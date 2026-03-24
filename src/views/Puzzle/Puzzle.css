@@ -43,9 +43,9 @@
     }
 
     &.portrait .center-col {
-        height: 100vw;
-        min-height: 100vw; /* firefox needs this */
-        max-height: 100vw; /* firefox needs this */
+        height: 100dvw;
+        min-height: 100dvw; /* firefox needs this */
+        max-height: 100dvw; /* firefox needs this */
         flex-basis: 99%;
     }
 
@@ -62,8 +62,8 @@
         overflow-y: visible;
         overflow-x: visible;
         align-self: center;
-        min-height: 100vh;
-        max-width: calc(100vw - 1rem);
+        min-height: 100dvh;
+        max-width: calc(100dvw - 1rem);
     }
 
     .btn-container {

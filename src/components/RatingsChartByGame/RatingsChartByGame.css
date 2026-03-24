@@ -17,7 +17,7 @@
 .RatingsChartByGame {
     /* height needs to match constant in .tsx file */
     height: 380px;
-    max-width: calc(100vw - 2em);
+    max-width: calc(100dvw - 2em);
     position: relative; /* so we can position the minigoban on over */
 
     .MiniGoban {
@@ -27,7 +27,7 @@
     }
 
     /* Uncomment this to make charts resize.  But only when they support that. */
-    /* max-width: calc(100vw - 2em); */
+    /* max-width: calc(100dvw - 2em); */
     svg {
         font-size: var(--font-size-smaller);
     }

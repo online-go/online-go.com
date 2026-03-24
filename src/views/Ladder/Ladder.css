@@ -21,8 +21,8 @@
     display: flex;
     align-items: stretch;
     justify-content: center;
-    max-height: calc(100vh - var(--navbar-height) - 0.2rem);
-    height: calc(100vh - var(--navbar-height) - 0.2rem);
+    max-height: calc(100dvh - var(--navbar-height) - 0.2rem);
+    height: calc(100dvh - var(--navbar-height) - 0.2rem);
 }
 
 .Ladder {
@@ -79,7 +79,7 @@
     .LadderRow {
         overflow: hidden;
         max-width: 30rem;
-        width: 100vw;
+        width: 100dvw;
         height: 30px;
         cursor: pointer;
 

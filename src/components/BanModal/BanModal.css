@@ -17,8 +17,8 @@
 .BanModal {
     width: 30rem;
     height: 30rem;
-    max-height: 90vh;
-    max-width: 90vw;
+    max-height: 90dvh;
+    max-width: 90dvw;
     text-align: center;
 
     .player-name {

@@ -18,7 +18,7 @@
     display: flex;
     flex-direction: column;
     height: calc(100dvh - var(--navbar-height) - 4px);
-    width: 100vw;
+    width: 100dvw;
     overflow: hidden;
 
     div {
@@ -338,7 +338,7 @@
         flex-wrap: wrap;
         justify-content: center;
         align-content: flex-start;
-        width: 100vw;
+        width: 100dvw;
         height: 100%;
         position: absolute;
         top: 0;
@@ -355,7 +355,7 @@
 
     #gotv-container .gotv-layout .list-pane.expanded {
         transform: translateY(0);
-        width: 100vw;
+        width: 100dvw;
         height: 100%;
     }
 
@@ -420,10 +420,10 @@
     }
 
     #gotv-container .gotv-layout .stream-pane {
-        width: 100vw;
+        width: 100dvw;
         margin-top: 50px;
         flex: none;
-        height: calc((100vw * 9 / 16));
+        height: calc((100dvw * 9 / 16));
         border-bottom: 1px solid transparent;
         border-bottom-color: var(--shade4);
 
@@ -433,7 +433,7 @@
     }
 
     #gotv-container .gotv-layout .chat-pane {
-        width: 100vw;
+        width: 100dvw;
         flex: 1 1 auto;
         overflow: hidden;
         background-color: var(--bg);

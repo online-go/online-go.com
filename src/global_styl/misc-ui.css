@@ -246,6 +246,6 @@
         flex-basis: 1rem;
         display: flex;
         flex-direction: column;
-        max-width: 95vw;
+        max-width: 95dvw;
     }
 }

@@ -38,8 +38,8 @@
     top: 50%;
     transform: translate(-50%, -50%);
     width: 30rem;
-    max-width: calc(95vw - 2rem);
-    max-height: calc(95vh - 2rem);
+    max-width: calc(95dvw - 2rem);
+    max-height: calc(95dvh - 2rem);
     box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
     z-index: var(--z-account-warning);
     background-color: var(--account-warning-bg);
@@ -107,8 +107,8 @@
     top: 50%;
     transform: translate(-50%, -50%);
     width: 30rem;
-    max-width: calc(95vw - 2rem);
-    max-height: calc(95vh - 2rem);
+    max-width: calc(95dvw - 2rem);
+    max-height: calc(95dvh - 2rem);
     box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
     z-index: var(--z-account-warning);
     background-color: var(--account-warning-bg);

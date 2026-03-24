@@ -16,9 +16,9 @@
  */
 .ErrcodeModal {
     width: 40rem;
-    max-width: 100vw;
+    max-width: 100dvw;
     min-height: 20rem;
-    max-width: 100vh;
+    max-width: 100dvh;
 
     .header {
         text-align: center;

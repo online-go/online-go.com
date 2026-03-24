@@ -16,9 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 .LearnMore {
-    max-width: 90vw;
+    max-width: 90dvw;
     width: 50rem;
-    max-height: 90vh;
+    max-height: 90dvh;
 
     /* height: 45rem; */
     p {

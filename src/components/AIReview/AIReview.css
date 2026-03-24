@@ -294,7 +294,7 @@
         display: block;
         width: 15rem;
         margin: auto;
-        max-width: 100vw;
+        max-width: 100dvw;
         font-size: var(--font-size-small);
         word-break: nobreak;
     }

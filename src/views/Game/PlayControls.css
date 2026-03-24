@@ -8,7 +8,7 @@
     flex-direction: column;
     justify-content: center;
     padding-top: 0.5rem;
-    max-width: 100vw;
+    max-width: 100dvw;
     min-height: 5rem;
 
     /* height: 23rem; */
@@ -47,7 +47,7 @@
             color: var(--fg);
             padding: 0.5rem;
             border-radius: 0.5rem;
-            max-width: 90vw;
+            max-width: 90dvw;
             text-align: justify;
         }
     }

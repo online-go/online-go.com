@@ -17,7 +17,7 @@
 
 .RatingsChartDistribution {
     height: 300px;
-    max-width: calc(100vw - 2em);
+    max-width: calc(100dvw - 2em);
 
     h4 {
         text-align: center;

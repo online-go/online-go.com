@@ -17,8 +17,8 @@
 .AIReviewChart {
     height: 100px;
     /* margin-bottom: 1rem; */
-    /* max-width: calc(100vw - 2em); */
-    max-width: calc(100vw);
+    /* max-width: calc(100dvw - 2em); */
+    max-width: calc(100dvw);
     /* max-width: 100%; */
     user-select: none;
 

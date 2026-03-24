@@ -32,7 +32,7 @@
 
     .body {
         padding: 1rem;
-        max-height: 60vh;
+        max-height: 60dvh;
         overflow-y: auto;
 
         .share-with {

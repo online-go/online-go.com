@@ -92,7 +92,7 @@
     .TestResultRow {
         display: inline-block;
         width: 50rem;
-        max-width: 90vw;
+        max-width: 90dvw;
 
         > span {
             margin-left: 1rem;

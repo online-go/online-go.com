@@ -62,6 +62,12 @@ declare module "postcss-functions" {
     export default plugin;
 }
 
+declare module "postcss-viewport-unit-fallback" {
+    import { PluginCreator } from "postcss";
+    const plugin: PluginCreator<Record<string, unknown>>;
+    export default plugin;
+}
+
 declare module "postcss-url" {
     import { PluginCreator } from "postcss";
     interface UrlOptions {

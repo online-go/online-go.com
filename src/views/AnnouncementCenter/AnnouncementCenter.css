@@ -357,12 +357,12 @@
         margin: auto;
         display: inline-block;
         width: 40rem;
-        max-width: 100vw;
+        max-width: 100dvw;
     }
 
     input, select {
         width: 30rem;
-        max-width: 90vw;
+        max-width: 90dvw;
 
         &.invalid {
             border-color: var(--reject) !important;

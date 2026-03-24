@@ -16,8 +16,8 @@
     flex-direction: column;
     width: 25rem;
     height: 40rem;
-    max-height: 90vh;
-    max-width: 90vw;
+    max-height: 90dvh;
+    max-width: 90dvw;
     color: var(--fg);
     border-radius: 0.5rem;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);

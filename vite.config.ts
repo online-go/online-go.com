@@ -33,6 +33,7 @@ import simpleVars from "postcss-simple-vars";
 import functions from "postcss-functions";
 import postcssUrl from "postcss-url";
 import inline_svg from "postcss-inline-svg";
+import viewportUnitFallback from "postcss-viewport-unit-fallback";
 import autoprefixer from "autoprefixer";
 import cssnano from "cssnano";
 import Color from "color";
@@ -279,6 +280,7 @@ export default defineConfig({
                 inline_svg({
                     paths: [path.resolve(__dirname, "assets"), path.resolve(__dirname, "src")],
                 }),
+                viewportUnitFallback(),
                 autoprefixer() as any,
                 // Only minify CSS in production
                 ...(process.env.NODE_ENV === "production" ? [cssnano()] : []),

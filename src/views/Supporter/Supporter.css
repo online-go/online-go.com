@@ -5,7 +5,7 @@
     justify-content: center;
 
     h3 {
-        width: 100vw;
+        width: 100dvw;
         max-width: 40rem;
     }
 
@@ -118,7 +118,7 @@
         display: inline-flex;
         flex-direction: column;
         width: 20rem;
-        max-width: 95vw;
+        max-width: 95dvw;
         /* themed background-color shade3 */
         /* margin: 1rem; */
         margin-left: 0.2rem;
@@ -199,7 +199,7 @@
     }
 
     .SiteSupporterText {
-        width: 100vw;
+        width: 100dvw;
         max-width: 50rem;
         text-align: justify;
 

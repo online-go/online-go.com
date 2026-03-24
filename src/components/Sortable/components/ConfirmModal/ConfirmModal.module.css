@@ -7,8 +7,8 @@
         width: var(--width);
         height: var(--height);
         position: fixed;
-        top: calc(100vh / 2 - var(--height) / 2);
-        left: calc(100vw / 2 - var(--width) / 2);
+        top: calc(100dvh / 2 - var(--height) / 2);
+        left: calc(100dvw / 2 - var(--width) / 2);
         border-radius: 10px;
         box-shadow: -1px 0 15px 0 rgba(34, 33, 81, 0.01), 0px 15px 15px 0 rgba(34, 33, 81, 0.25);
         padding: 15px;

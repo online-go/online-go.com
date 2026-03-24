@@ -23,7 +23,7 @@
 
     .Card {
         width: 20rem;
-        max-width: 100vw;
+        max-width: 100dvw;
         min-height: 30rem;
         text-align: center;
     }
@@ -49,7 +49,7 @@
 
     .MyLadders-row {
         margin-left: 2rem;
-        max-width: 100vw;
+        max-width: 100dvw;
         padding-bottom: 0.5rem;
     }
 

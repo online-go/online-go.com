@@ -8573,6 +8573,11 @@ postcss-value-parser@^4.0.0, postcss-value-parser@^4.2.0:
   resolved "https://registry.yarnpkg.com/postcss-value-parser/-/postcss-value-parser-4.2.0.tgz#723c09920836ba6d3e5af019f92bc0971c02e514"
   integrity sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==
 
+postcss-viewport-unit-fallback@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/postcss-viewport-unit-fallback/-/postcss-viewport-unit-fallback-1.0.1.tgz#2bea6574837ef10a7d78932266fe242e84302cd5"
+  integrity sha512-J2UiqTXKHTCICBIV/Yqn3fFVd42yzwiG4ogVdr8WQ8kJ5f72bKLZO30sd3Xs0n4sIRj3qDgMbz4AMCG/OtyXgg==
+
 postcss@^6.0.0:
   version "6.0.23"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-6.0.23.tgz#61c82cc328ac60e677645f979054eb98bc0e3324"
