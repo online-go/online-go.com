@@ -50,6 +50,8 @@
     .library-lost-result-unranked,
     .library-hidden-result {
         overflow: hidden;
+        max-width: 8rem;
+        text-overflow: ellipsis;
     }
 
     .library-lost-result-vs-weaker {
@@ -129,5 +131,11 @@
 
     .fa-flag {
         color: #ff8b00;
+    }
+
+    .game-name {
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+        max-width: 10rem;
     }
 }
