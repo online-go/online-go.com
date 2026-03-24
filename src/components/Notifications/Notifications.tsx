@@ -307,7 +307,7 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
                 return (
                     <div>
                         {_(
-                            "Vacatin mode has been automatically activated, to prevent a game timing out",
+                            "Vacation mode has been automatically activated, to prevent a game timing out",
                         )}
                     </div>
                 );
