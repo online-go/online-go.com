@@ -17,11 +17,13 @@
 .User {
     padding-top: 3rem;
 
-    dt, dd {
+    dt,
+    dd {
         margin-bottom: 0.5em;
     }
 
-    h3, h4 {
+    h3,
+    h4 {
         margin: 0;
     }
 
@@ -178,7 +180,8 @@
     }
 
     .edit-button {
-        .fa-save, .fa-pencil {
+        .fa-save,
+        .fa-pencil {
             padding-right: 0.3rem;
         }
     }
@@ -189,7 +192,8 @@
         padding-right: 0.5em;
     }
 
-    td.banned, th.banned {
+    td.banned,
+    th.banned {
         width: 7em;
         text-align: center;
     }
@@ -212,11 +216,11 @@
     }
 
     .won {
-        color: #5CB85C;
+        color: #5cb85c;
     }
 
     .loss {
-        color: #D9534F;
+        color: #d9534f;
     }
 
     .rating_details {
@@ -282,7 +286,10 @@
         color: var(--colored-background-fg);
     }
 
-    .fa-circle-o, .fa-bolt, .fa-clock-o, .ogs-turtle:before {
+    .fa-circle-o,
+    .fa-bolt,
+    .fa-clock-o,
+    .ogs-turtle:before {
         width: 1.5em;
         text-align: center;
     }
@@ -326,7 +333,8 @@
         display: flex;
         align-items: flex-end;
 
-        i { /* the search icon */
+        i {
+            /* the search icon */
             /* This would give us the themed underline */
             /* .. but it is bugged in Chrome. */
             /* @extend input; */
@@ -445,7 +453,8 @@
                 font-size: var(--font-size-small);
             }
 
-            .left, .right {
+            .left,
+            .right {
                 display: inline-block;
                 margin: 0;
                 padding: 0;
@@ -494,62 +503,7 @@
         }
     }
 
-    .game-options {
-        display: flex;
-        justify-content: space-between;
-        align-items: self-start;
-        width: 100%;
-
-        .rengo-selector > * {
-            vertical-align: middle;
-        }
-    }
-
-    .game-history-table, .review-history-table {
-        .game_name, .date, .player, .library-lost-result, .library-won-result, .library-tie-result, .library-lost-result-vs-weaker, .library-lost-result-vs-stronger, .library-won-result-vs-stronger, .library-won-result-vs-weaker, .library-won-result-unranked, .library-lost-result-unranked, .library-hidden-result {
-            white-space: nowrap;
-        }
-
-        .library-lost-result, .library-won-result, .library-tie-result, .library-lost-result-vs-weaker, .library-lost-result-vs-stronger, .library-won-result-vs-stronger, .library-won-result-vs-weaker, .library-won-result-unranked, .library-lost-result-unranked, .library-hidden-result {
-            overflow: hidden;
-        }
-
-        .library-lost-result-vs-weaker {
-            background-color: var(--weak-loss);
-            color: var(--weak-l-text);
-        }
-
-        .library-lost-result-vs-stronger {
-            background-color: var(--strong-loss);
-            color: var(--strong-l-text);
-        }
-
-        .library-won-result-vs-stronger {
-            background-color: var(--strong-win);
-            color: var(--strong-w-text);
-        }
-
-        .library-won-result-vs-weaker {
-            background-color: var(--weak-win);
-            color: var(--weak-w-text);
-        }
-
-        .library-won-result-unranked {
-            color: var(--strong-win);
-        }
-
-        .library-lost-result-unranked {
-            color: var(--strong-loss);
-        }
-
-        .board_size {
-            padding-right: 0.5em;
-        }
-
-        .handicap {
-            text-align: center;
-        }
-
+    .review-history-table {
         .game_name {
             a {
                 color: unset;
@@ -558,31 +512,7 @@
             max-width: 15rem;
             overflow: hidden;
             text-overflow: ellipsis;
-        }
-
-        .player {
-            max-width: 12rem;
-            overflow: hidden;
-        }
-
-        span {
-            padding-right: 0.3em;
-            vertical-align: middle;
-        }
-
-        .user_info {
             white-space: nowrap;
-        }
-
-        .winner_marker {
-            color: var(--winner-trophy);
-            padding-left: 4px;
-            vertical-align: middle;
-            padding-right: 4px;
-        }
-
-        .annulled {
-            opacity: var(--annul-opacity);
         }
 
         th {
@@ -616,7 +546,8 @@
     }
 
     .SelfReportedAccountLinkages {
-        .association-link, .server-link {
+        .association-link,
+        .server-link {
             display: flex;
             align-items: middle;
             justify-content: center;
@@ -652,9 +583,5 @@
                 width: 8rem;
             }
         }
-    }
-
-    .fa-flag {
-        color: #ff8B00;
     }
 }
