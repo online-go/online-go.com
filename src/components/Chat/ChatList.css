@@ -20,7 +20,7 @@
 .ChatList {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - var(--navbar-height) - var(--channel-utils-height));
+    height: calc(100dvh - var(--navbar-height) - var(--channel-utils-height));
     overflow-y: auto;
     width: var(--channel-width);
     max-width: var(--channel-max-width);

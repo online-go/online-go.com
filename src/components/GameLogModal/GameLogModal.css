@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 .GameLogModal.Modal {
-    width: 90vw;
-    min-width: 90vw;
-    max-width: 90vw;
+    width: 90dvw;
+    min-width: 90dvw;
+    max-width: 90dvw;
 }

@@ -35,7 +35,7 @@
     .Challenge {
         width: 19rem;
         min-height: 19rem;
-        max-width: 100vw;
+        max-width: 100dvw;
         display: flex;
         flex-direction: column;
         align-items: center;

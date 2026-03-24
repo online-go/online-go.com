@@ -17,7 +17,7 @@
 #LearningHub-container {
     display: flex;
     justify-content: center;
-    height: calc(100vh - var(--below-navbar));
+    height: calc(100dvh - var(--below-navbar));
     overflow-y: auto;
 }
 
@@ -349,7 +349,7 @@
     margin: 2rem;
     margin-top: 5rem;
     min-height: 30rem;
-    max-height: calc(100vh - 10rem);
+    max-height: calc(100dvh - 10rem);
     overflow-y: auto;
 
     > a { /* main menu */

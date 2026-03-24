@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 .GameList {
-    max-width: 100vw;
+    max-width: 100dvw;
     overflow-x: hidden;
     text-align: center;
 

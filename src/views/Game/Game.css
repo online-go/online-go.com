@@ -474,7 +474,7 @@
                 flex-grow: 0;
             }
 
-            flex-basis: 100vh;
+            flex-basis: 100dvh;
             justify-content: flex-start;
             flex-grow: 0;
         }

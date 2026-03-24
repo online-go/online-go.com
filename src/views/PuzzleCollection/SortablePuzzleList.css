@@ -17,7 +17,7 @@
 .SortablePuzzleList {
     width: 35rem;
     padding: 0;
-    max-width: 100vw;
+    max-width: 100dvw;
 }
 
 /* this has to be outside, the drag/drop stuff creates a wandering <li> node */

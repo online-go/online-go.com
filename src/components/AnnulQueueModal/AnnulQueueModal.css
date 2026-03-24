@@ -1,6 +1,6 @@
 .AnnulQueueModal {
-    min-width: 80vw;
-    min-height: 90vh;
+    min-width: 80dvw;
+    min-height: 90dvh;
     z-index: 1000;
     position: fixed;
     top: 50%;

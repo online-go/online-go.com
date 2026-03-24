@@ -44,8 +44,8 @@
         top: var(--navbar-height);
         right: 0;
         width: 15rem;
-        max-width: 100vw;
-        max-height: calc(100vh - var(--navbar-height));
+        max-width: 100dvw;
+        max-height: calc(100dvh - var(--navbar-height));
         overflow-y: scroll;
         overflow-x: hidden;
         box-shadow: -2px 2px 1px 0px rgba(0, 0, 0, 0.16);

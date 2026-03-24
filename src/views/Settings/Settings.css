@@ -37,7 +37,7 @@
     }
 
     .PreferenceLine {
-        max-width: 100vw;
+        max-width: 100dvw;
         flex-wrap: wrap;
         margin-bottom: 2rem;
         align-items: center;
@@ -150,7 +150,7 @@
             > h4 {
                 display: inline-block;
                 width: 10rem;
-                max-width: 100vw;
+                max-width: 100dvw;
                 flex: 0;
                 flex-basis: 10rem;
                 margin-right: 2rem;
@@ -232,7 +232,7 @@
         margin-bottom: 0.5rem;
         display: flex;
         align-items: center;
-        max-width: 95vw;
+        max-width: 95dvw;
 
         label {
             flex: 1;
@@ -369,7 +369,7 @@
 
             .blocked-player {
                 width: 20rem;
-                max-width: 100vw;
+                max-width: 100dvw;
             }
         }
     }

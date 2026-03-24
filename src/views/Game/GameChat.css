@@ -27,7 +27,7 @@
     /* height: 100%; */
     border: 1px solid transparent;
     border-color: var(--shade4);
-    flex-basis: 100vh;
+    flex-basis: 100dvh;
 
     .log-player-container {
         flex-grow: 1;

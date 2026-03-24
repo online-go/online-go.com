@@ -19,8 +19,8 @@
     flex-direction: column;
     width: 22rem;
     height: 25rem;
-    max-width: 100vw;
-    max-height: 100vh;
+    max-width: 100dvw;
+    max-height: 100dvh;
     align-items: center;
     justify-content: center;
     color: var(--fg);

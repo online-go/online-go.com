@@ -44,8 +44,8 @@
         flex-direction: column;
         justify-content: center;
         flex-basis: 5rem;
-        max-height: 100vh;
-        max-height: calc(100vh - var(--navbar-height));
+        max-height: 100dvh;
+        max-height: calc(100dvh - var(--navbar-height));
     }
 
     .active-games {
@@ -78,7 +78,7 @@
     .left {
         flex: 1;
         min-width: 0;
-        max-width: 100vw;
+        max-width: 100dvw;
         display: flex;
         flex-direction: column;
         overflow-x: hidden;
@@ -88,7 +88,7 @@
         flex: 0;
         flex-basis: 20rem;
         min-width: 20rem;
-        max-width: 100vw;
+        max-width: 100dvw;
         text-align: left;
         margin-left: 1rem;
 

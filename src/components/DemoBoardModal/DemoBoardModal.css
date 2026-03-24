@@ -20,7 +20,7 @@
   max-width: 100%;
 
   .header {
-    max-height: 80vh;
+    max-height: 80dvh;
     align-items: stretch !important;
   }
 
@@ -68,7 +68,7 @@
   }
 
   .header {
-    max-height: 80vh;
+    max-height: 80dvh;
     align-items: stretch !important;
   }
 

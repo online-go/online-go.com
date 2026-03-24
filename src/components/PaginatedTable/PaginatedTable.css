@@ -16,14 +16,14 @@
  */
 .PaginatedTable {
     position: relative;
-    max-width: 100vw;
+    max-width: 100dvw;
 
     div {
         overflow-x: auto;
 
         table {
             width: 100%;
-            max-width: 100vw;
+            max-width: 100dvw;
             border-collapse: collapse;
 
             tr {

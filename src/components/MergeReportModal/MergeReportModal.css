@@ -17,7 +17,7 @@
 .MergeReportModal {
     width: 30rem;
     max-width: 100%;
-    height: 55vh;
+    height: 55dvh;
     max-height: 100%;
 
     .body {

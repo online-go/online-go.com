@@ -19,7 +19,7 @@
     flex: 1;
     flex-direction: column;
     align-items: stretch;
-    width: 100vw;
+    width: 100dvw;
     max-width: 60rem;
     margin: auto;
 
@@ -63,7 +63,7 @@
     }
 
     .round-entries-container {
-        max-width: 100vw;
+        max-width: 100dvw;
         overflow-x: auto;
     }
 
@@ -85,14 +85,14 @@
             .name {
                 display: inline-block;
                 min-width: 15rem;
-                max-width: 50vw;
+                max-width: 50dvw;
                 overflow: hidden;
             }
 
             .Player {
                 display: inline-block;
                 min-width: 8rem;
-                max-width: 15vw;
+                max-width: 15dvw;
                 overflow: hidden;
             }
         }

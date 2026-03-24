@@ -28,7 +28,7 @@
 
 .EmailBanner {
     width: 40rem;
-    max-width: 100vw;
+    max-width: 100dvw;
     text-align: justify;
 
     .primary {

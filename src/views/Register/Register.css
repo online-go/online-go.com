@@ -21,7 +21,7 @@
     justify-content: space-around;
     align-items: center;
 
-    /* min-height: 100vh; */
+    /* min-height: 100dvh; */
     .Card {
         padding: 1rem;
         width: 15rem;

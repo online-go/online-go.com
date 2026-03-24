@@ -394,7 +394,7 @@
     .ogs-react-select__menu {
         right: 0;
         width: 20rem;
-        max-width: 90vw;
+        max-width: 90dvw;
         z-index: calc(var(--z-play-buttons) + 1);
 
         .ogs-react-select__group-heading {
@@ -492,7 +492,7 @@
         .ogs-react-select__menu {
             right: 0;
             width: 6rem;
-            max-width: 40vw;
+            max-width: 40dvw;
         }
     }
 }

@@ -229,7 +229,7 @@
             flex-wrap: wrap;
 
             .top-right-details {
-                width: 100vw;
+                width: 100dvw;
             }
 
             table {
@@ -328,7 +328,7 @@
 
         select {
             min-width: 20rem;
-            max-width: 100vw;
+            max-width: 100dvw;
         }
 
         .scheduled-matches {
@@ -418,7 +418,7 @@
 
             textarea {
                 width: 20rem;
-                max-width: 100vw;
+                max-width: 100dvw;
             }
         }
     }
@@ -427,7 +427,7 @@
         border: 2px solid transparent;
         border-color: var(--fg);
         width: 24rem;
-        max-width: 85vw;
+        max-width: 85dvw;
         margin-left: auto;
         margin-right: auto;
         padding: 1rem;

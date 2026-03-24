@@ -133,7 +133,7 @@
     }
 
     .header {
-        max-height: 80vh;
+        max-height: 80dvh;
         align-items: stretch !important;
     }
 

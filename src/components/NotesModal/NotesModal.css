@@ -17,7 +17,7 @@
 .NotesModal {
     width: 50rem;
     max-width: 100%;
-    height: 95vh;
+    height: 95dvh;
     max-height: 100%;
 
     .body {

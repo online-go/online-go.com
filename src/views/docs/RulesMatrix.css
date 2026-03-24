@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #RulesMatrix {
-    max-width: 100vw;
+    max-width: 100dvw;
     overflow: auto;
 
     #docs-go-rules-comparison-matrix {

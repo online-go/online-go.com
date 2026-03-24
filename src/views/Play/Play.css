@@ -177,7 +177,7 @@
     width: 100%;
     text-align: center;
     margin-top: 1rem;
-    max-width: 100vw;
+    max-width: 100dvw;
     overflow-y: auto;
 }
 
