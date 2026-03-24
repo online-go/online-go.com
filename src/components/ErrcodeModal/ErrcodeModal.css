@@ -18,7 +18,7 @@
     width: 40rem;
     max-width: 100dvw;
     min-height: 20rem;
-    max-width: 100dvh;
+    max-height: 100dvh;
 
     .header {
         text-align: center;
