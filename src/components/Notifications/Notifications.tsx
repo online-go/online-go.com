@@ -135,6 +135,7 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
             case "gameStarted":
             case "gameEnded":
             case "timecop":
+            case "autoVacation":
             case "gameEnteredStoneRemoval":
             case "gameResumedFromStoneRemoval":
                 if (notification.game_id === undefined) {
@@ -301,6 +302,15 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
                     </div>
                 );
             }
+
+            case "autoVacation":
+                return (
+                    <div>
+                        {_(
+                            "Vacatin mode has been automatically activated, to prevent a game timing out",
+                        )}
+                    </div>
+                );
 
             case "gameEnteredStoneRemoval":
                 return <div>{_("Game has entered the stone removal phase")}</div>;

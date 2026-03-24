@@ -22,8 +22,9 @@ import { put, del } from "@/lib/requests";
 import { errorAlerter } from "@/lib/misc";
 
 import { durationString } from "@/components/TimeControl";
+import { Toggle } from "@/components/Toggle";
 
-import { SettingGroupPageProps } from "@/lib/SettingsCommon";
+import { SettingGroupPageProps, PreferenceLine } from "@/lib/SettingsCommon";
 
 export function VacationSettings(props: SettingGroupPageProps): React.ReactElement {
     const [vacation_left, set_vacation_left]: [number, (x: number) => void] = React.useState(
@@ -101,6 +102,24 @@ export function VacationSettings(props: SettingGroupPageProps): React.ReactEleme
                     })}
                 </div>
             </div>
+
+            <PreferenceLine
+                title={_("Auto-vacation")}
+                description={_(
+                    "Automatically turn on vacation before timing out a correspondence game.",
+                )}
+            >
+                <Toggle
+                    checked={props.state.profile.auto_vacation ?? true}
+                    onChange={(checked) => {
+                        put("me/settings", {
+                            site_preferences: { auto_vacation: checked },
+                        })
+                            .then(() => props.refresh())
+                            .catch(errorAlerter);
+                    }}
+                />
+            </PreferenceLine>
         </div>
     );
 }
