@@ -93,9 +93,10 @@ export function WhatsNew(): React.ReactElement | null {
                     applyPost(data[0]);
 
                     if (isTranslated) {
+                        const postIdAtLoad = data[0].id;
                         get(`whats_new/?language=en${idParam}`)
                             .then((enData: WhatsNewPost[]) => {
-                                if (enData.length > 0) {
+                                if (enData.length > 0 && activePostIdRef.current === postIdAtLoad) {
                                     setOriginalPost(enData[0]);
                                 }
                             })
@@ -266,6 +267,7 @@ export function WhatsNew(): React.ReactElement | null {
                     <button
                         className="translation-toggle"
                         onClick={() => setShowOriginal(!showOriginal)}
+                        disabled={!showOriginal && originalPost === null}
                     >
                         {showOriginal
                             ? pgettext(
