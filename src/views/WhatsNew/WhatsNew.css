@@ -20,6 +20,40 @@
         margin-bottom: 1rem;
     }
 
+    .translation-notice {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--text-dimmed);
+        margin-top: 1rem;
+    }
+
+    .translation-notice-text {
+        font-style: italic;
+    }
+
+    .translation-toggle {
+        background: none;
+        border: none;
+        box-shadow: none;
+        color: var(--link-color);
+        cursor: pointer;
+        font-size: 0.85rem;
+        padding: 0;
+    }
+
+    .translation-toggle:disabled {
+        cursor: default;
+        opacity: 0.5;
+    }
+
+    .translation-toggle:hover:not(:disabled) {
+        color: var(--link-color-active);
+        text-decoration: underline;
+    }
+
     .post-body {
         margin-bottom: 1.5rem;
         line-height: 1.6;

@@ -19,7 +19,7 @@ import * as React from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import * as data from "@/lib/data";
 import { get, post, put } from "@/lib/requests";
-import { _, current_language, moment } from "@/lib/translate";
+import { _, pgettext, current_language, moment } from "@/lib/translate";
 import { errorAlerter } from "@/lib/misc";
 import { alert } from "@/lib/swal_config";
 import { Markdown } from "@/components/Markdown";
@@ -67,8 +67,12 @@ export function WhatsNew(): React.ReactElement | null {
     const [feedbackText, setFeedbackText] = React.useState("");
     const [feedbackSending, setFeedbackSending] = React.useState(false);
     const [feedbackSent, setFeedbackSent] = React.useState(false);
+    const [originalPost, setOriginalPost] = React.useState<WhatsNewPost | null>(null);
+    const [originalFetchFailed, setOriginalFetchFailed] = React.useState(false);
+    const [showOriginal, setShowOriginal] = React.useState(false);
     const feedbackSentTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
     const activePostIdRef = React.useRef<number | null>(null);
+    const isTranslated = current_language !== "en";
 
     function applyPost(p: WhatsNewPost): void {
         activePostIdRef.current = p.id;
@@ -81,11 +85,30 @@ export function WhatsNew(): React.ReactElement | null {
     function loadPost(id?: number): void {
         setLoading(true);
         setError(null);
+        setOriginalPost(null);
+        setOriginalFetchFailed(false);
+        setShowOriginal(false);
         const idParam = id ? `&id=${id}` : "";
         get(`whats_new/?language=${encodeURIComponent(current_language)}${idParam}`)
             .then((data: WhatsNewPost[]) => {
                 if (data.length > 0) {
                     applyPost(data[0]);
+
+                    if (isTranslated) {
+                        const postIdAtLoad = data[0].id;
+                        get(`whats_new/?language=en${idParam}`)
+                            .then((enData: WhatsNewPost[]) => {
+                                if (enData.length > 0 && activePostIdRef.current === postIdAtLoad) {
+                                    setOriginalPost(enData[0]);
+                                }
+                            })
+                            .catch((err: unknown) => {
+                                console.error(err);
+                                if (activePostIdRef.current === postIdAtLoad) {
+                                    setOriginalFetchFailed(true);
+                                }
+                            });
+                    }
                 }
             })
             .catch((err: unknown) => {
@@ -222,11 +245,51 @@ export function WhatsNew(): React.ReactElement | null {
                 action={handleReactionCountsPush}
             />
 
-            <h1 className="post-title">{currentPost.title}</h1>
+            <h1 className="post-title">
+                {showOriginal && originalPost ? originalPost.title : currentPost.title}
+            </h1>
             <div className="post-meta">{moment(currentPost.created_at).format("ll")}</div>
             <div className="post-body">
-                <Markdown source={currentPost.content ?? ""} />
+                <Markdown
+                    source={
+                        showOriginal && originalPost
+                            ? (originalPost.content ?? "")
+                            : (currentPost.content ?? "")
+                    }
+                />
             </div>
+            {isTranslated && (
+                <div className="translation-notice">
+                    <span className="translation-notice-text">
+                        {showOriginal
+                            ? pgettext(
+                                  "Label indicating the user is viewing the original English text of a post",
+                                  "Original text",
+                              )
+                            : pgettext(
+                                  "Label indicating the post has been automatically translated from English",
+                                  "Auto-translated",
+                              )}
+                    </span>
+                    {!originalFetchFailed && (
+                        <button
+                            className="translation-toggle"
+                            onClick={() => setShowOriginal(!showOriginal)}
+                            disabled={!showOriginal && originalPost === null}
+                        >
+                            {showOriginal
+                                ? pgettext(
+                                      "Button to switch back to the translated version of a post",
+                                      "Show translation",
+                                  )
+                                : pgettext(
+                                      "Button to view the original English version of a post",
+                                      "Show original",
+                                  )}
+                        </button>
+                    )}
+                </div>
+            )}
             <div className="reactions-bar">
                 {ALL_EMOJIS.map((emoji) => {
                     const count = reactionCounts[emoji] || 0;
