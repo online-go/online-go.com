@@ -21,6 +21,7 @@ import {
     normalUserCanUpdateProfileTest,
 } from "./suspended-user-profile-updates";
 import { suspendedUserDeletionRequestTest } from "./suspended-user-deletion-request";
+import { newUserVacationBalanceTest } from "./new-user-vacation-balance";
 
 ogsTest.describe("@User Profile Tests", () => {
     ogsTest("Normal users can update their profile name", normalUserCanUpdateProfileTest);
@@ -32,4 +33,5 @@ ogsTest.describe("@User Profile Tests", () => {
         "Suspended users see deletion request button in account settings",
         suspendedUserDeletionRequestTest,
     );
+    ogsTest("New users start with zero vacation balance", newUserVacationBalanceTest);
 });
