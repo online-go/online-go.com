@@ -383,7 +383,7 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
                                         onClick={() => acceptUndo()}
                                         ref={accept_button}
                                     >
-                                        ↶ {_("Accept Undo")}
+                                        {_("Accept Undo")}
                                     </button>
                                 )}
                                 {show_cancel_undo && (
@@ -431,8 +431,17 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
                 )}
             </span>
             <span>
-                {show_cancel && phase !== "finished" && (
-                    <CancelButton className={!zen_mode ? "bold xs" : "bold xs cancel-button-zen"} />
+                {show_accept_undo && show_undo_requested ? (
+                    <button className="bold reject-undo-button xs" onClick={() => cancelUndo()}>
+                        {_("Reject Undo")}
+                    </button>
+                ) : (
+                    show_cancel &&
+                    phase !== "finished" && (
+                        <CancelButton
+                            className={!zen_mode ? "bold xs" : "bold xs cancel-button-zen"}
+                        />
+                    )
                 )}
             </span>
         </span>

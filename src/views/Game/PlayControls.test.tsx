@@ -214,7 +214,7 @@ test("Renders accept undo if undo requested", () => {
 
     expect(screen.queryByText("Undo")).toBeNull();
     expect(screen.getByText("Accept Undo", { exact: false })).toBeDefined();
-    expect(screen.getByText("Undo Requested")).toBeDefined();
+    expect(screen.getByText("test_user2 has requested an undo")).toBeDefined();
 });
 
 test("Renders Pass if it is the user's turn", () => {

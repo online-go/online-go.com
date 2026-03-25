@@ -318,11 +318,12 @@ describe("PlayButtons", () => {
         );
 
         // Present
-        expect(screen.getByText("Cancel game")).toBeDefined();
         expect(screen.getByText("Pass")).toBeDefined();
         expect(screen.queryByText("Accept Undo")).toBeDefined();
+        expect(screen.queryByText("Reject Undo")).toBeDefined();
 
-        // Absent
+        // Absent - Reject Undo replaces Cancel game
+        expect(screen.queryByText("Cancel game")).toBeNull();
         expect(screen.queryByText("Undo")).toBeNull();
         expect(screen.queryByText("Submit Move")).toBeNull();
         expect(screen.queryByText("Cancel Undo")).toBeNull();
@@ -353,11 +354,12 @@ describe("PlayButtons", () => {
         });
 
         // Present
-        expect(screen.getByText("Cancel game")).toBeDefined();
         expect(screen.getByText("Pass")).toBeDefined();
         expect(screen.queryByText("Accept Undo")).toBeDefined();
+        expect(screen.queryByText("Reject Undo")).toBeDefined();
 
-        // Absent
+        // Absent - Reject Undo replaces Cancel game
+        expect(screen.queryByText("Cancel game")).toBeNull();
         expect(screen.queryByText("Undo")).toBeNull();
         expect(screen.queryByText("Submit Move")).toBeNull();
         expect(screen.queryByText("Cancel Undo")).toBeNull();
@@ -393,6 +395,7 @@ describe("PlayButtons", () => {
 
         // Absent
         expect(screen.queryByText("Accept Undo")).toBeNull();
+        expect(screen.queryByText("Reject Undo")).toBeNull();
     });
 
     test("engine reports both stones when undoing two moves", () => {
