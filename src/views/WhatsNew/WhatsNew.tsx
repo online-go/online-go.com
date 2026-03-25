@@ -68,6 +68,7 @@ export function WhatsNew(): React.ReactElement | null {
     const [feedbackSending, setFeedbackSending] = React.useState(false);
     const [feedbackSent, setFeedbackSent] = React.useState(false);
     const [originalPost, setOriginalPost] = React.useState<WhatsNewPost | null>(null);
+    const [originalFetchFailed, setOriginalFetchFailed] = React.useState(false);
     const [showOriginal, setShowOriginal] = React.useState(false);
     const feedbackSentTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
     const activePostIdRef = React.useRef<number | null>(null);
@@ -85,6 +86,7 @@ export function WhatsNew(): React.ReactElement | null {
         setLoading(true);
         setError(null);
         setOriginalPost(null);
+        setOriginalFetchFailed(false);
         setShowOriginal(false);
         const idParam = id ? `&id=${id}` : "";
         get(`whats_new/?language=${encodeURIComponent(current_language)}${idParam}`)
@@ -100,7 +102,12 @@ export function WhatsNew(): React.ReactElement | null {
                                     setOriginalPost(enData[0]);
                                 }
                             })
-                            .catch(console.error);
+                            .catch((err: unknown) => {
+                                console.error(err);
+                                if (activePostIdRef.current === postIdAtLoad) {
+                                    setOriginalFetchFailed(true);
+                                }
+                            });
                     }
                 }
             })
@@ -264,21 +271,23 @@ export function WhatsNew(): React.ReactElement | null {
                                   "Auto-translated",
                               )}
                     </span>
-                    <button
-                        className="translation-toggle"
-                        onClick={() => setShowOriginal(!showOriginal)}
-                        disabled={!showOriginal && originalPost === null}
-                    >
-                        {showOriginal
-                            ? pgettext(
-                                  "Button to switch back to the translated version of a post",
-                                  "Show translation",
-                              )
-                            : pgettext(
-                                  "Button to view the original English version of a post",
-                                  "Show original",
-                              )}
-                    </button>
+                    {!originalFetchFailed && (
+                        <button
+                            className="translation-toggle"
+                            onClick={() => setShowOriginal(!showOriginal)}
+                            disabled={!showOriginal && originalPost === null}
+                        >
+                            {showOriginal
+                                ? pgettext(
+                                      "Button to switch back to the translated version of a post",
+                                      "Show translation",
+                                  )
+                                : pgettext(
+                                      "Button to view the original English version of a post",
+                                      "Show original",
+                                  )}
+                        </button>
+                    )}
                 </div>
             )}
             <div className="reactions-bar">
