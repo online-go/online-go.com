@@ -20,6 +20,7 @@ import { _, llm_pgettext, pgettext, moment } from "@/lib/translate";
 import * as DynamicHelp from "react-dynamic-help";
 
 import { GobanEngineConfig } from "goban";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 import { socket } from "@/lib/sockets";
 import { Player } from "@/components/Player";
@@ -300,22 +301,24 @@ export function LogData({
                     // we'll re-render when it's set
                     if (markedConfig) {
                         ret.push(
-                            <ScoringEventThumbnail
-                                key={k}
-                                config={markedConfig}
-                                move_number={data.move_number}
-                            />,
+                            <ErrorBoundary key={k}>
+                                <ScoringEventThumbnail
+                                    config={markedConfig}
+                                    move_number={data.move_number}
+                                />
+                            </ErrorBoundary>,
                         );
                     }
                 } else if (k === "stones" && !data.score_estimate_response) {
                     // we'll re-render when it's set
                     if (markedConfig) {
                         ret.push(
-                            <ScoringEventThumbnail
-                                key={k}
-                                config={markedConfig}
-                                move_number={data.move_number}
-                            />,
+                            <ErrorBoundary key={k}>
+                                <ScoringEventThumbnail
+                                    config={markedConfig}
+                                    move_number={data.move_number}
+                                />
+                            </ErrorBoundary>,
                         );
                     }
                 } else if (k === "removed") {
