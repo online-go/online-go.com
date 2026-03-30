@@ -126,7 +126,7 @@ interface TournamentInterface {
     exclude_provisional: boolean;
     auto_start_on_max: boolean;
     ranked: boolean;
-    no_vacation: boolean;
+    no_vacation?: boolean;
     exclusivity: string;
     first_pairing_method: string;
     subsequent_pairing_method: string;
