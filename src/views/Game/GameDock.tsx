@@ -176,8 +176,9 @@ export function GameDock({
             "handicap_rank_difference",
             "rengo",
             "rengo_teams",
+            "no_vacation",
         ] as const) {
-            (goban.config as any)[k] = goban.engine.config[k];
+            (goban.config as any)[k] = (goban.engine.config as any)[k];
         }
         openGameInfoModal(
             goban.config,
