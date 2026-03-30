@@ -132,11 +132,14 @@ export function VacationSettings(props: SettingGroupPageProps): React.ReactEleme
             {no_vacation_games.length > 0 && (
                 <div className="no-vacation-warning">
                     <i className="fa fa-exclamation-triangle"></i>{" "}
-                    {ngettext(
-                        "You have {{count}} active correspondence game that will not be paused by vacation:",
-                        "You have {{count}} active correspondence games that will not be paused by vacation:",
-                        no_vacation_games.length,
-                    ).replace("{{count}}", String(no_vacation_games.length))}
+                    {interpolate(
+                        ngettext(
+                            "You have {{count}} active correspondence game that will not be paused by vacation:",
+                            "You have {{count}} active correspondence games that will not be paused by vacation:",
+                            no_vacation_games.length,
+                        ),
+                        { count: no_vacation_games.length },
+                    )}
                     <ul>
                         {no_vacation_games.map((g) => (
                             <li key={g.id}>
