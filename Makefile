@@ -25,8 +25,8 @@ stage1-dev: node_modules .husky
 stage2-dev: node_modules .husky
 	export OGS_BACKEND=LOCAL OGS_PORT=8002 && npm run dev
 
-.husky: 
-	npx husky install
+.husky:
+	npx husky
 
 node_modules: package.json
 	npm ls yarn || npm install yarn

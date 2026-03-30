@@ -27,7 +27,7 @@ npx yarn install
 
 # Next install `husky`, this provides pre-commit checks to ensure the code
 # meets some basic guidelines
-npx husky install
+npx husky
 
 # Run this to start the development server and build system
 npm run dev
