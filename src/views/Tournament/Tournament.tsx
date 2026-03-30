@@ -1596,7 +1596,7 @@ export function Tournament(): React.ReactElement {
                                         <input
                                             type="checkbox"
                                             id="no_vacation"
-                                            checked={tournament.no_vacation}
+                                            checked={tournament.no_vacation ?? false}
                                             onChange={setNoVacation}
                                         />
                                     )}
