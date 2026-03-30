@@ -53,15 +53,23 @@ export function VacationSettings(props: SettingGroupPageProps): React.ReactEleme
     });
 
     React.useEffect(() => {
+        let canceled = false;
         get("ui/overview")
             .then((result: { active_games: rest_api.players.full.Game[] }) => {
-                const games = result.active_games.filter(
-                    (g) => g.no_vacation && (g.time_per_move ?? 0) >= 3600,
-                );
-                set_no_vacation_games(games.map((g) => ({ id: g.id, name: g.name })));
+                if (!canceled) {
+                    const games = result.active_games.filter(
+                        (g) => g.no_vacation && (g.time_per_move ?? 0) >= 3600,
+                    );
+                    set_no_vacation_games(games.map((g) => ({ id: g.id, name: g.name })));
+                }
             })
-            .catch(errorAlerter);
+            .catch((err) => {
+                if (!canceled) {
+                    errorAlerter(err);
+                }
+            });
         return () => {
+            canceled = true;
             abort_requests_in_flight("ui/overview");
         };
     }, []);
