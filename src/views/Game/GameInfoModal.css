@@ -23,7 +23,7 @@
         flex-direction: column;
     }
 
-    h3>span {
+    h3 > span {
         margin: 0 0.3rem 0 0.3rem;
     }
 
@@ -53,5 +53,10 @@
 
     dd {
         width: 70%;
+    }
+
+    .no-vacation-warning {
+        color: var(--warning-bg);
+        font-weight: bold;
     }
 }

@@ -17,8 +17,8 @@
 
 import * as React from "react";
 
-import { _, interpolate } from "@/lib/translate";
-import { put, del } from "@/lib/requests";
+import { _, interpolate, ngettext } from "@/lib/translate";
+import { get, put, del } from "@/lib/requests";
 import { errorAlerter } from "@/lib/misc";
 
 import { durationString } from "@/components/TimeControl";
@@ -26,10 +26,16 @@ import { Toggle } from "@/components/Toggle";
 
 import { SettingGroupPageProps, PreferenceLine } from "@/lib/SettingsCommon";
 
+interface NoVacationGame {
+    id: number;
+    name: string;
+}
+
 export function VacationSettings(props: SettingGroupPageProps): React.ReactElement {
     const [vacation_left, set_vacation_left]: [number, (x: number) => void] = React.useState(
         props.state.profile.vacation_left - (Date.now() - props.vacation_base_time) / 1000,
     );
+    const [no_vacation_games, set_no_vacation_games] = React.useState<NoVacationGame[]>([]);
 
     React.useEffect(() => {
         const vacation_interval = setInterval(() => {
@@ -45,6 +51,26 @@ export function VacationSettings(props: SettingGroupPageProps): React.ReactEleme
             clearInterval(vacation_interval);
         };
     });
+
+    React.useEffect(() => {
+        get("ui/overview")
+            .then(
+                (result: {
+                    active_games: Array<{
+                        id: number;
+                        name: string;
+                        no_vacation?: boolean;
+                        time_per_move?: number;
+                    }>;
+                }) => {
+                    const games = result.active_games.filter(
+                        (g) => g.no_vacation && (g.time_per_move ?? 0) >= 3600,
+                    );
+                    set_no_vacation_games(games.map((g) => ({ id: g.id, name: g.name })));
+                },
+            )
+            .catch(errorAlerter);
+    }, []);
 
     function endVacation() {
         del("me/vacation")
@@ -102,6 +128,24 @@ export function VacationSettings(props: SettingGroupPageProps): React.ReactEleme
                     })}
                 </div>
             </div>
+
+            {no_vacation_games.length > 0 && (
+                <div className="no-vacation-warning">
+                    <i className="fa fa-exclamation-triangle"></i>{" "}
+                    {ngettext(
+                        "You have {{count}} active correspondence game that will not be paused by vacation:",
+                        "You have {{count}} active correspondence games that will not be paused by vacation:",
+                        no_vacation_games.length,
+                    ).replace("{{count}}", String(no_vacation_games.length))}
+                    <ul>
+                        {no_vacation_games.map((g) => (
+                            <li key={g.id}>
+                                <a href={`/game/${g.id}`}>{g.name || `#${g.id}`}</a>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
 
             <PreferenceLine
                 title={_("Auto-vacation")}

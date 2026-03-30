@@ -126,6 +126,7 @@ interface TournamentInterface {
     exclude_provisional: boolean;
     auto_start_on_max: boolean;
     ranked: boolean;
+    no_vacation: boolean;
     exclusivity: string;
     first_pairing_method: string;
     subsequent_pairing_method: string;
@@ -184,6 +185,7 @@ export function Tournament(): React.ReactElement {
         exclude_provisional: true,
         auto_start_on_max: false,
         ranked: true,
+        no_vacation: false,
         //scheduled_rounds: true,
         exclusivity: "group",
         first_pairing_method: "slide",
@@ -722,6 +724,9 @@ export function Tournament(): React.ReactElement {
     const setRanked = (ev: React.ChangeEvent<HTMLInputElement>) => {
         setTournament({ ...tournament, ranked: ev.target.checked });
     };
+    const setNoVacation = (ev: React.ChangeEvent<HTMLInputElement>) => {
+        setTournament({ ...tournament, no_vacation: ev.target.checked });
+    };
     const setDescription = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         setTournament({ ...tournament, description: ev.target.value });
     };
@@ -930,6 +935,9 @@ export function Tournament(): React.ReactElement {
         : _("Allowed");
     const analysis_mode_text = tournament.analysis_enabled ? _("Allowed") : _("Not allowed");
     const ranked_text = tournament.ranked ? _("Ranked") : _("Unranked");
+    const no_vacation_text = tournament.no_vacation
+        ? _("Vacation disabled")
+        : _("Vacation allowed");
     const cdn_release = data.get("config.cdn_release");
     //let scheduled_rounds_text = tournament.scheduled_rounds ? pgettext("In a tournament, rounds will be scheduled to start at specific times", "Rounds are scheduled") : pgettext("In a tournament, the next round will start when the last finishes", "Rounds will automatically start when the last round finishes");
 
@@ -1149,6 +1157,14 @@ export function Tournament(): React.ReactElement {
                         <p>
                             <b>{_("Clock:")}</b> {time_control_text}
                         </p>
+                    )}
+                    {!editing && tournament_loaded && tournament.no_vacation && (
+                        <div className="no-vacation-banner">
+                            <i className="fa fa-exclamation-triangle"></i>{" "}
+                            {_(
+                                "Vacation is disabled for this tournament. Game clocks will not pause for vacation.",
+                            )}
+                        </div>
                     )}
                     {editing && (
                         <TimeControlPicker
@@ -1564,6 +1580,24 @@ export function Tournament(): React.ReactElement {
                                             id="ranked"
                                             checked={tournament.ranked}
                                             onChange={setRanked}
+                                        />
+                                    )}
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th>
+                                    <label htmlFor="no_vacation">{_("No vacation")}</label>
+                                </th>
+                                <td>
+                                    {!editing ? (
+                                        no_vacation_text
+                                    ) : (
+                                        <input
+                                            type="checkbox"
+                                            id="no_vacation"
+                                            checked={tournament.no_vacation}
+                                            onChange={setNoVacation}
                                         />
                                     )}
                                 </td>
