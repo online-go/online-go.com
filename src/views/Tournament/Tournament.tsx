@@ -731,7 +731,11 @@ export function Tournament(): React.ReactElement {
         setTournament({ ...tournament, description: ev.target.value });
     };
     const setTimeControl = (tc: TimeControl) => {
-        setTournament({ ...tournament, time_control_parameters: tc });
+        setTournament({
+            ...tournament,
+            time_control_parameters: tc,
+            no_vacation: tc.speed === "correspondence" ? tournament.no_vacation : false,
+        });
     };
     const updateNotes = (data: { [k: string]: any }) => {
         const newSettings = Object.assign({}, tournament.settings, data);
