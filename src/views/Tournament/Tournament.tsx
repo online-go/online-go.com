@@ -1158,14 +1158,17 @@ export function Tournament(): React.ReactElement {
                             <b>{_("Clock:")}</b> {time_control_text}
                         </p>
                     )}
-                    {!editing && tournament_loaded && tournament.no_vacation && (
-                        <div className="no-vacation-banner">
-                            <i className="fa fa-exclamation-triangle"></i>{" "}
-                            {_(
-                                "Vacation is disabled for this tournament. Game clocks will not pause for vacation.",
-                            )}
-                        </div>
-                    )}
+                    {!editing &&
+                        tournament_loaded &&
+                        tournament.no_vacation &&
+                        tournament.time_control_parameters.speed === "correspondence" && (
+                            <div className="no-vacation-banner">
+                                <i className="fa fa-exclamation-triangle"></i>{" "}
+                                {_(
+                                    "Vacation is disabled for this tournament. Game clocks will not pause for vacation.",
+                                )}
+                            </div>
+                        )}
                     {editing && (
                         <TimeControlPicker
                             timeControl={tournament.time_control_parameters}
@@ -1585,23 +1588,25 @@ export function Tournament(): React.ReactElement {
                                 </td>
                             </tr>
 
-                            <tr>
-                                <th>
-                                    <label htmlFor="no_vacation">{_("No vacation")}</label>
-                                </th>
-                                <td>
-                                    {!editing ? (
-                                        no_vacation_text
-                                    ) : (
-                                        <input
-                                            type="checkbox"
-                                            id="no_vacation"
-                                            checked={tournament.no_vacation ?? false}
-                                            onChange={setNoVacation}
-                                        />
-                                    )}
-                                </td>
-                            </tr>
+                            {tournament.time_control_parameters.speed === "correspondence" && (
+                                <tr>
+                                    <th>
+                                        <label htmlFor="no_vacation">{_("No vacation")}</label>
+                                    </th>
+                                    <td>
+                                        {!editing ? (
+                                            no_vacation_text
+                                        ) : (
+                                            <input
+                                                type="checkbox"
+                                                id="no_vacation"
+                                                checked={tournament.no_vacation ?? false}
+                                                onChange={setNoVacation}
+                                            />
+                                        )}
+                                    </td>
+                                </tr>
+                            )}
 
                             <tr>
                                 <th>{_("Rank Restriction")}</th>
