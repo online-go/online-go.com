@@ -18,7 +18,7 @@
 import * as React from "react";
 
 import { _, interpolate, ngettext } from "@/lib/translate";
-import { get, put, del } from "@/lib/requests";
+import { get, put, del, abort_requests_in_flight } from "@/lib/requests";
 import { errorAlerter } from "@/lib/misc";
 
 import { durationString } from "@/components/TimeControl";
@@ -54,22 +54,16 @@ export function VacationSettings(props: SettingGroupPageProps): React.ReactEleme
 
     React.useEffect(() => {
         get("ui/overview")
-            .then(
-                (result: {
-                    active_games: Array<{
-                        id: number;
-                        name: string;
-                        no_vacation?: boolean;
-                        time_per_move?: number;
-                    }>;
-                }) => {
-                    const games = result.active_games.filter(
-                        (g) => g.no_vacation && (g.time_per_move ?? 0) >= 3600,
-                    );
-                    set_no_vacation_games(games.map((g) => ({ id: g.id, name: g.name })));
-                },
-            )
+            .then((result: { active_games: rest_api.players.full.Game[] }) => {
+                const games = result.active_games.filter(
+                    (g) => g.no_vacation && (g.time_per_move ?? 0) >= 3600,
+                );
+                set_no_vacation_games(games.map((g) => ({ id: g.id, name: g.name })));
+            })
             .catch(errorAlerter);
+        return () => {
+            abort_requests_in_flight("ui/overview");
+        };
     }, []);
 
     function endVacation() {
