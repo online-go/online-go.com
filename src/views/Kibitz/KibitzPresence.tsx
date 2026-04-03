@@ -16,8 +16,11 @@
  */
 
 import * as React from "react";
+import { Player } from "@/components/Player";
+import { chat_manager, ChatChannelProxy, users_by_rank } from "@/lib/chat_manager";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { KibitzRoomSummary } from "@/models/kibitz";
+import { User } from "goban";
 import "./KibitzPresence.css";
 
 interface KibitzPresenceProps {
@@ -25,6 +28,27 @@ interface KibitzPresenceProps {
 }
 
 export function KibitzPresence({ room }: KibitzPresenceProps): React.ReactElement {
+    const [proxy, setProxy] = React.useState<ChatChannelProxy | null>(null);
+    const [, refresh] = React.useState(0);
+
+    React.useEffect(() => {
+        const nextProxy = chat_manager.join(room.channel);
+        setProxy(nextProxy);
+
+        const sync = () => refresh((value) => value + 1);
+        nextProxy.on("join", sync);
+        nextProxy.on("part", sync);
+        sync();
+
+        return () => {
+            nextProxy.off("join", sync);
+            nextProxy.off("part", sync);
+            nextProxy.part();
+        };
+    }, [room.channel]);
+
+    const users: User[] = proxy ? Object.values(proxy.channel.user_list).sort(users_by_rank) : [];
+
     return (
         <div className="KibitzPresence">
             <div className="KibitzPresence-title">
@@ -38,6 +62,15 @@ export function KibitzPresence({ room }: KibitzPresenceProps): React.ReactElemen
                     )}
                 </div>
                 <div className="presence-stat">{room.kind}</div>
+                {users.length > 0 ? (
+                    <div className="presence-users">
+                        {users.map((user) => (
+                            <div key={user.id} className="presence-user">
+                                <Player user={user} flag rank noextracontrols />
+                            </div>
+                        ))}
+                    </div>
+                ) : null}
             </div>
         </div>
     );
