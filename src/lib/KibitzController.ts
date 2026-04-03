@@ -20,7 +20,12 @@
 import { EventEmitter } from "eventemitter3";
 import * as data from "@/lib/data";
 import { updateCachedChannelInformation } from "@/lib/chat_manager";
+import { get } from "@/lib/requests";
+import { socket } from "@/lib/sockets";
 import type {
+    KibitzDebugCandidate,
+    KibitzDebugRoomHydration,
+    KibitzDebugState,
     KibitzProposal,
     KibitzRoom,
     KibitzRoomSummary,
@@ -36,6 +41,25 @@ interface KibitzControllerEvents {
     "proposals-changed": (proposals: KibitzProposal[]) => void;
     "variations-changed": (variations: KibitzVariationSummary[]) => void;
     "secondary-pane-changed": (state: KibitzSecondaryPaneState) => void;
+    "debug-changed": (state: KibitzDebugState) => void;
+}
+
+interface ObservedGameResult {
+    id: number;
+    name: string;
+    width: number;
+    height: number;
+    black: {
+        id: number;
+        username: string;
+    };
+    white: {
+        id: number;
+        username: string;
+    };
+    json?: {
+        moves?: unknown[];
+    };
 }
 
 function createUser(id: number, username: string, ranking: number): KibitzRoom["users"][number] {
@@ -74,16 +98,6 @@ function createSeededRooms(): KibitzRoomSummary[] {
             kind: "preset",
             viewer_count: 18,
             proposals_enabled: true,
-            current_game: {
-                game_id: 1001,
-                board_size: "19x19",
-                title: "Alecto vs WhiteStar",
-                black: createUser(101, "Alecto", 34),
-                white: createUser(102, "WhiteStar", 31),
-                tournament_name: "Spring Open",
-                move_number: 143,
-                live: true,
-            },
         },
         {
             id: "tournament-pick",
@@ -92,16 +106,6 @@ function createSeededRooms(): KibitzRoomSummary[] {
             kind: "preset",
             viewer_count: 11,
             proposals_enabled: true,
-            current_game: {
-                game_id: 1002,
-                board_size: "19x19",
-                title: "Quarterfinal Board 2",
-                black: createUser(103, "TenukiTime", 28),
-                white: createUser(104, "KoThreat", 29),
-                tournament_name: "Weekend Cup",
-                move_number: 88,
-                live: true,
-            },
         },
         {
             id: "top-9x9",
@@ -110,17 +114,102 @@ function createSeededRooms(): KibitzRoomSummary[] {
             kind: "preset",
             viewer_count: 7,
             proposals_enabled: true,
-            current_game: {
-                game_id: 1003,
-                board_size: "9x9",
-                title: "Speed board",
-                black: createUser(105, "FusekiFox", 18),
-                white: createUser(106, "CenterLine", 17),
-                move_number: 42,
-                live: true,
-            },
         },
     ];
+}
+
+function mapObservedGameToWatchedGame(game: ObservedGameResult) {
+    return {
+        game_id: game.id,
+        board_size: `${game.width}x${game.height}` as const,
+        title: game.name,
+        black: createUser(game.black.id, game.black.username, 0),
+        white: createUser(game.white.id, game.white.username, 0),
+        move_number: game.json?.moves?.length ?? 0,
+        live: true,
+    };
+}
+
+function findObservedGame(
+    games: ObservedGameResult[],
+    predicate: (game: ObservedGameResult) => boolean,
+): ObservedGameResult | null {
+    return games.find(predicate) ?? null;
+}
+
+function matchesBoardSize(game: ObservedGameResult, width: number, height: number): boolean {
+    return Number(game.width) === width && Number(game.height) === height;
+}
+
+async function resolveObservedGameByBoardSize(
+    games: ObservedGameResult[],
+    width: number,
+    height: number,
+): Promise<{
+    game: ObservedGameResult | null;
+    picked_via?: "query" | "details";
+    error?: string;
+}> {
+    const directMatch = findObservedGame(games, (game) => matchesBoardSize(game, width, height));
+    if (directMatch) {
+        return {
+            game: directMatch,
+            picked_via: "query",
+        };
+    }
+
+    for (const candidate of games.slice(0, 5)) {
+        try {
+            const details = await get(`games/${candidate.id}`);
+            if (details.width === width && details.height === height) {
+                return {
+                    game: {
+                        ...candidate,
+                        width: details.width,
+                        height: details.height,
+                    },
+                    picked_via: "details",
+                };
+            }
+        } catch (error) {
+            return {
+                game: null,
+                error: error instanceof Error ? error.message : String(error),
+            };
+        }
+    }
+
+    return {
+        game: null,
+    };
+}
+
+function createDebugCandidate(game: ObservedGameResult): KibitzDebugCandidate {
+    return {
+        id: game.id,
+        title: game.name,
+        width: game.width,
+        height: game.height,
+        move_count: game.json?.moves?.length,
+    };
+}
+
+function queryObservedGames(where: Record<string, boolean>): Promise<ObservedGameResult[]> {
+    return new Promise((resolve) => {
+        socket.send(
+            "gamelist/query",
+            {
+                list: "live",
+                sort_by: "rank",
+                where,
+                from: 0,
+                limit: 25,
+            },
+            (res) => {
+                resolve((res?.results ?? []) as ObservedGameResult[]);
+            },
+        );
+    });
 }
 
 function createRoomDetails(summary: KibitzRoomSummary): KibitzRoom {
@@ -168,6 +257,11 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     private _proposals: KibitzProposal[] = [];
     private _variations: KibitzVariationSummary[] = [];
     private _secondary_pane: KibitzSecondaryPaneState = { collapsed: false };
+    private _debug: KibitzDebugState = {
+        socket_connected: socket.connected,
+        status: "idle",
+        rooms: [],
+    };
 
     public get rooms(): KibitzRoomSummary[] {
         return this._rooms;
@@ -193,6 +287,10 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         return this._secondary_pane;
     }
 
+    public get debug(): KibitzDebugState {
+        return this._debug;
+    }
+
     public get default_room_id(): string | null {
         return this._rooms[0]?.id ?? null;
     }
@@ -202,7 +300,16 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
 
         const rooms = createSeededRooms();
         this.setRooms(rooms);
+        socket.on("connect", this.onSocketConnect);
+
+        if (socket.connected) {
+            void this.hydrateSeededRoomsFromLiveGames();
+        }
     }
+
+    private onSocketConnect = () => {
+        void this.hydrateSeededRoomsFromLiveGames();
+    };
 
     public setRooms(rooms: KibitzRoomSummary[]): void {
         this._rooms = rooms;
@@ -238,6 +345,127 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     public setSecondaryPane(state: KibitzSecondaryPaneState): void {
         this._secondary_pane = state;
         this.emit("secondary-pane-changed", this._secondary_pane);
+    }
+
+    public setDebug(state: KibitzDebugState): void {
+        this._debug = state;
+        this.emit("debug-changed", this._debug);
+    }
+
+    private async hydrateSeededRoomsFromLiveGames(): Promise<void> {
+        this.setDebug({
+            ...this._debug,
+            socket_connected: socket.connected,
+            status: "loading",
+            error: undefined,
+            last_hydration_started_at: Date.now(),
+            rooms: [],
+        });
+
+        try {
+            const [top19Games, tournamentGames, top9Games] = await Promise.all([
+                queryObservedGames({
+                    hide_unranked: true,
+                    hide_13x13: true,
+                    hide_9x9: true,
+                    hide_other: true,
+                }),
+                queryObservedGames({
+                    hide_open: true,
+                    hide_ladder: true,
+                }),
+                queryObservedGames({
+                    hide_unranked: true,
+                    hide_19x19: true,
+                    hide_13x13: true,
+                    hide_other: true,
+                }),
+            ]);
+
+            const [top19Resolution, top9Resolution] = await Promise.all([
+                resolveObservedGameByBoardSize(top19Games, 19, 19),
+                resolveObservedGameByBoardSize(top9Games, 9, 9),
+            ]);
+            const tournamentCandidates = tournamentGames.filter(
+                (game) => game.width > 0 && game.height > 0,
+            );
+            const tournamentPick =
+                tournamentCandidates.length > 0
+                    ? tournamentCandidates[Math.floor(Math.random() * tournamentCandidates.length)]
+                    : null;
+
+            const roomUpdates: Record<string, ObservedGameResult | null> = {
+                "top-19x19": top19Resolution.game,
+                "tournament-pick": tournamentPick,
+                "top-9x9": top9Resolution.game,
+            };
+
+            const roomDebug: KibitzDebugRoomHydration[] = [
+                {
+                    room_id: "top-19x19",
+                    requested_size: "19x19",
+                    query_count: top19Games.length,
+                    picked_game_id: top19Resolution.game?.id,
+                    picked_via: top19Resolution.picked_via,
+                    error: top19Resolution.error,
+                    candidates: top19Games.slice(0, 5).map(createDebugCandidate),
+                },
+                {
+                    room_id: "tournament-pick",
+                    query_count: tournamentGames.length,
+                    picked_game_id: tournamentPick?.id,
+                    picked_via: tournamentPick ? "query" : undefined,
+                    candidates: tournamentGames.slice(0, 5).map(createDebugCandidate),
+                },
+                {
+                    room_id: "top-9x9",
+                    requested_size: "9x9",
+                    query_count: top9Games.length,
+                    picked_game_id: top9Resolution.game?.id,
+                    picked_via: top9Resolution.picked_via,
+                    error: top9Resolution.error,
+                    candidates: top9Games.slice(0, 5).map(createDebugCandidate),
+                },
+            ];
+
+            const nextRooms = this._rooms.map((room) => {
+                const observedGame = roomUpdates[room.id];
+                if (!observedGame) {
+                    return room;
+                }
+
+                return {
+                    ...room,
+                    current_game: mapObservedGameToWatchedGame(observedGame),
+                };
+            });
+
+            this.setRooms(nextRooms);
+            this.setDebug({
+                socket_connected: socket.connected,
+                status: "ready",
+                last_hydration_started_at: this._debug.last_hydration_started_at,
+                last_hydration_finished_at: Date.now(),
+                rooms: roomDebug,
+            });
+
+            if (this._active_room?.id) {
+                const refreshedActiveRoom =
+                    nextRooms.find((room) => room.id === this._active_room?.id) ?? null;
+                if (refreshedActiveRoom) {
+                    this.setActiveRoom(createRoomDetails(refreshedActiveRoom));
+                }
+            }
+        } catch (error) {
+            this.setDebug({
+                socket_connected: socket.connected,
+                status: "error",
+                last_hydration_started_at: this._debug.last_hydration_started_at,
+                last_hydration_finished_at: Date.now(),
+                error: error instanceof Error ? error.message : String(error),
+                rooms: [],
+            });
+        }
     }
 
     public previewGame(gameId: number): void {

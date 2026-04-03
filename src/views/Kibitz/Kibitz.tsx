@@ -16,10 +16,11 @@
  */
 
 import * as React from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { pgettext } from "@/lib/translate";
 import { KibitzController } from "@/lib/KibitzController";
 import type {
+    KibitzDebugState,
     KibitzProposal,
     KibitzRoom,
     KibitzRoomSummary,
@@ -28,6 +29,7 @@ import type {
 } from "@/models/kibitz";
 import { KibitzProposalBar } from "./KibitzProposalBar";
 import { KibitzProposalQueue } from "./KibitzProposalQueue";
+import { KibitzDebugPanel } from "./KibitzDebugPanel";
 import { KibitzRoomList } from "./KibitzRoomList";
 import { KibitzRoomStage } from "./KibitzRoomStage";
 import { KibitzRoomStream } from "./KibitzRoomStream";
@@ -35,6 +37,7 @@ import { KibitzPresence } from "./KibitzPresence";
 import "./Kibitz.css";
 
 export function Kibitz(): React.ReactElement {
+    const location = useLocation();
     const navigate = useNavigate();
     const { roomId } = useParams<"roomId">();
     const controllerRef = React.useRef<KibitzController | null>(null);
@@ -51,6 +54,11 @@ export function Kibitz(): React.ReactElement {
     const [secondaryPane, setSecondaryPane] = React.useState<KibitzSecondaryPaneState>(
         controller.secondary_pane,
     );
+    const [debug, setDebug] = React.useState<KibitzDebugState>(controller.debug);
+    const showDebug = React.useMemo(() => {
+        const params = new URLSearchParams(location.search);
+        return params.get("debug-kibitz") === "1";
+    }, [location.search]);
 
     React.useEffect(() => {
         controller.on("rooms-changed", setRooms);
@@ -58,6 +66,7 @@ export function Kibitz(): React.ReactElement {
         controller.on("stream-changed", setStream);
         controller.on("proposals-changed", setProposals);
         controller.on("secondary-pane-changed", setSecondaryPane);
+        controller.on("debug-changed", setDebug);
 
         return () => {
             controller.off("rooms-changed", setRooms);
@@ -65,6 +74,7 @@ export function Kibitz(): React.ReactElement {
             controller.off("stream-changed", setStream);
             controller.off("proposals-changed", setProposals);
             controller.off("secondary-pane-changed", setSecondaryPane);
+            controller.off("debug-changed", setDebug);
         };
     }, [controller]);
 
@@ -133,6 +143,7 @@ export function Kibitz(): React.ReactElement {
             <div className="Kibitz-header">
                 <h1>{pgettext("Title for the kibitz page", "Kibitz")}</h1>
             </div>
+            {showDebug ? <KibitzDebugPanel debug={debug} /> : null}
             <div className="Kibitz-layout">
                 <KibitzRoomList
                     rooms={rooms}

@@ -79,6 +79,8 @@ export function KibitzRoomStage({
         mainGameDetails && mainGameDetails.width && mainGameDetails.height
             ? `${mainGameDetails.width}x${mainGameDetails.height}`
             : mainGame?.board_size;
+    const displayedMoveNumber =
+        mainGameDetails?.gamedata?.moves?.length ?? mainGameDetails?.gamedata?.clock?.last_move;
     const displayedTournament =
         typeof mainGameDetails?.tournament === "number" && mainGameDetails.tournament > 0
             ? interpolate(
@@ -133,13 +135,13 @@ export function KibitzRoomStage({
                                                   { size: displayedBoardSize },
                                               )
                                             : ""}
-                                        {mainGame.move_number
+                                        {displayedMoveNumber
                                             ? ` - ${interpolate(
                                                   pgettext(
                                                       "Move number label shown in the kibitz stage",
                                                       "Move {{move_number}}",
                                                   ),
-                                                  { move_number: mainGame.move_number },
+                                                  { move_number: displayedMoveNumber },
                                               )}`
                                             : ""}
                                         {displayedTournament ? ` - ${displayedTournament}` : ""}

@@ -116,3 +116,30 @@ export interface KibitzSecondaryPaneState {
     preview_game_id?: number;
     variation_id?: string;
 }
+
+export interface KibitzDebugCandidate {
+    id: number;
+    title: string;
+    width?: number;
+    height?: number;
+    move_count?: number;
+}
+
+export interface KibitzDebugRoomHydration {
+    room_id: string;
+    requested_size?: `${number}x${number}`;
+    query_count: number;
+    picked_game_id?: number;
+    picked_via?: "query" | "details";
+    error?: string;
+    candidates: KibitzDebugCandidate[];
+}
+
+export interface KibitzDebugState {
+    socket_connected: boolean;
+    status: "idle" | "loading" | "ready" | "error";
+    last_hydration_started_at?: number;
+    last_hydration_finished_at?: number;
+    error?: string;
+    rooms: KibitzDebugRoomHydration[];
+}
