@@ -16,8 +16,11 @@
  */
 
 import * as React from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { pgettext } from "@/lib/translate";
+import { KibitzController } from "@/lib/KibitzController";
 import type {
+    KibitzRoom,
     KibitzRoomSummary,
     KibitzSecondaryPaneState,
     KibitzStreamItem,
@@ -28,44 +31,70 @@ import { KibitzRoomStream } from "./KibitzRoomStream";
 import { KibitzPresence } from "./KibitzPresence";
 import "./Kibitz.css";
 
-const placeholderRooms: KibitzRoomSummary[] = [
-    {
-        id: "top-19x19",
-        channel: "kibitz-top-19x19",
-        title: "Top 19x19",
-        kind: "preset",
-        viewer_count: 0,
-        proposals_enabled: true,
-    },
-    {
-        id: "tournament-pick",
-        channel: "kibitz-tournament-pick",
-        title: "Tournament Pick",
-        kind: "preset",
-        viewer_count: 0,
-        proposals_enabled: true,
-    },
-    {
-        id: "top-9x9",
-        channel: "kibitz-top-9x9",
-        title: "Top 9x9",
-        kind: "preset",
-        viewer_count: 0,
-        proposals_enabled: true,
-    },
-];
-
-const placeholderStream: KibitzStreamItem[] = [];
-
-const defaultSecondaryPane: KibitzSecondaryPaneState = {
-    collapsed: false,
-};
-
 export function Kibitz(): React.ReactElement {
-    const [activeRoomId, setActiveRoomId] = React.useState<string>(placeholderRooms[0].id);
+    const navigate = useNavigate();
+    const { roomId } = useParams<"roomId">();
+    const controllerRef = React.useRef<KibitzController | null>(null);
 
-    const activeRoom =
-        placeholderRooms.find((room) => room.id === activeRoomId) ?? placeholderRooms[0];
+    if (!controllerRef.current) {
+        controllerRef.current = new KibitzController();
+    }
+
+    const controller = controllerRef.current;
+    const [rooms, setRooms] = React.useState<KibitzRoomSummary[]>(controller.rooms);
+    const [activeRoom, setActiveRoom] = React.useState<KibitzRoom | null>(controller.active_room);
+    const [stream, setStream] = React.useState<KibitzStreamItem[]>(controller.stream);
+    const [secondaryPane, setSecondaryPane] = React.useState<KibitzSecondaryPaneState>(
+        controller.secondary_pane,
+    );
+
+    React.useEffect(() => {
+        controller.on("rooms-changed", setRooms);
+        controller.on("room-changed", setActiveRoom);
+        controller.on("stream-changed", setStream);
+        controller.on("secondary-pane-changed", setSecondaryPane);
+
+        return () => {
+            controller.off("rooms-changed", setRooms);
+            controller.off("room-changed", setActiveRoom);
+            controller.off("stream-changed", setStream);
+            controller.off("secondary-pane-changed", setSecondaryPane);
+        };
+    }, [controller]);
+
+    React.useEffect(() => {
+        const nextRoomId = roomId ?? controller.default_room_id;
+
+        if (!nextRoomId) {
+            return;
+        }
+
+        if (!roomId) {
+            void navigate(`/kibitz/${nextRoomId}`, { replace: true });
+            return;
+        }
+
+        controller.selectRoom(nextRoomId);
+    }, [controller, navigate, roomId]);
+
+    const onSelectRoom = React.useCallback(
+        (nextRoomId: string) => {
+            void navigate(`/kibitz/${nextRoomId}`);
+        },
+        [navigate],
+    );
+
+    const resolvedRoom = activeRoom ?? rooms.find((room) => room.id === roomId) ?? rooms[0];
+
+    if (!resolvedRoom) {
+        return (
+            <div className="Kibitz">
+                <div className="Kibitz-header">
+                    <h1>{pgettext("Title for the kibitz page", "Kibitz")}</h1>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="Kibitz">
@@ -74,15 +103,15 @@ export function Kibitz(): React.ReactElement {
             </div>
             <div className="Kibitz-layout">
                 <KibitzRoomList
-                    rooms={placeholderRooms}
-                    activeRoomId={activeRoom.id}
-                    onSelectRoom={setActiveRoomId}
+                    rooms={rooms}
+                    activeRoomId={resolvedRoom.id}
+                    onSelectRoom={onSelectRoom}
                 />
                 <div className="Kibitz-main">
-                    <KibitzRoomStage room={activeRoom} secondaryPane={defaultSecondaryPane} />
+                    <KibitzRoomStage room={resolvedRoom} secondaryPane={secondaryPane} />
                     <div className="Kibitz-sidebar">
-                        <KibitzRoomStream room={activeRoom} items={placeholderStream} />
-                        <KibitzPresence room={activeRoom} />
+                        <KibitzRoomStream room={resolvedRoom} items={stream} />
+                        <KibitzPresence room={resolvedRoom} />
                     </div>
                 </div>
             </div>

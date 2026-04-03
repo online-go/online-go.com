@@ -248,6 +248,8 @@ export function resolveChannelDisplayName(channel: string): string {
         return interpolate(_("Game {{number}}"), { number: channel.substring(5) }); // eslint-disable-line id-denylist
     } else if (channel.startsWith("review-")) {
         return interpolate(_("Review {{number}}"), { number: channel.substring(7) }); // eslint-disable-line id-denylist
+    } else if (channel.startsWith("kibitz-")) {
+        return channel_information_cache[channel]?.name ?? channel.substring(7);
     }
     return "<error>";
 }
@@ -958,6 +960,10 @@ export function resolveChannelInformation(channel: string): Promise<ChannelInfor
         if (m) {
             ret.tournament_id = parseInt(m[1]);
         }
+    }
+
+    if (channel.startsWith("kibitz-")) {
+        ret.name = resolveChannelDisplayName(channel);
     }
 
     if (ret.group_id) {
