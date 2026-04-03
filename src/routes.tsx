@@ -52,6 +52,7 @@ import { GroupList } from "@/views/GroupList";
 import { Ladder } from "@/views/Ladder";
 import { LadderList } from "@/views/LadderList";
 import { LibraryPlayer } from "@/views/LibraryPlayer";
+import { Kibitz } from "@/views/Kibitz";
 import { Play } from "@/views/Play";
 import { Moderator } from "@moderator-ui/Moderator";
 import { ObserveGames } from "@/views/ObserveGames";
@@ -286,6 +287,8 @@ export const routes = (
                 <Route path="/chat/:channel/*" element={<ChatView />} />
                 <Route path="/chat/:channel/**/*" element={<ChatView />} />
                 <Route path="/chat" element={<ChatRedirect />} />
+                <Route path="/kibitz/:roomId" element={<Kibitz />} />
+                <Route path="/kibitz" element={<Kibitz />} />
                 <Route path="/observe-games" element={<ObserveGames />} />
                 <Route path="/game/view/:game_id" element={<Game />} />
                 <Route path="/game/:game_id/:move_number" element={<Game />} />

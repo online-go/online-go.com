@@ -263,6 +263,11 @@ export function NavBar(): React.ReactElement {
                                 icon={<i className="fa fa-comment-o" />}
                             />
                             <MenuLink
+                                title={_("Kibitz")}
+                                to="/kibitz"
+                                icon={<i className="fa fa-eye" />}
+                            />
+                            <MenuLink
                                 title={_("Groups")}
                                 to="/groups"
                                 icon={<i className="fa fa-users" />}

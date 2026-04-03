@@ -1,0 +1,36 @@
+.KibitzRoomStream {
+    border: 1px solid var(--shade4);
+    border-radius: 0.5rem;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 14rem;
+
+    .KibitzRoomStream-title {
+        border-bottom: 1px solid var(--shade4);
+        font-weight: bold;
+        padding: 0.75rem 1rem;
+    }
+
+    .KibitzRoomStream-items {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: 0.5rem;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 1rem;
+    }
+
+    .stream-item,
+    .stream-empty {
+        color: var(--text-color-faded);
+    }
+
+    .KibitzRoomStream-footer {
+        border-top: 1px solid var(--shade4);
+        color: var(--text-color-faded);
+        font-size: 0.875rem;
+        padding: 0.75rem 1rem;
+    }
+}

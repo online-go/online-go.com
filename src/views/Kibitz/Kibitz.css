@@ -1,0 +1,40 @@
+.Kibitz {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+
+    .Kibitz-header {
+        h1 {
+            margin: 0;
+        }
+    }
+
+    .Kibitz-layout {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr);
+    }
+
+    .Kibitz-main {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: minmax(0, 1.5fr) minmax(18rem, 24rem);
+    }
+
+    .Kibitz-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        min-height: 0;
+    }
+}
+
+@media (max-width: 1000px) {
+    .Kibitz {
+        .Kibitz-layout,
+        .Kibitz-main {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+}
