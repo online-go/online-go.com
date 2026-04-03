@@ -44,3 +44,6 @@ old-*
 i18n/*.tar.gz
 *.old
 .playwright-mcp
+
+# Kibitz folder John
+/kibitz-docs
