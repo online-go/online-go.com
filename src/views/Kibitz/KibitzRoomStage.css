@@ -43,18 +43,72 @@
         }
 
         .panel-body {
-            align-items: center;
+            align-items: flex-start;
             color: var(--text-color-faded);
             display: flex;
             flex: 1;
             justify-content: center;
+            overflow: hidden;
             padding: 1rem;
             text-align: center;
+        }
+
+        .board-content {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            gap: 0.75rem;
+            min-height: 0;
+            width: 100%;
+        }
+
+        .board-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            text-align: left;
+
+            .players {
+                color: var(--fg);
+                font-weight: bold;
+            }
+
+            .game-details {
+                color: var(--text-color-faded);
+                font-size: 0.875rem;
+            }
+        }
+
+        .MiniGoban.KibitzMiniGoban {
+            align-self: center;
+            height: auto;
+            justify-content: flex-start;
+            max-width: min(100%, 22rem);
+            min-height: 0;
+            width: 100%;
+
+            .inner-container {
+                max-width: 100%;
+                overflow: hidden;
+            }
+
+            .board {
+                padding: 0.5rem;
+            }
+        }
+
+        .MiniGoban.KibitzMiniGoban.secondary {
+            max-width: min(100%, 14rem);
+        }
+
+        .board-actions {
+            text-align: left;
         }
 
         &.collapsed {
             .panel-body {
                 min-height: 6rem;
+                justify-content: center;
             }
         }
     }
