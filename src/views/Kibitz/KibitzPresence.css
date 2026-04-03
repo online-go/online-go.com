@@ -1,11 +1,11 @@
 .KibitzPresence {
-    border: 1px solid var(--shade4);
-    border-radius: 0.5rem;
+    background: var(--card-background-color);
     display: flex;
     flex-direction: column;
 
     .KibitzPresence-title {
-        border-bottom: 1px solid var(--shade4);
+        border-bottom: 1px solid transparent;
+        border-bottom-color: var(--shade3);
         font-weight: bold;
         padding: 0.75rem 1rem;
     }

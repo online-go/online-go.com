@@ -1,13 +1,13 @@
 .KibitzRoomStream {
-    border: 1px solid var(--shade4);
-    border-radius: 0.5rem;
+    background: var(--card-background-color);
     display: flex;
     flex: 1;
     flex-direction: column;
     min-height: 14rem;
 
     .KibitzRoomStream-title {
-        border-bottom: 1px solid var(--shade4);
+        border-bottom: 1px solid transparent;
+        border-bottom-color: var(--shade3);
         font-weight: bold;
         padding: 0.75rem 1rem;
     }
@@ -31,7 +31,8 @@
     }
 
     .KibitzRoomStream-footer {
-        border-top: 1px solid var(--shade4);
+        border-top: 1px solid transparent;
+        border-top-color: var(--shade3);
         padding: 0.75rem 1rem;
 
         .TabCompleteInput {

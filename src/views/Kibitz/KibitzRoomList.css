@@ -1,12 +1,15 @@
 .KibitzRoomList {
-    border: 1px solid var(--shade4);
-    border-radius: 0.5rem;
+    background: var(--card-background-color);
+    border-right: 1px solid transparent;
+    border-right-color: var(--shade3);
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     min-height: 16rem;
 
     .KibitzRoomList-title {
-        border-bottom: 1px solid var(--shade4);
+        border-bottom: 1px solid transparent;
+        border-bottom-color: var(--shade3);
         font-weight: bold;
         padding: 0.75rem 1rem;
     }
@@ -21,7 +24,8 @@
         align-items: flex-start;
         background: transparent;
         border: 0;
-        border-bottom: 1px solid var(--shade4);
+        border-bottom: 1px solid transparent;
+        border-bottom-color: var(--shade3);
         cursor: pointer;
         display: flex;
         flex-direction: column;
@@ -30,7 +34,7 @@
         text-align: left;
 
         &.active {
-            background: var(--shade5);
+            background: var(--shade2);
         }
 
         .room-title {
@@ -41,5 +45,11 @@
             color: var(--text-color-faded);
             font-size: 0.875rem;
         }
+    }
+}
+
+@media (max-width: 1000px) {
+    .KibitzRoomList {
+        border-right: 0;
     }
 }

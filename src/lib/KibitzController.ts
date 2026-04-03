@@ -184,6 +184,19 @@ async function resolveObservedGameByBoardSize(
     };
 }
 
+function pickBroadFallbackGame(
+    games: ObservedGameResult[],
+    width: number,
+    height: number,
+): ObservedGameResult | null {
+    const sizedGame = findObservedGame(games, (game) => matchesBoardSize(game, width, height));
+    if (sizedGame) {
+        return sizedGame;
+    }
+
+    return games[0] ?? null;
+}
+
 function createDebugCandidate(game: ObservedGameResult): KibitzDebugCandidate {
     return {
         id: game.id,
@@ -363,7 +376,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         });
 
         try {
-            const [top19Games, tournamentGames, top9Games] = await Promise.all([
+            const [top19Games, tournamentGames, top9Games, broadGames] = await Promise.all([
                 queryObservedGames({
                     hide_unranked: true,
                     hide_13x13: true,
@@ -380,6 +393,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                     hide_13x13: true,
                     hide_other: true,
                 }),
+                queryObservedGames({}),
             ]);
 
             const [top19Resolution, top9Resolution] = await Promise.all([
@@ -392,39 +406,59 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             const tournamentPick =
                 tournamentCandidates.length > 0
                     ? tournamentCandidates[Math.floor(Math.random() * tournamentCandidates.length)]
-                    : null;
+                    : (broadGames[0] ?? null);
+            const top19Final = top19Resolution.game ?? pickBroadFallbackGame(broadGames, 19, 19);
+            const top9Final = top9Resolution.game ?? pickBroadFallbackGame(broadGames, 9, 9);
 
             const roomUpdates: Record<string, ObservedGameResult | null> = {
-                "top-19x19": top19Resolution.game,
+                "top-19x19": top19Final,
                 "tournament-pick": tournamentPick,
-                "top-9x9": top9Resolution.game,
+                "top-9x9": top9Final,
             };
 
             const roomDebug: KibitzDebugRoomHydration[] = [
                 {
                     room_id: "top-19x19",
                     requested_size: "19x19",
-                    query_count: top19Games.length,
-                    picked_game_id: top19Resolution.game?.id,
-                    picked_via: top19Resolution.picked_via,
+                    query_count: top19Games.length > 0 ? top19Games.length : broadGames.length,
+                    query_source: top19Games.length > 0 ? "filtered" : "broad-fallback",
+                    picked_game_id: top19Final?.id,
+                    picked_via: top19Resolution.game
+                        ? top19Resolution.picked_via
+                        : top19Final
+                          ? "query"
+                          : undefined,
                     error: top19Resolution.error,
-                    candidates: top19Games.slice(0, 5).map(createDebugCandidate),
+                    candidates: (top19Games.length > 0 ? top19Games : broadGames)
+                        .slice(0, 5)
+                        .map(createDebugCandidate),
                 },
                 {
                     room_id: "tournament-pick",
-                    query_count: tournamentGames.length,
+                    query_count:
+                        tournamentGames.length > 0 ? tournamentGames.length : broadGames.length,
+                    query_source: tournamentGames.length > 0 ? "filtered" : "broad-fallback",
                     picked_game_id: tournamentPick?.id,
                     picked_via: tournamentPick ? "query" : undefined,
-                    candidates: tournamentGames.slice(0, 5).map(createDebugCandidate),
+                    candidates: (tournamentGames.length > 0 ? tournamentGames : broadGames)
+                        .slice(0, 5)
+                        .map(createDebugCandidate),
                 },
                 {
                     room_id: "top-9x9",
                     requested_size: "9x9",
-                    query_count: top9Games.length,
-                    picked_game_id: top9Resolution.game?.id,
-                    picked_via: top9Resolution.picked_via,
+                    query_count: top9Games.length > 0 ? top9Games.length : broadGames.length,
+                    query_source: top9Games.length > 0 ? "filtered" : "broad-fallback",
+                    picked_game_id: top9Final?.id,
+                    picked_via: top9Resolution.game
+                        ? top9Resolution.picked_via
+                        : top9Final
+                          ? "query"
+                          : undefined,
                     error: top9Resolution.error,
-                    candidates: top9Games.slice(0, 5).map(createDebugCandidate),
+                    candidates: (top9Games.length > 0 ? top9Games : broadGames)
+                        .slice(0, 5)
+                        .map(createDebugCandidate),
                 },
             ];
 

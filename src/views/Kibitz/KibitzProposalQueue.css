@@ -1,6 +1,7 @@
 .KibitzProposalQueue {
-    border: 1px solid var(--shade4);
-    border-radius: 0.5rem;
+    background: var(--card-background-color);
+    border-top: 1px solid transparent;
+    border-top-color: var(--shade3);
     padding: 0.75rem 1rem;
 
     .queue-title {
@@ -15,9 +16,17 @@
     }
 
     .queue-item {
+        border-top: 1px solid transparent;
+        border-top-color: var(--shade3);
         display: flex;
         justify-content: space-between;
         gap: 0.75rem;
+        padding-top: 0.5rem;
+    }
+
+    .queue-item:first-child {
+        border-top: 0;
+        padding-top: 0;
     }
 
     .queue-status {

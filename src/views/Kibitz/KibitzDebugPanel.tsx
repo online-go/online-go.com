@@ -96,10 +96,16 @@ export function KibitzDebugPanel({ debug }: KibitzDebugPanelProps): React.ReactE
                             {interpolate(
                                 pgettext(
                                     "Summary line for a kibitz room hydration diagnostic",
-                                    "Results: {{count}} | Pick: {{pick}} | Via: {{via}}",
+                                    "Results: {{count}} | Source: {{source}} | Pick: {{pick}} | Via: {{via}}",
                                 ),
                                 {
                                     count: room.query_count,
+                                    source:
+                                        room.query_source ??
+                                        pgettext(
+                                            "Fallback value for missing query source in kibitz diagnostics",
+                                            "unknown",
+                                        ),
                                     pick:
                                         room.picked_game_id?.toString() ??
                                         pgettext(

@@ -1,7 +1,6 @@
 .KibitzProposalBar {
     align-items: center;
     background: var(--primary);
-    border-radius: 0.5rem;
     color: var(--colored-background-fg);
     display: flex;
     flex-wrap: wrap;
@@ -25,7 +24,6 @@
         button {
             background: var(--colored-background-fg);
             border: 0;
-            border-radius: 999px;
             color: var(--primary);
             cursor: pointer;
             padding: 0.35rem 0.75rem;
