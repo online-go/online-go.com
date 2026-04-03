@@ -84,6 +84,17 @@ export function Kibitz(): React.ReactElement {
         [navigate],
     );
 
+    const onPreviewGame = React.useCallback(
+        (gameId: number) => {
+            controller.previewGame(gameId);
+        },
+        [controller],
+    );
+
+    const onClearPreview = React.useCallback(() => {
+        controller.clearPreviewGame();
+    }, [controller]);
+
     const resolvedRoom = activeRoom ?? rooms.find((room) => room.id === roomId) ?? rooms[0];
 
     if (!resolvedRoom) {
@@ -108,7 +119,13 @@ export function Kibitz(): React.ReactElement {
                     onSelectRoom={onSelectRoom}
                 />
                 <div className="Kibitz-main">
-                    <KibitzRoomStage room={resolvedRoom} secondaryPane={secondaryPane} />
+                    <KibitzRoomStage
+                        room={resolvedRoom}
+                        rooms={rooms}
+                        secondaryPane={secondaryPane}
+                        onPreviewGame={onPreviewGame}
+                        onClearPreview={onClearPreview}
+                    />
                     <div className="Kibitz-sidebar">
                         <KibitzRoomStream room={resolvedRoom} items={stream} />
                         <KibitzPresence room={resolvedRoom} />

@@ -25,13 +25,25 @@ import "./KibitzRoomStage.css";
 
 interface KibitzRoomStageProps {
     room: KibitzRoomSummary;
+    rooms: KibitzRoomSummary[];
     secondaryPane: KibitzSecondaryPaneState;
+    onPreviewGame: (gameId: number) => void;
+    onClearPreview: () => void;
 }
 
-export function KibitzRoomStage({ room, secondaryPane }: KibitzRoomStageProps): React.ReactElement {
+export function KibitzRoomStage({
+    room,
+    rooms,
+    secondaryPane,
+    onPreviewGame,
+    onClearPreview,
+}: KibitzRoomStageProps): React.ReactElement {
     const mainGame = room.current_game;
     const secondaryGameId = secondaryPane.preview_game_id;
     const [mainGameDetails, setMainGameDetails] = React.useState<rest_api.GameDetails | null>(null);
+    const previewCandidates = rooms.filter(
+        (candidate) => candidate.id !== room.id && candidate.current_game?.game_id,
+    );
 
     React.useEffect(() => {
         if (!mainGame?.game_id) {
@@ -149,6 +161,33 @@ export function KibitzRoomStage({ room, secondaryPane }: KibitzRoomStageProps): 
                                             "Open game page",
                                         )}
                                     </Link>
+                                    {previewCandidates.length > 0 ? (
+                                        <div className="preview-actions">
+                                            <div className="preview-actions-title">
+                                                {pgettext(
+                                                    "Heading for a list of games that can be previewed in kibitz",
+                                                    "Preview another room",
+                                                )}
+                                            </div>
+                                            <div className="preview-actions-list">
+                                                {previewCandidates.map((candidate) => (
+                                                    <button
+                                                        key={candidate.id}
+                                                        type="button"
+                                                        className="preview-action-button"
+                                                        onClick={() =>
+                                                            onPreviewGame(
+                                                                candidate.current_game
+                                                                    ?.game_id as number,
+                                                            )
+                                                        }
+                                                    >
+                                                        {candidate.title}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : null}
                                 </div>
                             </div>
                         ) : (
@@ -187,6 +226,18 @@ export function KibitzRoomStage({ room, secondaryPane }: KibitzRoomStageProps): 
                                     displayWidth={180}
                                     className="KibitzMiniGoban secondary"
                                 />
+                                <div className="board-actions">
+                                    <button
+                                        type="button"
+                                        className="preview-action-button clear-preview"
+                                        onClick={onClearPreview}
+                                    >
+                                        {pgettext(
+                                            "Button label for closing the preview game in the secondary kibitz pane",
+                                            "Clear preview",
+                                        )}
+                                    </button>
+                                </div>
                             </div>
                         ) : (
                             pgettext(

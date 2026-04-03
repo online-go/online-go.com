@@ -220,6 +220,22 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.emit("secondary-pane-changed", this._secondary_pane);
     }
 
+    public previewGame(gameId: number): void {
+        this.setSecondaryPane({
+            ...this._secondary_pane,
+            collapsed: false,
+            preview_game_id: gameId,
+            variation_id: undefined,
+        });
+    }
+
+    public clearPreviewGame(): void {
+        this.setSecondaryPane({
+            ...this._secondary_pane,
+            preview_game_id: undefined,
+        });
+    }
+
     public selectRoom(roomId: string): void {
         const room = this._rooms.find((entry) => entry.id === roomId) ?? null;
 

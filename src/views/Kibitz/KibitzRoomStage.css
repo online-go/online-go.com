@@ -103,6 +103,37 @@
 
         .board-actions {
             text-align: left;
+
+            .preview-actions {
+                margin-top: 0.75rem;
+            }
+
+            .preview-actions-title {
+                color: var(--text-color-faded);
+                font-size: 0.875rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .preview-actions-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+        }
+
+        .preview-action-button {
+            background: var(--shade5);
+            border: 1px solid var(--shade4);
+            border-radius: 999px;
+            color: var(--fg);
+            cursor: pointer;
+            font-size: 0.875rem;
+            padding: 0.35rem 0.75rem;
+            text-align: left;
+        }
+
+        .preview-action-button.clear-preview {
+            align-self: flex-start;
         }
 
         &.collapsed {
