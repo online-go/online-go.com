@@ -20,11 +20,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import { pgettext } from "@/lib/translate";
 import { KibitzController } from "@/lib/KibitzController";
 import type {
+    KibitzProposal,
     KibitzRoom,
     KibitzRoomSummary,
     KibitzSecondaryPaneState,
     KibitzStreamItem,
 } from "@/models/kibitz";
+import { KibitzProposalBar } from "./KibitzProposalBar";
+import { KibitzProposalQueue } from "./KibitzProposalQueue";
 import { KibitzRoomList } from "./KibitzRoomList";
 import { KibitzRoomStage } from "./KibitzRoomStage";
 import { KibitzRoomStream } from "./KibitzRoomStream";
@@ -44,6 +47,7 @@ export function Kibitz(): React.ReactElement {
     const [rooms, setRooms] = React.useState<KibitzRoomSummary[]>(controller.rooms);
     const [activeRoom, setActiveRoom] = React.useState<KibitzRoom | null>(controller.active_room);
     const [stream, setStream] = React.useState<KibitzStreamItem[]>(controller.stream);
+    const [proposals, setProposals] = React.useState<KibitzProposal[]>(controller.proposals);
     const [secondaryPane, setSecondaryPane] = React.useState<KibitzSecondaryPaneState>(
         controller.secondary_pane,
     );
@@ -52,12 +56,14 @@ export function Kibitz(): React.ReactElement {
         controller.on("rooms-changed", setRooms);
         controller.on("room-changed", setActiveRoom);
         controller.on("stream-changed", setStream);
+        controller.on("proposals-changed", setProposals);
         controller.on("secondary-pane-changed", setSecondaryPane);
 
         return () => {
             controller.off("rooms-changed", setRooms);
             controller.off("room-changed", setActiveRoom);
             controller.off("stream-changed", setStream);
+            controller.off("proposals-changed", setProposals);
             controller.off("secondary-pane-changed", setSecondaryPane);
         };
     }, [controller]);
@@ -95,7 +101,22 @@ export function Kibitz(): React.ReactElement {
         controller.clearPreviewGame();
     }, [controller]);
 
+    const onVoteProposal = React.useCallback(
+        (proposalId: string, choice: "change" | "keep") => {
+            controller.voteOnProposal(proposalId, choice);
+        },
+        [controller],
+    );
+
     const resolvedRoom = activeRoom ?? rooms.find((room) => room.id === roomId) ?? rooms[0];
+    const roomProposals = proposals.filter((proposal) => proposal.room_id === resolvedRoom?.id);
+    const activeProposal = roomProposals.find((proposal) => proposal.status === "active");
+
+    const onProposePreview = React.useCallback(() => {
+        if (resolvedRoom) {
+            controller.proposePreviewedGame(resolvedRoom.id);
+        }
+    }, [controller, resolvedRoom]);
 
     if (!resolvedRoom) {
         return (
@@ -119,17 +140,22 @@ export function Kibitz(): React.ReactElement {
                     onSelectRoom={onSelectRoom}
                 />
                 <div className="Kibitz-main">
-                    <KibitzRoomStage
-                        room={resolvedRoom}
-                        rooms={rooms}
-                        secondaryPane={secondaryPane}
-                        onPreviewGame={onPreviewGame}
-                        onClearPreview={onClearPreview}
-                    />
-                    <div className="Kibitz-sidebar">
-                        <KibitzRoomStream room={resolvedRoom} items={stream} />
-                        <KibitzPresence room={resolvedRoom} />
+                    <KibitzProposalBar proposal={activeProposal} onVote={onVoteProposal} />
+                    <div className="Kibitz-content">
+                        <KibitzRoomStage
+                            room={resolvedRoom}
+                            rooms={rooms}
+                            secondaryPane={secondaryPane}
+                            onPreviewGame={onPreviewGame}
+                            onClearPreview={onClearPreview}
+                            onProposePreview={onProposePreview}
+                        />
+                        <div className="Kibitz-sidebar">
+                            <KibitzRoomStream room={resolvedRoom} items={stream} />
+                            <KibitzPresence room={resolvedRoom} />
+                        </div>
                     </div>
+                    <KibitzProposalQueue proposals={roomProposals} />
                 </div>
             </div>
         </div>

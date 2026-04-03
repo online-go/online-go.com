@@ -15,7 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* cspell: words cooldown */
+
 import { EventEmitter } from "eventemitter3";
+import * as data from "@/lib/data";
 import { updateCachedChannelInformation } from "@/lib/chat_manager";
 import type {
     KibitzProposal,
@@ -43,6 +46,23 @@ function createUser(id: number, username: string, ranking: number): KibitzRoom["
         professional: false,
         ui_class: "",
     };
+}
+
+function createCurrentUser(): KibitzRoom["users"][number] {
+    const user = data.get("config.user");
+    if (user && !user.anonymous) {
+        return {
+            id: user.id,
+            username: user.username,
+            ranking: user.ranking,
+            professional: user.professional,
+            ui_class: user.ui_class,
+            country: user.country,
+            icon: user.icon,
+        };
+    }
+
+    return createUser(-1, "You", 0);
 }
 
 function createSeededRooms(): KibitzRoomSummary[] {
@@ -234,6 +254,174 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             ...this._secondary_pane,
             preview_game_id: undefined,
         });
+    }
+
+    public proposePreviewedGame(roomId: string): void {
+        const previewGameId = this._secondary_pane.preview_game_id;
+        if (!previewGameId) {
+            return;
+        }
+
+        const room = this._rooms.find((entry) => entry.id === roomId);
+        const sourceRoom = this._rooms.find(
+            (entry) => entry.current_game?.game_id === previewGameId,
+        );
+        const proposedGame = sourceRoom?.current_game;
+
+        if (!room || !proposedGame) {
+            return;
+        }
+
+        const activeProposalExists = this._proposals.some(
+            (proposal) => proposal.status === "active",
+        );
+        const proposer = createCurrentUser();
+        const proposal: KibitzProposal = {
+            id: `proposal-${Date.now()}`,
+            room_id: roomId,
+            proposer,
+            proposed_game: proposedGame,
+            status: activeProposalExists ? "queued" : "active",
+            created_at: Date.now(),
+            cooldown_seconds: 30,
+            vote_state: {
+                change_votes: [],
+                keep_votes: [],
+                abstain_count: 0,
+                ends_at: Date.now() + 30_000,
+            },
+        };
+
+        this.setProposals([...this._proposals, proposal]);
+        this.setStream([
+            ...this._stream,
+            {
+                id: `${proposal.id}-started`,
+                room_id: roomId,
+                type: "proposal_started",
+                created_at: Date.now(),
+                author: proposer,
+                text: `${proposer.username} proposed switching to ${proposedGame.title}.`,
+                game_id: proposedGame.game_id,
+                proposal_id: proposal.id,
+            },
+        ]);
+    }
+
+    public voteOnProposal(proposalId: string, choice: "change" | "keep"): void {
+        const voter = createCurrentUser();
+        let resolvedProposal: KibitzProposal | null = null;
+
+        const proposals = this._proposals.map((proposal) => {
+            if (
+                proposal.id !== proposalId ||
+                !proposal.vote_state ||
+                proposal.status !== "active"
+            ) {
+                return proposal;
+            }
+
+            const alreadyVoted =
+                proposal.vote_state.change_votes.some((entry) => entry.id === voter.id) ||
+                proposal.vote_state.keep_votes.some((entry) => entry.id === voter.id);
+            if (alreadyVoted) {
+                return proposal;
+            }
+
+            const nextProposal: KibitzProposal = {
+                ...proposal,
+                vote_state: {
+                    ...proposal.vote_state,
+                    change_votes:
+                        choice === "change"
+                            ? [...proposal.vote_state.change_votes, voter]
+                            : proposal.vote_state.change_votes,
+                    keep_votes:
+                        choice === "keep"
+                            ? [...proposal.vote_state.keep_votes, voter]
+                            : proposal.vote_state.keep_votes,
+                },
+                status: choice === "change" ? "accepted" : "rejected",
+            };
+            resolvedProposal = nextProposal;
+            return nextProposal;
+        });
+
+        this.setProposals(proposals);
+
+        if (!resolvedProposal) {
+            return;
+        }
+
+        const finalProposal = resolvedProposal as KibitzProposal;
+
+        if (finalProposal.status === "accepted") {
+            this.applyProposal(finalProposal);
+        } else {
+            this.rejectProposal(finalProposal);
+        }
+    }
+
+    private applyProposal(proposal: KibitzProposal): void {
+        this._rooms = this._rooms.map((room) =>
+            room.id === proposal.room_id
+                ? {
+                      ...room,
+                      current_game: proposal.proposed_game,
+                  }
+                : room,
+        );
+        this.emit("rooms-changed", this._rooms);
+
+        if (this._active_room?.id === proposal.room_id) {
+            this.setActiveRoom(
+                createRoomDetails(
+                    this._rooms.find((room) => room.id === proposal.room_id) as KibitzRoomSummary,
+                ),
+            );
+        }
+
+        this.setStream([
+            ...this._stream,
+            {
+                id: `${proposal.id}-accepted`,
+                room_id: proposal.room_id,
+                type: "proposal_result",
+                created_at: Date.now(),
+                text: `Change board won. Switched to ${proposal.proposed_game.title}.`,
+                game_id: proposal.proposed_game.game_id,
+                proposal_id: proposal.id,
+            },
+        ]);
+
+        this.clearPreviewGame();
+        this.advanceProposalQueue(proposal.id);
+    }
+
+    private rejectProposal(proposal: KibitzProposal): void {
+        this.setStream([
+            ...this._stream,
+            {
+                id: `${proposal.id}-rejected`,
+                room_id: proposal.room_id,
+                type: "proposal_result",
+                created_at: Date.now(),
+                text: `Keeping current board in ${proposal.room_id}.`,
+                game_id: proposal.proposed_game.game_id,
+                proposal_id: proposal.id,
+            },
+        ]);
+
+        this.advanceProposalQueue(proposal.id);
+    }
+
+    private advanceProposalQueue(resolvedProposalId: string): void {
+        const remaining = this._proposals.filter((proposal) => proposal.id !== resolvedProposalId);
+        const firstQueued = remaining.find((proposal) => proposal.status === "queued");
+        if (firstQueued) {
+            firstQueued.status = "active";
+        }
+        this.setProposals(remaining);
     }
 
     public selectRoom(roomId: string): void {

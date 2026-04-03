@@ -16,3 +16,5 @@
  */
 
 export * from "./Kibitz";
+export * from "./KibitzProposalBar";
+export * from "./KibitzProposalQueue";

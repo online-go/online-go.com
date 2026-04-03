@@ -1,0 +1,27 @@
+.KibitzProposalQueue {
+    border: 1px solid var(--shade4);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+
+    .queue-title {
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .queue-items {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .queue-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+
+    .queue-status {
+        color: var(--text-color-faded);
+        text-transform: capitalize;
+    }
+}

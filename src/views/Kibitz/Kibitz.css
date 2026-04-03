@@ -17,6 +17,12 @@
     }
 
     .Kibitz-main {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .Kibitz-content {
         display: grid;
         gap: 1rem;
         grid-template-columns: minmax(0, 1.5fr) minmax(18rem, 24rem);
@@ -28,12 +34,21 @@
         gap: 1rem;
         min-height: 0;
     }
+
+    .Kibitz-main > .KibitzRoomStage,
+    .Kibitz-main > .KibitzProposalBar,
+    .Kibitz-main > .KibitzProposalQueue {
+        width: 100%;
+    }
 }
 
 @media (max-width: 1000px) {
     .Kibitz {
-        .Kibitz-layout,
-        .Kibitz-main {
+        .Kibitz-layout {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .Kibitz-content {
             grid-template-columns: minmax(0, 1fr);
         }
     }

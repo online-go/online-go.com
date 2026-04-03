@@ -29,6 +29,7 @@ interface KibitzRoomStageProps {
     secondaryPane: KibitzSecondaryPaneState;
     onPreviewGame: (gameId: number) => void;
     onClearPreview: () => void;
+    onProposePreview: () => void;
 }
 
 export function KibitzRoomStage({
@@ -37,6 +38,7 @@ export function KibitzRoomStage({
     secondaryPane,
     onPreviewGame,
     onClearPreview,
+    onProposePreview,
 }: KibitzRoomStageProps): React.ReactElement {
     const mainGame = room.current_game;
     const secondaryGameId = secondaryPane.preview_game_id;
@@ -227,6 +229,16 @@ export function KibitzRoomStage({
                                     className="KibitzMiniGoban secondary"
                                 />
                                 <div className="board-actions">
+                                    <button
+                                        type="button"
+                                        className="preview-action-button"
+                                        onClick={onProposePreview}
+                                    >
+                                        {pgettext(
+                                            "Button label for proposing the current previewed game in kibitz",
+                                            "Propose this board",
+                                        )}
+                                    </button>
                                     <button
                                         type="button"
                                         className="preview-action-button clear-preview"
