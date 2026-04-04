@@ -20,15 +20,18 @@
 import { EventEmitter } from "eventemitter3";
 import * as data from "@/lib/data";
 import { updateCachedChannelInformation } from "@/lib/chat_manager";
+import { KibitzMockService } from "@/lib/KibitzMockService";
 import { get } from "@/lib/requests";
 import { socket } from "@/lib/sockets";
 import type {
     KibitzDebugCandidate,
     KibitzDebugRoomHydration,
     KibitzDebugState,
+    KibitzMode,
     KibitzProposal,
     KibitzRoom,
     KibitzRoomSummary,
+    KibitzRoomUser,
     KibitzSecondaryPaneState,
     KibitzStreamItem,
     KibitzVariationSummary,
@@ -264,17 +267,24 @@ function createRoomStream(room: KibitzRoomSummary): KibitzStreamItem[] {
 }
 
 export class KibitzController extends EventEmitter<KibitzControllerEvents> {
+    private _mode: KibitzMode;
     private _rooms: KibitzRoomSummary[] = [];
     private _active_room: KibitzRoom | null = null;
     private _stream: KibitzStreamItem[] = [];
     private _proposals: KibitzProposal[] = [];
     private _variations: KibitzVariationSummary[] = [];
     private _secondary_pane: KibitzSecondaryPaneState = { collapsed: false };
+    private _mock_service: KibitzMockService | null = null;
     private _debug: KibitzDebugState = {
+        mode: "live",
         socket_connected: socket.connected,
         status: "idle",
         rooms: [],
     };
+
+    public get mode(): KibitzMode {
+        return this._mode;
+    }
 
     public get rooms(): KibitzRoomSummary[] {
         return this._rooms;
@@ -312,17 +322,90 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         super();
 
         const rooms = createSeededRooms();
+        this._mode = this.detectMode();
+        this._debug.mode = this._mode;
         this.setRooms(rooms);
-        socket.on("connect", this.onSocketConnect);
+        if (this._mode === "demo") {
+            this._mock_service = new KibitzMockService();
+            this._mock_service.on("changed", this.onMockServiceChanged);
+            this.syncFromMockService();
+        } else {
+            socket.on("connect", this.onSocketConnect);
 
-        if (socket.connected) {
-            void this.hydrateSeededRoomsFromLiveGames();
+            if (socket.connected) {
+                void this.hydrateSeededRoomsFromLiveGames();
+            }
         }
+    }
+
+    public destroy(): void {
+        socket.off("connect", this.onSocketConnect);
+        this._mock_service?.off("changed", this.onMockServiceChanged);
+        this._mock_service?.destroy();
+    }
+
+    private detectMode(): KibitzMode {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("live-kibitz") === "1") {
+            return "live";
+        }
+        if (params.get("demo-kibitz") === "1") {
+            return "demo";
+        }
+
+        return /beta|dev/i.test(window.location.hostname) ? "demo" : "live";
     }
 
     private onSocketConnect = () => {
         void this.hydrateSeededRoomsFromLiveGames();
     };
+
+    private onMockServiceChanged = () => {
+        this.syncFromMockService();
+    };
+
+    private syncFromMockService(): void {
+        if (!this._mock_service) {
+            return;
+        }
+
+        const rooms = this._mock_service.listRooms();
+        this.setRooms(rooms);
+        this.setDebug({
+            mode: "demo",
+            socket_connected: false,
+            status: "ready",
+            last_hydration_started_at: this._debug.last_hydration_started_at,
+            last_hydration_finished_at: Date.now(),
+            rooms: rooms.map((room) => ({
+                room_id: room.id,
+                requested_size: room.current_game?.board_size,
+                query_count: 1,
+                query_source: "broad-fallback",
+                picked_game_id: room.current_game?.game_id,
+                picked_via: "query",
+                candidates: room.current_game
+                    ? [
+                          {
+                              id: room.current_game.game_id,
+                              title: room.current_game.title,
+                              width: room.current_game.mock_game_data?.width,
+                              height: room.current_game.mock_game_data?.height,
+                              move_count: room.current_game.move_number,
+                          },
+                      ]
+                    : [],
+            })),
+        });
+
+        if (this._active_room?.id) {
+            const room = this._mock_service.getRoom(this._active_room.id);
+            this.setActiveRoom(room);
+            this.setStream(this._mock_service.getStream(this._active_room.id));
+            this.setProposals(this._mock_service.getProposals(this._active_room.id));
+            this.setVariations(this._mock_service.getVariations(this._active_room.id));
+        }
+    }
 
     public setRooms(rooms: KibitzRoomSummary[]): void {
         this._rooms = rooms;
@@ -368,6 +451,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     private async hydrateSeededRoomsFromLiveGames(): Promise<void> {
         this.setDebug({
             ...this._debug,
+            mode: this._mode,
             socket_connected: socket.connected,
             status: "loading",
             error: undefined,
@@ -476,6 +560,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
 
             this.setRooms(nextRooms);
             this.setDebug({
+                mode: this._mode,
                 socket_connected: socket.connected,
                 status: "ready",
                 last_hydration_started_at: this._debug.last_hydration_started_at,
@@ -492,6 +577,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             }
         } catch (error) {
             this.setDebug({
+                mode: this._mode,
                 socket_connected: socket.connected,
                 status: "error",
                 last_hydration_started_at: this._debug.last_hydration_started_at,
@@ -534,6 +620,12 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             return;
         }
 
+        if (this._mode === "demo" && this._mock_service) {
+            this._mock_service.createProposal(roomId, createCurrentUser(), proposedGame);
+            this.clearPreviewGame();
+            return;
+        }
+
         const activeProposalExists = this._proposals.some(
             (proposal) => proposal.status === "active",
         );
@@ -572,6 +664,11 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
 
     public voteOnProposal(proposalId: string, choice: "change" | "keep"): void {
         const voter = createCurrentUser();
+        if (this._mode === "demo" && this._mock_service && this._active_room?.id) {
+            this._mock_service.voteOnProposal(this._active_room.id, proposalId, voter, choice);
+            return;
+        }
+
         let resolvedProposal: KibitzProposal | null = null;
 
         const proposals = this._proposals.map((proposal) => {
@@ -687,6 +784,24 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     }
 
     public selectRoom(roomId: string): void {
+        if (this._mode === "demo" && this._mock_service) {
+            const room = this._mock_service.getRoom(roomId);
+
+            if (!room) {
+                this.setActiveRoom(null);
+                this.setStream([]);
+                this.setProposals([]);
+                this.setVariations([]);
+                return;
+            }
+
+            this.setActiveRoom(room);
+            this.setStream(this._mock_service.getStream(roomId));
+            this.setProposals(this._mock_service.getProposals(roomId));
+            this.setVariations(this._mock_service.getVariations(roomId));
+            return;
+        }
+
         const room = this._rooms.find((entry) => entry.id === roomId) ?? null;
 
         if (!room) {
@@ -701,5 +816,19 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.setStream(createRoomStream(room));
         this.setProposals([]);
         this.setVariations([]);
+    }
+
+    public sendMessage(roomId: string, text: string): void {
+        if (this._mode === "demo" && this._mock_service) {
+            this._mock_service.appendMessage(roomId, createCurrentUser(), text);
+        }
+    }
+
+    public getRoomUsers(roomId: string): KibitzRoomUser[] {
+        if (this._mode === "demo" && this._mock_service) {
+            return this._mock_service.getRoom(roomId)?.users ?? [];
+        }
+
+        return this._active_room?.id === roomId ? this._active_room.users : [];
     }
 }

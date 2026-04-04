@@ -20,10 +20,11 @@ import { Link } from "react-router-dom";
 import { MiniGoban } from "@/components/MiniGoban";
 import { get } from "@/lib/requests";
 import { interpolate, pgettext } from "@/lib/translate";
-import type { KibitzRoomSummary, KibitzSecondaryPaneState } from "@/models/kibitz";
+import type { KibitzMode, KibitzRoomSummary, KibitzSecondaryPaneState } from "@/models/kibitz";
 import "./KibitzRoomStage.css";
 
 interface KibitzRoomStageProps {
+    mode: KibitzMode;
     room: KibitzRoomSummary;
     rooms: KibitzRoomSummary[];
     secondaryPane: KibitzSecondaryPaneState;
@@ -33,6 +34,7 @@ interface KibitzRoomStageProps {
 }
 
 export function KibitzRoomStage({
+    mode,
     room,
     rooms,
     secondaryPane,
@@ -46,9 +48,12 @@ export function KibitzRoomStage({
     const previewCandidates = rooms.filter(
         (candidate) => candidate.id !== room.id && candidate.current_game?.game_id,
     );
+    const previewGame = rooms.find(
+        (candidate) => candidate.current_game?.game_id === secondaryGameId,
+    )?.current_game;
 
     React.useEffect(() => {
-        if (!mainGame?.game_id) {
+        if (!mainGame?.game_id || mainGame.mock_game_data || mode === "demo") {
             setMainGameDetails(null);
             return;
         }
@@ -70,7 +75,7 @@ export function KibitzRoomStage({
         return () => {
             canceled = true;
         };
-    }, [mainGame?.game_id]);
+    }, [mainGame?.game_id, mainGame?.mock_game_data, mode]);
 
     const displayedTitle = mainGameDetails?.name || mainGame?.title;
     const displayedBlack = mainGameDetails?.players?.black?.username || mainGame?.black.username;
@@ -80,7 +85,9 @@ export function KibitzRoomStage({
             ? `${mainGameDetails.width}x${mainGameDetails.height}`
             : mainGame?.board_size;
     const displayedMoveNumber =
-        mainGameDetails?.gamedata?.moves?.length ?? mainGameDetails?.gamedata?.clock?.last_move;
+        mainGameDetails?.gamedata?.moves?.length ??
+        mainGameDetails?.gamedata?.clock?.last_move ??
+        mainGame?.move_number;
     const displayedTournament =
         typeof mainGameDetails?.tournament === "number" && mainGameDetails.tournament > 0
             ? interpolate(
@@ -148,7 +155,12 @@ export function KibitzRoomStage({
                                     </div>
                                 </div>
                                 <MiniGoban
-                                    game_id={mainGame.game_id}
+                                    game_id={mainGame.mock_game_data ? undefined : mainGame.game_id}
+                                    json={mainGame.mock_game_data}
+                                    width={mainGame.mock_game_data?.width}
+                                    height={mainGame.mock_game_data?.height}
+                                    black={mainGame.black}
+                                    white={mainGame.white}
                                     noLink={true}
                                     noText={true}
                                     title={false}
@@ -156,15 +168,17 @@ export function KibitzRoomStage({
                                     className="KibitzMiniGoban"
                                 />
                                 <div className="board-actions">
-                                    <Link
-                                        to={`/game/${mainGame.game_id}`}
-                                        className="view-game-link"
-                                    >
-                                        {pgettext(
-                                            "Link text for opening the current game from the kibitz stage",
-                                            "Open game page",
-                                        )}
-                                    </Link>
+                                    {!mainGame.mock_game_data ? (
+                                        <Link
+                                            to={`/game/${mainGame.game_id}`}
+                                            className="view-game-link"
+                                        >
+                                            {pgettext(
+                                                "Link text for opening the current game from the kibitz stage",
+                                                "Open game page",
+                                            )}
+                                        </Link>
+                                    ) : null}
                                     {previewCandidates.length > 0 ? (
                                         <div className="preview-actions">
                                             <div className="preview-actions-title">
@@ -223,7 +237,14 @@ export function KibitzRoomStage({
                         ) : secondaryGameId ? (
                             <div className="board-content">
                                 <MiniGoban
-                                    game_id={secondaryGameId}
+                                    game_id={
+                                        previewGame?.mock_game_data ? undefined : secondaryGameId
+                                    }
+                                    json={previewGame?.mock_game_data}
+                                    width={previewGame?.mock_game_data?.width}
+                                    height={previewGame?.mock_game_data?.height}
+                                    black={previewGame?.black}
+                                    white={previewGame?.white}
                                     noLink={true}
                                     noText={true}
                                     title={false}

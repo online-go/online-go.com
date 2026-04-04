@@ -19,19 +19,26 @@ import * as React from "react";
 import { Player } from "@/components/Player";
 import { chat_manager, ChatChannelProxy, users_by_rank } from "@/lib/chat_manager";
 import { interpolate, pgettext } from "@/lib/translate";
-import type { KibitzRoomSummary } from "@/models/kibitz";
+import type { KibitzMode, KibitzRoomSummary, KibitzRoomUser } from "@/models/kibitz";
 import { User } from "goban";
 import "./KibitzPresence.css";
 
 interface KibitzPresenceProps {
+    mode: KibitzMode;
     room: KibitzRoomSummary;
+    users: KibitzRoomUser[];
 }
 
-export function KibitzPresence({ room }: KibitzPresenceProps): React.ReactElement {
+export function KibitzPresence({ mode, room, users }: KibitzPresenceProps): React.ReactElement {
     const [proxy, setProxy] = React.useState<ChatChannelProxy | null>(null);
     const [, refresh] = React.useState(0);
 
     React.useEffect(() => {
+        if (mode === "demo") {
+            setProxy(null);
+            return;
+        }
+
         const nextProxy = chat_manager.join(room.channel);
         setProxy(nextProxy);
 
@@ -45,9 +52,12 @@ export function KibitzPresence({ room }: KibitzPresenceProps): React.ReactElemen
             nextProxy.off("part", sync);
             nextProxy.part();
         };
-    }, [room.channel]);
+    }, [mode, room.channel]);
 
-    const users: User[] = proxy ? Object.values(proxy.channel.user_list).sort(users_by_rank) : [];
+    const channelUsers: User[] = proxy
+        ? Object.values(proxy.channel.user_list).sort(users_by_rank)
+        : [];
+    const visibleUsers = mode === "demo" ? users : channelUsers;
 
     return (
         <div className="KibitzPresence">
@@ -62,9 +72,9 @@ export function KibitzPresence({ room }: KibitzPresenceProps): React.ReactElemen
                     )}
                 </div>
                 <div className="presence-stat">{room.kind}</div>
-                {users.length > 0 ? (
+                {visibleUsers.length > 0 ? (
                     <div className="presence-users">
-                        {users.map((user) => (
+                        {visibleUsers.map((user) => (
                             <div key={user.id} className="presence-user">
                                 <Player user={user} flag rank noextracontrols />
                             </div>

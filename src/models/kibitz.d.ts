@@ -18,6 +18,7 @@
 /* cspell: words cooldown */
 
 export type KibitzRoomKind = "preset" | "user" | "broadcast";
+export type KibitzMode = "live" | "demo";
 
 export type KibitzProposalStatus = "queued" | "active" | "accepted" | "rejected" | "expired";
 
@@ -48,6 +49,20 @@ export interface KibitzWatchedGame {
     tournament_name?: string;
     move_number?: number;
     live?: boolean;
+    mock_game_data?: {
+        width: number;
+        height: number;
+        game_name: string;
+        players: {
+            black: KibitzRoomUser;
+            white: KibitzRoomUser;
+        };
+        moves: Array<{ x: number; y: number }>;
+        phase?: string;
+        komi?: number;
+        initial_player?: "black" | "white";
+        puzzle_player_move_mode?: boolean;
+    };
 }
 
 export interface KibitzRoomSummary {
@@ -137,6 +152,7 @@ export interface KibitzDebugRoomHydration {
 }
 
 export interface KibitzDebugState {
+    mode?: KibitzMode;
     socket_connected: boolean;
     status: "idle" | "loading" | "ready" | "error";
     last_hydration_started_at?: number;

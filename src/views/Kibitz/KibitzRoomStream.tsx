@@ -26,16 +26,23 @@ import {
 } from "@/lib/chat_manager";
 import { interpolate, pgettext } from "@/lib/translate";
 import { useUser } from "@/lib/hooks";
-import type { KibitzRoomSummary, KibitzStreamItem } from "@/models/kibitz";
+import type { KibitzMode, KibitzRoomSummary, KibitzStreamItem } from "@/models/kibitz";
 import "./KibitzRoomStream.css";
 import "@/components/Chat/ChatLog.css";
 
 interface KibitzRoomStreamProps {
+    mode: KibitzMode;
     room: KibitzRoomSummary;
     items: KibitzStreamItem[];
+    onSendMessage: (text: string) => void;
 }
 
-export function KibitzRoomStream({ room, items }: KibitzRoomStreamProps): React.ReactElement {
+export function KibitzRoomStream({
+    mode,
+    room,
+    items,
+    onSendMessage,
+}: KibitzRoomStreamProps): React.ReactElement {
     const user = useUser();
     const [proxy, setProxy] = React.useState<ChatChannelProxy | null>(null);
     const [, refresh] = React.useState(0);
@@ -44,6 +51,12 @@ export function KibitzRoomStream({ room, items }: KibitzRoomStreamProps): React.
     );
 
     React.useEffect(() => {
+        if (mode === "demo") {
+            setProxy(null);
+            setChannelName(room.title);
+            return;
+        }
+
         const nextProxy = chat_manager.join(room.channel);
         setProxy(nextProxy);
 
@@ -67,7 +80,7 @@ export function KibitzRoomStream({ room, items }: KibitzRoomStreamProps): React.
             nextProxy.off("part", sync);
             nextProxy.part();
         };
-    }, [room.channel, room.title]);
+    }, [mode, room.channel, room.title]);
 
     const onKeyPress = React.useCallback(
         (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -78,6 +91,10 @@ export function KibitzRoomStream({ room, items }: KibitzRoomStreamProps): React.
             const input = event.target as HTMLInputElement;
             const value = input.value.trim();
             if (!value || !proxy) {
+                if (mode === "demo") {
+                    onSendMessage(value);
+                    input.value = "";
+                }
                 return false;
             }
 
@@ -85,7 +102,7 @@ export function KibitzRoomStream({ room, items }: KibitzRoomStreamProps): React.
             input.value = "";
             return false;
         },
-        [proxy],
+        [mode, onSendMessage, proxy],
     );
 
     const chatLog = proxy?.channel.chat_log.slice(-200) ?? [];

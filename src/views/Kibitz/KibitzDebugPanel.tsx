@@ -56,6 +56,17 @@ export function KibitzDebugPanel({ debug }: KibitzDebugPanelProps): React.ReactE
                         },
                     )}
                 </div>
+                {debug.mode ? (
+                    <div className="status">
+                        {interpolate(
+                            pgettext(
+                                "Summary line for kibitz diagnostics mode state",
+                                "Mode: {{mode}}",
+                            ),
+                            { mode: debug.mode },
+                        )}
+                    </div>
+                ) : null}
             </div>
             <div className="KibitzDebugPanel-meta">
                 <div>

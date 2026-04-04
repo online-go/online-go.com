@@ -21,6 +21,7 @@ import { pgettext } from "@/lib/translate";
 import { KibitzController } from "@/lib/KibitzController";
 import type {
     KibitzDebugState,
+    KibitzMode,
     KibitzProposal,
     KibitzRoom,
     KibitzRoomSummary,
@@ -47,6 +48,7 @@ export function Kibitz(): React.ReactElement {
     }
 
     const controller = controllerRef.current;
+    const [mode] = React.useState<KibitzMode>(controller.mode);
     const [rooms, setRooms] = React.useState<KibitzRoomSummary[]>(controller.rooms);
     const [activeRoom, setActiveRoom] = React.useState<KibitzRoom | null>(controller.active_room);
     const [stream, setStream] = React.useState<KibitzStreamItem[]>(controller.stream);
@@ -75,6 +77,7 @@ export function Kibitz(): React.ReactElement {
             controller.off("proposals-changed", setProposals);
             controller.off("secondary-pane-changed", setSecondaryPane);
             controller.off("debug-changed", setDebug);
+            controller.destroy();
         };
     }, [controller]);
 
@@ -128,6 +131,15 @@ export function Kibitz(): React.ReactElement {
         }
     }, [controller, resolvedRoom]);
 
+    const onSendMessage = React.useCallback(
+        (text: string) => {
+            if (resolvedRoom) {
+                controller.sendMessage(resolvedRoom.id, text);
+            }
+        },
+        [controller, resolvedRoom],
+    );
+
     if (!resolvedRoom) {
         return (
             <div className="Kibitz">
@@ -154,6 +166,7 @@ export function Kibitz(): React.ReactElement {
                     <KibitzProposalBar proposal={activeProposal} onVote={onVoteProposal} />
                     <div className="Kibitz-content">
                         <KibitzRoomStage
+                            mode={mode}
                             room={resolvedRoom}
                             rooms={rooms}
                             secondaryPane={secondaryPane}
@@ -162,8 +175,17 @@ export function Kibitz(): React.ReactElement {
                             onProposePreview={onProposePreview}
                         />
                         <div className="Kibitz-sidebar">
-                            <KibitzRoomStream room={resolvedRoom} items={stream} />
-                            <KibitzPresence room={resolvedRoom} />
+                            <KibitzRoomStream
+                                mode={mode}
+                                room={resolvedRoom}
+                                items={stream}
+                                onSendMessage={onSendMessage}
+                            />
+                            <KibitzPresence
+                                mode={mode}
+                                room={resolvedRoom}
+                                users={controller.getRoomUsers(resolvedRoom.id)}
+                            />
                         </div>
                     </div>
                     <KibitzProposalQueue proposals={roomProposals} />
