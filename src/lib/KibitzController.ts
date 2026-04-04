@@ -601,6 +601,16 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.setSecondaryPane({
             ...this._secondary_pane,
             preview_game_id: undefined,
+            variation_id: undefined,
+        });
+    }
+
+    public openVariation(variationId: string): void {
+        this.setSecondaryPane({
+            ...this._secondary_pane,
+            collapsed: false,
+            preview_game_id: undefined,
+            variation_id: variationId,
         });
     }
 

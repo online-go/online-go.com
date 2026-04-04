@@ -30,6 +30,30 @@
         padding: 0;
     }
 
+    .variation-post {
+        background: var(--shade1);
+        border: 0;
+        border-top: 1px solid transparent;
+        border-top-color: var(--shade3);
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        padding: 0.75rem 1rem;
+        text-align: left;
+        width: 100%;
+
+        .variation-post-title {
+            color: var(--fg);
+            font-weight: bold;
+        }
+
+        .variation-post-meta {
+            color: var(--text-color-faded);
+            font-size: 0.875rem;
+        }
+    }
+
     .KibitzRoomStream-footer {
         border-top: 1px solid transparent;
         border-top-color: var(--shade3);

@@ -53,6 +53,7 @@ export function Kibitz(): React.ReactElement {
     const [activeRoom, setActiveRoom] = React.useState<KibitzRoom | null>(controller.active_room);
     const [stream, setStream] = React.useState<KibitzStreamItem[]>(controller.stream);
     const [proposals, setProposals] = React.useState<KibitzProposal[]>(controller.proposals);
+    const [variations, setVariations] = React.useState(controller.variations);
     const [secondaryPane, setSecondaryPane] = React.useState<KibitzSecondaryPaneState>(
         controller.secondary_pane,
     );
@@ -67,6 +68,7 @@ export function Kibitz(): React.ReactElement {
         controller.on("room-changed", setActiveRoom);
         controller.on("stream-changed", setStream);
         controller.on("proposals-changed", setProposals);
+        controller.on("variations-changed", setVariations);
         controller.on("secondary-pane-changed", setSecondaryPane);
         controller.on("debug-changed", setDebug);
 
@@ -75,6 +77,7 @@ export function Kibitz(): React.ReactElement {
             controller.off("room-changed", setActiveRoom);
             controller.off("stream-changed", setStream);
             controller.off("proposals-changed", setProposals);
+            controller.off("variations-changed", setVariations);
             controller.off("secondary-pane-changed", setSecondaryPane);
             controller.off("debug-changed", setDebug);
             controller.destroy();
@@ -113,6 +116,13 @@ export function Kibitz(): React.ReactElement {
     const onClearPreview = React.useCallback(() => {
         controller.clearPreviewGame();
     }, [controller]);
+
+    const onOpenVariation = React.useCallback(
+        (variationId: string) => {
+            controller.openVariation(variationId);
+        },
+        [controller],
+    );
 
     const onVoteProposal = React.useCallback(
         (proposalId: string, choice: "change" | "keep") => {
@@ -169,6 +179,7 @@ export function Kibitz(): React.ReactElement {
                             mode={mode}
                             room={resolvedRoom}
                             rooms={rooms}
+                            variations={variations}
                             secondaryPane={secondaryPane}
                             onPreviewGame={onPreviewGame}
                             onClearPreview={onClearPreview}
@@ -179,6 +190,8 @@ export function Kibitz(): React.ReactElement {
                                 mode={mode}
                                 room={resolvedRoom}
                                 items={stream}
+                                variations={variations}
+                                onOpenVariation={onOpenVariation}
                                 onSendMessage={onSendMessage}
                             />
                             <KibitzPresence

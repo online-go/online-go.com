@@ -26,7 +26,12 @@ import {
 } from "@/lib/chat_manager";
 import { interpolate, pgettext } from "@/lib/translate";
 import { useUser } from "@/lib/hooks";
-import type { KibitzMode, KibitzRoomSummary, KibitzStreamItem } from "@/models/kibitz";
+import type {
+    KibitzMode,
+    KibitzRoomSummary,
+    KibitzStreamItem,
+    KibitzVariationSummary,
+} from "@/models/kibitz";
 import "./KibitzRoomStream.css";
 import "@/components/Chat/ChatLog.css";
 
@@ -34,6 +39,8 @@ interface KibitzRoomStreamProps {
     mode: KibitzMode;
     room: KibitzRoomSummary;
     items: KibitzStreamItem[];
+    variations: KibitzVariationSummary[];
+    onOpenVariation: (variationId: string) => void;
     onSendMessage: (text: string) => void;
 }
 
@@ -41,6 +48,8 @@ export function KibitzRoomStream({
     mode,
     room,
     items,
+    variations,
+    onOpenVariation,
     onSendMessage,
 }: KibitzRoomStreamProps): React.ReactElement {
     const user = useUser();
@@ -108,7 +117,10 @@ export function KibitzRoomStream({
     const chatLog = proxy?.channel.chat_log.slice(-200) ?? [];
     const demoChatLog: ChatMessage[] = items
         .map((item) => {
-            if (!item.author && item.type !== "system" && item.type !== "proposal_result") {
+            if (
+                item.type === "variation_posted" ||
+                (!item.author && item.type !== "system" && item.type !== "proposal_result")
+            ) {
                 return null;
             }
 
@@ -129,6 +141,7 @@ export function KibitzRoomStream({
             };
         })
         .filter(Boolean) as ChatMessage[];
+    const variationPosts = items.filter((item) => item.type === "variation_posted");
     let lastLine: ChatMessage | undefined;
 
     return (
@@ -150,6 +163,33 @@ export function KibitzRoomStream({
                                 />
                             );
                         })}
+                        {mode === "demo"
+                            ? variationPosts.map((item) => {
+                                  const variation = variations.find(
+                                      (entry) => entry.id === item.variation_id,
+                                  );
+                                  return (
+                                      <button
+                                          key={item.id}
+                                          type="button"
+                                          className="variation-post"
+                                          onClick={() =>
+                                              item.variation_id &&
+                                              onOpenVariation(item.variation_id)
+                                          }
+                                      >
+                                          <span className="variation-post-title">
+                                              {variation?.title ??
+                                                  pgettext(
+                                                      "Fallback title for a variation link in the kibitz stream",
+                                                      "Open variation",
+                                                  )}
+                                          </span>
+                                          <span className="variation-post-meta">{item.text}</span>
+                                      </button>
+                                  );
+                              })
+                            : null}
                     </div>
                 ) : items.length > 0 ? (
                     items.map((item) => (

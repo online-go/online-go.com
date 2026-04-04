@@ -20,13 +20,19 @@ import { Link } from "react-router-dom";
 import { MiniGoban } from "@/components/MiniGoban";
 import { get } from "@/lib/requests";
 import { interpolate, pgettext } from "@/lib/translate";
-import type { KibitzMode, KibitzRoomSummary, KibitzSecondaryPaneState } from "@/models/kibitz";
+import type {
+    KibitzMode,
+    KibitzRoomSummary,
+    KibitzSecondaryPaneState,
+    KibitzVariationSummary,
+} from "@/models/kibitz";
 import "./KibitzRoomStage.css";
 
 interface KibitzRoomStageProps {
     mode: KibitzMode;
     room: KibitzRoomSummary;
     rooms: KibitzRoomSummary[];
+    variations: KibitzVariationSummary[];
     secondaryPane: KibitzSecondaryPaneState;
     onPreviewGame: (gameId: number) => void;
     onClearPreview: () => void;
@@ -37,6 +43,7 @@ export function KibitzRoomStage({
     mode,
     room,
     rooms,
+    variations,
     secondaryPane,
     onPreviewGame,
     onClearPreview,
@@ -44,6 +51,9 @@ export function KibitzRoomStage({
 }: KibitzRoomStageProps): React.ReactElement {
     const mainGame = room.current_game;
     const secondaryGameId = secondaryPane.preview_game_id;
+    const selectedVariation = variations.find(
+        (variation) => variation.id === secondaryPane.variation_id,
+    );
     const [mainGameDetails, setMainGameDetails] = React.useState<rest_api.GameDetails | null>(null);
     const previewCandidates = rooms.filter(
         (candidate) => candidate.id !== room.id && candidate.current_game?.game_id,
@@ -270,6 +280,45 @@ export function KibitzRoomStage({
                                         {pgettext(
                                             "Button label for closing the preview game in the secondary kibitz pane",
                                             "Clear preview",
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        ) : selectedVariation ? (
+                            <div className="board-content">
+                                <div className="board-meta">
+                                    <div className="players">
+                                        {selectedVariation.creator.username}
+                                    </div>
+                                    <div className="game-details">
+                                        {selectedVariation.title ??
+                                            pgettext(
+                                                "Fallback title for an untitled kibitz variation",
+                                                "Variation preview",
+                                            )}
+                                    </div>
+                                </div>
+                                <MiniGoban
+                                    json={selectedVariation.mock_game_data}
+                                    width={selectedVariation.mock_game_data?.width}
+                                    height={selectedVariation.mock_game_data?.height}
+                                    black={selectedVariation.mock_game_data?.players.black}
+                                    white={selectedVariation.mock_game_data?.players.white}
+                                    noLink={true}
+                                    noText={true}
+                                    title={false}
+                                    displayWidth={180}
+                                    className="KibitzMiniGoban secondary"
+                                />
+                                <div className="board-actions">
+                                    <button
+                                        type="button"
+                                        className="preview-action-button clear-preview"
+                                        onClick={onClearPreview}
+                                    >
+                                        {pgettext(
+                                            "Button label for closing a variation preview in the secondary kibitz pane",
+                                            "Clear variation",
                                         )}
                                     </button>
                                 </div>

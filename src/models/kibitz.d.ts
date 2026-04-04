@@ -112,6 +112,7 @@ export interface KibitzVariationSummary {
     current_viewers: KibitzRoomUser[];
     move_count?: number;
     title?: string;
+    mock_game_data?: KibitzWatchedGame["mock_game_data"];
 }
 
 export interface KibitzStreamItem {
