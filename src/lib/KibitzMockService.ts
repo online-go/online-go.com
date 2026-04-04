@@ -156,6 +156,28 @@ function createRooms(): MockRoomState[] {
         [5, 5],
         [3, 5],
     ]);
+    const tournamentProposalGame = createMockGame(
+        910004,
+        19,
+        "Center reduction race",
+        createUser(5007, "SoraInfluence", 26),
+        createUser(5008, "MikTerritory", 25),
+        [
+            [3, 3],
+            [15, 15],
+            [15, 3],
+            [3, 15],
+            [10, 16],
+            [16, 10],
+            [4, 10],
+            [10, 4],
+            [5, 5],
+            [14, 14],
+            [6, 10],
+            [13, 9],
+        ],
+        "OGS Beta Cup",
+    );
 
     const topRoomUsers = [
         vera,
@@ -209,6 +231,16 @@ function createRooms(): MockRoomState[] {
                     text: "Black is framing the top while keeping sente for the right side.",
                     game_id: currentGame19.game_id,
                 },
+                {
+                    id: "top-19x19-var-post-1",
+                    room_id: "top-19x19",
+                    type: "variation_posted",
+                    created_at: Date.now() - 170_000,
+                    author: topRoomUsers[1],
+                    text: "Posted a variation: Black shoulder-hit follow-up.",
+                    game_id: currentGame19.game_id,
+                    variation_id: "var-top-1",
+                },
             ],
             proposals: [],
             variations: [
@@ -222,6 +254,34 @@ function createRooms(): MockRoomState[] {
                     current_viewers: topRoomUsers.slice(0, 3),
                     move_count: 7,
                     title: "Black shoulder-hit follow-up",
+                    mock_game_data: {
+                        width: 19,
+                        height: 19,
+                        game_name: "Black shoulder-hit follow-up",
+                        players: {
+                            black: vera,
+                            white: jun,
+                        },
+                        moves: createMoves([
+                            [3, 3],
+                            [15, 15],
+                            [15, 3],
+                            [3, 15],
+                            [10, 16],
+                            [16, 10],
+                            [4, 10],
+                            [10, 4],
+                            [11, 15],
+                            [11, 13],
+                            [9, 14],
+                            [13, 12],
+                            [8, 15],
+                            [12, 14],
+                        ]),
+                        phase: "play",
+                        komi: 7.5,
+                        initial_player: "black",
+                    },
                 },
             ],
         },
@@ -249,8 +309,34 @@ function createRooms(): MockRoomState[] {
                     text: "If white tenukis again, the lower side gets severe quickly.",
                     game_id: tournamentGame.game_id,
                 },
+                {
+                    id: "tournament-pick-proposal-seeded",
+                    room_id: "tournament-pick",
+                    type: "proposal_started",
+                    created_at: Date.now() - 100_000,
+                    author: tournamentUsers[2],
+                    text: `${tournamentUsers[2].username} proposed switching to ${tournamentProposalGame.title}.`,
+                    game_id: tournamentProposalGame.game_id,
+                    proposal_id: "tournament-pick-proposal-1",
+                },
             ],
-            proposals: [],
+            proposals: [
+                {
+                    id: "tournament-pick-proposal-1",
+                    room_id: "tournament-pick",
+                    proposer: tournamentUsers[2],
+                    proposed_game: tournamentProposalGame,
+                    status: "active",
+                    created_at: Date.now() - 100_000,
+                    cooldown_seconds: 30,
+                    vote_state: {
+                        change_votes: [tournamentUsers[3]],
+                        keep_votes: [],
+                        abstain_count: 0,
+                        ends_at: Date.now() + 45_000,
+                    },
+                },
+            ],
             variations: [],
         },
         {
@@ -416,7 +502,18 @@ export class KibitzMockService extends EventEmitter<KibitzMockServiceEvents> {
             proposal.vote_state.keep_votes.push(voter);
         }
 
-        proposal.status = choice === "change" ? "accepted" : "rejected";
+        if (
+            proposal.vote_state.change_votes.length < 2 &&
+            proposal.vote_state.keep_votes.length < 2
+        ) {
+            this.emit("changed");
+            return;
+        }
+
+        proposal.status =
+            proposal.vote_state.change_votes.length >= proposal.vote_state.keep_votes.length
+                ? "accepted"
+                : "rejected";
         if (proposal.status === "accepted") {
             room.room.current_game = proposal.proposed_game;
             room.stream.push({
@@ -455,6 +552,25 @@ export class KibitzMockService extends EventEmitter<KibitzMockServiceEvents> {
         }
 
         const room = rooms[Math.floor(Math.random() * rooms.length)];
+        const activeProposal = room.proposals.find(
+            (proposal) => proposal.status === "active" && proposal.vote_state,
+        );
+        if (activeProposal && activeProposal.vote_state) {
+            const availableVoters = room.room.users.filter(
+                (user) =>
+                    !activeProposal.vote_state?.change_votes.some(
+                        (entry) => entry.id === user.id,
+                    ) &&
+                    !activeProposal.vote_state?.keep_votes.some((entry) => entry.id === user.id),
+            );
+            const voter = availableVoters[0];
+            if (voter) {
+                const choice = room.room.id === "tournament-pick" ? "change" : "keep";
+                this.voteOnProposal(room.room.id, activeProposal.id, voter, choice);
+                return;
+            }
+        }
+
         const speaker = room.room.active_chatters[Date.now() % room.room.active_chatters.length];
         const messages = [
             "That exchange looks lighter after the peep than it did two moves ago.",

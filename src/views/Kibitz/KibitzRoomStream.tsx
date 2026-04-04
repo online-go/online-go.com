@@ -106,6 +106,29 @@ export function KibitzRoomStream({
     );
 
     const chatLog = proxy?.channel.chat_log.slice(-200) ?? [];
+    const demoChatLog: ChatMessage[] = items
+        .map((item) => {
+            if (!item.author && item.type !== "system" && item.type !== "proposal_result") {
+                return null;
+            }
+
+            return {
+                channel: room.channel,
+                username: item.author?.username ?? "",
+                id: item.author?.id ?? 0,
+                ranking: item.author?.ranking ?? 0,
+                professional: item.author?.professional ?? false,
+                ui_class: item.author?.ui_class ?? "",
+                country: item.author?.country,
+                system: item.type !== "chat",
+                message: {
+                    i: item.id,
+                    t: Math.floor(item.created_at / 1000),
+                    m: item.text,
+                },
+            };
+        })
+        .filter(Boolean) as ChatMessage[];
     let lastLine: ChatMessage | undefined;
 
     return (
@@ -114,9 +137,9 @@ export function KibitzRoomStream({
                 {pgettext("Heading for the main message stream in a kibitz room", "Room stream")}
             </div>
             <div className="KibitzRoomStream-items">
-                {chatLog.length > 0 ? (
+                {(mode === "demo" ? demoChatLog.length > 0 : chatLog.length > 0) ? (
                     <div className="chat-lines">
-                        {chatLog.map((line) => {
+                        {(mode === "demo" ? demoChatLog : chatLog).map((line) => {
                             const previousLine = lastLine;
                             lastLine = line;
                             return (
