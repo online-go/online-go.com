@@ -22,6 +22,7 @@ import { get } from "@/lib/requests";
 import { interpolate, pgettext } from "@/lib/translate";
 import type {
     KibitzMode,
+    KibitzProposal,
     KibitzRoomSummary,
     KibitzSecondaryPaneState,
     KibitzVariationSummary,
@@ -32,6 +33,7 @@ interface KibitzRoomStageProps {
     mode: KibitzMode;
     room: KibitzRoomSummary;
     rooms: KibitzRoomSummary[];
+    proposals: KibitzProposal[];
     variations: KibitzVariationSummary[];
     secondaryPane: KibitzSecondaryPaneState;
     onPreviewGame: (gameId: number) => void;
@@ -43,6 +45,7 @@ export function KibitzRoomStage({
     mode,
     room,
     rooms,
+    proposals,
     variations,
     secondaryPane,
     onPreviewGame,
@@ -58,9 +61,12 @@ export function KibitzRoomStage({
     const previewCandidates = rooms.filter(
         (candidate) => candidate.id !== room.id && candidate.current_game?.game_id,
     );
-    const previewGame = rooms.find(
-        (candidate) => candidate.current_game?.game_id === secondaryGameId,
-    )?.current_game;
+    const previewGame =
+        rooms.find((candidate) => candidate.current_game?.game_id === secondaryGameId)
+            ?.current_game ??
+        proposals.find((proposal) => proposal.proposed_game.game_id === secondaryGameId)
+            ?.proposed_game;
+    const previewDisplayedMoveNumber = previewGame?.move_number;
 
     React.useEffect(() => {
         if (!mainGame?.game_id || mainGame.mock_game_data || mode === "demo") {
@@ -246,6 +252,41 @@ export function KibitzRoomStage({
                             )
                         ) : secondaryGameId ? (
                             <div className="board-content">
+                                <div className="board-meta">
+                                    <div className="players">
+                                        {interpolate(
+                                            pgettext(
+                                                "Player names shown above the secondary board in kibitz",
+                                                "{{black}} vs {{white}}",
+                                            ),
+                                            {
+                                                black: previewGame?.black.username ?? "",
+                                                white: previewGame?.white.username ?? "",
+                                            },
+                                        )}
+                                    </div>
+                                    <div className="game-details">
+                                        {previewGame?.title ?? ""}
+                                        {previewGame?.board_size
+                                            ? ` - ${interpolate(
+                                                  pgettext(
+                                                      "Board size label shown in the kibitz secondary pane",
+                                                      "Board {{size}}",
+                                                  ),
+                                                  { size: previewGame.board_size },
+                                              )}`
+                                            : ""}
+                                        {previewDisplayedMoveNumber
+                                            ? ` - ${interpolate(
+                                                  pgettext(
+                                                      "Move number label shown in the kibitz secondary pane",
+                                                      "Move {{move_number}}",
+                                                  ),
+                                                  { move_number: previewDisplayedMoveNumber },
+                                              )}`
+                                            : ""}
+                                    </div>
+                                </div>
                                 <MiniGoban
                                     game_id={
                                         previewGame?.mock_game_data ? undefined : secondaryGameId

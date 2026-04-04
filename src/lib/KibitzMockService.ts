@@ -93,6 +93,10 @@ function createMockGame(
     };
 }
 
+function formatProposalSummary(game: KibitzWatchedGame): string {
+    return `switching main game to ${game.title} (${game.black.username} vs ${game.white.username}, ${game.board_size}, move ${game.move_number ?? 0})`;
+}
+
 function createRooms(): MockRoomState[] {
     const vera = createUser(5001, "VeraFuseki", 29);
     const jun = createUser(5002, "JunShape", 27);
@@ -223,6 +227,14 @@ function createRooms(): MockRoomState[] {
                     game_id: currentGame19.game_id,
                 },
                 {
+                    id: "top-19x19-join-1",
+                    room_id: "top-19x19",
+                    type: "system",
+                    created_at: Date.now() - 285_000,
+                    text: `${topRoomUsers[3].username} joined chat.`,
+                    game_id: currentGame19.game_id,
+                },
+                {
                     id: "top-19x19-chat-1",
                     room_id: "top-19x19",
                     type: "chat",
@@ -315,7 +327,7 @@ function createRooms(): MockRoomState[] {
                     type: "proposal_started",
                     created_at: Date.now() - 100_000,
                     author: tournamentUsers[2],
-                    text: `${tournamentUsers[2].username} proposed switching to ${tournamentProposalGame.title}.`,
+                    text: `${tournamentUsers[2].username} proposed ${formatProposalSummary(tournamentProposalGame)}.`,
                     game_id: tournamentProposalGame.game_id,
                     proposal_id: "tournament-pick-proposal-1",
                 },
@@ -466,7 +478,7 @@ export class KibitzMockService extends EventEmitter<KibitzMockServiceEvents> {
             type: "proposal_started",
             created_at: Date.now(),
             author: proposer,
-            text: `${proposer.username} proposed switching to ${proposedGame.title}.`,
+            text: `${proposer.username} proposed ${formatProposalSummary(proposedGame)}.`,
             game_id: proposedGame.game_id,
             proposal_id: proposal.id,
         });

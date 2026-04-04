@@ -35,37 +35,55 @@ export function KibitzProposalBar({
 
     return (
         <div className="KibitzProposalBar">
-            <div className="proposal-summary">
-                {interpolate(
-                    pgettext(
-                        "Proposal summary shown above the kibitz board area",
-                        "{{username}} proposed {{title}}",
-                    ),
-                    {
-                        username: proposal.proposer.username,
-                        title: proposal.proposed_game.title,
-                    },
-                )}
+            <div className="proposal-copy">
+                <div className="proposal-summary">
+                    {interpolate(
+                        pgettext(
+                            "Proposal summary shown above the kibitz board area",
+                            "{{username}} proposed switching main game to {{title}}",
+                        ),
+                        {
+                            username: proposal.proposer.username,
+                            title: proposal.proposed_game.title,
+                        },
+                    )}
+                </div>
+                <div className="proposal-game-meta">
+                    {interpolate(
+                        pgettext(
+                            "Proposed game metadata shown in the kibitz proposal bar",
+                            "{{black}} vs {{white}} | Board {{size}} | Move {{move_number}}",
+                        ),
+                        {
+                            black: proposal.proposed_game.black.username,
+                            white: proposal.proposed_game.white.username,
+                            size: proposal.proposed_game.board_size,
+                            move_number: proposal.proposed_game.move_number ?? 0,
+                        },
+                    )}
+                </div>
             </div>
-            <div className="proposal-votes">
-                <span>
-                    {interpolate(pgettext("Change board vote count", "Change {{count}}"), {
-                        count: proposal.vote_state.change_votes.length,
-                    })}
-                </span>
-                <span>
-                    {interpolate(pgettext("Keep board vote count", "Keep {{count}}"), {
-                        count: proposal.vote_state.keep_votes.length,
-                    })}
-                </span>
-            </div>
-            <div className="proposal-actions">
-                <button type="button" onClick={() => onVote(proposal.id, "change")}>
-                    {pgettext("Vote button in kibitz proposal bar", "Change board")}
-                </button>
-                <button type="button" onClick={() => onVote(proposal.id, "keep")}>
-                    {pgettext("Vote button in kibitz proposal bar", "Keep current")}
-                </button>
+            <div className="proposal-controls">
+                <div className="proposal-votes">
+                    <span>
+                        {interpolate(pgettext("Change board vote count", "Change {{count}}"), {
+                            count: proposal.vote_state.change_votes.length,
+                        })}
+                    </span>
+                    <span>
+                        {interpolate(pgettext("Keep board vote count", "Keep {{count}}"), {
+                            count: proposal.vote_state.keep_votes.length,
+                        })}
+                    </span>
+                </div>
+                <div className="proposal-actions">
+                    <button type="button" onClick={() => onVote(proposal.id, "change")}>
+                        {pgettext("Vote button in kibitz proposal bar", "Change board")}
+                    </button>
+                    <button type="button" onClick={() => onVote(proposal.id, "keep")}>
+                        {pgettext("Vote button in kibitz proposal bar", "Keep current")}
+                    </button>
+                </div>
             </div>
         </div>
     );

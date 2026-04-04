@@ -266,6 +266,14 @@ function createRoomStream(room: KibitzRoomSummary): KibitzStreamItem[] {
     ];
 }
 
+function formatProposalSummary(game: KibitzRoomSummary["current_game"]): string {
+    if (!game) {
+        return "";
+    }
+
+    return `switching main game to ${game.title} (${game.black.username} vs ${game.white.username}, ${game.board_size}, move ${game.move_number ?? 0})`;
+}
+
 export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     private _mode: KibitzMode;
     private _rooms: KibitzRoomSummary[] = [];
@@ -665,7 +673,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 type: "proposal_started",
                 created_at: Date.now(),
                 author: proposer,
-                text: `${proposer.username} proposed switching to ${proposedGame.title}.`,
+                text: `${proposer.username} proposed ${formatProposalSummary(proposedGame)}.`,
                 game_id: proposedGame.game_id,
                 proposal_id: proposal.id,
             },
@@ -807,8 +815,20 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
 
             this.setActiveRoom(room);
             this.setStream(this._mock_service.getStream(roomId));
-            this.setProposals(this._mock_service.getProposals(roomId));
+            const proposals = this._mock_service.getProposals(roomId);
+            this.setProposals(proposals);
             this.setVariations(this._mock_service.getVariations(roomId));
+            const activeProposal = proposals.find((proposal) => proposal.status === "active");
+            this.setSecondaryPane(
+                activeProposal
+                    ? {
+                          collapsed: false,
+                          preview_game_id: activeProposal.proposed_game.game_id,
+                      }
+                    : {
+                          collapsed: false,
+                      },
+            );
             return;
         }
 

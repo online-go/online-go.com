@@ -61,9 +61,6 @@ export function KibitzPresence({ mode, room, users }: KibitzPresenceProps): Reac
 
     return (
         <div className="KibitzPresence">
-            <div className="KibitzPresence-title">
-                {pgettext("Heading for the user presence panel in a kibitz room", "Presence")}
-            </div>
             <div className="KibitzPresence-body">
                 <div className="presence-stat">
                     {interpolate(

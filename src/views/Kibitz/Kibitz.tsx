@@ -179,6 +179,7 @@ export function Kibitz(): React.ReactElement {
                             mode={mode}
                             room={resolvedRoom}
                             rooms={rooms}
+                            proposals={roomProposals}
                             variations={variations}
                             secondaryPane={secondaryPane}
                             onPreviewGame={onPreviewGame}

@@ -28,6 +28,13 @@
         max-height: 24rem;
         min-height: 14rem;
         padding: 0;
+
+        .chat-line.system {
+            border-top-color: #b38762;
+            color: #8b684b;
+            margin-left: 0;
+            padding-left: 0.75rem;
+        }
     }
 
     .variation-post {

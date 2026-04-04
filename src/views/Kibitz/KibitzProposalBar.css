@@ -4,12 +4,33 @@
     color: var(--colored-background-fg);
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: 1rem;
     justify-content: space-between;
     padding: 0.75rem 1rem;
 
+    .proposal-copy {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: 0.2rem;
+        min-width: 14rem;
+    }
+
     .proposal-summary {
         font-weight: bold;
+    }
+
+    .proposal-game-meta {
+        color: rgba(255, 255, 255, 0.88);
+        font-size: 0.875rem;
+    }
+
+    .proposal-controls {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
     }
 
     .proposal-votes {
