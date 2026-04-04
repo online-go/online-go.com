@@ -35,6 +35,7 @@ import { KibitzRoomList } from "./KibitzRoomList";
 import { KibitzRoomStage } from "./KibitzRoomStage";
 import { KibitzRoomStream } from "./KibitzRoomStream";
 import { KibitzPresence } from "./KibitzPresence";
+import { KibitzVariationList } from "./KibitzVariationList";
 import "./Kibitz.css";
 
 export function Kibitz(): React.ReactElement {
@@ -167,11 +168,18 @@ export function Kibitz(): React.ReactElement {
             </div>
             {showDebug ? <KibitzDebugPanel debug={debug} /> : null}
             <div className="Kibitz-layout">
-                <KibitzRoomList
-                    rooms={rooms}
-                    activeRoomId={resolvedRoom.id}
-                    onSelectRoom={onSelectRoom}
-                />
+                <div className="Kibitz-left-rail">
+                    <KibitzRoomList
+                        rooms={rooms}
+                        activeRoomId={resolvedRoom.id}
+                        onSelectRoom={onSelectRoom}
+                    />
+                    <KibitzPresence
+                        mode={mode}
+                        room={resolvedRoom}
+                        users={controller.getRoomUsers(resolvedRoom.id)}
+                    />
+                </div>
                 <div className="Kibitz-main">
                     <KibitzProposalBar proposal={activeProposal} onVote={onVoteProposal} />
                     <div className="Kibitz-content">
@@ -195,14 +203,15 @@ export function Kibitz(): React.ReactElement {
                                 onOpenVariation={onOpenVariation}
                                 onSendMessage={onSendMessage}
                             />
-                            <KibitzPresence
-                                mode={mode}
-                                room={resolvedRoom}
-                                users={controller.getRoomUsers(resolvedRoom.id)}
-                            />
+                            <div className="Kibitz-footer-panels">
+                                <KibitzVariationList
+                                    variations={variations}
+                                    onOpenVariation={onOpenVariation}
+                                />
+                                <KibitzProposalQueue proposals={roomProposals} />
+                            </div>
                         </div>
                     </div>
-                    <KibitzProposalQueue proposals={roomProposals} />
                 </div>
             </div>
         </div>

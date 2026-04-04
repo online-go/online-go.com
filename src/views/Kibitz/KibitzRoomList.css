@@ -5,7 +5,7 @@
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    min-height: 16rem;
+    min-height: 0;
 
     .KibitzRoomList-title {
         border-bottom: 1px solid transparent;

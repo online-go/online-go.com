@@ -2,13 +2,9 @@
     background: var(--card-background-color);
     display: flex;
     flex-direction: column;
-
-    .KibitzPresence-title {
-        border-bottom: 1px solid transparent;
-        border-bottom-color: var(--shade3);
-        font-weight: bold;
-        padding: 0.75rem 1rem;
-    }
+    min-height: 0;
+    border-top: 1px solid transparent;
+    border-top-color: var(--shade3);
 
     .KibitzPresence-body {
         display: flex;
@@ -26,5 +22,6 @@
         flex-direction: column;
         gap: 0.5rem;
         margin-top: 0.5rem;
+        overflow-y: auto;
     }
 }

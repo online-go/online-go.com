@@ -19,6 +19,12 @@
         align-items: stretch;
     }
 
+    .Kibitz-left-rail {
+        display: grid;
+        grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+        min-height: 0;
+    }
+
     .Kibitz-main {
         display: flex;
         flex-direction: column;
@@ -33,8 +39,8 @@
     }
 
     .Kibitz-sidebar {
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-rows: minmax(0, 4fr) minmax(9rem, 1fr);
         gap: 0;
         min-height: 0;
         background: var(--bg);
@@ -44,6 +50,13 @@
     .Kibitz-main > .KibitzProposalBar,
     .Kibitz-main > .KibitzProposalQueue {
         width: 100%;
+    }
+
+    .Kibitz-footer-panels {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 0;
+        min-height: 0;
     }
 }
 
@@ -59,9 +72,23 @@
             gap: 0.75rem;
         }
 
+        .Kibitz-left-rail,
         .Kibitz-main,
         .Kibitz-sidebar {
             gap: 0.75rem;
+        }
+
+        .Kibitz-left-rail,
+        .Kibitz-footer-panels {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: auto;
+            gap: 0.75rem;
+        }
+
+        .Kibitz-sidebar {
+            display: grid;
+            grid-template-rows: auto;
         }
     }
 }

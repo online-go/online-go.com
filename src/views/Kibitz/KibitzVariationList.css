@@ -1,0 +1,45 @@
+.KibitzVariationList {
+    background: var(--card-background-color);
+    padding: 0.75rem 1rem;
+
+    .variation-title {
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .variation-items {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .variation-item {
+        background: transparent;
+        border: 0;
+        border-top: 1px solid transparent;
+        border-top-color: var(--shade3);
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        padding: 0.5rem 0 0;
+        text-align: left;
+        width: 100%;
+    }
+
+    .variation-item:first-child {
+        border-top: 0;
+        padding-top: 0;
+    }
+
+    .variation-name {
+        color: var(--fg);
+        font-weight: bold;
+    }
+
+    .variation-meta,
+    .variation-empty {
+        color: var(--text-color-faded);
+        font-size: 0.875rem;
+    }
+}
