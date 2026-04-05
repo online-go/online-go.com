@@ -2,32 +2,22 @@
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
     height: calc(100dvh - var(--below-navbar));
     overflow: hidden;
     padding: 0.5rem 0.75rem 0.75rem;
-
-    .Kibitz-header {
-        flex: 0 0 auto;
-        padding-bottom: 0.25rem;
-
-        h1 {
-            margin: 0;
-        }
-    }
 
     .Kibitz-layout {
         display: grid;
         flex: 1;
         gap: 0;
-        grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr);
+        grid-template-columns: minmax(13rem, 16rem) minmax(0, 1fr);
         align-items: stretch;
         min-height: 0;
     }
 
     .Kibitz-left-rail {
         display: grid;
-        grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr) auto;
         min-height: 0;
     }
 
@@ -44,13 +34,13 @@
         display: grid;
         flex: 1;
         gap: 0;
-        grid-template-columns: minmax(0, 1.7fr) minmax(18rem, 23rem);
+        grid-template-columns: minmax(0, 2.1fr) minmax(15.5rem, 18.5rem);
         min-height: 0;
     }
 
     .Kibitz-sidebar {
         display: grid;
-        grid-template-rows: minmax(0, 5fr) minmax(7rem, 1fr);
+        grid-template-rows: minmax(0, 6.5fr) minmax(5.5rem, 0.75fr);
         gap: 0;
         min-height: 0;
         background: var(--bg);

@@ -3,14 +3,15 @@
     display: flex;
     flex-direction: column;
     min-height: 0;
+    max-height: 13rem;
     border-top: 1px solid transparent;
     border-top-color: var(--shade3);
 
     .KibitzPresence-body {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
-        padding: 1rem;
+        gap: 0.35rem;
+        padding: 0.65rem 0.75rem;
     }
 
     .presence-stat {
@@ -20,8 +21,8 @@
     .presence-users {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
-        margin-top: 0.5rem;
+        gap: 0.35rem;
+        margin-top: 0.25rem;
         overflow-y: auto;
     }
 }

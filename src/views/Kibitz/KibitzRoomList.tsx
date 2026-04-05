@@ -34,7 +34,7 @@ export function KibitzRoomList({
     return (
         <div className="KibitzRoomList">
             <div className="KibitzRoomList-title">
-                {pgettext("Heading for a list of kibitz rooms", "Rooms")}
+                {pgettext("Title for the kibitz left rail", "Kibitz")}
             </div>
             <div className="KibitzRoomList-items">
                 {rooms.map((room) => (

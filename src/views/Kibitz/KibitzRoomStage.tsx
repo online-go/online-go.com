@@ -119,24 +119,53 @@ export function KibitzRoomStage({
     return (
         <div className="KibitzRoomStage">
             <div className="KibitzRoomStage-header">
-                <div className="room-title">{room.title}</div>
-                <div className="room-subtitle">
-                    {displayedTitle ??
-                        pgettext(
-                            "Placeholder when no main game is loaded in a kibitz room",
-                            "No main board selected yet",
-                        )}
+                <div className="stage-header-copy">
+                    <div className="room-title">{room.title}</div>
+                    <div className="room-subtitle">
+                        {displayedTitle ??
+                            pgettext(
+                                "Placeholder when no main game is loaded in a kibitz room",
+                                "No main board selected yet",
+                            )}
+                    </div>
                 </div>
+                {mainGame && (!mainGame.mock_game_data || previewCandidates.length > 0) ? (
+                    <div className="stage-header-actions">
+                        {!mainGame.mock_game_data ? (
+                            <Link to={`/game/${mainGame.game_id}`} className="view-game-link">
+                                {pgettext(
+                                    "Link text for opening the current game from the kibitz stage",
+                                    "Open game page",
+                                )}
+                            </Link>
+                        ) : null}
+                        {previewCandidates.map((candidate) => (
+                            <button
+                                key={candidate.id}
+                                type="button"
+                                className="preview-action-button compact"
+                                onClick={() =>
+                                    onPreviewGame(candidate.current_game?.game_id as number)
+                                }
+                            >
+                                {candidate.title}
+                            </button>
+                        ))}
+                    </div>
+                ) : null}
             </div>
             <div className="KibitzRoomStage-boards">
                 <div className="board-panel main-board">
-                    <div className="panel-title">
-                        {pgettext("Label for the shared board in kibitz", "Main board")}
-                    </div>
                     <div className="panel-body">
                         {mainGame ? (
                             <div className="board-content">
                                 <div className="board-meta">
+                                    <div className="board-label">
+                                        {pgettext(
+                                            "Label for the shared board in kibitz",
+                                            "Main board",
+                                        )}
+                                    </div>
                                     <div className="players">
                                         {interpolate(
                                             pgettext(
@@ -176,46 +205,6 @@ export function KibitzRoomStage({
                                     json={mainGame.mock_game_data}
                                     className="main-board-surface"
                                 />
-                                <div className="board-actions">
-                                    {!mainGame.mock_game_data ? (
-                                        <Link
-                                            to={`/game/${mainGame.game_id}`}
-                                            className="view-game-link"
-                                        >
-                                            {pgettext(
-                                                "Link text for opening the current game from the kibitz stage",
-                                                "Open game page",
-                                            )}
-                                        </Link>
-                                    ) : null}
-                                    {previewCandidates.length > 0 ? (
-                                        <div className="preview-actions">
-                                            <div className="preview-actions-title">
-                                                {pgettext(
-                                                    "Heading for a list of games that can be previewed in kibitz",
-                                                    "Preview another room",
-                                                )}
-                                            </div>
-                                            <div className="preview-actions-list">
-                                                {previewCandidates.map((candidate) => (
-                                                    <button
-                                                        key={candidate.id}
-                                                        type="button"
-                                                        className="preview-action-button"
-                                                        onClick={() =>
-                                                            onPreviewGame(
-                                                                candidate.current_game
-                                                                    ?.game_id as number,
-                                                            )
-                                                        }
-                                                    >
-                                                        {candidate.title}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ) : null}
-                                </div>
                             </div>
                         ) : (
                             pgettext(
@@ -231,12 +220,6 @@ export function KibitzRoomStage({
                         (secondaryPane.collapsed ? " collapsed" : "")
                     }
                 >
-                    <div className="panel-title">
-                        {pgettext(
-                            "Label for the personal secondary board in kibitz",
-                            "Secondary board",
-                        )}
-                    </div>
                     <div className="panel-body">
                         {secondaryPane.collapsed ? (
                             pgettext(
@@ -246,6 +229,12 @@ export function KibitzRoomStage({
                         ) : secondaryGameId ? (
                             <div className="board-content">
                                 <div className="board-meta">
+                                    <div className="board-label">
+                                        {pgettext(
+                                            "Label for the personal secondary board in kibitz",
+                                            "Secondary board",
+                                        )}
+                                    </div>
                                     <div className="players">
                                         {interpolate(
                                             pgettext(
@@ -321,6 +310,12 @@ export function KibitzRoomStage({
                         ) : selectedVariation ? (
                             <div className="board-content">
                                 <div className="board-meta">
+                                    <div className="board-label">
+                                        {pgettext(
+                                            "Label for the personal secondary board in kibitz",
+                                            "Secondary board",
+                                        )}
+                                    </div>
                                     <div className="players">
                                         {selectedVariation.creator.username}
                                     </div>

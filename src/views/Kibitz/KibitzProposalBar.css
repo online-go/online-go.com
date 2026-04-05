@@ -7,8 +7,8 @@
     flex-wrap: nowrap;
     gap: 0.5rem;
     justify-content: space-between;
-    min-height: 3.5rem;
-    padding: 0.5rem 0.75rem;
+    min-height: 3rem;
+    padding: 0.35rem 0.625rem;
 
     .proposal-copy {
         display: flex;
@@ -21,11 +21,13 @@
 
     .proposal-summary {
         font-weight: bold;
+        line-height: 1.15;
     }
 
     .proposal-game-meta {
         color: rgba(255, 255, 255, 0.88);
-        font-size: 0.875rem;
+        font-size: 0.8rem;
+        line-height: 1.15;
     }
 
     .proposal-controls {

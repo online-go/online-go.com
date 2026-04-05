@@ -17,7 +17,6 @@
 
 import * as React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { pgettext } from "@/lib/translate";
 import { KibitzController } from "@/lib/KibitzController";
 import type {
     KibitzDebugState,
@@ -152,20 +151,11 @@ export function Kibitz(): React.ReactElement {
     );
 
     if (!resolvedRoom) {
-        return (
-            <div className="Kibitz">
-                <div className="Kibitz-header">
-                    <h1>{pgettext("Title for the kibitz page", "Kibitz")}</h1>
-                </div>
-            </div>
-        );
+        return <div className="Kibitz" />;
     }
 
     return (
         <div className="Kibitz">
-            <div className="Kibitz-header">
-                <h1>{pgettext("Title for the kibitz page", "Kibitz")}</h1>
-            </div>
             {showDebug ? <KibitzDebugPanel debug={debug} /> : null}
             <div className="Kibitz-layout">
                 <div className="Kibitz-left-rail">
