@@ -1,0 +1,22 @@
+.KibitzBoard {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+
+    .goban-container {
+        align-items: center;
+        display: flex;
+        flex: 1;
+        justify-content: center;
+        min-height: 0;
+        min-width: 0;
+        position: relative;
+
+        .Goban {
+            left: 0;
+            position: absolute;
+            top: 0;
+        }
+    }
+}

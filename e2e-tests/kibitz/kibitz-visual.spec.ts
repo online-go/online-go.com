@@ -28,6 +28,10 @@ function describeMeasurements(measurements: Record<string, KibitzMeasurement | n
     return JSON.stringify(measurements, null, 2);
 }
 
+function describeDebugData(debugData: unknown) {
+    return JSON.stringify(debugData, null, 2);
+}
+
 async function captureKibitzLayout(
     page: Page,
     route: string,
@@ -64,7 +68,85 @@ async function captureKibitzLayout(
         };
     });
 
+    const boardDebug = await page.evaluate(() => {
+        function rectOf(element: Element | null) {
+            if (!element) {
+                return null;
+            }
+            const bounds = element.getBoundingClientRect();
+            return {
+                top: Math.round(bounds.top),
+                left: Math.round(bounds.left),
+                width: Math.round(bounds.width),
+                height: Math.round(bounds.height),
+            };
+        }
+
+        function styleOf(element: Element | null) {
+            if (!element) {
+                return null;
+            }
+            const style = window.getComputedStyle(element);
+            return {
+                backgroundColor: style.backgroundColor,
+                backgroundImage: style.backgroundImage,
+                boxShadow: style.boxShadow,
+                position: style.position,
+                display: style.display,
+                width: style.width,
+                height: style.height,
+            };
+        }
+
+        function describeElement(element: Element | null) {
+            if (!element) {
+                return null;
+            }
+
+            const htmlElement = element as HTMLElement;
+
+            return {
+                tag: element.tagName.toLowerCase(),
+                className: htmlElement.className,
+                rect: rectOf(element),
+                style: styleOf(element),
+                childCount: element.children.length,
+            };
+        }
+
+        function describeChildren(element: Element | null) {
+            if (!element) {
+                return [];
+            }
+
+            return Array.from(element.children).map((child) => ({
+                tag: child.tagName.toLowerCase(),
+                className: (child as HTMLElement).className,
+                rect: rectOf(child),
+                style: styleOf(child),
+                children: Array.from(child.children).map((grandchild) => ({
+                    tag: grandchild.tagName.toLowerCase(),
+                    className: (grandchild as HTMLElement).className,
+                    rect: rectOf(grandchild),
+                    style: styleOf(grandchild),
+                })),
+            }));
+        }
+
+        const kibitzBoard = document.querySelector(".KibitzBoard.primary");
+        const gobanContainer = document.querySelector(".KibitzBoard.primary .goban-container");
+        const goban = document.querySelector(".KibitzBoard.primary .Goban");
+
+        return {
+            kibitzBoard: describeElement(kibitzBoard),
+            gobanContainer: describeElement(gobanContainer),
+            goban: describeElement(goban),
+            gobanChildren: describeChildren(goban),
+        };
+    });
+
     console.log(`Kibitz measurements for ${route}:`, describeMeasurements(measurements));
+    console.log(`Kibitz board debug for ${route}:`, describeDebugData(boardDebug));
 
     await expect(page).toHaveScreenshot(screenshotName, {
         fullPage: true,
@@ -72,6 +154,10 @@ async function captureKibitzLayout(
 
     await testInfo.attach(`${screenshotName}-measurements`, {
         body: describeMeasurements(measurements),
+        contentType: "application/json",
+    });
+    await testInfo.attach(`${screenshotName}-board-debug`, {
+        body: describeDebugData(boardDebug),
         contentType: "application/json",
     });
 }

@@ -27,6 +27,7 @@ import type {
     KibitzSecondaryPaneState,
     KibitzVariationSummary,
 } from "@/models/kibitz";
+import { KibitzBoard } from "./KibitzBoard";
 import "./KibitzRoomStage.css";
 
 interface KibitzRoomStageProps {
@@ -170,18 +171,10 @@ export function KibitzRoomStage({
                                         {displayedTournament ? ` - ${displayedTournament}` : ""}
                                     </div>
                                 </div>
-                                <MiniGoban
-                                    game_id={mainGame.mock_game_data ? undefined : mainGame.game_id}
+                                <KibitzBoard
+                                    gameId={mainGame.mock_game_data ? undefined : mainGame.game_id}
                                     json={mainGame.mock_game_data}
-                                    width={mainGame.mock_game_data?.width}
-                                    height={mainGame.mock_game_data?.height}
-                                    black={mainGame.black}
-                                    white={mainGame.white}
-                                    noLink={true}
-                                    noText={true}
-                                    title={false}
-                                    displayWidth={300}
-                                    className="KibitzMiniGoban"
+                                    className="main-board-surface"
                                 />
                                 <div className="board-actions">
                                     {!mainGame.mock_game_data ? (
@@ -299,7 +292,7 @@ export function KibitzRoomStage({
                                     noLink={true}
                                     noText={true}
                                     title={false}
-                                    displayWidth={180}
+                                    displayWidth={220}
                                     className="KibitzMiniGoban secondary"
                                 />
                                 <div className="board-actions">
@@ -348,7 +341,7 @@ export function KibitzRoomStage({
                                     noLink={true}
                                     noText={true}
                                     title={false}
-                                    displayWidth={180}
+                                    displayWidth={220}
                                     className="KibitzMiniGoban secondary"
                                 />
                                 <div className="board-actions">
