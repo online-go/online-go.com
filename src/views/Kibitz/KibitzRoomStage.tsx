@@ -42,7 +42,8 @@ interface KibitzRoomStageProps {
     onPreviewGame: (gameId: number) => void;
     onClearPreview: () => void;
     onProposePreview: () => void;
-    onCycleSecondaryPaneSize: () => void;
+    onIncreaseSecondaryPaneSize: () => void;
+    onDecreaseSecondaryPaneSize: () => void;
 }
 
 export function KibitzRoomStage({
@@ -55,7 +56,8 @@ export function KibitzRoomStage({
     onPreviewGame,
     onClearPreview,
     onProposePreview,
-    onCycleSecondaryPaneSize,
+    onIncreaseSecondaryPaneSize,
+    onDecreaseSecondaryPaneSize,
 }: KibitzRoomStageProps): React.ReactElement {
     const mainGame = room.current_game;
     const secondaryGameId = secondaryPane.preview_game_id;
@@ -232,7 +234,8 @@ export function KibitzRoomStage({
                 </div>
                 <KibitzDividerHandle
                     secondaryPane={secondaryPane}
-                    onCycle={onCycleSecondaryPaneSize}
+                    onIncrease={onIncreaseSecondaryPaneSize}
+                    onDecrease={onDecreaseSecondaryPaneSize}
                 />
                 <div
                     className={

@@ -61,6 +61,14 @@
 
         &.secondary-pane-equal {
             grid-template-columns: minmax(0, 1fr) 1.3rem minmax(0, 1fr);
+
+            .board-panel {
+                min-width: 0;
+            }
+
+            .secondary-board .KibitzBoard {
+                max-width: min(100%, 39rem, 78vh);
+            }
         }
     }
 

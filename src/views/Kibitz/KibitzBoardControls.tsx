@@ -70,7 +70,7 @@ export function KibitzBoardControls({
 
     if (variant === "minimal") {
         return (
-            <div className="KibitzBoardControls minimal">
+            <div className="KibitzBoardControls minimal-row">
                 <button
                     type="button"
                     className="kibitz-move-control"

@@ -16,49 +16,61 @@
  */
 
 import * as React from "react";
-import { interpolate, pgettext } from "@/lib/translate";
+import { pgettext } from "@/lib/translate";
 import type { KibitzSecondaryPaneState } from "@/models/kibitz";
 import "./KibitzDividerHandle.css";
 
 interface KibitzDividerHandleProps {
     secondaryPane: KibitzSecondaryPaneState;
-    onCycle: () => void;
+    onIncrease: () => void;
+    onDecrease: () => void;
 }
 
 export function KibitzDividerHandle({
     secondaryPane,
-    onCycle,
+    onIncrease,
+    onDecrease,
 }: KibitzDividerHandleProps): React.ReactElement {
     const mode = secondaryPane.collapsed ? "hidden" : (secondaryPane.size ?? "small");
-    const nextMode =
-        mode === "hidden"
-            ? pgettext("Next kibitz divider mode label", "small")
-            : mode === "small"
-              ? pgettext("Next kibitz divider mode label", "equal")
-              : pgettext("Next kibitz divider mode label", "hidden");
+    const canIncrease = mode !== "equal";
+    const canDecrease = mode !== "hidden";
 
     return (
-        <button
-            type="button"
-            className={`KibitzDividerHandle mode-${mode}`}
-            onClick={onCycle}
-            aria-label={pgettext(
-                "Aria label for the kibitz divider handle that cycles secondary pane sizes",
-                "Resize secondary board",
-            )}
-            title={interpolate(
-                pgettext(
-                    "Tooltip for the kibitz divider handle that cycles secondary pane sizes",
-                    "Switch secondary board size (next: {{mode}})",
-                ),
-                { mode: nextMode },
-            )}
-        >
-            <span className="handle-bars" aria-hidden="true">
-                <span />
-                <span />
-                <span />
-            </span>
-        </button>
+        <div className={`KibitzDividerHandle mode-${mode}`}>
+            {canIncrease ? (
+                <button
+                    type="button"
+                    className="divider-arrow increase"
+                    onClick={onIncrease}
+                    aria-label={pgettext(
+                        "Aria label for making the kibitz secondary board larger",
+                        "Increase secondary board size",
+                    )}
+                    title={pgettext(
+                        "Tooltip for making the kibitz secondary board larger",
+                        "Increase secondary board size",
+                    )}
+                >
+                    <i className="fa fa-caret-left" />
+                </button>
+            ) : null}
+            {canDecrease ? (
+                <button
+                    type="button"
+                    className="divider-arrow decrease"
+                    onClick={onDecrease}
+                    aria-label={pgettext(
+                        "Aria label for making the kibitz secondary board smaller",
+                        "Decrease secondary board size",
+                    )}
+                    title={pgettext(
+                        "Tooltip for making the kibitz secondary board smaller",
+                        "Decrease secondary board size",
+                    )}
+                >
+                    <i className="fa fa-caret-right" />
+                </button>
+            ) : null}
+        </div>
     );
 }

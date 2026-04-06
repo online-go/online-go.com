@@ -56,3 +56,14 @@
         cursor: pointer;
     }
 }
+
+.KibitzBoardControls.minimal-row {
+    align-items: center;
+    display: inline-flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 0.25rem;
+    justify-content: flex-start;
+    padding: 0 0.125rem;
+    width: auto;
+}
