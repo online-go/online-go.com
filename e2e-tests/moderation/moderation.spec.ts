@@ -36,6 +36,7 @@ import { aiDetectorVoteWarnAndAnnulTest } from "./ai-detector-vote-warn-annul";
 import { aiDetectorVoteFirstWarnAndAnnulTest } from "./ai-detector-vote-first-warn-annul";
 import { aiDetectorVoteCancelTicketTest } from "./ai-detector-vote-cancel-ticket";
 import { aiDetectorSeesSuspensionModlogTest } from "./ai-detector-sees-suspension-modlog";
+import { appealTemplateSelectorTest } from "./appeal-template-selector";
 
 ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest("@Slow Auto-warn first turn disconnectors", modWarnFirstTurnDisconnectorTest);
@@ -66,5 +67,9 @@ ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest(
         "@Slow AI Detector can see SUSPENSION ModLog entries in ViewReport",
         aiDetectorSeesSuspensionModlogTest,
+    );
+    ogsTest(
+        "Appeal template selector shows AI-use templates for AI suspension",
+        appealTemplateSelectorTest,
     );
 });
