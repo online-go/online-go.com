@@ -168,6 +168,12 @@ export function KibitzRoomStream({
                                   const variation = variations.find(
                                       (entry) => entry.id === item.variation_id,
                                   );
+                                  const label =
+                                      variation?.title ??
+                                      pgettext(
+                                          "Fallback title for a variation link in the kibitz stream",
+                                          "Open variation",
+                                      );
                                   return (
                                       <button
                                           key={item.id}
@@ -178,14 +184,7 @@ export function KibitzRoomStream({
                                               onOpenVariation(item.variation_id)
                                           }
                                       >
-                                          <span className="variation-post-title">
-                                              {variation?.title ??
-                                                  pgettext(
-                                                      "Fallback title for a variation link in the kibitz stream",
-                                                      "Open variation",
-                                                  )}
-                                          </span>
-                                          <span className="variation-post-meta">{item.text}</span>
+                                          {label}
                                       </button>
                                   );
                               })

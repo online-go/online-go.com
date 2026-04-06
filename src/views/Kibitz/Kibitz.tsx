@@ -125,6 +125,10 @@ export function Kibitz(): React.ReactElement {
         [controller],
     );
 
+    const onCycleSecondaryPaneSize = React.useCallback(() => {
+        controller.cycleSecondaryPaneSize();
+    }, [controller]);
+
     const onVoteProposal = React.useCallback(
         (proposalId: string, choice: "change" | "keep") => {
             controller.voteOnProposal(proposalId, choice);
@@ -184,6 +188,7 @@ export function Kibitz(): React.ReactElement {
                             onPreviewGame={onPreviewGame}
                             onClearPreview={onClearPreview}
                             onProposePreview={onProposePreview}
+                            onCycleSecondaryPaneSize={onCycleSecondaryPaneSize}
                         />
                         <div className="Kibitz-sidebar">
                             <KibitzRoomStream

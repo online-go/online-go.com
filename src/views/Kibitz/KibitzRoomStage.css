@@ -52,15 +52,15 @@
         min-height: 0;
 
         &.secondary-pane-hidden {
-            grid-template-columns: minmax(0, 1fr);
+            grid-template-columns: minmax(0, 1fr) 1.3rem 0;
         }
 
         &.secondary-pane-small {
-            grid-template-columns: minmax(0, 1fr) minmax(14.75rem, 16.5rem);
+            grid-template-columns: minmax(0, 1fr) 1.3rem minmax(15.25rem, 17rem);
         }
 
         &.secondary-pane-equal {
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            grid-template-columns: minmax(0, 1fr) 1.3rem minmax(0, 1fr);
         }
     }
 
@@ -120,6 +120,13 @@
             text-align: left;
             padding: 0 0.125rem;
 
+            .board-meta-top {
+                align-items: flex-start;
+                display: flex;
+                gap: 0.35rem;
+                justify-content: space-between;
+            }
+
             .board-label {
                 color: var(--text-color-faded);
                 font-size: 0.72rem;
@@ -148,50 +155,29 @@
             padding-inline: 0.125rem;
         }
 
-        .MiniGoban.KibitzMiniGoban {
-            align-self: center;
-            display: flex;
-            height: auto;
-            justify-content: center;
-            justify-self: center;
-            max-width: min(100%, 39rem, 78vh);
+        .KibitzBoard.secondary-board-surface {
             min-height: 0;
-            width: 100%;
-
-            .inner-container {
-                max-width: 100%;
-                overflow: hidden;
-            }
-
-            .board {
-                padding: 0;
-            }
+            padding-inline: 0.125rem;
         }
 
-        .MiniGoban.KibitzMiniGoban.secondary {
+        .KibitzBoard {
+            align-self: stretch;
+            justify-self: center;
+            max-width: min(100%, 39rem, 78vh);
+            width: 100%;
+        }
+
+        .secondary-board .KibitzBoard {
             max-width: min(100%, 14rem, 34vh);
         }
 
         .board-actions {
-            text-align: left;
             display: flex;
             flex-wrap: wrap;
             gap: 0.35rem;
-
-            .preview-actions {
-                margin-top: 0;
-            }
-
-            .preview-actions-title {
-                color: var(--text-color-faded);
-                display: none;
-            }
-
-            .preview-actions-list {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 0.35rem;
-            }
+            justify-content: flex-end;
+            margin-left: auto;
+            text-align: left;
         }
 
         .preview-action-button {
@@ -221,6 +207,8 @@
         }
 
         &.collapsed {
+            display: none;
+
             .panel-body {
                 min-height: 6rem;
                 justify-content: center;

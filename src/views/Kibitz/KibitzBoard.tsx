@@ -27,12 +27,18 @@ interface KibitzBoardProps {
     gameId?: number;
     json?: KibitzWatchedGame["mock_game_data"];
     className?: string;
+    onReady?: (controller: GobanController | null) => void;
 }
 
 type KibitzBoardConfig = Partial<GobanRendererConfig> &
     NonNullable<KibitzWatchedGame["mock_game_data"]>;
 
-export function KibitzBoard({ gameId, json, className }: KibitzBoardProps): React.ReactElement {
+export function KibitzBoard({
+    gameId,
+    json,
+    className,
+    onReady,
+}: KibitzBoardProps): React.ReactElement {
     const gobanDiv = React.useRef<HTMLDivElement>(
         (() => {
             const element = document.createElement("div");
@@ -77,13 +83,15 @@ export function KibitzBoard({ gameId, json, className }: KibitzBoardProps): Reac
         gobanDiv.current.style.setProperty("background-image", "none", "important");
         gobanDiv.current.style.setProperty("box-shadow", "none", "important");
         setGoban(controllerRef.current.goban);
+        onReady?.(controllerRef.current);
 
         return () => {
+            onReady?.(null);
             controllerRef.current?.destroy();
             controllerRef.current = null;
             setGoban(null);
         };
-    }, [gameId, json]);
+    }, [gameId, json, onReady]);
 
     return (
         <div className={"KibitzBoard" + (className ? ` ${className}` : "")}>

@@ -1,0 +1,30 @@
+.KibitzDividerHandle {
+    align-items: center;
+    background: var(--shade1);
+    border: 0;
+    border-left: 1px solid transparent;
+    border-left-color: var(--shade3);
+    border-right: 1px solid transparent;
+    border-right-color: var(--shade3);
+    color: var(--text-color-faded);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 0;
+    padding: 0.25rem 0;
+    width: 1.3rem;
+
+    .handle-bars {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+
+        span {
+            background: currentColor;
+            display: block;
+            height: 0.12rem;
+            width: 0.4rem;
+        }
+    }
+}

@@ -625,6 +625,44 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         });
     }
 
+    public increaseSecondaryPaneSize(): void {
+        if (this._secondary_pane.collapsed) {
+            this.setSecondaryPane({
+                ...this._secondary_pane,
+                collapsed: false,
+                size: "small",
+            });
+            return;
+        }
+
+        if ((this._secondary_pane.size ?? "small") === "small") {
+            this.setSecondaryPane({
+                ...this._secondary_pane,
+                collapsed: false,
+                size: "equal",
+            });
+        }
+    }
+
+    public decreaseSecondaryPaneSize(): void {
+        if ((this._secondary_pane.size ?? "small") === "equal") {
+            this.setSecondaryPane({
+                ...this._secondary_pane,
+                collapsed: false,
+                size: "small",
+            });
+            return;
+        }
+
+        if (!this._secondary_pane.collapsed) {
+            this.setSecondaryPane({
+                ...this._secondary_pane,
+                collapsed: true,
+                size: "small",
+            });
+        }
+    }
+
     public proposePreviewedGame(roomId: string): void {
         const previewGameId = this._secondary_pane.preview_game_id;
         if (!previewGameId) {
