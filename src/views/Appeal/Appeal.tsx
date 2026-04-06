@@ -28,6 +28,7 @@ import { AutoTranslate } from "@/components/AutoTranslate";
 import { UIPush } from "@/components/UIPush";
 import { getPrivateChat } from "@/components/PrivateChat";
 import * as player_cache from "@/lib/player_cache";
+import { TemplateSelector } from "./TemplateSelector";
 import "./Appeal.css";
 
 // These are strings used to identify the reason for suspension.
@@ -170,6 +171,13 @@ export function Appeal(props: { player_id?: number }): React.ReactElement | null
                 </>
             )}
             <Card className="input-card">
+                {(mod || null) && (
+                    <TemplateSelector
+                        banReason={ban_reason}
+                        currentText={messageText}
+                        onSelectTemplate={setMessageText}
+                    />
+                )}
                 <textarea
                     value={messageText}
                     onChange={(ev) => setMessageText(ev.target.value)}
