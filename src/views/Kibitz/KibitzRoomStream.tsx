@@ -168,12 +168,16 @@ export function KibitzRoomStream({
                                   const variation = variations.find(
                                       (entry) => entry.id === item.variation_id,
                                   );
-                                  const label =
+                                  const label = `${item.author?.username ?? ""} ${pgettext(
+                                      "Lead-in for a variation post line in the kibitz stream",
+                                      "posted variation",
+                                  )}: ${
                                       variation?.title ??
                                       pgettext(
                                           "Fallback title for a variation link in the kibitz stream",
                                           "Open variation",
-                                      );
+                                      )
+                                  }`;
                                   return (
                                       <button
                                           key={item.id}

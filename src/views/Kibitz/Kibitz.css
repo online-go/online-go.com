@@ -47,6 +47,9 @@
     }
 
     .Kibitz-footer-panels {
+        background: var(--card-background-color);
+        border-top: 1px solid transparent;
+        border-top-color: var(--shade3);
         display: grid;
         grid-template-columns: minmax(0, 1fr);
         grid-auto-rows: auto;
@@ -56,7 +59,6 @@
     }
 
     .Kibitz-footer-empty {
-        background: var(--card-background-color);
         color: var(--text-color-faded);
         font-size: 0.8rem;
         line-height: 1.2;

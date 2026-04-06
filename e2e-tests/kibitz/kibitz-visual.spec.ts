@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { expect, Page, TestInfo } from "@playwright/test";
+import { Page, TestInfo } from "@playwright/test";
 import { ogsTest, load } from "@helpers";
 
 interface KibitzMeasurement {
@@ -37,10 +37,23 @@ async function captureKibitzLayout(
     route: string,
     screenshotName: string,
     testInfo: TestInfo,
+    options?: {
+        equalMode?: boolean;
+    },
 ) {
     await page.setViewportSize({ width: 1920, height: 1080 });
     await load(page, route);
     await page.waitForTimeout(1000);
+
+    if (options?.equalMode) {
+        const increaseButton = page.locator(".KibitzDividerHandle .divider-arrow.increase");
+        for (let i = 0; i < 2; i++) {
+            if (await increaseButton.count()) {
+                await increaseButton.first().click();
+                await page.waitForTimeout(150);
+            }
+        }
+    }
 
     const measurements = await page.evaluate(() => {
         function rect(selector: string) {
@@ -133,9 +146,11 @@ async function captureKibitzLayout(
             }));
         }
 
-        const kibitzBoard = document.querySelector(".KibitzBoard.primary");
-        const gobanContainer = document.querySelector(".KibitzBoard.primary .goban-container");
-        const goban = document.querySelector(".KibitzBoard.primary .Goban");
+        const kibitzBoard = document.querySelector(".KibitzBoard.main-board-surface");
+        const gobanContainer = document.querySelector(
+            ".KibitzBoard.main-board-surface .goban-container",
+        );
+        const goban = document.querySelector(".KibitzBoard.main-board-surface .Goban");
 
         return {
             kibitzBoard: describeElement(kibitzBoard),
@@ -148,10 +163,13 @@ async function captureKibitzLayout(
     console.log(`Kibitz measurements for ${route}:`, describeMeasurements(measurements));
     console.log(`Kibitz board debug for ${route}:`, describeDebugData(boardDebug));
 
-    await expect(page).toHaveScreenshot(screenshotName, {
-        fullPage: true,
-    });
+    const screenshotPath = testInfo.outputPath(screenshotName);
+    await page.screenshot({ path: screenshotPath, fullPage: true });
 
+    await testInfo.attach(screenshotName, {
+        path: screenshotPath,
+        contentType: "image/png",
+    });
     await testInfo.attach(`${screenshotName}-measurements`, {
         body: describeMeasurements(measurements),
         contentType: "application/json",
@@ -174,8 +192,9 @@ ogsTest.describe("@Manual Kibitz visual inspection harness", () => {
             await captureKibitzLayout(
                 page,
                 "/kibitz/tournament-pick?demo-kibitz=1",
-                "kibitz-tournament-demo-1080p.png",
+                "kibitz-tournament-demo-1080p-equal.png",
                 testInfo,
+                { equalMode: true },
             );
         },
     );
@@ -186,8 +205,9 @@ ogsTest.describe("@Manual Kibitz visual inspection harness", () => {
             await captureKibitzLayout(
                 page,
                 "/kibitz/top-19x19?demo-kibitz=1",
-                "kibitz-top-19x19-demo-1080p.png",
+                "kibitz-top-19x19-demo-1080p-equal.png",
                 testInfo,
+                { equalMode: true },
             );
         },
     );
@@ -196,8 +216,9 @@ ogsTest.describe("@Manual Kibitz visual inspection harness", () => {
         await captureKibitzLayout(
             page,
             "/kibitz/top-9x9?demo-kibitz=1",
-            "kibitz-top-9x9-demo-1080p.png",
+            "kibitz-top-9x9-demo-1080p-equal.png",
             testInfo,
+            { equalMode: true },
         );
     });
 });

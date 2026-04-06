@@ -68,7 +68,6 @@ export function KibitzPresence({ mode, room, users }: KibitzPresenceProps): Reac
                         { count: room.viewer_count },
                     )}
                 </div>
-                <div className="presence-stat">{room.kind}</div>
                 {visibleUsers.length > 0 ? (
                     <div className="presence-users">
                         {visibleUsers.map((user) => (

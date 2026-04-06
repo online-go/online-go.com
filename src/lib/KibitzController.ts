@@ -92,6 +92,15 @@ function createCurrentUser(): KibitzRoom["users"][number] {
     return createUser(-1, "You", 0);
 }
 
+function getCurrentUserId(): number | null {
+    const user = data.get("config.user");
+    if (user && !user.anonymous) {
+        return user.id;
+    }
+
+    return null;
+}
+
 function createSeededRooms(): KibitzRoomSummary[] {
     return [
         {
@@ -140,6 +149,23 @@ function findObservedGame(
     return games.find(predicate) ?? null;
 }
 
+function findObservedGameForUser(
+    games: ObservedGameResult[],
+    userId: number | null,
+    predicate?: (game: ObservedGameResult) => boolean,
+): ObservedGameResult | null {
+    if (userId == null) {
+        return null;
+    }
+
+    return (
+        games.find((game) => {
+            const isParticipant = game.black.id === userId || game.white.id === userId;
+            return isParticipant && (predicate ? predicate(game) : true);
+        }) ?? null
+    );
+}
+
 function matchesBoardSize(game: ObservedGameResult, width: number, height: number): boolean {
     return Number(game.width) === width && Number(game.height) === height;
 }
@@ -148,11 +174,22 @@ async function resolveObservedGameByBoardSize(
     games: ObservedGameResult[],
     width: number,
     height: number,
+    preferredUserId?: number | null,
 ): Promise<{
     game: ObservedGameResult | null;
     picked_via?: "query" | "details";
     error?: string;
 }> {
+    const userMatch = findObservedGameForUser(games, preferredUserId ?? null, (game) =>
+        matchesBoardSize(game, width, height),
+    );
+    if (userMatch) {
+        return {
+            game: userMatch,
+            picked_via: "query",
+        };
+    }
+
     const directMatch = findObservedGame(games, (game) => matchesBoardSize(game, width, height));
     if (directMatch) {
         return {
@@ -191,10 +228,23 @@ function pickBroadFallbackGame(
     games: ObservedGameResult[],
     width: number,
     height: number,
+    preferredUserId?: number | null,
 ): ObservedGameResult | null {
+    const userSizedGame = findObservedGameForUser(games, preferredUserId ?? null, (game) =>
+        matchesBoardSize(game, width, height),
+    );
+    if (userSizedGame) {
+        return userSizedGame;
+    }
+
     const sizedGame = findObservedGame(games, (game) => matchesBoardSize(game, width, height));
     if (sizedGame) {
         return sizedGame;
+    }
+
+    const userGame = findObservedGameForUser(games, preferredUserId ?? null);
+    if (userGame) {
+        return userGame;
     }
 
     return games[0] ?? null;
@@ -457,6 +507,8 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     }
 
     private async hydrateSeededRoomsFromLiveGames(): Promise<void> {
+        const currentUserId = getCurrentUserId();
+
         this.setDebug({
             ...this._debug,
             mode: this._mode,
@@ -489,18 +541,23 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             ]);
 
             const [top19Resolution, top9Resolution] = await Promise.all([
-                resolveObservedGameByBoardSize(top19Games, 19, 19),
-                resolveObservedGameByBoardSize(top9Games, 9, 9),
+                resolveObservedGameByBoardSize(top19Games, 19, 19, currentUserId),
+                resolveObservedGameByBoardSize(top9Games, 9, 9, currentUserId),
             ]);
             const tournamentCandidates = tournamentGames.filter(
                 (game) => game.width > 0 && game.height > 0,
             );
+            const tournamentUserGame = findObservedGameForUser(tournamentCandidates, currentUserId);
             const tournamentPick =
-                tournamentCandidates.length > 0
+                tournamentUserGame ??
+                (tournamentCandidates.length > 0
                     ? tournamentCandidates[Math.floor(Math.random() * tournamentCandidates.length)]
-                    : (broadGames[0] ?? null);
-            const top19Final = top19Resolution.game ?? pickBroadFallbackGame(broadGames, 19, 19);
-            const top9Final = top9Resolution.game ?? pickBroadFallbackGame(broadGames, 9, 9);
+                    : null) ??
+                pickBroadFallbackGame(broadGames, 19, 19, currentUserId);
+            const top19Final =
+                top19Resolution.game ?? pickBroadFallbackGame(broadGames, 19, 19, currentUserId);
+            const top9Final =
+                top9Resolution.game ?? pickBroadFallbackGame(broadGames, 9, 9, currentUserId);
 
             const roomUpdates: Record<string, ObservedGameResult | null> = {
                 "top-19x19": top19Final,

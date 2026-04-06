@@ -15,8 +15,13 @@
 
         .Goban {
             left: 0;
+            box-shadow: none !important;
             position: absolute;
             top: 0;
+        }
+
+        .Goban .Goban {
+            box-shadow: none !important;
         }
     }
 }

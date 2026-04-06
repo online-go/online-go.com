@@ -66,8 +66,48 @@
                 min-width: 0;
             }
 
+            .board-content {
+                grid-template-rows: 4.25rem minmax(0, 1fr) 8.85rem;
+            }
+
+            .board-meta {
+                height: 4.25rem;
+                justify-content: flex-start;
+                overflow: hidden;
+            }
+
+            .board-meta-top {
+                min-height: 1.2rem;
+            }
+
+            .players {
+                min-height: 1.1rem;
+                white-space: nowrap;
+            }
+
+            .game-details {
+                min-height: 2rem;
+            }
+
             .secondary-board .KibitzBoard {
                 max-width: min(100%, 39rem, 78vh);
+            }
+
+            .secondary-board .KibitzBoardControls {
+                width: auto;
+            }
+
+            .secondary-board .kibitz-move-tree-container {
+                align-self: center;
+                width: min(100%, 39rem, 78vh);
+            }
+
+            .secondary-board .board-actions {
+                flex-wrap: nowrap;
+            }
+
+            .KibitzBoardControls {
+                justify-content: flex-start;
             }
         }
     }
@@ -179,6 +219,16 @@
             max-width: min(100%, 14rem, 34vh);
         }
 
+        .secondary-board .KibitzBoardControls {
+            align-self: center;
+            width: auto;
+        }
+
+        .secondary-board .kibitz-move-tree-container {
+            align-self: center;
+            width: min(100%, 14rem, 34vh);
+        }
+
         .board-actions {
             display: flex;
             flex-wrap: wrap;
@@ -189,6 +239,7 @@
         }
 
         .preview-action-button {
+            box-shadow: none;
             background: var(--shade2);
             border: 0;
             color: var(--fg);

@@ -12,7 +12,7 @@
         border-bottom-color: var(--shade3);
         font-size: 0.95rem;
         font-weight: bold;
-        padding: 0.5rem 0.75rem;
+        padding: 0.45rem 0.75rem;
     }
 
     .KibitzRoomList-items {
@@ -30,10 +30,10 @@
         cursor: pointer;
         display: flex;
         flex-direction: column;
-        gap: 0.25rem;
-        min-height: 3.4rem;
+        gap: 0.15rem;
+        min-height: 3rem;
         justify-content: center;
-        padding: 0.45rem 0.75rem;
+        padding: 0.35rem 0.75rem;
         text-align: left;
 
         &.active {
@@ -43,14 +43,14 @@
         .room-title {
             display: block;
             font-weight: bold;
-            line-height: 1.15;
+            line-height: 1.1;
         }
 
         .room-meta {
             color: var(--text-color-faded);
             display: block;
             font-size: 0.8rem;
-            line-height: 1.1;
+            line-height: 1.05;
         }
     }
 }

@@ -1,6 +1,6 @@
 .KibitzDividerHandle {
     align-items: center;
-    background: var(--shade1);
+    background: var(--bg);
     border-left: 1px solid transparent;
     border-left-color: var(--shade3);
     border-right: 1px solid transparent;
