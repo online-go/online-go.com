@@ -55,6 +55,7 @@ export function KibitzRoomStage({
 }: KibitzRoomStageProps): React.ReactElement {
     const mainGame = room.current_game;
     const secondaryGameId = secondaryPane.preview_game_id;
+    const secondaryPaneSize = secondaryPane.collapsed ? "hidden" : (secondaryPane.size ?? "small");
     const selectedVariation = variations.find(
         (variation) => variation.id === secondaryPane.variation_id,
     );
@@ -154,7 +155,7 @@ export function KibitzRoomStage({
                     </div>
                 ) : null}
             </div>
-            <div className="KibitzRoomStage-boards">
+            <div className={`KibitzRoomStage-boards secondary-pane-${secondaryPaneSize}`}>
                 <div className="board-panel main-board">
                     <div className="panel-body">
                         {mainGame ? (

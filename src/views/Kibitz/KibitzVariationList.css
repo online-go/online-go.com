@@ -2,12 +2,12 @@
     background: var(--card-background-color);
     min-height: 0;
     overflow-y: auto;
-    padding: 0.45rem 0.75rem;
+    padding: 0.4rem 0.75rem;
 
     .variation-title {
         font-weight: bold;
         font-size: 0.85rem;
-        margin-bottom: 0.35rem;
+        margin-bottom: 0.25rem;
     }
 
     .variation-items {

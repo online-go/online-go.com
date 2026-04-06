@@ -281,7 +281,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     private _stream: KibitzStreamItem[] = [];
     private _proposals: KibitzProposal[] = [];
     private _variations: KibitzVariationSummary[] = [];
-    private _secondary_pane: KibitzSecondaryPaneState = { collapsed: false };
+    private _secondary_pane: KibitzSecondaryPaneState = { collapsed: false, size: "small" };
     private _mock_service: KibitzMockService | null = null;
     private _debug: KibitzDebugState = {
         mode: "live",
@@ -600,6 +600,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.setSecondaryPane({
             ...this._secondary_pane,
             collapsed: false,
+            size: this._secondary_pane.size ?? "small",
             preview_game_id: gameId,
             variation_id: undefined,
         });
@@ -608,6 +609,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     public clearPreviewGame(): void {
         this.setSecondaryPane({
             ...this._secondary_pane,
+            size: this._secondary_pane.size ?? "small",
             preview_game_id: undefined,
             variation_id: undefined,
         });
@@ -617,6 +619,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.setSecondaryPane({
             ...this._secondary_pane,
             collapsed: false,
+            size: this._secondary_pane.size ?? "small",
             preview_game_id: undefined,
             variation_id: variationId,
         });
@@ -823,10 +826,12 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 activeProposal
                     ? {
                           collapsed: false,
+                          size: "small",
                           preview_game_id: activeProposal.proposed_game.game_id,
                       }
                     : {
                           collapsed: false,
+                          size: "small",
                       },
             );
             return;

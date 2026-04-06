@@ -49,8 +49,19 @@
         display: grid;
         flex: 1;
         gap: 0;
-        grid-template-columns: minmax(0, 1fr) 12rem;
         min-height: 0;
+
+        &.secondary-pane-hidden {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        &.secondary-pane-small {
+            grid-template-columns: minmax(0, 1fr) minmax(14.75rem, 16.5rem);
+        }
+
+        &.secondary-pane-equal {
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        }
     }
 
     .board-panel {
@@ -89,14 +100,14 @@
             flex: 1;
             justify-content: center;
             overflow: hidden;
-            padding: 0.25rem;
+            padding: 0.125rem;
             text-align: center;
         }
 
         .board-content {
             display: grid;
             flex: 1;
-            gap: 0.25rem;
+            gap: 0.125rem;
             grid-template-rows: auto minmax(0, 1fr) auto;
             min-height: 0;
             width: 100%;
@@ -134,6 +145,7 @@
 
         .KibitzBoard.main-board-surface {
             min-height: 0;
+            padding-inline: 0.125rem;
         }
 
         .MiniGoban.KibitzMiniGoban {
@@ -142,7 +154,7 @@
             height: auto;
             justify-content: center;
             justify-self: center;
-            max-width: min(100%, 28rem, 58vh);
+            max-width: min(100%, 39rem, 78vh);
             min-height: 0;
             width: 100%;
 
@@ -157,7 +169,7 @@
         }
 
         .MiniGoban.KibitzMiniGoban.secondary {
-            max-width: min(100%, 10.25rem, 26vh);
+            max-width: min(100%, 14rem, 34vh);
         }
 
         .board-actions {
@@ -218,6 +230,11 @@
         &.secondary-board {
             border-left: 1px solid transparent;
             border-left-color: var(--shade3);
+
+            .panel-body {
+                padding-left: 0.375rem;
+                padding-right: 0.375rem;
+            }
 
             .board-content {
                 grid-template-rows: auto minmax(0, 1fr) auto;

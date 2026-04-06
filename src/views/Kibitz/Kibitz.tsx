@@ -18,6 +18,7 @@
 import * as React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { KibitzController } from "@/lib/KibitzController";
+import { pgettext } from "@/lib/translate";
 import type {
     KibitzDebugState,
     KibitzMode,
@@ -194,11 +195,26 @@ export function Kibitz(): React.ReactElement {
                                 onSendMessage={onSendMessage}
                             />
                             <div className="Kibitz-footer-panels">
-                                <KibitzVariationList
-                                    variations={variations}
-                                    onOpenVariation={onOpenVariation}
-                                />
-                                <KibitzProposalQueue proposals={roomProposals} />
+                                {variations.length === 0 && roomProposals.length === 0 ? (
+                                    <div className="Kibitz-footer-empty">
+                                        {pgettext(
+                                            "Compact empty state shown below the kibitz room stream when there are no variations or queued proposals",
+                                            "No variations yet. Watch next queue empty.",
+                                        )}
+                                    </div>
+                                ) : (
+                                    <>
+                                        {variations.length > 0 ? (
+                                            <KibitzVariationList
+                                                variations={variations}
+                                                onOpenVariation={onOpenVariation}
+                                            />
+                                        ) : null}
+                                        {roomProposals.length > 0 ? (
+                                            <KibitzProposalQueue proposals={roomProposals} />
+                                        ) : null}
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>
