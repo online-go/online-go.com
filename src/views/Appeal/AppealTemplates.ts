@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { pgettext } from "@/lib/translate";
-
 export type TemplateCategory = "acknowledgment" | "denial" | "welcome_back";
 
 export type OffenseType =
@@ -94,34 +92,23 @@ export const APPEAL_TEMPLATES: AppealTemplate[] = [
     // --- Acknowledgment templates ---
     {
         id: "ack_general",
-        title: pgettext(
-            "Appeal response template title",
-            "Thanks for appealing — what happens next",
-        ),
+        title: "Thanks for appealing — what happens next",
         category: "acknowledgment",
         offenseTypes: "all",
         builtIn: true,
-        text: pgettext(
-            "Appeal response template sent to a suspended user",
-            `Thank you for your appeal.
+        text: `Thank you for your appeal.
 
 Your case will be reviewed by our moderation team. We take appeals seriously and will look at the circumstances carefully.
 
 Please allow some time for us to review — we will respond here when we have an update.`,
-        ),
     },
     {
         id: "ack_ai_use",
-        title: pgettext(
-            "Appeal response template title",
-            "Thanks — AI use appeal process (with prior warning)",
-        ),
+        title: "Thanks — AI use appeal process (with prior warning)",
         category: "acknowledgment",
         offenseTypes: ["ai_use"],
         builtIn: true,
-        text: pgettext(
-            "Appeal response template sent to a user suspended for AI use who had a prior warning",
-            `Thanks for your appeal. The process from here is:
+        text: `Thanks for your appeal. The process from here is:
 
   - We ask you to double check and refresh your memory.
 
@@ -137,20 +124,14 @@ Please advise.
 
 ( https://github.com/online-go/online-go.com/wiki/Moderation-at-OGS#minimizing-ai-cheating )
 `,
-        ),
     },
     {
         id: "ack_ai_use_no_warning",
-        title: pgettext(
-            "Appeal response template title",
-            "Thanks — AI use appeal process (no prior warning)",
-        ),
+        title: "Thanks — AI use appeal process (no prior warning)",
         category: "acknowledgment",
         offenseTypes: ["ai_use"],
         builtIn: true,
-        text: pgettext(
-            "Appeal response template sent to a user suspended for AI use without a prior warning",
-            `Thanks for your appeal. The process from here is:
+        text: `Thanks for your appeal. The process from here is:
 
   - We ask you to double check and refresh your memory.
 
@@ -166,31 +147,25 @@ Please advise.
 
 ( https://github.com/online-go/online-go.com/wiki/Moderation-at-OGS#minimizing-ai-cheating )
 `,
-        ),
     },
 
     // --- Denial templates ---
     {
         id: "denial_general",
-        title: pgettext("Appeal response template title", "Appeal denied - generic"),
+        title: "Appeal denied - generic",
         category: "denial",
         offenseTypes: "all",
         builtIn: true,
-        text: pgettext(
-            "Appeal response template sent to deny a suspended user’s appeal",
-            `We have reviewed your appeal and unfortunately we will not be restoring this account.
+        text: `We have reviewed your appeal and unfortunately we will not be restoring this account.
 `,
-        ),
     },
     {
         id: "denial_ai_use",
-        title: pgettext("Appeal response template title", "Appeal denied — AI use"),
+        title: "Appeal denied — AI use",
         category: "denial",
         offenseTypes: ["ai_use"],
         builtIn: true,
-        text: pgettext(
-            "Appeal response template sent to deny a user’s appeal against an AI use suspension",
-            `A review of the detection process says that AI was definitely used.
+        text: `A review of the detection process says that AI was definitely used.
 
 If this is not the case, we regret this, but we have to act on what we see.
 
@@ -199,48 +174,41 @@ Your questions about this are answered here:
 https://github.com/online-go/online-go.com/wiki/Moderation-at-OGS#minimizing-ai-cheating
 
 You will need to find somewhere else to play Go.`,
-        ),
     },
 
     // --- Welcome back templates ---
     {
         id: "welcome_back_general",
-        title: pgettext("Appeal response template title", "Welcome back"),
+        title: "Welcome back",
         category: "welcome_back",
         offenseTypes: "all",
         builtIn: true,
-        text: pgettext(
-            "Appeal response template sent when restoring a suspended user’s account",
-            `Your account has been restored. Welcome back to OGS!
+        text: `Your account has been restored. Welcome back to OGS!
 
 We trust that you understand what led to the suspension and that it will not be repeated. Please review our terms of service if you are unsure.
 
 We hope you enjoy your time on OGS.`,
-        ),
     },
     {
         id: "welcome_back_ai_use",
-        title: pgettext("Appeal response template title", "Welcome back — after AI use"),
+        title: "Welcome back — after AI use",
         category: "welcome_back",
         offenseTypes: ["ai_use"],
         builtIn: true,
-        text: pgettext(
-            "Appeal response template sent when restoring a user suspended for AI use",
-            `Your account has been restored. Welcome back to OGS!
+        text: `Your account has been restored. Welcome back to OGS!
 
 Please remember that all games must be played without any form of AI assistance, or any outside assistance.
 
 We’re committed to minimizing AI cheating, and any further detection of AI use will result in a permanent suspension.
 
 We hope you enjoy playing on OGS fairly.`,
-        ),
     },
 ];
 
 const CATEGORY_LABELS: Record<TemplateCategory, string> = {
-    acknowledgment: pgettext("Appeal template category", "Acknowledgment"),
-    denial: pgettext("Appeal template category", "Denial"),
-    welcome_back: pgettext("Appeal template category", "Welcome back"),
+    acknowledgment: "Acknowledgment",
+    denial: "Denial",
+    welcome_back: "Welcome back",
 };
 
 export function getCategoryLabel(category: TemplateCategory): string {

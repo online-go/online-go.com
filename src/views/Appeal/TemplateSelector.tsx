@@ -16,7 +16,6 @@
  */
 
 import * as React from "react";
-import { pgettext } from "@/lib/translate";
 import {
     getOffenseType,
     getTemplatesForOffense,
@@ -54,15 +53,7 @@ export function TemplateSelector({
         }
 
         const hasExistingText = currentText.trim().length > 0;
-        if (
-            hasExistingText &&
-            !window.confirm(
-                pgettext(
-                    "Confirmation when selecting an appeal template",
-                    "Replace the current message with this template?",
-                ),
-            )
-        ) {
+        if (hasExistingText && !window.confirm("Replace the current message with this template?")) {
             // Reset the select back to placeholder
             ev.target.value = "";
             return;
@@ -87,7 +78,7 @@ export function TemplateSelector({
         <div className="TemplateSelector">
             <select onChange={handleChange} defaultValue="">
                 <option value="" disabled>
-                    {pgettext("Appeal template selector placeholder", "Insert template...")}
+                    Insert template...
                 </option>
                 {Array.from(grouped.entries()).map(([category, categoryTemplates]) => (
                     <optgroup key={category} label={getCategoryLabel(category)}>
