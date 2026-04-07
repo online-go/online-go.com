@@ -397,8 +397,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
                         </dd>
                         <dt>{_("Time Control")}</dt>
                         <dd>{time_control_description}</dd>
-                        {(config as GobanConfig & { disable_vacation?: boolean })
-                            .disable_vacation && (
+                        {config.disable_vacation && (
                             <>
                                 <dt>{_("Vacation")}</dt>
                                 <dd className="disable-vacation-warning">
