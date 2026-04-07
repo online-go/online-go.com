@@ -169,16 +169,16 @@ export function GameDock({
     };
 
     const showGameInfo = () => {
-        for (const k of [
-            "komi",
-            "rules",
-            "handicap",
-            "handicap_rank_difference",
-            "rengo",
-            "rengo_teams",
-        ] as const) {
-            (goban.config as any)[k] = goban.engine.config[k];
-        }
+        const ec = goban.engine.config;
+        Object.assign(goban.config, {
+            komi: ec.komi,
+            rules: ec.rules,
+            handicap: ec.handicap,
+            handicap_rank_difference: ec.handicap_rank_difference,
+            rengo: ec.rengo,
+            rengo_teams: ec.rengo_teams,
+            disable_vacation: ec.disable_vacation,
+        });
         openGameInfoModal(
             goban.config,
             historical_black || goban.engine.players.black,
