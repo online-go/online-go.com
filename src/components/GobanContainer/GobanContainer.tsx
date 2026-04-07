@@ -35,6 +35,8 @@ interface GobanContainerProps {
     onWheel?: React.WheelEventHandler<HTMLDivElement> | undefined;
     /** Additional props to pass to the PersistentElement that wraps the goban_div */
     extra_props?: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>;
+    /** Vertical alignment of the rendered goban within the container */
+    verticalAlign?: "center" | "top";
 }
 
 /**
@@ -45,6 +47,7 @@ export function GobanContainer({
     onResize: onResizeCb,
     onWheel,
     extra_props,
+    verticalAlign = "center",
 }: GobanContainerProps): React.ReactElement {
     const goban_controller = useGobanControllerOrNull();
     const ref_goban_container = React.useRef<HTMLDivElement>(null);
@@ -62,9 +65,10 @@ export function GobanContainer({
             return;
         }
         const m = goban.computeMetrics();
-        goban_div.style.top = `${
-            Math.ceil(ref_goban_container.current.offsetHeight - m.height) / 2
-        }px`;
+        goban_div.style.top =
+            verticalAlign === "top"
+                ? "0px"
+                : `${Math.ceil(ref_goban_container.current.offsetHeight - m.height) / 2}px`;
         goban_div.style.left = `${
             Math.ceil(ref_goban_container.current.offsetWidth - m.width) / 2
         }px`;
@@ -122,7 +126,7 @@ export function GobanContainer({
 
             recenterGoban();
         },
-        [goban, goban_div, onResizeCb],
+        [goban, goban_div, onResizeCb, verticalAlign],
     );
 
     React.useEffect(() => {
