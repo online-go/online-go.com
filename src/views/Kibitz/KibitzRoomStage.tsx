@@ -227,21 +227,19 @@ export function KibitzRoomStage({
                                     className="main-board-surface"
                                     onReady={setMainBoardController}
                                 />
-                                <div className="main-board-footer">
-                                    <div className="main-board-transport-row">
-                                        <KibitzBoardControls
-                                            controller={mainBoardController}
-                                            variant="minimal"
-                                            totalMoves={displayedMoveNumber}
-                                        />
-                                    </div>
-                                    {secondaryPaneSize === "equal" ? (
-                                        <div
-                                            className="main-board-variation-spacer"
-                                            aria-hidden="true"
-                                        />
-                                    ) : null}
+                                <div className="main-board-transport-row">
+                                    <KibitzBoardControls
+                                        controller={mainBoardController}
+                                        variant="minimal"
+                                        totalMoves={displayedMoveNumber}
+                                    />
                                 </div>
+                                {secondaryPaneSize === "equal" ? (
+                                    <div
+                                        className="main-board-variation-spacer"
+                                        aria-hidden="true"
+                                    />
+                                ) : null}
                             </div>
                         ) : (
                             pgettext(
@@ -319,57 +317,55 @@ export function KibitzRoomStage({
                                     className="secondary-board-surface"
                                     onReady={setSecondaryBoardController}
                                 />
-                                <div className="secondary-board-footer">
-                                    <div className="secondary-board-transport-row">
-                                        <div className="transport-controls">
-                                            <KibitzBoardControls
-                                                controller={secondaryBoardController}
-                                                variant="full"
-                                                showMoveTree={false}
-                                                totalMoves={previewDisplayedMoveNumber}
-                                            />
-                                        </div>
-                                        <div className="board-actions board-actions-inline">
-                                            <button
-                                                type="button"
-                                                className="preview-action-button symbol-button"
-                                                onClick={onProposePreview}
-                                                aria-label={pgettext(
-                                                    "Aria label for proposing the current previewed game in kibitz",
-                                                    "Propose",
-                                                )}
-                                                title={pgettext(
-                                                    "Tooltip label for proposing the current previewed game in kibitz",
-                                                    "Propose",
-                                                )}
-                                            >
-                                                +
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="preview-action-button clear-preview symbol-button"
-                                                onClick={onClearPreview}
-                                                aria-label={pgettext(
-                                                    "Aria label for closing the preview game in the secondary kibitz pane",
-                                                    "Clear",
-                                                )}
-                                                title={pgettext(
-                                                    "Tooltip label for closing the preview game in the secondary kibitz pane",
-                                                    "Clear",
-                                                )}
-                                            >
-                                                X
-                                            </button>
-                                        </div>
-                                    </div>
-                                    {secondaryPaneSize === "equal" ? (
-                                        <Resizable
-                                            id="kibitz-secondary-move-tree-container"
-                                            className="kibitz-move-tree-container"
-                                            ref={setSecondaryMoveTreeContainer}
+                                <div className="secondary-board-transport-row">
+                                    <div className="transport-controls">
+                                        <KibitzBoardControls
+                                            controller={secondaryBoardController}
+                                            variant="full"
+                                            showMoveTree={false}
+                                            totalMoves={previewDisplayedMoveNumber}
                                         />
-                                    ) : null}
+                                    </div>
+                                    <div className="board-actions board-actions-inline">
+                                        <button
+                                            type="button"
+                                            className="preview-action-button symbol-button"
+                                            onClick={onProposePreview}
+                                            aria-label={pgettext(
+                                                "Aria label for proposing the current previewed game in kibitz",
+                                                "Propose",
+                                            )}
+                                            title={pgettext(
+                                                "Tooltip label for proposing the current previewed game in kibitz",
+                                                "Propose",
+                                            )}
+                                        >
+                                            +
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="preview-action-button clear-preview symbol-button"
+                                            onClick={onClearPreview}
+                                            aria-label={pgettext(
+                                                "Aria label for closing the preview game in the secondary kibitz pane",
+                                                "Clear",
+                                            )}
+                                            title={pgettext(
+                                                "Tooltip label for closing the preview game in the secondary kibitz pane",
+                                                "Clear",
+                                            )}
+                                        >
+                                            X
+                                        </button>
+                                    </div>
                                 </div>
+                                {secondaryPaneSize === "equal" ? (
+                                    <Resizable
+                                        id="kibitz-secondary-move-tree-container"
+                                        className="kibitz-move-tree-container"
+                                        ref={setSecondaryMoveTreeContainer}
+                                    />
+                                ) : null}
                             </div>
                         ) : selectedVariation ? (
                             <div className="board-content">
@@ -396,42 +392,40 @@ export function KibitzRoomStage({
                                     className="secondary-board-surface"
                                     onReady={setSecondaryBoardController}
                                 />
-                                <div className="secondary-board-footer">
-                                    <div className="secondary-board-transport-row">
-                                        <div className="transport-controls">
-                                            <KibitzBoardControls
-                                                controller={secondaryBoardController}
-                                                variant="full"
-                                                showMoveTree={false}
-                                                totalMoves={selectedVariation.move_count}
-                                            />
-                                        </div>
-                                        <div className="board-actions board-actions-inline">
-                                            <button
-                                                type="button"
-                                                className="preview-action-button clear-preview symbol-button"
-                                                onClick={onClearPreview}
-                                                aria-label={pgettext(
-                                                    "Aria label for closing a variation preview in the secondary kibitz pane",
-                                                    "Clear",
-                                                )}
-                                                title={pgettext(
-                                                    "Tooltip label for closing a variation preview in the secondary kibitz pane",
-                                                    "Clear",
-                                                )}
-                                            >
-                                                X
-                                            </button>
-                                        </div>
-                                    </div>
-                                    {secondaryPaneSize === "equal" ? (
-                                        <Resizable
-                                            id="kibitz-secondary-move-tree-container"
-                                            className="kibitz-move-tree-container"
-                                            ref={setSecondaryMoveTreeContainer}
+                                <div className="secondary-board-transport-row">
+                                    <div className="transport-controls">
+                                        <KibitzBoardControls
+                                            controller={secondaryBoardController}
+                                            variant="full"
+                                            showMoveTree={false}
+                                            totalMoves={selectedVariation.move_count}
                                         />
-                                    ) : null}
+                                    </div>
+                                    <div className="board-actions board-actions-inline">
+                                        <button
+                                            type="button"
+                                            className="preview-action-button clear-preview symbol-button"
+                                            onClick={onClearPreview}
+                                            aria-label={pgettext(
+                                                "Aria label for closing a variation preview in the secondary kibitz pane",
+                                                "Clear",
+                                            )}
+                                            title={pgettext(
+                                                "Tooltip label for closing a variation preview in the secondary kibitz pane",
+                                                "Clear",
+                                            )}
+                                        >
+                                            X
+                                        </button>
+                                    </div>
                                 </div>
+                                {secondaryPaneSize === "equal" ? (
+                                    <Resizable
+                                        id="kibitz-secondary-move-tree-container"
+                                        className="kibitz-move-tree-container"
+                                        ref={setSecondaryMoveTreeContainer}
+                                    />
+                                ) : null}
                             </div>
                         ) : (
                             pgettext(

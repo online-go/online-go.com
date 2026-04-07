@@ -1,17 +1,21 @@
 .KibitzBoard {
+    align-items: flex-start;
     display: flex;
     flex: 1;
     min-height: 0;
     width: 100%;
 
     .goban-container {
-        align-items: center;
+        align-items: flex-start;
+        aspect-ratio: 1 / 1;
         display: flex;
-        flex: 1;
+        flex: 0 0 auto;
         justify-content: center;
         min-height: 0;
         min-width: 0;
+        max-width: 100%;
         position: relative;
+        width: 100%;
 
         .Goban {
             left: 0;

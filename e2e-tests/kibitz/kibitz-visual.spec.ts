@@ -15,16 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Page, TestInfo } from "@playwright/test";
+import { expect, Page, TestInfo } from "@playwright/test";
 import { ogsTest, load } from "@helpers";
 
-interface KibitzMeasurement {
-    top: number;
-    bottom: number;
-    height: number;
-}
-
-function describeMeasurements(measurements: Record<string, KibitzMeasurement | null>) {
+function describeMeasurements(measurements: unknown) {
     return JSON.stringify(measurements, null, 2);
 }
 
@@ -58,12 +52,21 @@ async function captureKibitzLayout(
 
     if (options?.equalMode) {
         const increaseButton = page.locator(".KibitzDividerHandle .divider-arrow.increase");
-        for (let i = 0; i < 2; i++) {
+        const stageBoards = page.locator(".KibitzRoomStage-boards");
+
+        for (let i = 0; i < 4; i++) {
+            const className = await stageBoards.first().getAttribute("class");
+            if (className?.includes("secondary-pane-equal")) {
+                break;
+            }
+
             if (await increaseButton.count()) {
-                await increaseButton.first().click();
-                await page.waitForTimeout(150);
+                await increaseButton.first().click({ force: true });
+                await page.waitForTimeout(200);
             }
         }
+
+        await expect(stageBoards.first()).toHaveClass(/secondary-pane-equal/);
     }
 
     const measurements = await page.evaluate(() => {
@@ -86,6 +89,7 @@ async function captureKibitzLayout(
             main: rect(".Kibitz-main"),
             sidebar: rect(".Kibitz-sidebar"),
             stage: rect(".KibitzRoomStage"),
+            stageBoardsClass: document.querySelector(".KibitzRoomStage-boards")?.className ?? null,
             proposalBar: rect(".KibitzProposalBar"),
             stream: rect(".KibitzRoomStream"),
             footerPanels: rect(".Kibitz-footer-panels"),
@@ -93,33 +97,59 @@ async function captureKibitzLayout(
     });
 
     const boardDebug = await page.evaluate(() => {
-        function rectOf(element: Element | null) {
-            if (!element) {
-                return null;
-            }
-            const bounds = element.getBoundingClientRect();
+        function buildRect(bounds: DOMRect) {
             return {
                 top: Math.round(bounds.top),
                 left: Math.round(bounds.left),
                 width: Math.round(bounds.width),
                 height: Math.round(bounds.height),
+                right: Math.round(bounds.right),
+                bottom: Math.round(bounds.bottom),
             };
+        }
+
+        function buildStyle(style: CSSStyleDeclaration) {
+            return {
+                display: style.display,
+                position: style.position,
+                width: style.width,
+                height: style.height,
+                minWidth: style.minWidth,
+                minHeight: style.minHeight,
+                maxWidth: style.maxWidth,
+                maxHeight: style.maxHeight,
+                flex: style.flex,
+                flexBasis: style.flexBasis,
+                alignSelf: style.alignSelf,
+                justifySelf: style.justifySelf,
+                aspectRatio: style.aspectRatio,
+                overflow: style.overflow,
+                overflowX: style.overflowX,
+                overflowY: style.overflowY,
+                gridTemplateRows: style.gridTemplateRows,
+                gridTemplateColumns: style.gridTemplateColumns,
+                gridRow: style.gridRow,
+                gridColumn: style.gridColumn,
+                paddingTop: style.paddingTop,
+                paddingBottom: style.paddingBottom,
+                marginTop: style.marginTop,
+                marginBottom: style.marginBottom,
+                boxSizing: style.boxSizing,
+            };
+        }
+
+        function rectOf(element: Element | null) {
+            if (!element) {
+                return null;
+            }
+            return buildRect(element.getBoundingClientRect());
         }
 
         function styleOf(element: Element | null) {
             if (!element) {
                 return null;
             }
-            const style = window.getComputedStyle(element);
-            return {
-                backgroundColor: style.backgroundColor,
-                backgroundImage: style.backgroundImage,
-                boxShadow: style.boxShadow,
-                position: style.position,
-                display: style.display,
-                width: style.width,
-                height: style.height,
-            };
+            return buildStyle(window.getComputedStyle(element));
         }
 
         function describeElement(element: Element | null) {
@@ -133,9 +163,43 @@ async function captureKibitzLayout(
                 tag: element.tagName.toLowerCase(),
                 className: htmlElement.className,
                 rect: rectOf(element),
+                box: {
+                    clientWidth: htmlElement.clientWidth,
+                    clientHeight: htmlElement.clientHeight,
+                    offsetWidth: htmlElement.offsetWidth,
+                    offsetHeight: htmlElement.offsetHeight,
+                    scrollWidth: htmlElement.scrollWidth,
+                    scrollHeight: htmlElement.scrollHeight,
+                },
                 style: styleOf(element),
                 childCount: element.children.length,
             };
+        }
+
+        function describeParents(element: Element | null, depth: number = 6) {
+            const parents: unknown[] = [];
+            let current = element?.parentElement ?? null;
+
+            for (let i = 0; i < depth && current; i++) {
+                parents.push({
+                    tag: current.tagName.toLowerCase(),
+                    className: current.className,
+                    rect: rectOf(current),
+                    box: {
+                        clientWidth: current.clientWidth,
+                        clientHeight: current.clientHeight,
+                        offsetWidth: current.offsetWidth,
+                        offsetHeight: current.offsetHeight,
+                        scrollWidth: current.scrollWidth,
+                        scrollHeight: current.scrollHeight,
+                    },
+                    style: styleOf(current),
+                    inlineStyle: current.getAttribute("style"),
+                });
+                current = current.parentElement;
+            }
+
+            return parents;
         }
 
         function describeChildren(element: Element | null) {
@@ -197,6 +261,10 @@ async function captureKibitzLayout(
             secondaryKibitzBoard: describeElement(secondaryKibitzBoard),
             secondaryGobanContainer: describeElement(secondaryGobanContainer),
             secondaryGoban: describeElement(secondaryGoban),
+            mainBoardParents: describeParents(kibitzBoard),
+            mainGobanContainerParents: describeParents(gobanContainer),
+            secondaryBoardParents: describeParents(secondaryKibitzBoard),
+            secondaryGobanContainerParents: describeParents(secondaryGobanContainer),
             gobanChildren: describeChildren(goban),
         };
     });

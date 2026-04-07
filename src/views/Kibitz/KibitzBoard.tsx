@@ -95,7 +95,7 @@ export function KibitzBoard({
 
     return (
         <div className={"KibitzBoard" + (className ? ` ${className}` : "")}>
-            {goban ? <GobanContainer goban={goban} verticalAlign="top" /> : null}
+            {goban ? <GobanContainer goban={goban} verticalAlign="top" sizingMode="width" /> : null}
         </div>
     );
 }
