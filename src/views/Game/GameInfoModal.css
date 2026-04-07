@@ -56,7 +56,7 @@
     }
 
     .disable-vacation-warning {
-        color: var(--warning-bg);
+        color: var(--warning-fg);
         font-weight: bold;
     }
 }
