@@ -61,5 +61,17 @@
             background-image: url('https://cdn.online-go.com/achievements/wsc2025-grand-slam-v2.png');
         }
     }
-    
+
+    &.wsc2026 {
+        .icon {
+            background-image: url('https://cdn.online-go.com/achievements/wsc2026.png');
+        }
+    }
+
+    &.wsc2026-grand-slam {
+        .icon {
+            background-image: url('https://cdn.online-go.com/achievements/wsc2026-grand-slam.png');
+        }
+    }
+
 }
