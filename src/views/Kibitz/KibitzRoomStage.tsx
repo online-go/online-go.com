@@ -252,35 +252,11 @@ export function KibitzRoomStage({
                         ) : secondaryGameId ? (
                             <div className="board-content">
                                 <div className="board-meta">
-                                    <div className="board-meta-top">
-                                        <div className="board-label">
-                                            {pgettext(
-                                                "Label for the personal secondary board in kibitz",
-                                                "Secondary board",
-                                            )}
-                                        </div>
-                                        <div className="board-actions">
-                                            <button
-                                                type="button"
-                                                className="preview-action-button"
-                                                onClick={onProposePreview}
-                                            >
-                                                {pgettext(
-                                                    "Button label for proposing the current previewed game in kibitz",
-                                                    "Propose this board",
-                                                )}
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="preview-action-button clear-preview"
-                                                onClick={onClearPreview}
-                                            >
-                                                {pgettext(
-                                                    "Button label for closing the preview game in the secondary kibitz pane",
-                                                    "Clear preview",
-                                                )}
-                                            </button>
-                                        </div>
+                                    <div className="board-label">
+                                        {pgettext(
+                                            "Label for the personal secondary board in kibitz",
+                                            "Secondary board",
+                                        )}
                                     </div>
                                     <div className="players">
                                         {interpolate(
@@ -324,35 +300,45 @@ export function KibitzRoomStage({
                                     className="secondary-board-surface"
                                     onReady={setSecondaryBoardController}
                                 />
-                                <KibitzBoardControls
-                                    controller={secondaryBoardController}
-                                    variant="full"
-                                    showMoveTree={secondaryPaneSize === "equal"}
-                                    totalMoves={previewDisplayedMoveNumber}
-                                />
+                                <div className="secondary-board-footer">
+                                    <div className="board-actions board-actions-below">
+                                        <button
+                                            type="button"
+                                            className="preview-action-button"
+                                            onClick={onProposePreview}
+                                        >
+                                            {pgettext(
+                                                "Button label for proposing the current previewed game in kibitz",
+                                                "Propose this board",
+                                            )}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="preview-action-button clear-preview"
+                                            onClick={onClearPreview}
+                                        >
+                                            {pgettext(
+                                                "Button label for closing the preview game in the secondary kibitz pane",
+                                                "Clear preview",
+                                            )}
+                                        </button>
+                                    </div>
+                                    <KibitzBoardControls
+                                        controller={secondaryBoardController}
+                                        variant="full"
+                                        showMoveTree={secondaryPaneSize === "equal"}
+                                        totalMoves={previewDisplayedMoveNumber}
+                                    />
+                                </div>
                             </div>
                         ) : selectedVariation ? (
                             <div className="board-content">
                                 <div className="board-meta">
-                                    <div className="board-meta-top">
-                                        <div className="board-label">
-                                            {pgettext(
-                                                "Label for the personal secondary board in kibitz",
-                                                "Secondary board",
-                                            )}
-                                        </div>
-                                        <div className="board-actions">
-                                            <button
-                                                type="button"
-                                                className="preview-action-button clear-preview"
-                                                onClick={onClearPreview}
-                                            >
-                                                {pgettext(
-                                                    "Button label for closing a variation preview in the secondary kibitz pane",
-                                                    "Clear variation",
-                                                )}
-                                            </button>
-                                        </div>
+                                    <div className="board-label">
+                                        {pgettext(
+                                            "Label for the personal secondary board in kibitz",
+                                            "Secondary board",
+                                        )}
                                     </div>
                                     <div className="players">
                                         {selectedVariation.creator.username}
@@ -370,12 +356,26 @@ export function KibitzRoomStage({
                                     className="secondary-board-surface"
                                     onReady={setSecondaryBoardController}
                                 />
-                                <KibitzBoardControls
-                                    controller={secondaryBoardController}
-                                    variant="full"
-                                    showMoveTree={secondaryPaneSize === "equal"}
-                                    totalMoves={selectedVariation.move_count}
-                                />
+                                <div className="secondary-board-footer">
+                                    <div className="board-actions board-actions-below">
+                                        <button
+                                            type="button"
+                                            className="preview-action-button clear-preview"
+                                            onClick={onClearPreview}
+                                        >
+                                            {pgettext(
+                                                "Button label for closing a variation preview in the secondary kibitz pane",
+                                                "Clear variation",
+                                            )}
+                                        </button>
+                                    </div>
+                                    <KibitzBoardControls
+                                        controller={secondaryBoardController}
+                                        variant="full"
+                                        showMoveTree={secondaryPaneSize === "equal"}
+                                        totalMoves={selectedVariation.move_count}
+                                    />
+                                </div>
                             </div>
                         ) : (
                             pgettext(

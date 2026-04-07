@@ -76,16 +76,11 @@
             }
 
             .board-content {
-                grid-template-rows: auto minmax(0, 1fr) var(--equal-controls-height);
+                grid-template-rows: auto minmax(0, 1fr) auto;
             }
 
             .board-meta {
                 justify-content: flex-start;
-            }
-
-            .board-meta-top {
-                min-height: 1.2rem;
-                flex-wrap: wrap;
             }
 
             .players {
@@ -147,17 +142,20 @@
             }
 
             .main-board .KibitzBoardControls.minimal-row,
-            .secondary-board .KibitzBoardControls.full {
+            .secondary-board .secondary-board-footer {
                 background: var(--shade1);
                 border-top: 1px solid transparent;
                 border-top-color: var(--shade3);
                 min-height: var(--equal-controls-height);
-                padding-top: 0.6rem;
             }
 
             .main-board .KibitzBoardControls.minimal-row {
                 align-items: flex-start;
                 justify-content: center;
+            }
+
+            .secondary-board .secondary-board-footer {
+                padding-top: 0.35rem;
             }
         }
     }
@@ -229,7 +227,7 @@
             }
 
             .board-label {
-                color: var(--text-color-faded);
+                color: var(--shade1);
                 font-size: 0.72rem;
                 font-weight: bold;
                 letter-spacing: 0.02em;
@@ -290,6 +288,18 @@
             margin-left: auto;
             min-width: 0;
             text-align: left;
+        }
+
+        .board-actions.board-actions-below {
+            margin-left: 0;
+            padding: 0 0.125rem;
+            width: 100%;
+        }
+
+        .secondary-board-footer {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
         }
 
         .preview-action-button {
