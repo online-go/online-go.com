@@ -69,11 +69,11 @@
             align-items: flex-end;
         }
 
-        input[type='checkbox'] {
+        input[type="checkbox"] {
             width: 2rem;
         }
 
-        input[type='number'] {
+        input[type="number"] {
             width: 5rem;
         }
 
@@ -86,7 +86,7 @@
         }
     }
 
-    .no-vacation-banner {
+    .disable-vacation-banner {
         background-color: var(--warning-bg);
         color: var(--warning-fg);
         border-radius: 0.25rem;
@@ -265,13 +265,16 @@
     .tournament-elimination-container {
         position: relative;
 
-        .match-div, .bye-div {
+        .match-div,
+        .bye-div {
             position: absolute;
             height: 2.5em;
             width: 12em;
         }
 
-        .black, .white, .bye {
+        .black,
+        .white,
+        .bye {
             /* border: 1px solid mix(@body-bg, #888, 30%); */
             white-space: nowrap;
             overflow: hidden;
@@ -343,7 +346,8 @@
         .scheduled-matches {
             margin: auto;
 
-            .player1, .player2 {
+            .player1,
+            .player2 {
                 width: 7rem;
                 overflow: hidden;
                 padding-right: 1rem;
@@ -414,7 +418,12 @@
     }
 
     .round-notes {
-        p, h1, h2, h3, h4, h5 {
+        p,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5 {
             text-align: center;
         }
 

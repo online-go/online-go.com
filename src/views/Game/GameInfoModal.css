@@ -55,7 +55,7 @@
         width: 70%;
     }
 
-    .no-vacation-warning {
+    .disable-vacation-warning {
         color: var(--warning-bg);
         font-weight: bold;
     }

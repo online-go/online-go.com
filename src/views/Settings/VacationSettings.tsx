@@ -26,7 +26,7 @@ import { Toggle } from "@/components/Toggle";
 
 import { SettingGroupPageProps, PreferenceLine } from "@/lib/SettingsCommon";
 
-interface NoVacationGame {
+interface DisableVacationGame {
     id: number;
     name: string;
 }
@@ -35,7 +35,9 @@ export function VacationSettings(props: SettingGroupPageProps): React.ReactEleme
     const [vacation_left, set_vacation_left]: [number, (x: number) => void] = React.useState(
         props.state.profile.vacation_left - (Date.now() - props.vacation_base_time) / 1000,
     );
-    const [no_vacation_games, set_no_vacation_games] = React.useState<NoVacationGame[]>([]);
+    const [disable_vacation_games, set_disable_vacation_games] = React.useState<
+        DisableVacationGame[]
+    >([]);
 
     React.useEffect(() => {
         const vacation_interval = setInterval(() => {
@@ -58,9 +60,9 @@ export function VacationSettings(props: SettingGroupPageProps): React.ReactEleme
             .then((result: { active_games: rest_api.players.full.Game[] }) => {
                 if (!canceled) {
                     const games = result.active_games.filter(
-                        (g) => g.no_vacation && (g.time_per_move ?? 0) >= 3600,
+                        (g) => g.disable_vacation && (g.time_per_move ?? 0) >= 3600,
                     );
-                    set_no_vacation_games(games.map((g) => ({ id: g.id, name: g.name })));
+                    set_disable_vacation_games(games.map((g) => ({ id: g.id, name: g.name })));
                 }
             })
             .catch((err) => {
@@ -131,19 +133,19 @@ export function VacationSettings(props: SettingGroupPageProps): React.ReactEleme
                 </div>
             </div>
 
-            {no_vacation_games.length > 0 && (
-                <div className="no-vacation-warning">
+            {disable_vacation_games.length > 0 && (
+                <div className="disable-vacation-warning">
                     <i className="fa fa-exclamation-triangle"></i>{" "}
                     {interpolate(
                         ngettext(
                             "You have {{count}} active correspondence game that will not be paused by vacation:",
                             "You have {{count}} active correspondence games that will not be paused by vacation:",
-                            no_vacation_games.length,
+                            disable_vacation_games.length,
                         ),
-                        { count: no_vacation_games.length },
+                        { count: disable_vacation_games.length },
                     )}
                     <ul>
-                        {no_vacation_games.map((g) => (
+                        {disable_vacation_games.map((g) => (
                             <li key={g.id}>
                                 <a href={`/game/${g.id}`}>{g.name || `#${g.id}`}</a>
                             </li>

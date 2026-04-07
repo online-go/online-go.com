@@ -124,7 +124,7 @@
         }
     }
 
-    .no-vacation-warning {
+    .disable-vacation-warning {
         background-color: var(--warning-bg);
         color: var(--warning-fg);
         border-radius: 0.25rem;

@@ -16,19 +16,19 @@
  */
 
 /*
- * Test that a no-vacation tournament can be created, that the tournament page
- * prominently shows the no-vacation banner, and that the resulting games
- * appear in each player's vacation settings pane as no-vacation warnings.
+ * Test that a disable-vacation tournament can be created, that the tournament page
+ * prominently shows the disable-vacation banner, and that the resulting games
+ * appear in each player's vacation settings pane as disable-vacation warnings.
  *
  * Flow:
  * 1. A director creates a group and a correspondence round-robin tournament
- *    with no_vacation enabled
+ *    with disable_vacation enabled
  * 2. Verify the tournament page shows the "Vacation disabled" banner
  * 3. Two players join the tournament
  * 4. The director starts the tournament
  * 5. Games are created
  * 6. Each player navigates to their vacation settings and verifies the
- *    no-vacation game warning is displayed
+ *    disable-vacation game warning is displayed
  */
 
 import type { CreateContextOptions } from "@helpers";
@@ -40,15 +40,15 @@ import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { log } from "@helpers/logger";
 
-export const tournamentNoVacationTest = async ({
+export const tournamentDisableVacationTest = async ({
     createContext,
 }: {
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
-    log("=== No-Vacation Tournament Test ===");
+    log("=== Disable-Vacation Tournament Test ===");
 
     // 1. Create three users: one director and two players
-    const directorUsername = newTestUsername("NVDir");
+    const directorUsername = newTestUsername("DVDir");
     log(`Creating director: ${directorUsername}`);
     const { userPage: directorPage } = await prepareNewUser(
         createContext,
@@ -56,11 +56,11 @@ export const tournamentNoVacationTest = async ({
         "test",
     );
 
-    const player1Username = newTestUsername("NVP1");
+    const player1Username = newTestUsername("DVP1");
     log(`Creating player 1: ${player1Username}`);
     const { userPage: player1Page } = await prepareNewUser(createContext, player1Username, "test");
 
-    const player2Username = newTestUsername("NVP2");
+    const player2Username = newTestUsername("DVP2");
     log(`Creating player 2: ${player2Username}`);
     const { userPage: player2Page } = await prepareNewUser(createContext, player2Username, "test");
 
@@ -68,7 +68,7 @@ export const tournamentNoVacationTest = async ({
     log("Director creating a group for the tournament...");
     await directorPage.goto("/group/create");
 
-    const groupName = `E2E NoVac Group ${directorUsername}`;
+    const groupName = `E2E DVac Group ${directorUsername}`;
     const groupNameInput = directorPage.locator("#group-create-name");
     await expect(groupNameInput).toBeVisible();
     await groupNameInput.fill(groupName);
@@ -82,12 +82,12 @@ export const tournamentNoVacationTest = async ({
     const groupId = groupUrl.match(/\/group\/(\d+)/)?.[1];
     log(`Group created at: ${groupUrl}`);
 
-    // 3. Director creates a correspondence round-robin tournament with no_vacation
+    // 3. Director creates a correspondence round-robin tournament with disable_vacation
     log("Director navigating to tournament creation page...");
     await directorPage.goto(`/tournament/new/${groupId}`);
 
     // Fill in tournament name
-    const tournamentName = "E2E No-Vacation Test";
+    const tournamentName = "E2E Disable Vacation Test";
     const nameInput = directorPage.locator('input[placeholder="Tournament Name"]');
     await expect(nameInput).toBeVisible();
     await nameInput.fill(tournamentName);
@@ -96,8 +96,8 @@ export const tournamentNoVacationTest = async ({
     // Fill in description
     const descInput = directorPage.locator('textarea[placeholder="Description"]');
     await expect(descInput).toBeVisible();
-    await descInput.fill("E2E test tournament for no-vacation feature");
-    await expect(descInput).toHaveValue("E2E test tournament for no-vacation feature");
+    await descInput.fill("E2E test tournament for disable vacation feature");
+    await expect(descInput).toHaveValue("E2E test tournament for disable vacation feature");
 
     // Set tournament type to Round Robin (lowest player requirement)
     await directorPage.selectOption("#tournament-type", "roundrobin");
@@ -122,14 +122,14 @@ export const tournamentNoVacationTest = async ({
     await expect(directorPage.locator("#challenge-time-control")).toHaveValue("fischer");
     await expect(directorPage.locator("#challenge-speed")).toHaveValue("correspondence");
 
-    // Enable no_vacation
-    const noVacationCheckbox = directorPage.locator("#no_vacation");
-    await expect(noVacationCheckbox).toBeVisible();
-    if (!(await noVacationCheckbox.isChecked())) {
-        await noVacationCheckbox.check();
+    // Enable disable_vacation
+    const disableVacationCheckbox = directorPage.locator("#disable_vacation");
+    await expect(disableVacationCheckbox).toBeVisible();
+    if (!(await disableVacationCheckbox.isChecked())) {
+        await disableVacationCheckbox.check();
     }
-    await expect(noVacationCheckbox).toBeChecked();
-    log("No-vacation checkbox checked");
+    await expect(disableVacationCheckbox).toBeChecked();
+    log("Disable-vacation checkbox checked");
 
     // Allow provisional players to join
     const provisionalCheckbox = directorPage.locator("#provisional");
@@ -162,11 +162,11 @@ export const tournamentNoVacationTest = async ({
     // Verify the tournament page shows the tournament name
     await expect(directorPage.getByText(tournamentName).first()).toBeVisible();
 
-    // 4. Verify the no-vacation banner is displayed prominently on the tournament page
+    // 4. Verify the disable-vacation banner is displayed prominently on the tournament page
     await expect(directorPage.getByText("Vacation is disabled for this tournament")).toBeVisible({
         timeout: 10000,
     });
-    log("No-vacation banner is visible on tournament page");
+    log("Disable-vacation banner is visible on tournament page");
 
     // Also verify the details table shows "Vacation disabled"
     await expect(directorPage.getByText("Vacation disabled")).toBeVisible();
@@ -177,7 +177,7 @@ export const tournamentNoVacationTest = async ({
     await player1Page.goto(tournamentUrl);
     await expect(player1Page.getByText(tournamentName).first()).toBeVisible();
 
-    // Player 1 should also see the no-vacation banner
+    // Player 1 should also see the disable-vacation banner
     await expect(player1Page.getByText("Vacation is disabled for this tournament")).toBeVisible({
         timeout: 10000,
     });
@@ -230,7 +230,7 @@ export const tournamentNoVacationTest = async ({
     });
     log("Games created with both players in results");
 
-    // 7. Verify no-vacation warning appears on each player's vacation settings pane
+    // 7. Verify disable-vacation warning appears on each player's vacation settings pane
     //
     // Tournament games are started asynchronously via a Celery task with a 2s delay.
     // The player-game M2M association is created inside that task, so we need to wait
@@ -244,7 +244,7 @@ export const tournamentNoVacationTest = async ({
     ).toBeVisible({ timeout: 60000 });
     log("Turn indicator visible for player 1 - game is active");
 
-    log("Checking player 1 vacation settings for no-vacation warning...");
+    log("Checking player 1 vacation settings for disable-vacation warning...");
     await player1Page.goto("/user/settings");
 
     const vacationTab1 = player1Page.getByText("Vacation", { exact: true });
@@ -260,9 +260,9 @@ export const tournamentNoVacationTest = async ({
 
     // The game link should contain the tournament name
     await expect(
-        player1Page.locator(".no-vacation-warning").getByText(/Tournament Game/),
+        player1Page.locator(".disable-vacation-warning").getByText(/Tournament Game/),
     ).toBeVisible();
-    log("Player 1 sees no-vacation warning with game link");
+    log("Player 1 sees disable-vacation warning with game link");
 
     log("Waiting for tournament game to be started (turn indicator) for player 2...");
     await expect(
@@ -270,7 +270,7 @@ export const tournamentNoVacationTest = async ({
     ).toBeVisible({ timeout: 60000 });
     log("Turn indicator visible for player 2 - game is active");
 
-    log("Checking player 2 vacation settings for no-vacation warning...");
+    log("Checking player 2 vacation settings for disable-vacation warning...");
     await player2Page.goto("/user/settings");
 
     const vacationTab2 = player2Page.getByText("Vacation", { exact: true });
@@ -284,9 +284,9 @@ export const tournamentNoVacationTest = async ({
     ).toBeVisible({ timeout: 15000 });
 
     await expect(
-        player2Page.locator(".no-vacation-warning").getByText(/Tournament Game/),
+        player2Page.locator(".disable-vacation-warning").getByText(/Tournament Game/),
     ).toBeVisible();
-    log("Player 2 sees no-vacation warning with game link");
+    log("Player 2 sees disable-vacation warning with game link");
 
-    log("=== No-Vacation Tournament Test Complete ===");
+    log("=== Disable-Vacation Tournament Test Complete ===");
 };

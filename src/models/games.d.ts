@@ -304,7 +304,7 @@ declare namespace rest_api {
             json: games.GameData;
             id: number;
             name: string;
-            no_vacation?: boolean;
+            disable_vacation?: boolean;
             time_per_move?: number;
         }
     }

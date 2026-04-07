@@ -126,7 +126,7 @@ interface TournamentInterface {
     exclude_provisional: boolean;
     auto_start_on_max: boolean;
     ranked: boolean;
-    no_vacation?: boolean;
+    disable_vacation?: boolean;
     exclusivity: string;
     first_pairing_method: string;
     subsequent_pairing_method: string;
@@ -185,7 +185,7 @@ export function Tournament(): React.ReactElement {
         exclude_provisional: true,
         auto_start_on_max: false,
         ranked: true,
-        no_vacation: false,
+        disable_vacation: false,
         //scheduled_rounds: true,
         exclusivity: "group",
         first_pairing_method: "slide",
@@ -724,8 +724,8 @@ export function Tournament(): React.ReactElement {
     const setRanked = (ev: React.ChangeEvent<HTMLInputElement>) => {
         setTournament({ ...tournament, ranked: ev.target.checked });
     };
-    const setNoVacation = (ev: React.ChangeEvent<HTMLInputElement>) => {
-        setTournament({ ...tournament, no_vacation: ev.target.checked });
+    const setDisableVacation = (ev: React.ChangeEvent<HTMLInputElement>) => {
+        setTournament({ ...tournament, disable_vacation: ev.target.checked });
     };
     const setDescription = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         setTournament({ ...tournament, description: ev.target.value });
@@ -734,7 +734,7 @@ export function Tournament(): React.ReactElement {
         setTournament({
             ...tournament,
             time_control_parameters: tc,
-            no_vacation: tc.speed === "correspondence" ? tournament.no_vacation : false,
+            disable_vacation: tc.speed === "correspondence" ? tournament.disable_vacation : false,
         });
     };
     const updateNotes = (data: { [k: string]: any }) => {
@@ -939,7 +939,7 @@ export function Tournament(): React.ReactElement {
         : _("Allowed");
     const analysis_mode_text = tournament.analysis_enabled ? _("Allowed") : _("Not allowed");
     const ranked_text = tournament.ranked ? _("Ranked") : _("Unranked");
-    const no_vacation_text = tournament.no_vacation
+    const disable_vacation_text = tournament.disable_vacation
         ? _("Vacation disabled")
         : _("Vacation allowed");
     const cdn_release = data.get("config.cdn_release");
@@ -1164,9 +1164,9 @@ export function Tournament(): React.ReactElement {
                     )}
                     {!editing &&
                         tournament_loaded &&
-                        tournament.no_vacation &&
+                        tournament.disable_vacation &&
                         tournament.time_control_parameters.speed === "correspondence" && (
-                            <div className="no-vacation-banner">
+                            <div className="disable-vacation-banner">
                                 <i className="fa fa-exclamation-triangle"></i>{" "}
                                 {_(
                                     "Vacation is disabled for this tournament. Game clocks will not pause for vacation.",
@@ -1595,17 +1595,19 @@ export function Tournament(): React.ReactElement {
                             {tournament.time_control_parameters.speed === "correspondence" && (
                                 <tr>
                                     <th>
-                                        <label htmlFor="no_vacation">{_("No vacation")}</label>
+                                        <label htmlFor="disable_vacation">
+                                            {_("Disable vacation")}
+                                        </label>
                                     </th>
                                     <td>
                                         {!editing ? (
-                                            no_vacation_text
+                                            disable_vacation_text
                                         ) : (
                                             <input
                                                 type="checkbox"
-                                                id="no_vacation"
-                                                checked={tournament.no_vacation ?? false}
-                                                onChange={setNoVacation}
+                                                id="disable_vacation"
+                                                checked={tournament.disable_vacation ?? false}
+                                                onChange={setDisableVacation}
                                             />
                                         )}
                                     </td>
