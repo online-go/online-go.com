@@ -37,6 +37,8 @@ interface GobanContainerProps {
     extra_props?: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>;
     /** Vertical alignment of the rendered goban within the container */
     verticalAlign?: "center" | "top";
+    /** How to derive the display width used for square-size calculation */
+    sizingMode?: "min" | "width";
 }
 
 /**
@@ -48,6 +50,7 @@ export function GobanContainer({
     onWheel,
     extra_props,
     verticalAlign = "center",
+    sizingMode = "min",
 }: GobanContainerProps): React.ReactElement {
     const goban_controller = useGobanControllerOrNull();
     const ref_goban_container = React.useRef<HTMLDivElement>(null);
@@ -115,10 +118,12 @@ export function GobanContainer({
             if (no_debounce) {
                 // Debouncing is necessary because setting the square size can be an expensive operation.
                 goban.setSquareSizeBasedOnDisplayWidth(
-                    Math.min(
-                        ref_goban_container.current.offsetWidth,
-                        ref_goban_container.current.offsetHeight,
-                    ),
+                    sizingMode === "width"
+                        ? ref_goban_container.current.offsetWidth
+                        : Math.min(
+                              ref_goban_container.current.offsetWidth,
+                              ref_goban_container.current.offsetHeight,
+                          ),
                 );
             } else {
                 resize_debounce.current = setTimeout(() => onResize(true), 10);
@@ -126,7 +131,7 @@ export function GobanContainer({
 
             recenterGoban();
         },
-        [goban, goban_div, onResizeCb, verticalAlign],
+        [goban, goban_div, onResizeCb, sizingMode, verticalAlign],
     );
 
     React.useEffect(() => {

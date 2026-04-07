@@ -60,8 +60,9 @@
         }
 
         &.secondary-pane-equal {
-            --equal-board-width: min(100%, 36rem, 72vh);
-            --equal-board-height: calc(var(--equal-board-width) * 1.1666667);
+            --equal-board-max-width: min(36rem, 72vh);
+            --equal-board-width: min(100%, var(--equal-board-max-width));
+            --equal-board-height: auto;
             --equal-controls-height: 8.85rem;
             grid-template-columns: minmax(0, 1fr) 1.3rem minmax(0, 1fr);
 
@@ -75,22 +76,21 @@
             }
 
             .board-content {
-                grid-template-rows: 4.25rem minmax(0, 1fr) var(--equal-controls-height);
+                grid-template-rows: auto minmax(0, 1fr) var(--equal-controls-height);
             }
 
             .board-meta {
-                height: 4.25rem;
                 justify-content: flex-start;
-                overflow: hidden;
             }
 
             .board-meta-top {
                 min-height: 1.2rem;
+                flex-wrap: wrap;
             }
 
             .players {
                 min-height: 1.1rem;
-                white-space: nowrap;
+                white-space: normal;
             }
 
             .game-details {
@@ -112,7 +112,7 @@
             }
 
             .secondary-board .board-actions {
-                flex-wrap: nowrap;
+                flex-wrap: wrap;
             }
 
             .KibitzBoardControls {
@@ -129,7 +129,7 @@
             .KibitzBoard {
                 flex: 0 0 auto;
                 height: var(--equal-board-height);
-                max-width: none;
+                max-width: var(--equal-board-width);
                 overflow: hidden;
                 width: var(--equal-board-width);
             }
@@ -142,7 +142,8 @@
             .KibitzBoardControls {
                 align-self: center;
                 box-sizing: border-box;
-                width: var(--equal-board-width);
+                max-width: var(--equal-board-width);
+                width: 100%;
             }
 
             .main-board .KibitzBoardControls.minimal-row,
@@ -166,6 +167,7 @@
         display: flex;
         flex-direction: column;
         min-height: 0;
+        min-width: 0;
 
         .panel-title {
             align-items: center;
@@ -207,6 +209,7 @@
             gap: 0.125rem;
             grid-template-rows: auto minmax(0, 1fr) auto;
             min-height: 0;
+            min-width: 0;
             width: 100%;
         }
 
@@ -222,6 +225,7 @@
                 display: flex;
                 gap: 0.35rem;
                 justify-content: space-between;
+                min-width: 0;
             }
 
             .board-label {
@@ -284,6 +288,7 @@
             gap: 0.35rem;
             justify-content: flex-end;
             margin-left: auto;
+            min-width: 0;
             text-align: left;
         }
 
@@ -348,15 +353,11 @@
 @media (max-width: 1850px), (max-height: 1000px) {
     .KibitzRoomStage {
         .KibitzRoomStage-boards.secondary-pane-equal {
-            --equal-board-width: min(100%, 31rem, 60vh);
+            --equal-board-max-width: min(31rem, 60vh);
             --equal-controls-height: 6.1rem;
 
             .board-content {
-                grid-template-rows: 4rem minmax(0, 1fr) var(--equal-controls-height);
-            }
-
-            .board-meta {
-                height: 4rem;
+                grid-template-rows: auto minmax(0, 1fr) var(--equal-controls-height);
             }
 
             .secondary-board .kibitz-move-tree-container {

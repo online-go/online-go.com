@@ -4,7 +4,7 @@
     color: var(--colored-background-fg);
     display: flex;
     flex: 0 0 auto;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: 0.5rem;
     justify-content: space-between;
     min-height: 3rem;
@@ -15,7 +15,7 @@
         flex: 1;
         flex-direction: column;
         gap: 0.2rem;
-        min-width: 14rem;
+        min-width: 0;
         min-height: 0;
     }
 
@@ -35,18 +35,22 @@
         gap: 0.5rem;
         align-items: center;
         justify-content: flex-end;
-        flex-wrap: nowrap;
-        flex-shrink: 0;
+        flex-wrap: wrap;
+        flex-shrink: 1;
+        min-width: 0;
     }
 
     .proposal-votes {
         display: flex;
         gap: 0.5rem;
-        white-space: nowrap;
+        flex-wrap: wrap;
+        min-width: 0;
+        white-space: normal;
     }
 
     .proposal-actions {
         display: flex;
+        flex-wrap: wrap;
         gap: 0.5rem;
 
         button {

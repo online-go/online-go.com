@@ -3,8 +3,9 @@
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
+    min-width: 0;
     padding: 0 0.125rem;
-    width: fit-content;
+    width: 100%;
 
     .control-row {
         align-items: center;
@@ -67,6 +68,7 @@
         margin: 0;
         max-width: 100%;
         min-height: 6.5rem;
+        min-width: 0;
         overflow: auto;
         overflow-x: hidden;
         resize: vertical;
