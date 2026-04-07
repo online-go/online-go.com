@@ -39,11 +39,22 @@ async function captureKibitzLayout(
     testInfo: TestInfo,
     options?: {
         equalMode?: boolean;
+        openVariation?: boolean;
     },
 ) {
     await page.setViewportSize({ width: 1920, height: 1080 });
     await load(page, route);
     await page.waitForTimeout(1000);
+
+    if (options?.openVariation) {
+        const variationTrigger = page
+            .locator(".KibitzRoomStream .variation-post, .KibitzVariationList .variation-item")
+            .first();
+        if (await variationTrigger.count()) {
+            await variationTrigger.click();
+            await page.waitForTimeout(250);
+        }
+    }
 
     if (options?.equalMode) {
         const increaseButton = page.locator(".KibitzDividerHandle .divider-arrow.increase");
@@ -146,16 +157,46 @@ async function captureKibitzLayout(
             }));
         }
 
+        const mainBoardContent = document.querySelector(".board-panel.main-board .board-content");
+        const secondaryBoardContent = document.querySelector(
+            ".board-panel.secondary-board .board-content",
+        );
+        const mainBoardMeta = document.querySelector(".board-panel.main-board .board-meta");
+        const secondaryBoardMeta = document.querySelector(
+            ".board-panel.secondary-board .board-meta",
+        );
+        const mainBoardControls = document.querySelector(
+            ".board-panel.main-board .KibitzBoardControls",
+        );
+        const secondaryBoardControls = document.querySelector(
+            ".board-panel.secondary-board .KibitzBoardControls",
+        );
         const kibitzBoard = document.querySelector(".KibitzBoard.main-board-surface");
         const gobanContainer = document.querySelector(
             ".KibitzBoard.main-board-surface .goban-container",
         );
         const goban = document.querySelector(".KibitzBoard.main-board-surface .Goban");
+        const secondaryKibitzBoard = document.querySelector(".KibitzBoard.secondary-board-surface");
+        const secondaryGobanContainer = document.querySelector(
+            ".KibitzBoard.secondary-board-surface .goban-container",
+        );
+        const secondaryGoban = document.querySelector(
+            ".KibitzBoard.secondary-board-surface .Goban",
+        );
 
         return {
+            mainBoardContent: describeElement(mainBoardContent),
+            secondaryBoardContent: describeElement(secondaryBoardContent),
+            mainBoardMeta: describeElement(mainBoardMeta),
+            secondaryBoardMeta: describeElement(secondaryBoardMeta),
+            mainBoardControls: describeElement(mainBoardControls),
+            secondaryBoardControls: describeElement(secondaryBoardControls),
             kibitzBoard: describeElement(kibitzBoard),
             gobanContainer: describeElement(gobanContainer),
             goban: describeElement(goban),
+            secondaryKibitzBoard: describeElement(secondaryKibitzBoard),
+            secondaryGobanContainer: describeElement(secondaryGobanContainer),
+            secondaryGoban: describeElement(secondaryGoban),
             gobanChildren: describeChildren(goban),
         };
     });
@@ -207,7 +248,7 @@ ogsTest.describe("@Manual Kibitz visual inspection harness", () => {
                 "/kibitz/top-19x19?demo-kibitz=1",
                 "kibitz-top-19x19-demo-1080p-equal.png",
                 testInfo,
-                { equalMode: true },
+                { equalMode: true, openVariation: true },
             );
         },
     );

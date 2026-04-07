@@ -65,6 +65,8 @@ interface ObservedGameResult {
     };
 }
 
+interface ActivePlayerGameResult extends ObservedGameResult {}
+
 function createUser(id: number, username: string, ranking: number): KibitzRoom["users"][number] {
     return {
         id,
@@ -258,6 +260,16 @@ function createDebugCandidate(game: ObservedGameResult): KibitzDebugCandidate {
         height: game.height,
         move_count: game.json?.moves?.length,
     };
+}
+
+async function queryCurrentUserActiveGames(): Promise<ActivePlayerGameResult[]> {
+    const userId = getCurrentUserId();
+    if (userId == null) {
+        return [];
+    }
+
+    const response = await get(`players/${userId}/full`);
+    return (response.active_games ?? []) as ActivePlayerGameResult[];
 }
 
 function queryObservedGames(where: Record<string, boolean>): Promise<ObservedGameResult[]> {
@@ -520,25 +532,27 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         });
 
         try {
-            const [top19Games, tournamentGames, top9Games, broadGames] = await Promise.all([
-                queryObservedGames({
-                    hide_unranked: true,
-                    hide_13x13: true,
-                    hide_9x9: true,
-                    hide_other: true,
-                }),
-                queryObservedGames({
-                    hide_open: true,
-                    hide_ladder: true,
-                }),
-                queryObservedGames({
-                    hide_unranked: true,
-                    hide_19x19: true,
-                    hide_13x13: true,
-                    hide_other: true,
-                }),
-                queryObservedGames({}),
-            ]);
+            const [top19Games, tournamentGames, top9Games, broadGames, activeGames] =
+                await Promise.all([
+                    queryObservedGames({
+                        hide_unranked: true,
+                        hide_13x13: true,
+                        hide_9x9: true,
+                        hide_other: true,
+                    }),
+                    queryObservedGames({
+                        hide_open: true,
+                        hide_ladder: true,
+                    }),
+                    queryObservedGames({
+                        hide_unranked: true,
+                        hide_19x19: true,
+                        hide_13x13: true,
+                        hide_other: true,
+                    }),
+                    queryObservedGames({}),
+                    queryCurrentUserActiveGames(),
+                ]);
 
             const [top19Resolution, top9Resolution] = await Promise.all([
                 resolveObservedGameByBoardSize(top19Games, 19, 19, currentUserId),
@@ -555,9 +569,13 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                     : null) ??
                 pickBroadFallbackGame(broadGames, 19, 19, currentUserId);
             const top19Final =
-                top19Resolution.game ?? pickBroadFallbackGame(broadGames, 19, 19, currentUserId);
+                top19Resolution.game ??
+                pickBroadFallbackGame(broadGames, 19, 19, currentUserId) ??
+                pickBroadFallbackGame(activeGames, 19, 19, currentUserId);
             const top9Final =
-                top9Resolution.game ?? pickBroadFallbackGame(broadGames, 9, 9, currentUserId);
+                top9Resolution.game ??
+                pickBroadFallbackGame(broadGames, 9, 9, currentUserId) ??
+                pickBroadFallbackGame(activeGames, 9, 9, currentUserId);
 
             const roomUpdates: Record<string, ObservedGameResult | null> = {
                 "top-19x19": top19Final,
@@ -569,8 +587,18 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 {
                     room_id: "top-19x19",
                     requested_size: "19x19",
-                    query_count: top19Games.length > 0 ? top19Games.length : broadGames.length,
-                    query_source: top19Games.length > 0 ? "filtered" : "broad-fallback",
+                    query_count:
+                        top19Games.length > 0
+                            ? top19Games.length
+                            : broadGames.length > 0
+                              ? broadGames.length
+                              : activeGames.length,
+                    query_source:
+                        top19Games.length > 0
+                            ? "filtered"
+                            : broadGames.length > 0
+                              ? "broad-fallback"
+                              : "active-games-fallback",
                     picked_game_id: top19Final?.id,
                     picked_via: top19Resolution.game
                         ? top19Resolution.picked_via
@@ -578,7 +606,12 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                           ? "query"
                           : undefined,
                     error: top19Resolution.error,
-                    candidates: (top19Games.length > 0 ? top19Games : broadGames)
+                    candidates: (top19Games.length > 0
+                        ? top19Games
+                        : broadGames.length > 0
+                          ? broadGames
+                          : activeGames
+                    )
                         .slice(0, 5)
                         .map(createDebugCandidate),
                 },
@@ -596,8 +629,18 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 {
                     room_id: "top-9x9",
                     requested_size: "9x9",
-                    query_count: top9Games.length > 0 ? top9Games.length : broadGames.length,
-                    query_source: top9Games.length > 0 ? "filtered" : "broad-fallback",
+                    query_count:
+                        top9Games.length > 0
+                            ? top9Games.length
+                            : broadGames.length > 0
+                              ? broadGames.length
+                              : activeGames.length,
+                    query_source:
+                        top9Games.length > 0
+                            ? "filtered"
+                            : broadGames.length > 0
+                              ? "broad-fallback"
+                              : "active-games-fallback",
                     picked_game_id: top9Final?.id,
                     picked_via: top9Resolution.game
                         ? top9Resolution.picked_via
@@ -605,7 +648,12 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                           ? "query"
                           : undefined,
                     error: top9Resolution.error,
-                    candidates: (top9Games.length > 0 ? top9Games : broadGames)
+                    candidates: (top9Games.length > 0
+                        ? top9Games
+                        : broadGames.length > 0
+                          ? broadGames
+                          : activeGames
+                    )
                         .slice(0, 5)
                         .map(createDebugCandidate),
                 },

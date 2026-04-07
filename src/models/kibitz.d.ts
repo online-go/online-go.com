@@ -146,7 +146,7 @@ export interface KibitzDebugRoomHydration {
     room_id: string;
     requested_size?: `${number}x${number}`;
     query_count: number;
-    query_source?: "filtered" | "broad-fallback";
+    query_source?: "filtered" | "broad-fallback" | "active-games-fallback";
     picked_game_id?: number;
     picked_via?: "query" | "details";
     error?: string;
