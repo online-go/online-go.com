@@ -33,7 +33,7 @@
         "test:e2e:debug": "node scripts/run-playwright.js --debug",
         "test:ci": "yarn test:e2e:docker:smoke && yarn test",
         "test:e2e:docker:smoke": "CI=true yarn test:e2e:docker --grep @Smoke",
-        "test:e2e:docker": "PLAYWRIGHT_DOCKER=mcr.microsoft.com/playwright:v1.51.0-noble scripts/run-playwright-in-docker.sh"
+        "test:e2e:docker": "PLAYWRIGHT_DOCKER=mcr.microsoft.com/playwright:v1.59.1-noble scripts/run-playwright-in-docker.sh"
     },
     "browserslist": [
         "last 8 years, not dead"
@@ -44,7 +44,7 @@
         "@eslint/js": "9.38.0",
         "@google-cloud/translate": "^9.2.1",
         "@openrouter/sdk": "^0.9.11",
-        "@playwright/test": "^1.56.1",
+        "@playwright/test": "^1.59.1",
         "@stylistic/eslint-plugin": "^5.5.0",
         "@testing-library/dom": "^10.4.1",
         "@testing-library/jest-dom": "^6.9.1",
