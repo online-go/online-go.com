@@ -92,6 +92,8 @@ In development, the best is `yarn test:e2e:ui` , which opens the PW UI and lets 
 
 Other yarn targets are listed below.
 
+You need the dev server running - the playwright tests run against that (except where noted)
+
 ## Writing Tests
 
 It's probably best to find a test that is like the one you want to write and see how it's done.

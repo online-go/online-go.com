@@ -8,7 +8,7 @@ on:
 #        branches: [main]
 
 env:
-    PLAYWRIGHT_DOCKER: mcr.microsoft.com/playwright:v1.51.0-noble
+    PLAYWRIGHT_DOCKER: mcr.microsoft.com/playwright:v1.59.0-noble
 
 jobs:
     playwright:

@@ -126,7 +126,7 @@ You could poke around in `src/` if you are already curious
 
 6. in a command window, cd to the folder that was created when you cloned the repo and do
 
-`yarn clean-install`
+`yarn install --frozen-lockfile`
 
 `yarn run dev`
 
