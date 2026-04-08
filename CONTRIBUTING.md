@@ -2,10 +2,10 @@
 
 We welcome contributions made with AI assistance! If you're using AI tools like Claude Code, Cursor, GitHub Copilot, Codex, or any other AI tool to help with your contributions, please keep these guidelines in mind:
 
--   **Follow project standards**: All code must adhere to the guidelines in [AGENTS.md](AGENTS.md), including our development commands, architecture patterns, and code quality standards. When in doubt, it should look and feel like the other code in the project.
--   **Review and understand**: You are responsible for fully reviewing, understanding, and testing all AI-generated code before submitting. Don't submit code you haven't personally verified or don't understand.
--   **Test thoroughly**: Ensure the changes you've made are working as expected. Ensure they work on both mobile and desktop browsers. When applicable, ensure they work as expected when you're logged in or anonymous.
--   **Code quality**: Ensure the code builds successfully and passes all linting and formatting checks (`npm run build`, `npm run lint`, `npm run prettier`).
+- **Follow project standards**: All code must adhere to the guidelines in [AGENTS.md](AGENTS.md), including our development commands, architecture patterns, and code quality standards. When in doubt, it should look and feel like the other code in the project.
+- **Review and understand**: You are responsible for fully reviewing, understanding, and testing all AI-generated code before submitting. Don't submit code you haven't personally verified or don't understand.
+- **Test thoroughly**: Ensure the changes you've made are working as expected. Ensure they work on both mobile and desktop browsers. When applicable, ensure they work as expected when you're logged in or anonymous.
+- **Code quality**: Ensure the code builds successfully and passes all linting and formatting checks (`npm run build`, `npm run lint`, `npm run prettier`).
 
 AI is a powerful tool for productivity, but the quality and correctness of your contribution is ultimately your responsibility.
 
@@ -30,7 +30,7 @@ npx yarn install
 npx husky
 
 # Run this to start the development server and build system
-npm run dev
+yarn run dev
 ```
 
 If you're on Linux, you can simply type `make` and it will do all this for you as well.
@@ -48,21 +48,20 @@ To open issues or make code contributions you'll need to have a GitHub account, 
 
 ## Opening issues
 
--   Search the [issue tracker](https://github.com/online-go/online-go.com/issues) to see if the problem is already submitted or the request for an enhancement exists.
--   Submit an issue if one does not exist. Please include as much of the below information as possible:
-    -   A clear summary.
-    -   Operating System tested on.
-    -   Browser used when bug appeared (or multiple browsers if you have replicated the bug).
-    -   Browser version.
-    -   Steps to reproduce the issue.
-    -   Any additional information that you might think is useful.
+- Search the [issue tracker](https://github.com/online-go/online-go.com/issues) to see if the problem is already submitted or the request for an enhancement exists.
+- Submit an issue if one does not exist. Please include as much of the below information as possible:
+    - A clear summary.
+    - Operating System tested on.
+    - Browser used when bug appeared (or multiple browsers if you have replicated the bug).
+    - Browser version.
+    - Steps to reproduce the issue.
+    - Any additional information that you might think is useful.
 
 ## How to Make Changes
 
 1. [Fork the repository](https://help.github.com/articles/fork-a-repo/).
     - If you haven't done so, [set up git](https://help.github.com/articles/set-up-git/).
 2. Clone the repository to your computer. (Found in step 2 of "keeping your fork synced" in the fork a repo help article.)
-
     - To ensure you track the latest updates, you will want to configure git to sync your fork with the original online-go repository. (See step 3 in the same article.)
     - You will need [Git LFS](https://git-lfs.github.com/) installed.
         - If you already have it that should be fine
@@ -85,16 +84,16 @@ To open issues or make code contributions you'll need to have a GitHub account, 
 
 This project is largely built with TypeScript and React. If you are unfamiliar with these, please take a few minutes to familiarize yourself.
 
--   [React](https://reactjs.org/)
--   [TypeScript](https://www.typescriptlang.org/)
+- [React](https://reactjs.org/)
+- [TypeScript](https://www.typescriptlang.org/)
 
 ## Detailed Setup Steps (Windows, but applicable mostly to others)
 
 0. Create a fork of [online-go.com](http://online-go.com/)
 
--   Have an account at [github.com](http://github.com/), login there
--   Go to [GitHub - online-go/online-go.com: Source code for the Online-Go.com web interface](https://github.com/online-go/online-go.com)
--   Press the “fork” button
+- Have an account at [github.com](http://github.com/), login there
+- Go to [GitHub - online-go/online-go.com: Source code for the Online-Go.com web interface](https://github.com/online-go/online-go.com)
+- Press the “fork” button
 
 1. Install VSCode
 
@@ -110,14 +109,14 @@ This project is largely built with TypeScript and React. If you are unfamiliar w
 
 5. Open VSCode
 
--   Choose "clone git repository"
--   Chose "clone from github"
--   Allow it to log you into GitHub
--   Choose _your fork_ of online-go.com to clone
-    -   **make sure it's your fork** - VSCode may offer the official repo at the top of the list, don't chose that one
--   Chose a local folder somewhere sensible to clone it into (definitely distinct from anything left over from before!)
--   Agree to install the recommended extensions
-    (you definitely need these for OGS, they setup the editor for coding standards that are enforced, and provide linting while editing)
+- Choose "clone git repository"
+- Chose "clone from github"
+- Allow it to log you into GitHub
+- Choose _your fork_ of online-go.com to clone
+    - **make sure it's your fork** - VSCode may offer the official repo at the top of the list, don't chose that one
+- Chose a local folder somewhere sensible to clone it into (definitely distinct from anything left over from before!)
+- Agree to install the recommended extensions
+  (you definitely need these for OGS, they setup the editor for coding standards that are enforced, and provide linting while editing)
 
 ... you should now see a code explorer on the left pane of VSCode showing the OGS repo file structure (maybe you need to click on the top icon in the left pane to get this view).
 
@@ -127,9 +126,9 @@ You could poke around in `src/` if you are already curious
 
 6. in a command window, cd to the folder that was created when you cloned the repo and do
 
-`npm clean-install`
+`yarn clean-install`
 
-`npm run dev`
+`yarn run dev`
 
 This should result in a bunch of packages being installed, then a server starting up and telling you it's running
 
@@ -139,14 +138,14 @@ Navigate to localhost:8080 in your browser and hopefully see your local checkout
 
 You can immediately edit something:
 
--   Click on the search magnifying glass top left pane of VSCode
--   Type `no games being played` into the search bar
+- Click on the search magnifying glass top left pane of VSCode
+- Type `no games being played` into the search bar
 
 It should show you where this string is in [ObserveGamesComponent.tsx](src/components/ObserveGamesComponent/ObserveGamesComponent.tsx).
 
--   click on that to be taken to that place in the code
--   Edit the string, save the file
--   See in the browser that string update on the "Watch" page that was open.
+- click on that to be taken to that place in the code
+- Edit the string, save the file
+- See in the browser that string update on the "Watch" page that was open.
 
 :tada: you made an edit to OGS UI.
 
@@ -156,15 +155,15 @@ You will want to commit your changes regularly locally. To prepare for this you 
 
 This is easiest done in VSCode - down the bottom left is a label telling you what branch you are in fact on now. It has the "source control" symbol (branchy thing) and the name of the branch. To make a branch and commit to it:
 
--   Click the branch label
--   "Create a branch"
--   Give it a name
+- Click the branch label
+- "Create a branch"
+- Give it a name
 
 Then
 
--   Click on the "source control" symbol in the left pane (select git actions)
--   Type a meaningful commit message in the obvious message entry place
--   click commit
+- Click on the "source control" symbol in the left pane (select git actions)
+- Type a meaningful commit message in the obvious message entry place
+- click commit
 
 Do the last three steps often :slight_smile:
 
@@ -172,9 +171,19 @@ Do the last three steps often :slight_smile:
 
 When your change is ready for incorporation into OGS:
 
--   Click "source control" in the left
--   Click "publish change"
+- Click "source control" in the left
+- Click "publish change"
 
 **Note**: it might be saying "Sync" instead of "Publish" - this means that GitHub knows about your branch already from something you did previously, that's OK.
 
 🎉 Now your code is available ready for a Pull Request into the main repo.
+
+8. Before you make a Pull Request, of course you need to test your change.
+
+A reminder from above:
+
+- Ensure the changes you've made are working as expected. Ensure they work on both mobile and desktop browsers. When applicable, ensure they work as expected when you're logged in or anonymous.
+
+It's also best if your change has an automated test. We use Playwright for automated end-to-end tests.
+
+You find these in the `e2e-tests/` folder, see the [e2e README](e2e-tests/README.md).
