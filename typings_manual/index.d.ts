@@ -1,8 +1,5 @@
 /// <reference path="js-noise.d.ts" />
 
-// CSS module declarations for Vite
-declare module "*.css";
-
 // Vite worker URL import: `import url from './worker?worker&url'` returns
 // the URL string of the separately-bundled worker script.
 declare module "*?worker&url" {
