@@ -293,8 +293,10 @@ function GroupList({ forceShow }: { forceShow?: boolean }): React.ReactElement |
                 setGroups(g);
             }
         };
-        const updateInvitations = (inv: InvitationType[]) => {
-            setInvitations(inv);
+        const updateInvitations = (inv?: InvitationType[]) => {
+            if (inv) {
+                setInvitations(inv);
+            }
         };
 
         data.watch(cached.groups, updateGroups);
@@ -352,6 +354,9 @@ function GroupList({ forceShow }: { forceShow?: boolean }): React.ReactElement |
 
 function TournamentList({ forceShow }: { forceShow?: boolean }): React.ReactElement | null {
     const [tournaments, setTournaments] = React.useState<ActiveTournamentList>([]);
+    const [tournamentInvitations, setTournamentInvitations] = React.useState<
+        rest_api.me.TournamentInvitation[]
+    >([]);
 
     React.useEffect(() => {
         const update = (t?: ActiveTournamentList) => {
@@ -359,15 +364,34 @@ function TournamentList({ forceShow }: { forceShow?: boolean }): React.ReactElem
                 setTournaments(t);
             }
         };
+        const updateInvitations = (inv?: rest_api.me.TournamentInvitation[]) => {
+            if (inv) {
+                setTournamentInvitations(inv);
+            }
+        };
 
         data.watch(cached.active_tournaments, update);
+        data.watch(cached.tournament_invitations, updateInvitations);
 
         return () => {
             data.unwatch(cached.active_tournaments, update);
+            data.unwatch(cached.tournament_invitations, updateInvitations);
         };
     }, []);
 
-    if (!forceShow && tournaments.length === 0) {
+    const acceptInvite = (invite: rest_api.me.TournamentInvitation) => {
+        post("me/tournaments/invitations", { request_id: invite.id })
+            .then(() => 0)
+            .catch(() => 0);
+    };
+
+    const rejectInvite = (invite: rest_api.me.TournamentInvitation) => {
+        post("me/tournaments/invitations", { request_id: invite.id, delete: true })
+            .then(() => 0)
+            .catch(() => 0);
+    };
+
+    if (!forceShow && tournaments.length === 0 && tournamentInvitations.length === 0) {
         return null;
     }
 
@@ -379,6 +403,16 @@ function TournamentList({ forceShow }: { forceShow?: boolean }): React.ReactElem
                 </Link>
             </h3>
             <div className="Home-TournamentList">
+                {tournamentInvitations.map((invite) => (
+                    <div className="invite" key={invite.id}>
+                        <i className="fa fa-times" onClick={() => rejectInvite(invite)} />
+                        <i className="fa fa-check" onClick={() => acceptInvite(invite)} />
+                        <Link to={`/tournament/${invite.tournament.id}`}>
+                            <img src={user_uploads_url(invite.tournament.icon, 32)} />{" "}
+                            {invite.tournament.name}
+                        </Link>
+                    </div>
+                ))}
                 {tournaments.map((tournament) => (
                     <Link key={tournament.id} to={`/tournament/${tournament.id}`}>
                         <img src={user_uploads_url(tournament.icon, 32)} /> {tournament.name}
@@ -391,6 +425,9 @@ function TournamentList({ forceShow }: { forceShow?: boolean }): React.ReactElem
 
 function HomeFriendList({ forceShow }: { forceShow?: boolean }): React.ReactElement | null {
     const [friends, setFriends] = React.useState<PlayerCacheEntry[]>([]);
+    const [friendInvitations, setFriendInvitations] = React.useState<rest_api.FriendInvitations>(
+        [],
+    );
 
     React.useEffect(() => {
         const update = (f?: PlayerCacheEntry[]) => {
@@ -398,15 +435,22 @@ function HomeFriendList({ forceShow }: { forceShow?: boolean }): React.ReactElem
                 setFriends(f);
             }
         };
+        const updateInvitations = (inv?: rest_api.FriendInvitations) => {
+            if (inv) {
+                setFriendInvitations(inv);
+            }
+        };
 
         data.watch(cached.friends, update);
+        data.watch(cached.friend_invitations, updateInvitations);
 
         return () => {
             data.unwatch(cached.friends, update);
+            data.unwatch(cached.friend_invitations, updateInvitations);
         };
     }, []);
 
-    if (!forceShow && friends.length === 0) {
+    if (!forceShow && friends.length === 0 && friendInvitations.length === 0) {
         return null;
     }
 
