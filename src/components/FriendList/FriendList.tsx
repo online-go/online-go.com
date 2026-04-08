@@ -23,8 +23,7 @@ import * as preferences from "@/lib/preferences";
 import { Player } from "@/components/Player";
 import cached from "@/lib/cached";
 import { PlayerCacheEntry } from "@/lib/player_cache";
-import { get, post } from "@/lib/requests";
-import { push_manager } from "../UIPush";
+import { post } from "@/lib/requests";
 import { player_is_ignored } from "../BlockPlayer";
 import "./FriendList.css";
 export function FriendList() {
@@ -36,21 +35,16 @@ export function FriendList() {
     const [notifyOnDecline, setNotifyOnDecline] = React.useState(false);
 
     React.useEffect(() => {
-        const update_friend_list = () => {
-            get("me/friends/invitations/")
-                .then((invitations: rest_api.FriendInvitations) => {
-                    setInvitations(invitations);
-                })
-                .catch((err) => {
-                    console.error(err);
-                });
+        const updateInvitations = (inv?: rest_api.FriendInvitations) => {
+            if (inv) {
+                setInvitations(inv);
+            }
         };
 
-        update_friend_list();
-        const handler = push_manager.on("update-friend-list", update_friend_list);
+        data.watch(cached.friend_invitations, updateInvitations);
 
         return () => {
-            push_manager.off(handler);
+            data.unwatch(cached.friend_invitations, updateInvitations);
         };
     }, []);
 
@@ -108,14 +102,12 @@ export function FriendList() {
     };
 
     const acceptInvite = (invitation: rest_api.FriendInvitations[number]) => {
-        setInvitations(invitations.filter((inv) => inv.from_user.id !== invitation.from_user.id));
         post("me/friends/invitations/", { from_user: invitation.from_user.id })
             .then(() => 0)
             .catch(() => 0);
     };
 
     const rejectInvite = (invitation: rest_api.FriendInvitations[number]) => {
-        setInvitations(invitations.filter((inv) => inv.from_user.id !== invitation.from_user.id));
         post("me/friends/invitations/", {
             from_user: invitation.from_user.id,
             delete: true,
@@ -180,7 +172,6 @@ export function FriendList() {
                         </div>
                     ),
             )}
-            {(friends.length === 0 || null) && null}
         </div>
     );
 }

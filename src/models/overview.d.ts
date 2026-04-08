@@ -35,6 +35,12 @@ declare namespace rest_api {
             player_is_member_of_group: boolean;
         }
 
+        interface TournamentInvitation {
+            id: number;
+            tournament: { id: number; name: string; icon: string };
+            message: string;
+        }
+
         interface Invitation {
             id: number;
             group: {
