@@ -47,6 +47,25 @@ interface KibitzRoomStageProps {
     onSetSecondaryPaneMode: (mode: "hidden" | "small" | "equal") => void;
 }
 
+function getPlayerRankText(player: unknown): string | null {
+    if (!player || typeof player !== "object") {
+        return null;
+    }
+
+    const candidate = player as Record<string, unknown>;
+    const rankValue =
+        candidate.rank_label ?? candidate.rank ?? candidate.rank_text ?? candidate.display_rank;
+
+    return typeof rankValue === "string" && rankValue.trim().length > 0 ? rankValue.trim() : null;
+}
+
+function formatPlayerNameWithRank(username: string | undefined, ...players: unknown[]): string {
+    const resolvedUsername = username ?? "";
+    const rankText = players.map(getPlayerRankText).find((value) => Boolean(value));
+
+    return rankText ? `${resolvedUsername} ${rankText}` : resolvedUsername;
+}
+
 function useSquareFitSize<T extends HTMLElement>() {
     const [element, setElement] = React.useState<T | null>(null);
     const [size, setSize] = React.useState(0);
@@ -104,7 +123,6 @@ export function KibitzRoomStage({
     const mainGame = room.current_game;
     const secondaryGameId = secondaryPane.preview_game_id;
     const secondaryPaneSize = secondaryPane.collapsed ? "hidden" : (secondaryPane.size ?? "small");
-    const isSmallSecondaryPane = secondaryPaneSize === "small";
     const selectedVariation = variations.find(
         (variation) => variation.id === secondaryPane.variation_id,
     );
@@ -147,6 +165,10 @@ export function KibitzRoomStage({
     );
     const [mainBoardSlotRef, mainBoardSize] = useSquareFitSize<HTMLDivElement>();
     const [secondaryBoardSlotRef, secondaryBoardSize] = useSquareFitSize<HTMLDivElement>();
+    const [mainCurrentMoveNumber, setMainCurrentMoveNumber] = React.useState<number | null>(null);
+    const [secondaryCurrentMoveNumber, setSecondaryCurrentMoveNumber] = React.useState<
+        number | null
+    >(null);
 
     React.useEffect(() => {
         if (!mainGame?.game_id || mainGame.mock_game_data || mode === "demo") {
@@ -194,6 +216,148 @@ export function KibitzRoomStage({
                   { tournament_id: mainGameDetails.tournament },
               )
             : mainGame?.tournament_name;
+
+    const displayedBlackWithRank = formatPlayerNameWithRank(
+        displayedBlack,
+        mainGameDetails?.players?.black,
+        mainGame?.black,
+    );
+    const displayedWhiteWithRank = formatPlayerNameWithRank(
+        displayedWhite,
+        mainGameDetails?.players?.white,
+        mainGame?.white,
+    );
+    const mainIsLive =
+        typeof displayedMoveNumber === "number"
+            ? (mainCurrentMoveNumber ?? displayedMoveNumber) >= displayedMoveNumber
+            : true;
+    const mainMoveSummary =
+        typeof displayedMoveNumber === "number"
+            ? mainIsLive
+                ? interpolate(
+                      pgettext(
+                          "Move summary chip shown in the kibitz main board header when the board is live",
+                          "Move {{move_number}}",
+                      ),
+                      { move_number: displayedMoveNumber },
+                  )
+                : interpolate(
+                      pgettext(
+                          "Move summary chip shown in the kibitz main board header when the board is out of sync",
+                          "Move {{current_move}} / {{latest_move}}",
+                      ),
+                      {
+                          current_move: mainCurrentMoveNumber ?? 0,
+                          latest_move: displayedMoveNumber,
+                      },
+                  )
+            : null;
+    const secondaryDisplayedMoveCount =
+        typeof previewDisplayedMoveNumber === "number"
+            ? previewDisplayedMoveNumber
+            : typeof selectedVariation?.move_count === "number"
+              ? selectedVariation.move_count
+              : null;
+    const secondaryMoveSummary =
+        typeof secondaryDisplayedMoveCount === "number"
+            ? interpolate(
+                  pgettext(
+                      "Move summary chip shown in the kibitz secondary header",
+                      "Move {{move_number}}",
+                  ),
+                  {
+                      move_number: secondaryCurrentMoveNumber ?? secondaryDisplayedMoveCount,
+                  },
+              )
+            : null;
+    const previewBlackWithRank = formatPlayerNameWithRank(
+        previewGame?.black.username,
+        previewGame?.black,
+    );
+    const previewWhiteWithRank = formatPlayerNameWithRank(
+        previewGame?.white.username,
+        previewGame?.white,
+    );
+    const secondaryHeaderLabel = selectedVariation
+        ? secondaryPaneSize === "small"
+            ? pgettext("Label for the variation tray in kibitz", "Variation tray")
+            : pgettext("Label for the variation board in kibitz", "Variation board")
+        : secondaryPaneSize === "small"
+          ? pgettext("Label for the preview tray in kibitz", "Preview tray")
+          : pgettext("Label for the preview board in kibitz", "Preview board");
+    const secondaryHeaderStatus = selectedVariation
+        ? pgettext("Status pill shown on a kibitz variation header", "Variation")
+        : pgettext("Status pill shown on a kibitz preview header", "Private preview");
+    const secondarySubtitle = selectedVariation
+        ? secondaryPaneSize === "small"
+            ? null
+            : (selectedVariation.title ??
+              pgettext("Fallback title for an untitled kibitz variation", "Variation preview"))
+        : secondaryPaneSize === "small"
+          ? null
+          : (previewGame?.title ?? null);
+
+    React.useEffect(() => {
+        setMainCurrentMoveNumber(
+            typeof displayedMoveNumber === "number" ? displayedMoveNumber : null,
+        );
+    }, [displayedMoveNumber, mainGame?.game_id]);
+
+    React.useEffect(() => {
+        if (!mainBoardController) {
+            return;
+        }
+
+        const goban = mainBoardController.goban as any;
+        const sync = () => {
+            const nextMoveNumber = goban?.engine?.cur_move?.move_number;
+            setMainCurrentMoveNumber(typeof nextMoveNumber === "number" ? nextMoveNumber : null);
+        };
+
+        sync();
+        goban?.on?.("cur_move", sync);
+
+        return () => {
+            goban?.off?.("cur_move", sync);
+        };
+    }, [mainBoardController]);
+
+    React.useEffect(() => {
+        const nextDisplayedMoveNumber =
+            typeof previewDisplayedMoveNumber === "number"
+                ? previewDisplayedMoveNumber
+                : typeof selectedVariation?.move_count === "number"
+                  ? selectedVariation.move_count
+                  : null;
+
+        setSecondaryCurrentMoveNumber(nextDisplayedMoveNumber);
+    }, [
+        previewDisplayedMoveNumber,
+        secondaryGameId,
+        selectedVariation?.id,
+        selectedVariation?.move_count,
+    ]);
+
+    React.useEffect(() => {
+        if (!secondaryBoardController) {
+            return;
+        }
+
+        const goban = secondaryBoardController.goban as any;
+        const sync = () => {
+            const nextMoveNumber = goban?.engine?.cur_move?.move_number;
+            setSecondaryCurrentMoveNumber(
+                typeof nextMoveNumber === "number" ? nextMoveNumber : null,
+            );
+        };
+
+        sync();
+        goban?.on?.("cur_move", sync);
+
+        return () => {
+            goban?.off?.("cur_move", sync);
+        };
+    }, [secondaryBoardController]);
 
     const renderSecondaryTray = () => {
         if (secondaryPaneSize !== "small") {
@@ -536,45 +700,110 @@ export function KibitzRoomStage({
                     <div className="panel-body">
                         {mainGame ? (
                             <div className="board-content">
-                                <div className="board-meta">
-                                    <div className="board-label">
-                                        {pgettext(
-                                            "Label for the shared board in kibitz",
-                                            "Main board",
-                                        )}
+                                <div className="board-meta board-meta-rich main-board-meta">
+                                    <div className="board-meta-top">
+                                        <div className="board-title-block">
+                                            <div className="board-kicker-row">
+                                                <div className="board-label">
+                                                    {pgettext(
+                                                        "Label for the shared board in kibitz",
+                                                        "Main board",
+                                                    )}
+                                                </div>
+                                                <span
+                                                    className={
+                                                        "board-status-pill " +
+                                                        (mainIsLive ? "live" : "reviewing")
+                                                    }
+                                                >
+                                                    {mainIsLive
+                                                        ? pgettext(
+                                                              "Status pill shown when the kibitz main board is at the latest move",
+                                                              "Live",
+                                                          )
+                                                        : pgettext(
+                                                              "Status pill shown when the kibitz main board is privately rewound",
+                                                              "Reviewing",
+                                                          )}
+                                                </span>
+                                                {!mainGame.mock_game_data && mainGame.game_id ? (
+                                                    <span className="board-id-chip">
+                                                        {interpolate(
+                                                            pgettext(
+                                                                "Game id chip shown in the kibitz main board header",
+                                                                "Game {{game_id}}",
+                                                            ),
+                                                            { game_id: mainGame.game_id },
+                                                        )}
+                                                    </span>
+                                                ) : null}
+                                            </div>
+                                            <div className="players">
+                                                {interpolate(
+                                                    pgettext(
+                                                        "Player names shown above the main board in kibitz",
+                                                        "{{black}} vs {{white}}",
+                                                    ),
+                                                    {
+                                                        black: displayedBlackWithRank,
+                                                        white: displayedWhiteWithRank,
+                                                    },
+                                                )}
+                                            </div>
+                                            {displayedTitle ? (
+                                                <div className="board-subtitle">
+                                                    {displayedTitle}
+                                                </div>
+                                            ) : null}
+                                        </div>
+                                        <div className="board-header-actions">
+                                            {!mainIsLive ? (
+                                                <button
+                                                    type="button"
+                                                    className="board-header-button return-live"
+                                                    onClick={mainBoardController?.gotoLastMove}
+                                                >
+                                                    {pgettext(
+                                                        "Button shown in the kibitz main board header for returning to the latest move",
+                                                        "Return to live",
+                                                    )}
+                                                </button>
+                                            ) : null}
+                                            {!mainGame.mock_game_data ? (
+                                                <Link
+                                                    to={`/game/${mainGame.game_id}`}
+                                                    className="board-header-link"
+                                                >
+                                                    {pgettext(
+                                                        "Link text for opening the current game from the kibitz main board header",
+                                                        "Open game",
+                                                    )}
+                                                </Link>
+                                            ) : null}
+                                        </div>
                                     </div>
-                                    <div className="players">
-                                        {interpolate(
-                                            pgettext(
-                                                "Player names shown above the main board in kibitz",
-                                                "{{black}} vs {{white}}",
-                                            ),
-                                            {
-                                                black: displayedBlack,
-                                                white: displayedWhite,
-                                            },
-                                        )}
-                                    </div>
-                                    <div className="game-details">
-                                        {displayedBoardSize
-                                            ? interpolate(
-                                                  pgettext(
-                                                      "Board size label shown in the kibitz stage",
-                                                      "Board {{size}}",
-                                                  ),
-                                                  { size: displayedBoardSize },
-                                              )
-                                            : ""}
-                                        {displayedMoveNumber
-                                            ? ` - ${interpolate(
-                                                  pgettext(
-                                                      "Move number label shown in the kibitz stage",
-                                                      "Move {{move_number}}",
-                                                  ),
-                                                  { move_number: displayedMoveNumber },
-                                              )}`
-                                            : ""}
-                                        {displayedTournament ? ` - ${displayedTournament}` : ""}
+                                    <div className="board-meta-chips">
+                                        {displayedBoardSize ? (
+                                            <span className="board-meta-chip">
+                                                {interpolate(
+                                                    pgettext(
+                                                        "Board size chip shown in the kibitz stage",
+                                                        "Board {{size}}",
+                                                    ),
+                                                    { size: displayedBoardSize },
+                                                )}
+                                            </span>
+                                        ) : null}
+                                        {mainMoveSummary ? (
+                                            <span className="board-meta-chip highlight">
+                                                {mainMoveSummary}
+                                            </span>
+                                        ) : null}
+                                        {displayedTournament ? (
+                                            <span className="board-meta-chip ellipsis-chip">
+                                                {displayedTournament}
+                                            </span>
+                                        ) : null}
                                     </div>
                                 </div>
                                 <div className="board-fit-slot" ref={mainBoardSlotRef}>
@@ -628,52 +857,64 @@ export function KibitzRoomStage({
                             )
                         ) : secondaryGameId ? (
                             <div className="board-content">
-                                <div className="board-meta">
-                                    <div className="board-label">
-                                        {secondaryPaneSize === "small"
-                                            ? pgettext(
-                                                  "Label for the preview tray in kibitz",
-                                                  "Preview tray",
-                                              )
-                                            : pgettext(
-                                                  "Label for the personal secondary board in kibitz",
-                                                  "Secondary board",
-                                              )}
+                                <div className="board-meta board-meta-rich secondary-board-meta">
+                                    <div className="board-meta-top">
+                                        <div className="board-title-block">
+                                            <div className="board-kicker-row">
+                                                <div className="board-label">
+                                                    {secondaryHeaderLabel}
+                                                </div>
+                                                <span className="board-status-pill preview">
+                                                    {secondaryHeaderStatus}
+                                                </span>
+                                                {previewGame?.game_id ? (
+                                                    <span className="board-id-chip">
+                                                        {interpolate(
+                                                            pgettext(
+                                                                "Game id chip shown in the kibitz secondary board header",
+                                                                "Game {{game_id}}",
+                                                            ),
+                                                            { game_id: previewGame.game_id },
+                                                        )}
+                                                    </span>
+                                                ) : null}
+                                            </div>
+                                            <div className="players">
+                                                {interpolate(
+                                                    pgettext(
+                                                        "Player names shown above the secondary board in kibitz",
+                                                        "{{black}} vs {{white}}",
+                                                    ),
+                                                    {
+                                                        black: previewBlackWithRank,
+                                                        white: previewWhiteWithRank,
+                                                    },
+                                                )}
+                                            </div>
+                                            {secondarySubtitle ? (
+                                                <div className="board-subtitle">
+                                                    {secondarySubtitle}
+                                                </div>
+                                            ) : null}
+                                        </div>
                                     </div>
-                                    <div className="players">
-                                        {interpolate(
-                                            pgettext(
-                                                "Player names shown above the secondary board in kibitz",
-                                                "{{black}} vs {{white}}",
-                                            ),
-                                            {
-                                                black: previewGame?.black.username ?? "",
-                                                white: previewGame?.white.username ?? "",
-                                            },
-                                        )}
-                                    </div>
-                                    <div className="game-details">
-                                        {!isSmallSecondaryPane && previewGame?.title
-                                            ? previewGame.title
-                                            : ""}
-                                        {previewGame?.board_size
-                                            ? `${!isSmallSecondaryPane && previewGame?.title ? " - " : ""}${interpolate(
-                                                  pgettext(
-                                                      "Board size label shown in the kibitz secondary pane",
-                                                      "Board {{size}}",
-                                                  ),
-                                                  { size: previewGame.board_size },
-                                              )}`
-                                            : ""}
-                                        {previewDisplayedMoveNumber
-                                            ? `${previewGame?.board_size || (!isSmallSecondaryPane && previewGame?.title) ? " - " : ""}${interpolate(
-                                                  pgettext(
-                                                      "Move number label shown in the kibitz secondary pane",
-                                                      "Move {{move_number}}",
-                                                  ),
-                                                  { move_number: previewDisplayedMoveNumber },
-                                              )}`
-                                            : ""}
+                                    <div className="board-meta-chips">
+                                        {previewGame?.board_size ? (
+                                            <span className="board-meta-chip">
+                                                {interpolate(
+                                                    pgettext(
+                                                        "Board size chip shown in the kibitz secondary header",
+                                                        "Board {{size}}",
+                                                    ),
+                                                    { size: previewGame.board_size },
+                                                )}
+                                            </span>
+                                        ) : null}
+                                        {secondaryMoveSummary ? (
+                                            <span className="board-meta-chip highlight">
+                                                {secondaryMoveSummary}
+                                            </span>
+                                        ) : null}
                                     </div>
                                 </div>
                                 <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
@@ -745,35 +986,42 @@ export function KibitzRoomStage({
                             </div>
                         ) : selectedVariation ? (
                             <div className="board-content">
-                                <div className="board-meta">
-                                    <div className="board-label">
-                                        {secondaryPaneSize === "small"
-                                            ? pgettext(
-                                                  "Label for the variation tray in kibitz",
-                                                  "Variation tray",
-                                              )
-                                            : pgettext(
-                                                  "Label for the personal secondary board in kibitz",
-                                                  "Secondary board",
-                                              )}
+                                <div className="board-meta board-meta-rich secondary-board-meta variation-header">
+                                    <div className="board-meta-top">
+                                        <div className="board-title-block">
+                                            <div className="board-kicker-row">
+                                                <div className="board-label">
+                                                    {secondaryHeaderLabel}
+                                                </div>
+                                                <span className="board-status-pill variation">
+                                                    {secondaryHeaderStatus}
+                                                </span>
+                                            </div>
+                                            <div className="players">
+                                                {selectedVariation.creator.username}
+                                            </div>
+                                            {secondarySubtitle ? (
+                                                <div className="board-subtitle">
+                                                    {secondarySubtitle}
+                                                </div>
+                                            ) : null}
+                                        </div>
                                     </div>
-                                    <div className="players">
-                                        {selectedVariation.creator.username}
-                                    </div>
-                                    <div className="game-details">
-                                        {isSmallSecondaryPane
-                                            ? interpolate(
-                                                  pgettext(
-                                                      "Move count label shown for a variation in the kibitz secondary pane",
-                                                      "Move {{move_number}}",
-                                                  ),
-                                                  { move_number: selectedVariation.move_count },
-                                              )
-                                            : (selectedVariation.title ??
-                                              pgettext(
-                                                  "Fallback title for an untitled kibitz variation",
-                                                  "Variation preview",
-                                              ))}
+                                    <div className="board-meta-chips">
+                                        {secondaryMoveSummary ? (
+                                            <span className="board-meta-chip highlight">
+                                                {secondaryMoveSummary}
+                                            </span>
+                                        ) : null}
+                                        <span className="board-meta-chip ellipsis-chip">
+                                            {interpolate(
+                                                pgettext(
+                                                    "Creator chip shown in the kibitz variation header",
+                                                    "By {{username}}",
+                                                ),
+                                                { username: selectedVariation.creator.username },
+                                            )}
+                                        </span>
                                     </div>
                                 </div>
                                 <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
