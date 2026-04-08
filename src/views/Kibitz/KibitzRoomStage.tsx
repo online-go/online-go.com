@@ -25,6 +25,7 @@ import type {
     KibitzMode,
     KibitzProposal,
     KibitzRoomSummary,
+    KibitzRoomUser,
     KibitzSecondaryPaneState,
     KibitzVariationSummary,
 } from "@/models/kibitz";
@@ -40,6 +41,7 @@ interface KibitzRoomStageProps {
     proposals: KibitzProposal[];
     variations: KibitzVariationSummary[];
     secondaryPane: KibitzSecondaryPaneState;
+    roomUsers: KibitzRoomUser[];
     onPreviewGame: (gameId: number) => void;
     onClearPreview: () => void;
     onProposePreview: () => void;
@@ -64,6 +66,22 @@ function formatPlayerNameWithRank(username: string | undefined, ...players: unkn
     const rankText = players.map(getPlayerRankText).find((value) => Boolean(value));
 
     return rankText ? `${resolvedUsername} ${rankText}` : resolvedUsername;
+}
+
+function getUserInitials(username: string | undefined): string {
+    const trimmedUsername = (username ?? "").trim();
+
+    if (!trimmedUsername) {
+        return "?";
+    }
+
+    const parts = trimmedUsername.split(/\s+/).filter(Boolean);
+
+    if (parts.length === 1) {
+        return parts[0].slice(0, 2).toUpperCase();
+    }
+
+    return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
 function useSquareFitSize<T extends HTMLElement>() {
@@ -114,6 +132,7 @@ export function KibitzRoomStage({
     proposals,
     variations,
     secondaryPane,
+    roomUsers,
     onPreviewGame,
     onClearPreview,
     onProposePreview,
@@ -288,6 +307,13 @@ export function KibitzRoomStage({
     const secondaryHeaderStatus = selectedVariation
         ? pgettext("Status pill shown on a kibitz variation header", "Variation")
         : pgettext("Status pill shown on a kibitz preview header", "Private preview");
+    const stageVisibleUsers = roomUsers.slice(0, 6);
+    const stageOverflowUsers = Math.max(0, roomUsers.length - stageVisibleUsers.length);
+    const stageHighlightedNames = stageVisibleUsers
+        .map((user) => user.username)
+        .filter(Boolean)
+        .slice(0, 3)
+        .join(", ");
     const secondarySubtitle = selectedVariation
         ? secondaryPaneSize === "small"
             ? null
@@ -669,6 +695,48 @@ export function KibitzRoomStage({
                                 "No main board selected yet",
                             )}
                     </div>
+                    {room.viewer_count > 0 || stageVisibleUsers.length > 0 ? (
+                        <div className="stage-social-row">
+                            {stageVisibleUsers.length > 0 ? (
+                                <div className="stage-social-avatars" aria-hidden="true">
+                                    {stageVisibleUsers.map((user) => (
+                                        <span
+                                            key={user.id}
+                                            className="stage-social-avatar"
+                                            title={user.username}
+                                        >
+                                            {getUserInitials(user.username)}
+                                        </span>
+                                    ))}
+                                    {stageOverflowUsers > 0 ? (
+                                        <span className="stage-social-avatar stage-social-avatar-overflow">
+                                            +{stageOverflowUsers}
+                                        </span>
+                                    ) : null}
+                                </div>
+                            ) : null}
+                            <div className="stage-social-summary">
+                                {stageHighlightedNames
+                                    ? interpolate(
+                                          pgettext(
+                                              "Compact room-presence summary shown in the kibitz stage header",
+                                              "{{count}} here now · {{names}}",
+                                          ),
+                                          {
+                                              count: room.viewer_count,
+                                              names: stageHighlightedNames,
+                                          },
+                                      )
+                                    : interpolate(
+                                          pgettext(
+                                              "Compact room-presence summary shown in the kibitz stage header when no names are highlighted",
+                                              "{{count}} here now",
+                                          ),
+                                          { count: room.viewer_count },
+                                      )}
+                            </div>
+                        </div>
+                    ) : null}
                 </div>
                 {mainGame && (!mainGame.mock_game_data || previewCandidates.length > 0) ? (
                     <div className="stage-header-actions">

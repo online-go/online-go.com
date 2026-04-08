@@ -845,3 +845,54 @@
         }
     }
 }
+
+
+.KibitzRoomStage {
+    .KibitzRoomStage-header {
+        .stage-social-row {
+            align-items: center;
+            display: flex;
+            gap: 0.45rem;
+            min-width: 0;
+            padding-top: 0.18rem;
+        }
+
+        .stage-social-avatars {
+            align-items: center;
+            display: flex;
+            flex: 0 0 auto;
+            flex-wrap: wrap;
+            gap: 0.2rem;
+        }
+
+        .stage-social-avatar {
+            align-items: center;
+            background: var(--shade2);
+            color: var(--fg);
+            display: inline-flex;
+            font-size: 0.58rem;
+            font-weight: bold;
+            height: 1.1rem;
+            justify-content: center;
+            line-height: 1;
+            min-width: 1.1rem;
+            text-transform: uppercase;
+        }
+
+        .stage-social-avatar-overflow {
+            background: var(--shade1);
+            color: var(--text-color-faded);
+            min-width: 1.35rem;
+            padding: 0 0.16rem;
+        }
+
+        .stage-social-summary {
+            color: var(--text-color-faded);
+            font-size: 0.74rem;
+            font-weight: bold;
+            line-height: 1.15;
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+    }
+}

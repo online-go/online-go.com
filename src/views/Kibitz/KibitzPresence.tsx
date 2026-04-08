@@ -29,6 +29,22 @@ interface KibitzPresenceProps {
     users: KibitzRoomUser[];
 }
 
+function getUserInitials(username: string | undefined): string {
+    const trimmedUsername = (username ?? "").trim();
+
+    if (!trimmedUsername) {
+        return "?";
+    }
+
+    const parts = trimmedUsername.split(/\s+/).filter(Boolean);
+
+    if (parts.length === 1) {
+        return parts[0].slice(0, 2).toUpperCase();
+    }
+
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+
 export function KibitzPresence({ mode, room, users }: KibitzPresenceProps): React.ReactElement {
     const [proxy, setProxy] = React.useState<ChatChannelProxy | null>(null);
     const [, refresh] = React.useState(0);
@@ -58,24 +74,75 @@ export function KibitzPresence({ mode, room, users }: KibitzPresenceProps): Reac
         ? Object.values(proxy.channel.user_list).sort(users_by_rank)
         : [];
     const visibleUsers = mode === "demo" ? users : channelUsers;
+    const stackedUsers = visibleUsers.slice(0, 6);
+    const overflowCount = Math.max(0, visibleUsers.length - stackedUsers.length);
+    const highlightedNames = stackedUsers
+        .map((user) => user.username)
+        .filter(Boolean)
+        .slice(0, 3)
+        .join(", ");
 
     return (
         <div className="KibitzPresence">
             <div className="KibitzPresence-body">
-                <div className="presence-stat">
-                    {interpolate(
-                        pgettext("Viewer count summary inside a kibitz room", "{{count}} watching"),
-                        { count: room.viewer_count },
-                    )}
+                <div className="presence-summary">
+                    <div className="presence-summary-copy">
+                        <div className="presence-stat">
+                            {interpolate(
+                                pgettext(
+                                    "Viewer count summary inside a kibitz room",
+                                    "{{count}} watching",
+                                ),
+                                { count: room.viewer_count },
+                            )}
+                        </div>
+                        {highlightedNames ? (
+                            <div className="presence-highlight">
+                                {interpolate(
+                                    pgettext(
+                                        "Compact social summary in the kibitz presence panel",
+                                        "Active now: {{names}}",
+                                    ),
+                                    { names: highlightedNames },
+                                )}
+                            </div>
+                        ) : null}
+                    </div>
+                    {stackedUsers.length > 0 ? (
+                        <div className="presence-avatar-stack" aria-hidden="true">
+                            {stackedUsers.map((user) => (
+                                <span
+                                    key={user.id}
+                                    className="presence-avatar"
+                                    title={user.username}
+                                >
+                                    {getUserInitials(user.username)}
+                                </span>
+                            ))}
+                            {overflowCount > 0 ? (
+                                <span className="presence-avatar presence-avatar-overflow">
+                                    +{overflowCount}
+                                </span>
+                            ) : null}
+                        </div>
+                    ) : null}
                 </div>
                 {visibleUsers.length > 0 ? (
-                    <div className="presence-users">
-                        {visibleUsers.map((user) => (
-                            <div key={user.id} className="presence-user">
-                                <Player user={user} flag rank noextracontrols />
-                            </div>
-                        ))}
-                    </div>
+                    <>
+                        <div className="presence-users-heading">
+                            {pgettext(
+                                "Heading for the current room user list in kibitz",
+                                "In the room",
+                            )}
+                        </div>
+                        <div className="presence-users">
+                            {visibleUsers.map((user) => (
+                                <div key={user.id} className="presence-user">
+                                    <Player user={user} flag rank noextracontrols />
+                                </div>
+                            ))}
+                        </div>
+                    </>
                 ) : null}
             </div>
         </div>

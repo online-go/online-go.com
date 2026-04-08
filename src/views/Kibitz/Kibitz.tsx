@@ -191,6 +191,15 @@ export function Kibitz(): React.ReactElement {
         [controller, resolvedRoom],
     );
 
+    const resolvedRoomUsers = resolvedRoom ? controller.getRoomUsers(resolvedRoom.id) : [];
+    const roomUsersById = React.useMemo(
+        () =>
+            Object.fromEntries(
+                rooms.map((room) => [room.id, controller.getRoomUsers(room.id)]),
+            ) as Record<string, ReturnType<typeof controller.getRoomUsers>>,
+        [controller, rooms, activeRoom, stream],
+    );
+
     if (!resolvedRoom) {
         return <div className="Kibitz" />;
     }
@@ -203,13 +212,10 @@ export function Kibitz(): React.ReactElement {
                     <KibitzRoomList
                         rooms={rooms}
                         activeRoomId={resolvedRoom.id}
+                        roomUsersById={roomUsersById}
                         onSelectRoom={onSelectRoom}
                     />
-                    <KibitzPresence
-                        mode={mode}
-                        room={resolvedRoom}
-                        users={controller.getRoomUsers(resolvedRoom.id)}
-                    />
+                    <KibitzPresence mode={mode} room={resolvedRoom} users={resolvedRoomUsers} />
                 </div>
                 <div className="Kibitz-main">
                     <KibitzProposalBar proposal={activeProposal} onVote={onVoteProposal} />
@@ -221,6 +227,7 @@ export function Kibitz(): React.ReactElement {
                             proposals={roomProposals}
                             variations={variations}
                             secondaryPane={secondaryPane}
+                            roomUsers={resolvedRoomUsers}
                             onPreviewGame={onPreviewGame}
                             onClearPreview={onClearPreview}
                             onProposePreview={onProposePreview}
@@ -231,6 +238,7 @@ export function Kibitz(): React.ReactElement {
                             <KibitzRoomStream
                                 mode={mode}
                                 room={resolvedRoom}
+                                roomUsers={resolvedRoomUsers}
                                 items={stream}
                                 variations={variations}
                                 onOpenVariation={onOpenVariation}

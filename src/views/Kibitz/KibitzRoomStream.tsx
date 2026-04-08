@@ -29,6 +29,7 @@ import { useUser } from "@/lib/hooks";
 import type {
     KibitzMode,
     KibitzRoomSummary,
+    KibitzRoomUser,
     KibitzStreamItem,
     KibitzVariationSummary,
 } from "@/models/kibitz";
@@ -38,15 +39,33 @@ import "@/components/Chat/ChatLog.css";
 interface KibitzRoomStreamProps {
     mode: KibitzMode;
     room: KibitzRoomSummary;
+    roomUsers: KibitzRoomUser[];
     items: KibitzStreamItem[];
     variations: KibitzVariationSummary[];
     onOpenVariation: (variationId: string) => void;
     onSendMessage: (text: string) => void;
 }
 
+function getUserInitials(username: string | undefined): string {
+    const trimmedUsername = (username ?? "").trim();
+
+    if (!trimmedUsername) {
+        return "?";
+    }
+
+    const parts = trimmedUsername.split(/\s+/).filter(Boolean);
+
+    if (parts.length === 1) {
+        return parts[0].slice(0, 2).toUpperCase();
+    }
+
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+
 export function KibitzRoomStream({
     mode,
     room,
+    roomUsers,
     items,
     variations,
     onOpenVariation,
@@ -142,6 +161,8 @@ export function KibitzRoomStream({
         })
         .filter(Boolean) as ChatMessage[];
     const variationPosts = items.filter((item) => item.type === "variation_posted");
+    const visibleUsers = roomUsers.slice(0, 5);
+    const overflowCount = Math.max(0, roomUsers.length - visibleUsers.length);
     let lastLine: ChatMessage | undefined;
 
     return (
@@ -149,6 +170,39 @@ export function KibitzRoomStream({
             <div className="KibitzRoomStream-title">
                 {pgettext("Heading for the main message stream in a kibitz room", "Room stream")}
             </div>
+            {room.viewer_count > 0 || visibleUsers.length > 0 ? (
+                <div className="KibitzRoomStream-social">
+                    <div className="stream-social-copy">
+                        <span className="stream-social-label">
+                            {interpolate(
+                                pgettext(
+                                    "Compact room-presence label shown above the kibitz room stream",
+                                    "{{count}} here now",
+                                ),
+                                { count: room.viewer_count },
+                            )}
+                        </span>
+                    </div>
+                    {visibleUsers.length > 0 ? (
+                        <div className="stream-avatar-stack" aria-hidden="true">
+                            {visibleUsers.map((roomUser) => (
+                                <span
+                                    key={roomUser.id}
+                                    className="stream-avatar"
+                                    title={roomUser.username}
+                                >
+                                    {getUserInitials(roomUser.username)}
+                                </span>
+                            ))}
+                            {overflowCount > 0 ? (
+                                <span className="stream-avatar stream-avatar-overflow">
+                                    +{overflowCount}
+                                </span>
+                            ) : null}
+                        </div>
+                    ) : null}
+                </div>
+            ) : null}
             <div className="KibitzRoomStream-items">
                 {(mode === "demo" ? demoChatLog.length > 0 : chatLog.length > 0) ? (
                     <div className="chat-lines">
