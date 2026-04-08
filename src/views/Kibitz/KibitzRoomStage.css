@@ -63,16 +63,15 @@
             .main-board .KibitzBoard {
                 aspect-ratio: 1 / 1;
                 flex: 0 1 auto;
-                height: 100%;
-                max-height: 100%;
+                height: auto;
                 max-width: 100%;
-                width: auto;
+                width: 100%;
             }
 
             .main-board .KibitzBoard .goban-container {
                 flex: 1 1 auto !important;
                 flex-basis: auto !important;
-                height: 100% !important;
+                height: auto !important;
                 max-height: 100%;
                 width: 100%;
             }
