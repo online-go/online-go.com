@@ -10,7 +10,7 @@
         display: grid;
         flex: 1;
         gap: 0;
-        grid-template-columns: minmax(10.5rem, 12.75rem) minmax(0, 1fr);
+        grid-template-columns: minmax(11.5rem, 14rem) minmax(0, 1fr);
         align-items: stretch;
         min-height: 0;
     }
