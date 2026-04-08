@@ -101,13 +101,22 @@ export function FriendList() {
         ev.stopPropagation();
     };
 
+    const removeInvitation = (invitation: rest_api.FriendInvitations[number]) => {
+        data.set(
+            cached.friend_invitations,
+            invitations.filter((inv) => inv.from_user.id !== invitation.from_user.id),
+        );
+    };
+
     const acceptInvite = (invitation: rest_api.FriendInvitations[number]) => {
+        removeInvitation(invitation);
         post("me/friends/invitations/", { from_user: invitation.from_user.id })
             .then(() => 0)
             .catch(() => 0);
     };
 
     const rejectInvite = (invitation: rest_api.FriendInvitations[number]) => {
+        removeInvitation(invitation);
         post("me/friends/invitations/", {
             from_user: invitation.from_user.id,
             delete: true,
