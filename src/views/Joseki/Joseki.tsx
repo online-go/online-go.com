@@ -349,6 +349,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
     };
 
     componentDidMount = () => {
+        window.document.title = _("Joseki");
         this.getUserJosekiPermissions();
 
         // we get the tags here because they are needed for selector components, initial settings for those,

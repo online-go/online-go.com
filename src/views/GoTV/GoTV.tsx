@@ -64,6 +64,10 @@ export function GoTV(): React.ReactElement {
     const location = useLocation();
 
     useEffect(() => {
+        window.document.title = _("GoTV");
+    }, []);
+
+    useEffect(() => {
         // Load the Twitch library and set the state when loaded
         load_twitch_library()
             .then(() => {
