@@ -35,7 +35,7 @@ There are two main "kinds" of tests:
 
     -   These are intended to be quick to run, and just make sure things are not totally broken
 
--   "Full Tests", which are not run automatically, they can be run as needed
+-   "Full Tests", which are run on the e2e testing server on each merge to main.
     -   These are intended to grow to cover as much as possible
 
 Some individual "Full Tests" are particularly slow: these are marked by the @Slow PW tag.
