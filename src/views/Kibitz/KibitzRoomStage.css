@@ -59,6 +59,25 @@
             grid-template-columns: minmax(0, 1fr) 1.3rem minmax(15.25rem, 17rem);
         }
 
+        &:not(.secondary-pane-equal) {
+            .main-board .KibitzBoard {
+                aspect-ratio: 1 / 1;
+                flex: 0 1 auto;
+                height: 100%;
+                max-height: 100%;
+                max-width: 100%;
+                width: auto;
+            }
+
+            .main-board .KibitzBoard .goban-container {
+                flex: 1 1 auto !important;
+                flex-basis: auto !important;
+                height: 100% !important;
+                max-height: 100%;
+                width: 100%;
+            }
+        }
+
         &.secondary-pane-equal {
             --equal-board-max-width: min(32rem, 48vh);
             --equal-board-width: min(100%, var(--equal-board-max-width));
@@ -296,7 +315,7 @@
         .KibitzBoard {
             align-self: start;
             justify-self: center;
-            max-width: min(100%, 39rem, 78vh);
+            max-width: 100%;
             width: 100%;
         }
 

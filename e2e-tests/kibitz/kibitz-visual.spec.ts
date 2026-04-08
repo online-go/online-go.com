@@ -309,6 +309,30 @@ ogsTest.describe("@Manual Kibitz visual inspection harness", () => {
     );
 
     ogsTest(
+        "Kibitz tournament demo small layout captures and measurements",
+        async ({ page }, testInfo) => {
+            await captureKibitzLayout(
+                page,
+                "/kibitz/tournament-pick?demo-kibitz=1",
+                "kibitz-tournament-demo-1080p-small.png",
+                testInfo,
+            );
+        },
+    );
+
+    ogsTest(
+        "Kibitz top 19x19 demo default layout captures and measurements",
+        async ({ page }, testInfo) => {
+            await captureKibitzLayout(
+                page,
+                "/kibitz/top-19x19?demo-kibitz=1",
+                "kibitz-top-19x19-demo-1080p-default.png",
+                testInfo,
+            );
+        },
+    );
+
+    ogsTest(
         "Kibitz top 19x19 demo layout captures and measurements",
         async ({ page }, testInfo) => {
             await captureKibitzLayout(
