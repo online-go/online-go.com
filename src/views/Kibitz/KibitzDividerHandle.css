@@ -1,4 +1,6 @@
 .KibitzDividerHandle {
+    --divider-width: 2.5rem;
+
     align-items: center;
     background: var(--bg);
     border-left: 1px solid transparent;
@@ -6,24 +8,91 @@
     border-right: 1px solid transparent;
     border-right-color: var(--shade3);
     display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
     justify-content: center;
     min-height: 0;
-    padding: 0.15rem 0;
-    width: 1.3rem;
+    padding: 0.35rem 0;
+    width: var(--divider-width);
 
-    .divider-arrow {
+    .divider-mode-switch {
+        background: var(--card-background-color);
+        border: 1px solid transparent;
+        border-color: var(--shade3);
+        border-radius: 999px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        padding: 0.25rem;
+    }
+
+    .divider-mode-button {
         align-items: center;
         background: transparent;
         border: 0;
+        border-radius: 999px;
         color: var(--text-color-faded);
         cursor: pointer;
         display: inline-flex;
-        font-size: 0.9rem;
+        height: 2rem;
         justify-content: center;
-        min-height: 1rem;
         padding: 0;
-        width: 100%;
+        transition:
+            background-color 120ms ease,
+            color 120ms ease,
+            transform 120ms ease,
+            box-shadow 120ms ease;
+        width: 2rem;
+    }
+
+    .divider-mode-button:hover {
+        background: var(--shade1);
+        color: var(--fg);
+    }
+
+    .divider-mode-button:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 1px;
+    }
+
+    .divider-mode-button.active {
+        background: var(--shade2);
+        box-shadow: inset 0 0 0 1px var(--shade3);
+        color: var(--fg);
+    }
+
+    .layout-glyph {
+        align-items: stretch;
+        display: grid;
+        gap: 0.12rem;
+        height: 0.95rem;
+        width: 0.95rem;
+    }
+
+    .layout-glyph .pane {
+        background: currentColor;
+        border-radius: 0.12rem;
+        opacity: 0.92;
+    }
+
+    .divider-mode-button.focus-main .layout-glyph {
+        grid-template-columns: 1fr;
+    }
+
+    .divider-mode-button.focus-main .pane-secondary {
+        display: none;
+    }
+
+    .divider-mode-button.split-view .layout-glyph {
+        grid-template-columns: 1.8fr 0.8fr;
+    }
+
+    .divider-mode-button.compare-view .layout-glyph {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 850px) {
+    .KibitzDividerHandle {
+        display: none;
     }
 }

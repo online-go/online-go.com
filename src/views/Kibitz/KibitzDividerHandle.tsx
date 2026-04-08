@@ -20,57 +20,67 @@ import { pgettext } from "@/lib/translate";
 import type { KibitzSecondaryPaneState } from "@/models/kibitz";
 import "./KibitzDividerHandle.css";
 
+type DividerMode = "hidden" | "small" | "equal";
+
 interface KibitzDividerHandleProps {
     secondaryPane: KibitzSecondaryPaneState;
-    onIncrease: () => void;
-    onDecrease: () => void;
+    onSetMode: (mode: DividerMode) => void;
 }
+
+const MODE_OPTIONS: Array<{ id: DividerMode; label: string; className: string }> = [
+    {
+        id: "hidden",
+        label: pgettext("Kibitz divider mode label", "Focus main"),
+        className: "focus-main",
+    },
+    {
+        id: "small",
+        label: pgettext("Kibitz divider mode label", "Split"),
+        className: "split-view",
+    },
+    {
+        id: "equal",
+        label: pgettext("Kibitz divider mode label", "Compare"),
+        className: "compare-view",
+    },
+];
 
 export function KibitzDividerHandle({
     secondaryPane,
-    onIncrease,
-    onDecrease,
+    onSetMode,
 }: KibitzDividerHandleProps): React.ReactElement {
-    const mode = secondaryPane.collapsed ? "hidden" : (secondaryPane.size ?? "small");
-    const canIncrease = mode !== "equal";
-    const canDecrease = mode !== "hidden";
+    const mode: DividerMode = secondaryPane.collapsed ? "hidden" : (secondaryPane.size ?? "small");
 
     return (
-        <div className={`KibitzDividerHandle mode-${mode}`}>
-            {canIncrease ? (
-                <button
-                    type="button"
-                    className="divider-arrow increase"
-                    onClick={onIncrease}
-                    aria-label={pgettext(
-                        "Aria label for making the kibitz secondary board larger",
-                        "Increase secondary board size",
-                    )}
-                    title={pgettext(
-                        "Tooltip for making the kibitz secondary board larger",
-                        "Increase secondary board size",
-                    )}
-                >
-                    <i className="fa fa-caret-left" />
-                </button>
-            ) : null}
-            {canDecrease ? (
-                <button
-                    type="button"
-                    className="divider-arrow decrease"
-                    onClick={onDecrease}
-                    aria-label={pgettext(
-                        "Aria label for making the kibitz secondary board smaller",
-                        "Decrease secondary board size",
-                    )}
-                    title={pgettext(
-                        "Tooltip for making the kibitz secondary board smaller",
-                        "Decrease secondary board size",
-                    )}
-                >
-                    <i className="fa fa-caret-right" />
-                </button>
-            ) : null}
+        <div
+            className={`KibitzDividerHandle mode-${mode}`}
+            role="group"
+            aria-label={pgettext("Aria label for kibitz divider mode switch", "Board layout")}
+        >
+            <div className="divider-mode-switch">
+                {MODE_OPTIONS.map((option) => {
+                    const active = option.id === mode;
+                    return (
+                        <button
+                            key={option.id}
+                            type="button"
+                            className={
+                                `divider-mode-button ${option.className}` +
+                                (active ? " active" : "")
+                            }
+                            onClick={() => onSetMode(option.id)}
+                            aria-pressed={active}
+                            aria-label={option.label}
+                            title={option.label}
+                        >
+                            <span className="layout-glyph" aria-hidden="true">
+                                <span className="pane pane-main" />
+                                <span className="pane pane-secondary" />
+                            </span>
+                        </button>
+                    );
+                })}
+            </div>
         </div>
     );
 }

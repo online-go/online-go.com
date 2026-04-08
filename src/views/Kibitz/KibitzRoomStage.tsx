@@ -43,8 +43,7 @@ interface KibitzRoomStageProps {
     onPreviewGame: (gameId: number) => void;
     onClearPreview: () => void;
     onProposePreview: () => void;
-    onIncreaseSecondaryPaneSize: () => void;
-    onDecreaseSecondaryPaneSize: () => void;
+    onSetSecondaryPaneMode: (mode: "hidden" | "small" | "equal") => void;
 }
 
 function useSquareFitSize<T extends HTMLElement>() {
@@ -98,8 +97,7 @@ export function KibitzRoomStage({
     onPreviewGame,
     onClearPreview,
     onProposePreview,
-    onIncreaseSecondaryPaneSize,
-    onDecreaseSecondaryPaneSize,
+    onSetSecondaryPaneMode,
 }: KibitzRoomStageProps): React.ReactElement {
     const mainGame = room.current_game;
     const secondaryGameId = secondaryPane.preview_game_id;
@@ -299,8 +297,7 @@ export function KibitzRoomStage({
                 </div>
                 <KibitzDividerHandle
                     secondaryPane={secondaryPane}
-                    onIncrease={onIncreaseSecondaryPaneSize}
-                    onDecrease={onDecreaseSecondaryPaneSize}
+                    onSetMode={onSetSecondaryPaneMode}
                 />
                 <div
                     className={

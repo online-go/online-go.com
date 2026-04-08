@@ -38,6 +38,8 @@ import { KibitzPresence } from "./KibitzPresence";
 import { KibitzVariationList } from "./KibitzVariationList";
 import "./Kibitz.css";
 
+type SecondaryPaneMode = "hidden" | "small" | "equal";
+
 export function Kibitz(): React.ReactElement {
     const location = useLocation();
     const navigate = useNavigate();
@@ -58,11 +60,17 @@ export function Kibitz(): React.ReactElement {
     const [secondaryPane, setSecondaryPane] = React.useState<KibitzSecondaryPaneState>(
         controller.secondary_pane,
     );
+    const [pendingSecondaryPaneMode, setPendingSecondaryPaneMode] =
+        React.useState<SecondaryPaneMode | null>(null);
     const [debug, setDebug] = React.useState<KibitzDebugState>(controller.debug);
     const showDebug = React.useMemo(() => {
         const params = new URLSearchParams(location.search);
         return params.get("debug-kibitz") === "1";
     }, [location.search]);
+
+    const currentSecondaryPaneMode: SecondaryPaneMode = secondaryPane.collapsed
+        ? "hidden"
+        : (secondaryPane.size ?? "small");
 
     React.useEffect(() => {
         controller.on("rooms-changed", setRooms);
@@ -125,13 +133,36 @@ export function Kibitz(): React.ReactElement {
         [controller],
     );
 
-    const onIncreaseSecondaryPaneSize = React.useCallback(() => {
-        controller.increaseSecondaryPaneSize();
-    }, [controller]);
+    const onSetSecondaryPaneMode = React.useCallback((nextMode: SecondaryPaneMode) => {
+        setPendingSecondaryPaneMode(nextMode);
+    }, []);
 
-    const onDecreaseSecondaryPaneSize = React.useCallback(() => {
-        controller.decreaseSecondaryPaneSize();
-    }, [controller]);
+    React.useEffect(() => {
+        if (!pendingSecondaryPaneMode || pendingSecondaryPaneMode === currentSecondaryPaneMode) {
+            if (pendingSecondaryPaneMode && pendingSecondaryPaneMode === currentSecondaryPaneMode) {
+                setPendingSecondaryPaneMode(null);
+            }
+            return;
+        }
+
+        if (pendingSecondaryPaneMode === "hidden") {
+            controller.decreaseSecondaryPaneSize();
+            return;
+        }
+
+        if (pendingSecondaryPaneMode === "small") {
+            if (currentSecondaryPaneMode === "hidden") {
+                controller.increaseSecondaryPaneSize();
+            } else {
+                controller.decreaseSecondaryPaneSize();
+            }
+            return;
+        }
+
+        if (pendingSecondaryPaneMode === "equal") {
+            controller.increaseSecondaryPaneSize();
+        }
+    }, [controller, currentSecondaryPaneMode, pendingSecondaryPaneMode]);
 
     const onVoteProposal = React.useCallback(
         (proposalId: string, choice: "change" | "keep") => {
@@ -192,8 +223,7 @@ export function Kibitz(): React.ReactElement {
                             onPreviewGame={onPreviewGame}
                             onClearPreview={onClearPreview}
                             onProposePreview={onProposePreview}
-                            onIncreaseSecondaryPaneSize={onIncreaseSecondaryPaneSize}
-                            onDecreaseSecondaryPaneSize={onDecreaseSecondaryPaneSize}
+                            onSetSecondaryPaneMode={onSetSecondaryPaneMode}
                         />
                         <div className="Kibitz-sidebar">
                             <KibitzRoomStream
