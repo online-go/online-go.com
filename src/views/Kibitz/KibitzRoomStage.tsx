@@ -47,6 +47,47 @@ interface KibitzRoomStageProps {
     onDecreaseSecondaryPaneSize: () => void;
 }
 
+function useSquareFitSize<T extends HTMLElement>() {
+    const [element, setElement] = React.useState<T | null>(null);
+    const [size, setSize] = React.useState(0);
+    const ref = React.useCallback((node: T | null) => {
+        setElement(node);
+    }, []);
+
+    React.useLayoutEffect(() => {
+        if (!element) {
+            setSize(0);
+            return;
+        }
+
+        let raf = 0;
+
+        const measure = () => {
+            const nextSize = Math.max(
+                0,
+                Math.floor(Math.min(element.clientWidth, element.clientHeight)),
+            );
+            setSize((previousSize) => (previousSize === nextSize ? previousSize : nextSize));
+        };
+
+        const scheduleMeasure = () => {
+            cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(measure);
+        };
+
+        const resizeObserver = new ResizeObserver(scheduleMeasure);
+        resizeObserver.observe(element);
+        scheduleMeasure();
+
+        return () => {
+            cancelAnimationFrame(raf);
+            resizeObserver.disconnect();
+        };
+    }, [element]);
+
+    return [ref, size] as const;
+}
+
 export function KibitzRoomStage({
     mode,
     room,
@@ -89,6 +130,8 @@ export function KibitzRoomStage({
         },
         [secondaryBoardController],
     );
+    const [mainBoardSlotRef, mainBoardSize] = useSquareFitSize<HTMLDivElement>();
+    const [secondaryBoardSlotRef, secondaryBoardSize] = useSquareFitSize<HTMLDivElement>();
 
     React.useEffect(() => {
         if (!mainGame?.game_id || mainGame.mock_game_data || mode === "demo") {
@@ -221,12 +264,17 @@ export function KibitzRoomStage({
                                         {displayedTournament ? ` - ${displayedTournament}` : ""}
                                     </div>
                                 </div>
-                                <KibitzBoard
-                                    gameId={mainGame.mock_game_data ? undefined : mainGame.game_id}
-                                    json={mainGame.mock_game_data}
-                                    className="main-board-surface"
-                                    onReady={setMainBoardController}
-                                />
+                                <div className="board-fit-slot" ref={mainBoardSlotRef}>
+                                    <KibitzBoard
+                                        gameId={
+                                            mainGame.mock_game_data ? undefined : mainGame.game_id
+                                        }
+                                        json={mainGame.mock_game_data}
+                                        className="main-board-surface"
+                                        size={mainBoardSize}
+                                        onReady={setMainBoardController}
+                                    />
+                                </div>
                                 <div className="main-board-transport-row">
                                     <KibitzBoardControls
                                         controller={mainBoardController}
@@ -309,14 +357,19 @@ export function KibitzRoomStage({
                                             : ""}
                                     </div>
                                 </div>
-                                <KibitzBoard
-                                    gameId={
-                                        previewGame?.mock_game_data ? undefined : secondaryGameId
-                                    }
-                                    json={previewGame?.mock_game_data}
-                                    className="secondary-board-surface"
-                                    onReady={setSecondaryBoardController}
-                                />
+                                <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
+                                    <KibitzBoard
+                                        gameId={
+                                            previewGame?.mock_game_data
+                                                ? undefined
+                                                : secondaryGameId
+                                        }
+                                        json={previewGame?.mock_game_data}
+                                        className="secondary-board-surface"
+                                        size={secondaryBoardSize}
+                                        onReady={setSecondaryBoardController}
+                                    />
+                                </div>
                                 <div className="secondary-board-transport-row">
                                     <div className="transport-controls">
                                         <KibitzBoardControls
@@ -387,11 +440,14 @@ export function KibitzRoomStage({
                                             )}
                                     </div>
                                 </div>
-                                <KibitzBoard
-                                    json={selectedVariation.mock_game_data}
-                                    className="secondary-board-surface"
-                                    onReady={setSecondaryBoardController}
-                                />
+                                <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
+                                    <KibitzBoard
+                                        json={selectedVariation.mock_game_data}
+                                        className="secondary-board-surface"
+                                        size={secondaryBoardSize}
+                                        onReady={setSecondaryBoardController}
+                                    />
+                                </div>
                                 <div className="secondary-board-transport-row">
                                     <div className="transport-controls">
                                         <KibitzBoardControls

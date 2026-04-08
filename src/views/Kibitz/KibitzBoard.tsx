@@ -27,6 +27,7 @@ interface KibitzBoardProps {
     gameId?: number;
     json?: KibitzWatchedGame["mock_game_data"];
     className?: string;
+    size?: number;
     onReady?: (controller: GobanController | null) => void;
 }
 
@@ -37,6 +38,7 @@ export function KibitzBoard({
     gameId,
     json,
     className,
+    size,
     onReady,
 }: KibitzBoardProps): React.ReactElement {
     const gobanDiv = React.useRef<HTMLDivElement>(
@@ -94,7 +96,18 @@ export function KibitzBoard({
     }, [gameId, json, onReady]);
 
     return (
-        <div className={"KibitzBoard" + (className ? ` ${className}` : "")}>
+        <div
+            className={"KibitzBoard" + (className ? ` ${className}` : "")}
+            style={
+                size
+                    ? {
+                          width: `${size}px`,
+                          height: `${size}px`,
+                          flex: "0 0 auto",
+                      }
+                    : undefined
+            }
+        >
             {goban ? <GobanContainer goban={goban} verticalAlign="top" sizingMode="width" /> : null}
         </div>
     );
