@@ -194,6 +194,10 @@ function guessCurrency(config: Config, country: string): string {
 
 export function Supporter(props: SupporterProperties): React.ReactElement {
     const params = useParams();
+    React.useEffect(() => {
+        window.document.title = _("Support OGS");
+    }, []);
+
     const user = data.get("user");
     const inline = props?.inline;
     const account_id = parseInt((params?.account_id || user?.id || "0") as string);

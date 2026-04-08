@@ -152,52 +152,54 @@ function AppLayout(props: { children: any }): React.ReactElement {
     }
 
     return (
-        <Experiment name="v6">
-            <Variant value="enabled" bodyClass="v6">
-                <div id="variant-container">
-                    <ErrorBoundary>
-                        <AccessibilityMenu />
-                    </ErrorBoundary>
-                    <ErrorBoundary>
-                        <NavBar />
-                    </ErrorBoundary>
-                    <ErrorBoundary>
-                        <MainSection>{props.children}</MainSection>
-                    </ErrorBoundary>
-                    <ErrorBoundary>
-                        <Announcements />
-                    </ErrorBoundary>
-                    <ErrorBoundary>
-                        <NetworkStatus />
-                    </ErrorBoundary>
-                    <ErrorBoundary>
-                        <AccountWarning />
-                    </ErrorBoundary>
-                </div>
-            </Variant>
-            <ExDefault>
-                <div id="default-variant-container">
-                    <ErrorBoundary>
-                        <AccessibilityMenu />
-                    </ErrorBoundary>
-                    <ErrorBoundary>
-                        <NavBar />
-                    </ErrorBoundary>
-                    <ErrorBoundary>
-                        <Announcements />
-                    </ErrorBoundary>
-                    <ErrorBoundary>
-                        <NetworkStatus />
-                    </ErrorBoundary>
-                    <ErrorBoundary>
-                        <MainSection>{props.children}</MainSection>
-                    </ErrorBoundary>
-                    <ErrorBoundary>
-                        <AccountWarning />
-                    </ErrorBoundary>
-                </div>
-            </ExDefault>
-        </Experiment>
+        <>
+            <Experiment name="v6">
+                <Variant value="enabled" bodyClass="v6">
+                    <div id="variant-container">
+                        <ErrorBoundary>
+                            <AccessibilityMenu />
+                        </ErrorBoundary>
+                        <ErrorBoundary>
+                            <NavBar />
+                        </ErrorBoundary>
+                        <ErrorBoundary>
+                            <MainSection>{props.children}</MainSection>
+                        </ErrorBoundary>
+                        <ErrorBoundary>
+                            <Announcements />
+                        </ErrorBoundary>
+                        <ErrorBoundary>
+                            <NetworkStatus />
+                        </ErrorBoundary>
+                        <ErrorBoundary>
+                            <AccountWarning />
+                        </ErrorBoundary>
+                    </div>
+                </Variant>
+                <ExDefault>
+                    <div id="default-variant-container">
+                        <ErrorBoundary>
+                            <AccessibilityMenu />
+                        </ErrorBoundary>
+                        <ErrorBoundary>
+                            <NavBar />
+                        </ErrorBoundary>
+                        <ErrorBoundary>
+                            <Announcements />
+                        </ErrorBoundary>
+                        <ErrorBoundary>
+                            <NetworkStatus />
+                        </ErrorBoundary>
+                        <ErrorBoundary>
+                            <MainSection>{props.children}</MainSection>
+                        </ErrorBoundary>
+                        <ErrorBoundary>
+                            <AccountWarning />
+                        </ErrorBoundary>
+                    </div>
+                </ExDefault>
+            </Experiment>
+        </>
     );
 }
 const PageNotFound = () => (
