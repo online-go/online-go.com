@@ -25,6 +25,107 @@ interface KibitzProposalBarProps {
     onVote: (proposalId: string, choice: "change" | "keep") => void;
 }
 
+type VoteUserLike = {
+    id?: number | string;
+    username?: string;
+    user?: {
+        id?: number | string;
+        username?: string;
+    };
+};
+
+function getVoteUsername(user: VoteUserLike | string | null | undefined): string {
+    if (!user) {
+        return "";
+    }
+
+    if (typeof user === "string") {
+        return user;
+    }
+
+    return user.username ?? user.user?.username ?? "";
+}
+
+function getVoteKey(user: VoteUserLike | string | null | undefined, index: number): string {
+    if (!user) {
+        return `vote-${index}`;
+    }
+
+    if (typeof user === "string") {
+        return `${user}-${index}`;
+    }
+
+    return String(user.id ?? user.user?.id ?? user.username ?? user.user?.username ?? index);
+}
+
+function getInitials(name: string): string {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+
+    if (parts.length === 0) {
+        return "?";
+    }
+
+    if (parts.length === 1) {
+        return parts[0].slice(0, 2).toUpperCase();
+    }
+
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+
+function VoteAvatarStack({
+    users,
+    emptyLabel,
+}: {
+    users: Array<VoteUserLike | string>;
+    emptyLabel: string;
+}): React.ReactElement {
+    if (users.length === 0) {
+        return <div className="proposal-vote-empty">{emptyLabel}</div>;
+    }
+
+    const visibleUsers = users.slice(0, 5);
+    const overflow = users.length - visibleUsers.length;
+
+    return (
+        <div className="proposal-vote-avatars">
+            {visibleUsers.map((user, index) => {
+                const username = getVoteUsername(user);
+
+                return (
+                    <span
+                        key={getVoteKey(user, index)}
+                        className="proposal-voter-avatar"
+                        title={
+                            username ||
+                            pgettext("Fallback tooltip label for a vote avatar in kibitz", "Voter")
+                        }
+                        aria-label={
+                            username ||
+                            pgettext("Fallback aria label for a vote avatar in kibitz", "Voter")
+                        }
+                    >
+                        {getInitials(username)}
+                    </span>
+                );
+            })}
+            {overflow > 0 ? (
+                <span
+                    className="proposal-voter-avatar proposal-voter-avatar-overflow"
+                    title={interpolate(
+                        pgettext(
+                            "Tooltip for additional hidden vote avatars in kibitz",
+                            "+{{count}} more voters",
+                        ),
+                        { count: overflow },
+                    )}
+                >
+                    +{overflow}
+                </span>
+            ) : null}
+        </div>
+    );
+}
+
 export function KibitzProposalBar({
     proposal,
     onVote,
@@ -33,54 +134,123 @@ export function KibitzProposalBar({
         return null;
     }
 
+    const changeVotes = proposal.vote_state.change_votes ?? [];
+    const keepVotes = proposal.vote_state.keep_votes ?? [];
+    const totalVotes = changeVotes.length + keepVotes.length;
+    const changeLeading = changeVotes.length > keepVotes.length;
+    const keepLeading = keepVotes.length > changeVotes.length;
+
     return (
         <div className="KibitzProposalBar">
-            <div className="proposal-copy">
-                <div className="proposal-summary">
-                    {interpolate(
-                        pgettext(
-                            "Proposal summary shown above the kibitz board area",
-                            "{{username}} proposed switching main game to {{title}}",
-                        ),
-                        {
-                            username: proposal.proposer.username,
-                            title: proposal.proposed_game.title,
-                        },
-                    )}
+            <div className="proposal-primary">
+                <div className="proposal-proposer">
+                    <span
+                        className="proposal-proposer-avatar"
+                        title={proposal.proposer.username}
+                        aria-hidden="true"
+                    >
+                        {getInitials(proposal.proposer.username)}
+                    </span>
+                    <div className="proposal-proposer-copy">
+                        <div className="proposal-eyebrow">
+                            {pgettext("Eyebrow shown in the kibitz proposal bar", "Board proposal")}
+                        </div>
+                        <div className="proposal-summary">
+                            {interpolate(
+                                pgettext(
+                                    "Proposal summary shown above the kibitz board area",
+                                    "{{username}} proposed switching the room to",
+                                ),
+                                {
+                                    username: proposal.proposer.username,
+                                },
+                            )}
+                        </div>
+                    </div>
                 </div>
-                <div className="proposal-game-meta">
-                    {interpolate(
-                        pgettext(
-                            "Proposed game metadata shown in the kibitz proposal bar",
-                            "{{black}} vs {{white}} | Board {{size}} | Move {{move_number}}",
-                        ),
-                        {
-                            black: proposal.proposed_game.black.username,
-                            white: proposal.proposed_game.white.username,
-                            size: proposal.proposed_game.board_size,
-                            move_number: proposal.proposed_game.move_number ?? 0,
-                        },
-                    )}
+                <div className="proposal-game">
+                    <div className="proposal-title">{proposal.proposed_game.title}</div>
+                    <div className="proposal-game-meta">
+                        {interpolate(
+                            pgettext(
+                                "Proposed game metadata shown in the kibitz proposal bar",
+                                "{{black}} vs {{white}} | Board {{size}} | Move {{move_number}}",
+                            ),
+                            {
+                                black: proposal.proposed_game.black.username,
+                                white: proposal.proposed_game.white.username,
+                                size: proposal.proposed_game.board_size,
+                                move_number: proposal.proposed_game.move_number ?? 0,
+                            },
+                        )}
+                    </div>
+                    <div className="proposal-live-status">
+                        {interpolate(
+                            pgettext(
+                                "Live vote status shown in the kibitz proposal bar",
+                                "Vote live | {{count}} total votes",
+                            ),
+                            { count: totalVotes },
+                        )}
+                    </div>
                 </div>
             </div>
+
             <div className="proposal-controls">
-                <div className="proposal-votes">
-                    <span>
-                        {interpolate(pgettext("Change board vote count", "Change {{count}}"), {
-                            count: proposal.vote_state.change_votes.length,
-                        })}
-                    </span>
-                    <span>
-                        {interpolate(pgettext("Keep board vote count", "Keep {{count}}"), {
-                            count: proposal.vote_state.keep_votes.length,
-                        })}
-                    </span>
+                <div className="proposal-vote-lanes">
+                    <div
+                        className={"proposal-vote-lane change" + (changeLeading ? " leading" : "")}
+                    >
+                        <div className="proposal-vote-lane-top">
+                            <span className="proposal-vote-label">
+                                {pgettext(
+                                    "Label for the change-board vote lane in kibitz",
+                                    "Change board",
+                                )}
+                            </span>
+                            <span className="proposal-vote-count">{changeVotes.length}</span>
+                        </div>
+                        <VoteAvatarStack
+                            users={changeVotes as Array<VoteUserLike | string>}
+                            emptyLabel={pgettext(
+                                "Empty state for the change vote lane in kibitz",
+                                "No votes yet",
+                            )}
+                        />
+                    </div>
+                    <div className={"proposal-vote-lane keep" + (keepLeading ? " leading" : "")}>
+                        <div className="proposal-vote-lane-top">
+                            <span className="proposal-vote-label">
+                                {pgettext(
+                                    "Label for the keep-current vote lane in kibitz",
+                                    "Keep current",
+                                )}
+                            </span>
+                            <span className="proposal-vote-count">{keepVotes.length}</span>
+                        </div>
+                        <VoteAvatarStack
+                            users={keepVotes as Array<VoteUserLike | string>}
+                            emptyLabel={pgettext(
+                                "Empty state for the keep vote lane in kibitz",
+                                "No votes yet",
+                            )}
+                        />
+                    </div>
                 </div>
+
                 <div className="proposal-actions">
-                    <button type="button" onClick={() => onVote(proposal.id, "change")}>
+                    <button
+                        type="button"
+                        className="proposal-action primary"
+                        onClick={() => onVote(proposal.id, "change")}
+                    >
                         {pgettext("Vote button in kibitz proposal bar", "Change board")}
                     </button>
-                    <button type="button" onClick={() => onVote(proposal.id, "keep")}>
+                    <button
+                        type="button"
+                        className="proposal-action secondary"
+                        onClick={() => onVote(proposal.id, "keep")}
+                    >
                         {pgettext("Vote button in kibitz proposal bar", "Keep current")}
                     </button>
                 </div>

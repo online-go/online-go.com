@@ -1,38 +1,137 @@
 .KibitzProposalQueue {
     border-top: 1px solid transparent;
     border-top-color: var(--shade3);
-    padding: 0.4rem 0.75rem;
     min-height: 0;
     overflow-y: auto;
+    padding: 0.4rem 0.75rem;
 
     .queue-title {
-        font-weight: bold;
         font-size: 0.85rem;
-        margin-bottom: 0.25rem;
+        font-weight: bold;
+        margin-bottom: 0.3rem;
     }
 
     .queue-items {
         display: flex;
         flex-direction: column;
-        gap: 0.35rem;
+        gap: 0;
     }
 
     .queue-item {
+        align-items: flex-start;
         border-top: 1px solid transparent;
         border-top-color: var(--shade3);
-        display: flex;
-        justify-content: space-between;
+        display: grid;
         gap: 0.5rem;
-        padding-top: 0.35rem;
+        grid-template-columns: minmax(0, 1fr) auto;
+        padding: 0.45rem 0;
     }
 
     .queue-item:first-child {
         border-top: 0;
-        padding-top: 0;
+        padding-top: 0.1rem;
     }
 
-    .queue-status {
+    .queue-item-primary {
+        display: flex;
+        flex-direction: column;
+        gap: 0.12rem;
+        min-width: 0;
+    }
+
+    .queue-item-top {
+        align-items: center;
+        display: flex;
+        gap: 0.45rem;
+        justify-content: space-between;
+        min-width: 0;
+    }
+
+    .queue-status-pill {
+        background: var(--shade1);
         color: var(--text-color-faded);
-        text-transform: capitalize;
+        display: inline-flex;
+        font-size: 0.68rem;
+        font-weight: bold;
+        letter-spacing: 0.03em;
+        line-height: 1;
+        padding: 0.2rem 0.4rem;
+        text-transform: uppercase;
+        vertical-align: middle;
+    }
+
+    .queue-status-pill.active {
+        background: rgba(38, 108, 215, 0.16);
+        color: var(--primary);
+    }
+
+    .queue-proposer {
+        align-items: center;
+        color: var(--text-color-faded);
+        display: inline-flex;
+        gap: 0.3rem;
+        min-width: 0;
+    }
+
+    .queue-proposer-avatar {
+        align-items: center;
+        background: var(--shade2);
+        color: var(--fg);
+        display: inline-flex;
+        font-size: 0.62rem;
+        font-weight: bold;
+        height: 1.2rem;
+        justify-content: center;
+        min-width: 1.2rem;
+        text-transform: uppercase;
+    }
+
+    .queue-proposer-name {
+        font-size: 0.75rem;
+        line-height: 1.1;
+        overflow-wrap: anywhere;
+    }
+
+    .queue-game {
+        color: var(--fg);
+        font-size: 0.95rem;
+        font-weight: bold;
+        line-height: 1.15;
+        overflow-wrap: anywhere;
+    }
+
+    .queue-meta,
+    .queue-vote-summary {
+        color: var(--text-color-faded);
+        font-size: 0.76rem;
+        line-height: 1.15;
+        overflow-wrap: anywhere;
+    }
+
+    .queue-item-side {
+        align-items: flex-start;
+        display: flex;
+        justify-content: flex-end;
+        min-width: 0;
+        padding-top: 0.05rem;
+    }
+
+    .queue-vote-summary.queued-label {
+        color: var(--shade1);
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+}
+
+@media (max-width: 900px) {
+    .KibitzProposalQueue {
+        .queue-item {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .queue-item-side {
+            justify-content: flex-start;
+            padding-top: 0;
+        }
     }
 }
