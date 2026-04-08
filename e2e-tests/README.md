@@ -119,6 +119,25 @@ Things of note:
     - We have a subclassed version of this `ogsTest`
         - it adds checking at the end of each test that no `ErrorBoundary` appeared
 
+A suitable "regression test" for any change you make is
+
+`yarn test:e2e:quick`
+
+If an unrelated test fails, it's worth running it again on its own, because if the Beta server gets overpowered by e2e testing,
+some fragility in the tests can cause failure. This typically is resolved by running it on its own.
+
+`yarn test:e2e:quick --grep "target test description"`
+
+(The e2e testing server has retries and other strategies for dealing with this)
+
+<details>
+<summary> What? Fragile?</summary>
+
+Yes, it's hard to accept that some tests are fragile. It turns out that the way React hydrates and refreshes is actually
+susceptible to this, it's proved hard to eliminate. Any assistance with that more than welcome!
+
+</details>
+
 ## Multi-user tests
 
 - user-utils.ts provides helper functions for doing multi-user tests.
