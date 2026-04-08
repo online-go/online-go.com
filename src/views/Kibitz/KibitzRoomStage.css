@@ -76,6 +76,14 @@
                 max-height: 100%;
                 width: 100%;
             }
+
+            .secondary-board .KibitzBoard .goban-container {
+                flex: 0 0 auto !important;
+                flex-basis: auto !important;
+                height: auto !important;
+                max-width: 100%;
+                width: 100%;
+            }
         }
 
         &.secondary-pane-equal {
