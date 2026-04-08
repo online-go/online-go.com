@@ -174,6 +174,7 @@ export function Kibitz(): React.ReactElement {
     const resolvedRoom = activeRoom ?? rooms.find((room) => room.id === roomId) ?? rooms[0];
     const roomProposals = proposals.filter((proposal) => proposal.room_id === resolvedRoom?.id);
     const activeProposal = roomProposals.find((proposal) => proposal.status === "active");
+    const queuedRoomProposals = roomProposals.filter((proposal) => proposal.status !== "active");
 
     const onProposePreview = React.useCallback(() => {
         if (resolvedRoom) {
@@ -236,7 +237,7 @@ export function Kibitz(): React.ReactElement {
                                 onSendMessage={onSendMessage}
                             />
                             <div className="Kibitz-footer-panels">
-                                {variations.length === 0 && roomProposals.length === 0 ? (
+                                {variations.length === 0 && queuedRoomProposals.length === 0 ? (
                                     <div className="Kibitz-footer-empty">
                                         {pgettext(
                                             "Compact empty state shown below the kibitz room stream when there are no variations or queued proposals",
@@ -251,8 +252,8 @@ export function Kibitz(): React.ReactElement {
                                                 onOpenVariation={onOpenVariation}
                                             />
                                         ) : null}
-                                        {roomProposals.length > 0 ? (
-                                            <KibitzProposalQueue proposals={roomProposals} />
+                                        {queuedRoomProposals.length > 0 ? (
+                                            <KibitzProposalQueue proposals={queuedRoomProposals} />
                                         ) : null}
                                     </>
                                 )}
