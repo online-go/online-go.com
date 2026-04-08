@@ -223,6 +223,7 @@ export function Kibitz(): React.ReactElement {
                             onPreviewGame={onPreviewGame}
                             onClearPreview={onClearPreview}
                             onProposePreview={onProposePreview}
+                            onOpenVariation={onOpenVariation}
                             onSetSecondaryPaneMode={onSetSecondaryPaneMode}
                         />
                         <div className="Kibitz-sidebar">

@@ -43,6 +43,7 @@ interface KibitzRoomStageProps {
     onPreviewGame: (gameId: number) => void;
     onClearPreview: () => void;
     onProposePreview: () => void;
+    onOpenVariation: (variationId: string) => void;
     onSetSecondaryPaneMode: (mode: "hidden" | "small" | "equal") => void;
 }
 
@@ -97,6 +98,7 @@ export function KibitzRoomStage({
     onPreviewGame,
     onClearPreview,
     onProposePreview,
+    onOpenVariation,
     onSetSecondaryPaneMode,
 }: KibitzRoomStageProps): React.ReactElement {
     const mainGame = room.current_game;
@@ -109,6 +111,20 @@ export function KibitzRoomStage({
     const previewCandidates = rooms.filter(
         (candidate) => candidate.id !== room.id && candidate.current_game?.game_id,
     );
+    const smallModeQuickVariations = variations
+        .filter((variation) => variation.id !== secondaryPane.variation_id)
+        .slice(0, 4);
+    const smallModeProposalPreviews = proposals
+        .filter(
+            (proposal) =>
+                proposal.proposed_game.game_id &&
+                proposal.proposed_game.game_id !== secondaryGameId &&
+                (proposal.status === "queued" || proposal.status === "active"),
+        )
+        .slice(0, 3);
+    const smallModeRoomPreviews = previewCandidates
+        .filter((candidate) => candidate.current_game?.game_id !== secondaryGameId)
+        .slice(0, 3);
     const previewGame =
         rooms.find((candidate) => candidate.current_game?.game_id === secondaryGameId)
             ?.current_game ??
@@ -177,6 +193,304 @@ export function KibitzRoomStage({
                   { tournament_id: mainGameDetails.tournament },
               )
             : mainGame?.tournament_name;
+
+    const renderSecondaryTray = () => {
+        if (secondaryPaneSize !== "small") {
+            return null;
+        }
+
+        const quickLinksAvailable =
+            smallModeQuickVariations.length > 0 ||
+            smallModeProposalPreviews.length > 0 ||
+            smallModeRoomPreviews.length > 0;
+
+        if (secondaryGameId && previewGame) {
+            return (
+                <div className="secondary-tray secondary-tray-preview">
+                    <div className="secondary-tray-card primary">
+                        <div className="tray-eyebrow">
+                            {pgettext(
+                                "Eyebrow for the secondary tray when previewing a game in kibitz",
+                                "Previewing privately",
+                            )}
+                        </div>
+                        <div className="tray-title">
+                            {previewGame.title ??
+                                pgettext(
+                                    "Fallback title for a game preview in the kibitz side tray",
+                                    "Previewed game",
+                                )}
+                        </div>
+                        <div className="tray-copy">
+                            {pgettext(
+                                "Helper copy shown in the kibitz side tray when previewing another game",
+                                "This board is just for you until you propose it to the room.",
+                            )}
+                        </div>
+                        <div className="tray-actions">
+                            <button
+                                type="button"
+                                className="preview-action-button tray-button primary"
+                                onClick={onProposePreview}
+                            >
+                                {pgettext(
+                                    "Primary button in the kibitz side tray for proposing a previewed game",
+                                    "Propose to room",
+                                )}
+                            </button>
+                            <button
+                                type="button"
+                                className="preview-action-button tray-button subtle"
+                                onClick={onClearPreview}
+                            >
+                                {pgettext(
+                                    "Secondary button in the kibitz side tray for closing the preview",
+                                    "Close preview",
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                    {quickLinksAvailable ? (
+                        <div className="secondary-tray-sections">
+                            {smallModeQuickVariations.length > 0 ? (
+                                <div className="secondary-tray-section">
+                                    <div className="section-title">
+                                        {pgettext(
+                                            "Section heading for quick variation shortcuts in the kibitz side tray",
+                                            "Hot variations",
+                                        )}
+                                    </div>
+                                    <div className="tray-chip-list">
+                                        {smallModeQuickVariations.map((variation) => (
+                                            <button
+                                                key={variation.id}
+                                                type="button"
+                                                className="tray-chip"
+                                                onClick={() => onOpenVariation(variation.id)}
+                                            >
+                                                <span className="chip-title">
+                                                    {variation.title ||
+                                                        pgettext(
+                                                            "Fallback title for an untitled variation in the kibitz side tray",
+                                                            "Untitled variation",
+                                                        )}
+                                                </span>
+                                                <span className="chip-meta">
+                                                    {variation.creator.username}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            ) : null}
+                            {smallModeProposalPreviews.length > 0 ? (
+                                <div className="secondary-tray-section">
+                                    <div className="section-title">
+                                        {pgettext(
+                                            "Section heading for queued board proposals in the kibitz side tray",
+                                            "Watch next",
+                                        )}
+                                    </div>
+                                    <div className="tray-link-list">
+                                        {smallModeProposalPreviews.map((proposal) => (
+                                            <button
+                                                key={proposal.id}
+                                                type="button"
+                                                className="tray-link"
+                                                onClick={() =>
+                                                    onPreviewGame(
+                                                        proposal.proposed_game.game_id as number,
+                                                    )
+                                                }
+                                            >
+                                                <span className="link-title">
+                                                    {proposal.proposed_game.title}
+                                                </span>
+                                                <span className="link-meta">{proposal.status}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            ) : null}
+                        </div>
+                    ) : null}
+                </div>
+            );
+        }
+
+        if (selectedVariation) {
+            return (
+                <div className="secondary-tray secondary-tray-variation">
+                    <div className="secondary-tray-card primary">
+                        <div className="tray-eyebrow">
+                            {pgettext(
+                                "Eyebrow for the secondary tray when viewing a variation in kibitz",
+                                "Variation discussion",
+                            )}
+                        </div>
+                        <div className="tray-title">
+                            {selectedVariation.title ??
+                                pgettext(
+                                    "Fallback title for a variation in the kibitz side tray",
+                                    "Variation preview",
+                                )}
+                        </div>
+                        <div className="tray-copy">
+                            {interpolate(
+                                pgettext(
+                                    "Helper copy shown in the kibitz side tray when viewing a variation",
+                                    "Created by {{username}}. Follow the line here without disturbing the room board.",
+                                ),
+                                { username: selectedVariation.creator.username },
+                            )}
+                        </div>
+                        <div className="tray-actions">
+                            <button
+                                type="button"
+                                className="preview-action-button tray-button subtle"
+                                onClick={onClearPreview}
+                            >
+                                {pgettext(
+                                    "Button for closing a variation in the kibitz side tray",
+                                    "Close variation",
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                    {smallModeQuickVariations.length > 0 ? (
+                        <div className="secondary-tray-section">
+                            <div className="section-title">
+                                {pgettext(
+                                    "Section heading for more variations in the kibitz side tray",
+                                    "More variations",
+                                )}
+                            </div>
+                            <div className="tray-chip-list">
+                                {smallModeQuickVariations.map((variation) => (
+                                    <button
+                                        key={variation.id}
+                                        type="button"
+                                        className="tray-chip"
+                                        onClick={() => onOpenVariation(variation.id)}
+                                    >
+                                        <span className="chip-title">
+                                            {variation.title ||
+                                                pgettext(
+                                                    "Fallback title for an untitled variation in the kibitz side tray",
+                                                    "Untitled variation",
+                                                )}
+                                        </span>
+                                        <span className="chip-meta">
+                                            {variation.creator.username}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    ) : null}
+                </div>
+            );
+        }
+
+        return (
+            <div className="secondary-tray secondary-tray-empty">
+                <div className="secondary-tray-card primary empty">
+                    <div className="tray-eyebrow">
+                        {pgettext("Eyebrow for the idle kibitz side tray", "Secondary tray")}
+                    </div>
+                    <div className="tray-title">
+                        {pgettext(
+                            "Title for the idle kibitz side tray",
+                            "Open a preview or variation",
+                        )}
+                    </div>
+                    <div className="tray-copy">
+                        {pgettext(
+                            "Helper copy for the idle kibitz side tray",
+                            "Use this space to inspect another game, or follow a room variation without leaving the shared board.",
+                        )}
+                    </div>
+                </div>
+                {smallModeQuickVariations.length > 0 ? (
+                    <div className="secondary-tray-section">
+                        <div className="section-title">
+                            {pgettext(
+                                "Section heading for room variations in the idle kibitz side tray",
+                                "Hot variations",
+                            )}
+                        </div>
+                        <div className="tray-chip-list">
+                            {smallModeQuickVariations.map((variation) => (
+                                <button
+                                    key={variation.id}
+                                    type="button"
+                                    className="tray-chip"
+                                    onClick={() => onOpenVariation(variation.id)}
+                                >
+                                    <span className="chip-title">
+                                        {variation.title ||
+                                            pgettext(
+                                                "Fallback title for an untitled variation in the kibitz side tray",
+                                                "Untitled variation",
+                                            )}
+                                    </span>
+                                    <span className="chip-meta">{variation.creator.username}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                ) : null}
+                {smallModeProposalPreviews.length > 0 || smallModeRoomPreviews.length > 0 ? (
+                    <div className="secondary-tray-section">
+                        <div className="section-title">
+                            {pgettext(
+                                "Section heading for room previews in the idle kibitz side tray",
+                                "Quick previews",
+                            )}
+                        </div>
+                        <div className="tray-link-list">
+                            {smallModeProposalPreviews.map((proposal) => (
+                                <button
+                                    key={proposal.id}
+                                    type="button"
+                                    className="tray-link"
+                                    onClick={() =>
+                                        onPreviewGame(proposal.proposed_game.game_id as number)
+                                    }
+                                >
+                                    <span className="link-title">
+                                        {proposal.proposed_game.title}
+                                    </span>
+                                    <span className="link-meta">{proposal.status}</span>
+                                </button>
+                            ))}
+                            {smallModeRoomPreviews.map((candidate) => (
+                                <button
+                                    key={candidate.id}
+                                    type="button"
+                                    className="tray-link"
+                                    onClick={() =>
+                                        onPreviewGame(candidate.current_game?.game_id as number)
+                                    }
+                                >
+                                    <span className="link-title">{candidate.title}</span>
+                                    <span className="link-meta">
+                                        {interpolate(
+                                            pgettext(
+                                                "Viewer count summary for a preview shortcut in the kibitz side tray",
+                                                "{{count}} watching",
+                                            ),
+                                            { count: candidate.viewer_count },
+                                        )}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                ) : null}
+            </div>
+        );
+    };
 
     return (
         <div className="KibitzRoomStage">
@@ -315,10 +629,15 @@ export function KibitzRoomStage({
                             <div className="board-content">
                                 <div className="board-meta">
                                     <div className="board-label">
-                                        {pgettext(
-                                            "Label for the personal secondary board in kibitz",
-                                            "Secondary board",
-                                        )}
+                                        {secondaryPaneSize === "small"
+                                            ? pgettext(
+                                                  "Label for the preview tray in kibitz",
+                                                  "Preview tray",
+                                              )
+                                            : pgettext(
+                                                  "Label for the personal secondary board in kibitz",
+                                                  "Secondary board",
+                                              )}
                                     </div>
                                     <div className="players">
                                         {interpolate(
@@ -376,38 +695,40 @@ export function KibitzRoomStage({
                                             totalMoves={previewDisplayedMoveNumber}
                                         />
                                     </div>
-                                    <div className="board-actions board-actions-inline">
-                                        <button
-                                            type="button"
-                                            className="preview-action-button symbol-button"
-                                            onClick={onProposePreview}
-                                            aria-label={pgettext(
-                                                "Aria label for proposing the current previewed game in kibitz",
-                                                "Propose",
-                                            )}
-                                            title={pgettext(
-                                                "Tooltip label for proposing the current previewed game in kibitz",
-                                                "Propose",
-                                            )}
-                                        >
-                                            +
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="preview-action-button clear-preview symbol-button"
-                                            onClick={onClearPreview}
-                                            aria-label={pgettext(
-                                                "Aria label for closing the preview game in the secondary kibitz pane",
-                                                "Clear",
-                                            )}
-                                            title={pgettext(
-                                                "Tooltip label for closing the preview game in the secondary kibitz pane",
-                                                "Clear",
-                                            )}
-                                        >
-                                            X
-                                        </button>
-                                    </div>
+                                    {secondaryPaneSize === "equal" ? (
+                                        <div className="board-actions board-actions-inline">
+                                            <button
+                                                type="button"
+                                                className="preview-action-button symbol-button"
+                                                onClick={onProposePreview}
+                                                aria-label={pgettext(
+                                                    "Aria label for proposing the current previewed game in kibitz",
+                                                    "Propose",
+                                                )}
+                                                title={pgettext(
+                                                    "Tooltip label for proposing the current previewed game in kibitz",
+                                                    "Propose",
+                                                )}
+                                            >
+                                                +
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="preview-action-button clear-preview symbol-button"
+                                                onClick={onClearPreview}
+                                                aria-label={pgettext(
+                                                    "Aria label for closing the preview game in the secondary kibitz pane",
+                                                    "Clear",
+                                                )}
+                                                title={pgettext(
+                                                    "Tooltip label for closing the preview game in the secondary kibitz pane",
+                                                    "Clear",
+                                                )}
+                                            >
+                                                X
+                                            </button>
+                                        </div>
+                                    ) : null}
                                 </div>
                                 {secondaryPaneSize === "equal" ? (
                                     <Resizable
@@ -415,16 +736,23 @@ export function KibitzRoomStage({
                                         className="kibitz-move-tree-container"
                                         ref={setSecondaryMoveTreeContainer}
                                     />
-                                ) : null}
+                                ) : (
+                                    renderSecondaryTray()
+                                )}
                             </div>
                         ) : selectedVariation ? (
                             <div className="board-content">
                                 <div className="board-meta">
                                     <div className="board-label">
-                                        {pgettext(
-                                            "Label for the personal secondary board in kibitz",
-                                            "Secondary board",
-                                        )}
+                                        {secondaryPaneSize === "small"
+                                            ? pgettext(
+                                                  "Label for the variation tray in kibitz",
+                                                  "Variation tray",
+                                              )
+                                            : pgettext(
+                                                  "Label for the personal secondary board in kibitz",
+                                                  "Secondary board",
+                                              )}
                                     </div>
                                     <div className="players">
                                         {selectedVariation.creator.username}
@@ -454,23 +782,25 @@ export function KibitzRoomStage({
                                             totalMoves={selectedVariation.move_count}
                                         />
                                     </div>
-                                    <div className="board-actions board-actions-inline">
-                                        <button
-                                            type="button"
-                                            className="preview-action-button clear-preview symbol-button"
-                                            onClick={onClearPreview}
-                                            aria-label={pgettext(
-                                                "Aria label for closing a variation preview in the secondary kibitz pane",
-                                                "Clear",
-                                            )}
-                                            title={pgettext(
-                                                "Tooltip label for closing a variation preview in the secondary kibitz pane",
-                                                "Clear",
-                                            )}
-                                        >
-                                            X
-                                        </button>
-                                    </div>
+                                    {secondaryPaneSize === "equal" ? (
+                                        <div className="board-actions board-actions-inline">
+                                            <button
+                                                type="button"
+                                                className="preview-action-button clear-preview symbol-button"
+                                                onClick={onClearPreview}
+                                                aria-label={pgettext(
+                                                    "Aria label for closing a variation preview in the secondary kibitz pane",
+                                                    "Clear",
+                                                )}
+                                                title={pgettext(
+                                                    "Tooltip label for closing a variation preview in the secondary kibitz pane",
+                                                    "Clear",
+                                                )}
+                                            >
+                                                X
+                                            </button>
+                                        </div>
+                                    ) : null}
                                 </div>
                                 {secondaryPaneSize === "equal" ? (
                                     <Resizable
@@ -478,8 +808,12 @@ export function KibitzRoomStage({
                                         className="kibitz-move-tree-container"
                                         ref={setSecondaryMoveTreeContainer}
                                     />
-                                ) : null}
+                                ) : (
+                                    renderSecondaryTray()
+                                )}
                             </div>
+                        ) : secondaryPaneSize === "small" ? (
+                            renderSecondaryTray()
                         ) : (
                             pgettext(
                                 "Placeholder for the secondary kibitz goban area before the board is wired up",
