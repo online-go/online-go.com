@@ -70,11 +70,11 @@ export function KibitzRoomList({
             <div className="KibitzRoomList-items">
                 {rooms.map((room) => {
                     const roomUsers = roomUsersById[room.id] ?? [];
-                    const stackedUsers = roomUsers.slice(0, 3);
+                    const stackedUsers = roomUsers.slice(0, 4);
                     const overflowCount = Math.max(0, roomUsers.length - stackedUsers.length);
                     const isActive = room.id === activeRoomId;
                     const roomGame = room.current_game;
-                    const roomSummaryBits = [
+                    const contextBits = [
                         roomGame?.board_size,
                         typeof roomGame?.move_number === "number"
                             ? interpolate(
@@ -96,43 +96,35 @@ export function KibitzRoomList({
                             <span className="room-active-rail" aria-hidden="true" />
                             <div className="room-main">
                                 <div className="room-top-row">
-                                    <div className="room-title-stack">
-                                        <span className="room-title">{room.title}</span>
-                                        {roomGame?.title ? (
-                                            <span className="room-subtitle">{roomGame.title}</span>
-                                        ) : null}
-                                    </div>
-                                    <div className="room-status-chips">
-                                        {isActive ? (
-                                            <span className="room-status-chip active-chip">
-                                                {pgettext(
-                                                    "Active room chip shown in the kibitz room list",
-                                                    "Here",
-                                                )}
-                                            </span>
-                                        ) : null}
-                                        <span className="room-status-chip viewer-chip">
-                                            {interpolate(
-                                                pgettext(
-                                                    "Viewer count label for a kibitz room",
-                                                    "{{count}} watching",
-                                                ),
-                                                {
-                                                    count: room.viewer_count,
-                                                },
+                                    <span className="room-title">{room.title}</span>
+                                    {isActive ? (
+                                        <span className="room-status-chip active-chip">
+                                            {pgettext(
+                                                "Active room chip shown in the kibitz room list",
+                                                "Here",
                                             )}
                                         </span>
-                                    </div>
+                                    ) : null}
                                 </div>
-                                {roomSummaryBits.length > 0 ? (
-                                    <div className="room-context-row">
-                                        {roomSummaryBits.map((bit) => (
-                                            <span key={bit} className="room-context-chip">
-                                                {bit}
-                                            </span>
-                                        ))}
-                                    </div>
+                                {roomGame?.title ? (
+                                    <div className="room-subtitle">{roomGame.title}</div>
                                 ) : null}
+                                <div className="room-meta-row">
+                                    <span className="room-watching-label">
+                                        {interpolate(
+                                            pgettext(
+                                                "Viewer count label for a kibitz room",
+                                                "{{count}} watching",
+                                            ),
+                                            { count: room.viewer_count },
+                                        )}
+                                    </span>
+                                    {contextBits.length > 0 ? (
+                                        <span className="room-context-inline">
+                                            {contextBits.join(" · ")}
+                                        </span>
+                                    ) : null}
+                                </div>
                             </div>
                             {stackedUsers.length > 0 ? (
                                 <div className="room-presence-row">
@@ -162,16 +154,7 @@ export function KibitzRoomList({
                                         )}
                                     </span>
                                 </div>
-                            ) : (
-                                <div className="room-presence-row empty">
-                                    <span className="room-presence-label">
-                                        {pgettext(
-                                            "Empty presence hint in the kibitz room list",
-                                            "No one chatting right now",
-                                        )}
-                                    </span>
-                                </div>
-                            )}
+                            ) : null}
                         </button>
                     );
                 })}
