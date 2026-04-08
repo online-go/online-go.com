@@ -33,7 +33,7 @@
         "test:e2e:debug": "node scripts/run-playwright.js --debug",
         "test:ci": "yarn test:e2e:docker:smoke && yarn test",
         "test:e2e:docker:smoke": "CI=true yarn test:e2e:docker --grep @Smoke",
-        "test:e2e:docker": "PLAYWRIGHT_DOCKER=mcr.microsoft.com/playwright:v1.59.0-noble scripts/run-playwright-in-docker.sh"
+        "test:e2e:docker": "PLAYWRIGHT_DOCKER=mcr.microsoft.com/playwright:v1.59.1-noble scripts/run-playwright-in-docker.sh"
     },
     "browserslist": [
         "last 8 years, not dead"
