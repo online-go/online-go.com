@@ -104,6 +104,7 @@ export function KibitzRoomStage({
     const mainGame = room.current_game;
     const secondaryGameId = secondaryPane.preview_game_id;
     const secondaryPaneSize = secondaryPane.collapsed ? "hidden" : (secondaryPane.size ?? "small");
+    const isSmallSecondaryPane = secondaryPaneSize === "small";
     const selectedVariation = variations.find(
         (variation) => variation.id === secondaryPane.variation_id,
     );
@@ -652,9 +653,11 @@ export function KibitzRoomStage({
                                         )}
                                     </div>
                                     <div className="game-details">
-                                        {previewGame?.title ?? ""}
+                                        {!isSmallSecondaryPane && previewGame?.title
+                                            ? previewGame.title
+                                            : ""}
                                         {previewGame?.board_size
-                                            ? ` - ${interpolate(
+                                            ? `${!isSmallSecondaryPane && previewGame?.title ? " - " : ""}${interpolate(
                                                   pgettext(
                                                       "Board size label shown in the kibitz secondary pane",
                                                       "Board {{size}}",
@@ -663,7 +666,7 @@ export function KibitzRoomStage({
                                               )}`
                                             : ""}
                                         {previewDisplayedMoveNumber
-                                            ? ` - ${interpolate(
+                                            ? `${previewGame?.board_size || (!isSmallSecondaryPane && previewGame?.title) ? " - " : ""}${interpolate(
                                                   pgettext(
                                                       "Move number label shown in the kibitz secondary pane",
                                                       "Move {{move_number}}",
@@ -758,11 +761,19 @@ export function KibitzRoomStage({
                                         {selectedVariation.creator.username}
                                     </div>
                                     <div className="game-details">
-                                        {selectedVariation.title ??
-                                            pgettext(
-                                                "Fallback title for an untitled kibitz variation",
-                                                "Variation preview",
-                                            )}
+                                        {isSmallSecondaryPane
+                                            ? interpolate(
+                                                  pgettext(
+                                                      "Move count label shown for a variation in the kibitz secondary pane",
+                                                      "Move {{move_number}}",
+                                                  ),
+                                                  { move_number: selectedVariation.move_count },
+                                              )
+                                            : (selectedVariation.title ??
+                                              pgettext(
+                                                  "Fallback title for an untitled kibitz variation",
+                                                  "Variation preview",
+                                              ))}
                                     </div>
                                 </div>
                                 <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
