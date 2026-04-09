@@ -7,44 +7,6 @@
     min-height: 0;
     padding: 0 0.375rem 0.375rem;
 
-    .KibitzRoomStage-header {
-        border-bottom: 1px solid transparent;
-        border-bottom-color: var(--shade3);
-        display: flex;
-        gap: 0.75rem;
-        justify-content: space-between;
-        align-items: flex-start;
-        padding: 0.375rem 0 0.5rem;
-
-        .stage-header-copy {
-            display: flex;
-            flex-direction: column;
-            gap: 0.1rem;
-            min-width: 0;
-        }
-
-        .stage-header-actions {
-            align-items: center;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.35rem;
-            justify-content: flex-end;
-            margin-left: auto;
-        }
-
-        .room-title {
-            font-size: 0.98rem;
-            font-weight: bold;
-            line-height: 1.15;
-        }
-
-        .room-subtitle {
-            color: var(--text-color-faded);
-            font-size: 0.82rem;
-            line-height: 1.15;
-        }
-    }
-
     .KibitzRoomStage-boards {
         display: grid;
         flex: 1;
@@ -292,7 +254,30 @@
             flex-direction: column;
             gap: 0.15rem;
             text-align: left;
-            padding: 0 0.125rem;
+            padding: 0 0.125rem 0.625rem;
+
+            .board-title-row {
+                align-items: baseline;
+                display: flex;
+                gap: 0.35rem;
+                min-width: 0;
+            }
+
+            .board-title {
+                color: var(--fg);
+                flex: 0 0 auto;
+                font-size: 0.98rem;
+                font-weight: bold;
+                line-height: 1.15;
+            }
+
+            .board-subtitle {
+                color: var(--text-color-faded);
+                min-width: 0;
+                font-size: 0.82rem;
+                line-height: 1.15;
+                overflow-wrap: anywhere;
+            }
 
             .board-meta-top {
                 align-items: flex-start;
@@ -383,21 +368,24 @@
 
         .secondary-board-transport-row {
             align-items: center;
+            box-sizing: border-box;
             display: grid;
             gap: 0.35rem;
             grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
             height: var(--equal-transport-height, auto);
             min-width: 0;
+            padding: 0.3125rem 0;
             width: 100%;
         }
 
         .main-board-transport-row {
             align-items: center;
+            box-sizing: border-box;
             display: flex;
             height: var(--equal-transport-height, auto);
             justify-content: center;
             min-width: 0;
-            padding: 0;
+            padding: 0.3125rem 0;
             width: 100%;
         }
 
@@ -416,6 +404,15 @@
         .secondary-board-transport-row .transport-controls .KibitzBoardControls.full {
             width: auto;
             max-width: none;
+        }
+
+        .secondary-room-preview-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            justify-content: flex-end;
+            min-width: 0;
+            padding: 0 0.125rem;
         }
 
         .board-actions.board-actions-inline {
