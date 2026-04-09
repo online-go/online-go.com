@@ -6,6 +6,7 @@
 import "./TimeControl";
 import { TimeControlTypes } from "./TimeControl";
 import { updateSpeed } from "./TimeControlUpdates";
+import { getDefaultTimeControl } from "./util";
 // import { classifyGameSpeed, getDefaultTimeControl } from "./util";
 
 // test("Default time controls fit their respective categories", () => {
@@ -49,3 +50,20 @@ test("Updating speed away from correspondence + 'pause on weekends' should not m
     const updated = updateSpeed(tc, "live", 19, 19);
     expect(updated.pause_on_weekends).toEqual(false);
 });
+
+test.each(TimeControlTypes.ALL_SYSTEMS_EXCEPT_NONE)(
+    "Updating speed away from correspondence clears pause-on-weekends for %s",
+    (system) => {
+        const tc = {
+            ...getDefaultTimeControl("correspondence", system),
+            speed: "correspondence" as const,
+            pause_on_weekends: true,
+        };
+
+        const updated = updateSpeed(tc, "live", 19, 19);
+
+        expect(updated.pause_on_weekends).toBe(false);
+        expect(updated.speed).toBe("live");
+        expect(updated.system).toBe(system);
+    },
+);
