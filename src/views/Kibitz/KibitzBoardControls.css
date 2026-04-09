@@ -19,7 +19,7 @@
     }
 
     .kibitz-move-control,
-    .kibitz-live-button {
+    .kibitz-return-live-button {
         align-items: center;
         background: var(--shade2);
         border: 0;
@@ -36,15 +36,11 @@
         vertical-align: middle;
     }
 
-    .kibitz-live-button {
+    .kibitz-return-live-button {
+        background: var(--primary);
+        color: var(--colored-background-fg);
         min-width: auto;
         padding-inline: 0.55rem;
-    }
-
-    .kibitz-live-button:disabled {
-        background: var(--shade1);
-        color: var(--text-color-faded);
-        cursor: default;
     }
 
     .move-number {
@@ -82,18 +78,32 @@
 
 .KibitzBoardControls.minimal-row {
     align-items: center;
-    display: inline-flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    gap: 0.25rem;
+    display: grid;
     height: 1.6rem;
-    justify-content: center;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     line-height: 1.6rem;
-    margin: 0 auto;
+    margin: 0;
     padding: 0 0.125rem;
-    width: auto;
+    width: 100%;
 
     > * {
         flex: 0 0 auto;
+    }
+
+    .minimal-row-core {
+        align-items: center;
+        display: inline-flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 0.25rem;
+        justify-content: center;
+        grid-column: 2;
+        justify-self: center;
+    }
+
+    .kibitz-return-live-button {
+        grid-column: 3;
+        justify-self: start;
+        margin-left: 0.25rem;
     }
 }

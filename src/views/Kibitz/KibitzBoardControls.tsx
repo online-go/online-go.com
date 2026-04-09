@@ -69,47 +69,53 @@ export function KibitzBoardControls({
     }
 
     if (variant === "minimal") {
+        const canReturnToLive =
+            typeof totalMoves === "number" && totalMoves > 0 && moveNumber < totalMoves;
+
         return (
             <div className="KibitzBoardControls minimal-row">
-                <button
-                    type="button"
-                    className="kibitz-move-control"
-                    onClick={controller.previousMove}
-                    aria-label={pgettext(
-                        "Aria label for the main kibitz board previous-move button",
-                        "Previous move",
-                    )}
-                >
-                    <i className="fa fa-step-backward" />
-                </button>
-                <span className="move-number">
-                    {interpolate(
-                        pgettext("Move number label in kibitz board controls", "Move {{n}}"),
-                        { n: moveNumber },
-                    )}
-                </span>
-                <button
-                    type="button"
-                    className="kibitz-live-button"
-                    onClick={controller.gotoLastMove}
-                    disabled={typeof totalMoves === "number" ? moveNumber >= totalMoves : false}
-                >
-                    {pgettext(
-                        "Button label for jumping the kibitz main board to the latest live move",
-                        "Currently Live",
-                    )}
-                </button>
-                <button
-                    type="button"
-                    className="kibitz-move-control"
-                    onClick={controller.nextMove}
-                    aria-label={pgettext(
-                        "Aria label for the main kibitz board next-move button",
-                        "Next move",
-                    )}
-                >
-                    <i className="fa fa-step-forward" />
-                </button>
+                <div className="minimal-row-core">
+                    <button
+                        type="button"
+                        className="kibitz-move-control"
+                        onClick={controller.previousMove}
+                        aria-label={pgettext(
+                            "Aria label for the main kibitz board previous-move button",
+                            "Previous move",
+                        )}
+                    >
+                        <i className="fa fa-step-backward" />
+                    </button>
+                    <span className="move-number">
+                        {interpolate(
+                            pgettext("Move number label in kibitz board controls", "Move {{n}}"),
+                            { n: moveNumber },
+                        )}
+                    </span>
+                    <button
+                        type="button"
+                        className="kibitz-move-control"
+                        onClick={controller.nextMove}
+                        aria-label={pgettext(
+                            "Aria label for the main kibitz board next-move button",
+                            "Next move",
+                        )}
+                    >
+                        <i className="fa fa-step-forward" />
+                    </button>
+                </div>
+                {canReturnToLive ? (
+                    <button
+                        type="button"
+                        className="kibitz-return-live-button"
+                        onClick={controller.gotoLastMove}
+                    >
+                        {pgettext(
+                            "Button label for returning the kibitz main board to the live move",
+                            "Back to live",
+                        )}
+                    </button>
+                ) : null}
             </div>
         );
     }
