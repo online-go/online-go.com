@@ -157,7 +157,7 @@ export function KibitzProposalBar({
                                 {interpolate(
                                     pgettext(
                                         "Compact proposal summary prefix shown above the kibitz board area",
-                                        "{{username}} proposes",
+                                        "{{username}} proposes to watch",
                                     ),
                                     { username: proposal.proposer.username },
                                 )}

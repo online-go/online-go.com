@@ -218,7 +218,6 @@ export function Kibitz(): React.ReactElement {
                     <KibitzPresence mode={mode} room={resolvedRoom} users={resolvedRoomUsers} />
                 </div>
                 <div className="Kibitz-main">
-                    <KibitzProposalBar proposal={activeProposal} onVote={onVoteProposal} />
                     <div className="Kibitz-content">
                         <KibitzRoomStage
                             mode={mode}
@@ -227,14 +226,13 @@ export function Kibitz(): React.ReactElement {
                             proposals={roomProposals}
                             variations={variations}
                             secondaryPane={secondaryPane}
-                            roomUsers={resolvedRoomUsers}
                             onPreviewGame={onPreviewGame}
                             onClearPreview={onClearPreview}
                             onProposePreview={onProposePreview}
-                            onOpenVariation={onOpenVariation}
                             onSetSecondaryPaneMode={onSetSecondaryPaneMode}
                         />
                         <div className="Kibitz-sidebar">
+                            <KibitzProposalBar proposal={activeProposal} onVote={onVoteProposal} />
                             <KibitzRoomStream
                                 mode={mode}
                                 room={resolvedRoom}

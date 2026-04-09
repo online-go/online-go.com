@@ -44,97 +44,78 @@
             line-height: 1.15;
         }
     }
+
     .KibitzRoomStage-boards {
-        --divider-width: 2.5rem;
         display: grid;
         flex: 1;
         gap: 0;
         min-height: 0;
 
         &.secondary-pane-hidden {
-            grid-template-columns: minmax(0, 1fr) var(--divider-width) 0;
+            grid-template-columns: minmax(0, 1fr) 1.3rem 0;
         }
 
         &.secondary-pane-small {
-            grid-template-columns: minmax(0, 1fr) var(--divider-width) minmax(16.5rem, 18.75rem);
+            grid-template-columns: minmax(0, 1fr) 1.3rem minmax(15.25rem, 17rem);
+        }
 
-            .board-panel.secondary-board {
-                border-left: 0;
-            }
-
-            .board-panel.secondary-board .panel-body {
-                padding: 0.3rem 0.4rem 0.4rem;
-            }
-
-            .board-panel.secondary-board .board-content {
-                align-content: start;
-                gap: 0.35rem;
-                grid-template-rows: auto auto auto minmax(0, 1fr);
-            }
-
-            .board-panel.secondary-board .board-meta {
-                background: transparent;
-                border: 0;
-                border-radius: 0;
-                gap: 0.1rem;
-                min-width: 0;
-                padding: 0 0.125rem;
-            }
-
-            .board-panel.secondary-board .board-fit-slot {
-                align-items: start;
+        &.secondary-pane-small {
+            .main-board .KibitzBoard {
                 aspect-ratio: 1 / 1;
-                justify-self: center;
-                max-width: 9.75rem;
-                min-height: 0;
-                min-width: 0;
-                padding-top: 0;
-                width: min(100%, 9.75rem);
-            }
-
-            .board-panel.secondary-board .board-fit-slot .KibitzBoard {
-                height: 100%;
-                max-height: none;
-                max-width: none;
-                padding-inline: 0;
+                flex: 0 1 auto;
+                height: auto;
+                max-width: 100%;
                 width: 100%;
             }
 
-            .board-panel.secondary-board .secondary-board-transport-row {
-                gap: 0.25rem;
-                grid-template-columns: minmax(0, 1fr);
-                justify-items: center;
+            .main-board .KibitzBoard .goban-container {
+                flex: 1 1 auto !important;
+                flex-basis: auto !important;
+                height: auto !important;
+                max-height: 100%;
+                width: 100%;
             }
+        }
 
-            .board-panel.secondary-board .transport-controls {
-                grid-column: auto;
-                justify-self: center;
+        &.secondary-pane-hidden {
+            .main-board .KibitzBoard {
+                aspect-ratio: 1 / 1;
+                flex: 0 1 auto;
+                height: 100%;
+                max-height: 100%;
                 max-width: 100%;
                 width: auto;
             }
 
-            .board-panel.secondary-board .transport-controls .KibitzBoardControls.full {
+            .main-board .KibitzBoard .goban-container {
+                flex: 1 1 auto !important;
+                flex-basis: auto !important;
+                height: 100% !important;
+                max-height: 100%;
+                max-width: 100%;
                 width: auto;
             }
+        }
 
-            .board-panel.secondary-board .board-meta .players {
-                font-size: 0.82rem;
-            }
-
-            .board-panel.secondary-board .board-meta .game-details {
-                font-size: 0.76rem;
-            }
-
-            .board-panel.secondary-board .board-actions.board-actions-inline {
-                display: none;
+        &:not(.secondary-pane-equal) {
+            .secondary-board .KibitzBoard .goban-container {
+                flex: 0 0 auto !important;
+                flex-basis: auto !important;
+                height: auto !important;
+                max-width: 100%;
+                width: 100%;
             }
         }
 
         &.secondary-pane-equal {
+            --equal-board-max-width: min(32rem, 48vh);
+            --equal-board-width: min(100%, var(--equal-board-max-width));
+            --equal-board-height: var(--equal-board-width);
+            --equal-main-board-height: var(--equal-board-width);
             --equal-meta-height: 4rem;
             --equal-transport-height: 2.35rem;
             --equal-variation-height: 6.5rem;
-            grid-template-columns: minmax(0, 1fr) var(--divider-width) minmax(0, 1fr);
+            grid-template-columns: minmax(0, 1fr) 1.3rem minmax(0, 1fr);
 
             .board-panel {
                 border-left: 0;
@@ -149,9 +130,10 @@
                 align-content: stretch;
                 grid-template-rows:
                     var(--equal-meta-height)
-                    minmax(0, 1fr)
+                    var(--equal-board-height)
                     var(--equal-transport-height)
-                    auto;
+                    var(--equal-variation-height)
+                    minmax(0, 1fr);
             }
 
             .board-meta {
@@ -167,6 +149,15 @@
 
             .game-details {
                 min-height: 2rem;
+            }
+
+            .secondary-board .KibitzBoard {
+                width: var(--equal-board-width);
+                max-width: none;
+            }
+
+            .secondary-board .KibitzBoardControls {
+                width: var(--equal-board-width);
             }
 
             .secondary-board .kibitz-move-tree-container {
@@ -196,9 +187,38 @@
                 }
             }
 
+            .KibitzBoard {
+                flex: 0 0 auto;
+                height: var(--equal-board-height);
+                max-width: var(--equal-board-width);
+                overflow: hidden;
+                width: var(--equal-board-width);
+            }
+
+            .KibitzBoard.main-board-surface {
+                height: var(--equal-main-board-height);
+            }
+
+            .KibitzBoard .goban-container {
+                height: var(--equal-board-height);
+                width: 100%;
+            }
+
+            .KibitzBoard.main-board-surface .goban-container {
+                height: var(--equal-main-board-height);
+            }
+
+            .KibitzBoard.main-board-surface .goban-container,
+            .KibitzBoard.secondary-board-surface .goban-container {
+                flex: 0 0 auto !important;
+                flex-basis: auto !important;
+                min-height: 0 !important;
+            }
+
             .KibitzBoardControls {
                 align-self: center;
                 box-sizing: border-box;
+                max-width: var(--equal-board-width);
                 width: 100%;
             }
 
@@ -271,7 +291,6 @@
             display: flex;
             flex-direction: column;
             gap: 0.15rem;
-            min-width: 0;
             text-align: left;
             padding: 0 0.125rem;
 
@@ -297,32 +316,24 @@
                 font-size: 0.9rem;
                 font-weight: bold;
                 line-height: 1.2;
-                min-width: 0;
-                overflow-wrap: anywhere;
-                white-space: normal;
             }
 
             .game-details {
                 color: var(--text-color-faded);
                 font-size: 0.8rem;
                 line-height: 1.2;
-                min-width: 0;
-                overflow-wrap: anywhere;
-                white-space: normal;
             }
         }
 
-        .board-fit-slot {
-            align-items: center;
-            display: grid;
-            justify-items: center;
-            min-height: 0;
-            min-width: 0;
-            overflow: hidden;
-        }
         .KibitzBoard.main-board-surface {
             min-height: 0;
             padding-inline: 0.125rem;
+
+            .goban-container {
+                aspect-ratio: 1 / 1;
+                height: auto !important;
+                width: 100%;
+            }
         }
 
         .KibitzBoard.secondary-board-surface {
@@ -333,10 +344,12 @@
         .KibitzBoard {
             align-self: start;
             justify-self: center;
-            max-width: none;
-            max-height: none;
-            min-height: 0;
-            min-width: 0;
+            max-width: 100%;
+            width: 100%;
+        }
+
+        .secondary-board .KibitzBoard {
+            max-width: min(100%, 14rem, 34vh);
         }
 
         .secondary-board .KibitzBoardControls {
@@ -406,142 +419,6 @@
             width: auto;
         }
 
-        .secondary-tray {
-            background: transparent;
-            border: 0;
-            border-top: 1px solid transparent;
-            border-top-color: var(--shade3);
-            border-radius: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 0.45rem;
-            min-height: 0;
-            overflow-y: auto;
-            padding: 0.45rem 0 0;
-            text-align: left;
-        }
-
-        .secondary-tray-card.primary {
-            background: transparent;
-            border: 0;
-            border-radius: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-            padding: 0;
-        }
-
-        .secondary-tray-card.primary.empty {
-            border-style: solid;
-        }
-
-        .tray-eyebrow {
-            color: var(--shade1);
-            font-size: 0.68rem;
-            font-weight: bold;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-        }
-
-        .tray-title {
-            color: var(--fg);
-            font-size: 0.95rem;
-            font-weight: bold;
-            line-height: 1.2;
-            min-width: 0;
-            overflow-wrap: anywhere;
-        }
-
-        .tray-copy {
-            color: var(--text-color-faded);
-            font-size: 0.8rem;
-            line-height: 1.25;
-            min-width: 0;
-            overflow-wrap: anywhere;
-        }
-
-        .tray-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 0.35rem;
-            margin-top: 0.1rem;
-        }
-
-        .secondary-tray-sections {
-            display: flex;
-            flex-direction: column;
-            gap: 0.45rem;
-        }
-
-        .secondary-tray-section {
-            display: flex;
-            flex-direction: column;
-            gap: 0.2rem;
-        }
-
-        .section-title {
-            color: var(--text-color-faded);
-            font-size: 0.74rem;
-            font-weight: bold;
-            letter-spacing: 0.03em;
-            text-transform: uppercase;
-        }
-
-        .tray-chip-list,
-        .tray-link-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-        }
-
-        .tray-chip,
-        .tray-link {
-            align-items: flex-start;
-            background: transparent;
-            border: 0;
-            border-top: 1px solid transparent;
-            border-top-color: var(--shade3);
-            border-radius: 0;
-            color: var(--fg);
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            gap: 0.15rem;
-            min-width: 0;
-            padding: 0.35rem 0;
-            text-align: left;
-            width: 100%;
-        }
-
-        .tray-chip:first-child,
-        .tray-link:first-child {
-            border-top: 0;
-        }
-
-        .tray-chip:hover,
-        .tray-link:hover {
-            background: transparent;
-        }
-
-        .chip-title,
-        .link-title {
-            color: var(--fg);
-            font-size: 0.82rem;
-            font-weight: bold;
-            line-height: 1.15;
-            min-width: 0;
-            overflow-wrap: anywhere;
-        }
-
-        .chip-meta,
-        .link-meta {
-            color: var(--text-color-faded);
-            font-size: 0.75rem;
-            line-height: 1.15;
-            min-width: 0;
-            overflow-wrap: anywhere;
-        }
-
         .preview-action-button {
             box-shadow: none;
             background: var(--shade2);
@@ -569,23 +446,6 @@
             font-weight: bold;
             min-width: 2rem;
             text-align: center;
-        }
-
-        .preview-action-button.tray-button {
-            border-radius: 0;
-            padding: 0.4rem 0.6rem;
-            text-align: left;
-        }
-
-        .preview-action-button.tray-button.primary {
-            background: var(--primary);
-            color: var(--colored-background-fg);
-            font-weight: bold;
-        }
-
-        .preview-action-button.tray-button.subtle {
-            background: var(--shade2);
-            color: var(--fg);
         }
 
         .view-game-link {
@@ -627,6 +487,7 @@
 @media (max-width: 1850px), (max-height: 1000px) {
     .KibitzRoomStage {
         .KibitzRoomStage-boards.secondary-pane-equal {
+            --equal-board-max-width: min(28rem, 42vh);
             --equal-meta-height: 3.85rem;
             --equal-transport-height: 2.25rem;
             --equal-variation-height: 7.2rem;
@@ -636,358 +497,15 @@
 
 @media (max-width: 850px) {
     .KibitzRoomStage {
-        .KibitzRoomStage-boards,
-        .KibitzRoomStage-boards.secondary-pane-hidden,
-        .KibitzRoomStage-boards.secondary-pane-small,
-        .KibitzRoomStage-boards.secondary-pane-equal {
+        .KibitzRoomStage-boards {
             grid-template-columns: minmax(0, 1fr);
             gap: 0.75rem;
-        }
-
-        .KibitzDividerHandle {
-            display: none;
         }
 
         .board-panel.secondary-board {
             border-left: 0;
             border-top: 1px solid transparent;
             border-top-color: var(--shade3);
-        }
-    }
-}
-
-.KibitzRoomStage {
-    .KibitzRoomStage-boards.secondary-pane-equal {
-        --equal-meta-height: 5.5rem;
-    }
-
-    .board-panel {
-        .board-meta {
-            gap: 0.32rem;
-            min-width: 0;
-            padding: 0.125rem 0.25rem 0;
-        }
-
-        .board-meta-top {
-            align-items: flex-start;
-            display: flex;
-            gap: 0.75rem;
-            justify-content: space-between;
-            min-width: 0;
-        }
-
-        .board-title-block {
-            display: flex;
-            flex: 1;
-            flex-direction: column;
-            gap: 0.14rem;
-            min-width: 0;
-        }
-
-        .board-kicker-row {
-            align-items: center;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.32rem;
-            min-width: 0;
-        }
-
-        .board-label {
-            color: var(--shade1);
-            font-size: 0.68rem;
-            font-weight: bold;
-            letter-spacing: 0.04em;
-            line-height: 1.1;
-            text-transform: uppercase;
-        }
-
-        .players,
-        .board-subtitle,
-        .game-details,
-        .board-header-actions,
-        .board-meta-chips,
-        .board-meta-chip,
-        .board-id-chip {
-            min-width: 0;
-        }
-
-        .players {
-            color: var(--fg);
-            font-size: 0.92rem;
-            font-weight: bold;
-            line-height: 1.18;
-            overflow-wrap: anywhere;
-        }
-
-        .main-board .players {
-            font-size: 1.02rem;
-        }
-
-        .board-subtitle {
-            color: var(--text-color-faded);
-            font-size: 0.8rem;
-            line-height: 1.18;
-            overflow-wrap: anywhere;
-        }
-
-        .board-status-pill,
-        .board-meta-chip,
-        .board-id-chip {
-            align-items: center;
-            background: var(--shade1);
-            border: 1px solid transparent;
-            border-color: var(--shade3);
-            color: var(--text-color-faded);
-            display: inline-flex;
-            font-size: 0.72rem;
-            gap: 0.2rem;
-            line-height: 1;
-            max-width: 100%;
-            padding: 0.18rem 0.45rem;
-            white-space: nowrap;
-        }
-
-        .board-meta-chip.highlight,
-        .board-status-pill.reviewing,
-        .board-status-pill.live {
-            color: var(--fg);
-        }
-
-        .board-status-pill.reviewing {
-            background: color-mix(in srgb, var(--primary) 22%, var(--shade1));
-            border-color: color-mix(in srgb, var(--primary) 40%, var(--shade3));
-        }
-
-        .board-status-pill.live {
-            background: color-mix(in srgb, var(--primary) 12%, var(--shade1));
-            border-color: color-mix(in srgb, var(--primary) 22%, var(--shade3));
-        }
-
-        .board-status-pill.preview,
-        .board-status-pill.variation {
-            background: var(--shade1);
-            color: var(--fg);
-        }
-
-        .board-id-chip,
-        .board-meta-chip.ellipsis-chip {
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .board-meta-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.32rem;
-            min-width: 0;
-        }
-
-        .board-header-actions {
-            align-items: flex-start;
-            display: flex;
-            flex-shrink: 0;
-            flex-wrap: wrap;
-            gap: 0.35rem;
-            justify-content: flex-end;
-            margin-left: auto;
-            min-width: 0;
-        }
-
-        .board-header-link,
-        .board-header-button {
-            background: transparent;
-            border: 1px solid transparent;
-            border-color: var(--shade3);
-            box-shadow: none;
-            color: var(--text-color-faded);
-            cursor: pointer;
-            font-size: 0.74rem;
-            line-height: 1.1;
-            padding: 0.3rem 0.55rem;
-            text-decoration: none;
-        }
-
-        .board-header-link:hover,
-        .board-header-button:hover {
-            color: var(--fg);
-        }
-
-        .board-header-button.return-live {
-            background: var(--primary);
-            border-color: var(--primary);
-            color: var(--colored-background-fg);
-            font-weight: bold;
-        }
-
-        .secondary-board .board-meta.rich,
-        .secondary-board .board-meta-rich {
-            .players {
-                font-size: 0.88rem;
-            }
-        }
-    }
-
-    .KibitzRoomStage-boards.secondary-pane-small {
-        .board-panel.secondary-board .board-meta {
-            gap: 0.28rem;
-        }
-
-        .board-panel.secondary-board .board-subtitle {
-            display: none;
-        }
-    }
-}
-
-@media (max-width: 1850px), (max-height: 1000px) {
-    .KibitzRoomStage {
-        .KibitzRoomStage-boards.secondary-pane-equal {
-            --equal-meta-height: 5.05rem;
-        }
-    }
-}
-
-
-.KibitzRoomStage {
-    .KibitzRoomStage-header {
-        .stage-social-row {
-            align-items: center;
-            display: flex;
-            gap: 0.45rem;
-            min-width: 0;
-            padding-top: 0.18rem;
-        }
-
-        .stage-social-avatars {
-            align-items: center;
-            display: flex;
-            flex: 0 0 auto;
-            flex-wrap: wrap;
-            gap: 0.2rem;
-        }
-
-        .stage-social-avatar {
-            align-items: center;
-            background: var(--shade2);
-            color: var(--fg);
-            display: inline-flex;
-            font-size: 0.58rem;
-            font-weight: bold;
-            height: 1.1rem;
-            justify-content: center;
-            line-height: 1;
-            min-width: 1.1rem;
-            text-transform: uppercase;
-        }
-
-        .stage-social-avatar-overflow {
-            background: var(--shade1);
-            color: var(--text-color-faded);
-            min-width: 1.35rem;
-            padding: 0 0.16rem;
-        }
-
-        .stage-social-summary {
-            color: var(--text-color-faded);
-            font-size: 0.74rem;
-            font-weight: bold;
-            line-height: 1.15;
-            min-width: 0;
-            overflow-wrap: anywhere;
-        }
-    }
-}
-
-
-.KibitzRoomStage {
-    .KibitzRoomStage-header {
-        .stage-social-row {
-            align-items: center;
-            display: flex;
-            gap: 0.45rem;
-            margin-top: 0.18rem;
-            min-width: 0;
-        }
-
-        .stage-social-avatars {
-            align-items: center;
-            display: flex;
-            flex: 0 0 auto;
-            gap: 0.2rem;
-        }
-
-        .stage-social-avatar {
-            align-items: center;
-            background: var(--shade2);
-            color: var(--fg);
-            display: inline-flex;
-            font-size: 0.54rem;
-            font-weight: bold;
-            height: 1.05rem;
-            justify-content: center;
-            line-height: 1;
-            min-width: 1.05rem;
-            text-transform: uppercase;
-        }
-
-        .stage-social-avatar-overflow {
-            background: var(--shade1);
-            color: var(--text-color-faded);
-            min-width: 1.3rem;
-            padding: 0 0.14rem;
-        }
-
-        .stage-social-summary {
-            color: var(--text-color-faded);
-            font-size: 0.76rem;
-            line-height: 1.1;
-            min-width: 0;
-        }
-    }
-
-    .board-panel {
-        .board-kicker-row {
-            gap: 0.28rem;
-        }
-
-        .board-id-chip {
-            display: none;
-        }
-
-        .board-meta-chips {
-            align-items: baseline;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.18rem;
-            min-width: 0;
-        }
-
-        .board-meta-chip {
-            background: transparent;
-            border: 0;
-            color: var(--text-color-faded);
-            display: inline;
-            font-size: 0.78rem;
-            line-height: 1.18;
-            max-width: none;
-            padding: 0;
-            white-space: normal;
-        }
-
-        .board-meta-chip.highlight {
-            color: var(--fg);
-            font-weight: normal;
-        }
-
-        .board-meta-chip.ellipsis-chip {
-            overflow: visible;
-            text-overflow: clip;
-        }
-
-        .board-meta-chip:not(:first-child)::before {
-            color: var(--shade1);
-            content: "·";
-            display: inline-block;
-            margin-right: 0.32rem;
         }
     }
 }

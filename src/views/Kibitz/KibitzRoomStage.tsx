@@ -25,7 +25,6 @@ import type {
     KibitzMode,
     KibitzProposal,
     KibitzRoomSummary,
-    KibitzRoomUser,
     KibitzSecondaryPaneState,
     KibitzVariationSummary,
 } from "@/models/kibitz";
@@ -41,88 +40,10 @@ interface KibitzRoomStageProps {
     proposals: KibitzProposal[];
     variations: KibitzVariationSummary[];
     secondaryPane: KibitzSecondaryPaneState;
-    roomUsers: KibitzRoomUser[];
     onPreviewGame: (gameId: number) => void;
     onClearPreview: () => void;
     onProposePreview: () => void;
-    onOpenVariation: (variationId: string) => void;
     onSetSecondaryPaneMode: (mode: "hidden" | "small" | "equal") => void;
-}
-
-function getPlayerRankText(player: unknown): string | null {
-    if (!player || typeof player !== "object") {
-        return null;
-    }
-
-    const candidate = player as Record<string, unknown>;
-    const rankValue =
-        candidate.rank_label ?? candidate.rank ?? candidate.rank_text ?? candidate.display_rank;
-
-    return typeof rankValue === "string" && rankValue.trim().length > 0 ? rankValue.trim() : null;
-}
-
-function formatPlayerNameWithRank(username: string | undefined, ...players: unknown[]): string {
-    const resolvedUsername = username ?? "";
-    const rankText = players.map(getPlayerRankText).find((value) => Boolean(value));
-
-    return rankText ? `${resolvedUsername} ${rankText}` : resolvedUsername;
-}
-
-function getUserInitials(username: string | undefined): string {
-    const trimmedUsername = (username ?? "").trim();
-
-    if (!trimmedUsername) {
-        return "?";
-    }
-
-    const parts = trimmedUsername.split(/\s+/).filter(Boolean);
-
-    if (parts.length === 1) {
-        return parts[0].slice(0, 2).toUpperCase();
-    }
-
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-}
-
-function useSquareFitSize<T extends HTMLElement>() {
-    const [element, setElement] = React.useState<T | null>(null);
-    const [size, setSize] = React.useState(0);
-    const ref = React.useCallback((node: T | null) => {
-        setElement(node);
-    }, []);
-
-    React.useLayoutEffect(() => {
-        if (!element) {
-            setSize(0);
-            return;
-        }
-
-        let raf = 0;
-
-        const measure = () => {
-            const nextSize = Math.max(
-                0,
-                Math.floor(Math.min(element.clientWidth, element.clientHeight)),
-            );
-            setSize((previousSize) => (previousSize === nextSize ? previousSize : nextSize));
-        };
-
-        const scheduleMeasure = () => {
-            cancelAnimationFrame(raf);
-            raf = requestAnimationFrame(measure);
-        };
-
-        const resizeObserver = new ResizeObserver(scheduleMeasure);
-        resizeObserver.observe(element);
-        scheduleMeasure();
-
-        return () => {
-            cancelAnimationFrame(raf);
-            resizeObserver.disconnect();
-        };
-    }, [element]);
-
-    return [ref, size] as const;
 }
 
 export function KibitzRoomStage({
@@ -132,11 +53,9 @@ export function KibitzRoomStage({
     proposals,
     variations,
     secondaryPane,
-    roomUsers,
     onPreviewGame,
     onClearPreview,
     onProposePreview,
-    onOpenVariation,
     onSetSecondaryPaneMode,
 }: KibitzRoomStageProps): React.ReactElement {
     const mainGame = room.current_game;
@@ -149,25 +68,14 @@ export function KibitzRoomStage({
     const previewCandidates = rooms.filter(
         (candidate) => candidate.id !== room.id && candidate.current_game?.game_id,
     );
-    const smallModeQuickVariations = variations
-        .filter((variation) => variation.id !== secondaryPane.variation_id)
-        .slice(0, 4);
-    const smallModeProposalPreviews = proposals
-        .filter(
-            (proposal) =>
-                proposal.proposed_game.game_id &&
-                proposal.proposed_game.game_id !== secondaryGameId &&
-                (proposal.status === "queued" || proposal.status === "active"),
-        )
-        .slice(0, 3);
-    const smallModeRoomPreviews = previewCandidates
-        .filter((candidate) => candidate.current_game?.game_id !== secondaryGameId)
-        .slice(0, 3);
-    const previewGame =
-        rooms.find((candidate) => candidate.current_game?.game_id === secondaryGameId)
-            ?.current_game ??
-        proposals.find((proposal) => proposal.proposed_game.game_id === secondaryGameId)
-            ?.proposed_game;
+    const previewRoomGame = rooms.find(
+        (candidate) => candidate.current_game?.game_id === secondaryGameId,
+    )?.current_game;
+    const previewProposal = proposals.find(
+        (proposal) => proposal.proposed_game.game_id === secondaryGameId,
+    );
+    const previewGame = previewRoomGame ?? previewProposal?.proposed_game;
+    const isProposalPreview = Boolean(previewProposal);
     const previewDisplayedMoveNumber = previewGame?.move_number;
     const [mainBoardController, setMainBoardController] = React.useState<GobanController | null>(
         null,
@@ -182,12 +90,6 @@ export function KibitzRoomStage({
         },
         [secondaryBoardController],
     );
-    const [mainBoardSlotRef, mainBoardSize] = useSquareFitSize<HTMLDivElement>();
-    const [secondaryBoardSlotRef, secondaryBoardSize] = useSquareFitSize<HTMLDivElement>();
-    const [mainCurrentMoveNumber, setMainCurrentMoveNumber] = React.useState<number | null>(null);
-    const [secondaryCurrentMoveNumber, setSecondaryCurrentMoveNumber] = React.useState<
-        number | null
-    >(null);
 
     React.useEffect(() => {
         if (!mainGame?.game_id || mainGame.mock_game_data || mode === "demo") {
@@ -236,453 +138,6 @@ export function KibitzRoomStage({
               )
             : mainGame?.tournament_name;
 
-    const displayedBlackWithRank = formatPlayerNameWithRank(
-        displayedBlack,
-        mainGameDetails?.players?.black,
-        mainGame?.black,
-    );
-    const displayedWhiteWithRank = formatPlayerNameWithRank(
-        displayedWhite,
-        mainGameDetails?.players?.white,
-        mainGame?.white,
-    );
-    const mainIsLive =
-        typeof displayedMoveNumber === "number"
-            ? (mainCurrentMoveNumber ?? displayedMoveNumber) >= displayedMoveNumber
-            : true;
-    const mainMoveSummary =
-        typeof displayedMoveNumber === "number"
-            ? mainIsLive
-                ? interpolate(
-                      pgettext(
-                          "Move summary chip shown in the kibitz main board header when the board is live",
-                          "Move {{move_number}}",
-                      ),
-                      { move_number: displayedMoveNumber },
-                  )
-                : interpolate(
-                      pgettext(
-                          "Move summary chip shown in the kibitz main board header when the board is out of sync",
-                          "Move {{current_move}} / {{latest_move}}",
-                      ),
-                      {
-                          current_move: mainCurrentMoveNumber ?? 0,
-                          latest_move: displayedMoveNumber,
-                      },
-                  )
-            : null;
-    const secondaryDisplayedMoveCount =
-        typeof previewDisplayedMoveNumber === "number"
-            ? previewDisplayedMoveNumber
-            : typeof selectedVariation?.move_count === "number"
-              ? selectedVariation.move_count
-              : null;
-    const secondaryMoveSummary =
-        typeof secondaryDisplayedMoveCount === "number"
-            ? interpolate(
-                  pgettext(
-                      "Move summary chip shown in the kibitz secondary header",
-                      "Move {{move_number}}",
-                  ),
-                  {
-                      move_number: secondaryCurrentMoveNumber ?? secondaryDisplayedMoveCount,
-                  },
-              )
-            : null;
-    const previewBlackWithRank = formatPlayerNameWithRank(
-        previewGame?.black.username,
-        previewGame?.black,
-    );
-    const previewWhiteWithRank = formatPlayerNameWithRank(
-        previewGame?.white.username,
-        previewGame?.white,
-    );
-    const secondaryHeaderLabel = selectedVariation
-        ? secondaryPaneSize === "small"
-            ? pgettext("Label for the variation tray in kibitz", "Variation tray")
-            : pgettext("Label for the variation board in kibitz", "Variation board")
-        : secondaryPaneSize === "small"
-          ? pgettext("Label for the preview tray in kibitz", "Preview tray")
-          : pgettext("Label for the preview board in kibitz", "Preview board");
-    const secondaryHeaderStatus = selectedVariation
-        ? pgettext("Status pill shown on a kibitz variation header", "Variation")
-        : pgettext("Status pill shown on a kibitz preview header", "Private preview");
-    const stageVisibleUsers = roomUsers.slice(0, 6);
-    const stageOverflowUsers = Math.max(0, roomUsers.length - stageVisibleUsers.length);
-    const stageHighlightedNames = stageVisibleUsers
-        .slice(0, 3)
-        .map((user) => user.username)
-        .filter(Boolean)
-        .join(", ");
-    const secondarySubtitle = selectedVariation
-        ? secondaryPaneSize === "small"
-            ? null
-            : (selectedVariation.title ??
-              pgettext("Fallback title for an untitled kibitz variation", "Variation preview"))
-        : secondaryPaneSize === "small"
-          ? null
-          : (previewGame?.title ?? null);
-
-    React.useEffect(() => {
-        setMainCurrentMoveNumber(
-            typeof displayedMoveNumber === "number" ? displayedMoveNumber : null,
-        );
-    }, [displayedMoveNumber, mainGame?.game_id]);
-
-    React.useEffect(() => {
-        if (!mainBoardController) {
-            return;
-        }
-
-        const goban = mainBoardController.goban as any;
-        const sync = () => {
-            const nextMoveNumber = goban?.engine?.cur_move?.move_number;
-            setMainCurrentMoveNumber(typeof nextMoveNumber === "number" ? nextMoveNumber : null);
-        };
-
-        sync();
-        goban?.on?.("cur_move", sync);
-
-        return () => {
-            goban?.off?.("cur_move", sync);
-        };
-    }, [mainBoardController]);
-
-    React.useEffect(() => {
-        const nextDisplayedMoveNumber =
-            typeof previewDisplayedMoveNumber === "number"
-                ? previewDisplayedMoveNumber
-                : typeof selectedVariation?.move_count === "number"
-                  ? selectedVariation.move_count
-                  : null;
-
-        setSecondaryCurrentMoveNumber(nextDisplayedMoveNumber);
-    }, [
-        previewDisplayedMoveNumber,
-        secondaryGameId,
-        selectedVariation?.id,
-        selectedVariation?.move_count,
-    ]);
-
-    React.useEffect(() => {
-        if (!secondaryBoardController) {
-            return;
-        }
-
-        const goban = secondaryBoardController.goban as any;
-        const sync = () => {
-            const nextMoveNumber = goban?.engine?.cur_move?.move_number;
-            setSecondaryCurrentMoveNumber(
-                typeof nextMoveNumber === "number" ? nextMoveNumber : null,
-            );
-        };
-
-        sync();
-        goban?.on?.("cur_move", sync);
-
-        return () => {
-            goban?.off?.("cur_move", sync);
-        };
-    }, [secondaryBoardController]);
-
-    const renderSecondaryTray = () => {
-        if (secondaryPaneSize !== "small") {
-            return null;
-        }
-
-        const quickLinksAvailable =
-            smallModeQuickVariations.length > 0 ||
-            smallModeProposalPreviews.length > 0 ||
-            smallModeRoomPreviews.length > 0;
-
-        if (secondaryGameId && previewGame) {
-            return (
-                <div className="secondary-tray secondary-tray-preview">
-                    <div className="secondary-tray-card primary">
-                        <div className="tray-eyebrow">
-                            {pgettext(
-                                "Eyebrow for the secondary tray when previewing a game in kibitz",
-                                "Previewing privately",
-                            )}
-                        </div>
-                        <div className="tray-title">
-                            {previewGame.title ??
-                                pgettext(
-                                    "Fallback title for a game preview in the kibitz side tray",
-                                    "Previewed game",
-                                )}
-                        </div>
-                        <div className="tray-copy">
-                            {pgettext(
-                                "Helper copy shown in the kibitz side tray when previewing another game",
-                                "This board is just for you until you propose it to the room.",
-                            )}
-                        </div>
-                        <div className="tray-actions">
-                            <button
-                                type="button"
-                                className="preview-action-button tray-button primary"
-                                onClick={onProposePreview}
-                            >
-                                {pgettext(
-                                    "Primary button in the kibitz side tray for proposing a previewed game",
-                                    "Propose to room",
-                                )}
-                            </button>
-                            <button
-                                type="button"
-                                className="preview-action-button tray-button subtle"
-                                onClick={onClearPreview}
-                            >
-                                {pgettext(
-                                    "Secondary button in the kibitz side tray for closing the preview",
-                                    "Close preview",
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                    {quickLinksAvailable ? (
-                        <div className="secondary-tray-sections">
-                            {smallModeQuickVariations.length > 0 ? (
-                                <div className="secondary-tray-section">
-                                    <div className="section-title">
-                                        {pgettext(
-                                            "Section heading for quick variation shortcuts in the kibitz side tray",
-                                            "Hot variations",
-                                        )}
-                                    </div>
-                                    <div className="tray-chip-list">
-                                        {smallModeQuickVariations.map((variation) => (
-                                            <button
-                                                key={variation.id}
-                                                type="button"
-                                                className="tray-chip"
-                                                onClick={() => onOpenVariation(variation.id)}
-                                            >
-                                                <span className="chip-title">
-                                                    {variation.title ||
-                                                        pgettext(
-                                                            "Fallback title for an untitled variation in the kibitz side tray",
-                                                            "Untitled variation",
-                                                        )}
-                                                </span>
-                                                <span className="chip-meta">
-                                                    {variation.creator.username}
-                                                </span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            ) : null}
-                            {smallModeProposalPreviews.length > 0 ? (
-                                <div className="secondary-tray-section">
-                                    <div className="section-title">
-                                        {pgettext(
-                                            "Section heading for queued board proposals in the kibitz side tray",
-                                            "Watch next",
-                                        )}
-                                    </div>
-                                    <div className="tray-link-list">
-                                        {smallModeProposalPreviews.map((proposal) => (
-                                            <button
-                                                key={proposal.id}
-                                                type="button"
-                                                className="tray-link"
-                                                onClick={() =>
-                                                    onPreviewGame(
-                                                        proposal.proposed_game.game_id as number,
-                                                    )
-                                                }
-                                            >
-                                                <span className="link-title">
-                                                    {proposal.proposed_game.title}
-                                                </span>
-                                                <span className="link-meta">{proposal.status}</span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            ) : null}
-                        </div>
-                    ) : null}
-                </div>
-            );
-        }
-
-        if (selectedVariation) {
-            return (
-                <div className="secondary-tray secondary-tray-variation">
-                    <div className="secondary-tray-card primary">
-                        <div className="tray-eyebrow">
-                            {pgettext(
-                                "Eyebrow for the secondary tray when viewing a variation in kibitz",
-                                "Variation discussion",
-                            )}
-                        </div>
-                        <div className="tray-title">
-                            {selectedVariation.title ??
-                                pgettext(
-                                    "Fallback title for a variation in the kibitz side tray",
-                                    "Variation preview",
-                                )}
-                        </div>
-                        <div className="tray-copy">
-                            {interpolate(
-                                pgettext(
-                                    "Helper copy shown in the kibitz side tray when viewing a variation",
-                                    "Created by {{username}}. Follow the line here without disturbing the room board.",
-                                ),
-                                { username: selectedVariation.creator.username },
-                            )}
-                        </div>
-                        <div className="tray-actions">
-                            <button
-                                type="button"
-                                className="preview-action-button tray-button subtle"
-                                onClick={onClearPreview}
-                            >
-                                {pgettext(
-                                    "Button for closing a variation in the kibitz side tray",
-                                    "Close variation",
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                    {smallModeQuickVariations.length > 0 ? (
-                        <div className="secondary-tray-section">
-                            <div className="section-title">
-                                {pgettext(
-                                    "Section heading for more variations in the kibitz side tray",
-                                    "More variations",
-                                )}
-                            </div>
-                            <div className="tray-chip-list">
-                                {smallModeQuickVariations.map((variation) => (
-                                    <button
-                                        key={variation.id}
-                                        type="button"
-                                        className="tray-chip"
-                                        onClick={() => onOpenVariation(variation.id)}
-                                    >
-                                        <span className="chip-title">
-                                            {variation.title ||
-                                                pgettext(
-                                                    "Fallback title for an untitled variation in the kibitz side tray",
-                                                    "Untitled variation",
-                                                )}
-                                        </span>
-                                        <span className="chip-meta">
-                                            {variation.creator.username}
-                                        </span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    ) : null}
-                </div>
-            );
-        }
-
-        return (
-            <div className="secondary-tray secondary-tray-empty">
-                <div className="secondary-tray-card primary empty">
-                    <div className="tray-eyebrow">
-                        {pgettext("Eyebrow for the idle kibitz side tray", "Secondary tray")}
-                    </div>
-                    <div className="tray-title">
-                        {pgettext(
-                            "Title for the idle kibitz side tray",
-                            "Open a preview or variation",
-                        )}
-                    </div>
-                    <div className="tray-copy">
-                        {pgettext(
-                            "Helper copy for the idle kibitz side tray",
-                            "Use this space to inspect another game, or follow a room variation without leaving the shared board.",
-                        )}
-                    </div>
-                </div>
-                {smallModeQuickVariations.length > 0 ? (
-                    <div className="secondary-tray-section">
-                        <div className="section-title">
-                            {pgettext(
-                                "Section heading for room variations in the idle kibitz side tray",
-                                "Hot variations",
-                            )}
-                        </div>
-                        <div className="tray-chip-list">
-                            {smallModeQuickVariations.map((variation) => (
-                                <button
-                                    key={variation.id}
-                                    type="button"
-                                    className="tray-chip"
-                                    onClick={() => onOpenVariation(variation.id)}
-                                >
-                                    <span className="chip-title">
-                                        {variation.title ||
-                                            pgettext(
-                                                "Fallback title for an untitled variation in the kibitz side tray",
-                                                "Untitled variation",
-                                            )}
-                                    </span>
-                                    <span className="chip-meta">{variation.creator.username}</span>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                ) : null}
-                {smallModeProposalPreviews.length > 0 || smallModeRoomPreviews.length > 0 ? (
-                    <div className="secondary-tray-section">
-                        <div className="section-title">
-                            {pgettext(
-                                "Section heading for room previews in the idle kibitz side tray",
-                                "Quick previews",
-                            )}
-                        </div>
-                        <div className="tray-link-list">
-                            {smallModeProposalPreviews.map((proposal) => (
-                                <button
-                                    key={proposal.id}
-                                    type="button"
-                                    className="tray-link"
-                                    onClick={() =>
-                                        onPreviewGame(proposal.proposed_game.game_id as number)
-                                    }
-                                >
-                                    <span className="link-title">
-                                        {proposal.proposed_game.title}
-                                    </span>
-                                    <span className="link-meta">{proposal.status}</span>
-                                </button>
-                            ))}
-                            {smallModeRoomPreviews.map((candidate) => (
-                                <button
-                                    key={candidate.id}
-                                    type="button"
-                                    className="tray-link"
-                                    onClick={() =>
-                                        onPreviewGame(candidate.current_game?.game_id as number)
-                                    }
-                                >
-                                    <span className="link-title">{candidate.title}</span>
-                                    <span className="link-meta">
-                                        {interpolate(
-                                            pgettext(
-                                                "Viewer count summary for a preview shortcut in the kibitz side tray",
-                                                "{{count}} watching",
-                                            ),
-                                            { count: candidate.viewer_count },
-                                        )}
-                                    </span>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                ) : null}
-            </div>
-        );
-    };
-
     return (
         <div className="KibitzRoomStage">
             <div className="KibitzRoomStage-header">
@@ -695,48 +150,6 @@ export function KibitzRoomStage({
                                 "No main board selected yet",
                             )}
                     </div>
-                    {room.viewer_count > 0 || stageVisibleUsers.length > 0 ? (
-                        <div className="stage-social-row">
-                            {stageVisibleUsers.length > 0 ? (
-                                <div className="stage-social-avatars" aria-hidden="true">
-                                    {stageVisibleUsers.map((user) => (
-                                        <span
-                                            key={user.id}
-                                            className="stage-social-avatar"
-                                            title={user.username}
-                                        >
-                                            {getUserInitials(user.username)}
-                                        </span>
-                                    ))}
-                                    {stageOverflowUsers > 0 ? (
-                                        <span className="stage-social-avatar stage-social-avatar-overflow">
-                                            +{stageOverflowUsers}
-                                        </span>
-                                    ) : null}
-                                </div>
-                            ) : null}
-                            <div className="stage-social-summary">
-                                {stageHighlightedNames
-                                    ? interpolate(
-                                          pgettext(
-                                              "Compact room-presence summary shown in the kibitz stage header",
-                                              "{{count}} here now · {{names}}",
-                                          ),
-                                          {
-                                              count: room.viewer_count,
-                                              names: stageHighlightedNames,
-                                          },
-                                      )
-                                    : interpolate(
-                                          pgettext(
-                                              "Compact room-presence summary shown in the kibitz stage header when no names are highlighted",
-                                              "{{count}} here now",
-                                          ),
-                                          { count: room.viewer_count },
-                                      )}
-                            </div>
-                        </div>
-                    ) : null}
                 </div>
                 {mainGame && (!mainGame.mock_game_data || previewCandidates.length > 0) ? (
                     <div className="stage-header-actions">
@@ -768,123 +181,53 @@ export function KibitzRoomStage({
                     <div className="panel-body">
                         {mainGame ? (
                             <div className="board-content">
-                                <div className="board-meta board-meta-rich main-board-meta">
-                                    <div className="board-meta-top">
-                                        <div className="board-title-block">
-                                            <div className="board-kicker-row">
-                                                <div className="board-label">
-                                                    {pgettext(
-                                                        "Label for the shared board in kibitz",
-                                                        "Main board",
-                                                    )}
-                                                </div>
-                                                <span
-                                                    className={
-                                                        "board-status-pill " +
-                                                        (mainIsLive ? "live" : "reviewing")
-                                                    }
-                                                >
-                                                    {mainIsLive
-                                                        ? pgettext(
-                                                              "Status pill shown when the kibitz main board is at the latest move",
-                                                              "Live",
-                                                          )
-                                                        : pgettext(
-                                                              "Status pill shown when the kibitz main board is privately rewound",
-                                                              "Reviewing",
-                                                          )}
-                                                </span>
-                                                {!mainGame.mock_game_data && mainGame.game_id ? (
-                                                    <span className="board-id-chip">
-                                                        {interpolate(
-                                                            pgettext(
-                                                                "Game id chip shown in the kibitz main board header",
-                                                                "Game {{game_id}}",
-                                                            ),
-                                                            { game_id: mainGame.game_id },
-                                                        )}
-                                                    </span>
-                                                ) : null}
-                                            </div>
-                                            <div className="players">
-                                                {interpolate(
-                                                    pgettext(
-                                                        "Player names shown above the main board in kibitz",
-                                                        "{{black}} vs {{white}}",
-                                                    ),
-                                                    {
-                                                        black: displayedBlackWithRank,
-                                                        white: displayedWhiteWithRank,
-                                                    },
-                                                )}
-                                            </div>
-                                            {displayedTitle ? (
-                                                <div className="board-subtitle">
-                                                    {displayedTitle}
-                                                </div>
-                                            ) : null}
-                                        </div>
-                                        <div className="board-header-actions">
-                                            {!mainIsLive ? (
-                                                <button
-                                                    type="button"
-                                                    className="board-header-button return-live"
-                                                    onClick={mainBoardController?.gotoLastMove}
-                                                >
-                                                    {pgettext(
-                                                        "Button shown in the kibitz main board header for returning to the latest move",
-                                                        "Return to live",
-                                                    )}
-                                                </button>
-                                            ) : null}
-                                            {!mainGame.mock_game_data ? (
-                                                <Link
-                                                    to={`/game/${mainGame.game_id}`}
-                                                    className="board-header-link"
-                                                >
-                                                    {pgettext(
-                                                        "Link text for opening the current game from the kibitz main board header",
-                                                        "Open game",
-                                                    )}
-                                                </Link>
-                                            ) : null}
-                                        </div>
+                                <div className="board-meta">
+                                    <div className="board-label">
+                                        {pgettext(
+                                            "Label for the shared board in kibitz",
+                                            "Main board",
+                                        )}
                                     </div>
-                                    <div className="board-meta-chips">
-                                        {displayedBoardSize ? (
-                                            <span className="board-meta-chip">
-                                                {interpolate(
-                                                    pgettext(
-                                                        "Board size chip shown in the kibitz stage",
-                                                        "Board {{size}}",
-                                                    ),
-                                                    { size: displayedBoardSize },
-                                                )}
-                                            </span>
-                                        ) : null}
-                                        {mainMoveSummary ? (
-                                            <span className="board-meta-chip highlight">
-                                                {mainMoveSummary}
-                                            </span>
-                                        ) : null}
-                                        {displayedTournament ? (
-                                            <span className="board-meta-chip ellipsis-chip">
-                                                {displayedTournament}
-                                            </span>
-                                        ) : null}
+                                    <div className="players">
+                                        {interpolate(
+                                            pgettext(
+                                                "Player names shown above the main board in kibitz",
+                                                "{{black}} vs {{white}}",
+                                            ),
+                                            {
+                                                black: displayedBlack,
+                                                white: displayedWhite,
+                                            },
+                                        )}
+                                    </div>
+                                    <div className="game-details">
+                                        {displayedBoardSize
+                                            ? interpolate(
+                                                  pgettext(
+                                                      "Board size label shown in the kibitz stage",
+                                                      "Board {{size}}",
+                                                  ),
+                                                  { size: displayedBoardSize },
+                                              )
+                                            : ""}
+                                        {displayedMoveNumber
+                                            ? ` - ${interpolate(
+                                                  pgettext(
+                                                      "Move number label shown in the kibitz stage",
+                                                      "Move {{move_number}}",
+                                                  ),
+                                                  { move_number: displayedMoveNumber },
+                                              )}`
+                                            : ""}
+                                        {displayedTournament ? ` - ${displayedTournament}` : ""}
                                     </div>
                                 </div>
-                                <div className="board-fit-slot" ref={mainBoardSlotRef}>
-                                    <KibitzBoard
-                                        gameId={
-                                            mainGame.mock_game_data ? undefined : mainGame.game_id
-                                        }
-                                        json={mainGame.mock_game_data}
-                                        className="main-board-surface"
-                                        size={mainBoardSize}
-                                        onReady={setMainBoardController}
-                                    />
-                                </div>
+                                <KibitzBoard
+                                    gameId={mainGame.mock_game_data ? undefined : mainGame.game_id}
+                                    json={mainGame.mock_game_data}
+                                    className="main-board-surface"
+                                    onReady={setMainBoardController}
+                                />
                                 <div className="main-board-transport-row">
                                     <KibitzBoardControls
                                         controller={mainBoardController}
@@ -925,79 +268,75 @@ export function KibitzRoomStage({
                             )
                         ) : secondaryGameId ? (
                             <div className="board-content">
-                                <div className="board-meta board-meta-rich secondary-board-meta">
-                                    <div className="board-meta-top">
-                                        <div className="board-title-block">
-                                            <div className="board-kicker-row">
-                                                <div className="board-label">
-                                                    {secondaryHeaderLabel}
-                                                </div>
-                                                <span className="board-status-pill preview">
-                                                    {secondaryHeaderStatus}
-                                                </span>
-                                                {previewGame?.game_id ? (
-                                                    <span className="board-id-chip">
-                                                        {interpolate(
-                                                            pgettext(
-                                                                "Game id chip shown in the kibitz secondary board header",
-                                                                "Game {{game_id}}",
-                                                            ),
-                                                            { game_id: previewGame.game_id },
-                                                        )}
-                                                    </span>
-                                                ) : null}
-                                            </div>
-                                            <div className="players">
-                                                {interpolate(
-                                                    pgettext(
-                                                        "Player names shown above the secondary board in kibitz",
-                                                        "{{black}} vs {{white}}",
-                                                    ),
-                                                    {
-                                                        black: previewBlackWithRank,
-                                                        white: previewWhiteWithRank,
-                                                    },
-                                                )}
-                                            </div>
-                                            {secondarySubtitle ? (
-                                                <div className="board-subtitle">
-                                                    {secondarySubtitle}
-                                                </div>
-                                            ) : null}
-                                        </div>
+                                <div className="board-meta">
+                                    <div className="board-label">
+                                        {isProposalPreview
+                                            ? pgettext(
+                                                  "Label for the secondary board in kibitz when previewing a proposed game",
+                                                  "Voted board",
+                                              )
+                                            : pgettext(
+                                                  "Label for the personal secondary board in kibitz",
+                                                  "Secondary board",
+                                              )}
                                     </div>
-                                    <div className="board-meta-chips">
-                                        {previewGame?.board_size ? (
-                                            <span className="board-meta-chip">
-                                                {interpolate(
-                                                    pgettext(
-                                                        "Board size chip shown in the kibitz secondary header",
-                                                        "Board {{size}}",
-                                                    ),
-                                                    { size: previewGame.board_size },
-                                                )}
-                                            </span>
-                                        ) : null}
-                                        {secondaryMoveSummary ? (
-                                            <span className="board-meta-chip highlight">
-                                                {secondaryMoveSummary}
-                                            </span>
-                                        ) : null}
+                                    <div className="players">
+                                        {interpolate(
+                                            pgettext(
+                                                "Player names shown above the secondary board in kibitz",
+                                                "{{black}} vs {{white}}",
+                                            ),
+                                            {
+                                                black: previewGame?.black.username ?? "",
+                                                white: previewGame?.white.username ?? "",
+                                            },
+                                        )}
+                                    </div>
+                                    <div className="game-details">
+                                        {isProposalPreview
+                                            ? interpolate(
+                                                  pgettext(
+                                                      "Helper text shown when previewing a game that is already in the room vote flow",
+                                                      "Already {{status}} for the room",
+                                                  ),
+                                                  {
+                                                      status:
+                                                          previewProposal?.status ??
+                                                          pgettext(
+                                                              "Fallback proposal status",
+                                                              "proposed",
+                                                          ),
+                                                  },
+                                              )
+                                            : (previewGame?.title ?? "")}
+                                        {previewGame?.board_size
+                                            ? ` - ${interpolate(
+                                                  pgettext(
+                                                      "Board size label shown in the kibitz secondary pane",
+                                                      "Board {{size}}",
+                                                  ),
+                                                  { size: previewGame.board_size },
+                                              )}`
+                                            : ""}
+                                        {previewDisplayedMoveNumber
+                                            ? ` - ${interpolate(
+                                                  pgettext(
+                                                      "Move number label shown in the kibitz secondary pane",
+                                                      "Move {{move_number}}",
+                                                  ),
+                                                  { move_number: previewDisplayedMoveNumber },
+                                              )}`
+                                            : ""}
                                     </div>
                                 </div>
-                                <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
-                                    <KibitzBoard
-                                        gameId={
-                                            previewGame?.mock_game_data
-                                                ? undefined
-                                                : secondaryGameId
-                                        }
-                                        json={previewGame?.mock_game_data}
-                                        className="secondary-board-surface"
-                                        size={secondaryBoardSize}
-                                        onReady={setSecondaryBoardController}
-                                    />
-                                </div>
+                                <KibitzBoard
+                                    gameId={
+                                        previewGame?.mock_game_data ? undefined : secondaryGameId
+                                    }
+                                    json={previewGame?.mock_game_data}
+                                    className="secondary-board-surface"
+                                    onReady={setSecondaryBoardController}
+                                />
                                 <div className="secondary-board-transport-row">
                                     <div className="transport-controls">
                                         <KibitzBoardControls
@@ -1007,8 +346,8 @@ export function KibitzRoomStage({
                                             totalMoves={previewDisplayedMoveNumber}
                                         />
                                     </div>
-                                    {secondaryPaneSize === "equal" ? (
-                                        <div className="board-actions board-actions-inline">
+                                    <div className="board-actions board-actions-inline">
+                                        {!isProposalPreview ? (
                                             <button
                                                 type="button"
                                                 className="preview-action-button symbol-button"
@@ -1024,23 +363,23 @@ export function KibitzRoomStage({
                                             >
                                                 +
                                             </button>
-                                            <button
-                                                type="button"
-                                                className="preview-action-button clear-preview symbol-button"
-                                                onClick={onClearPreview}
-                                                aria-label={pgettext(
-                                                    "Aria label for closing the preview game in the secondary kibitz pane",
-                                                    "Clear",
-                                                )}
-                                                title={pgettext(
-                                                    "Tooltip label for closing the preview game in the secondary kibitz pane",
-                                                    "Clear",
-                                                )}
-                                            >
-                                                X
-                                            </button>
-                                        </div>
-                                    ) : null}
+                                        ) : null}
+                                        <button
+                                            type="button"
+                                            className="preview-action-button clear-preview symbol-button"
+                                            onClick={onClearPreview}
+                                            aria-label={pgettext(
+                                                "Aria label for closing the preview game in the secondary kibitz pane",
+                                                "Clear",
+                                            )}
+                                            title={pgettext(
+                                                "Tooltip label for closing the preview game in the secondary kibitz pane",
+                                                "Clear",
+                                            )}
+                                        >
+                                            X
+                                        </button>
+                                    </div>
                                 </div>
                                 {secondaryPaneSize === "equal" ? (
                                     <Resizable
@@ -1048,58 +387,33 @@ export function KibitzRoomStage({
                                         className="kibitz-move-tree-container"
                                         ref={setSecondaryMoveTreeContainer}
                                     />
-                                ) : (
-                                    renderSecondaryTray()
-                                )}
+                                ) : null}
                             </div>
                         ) : selectedVariation ? (
                             <div className="board-content">
-                                <div className="board-meta board-meta-rich secondary-board-meta variation-header">
-                                    <div className="board-meta-top">
-                                        <div className="board-title-block">
-                                            <div className="board-kicker-row">
-                                                <div className="board-label">
-                                                    {secondaryHeaderLabel}
-                                                </div>
-                                                <span className="board-status-pill variation">
-                                                    {secondaryHeaderStatus}
-                                                </span>
-                                            </div>
-                                            <div className="players">
-                                                {selectedVariation.creator.username}
-                                            </div>
-                                            {secondarySubtitle ? (
-                                                <div className="board-subtitle">
-                                                    {secondarySubtitle}
-                                                </div>
-                                            ) : null}
-                                        </div>
+                                <div className="board-meta">
+                                    <div className="board-label">
+                                        {pgettext(
+                                            "Label for the personal secondary board in kibitz",
+                                            "Secondary board",
+                                        )}
                                     </div>
-                                    <div className="board-meta-chips">
-                                        {secondaryMoveSummary ? (
-                                            <span className="board-meta-chip highlight">
-                                                {secondaryMoveSummary}
-                                            </span>
-                                        ) : null}
-                                        <span className="board-meta-chip ellipsis-chip">
-                                            {interpolate(
-                                                pgettext(
-                                                    "Creator chip shown in the kibitz variation header",
-                                                    "By {{username}}",
-                                                ),
-                                                { username: selectedVariation.creator.username },
+                                    <div className="players">
+                                        {selectedVariation.creator.username}
+                                    </div>
+                                    <div className="game-details">
+                                        {selectedVariation.title ??
+                                            pgettext(
+                                                "Fallback title for an untitled kibitz variation",
+                                                "Variation preview",
                                             )}
-                                        </span>
                                     </div>
                                 </div>
-                                <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
-                                    <KibitzBoard
-                                        json={selectedVariation.mock_game_data}
-                                        className="secondary-board-surface"
-                                        size={secondaryBoardSize}
-                                        onReady={setSecondaryBoardController}
-                                    />
-                                </div>
+                                <KibitzBoard
+                                    json={selectedVariation.mock_game_data}
+                                    className="secondary-board-surface"
+                                    onReady={setSecondaryBoardController}
+                                />
                                 <div className="secondary-board-transport-row">
                                     <div className="transport-controls">
                                         <KibitzBoardControls
@@ -1109,25 +423,23 @@ export function KibitzRoomStage({
                                             totalMoves={selectedVariation.move_count}
                                         />
                                     </div>
-                                    {secondaryPaneSize === "equal" ? (
-                                        <div className="board-actions board-actions-inline">
-                                            <button
-                                                type="button"
-                                                className="preview-action-button clear-preview symbol-button"
-                                                onClick={onClearPreview}
-                                                aria-label={pgettext(
-                                                    "Aria label for closing a variation preview in the secondary kibitz pane",
-                                                    "Clear",
-                                                )}
-                                                title={pgettext(
-                                                    "Tooltip label for closing a variation preview in the secondary kibitz pane",
-                                                    "Clear",
-                                                )}
-                                            >
-                                                X
-                                            </button>
-                                        </div>
-                                    ) : null}
+                                    <div className="board-actions board-actions-inline">
+                                        <button
+                                            type="button"
+                                            className="preview-action-button clear-preview symbol-button"
+                                            onClick={onClearPreview}
+                                            aria-label={pgettext(
+                                                "Aria label for closing a variation preview in the secondary kibitz pane",
+                                                "Clear",
+                                            )}
+                                            title={pgettext(
+                                                "Tooltip label for closing a variation preview in the secondary kibitz pane",
+                                                "Clear",
+                                            )}
+                                        >
+                                            X
+                                        </button>
+                                    </div>
                                 </div>
                                 {secondaryPaneSize === "equal" ? (
                                     <Resizable
@@ -1135,12 +447,8 @@ export function KibitzRoomStage({
                                         className="kibitz-move-tree-container"
                                         ref={setSecondaryMoveTreeContainer}
                                     />
-                                ) : (
-                                    renderSecondaryTray()
-                                )}
+                                ) : null}
                             </div>
-                        ) : secondaryPaneSize === "small" ? (
-                            renderSecondaryTray()
                         ) : (
                             pgettext(
                                 "Placeholder for the secondary kibitz goban area before the board is wired up",
