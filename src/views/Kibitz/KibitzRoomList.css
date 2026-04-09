@@ -118,28 +118,6 @@
             line-height: 1.1;
         }
 
-        .room-status-chip {
-            align-items: center;
-            background: var(--shade1);
-            border: 1px solid transparent;
-            border-color: var(--shade3);
-            color: var(--text-color-faded);
-            display: inline-flex;
-            flex: 0 0 auto;
-            font-size: 0.66rem;
-            font-weight: bold;
-            line-height: 1;
-            min-height: 1.05rem;
-            padding: 0.14rem 0.35rem;
-            white-space: nowrap;
-        }
-
-        .room-status-chip.active-chip {
-            background: color-mix(in srgb, var(--primary) 13%, var(--shade1));
-            border-color: color-mix(in srgb, var(--primary) 24%, var(--shade3));
-            color: var(--fg);
-        }
-
         .room-viewer-count {
             align-items: center;
             color: var(--text-color-faded);

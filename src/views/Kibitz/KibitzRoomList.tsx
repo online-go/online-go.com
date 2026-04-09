@@ -66,14 +66,6 @@ export function KibitzRoomList({
                             <div className="room-main">
                                 <div className="room-top-row">
                                     <span className="room-title">{room.title}</span>
-                                    {isActive ? (
-                                        <span className="room-status-chip active-chip">
-                                            {pgettext(
-                                                "Active room chip shown in the kibitz room list",
-                                                "Here",
-                                            )}
-                                        </span>
-                                    ) : null}
                                 </div>
                                 <div className="room-bottom-row">
                                     <span className="room-subtitle">
@@ -93,6 +85,9 @@ export function KibitzRoomList({
                                             { count: room.viewer_count },
                                         )}
                                     >
+                                        <span className="room-viewer-number">
+                                            {room.viewer_count}
+                                        </span>
                                         <span className="room-viewer-icon" aria-hidden="true">
                                             <svg
                                                 viewBox="0 0 16 16"
@@ -104,9 +99,6 @@ export function KibitzRoomList({
                                                     fill="currentColor"
                                                 />
                                             </svg>
-                                        </span>
-                                        <span className="room-viewer-number">
-                                            {room.viewer_count}
                                         </span>
                                     </span>
                                 </div>
