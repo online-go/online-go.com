@@ -4,11 +4,12 @@
     border-top-color: var(--shade3);
     display: flex;
     flex-direction: column;
-    max-height: 11rem;
-    min-height: 0;
+    max-height: 22rem;
+    min-height: 12rem;
 
     .KibitzPresence-body {
         display: flex;
+        flex: 1;
         flex-direction: column;
         gap: 0.35rem;
         min-height: 0;
@@ -62,6 +63,7 @@
 
     .presence-users {
         display: flex;
+        flex: 1;
         flex-direction: column;
         gap: 0.15rem;
         margin-top: 0.05rem;

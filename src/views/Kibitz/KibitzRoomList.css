@@ -1,7 +1,5 @@
 .KibitzRoomList {
     background: var(--card-background-color);
-    border-right: 1px solid transparent;
-    border-right-color: var(--shade3);
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -53,7 +51,9 @@
         padding: 0.45rem 0.7rem 0.48rem 0.88rem;
         position: relative;
         text-align: left;
-        transition: background-color 120ms ease, box-shadow 120ms ease;
+        transition:
+            background-color 120ms ease,
+            box-shadow 120ms ease;
 
         &:hover {
             background: color-mix(in srgb, var(--shade2) 50%, transparent);
@@ -147,10 +147,13 @@
             font-variant-numeric: tabular-nums;
         }
     }
+
+    .KibitzRoomList-item:last-child {
+        border-bottom: 0;
+    }
 }
 
 @media (max-width: 1000px) {
     .KibitzRoomList {
-        border-right: 0;
     }
 }

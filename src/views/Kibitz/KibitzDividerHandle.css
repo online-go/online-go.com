@@ -3,10 +3,6 @@
 
     align-items: center;
     background: var(--bg);
-    border-left: 1px solid transparent;
-    border-left-color: var(--shade3);
-    border-right: 1px solid transparent;
-    border-right-color: var(--shade3);
     display: flex;
     justify-content: center;
     min-height: 0;
