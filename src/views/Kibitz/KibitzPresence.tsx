@@ -18,7 +18,7 @@
 import * as React from "react";
 import { Player } from "@/components/Player";
 import { chat_manager, ChatChannelProxy, users_by_rank } from "@/lib/chat_manager";
-import { interpolate, pgettext } from "@/lib/translate";
+import { pgettext } from "@/lib/translate";
 import type { KibitzMode, KibitzRoomSummary, KibitzRoomUser } from "@/models/kibitz";
 import { User } from "goban";
 import "./KibitzPresence.css";
@@ -74,39 +74,18 @@ export function KibitzPresence({ mode, room, users }: KibitzPresenceProps): Reac
         ? Object.values(proxy.channel.user_list).sort(users_by_rank)
         : [];
     const visibleUsers = mode === "demo" ? users : channelUsers;
-    const stackedUsers = visibleUsers.slice(0, 6);
+    const stackedUsers = visibleUsers.slice(0, 5);
     const overflowCount = Math.max(0, visibleUsers.length - stackedUsers.length);
-    const highlightedNames = stackedUsers
-        .map((user) => user.username)
-        .filter(Boolean)
-        .slice(0, 3)
-        .join(", ");
 
     return (
         <div className="KibitzPresence">
             <div className="KibitzPresence-body">
-                <div className="presence-summary">
-                    <div className="presence-summary-copy">
-                        <div className="presence-stat">
-                            {interpolate(
-                                pgettext(
-                                    "Viewer count summary inside a kibitz room",
-                                    "{{count}} watching",
-                                ),
-                                { count: room.viewer_count },
-                            )}
-                        </div>
-                        {highlightedNames ? (
-                            <div className="presence-highlight">
-                                {interpolate(
-                                    pgettext(
-                                        "Compact social summary in the kibitz presence panel",
-                                        "Active now: {{names}}",
-                                    ),
-                                    { names: highlightedNames },
-                                )}
-                            </div>
-                        ) : null}
+                <div className="presence-header">
+                    <div className="presence-users-heading">
+                        {pgettext(
+                            "Heading for the current room user list in kibitz",
+                            "In the room",
+                        )}
                     </div>
                     {stackedUsers.length > 0 ? (
                         <div className="presence-avatar-stack" aria-hidden="true">
@@ -128,22 +107,21 @@ export function KibitzPresence({ mode, room, users }: KibitzPresenceProps): Reac
                     ) : null}
                 </div>
                 {visibleUsers.length > 0 ? (
-                    <>
-                        <div className="presence-users-heading">
-                            {pgettext(
-                                "Heading for the current room user list in kibitz",
-                                "In the room",
-                            )}
-                        </div>
-                        <div className="presence-users">
-                            {visibleUsers.map((user) => (
-                                <div key={user.id} className="presence-user">
-                                    <Player user={user} flag rank noextracontrols />
-                                </div>
-                            ))}
-                        </div>
-                    </>
-                ) : null}
+                    <div className="presence-users">
+                        {visibleUsers.map((user) => (
+                            <div key={user.id} className="presence-user">
+                                <Player user={user} flag rank noextracontrols />
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="presence-empty">
+                        {pgettext(
+                            "Empty state for the room presence roster in kibitz",
+                            "No one is in the room yet.",
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

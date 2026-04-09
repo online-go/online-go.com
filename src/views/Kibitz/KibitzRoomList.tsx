@@ -27,26 +27,10 @@ interface KibitzRoomListProps {
     onSelectRoom: (roomId: string) => void;
 }
 
-function getUserInitials(username: string | undefined): string {
-    const trimmedUsername = (username ?? "").trim();
-
-    if (!trimmedUsername) {
-        return "?";
-    }
-
-    const parts = trimmedUsername.split(/\s+/).filter(Boolean);
-
-    if (parts.length === 1) {
-        return parts[0].slice(0, 2).toUpperCase();
-    }
-
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-}
-
 export function KibitzRoomList({
     rooms,
     activeRoomId,
-    roomUsersById = {},
+    roomUsersById: _roomUsersById = {},
     onSelectRoom,
 }: KibitzRoomListProps): React.ReactElement {
     return (
@@ -69,23 +53,8 @@ export function KibitzRoomList({
             </div>
             <div className="KibitzRoomList-items">
                 {rooms.map((room) => {
-                    const roomUsers = roomUsersById[room.id] ?? [];
-                    const stackedUsers = roomUsers.slice(0, 4);
-                    const overflowCount = Math.max(0, roomUsers.length - stackedUsers.length);
                     const isActive = room.id === activeRoomId;
                     const roomGame = room.current_game;
-                    const contextBits = [
-                        roomGame?.board_size,
-                        typeof roomGame?.move_number === "number"
-                            ? interpolate(
-                                  pgettext(
-                                      "Compact move summary in the kibitz room list",
-                                      "Move {{move_number}}",
-                                  ),
-                                  { move_number: roomGame.move_number },
-                              )
-                            : null,
-                    ].filter(Boolean) as string[];
 
                     return (
                         <button
@@ -106,55 +75,42 @@ export function KibitzRoomList({
                                         </span>
                                     ) : null}
                                 </div>
-                                {roomGame?.title ? (
-                                    <div className="room-subtitle">{roomGame.title}</div>
-                                ) : null}
-                                <div className="room-meta-row">
-                                    <span className="room-watching-label">
-                                        {interpolate(
+                                <div className="room-bottom-row">
+                                    <span className="room-subtitle">
+                                        {roomGame?.title ??
                                             pgettext(
-                                                "Viewer count label for a kibitz room",
-                                                "{{count}} watching",
+                                                "Fallback subtitle shown in the kibitz room list when no current game exists",
+                                                "No game selected",
+                                            )}
+                                    </span>
+                                    <span
+                                        className="room-viewer-count"
+                                        title={interpolate(
+                                            pgettext(
+                                                "Tooltip for the viewer count shown in the kibitz room list",
+                                                "{{count}} people here",
                                             ),
                                             { count: room.viewer_count },
                                         )}
-                                    </span>
-                                    {contextBits.length > 0 ? (
-                                        <span className="room-context-inline">
-                                            {contextBits.join(" · ")}
+                                    >
+                                        <span className="room-viewer-icon" aria-hidden="true">
+                                            <svg
+                                                viewBox="0 0 16 16"
+                                                focusable="false"
+                                                aria-hidden="true"
+                                            >
+                                                <path
+                                                    d="M8 8a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm0 1c-2.7 0-5 1.4-5 3.2V14h10v-1.8C13 10.4 10.7 9 8 9Z"
+                                                    fill="currentColor"
+                                                />
+                                            </svg>
                                         </span>
-                                    ) : null}
+                                        <span className="room-viewer-number">
+                                            {room.viewer_count}
+                                        </span>
+                                    </span>
                                 </div>
                             </div>
-                            {stackedUsers.length > 0 ? (
-                                <div className="room-presence-row">
-                                    <span className="room-avatar-stack" aria-hidden="true">
-                                        {stackedUsers.map((user) => (
-                                            <span
-                                                key={user.id}
-                                                className="room-avatar"
-                                                title={user.username}
-                                            >
-                                                {getUserInitials(user.username)}
-                                            </span>
-                                        ))}
-                                        {overflowCount > 0 ? (
-                                            <span className="room-avatar room-avatar-overflow">
-                                                +{overflowCount}
-                                            </span>
-                                        ) : null}
-                                    </span>
-                                    <span className="room-presence-label">
-                                        {interpolate(
-                                            pgettext(
-                                                "Compact active-user label for a kibitz room row",
-                                                "{{count}} here now",
-                                            ),
-                                            { count: roomUsers.length },
-                                        )}
-                                    </span>
-                                </div>
-                            ) : null}
                         </button>
                     );
                 })}

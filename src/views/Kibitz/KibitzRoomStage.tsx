@@ -310,9 +310,9 @@ export function KibitzRoomStage({
     const stageVisibleUsers = roomUsers.slice(0, 6);
     const stageOverflowUsers = Math.max(0, roomUsers.length - stageVisibleUsers.length);
     const stageHighlightedNames = stageVisibleUsers
+        .slice(0, 3)
         .map((user) => user.username)
         .filter(Boolean)
-        .slice(0, 3)
         .join(", ");
     const secondarySubtitle = selectedVariation
         ? secondaryPaneSize === "small"

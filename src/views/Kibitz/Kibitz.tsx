@@ -238,7 +238,6 @@ export function Kibitz(): React.ReactElement {
                             <KibitzRoomStream
                                 mode={mode}
                                 room={resolvedRoom}
-                                roomUsers={resolvedRoomUsers}
                                 items={stream}
                                 variations={variations}
                                 onOpenVariation={onOpenVariation}
