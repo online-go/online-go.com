@@ -39,16 +39,15 @@
     }
 
     .Kibitz-sidebar {
-        --sidebar-proposal-slot-height: 7.25rem;
         background: var(--bg);
         display: grid;
         gap: 0;
-        grid-template-rows: var(--sidebar-proposal-slot-height) minmax(0, 1fr) auto;
+        grid-template-rows: auto minmax(0, 1fr) auto;
         min-height: 0;
     }
 
     .Kibitz-sidebar.no-active-proposal {
-        --sidebar-proposal-slot-height: 0;
+        grid-template-rows: 0 minmax(0, 1fr) auto;
     }
 
     .Kibitz-sidebar-proposal-slot {
