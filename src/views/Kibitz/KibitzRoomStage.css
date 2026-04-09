@@ -1,5 +1,5 @@
 .KibitzRoomStage {
-    --board-divider-width: 2.75rem;
+    --board-divider-width: 0;
 
     background: var(--bg);
     display: flex;

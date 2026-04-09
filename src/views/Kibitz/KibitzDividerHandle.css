@@ -6,8 +6,11 @@
     display: flex;
     justify-content: center;
     min-height: 0;
+    overflow: visible;
     padding: 0.35rem 0;
-    width: var(--divider-width);
+    position: relative;
+    width: 0;
+    z-index: 2;
 
     .divider-mode-switch {
         background: var(--card-background-color);
@@ -18,7 +21,22 @@
         display: flex;
         flex-direction: column;
         gap: 0.2rem;
+        left: 0;
         padding: 0.25rem;
+        position: absolute;
+        top: 70%;
+    }
+
+    &.mode-hidden .divider-mode-switch {
+        transform: translate(-100%, -70%);
+    }
+
+    &.mode-small .divider-mode-switch {
+        transform: translate(0, -70%);
+    }
+
+    &.mode-equal .divider-mode-switch {
+        transform: translate(-50%, -70%);
     }
 
     .divider-mode-button {
