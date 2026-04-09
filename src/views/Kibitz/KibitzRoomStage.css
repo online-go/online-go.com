@@ -325,6 +325,15 @@
             }
         }
 
+        .board-fit-slot {
+            align-items: center;
+            display: grid;
+            justify-items: center;
+            min-height: 0;
+            min-width: 0;
+            overflow: hidden;
+        }
+
         .KibitzBoard.main-board-surface {
             min-height: 0;
             padding-inline: 0.125rem;
