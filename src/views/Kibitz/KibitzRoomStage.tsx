@@ -61,9 +61,33 @@ function useSquareFitSize<T extends HTMLElement>() {
         let raf = 0;
 
         const measure = () => {
+            const parent = element.parentElement;
+            const parentStyle = parent ? window.getComputedStyle(parent) : null;
+            const rowGap = Number.parseFloat(parentStyle?.rowGap ?? parentStyle?.gap ?? "0") || 0;
+            const visibleChildren = parent
+                ? Array.from(parent.children).filter(
+                      (child): child is HTMLElement =>
+                          child instanceof HTMLElement && child.offsetParent !== null,
+                  )
+                : [];
+            const reservedHeight = visibleChildren.reduce((total, child) => {
+                if (child === element || child.classList.contains("board-content-spacer")) {
+                    return total;
+                }
+
+                return total + child.getBoundingClientRect().height;
+            }, 0);
+            const availableHeight = Math.max(
+                0,
+                (parent?.clientHeight ?? element.clientHeight) -
+                    reservedHeight -
+                    rowGap * Math.max(0, visibleChildren.length - 1),
+            );
             const nextSize = Math.max(
                 0,
-                Math.floor(Math.min(element.clientWidth, element.clientHeight)),
+                Math.floor(
+                    Math.min(element.clientWidth || parent?.clientWidth || 0, availableHeight),
+                ),
             );
             setSize((previousSize) => (previousSize === nextSize ? previousSize : nextSize));
         };
@@ -260,6 +284,9 @@ export function KibitzRoomStage({
                                         aria-hidden="true"
                                     />
                                 ) : null}
+                                {secondaryPaneSize !== "equal" ? (
+                                    <div className="board-content-spacer" aria-hidden="true" />
+                                ) : null}
                             </div>
                         ) : (
                             pgettext(
@@ -419,6 +446,9 @@ export function KibitzRoomStage({
                                         ref={setSecondaryMoveTreeContainer}
                                     />
                                 ) : null}
+                                {secondaryPaneSize !== "equal" ? (
+                                    <div className="board-content-spacer" aria-hidden="true" />
+                                ) : null}
                             </div>
                         ) : selectedVariation ? (
                             <div className="board-content">
@@ -499,6 +529,9 @@ export function KibitzRoomStage({
                                         className="kibitz-move-tree-container"
                                         ref={setSecondaryMoveTreeContainer}
                                     />
+                                ) : null}
+                                {secondaryPaneSize !== "equal" ? (
+                                    <div className="board-content-spacer" aria-hidden="true" />
                                 ) : null}
                             </div>
                         ) : (

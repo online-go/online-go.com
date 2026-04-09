@@ -97,6 +97,7 @@
             }
 
             .board-panel .board-content {
+                display: grid;
                 align-content: stretch;
                 grid-template-rows:
                     var(--equal-meta-height)
@@ -203,6 +204,10 @@
                 background: transparent;
                 padding-top: 0;
             }
+
+            .board-content-spacer {
+                display: none;
+            }
         }
     }
 
@@ -248,10 +253,10 @@
         }
 
         .board-content {
-            display: grid;
+            display: flex;
             flex: 1;
+            flex-direction: column;
             gap: 0.125rem;
-            grid-template-rows: auto minmax(0, 1fr) auto;
             min-height: 0;
             min-width: 0;
             width: 100%;
@@ -325,6 +330,12 @@
             min-height: 0;
             min-width: 0;
             overflow: hidden;
+            width: 100%;
+        }
+
+        .board-content-spacer {
+            flex: 1 1 auto;
+            min-height: 0;
         }
 
         .KibitzBoard.main-board-surface {
