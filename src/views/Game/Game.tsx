@@ -146,6 +146,25 @@ export function Game(): React.ReactElement | null {
         }
     };
 
+    const applyReviewFallback = React.useCallback((title: string) => {
+        if (window.location.pathname.startsWith("/review/")) {
+            return _("Review");
+        }
+        if (window.location.pathname.startsWith("/demo/")) {
+            return _("Demo");
+        }
+        return title || _("OGS");
+    }, []);
+
+    const setTabTitle = React.useCallback(
+        (title: string) => {
+            const finalTitle = applyReviewFallback(title);
+            window.document.title = finalTitle;
+            on_refocus_title.current = finalTitle;
+        },
+        [applyReviewFallback],
+    );
+
     const onFocus = () => {
         if (goban?.engine) {
             last_move_viewed.current = goban.engine.getMoveNumber();
@@ -254,6 +273,9 @@ export function Game(): React.ReactElement | null {
             opts.isPlayerController = () =>
                 goban_controller.current?.goban?.review_controller_id === data.get("user").id;
         }
+        if (review_id) {
+            setTabTitle("");
+        }
 
         goban_controller.current?.destroy();
         goban_controller.current = new GobanController(opts);
@@ -302,15 +324,17 @@ export function Game(): React.ReactElement | null {
             last_move_viewed.current = 0;
             on_refocus_title.current = last_title;
             goban.on("state_text", (state) => {
-                on_refocus_title.current = state.title;
+                const title = applyReviewFallback(state.title);
+
+                on_refocus_title.current = title;
                 if (state.show_moves_made_count) {
                     if (!goban) {
-                        window.document.title = state.title;
+                        window.document.title = title;
                         return;
                     }
                     if (document.hasFocus()) {
                         last_move_viewed.current = goban!.engine.getMoveNumber();
-                        window.document.title = state.title;
+                        window.document.title = title;
                     } else {
                         const diff = goban!.engine.getMoveNumber() - last_move_viewed.current;
                         if (diff > 0) {
@@ -318,7 +342,7 @@ export function Game(): React.ReactElement | null {
                         }
                     }
                 } else {
-                    window.document.title = state.title;
+                    window.document.title = title;
                 }
             });
         }
@@ -440,9 +464,7 @@ export function Game(): React.ReactElement | null {
                         black_username.current &&
                         !preferences.get("dynamic-title")
                     ) {
-                        on_refocus_title.current =
-                            black_username.current + " vs " + white_username.current;
-                        window.document.title = on_refocus_title.current;
+                        setTabTitle(black_username.current + " vs " + white_username.current);
                     }
                     if (goban_controller.current) {
                         goban_controller.current.creator_id = game.creator;
