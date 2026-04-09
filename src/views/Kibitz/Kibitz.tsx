@@ -231,8 +231,18 @@ export function Kibitz(): React.ReactElement {
                             onProposePreview={onProposePreview}
                             onSetSecondaryPaneMode={onSetSecondaryPaneMode}
                         />
-                        <div className="Kibitz-sidebar">
-                            <KibitzProposalBar proposal={activeProposal} onVote={onVoteProposal} />
+                        <div
+                            className={
+                                "Kibitz-sidebar" +
+                                (activeProposal ? " has-active-proposal" : " no-active-proposal")
+                            }
+                        >
+                            <div className="Kibitz-sidebar-proposal-slot">
+                                <KibitzProposalBar
+                                    proposal={activeProposal}
+                                    onVote={onVoteProposal}
+                                />
+                            </div>
                             <KibitzRoomStream
                                 mode={mode}
                                 room={resolvedRoom}

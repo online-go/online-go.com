@@ -39,11 +39,26 @@
     }
 
     .Kibitz-sidebar {
+        --sidebar-proposal-slot-height: 7.25rem;
+        background: var(--bg);
         display: grid;
-        grid-template-rows: auto minmax(0, 1fr) auto;
+        gap: 0;
+        grid-template-rows: var(--sidebar-proposal-slot-height) minmax(0, 1fr) auto;
+        min-height: 0;
+    }
+
+    .Kibitz-sidebar.no-active-proposal {
+        --sidebar-proposal-slot-height: 0;
+    }
+
+    .Kibitz-sidebar-proposal-slot {
         gap: 0;
         min-height: 0;
-        background: var(--bg);
+        overflow: hidden;
+    }
+
+    .Kibitz-sidebar-proposal-slot:empty {
+        background: transparent;
     }
 
     .Kibitz-footer-panels {
