@@ -46,8 +46,8 @@
         flex-direction: column;
         gap: 0.14rem;
         justify-content: center;
-        min-height: 0;
-        padding: 0.45rem 0.7rem 0.48rem 0.88rem;
+        min-height: 4.2rem;
+        padding: 0.8rem 0.7rem 0.8rem 0.88rem;
         position: relative;
         text-align: left;
         transition:
