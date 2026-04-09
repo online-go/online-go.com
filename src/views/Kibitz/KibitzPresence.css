@@ -20,7 +20,6 @@
         align-items: center;
         display: flex;
         gap: 0.45rem;
-        justify-content: space-between;
         min-width: 0;
     }
 
@@ -31,13 +30,6 @@
         letter-spacing: 0.03em;
         line-height: 1.1;
         text-transform: uppercase;
-    }
-
-    .presence-avatar-stack {
-        align-items: center;
-        display: flex;
-        flex: 0 0 auto;
-        gap: 0.2rem;
     }
 
     .presence-avatar {
@@ -54,13 +46,6 @@
         text-transform: uppercase;
     }
 
-    .presence-avatar-overflow {
-        background: var(--shade1);
-        color: var(--text-color-faded);
-        min-width: 1.35rem;
-        padding: 0 0.16rem;
-    }
-
     .presence-users {
         display: flex;
         flex: 1;
@@ -72,6 +57,9 @@
     }
 
     .presence-user {
+        align-items: center;
+        display: flex;
+        gap: 0.35rem;
         line-height: 1;
 
         .Player {

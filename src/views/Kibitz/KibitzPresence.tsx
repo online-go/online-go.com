@@ -74,8 +74,6 @@ export function KibitzPresence({ mode, room, users }: KibitzPresenceProps): Reac
         ? Object.values(proxy.channel.user_list).sort(users_by_rank)
         : [];
     const visibleUsers = mode === "demo" ? users : channelUsers;
-    const stackedUsers = visibleUsers.slice(0, 5);
-    const overflowCount = Math.max(0, visibleUsers.length - stackedUsers.length);
 
     return (
         <div className="KibitzPresence">
@@ -87,29 +85,18 @@ export function KibitzPresence({ mode, room, users }: KibitzPresenceProps): Reac
                             "In the room",
                         )}
                     </div>
-                    {stackedUsers.length > 0 ? (
-                        <div className="presence-avatar-stack" aria-hidden="true">
-                            {stackedUsers.map((user) => (
-                                <span
-                                    key={user.id}
-                                    className="presence-avatar"
-                                    title={user.username}
-                                >
-                                    {getUserInitials(user.username)}
-                                </span>
-                            ))}
-                            {overflowCount > 0 ? (
-                                <span className="presence-avatar presence-avatar-overflow">
-                                    +{overflowCount}
-                                </span>
-                            ) : null}
-                        </div>
-                    ) : null}
                 </div>
                 {visibleUsers.length > 0 ? (
                     <div className="presence-users">
                         {visibleUsers.map((user) => (
                             <div key={user.id} className="presence-user">
+                                <span
+                                    className="presence-avatar"
+                                    title={user.username}
+                                    aria-hidden="true"
+                                >
+                                    {getUserInitials(user.username)}
+                                </span>
                                 <Player user={user} flag rank noextracontrols />
                             </div>
                         ))}

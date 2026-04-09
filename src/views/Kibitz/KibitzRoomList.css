@@ -34,14 +34,13 @@
         flex: 1;
         flex-direction: column;
         min-height: 0;
+        padding-top: 0.5rem;
     }
 
     .KibitzRoomList-item {
         align-items: flex-start;
         background: transparent;
         border: 0;
-        border-bottom: 1px solid transparent;
-        border-bottom-color: var(--shade3);
         cursor: pointer;
         display: flex;
         flex-direction: column;
@@ -146,10 +145,6 @@
         .room-viewer-number {
             font-variant-numeric: tabular-nums;
         }
-    }
-
-    .KibitzRoomList-item:last-child {
-        border-bottom: 0;
     }
 }
 
