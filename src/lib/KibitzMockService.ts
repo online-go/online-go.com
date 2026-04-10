@@ -18,6 +18,7 @@
 /* cspell: words cooldown moyo Niko Sabaki tenukis endgame Maru Miri Noor */
 
 import { EventEmitter } from "eventemitter3";
+import { encodeMove } from "goban";
 import type { PreparedAnalysisSnapshot } from "@/lib/GobanController";
 import type {
     KibitzProposal,
@@ -147,6 +148,10 @@ function shuffle<T>(items: T[]): T[] {
 
 function clamp(value: number, min: number, max: number): number {
     return Math.min(max, Math.max(min, value));
+}
+
+function buildEncodedMoves(moves: Array<{ x: number; y: number }>): string {
+    return moves.map((move) => encodeMove(move.x, move.y)).join("");
 }
 
 function pickActiveChatters(users: KibitzRoomUser[], count: number): KibitzRoomUser[] {
@@ -1029,6 +1034,78 @@ export class KibitzMockService extends EventEmitter<KibitzMockServiceEvents> {
         return true;
     }
 
+    private simulateVariationPost(room: MockRoomState): boolean {
+        const sourceGame = room.room.current_game?.mock_game_data;
+        if (!sourceGame) {
+            return false;
+        }
+
+        const creator = choice(
+            room.room.active_chatters.length > 0 ? room.room.active_chatters : room.room.users,
+        );
+        const baseMoves = sourceGame.moves.slice();
+        const variationTail = choice([
+            [
+                { x: 11, y: 15 },
+                { x: 11, y: 13 },
+                { x: 9, y: 14 },
+            ],
+            [
+                { x: 14, y: 10 },
+                { x: 13, y: 11 },
+                { x: 15, y: 12 },
+            ],
+            [
+                { x: 5, y: 14 },
+                { x: 7, y: 15 },
+                { x: 8, y: 14 },
+            ],
+        ]);
+        const moves = [...baseMoves, ...variationTail].filter(
+            (move) => move.x < sourceGame.width && move.y < sourceGame.height,
+        );
+        const title = choice([
+            "Black shoulder-hit follow-up",
+            "Right side forcing line",
+            "Top side squeeze continuation",
+            "Cutting-point probe variation",
+        ]);
+
+        const snapshot: PreparedAnalysisSnapshot = {
+            analysis: {
+                type: "analysis",
+                from: baseMoves.length,
+                moves: buildEncodedMoves(moves),
+                name: title,
+            },
+            auto_named: false,
+            is_duplicate: false,
+            move_count: moves.length,
+            width: sourceGame.width,
+            height: sourceGame.height,
+            players: {
+                black: {
+                    id: sourceGame.players.black.id,
+                    username: sourceGame.players.black.username,
+                },
+                white: {
+                    id: sourceGame.players.white.id,
+                    username: sourceGame.players.white.username,
+                },
+            },
+            moves,
+        };
+
+        return this.createVariation(
+            room.room.id,
+            creator,
+            room.room.current_game?.game_id ?? 0,
+            snapshot,
+        )
+            ? true
+            : false;
+    }
+
     private chooseVoteChoice(
         room: MockRoomState,
         proposal: KibitzProposal,
@@ -1119,6 +1196,10 @@ export class KibitzMockService extends EventEmitter<KibitzMockServiceEvents> {
             if (Math.random() < 0.5) {
                 changed = this.simulateChat(room) || changed;
             }
+        }
+
+        if (room.room.id === "top-19x19" && Math.random() < 0.18) {
+            changed = this.simulateVariationPost(room) || changed;
         }
 
         if (Math.random() < 0.375) {

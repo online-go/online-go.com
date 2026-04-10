@@ -44,6 +44,20 @@ interface KibitzRoomStreamProps {
     onSendMessage: (text: string) => void;
 }
 
+type DemoStreamEntry =
+    | {
+          kind: "chat";
+          key: string;
+          createdAt: number;
+          line: ChatMessage;
+      }
+    | {
+          kind: "variation";
+          key: string;
+          createdAt: number;
+          item: KibitzStreamItem;
+      };
+
 export function KibitzRoomStream({
     mode,
     room,
@@ -117,36 +131,45 @@ export function KibitzRoomStream({
     );
 
     const chatLog = proxy?.channel.chat_log.slice(-200) ?? [];
-    const demoChatLog: ChatMessage[] = items
-        .map((item) => {
-            if (
-                item.type === "variation_posted" ||
-                (!item.author && item.type !== "system" && item.type !== "proposal_result")
-            ) {
+    const demoEntries: DemoStreamEntry[] = items
+        .map<DemoStreamEntry | null>((item) => {
+            if (item.type === "variation_posted") {
+                return {
+                    kind: "variation",
+                    key: item.id,
+                    createdAt: item.created_at,
+                    item,
+                };
+            }
+
+            if (!item.author && item.type !== "system" && item.type !== "proposal_result") {
                 return null;
             }
 
             return {
-                channel: room.channel,
-                username: item.author?.username ?? "",
-                id: item.author?.id ?? 0,
-                ranking: item.author?.ranking ?? 0,
-                professional: item.author?.professional ?? false,
-                ui_class: item.author?.ui_class ?? "",
-                country: item.author?.country,
-                system: item.type !== "chat",
-                message: {
-                    i: item.id,
-                    t: Math.floor(item.created_at / 1000),
-                    m: item.text,
+                kind: "chat",
+                key: item.id,
+                createdAt: item.created_at,
+                line: {
+                    channel: room.channel,
+                    username: item.author?.username ?? "",
+                    id: item.author?.id ?? 0,
+                    ranking: item.author?.ranking ?? 0,
+                    professional: item.author?.professional ?? false,
+                    ui_class: item.author?.ui_class ?? "",
+                    country: item.author?.country,
+                    system: item.type !== "chat",
+                    message: {
+                        i: item.id,
+                        t: Math.floor(item.created_at / 1000),
+                        m: item.text,
+                    },
                 },
             };
         })
-        .filter(Boolean) as ChatMessage[];
-    const variationPosts = items.filter((item) => item.type === "variation_posted");
-    const renderedLineCount =
-        (mode === "demo" ? demoChatLog.length : chatLog.length) +
-        (mode === "demo" ? variationPosts.length : 0);
+        .filter((entry): entry is DemoStreamEntry => entry !== null)
+        .sort((left, right) => left.createdAt - right.createdAt);
+    const renderedLineCount = mode === "demo" ? demoEntries.length : chatLog.length;
     let lastLine: ChatMessage | undefined;
 
     const updateFollowLatest = React.useCallback(() => {
@@ -181,49 +204,61 @@ export function KibitzRoomStream({
                 {pgettext("Heading for the main message stream in a kibitz room", "Room stream")}
             </div>
             <div className="KibitzRoomStream-items">
-                {(mode === "demo" ? demoChatLog.length > 0 : chatLog.length > 0) ? (
+                {(mode === "demo" ? demoEntries.length > 0 : chatLog.length > 0) ? (
                     <div ref={chatLinesRef} className="chat-lines" onScroll={updateFollowLatest}>
-                        {(mode === "demo" ? demoChatLog : chatLog).map((line) => {
-                            const previousLine = lastLine;
-                            lastLine = line;
-                            return (
-                                <ChatLine
-                                    key={line.message.i || `system-${line.message.t}`}
-                                    line={line}
-                                    lastLine={previousLine}
-                                />
-                            );
-                        })}
                         {mode === "demo"
-                            ? variationPosts.map((item) => {
-                                  const variation = variations.find(
-                                      (entry) => entry.id === item.variation_id,
-                                  );
-                                  const label = `${item.author?.username ?? ""} ${pgettext(
-                                      "Lead-in for a variation post line in the kibitz stream",
-                                      "posted variation",
-                                  )}: ${
-                                      variation?.title ??
-                                      pgettext(
-                                          "Fallback title for a variation link in the kibitz stream",
-                                          "Open variation",
-                                      )
-                                  }`;
+                            ? demoEntries.map((entry) => {
+                                  if (entry.kind === "variation") {
+                                      const variation = variations.find(
+                                          (variationEntry) =>
+                                              variationEntry.id === entry.item.variation_id,
+                                      );
+                                      const label = `${entry.item.author?.username ?? ""} ${pgettext(
+                                          "Lead-in for a variation post line in the kibitz stream",
+                                          "posted variation",
+                                      )}: ${
+                                          variation?.title ??
+                                          pgettext(
+                                              "Fallback title for a variation link in the kibitz stream",
+                                              "Open variation",
+                                          )
+                                      }`;
+                                      return (
+                                          <button
+                                              key={entry.key}
+                                              type="button"
+                                              className="variation-post"
+                                              onClick={() =>
+                                                  entry.item.variation_id &&
+                                                  onOpenVariation(entry.item.variation_id)
+                                              }
+                                          >
+                                              {label}
+                                          </button>
+                                      );
+                                  }
+
+                                  const previousLine = lastLine;
+                                  lastLine = entry.line;
                                   return (
-                                      <button
-                                          key={item.id}
-                                          type="button"
-                                          className="variation-post"
-                                          onClick={() =>
-                                              item.variation_id &&
-                                              onOpenVariation(item.variation_id)
-                                          }
-                                      >
-                                          {label}
-                                      </button>
+                                      <ChatLine
+                                          key={entry.key}
+                                          line={entry.line}
+                                          lastLine={previousLine}
+                                      />
                                   );
                               })
-                            : null}
+                            : chatLog.map((line) => {
+                                  const previousLine = lastLine;
+                                  lastLine = line;
+                                  return (
+                                      <ChatLine
+                                          key={line.message.i || `system-${line.message.t}`}
+                                          line={line}
+                                          lastLine={previousLine}
+                                      />
+                                  );
+                              })}
                     </div>
                 ) : items.length > 0 ? (
                     items.map((item) => (
