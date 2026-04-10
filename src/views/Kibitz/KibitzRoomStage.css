@@ -81,7 +81,7 @@
             --equal-transport-height: 2.35rem;
             --equal-analyze-height: 6rem;
             --equal-compose-height: 2.4rem;
-            --equal-variation-height: 6.5rem;
+            --equal-variation-height: 4.5rem;
             grid-template-columns:
                 minmax(0, 1fr)
                 var(--board-divider-width)
@@ -101,12 +101,12 @@
                 align-content: start;
                 grid-template-rows:
                     var(--equal-meta-height)
-                    auto
+                    minmax(0, 1fr)
                     auto
                     var(--equal-analyze-height)
                     var(--equal-compose-height)
                     var(--equal-variation-height)
-                    minmax(0, 1fr);
+                    auto;
             }
 
             .board-fit-slot {
@@ -146,8 +146,8 @@
             }
 
             .main-board .main-board-variation-spacer {
-                height: var(--equal-variation-height);
-                min-height: var(--equal-variation-height);
+                height: auto;
+                min-height: 0;
             }
 
             .secondary-board .board-actions {
@@ -168,6 +168,11 @@
             .KibitzBoardControls {
                 align-self: center;
                 box-sizing: border-box;
+                width: 100%;
+            }
+
+            .secondary-board .KibitzBoard {
+                max-width: 100%;
                 width: 100%;
             }
 
@@ -582,7 +587,7 @@
         .KibitzRoomStage-boards.secondary-pane-equal {
             --equal-board-max-width: min(28rem, 42vh);
             --equal-transport-height: 2.25rem;
-            --equal-variation-height: 7.2rem;
+            --equal-variation-height: 5rem;
         }
     }
 }
