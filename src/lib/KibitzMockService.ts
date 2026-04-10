@@ -584,7 +584,7 @@ export class KibitzMockService extends EventEmitter<KibitzMockServiceEvents> {
         }
 
         this.heartbeatTimer = setInterval(this.tickHeartbeat, 1000);
-        this.activityTimer = setInterval(this.simulateActivity, 4500);
+        this.activityTimer = setInterval(this.simulateActivity, 2500);
     }
 
     public destroy(): void {
@@ -903,7 +903,7 @@ export class KibitzMockService extends EventEmitter<KibitzMockServiceEvents> {
             game_id: room.room.current_game?.game_id,
         });
 
-        if (Math.random() < 0.22) {
+        if (Math.random() < 0.4) {
             const secondSpeaker = choice(room.room.active_chatters);
             const secondMessage = choice(room.messagePool);
 
@@ -966,7 +966,7 @@ export class KibitzMockService extends EventEmitter<KibitzMockServiceEvents> {
         const choiceValue = this.chooseVoteChoice(room, activeProposal, voter);
         this.voteOnProposal(room.room.id, activeProposal.id, voter, choiceValue);
 
-        if (Math.random() < 0.3) {
+        if (Math.random() < 0.6) {
             const commentator = choice(
                 room.room.active_chatters.length > 0 ? room.room.active_chatters : room.room.users,
             );
@@ -993,7 +993,7 @@ export class KibitzMockService extends EventEmitter<KibitzMockServiceEvents> {
         const room = this.pickWeightedRoom();
         let changed = false;
 
-        if (Math.random() < 0.28) {
+        if (Math.random() < 0.4) {
             this.refreshActiveChatters(room);
         }
 
@@ -1005,13 +1005,13 @@ export class KibitzMockService extends EventEmitter<KibitzMockServiceEvents> {
             (proposal) => proposal.status === "active" && proposal.vote_state,
         );
 
-        if (activeProposal && Math.random() < (room.room.id === "tournament-pick" ? 0.68 : 0.3)) {
+        if (activeProposal && Math.random() < (room.room.id === "tournament-pick" ? 0.8 : 0.45)) {
             changed = this.simulateProposalVote(room) || changed;
         } else {
             changed = this.simulateChat(room) || changed;
         }
 
-        if (Math.random() < 0.38) {
+        if (Math.random() < 0.75) {
             const secondRoom = this.pickWeightedRoom();
             changed = this.simulateChat(secondRoom) || changed;
         }

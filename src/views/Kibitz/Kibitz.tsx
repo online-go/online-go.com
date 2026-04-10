@@ -46,7 +46,7 @@ export function Kibitz(): React.ReactElement {
     const { roomId } = useParams<"roomId">();
     const controllerRef = React.useRef<KibitzController | null>(null);
 
-    if (!controllerRef.current) {
+    if (!controllerRef.current || controllerRef.current.destroyed) {
         controllerRef.current = new KibitzController();
     }
 
@@ -92,6 +92,29 @@ export function Kibitz(): React.ReactElement {
             controller.destroy();
         };
     }, [controller]);
+
+    React.useEffect(() => {
+        if (mode !== "demo") {
+            return;
+        }
+
+        const syncDemoState = () => {
+            setRooms(controller.rooms);
+            setActiveRoom(controller.active_room);
+            setStream(controller.stream);
+            setProposals(controller.proposals);
+            setVariations(controller.variations);
+            setSecondaryPane(controller.secondary_pane);
+            setDebug(controller.debug);
+        };
+
+        syncDemoState();
+        const timer = window.setInterval(syncDemoState, 1000);
+
+        return () => {
+            window.clearInterval(timer);
+        };
+    }, [controller, mode]);
 
     React.useEffect(() => {
         const nextRoomId = roomId ?? controller.default_room_id;

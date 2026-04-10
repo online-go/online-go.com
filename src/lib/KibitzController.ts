@@ -345,6 +345,8 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     private _variations: KibitzVariationSummary[] = [];
     private _secondary_pane: KibitzSecondaryPaneState = { collapsed: true, size: "small" };
     private _mock_service: KibitzMockService | null = null;
+    private _mock_sync_timer: ReturnType<typeof setInterval> | null = null;
+    private _destroyed = false;
     private _debug: KibitzDebugState = {
         mode: "live",
         socket_connected: socket.connected,
@@ -384,6 +386,10 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         return this._debug;
     }
 
+    public get destroyed(): boolean {
+        return this._destroyed;
+    }
+
     public get default_room_id(): string | null {
         return this._rooms[0]?.id ?? null;
     }
@@ -399,6 +405,9 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             this._mock_service = new KibitzMockService();
             this._mock_service.on("changed", this.onMockServiceChanged);
             this.syncFromMockService();
+            this._mock_sync_timer = setInterval(() => {
+                this.syncFromMockService();
+            }, 1000);
         } else {
             socket.on("connect", this.onSocketConnect);
 
@@ -409,9 +418,18 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     }
 
     public destroy(): void {
+        if (this._destroyed) {
+            return;
+        }
+        this._destroyed = true;
         socket.off("connect", this.onSocketConnect);
         this._mock_service?.off("changed", this.onMockServiceChanged);
         this._mock_service?.destroy();
+        this._mock_service = null;
+        if (this._mock_sync_timer) {
+            clearInterval(this._mock_sync_timer);
+            this._mock_sync_timer = null;
+        }
     }
 
     private detectMode(): KibitzMode {
