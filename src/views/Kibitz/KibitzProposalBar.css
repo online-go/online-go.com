@@ -9,18 +9,18 @@
     min-height: 0;
 
     .proposal-announcement {
-        align-items: center;
+        align-items: flex-start;
         background: var(--primary);
         color: var(--colored-background-fg);
         display: flex;
-        gap: 0.75rem;
+        gap: 0.6rem;
         justify-content: space-between;
         min-width: 0;
-        padding: 0.4rem 0.75rem;
+        padding: 0.45rem 0.6rem;
     }
 
     .proposal-announcement-main {
-        align-items: center;
+        align-items: flex-start;
         display: flex;
         gap: 0.55rem;
         min-width: 0;
@@ -30,11 +30,11 @@
     .proposal-voter-avatar {
         align-items: center;
         background: rgba(0, 0, 0, 0.18);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        border: 0;
         color: var(--colored-background-fg);
         display: inline-flex;
         flex: 0 0 auto;
-        font-size: 0.66rem;
+        font-size: 0.64rem;
         font-weight: bold;
         height: 1.45rem;
         justify-content: center;
@@ -47,77 +47,74 @@
     .proposal-announcement-copy {
         display: flex;
         flex-direction: column;
-        gap: 0.1rem;
-        min-width: 0;
-    }
-
-    .proposal-summary-line {
-        align-items: baseline;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.35rem;
-        line-height: 1.1;
+        gap: 0.08rem;
         min-width: 0;
     }
 
     .proposal-summary-prefix {
-        color: rgba(255, 255, 255, 0.86);
-        font-size: 0.84rem;
+        color: rgba(255, 255, 255, 0.88);
+        font-size: 0.78rem;
+        line-height: 1.1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .proposal-title {
         color: var(--colored-background-fg);
-        font-size: 0.98rem;
+        font-size: 1.02rem;
         font-weight: bold;
-        line-height: 1.1;
-        overflow-wrap: anywhere;
+        line-height: 1.08;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .proposal-game-meta,
     .proposal-live-status {
-        color: rgba(255, 255, 255, 0.82);
+        color: rgba(255, 255, 255, 0.84);
         font-size: 0.76rem;
         line-height: 1.1;
-        overflow-wrap: anywhere;
+    }
+
+    .proposal-game-meta {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .proposal-live-status {
         flex: 0 0 auto;
         font-weight: bold;
+        padding-top: 0.05rem;
+        text-align: right;
         white-space: nowrap;
     }
 
     .proposal-vote-rail {
+        align-items: stretch;
+        background: var(--card-background-color);
         display: grid;
-        gap: 0;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.25rem;
+        grid-template-columns: minmax(0, 1fr) 4.25rem minmax(0, 1fr);
         min-width: 0;
+        padding: 0.5rem 0.6rem 0.6rem;
     }
 
     .proposal-choice {
-        align-items: center;
         background: transparent;
-        display: grid;
-        gap: 0.6rem;
-        grid-template-columns: minmax(0, 1fr) auto;
+        display: flex;
         min-width: 0;
-        padding: 0.5rem 0.75rem;
-    }
-
-    .proposal-choice + .proposal-choice {
-        border-left: 1px solid transparent;
-        border-left-color: var(--shade3);
-    }
-
-    .proposal-choice.leading {
-        background: rgba(38, 108, 215, 0.06);
-        box-shadow: inset 0 2px 0 0 var(--primary);
     }
 
     .proposal-choice-main {
         display: flex;
+        flex: 1 1 auto;
         flex-direction: column;
-        gap: 0.28rem;
+        gap: 0.35rem;
         min-width: 0;
     }
 
@@ -130,12 +127,18 @@
     }
 
     .proposal-choice-label {
-        color: var(--fg);
-        font-size: 0.76rem;
+        color: var(--text-color-faded);
+        font-size: 0.74rem;
         font-weight: bold;
         letter-spacing: 0.03em;
-        line-height: 1.1;
+        line-height: 1.08;
+        min-width: 0;
         text-transform: uppercase;
+    }
+
+    .proposal-choice-label.leading,
+    .proposal-choice-label.tied {
+        color: var(--fg);
     }
 
     .proposal-vote-count {
@@ -143,18 +146,24 @@
         background: var(--shade1);
         color: var(--text-color-faded);
         display: inline-flex;
-        font-size: 0.74rem;
+        flex: 0 0 auto;
+        font-size: 0.76rem;
         font-weight: bold;
-        height: 1.2rem;
+        height: 1.35rem;
         justify-content: center;
         line-height: 1;
-        min-width: 1.45rem;
-        padding: 0 0.32rem;
+        min-width: 1.6rem;
+        padding: 0 0.34rem;
     }
 
-    .proposal-choice.leading .proposal-vote-count {
-        background: rgba(38, 108, 215, 0.16);
-        color: var(--primary);
+    .proposal-vote-count.leading {
+        background: var(--primary);
+        color: var(--colored-background-fg);
+    }
+
+    .proposal-vote-count.tied {
+        background: color-mix(in srgb, var(--primary) 18%, var(--shade1));
+        color: var(--fg);
     }
 
     .proposal-vote-avatars {
@@ -162,29 +171,29 @@
         display: flex;
         flex-wrap: wrap;
         gap: 0.25rem;
-        min-height: 1.4rem;
+        min-height: 1.3rem;
         min-width: 0;
     }
 
     .proposal-voter-avatar {
         background: var(--shade2);
-        border-color: transparent;
         color: var(--fg);
-        font-size: 0.6rem;
-        height: 1.3rem;
-        min-width: 1.3rem;
+        font-size: 0.58rem;
+        height: 1.25rem;
+        min-width: 1.25rem;
     }
 
     .proposal-voter-avatar-overflow {
         background: var(--shade1);
         color: var(--text-color-faded);
-        min-width: 1.5rem;
+        min-width: 1.45rem;
     }
 
     .proposal-vote-empty {
         color: var(--text-color-faded);
-        font-size: 0.74rem;
+        font-size: 0.72rem;
         line-height: 1.1;
+        min-height: 1.25rem;
     }
 
     .proposal-action {
@@ -196,9 +205,12 @@
         font-size: 0.82rem;
         font-weight: bold;
         line-height: 1;
-        min-width: 5.75rem;
-        padding: 0.45rem 0.7rem;
+        margin-top: auto;
+        min-height: 2.1rem;
+        min-width: 0;
+        padding: 0.5rem 0.7rem;
         white-space: nowrap;
+        width: 100%;
     }
 
     .proposal-action.primary {
@@ -210,17 +222,67 @@
         background: var(--shade2);
         color: var(--fg);
     }
+
+    .proposal-timer-spine {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        gap: 0.22rem;
+        justify-content: center;
+        min-width: 0;
+        padding: 0.05rem 0;
+    }
+
+    .proposal-timer-value {
+        color: var(--fg);
+        font-size: 0.96rem;
+        font-weight: bold;
+        line-height: 1;
+        white-space: nowrap;
+    }
+
+    .proposal-timer-label {
+        color: var(--text-color-faded);
+        font-size: 0.66rem;
+        font-weight: bold;
+        letter-spacing: 0.04em;
+        line-height: 1;
+        text-transform: uppercase;
+    }
+
+    .proposal-timer-track {
+        align-items: flex-end;
+        background: var(--shade1);
+        display: flex;
+        height: 2.7rem;
+        justify-content: center;
+        overflow: hidden;
+        width: 0.22rem;
+    }
+
+    .proposal-timer-fill {
+        background: var(--primary);
+        flex: 1 1 auto;
+        transform-origin: bottom center;
+        transition: transform 180ms linear;
+        width: 100%;
+    }
 }
 
 @media (max-width: 1200px) {
     .KibitzProposalBar {
         .proposal-announcement {
-            align-items: flex-start;
             flex-direction: column;
         }
 
         .proposal-live-status {
+            padding-top: 0;
+            text-align: left;
             white-space: normal;
+        }
+
+        .proposal-vote-rail {
+            grid-template-columns: minmax(0, 1fr) 3.75rem minmax(0, 1fr);
         }
     }
 }
@@ -228,22 +290,33 @@
 @media (max-width: 900px) {
     .KibitzProposalBar {
         .proposal-vote-rail {
+            gap: 0.5rem;
             grid-template-columns: minmax(0, 1fr);
+            padding-top: 0.6rem;
         }
 
-        .proposal-choice + .proposal-choice {
-            border-left: 0;
-            border-top: 1px solid transparent;
-            border-top-color: var(--shade3);
+        .proposal-timer-spine {
+            flex-direction: row;
+            gap: 0.45rem;
+            justify-content: flex-start;
+            order: -1;
+            padding: 0;
+        }
+
+        .proposal-timer-track {
+            height: 0.22rem;
+            width: 3rem;
+        }
+
+        .proposal-timer-fill {
+            height: 100%;
+            transform: none !important;
+            transform-origin: left center;
+            width: 100%;
         }
 
         .proposal-choice {
-            grid-template-columns: minmax(0, 1fr);
-        }
-
-        .proposal-action {
-            min-width: 0;
-            width: 100%;
+            padding: 0;
         }
     }
 }

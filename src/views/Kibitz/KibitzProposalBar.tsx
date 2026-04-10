@@ -16,9 +16,12 @@
  */
 
 import * as React from "react";
+import * as data from "@/lib/data";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { KibitzProposal } from "@/models/kibitz";
 import "./KibitzProposalBar.css";
+
+// cspell:ignore cooldown
 
 interface KibitzProposalBarProps {
     proposal?: KibitzProposal;
@@ -72,6 +75,14 @@ function getInitials(name: string): string {
     return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
+function formatCountdown(milliseconds: number): string {
+    const totalSeconds = Math.max(0, Math.ceil(milliseconds / 1000));
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
 function VoteAvatarStack({
     users,
     emptyLabel,
@@ -83,7 +94,7 @@ function VoteAvatarStack({
         return <div className="proposal-vote-empty">{emptyLabel}</div>;
     }
 
-    const visibleUsers = users.slice(0, 4);
+    const visibleUsers = users.slice(0, 3);
     const overflow = users.length - visibleUsers.length;
 
     return (
@@ -130,6 +141,24 @@ export function KibitzProposalBar({
     proposal,
     onVote,
 }: KibitzProposalBarProps): React.ReactElement | null {
+    const endsAt = proposal?.vote_state?.ends_at ?? null;
+    const [now, setNow] = React.useState(() => Date.now());
+
+    React.useEffect(() => {
+        if (!proposal || !proposal.vote_state || !endsAt) {
+            return;
+        }
+
+        setNow(Date.now());
+        const interval = window.setInterval(() => {
+            setNow(Date.now());
+        }, 1000);
+
+        return () => {
+            window.clearInterval(interval);
+        };
+    }, [endsAt, proposal]);
+
     if (!proposal || !proposal.vote_state) {
         return null;
     }
@@ -137,8 +166,18 @@ export function KibitzProposalBar({
     const changeVotes = proposal.vote_state.change_votes ?? [];
     const keepVotes = proposal.vote_state.keep_votes ?? [];
     const totalVotes = changeVotes.length + keepVotes.length;
+    const currentUserId = data.get("config.user")?.id ?? data.get("user")?.id ?? 0;
+    const hasVotedChange = changeVotes.some((entry) => entry.id === currentUserId);
+    const hasVotedKeep = keepVotes.some((entry) => entry.id === currentUserId);
     const changeLeading = changeVotes.length > keepVotes.length;
     const keepLeading = keepVotes.length > changeVotes.length;
+    const tied = !changeLeading && !keepLeading;
+    const remainingMs = endsAt ? Math.max(0, endsAt - now) : 0;
+    const voteWindowMs = Math.max(1, (proposal.cooldown_seconds ?? 0) * 1000);
+    const progressRatio = endsAt ? Math.max(0, Math.min(1, remainingMs / voteWindowMs)) : 0;
+    const countdownText = endsAt
+        ? formatCountdown(remainingMs)
+        : pgettext("Fallback timer text in kibitz proposal bar", "--:--");
 
     return (
         <div className="KibitzProposalBar">
@@ -152,23 +191,21 @@ export function KibitzProposalBar({
                         {getInitials(proposal.proposer.username)}
                     </span>
                     <div className="proposal-announcement-copy">
-                        <div className="proposal-summary-line">
-                            <span className="proposal-summary-prefix">
-                                {interpolate(
-                                    pgettext(
-                                        "Compact proposal summary prefix shown above the kibitz board area",
-                                        "{{username}} proposes to watch",
-                                    ),
-                                    { username: proposal.proposer.username },
-                                )}
-                            </span>
-                            <span className="proposal-title">{proposal.proposed_game.title}</span>
+                        <div className="proposal-summary-prefix">
+                            {interpolate(
+                                pgettext(
+                                    "Compact proposal summary prefix shown above the kibitz board area",
+                                    "{{username}} proposes to watch",
+                                ),
+                                { username: proposal.proposer.username },
+                            )}
                         </div>
+                        <div className="proposal-title">{proposal.proposed_game.title}</div>
                         <div className="proposal-game-meta">
                             {interpolate(
                                 pgettext(
                                     "Proposed game metadata shown in the kibitz proposal bar",
-                                    "{{black}} vs {{white}} | {{size}} | Move {{move_number}}",
+                                    "{{black}} vs {{white}} · {{size}} · Move {{move_number}}",
                                 ),
                                 {
                                     black: proposal.proposed_game.black.username,
@@ -184,7 +221,7 @@ export function KibitzProposalBar({
                     {interpolate(
                         pgettext(
                             "Live vote status shown in the kibitz proposal bar",
-                            "Live vote | {{count}} total votes",
+                            "Live vote · {{count}} total votes",
                         ),
                         { count: totalVotes },
                     )}
@@ -192,16 +229,28 @@ export function KibitzProposalBar({
             </div>
 
             <div className="proposal-vote-rail">
-                <div className={"proposal-choice change" + (changeLeading ? " leading" : "")}>
+                <div className="proposal-choice change">
                     <div className="proposal-choice-main">
                         <div className="proposal-choice-label-row">
-                            <span className="proposal-choice-label">
+                            <span
+                                className={
+                                    "proposal-choice-label" +
+                                    (changeLeading ? " leading" : tied ? " tied" : "")
+                                }
+                            >
                                 {pgettext(
                                     "Label for the change-board vote lane in kibitz",
                                     "Change board",
                                 )}
                             </span>
-                            <span className="proposal-vote-count">{changeVotes.length}</span>
+                            <span
+                                className={
+                                    "proposal-vote-count" +
+                                    (changeLeading ? " leading" : tied ? " tied" : "")
+                                }
+                            >
+                                {changeVotes.length}
+                            </span>
                         </div>
                         <VoteAvatarStack
                             users={changeVotes as Array<VoteUserLike | string>}
@@ -210,26 +259,53 @@ export function KibitzProposalBar({
                                 "No votes yet",
                             )}
                         />
+                        <button
+                            type="button"
+                            className={
+                                "proposal-action" + (hasVotedChange ? " primary" : " secondary")
+                            }
+                            onClick={() => onVote(proposal.id, "change")}
+                        >
+                            {pgettext("Vote button in kibitz proposal bar", "Vote")}
+                        </button>
                     </div>
-                    <button
-                        type="button"
-                        className="proposal-action primary"
-                        onClick={() => onVote(proposal.id, "change")}
-                    >
-                        {pgettext("Vote button in kibitz proposal bar", "Vote")}
-                    </button>
                 </div>
 
-                <div className={"proposal-choice keep" + (keepLeading ? " leading" : "")}>
+                <div className="proposal-timer-spine" aria-hidden="true">
+                    <div className="proposal-timer-value">{countdownText}</div>
+                    <div className="proposal-timer-label">
+                        {pgettext("Compact remaining-time label in kibitz proposal bar", "left")}
+                    </div>
+                    <div className="proposal-timer-track">
+                        <div
+                            className="proposal-timer-fill"
+                            style={{ transform: `scaleY(${progressRatio})` }}
+                        />
+                    </div>
+                </div>
+
+                <div className="proposal-choice keep">
                     <div className="proposal-choice-main">
                         <div className="proposal-choice-label-row">
-                            <span className="proposal-choice-label">
+                            <span
+                                className={
+                                    "proposal-choice-label" +
+                                    (keepLeading ? " leading" : tied ? " tied" : "")
+                                }
+                            >
                                 {pgettext(
                                     "Label for the keep-current vote lane in kibitz",
                                     "Keep current",
                                 )}
                             </span>
-                            <span className="proposal-vote-count">{keepVotes.length}</span>
+                            <span
+                                className={
+                                    "proposal-vote-count" +
+                                    (keepLeading ? " leading" : tied ? " tied" : "")
+                                }
+                            >
+                                {keepVotes.length}
+                            </span>
                         </div>
                         <VoteAvatarStack
                             users={keepVotes as Array<VoteUserLike | string>}
@@ -238,14 +314,16 @@ export function KibitzProposalBar({
                                 "No votes yet",
                             )}
                         />
+                        <button
+                            type="button"
+                            className={
+                                "proposal-action" + (hasVotedKeep ? " primary" : " secondary")
+                            }
+                            onClick={() => onVote(proposal.id, "keep")}
+                        >
+                            {pgettext("Vote button in kibitz proposal bar", "Vote")}
+                        </button>
                     </div>
-                    <button
-                        type="button"
-                        className="proposal-action secondary"
-                        onClick={() => onVote(proposal.id, "keep")}
-                    >
-                        {pgettext("Vote button in kibitz proposal bar", "Vote")}
-                    </button>
                 </div>
             </div>
         </div>
