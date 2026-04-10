@@ -30,6 +30,7 @@ import type {
 import { KibitzBoard } from "./KibitzBoard";
 import { KibitzBoardControls } from "./KibitzBoardControls";
 import { KibitzDividerHandle } from "./KibitzDividerHandle";
+import { GobanAnalyzeButtonBar } from "@/components/GobanAnalyzeButtonBar/GobanAnalyzeButtonBar";
 import "./KibitzRoomStage.css";
 
 interface KibitzRoomStageProps {
@@ -331,6 +332,9 @@ export function KibitzRoomStage({
                                     />
                                 </div>
                                 {secondaryPaneSize === "equal" ? (
+                                    <div className="main-board-analyze-spacer" aria-hidden="true" />
+                                ) : null}
+                                {secondaryPaneSize === "equal" ? (
                                     <div className="main-board-preview-spacer" aria-hidden="true" />
                                 ) : null}
                                 {secondaryPaneSize === "equal" ? (
@@ -475,6 +479,15 @@ export function KibitzRoomStage({
                                         </button>
                                     </div>
                                 </div>
+                                {secondaryPaneSize === "equal" && secondaryBoardController ? (
+                                    <div className="secondary-board-analyze-row">
+                                        <GobanAnalyzeButtonBar
+                                            controller={secondaryBoardController}
+                                            showBackToGame={false}
+                                            showConditionalPlannerButton={false}
+                                        />
+                                    </div>
+                                ) : null}
                                 {previewCandidates.length > 0 ? (
                                     <div className="secondary-room-preview-actions">
                                         {previewCandidates.map((candidate) => (
@@ -562,6 +575,15 @@ export function KibitzRoomStage({
                                         </button>
                                     </div>
                                 </div>
+                                {secondaryPaneSize === "equal" && secondaryBoardController ? (
+                                    <div className="secondary-board-analyze-row">
+                                        <GobanAnalyzeButtonBar
+                                            controller={secondaryBoardController}
+                                            showBackToGame={false}
+                                            showConditionalPlannerButton={false}
+                                        />
+                                    </div>
+                                ) : null}
                                 {previewCandidates.length > 0 ? (
                                     <div className="secondary-room-preview-actions">
                                         {previewCandidates.map((candidate) => (

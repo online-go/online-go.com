@@ -79,6 +79,7 @@
             --equal-board-max-width: min(32rem, 48vh);
             --equal-meta-height: var(--kibitz-header-block-height);
             --equal-transport-height: 2.35rem;
+            --equal-analyze-height: 6rem;
             --equal-preview-actions-height: 2.2rem;
             --equal-variation-height: 6.5rem;
             grid-template-columns:
@@ -102,6 +103,7 @@
                     var(--equal-meta-height)
                     auto
                     auto
+                    var(--equal-analyze-height)
                     var(--equal-preview-actions-height)
                     var(--equal-variation-height)
                     minmax(0, 1fr);
@@ -135,6 +137,11 @@
 
             .main-board .main-board-preview-spacer {
                 min-height: var(--equal-preview-actions-height);
+                visibility: hidden;
+            }
+
+            .main-board .main-board-analyze-spacer {
+                min-height: var(--equal-analyze-height);
                 visibility: hidden;
             }
 
@@ -181,6 +188,19 @@
                 min-height: var(--equal-preview-actions-height);
                 padding-top: 0;
                 padding-bottom: 0;
+            }
+
+            .secondary-board-analyze-row {
+                align-items: center;
+                display: flex;
+                justify-content: center;
+                min-height: var(--equal-analyze-height);
+                overflow: hidden;
+                padding: 0 0.75rem;
+
+                .game-analyze-button-bar {
+                    justify-content: flex-start;
+                }
             }
 
             .board-content-spacer {
@@ -441,6 +461,10 @@
             visibility: hidden;
         }
 
+        .main-board-analyze-spacer {
+            display: none;
+        }
+
         .transport-controls {
             grid-column: 2;
             justify-self: center;
@@ -459,6 +483,10 @@
             justify-content: flex-end;
             min-width: 0;
             padding: 0 0.125rem;
+        }
+
+        .secondary-board-analyze-row {
+            display: none;
         }
 
         .board-actions.board-actions-inline {
