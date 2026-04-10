@@ -331,6 +331,9 @@ export function KibitzRoomStage({
                                     />
                                 </div>
                                 {secondaryPaneSize === "equal" ? (
+                                    <div className="main-board-preview-spacer" aria-hidden="true" />
+                                ) : null}
+                                {secondaryPaneSize === "equal" ? (
                                     <div
                                         className="main-board-variation-spacer"
                                         aria-hidden="true"
