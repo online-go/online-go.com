@@ -38,13 +38,6 @@
         white-space: nowrap;
     }
 
-    .presence-avatar-stack {
-        align-items: center;
-        display: flex;
-        flex: 0 0 auto;
-        gap: 0.25rem;
-    }
-
     .presence-avatar {
         align-items: center;
         background: var(--shade2);
@@ -64,13 +57,6 @@
     .presence-avatar.inline {
         height: 1.2rem;
         min-width: 1.2rem;
-    }
-
-    .presence-avatar-overflow {
-        background: var(--shade1);
-        color: var(--text-color-faded);
-        min-width: 1.35rem;
-        padding: 0 0.16rem;
     }
 
     .presence-avatar-image {

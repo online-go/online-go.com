@@ -105,9 +105,6 @@ export function KibitzPresence({ mode, room, users }: KibitzPresenceProps): Reac
         ? Object.values(proxy.channel.user_list).sort(users_by_rank)
         : [];
     const visibleUsers = mode === "demo" ? users : channelUsers;
-    const stackedUsers = visibleUsers.slice(0, 5);
-    const overflowCount = Math.max(0, visibleUsers.length - stackedUsers.length);
-
     return (
         <div className="KibitzPresence">
             <div className="KibitzPresence-body">
@@ -128,18 +125,6 @@ export function KibitzPresence({ mode, room, users }: KibitzPresenceProps): Reac
                         )}
                     </div>
                 </div>
-                {stackedUsers.length > 0 ? (
-                    <div className="presence-avatar-stack" aria-hidden="true">
-                        {stackedUsers.map((user) => (
-                            <PresenceAvatar key={user.id} user={user} className="presence-avatar" />
-                        ))}
-                        {overflowCount > 0 ? (
-                            <span className="presence-avatar presence-avatar-overflow">
-                                +{overflowCount}
-                            </span>
-                        ) : null}
-                    </div>
-                ) : null}
                 {visibleUsers.length > 0 ? (
                     <div className="presence-users">
                         {visibleUsers.map((user) => (
