@@ -199,7 +199,30 @@
                 padding: 0 0.75rem;
 
                 .game-analyze-button-bar {
-                    justify-content: flex-start;
+                    gap: 0;
+                    justify-content: center;
+
+                    .btn-group {
+                        display: inline-flex;
+                        gap: 0;
+                    }
+
+                    button {
+                        font-size: 0.8rem;
+                        min-height: 1.35rem;
+                        min-width: 1.35rem;
+                        padding: 0 0.28rem;
+                    }
+
+                    .pass-button {
+                        min-width: auto;
+                        padding: 0 0.45rem;
+                    }
+
+                    input {
+                        height: 1.35rem;
+                        width: 1.35rem;
+                    }
                 }
             }
 
