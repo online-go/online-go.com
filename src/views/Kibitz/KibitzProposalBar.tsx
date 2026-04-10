@@ -31,9 +31,11 @@ interface KibitzProposalBarProps {
 type VoteUserLike = {
     id?: number | string;
     username?: string;
+    icon?: string;
     user?: {
         id?: number | string;
         username?: string;
+        icon?: string;
     };
 };
 
@@ -47,6 +49,14 @@ function getVoteUsername(user: VoteUserLike | string | null | undefined): string
     }
 
     return user.username ?? user.user?.username ?? "";
+}
+
+function getVoteIcon(user: VoteUserLike | string | null | undefined): string | undefined {
+    if (!user || typeof user === "string") {
+        return undefined;
+    }
+
+    return user.icon ?? user.user?.icon;
 }
 
 function getVoteKey(user: VoteUserLike | string | null | undefined, index: number): string {
@@ -83,6 +93,35 @@ function formatCountdown(milliseconds: number): string {
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
+function ProposalAvatar({
+    user,
+    className,
+}: {
+    user: VoteUserLike | null | undefined;
+    className: string;
+}): React.ReactElement {
+    const username = getVoteUsername(user);
+    const icon = getVoteIcon(user);
+
+    return (
+        <span
+            className={className}
+            title={
+                username || pgettext("Fallback tooltip label for a vote avatar in kibitz", "Voter")
+            }
+            aria-label={
+                username || pgettext("Fallback aria label for a vote avatar in kibitz", "Voter")
+            }
+        >
+            {icon ? (
+                <img className="proposal-avatar-image" src={icon} alt="" aria-hidden="true" />
+            ) : (
+                getInitials(username)
+            )}
+        </span>
+    );
+}
+
 function VoteAvatarStack({
     users,
     emptyLabel,
@@ -99,26 +138,13 @@ function VoteAvatarStack({
 
     return (
         <div className="proposal-vote-avatars">
-            {visibleUsers.map((user, index) => {
-                const username = getVoteUsername(user);
-
-                return (
-                    <span
-                        key={getVoteKey(user, index)}
-                        className="proposal-voter-avatar"
-                        title={
-                            username ||
-                            pgettext("Fallback tooltip label for a vote avatar in kibitz", "Voter")
-                        }
-                        aria-label={
-                            username ||
-                            pgettext("Fallback aria label for a vote avatar in kibitz", "Voter")
-                        }
-                    >
-                        {getInitials(username)}
-                    </span>
-                );
-            })}
+            {visibleUsers.map((user, index) => (
+                <ProposalAvatar
+                    key={getVoteKey(user, index)}
+                    user={typeof user === "string" ? { username: user } : user}
+                    className="proposal-voter-avatar"
+                />
+            ))}
             {overflow > 0 ? (
                 <span
                     className="proposal-voter-avatar proposal-voter-avatar-overflow"
@@ -183,13 +209,7 @@ export function KibitzProposalBar({
         <div className="KibitzProposalBar">
             <div className="proposal-announcement">
                 <div className="proposal-announcement-main">
-                    <span
-                        className="proposal-proposer-avatar"
-                        title={proposal.proposer.username}
-                        aria-hidden="true"
-                    >
-                        {getInitials(proposal.proposer.username)}
-                    </span>
+                    <ProposalAvatar user={proposal.proposer} className="proposal-proposer-avatar" />
                     <div className="proposal-announcement-copy">
                         <div className="proposal-summary-prefix">
                             {interpolate(
@@ -262,11 +282,14 @@ export function KibitzProposalBar({
                         <button
                             type="button"
                             className={
-                                "proposal-action" + (hasVotedChange ? " primary" : " secondary")
+                                "proposal-action " +
+                                (hasVotedChange || changeLeading ? "primary" : "secondary")
                             }
                             onClick={() => onVote(proposal.id, "change")}
                         >
-                            {pgettext("Vote button in kibitz proposal bar", "Vote")}
+                            {hasVotedChange
+                                ? pgettext("Vote button in kibitz proposal bar", "Voted")
+                                : pgettext("Vote button in kibitz proposal bar", "Vote")}
                         </button>
                     </div>
                 </div>
@@ -317,11 +340,14 @@ export function KibitzProposalBar({
                         <button
                             type="button"
                             className={
-                                "proposal-action" + (hasVotedKeep ? " primary" : " secondary")
+                                "proposal-action " +
+                                (hasVotedKeep || keepLeading ? "primary" : "secondary")
                             }
                             onClick={() => onVote(proposal.id, "keep")}
                         >
-                            {pgettext("Vote button in kibitz proposal bar", "Vote")}
+                            {hasVotedKeep
+                                ? pgettext("Vote button in kibitz proposal bar", "Voted")
+                                : pgettext("Vote button in kibitz proposal bar", "Vote")}
                         </button>
                     </div>
                 </div>

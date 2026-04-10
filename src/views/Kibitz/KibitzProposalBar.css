@@ -40,8 +40,16 @@
         justify-content: center;
         line-height: 1;
         min-width: 1.45rem;
+        overflow: hidden;
         text-transform: uppercase;
         vertical-align: middle;
+    }
+
+    .proposal-avatar-image {
+        display: block;
+        height: 100%;
+        object-fit: cover;
+        width: 100%;
     }
 
     .proposal-announcement-copy {

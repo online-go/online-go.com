@@ -1,13 +1,49 @@
 .KibitzRoomStage {
-    --board-divider-width: 0;
-
     background: var(--bg);
     display: flex;
     flex: 1;
     flex-direction: column;
     gap: 0.25rem;
     min-height: 0;
-    padding: 0 0.375rem 0;
+    padding: 0 0.375rem 0.375rem;
+
+    .KibitzRoomStage-header {
+        border-bottom: 1px solid transparent;
+        border-bottom-color: var(--shade3);
+        display: flex;
+        gap: 0.75rem;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 0.375rem 0 0.5rem;
+
+        .stage-header-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 0.1rem;
+            min-width: 0;
+        }
+
+        .stage-header-actions {
+            align-items: center;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            justify-content: flex-end;
+            margin-left: auto;
+        }
+
+        .room-title {
+            font-size: 0.98rem;
+            font-weight: bold;
+            line-height: 1.15;
+        }
+
+        .room-subtitle {
+            color: var(--text-color-faded);
+            font-size: 0.82rem;
+            line-height: 1.15;
+        }
+    }
 
     .KibitzRoomStage-boards {
         display: grid;
@@ -16,14 +52,11 @@
         min-height: 0;
 
         &.secondary-pane-hidden {
-            grid-template-columns: minmax(0, 1fr) var(--board-divider-width) 0;
+            grid-template-columns: minmax(0, 1fr) 1.3rem 0;
         }
 
         &.secondary-pane-small {
-            grid-template-columns:
-                minmax(0, 1fr)
-                var(--board-divider-width)
-                minmax(15.25rem, 17rem);
+            grid-template-columns: minmax(0, 1fr) 1.3rem minmax(15.25rem, 17rem);
         }
 
         &.secondary-pane-small {
@@ -75,13 +108,14 @@
         }
 
         &.secondary-pane-equal {
+            --equal-board-max-width: min(32rem, 48vh);
+            --equal-board-width: min(100%, var(--equal-board-max-width));
+            --equal-board-height: var(--equal-board-width);
+            --equal-main-board-height: var(--equal-board-width);
             --equal-meta-height: 4rem;
             --equal-transport-height: 2.35rem;
             --equal-variation-height: 6.5rem;
-            grid-template-columns:
-                minmax(0, 1fr)
-                var(--board-divider-width)
-                minmax(0, 1fr);
+            grid-template-columns: minmax(0, 1fr) 1.3rem minmax(0, 1fr);
 
             .board-panel {
                 border-left: 0;
@@ -93,16 +127,17 @@
             }
 
             .board-panel .board-content {
-                display: grid;
                 align-content: stretch;
                 grid-template-rows:
-                    auto
-                    minmax(0, 1fr)
-                    auto;
-                grid-auto-rows: auto;
+                    var(--equal-meta-height)
+                    var(--equal-board-height)
+                    var(--equal-transport-height)
+                    var(--equal-variation-height)
+                    minmax(0, 1fr);
             }
 
             .board-meta {
+                height: var(--equal-meta-height);
                 justify-content: flex-start;
                 overflow: hidden;
             }
@@ -114,6 +149,15 @@
 
             .game-details {
                 min-height: 2rem;
+            }
+
+            .secondary-board .KibitzBoard {
+                width: var(--equal-board-width);
+                max-width: none;
+            }
+
+            .secondary-board .KibitzBoardControls {
+                width: var(--equal-board-width);
             }
 
             .secondary-board .kibitz-move-tree-container {
@@ -143,11 +187,39 @@
                 }
             }
 
+            .KibitzBoard {
+                flex: 0 0 auto;
+                height: var(--equal-board-height);
+                max-width: var(--equal-board-width);
+                overflow: hidden;
+                width: var(--equal-board-width);
+            }
+
+            .KibitzBoard.main-board-surface {
+                height: var(--equal-main-board-height);
+            }
+
+            .KibitzBoard .goban-container {
+                height: var(--equal-board-height);
+                width: 100%;
+            }
+
+            .KibitzBoard.main-board-surface .goban-container {
+                height: var(--equal-main-board-height);
+            }
+
+            .KibitzBoard.main-board-surface .goban-container,
+            .KibitzBoard.secondary-board-surface .goban-container {
+                flex: 0 0 auto !important;
+                flex-basis: auto !important;
+                min-height: 0 !important;
+            }
+
             .KibitzBoardControls {
                 align-self: center;
                 box-sizing: border-box;
-                max-width: 100%;
-                width: auto;
+                max-width: var(--equal-board-width);
+                width: 100%;
             }
 
             .main-board .KibitzBoardControls.minimal-row {
@@ -160,15 +232,6 @@
             .secondary-board .secondary-board-transport-row {
                 background: transparent;
                 padding-top: 0;
-            }
-
-            .board-fit-slot {
-                align-self: stretch;
-                height: 100%;
-            }
-
-            .board-content-spacer {
-                display: none;
             }
         }
     }
@@ -215,10 +278,10 @@
         }
 
         .board-content {
-            display: flex;
+            display: grid;
             flex: 1;
-            flex-direction: column;
             gap: 0.125rem;
+            grid-template-rows: auto minmax(0, 1fr) auto;
             min-height: 0;
             min-width: 0;
             width: 100%;
@@ -229,30 +292,7 @@
             flex-direction: column;
             gap: 0.15rem;
             text-align: left;
-            padding: 0.5rem 0.125rem 0.625rem 0.75rem;
-
-            .board-title-row {
-                align-items: baseline;
-                display: flex;
-                gap: 0.35rem;
-                min-width: 0;
-            }
-
-            .board-title {
-                color: var(--fg);
-                flex: 0 0 auto;
-                font-size: 0.98rem;
-                font-weight: bold;
-                line-height: 1.15;
-            }
-
-            .board-subtitle {
-                color: var(--text-color-faded);
-                min-width: 0;
-                font-size: 0.82rem;
-                line-height: 1.15;
-                overflow-wrap: anywhere;
-            }
+            padding: 0 0.125rem;
 
             .board-meta-top {
                 align-items: flex-start;
@@ -278,6 +318,61 @@
                 line-height: 1.2;
             }
 
+            .players.player-pair,
+            .players.player-single {
+                align-items: center;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.35rem;
+            }
+
+            .player-badge {
+                align-items: center;
+                display: inline-flex;
+                gap: 0.35rem;
+                max-width: 100%;
+                min-width: 0;
+            }
+
+            .player-name {
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .player-vs {
+                color: var(--text-color-faded);
+                font-size: 0.76rem;
+                font-weight: bold;
+                letter-spacing: 0.03em;
+                line-height: 1;
+                text-transform: uppercase;
+            }
+
+            .stage-avatar {
+                align-items: center;
+                background: var(--shade2);
+                color: var(--fg);
+                display: inline-flex;
+                flex: 0 0 auto;
+                font-size: 0.56rem;
+                font-weight: bold;
+                height: 1.15rem;
+                justify-content: center;
+                line-height: 1;
+                min-width: 1.15rem;
+                overflow: hidden;
+                text-transform: uppercase;
+            }
+
+            .stage-avatar-image {
+                display: block;
+                height: 100%;
+                object-fit: cover;
+                width: 100%;
+            }
+
             .game-details {
                 color: var(--text-color-faded);
                 font-size: 0.8rem;
@@ -285,24 +380,15 @@
             }
         }
 
-        .board-fit-slot {
-            align-items: center;
-            display: grid;
-            justify-items: center;
-            min-height: 0;
-            min-width: 0;
-            overflow: hidden;
-            width: 100%;
-        }
-
-        .board-content-spacer {
-            flex: 1 1 auto;
-            min-height: 0;
-        }
-
         .KibitzBoard.main-board-surface {
             min-height: 0;
             padding-inline: 0.125rem;
+
+            .goban-container {
+                aspect-ratio: 1 / 1;
+                height: auto !important;
+                width: 100%;
+            }
         }
 
         .KibitzBoard.secondary-board-surface {
@@ -313,7 +399,8 @@
         .KibitzBoard {
             align-self: start;
             justify-self: center;
-            max-width: none;
+            max-width: 100%;
+            width: 100%;
         }
 
         .secondary-board .KibitzBoard {
@@ -342,24 +429,21 @@
 
         .secondary-board-transport-row {
             align-items: center;
-            box-sizing: border-box;
             display: grid;
             gap: 0.35rem;
             grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
             height: var(--equal-transport-height, auto);
             min-width: 0;
-            padding: 0.3125rem 0;
             width: 100%;
         }
 
         .main-board-transport-row {
             align-items: center;
-            box-sizing: border-box;
             display: flex;
             height: var(--equal-transport-height, auto);
             justify-content: center;
             min-width: 0;
-            padding: 0.3125rem 0;
+            padding: 0;
             width: 100%;
         }
 
@@ -378,15 +462,6 @@
         .secondary-board-transport-row .transport-controls .KibitzBoardControls.full {
             width: auto;
             max-width: none;
-        }
-
-        .secondary-room-preview-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.35rem;
-            justify-content: flex-end;
-            min-width: 0;
-            padding: 0 0.125rem;
         }
 
         .board-actions.board-actions-inline {
@@ -443,6 +518,9 @@
         }
 
         &.secondary-board {
+            border-left: 1px solid transparent;
+            border-left-color: var(--shade3);
+
             .panel-body {
                 padding-left: 0.375rem;
                 padding-right: 0.375rem;
@@ -464,6 +542,7 @@
 @media (max-width: 1850px), (max-height: 1000px) {
     .KibitzRoomStage {
         .KibitzRoomStage-boards.secondary-pane-equal {
+            --equal-board-max-width: min(28rem, 42vh);
             --equal-meta-height: 3.85rem;
             --equal-transport-height: 2.25rem;
             --equal-variation-height: 7.2rem;

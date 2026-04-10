@@ -18,7 +18,7 @@
 import * as React from "react";
 import { Player } from "@/components/Player";
 import { chat_manager, ChatChannelProxy, users_by_rank } from "@/lib/chat_manager";
-import { pgettext } from "@/lib/translate";
+import { interpolate, pgettext } from "@/lib/translate";
 import type { KibitzMode, KibitzRoomSummary, KibitzRoomUser } from "@/models/kibitz";
 import { User } from "goban";
 import "./KibitzPresence.css";
@@ -43,6 +43,37 @@ function getUserInitials(username: string | undefined): string {
     }
 
     return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+
+function getUserIcon(user: KibitzRoomUser | User | null | undefined): string | undefined {
+    if (!user || typeof user !== "object") {
+        return undefined;
+    }
+
+    const icon = "icon" in user ? user.icon : undefined;
+
+    return typeof icon === "string" && icon.length > 0 ? icon : undefined;
+}
+
+function PresenceAvatar({
+    user,
+    className,
+}: {
+    user: KibitzRoomUser | User;
+    className: string;
+}): React.ReactElement {
+    const username = user.username ?? "";
+    const icon = getUserIcon(user);
+
+    return (
+        <span className={className} title={username} aria-hidden="true">
+            {icon ? (
+                <img className="presence-avatar-image" src={icon} alt="" aria-hidden="true" />
+            ) : (
+                getUserInitials(username)
+            )}
+        </span>
+    );
 }
 
 export function KibitzPresence({ mode, room, users }: KibitzPresenceProps): React.ReactElement {
@@ -74,6 +105,8 @@ export function KibitzPresence({ mode, room, users }: KibitzPresenceProps): Reac
         ? Object.values(proxy.channel.user_list).sort(users_by_rank)
         : [];
     const visibleUsers = mode === "demo" ? users : channelUsers;
+    const stackedUsers = visibleUsers.slice(0, 5);
+    const overflowCount = Math.max(0, visibleUsers.length - stackedUsers.length);
 
     return (
         <div className="KibitzPresence">
@@ -85,18 +118,33 @@ export function KibitzPresence({ mode, room, users }: KibitzPresenceProps): Reac
                             "In the room",
                         )}
                     </div>
+                    <div className="presence-stat">
+                        {interpolate(
+                            pgettext(
+                                "Viewer count summary inside a kibitz room",
+                                "{{count}} watching",
+                            ),
+                            { count: room.viewer_count },
+                        )}
+                    </div>
                 </div>
+                {stackedUsers.length > 0 ? (
+                    <div className="presence-avatar-stack" aria-hidden="true">
+                        {stackedUsers.map((user) => (
+                            <PresenceAvatar key={user.id} user={user} className="presence-avatar" />
+                        ))}
+                        {overflowCount > 0 ? (
+                            <span className="presence-avatar presence-avatar-overflow">
+                                +{overflowCount}
+                            </span>
+                        ) : null}
+                    </div>
+                ) : null}
                 {visibleUsers.length > 0 ? (
                     <div className="presence-users">
                         {visibleUsers.map((user) => (
                             <div key={user.id} className="presence-user">
-                                <span
-                                    className="presence-avatar"
-                                    title={user.username}
-                                    aria-hidden="true"
-                                >
-                                    {getUserInitials(user.username)}
-                                </span>
+                                <PresenceAvatar user={user} className="presence-avatar inline" />
                                 <Player user={user} flag rank noextracontrols />
                             </div>
                         ))}

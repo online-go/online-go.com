@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import { Link } from "react-router-dom";
 import { Resizable } from "@/components/Resizable";
 import { GobanController } from "@/lib/GobanController";
 import { get } from "@/lib/requests";
@@ -45,69 +46,49 @@ interface KibitzRoomStageProps {
     onSetSecondaryPaneMode: (mode: "hidden" | "small" | "equal") => void;
 }
 
-function useSquareFitSize<T extends HTMLElement>() {
-    const [element, setElement] = React.useState<T | null>(null);
-    const [size, setSize] = React.useState(0);
-    const ref = React.useCallback((node: T | null) => {
-        setElement(node);
-    }, []);
+function getUserInitials(username: string | undefined): string {
+    const trimmedUsername = (username ?? "").trim();
 
-    React.useLayoutEffect(() => {
-        if (!element) {
-            setSize(0);
-            return;
-        }
+    if (!trimmedUsername) {
+        return "?";
+    }
 
-        let raf = 0;
+    const parts = trimmedUsername.split(/\s+/).filter(Boolean);
 
-        const measure = () => {
-            const parent = element.parentElement;
-            const parentStyle = parent ? window.getComputedStyle(parent) : null;
-            const rowGap = Number.parseFloat(parentStyle?.rowGap ?? parentStyle?.gap ?? "0") || 0;
-            const visibleChildren = parent
-                ? Array.from(parent.children).filter(
-                      (child): child is HTMLElement =>
-                          child instanceof HTMLElement && child.offsetParent !== null,
-                  )
-                : [];
-            const reservedHeight = visibleChildren.reduce((total, child) => {
-                if (child === element || child.classList.contains("board-content-spacer")) {
-                    return total;
-                }
+    if (parts.length === 1) {
+        return parts[0].slice(0, 2).toUpperCase();
+    }
 
-                return total + child.getBoundingClientRect().height;
-            }, 0);
-            const availableHeight = Math.max(
-                0,
-                (parent?.clientHeight ?? element.clientHeight) -
-                    reservedHeight -
-                    rowGap * Math.max(0, visibleChildren.length - 1),
-            );
-            const nextSize = Math.max(
-                0,
-                Math.floor(
-                    Math.min(element.clientWidth || parent?.clientWidth || 0, availableHeight),
-                ),
-            );
-            setSize((previousSize) => (previousSize === nextSize ? previousSize : nextSize));
-        };
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+}
 
-        const scheduleMeasure = () => {
-            cancelAnimationFrame(raf);
-            raf = requestAnimationFrame(measure);
-        };
+function getUserIcon(user: unknown): string | undefined {
+    if (!user || typeof user !== "object") {
+        return undefined;
+    }
 
-        const resizeObserver = new ResizeObserver(scheduleMeasure);
-        resizeObserver.observe(element);
-        scheduleMeasure();
+    const record = user as Record<string, unknown>;
+    const icon = record.icon;
 
-        return () => {
-            cancelAnimationFrame(raf);
-            resizeObserver.disconnect();
-        };
-    }, [element]);
+    return typeof icon === "string" && icon.length > 0 ? icon : undefined;
+}
 
-    return [ref, size] as const;
+function renderInlineAvatar(
+    user: unknown,
+    username: string | undefined,
+    className: string,
+): React.ReactElement {
+    const icon = getUserIcon(user);
+
+    return (
+        <span className={className} title={username} aria-hidden="true">
+            {icon ? (
+                <img className="stage-avatar-image" src={icon} alt="" aria-hidden="true" />
+            ) : (
+                getUserInitials(username)
+            )}
+        </span>
+    );
 }
 
 export function KibitzRoomStage({
@@ -132,22 +113,17 @@ export function KibitzRoomStage({
     const previewCandidates = rooms.filter(
         (candidate) => candidate.id !== room.id && candidate.current_game?.game_id,
     );
-    const previewRoomGame = rooms.find(
-        (candidate) => candidate.current_game?.game_id === secondaryGameId,
-    )?.current_game;
-    const previewProposal = proposals.find(
-        (proposal) => proposal.proposed_game.game_id === secondaryGameId,
-    );
-    const previewGame = previewRoomGame ?? previewProposal?.proposed_game;
-    const isProposalPreview = Boolean(previewProposal);
+    const previewGame =
+        rooms.find((candidate) => candidate.current_game?.game_id === secondaryGameId)
+            ?.current_game ??
+        proposals.find((proposal) => proposal.proposed_game.game_id === secondaryGameId)
+            ?.proposed_game;
     const previewDisplayedMoveNumber = previewGame?.move_number;
     const [mainBoardController, setMainBoardController] = React.useState<GobanController | null>(
         null,
     );
     const [secondaryBoardController, setSecondaryBoardController] =
         React.useState<GobanController | null>(null);
-    const [mainBoardSlotRef, mainBoardSize] = useSquareFitSize<HTMLDivElement>();
-    const [secondaryBoardSlotRef, secondaryBoardSize] = useSquareFitSize<HTMLDivElement>();
     const setSecondaryMoveTreeContainer = React.useCallback(
         (instance: Resizable | null) => {
             if (secondaryBoardController && instance) {
@@ -203,39 +179,80 @@ export function KibitzRoomStage({
                   { tournament_id: mainGameDetails.tournament },
               )
             : mainGame?.tournament_name;
-    const stageStatus = mainGame
-        ? pgettext("Live status shown in the compact kibitz stage header", "Live")
-        : null;
 
     return (
         <div className="KibitzRoomStage">
+            <div className="KibitzRoomStage-header">
+                <div className="stage-header-copy">
+                    <div className="room-title">{room.title}</div>
+                    <div className="room-subtitle">
+                        {displayedTitle ??
+                            pgettext(
+                                "Placeholder when no main game is loaded in a kibitz room",
+                                "No main board selected yet",
+                            )}
+                    </div>
+                </div>
+                {mainGame && (!mainGame.mock_game_data || previewCandidates.length > 0) ? (
+                    <div className="stage-header-actions">
+                        {!mainGame.mock_game_data ? (
+                            <Link to={`/game/${mainGame.game_id}`} className="view-game-link">
+                                {pgettext(
+                                    "Link text for opening the current game from the kibitz stage",
+                                    "Open game page",
+                                )}
+                            </Link>
+                        ) : null}
+                        {previewCandidates.map((candidate) => (
+                            <button
+                                key={candidate.id}
+                                type="button"
+                                className="preview-action-button compact"
+                                onClick={() =>
+                                    onPreviewGame(candidate.current_game?.game_id as number)
+                                }
+                            >
+                                {candidate.title}
+                            </button>
+                        ))}
+                    </div>
+                ) : null}
+            </div>
             <div className={`KibitzRoomStage-boards secondary-pane-${secondaryPaneSize}`}>
                 <div className="board-panel main-board">
                     <div className="panel-body">
                         {mainGame ? (
                             <div className="board-content">
                                 <div className="board-meta">
-                                    <div className="board-title-row">
-                                        <div className="board-title">{room.title}</div>
-                                        <div className="board-subtitle">
-                                            {displayedTitle ??
-                                                pgettext(
-                                                    "Placeholder when no main game is loaded in a kibitz room",
-                                                    "No main board selected yet",
-                                                )}
-                                        </div>
-                                    </div>
-                                    <div className="players">
-                                        {interpolate(
-                                            pgettext(
-                                                "Player names shown above the main board in kibitz",
-                                                "{{black}} vs {{white}}",
-                                            ),
-                                            {
-                                                black: displayedBlack,
-                                                white: displayedWhite,
-                                            },
+                                    <div className="board-label">
+                                        {pgettext(
+                                            "Label for the shared board in kibitz",
+                                            "Main board",
                                         )}
+                                    </div>
+                                    <div className="players player-pair">
+                                        <div className="player-badge">
+                                            {renderInlineAvatar(
+                                                mainGame?.black,
+                                                displayedBlack,
+                                                "stage-avatar",
+                                            )}
+                                            <span className="player-name">{displayedBlack}</span>
+                                        </div>
+                                        <span className="player-vs">
+                                            {pgettext(
+                                                "Versus label shown between players in kibitz",
+                                                "vs",
+                                            )}
+                                        </span>
+                                        <div className="player-badge">
+                                            {renderInlineAvatar(
+                                                mainGame?.white,
+                                                displayedWhite,
+                                                "stage-avatar",
+                                            )}
+                                            <span className="player-name">{displayedWhite}</span>
+                                        </div>
                                     </div>
                                     <div className="game-details">
                                         {displayedBoardSize
@@ -256,21 +273,15 @@ export function KibitzRoomStage({
                                                   { move_number: displayedMoveNumber },
                                               )}`
                                             : ""}
-                                        {stageStatus ? ` - ${stageStatus}` : ""}
                                         {displayedTournament ? ` - ${displayedTournament}` : ""}
                                     </div>
                                 </div>
-                                <div className="board-fit-slot" ref={mainBoardSlotRef}>
-                                    <KibitzBoard
-                                        gameId={
-                                            mainGame.mock_game_data ? undefined : mainGame.game_id
-                                        }
-                                        json={mainGame.mock_game_data}
-                                        className="main-board-surface"
-                                        size={mainBoardSize}
-                                        onReady={setMainBoardController}
-                                    />
-                                </div>
+                                <KibitzBoard
+                                    gameId={mainGame.mock_game_data ? undefined : mainGame.game_id}
+                                    json={mainGame.mock_game_data}
+                                    className="main-board-surface"
+                                    onReady={setMainBoardController}
+                                />
                                 <div className="main-board-transport-row">
                                     <KibitzBoardControls
                                         controller={mainBoardController}
@@ -283,9 +294,6 @@ export function KibitzRoomStage({
                                         className="main-board-variation-spacer"
                                         aria-hidden="true"
                                     />
-                                ) : null}
-                                {secondaryPaneSize !== "equal" ? (
-                                    <div className="board-content-spacer" aria-hidden="true" />
                                 ) : null}
                             </div>
                         ) : (
@@ -315,35 +323,42 @@ export function KibitzRoomStage({
                         ) : secondaryGameId ? (
                             <div className="board-content">
                                 <div className="board-meta">
-                                    <div className="players">
-                                        {interpolate(
-                                            pgettext(
-                                                "Player names shown above the secondary board in kibitz",
-                                                "{{black}} vs {{white}}",
-                                            ),
-                                            {
-                                                black: previewGame?.black.username ?? "",
-                                                white: previewGame?.white.username ?? "",
-                                            },
+                                    <div className="board-label">
+                                        {pgettext(
+                                            "Label for the personal secondary board in kibitz",
+                                            "Secondary board",
                                         )}
                                     </div>
+                                    <div className="players player-pair">
+                                        <div className="player-badge">
+                                            {renderInlineAvatar(
+                                                previewGame?.black,
+                                                previewGame?.black.username,
+                                                "stage-avatar",
+                                            )}
+                                            <span className="player-name">
+                                                {previewGame?.black.username ?? ""}
+                                            </span>
+                                        </div>
+                                        <span className="player-vs">
+                                            {pgettext(
+                                                "Versus label shown between players in kibitz",
+                                                "vs",
+                                            )}
+                                        </span>
+                                        <div className="player-badge">
+                                            {renderInlineAvatar(
+                                                previewGame?.white,
+                                                previewGame?.white.username,
+                                                "stage-avatar",
+                                            )}
+                                            <span className="player-name">
+                                                {previewGame?.white.username ?? ""}
+                                            </span>
+                                        </div>
+                                    </div>
                                     <div className="game-details">
-                                        {isProposalPreview
-                                            ? interpolate(
-                                                  pgettext(
-                                                      "Helper text shown when previewing a game that is already in the room vote flow",
-                                                      "Already {{status}} for the room",
-                                                  ),
-                                                  {
-                                                      status:
-                                                          previewProposal?.status ??
-                                                          pgettext(
-                                                              "Fallback proposal status",
-                                                              "proposed",
-                                                          ),
-                                                  },
-                                              )
-                                            : (previewGame?.title ?? "")}
+                                        {previewGame?.title ?? ""}
                                         {previewGame?.board_size
                                             ? ` - ${interpolate(
                                                   pgettext(
@@ -364,19 +379,14 @@ export function KibitzRoomStage({
                                             : ""}
                                     </div>
                                 </div>
-                                <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
-                                    <KibitzBoard
-                                        gameId={
-                                            previewGame?.mock_game_data
-                                                ? undefined
-                                                : secondaryGameId
-                                        }
-                                        json={previewGame?.mock_game_data}
-                                        className="secondary-board-surface"
-                                        size={secondaryBoardSize}
-                                        onReady={setSecondaryBoardController}
-                                    />
-                                </div>
+                                <KibitzBoard
+                                    gameId={
+                                        previewGame?.mock_game_data ? undefined : secondaryGameId
+                                    }
+                                    json={previewGame?.mock_game_data}
+                                    className="secondary-board-surface"
+                                    onReady={setSecondaryBoardController}
+                                />
                                 <div className="secondary-board-transport-row">
                                     <div className="transport-controls">
                                         <KibitzBoardControls
@@ -387,23 +397,21 @@ export function KibitzRoomStage({
                                         />
                                     </div>
                                     <div className="board-actions board-actions-inline">
-                                        {!isProposalPreview ? (
-                                            <button
-                                                type="button"
-                                                className="preview-action-button symbol-button"
-                                                onClick={onProposePreview}
-                                                aria-label={pgettext(
-                                                    "Aria label for proposing the current previewed game in kibitz",
-                                                    "Propose",
-                                                )}
-                                                title={pgettext(
-                                                    "Tooltip label for proposing the current previewed game in kibitz",
-                                                    "Propose",
-                                                )}
-                                            >
-                                                +
-                                            </button>
-                                        ) : null}
+                                        <button
+                                            type="button"
+                                            className="preview-action-button symbol-button"
+                                            onClick={onProposePreview}
+                                            aria-label={pgettext(
+                                                "Aria label for proposing the current previewed game in kibitz",
+                                                "Propose",
+                                            )}
+                                            title={pgettext(
+                                                "Tooltip label for proposing the current previewed game in kibitz",
+                                                "Propose",
+                                            )}
+                                        >
+                                            +
+                                        </button>
                                         <button
                                             type="button"
                                             className="preview-action-button clear-preview symbol-button"
@@ -421,33 +429,12 @@ export function KibitzRoomStage({
                                         </button>
                                     </div>
                                 </div>
-                                {previewCandidates.length > 0 ? (
-                                    <div className="secondary-room-preview-actions">
-                                        {previewCandidates.map((candidate) => (
-                                            <button
-                                                key={candidate.id}
-                                                type="button"
-                                                className="preview-action-button compact"
-                                                onClick={() =>
-                                                    onPreviewGame(
-                                                        candidate.current_game?.game_id as number,
-                                                    )
-                                                }
-                                            >
-                                                {candidate.title}
-                                            </button>
-                                        ))}
-                                    </div>
-                                ) : null}
                                 {secondaryPaneSize === "equal" ? (
                                     <Resizable
                                         id="kibitz-secondary-move-tree-container"
                                         className="kibitz-move-tree-container"
                                         ref={setSecondaryMoveTreeContainer}
                                     />
-                                ) : null}
-                                {secondaryPaneSize !== "equal" ? (
-                                    <div className="board-content-spacer" aria-hidden="true" />
                                 ) : null}
                             </div>
                         ) : selectedVariation ? (
@@ -459,8 +446,17 @@ export function KibitzRoomStage({
                                             "Secondary board",
                                         )}
                                     </div>
-                                    <div className="players">
-                                        {selectedVariation.creator.username}
+                                    <div className="players player-single">
+                                        <div className="player-badge">
+                                            {renderInlineAvatar(
+                                                selectedVariation.creator,
+                                                selectedVariation.creator.username,
+                                                "stage-avatar",
+                                            )}
+                                            <span className="player-name">
+                                                {selectedVariation.creator.username}
+                                            </span>
+                                        </div>
                                     </div>
                                     <div className="game-details">
                                         {selectedVariation.title ??
@@ -470,14 +466,11 @@ export function KibitzRoomStage({
                                             )}
                                     </div>
                                 </div>
-                                <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
-                                    <KibitzBoard
-                                        json={selectedVariation.mock_game_data}
-                                        className="secondary-board-surface"
-                                        size={secondaryBoardSize}
-                                        onReady={setSecondaryBoardController}
-                                    />
-                                </div>
+                                <KibitzBoard
+                                    json={selectedVariation.mock_game_data}
+                                    className="secondary-board-surface"
+                                    onReady={setSecondaryBoardController}
+                                />
                                 <div className="secondary-board-transport-row">
                                     <div className="transport-controls">
                                         <KibitzBoardControls
@@ -505,33 +498,12 @@ export function KibitzRoomStage({
                                         </button>
                                     </div>
                                 </div>
-                                {previewCandidates.length > 0 ? (
-                                    <div className="secondary-room-preview-actions">
-                                        {previewCandidates.map((candidate) => (
-                                            <button
-                                                key={candidate.id}
-                                                type="button"
-                                                className="preview-action-button compact"
-                                                onClick={() =>
-                                                    onPreviewGame(
-                                                        candidate.current_game?.game_id as number,
-                                                    )
-                                                }
-                                            >
-                                                {candidate.title}
-                                            </button>
-                                        ))}
-                                    </div>
-                                ) : null}
                                 {secondaryPaneSize === "equal" ? (
                                     <Resizable
                                         id="kibitz-secondary-move-tree-container"
                                         className="kibitz-move-tree-container"
                                         ref={setSecondaryMoveTreeContainer}
                                     />
-                                ) : null}
-                                {secondaryPaneSize !== "equal" ? (
-                                    <div className="board-content-spacer" aria-hidden="true" />
                                 ) : null}
                             </div>
                         ) : (
