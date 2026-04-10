@@ -593,16 +593,38 @@
 }
 
 @media (max-width: 850px) {
-    .KibitzRoomStage {
-        .KibitzRoomStage-boards {
-            grid-template-columns: minmax(0, 1fr);
-            gap: 0.75rem;
-        }
+  .Kibitz-layout {
+    display: flex;
+    flex-direction: column;
+  }
 
-        .board-panel.secondary-board {
-            border-left: 0;
-            border-top: 1px solid transparent;
-            border-top-color: var(--shade3);
-        }
-    }
+  .Kibitz-main {
+    order: 1;
+  }
+
+  .Kibitz-left-rail {
+    order: 2;
+  }
+
+  .Kibitz-sidebar {
+    order: 3;
+  }
+
+  .KibitzRoomStage-boards .secondary-board {
+    display: none;
+  }
+
+  .KibitzRoomStage .board-meta {
+    min-height: auto;
+    padding: 0.35rem 0.25rem 0.4rem 0.4rem;
+  }
+
+  .KibitzRoomStage .board-subtitle,
+  .KibitzRoomStage .game-details {
+    font-size: 0.72rem;
+  }
+
+  .Kibitz {
+    padding: 0.25rem;
+  }
 }
