@@ -343,7 +343,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     private _stream: KibitzStreamItem[] = [];
     private _proposals: KibitzProposal[] = [];
     private _variations: KibitzVariationSummary[] = [];
-    private _secondary_pane: KibitzSecondaryPaneState = { collapsed: false, size: "small" };
+    private _secondary_pane: KibitzSecondaryPaneState = { collapsed: true, size: "small" };
     private _mock_service: KibitzMockService | null = null;
     private _debug: KibitzDebugState = {
         mode: "live",
@@ -968,12 +968,12 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             this.setSecondaryPane(
                 activeProposal
                     ? {
-                          collapsed: false,
+                          collapsed: true,
                           size: "small",
                           preview_game_id: activeProposal.proposed_game.game_id,
                       }
                     : {
-                          collapsed: false,
+                          collapsed: true,
                           size: "small",
                       },
             );

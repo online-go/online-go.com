@@ -40,13 +40,13 @@
             border-top-color: #b38762;
             color: #8b684b;
             margin-left: 0;
-            padding-left: 0.75rem;
+            padding-left: 0rem;
         }
     }
 
     .variation-post {
         align-items: center;
-        background: transparent;
+        background: var(--shade1);
         border: 0;
         box-sizing: border-box;
         color: var(--primary);
@@ -63,7 +63,7 @@
         width: 100%;
 
         &:hover {
-            background: color-mix(in srgb, var(--shade2) 50%, transparent);
+            background: color-mix(in srgb, var(--shade1) 100%, transparent);
         }
     }
 
