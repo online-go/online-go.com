@@ -147,13 +147,6 @@
                 justify-content: flex-start;
             }
 
-            .board-panel.secondary-board {
-                .panel-body {
-                    padding-left: 0.125rem;
-                    padding-right: 0.125rem;
-                }
-            }
-
             .KibitzBoard.main-board-surface .goban-container,
             .KibitzBoard.secondary-board-surface .goban-container {
                 flex: 0 0 auto !important;
