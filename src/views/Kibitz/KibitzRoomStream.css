@@ -58,10 +58,10 @@
 
     .variation-post {
         align-items: center;
-        background: var(--shade1);
+        background: var(--shade4);
         border: 0;
         box-sizing: border-box;
-        color: var(--primary);
+        color: var(--variation);
         cursor: pointer;
         display: flex;
         font-size: 0.85rem;
