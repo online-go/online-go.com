@@ -6,6 +6,11 @@
     gap: 0.25rem;
     user-select: none;
 
+    .btn-group {
+        display: inline-flex;
+        vertical-align: middle;
+    }
+
     .stone-button {
         line-height: 1.333rem;
     }
@@ -28,5 +33,31 @@
     button .score-square {
         transform: scale(0.667);
         transform-origin: center;
+    }
+
+    .score-square {
+        display: inline-block;
+        width: 0.7rem;
+        height: 0.7rem;
+        border: 0.3rem solid #f00;
+
+        &.black {
+            background-color: black;
+            border-color: #555;
+        }
+
+        &.white {
+            background-color: white;
+            border-color: #aaa;
+        }
+
+        &.custom {
+            background-color: var(--success);
+            border-color: var(--success-dark);
+        }
+    }
+
+    .removal {
+        color: red;
     }
 }
