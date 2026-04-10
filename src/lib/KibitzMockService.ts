@@ -322,6 +322,38 @@ function createRooms(): MockRoomState[] {
         ],
         "OGS Beta Cup",
     );
+    const topProposalGameA = createMockGame(910007, 19, "Top side squeeze fight", vera, jun, [
+        [3, 3],
+        [15, 15],
+        [15, 3],
+        [3, 15],
+        [10, 16],
+        [16, 10],
+        [4, 10],
+        [10, 4],
+        [5, 14],
+        [14, 6],
+        [7, 15],
+        [12, 13],
+        [8, 14],
+        [11, 12],
+    ]);
+    const topProposalGameB = createMockGame(910008, 19, "Right side forcing race", vera, jun, [
+        [3, 3],
+        [15, 15],
+        [15, 3],
+        [3, 15],
+        [10, 16],
+        [16, 10],
+        [4, 10],
+        [10, 4],
+        [14, 10],
+        [5, 15],
+        [13, 11],
+        [6, 14],
+        [15, 12],
+        [7, 13],
+    ]);
 
     return [
         {
@@ -438,6 +470,9 @@ function createRooms(): MockRoomState[] {
             ],
             viewerFloor: 16,
             viewerCeiling: 22,
+            proposalPool: [topProposalGameA, topProposalGameB],
+            nextProposalAt: Date.now() + 18_000,
+            proposalCursor: 0,
         },
         {
             room: {
@@ -882,7 +917,6 @@ export class KibitzMockService extends EventEmitter<KibitzMockServiceEvents> {
             }
 
             if (
-                room.room.id === "tournament-pick" &&
                 !room.proposals.some((proposal) => proposal.status === "active") &&
                 (room.nextProposalAt ?? 0) <= now &&
                 room.proposalPool &&
@@ -890,10 +924,16 @@ export class KibitzMockService extends EventEmitter<KibitzMockServiceEvents> {
             ) {
                 const nextIndex = room.proposalCursor ?? 0;
                 const nextGame = room.proposalPool[nextIndex % room.proposalPool.length];
-                const proposer = choice(room.room.users.slice(2));
-                this.startProposal(room, proposer, nextGame, 45);
+                const candidateProposers =
+                    room.room.users.length > 2 ? room.room.users.slice(2) : room.room.users;
+                const proposer = choice(candidateProposers);
+                const cooldownSeconds = room.room.id === "tournament-pick" ? 45 : 30;
+                this.startProposal(room, proposer, nextGame, cooldownSeconds);
                 room.proposalCursor = (nextIndex + 1) % room.proposalPool.length;
-                room.nextProposalAt = now + 15_000 + Math.floor(Math.random() * 10_000);
+                room.nextProposalAt =
+                    room.room.id === "tournament-pick"
+                        ? now + 15_000 + Math.floor(Math.random() * 10_000)
+                        : now + 20_000 + Math.floor(Math.random() * 12_000);
                 changed = true;
             }
         }
@@ -971,7 +1011,7 @@ export class KibitzMockService extends EventEmitter<KibitzMockServiceEvents> {
             game_id: room.room.current_game?.game_id,
         });
 
-        if (Math.random() < 0.4) {
+        if (Math.random() < 0.2) {
             const secondSpeaker = choice(room.room.active_chatters);
             const secondMessage = choice(room.messagePool);
 
@@ -1076,10 +1116,12 @@ export class KibitzMockService extends EventEmitter<KibitzMockServiceEvents> {
         if (activeProposal && Math.random() < (room.room.id === "tournament-pick" ? 0.8 : 0.45)) {
             changed = this.simulateProposalVote(room) || changed;
         } else {
-            changed = this.simulateChat(room) || changed;
+            if (Math.random() < 0.5) {
+                changed = this.simulateChat(room) || changed;
+            }
         }
 
-        if (Math.random() < 0.75) {
+        if (Math.random() < 0.375) {
             const secondRoom = this.pickWeightedRoom();
             changed = this.simulateChat(secondRoom) || changed;
         }
