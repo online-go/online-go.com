@@ -242,6 +242,9 @@ export function Supporter(props: SupporterProperties): React.ReactElement {
     const [prizes, setPrizes] = React.useState<Service[]>([]);
 
     React.useEffect(() => {
+        if (!inline) {
+            window.document.title = _("Support OGS");
+        }
         Promise.all([
             get(`/billing/summary/${Math.max(0, account_id)}`)
                 .then((config: Config) => {
@@ -295,7 +298,7 @@ export function Supporter(props: SupporterProperties): React.ReactElement {
             .then(ignore)
             .catch(ignore)
             .finally(() => setLoading(false));
-    }, [account_id, refresh]);
+    }, [account_id, refresh, inline]);
 
     if (error) {
         return (

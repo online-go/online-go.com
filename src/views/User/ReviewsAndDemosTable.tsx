@@ -58,8 +58,10 @@ export function ReviewsAndDemosTable(props: ReviewsAndDemosProps): React.ReactEl
                     : "library-lost"
                 : "";
             item.name = r.name;
-            item.href = "/review/" + item.id;
-            item.historical = r.game.historical_ratings || {
+            const isReviewOfGame = !!(r.game && (typeof r.game === "number" || r.game.id));
+            const prefix = isReviewOfGame ? "/review/" : "/demo/";
+            item.href = prefix + item.id;
+            item.historical = (r.game && r.game.historical_ratings) || {
                 black: item.black,
                 white: item.white,
             };
