@@ -9,8 +9,6 @@
 
     .KibitzRoomStream-title {
         box-sizing: border-box;
-        border-bottom: 1px solid transparent;
-        border-bottom-color: var(--shade3);
         font-weight: bold;
         min-height: var(--kibitz-header-block-height);
         padding: 0.45rem 0.75rem;
@@ -72,8 +70,6 @@
     }
 
     .KibitzRoomStream-footer {
-        border-top: 1px solid transparent;
-        border-top-color: var(--shade3);
         padding: 0.45rem 0.75rem;
 
         .TabCompleteInput {

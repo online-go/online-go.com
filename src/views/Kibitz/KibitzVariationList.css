@@ -24,6 +24,7 @@
         display: flex;
         flex-direction: column;
         gap: 0.22rem;
+        min-height: 3.1rem;
         padding: 0.35rem 0 0;
         text-align: left;
         width: 100%;
