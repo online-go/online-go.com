@@ -1,5 +1,6 @@
 .KibitzRoomStage {
     --board-divider-width: 0;
+    --kibitz-header-block-height: 5.025rem;
 
     background: var(--bg);
     display: flex;
@@ -266,6 +267,7 @@
             display: flex;
             flex-direction: column;
             gap: 0.15rem;
+            min-height: var(--kibitz-header-block-height);
             text-align: left;
             padding: 0.5rem 0.125rem 0.625rem 0.75rem;
 

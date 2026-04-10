@@ -1,4 +1,6 @@
 .KibitzRoomList {
+    --kibitz-header-block-height: 5.025rem;
+
     background: var(--card-background-color);
     box-sizing: border-box;
     display: flex;
@@ -6,8 +8,10 @@
     min-height: 0;
 
     .KibitzRoomList-titleRow {
+        box-sizing: border-box;
         border-bottom: 1px solid transparent;
         border-bottom-color: var(--shade3);
+        min-height: var(--kibitz-header-block-height);
         padding: 0.5rem 0.75rem 0.55rem;
     }
 
