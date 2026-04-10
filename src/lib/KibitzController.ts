@@ -452,6 +452,40 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.syncFromMockService();
     };
 
+    private syncDemoSecondaryPaneWithActiveProposal(proposals: KibitzProposal[]): void {
+        const activeProposal = proposals.find((proposal) => proposal.status === "active");
+
+        if (this._secondary_pane.variation_id) {
+            return;
+        }
+
+        if (activeProposal) {
+            const nextPreviewGameId = activeProposal.proposed_game.game_id;
+
+            if (
+                this._secondary_pane.collapsed ||
+                this._secondary_pane.preview_game_id !== nextPreviewGameId
+            ) {
+                this.setSecondaryPane({
+                    ...this._secondary_pane,
+                    collapsed: false,
+                    size: this._secondary_pane.size ?? "small",
+                    preview_game_id: nextPreviewGameId,
+                    variation_id: undefined,
+                });
+            }
+            return;
+        }
+
+        if (this._secondary_pane.preview_game_id) {
+            this.setSecondaryPane({
+                ...this._secondary_pane,
+                preview_game_id: undefined,
+                variation_id: undefined,
+            });
+        }
+    }
+
     private syncFromMockService(): void {
         if (!this._mock_service) {
             return;
@@ -490,8 +524,10 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             const room = this._mock_service.getRoom(this._active_room.id);
             this.setActiveRoom(room);
             this.setStream(this._mock_service.getStream(this._active_room.id));
-            this.setProposals(this._mock_service.getProposals(this._active_room.id));
+            const proposals = this._mock_service.getProposals(this._active_room.id);
+            this.setProposals(proposals);
             this.setVariations(this._mock_service.getVariations(this._active_room.id));
+            this.syncDemoSecondaryPaneWithActiveProposal(proposals);
         }
     }
 
@@ -982,19 +1018,11 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             const proposals = this._mock_service.getProposals(roomId);
             this.setProposals(proposals);
             this.setVariations(this._mock_service.getVariations(roomId));
-            const activeProposal = proposals.find((proposal) => proposal.status === "active");
-            this.setSecondaryPane(
-                activeProposal
-                    ? {
-                          collapsed: true,
-                          size: "small",
-                          preview_game_id: activeProposal.proposed_game.game_id,
-                      }
-                    : {
-                          collapsed: true,
-                          size: "small",
-                      },
-            );
+            this.setSecondaryPane({
+                collapsed: false,
+                size: "small",
+            });
+            this.syncDemoSecondaryPaneWithActiveProposal(proposals);
             return;
         }
 
