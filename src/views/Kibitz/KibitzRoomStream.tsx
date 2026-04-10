@@ -53,8 +53,10 @@ export function KibitzRoomStream({
     onSendMessage,
 }: KibitzRoomStreamProps): React.ReactElement {
     const user = useUser();
+    const chatLinesRef = React.useRef<HTMLDivElement | null>(null);
     const [proxy, setProxy] = React.useState<ChatChannelProxy | null>(null);
     const [, refresh] = React.useState(0);
+    const [followLatest, setFollowLatest] = React.useState(true);
     const [channelName, setChannelName] = React.useState(
         cachedChannelInformation(room.channel)?.name,
     );
@@ -142,7 +144,36 @@ export function KibitzRoomStream({
         })
         .filter(Boolean) as ChatMessage[];
     const variationPosts = items.filter((item) => item.type === "variation_posted");
+    const renderedLineCount =
+        (mode === "demo" ? demoChatLog.length : chatLog.length) +
+        (mode === "demo" ? variationPosts.length : 0);
     let lastLine: ChatMessage | undefined;
+
+    const updateFollowLatest = React.useCallback(() => {
+        const container = chatLinesRef.current;
+        if (!container) {
+            return;
+        }
+
+        const pinnedToBottom =
+            container.scrollHeight - container.scrollTop - 10 < container.clientHeight;
+        setFollowLatest(pinnedToBottom);
+    }, []);
+
+    React.useLayoutEffect(() => {
+        const container = chatLinesRef.current;
+        if (!container || !followLatest) {
+            return;
+        }
+
+        container.scrollTop = container.scrollHeight;
+
+        requestAnimationFrame(() => {
+            if (chatLinesRef.current) {
+                chatLinesRef.current.scrollTop = chatLinesRef.current.scrollHeight;
+            }
+        });
+    }, [followLatest, renderedLineCount]);
 
     return (
         <div className="KibitzRoomStream">
@@ -151,7 +182,7 @@ export function KibitzRoomStream({
             </div>
             <div className="KibitzRoomStream-items">
                 {(mode === "demo" ? demoChatLog.length > 0 : chatLog.length > 0) ? (
-                    <div className="chat-lines">
+                    <div ref={chatLinesRef} className="chat-lines" onScroll={updateFollowLatest}>
                         {(mode === "demo" ? demoChatLog : chatLog).map((line) => {
                             const previousLine = lastLine;
                             lastLine = line;
