@@ -28,6 +28,7 @@ interface KibitzBoardProps {
     json?: KibitzWatchedGame["mock_game_data"];
     className?: string;
     size?: number;
+    interactive?: boolean;
     onReady?: (controller: GobanController | null) => void;
 }
 
@@ -39,6 +40,7 @@ export function KibitzBoard({
     json,
     className,
     size,
+    interactive = false,
     onReady,
 }: KibitzBoardProps): React.ReactElement {
     const gobanDiv = React.useRef<HTMLDivElement>(
@@ -57,7 +59,7 @@ export function KibitzBoard({
         const themes = preferences.getSelectedThemes();
         const config: GobanRendererConfig = {
             board_div: gobanDiv.current,
-            interactive: false,
+            interactive,
             connect_to_chat: false,
             draw_top_labels: labelPosition === "all" || labelPosition.indexOf("top") >= 0,
             draw_left_labels: labelPosition === "all" || labelPosition.indexOf("left") >= 0,
@@ -93,7 +95,7 @@ export function KibitzBoard({
             controllerRef.current = null;
             setGoban(null);
         };
-    }, [gameId, json, onReady]);
+    }, [gameId, interactive, json, onReady]);
 
     return (
         <div

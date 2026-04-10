@@ -434,6 +434,7 @@ export function KibitzRoomStage({
                                         json={previewGame?.mock_game_data}
                                         className="secondary-board-surface"
                                         size={secondaryBoardSize}
+                                        interactive={secondaryPaneSize === "equal"}
                                         onReady={setSecondaryBoardController}
                                     />
                                 </div>
@@ -545,6 +546,7 @@ export function KibitzRoomStage({
                                         json={selectedVariation.mock_game_data}
                                         className="secondary-board-surface"
                                         size={secondaryBoardSize}
+                                        interactive={secondaryPaneSize === "equal"}
                                         onReady={setSecondaryBoardController}
                                     />
                                 </div>
