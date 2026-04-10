@@ -31,6 +31,7 @@ import { KibitzBoard } from "./KibitzBoard";
 import { KibitzBoardControls } from "./KibitzBoardControls";
 import { KibitzDividerHandle } from "./KibitzDividerHandle";
 import { GobanAnalyzeButtonBar } from "@/components/GobanAnalyzeButtonBar/GobanAnalyzeButtonBar";
+import { KibitzVariationComposer } from "./KibitzVariationComposer";
 import "./KibitzRoomStage.css";
 
 interface KibitzRoomStageProps {
@@ -41,6 +42,7 @@ interface KibitzRoomStageProps {
     variations: KibitzVariationSummary[];
     secondaryPane: KibitzSecondaryPaneState;
     onClearPreview: () => void;
+    onPostVariation: (controller: GobanController) => void;
     onProposePreview: () => void;
     onSetSecondaryPaneMode: (mode: "hidden" | "small" | "equal") => void;
 }
@@ -165,6 +167,7 @@ export function KibitzRoomStage({
     variations,
     secondaryPane,
     onClearPreview,
+    onPostVariation,
     onProposePreview,
     onSetSecondaryPaneMode,
 }: KibitzRoomStageProps): React.ReactElement {
@@ -221,6 +224,22 @@ export function KibitzRoomStage({
             canceled = true;
         };
     }, [mainGame?.game_id, mainGame?.mock_game_data, mode]);
+
+    React.useEffect(() => {
+        if (!selectedVariation || !secondaryBoardController) {
+            return;
+        }
+
+        const goban = secondaryBoardController.goban;
+
+        if (selectedVariation.analysis_marks) {
+            goban.setMarks(selectedVariation.analysis_marks);
+        }
+        goban.pen_marks = selectedVariation.analysis_pen_marks
+            ? [...selectedVariation.analysis_pen_marks]
+            : [];
+        goban.redraw(true);
+    }, [secondaryBoardController, selectedVariation]);
 
     const displayedTitle = mainGameDetails?.name || mainGame?.title;
     const displayedBlack = mainGameDetails?.players?.black?.username || mainGame?.black.username;
@@ -328,6 +347,9 @@ export function KibitzRoomStage({
                                 </div>
                                 {secondaryPaneSize === "equal" ? (
                                     <div className="main-board-analyze-spacer" aria-hidden="true" />
+                                ) : null}
+                                {secondaryPaneSize === "equal" ? (
+                                    <div className="main-board-compose-spacer" aria-hidden="true" />
                                 ) : null}
                                 {secondaryPaneSize === "equal" ? (
                                     <div
@@ -481,6 +503,14 @@ export function KibitzRoomStage({
                                         />
                                     </div>
                                 ) : null}
+                                {secondaryPaneSize === "equal" && secondaryBoardController ? (
+                                    <div className="secondary-board-compose-row">
+                                        <KibitzVariationComposer
+                                            controller={secondaryBoardController}
+                                            onSubmit={onPostVariation}
+                                        />
+                                    </div>
+                                ) : null}
                                 {secondaryPaneSize === "equal" ? (
                                     <Resizable
                                         id="kibitz-secondary-move-tree-container"
@@ -557,6 +587,14 @@ export function KibitzRoomStage({
                                             controller={secondaryBoardController}
                                             showBackToGame={false}
                                             showConditionalPlannerButton={false}
+                                        />
+                                    </div>
+                                ) : null}
+                                {secondaryPaneSize === "equal" && secondaryBoardController ? (
+                                    <div className="secondary-board-compose-row">
+                                        <KibitzVariationComposer
+                                            controller={secondaryBoardController}
+                                            onSubmit={onPostVariation}
                                         />
                                     </div>
                                 ) : null}

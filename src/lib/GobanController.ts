@@ -23,9 +23,11 @@ import {
     GobanRenderer,
     MoveTree,
     createGoban,
+    decodeMoves,
     encodeMove,
     JGOFClock,
     JGOFSealingIntersection,
+    MoveTreePenMarks,
 } from "goban";
 import { EventEmitter } from "eventemitter3";
 import { sfx, SFXSprite, ValidSound } from "@/lib/sfx";
@@ -66,6 +68,38 @@ interface GobanControllerEvents {
     stashed_conditional_moves: (stashed_conditional_moves: ConditionalMoveTree | null) => void;
 }
 
+export interface SerializedAnalysisChatLineBody {
+    type: "analysis";
+    from: number;
+    moves: string;
+    name: string;
+    marks?: Record<string, string>;
+    pen_marks?: MoveTreePenMarks;
+}
+
+export interface PreparedAnalysisSnapshot {
+    analysis: SerializedAnalysisChatLineBody;
+    auto_named: boolean;
+    is_duplicate: boolean;
+    move_count: number;
+    width: number;
+    height: number;
+    players: {
+        black: {
+            id: number;
+            username: string;
+        };
+        white: {
+            id: number;
+            username: string;
+        };
+    };
+    moves: Array<{
+        x: number;
+        y: number;
+    }>;
+}
+
 export interface ReviewListEntry {
     owner: PlayerCacheEntry;
     id: number;
@@ -91,7 +125,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     public onPushAnalysisLeft?: () => void;
     public last_variation_number: number = 0;
     public creator_id?: number;
-    private last_analysis_sent: any;
+    private last_analysis_sent?: SerializedAnalysisChatLineBody;
     private game_id?: number;
     private review_id?: number;
     public _selected_chat_log: ChatMode;
@@ -723,7 +757,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     updateVariationName = (ev: ChangeEvent<HTMLInputElement>) => {
         this.setVariationName(ev.target.value);
     };
-    shareAnalysis = () => {
+    private prepareAnalysisSnapshot = (): PreparedAnalysisSnapshot => {
         const diff = this.goban.engine.getMoveDiff();
         let name = this.variation_name;
         let auto_named = false;
@@ -768,13 +802,12 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             }
         }
 
-        const analysis: any = {
+        const analysis: SerializedAnalysisChatLineBody = {
             type: "analysis",
             from: diff.from,
             moves: diff.moves,
-            name: name,
+            name,
         };
-        console.log(analysis);
 
         if (mark_ct) {
             analysis.marks = marks;
@@ -784,23 +817,61 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         }
 
         const las = this.last_analysis_sent;
-        if (
+        const is_duplicate =
             las &&
             las.from === analysis.from &&
             las.moves === analysis.moves &&
             (auto_named || las.name === analysis.name) &&
-            ((!analysis.marks && !las.marks) || las.marks === analysis.marks) &&
-            ((!analysis.pen_marks && !las.pen_marks) || las.pen_marks === analysis.pen_marks)
-        ) {
-            if (auto_named) {
-                --this.last_variation_number;
-            }
+            JSON.stringify(las.marks ?? null) === JSON.stringify(analysis.marks ?? null) &&
+            JSON.stringify(las.pen_marks ?? null) === JSON.stringify(analysis.pen_marks ?? null);
+
+        if (is_duplicate && auto_named) {
+            --this.last_variation_number;
+        }
+
+        const move_string = this.goban.engine.cur_move.getMoveStringToThisPoint();
+
+        return {
+            analysis,
+            auto_named,
+            is_duplicate: !!is_duplicate,
+            move_count: this.goban.engine.cur_move.move_number,
+            width: this.goban.width,
+            height: this.goban.height,
+            players: {
+                black: {
+                    id: this.goban.engine.players.black.id,
+                    username: this.goban.engine.players.black.username,
+                },
+                white: {
+                    id: this.goban.engine.players.white.id,
+                    username: this.goban.engine.players.white.username,
+                },
+            },
+            moves: decodeMoves(move_string, this.goban.height, this.goban.width).map((move) => ({
+                x: move.x,
+                y: move.y,
+            })),
+        };
+    };
+
+    public buildAnalysisSnapshot = (): PreparedAnalysisSnapshot => {
+        return this.prepareAnalysisSnapshot();
+    };
+
+    public recordAnalysisSent = (analysis: SerializedAnalysisChatLineBody) => {
+        this.last_analysis_sent = analysis;
+    };
+
+    shareAnalysis = () => {
+        const prepared = this.prepareAnalysisSnapshot();
+        if (prepared.is_duplicate) {
             return;
         }
 
         if (!data.get("user").anonymous) {
-            this.goban.sendChat(analysis, this.selected_chat_log);
-            this.last_analysis_sent = analysis;
+            this.goban.sendChat(prepared.analysis as unknown as string, this.selected_chat_log);
+            this.recordAnalysisSent(prepared.analysis);
         } else {
             this.goban.showMessage("error", {
                 error: { message: "Can't send to the " + this.selected_chat_log + " chat_log" },

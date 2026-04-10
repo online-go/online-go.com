@@ -21,6 +21,10 @@ export type KibitzRoomKind = "preset" | "user" | "broadcast";
 export type KibitzMode = "live" | "demo";
 
 export type KibitzProposalStatus = "queued" | "active" | "accepted" | "rejected" | "expired";
+export type KibitzVariationPenMarks = Array<{
+    color: string;
+    points: number[];
+}>;
 
 export type KibitzStreamItemType =
     | "chat"
@@ -112,6 +116,10 @@ export interface KibitzVariationSummary {
     current_viewers: KibitzRoomUser[];
     move_count?: number;
     title?: string;
+    analysis_from?: number;
+    analysis_moves?: string;
+    analysis_marks?: Record<string, string>;
+    analysis_pen_marks?: KibitzVariationPenMarks;
     mock_game_data?: KibitzWatchedGame["mock_game_data"];
 }
 

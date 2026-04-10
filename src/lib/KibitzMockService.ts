@@ -18,6 +18,7 @@
 /* cspell: words cooldown moyo Niko Sabaki tenukis endgame Maru Miri Noor */
 
 import { EventEmitter } from "eventemitter3";
+import type { PreparedAnalysisSnapshot } from "@/lib/GobanController";
 import type {
     KibitzProposal,
     KibitzRoom,
@@ -575,6 +576,7 @@ export class KibitzMockService extends EventEmitter<KibitzMockServiceEvents> {
     private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
     private activityTimer: ReturnType<typeof setInterval> | null = null;
     private proposalSequence = 100;
+    private variationSequence = 100;
 
     constructor() {
         super();
@@ -693,6 +695,72 @@ export class KibitzMockService extends EventEmitter<KibitzMockServiceEvents> {
             proposal_id: proposal.id,
         });
         this.emit("changed");
+    }
+
+    public createVariation(
+        roomId: string,
+        creator: KibitzRoomUser,
+        sourceGameId: number,
+        snapshot: PreparedAnalysisSnapshot,
+    ): KibitzVariationSummary | null {
+        const room = this.rooms.get(roomId);
+        if (!room) {
+            return null;
+        }
+
+        const variation: KibitzVariationSummary = {
+            id: `${roomId}-variation-${this.variationSequence}`,
+            room_id: roomId,
+            game_id: sourceGameId,
+            creator,
+            created_at: Date.now(),
+            viewer_count: 1,
+            current_viewers: [creator],
+            move_count: snapshot.move_count,
+            title: snapshot.analysis.name,
+            analysis_from: snapshot.analysis.from,
+            analysis_moves: snapshot.analysis.moves,
+            analysis_marks: snapshot.analysis.marks,
+            analysis_pen_marks: snapshot.analysis.pen_marks,
+            mock_game_data: {
+                width: snapshot.width,
+                height: snapshot.height,
+                game_name: snapshot.analysis.name,
+                players: {
+                    black: createUser(
+                        snapshot.players.black.id,
+                        snapshot.players.black.username,
+                        0,
+                    ),
+                    white: createUser(
+                        snapshot.players.white.id,
+                        snapshot.players.white.username,
+                        0,
+                    ),
+                },
+                moves: snapshot.moves,
+                phase: "play",
+                komi: snapshot.width === 9 ? 6.5 : 7.5,
+                initial_player: "black",
+            },
+        };
+
+        this.variationSequence += 1;
+        room.variations.unshift(variation);
+        room.room.active_variation_ids.unshift(variation.id);
+        this.pushStreamItem(room, {
+            id: `${variation.id}-posted`,
+            room_id: roomId,
+            type: "variation_posted",
+            created_at: Date.now(),
+            author: creator,
+            text: `${creator.username} posted a variation: ${variation.title}.`,
+            game_id: variation.game_id,
+            variation_id: variation.id,
+        });
+        this.emit("changed");
+
+        return variation;
     }
 
     private startProposal(

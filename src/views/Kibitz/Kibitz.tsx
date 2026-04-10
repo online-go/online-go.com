@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { GobanController } from "@/lib/GobanController";
 import { KibitzController } from "@/lib/KibitzController";
 import { pgettext } from "@/lib/translate";
 import type {
@@ -148,7 +149,6 @@ export function Kibitz(): React.ReactElement {
         },
         [controller],
     );
-
     const onSetSecondaryPaneMode = React.useCallback((nextMode: SecondaryPaneMode) => {
         setPendingSecondaryPaneMode(nextMode);
     }, []);
@@ -198,6 +198,15 @@ export function Kibitz(): React.ReactElement {
         }
     }, [controller, resolvedRoom]);
 
+    const onPostVariation = React.useCallback(
+        (boardController: GobanController) => {
+            if (resolvedRoom) {
+                controller.postVariation(resolvedRoom.id, boardController);
+            }
+        },
+        [controller, resolvedRoom],
+    );
+
     const onSendMessage = React.useCallback(
         (text: string) => {
             if (resolvedRoom) {
@@ -243,6 +252,7 @@ export function Kibitz(): React.ReactElement {
                             variations={variations}
                             secondaryPane={secondaryPane}
                             onClearPreview={onClearPreview}
+                            onPostVariation={onPostVariation}
                             onProposePreview={onProposePreview}
                             onSetSecondaryPaneMode={onSetSecondaryPaneMode}
                         />

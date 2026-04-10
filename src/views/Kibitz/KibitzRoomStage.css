@@ -80,6 +80,7 @@
             --equal-meta-height: var(--kibitz-header-block-height);
             --equal-transport-height: 2.35rem;
             --equal-analyze-height: 6rem;
+            --equal-compose-height: 2.4rem;
             --equal-variation-height: 6.5rem;
             grid-template-columns:
                 minmax(0, 1fr)
@@ -103,6 +104,7 @@
                     auto
                     auto
                     var(--equal-analyze-height)
+                    var(--equal-compose-height)
                     var(--equal-variation-height)
                     minmax(0, 1fr);
             }
@@ -135,6 +137,11 @@
 
             .main-board .main-board-analyze-spacer {
                 min-height: var(--equal-analyze-height);
+                visibility: hidden;
+            }
+
+            .main-board .main-board-compose-spacer {
+                min-height: var(--equal-compose-height);
                 visibility: hidden;
             }
 
@@ -210,6 +217,13 @@
                         width: 1.35rem;
                     }
                 }
+            }
+
+            .secondary-board-compose-row {
+                align-items: center;
+                display: flex;
+                min-height: var(--equal-compose-height);
+                padding: 0 0.75rem;
             }
 
             .board-content-spacer {
@@ -474,6 +488,10 @@
             display: none;
         }
 
+        .main-board-compose-spacer {
+            display: none;
+        }
+
         .transport-controls {
             grid-column: 2;
             justify-self: center;
@@ -486,6 +504,10 @@
         }
 
         .secondary-board-analyze-row {
+            display: none;
+        }
+
+        .secondary-board-compose-row {
             display: none;
         }
 

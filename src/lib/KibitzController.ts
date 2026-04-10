@@ -19,6 +19,7 @@
 
 import { EventEmitter } from "eventemitter3";
 import * as data from "@/lib/data";
+import { GobanController } from "@/lib/GobanController";
 import { updateCachedChannelInformation } from "@/lib/chat_manager";
 import { KibitzMockService } from "@/lib/KibitzMockService";
 import { get } from "@/lib/requests";
@@ -1043,11 +1044,53 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         }
     }
 
+    public postVariation(roomId: string, boardController: GobanController): boolean {
+        const prepared = boardController.buildAnalysisSnapshot();
+        if (prepared.is_duplicate) {
+            return false;
+        }
+
+        const sourceGameId = this.resolveSecondarySourceGameId();
+        if (!sourceGameId) {
+            return false;
+        }
+
+        if (this._mode === "demo" && this._mock_service) {
+            const variation = this._mock_service.createVariation(
+                roomId,
+                createCurrentUser(),
+                sourceGameId,
+                prepared,
+            );
+
+            if (variation) {
+                boardController.recordAnalysisSent(prepared.analysis);
+                this.openVariation(variation.id);
+                return true;
+            }
+
+            return false;
+        }
+
+        console.warn("Live kibitz variation posting is not wired yet");
+        return false;
+    }
+
     public getRoomUsers(roomId: string): KibitzRoomUser[] {
         if (this._mode === "demo" && this._mock_service) {
             return this._mock_service.getRoom(roomId)?.users ?? [];
         }
 
         return this._active_room?.id === roomId ? this._active_room.users : [];
+    }
+
+    private resolveSecondarySourceGameId(): number | undefined {
+        if (this._secondary_pane.variation_id) {
+            return this._variations.find(
+                (variation) => variation.id === this._secondary_pane.variation_id,
+            )?.game_id;
+        }
+
+        return this._secondary_pane.preview_game_id ?? this._active_room?.current_game?.game_id;
     }
 }
