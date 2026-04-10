@@ -462,14 +462,9 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         if (activeProposal) {
             const nextPreviewGameId = activeProposal.proposed_game.game_id;
 
-            if (
-                this._secondary_pane.collapsed ||
-                this._secondary_pane.preview_game_id !== nextPreviewGameId
-            ) {
+            if (this._secondary_pane.preview_game_id !== nextPreviewGameId) {
                 this.setSecondaryPane({
                     ...this._secondary_pane,
-                    collapsed: false,
-                    size: this._secondary_pane.size ?? "small",
                     preview_game_id: nextPreviewGameId,
                     variation_id: undefined,
                 });
@@ -1019,7 +1014,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             this.setProposals(proposals);
             this.setVariations(this._mock_service.getVariations(roomId));
             this.setSecondaryPane({
-                collapsed: false,
+                collapsed: true,
                 size: "small",
             });
             this.syncDemoSecondaryPaneWithActiveProposal(proposals);
