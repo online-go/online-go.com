@@ -40,7 +40,6 @@ interface KibitzRoomStageProps {
     proposals: KibitzProposal[];
     variations: KibitzVariationSummary[];
     secondaryPane: KibitzSecondaryPaneState;
-    onPreviewGame: (gameId: number) => void;
     onClearPreview: () => void;
     onProposePreview: () => void;
     onSetSecondaryPaneMode: (mode: "hidden" | "small" | "equal") => void;
@@ -165,7 +164,6 @@ export function KibitzRoomStage({
     proposals,
     variations,
     secondaryPane,
-    onPreviewGame,
     onClearPreview,
     onProposePreview,
     onSetSecondaryPaneMode,
@@ -177,9 +175,6 @@ export function KibitzRoomStage({
         (variation) => variation.id === secondaryPane.variation_id,
     );
     const [mainGameDetails, setMainGameDetails] = React.useState<rest_api.GameDetails | null>(null);
-    const previewCandidates = rooms.filter(
-        (candidate) => candidate.id !== room.id && candidate.current_game?.game_id,
-    );
     const previewGame =
         rooms.find((candidate) => candidate.current_game?.game_id === secondaryGameId)
             ?.current_game ??
@@ -335,9 +330,6 @@ export function KibitzRoomStage({
                                     <div className="main-board-analyze-spacer" aria-hidden="true" />
                                 ) : null}
                                 {secondaryPaneSize === "equal" ? (
-                                    <div className="main-board-preview-spacer" aria-hidden="true" />
-                                ) : null}
-                                {secondaryPaneSize === "equal" ? (
                                     <div
                                         className="main-board-variation-spacer"
                                         aria-hidden="true"
@@ -489,24 +481,6 @@ export function KibitzRoomStage({
                                         />
                                     </div>
                                 ) : null}
-                                {previewCandidates.length > 0 ? (
-                                    <div className="secondary-room-preview-actions">
-                                        {previewCandidates.map((candidate) => (
-                                            <button
-                                                key={candidate.id}
-                                                type="button"
-                                                className="preview-action-button compact"
-                                                onClick={() =>
-                                                    onPreviewGame(
-                                                        candidate.current_game?.game_id as number,
-                                                    )
-                                                }
-                                            >
-                                                {candidate.title}
-                                            </button>
-                                        ))}
-                                    </div>
-                                ) : null}
                                 {secondaryPaneSize === "equal" ? (
                                     <Resizable
                                         id="kibitz-secondary-move-tree-container"
@@ -584,24 +558,6 @@ export function KibitzRoomStage({
                                             showBackToGame={false}
                                             showConditionalPlannerButton={false}
                                         />
-                                    </div>
-                                ) : null}
-                                {previewCandidates.length > 0 ? (
-                                    <div className="secondary-room-preview-actions">
-                                        {previewCandidates.map((candidate) => (
-                                            <button
-                                                key={candidate.id}
-                                                type="button"
-                                                className="preview-action-button compact"
-                                                onClick={() =>
-                                                    onPreviewGame(
-                                                        candidate.current_game?.game_id as number,
-                                                    )
-                                                }
-                                            >
-                                                {candidate.title}
-                                            </button>
-                                        ))}
                                     </div>
                                 ) : null}
                                 {secondaryPaneSize === "equal" ? (

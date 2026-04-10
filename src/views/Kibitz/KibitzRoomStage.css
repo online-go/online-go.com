@@ -80,7 +80,6 @@
             --equal-meta-height: var(--kibitz-header-block-height);
             --equal-transport-height: 2.35rem;
             --equal-analyze-height: 6rem;
-            --equal-preview-actions-height: 2.2rem;
             --equal-variation-height: 6.5rem;
             grid-template-columns:
                 minmax(0, 1fr)
@@ -104,7 +103,6 @@
                     auto
                     auto
                     var(--equal-analyze-height)
-                    var(--equal-preview-actions-height)
                     var(--equal-variation-height)
                     minmax(0, 1fr);
             }
@@ -133,11 +131,6 @@
                 height: var(--equal-variation-height);
                 min-height: var(--equal-variation-height);
                 width: min(100%, 39rem, 78vh);
-            }
-
-            .main-board .main-board-preview-spacer {
-                min-height: var(--equal-preview-actions-height);
-                visibility: hidden;
             }
 
             .main-board .main-board-analyze-spacer {
@@ -181,13 +174,6 @@
             .secondary-board .secondary-board-transport-row {
                 background: transparent;
                 padding-top: 0;
-            }
-
-            .secondary-room-preview-actions {
-                align-items: center;
-                min-height: var(--equal-preview-actions-height);
-                padding-top: 0;
-                padding-bottom: 0;
             }
 
             .secondary-board-analyze-row {
@@ -497,15 +483,6 @@
         .secondary-board-transport-row .transport-controls .KibitzBoardControls.full {
             width: auto;
             max-width: none;
-        }
-
-        .secondary-room-preview-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.35rem;
-            justify-content: flex-end;
-            min-width: 0;
-            padding: 0 0.125rem;
         }
 
         .secondary-board-analyze-row {

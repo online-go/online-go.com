@@ -138,13 +138,6 @@ export function Kibitz(): React.ReactElement {
         [navigate],
     );
 
-    const onPreviewGame = React.useCallback(
-        (gameId: number) => {
-            controller.previewGame(gameId);
-        },
-        [controller],
-    );
-
     const onClearPreview = React.useCallback(() => {
         controller.clearPreviewGame();
     }, [controller]);
@@ -249,7 +242,6 @@ export function Kibitz(): React.ReactElement {
                             proposals={roomProposals}
                             variations={variations}
                             secondaryPane={secondaryPane}
-                            onPreviewGame={onPreviewGame}
                             onClearPreview={onClearPreview}
                             onProposePreview={onProposePreview}
                             onSetSecondaryPaneMode={onSetSecondaryPaneMode}
