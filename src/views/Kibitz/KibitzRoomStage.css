@@ -77,7 +77,7 @@
 
         &.secondary-pane-equal {
             --equal-board-max-width: min(32rem, 48vh);
-            --equal-meta-height: 4rem;
+            --equal-meta-height: var(--kibitz-header-block-height);
             --equal-transport-height: 2.35rem;
             --equal-preview-actions-height: 2.2rem;
             --equal-variation-height: 6.5rem;
@@ -92,7 +92,7 @@
             }
 
             .board-panel .panel-body {
-                padding: 0.25rem;
+                padding: 0.25rem 0.25rem 0.25rem 0.75rem;
             }
 
             .board-panel .board-content {
@@ -105,6 +105,10 @@
                     var(--equal-preview-actions-height)
                     var(--equal-variation-height)
                     minmax(0, 1fr);
+            }
+
+            .board-fit-slot {
+                padding-top: 0.25rem;
             }
 
             .board-meta {
@@ -527,7 +531,6 @@
     .KibitzRoomStage {
         .KibitzRoomStage-boards.secondary-pane-equal {
             --equal-board-max-width: min(28rem, 42vh);
-            --equal-meta-height: 3.85rem;
             --equal-transport-height: 2.25rem;
             --equal-variation-height: 7.2rem;
         }
