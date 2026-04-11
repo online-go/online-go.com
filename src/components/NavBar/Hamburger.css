@@ -8,13 +8,19 @@
     align-items: center;
   }
 
-  .hamburger {
+  button.hamburger {
     position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 2rem;
     height: var(--navbar-height);
+    background: none;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
     cursor: pointer;
     z-index: 111;
   }

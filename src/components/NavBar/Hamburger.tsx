@@ -16,15 +16,21 @@
  */
 
 import * as React from "react";
+import { _ } from "@/lib/translate";
 import { Link } from "react-router-dom";
 import "./Hamburger.css";
 
 export function Hamburger(props: { open: boolean; onClick?: () => void }): React.ReactElement {
     return (
         <div className="hamburger-container">
-            <span className="hamburger" aria-expanded={props.open} onClick={props.onClick}>
+            <button
+                className="hamburger"
+                aria-expanded={props.open}
+                aria-label={_("Menu")}
+                onClick={props.onClick}
+            >
                 <span className="hamburger__in"></span>
-            </span>
+            </button>
             <Link
                 to="/"
                 className={`hamburger__logo ${props.open ? "hamburger__logo--hidden" : ""}`}
