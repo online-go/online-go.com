@@ -33,6 +33,7 @@ export function Hamburger(props: { open: boolean; onClick: () => void }): React.
             </button>
             <Link
                 to="/"
+                aria-label={_("Home")}
                 className={`hamburger__logo ${props.open ? "hamburger__logo--hidden" : ""}`}
             >
                 <span className="ogs-nav-logo" />
