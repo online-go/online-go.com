@@ -48,3 +48,5 @@ i18n/*.tar.gz
 # Playwright
 /playwright/.cache/
 /playwright/.auth/
+
+.vite
