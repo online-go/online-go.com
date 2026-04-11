@@ -40,6 +40,22 @@ import { KibitzController } from "./KibitzController";
 import "./Kibitz.css";
 
 type SecondaryPaneMode = "hidden" | "small" | "equal";
+type MobileCompanionPanel = "chat" | "vote" | "compare";
+
+const MOBILE_LAYOUT_MEDIA_QUERY = "(max-width: 1000px)";
+
+function formatMobileVoteCountdown(endsAt?: number): string | null {
+    if (!endsAt) {
+        return null;
+    }
+
+    const remainingMs = Math.max(0, endsAt - Date.now());
+    const totalSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
 
 export function Kibitz(): React.ReactElement {
     const location = useLocation();
@@ -64,10 +80,30 @@ export function Kibitz(): React.ReactElement {
     const [pendingSecondaryPaneMode, setPendingSecondaryPaneMode] =
         React.useState<SecondaryPaneMode | null>(null);
     const [debug, setDebug] = React.useState<KibitzDebugState>(controller.debug);
+    const [mobileCompanionPanel, setMobileCompanionPanel] =
+        React.useState<MobileCompanionPanel>("chat");
+    const [isMobileLayout, setIsMobileLayout] = React.useState(
+        () => window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY).matches,
+    );
+    const [mobileVoteCountdown, setMobileVoteCountdown] = React.useState<string | null>(null);
     const showDebug = React.useMemo(() => {
         const params = new URLSearchParams(location.search);
         return params.get("debug-kibitz") === "1";
     }, [location.search]);
+
+    React.useEffect(() => {
+        const mediaQuery = window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY);
+        const sync = (event?: MediaQueryListEvent) => {
+            setIsMobileLayout(event?.matches ?? mediaQuery.matches);
+        };
+
+        sync();
+        mediaQuery.addEventListener("change", sync);
+
+        return () => {
+            mediaQuery.removeEventListener("change", sync);
+        };
+    }, []);
 
     const currentSecondaryPaneMode: SecondaryPaneMode = secondaryPane.collapsed
         ? "hidden"
@@ -141,13 +177,21 @@ export function Kibitz(): React.ReactElement {
 
     const onClearPreview = React.useCallback(() => {
         controller.clearPreviewGame();
-    }, [controller]);
+        if (isMobileLayout) {
+            setMobileCompanionPanel("chat");
+            setPendingSecondaryPaneMode("hidden");
+        }
+    }, [controller, isMobileLayout]);
 
     const onOpenVariation = React.useCallback(
         (variationId: string) => {
             controller.openVariation(variationId);
+            if (isMobileLayout) {
+                setMobileCompanionPanel("compare");
+                setPendingSecondaryPaneMode("equal");
+            }
         },
-        [controller],
+        [controller, isMobileLayout],
     );
     const onSetSecondaryPaneMode = React.useCallback((nextMode: SecondaryPaneMode) => {
         setPendingSecondaryPaneMode(nextMode);
@@ -178,6 +222,15 @@ export function Kibitz(): React.ReactElement {
     const roomProposals = proposals.filter((proposal) => proposal.room_id === resolvedRoom?.id);
     const activeProposal = roomProposals.find((proposal) => proposal.status === "active");
     const queuedRoomProposals = roomProposals.filter((proposal) => proposal.status !== "active");
+    const proposalBackedPreview = Boolean(
+        secondaryPane.preview_game_id &&
+            roomProposals.some(
+                (proposal) => proposal.proposed_game.game_id === secondaryPane.preview_game_id,
+            ),
+    );
+    const hasCompareTarget = Boolean(
+        secondaryPane.variation_id || (secondaryPane.preview_game_id && !proposalBackedPreview),
+    );
 
     const onProposePreview = React.useCallback(() => {
         if (resolvedRoom) {
@@ -201,6 +254,68 @@ export function Kibitz(): React.ReactElement {
             }
         },
         [controller, resolvedRoom],
+    );
+
+    React.useEffect(() => {
+        if (!isMobileLayout) {
+            setMobileCompanionPanel("chat");
+            return;
+        }
+
+        setMobileCompanionPanel("chat");
+    }, [isMobileLayout, resolvedRoom?.id]);
+
+    React.useEffect(() => {
+        if (!activeProposal?.vote_state?.ends_at) {
+            setMobileVoteCountdown(null);
+            return;
+        }
+
+        const sync = () => {
+            setMobileVoteCountdown(formatMobileVoteCountdown(activeProposal.vote_state?.ends_at));
+        };
+
+        sync();
+        const timer = window.setInterval(sync, 1000);
+
+        return () => {
+            window.clearInterval(timer);
+        };
+    }, [activeProposal?.id, activeProposal?.vote_state?.ends_at]);
+
+    React.useEffect(() => {
+        if (!isMobileLayout) {
+            return;
+        }
+
+        if (mobileCompanionPanel === "compare" && !hasCompareTarget) {
+            setMobileCompanionPanel("chat");
+            if (currentSecondaryPaneMode !== "hidden") {
+                setPendingSecondaryPaneMode("hidden");
+            }
+        }
+    }, [currentSecondaryPaneMode, hasCompareTarget, isMobileLayout, mobileCompanionPanel]);
+
+    const onSelectMobileCompanionPanel = React.useCallback(
+        (panel: MobileCompanionPanel) => {
+            setMobileCompanionPanel(panel);
+
+            if (!isMobileLayout) {
+                return;
+            }
+
+            if (panel === "compare") {
+                if (hasCompareTarget) {
+                    setPendingSecondaryPaneMode("equal");
+                }
+                return;
+            }
+
+            if (currentSecondaryPaneMode !== "hidden") {
+                setPendingSecondaryPaneMode("hidden");
+            }
+        },
+        [currentSecondaryPaneMode, hasCompareTarget, isMobileLayout],
     );
 
     const resolvedRoomUsers = resolvedRoom ? controller.getRoomUsers(resolvedRoom.id) : [];
@@ -249,43 +364,190 @@ export function Kibitz(): React.ReactElement {
                                 (activeProposal ? " has-active-proposal" : " no-active-proposal")
                             }
                         >
-                            <div className="Kibitz-sidebar-proposal-slot">
-                                <KibitzProposalBar
-                                    proposal={activeProposal}
-                                    onVote={onVoteProposal}
-                                />
-                            </div>
-                            <KibitzRoomStream
-                                mode={mode}
-                                room={resolvedRoom}
-                                items={stream}
-                                variations={variations}
-                                onOpenVariation={onOpenVariation}
-                                onSendMessage={onSendMessage}
-                                compact={Boolean(activeProposal)}
-                            />
-                            <div className="Kibitz-footer-panels">
-                                {variations.length === 0 && queuedRoomProposals.length === 0 ? (
-                                    <div className="Kibitz-footer-empty">
-                                        {pgettext(
-                                            "Compact empty state shown below the kibitz room stream when there are no variations or queued proposals",
-                                            "No variations yet. Watch next queue empty.",
+                            {isMobileLayout ? (
+                                <>
+                                    <div
+                                        className="Kibitz-mobile-panel-switcher"
+                                        role="tablist"
+                                        aria-label={pgettext(
+                                            "Aria label for the mobile kibitz panel switcher",
+                                            "Mobile kibitz panels",
                                         )}
+                                    >
+                                        <button
+                                            type="button"
+                                            className={
+                                                "mobile-panel-button" +
+                                                (mobileCompanionPanel === "chat" ? " active" : "")
+                                            }
+                                            onClick={() => onSelectMobileCompanionPanel("chat")}
+                                            aria-pressed={mobileCompanionPanel === "chat"}
+                                        >
+                                            <span className="mobile-panel-label">
+                                                {pgettext("Mobile kibitz panel label", "Chat")}
+                                            </span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={
+                                                "mobile-panel-button vote-panel-button" +
+                                                (mobileCompanionPanel === "vote" ? " active" : "") +
+                                                (activeProposal ? " has-alert" : "")
+                                            }
+                                            onClick={() => onSelectMobileCompanionPanel("vote")}
+                                            aria-pressed={mobileCompanionPanel === "vote"}
+                                        >
+                                            <span className="mobile-panel-label">
+                                                {pgettext("Mobile kibitz panel label", "Vote")}
+                                            </span>
+                                            {mobileVoteCountdown ? (
+                                                <span className="mobile-panel-badge">
+                                                    {mobileVoteCountdown}
+                                                </span>
+                                            ) : null}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={
+                                                "mobile-panel-button compare-panel-button" +
+                                                (mobileCompanionPanel === "compare"
+                                                    ? " active"
+                                                    : "") +
+                                                (hasCompareTarget ? " has-alert" : "")
+                                            }
+                                            onClick={() => onSelectMobileCompanionPanel("compare")}
+                                            aria-pressed={mobileCompanionPanel === "compare"}
+                                        >
+                                            <span className="mobile-panel-label">
+                                                {pgettext("Mobile kibitz panel label", "Compare")}
+                                            </span>
+                                        </button>
                                     </div>
-                                ) : (
-                                    <>
-                                        {variations.length > 0 ? (
-                                            <KibitzVariationList
+                                    <div className="Kibitz-mobile-panel-surface">
+                                        {mobileCompanionPanel === "chat" ? (
+                                            <KibitzRoomStream
+                                                mode={mode}
+                                                room={resolvedRoom}
+                                                items={stream}
                                                 variations={variations}
                                                 onOpenVariation={onOpenVariation}
+                                                onSendMessage={onSendMessage}
                                             />
                                         ) : null}
-                                        {queuedRoomProposals.length > 0 ? (
-                                            <KibitzProposalQueue proposals={queuedRoomProposals} />
+                                        {mobileCompanionPanel === "vote" ? (
+                                            <div className="Kibitz-mobile-panel Kibitz-mobile-vote-panel">
+                                                {activeProposal ? (
+                                                    <KibitzProposalBar
+                                                        proposal={activeProposal}
+                                                        onVote={onVoteProposal}
+                                                    />
+                                                ) : (
+                                                    <div className="Kibitz-mobile-panel-empty">
+                                                        {pgettext(
+                                                            "Empty state shown in the mobile kibitz vote panel when no vote is active",
+                                                            "No live vote right now.",
+                                                        )}
+                                                    </div>
+                                                )}
+                                                {queuedRoomProposals.length > 0 ? (
+                                                    <KibitzProposalQueue
+                                                        proposals={queuedRoomProposals}
+                                                    />
+                                                ) : null}
+                                            </div>
                                         ) : null}
-                                    </>
-                                )}
-                            </div>
+                                        {mobileCompanionPanel === "compare" ? (
+                                            <div className="Kibitz-mobile-panel Kibitz-mobile-compare-panel">
+                                                {hasCompareTarget ? (
+                                                    <div className="Kibitz-mobile-panel-note">
+                                                        {pgettext(
+                                                            "Helper text shown in the mobile kibitz compare panel",
+                                                            "Comparison board is active above. Variations and queue stay here.",
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <div className="Kibitz-mobile-panel-empty">
+                                                        {pgettext(
+                                                            "Empty state shown in the mobile kibitz compare panel",
+                                                            "Open a variation or preview to compare here.",
+                                                        )}
+                                                    </div>
+                                                )}
+                                                <div className="Kibitz-footer-panels">
+                                                    {variations.length === 0 &&
+                                                    queuedRoomProposals.length === 0 ? (
+                                                        <div className="Kibitz-footer-empty">
+                                                            {pgettext(
+                                                                "Compact empty state shown below the kibitz room stream when there are no variations or queued proposals",
+                                                                "No variations yet. Watch next queue empty.",
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            {variations.length > 0 ? (
+                                                                <KibitzVariationList
+                                                                    variations={variations}
+                                                                    onOpenVariation={
+                                                                        onOpenVariation
+                                                                    }
+                                                                />
+                                                            ) : null}
+                                                            {queuedRoomProposals.length > 0 ? (
+                                                                <KibitzProposalQueue
+                                                                    proposals={queuedRoomProposals}
+                                                                />
+                                                            ) : null}
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ) : null}
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="Kibitz-sidebar-proposal-slot">
+                                        <KibitzProposalBar
+                                            proposal={activeProposal}
+                                            onVote={onVoteProposal}
+                                        />
+                                    </div>
+                                    <KibitzRoomStream
+                                        mode={mode}
+                                        room={resolvedRoom}
+                                        items={stream}
+                                        variations={variations}
+                                        onOpenVariation={onOpenVariation}
+                                        onSendMessage={onSendMessage}
+                                        compact={Boolean(activeProposal)}
+                                    />
+                                    <div className="Kibitz-footer-panels">
+                                        {variations.length === 0 &&
+                                        queuedRoomProposals.length === 0 ? (
+                                            <div className="Kibitz-footer-empty">
+                                                {pgettext(
+                                                    "Compact empty state shown below the kibitz room stream when there are no variations or queued proposals",
+                                                    "No variations yet. Watch next queue empty.",
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <>
+                                                {variations.length > 0 ? (
+                                                    <KibitzVariationList
+                                                        variations={variations}
+                                                        onOpenVariation={onOpenVariation}
+                                                    />
+                                                ) : null}
+                                                {queuedRoomProposals.length > 0 ? (
+                                                    <KibitzProposalQueue
+                                                        proposals={queuedRoomProposals}
+                                                    />
+                                                ) : null}
+                                            </>
+                                        )}
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>

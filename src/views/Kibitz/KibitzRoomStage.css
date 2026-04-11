@@ -667,38 +667,76 @@
     }
 }
 
-@media (max-width: 850px) {
-    .Kibitz-layout {
-        display: flex;
-        flex-direction: column;
-    }
+@media (max-width: 1000px) {
+    .KibitzRoomStage {
+        padding: 0;
 
-    .Kibitz-main {
-        order: 1;
-    }
+        .KibitzRoomStage-boards {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 0;
+        }
 
-    .Kibitz-left-rail {
-        order: 2;
-    }
+        .KibitzRoomStage-boards .KibitzDividerHandle {
+            display: none;
+        }
 
-    .Kibitz-sidebar {
-        order: 3;
-    }
+        .KibitzRoomStage-boards.secondary-pane-hidden .secondary-board {
+            display: none;
+        }
 
-    .KibitzRoomStage-boards .secondary-board {
-        display: none;
-    }
+        .KibitzRoomStage-boards:not(.secondary-pane-hidden) .main-board {
+            display: none;
+        }
 
-    .KibitzRoomStage .board-meta {
-        min-height: auto;
-        padding: 0.35rem 0.25rem 0.4rem 0.4rem;
-    }
+        .KibitzRoomStage-boards:not(.secondary-pane-hidden) .secondary-board {
+            display: flex;
+        }
 
-    .KibitzRoomStage .board-subtitle {
-        font-size: 0.72rem;
-    }
+        .board-panel .panel-body {
+            padding: 0.125rem;
+        }
 
-    .Kibitz {
-        padding: 0.25rem;
+        .board-meta {
+            min-height: auto;
+            padding: 0.35rem 0.4rem 0.45rem;
+        }
+
+        .board-meta-main {
+            display: grid;
+            gap: 0.2rem;
+            grid-template-columns: minmax(0, 1fr);
+            padding-left: 0.4rem;
+            padding-right: 0.4rem;
+            padding-top: 0.4rem;
+        }
+
+        .board-meta-main .board-title-row,
+        .board-meta-main .players.player-pair {
+            grid-column: auto;
+            justify-self: start;
+        }
+
+        .board-title {
+            font-size: 0.92rem;
+        }
+
+        .board-subtitle {
+            font-size: 0.72rem;
+        }
+
+        .players {
+            font-size: 0.84rem;
+        }
+
+        .KibitzBoard,
+        .secondary-board .KibitzBoard {
+            max-width: min(100%, 30rem, calc(100vw - 1rem));
+            width: 100%;
+        }
+
+        .secondary-board .KibitzBoardControls,
+        .secondary-board .kibitz-move-tree-container {
+            width: min(100%, 30rem, calc(100vw - 1rem));
+        }
     }
 }
