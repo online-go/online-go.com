@@ -76,8 +76,8 @@
         }
 
         &.secondary-pane-equal {
-            --equal-main-track: minmax(14rem, 0.72fr);
-            --equal-secondary-track: minmax(18rem, 1.28fr);
+            --equal-main-track: minmax(12.5rem, 0.58fr);
+            --equal-secondary-track: minmax(20.5rem, 1.42fr);
             --equal-meta-height: var(--kibitz-header-block-height);
             --equal-transport-height: 2.35rem;
             --equal-analyze-height: 6rem;
@@ -160,14 +160,31 @@
             }
 
             .main-board .board-meta {
-                max-width: min(100%, 24rem, 34vh);
+                max-width: min(100%, 21rem, 30vh);
+                padding-right: 0.5rem;
+            }
+
+            .main-board .board-title {
+                font-size: 0.92rem;
+            }
+
+            .main-board .board-subtitle {
+                font-size: 0.78rem;
+            }
+
+            .main-board .players {
+                font-size: 0.84rem;
+            }
+
+            .main-board .game-details {
+                font-size: 0.75rem;
             }
 
             .secondary-board .board-meta,
             .secondary-board-analyze-row,
             .secondary-board-compose-row,
             .secondary-board .kibitz-move-tree-container {
-                max-width: min(100%, 42rem, 66vh);
+                max-width: min(100%, 48rem, 78vh);
                 width: 100%;
             }
 
@@ -193,21 +210,21 @@
             }
 
             .main-board .KibitzBoard {
-                max-width: min(100%, 24rem, 34vh);
+                max-width: min(100%, 20rem, 30vh);
                 width: auto;
             }
 
             .main-board .KibitzBoardControls {
-                max-width: min(100%, 24rem, 34vh);
+                max-width: min(100%, 20rem, 30vh);
             }
 
             .secondary-board .KibitzBoard {
-                max-width: min(100%, 42rem, 66vh);
+                max-width: min(100%, 48rem, 78vh);
                 width: auto;
             }
 
             .secondary-board .KibitzBoardControls {
-                max-width: min(100%, 42rem, 66vh);
+                max-width: min(100%, 48rem, 78vh);
             }
 
             .main-board .KibitzBoardControls.minimal-row {
@@ -619,7 +636,8 @@
 @media (max-width: 1850px), (max-height: 1000px) {
     .KibitzRoomStage {
         .KibitzRoomStage-boards.secondary-pane-equal {
-            --equal-board-max-width: min(28rem, 42vh);
+            --equal-main-track: minmax(11.75rem, 0.62fr);
+            --equal-secondary-track: minmax(18rem, 1.38fr);
             --equal-transport-height: 2.25rem;
             --equal-variation-height: 5rem;
         }

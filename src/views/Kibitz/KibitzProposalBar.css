@@ -231,6 +231,52 @@
         color: var(--fg);
     }
 
+    .proposal-preview-toggle {
+        align-items: center;
+        background: transparent;
+        border: 0;
+        color: var(--fg);
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 0.22rem;
+        padding: 0;
+        width: 100%;
+    }
+
+    .proposal-preview-thumb {
+        align-items: center;
+        background: var(--shade2);
+        display: inline-flex;
+        height: 3.35rem;
+        justify-content: center;
+        overflow: hidden;
+        width: 3.35rem;
+    }
+
+    .proposal-preview-thumb .KibitzBoard {
+        height: 3.35rem;
+        width: 3.35rem;
+    }
+
+    .proposal-preview-thumb .KibitzBoard .goban-container {
+        height: 100% !important;
+        width: 100% !important;
+    }
+
+    .proposal-preview-toggle-label {
+        color: var(--text-color-faded);
+        font-size: 0.66rem;
+        font-weight: bold;
+        letter-spacing: 0.04em;
+        line-height: 1;
+        text-transform: uppercase;
+    }
+
+    .proposal-preview-toggle.expanded .proposal-preview-toggle-label {
+        color: var(--fg);
+    }
+
     .proposal-timer-spine {
         align-items: center;
         display: flex;
@@ -275,6 +321,75 @@
         transition: transform 180ms linear;
         width: 100%;
     }
+    .proposal-expanded-preview {
+        background: var(--card-background-color);
+        border-top: 1px solid transparent;
+        border-top-color: var(--shade3);
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        padding: 0.55rem 0.6rem 0.65rem;
+    }
+
+    .proposal-expanded-preview-header {
+        align-items: flex-start;
+        display: flex;
+        gap: 0.45rem;
+        justify-content: space-between;
+    }
+
+    .proposal-expanded-preview-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 0.12rem;
+        min-width: 0;
+    }
+
+    .proposal-expanded-preview-title {
+        color: var(--fg);
+        font-size: 0.74rem;
+        font-weight: bold;
+        letter-spacing: 0.03em;
+        line-height: 1.08;
+        text-transform: uppercase;
+    }
+
+    .proposal-expanded-preview-meta {
+        color: var(--text-color-faded);
+        font-size: 0.74rem;
+        line-height: 1.2;
+    }
+
+    .proposal-expanded-preview-close {
+        background: var(--shade2);
+        border: 0;
+        box-shadow: none;
+        color: var(--fg);
+        cursor: pointer;
+        font-size: 0.76rem;
+        font-weight: bold;
+        line-height: 1;
+        padding: 0.38rem 0.6rem;
+        white-space: nowrap;
+    }
+
+    .proposal-expanded-board-wrap {
+        align-items: center;
+        display: flex;
+        justify-content: center;
+        min-width: 0;
+    }
+
+    .proposal-expanded-board-wrap .KibitzBoard {
+        height: min(17rem, 58vw);
+        width: min(17rem, 58vw);
+    }
+
+    .proposal-expanded-board-wrap .KibitzBoard .goban-container {
+        height: 100% !important;
+        width: 100% !important;
+    }
+
 }
 
 @media (max-width: 1200px) {
@@ -304,11 +419,29 @@
         }
 
         .proposal-timer-spine {
+            align-items: center;
             flex-direction: row;
             gap: 0.45rem;
             justify-content: flex-start;
             order: -1;
             padding: 0;
+        }
+
+        .proposal-preview-toggle {
+            align-items: center;
+            flex-direction: row;
+            gap: 0.4rem;
+            width: auto;
+        }
+
+        .proposal-preview-thumb {
+            height: 2.8rem;
+            width: 2.8rem;
+        }
+
+        .proposal-preview-thumb .KibitzBoard {
+            height: 2.8rem;
+            width: 2.8rem;
         }
 
         .proposal-timer-track {
@@ -325,6 +458,19 @@
 
         .proposal-choice {
             padding: 0;
+        }
+
+        .proposal-expanded-preview-header {
+            flex-direction: column;
+        }
+
+        .proposal-expanded-preview-close {
+            align-self: flex-start;
+        }
+
+        .proposal-expanded-board-wrap .KibitzBoard {
+            height: min(15rem, 74vw);
+            width: min(15rem, 74vw);
         }
     }
 }

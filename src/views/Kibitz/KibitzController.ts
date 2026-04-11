@@ -717,7 +717,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.setSecondaryPane({
             ...this._secondary_pane,
             collapsed: false,
-            size: "equal",
+            size: this._secondary_pane.size ?? "small",
             preview_game_id: gameId,
             variation_id: undefined,
         });
@@ -736,7 +736,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.setSecondaryPane({
             ...this._secondary_pane,
             collapsed: false,
-            size: "equal",
+            size: this._secondary_pane.size ?? "small",
             preview_game_id: undefined,
             variation_id: variationId,
         });
@@ -993,19 +993,12 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             const proposals = this._mock_service.getProposals(roomId);
             this.setProposals(proposals);
             this.setVariations(this._mock_service.getVariations(roomId));
-            const activeProposal = proposals.find((proposal) => proposal.status === "active");
-            this.setSecondaryPane(
-                activeProposal
-                    ? {
-                          collapsed: false,
-                          size: "small",
-                          preview_game_id: activeProposal.proposed_game.game_id,
-                      }
-                    : {
-                          collapsed: false,
-                          size: "small",
-                      },
-            );
+            this.setSecondaryPane({
+                collapsed: true,
+                size: "small",
+                preview_game_id: undefined,
+                variation_id: undefined,
+            });
             return;
         }
 
