@@ -408,22 +408,6 @@ header.NavBar {
         }
     }
 
-    .hamburger {
-        display: none;
-        cursor: pointer;
-
-        @media only screen and (max-width: $hamburger-cutoff) {
-            font-size: 1.7rem;
-            display: inline-flex;
-            align-items: center;
-            padding-left: 0.5rem;
-
-            a {
-                display: inline-flex;
-                align-items: center;
-            }
-        }
-    }
 
     .Menu {
         img {
