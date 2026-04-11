@@ -20,7 +20,7 @@ import { _ } from "@/lib/translate";
 import { Link } from "react-router-dom";
 import "./Hamburger.css";
 
-export function Hamburger(props: { open: boolean; onClick?: () => void }): React.ReactElement {
+export function Hamburger(props: { open: boolean; onClick: () => void }): React.ReactElement {
     return (
         <div className="hamburger-container">
             <button
