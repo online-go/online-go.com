@@ -191,9 +191,6 @@ export function KibitzRoomStage({
         React.useState<GobanController | null>(null);
     const [mainBoardSlotRef, mainBoardSize] = useSquareFitSize<HTMLDivElement>();
     const [secondaryBoardSlotRef, secondaryBoardSize] = useSquareFitSize<HTMLDivElement>();
-    const sharedBoardSize =
-        secondaryPaneSize === "equal" ? Math.min(mainBoardSize, secondaryBoardSize) : undefined;
-
     const setSecondaryMoveTreeContainer = React.useCallback(
         (instance: Resizable | null) => {
             if (secondaryBoardController && instance) {
@@ -337,11 +334,7 @@ export function KibitzRoomStage({
                                         }
                                         json={mainGame.mock_game_data}
                                         className="main-board-surface"
-                                        size={
-                                            secondaryPaneSize === "equal"
-                                                ? sharedBoardSize
-                                                : mainBoardSize
-                                        }
+                                        size={mainBoardSize}
                                         onReady={setMainBoardController}
                                     />
                                 </div>
@@ -454,11 +447,7 @@ export function KibitzRoomStage({
                                         }
                                         json={previewGame?.mock_game_data}
                                         className="secondary-board-surface"
-                                        size={
-                                            secondaryPaneSize === "equal"
-                                                ? sharedBoardSize
-                                                : secondaryBoardSize
-                                        }
+                                        size={secondaryBoardSize}
                                         interactive={secondaryPaneSize === "equal"}
                                         onReady={setSecondaryBoardController}
                                     />
@@ -560,11 +549,7 @@ export function KibitzRoomStage({
                                     <KibitzBoard
                                         json={selectedVariation.mock_game_data}
                                         className="secondary-board-surface"
-                                        size={
-                                            secondaryPaneSize === "equal"
-                                                ? sharedBoardSize
-                                                : secondaryBoardSize
-                                        }
+                                        size={secondaryBoardSize}
                                         interactive={secondaryPaneSize === "equal"}
                                         onReady={setSecondaryBoardController}
                                     />

@@ -20,7 +20,7 @@ import { pgettext } from "@/lib/translate";
 import type { KibitzSecondaryPaneState } from "@/models/kibitz";
 import "./KibitzDividerHandle.css";
 
-type DividerMode = "hidden" | "small" | "equal";
+type DividerMode = "hidden" | "equal";
 
 interface KibitzDividerHandleProps {
     secondaryPane: KibitzSecondaryPaneState;
@@ -30,13 +30,8 @@ interface KibitzDividerHandleProps {
 const MODE_OPTIONS: Array<{ id: DividerMode; label: string; className: string }> = [
     {
         id: "hidden",
-        label: pgettext("Kibitz divider mode label", "Focus main"),
-        className: "focus-main",
-    },
-    {
-        id: "small",
-        label: pgettext("Kibitz divider mode label", "Split"),
-        className: "split-view",
+        label: pgettext("Kibitz divider mode label", "Watch"),
+        className: "watch-view",
     },
     {
         id: "equal",
@@ -49,13 +44,13 @@ export function KibitzDividerHandle({
     secondaryPane,
     onSetMode,
 }: KibitzDividerHandleProps): React.ReactElement {
-    const mode: DividerMode = secondaryPane.collapsed ? "hidden" : (secondaryPane.size ?? "small");
+    const mode: DividerMode = secondaryPane.collapsed ? "hidden" : "equal";
 
     return (
         <div
             className={`KibitzDividerHandle mode-${mode}`}
             role="group"
-            aria-label={pgettext("Aria label for kibitz divider mode switch", "Board layout")}
+            aria-label={pgettext("Aria label for kibitz divider mode switch", "Board view mode")}
         >
             <div className="divider-mode-switch">
                 {MODE_OPTIONS.map((option) => {

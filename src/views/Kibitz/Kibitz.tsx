@@ -18,7 +18,6 @@
 import * as React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { GobanController } from "@/lib/GobanController";
-import { KibitzController } from "@/lib/KibitzController";
 import { pgettext } from "@/lib/translate";
 import type {
     KibitzDebugState,
@@ -37,6 +36,7 @@ import { KibitzRoomStage } from "./KibitzRoomStage";
 import { KibitzRoomStream } from "./KibitzRoomStream";
 import { KibitzPresence } from "./KibitzPresence";
 import { KibitzVariationList } from "./KibitzVariationList";
+import { KibitzController } from "./KibitzController";
 import "./Kibitz.css";
 
 type SecondaryPaneMode = "hidden" | "small" | "equal";
@@ -154,30 +154,17 @@ export function Kibitz(): React.ReactElement {
     }, []);
 
     React.useEffect(() => {
-        if (!pendingSecondaryPaneMode || pendingSecondaryPaneMode === currentSecondaryPaneMode) {
-            if (pendingSecondaryPaneMode && pendingSecondaryPaneMode === currentSecondaryPaneMode) {
-                setPendingSecondaryPaneMode(null);
-            }
+        if (!pendingSecondaryPaneMode) {
             return;
         }
 
-        if (pendingSecondaryPaneMode === "hidden") {
-            controller.decreaseSecondaryPaneSize();
+        if (pendingSecondaryPaneMode === currentSecondaryPaneMode) {
+            setPendingSecondaryPaneMode(null);
             return;
         }
 
-        if (pendingSecondaryPaneMode === "small") {
-            if (currentSecondaryPaneMode === "hidden") {
-                controller.increaseSecondaryPaneSize();
-            } else {
-                controller.decreaseSecondaryPaneSize();
-            }
-            return;
-        }
-
-        if (pendingSecondaryPaneMode === "equal") {
-            controller.increaseSecondaryPaneSize();
-        }
+        controller.setSecondaryPaneMode(pendingSecondaryPaneMode);
+        setPendingSecondaryPaneMode(null);
     }, [controller, currentSecondaryPaneMode, pendingSecondaryPaneMode]);
 
     const onVoteProposal = React.useCallback(

@@ -76,16 +76,17 @@
         }
 
         &.secondary-pane-equal {
-            --equal-board-max-width: min(32rem, 48vh);
+            --equal-main-track: minmax(14rem, 0.72fr);
+            --equal-secondary-track: minmax(18rem, 1.28fr);
             --equal-meta-height: var(--kibitz-header-block-height);
             --equal-transport-height: 2.35rem;
             --equal-analyze-height: 6rem;
             --equal-compose-height: 2.4rem;
             --equal-variation-height: 4.5rem;
             grid-template-columns:
-                minmax(0, 1fr)
+                var(--equal-main-track)
                 var(--board-divider-width)
-                minmax(0, 1fr);
+                var(--equal-secondary-track);
 
             .board-panel {
                 border-left: 0;
@@ -111,6 +112,14 @@
 
             .board-fit-slot {
                 padding-top: 0.25rem;
+            }
+
+            .main-board .board-fit-slot {
+                justify-items: start;
+            }
+
+            .secondary-board .board-fit-slot {
+                justify-items: center;
             }
 
             .board-meta {
@@ -150,6 +159,18 @@
                 min-height: 0;
             }
 
+            .main-board .board-meta {
+                max-width: min(100%, 24rem, 34vh);
+            }
+
+            .secondary-board .board-meta,
+            .secondary-board-analyze-row,
+            .secondary-board-compose-row,
+            .secondary-board .kibitz-move-tree-container {
+                max-width: min(100%, 42rem, 66vh);
+                width: 100%;
+            }
+
             .secondary-board .board-actions {
                 flex-wrap: wrap;
             }
@@ -171,9 +192,22 @@
                 width: 100%;
             }
 
+            .main-board .KibitzBoard {
+                max-width: min(100%, 24rem, 34vh);
+                width: auto;
+            }
+
+            .main-board .KibitzBoardControls {
+                max-width: min(100%, 24rem, 34vh);
+            }
+
             .secondary-board .KibitzBoard {
-                max-width: 100%;
-                width: 100%;
+                max-width: min(100%, 42rem, 66vh);
+                width: auto;
+            }
+
+            .secondary-board .KibitzBoardControls {
+                max-width: min(100%, 42rem, 66vh);
             }
 
             .main-board .KibitzBoardControls.minimal-row {
