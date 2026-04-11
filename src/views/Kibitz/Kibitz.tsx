@@ -275,6 +275,7 @@ export function Kibitz(): React.ReactElement {
                                 variations={variations}
                                 onOpenVariation={onOpenVariation}
                                 onSendMessage={onSendMessage}
+                                compact={Boolean(activeProposal)}
                             />
                             <div className="Kibitz-footer-panels">
                                 {variations.length === 0 && queuedRoomProposals.length === 0 ? (

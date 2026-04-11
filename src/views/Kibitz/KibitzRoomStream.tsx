@@ -42,6 +42,7 @@ interface KibitzRoomStreamProps {
     variations: KibitzVariationSummary[];
     onOpenVariation: (variationId: string) => void;
     onSendMessage: (text: string) => void;
+    compact?: boolean;
 }
 
 type DemoStreamEntry =
@@ -65,6 +66,7 @@ export function KibitzRoomStream({
     variations,
     onOpenVariation,
     onSendMessage,
+    compact = false,
 }: KibitzRoomStreamProps): React.ReactElement {
     const user = useUser();
     const chatLinesRef = React.useRef<HTMLDivElement | null>(null);
@@ -199,10 +201,15 @@ export function KibitzRoomStream({
     }, [followLatest, renderedLineCount]);
 
     return (
-        <div className="KibitzRoomStream">
-            <div className="KibitzRoomStream-title">
-                {pgettext("Heading for the main message stream in a kibitz room", "Room stream")}
-            </div>
+        <div className={"KibitzRoomStream" + (compact ? " compact" : "")}>
+            {compact ? null : (
+                <div className="KibitzRoomStream-title">
+                    {pgettext(
+                        "Heading for the main message stream in a kibitz room",
+                        "Room stream",
+                    )}
+                </div>
+            )}
             <div className="KibitzRoomStream-items">
                 {(mode === "demo" ? demoEntries.length > 0 : chatLog.length > 0) ? (
                     <div ref={chatLinesRef} className="chat-lines" onScroll={updateFollowLatest}>
