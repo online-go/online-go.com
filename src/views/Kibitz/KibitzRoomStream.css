@@ -1,5 +1,5 @@
 .KibitzRoomStream {
-    --kibitz-header-block-height: 5.025rem;
+    --kibitz-header-block-height: 1.5rem;
 
     background: var(--card-background-color);
     display: flex;
