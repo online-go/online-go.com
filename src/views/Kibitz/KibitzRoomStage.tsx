@@ -244,10 +244,6 @@ export function KibitzRoomStage({
     const displayedTitle = mainGameDetails?.name || mainGame?.title;
     const displayedBlack = mainGameDetails?.players?.black?.username || mainGame?.black.username;
     const displayedWhite = mainGameDetails?.players?.white?.username || mainGame?.white.username;
-    const displayedBoardSize =
-        mainGameDetails && mainGameDetails.width && mainGameDetails.height
-            ? `${mainGameDetails.width}x${mainGameDetails.height}`
-            : mainGame?.board_size;
     const displayedMoveNumber =
         mainGameDetails?.gamedata?.moves?.length ??
         mainGameDetails?.gamedata?.clock?.last_move ??
@@ -305,27 +301,7 @@ export function KibitzRoomStage({
                                             <span className="player-name">{displayedWhite}</span>
                                         </div>
                                     </div>
-                                    <div className="game-details">
-                                        {displayedBoardSize
-                                            ? interpolate(
-                                                  pgettext(
-                                                      "Board size label shown in the kibitz stage",
-                                                      "Board {{size}}",
-                                                  ),
-                                                  { size: displayedBoardSize },
-                                              )
-                                            : ""}
-                                        {displayedMoveNumber
-                                            ? ` - ${interpolate(
-                                                  pgettext(
-                                                      "Move number label shown in the kibitz stage",
-                                                      "Move {{move_number}}",
-                                                  ),
-                                                  { move_number: displayedMoveNumber },
-                                              )}`
-                                            : ""}
-                                        {displayedTournament ? ` - ${displayedTournament}` : ""}
-                                    </div>
+                                    {displayedTournament ?? ""}
                                 </div>
                                 <div className="board-fit-slot" ref={mainBoardSlotRef}>
                                     <KibitzBoard
@@ -416,27 +392,7 @@ export function KibitzRoomStage({
                                             </span>
                                         </div>
                                     </div>
-                                    <div className="game-details">
-                                        {previewGame?.title ?? ""}
-                                        {previewGame?.board_size
-                                            ? ` - ${interpolate(
-                                                  pgettext(
-                                                      "Board size label shown in the kibitz secondary pane",
-                                                      "Board {{size}}",
-                                                  ),
-                                                  { size: previewGame.board_size },
-                                              )}`
-                                            : ""}
-                                        {previewDisplayedMoveNumber
-                                            ? ` - ${interpolate(
-                                                  pgettext(
-                                                      "Move number label shown in the kibitz secondary pane",
-                                                      "Move {{move_number}}",
-                                                  ),
-                                                  { move_number: previewDisplayedMoveNumber },
-                                              )}`
-                                            : ""}
-                                    </div>
+                                    {previewGame?.title ?? ""}
                                 </div>
                                 <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
                                     <KibitzBoard
@@ -537,13 +493,11 @@ export function KibitzRoomStage({
                                             </span>
                                         </div>
                                     </div>
-                                    <div className="game-details">
-                                        {selectedVariation.title ??
-                                            pgettext(
-                                                "Fallback title for an untitled kibitz variation",
-                                                "Variation preview",
-                                            )}
-                                    </div>
+                                    {selectedVariation.title ??
+                                        pgettext(
+                                            "Fallback title for an untitled kibitz variation",
+                                            "Variation preview",
+                                        )}
                                 </div>
                                 <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
                                     <KibitzBoard

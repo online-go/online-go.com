@@ -29,6 +29,8 @@ interface KibitzBoardProps {
     className?: string;
     size?: number;
     interactive?: boolean;
+    showLabels?: boolean;
+    fitMode?: "native" | "contain";
     onReady?: (controller: GobanController | null) => void;
 }
 
@@ -41,6 +43,8 @@ export function KibitzBoard({
     className,
     size,
     interactive = false,
+    showLabels = true,
+    fitMode = "native",
     onReady,
 }: KibitzBoardProps): React.ReactElement {
     const gobanDiv = React.useRef<HTMLDivElement>(
@@ -61,10 +65,14 @@ export function KibitzBoard({
             board_div: gobanDiv.current,
             interactive,
             connect_to_chat: false,
-            draw_top_labels: labelPosition === "all" || labelPosition.indexOf("top") >= 0,
-            draw_left_labels: labelPosition === "all" || labelPosition.indexOf("left") >= 0,
-            draw_right_labels: labelPosition === "all" || labelPosition.indexOf("right") >= 0,
-            draw_bottom_labels: labelPosition === "all" || labelPosition.indexOf("bottom") >= 0,
+            draw_top_labels:
+                showLabels && (labelPosition === "all" || labelPosition.indexOf("top") >= 0),
+            draw_left_labels:
+                showLabels && (labelPosition === "all" || labelPosition.indexOf("left") >= 0),
+            draw_right_labels:
+                showLabels && (labelPosition === "all" || labelPosition.indexOf("right") >= 0),
+            draw_bottom_labels:
+                showLabels && (labelPosition === "all" || labelPosition.indexOf("bottom") >= 0),
             variation_stone_opacity: preferences.get("variation-stone-opacity"),
             stone_font_scale: preferences.get("stone-font-scale"),
             square_size: "auto",
@@ -95,7 +103,7 @@ export function KibitzBoard({
             controllerRef.current = null;
             setGoban(null);
         };
-    }, [gameId, interactive, json, onReady]);
+    }, [gameId, interactive, json, onReady, showLabels]);
 
     return (
         <div
@@ -110,7 +118,14 @@ export function KibitzBoard({
                     : undefined
             }
         >
-            {goban ? <GobanContainer goban={goban} verticalAlign="top" sizingMode="width" /> : null}
+            {goban ? (
+                <GobanContainer
+                    goban={goban}
+                    verticalAlign="top"
+                    sizingMode="width"
+                    fitMode={fitMode}
+                />
+            ) : null}
         </div>
     );
 }

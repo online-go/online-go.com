@@ -24,6 +24,8 @@ import "./KibitzProposalBar.css";
 
 // cspell:ignore cooldown
 
+const PROPOSAL_PREVIEW_SIZE = 44;
+
 interface KibitzProposalBarProps {
     proposal?: KibitzProposal;
     onVote: (proposalId: string, choice: "change" | "keep") => void;
@@ -197,7 +199,6 @@ export function KibitzProposalBar({
 
     const changeVotes = proposal.vote_state.change_votes ?? [];
     const keepVotes = proposal.vote_state.keep_votes ?? [];
-    const totalVotes = changeVotes.length + keepVotes.length;
     const currentUserId = data.get("config.user")?.id ?? data.get("user")?.id ?? 0;
     const hasVotedChange = changeVotes.some((entry) => entry.id === currentUserId);
     const hasVotedKeep = keepVotes.some((entry) => entry.id === currentUserId);
@@ -243,14 +244,52 @@ export function KibitzProposalBar({
                         </div>
                     </div>
                 </div>
-                <div className="proposal-live-status">
-                    {interpolate(
-                        pgettext(
-                            "Live vote status shown in the kibitz proposal bar",
-                            "Live vote · {{count}} total votes",
-                        ),
-                        { count: totalVotes },
-                    )}
+                <div className="proposal-announcement-side">
+                    <button
+                        type="button"
+                        className={
+                            "proposal-preview-toggle" + (isPreviewExpanded ? " expanded" : "")
+                        }
+                        onClick={() => setIsPreviewExpanded((expanded) => !expanded)}
+                        aria-expanded={isPreviewExpanded}
+                        aria-label={
+                            isPreviewExpanded
+                                ? pgettext(
+                                      "Aria label for collapsing the proposal board preview in kibitz",
+                                      "Hide proposal board preview",
+                                  )
+                                : pgettext(
+                                      "Aria label for expanding the proposal board preview in kibitz",
+                                      "Show proposal board preview",
+                                  )
+                        }
+                        title={
+                            isPreviewExpanded
+                                ? pgettext(
+                                      "Tooltip label for collapsing the proposal board preview in kibitz",
+                                      "Hide board",
+                                  )
+                                : pgettext(
+                                      "Tooltip label for expanding the proposal board preview in kibitz",
+                                      "Preview board",
+                                  )
+                        }
+                    >
+                        <span className="proposal-preview-thumb">
+                            <KibitzBoard
+                                gameId={
+                                    proposal.proposed_game.mock_game_data
+                                        ? undefined
+                                        : proposal.proposed_game.game_id
+                                }
+                                json={proposal.proposed_game.mock_game_data}
+                                className="proposal-preview-board-surface"
+                                size={PROPOSAL_PREVIEW_SIZE}
+                                showLabels={false}
+                                fitMode="contain"
+                            />
+                        </span>
+                    </button>
                 </div>
             </div>
 
@@ -301,59 +340,6 @@ export function KibitzProposalBar({
                 </div>
 
                 <div className="proposal-timer-spine">
-                    <button
-                        type="button"
-                        className={
-                            "proposal-preview-toggle" + (isPreviewExpanded ? " expanded" : "")
-                        }
-                        onClick={() => setIsPreviewExpanded((expanded) => !expanded)}
-                        aria-expanded={isPreviewExpanded}
-                        aria-label={
-                            isPreviewExpanded
-                                ? pgettext(
-                                      "Aria label for collapsing the proposal board preview in kibitz",
-                                      "Hide proposal board preview",
-                                  )
-                                : pgettext(
-                                      "Aria label for expanding the proposal board preview in kibitz",
-                                      "Show proposal board preview",
-                                  )
-                        }
-                        title={
-                            isPreviewExpanded
-                                ? pgettext(
-                                      "Tooltip label for collapsing the proposal board preview in kibitz",
-                                      "Hide board",
-                                  )
-                                : pgettext(
-                                      "Tooltip label for expanding the proposal board preview in kibitz",
-                                      "Preview board",
-                                  )
-                        }
-                    >
-                        <span className="proposal-preview-thumb">
-                            <KibitzBoard
-                                gameId={
-                                    proposal.proposed_game.mock_game_data
-                                        ? undefined
-                                        : proposal.proposed_game.game_id
-                                }
-                                json={proposal.proposed_game.mock_game_data}
-                                className="proposal-preview-board-surface"
-                            />
-                        </span>
-                        <span className="proposal-preview-toggle-label">
-                            {isPreviewExpanded
-                                ? pgettext(
-                                      "Compact label for collapsing the proposal preview in kibitz",
-                                      "Hide",
-                                  )
-                                : pgettext(
-                                      "Compact label for expanding the proposal preview in kibitz",
-                                      "Preview",
-                                  )}
-                        </span>
-                    </button>
                     <div className="proposal-timer-value">{countdownText}</div>
                     <div className="proposal-timer-label">
                         {pgettext("Compact remaining-time label in kibitz proposal bar", "left")}

@@ -39,6 +39,8 @@ interface GobanContainerProps {
     verticalAlign?: "center" | "top";
     /** How to derive the display width used for square-size calculation */
     sizingMode?: "min" | "width";
+    /** Whether to scale the rendered goban to fully contain within the wrapper */
+    fitMode?: "native" | "contain";
 }
 
 /**
@@ -51,6 +53,7 @@ export function GobanContainer({
     extra_props,
     verticalAlign = "center",
     sizingMode = "min",
+    fitMode = "native",
 }: GobanContainerProps): React.ReactElement {
     const goban_controller = useGobanControllerOrNull();
     const ref_goban_container = React.useRef<HTMLDivElement>(null);
@@ -68,13 +71,22 @@ export function GobanContainer({
             return;
         }
         const m = goban.computeMetrics();
+        const containerWidth = ref_goban_container.current.offsetWidth;
+        const containerHeight = ref_goban_container.current.offsetHeight;
+        const scale =
+            fitMode === "contain" && m.width > 0 && m.height > 0
+                ? Math.min(containerWidth / m.width, containerHeight / m.height)
+                : 1;
+        const scaledWidth = m.width * scale;
+        const scaledHeight = m.height * scale;
+
+        goban_div.style.transformOrigin = "top left";
+        goban_div.style.transform = scale === 1 ? "" : `scale(${scale})`;
         goban_div.style.top =
             verticalAlign === "top"
                 ? "0px"
-                : `${Math.ceil(ref_goban_container.current.offsetHeight - m.height) / 2}px`;
-        goban_div.style.left = `${
-            Math.ceil(ref_goban_container.current.offsetWidth - m.width) / 2
-        }px`;
+                : `${Math.ceil((containerHeight - scaledHeight) / 2)}px`;
+        goban_div.style.left = `${Math.ceil((containerWidth - scaledWidth) / 2)}px`;
     };
     const onResize = React.useCallback(
         (no_debounce: boolean = false, do_cb: boolean = true) => {
@@ -131,7 +143,7 @@ export function GobanContainer({
 
             recenterGoban();
         },
-        [goban, goban_div, onResizeCb, sizingMode, verticalAlign],
+        [fitMode, goban, goban_div, onResizeCb, sizingMode, verticalAlign],
     );
 
     React.useEffect(() => {

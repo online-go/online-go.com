@@ -1,4 +1,6 @@
 .KibitzProposalBar {
+    --proposal-preview-size: 2.75rem;
+
     background: var(--card-background-color);
     border-bottom: 1px solid transparent;
     border-bottom-color: var(--shade3);
@@ -9,7 +11,7 @@
     min-height: 0;
 
     .proposal-announcement {
-        align-items: flex-start;
+        align-items: stretch;
         background: var(--primary);
         color: var(--colored-background-fg);
         display: flex;
@@ -22,7 +24,17 @@
     .proposal-announcement-main {
         align-items: flex-start;
         display: flex;
+        flex: 1 1 auto;
         gap: 0.55rem;
+        min-width: 0;
+    }
+
+    .proposal-announcement-side {
+        align-items: center;
+        display: flex;
+        flex: 0 0 var(--proposal-preview-size);
+        justify-content: flex-end;
+        width: var(--proposal-preview-size);
         min-width: 0;
     }
 
@@ -80,8 +92,7 @@
         white-space: nowrap;
     }
 
-    .proposal-game-meta,
-    .proposal-live-status {
+    .proposal-game-meta {
         color: rgba(255, 255, 255, 0.84);
         font-size: 0.76rem;
         line-height: 1.1;
@@ -91,14 +102,6 @@
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .proposal-live-status {
-        flex: 0 0 auto;
-        font-weight: bold;
-        padding-top: 0.05rem;
-        text-align: right;
         white-space: nowrap;
     }
 
@@ -235,46 +238,36 @@
         align-items: center;
         background: transparent;
         border: 0;
-        color: var(--fg);
+        color: var(--colored-background-fg);
         cursor: pointer;
         display: flex;
         flex-direction: column;
-        gap: 0.22rem;
+        flex: 0 0 auto;
+        gap: 0;
+        justify-content: center;
+        height: var(--proposal-preview-size);
         padding: 0;
-        width: 100%;
+        width: var(--proposal-preview-size);
     }
 
     .proposal-preview-thumb {
         align-items: center;
-        background: var(--shade2);
         display: inline-flex;
-        height: 3.35rem;
+        flex: 0 0 auto;
+        height: var(--proposal-preview-size);
         justify-content: center;
         overflow: hidden;
-        width: 3.35rem;
+        width: var(--proposal-preview-size);
     }
 
     .proposal-preview-thumb .KibitzBoard {
-        height: 3.35rem;
-        width: 3.35rem;
+        height: 100%;
+        width: 100%;
     }
 
     .proposal-preview-thumb .KibitzBoard .goban-container {
         height: 100% !important;
         width: 100% !important;
-    }
-
-    .proposal-preview-toggle-label {
-        color: var(--text-color-faded);
-        font-size: 0.66rem;
-        font-weight: bold;
-        letter-spacing: 0.04em;
-        line-height: 1;
-        text-transform: uppercase;
-    }
-
-    .proposal-preview-toggle.expanded .proposal-preview-toggle-label {
-        color: var(--fg);
     }
 
     .proposal-timer-spine {
@@ -389,7 +382,6 @@
         height: 100% !important;
         width: 100% !important;
     }
-
 }
 
 @media (max-width: 1200px) {
@@ -398,10 +390,8 @@
             flex-direction: column;
         }
 
-        .proposal-live-status {
-            padding-top: 0;
-            text-align: left;
-            white-space: normal;
+        .proposal-announcement-side {
+            justify-content: flex-start;
         }
 
         .proposal-vote-rail {
@@ -431,7 +421,8 @@
             align-items: center;
             flex-direction: row;
             gap: 0.4rem;
-            width: auto;
+            height: 2.8rem;
+            width: 2.8rem;
         }
 
         .proposal-preview-thumb {
