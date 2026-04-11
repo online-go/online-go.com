@@ -433,6 +433,38 @@
             }
         }
 
+        .board-meta-main {
+            align-items: center;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        }
+
+        .board-meta-main .board-title-row {
+            grid-column: 1;
+        }
+
+        .board-meta-main .players.player-pair {
+            grid-column: 2;
+            justify-self: center;
+        }
+
+        &.secondary-pane-hidden {
+            .board-meta-main {
+                align-items: center;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            }
+
+            .board-meta-main .board-title-row {
+                grid-column: 1;
+            }
+
+            .board-meta-main .players.player-pair {
+                grid-column: 2;
+                justify-self: center;
+            }
+        }
+
         .board-fit-slot {
             align-items: center;
             display: grid;

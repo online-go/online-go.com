@@ -19,7 +19,7 @@ import * as React from "react";
 import { Resizable } from "@/components/Resizable";
 import { GobanController } from "@/lib/GobanController";
 import { get } from "@/lib/requests";
-import { interpolate, pgettext } from "@/lib/translate";
+import { pgettext } from "@/lib/translate";
 import type {
     KibitzMode,
     KibitzProposal,
@@ -248,17 +248,6 @@ export function KibitzRoomStage({
         mainGameDetails?.gamedata?.moves?.length ??
         mainGameDetails?.gamedata?.clock?.last_move ??
         mainGame?.move_number;
-    const displayedTournament =
-        typeof mainGameDetails?.tournament === "number" && mainGameDetails.tournament > 0
-            ? interpolate(
-                  pgettext(
-                      "Fallback label when only a tournament id is known in the kibitz stage",
-                      "Tournament {{tournament_id}}",
-                  ),
-                  { tournament_id: mainGameDetails.tournament },
-              )
-            : mainGame?.tournament_name;
-
     return (
         <div className="KibitzRoomStage">
             <div className={`KibitzRoomStage-boards secondary-pane-${secondaryPaneSize}`}>
@@ -266,7 +255,12 @@ export function KibitzRoomStage({
                     <div className="panel-body">
                         {mainGame ? (
                             <div className="board-content">
-                                <div className="board-meta">
+                                <div
+                                    className={
+                                        "board-meta" +
+                                        (secondaryPaneSize === "hidden" ? " board-meta-main" : "")
+                                    }
+                                >
                                     <div className="board-title-row">
                                         <div className="board-title">{room.title}</div>
                                         <div className="board-subtitle">
@@ -301,7 +295,6 @@ export function KibitzRoomStage({
                                             <span className="player-name">{displayedWhite}</span>
                                         </div>
                                     </div>
-                                    {displayedTournament ?? ""}
                                 </div>
                                 <div className="board-fit-slot" ref={mainBoardSlotRef}>
                                     <KibitzBoard
