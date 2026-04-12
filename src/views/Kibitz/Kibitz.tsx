@@ -40,7 +40,7 @@ import { KibitzController } from "./KibitzController";
 import "./Kibitz.css";
 
 type SecondaryPaneMode = "hidden" | "small" | "equal";
-type MobileCompanionPanel = "chat" | "vote" | "compare";
+type MobileCompanionPanel = "rooms" | "chat" | "vote" | "compare";
 
 const MOBILE_LAYOUT_MEDIA_QUERY = "(max-width: 1000px)";
 
@@ -81,7 +81,7 @@ export function Kibitz(): React.ReactElement {
         React.useState<SecondaryPaneMode | null>(null);
     const [debug, setDebug] = React.useState<KibitzDebugState>(controller.debug);
     const [mobileCompanionPanel, setMobileCompanionPanel] =
-        React.useState<MobileCompanionPanel>("chat");
+        React.useState<MobileCompanionPanel>("rooms");
     const [isMobileLayout, setIsMobileLayout] = React.useState(
         () => window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY).matches,
     );
@@ -170,9 +170,12 @@ export function Kibitz(): React.ReactElement {
 
     const onSelectRoom = React.useCallback(
         (nextRoomId: string) => {
+            if (isMobileLayout) {
+                setMobileCompanionPanel("chat");
+            }
             void navigate(`/kibitz/${nextRoomId}`);
         },
-        [navigate],
+        [isMobileLayout, navigate],
     );
 
     const onClearPreview = React.useCallback(() => {
@@ -262,7 +265,7 @@ export function Kibitz(): React.ReactElement {
             return;
         }
 
-        setMobileCompanionPanel("chat");
+        setMobileCompanionPanel("rooms");
     }, [isMobileLayout, resolvedRoom?.id]);
 
     React.useEffect(() => {
@@ -378,6 +381,19 @@ export function Kibitz(): React.ReactElement {
                                             type="button"
                                             className={
                                                 "mobile-panel-button" +
+                                                (mobileCompanionPanel === "rooms" ? " active" : "")
+                                            }
+                                            onClick={() => onSelectMobileCompanionPanel("rooms")}
+                                            aria-pressed={mobileCompanionPanel === "rooms"}
+                                        >
+                                            <span className="mobile-panel-label">
+                                                {pgettext("Mobile kibitz panel label", "Rooms")}
+                                            </span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={
+                                                "mobile-panel-button" +
                                                 (mobileCompanionPanel === "chat" ? " active" : "")
                                             }
                                             onClick={() => onSelectMobileCompanionPanel("chat")}
@@ -424,6 +440,16 @@ export function Kibitz(): React.ReactElement {
                                         </button>
                                     </div>
                                     <div className="Kibitz-mobile-panel-surface">
+                                        {mobileCompanionPanel === "rooms" ? (
+                                            <div className="Kibitz-mobile-panel Kibitz-mobile-rooms-panel">
+                                                <KibitzRoomList
+                                                    rooms={rooms}
+                                                    activeRoomId={resolvedRoom.id}
+                                                    roomUsersById={roomUsersById}
+                                                    onSelectRoom={onSelectRoom}
+                                                />
+                                            </div>
+                                        ) : null}
                                         {mobileCompanionPanel === "chat" ? (
                                             <KibitzRoomStream
                                                 mode={mode}

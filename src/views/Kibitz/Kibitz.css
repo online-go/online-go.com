@@ -98,9 +98,7 @@
         }
 
         .Kibitz-left-rail {
-            gap: 0.5rem;
-            grid-template-rows: auto;
-            order: 2;
+            display: none;
         }
 
         .Kibitz-content {
@@ -133,7 +131,7 @@
             border-bottom-color: var(--shade3);
             display: grid;
             gap: 0.25rem;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(4, minmax(0, 1fr));
             padding: 0.25rem;
         }
 
