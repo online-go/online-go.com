@@ -705,6 +705,12 @@
             gap: 0;
         }
 
+        .KibitzRoomStage-boards.secondary-pane-equal,
+        .KibitzRoomStage-boards.secondary-pane-small,
+        .KibitzRoomStage-boards.secondary-pane-hidden {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
         .KibitzRoomStage-boards .KibitzDividerHandle {
             display: none;
         }
@@ -730,6 +736,10 @@
             padding: 0.35rem 0.4rem 0.45rem;
         }
 
+        .board-title-row {
+            display: none;
+        }
+
         .board-meta-main {
             display: grid;
             gap: 0.2rem;
@@ -746,10 +756,12 @@
         }
 
         .board-title {
+            display: none;
             font-size: 0.92rem;
         }
 
         .board-subtitle {
+            display: none;
             font-size: 0.72rem;
         }
 
