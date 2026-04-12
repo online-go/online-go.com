@@ -19,3 +19,7 @@ section.right { /* NavBar changeable icons and user name */
 .Announcements {
   visibility: hidden !important;
 }
+
+div.WhatsNewBanner {
+  visibility: hidden !important;
+}
