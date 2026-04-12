@@ -81,7 +81,7 @@
             --equal-secondary-track: minmax(20.5rem, 1.42fr);
             --equal-meta-height: var(--kibitz-header-block-height);
             --equal-transport-height: 2.35rem;
-            --equal-analyze-height: 6rem;
+            --equal-analyze-height: 3.5rem;
             --equal-compose-height: 2.4rem;
             --equal-variation-height: 4.5rem;
             grid-template-columns:
@@ -139,6 +139,27 @@
                 height: var(--equal-variation-height);
                 min-height: var(--equal-variation-height);
                 width: min(100%, 39rem, 78vh);
+            }
+
+            .secondary-board .board-meta-variation-inline {
+                align-items: center;
+                display: grid;
+                gap: 0.5rem;
+                grid-template-columns: auto minmax(0, 1fr);
+            }
+
+            .secondary-board .board-meta-variation-inline .players.player-single {
+                flex-wrap: nowrap;
+                min-width: 0;
+            }
+
+            .secondary-board .board-meta-variation-title {
+                color: var(--fg);
+                line-height: 1.15;
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
 
             .main-board .main-board-analyze-spacer {

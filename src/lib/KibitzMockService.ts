@@ -922,6 +922,7 @@ export class KibitzMockService extends EventEmitter<KibitzMockServiceEvents> {
             }
 
             if (
+                room.room.id !== "top-19x19" &&
                 !room.proposals.some((proposal) => proposal.status === "active") &&
                 (room.nextProposalAt ?? 0) <= now &&
                 room.proposalPool &&

@@ -473,7 +473,14 @@ export function KibitzRoomStage({
                             </div>
                         ) : selectedVariation ? (
                             <div className="board-content">
-                                <div className="board-meta">
+                                <div
+                                    className={
+                                        "board-meta" +
+                                        (secondaryPaneSize === "equal"
+                                            ? " board-meta-variation-inline"
+                                            : "")
+                                    }
+                                >
                                     <div className="players player-single">
                                         <div className="player-badge">
                                             {renderInlineAvatar(
@@ -486,11 +493,13 @@ export function KibitzRoomStage({
                                             </span>
                                         </div>
                                     </div>
-                                    {selectedVariation.title ??
-                                        pgettext(
-                                            "Fallback title for an untitled kibitz variation",
-                                            "Variation preview",
-                                        )}
+                                    <div className="board-meta-variation-title">
+                                        {selectedVariation.title ??
+                                            pgettext(
+                                                "Fallback title for an untitled kibitz variation",
+                                                "Variation preview",
+                                            )}
+                                    </div>
                                 </div>
                                 <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
                                     <KibitzBoard
