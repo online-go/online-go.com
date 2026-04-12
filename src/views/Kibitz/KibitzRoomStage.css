@@ -76,7 +76,7 @@
         }
 
         &.secondary-pane-equal {
-            --kibitz-header-block-height: 3.025rem;
+            --kibitz-header-block-height: 1.5rem;
             --equal-main-track: minmax(12.5rem, 0.58fr);
             --equal-secondary-track: minmax(20.5rem, 1.42fr);
             --equal-meta-height: var(--kibitz-header-block-height);
@@ -142,10 +142,13 @@
             }
 
             .secondary-board .board-meta-variation-inline {
-                align-items: center;
+                align-items: start;
                 display: grid;
                 gap: 0.5rem;
                 grid-template-columns: auto minmax(0, 1fr);
+                justify-content: flex-start;
+                padding-left: 0.75rem;
+                padding-top: 0.5rem;
             }
 
             .secondary-board .board-meta-variation-inline .players.player-single {
@@ -188,6 +191,11 @@
 
             .main-board .board-subtitle {
                 font-size: 0.78rem;
+            }
+
+            .main-board .board-title,
+            .main-board .board-subtitle {
+                display: none;
             }
 
             .main-board .players {

@@ -47,7 +47,7 @@ interface KibitzRoomStageProps {
     onSetSecondaryPaneMode: (mode: "hidden" | "small" | "equal") => void;
 }
 
-function useSquareFitSize<T extends HTMLElement>() {
+function useSquareFitSize<T extends HTMLElement>(layoutKey: string) {
     const [element, setElement] = React.useState<T | null>(null);
     const [size, setSize] = React.useState(0);
     const ref = React.useCallback((node: T | null) => {
@@ -79,18 +79,17 @@ function useSquareFitSize<T extends HTMLElement>() {
 
                 return total + child.getBoundingClientRect().height;
             }, 0);
-            const availableHeight = Math.max(
+            const fallbackHeight = Math.max(
                 0,
                 (parent?.clientHeight ?? 0) -
                     reservedHeight -
                     rowGap * Math.max(0, visibleChildren.length - 1),
             );
-            const nextSize = Math.max(
-                0,
-                Math.floor(
-                    Math.min(element.clientWidth || parent?.clientWidth || 0, availableHeight),
-                ),
-            );
+            const slotRect = element.getBoundingClientRect();
+            const slotWidth = Math.floor(slotRect.width || element.clientWidth || 0);
+            const slotHeight = Math.floor(slotRect.height || element.clientHeight || 0);
+            const usableHeight = Math.max(slotHeight, fallbackHeight);
+            const nextSize = Math.max(0, Math.floor(Math.min(slotWidth, usableHeight)));
             setSize((previousSize) => (previousSize === nextSize ? previousSize : nextSize));
         };
 
@@ -104,13 +103,15 @@ function useSquareFitSize<T extends HTMLElement>() {
         if (element.parentElement) {
             resizeObserver.observe(element.parentElement);
         }
+        window.addEventListener("resize", scheduleMeasure);
         scheduleMeasure();
 
         return () => {
             cancelAnimationFrame(raf);
+            window.removeEventListener("resize", scheduleMeasure);
             resizeObserver.disconnect();
         };
-    }, [element]);
+    }, [element, layoutKey]);
 
     return [ref, size] as const;
 }
@@ -189,8 +190,12 @@ export function KibitzRoomStage({
     );
     const [secondaryBoardController, setSecondaryBoardController] =
         React.useState<GobanController | null>(null);
-    const [mainBoardSlotRef, mainBoardSize] = useSquareFitSize<HTMLDivElement>();
-    const [secondaryBoardSlotRef, secondaryBoardSize] = useSquareFitSize<HTMLDivElement>();
+    const [mainBoardSlotRef, mainBoardSize] = useSquareFitSize<HTMLDivElement>(
+        `main-${secondaryPaneSize}`,
+    );
+    const [secondaryBoardSlotRef, secondaryBoardSize] = useSquareFitSize<HTMLDivElement>(
+        `secondary-${secondaryPaneSize}-${secondaryPane.variation_id ?? ""}-${secondaryPane.preview_game_id ?? ""}`,
+    );
     const setSecondaryMoveTreeContainer = React.useCallback(
         (instance: Resizable | null) => {
             if (secondaryBoardController && instance) {
