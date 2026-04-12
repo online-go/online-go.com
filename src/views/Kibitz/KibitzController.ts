@@ -736,7 +736,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.setSecondaryPane({
             ...this._secondary_pane,
             collapsed: false,
-            size: this._secondary_pane.size ?? "small",
+            size: "equal",
             preview_game_id: undefined,
             variation_id: variationId,
         });
