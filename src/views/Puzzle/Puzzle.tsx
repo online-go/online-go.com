@@ -696,6 +696,8 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
              * do, here's the next puzzle */
             show_correct = true;
         }
+        const turn_text =
+            this.goban.engine.colorToMove() === "black" ? _("Black to move") : _("White to move");
 
         const have_content: boolean =
             show_correct ||
@@ -721,6 +723,10 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
 
                         {this.frag_undo_reset_buttons()}
 
+                        {!show_correct && !this.state.show_wrong && (
+                            <div className="game-state">{turn_text}</div>
+                        )}
+
                         {(have_content || null) && this.frag_puzzle_content()}
                     </div>
                 )}
@@ -731,6 +737,10 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                         <hr />
 
                         {this.frag_undo_reset_buttons()}
+
+                        {!show_correct && !this.state.show_wrong && (
+                            <div className="game-state">{turn_text}</div>
+                        )}
 
                         {(have_content || null) && this.frag_puzzle_content()}
 
