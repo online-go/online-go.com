@@ -31,3 +31,7 @@ tr {
 .LadderComponent { /* this table is too variable to test by screenshot*/
   visibility: hidden !important;
 }
+
+div.WhatsNewBanner {
+  visibility: hidden !important;
+}

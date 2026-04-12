@@ -5,3 +5,7 @@
 .Announcements {
   visibility: hidden !important;
 }
+
+div.WhatsNewBanner {
+  visibility: hidden !important;
+}
