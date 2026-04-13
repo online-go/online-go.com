@@ -33,6 +33,7 @@ interface ObserveGamesComponentProperties {
     namesByGobans?: boolean;
     preferenceNamespace?: string;
     forceList?: boolean;
+    initialMiniGoban?: boolean;
     onSelectGameId?: (gameId: number) => void;
 }
 
@@ -70,6 +71,7 @@ interface ObserveGamesComponentState {
     corr_game_count: number;
     show_filters: boolean;
     force_list: boolean;
+    show_mini_goban: boolean;
     filters: GameListWhere;
 }
 
@@ -96,6 +98,7 @@ export class ObserveGamesComponent extends React.PureComponent<
             corr_game_count: 0,
             show_filters: false,
             force_list: this.namespacedPreferenceGet("observed-games-force-list") as boolean,
+            show_mini_goban: Boolean(this.props.initialMiniGoban),
             filters: this.namespacedPreferenceGet("observed-games-filter") as GameListWhere,
         };
         this.channel = props.channel;
@@ -323,13 +326,17 @@ export class ObserveGamesComponent extends React.PureComponent<
     toggleShowFilters = () => {
         this.setState({ show_filters: !this.state.show_filters });
     };
-    toggleForceList = () => {
+    toggleGameListView = () => {
+        const nextShowMiniGoban = !this.state.show_mini_goban;
         this.namespacedPreferenceSet(
             "observed-games-force-list",
-            !this.state.force_list,
+            !nextShowMiniGoban,
             data.Replication.REMOTE_OVERWRITES_LOCAL,
         );
-        this.setState({ force_list: !this.state.force_list });
+        this.setState({
+            force_list: !nextShowMiniGoban,
+            show_mini_goban: nextShowMiniGoban,
+        });
     };
 
     render() {
@@ -366,7 +373,7 @@ export class ObserveGamesComponent extends React.PureComponent<
                                 <button
                                     className={forceList ? "active" : ""}
                                     onClick={
-                                        this.props.forceList ? undefined : this.toggleForceList
+                                        this.props.forceList ? undefined : this.toggleGameListView
                                     }
                                     disabled={Boolean(this.props.forceList)}
                                 >
@@ -432,6 +439,7 @@ export class ObserveGamesComponent extends React.PureComponent<
                     miniGobanProps={this.props.miniGobanProps}
                     namesByGobans={this.props.namesByGobans}
                     forceList={forceList}
+                    forceMiniGoban={this.state.show_mini_goban}
                     lineSummaryMode={"both-players"}
                     onSelectGameId={this.props.onSelectGameId}
                 />

@@ -432,7 +432,7 @@ export function Kibitz(): React.ReactElement {
                         activeRoomId={resolvedRoom.id}
                         roomUsersById={roomUsersById}
                         onSelectRoom={onSelectRoom}
-                        onCreateRoom={mode === "demo" ? onOpenCreateRoom : undefined}
+                        onCreateRoom={onOpenCreateRoom}
                     />
                     <KibitzPresence mode={mode} room={resolvedRoom} users={resolvedRoomUsers} />
                 </div>
@@ -449,7 +449,7 @@ export function Kibitz(): React.ReactElement {
                             onPostVariation={onPostVariation}
                             onProposePreview={onProposePreview}
                             onSetSecondaryPaneMode={onSetSecondaryPaneMode}
-                            onChangeBoard={mode === "demo" ? onOpenChangeBoard : undefined}
+                            onChangeBoard={onOpenChangeBoard}
                         />
                         <div
                             className={
@@ -537,11 +537,7 @@ export function Kibitz(): React.ReactElement {
                                                     activeRoomId={resolvedRoom.id}
                                                     roomUsersById={roomUsersById}
                                                     onSelectRoom={onSelectRoom}
-                                                    onCreateRoom={
-                                                        mode === "demo"
-                                                            ? onOpenCreateRoom
-                                                            : undefined
-                                                    }
+                                                    onCreateRoom={onOpenCreateRoom}
                                                 />
                                             </div>
                                         ) : null}

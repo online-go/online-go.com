@@ -347,6 +347,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     private _proposals: KibitzProposal[] = [];
     private _variations: KibitzVariationSummary[] = [];
     private _secondary_pane: KibitzSecondaryPaneState = { collapsed: true, size: "small" };
+    private _local_room_sequence = 1;
     private _mock_service: KibitzMockService | null = null;
     private _debug: KibitzDebugState = {
         mode: "live",
@@ -1030,7 +1031,21 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             return room.id;
         }
 
-        return null;
+        const roomId = `user-room-${this._local_room_sequence++}`;
+        const room: KibitzRoomSummary = {
+            id: roomId,
+            channel: `kibitz-${roomId}`,
+            title: roomName.trim() || game.title,
+            kind: "user",
+            viewer_count: 1,
+            description: description.trim() || undefined,
+            proposals_enabled: true,
+            current_game: game,
+        };
+
+        this.setRooms([room, ...this._rooms]);
+        this.selectRoom(roomId);
+        return roomId;
     }
 
     public changeBoard(roomId: string, game: KibitzWatchedGame): boolean {
@@ -1038,7 +1053,29 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             return this._mock_service.changeBoard(roomId, game) !== null;
         }
 
-        return false;
+        let found = false;
+        const nextRooms = this._rooms.map((room) => {
+            if (room.id !== roomId) {
+                return room;
+            }
+
+            found = true;
+            return {
+                ...room,
+                current_game: game,
+            };
+        });
+
+        if (!found) {
+            return false;
+        }
+
+        this.setRooms(nextRooms);
+        if (this._active_room?.id === roomId) {
+            this.selectRoom(roomId);
+        }
+
+        return true;
     }
 
     public findRoomByGameId(gameId: number): KibitzRoomSummary | null {

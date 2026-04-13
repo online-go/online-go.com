@@ -292,7 +292,7 @@ export function KibitzGamePickerOverlay({
                             announcements={false}
                             updateTitle={false}
                             channel=""
-                            forceList={true}
+                            initialMiniGoban={true}
                             onSelectGameId={onSelectGameId}
                         />
                     </div>
