@@ -10,6 +10,11 @@ div.WhatsNewBanner {
   visibility: hidden !important;
 }
 
-.OmniSearch-input { /* bottom border renders inconsistently in pixel count */
-  border-bottom: none !important;
+.OmniSearch-container { /* flex layout causes sub-pixel jitter between runs */
+  flex-grow: 0 !important;
+  width: 20rem !important;
+}
+
+.OmniSearch-input-container { /* text/border rendering jitter inside the input */
+  visibility: hidden !important;
 }
