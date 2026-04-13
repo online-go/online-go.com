@@ -221,7 +221,7 @@ export class PlayerDetails extends React.PureComponent<
 
     checkAI = (ev: React.MouseEvent<HTMLButtonElement>) => {
         this.close_all_modals_and_popovers();
-        const url = `/moderator/ai-detection?player=${this.props.playerId}`;
+        const url = `/moderator/fair-play-search?mode=basic&player=${this.props.playerId}`;
         if (shouldOpenNewTab(ev)) {
             window.open(url, "_blank");
         } else {
