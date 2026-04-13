@@ -1,21 +1,18 @@
 .KibitzGamePickerOverlay {
-    background:
-        radial-gradient(circle at top, rgba(255, 255, 255, 0.08), transparent 32%),
-        rgba(9, 12, 16, 0.84);
+    background: var(--bg);
     inset: 0;
     display: flex;
     flex-direction: column;
     min-height: 0;
     overflow: hidden;
-    padding: 0.75rem;
+    padding: 0.5rem 0.75rem 0.75rem;
     position: fixed;
     z-index: 60;
 
     .KibitzGamePickerOverlay-shell {
-        background: var(--bg);
-        border: 1px solid var(--shade2);
-        border-radius: 1rem;
-        box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.38);
+        background: var(--card-background-color);
+        border: 1px solid var(--shade3);
+        box-shadow: none;
         display: flex;
         flex-direction: column;
         flex: 1;
@@ -84,9 +81,9 @@
     .KibitzGamePickerOverlay-selectionCard,
     .KibitzGamePickerOverlay-roomFields,
     .KibitzGamePickerOverlay-confirmation {
-        background: var(--bg2);
+        background: var(--card-background-color);
         border: 1px solid var(--shade3);
-        border-radius: 0.9rem;
+        border-radius: 0;
         display: flex;
         flex-direction: column;
         gap: 0.65rem;
@@ -170,9 +167,9 @@
 
     .KibitzGamePickerOverlay-suggestion {
         align-items: center;
-        background: rgba(255, 255, 255, 0.03);
+        background: var(--card-background-color);
         border: 1px solid var(--shade3);
-        border-radius: 0.75rem;
+        border-radius: 0;
         display: flex;
         gap: 0.75rem;
         justify-content: space-between;
@@ -221,7 +218,7 @@
 
     .KibitzGamePickerOverlay-popupBackdrop {
         align-items: center;
-        background: rgba(9, 12, 16, 0.56);
+        background: var(--bg);
         display: flex;
         inset: 0;
         justify-content: center;
@@ -231,10 +228,10 @@
     }
 
     .KibitzGamePickerOverlay-popup {
-        background: var(--bg);
-        border: 1px solid var(--shade2);
-        border-radius: 1rem;
-        box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, 0.35);
+        background: var(--card-background-color);
+        border: 1px solid var(--shade3);
+        border-radius: 0;
+        box-shadow: none;
         display: flex;
         flex-direction: column;
         gap: 0.85rem;
@@ -284,7 +281,8 @@
         padding: 0;
 
         .KibitzGamePickerOverlay-shell {
-            border-radius: 0;
+            border-left: 0;
+            border-right: 0;
         }
 
         .KibitzGamePickerOverlay-body {
