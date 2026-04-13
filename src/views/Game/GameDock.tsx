@@ -465,7 +465,10 @@ export function GameDock({
                     </a>
                 </Tooltip>
             )}
-            {((!review_id && (user_is_player || user_can_intervene) && phase !== "finished") ||
+            {((!review_id &&
+                (user_is_player || user_can_intervene) &&
+                phase !== "finished" &&
+                !(user_is_player && !user_can_intervene && engine.config.disable_vacation)) ||
                 null) && (
                 <Tooltip tooltipRequired={tooltipRequired} title={_("Pause game")}>
                     <a onClick={goban_controller.pauseGame}>

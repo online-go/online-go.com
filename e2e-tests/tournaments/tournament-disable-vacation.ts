@@ -27,7 +27,8 @@
  * 3. Two players join the tournament
  * 4. The director starts the tournament
  * 5. Games are created
- * 6. Each player navigates to their vacation settings and verifies the
+ * 6. A player navigates to their game and verifies the pause button is hidden
+ * 7. Each player navigates to their vacation settings and verifies the
  *    disable-vacation game warning is displayed
  */
 
@@ -243,6 +244,20 @@ export const tournamentDisableVacationTest = async ({
         player1Page.locator(".TurnIndicator .count.active, .TurnIndicator .count.inactive"),
     ).toBeVisible({ timeout: 60000 });
     log("Turn indicator visible for player 1 - game is active");
+
+    // 7a. Verify the pause button is NOT shown for players in disable-vacation games
+    log("Navigating player 1 to their tournament game to check pause button...");
+    await player1Page.locator(".TurnIndicator").click();
+    await player1Page.waitForURL(/\/game\/\d+/, { timeout: 30000 });
+
+    // Wait for the game board to be ready
+    const goban = player1Page.locator(".Goban[data-pointers-bound]");
+    await goban.waitFor({ state: "visible", timeout: 30000 });
+
+    // The pause button should NOT be visible for a player in a disable-vacation game
+    const pauseLink = player1Page.locator("a").filter({ hasText: "Pause game" });
+    await expect(pauseLink).not.toBeVisible();
+    log("Confirmed: Pause game button is NOT visible for player in disable-vacation game");
 
     log("Checking player 1 vacation settings for disable-vacation warning...");
     await player1Page.goto("/user/settings");
