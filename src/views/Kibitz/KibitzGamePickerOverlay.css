@@ -59,7 +59,7 @@
         display: grid;
         flex: 1;
         gap: 0;
-        grid-template-columns: minmax(0, 1.1fr) minmax(20rem, 0.9fr);
+        grid-template-columns: minmax(0, 1.65fr) minmax(18rem, 0.85fr);
         min-height: 0;
     }
 
