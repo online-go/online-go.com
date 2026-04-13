@@ -19,6 +19,7 @@
 
 import { EventEmitter } from "eventemitter3";
 import { encodeMove } from "goban";
+import * as data from "@/lib/data";
 import type { PreparedAnalysisSnapshot } from "@/lib/GobanController";
 import type {
     KibitzProposal,
@@ -87,6 +88,23 @@ function createUser(
         icon: createMiniAvatar(id, username),
         ...overrides,
     };
+}
+
+function createCurrentUser(): KibitzRoomUser {
+    const user = data.get("config.user");
+    if (user && !user.anonymous) {
+        return {
+            id: user.id,
+            username: user.username,
+            ranking: user.ranking,
+            professional: user.professional,
+            ui_class: user.ui_class,
+            country: user.country,
+            icon: user.icon,
+        };
+    }
+
+    return createUser(-1, "You", 0);
 }
 
 function createMoves(coords: Array<[number, number]>): Array<{ x: number; y: number }> {
@@ -617,6 +635,7 @@ export class KibitzMockService extends EventEmitter<KibitzMockServiceEvents> {
     private activityTimer: ReturnType<typeof setInterval> | null = null;
     private proposalSequence = 100;
     private variationSequence = 100;
+    private roomSequence = 100;
 
     constructor() {
         super();
@@ -660,6 +679,88 @@ export class KibitzMockService extends EventEmitter<KibitzMockServiceEvents> {
 
     public getVariations(roomId: string): KibitzVariationSummary[] {
         return [...(this.rooms.get(roomId)?.variations ?? [])];
+    }
+
+    public findRoomByGameId(gameId: number): KibitzRoomSummary | null {
+        for (const room of this.rooms.values()) {
+            if (room.room.current_game?.game_id === gameId) {
+                return { ...room.room };
+            }
+        }
+
+        return null;
+    }
+
+    public createRoom(
+        game: KibitzWatchedGame,
+        roomName: string,
+        description: string,
+    ): KibitzRoomSummary {
+        const creator = createCurrentUser();
+        const roomId = `user-room-${this.roomSequence}`;
+        this.roomSequence += 1;
+
+        const room: MockRoomState = {
+            room: {
+                id: roomId,
+                channel: `kibitz-${roomId}`,
+                title: roomName,
+                kind: "user",
+                viewer_count: 1,
+                description: description || undefined,
+                proposals_enabled: true,
+                current_game: game,
+                users: [creator],
+                active_chatters: [creator],
+                friends_in_room: [],
+                active_variation_ids: [],
+            },
+            stream: [
+                {
+                    id: `${roomId}-created`,
+                    room_id: roomId,
+                    type: "system",
+                    created_at: Date.now(),
+                    author: creator,
+                    text: `Created room around ${game.title}.`,
+                    game_id: game.game_id,
+                },
+            ],
+            proposals: [],
+            variations: [],
+            messagePool: [
+                "This room is starting from a fresh selection.",
+                "The room is waiting for its first note.",
+                "Create room is wired in demo mode.",
+            ],
+            viewerFloor: 1,
+            viewerCeiling: 4,
+        };
+
+        this.rooms.set(roomId, room);
+        this.emit("changed");
+
+        return { ...room.room };
+    }
+
+    public changeBoard(roomId: string, game: KibitzWatchedGame): KibitzRoomSummary | null {
+        const room = this.rooms.get(roomId);
+        if (!room) {
+            return null;
+        }
+
+        room.room.current_game = game;
+        this.pushStreamItem(room, {
+            id: `${roomId}-board-change-${Date.now()}`,
+            room_id: roomId,
+            type: "system",
+            created_at: Date.now(),
+            text: `Switching board to ${game.title}.`,
+            game_id: game.game_id,
+        });
+        this.emit("changed");
+
+        return { ...room.room };
     }
 
     public appendMessage(roomId: string, author: KibitzRoomUser, text: string): void {

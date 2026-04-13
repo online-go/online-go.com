@@ -68,6 +68,7 @@ interface GameListProps {
     namesByGobans?: boolean;
     forceList?: boolean;
     lineSummaryMode: LineSummaryTableMode;
+    onSelectGameId?: (gameId: number) => void;
 }
 
 type SortOrder = "clock" | "move-number" | "name" | "opponent" | "opponent-clock" | "size";
@@ -377,6 +378,7 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                     onGobanCreated={(game: GameType, goban: GobanRenderer) =>
                         this.onGobanCreated(game, goban)
                     }
+                    onSelectGameId={this.props.onSelectGameId}
                 ></LineSummaryTable>
             );
         } else {
@@ -421,6 +423,7 @@ interface LineSummaryTableProps extends GameListProps {
     currentSort: SortOrder | DescendingSortOrder;
     onSort: (sortBy: SortOrder) => void;
     onGobanCreated: (game: GameType, goban: GobanRenderer) => void;
+    onSelectGameId?: (gameId: number) => void;
 }
 
 function LineSummaryTable({
@@ -431,6 +434,7 @@ function LineSummaryTable({
     currentSort,
     onSort,
     onGobanCreated,
+    onSelectGameId,
 }: LineSummaryTableProps): React.ReactElement {
     const getHeaderClassName = (sortOrder: SortOrder) => {
         const sortable = disableSort && player ? "" : "sortable";
@@ -515,6 +519,7 @@ function LineSummaryTable({
                     height={game.height}
                     rengo_teams={game.json?.rengo_teams}
                     lineSummaryMode={lineSummaryMode}
+                    onSelectGameId={onSelectGameId}
                 />
             ))}
         </div>

@@ -37,10 +37,12 @@ import { KibitzRoomStream } from "./KibitzRoomStream";
 import { KibitzPresence } from "./KibitzPresence";
 import { KibitzVariationList } from "./KibitzVariationList";
 import { KibitzController } from "./KibitzController";
+import { KibitzGamePickerOverlay } from "./KibitzGamePickerOverlay";
 import "./Kibitz.css";
 
 type SecondaryPaneMode = "hidden" | "small" | "equal";
 type MobileCompanionPanel = "rooms" | "chat" | "vote" | "compare";
+type KibitzGamePickerMode = "create-room" | "change-board" | null;
 
 const MOBILE_LAYOUT_MEDIA_QUERY = "(max-width: 1000px)";
 
@@ -212,6 +214,20 @@ export function Kibitz(): React.ReactElement {
         setPendingSecondaryPaneMode(nextMode);
     }, []);
 
+    const [pickerMode, setPickerMode] = React.useState<KibitzGamePickerMode>(null);
+
+    const onOpenCreateRoom = React.useCallback(() => {
+        setPickerMode("create-room");
+    }, []);
+
+    const onOpenChangeBoard = React.useCallback(() => {
+        setPickerMode("change-board");
+    }, []);
+
+    const onClosePicker = React.useCallback(() => {
+        setPickerMode(null);
+    }, []);
+
     React.useEffect(() => {
         if (!pendingSecondaryPaneMode) {
             return;
@@ -234,6 +250,21 @@ export function Kibitz(): React.ReactElement {
     );
 
     const resolvedRoom = activeRoom ?? rooms.find((room) => room.id === roomId) ?? rooms[0];
+    const currentGameId = resolvedRoom?.current_game?.game_id ?? null;
+    const currentGameVariations = React.useMemo(
+        () =>
+            currentGameId == null
+                ? []
+                : variations.filter((variation) => variation.game_id === currentGameId),
+        [currentGameId, variations],
+    );
+    const previousGameVariations = React.useMemo(
+        () =>
+            currentGameId == null
+                ? variations
+                : variations.filter((variation) => variation.game_id !== currentGameId),
+        [currentGameId, variations],
+    );
     const roomProposals = proposals.filter((proposal) => proposal.room_id === resolvedRoom?.id);
     const activeProposal = roomProposals.find((proposal) => proposal.status === "active");
     const queuedRoomProposals = roomProposals.filter((proposal) => proposal.status !== "active");
@@ -269,6 +300,51 @@ export function Kibitz(): React.ReactElement {
             }
         },
         [controller, resolvedRoom],
+    );
+
+    const variationPanels = (
+        <>
+            {currentGameVariations.length === 0 && previousGameVariations.length === 0 ? (
+                <div className="Kibitz-footer-empty">
+                    {pgettext(
+                        "Compact empty state shown below the kibitz room stream when there are no variations or queued proposals",
+                        "No variations yet. Watch next queue empty.",
+                    )}
+                </div>
+            ) : (
+                <>
+                    {currentGameVariations.length > 0 ? (
+                        <KibitzVariationList
+                            variations={currentGameVariations}
+                            onOpenVariation={onOpenVariation}
+                        />
+                    ) : null}
+                    {previousGameVariations.length > 0 ? (
+                        <>
+                            {currentGameVariations.length > 0 ? (
+                                <div className="Kibitz-footer-divider">
+                                    {pgettext(
+                                        "Divider label for Kibitz variations from a previous game",
+                                        "Previous game",
+                                    )}
+                                </div>
+                            ) : null}
+                            <KibitzVariationList
+                                variations={previousGameVariations}
+                                onOpenVariation={onOpenVariation}
+                                title={pgettext(
+                                    "Heading for Kibitz variations from a previous game",
+                                    "Previous game",
+                                )}
+                            />
+                        </>
+                    ) : null}
+                    {queuedRoomProposals.length > 0 ? (
+                        <KibitzProposalQueue proposals={queuedRoomProposals} />
+                    ) : null}
+                </>
+            )}
+        </>
     );
 
     React.useEffect(() => {
@@ -356,6 +432,7 @@ export function Kibitz(): React.ReactElement {
                         activeRoomId={resolvedRoom.id}
                         roomUsersById={roomUsersById}
                         onSelectRoom={onSelectRoom}
+                        onCreateRoom={mode === "demo" ? onOpenCreateRoom : undefined}
                     />
                     <KibitzPresence mode={mode} room={resolvedRoom} users={resolvedRoomUsers} />
                 </div>
@@ -372,6 +449,7 @@ export function Kibitz(): React.ReactElement {
                             onPostVariation={onPostVariation}
                             onProposePreview={onProposePreview}
                             onSetSecondaryPaneMode={onSetSecondaryPaneMode}
+                            onChangeBoard={mode === "demo" ? onOpenChangeBoard : undefined}
                         />
                         <div
                             className={
@@ -459,6 +537,11 @@ export function Kibitz(): React.ReactElement {
                                                     activeRoomId={resolvedRoom.id}
                                                     roomUsersById={roomUsersById}
                                                     onSelectRoom={onSelectRoom}
+                                                    onCreateRoom={
+                                                        mode === "demo"
+                                                            ? onOpenCreateRoom
+                                                            : undefined
+                                                    }
                                                 />
                                             </div>
                                         ) : null}
@@ -520,31 +603,7 @@ export function Kibitz(): React.ReactElement {
                                                     </div>
                                                 )}
                                                 <div className="Kibitz-footer-panels">
-                                                    {variations.length === 0 &&
-                                                    queuedRoomProposals.length === 0 ? (
-                                                        <div className="Kibitz-footer-empty">
-                                                            {pgettext(
-                                                                "Compact empty state shown below the kibitz room stream when there are no variations or queued proposals",
-                                                                "No variations yet. Watch next queue empty.",
-                                                            )}
-                                                        </div>
-                                                    ) : (
-                                                        <>
-                                                            {variations.length > 0 ? (
-                                                                <KibitzVariationList
-                                                                    variations={variations}
-                                                                    onOpenVariation={
-                                                                        onOpenVariation
-                                                                    }
-                                                                />
-                                                            ) : null}
-                                                            {queuedRoomProposals.length > 0 ? (
-                                                                <KibitzProposalQueue
-                                                                    proposals={queuedRoomProposals}
-                                                                />
-                                                            ) : null}
-                                                        </>
-                                                    )}
+                                                    {variationPanels}
                                                 </div>
                                             </div>
                                         ) : null}
@@ -574,37 +633,40 @@ export function Kibitz(): React.ReactElement {
                                         onScrolledToVariation={onScrolledToVariation}
                                         compact={Boolean(activeProposal)}
                                     />
-                                    <div className="Kibitz-footer-panels">
-                                        {variations.length === 0 &&
-                                        queuedRoomProposals.length === 0 ? (
-                                            <div className="Kibitz-footer-empty">
-                                                {pgettext(
-                                                    "Compact empty state shown below the kibitz room stream when there are no variations or queued proposals",
-                                                    "No variations yet. Watch next queue empty.",
-                                                )}
-                                            </div>
-                                        ) : (
-                                            <>
-                                                {variations.length > 0 ? (
-                                                    <KibitzVariationList
-                                                        variations={variations}
-                                                        onOpenVariation={onOpenVariation}
-                                                    />
-                                                ) : null}
-                                                {queuedRoomProposals.length > 0 ? (
-                                                    <KibitzProposalQueue
-                                                        proposals={queuedRoomProposals}
-                                                    />
-                                                ) : null}
-                                            </>
-                                        )}
-                                    </div>
+                                    <div className="Kibitz-footer-panels">{variationPanels}</div>
                                 </>
                             )}
                         </div>
                     </div>
                 </div>
             </div>
+            {pickerMode ? (
+                <KibitzGamePickerOverlay
+                    mode={pickerMode}
+                    rooms={rooms}
+                    currentRoom={resolvedRoom}
+                    onClose={onClosePicker}
+                    onCreateRoom={(game, roomName, description) => {
+                        const nextRoomId = controller.createRoom(game, roomName, description);
+                        setPickerMode(null);
+                        if (nextRoomId) {
+                            void navigate(`/kibitz/${nextRoomId}`);
+                        }
+                    }}
+                    onChangeBoard={(game) => {
+                        if (!resolvedRoom) {
+                            return;
+                        }
+
+                        controller.changeBoard(resolvedRoom.id, game);
+                        setPickerMode(null);
+                    }}
+                    onJoinRoom={(nextRoomId) => {
+                        setPickerMode(null);
+                        void navigate(`/kibitz/${nextRoomId}`);
+                    }}
+                />
+            ) : null}
         </div>
     );
 }

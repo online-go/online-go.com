@@ -45,6 +45,7 @@ interface KibitzRoomStageProps {
     onPostVariation: (controller: GobanController) => void;
     onProposePreview: () => void;
     onSetSecondaryPaneMode: (mode: "hidden" | "small" | "equal") => void;
+    onChangeBoard?: () => void;
 }
 
 function useSquareFitSize<T extends HTMLElement>(layoutKey: string) {
@@ -171,6 +172,7 @@ export function KibitzRoomStage({
     onPostVariation,
     onProposePreview,
     onSetSecondaryPaneMode,
+    onChangeBoard,
 }: KibitzRoomStageProps): React.ReactElement {
     const mainGame = room.current_game;
     const secondaryGameId = secondaryPane.preview_game_id;
@@ -275,6 +277,18 @@ export function KibitzRoomStage({
                                                     "No main board selected yet",
                                                 )}
                                         </div>
+                                        {onChangeBoard ? (
+                                            <button
+                                                type="button"
+                                                className="xs primary kibitz-change-board-button"
+                                                onClick={onChangeBoard}
+                                            >
+                                                {pgettext(
+                                                    "Button label for opening Kibitz change board",
+                                                    "Change board",
+                                                )}
+                                            </button>
+                                        ) : null}
                                     </div>
                                     <div className="players player-pair">
                                         <div className="player-badge">

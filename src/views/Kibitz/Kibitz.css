@@ -78,6 +78,16 @@
         padding: 0.4rem 0.75rem;
     }
 
+    .Kibitz-footer-divider {
+        border-top: 1px solid var(--shade3);
+        color: var(--text-color-faded);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        padding: 0.4rem 0.75rem 0.25rem;
+        text-transform: uppercase;
+    }
+
     .Kibitz-mobile-panel-switcher,
     .Kibitz-mobile-panel-surface {
         display: none;

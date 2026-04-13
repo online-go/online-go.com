@@ -32,6 +32,8 @@ interface ObserveGamesComponentProperties {
     channel?: string;
     namesByGobans?: boolean;
     preferenceNamespace?: string;
+    forceList?: boolean;
+    onSelectGameId?: (gameId: number) => void;
 }
 
 interface GameListWhere {
@@ -332,6 +334,7 @@ export class ObserveGamesComponent extends React.PureComponent<
 
     render() {
         const n_filters = Object.keys(this.state.filters).length;
+        const forceList = this.state.force_list || Boolean(this.props.forceList);
 
         return (
             <div className="ObserveGamesComponent">
@@ -361,8 +364,11 @@ export class ObserveGamesComponent extends React.PureComponent<
                                     {n_filters ? `(${n_filters})` : ""}
                                 </button>
                                 <button
-                                    className={this.state.force_list ? "active" : ""}
-                                    onClick={this.toggleForceList}
+                                    className={forceList ? "active" : ""}
+                                    onClick={
+                                        this.props.forceList ? undefined : this.toggleForceList
+                                    }
+                                    disabled={Boolean(this.props.forceList)}
                                 >
                                     <i className="fa fa-list"></i>
                                 </button>
@@ -425,8 +431,9 @@ export class ObserveGamesComponent extends React.PureComponent<
                     emptyMessage={_("No games being played")}
                     miniGobanProps={this.props.miniGobanProps}
                     namesByGobans={this.props.namesByGobans}
-                    forceList={this.state.force_list}
+                    forceList={forceList}
                     lineSummaryMode={"both-players"}
+                    onSelectGameId={this.props.onSelectGameId}
                 />
             </div>
         );

@@ -25,6 +25,7 @@ interface KibitzRoomListProps {
     activeRoomId: string;
     roomUsersById?: Record<string, KibitzRoomUser[]>;
     onSelectRoom: (roomId: string) => void;
+    onCreateRoom?: () => void;
 }
 
 export function KibitzRoomList({
@@ -32,6 +33,7 @@ export function KibitzRoomList({
     activeRoomId,
     roomUsersById: _roomUsersById = {},
     onSelectRoom,
+    onCreateRoom,
 }: KibitzRoomListProps): React.ReactElement {
     return (
         <div className="KibitzRoomList">
@@ -50,6 +52,18 @@ export function KibitzRoomList({
                         )}
                     </div>
                 </div>
+                {onCreateRoom ? (
+                    <button
+                        type="button"
+                        className="xs primary KibitzRoomList-createButton"
+                        onClick={onCreateRoom}
+                    >
+                        {pgettext(
+                            "Button label for opening the Kibitz create room picker",
+                            "Create room",
+                        )}
+                    </button>
+                ) : null}
             </div>
             <div className="KibitzRoomList-items">
                 {rooms.map((room) => {

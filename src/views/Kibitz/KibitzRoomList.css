@@ -8,7 +8,11 @@
     min-height: 0;
 
     .KibitzRoomList-titleRow {
+        align-items: flex-start;
         box-sizing: border-box;
+        display: flex;
+        gap: 0.5rem;
+        justify-content: space-between;
         min-height: var(--kibitz-header-block-height);
         padding: 0.5rem 0.75rem 0.55rem;
     }
@@ -17,6 +21,12 @@
         display: flex;
         flex-direction: column;
         gap: 0.12rem;
+        min-width: 0;
+    }
+
+    .KibitzRoomList-createButton {
+        flex: 0 0 auto;
+        white-space: nowrap;
     }
 
     .KibitzRoomList-title {

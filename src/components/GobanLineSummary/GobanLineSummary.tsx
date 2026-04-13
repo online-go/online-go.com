@@ -50,6 +50,7 @@ interface GobanLineSummaryProps {
         white: UserType[];
     };
     lineSummaryMode: LineSummaryTableMode;
+    onSelectGameId?: (gameId: number) => void;
 }
 
 interface GobanLineSummaryState extends GobanInfoStateBase {
@@ -206,6 +207,14 @@ export class GobanLineSummary extends React.Component<
         return (
             <Link
                 to={`/game/${this.props.id}`}
+                onClick={
+                    this.props.onSelectGameId
+                        ? (event) => {
+                              event.preventDefault();
+                              this.props.onSelectGameId?.(this.props.id);
+                          }
+                        : undefined
+                }
                 className={
                     `GobanLineSummary ` +
                     (this.state.viewed_users_move ? " viewed-users-move" : "") +

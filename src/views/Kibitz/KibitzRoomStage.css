@@ -370,9 +370,10 @@
             padding: 0.5rem 0.125rem 0.625rem 0.75rem;
 
             .board-title-row {
-                align-items: baseline;
+                align-items: center;
                 display: flex;
                 gap: 0.35rem;
+                flex-wrap: wrap;
                 min-width: 0;
             }
 
@@ -390,6 +391,10 @@
                 font-size: 0.82rem;
                 line-height: 1.15;
                 overflow-wrap: anywhere;
+            }
+
+            .kibitz-change-board-button {
+                margin-left: auto;
             }
 
             .board-meta-top {

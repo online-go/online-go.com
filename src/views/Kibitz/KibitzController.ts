@@ -36,6 +36,7 @@ import type {
     KibitzSecondaryPaneState,
     KibitzStreamItem,
     KibitzVariationSummary,
+    KibitzWatchedGame,
 } from "@/models/kibitz";
 
 interface KibitzControllerEvents {
@@ -1016,6 +1017,36 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.setStream(createRoomStream(room));
         this.setProposals([]);
         this.setVariations([]);
+    }
+
+    public createRoom(
+        game: KibitzWatchedGame,
+        roomName: string,
+        description: string,
+    ): string | null {
+        if (this._mode === "demo" && this._mock_service) {
+            const room = this._mock_service.createRoom(game, roomName, description);
+            this.selectRoom(room.id);
+            return room.id;
+        }
+
+        return null;
+    }
+
+    public changeBoard(roomId: string, game: KibitzWatchedGame): boolean {
+        if (this._mode === "demo" && this._mock_service) {
+            return this._mock_service.changeBoard(roomId, game) !== null;
+        }
+
+        return false;
+    }
+
+    public findRoomByGameId(gameId: number): KibitzRoomSummary | null {
+        if (this._mode === "demo" && this._mock_service) {
+            return this._mock_service.findRoomByGameId(gameId);
+        }
+
+        return this._rooms.find((room) => room.current_game?.game_id === gameId) ?? null;
     }
 
     public sendMessage(roomId: string, text: string): void {

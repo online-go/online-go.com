@@ -23,6 +23,7 @@ import "./KibitzVariationList.css";
 interface KibitzVariationListProps {
     variations: KibitzVariationSummary[];
     onOpenVariation: (variationId: string) => void;
+    title?: string;
 }
 
 function getUserInitials(username: string | undefined): string {
@@ -44,11 +45,12 @@ function getUserInitials(username: string | undefined): string {
 export function KibitzVariationList({
     variations,
     onOpenVariation,
+    title,
 }: KibitzVariationListProps): React.ReactElement {
     return (
         <div className="KibitzVariationList">
             <div className="variation-title">
-                {pgettext("Heading for the variations list in kibitz", "Variations")}
+                {title ?? pgettext("Heading for the variations list in kibitz", "Variations")}
             </div>
             {variations.length > 0 ? (
                 <div className="variation-items">
