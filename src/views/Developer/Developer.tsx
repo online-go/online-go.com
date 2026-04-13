@@ -35,13 +35,17 @@ export class Developer extends React.PureComponent {
                 </h2>
                 <iframe src="https://ghbtns.com/github-btn.html?user=online-go&repo=online-go.com&type=star&count=true&size=large"></iframe>
                 <iframe src="https://ghbtns.com/github-btn.html?user=online-go&repo=online-go.com&type=fork&count=true&size=large"></iframe>
-
+                <h1>Design Documentation</h1>
+                <h2>
+                    <a href="https://deepwiki.com/online-go/online-go.com">Deep-wiki docs</a>
+                </h2>
                 <h1>{_("Application management")}</h1>
                 <h2>
                     <a href="/oauth2/applications/">OAuth2 Application Manager</a>
                 </h2>
-
+                <hr></hr>
                 <h1>API Documentation</h1>
+                <h2>(out-dated)</h2>
                 <h2>
                     <a href="https://docs.online-go.com" target="_blank">
                         https://docs.online-go.com
