@@ -35,3 +35,7 @@ tr {
 div.WhatsNewBanner {
   visibility: hidden !important;
 }
+
+.OmniSearch-input { /* bottom border renders inconsistently in pixel count */
+  border-bottom: none !important;
+}

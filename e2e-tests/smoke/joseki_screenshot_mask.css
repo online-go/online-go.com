@@ -31,3 +31,7 @@ section.right { /* NavBar changeable icons and user name */
 div.WhatsNewBanner {
   visibility: hidden !important;
 }
+
+.OmniSearch-input { /* bottom border renders inconsistently in pixel count */
+  border-bottom: none !important;
+}
