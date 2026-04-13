@@ -190,6 +190,7 @@
         width: 7em;
         text-align: left;
         padding-right: 0.5em;
+        white-space: nowrap;
     }
 
     td.banned,
