@@ -42,6 +42,9 @@ interface KibitzRoomStreamProps {
     variations: KibitzVariationSummary[];
     onOpenVariation: (variationId: string) => void;
     onSendMessage: (text: string) => void;
+    scrollToVariationId?: string | null;
+    scrollToVariationRequestId?: number | null;
+    onScrolledToVariation?: () => void;
     compact?: boolean;
 }
 
@@ -66,6 +69,9 @@ export function KibitzRoomStream({
     variations,
     onOpenVariation,
     onSendMessage,
+    scrollToVariationId,
+    scrollToVariationRequestId,
+    onScrolledToVariation,
     compact = false,
 }: KibitzRoomStreamProps): React.ReactElement {
     const user = useUser();
@@ -185,6 +191,43 @@ export function KibitzRoomStream({
         setFollowLatest(pinnedToBottom);
     }, []);
 
+    React.useEffect(() => {
+        if (!scrollToVariationId || scrollToVariationRequestId == null) {
+            return;
+        }
+
+        const container = chatLinesRef.current;
+        if (!container) {
+            return;
+        }
+
+        const selectorValue = window.CSS?.escape
+            ? window.CSS.escape(scrollToVariationId)
+            : scrollToVariationId.replace(/["\\]/g, "\\$&");
+        const target = container.querySelector(
+            `[data-variation-id="${selectorValue}"]`,
+        ) as HTMLElement | null;
+        if (!target) {
+            return;
+        }
+
+        target.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+        });
+        target.classList.add("variation-post-flash");
+
+        const timeout = window.setTimeout(() => {
+            target.classList.remove("variation-post-flash");
+            onScrolledToVariation?.();
+        }, 1400);
+
+        return () => {
+            window.clearTimeout(timeout);
+            target.classList.remove("variation-post-flash");
+        };
+    }, [items, onScrolledToVariation, scrollToVariationId, scrollToVariationRequestId]);
+
     React.useLayoutEffect(() => {
         const container = chatLinesRef.current;
         if (!container || !followLatest) {
@@ -235,6 +278,7 @@ export function KibitzRoomStream({
                                               key={entry.key}
                                               type="button"
                                               className="variation-post"
+                                              data-variation-id={entry.item.variation_id}
                                               onClick={() =>
                                                   entry.item.variation_id &&
                                                   onOpenVariation(entry.item.variation_id)
