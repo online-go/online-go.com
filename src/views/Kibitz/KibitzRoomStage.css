@@ -473,6 +473,7 @@
             display: grid;
             grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
             padding-left: 0.75rem;
+            padding-right: 0.75rem;
             padding-top: 0.5rem;
         }
 
@@ -485,12 +486,20 @@
             justify-self: center;
         }
 
+        .board-meta-main .kibitz-change-board-button {
+            align-self: start;
+            grid-column: 3;
+            justify-self: end;
+            margin-left: 0;
+        }
+
         &.secondary-pane-hidden {
             .board-meta-main {
                 align-items: start;
                 display: grid;
                 grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
                 padding-left: 0.75rem;
+                padding-right: 0.75rem;
                 padding-top: 0.5rem;
             }
 
@@ -501,6 +510,13 @@
             .board-meta-main .players.player-pair {
                 grid-column: 2;
                 justify-self: center;
+            }
+
+            .board-meta-main .kibitz-change-board-button {
+                align-self: start;
+                grid-column: 3;
+                justify-self: end;
+                margin-left: 0;
             }
         }
 

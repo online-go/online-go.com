@@ -277,18 +277,6 @@ export function KibitzRoomStage({
                                                     "No main board selected yet",
                                                 )}
                                         </div>
-                                        {onChangeBoard ? (
-                                            <button
-                                                type="button"
-                                                className="xs primary kibitz-change-board-button"
-                                                onClick={onChangeBoard}
-                                            >
-                                                {pgettext(
-                                                    "Button label for opening Kibitz change board",
-                                                    "Change board",
-                                                )}
-                                            </button>
-                                        ) : null}
                                     </div>
                                     <div className="players player-pair">
                                         <div className="player-badge">
@@ -314,6 +302,18 @@ export function KibitzRoomStage({
                                             <span className="player-name">{displayedWhite}</span>
                                         </div>
                                     </div>
+                                    {onChangeBoard ? (
+                                        <button
+                                            type="button"
+                                            className="xs primary kibitz-change-board-button"
+                                            onClick={onChangeBoard}
+                                        >
+                                            {pgettext(
+                                                "Button label for opening Kibitz change board",
+                                                "Change board",
+                                            )}
+                                        </button>
+                                    ) : null}
                                 </div>
                                 <div className="board-fit-slot" ref={mainBoardSlotRef}>
                                     <KibitzBoard
