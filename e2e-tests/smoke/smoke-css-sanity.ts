@@ -53,7 +53,6 @@ export const smokeCssSanityTest = async ({
 
     await expect(userPage).toHaveScreenshot("initial-page.png", {
         fullPage: true,
-        maxDiffPixels: 4, // we seem to get a little jitter in rending the underline of the search bar
         stylePath: path.join(currentDir, "basic_screenshot_mask.css"),
     });
 
@@ -61,28 +60,24 @@ export const smokeCssSanityTest = async ({
 
     await expect(userPage).toHaveScreenshot("profile-page.png", {
         fullPage: true,
-        maxDiffPixels: 4, // we seem to get a little jitter in rending the underline of the search bar
         stylePath: path.join(currentDir, "profile_screenshot_mask.css"),
     });
 
     await load(userPage, "/ladders");
     await expect(userPage).toHaveScreenshot("ladders-page.png", {
         fullPage: true,
-        maxDiffPixels: 4, // we seem to get a little jitter in rending the underline of the search bar
         stylePath: path.join(currentDir, "ladders_screenshot_mask.css"),
     });
 
     await load(userPage, "/tournaments");
     await expect(userPage).toHaveScreenshot("tournaments-page.png", {
         fullPage: true,
-        maxDiffPixels: 4, // we seem to get a little jitter in rending the underline of the search bar
         stylePath: path.join(currentDir, "basic_screenshot_mask.css"),
     });
 
     await load(userPage, "/joseki");
     await expect(userPage).toHaveScreenshot("joseki-page.png", {
         fullPage: true,
-        maxDiffPixels: 4, // we seem to get a little jitter in rending the underline of the search bar
         stylePath: path.join(currentDir, "joseki_screenshot_mask.css"),
     });
 };
