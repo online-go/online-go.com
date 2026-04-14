@@ -50,6 +50,7 @@ import { FreeTrialSurvey } from "@/components/FreeTrialSurvey";
 import { PriceIncreaseMessage } from "@/components/PriceIncreaseMessage";
 import { HomeDebug, useHomeDebugState, shouldRender, isForced } from "./HomeDebug";
 import { WhatsNewBanner } from "./WhatsNewBanner";
+import { GoldenRules } from "./GoldenRules";
 import "./Home.css";
 
 declare let ogs_missing_translation_count: number;
@@ -145,7 +146,7 @@ export function Home(): React.ReactElement {
                             <PlayButtons />
                         </div>
                     )}
-                    <div className="left">
+                    <div className="center">
                         <div className="top-bar-container">
                             {shouldRender("ChallengesList") && (
                                 <ChallengesList onAccept={refresh} />
@@ -215,6 +216,8 @@ export function Home(): React.ReactElement {
                                 showCount={shouldRender("GameCount")}
                             ></ActiveDroppedGameList>
                         )}
+
+                        <GoldenRules />
                     </div>
                     <div className="right">
                         {shouldRender("ProfileCard") && <ProfileCard user={user} />}

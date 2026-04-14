@@ -54,9 +54,6 @@ export function ActiveDroppedGameList(props: ActiveDroppedGameListProps): React.
                     />
                 </div>
             )}
-            {!hasActiveGames && !hasDroppedGames && (
-                <div className="no-active-games">{_("No active games")}</div>
-            )}
             {hasDroppedGames && (
                 <div className="dropped-games">
                     <div className="dropped-games-header">

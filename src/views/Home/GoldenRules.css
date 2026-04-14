@@ -1,0 +1,61 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+.GoldenRules {
+    padding: 1rem;
+    color: var(--shade2);
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+
+    .golden-rules-grid {
+        display: inline-grid;
+        grid-template-columns: auto auto;
+        gap: 0.3rem 2rem;
+    }
+
+    .rule {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        padding: 0.2rem 0;
+
+        .tr {
+            flex: 1;
+            text-align: justify;
+            text-align-last: justify;
+        }
+
+        &._1 {
+            .tr {
+                text-align-last: right;
+            }
+        }
+
+        &._2 {
+            .tr {
+                text-align-last: left;
+            }
+        }
+    }
+
+    .cn,
+    .ko {
+        font-weight: 500;
+    }
+}
