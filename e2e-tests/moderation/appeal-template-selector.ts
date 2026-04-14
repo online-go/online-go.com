@@ -198,12 +198,27 @@ export const appealTemplateSelectorTest = async (
         await voteButton.click();
         log("Vote submitted ✓");
 
-        // Wait for vote to be processed
+        // Wait for vote to be processed - check that Vote button is disabled or hidden
         await expect(voteButton)
             .toBeDisabled({ timeout: 5000 })
             .catch(() => {
                 // Button might be hidden instead of disabled
             });
+
+        // Wait for the reporter to receive the suspension notification via websocket push.
+        // This confirms the suspension has been fully processed before we check the
+        // suspended user's page.
+        log("Waiting for reporter to receive suspension notification...");
+        await expect(
+            reporterPage.getByText(/has been suspended/),
+        ).toBeVisible({ timeout: 30000 });
+        log("Reporter received suspension notification ✓");
+
+        // Dismiss the notification dialog if present
+        const okButton = reporterPage.getByRole("button", { name: "OK" });
+        if (await okButton.isVisible()) {
+            await okButton.click();
+        }
 
         // 5. Suspended user submits an appeal
         log("Suspended user navigating to appeal page...");

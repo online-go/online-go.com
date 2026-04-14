@@ -53,10 +53,10 @@ ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest("Suspended user can login to reach appeal page", suspendedUserCanLoginToAppealTest);
     ogsTest("Auto-suspend users with previously suspended accounts", autoSuspensionTest);
     ogsTest("System PM button appears for non-suspended users", systemPMButtonTest);
-    ogsTest("AI Detection player filter button works correctly", aiDetectionPlayerFilterTest);
+    ogsTest("Fair Play Search player filter button works correctly", aiDetectionPlayerFilterTest);
     // TODO: aiDetectionFastSMRReportTest needs assertion rework - temporarily disabled
     // ogsTest("AI Detection FastSMR report button works correctly", aiDetectionFastSMRReportTest);
-    ogsTest("Player dropdown Check AI button navigates to AI Detection", playerCheckAIButtonTest);
+    ogsTest("Player dropdown Check AI button navigates to Fair Play Search", playerCheckAIButtonTest);
     ogsTest("AI Detector can vote to suspend and annul AI user", aiDetectorVoteSuspendAndAnnulTest);
     ogsTest("AI Detector can vote to warn and annul AI user", aiDetectorVoteWarnAndAnnulTest);
     ogsTest(
