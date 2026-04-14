@@ -237,6 +237,12 @@
         padding-right: 1rem;
     }
 
+    @media screen and (max-width: 767px) {
+        .GoldenRules {
+            display: none;
+        }
+    }
+
     @media screen and (max-width: 850px) {
         .play-buttons-column {
             order: 2;

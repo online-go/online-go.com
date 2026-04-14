@@ -25,6 +25,10 @@
         display: inline-grid;
         grid-template-columns: auto auto;
         gap: 0.3rem 2rem;
+
+        @media (max-width: 767px) {
+            grid-template-columns: auto;
+        }
     }
 
     .rule {
@@ -50,6 +54,20 @@
         &._2 {
             .tr {
                 text-align-last: left;
+            }
+        }
+
+        @media (max-width: 767px) {
+            &._1, &._3, &._5, &._7, &._9 {
+                .tr {
+                    text-align-last: right;
+                }
+            }
+
+            &._2, &._4, &._6, &._8, &._10 {
+                .tr {
+                    text-align-last: left;
+                }
             }
         }
     }
