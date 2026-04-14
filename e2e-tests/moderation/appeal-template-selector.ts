@@ -209,16 +209,11 @@ export const appealTemplateSelectorTest = async (
         // This confirms the suspension has been fully processed before we check the
         // suspended user's page.
         log("Waiting for reporter to receive suspension notification...");
-        await expect(
-            reporterPage.getByText(/has been suspended/),
-        ).toBeVisible({ timeout: 30000 });
+        await expect(reporterPage.getByText(/has been suspended/)).toBeVisible({ timeout: 30000 });
         log("Reporter received suspension notification ✓");
 
-        // Dismiss the notification dialog if present
-        const okButton = reporterPage.getByRole("button", { name: "OK" });
-        if (await okButton.isVisible()) {
-            await okButton.click();
-        }
+        // Dismiss the notification dialog
+        await reporterPage.getByRole("button", { name: "OK" }).click();
 
         // 5. Suspended user submits an appeal
         log("Suspended user navigating to appeal page...");

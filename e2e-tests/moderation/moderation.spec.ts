@@ -56,7 +56,10 @@ ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest("Fair Play Search player filter button works correctly", aiDetectionPlayerFilterTest);
     // TODO: aiDetectionFastSMRReportTest needs assertion rework - temporarily disabled
     // ogsTest("AI Detection FastSMR report button works correctly", aiDetectionFastSMRReportTest);
-    ogsTest("Player dropdown Check AI button navigates to Fair Play Search", playerCheckAIButtonTest);
+    ogsTest(
+        "Player dropdown Check AI button navigates to Fair Play Search",
+        playerCheckAIButtonTest,
+    );
     ogsTest("AI Detector can vote to suspend and annul AI user", aiDetectorVoteSuspendAndAnnulTest);
     ogsTest("AI Detector can vote to warn and annul AI user", aiDetectorVoteWarnAndAnnulTest);
     ogsTest(
