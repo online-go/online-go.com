@@ -1,6 +1,7 @@
 # Project: online-go.com
 
-React/TypeScript frontend for online-go.com. Uses Vite, PostCSS, `yarn`.
+React/TypeScript frontend for online-go.com. Uses Vite, PostCSS, yarn. `main`
+is the primary trunk git branch.
 
 ## Layout
 
