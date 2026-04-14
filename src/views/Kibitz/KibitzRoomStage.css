@@ -276,9 +276,11 @@
 
             .secondary-board-analyze-row {
                 align-items: center;
+                box-sizing: border-box;
                 display: flex;
                 justify-content: center;
                 min-height: var(--equal-analyze-height);
+                min-width: 0;
                 overflow: hidden;
                 padding: 0 0.75rem;
                 position: relative;
@@ -314,8 +316,10 @@
 
             .secondary-board-compose-row {
                 align-items: center;
+                box-sizing: border-box;
                 display: flex;
                 min-height: var(--equal-compose-height);
+                min-width: 0;
                 padding: 0 0.75rem;
                 position: relative;
                 z-index: 1;
