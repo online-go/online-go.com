@@ -56,12 +56,13 @@ export function KibitzBoardControls({
                     : fallbackMoveNumber,
             );
         };
+        const syncEvents = ["cur_move", "last_official_move", "load", "gamedata"];
 
         sync();
-        goban?.on?.("cur_move", sync);
+        syncEvents.forEach((eventName) => goban?.on?.(eventName, sync));
 
         return () => {
-            goban?.off?.("cur_move", sync);
+            syncEvents.forEach((eventName) => goban?.off?.(eventName, sync));
         };
     }, [controller, totalMoves]);
 
