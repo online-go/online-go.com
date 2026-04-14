@@ -226,7 +226,23 @@ header.NavBar {
         overflow-x: hidden;
 
         & > .left {
-            display: none !important;
+            background-color: var(--navbar-background-color);
+            position: absolute;
+            top: var(--navbar-height);
+            bottom: 0;
+            left: 0;
+            padding: 0;
+            z-index: var(--z-nav-menu-menu);
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            visibility: hidden;
+            transform: translateX(calc(-100% - 10px));
+            transition: transform 200ms ease, visibility 0s 200ms;
+
+            & a {
+                opacity: 0;
+                transition: opacity 150ms ease;
+            }
         }
 
         .Menu.desktop-only {
@@ -334,17 +350,14 @@ header.NavBar {
         }
 
         &.hamburger-expanded > .left {
-            display: inline !important;
+            visibility: visible;
+            transform: translateX(0);
+            transition: transform 200ms ease, visibility 0s;
 
-            background-color: var(--navbar-background-color);
-            position: absolute;
-            top: var(--navbar-height);
-            bottom: 0;
-            left: 0;
-            padding: 0;
-            /* max-height: calc(100dvh - var(--navbar-height)) */
-            /* overflow-y: auto; */
-            z-index: var(--z-nav-menu-menu);
+            & a {
+                opacity: 1;
+                transition: opacity 125ms ease-in-out 125ms;
+            }
 
             & > ul {
                 display: flex;
