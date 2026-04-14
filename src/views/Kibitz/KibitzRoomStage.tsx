@@ -19,6 +19,7 @@ import * as React from "react";
 import { Resizable } from "@/components/Resizable";
 import { GobanController } from "@/lib/GobanController";
 import { get } from "@/lib/requests";
+import { alert } from "@/lib/swal_config";
 import { pgettext } from "@/lib/translate";
 import type {
     KibitzMode,
@@ -303,6 +304,31 @@ export function KibitzRoomStage({
         mainGameDetails?.gamedata?.moves?.length ??
         mainGameDetails?.gamedata?.clock?.last_move ??
         mainGame?.move_number;
+    const onConfirmClearSecondaryPane = React.useCallback(() => {
+        void alert
+            .fire({
+                text: pgettext(
+                    "Confirmation text for clearing the secondary kibitz pane preview",
+                    "Clear this variation? Any variation that isn't shared will be lost.",
+                ),
+                confirmButtonText: pgettext(
+                    "Confirmation button for clearing the secondary kibitz pane preview",
+                    "Clear",
+                ),
+                cancelButtonText: pgettext(
+                    "Cancel button for clearing the secondary kibitz pane preview",
+                    "Cancel",
+                ),
+                showCancelButton: true,
+                focusCancel: true,
+            })
+            .then(({ value: confirmed }) => {
+                if (confirmed) {
+                    onClearPreview();
+                }
+            });
+    }, [onClearPreview]);
+
     return (
         <div className="KibitzRoomStage">
             <div className={`KibitzRoomStage-boards secondary-pane-${secondaryPaneSize}`}>
@@ -414,10 +440,26 @@ export function KibitzRoomStage({
                                 ) : null}
                             </div>
                         ) : (
-                            pgettext(
-                                "Placeholder for the primary kibitz goban area before the board is wired up",
-                                "Shared board will render here",
-                            )
+                            <div className="secondary-board-empty-state">
+                                <div className="secondary-board-empty-message">
+                                    {pgettext(
+                                        "Placeholder for the primary kibitz goban area before the board is wired up",
+                                        "Shared board will render here",
+                                    )}
+                                </div>
+                                {onChangeBoard ? (
+                                    <button
+                                        type="button"
+                                        className="xs primary kibitz-change-board-button"
+                                        onClick={onChangeBoard}
+                                    >
+                                        {pgettext(
+                                            "Button label for opening Kibitz change board",
+                                            "Change board",
+                                        )}
+                                    </button>
+                                ) : null}
+                            </div>
                         )}
                     </div>
                 </div>
@@ -543,7 +585,7 @@ export function KibitzRoomStage({
                                         <button
                                             type="button"
                                             className="preview-action-button clear-preview symbol-button"
-                                            onClick={onClearPreview}
+                                            onClick={onConfirmClearSecondaryPane}
                                             aria-label={pgettext(
                                                 "Aria label for closing the preview game in the secondary kibitz pane",
                                                 "Clear",
@@ -638,7 +680,7 @@ export function KibitzRoomStage({
                                         <button
                                             type="button"
                                             className="preview-action-button clear-preview symbol-button"
-                                            onClick={onClearPreview}
+                                            onClick={onConfirmClearSecondaryPane}
                                             aria-label={pgettext(
                                                 "Aria label for closing a variation preview in the secondary kibitz pane",
                                                 "Clear",
