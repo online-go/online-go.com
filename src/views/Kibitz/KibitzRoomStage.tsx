@@ -198,20 +198,64 @@ export function KibitzRoomStage({
     );
     const [secondaryBoardController, setSecondaryBoardController] =
         React.useState<GobanController | null>(null);
+    const [secondaryMoveTreeContainer, setSecondaryMoveTreeContainer] =
+        React.useState<Resizable | null>(null);
+    const previousSecondaryControllerRef = React.useRef<GobanController | null>(null);
     const [mainBoardSlotRef, mainBoardSize] = useSquareFitSize<HTMLDivElement>(
         `main-${secondaryPaneSize}`,
     );
     const [secondaryBoardSlotRef, secondaryBoardSize] = useSquareFitSize<HTMLDivElement>(
         `secondary-${secondaryPaneSize}-${secondaryPane.variation_id ?? ""}-${secondaryPane.preview_game_id ?? ""}`,
     );
-    const setSecondaryMoveTreeContainer = React.useCallback(
-        (instance: Resizable | null) => {
-            if (secondaryBoardController && instance) {
-                secondaryBoardController.setMoveTreeContainer(instance);
+    const secondaryMoveTreeKey = React.useMemo(() => {
+        if (secondaryPane.variation_id != null) {
+            return `variation-${secondaryPane.variation_id}`;
+        }
+
+        if (secondaryPane.variation_source_game_id != null) {
+            return `draft-${secondaryPane.variation_source_game_id}`;
+        }
+
+        if (secondaryPane.preview_game_id != null) {
+            return `preview-${secondaryPane.preview_game_id}`;
+        }
+
+        return "empty";
+    }, [
+        secondaryPane.preview_game_id,
+        secondaryPane.variation_id,
+        secondaryPane.variation_source_game_id,
+    ]);
+    const handleSecondaryMoveTreeContainerRef = React.useCallback((instance: Resizable | null) => {
+        setSecondaryMoveTreeContainer(instance);
+    }, []);
+
+    React.useEffect(() => {
+        const previousController = previousSecondaryControllerRef.current;
+        const container = secondaryMoveTreeContainer?.div ?? null;
+
+        if (previousController && previousController !== secondaryBoardController) {
+            previousController.setMoveTreeContainer(null);
+        }
+
+        if (container) {
+            while (container.firstChild) {
+                container.removeChild(container.firstChild);
             }
-        },
-        [secondaryBoardController],
-    );
+        }
+
+        if (secondaryBoardController && container) {
+            secondaryBoardController.setMoveTreeContainer(secondaryMoveTreeContainer);
+        }
+
+        previousSecondaryControllerRef.current = secondaryBoardController;
+
+        return () => {
+            if (secondaryBoardController) {
+                secondaryBoardController.setMoveTreeContainer(null);
+            }
+        };
+    }, [secondaryBoardController, secondaryMoveTreeContainer, secondaryMoveTreeKey]);
 
     React.useEffect(() => {
         if (!mainGame?.game_id || mainGame.mock_game_data || mode === "demo") {
@@ -549,9 +593,10 @@ export function KibitzRoomStage({
                                 ) : null}
                                 {secondaryPaneSize === "equal" ? (
                                     <Resizable
+                                        key={secondaryMoveTreeKey}
                                         id="kibitz-secondary-move-tree-container"
                                         className="kibitz-move-tree-container"
-                                        ref={setSecondaryMoveTreeContainer}
+                                        ref={handleSecondaryMoveTreeContainerRef}
                                     />
                                 ) : null}
                                 {secondaryPaneSize !== "equal" ? (
@@ -643,9 +688,10 @@ export function KibitzRoomStage({
                                 ) : null}
                                 {secondaryPaneSize === "equal" ? (
                                     <Resizable
+                                        key={secondaryMoveTreeKey}
                                         id="kibitz-secondary-move-tree-container"
                                         className="kibitz-move-tree-container"
-                                        ref={setSecondaryMoveTreeContainer}
+                                        ref={handleSecondaryMoveTreeContainerRef}
                                     />
                                 ) : null}
                                 {secondaryPaneSize !== "equal" ? (

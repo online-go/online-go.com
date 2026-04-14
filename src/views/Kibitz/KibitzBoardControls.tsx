@@ -35,6 +35,8 @@ export function KibitzBoardControls({
     totalMoves,
 }: KibitzBoardControlsProps): React.ReactElement | null {
     const [moveNumber, setMoveNumber] = React.useState(() => totalMoves ?? 0);
+    const [moveTreeContainer, setMoveTreeContainer] = React.useState<Resizable | null>(null);
+    const previousControllerRef = React.useRef<GobanController | null>(null);
 
     React.useEffect(() => {
         if (!controller) {
@@ -63,14 +65,36 @@ export function KibitzBoardControls({
         };
     }, [controller, totalMoves]);
 
-    const setMoveTreeContainer = React.useCallback(
-        (instance: Resizable | null) => {
-            if (controller && instance) {
-                controller.setMoveTreeContainer(instance);
+    React.useEffect(() => {
+        const previousController = previousControllerRef.current;
+        const container = moveTreeContainer?.div ?? null;
+
+        if (previousController && previousController !== controller) {
+            previousController.setMoveTreeContainer(null);
+        }
+
+        if (container) {
+            while (container.firstChild) {
+                container.removeChild(container.firstChild);
             }
-        },
-        [controller],
-    );
+        }
+
+        if (controller && container) {
+            controller.setMoveTreeContainer(moveTreeContainer);
+        }
+
+        previousControllerRef.current = controller;
+
+        return () => {
+            if (controller) {
+                controller.setMoveTreeContainer(null);
+            }
+        };
+    }, [controller, moveTreeContainer]);
+
+    const handleMoveTreeContainerRef = React.useCallback((instance: Resizable | null) => {
+        setMoveTreeContainer(instance);
+    }, []);
 
     if (!controller) {
         return null;
@@ -186,7 +210,7 @@ export function KibitzBoardControls({
                 <Resizable
                     id="kibitz-secondary-move-tree-container"
                     className="kibitz-move-tree-container"
-                    ref={setMoveTreeContainer}
+                    ref={handleMoveTreeContainerRef}
                 />
             ) : null}
         </div>

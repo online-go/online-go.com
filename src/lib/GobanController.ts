@@ -210,6 +210,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             console.warn("GobanController.destroy() called twice");
             return;
         }
+        this.goban.setMoveTreeContainer(null);
         this.destroyed = true;
         if (this.chat_proxy?.part) {
             this.chat_proxy.part();
@@ -509,12 +510,12 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         return this._variation_name;
     }
 
-    public setMoveTreeContainer = (resizable: Resizable) => {
+    public setMoveTreeContainer = (resizable: Resizable | null) => {
         if (this.destroyed) {
             return;
         }
-        if (this.goban && resizable?.div) {
-            this.goban.setMoveTreeContainer(resizable.div);
+        if (this.goban) {
+            this.goban.setMoveTreeContainer(resizable?.div ?? null);
         }
     };
 
