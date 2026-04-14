@@ -140,6 +140,7 @@ export interface KibitzSecondaryPaneState {
     size?: "small" | "equal";
     preview_game_id?: number;
     variation_id?: string;
+    variation_source_game_id?: number;
 }
 
 export interface KibitzDebugCandidate {

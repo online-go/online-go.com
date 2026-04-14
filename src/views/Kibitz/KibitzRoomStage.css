@@ -669,6 +669,21 @@
             width: auto;
         }
 
+        .secondary-board-empty-state {
+            align-items: center;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            justify-content: center;
+            min-height: 100%;
+            padding: 1rem 0.5rem;
+            text-align: center;
+        }
+
+        .secondary-board-empty-message {
+            max-width: 18rem;
+        }
+
         .preview-action-button {
             box-shadow: none;
             background: var(--shade2);

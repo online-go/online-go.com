@@ -180,11 +180,7 @@ export function KibitzRoomStage({
     const secondaryGameId = secondaryPane.preview_game_id;
     const secondaryPaneSize = secondaryPane.collapsed ? "hidden" : (secondaryPane.size ?? "small");
     const isCreatingVariationFromCurrentBoard = Boolean(
-        secondaryPaneSize === "equal" &&
-            secondaryGameId &&
-            mainGame?.game_id &&
-            secondaryGameId === mainGame.game_id &&
-            !secondaryPane.variation_id,
+        secondaryPaneSize === "equal" && secondaryPane.variation_source_game_id,
     );
     const selectedVariation = variations.find(
         (variation) => variation.id === secondaryPane.variation_id,
@@ -406,34 +402,36 @@ export function KibitzRoomStage({
                                 >
                                     {isCreatingVariationFromCurrentBoard ? (
                                         <>
-                                            <div className="players player-pair">
-                                                <div className="player-badge">
-                                                    {renderInlineAvatar(
-                                                        previewGame?.black,
-                                                        previewGame?.black.username,
-                                                        "stage-avatar",
-                                                    )}
-                                                    <span className="player-name">
-                                                        {previewGame?.black.username ?? ""}
+                                            {previewGame ? (
+                                                <div className="players player-pair">
+                                                    <div className="player-badge">
+                                                        {renderInlineAvatar(
+                                                            previewGame.black,
+                                                            previewGame.black.username,
+                                                            "stage-avatar",
+                                                        )}
+                                                        <span className="player-name">
+                                                            {previewGame.black.username}
+                                                        </span>
+                                                    </div>
+                                                    <span className="player-vs">
+                                                        {pgettext(
+                                                            "Versus label shown between players in kibitz",
+                                                            "vs",
+                                                        )}
                                                     </span>
+                                                    <div className="player-badge">
+                                                        {renderInlineAvatar(
+                                                            previewGame.white,
+                                                            previewGame.white.username,
+                                                            "stage-avatar",
+                                                        )}
+                                                        <span className="player-name">
+                                                            {previewGame.white.username}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <span className="player-vs">
-                                                    {pgettext(
-                                                        "Versus label shown between players in kibitz",
-                                                        "vs",
-                                                    )}
-                                                </span>
-                                                <div className="player-badge">
-                                                    {renderInlineAvatar(
-                                                        previewGame?.white,
-                                                        previewGame?.white.username,
-                                                        "stage-avatar",
-                                                    )}
-                                                    <span className="player-name">
-                                                        {previewGame?.white.username ?? ""}
-                                                    </span>
-                                                </div>
-                                            </div>
+                                            ) : null}
                                             <div className="board-meta-variation-title">
                                                 {pgettext(
                                                     "Title for a new Kibitz variation draft",
@@ -654,10 +652,26 @@ export function KibitzRoomStage({
                                 ) : null}
                             </div>
                         ) : (
-                            pgettext(
-                                "Placeholder for the secondary kibitz goban area before the board is wired up",
-                                "Preview or variation board will render here",
-                            )
+                            <div className="secondary-board-empty-state">
+                                <div className="secondary-board-empty-message">
+                                    {pgettext(
+                                        "Placeholder for the secondary kibitz goban area before the board is wired up",
+                                        "Preview or variation board will render here",
+                                    )}
+                                </div>
+                                {mainGame && onCreateVariation ? (
+                                    <button
+                                        type="button"
+                                        className="xs primary kibitz-create-variation-button"
+                                        onClick={onCreateVariation}
+                                    >
+                                        {pgettext(
+                                            "Button label for opening Kibitz variation creation",
+                                            "Create variation",
+                                        )}
+                                    </button>
+                                ) : null}
+                            </div>
                         )}
                     </div>
                 </div>
