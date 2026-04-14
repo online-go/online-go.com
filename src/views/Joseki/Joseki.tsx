@@ -946,6 +946,14 @@ export function Joseki(): React.ReactElement {
 
     // ---- Effects ----
 
+    // Destroy the goban when the component unmounts to avoid leaking the
+    // renderer, its canvas element, and the 'update' event listener.
+    React.useEffect(() => {
+        return () => {
+            goban_ref.current?.destroy();
+        };
+    }, []);
+
     // Main initialization effect - runs on mount and re-runs when location changes
     React.useEffect(() => {
         window.document.title = _("Joseki");

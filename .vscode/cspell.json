@@ -223,7 +223,7 @@
         "yomi",
         "zenmode",
         "zoomable",
-        "josekisources"
+        "josekisources",
     ],
-    "language": "en,en-GB"
+    "language": "en,en-GB",
 }
