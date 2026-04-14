@@ -40,6 +40,7 @@ interface SelectedGameState {
     game: KibitzWatchedGame;
     isFinished: boolean;
     analysisDisabled: boolean;
+    isPublic: boolean;
 }
 
 function parseGameId(input: string): number | null {
@@ -132,6 +133,7 @@ export function KibitzGamePickerOverlay({
     );
     const selectionIsEligible =
         Boolean(selectedGame) &&
+        Boolean(selectedGame?.isPublic) &&
         !errorMessage &&
         !(selectedGame?.analysisDisabled && !selectedGame.isFinished);
     const canOpenRoomDetailsPopup =
@@ -177,16 +179,26 @@ export function KibitzGamePickerOverlay({
                 const analysisDisabled = Boolean(
                     details.disable_analysis || details.gamedata.disable_analysis,
                 );
+                const isPublic = !details.gamedata.private;
 
                 setSelectedGame({
                     details,
                     game,
                     isFinished,
                     analysisDisabled,
+                    isPublic,
                 });
                 setNameTouched(false);
                 if (mode === "create-room") {
                     setRoomName(buildDefaultRoomName(game));
+                }
+                if (!isPublic) {
+                    setErrorMessage(
+                        pgettext(
+                            "Error shown when a Kibitz game is private",
+                            "Only public games can be used for Kibitz rooms.",
+                        ),
+                    );
                 }
             } catch {
                 setSelectedGame(null);
