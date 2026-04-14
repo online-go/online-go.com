@@ -35,25 +35,28 @@ export function KibitzBoardControls({
     totalMoves,
 }: KibitzBoardControlsProps): React.ReactElement | null {
     const [moveNumber, setMoveNumber] = React.useState(() => totalMoves ?? 0);
+    const [latestMoveNumber, setLatestMoveNumber] = React.useState(() => totalMoves ?? 0);
     const [moveTreeContainer, setMoveTreeContainer] = React.useState<Resizable | null>(null);
     const previousControllerRef = React.useRef<GobanController | null>(null);
 
     React.useEffect(() => {
         if (!controller) {
             setMoveNumber(totalMoves ?? 0);
+            setLatestMoveNumber(totalMoves ?? 0);
             return;
         }
 
         const goban = controller.goban as any;
         const sync = () => {
             const currentMoveNumber = goban?.engine?.cur_move?.move_number;
-            const fallbackMoveNumber =
+            const officialMoveNumber =
                 goban?.engine?.last_official_move?.move_number ?? totalMoves ?? 0;
 
+            setLatestMoveNumber(officialMoveNumber);
             setMoveNumber(
                 typeof currentMoveNumber === "number" && currentMoveNumber > 0
                     ? currentMoveNumber
-                    : fallbackMoveNumber,
+                    : officialMoveNumber,
             );
         };
         const syncEvents = ["cur_move", "last_official_move", "load", "gamedata"];
@@ -107,8 +110,7 @@ export function KibitzBoardControls({
     }
 
     if (variant === "minimal") {
-        const canReturnToLive =
-            typeof totalMoves === "number" && totalMoves > 0 && moveNumber < totalMoves;
+        const canReturnToLive = latestMoveNumber > 0 && moveNumber < latestMoveNumber;
 
         return (
             <div className="KibitzBoardControls minimal-row">
