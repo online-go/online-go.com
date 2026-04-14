@@ -180,7 +180,7 @@ export function KibitzRoomStage({
     const secondaryGameId = secondaryPane.preview_game_id;
     const secondaryPaneSize = secondaryPane.collapsed ? "hidden" : (secondaryPane.size ?? "small");
     const isCreatingVariationFromCurrentBoard = Boolean(
-        secondaryPaneSize === "equal" && secondaryPane.variation_source_game_id,
+        secondaryPaneSize === "equal" && secondaryPane.variation_source_game,
     );
     const selectedVariation = variations.find(
         (variation) => variation.id === secondaryPane.variation_id,
@@ -191,7 +191,8 @@ export function KibitzRoomStage({
             ?.current_game ??
         proposals.find((proposal) => proposal.proposed_game.game_id === secondaryGameId)
             ?.proposed_game;
-    const previewDisplayedMoveNumber = previewGame?.move_number;
+    const secondaryBoardGame = previewGame ?? secondaryPane.variation_source_game;
+    const previewDisplayedMoveNumber = secondaryBoardGame?.move_number;
     const [mainBoardController, setMainBoardController] = React.useState<GobanController | null>(
         null,
     );
@@ -402,16 +403,16 @@ export function KibitzRoomStage({
                                 >
                                     {isCreatingVariationFromCurrentBoard ? (
                                         <>
-                                            {previewGame ? (
+                                            {secondaryBoardGame ? (
                                                 <div className="players player-pair">
                                                     <div className="player-badge">
                                                         {renderInlineAvatar(
-                                                            previewGame.black,
-                                                            previewGame.black.username,
+                                                            secondaryBoardGame.black,
+                                                            secondaryBoardGame.black.username,
                                                             "stage-avatar",
                                                         )}
                                                         <span className="player-name">
-                                                            {previewGame.black.username}
+                                                            {secondaryBoardGame.black.username}
                                                         </span>
                                                     </div>
                                                     <span className="player-vs">
@@ -422,12 +423,12 @@ export function KibitzRoomStage({
                                                     </span>
                                                     <div className="player-badge">
                                                         {renderInlineAvatar(
-                                                            previewGame.white,
-                                                            previewGame.white.username,
+                                                            secondaryBoardGame.white,
+                                                            secondaryBoardGame.white.username,
                                                             "stage-avatar",
                                                         )}
                                                         <span className="player-name">
-                                                            {previewGame.white.username}
+                                                            {secondaryBoardGame.white.username}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -476,11 +477,11 @@ export function KibitzRoomStage({
                                 <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
                                     <KibitzBoard
                                         gameId={
-                                            previewGame?.mock_game_data
+                                            secondaryBoardGame?.mock_game_data
                                                 ? undefined
                                                 : secondaryGameId
                                         }
-                                        json={previewGame?.mock_game_data}
+                                        json={secondaryBoardGame?.mock_game_data}
                                         className="secondary-board-surface"
                                         size={secondaryBoardSize}
                                         interactive={secondaryPaneSize === "equal"}

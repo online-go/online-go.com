@@ -723,6 +723,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             preview_game_id: gameId,
             variation_id: undefined,
             variation_source_game_id: undefined,
+            variation_source_game: undefined,
         });
     }
 
@@ -739,6 +740,9 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             preview_game_id: currentGameId,
             variation_id: undefined,
             variation_source_game_id: currentGameId,
+            variation_source_game: this._active_room?.current_game
+                ? { ...this._active_room.current_game }
+                : undefined,
         });
     }
 
@@ -749,6 +753,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             preview_game_id: undefined,
             variation_id: undefined,
             variation_source_game_id: undefined,
+            variation_source_game: undefined,
         });
     }
 
@@ -760,6 +765,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             preview_game_id: undefined,
             variation_id: variationId,
             variation_source_game_id: undefined,
+            variation_source_game: undefined,
         });
     }
 
@@ -967,7 +973,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             },
         ]);
 
-        if (!this._secondary_pane.variation_source_game_id) {
+        if (!this._secondary_pane.variation_source_game) {
             this.clearPreviewGame();
         }
         this.advanceProposalQueue(proposal.id);
@@ -1022,6 +1028,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 preview_game_id: undefined,
                 variation_id: undefined,
                 variation_source_game_id: undefined,
+                variation_source_game: undefined,
             });
             return;
         }

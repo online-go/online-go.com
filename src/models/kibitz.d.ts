@@ -141,6 +141,7 @@ export interface KibitzSecondaryPaneState {
     preview_game_id?: number;
     variation_id?: string;
     variation_source_game_id?: number;
+    variation_source_game?: KibitzWatchedGame;
 }
 
 export interface KibitzDebugCandidate {
