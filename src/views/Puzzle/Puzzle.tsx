@@ -354,6 +354,7 @@ export function Puzzle(): React.ReactElement {
             if (gobanRef.current) {
                 gobanRef.current.destroy();
                 gobanRef.current = null;
+                navigation.goban = null as unknown as GobanRenderer;
             }
         };
     }, [puzzle_id, fetchPuzzle, editor, navigation, gobanDiv]);
