@@ -21,25 +21,91 @@
     }
 
     .KibitzGamePickerOverlay-header {
-        align-items: flex-start;
+        align-items: start;
         border-bottom: 1px solid var(--shade3);
-        display: flex;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 1rem;
-        justify-content: space-between;
         padding: 1rem 1.1rem 0.9rem;
     }
 
     .KibitzGamePickerOverlay-headerMain {
+        grid-column: 1;
         min-width: 0;
-        flex: 1;
     }
 
     .KibitzGamePickerOverlay-headerControls {
+        grid-column: 2;
+        justify-self: center;
         display: flex;
-        flex: 0 0 24rem;
         flex-direction: column;
         gap: 0.35rem;
+        width: min(24rem, 100%);
         min-width: min(24rem, 100%);
+    }
+
+    button.KibitzGamePickerOverlay-actionButton,
+    button.KibitzGamePickerOverlay-dangerButton {
+        font-size: 1rem;
+        line-height: 1.2;
+        height: 3rem;
+        padding: 0 1rem;
+    }
+
+    button.KibitzGamePickerOverlay-cancelButton {
+        font-size: 1rem;
+        line-height: 1.2;
+        height: 3rem;
+        padding: 0 1rem;
+    }
+
+    button.KibitzGamePickerOverlay-dangerButton {
+        background-color: #c0392b !important;
+        border-color: #c0392b !important;
+        color: var(--colored-background-fg) !important;
+        box-shadow: none;
+    }
+
+    button.KibitzGamePickerOverlay-dangerButton:hover,
+    button.KibitzGamePickerOverlay-dangerButton:focus {
+        background-color: #d35445 !important;
+        filter: brightness(1.08);
+    }
+
+    button.KibitzGamePickerOverlay-dangerButton:active,
+    button.KibitzGamePickerOverlay-dangerButton.active {
+        background-color: #b03024 !important;
+        filter: brightness(0.92);
+    }
+
+    .ObserveGamesComponent .header > .right > button.xs.primary {
+        font-size: 1rem;
+        line-height: 1.2;
+        height: 3rem;
+        padding: 0 1rem;
+    }
+
+    .KibitzGamePickerOverlay-closeButton {
+        align-self: end;
+        grid-column: 3;
+        justify-self: end;
+    }
+
+    .KibitzGamePickerOverlay-boardWrap {
+        align-self: center;
+        aspect-ratio: 1 / 1;
+        min-height: 15rem;
+        width: min(100%, 22rem);
+    }
+
+    .KibitzGamePickerOverlay-board {
+        height: 100%;
+        width: 100%;
+    }
+
+    .KibitzGamePickerOverlay-board .goban-container {
+        height: 100% !important;
+        width: 100% !important;
     }
 
     .KibitzGamePickerOverlay-title {
@@ -299,12 +365,19 @@
         }
 
         .KibitzGamePickerOverlay-header {
+            display: flex;
             flex-direction: column;
         }
 
         .KibitzGamePickerOverlay-headerControls {
-            flex-basis: auto;
+            grid-column: auto;
+            justify-self: auto;
             width: 100%;
+        }
+
+        .KibitzGamePickerOverlay-closeButton {
+            align-self: flex-end;
+            grid-column: auto;
         }
 
         .KibitzGamePickerOverlay-suggestion {

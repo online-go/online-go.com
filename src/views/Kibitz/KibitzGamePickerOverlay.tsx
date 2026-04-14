@@ -20,6 +20,7 @@ import { get } from "@/lib/requests";
 import { interpolate, pgettext } from "@/lib/translate";
 import { ObserveGamesComponent } from "@/components/ObserveGamesComponent";
 import type { KibitzRoomSummary, KibitzRoomUser, KibitzWatchedGame } from "@/models/kibitz";
+import { KibitzBoard } from "./KibitzBoard";
 import "./KibitzGamePickerOverlay.css";
 
 type KibitzGamePickerOverlayMode = "create-room" | "change-board";
@@ -109,7 +110,6 @@ export function KibitzGamePickerOverlay({
     const [nameTouched, setNameTouched] = React.useState(false);
     const [loading, setLoading] = React.useState(false);
     const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
-    const [showChangeConfirm, setShowChangeConfirm] = React.useState(false);
     const [showRoomDetailsPopup, setShowRoomDetailsPopup] = React.useState(false);
 
     const currentGameId = currentRoom?.current_game?.game_id ?? null;
@@ -169,7 +169,6 @@ export function KibitzGamePickerOverlay({
         async (gameId: number) => {
             setLoading(true);
             setErrorMessage(null);
-            setShowChangeConfirm(false);
 
             try {
                 const details = (await get(`games/${gameId}`)) as rest_api.GameDetails;
@@ -252,13 +251,8 @@ export function KibitzGamePickerOverlay({
             return;
         }
 
-        if (!showChangeConfirm) {
-            setShowChangeConfirm(true);
-            return;
-        }
-
         onChangeBoard(selectedGame.game);
-    }, [canChangeBoard, onChangeBoard, selectedGame, showChangeConfirm]);
+    }, [canChangeBoard, onChangeBoard, selectedGame]);
 
     const selectedGameSummary = selectedGame?.game;
     const selectedGameStateLabel = selectedGame
@@ -323,7 +317,7 @@ export function KibitzGamePickerOverlay({
                             />
                             <button
                                 type="button"
-                                className="xs primary"
+                                className="xs primary KibitzGamePickerOverlay-actionButton"
                                 onClick={onResolveManualGame}
                             >
                                 {pgettext("Button label for loading a Kibitz game by ID", "Load")}
@@ -343,7 +337,7 @@ export function KibitzGamePickerOverlay({
                     </div>
                     <button
                         type="button"
-                        className="xs"
+                        className="xs KibitzGamePickerOverlay-closeButton KibitzGamePickerOverlay-dangerButton"
                         onClick={onClose}
                         aria-label={pgettext(
                             "Aria label for closing the Kibitz game picker overlay",
@@ -416,6 +410,12 @@ export function KibitzGamePickerOverlay({
                                         <span className="KibitzGamePickerOverlay-playerName">
                                             {selectedGameSummary.white.username}
                                         </span>
+                                    </div>
+                                    <div className="KibitzGamePickerOverlay-boardWrap">
+                                        <KibitzBoard
+                                            gameId={selectedGameSummary.game_id}
+                                            className="KibitzGamePickerOverlay-board"
+                                        />
                                     </div>
                                     {selectedGame?.analysisDisabled && !selectedGame.isFinished ? (
                                         <div className="KibitzGamePickerOverlay-error">
@@ -498,13 +498,17 @@ export function KibitzGamePickerOverlay({
                         </div>
 
                         <div className="KibitzGamePickerOverlay-footer">
-                            <button type="button" className="xs" onClick={onClose}>
+                            <button
+                                type="button"
+                                className="xs KibitzGamePickerOverlay-cancelButton"
+                                onClick={onClose}
+                            >
                                 {pgettext("Button label for canceling the Kibitz picker", "Cancel")}
                             </button>
                             {mode === "create-room" ? (
                                 <button
                                     type="button"
-                                    className="xs primary"
+                                    className="xs primary KibitzGamePickerOverlay-actionButton"
                                     onClick={onOpenRoomDetailsPopup}
                                     disabled={!canOpenRoomDetailsPopup}
                                 >
@@ -513,28 +517,16 @@ export function KibitzGamePickerOverlay({
                                         "Set room details",
                                     )}
                                 </button>
-                            ) : showChangeConfirm ? (
+                            ) : (
                                 <button
                                     type="button"
-                                    className="xs primary"
+                                    className="xs primary KibitzGamePickerOverlay-actionButton"
                                     onClick={onSubmitChangeBoard}
                                     disabled={!canChangeBoard}
                                 >
                                     {pgettext(
                                         "Button label for confirming a Kibitz board change",
                                         "Change board",
-                                    )}
-                                </button>
-                            ) : (
-                                <button
-                                    type="button"
-                                    className="xs primary"
-                                    onClick={onSubmitChangeBoard}
-                                    disabled={!canChangeBoard}
-                                >
-                                    {pgettext(
-                                        "Button label for advancing to Kibitz board change confirmation",
-                                        "Continue",
                                     )}
                                 </button>
                             )}
@@ -609,7 +601,11 @@ export function KibitzGamePickerOverlay({
                             />
                         </div>
                         <div className="KibitzGamePickerOverlay-popupFooter">
-                            <button type="button" className="xs" onClick={onCloseRoomDetailsPopup}>
+                            <button
+                                type="button"
+                                className="xs KibitzGamePickerOverlay-cancelButton"
+                                onClick={onCloseRoomDetailsPopup}
+                            >
                                 {pgettext(
                                     "Button label for canceling the Kibitz room details popup",
                                     "Cancel",
@@ -617,7 +613,7 @@ export function KibitzGamePickerOverlay({
                             </button>
                             <button
                                 type="button"
-                                className="xs primary"
+                                className="xs primary KibitzGamePickerOverlay-actionButton"
                                 onClick={onSubmitCreateRoom}
                                 disabled={!canCreateRoom}
                             >
