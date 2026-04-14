@@ -976,7 +976,7 @@ export function Joseki(): React.ReactElement {
                         value: tag.id,
                     }),
                 );
-                the_joseki_tag_ref.current = body.tags[0].id;
+                the_joseki_tag_ref.current = joseki_tags_ref.current?.[0];
 
                 const saved_filter = data.get("oje-variation-filter");
 
