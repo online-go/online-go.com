@@ -357,10 +357,6 @@ export function KibitzRoomStage({
                         )}
                     </div>
                 </div>
-                <KibitzDividerHandle
-                    secondaryPane={secondaryPane}
-                    onSetMode={onSetSecondaryPaneMode}
-                />
                 <div
                     className={
                         "board-panel secondary-board" +
@@ -593,6 +589,7 @@ export function KibitzRoomStage({
                     </div>
                 </div>
             </div>
+            <KibitzDividerHandle secondaryPane={secondaryPane} onSetMode={onSetSecondaryPaneMode} />
         </div>
     );
 }

@@ -30,12 +30,12 @@ interface KibitzDividerHandleProps {
 const MODE_OPTIONS: Array<{ id: DividerMode; label: string; className: string }> = [
     {
         id: "hidden",
-        label: pgettext("Kibitz divider mode label", "Watch"),
+        label: pgettext("Kibitz divider mode label", "Main board"),
         className: "watch-view",
     },
     {
         id: "equal",
-        label: pgettext("Kibitz divider mode label", "Compare"),
+        label: pgettext("Kibitz divider mode label", "Show variations"),
         className: "compare-view",
     },
 ];
@@ -72,6 +72,7 @@ export function KibitzDividerHandle({
                                 <span className="pane pane-main" />
                                 <span className="pane pane-secondary" />
                             </span>
+                            <span className="divider-mode-label">{option.label}</span>
                         </button>
                     );
                 })}
