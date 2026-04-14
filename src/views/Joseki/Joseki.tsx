@@ -535,6 +535,7 @@ export function Joseki(): React.ReactElement {
             back_stepping.current = false;
             if (S.current.mode === PageMode.Play) {
                 played_mistake.current = false;
+                set_move_string(S.current.move_string); // trigger re-render to clear highlight class
                 goban_ref.current!.enableStonePlacement();
             } else if (S.current.current_move_category !== "new") {
                 const stepping_back_to = previous_position_ref.current.node_id as string;
@@ -951,14 +952,12 @@ export function Joseki(): React.ReactElement {
     React.useEffect(() => {
         return () => {
             goban_ref.current?.destroy();
+            goban_ref.current = null;
         };
     }, []);
 
-    // Main initialization effect - runs on mount and re-runs when location changes
+    // One-time setup: fetch user permissions and tags (these don't change per-position)
     React.useEffect(() => {
-        window.document.title = _("Joseki");
-
-        // Fetch user permissions
         get(server_url + "user-permissions")
             .then((body) => {
                 set_user_can_edit(body.can_edit);
@@ -969,7 +968,6 @@ export function Joseki(): React.ReactElement {
                 console.log("Permissions GET failed:", r);
             });
 
-        // Fetch tags
         get(server_url + "tags")
             .then((body) => {
                 joseki_tags_ref.current = body.tags.map(
@@ -995,6 +993,11 @@ export function Joseki(): React.ReactElement {
             .catch((r) => {
                 console.log("Tags GET failed:", r);
             });
+    }, []);
+
+    // Board initialization - runs on mount and re-runs when location changes
+    React.useEffect(() => {
+        window.document.title = _("Joseki");
 
         const target_position = pos || "root";
 
