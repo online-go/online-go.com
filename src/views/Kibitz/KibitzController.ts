@@ -330,14 +330,6 @@ function createRoomStream(room: KibitzRoomSummary): KibitzStreamItem[] {
     ];
 }
 
-function formatProposalSummary(game: KibitzRoomSummary["current_game"]): string {
-    if (!game) {
-        return "";
-    }
-
-    return `switching main game to ${game.title} (${game.black.username} vs ${game.white.username}, ${game.board_size}, move ${game.move_number ?? 0})`;
-}
-
 export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     private _mode: KibitzMode;
     private _destroyed = false;
@@ -822,64 +814,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 size: "small",
             });
         }
-    }
-
-    public proposePreviewedGame(roomId: string): void {
-        const previewGameId = this._secondary_pane.preview_game_id;
-        if (!previewGameId) {
-            return;
-        }
-
-        const room = this._rooms.find((entry) => entry.id === roomId);
-        const sourceRoom = this._rooms.find(
-            (entry) => entry.current_game?.game_id === previewGameId,
-        );
-        const proposedGame = sourceRoom?.current_game;
-
-        if (!room || !proposedGame) {
-            return;
-        }
-
-        if (this._mode === "demo" && this._mock_service) {
-            this._mock_service.createProposal(roomId, createCurrentUser(), proposedGame);
-            this.clearPreviewGame();
-            return;
-        }
-
-        const activeProposalExists = this._proposals.some(
-            (proposal) => proposal.status === "active",
-        );
-        const proposer = createCurrentUser();
-        const proposal: KibitzProposal = {
-            id: `proposal-${Date.now()}`,
-            room_id: roomId,
-            proposer,
-            proposed_game: proposedGame,
-            status: activeProposalExists ? "queued" : "active",
-            created_at: Date.now(),
-            cooldown_seconds: 30,
-            vote_state: {
-                change_votes: [],
-                keep_votes: [],
-                abstain_count: 0,
-                ends_at: Date.now() + 30_000,
-            },
-        };
-
-        this.setProposals([...this._proposals, proposal]);
-        this.setStream([
-            ...this._stream,
-            {
-                id: `${proposal.id}-started`,
-                room_id: roomId,
-                type: "proposal_started",
-                created_at: Date.now(),
-                author: proposer,
-                text: `${proposer.username} proposed ${formatProposalSummary(proposedGame)}.`,
-                game_id: proposedGame.game_id,
-                proposal_id: proposal.id,
-            },
-        ]);
     }
 
     public voteOnProposal(proposalId: string, choice: "change" | "keep"): void {

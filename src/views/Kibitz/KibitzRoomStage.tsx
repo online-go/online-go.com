@@ -43,7 +43,6 @@ interface KibitzRoomStageProps {
     secondaryPane: KibitzSecondaryPaneState;
     onClearPreview: () => void;
     onPostVariation: (controller: GobanController) => void;
-    onProposePreview: () => void;
     onSetSecondaryPaneMode: (mode: "hidden" | "small" | "equal") => void;
     onChangeBoard?: () => void;
     onCreateVariation?: () => void;
@@ -171,7 +170,6 @@ export function KibitzRoomStage({
     secondaryPane,
     onClearPreview,
     onPostVariation,
-    onProposePreview,
     onSetSecondaryPaneMode,
     onChangeBoard,
     onCreateVariation,
@@ -542,21 +540,6 @@ export function KibitzRoomStage({
                                         />
                                     </div>
                                     <div className="board-actions board-actions-inline">
-                                        <button
-                                            type="button"
-                                            className="preview-action-button symbol-button"
-                                            onClick={onProposePreview}
-                                            aria-label={pgettext(
-                                                "Aria label for proposing the current previewed game in kibitz",
-                                                "Propose",
-                                            )}
-                                            title={pgettext(
-                                                "Tooltip label for proposing the current previewed game in kibitz",
-                                                "Propose",
-                                            )}
-                                        >
-                                            +
-                                        </button>
                                         <button
                                             type="button"
                                             className="preview-action-button clear-preview symbol-button"

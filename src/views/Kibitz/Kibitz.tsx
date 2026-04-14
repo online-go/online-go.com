@@ -271,12 +271,6 @@ export function Kibitz(): React.ReactElement {
         secondaryPane.variation_id || (secondaryPane.preview_game_id && !proposalBackedPreview),
     );
 
-    const onProposePreview = React.useCallback(() => {
-        if (resolvedRoom) {
-            controller.proposePreviewedGame(resolvedRoom.id);
-        }
-    }, [controller, resolvedRoom]);
-
     const onPostVariation = React.useCallback(
         (boardController: GobanController) => {
             if (resolvedRoom) {
@@ -417,7 +411,6 @@ export function Kibitz(): React.ReactElement {
                             secondaryPane={secondaryPane}
                             onClearPreview={onClearPreview}
                             onPostVariation={onPostVariation}
-                            onProposePreview={onProposePreview}
                             onSetSecondaryPaneMode={onSetSecondaryPaneMode}
                             onChangeBoard={onOpenChangeBoard}
                             onCreateVariation={onCreateVariation}
