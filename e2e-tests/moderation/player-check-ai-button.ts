@@ -22,7 +22,7 @@
  * 1. The "Check AI" button appears in the PlayerDetails dropdown for moderators
  * 2. The button appears for AI Detectors (users with AI_DETECTOR moderator powers)
  * 3. The button does NOT appear for regular users
- * 4. Clicking the button navigates to the AI Detection page with the player filter pre-set
+ * 4. Clicking the button navigates to the Fair Play Search page (basic mode) with the player filter pre-set
  * 5. The URL contains the player parameter
  * 6. The player autocomplete shows the filtered player's name
  *
@@ -138,15 +138,16 @@ export const playerCheckAIButtonTest = async ({
     await checkAIButton.click();
     log("'Check AI' button clicked ✓");
 
-    // 11. Verify navigation to AI Detection page
-    log("Verifying navigation to AI Detection page...");
-    await expect(modPage.getByRole("heading", { name: /AI Detection/i })).toBeVisible({ timeout: 15000 });
-    log("AI Detection page loaded ✓");
+    // 11. Verify navigation to Fair Play Search page
+    log("Verifying navigation to Fair Play Search page...");
+    await expect(modPage.getByRole("heading", { name: /Fair Play Search/i })).toBeVisible({ timeout: 15000 });
+    log("Fair Play Search page loaded ✓");
 
-    // 12. Verify the URL contains the player parameter
+    // 12. Verify the URL contains the player parameter and basic mode
     log("Verifying URL contains player parameter...");
     const currentUrl = modPage.url();
-    expect(currentUrl).toContain("/moderator/ai-detection");
+    expect(currentUrl).toContain("/moderator/fair-play-search");
+    expect(currentUrl).toContain("mode=basic");
     if (targetUserId) {
         expect(currentUrl).toContain(`player=${targetUserId}`);
         log(`URL contains player parameter: player=${targetUserId} ✓`);
@@ -156,7 +157,7 @@ export const playerCheckAIButtonTest = async ({
 
     // 13. Verify the player autocomplete shows the filtered player
     log("Verifying player autocomplete shows filtered player...");
-    const playerAutocomplete = modPage.locator(".search input[type='text']");
+    const playerAutocomplete = modPage.locator(".PlayerAutocomplete input");
     await expect(playerAutocomplete).toBeVisible();
 
     // Wait a moment for the autocomplete to populate
@@ -171,7 +172,7 @@ export const playerCheckAIButtonTest = async ({
     log("=== Player Check AI Button Test Complete ===");
     log("✓ 'Check AI' button hidden from regular users");
     log("✓ 'Check AI' button visible to moderators");
-    log("✓ Clicking button navigates to AI Detection page");
+    log("✓ Clicking button navigates to Fair Play Search page");
     log("✓ URL contains player parameter");
     log("✓ Player filter correctly pre-populated");
     log("✓ Player Check AI button functionality fully verified");
