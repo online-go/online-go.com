@@ -402,8 +402,18 @@
                 overflow-wrap: anywhere;
             }
 
-            .kibitz-change-board-button {
+            .board-meta-actions {
+                align-items: flex-start;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.35rem;
                 margin-left: auto;
+                min-width: 0;
+            }
+
+            .kibitz-create-variation-button,
+            .kibitz-change-board-button {
+                white-space: nowrap;
             }
 
             .board-meta-top {
@@ -495,7 +505,7 @@
             justify-self: center;
         }
 
-        .board-meta-main .kibitz-change-board-button {
+        .board-meta-main .board-meta-actions {
             align-self: start;
             grid-column: 3;
             justify-self: end;
@@ -521,7 +531,7 @@
                 justify-self: center;
             }
 
-            .board-meta-main .kibitz-change-board-button {
+            .board-meta-main .board-meta-actions {
                 align-self: start;
                 grid-column: 3;
                 justify-self: end;

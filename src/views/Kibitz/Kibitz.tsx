@@ -207,6 +207,13 @@ export function Kibitz(): React.ReactElement {
         },
         [controller, isMobileLayout],
     );
+    const onCreateVariation = React.useCallback(() => {
+        controller.startVariationFromCurrentBoard();
+        if (isMobileLayout) {
+            setMobileCompanionPanel("compare");
+            setPendingSecondaryPaneMode("equal");
+        }
+    }, [controller, isMobileLayout]);
     const onScrolledToVariation = React.useCallback(() => {
         setPendingScrollVariationRequest(null);
     }, []);
@@ -251,20 +258,6 @@ export function Kibitz(): React.ReactElement {
 
     const resolvedRoom = activeRoom ?? rooms.find((room) => room.id === roomId) ?? rooms[0];
     const currentGameId = resolvedRoom?.current_game?.game_id ?? null;
-    const currentGameVariations = React.useMemo(
-        () =>
-            currentGameId == null
-                ? []
-                : variations.filter((variation) => variation.game_id === currentGameId),
-        [currentGameId, variations],
-    );
-    const previousGameVariations = React.useMemo(
-        () =>
-            currentGameId == null
-                ? variations
-                : variations.filter((variation) => variation.game_id !== currentGameId),
-        [currentGameId, variations],
-    );
     const roomProposals = proposals.filter((proposal) => proposal.room_id === resolvedRoom?.id);
     const activeProposal = roomProposals.find((proposal) => proposal.status === "active");
     const queuedRoomProposals = roomProposals.filter((proposal) => proposal.status !== "active");
@@ -304,7 +297,7 @@ export function Kibitz(): React.ReactElement {
 
     const variationPanels = (
         <>
-            {currentGameVariations.length === 0 && previousGameVariations.length === 0 ? (
+            {variations.length === 0 ? (
                 <div className="Kibitz-footer-empty">
                     {pgettext(
                         "Compact empty state shown below the kibitz room stream when there are no variations or queued proposals",
@@ -312,38 +305,15 @@ export function Kibitz(): React.ReactElement {
                     )}
                 </div>
             ) : (
-                <>
-                    {currentGameVariations.length > 0 ? (
-                        <KibitzVariationList
-                            variations={currentGameVariations}
-                            onOpenVariation={onOpenVariation}
-                        />
-                    ) : null}
-                    {previousGameVariations.length > 0 ? (
-                        <>
-                            {currentGameVariations.length > 0 ? (
-                                <div className="Kibitz-footer-divider">
-                                    {pgettext(
-                                        "Divider label for Kibitz variations from a previous game",
-                                        "Previous game",
-                                    )}
-                                </div>
-                            ) : null}
-                            <KibitzVariationList
-                                variations={previousGameVariations}
-                                onOpenVariation={onOpenVariation}
-                                title={pgettext(
-                                    "Heading for Kibitz variations from a previous game",
-                                    "Previous game",
-                                )}
-                            />
-                        </>
-                    ) : null}
-                    {queuedRoomProposals.length > 0 ? (
-                        <KibitzProposalQueue proposals={queuedRoomProposals} />
-                    ) : null}
-                </>
+                <KibitzVariationList
+                    variations={variations}
+                    currentGameId={currentGameId}
+                    onOpenVariation={onOpenVariation}
+                />
             )}
+            {queuedRoomProposals.length > 0 ? (
+                <KibitzProposalQueue proposals={queuedRoomProposals} />
+            ) : null}
         </>
     );
 
@@ -450,6 +420,7 @@ export function Kibitz(): React.ReactElement {
                             onProposePreview={onProposePreview}
                             onSetSecondaryPaneMode={onSetSecondaryPaneMode}
                             onChangeBoard={onOpenChangeBoard}
+                            onCreateVariation={onCreateVariation}
                         />
                         <div
                             className={

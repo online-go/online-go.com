@@ -9,6 +9,16 @@
         margin-bottom: 0.25rem;
     }
 
+    .variation-divider {
+        border-top: 1px solid var(--shade3);
+        color: var(--text-color-faded);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        padding: 0.4rem 0 0.25rem;
+        text-transform: uppercase;
+    }
+
     .variation-items {
         display: flex;
         flex-direction: column;

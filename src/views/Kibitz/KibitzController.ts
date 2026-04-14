@@ -725,6 +725,21 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         });
     }
 
+    public startVariationFromCurrentBoard(): void {
+        const currentGameId = this._active_room?.current_game?.game_id;
+        if (!currentGameId) {
+            return;
+        }
+
+        this.setSecondaryPane({
+            ...this._secondary_pane,
+            collapsed: false,
+            size: "equal",
+            preview_game_id: currentGameId,
+            variation_id: undefined,
+        });
+    }
+
     public clearPreviewGame(): void {
         this.setSecondaryPane({
             ...this._secondary_pane,

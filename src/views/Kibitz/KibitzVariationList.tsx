@@ -22,6 +22,7 @@ import "./KibitzVariationList.css";
 
 interface KibitzVariationListProps {
     variations: KibitzVariationSummary[];
+    currentGameId?: number | null;
     onOpenVariation: (variationId: string) => void;
     title?: string;
 }
@@ -44,41 +45,85 @@ function getUserInitials(username: string | undefined): string {
 
 export function KibitzVariationList({
     variations,
+    currentGameId,
     onOpenVariation,
     title,
 }: KibitzVariationListProps): React.ReactElement {
+    const groupedVariations = React.useMemo(() => {
+        const groups = new Map<number, KibitzVariationSummary[]>();
+        const order: number[] = [];
+
+        for (const variation of variations) {
+            const group = groups.get(variation.game_id);
+
+            if (group) {
+                group.push(variation);
+            } else {
+                groups.set(variation.game_id, [variation]);
+                order.push(variation.game_id);
+            }
+        }
+
+        const currentGroupId =
+            currentGameId != null && groups.has(currentGameId) ? currentGameId : null;
+        const orderedGroupIds =
+            currentGroupId != null
+                ? [currentGroupId, ...order.filter((gameId) => gameId !== currentGroupId)]
+                : order;
+
+        return orderedGroupIds.map((gameId, index) => ({
+            gameId,
+            variations: groups.get(gameId) ?? [],
+            showDivider: index > 0,
+        }));
+    }, [currentGameId, variations]);
+
     return (
         <div className="KibitzVariationList">
             <div className="variation-title">
                 {title ?? pgettext("Heading for the variations list in kibitz", "Variations")}
             </div>
-            {variations.length > 0 ? (
+            {groupedVariations.length > 0 ? (
                 <div className="variation-items">
-                    {variations.map((variation) => (
-                        <button
-                            key={variation.id}
-                            type="button"
-                            className="variation-item"
-                            onClick={() => onOpenVariation(variation.id)}
-                        >
-                            <span className="variation-name">
-                                {variation.title ||
-                                    pgettext(
-                                        "Fallback title for an untitled variation in kibitz",
-                                        "Untitled variation",
+                    {groupedVariations.map((group) => (
+                        <React.Fragment key={group.gameId}>
+                            {group.showDivider ? (
+                                <div className="variation-divider">
+                                    {pgettext(
+                                        "Divider label for Kibitz variations from a previous game",
+                                        "Previous game",
                                     )}
-                            </span>
-                            <span className="variation-meta-row">
-                                <span
-                                    className="variation-avatar"
-                                    aria-hidden="true"
-                                    title={variation.creator.username}
+                                </div>
+                            ) : null}
+                            {group.variations.map((variation) => (
+                                <button
+                                    key={variation.id}
+                                    type="button"
+                                    className="variation-item"
+                                    onClick={() => onOpenVariation(variation.id)}
                                 >
-                                    {getUserInitials(variation.creator.username)}
-                                </span>
-                                <span className="variation-meta">{variation.creator.username}</span>
-                            </span>
-                        </button>
+                                    <span className="variation-name">
+                                        {variation.title ||
+                                            pgettext(
+                                                "Fallback title for an untitled variation in kibitz",
+                                                "Untitled variation",
+                                            )}
+                                    </span>
+                                    <span className="variation-meta-row">
+                                        <span
+                                            className="variation-avatar"
+                                            aria-hidden="true"
+                                            title={variation.creator.username}
+                                        >
+                                            {getUserInitials(variation.creator.username)}
+                                        </span>
+                                        <span className="variation-meta">
+                                            {variation.creator.username}
+                                        </span>
+                                    </span>
+                                </button>
+                            ))}
+                        </React.Fragment>
                     ))}
                 </div>
             ) : (

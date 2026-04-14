@@ -34,17 +34,25 @@ export function KibitzBoardControls({
     showMoveTree = false,
     totalMoves,
 }: KibitzBoardControlsProps): React.ReactElement | null {
-    const [moveNumber, setMoveNumber] = React.useState(0);
+    const [moveNumber, setMoveNumber] = React.useState(() => totalMoves ?? 0);
 
     React.useEffect(() => {
         if (!controller) {
-            setMoveNumber(0);
+            setMoveNumber(totalMoves ?? 0);
             return;
         }
 
         const goban = controller.goban as any;
         const sync = () => {
-            setMoveNumber(goban?.engine?.cur_move?.move_number ?? 0);
+            const currentMoveNumber = goban?.engine?.cur_move?.move_number;
+            const fallbackMoveNumber =
+                goban?.engine?.last_official_move?.move_number ?? totalMoves ?? 0;
+
+            setMoveNumber(
+                typeof currentMoveNumber === "number" && currentMoveNumber > 0
+                    ? currentMoveNumber
+                    : fallbackMoveNumber,
+            );
         };
 
         sync();
@@ -53,7 +61,7 @@ export function KibitzBoardControls({
         return () => {
             goban?.off?.("cur_move", sync);
         };
-    }, [controller]);
+    }, [controller, totalMoves]);
 
     const setMoveTreeContainer = React.useCallback(
         (instance: Resizable | null) => {
