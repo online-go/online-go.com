@@ -45,9 +45,9 @@ import { alert } from "@/lib/swal_config";
 import gobanSocketWorkerUrl from "./GobanSocketWorkerScript?worker&url";
 
 export class GobanSocketProxy<
-        SendProtocol extends ClientToServerBase = ClientToServer,
-        RecvProtocol = ServerToClient,
-    >
+    SendProtocol extends ClientToServerBase = ClientToServer,
+    RecvProtocol = ServerToClient,
+>
     extends EventEmitter<GobanSocketEvents>
     implements IGobanSocket<SendProtocol, RecvProtocol>
 {

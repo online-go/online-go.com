@@ -227,7 +227,8 @@ type Prefixed<T, P extends string> = {
  * during prototyping), one can use a key that starts with an underscore.
  */
 export interface DataSchema
-    extends Prefixed<CachedSchema, "cached">,
+    extends
+        Prefixed<CachedSchema, "cached">,
         Prefixed<ConfigSchema, "config">,
         Prefixed<ChatSchema, "chat">,
         Prefixed<SoundSchema, "sound">,

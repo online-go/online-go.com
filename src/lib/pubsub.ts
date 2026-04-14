@@ -76,9 +76,10 @@ export class Publisher<T> {
 // publication that this Subscriber can be subscribed to. If you don't wish
 // to narrow the type down, then you can specify K = keyof T or just allow
 // the compiler to infer the type.
-abstract class AbstractSubscriber<T, K extends Extract<keyof T, string>>
-    implements Subscriber<T, K>
-{
+abstract class AbstractSubscriber<T, K extends Extract<keyof T, string>> implements Subscriber<
+    T,
+    K
+> {
     private subscribed_channels: { [channel in K]?: boolean };
 
     constructor(
