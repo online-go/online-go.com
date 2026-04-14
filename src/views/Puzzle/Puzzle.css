@@ -56,6 +56,13 @@
         min-height: auto;
         padding: 0.5rem;
         z-index: 2;
+
+        .game-state {
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            padding: 0.5rem;
+        }
     }
 
     &.portrait .right-col {
