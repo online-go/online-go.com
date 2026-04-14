@@ -272,6 +272,11 @@ export function KibitzGamePickerOverlay({
             ? pgettext("Label for a finished Kibitz game", "Finished")
             : pgettext("Label for a live Kibitz game", "Live")
         : null;
+    const selectedGameStateClassName = selectedGame
+        ? selectedGame.isFinished
+            ? "KibitzGamePickerOverlay-stateText KibitzGamePickerOverlay-stateFinished"
+            : "KibitzGamePickerOverlay-stateText KibitzGamePickerOverlay-stateLive"
+        : undefined;
 
     return (
         <div className="KibitzGamePickerOverlay" role="dialog" aria-modal="true">
@@ -383,7 +388,7 @@ export function KibitzGamePickerOverlay({
                                             {selectedGameSummary.title}
                                         </div>
                                         {selectedGameStateLabel ? (
-                                            <div className="KibitzGamePickerOverlay-stateBadge">
+                                            <div className={selectedGameStateClassName}>
                                                 {selectedGameStateLabel}
                                             </div>
                                         ) : null}

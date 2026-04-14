@@ -201,13 +201,19 @@
         line-height: 1.2;
     }
 
-    .KibitzGamePickerOverlay-stateBadge {
-        background: var(--shade2);
-        border-radius: 999px;
-        color: var(--fg);
-        font-size: 0.75rem;
+    .KibitzGamePickerOverlay-stateText {
+        font-size: 0.8rem;
         font-weight: 700;
-        padding: 0.18rem 0.55rem;
+        line-height: 1.2;
+        margin-top: 0.1rem;
+    }
+
+    .KibitzGamePickerOverlay-stateLive {
+        color: var(--danger, #c0392b);
+    }
+
+    .KibitzGamePickerOverlay-stateFinished {
+        color: var(--fg);
     }
 
     .KibitzGamePickerOverlay-previewMeta,
