@@ -227,6 +227,7 @@ header.NavBar {
 
         & > .left {
             background-color: var(--navbar-background-color);
+            width: 100dvw;
             position: absolute;
             top: var(--navbar-height);
             bottom: 0;
