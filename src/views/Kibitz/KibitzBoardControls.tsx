@@ -66,6 +66,11 @@ export function KibitzBoardControls({
     }, [controller, totalMoves]);
 
     React.useEffect(() => {
+        if (!showMoveTree) {
+            previousControllerRef.current = null;
+            return;
+        }
+
         const previousController = previousControllerRef.current;
         const container = moveTreeContainer?.div ?? null;
 
@@ -90,7 +95,7 @@ export function KibitzBoardControls({
                 controller.setMoveTreeContainer(null);
             }
         };
-    }, [controller, moveTreeContainer]);
+    }, [controller, moveTreeContainer, showMoveTree]);
 
     const handleMoveTreeContainerRef = React.useCallback((instance: Resizable | null) => {
         setMoveTreeContainer(instance);

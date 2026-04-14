@@ -122,6 +122,8 @@
 
             .board-fit-slot {
                 padding-top: 0.25rem;
+                position: relative;
+                z-index: 0;
             }
 
             .main-board .board-fit-slot {
@@ -268,6 +270,8 @@
             .secondary-board .secondary-board-transport-row {
                 background: transparent;
                 padding-top: 0;
+                position: relative;
+                z-index: 1;
             }
 
             .secondary-board-analyze-row {
@@ -277,6 +281,8 @@
                 min-height: var(--equal-analyze-height);
                 overflow: hidden;
                 padding: 0 0.75rem;
+                position: relative;
+                z-index: 1;
 
                 .game-analyze-button-bar {
                     gap: 0;
@@ -311,6 +317,8 @@
                 display: flex;
                 min-height: var(--equal-compose-height);
                 padding: 0 0.75rem;
+                position: relative;
+                z-index: 1;
             }
 
             .board-content-spacer {
