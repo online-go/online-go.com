@@ -119,8 +119,14 @@ export function KibitzGamePickerOverlay({
             return null;
         }
 
-        return findExistingRoom(rooms, selectedGame.game.game_id);
-    }, [rooms, selectedGame]);
+        const existing = findExistingRoom(rooms, selectedGame.game.game_id);
+
+        if (mode === "change-board" && existing?.id === currentRoom?.id) {
+            return null;
+        }
+
+        return existing;
+    }, [currentRoom?.id, mode, rooms, selectedGame]);
 
     const manualEntryLabel = pgettext("Label for the Kibitz game ID input", "Game ID");
     const manualPlaceholder = pgettext(
