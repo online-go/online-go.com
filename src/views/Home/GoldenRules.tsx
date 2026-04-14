@@ -23,70 +23,70 @@ const RULES = [
     {
         cn: "贪不得胜",
         tr: pgettext(
-            "Golden rule of Go #1 (贪不得胜). Translate sussinctly and with balance, artistry is as important as accuracy in this context.",
+            "Golden rule of Go #1 (贪不得胜). Translate succinctly and with balance, artistry is as important as accuracy in this context.",
             "Don't be greedy",
         ),
     },
     {
         cn: "入界宜缓",
         tr: pgettext(
-            "Golden rule of Go #2 (入界宜缓). Translate sussinctly and with balance, artistry is as important as accuracy in this context.",
+            "Golden rule of Go #2 (入界宜缓). Translate succinctly and with balance, artistry is as important as accuracy in this context.",
             "Invade cautiously",
         ),
     },
     {
         cn: "攻彼顾我",
         tr: pgettext(
-            "Golden rule of Go #3 (攻彼顾我). Translate sussinctly and with balance, artistry is as important as accuracy in this context.",
+            "Golden rule of Go #3 (攻彼顾我). Translate succinctly and with balance, artistry is as important as accuracy in this context.",
             "Protect while attacking",
         ),
     },
     {
         cn: "弃子争先",
         tr: pgettext(
-            "Golden rule of Go #4 (弃子争先). Translate sussinctly and with balance, artistry is as important as accuracy in this context.",
+            "Golden rule of Go #4 (弃子争先). Translate succinctly and with balance, artistry is as important as accuracy in this context.",
             "Sacrifice to gain initiative",
         ),
     },
     {
         cn: "舍小就大",
         tr: pgettext(
-            "Golden rule of Go #5 (舍小就大). Translate sussinctly and with balance, artistry is as important as accuracy in this context.",
+            "Golden rule of Go #5 (舍小就大). Translate succinctly and with balance, artistry is as important as accuracy in this context.",
             "Abandon small, save big",
         ),
     },
     {
         cn: "逢危须弃",
         tr: pgettext(
-            "Golden rule of Go #6 (逢危须弃). Translate sussinctly and with balance, artistry is as important as accuracy in this context.",
+            "Golden rule of Go #6 (逢危须弃). Translate succinctly and with balance, artistry is as important as accuracy in this context.",
             "When in danger, sacrifice",
         ),
     },
     {
         cn: "慎勿轻速",
         tr: pgettext(
-            "Golden rule of Go #7 (慎勿轻速). Translate sussinctly and with balance, artistry is as important as accuracy in this context.",
+            "Golden rule of Go #7 (慎勿轻速). Translate succinctly and with balance, artistry is as important as accuracy in this context.",
             "Good shape finds sente",
         ),
     },
     {
         cn: "动须相应",
         tr: pgettext(
-            "Golden rule of Go #8 (动须相应). Translate sussinctly and with balance, artistry is as important as accuracy in this context.",
+            "Golden rule of Go #8 (动须相应). Translate succinctly and with balance, artistry is as important as accuracy in this context.",
             "Play locally, think globally",
         ),
     },
     {
         cn: "彼强自保",
         tr: pgettext(
-            "Golden rule of Go #9 (彼强自保). Translate sussinctly and with balance, artistry is as important as accuracy in this context.",
+            "Golden rule of Go #9 (彼强自保). Translate succinctly and with balance, artistry is as important as accuracy in this context.",
             "Near strength, play safe",
         ),
     },
     {
         cn: "势孤取和",
         tr: pgettext(
-            "Golden rule of Go #10 (势孤取和). Translate sussinctly and with balance, artistry is as important as accuracy in this context.",
+            "Golden rule of Go #10 (势孤取和). Translate succinctly and with balance, artistry is as important as accuracy in this context.",
             "When isolated, seek peace",
         ),
     },

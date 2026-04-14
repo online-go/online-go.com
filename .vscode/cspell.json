@@ -1,7 +1,5 @@
 {
-    "ignorePaths": [
-        "src/views/GoTV/twitchLanguageCodes.ts"
-    ],
+    "ignorePaths": ["src/views/GoTV/twitchLanguageCodes.ts"],
     "words": [
         "abcdefghjklmnopqrstuvwxyz",
         "Acked",
@@ -185,7 +183,6 @@
         "subtool",
         "superchat",
         "superko",
-        "sussinctly",
         "swal",
         "sweetalert",
         "tbody",
@@ -225,7 +222,7 @@
         "yike",
         "yomi",
         "zenmode",
-        "zoomable"
+        "zoomable",
     ],
-    "language": "en,en-GB"
+    "language": "en,en-GB",
 }
