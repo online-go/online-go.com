@@ -82,11 +82,13 @@ export function ExplorePane(props: ExploreProps): React.ReactElement {
 
         get(comments_url)
             .then((body) => {
-                set_extra_throb(false);
                 extractCommentary(body);
             })
             .catch((r) => {
                 console.log("Comments GET failed:", r);
+            })
+            .finally(() => {
+                set_extra_throb(false);
             });
         set_extra_info_selected("comments");
     }, [props.position_id, extractCommentary]);
@@ -120,7 +122,6 @@ export function ExplorePane(props: ExploreProps): React.ReactElement {
     // Intentionally omits deps -- this should only run once on mount.
     React.useEffect(() => {
         if (props.show_comments) {
-            console.log("comments forced");
             showComments();
         } else {
             showFilterSelector();
@@ -191,7 +192,7 @@ export function ExplorePane(props: ExploreProps): React.ReactElement {
                     <div className="see-also-block">
                         <div>{_("See also:")}</div>
                         {props.see_also.map((node, index) => (
-                            <Link key={index} to={"/joseki/" + node + " "}>
+                            <Link key={index} to={"/joseki/" + node}>
                                 {node}
                             </Link>
                         ))}
