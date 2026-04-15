@@ -202,7 +202,7 @@ export function KibitzRoomStage({
     const [secondaryMoveTreeContainer, setSecondaryMoveTreeContainer] =
         React.useState<Resizable | null>(null);
     const previousSecondaryControllerRef = React.useRef<GobanController | null>(null);
-    const mobileChatMainBoardSizeRef = React.useRef(0);
+    const mobileChatMainBoardSizeRef = React.useRef<number | null>(null);
     const sizeLayoutKey = mobilePanelKey ?? "desktop";
     const [mainBoardSlotRef, mainBoardSize] = useSquareFitSize<HTMLDivElement>(
         `main-${secondaryPaneSize}-${sizeLayoutKey}`,
@@ -302,18 +302,20 @@ export function KibitzRoomStage({
     }, [secondaryBoardController, selectedVariation]);
 
     React.useEffect(() => {
-        mobileChatMainBoardSizeRef.current = 0;
+        mobileChatMainBoardSizeRef.current = null;
     }, [room.id]);
 
     React.useEffect(() => {
-        if (mobilePanelKey !== "chat" || secondaryPaneSize !== "hidden" || mainBoardSize <= 0) {
+        if (
+            mobilePanelKey !== "chat" ||
+            secondaryPaneSize !== "hidden" ||
+            mainBoardSize <= 0 ||
+            mobileChatMainBoardSizeRef.current != null
+        ) {
             return;
         }
 
-        mobileChatMainBoardSizeRef.current = Math.max(
-            mobileChatMainBoardSizeRef.current,
-            mainBoardSize,
-        );
+        mobileChatMainBoardSizeRef.current = mainBoardSize;
     }, [mainBoardSize, mobilePanelKey, secondaryPaneSize]);
 
     const displayedTitle = mainGameDetails?.name || mainGame?.title;
@@ -324,7 +326,7 @@ export function KibitzRoomStage({
         mainGameDetails?.gamedata?.clock?.last_move ??
         mainGame?.move_number;
     const displayedMainBoardSize =
-        mobilePanelKey === "chat" && mobileChatMainBoardSizeRef.current > 0
+        mobilePanelKey === "chat" && mobileChatMainBoardSizeRef.current
             ? mobileChatMainBoardSizeRef.current
             : mainBoardSize;
     const onConfirmClearSecondaryPane = React.useCallback(() => {
