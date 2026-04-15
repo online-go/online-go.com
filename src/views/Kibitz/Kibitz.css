@@ -116,14 +116,64 @@
             gap: 0.5rem;
         }
 
+        .Kibitz-mobile-shell {
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column;
+            gap: 0;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .Kibitz-mobile-top-pane {
+            display: flex;
+            flex: 0 0 auto;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .Kibitz-mobile-top-pane .KibitzRoomStage {
+            flex: 1 1 auto;
+            min-height: 0;
+        }
+
+        .Kibitz-mobile-divider {
+            align-items: center;
+            cursor: ns-resize;
+            display: flex;
+            flex: 0 0 auto;
+            height: 1rem;
+            justify-content: center;
+            touch-action: none;
+        }
+
+        .Kibitz-mobile-divider::before {
+            background: var(--shade2);
+            border-radius: 999px;
+            content: "";
+            display: block;
+            height: 0.24rem;
+            width: 2.6rem;
+        }
+
+        .Kibitz-mobile-bottom-pane {
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+        }
+
         .Kibitz-sidebar {
             background: var(--bg);
             display: flex;
+            flex: 1 1 auto;
             flex-direction: column;
             gap: 0.5rem;
             grid-template-rows: none;
             min-height: 0;
             order: 3;
+            overflow: hidden;
         }
 
         .KibitzPresence {
@@ -267,8 +317,16 @@
 
         .Kibitz-mobile-panel-surface {
             display: flex;
+            flex: 1 1 auto;
             flex-direction: column;
             gap: 0.5rem;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .Kibitz-mobile-panel-surface > .KibitzRoomStream,
+        .Kibitz-mobile-panel-surface > .Kibitz-mobile-panel {
+            flex: 1 1 auto;
             min-height: 0;
         }
 
@@ -277,6 +335,7 @@
             flex-direction: column;
             gap: 0.5rem;
             min-height: 0;
+            overflow: auto;
         }
 
         .Kibitz-mobile-compare-actions {
