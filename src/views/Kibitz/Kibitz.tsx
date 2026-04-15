@@ -18,7 +18,7 @@
 import * as React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { GobanController } from "@/lib/GobanController";
-import { pgettext } from "@/lib/translate";
+import { interpolate, pgettext } from "@/lib/translate";
 import type {
     KibitzDebugState,
     KibitzMode,
@@ -41,7 +41,7 @@ import { KibitzGamePickerOverlay } from "./KibitzGamePickerOverlay";
 import "./Kibitz.css";
 
 type SecondaryPaneMode = "hidden" | "small" | "equal";
-type MobileCompanionPanel = "rooms" | "chat" | "vote" | "compare";
+type MobileCompanionPanel = "chat" | "vote" | "compare";
 type KibitzGamePickerMode = "create-room" | "change-board" | null;
 
 const MOBILE_LAYOUT_MEDIA_QUERY = "(max-width: 1000px)";
@@ -57,6 +57,21 @@ function formatMobileVoteCountdown(endsAt?: number): string | null {
     const seconds = totalSeconds % 60;
 
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function formatMobileMatchup(
+    room: KibitzRoom | KibitzRoomSummary | null | undefined,
+): string | null {
+    const game = room?.current_game;
+
+    if (!game) {
+        return null;
+    }
+
+    return interpolate(pgettext("Mobile kibitz room matchup label", "{{black}} vs {{white}}"), {
+        black: game.black.username,
+        white: game.white.username,
+    });
 }
 
 export function Kibitz(): React.ReactElement {
@@ -88,7 +103,9 @@ export function Kibitz(): React.ReactElement {
         React.useState<SecondaryPaneMode | null>(null);
     const [debug, setDebug] = React.useState<KibitzDebugState>(controller.debug);
     const [mobileCompanionPanel, setMobileCompanionPanel] =
-        React.useState<MobileCompanionPanel>("rooms");
+        React.useState<MobileCompanionPanel>("chat");
+    const [mobileRoomsOpen, setMobileRoomsOpen] = React.useState(false);
+    const [mobileRoomActionsOpen, setMobileRoomActionsOpen] = React.useState(false);
     const [isMobileLayout, setIsMobileLayout] = React.useState(
         () => window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY).matches,
     );
@@ -179,6 +196,8 @@ export function Kibitz(): React.ReactElement {
         (nextRoomId: string) => {
             if (isMobileLayout) {
                 setMobileCompanionPanel("chat");
+                setMobileRoomsOpen(false);
+                setMobileRoomActionsOpen(false);
             }
             void navigate(`/kibitz/${nextRoomId}`);
         },
@@ -314,10 +333,14 @@ export function Kibitz(): React.ReactElement {
     React.useEffect(() => {
         if (!isMobileLayout) {
             setMobileCompanionPanel("chat");
+            setMobileRoomsOpen(false);
+            setMobileRoomActionsOpen(false);
             return;
         }
 
-        setMobileCompanionPanel("rooms");
+        setMobileCompanionPanel("chat");
+        setMobileRoomsOpen(false);
+        setMobileRoomActionsOpen(false);
     }, [isMobileLayout, resolvedRoom?.id]);
 
     React.useEffect(() => {
@@ -373,7 +396,21 @@ export function Kibitz(): React.ReactElement {
         [currentSecondaryPaneMode, hasCompareTarget, isMobileLayout],
     );
 
+    const onToggleMobileRooms = React.useCallback(() => {
+        setMobileRoomsOpen((open) => !open);
+        setMobileRoomActionsOpen(false);
+    }, []);
+
+    const onCloseMobileRooms = React.useCallback(() => {
+        setMobileRoomsOpen(false);
+    }, []);
+
+    const onCloseMobileRoomActions = React.useCallback(() => {
+        setMobileRoomActionsOpen(false);
+    }, []);
+
     const resolvedRoomUsers = resolvedRoom ? controller.getRoomUsers(resolvedRoom.id) : [];
+    const mobileMatchup = formatMobileMatchup(resolvedRoom);
     const roomUsersById = React.useMemo(
         () =>
             Object.fromEntries(
@@ -401,6 +438,129 @@ export function Kibitz(): React.ReactElement {
                     <KibitzPresence mode={mode} room={resolvedRoom} users={resolvedRoomUsers} />
                 </div>
                 <div className="Kibitz-main">
+                    {isMobileLayout ? (
+                        <>
+                            <button
+                                type="button"
+                                className="Kibitz-mobile-room-bar"
+                                onClick={onToggleMobileRooms}
+                                aria-expanded={mobileRoomsOpen}
+                            >
+                                <div className="mobile-room-header-copy">
+                                    <div className="mobile-room-header-title">
+                                        {resolvedRoom.title}
+                                    </div>
+                                    {mobileMatchup ? (
+                                        <div className="mobile-room-header-matchup">
+                                            {mobileMatchup}
+                                        </div>
+                                    ) : null}
+                                </div>
+                                <div className="mobile-room-header-meta">
+                                    <span
+                                        className="mobile-room-viewer-icon"
+                                        title={interpolate(
+                                            pgettext(
+                                                "Tooltip for the viewer count shown in the mobile kibitz room header",
+                                                "{{count}} people here",
+                                            ),
+                                            { count: resolvedRoom.viewer_count },
+                                        )}
+                                    >
+                                        <svg
+                                            viewBox="0 0 16 16"
+                                            focusable="false"
+                                            aria-hidden="true"
+                                        >
+                                            <path
+                                                d="M8 8a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm0 1c-2.7 0-5 1.4-5 3.2V14h10v-1.8C13 10.4 10.7 9 8 9Z"
+                                                fill="currentColor"
+                                            />
+                                        </svg>
+                                    </span>
+                                    <span className="mobile-room-viewer-count">
+                                        {resolvedRoom.viewer_count}
+                                    </span>
+                                </div>
+                            </button>
+                            <div className="mobile-room-header-actions">
+                                {onCreateVariation || onOpenChangeBoard ? (
+                                    <div className="mobile-room-actions">
+                                        <button
+                                            type="button"
+                                            className="mobile-room-actions-button"
+                                            onClick={() => {
+                                                setMobileRoomActionsOpen((open) => !open);
+                                                setMobileRoomsOpen(false);
+                                            }}
+                                            aria-expanded={mobileRoomActionsOpen}
+                                            aria-label={pgettext(
+                                                "Aria label for the mobile kibitz room actions menu",
+                                                "Room actions",
+                                            )}
+                                        >
+                                            ...
+                                        </button>
+                                        {mobileRoomActionsOpen ? (
+                                            <div className="mobile-room-actions-menu">
+                                                {onCreateVariation ? (
+                                                    <button
+                                                        type="button"
+                                                        className="mobile-room-actions-menu-button"
+                                                        onClick={() => {
+                                                            onCloseMobileRoomActions();
+                                                            onCreateVariation();
+                                                        }}
+                                                    >
+                                                        {pgettext(
+                                                            "Button label for opening Kibitz variation creation",
+                                                            "Create variation",
+                                                        )}
+                                                    </button>
+                                                ) : null}
+                                                {onOpenChangeBoard ? (
+                                                    <button
+                                                        type="button"
+                                                        className="mobile-room-actions-menu-button"
+                                                        onClick={() => {
+                                                            onCloseMobileRoomActions();
+                                                            onOpenChangeBoard();
+                                                        }}
+                                                    >
+                                                        {pgettext(
+                                                            "Button label for opening Kibitz change board",
+                                                            "Change board",
+                                                        )}
+                                                    </button>
+                                                ) : null}
+                                            </div>
+                                        ) : null}
+                                    </div>
+                                ) : null}
+                            </div>
+                            {mobileRoomsOpen ? (
+                                <div className="Kibitz-mobile-rooms-drawer">
+                                    <KibitzRoomList
+                                        rooms={rooms}
+                                        activeRoomId={resolvedRoom.id}
+                                        roomUsersById={roomUsersById}
+                                        onSelectRoom={onSelectRoom}
+                                        onCreateRoom={onOpenCreateRoom}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="mobile-rooms-close-button"
+                                        onClick={onCloseMobileRooms}
+                                    >
+                                        {pgettext(
+                                            "Button label for closing the mobile kibitz room list",
+                                            "Close rooms",
+                                        )}
+                                    </button>
+                                </div>
+                            ) : null}
+                        </>
+                    ) : null}
                     <div className="Kibitz-content">
                         <KibitzRoomStage
                             mode={mode}
@@ -412,8 +572,8 @@ export function Kibitz(): React.ReactElement {
                             onClearPreview={onClearPreview}
                             onPostVariation={onPostVariation}
                             onSetSecondaryPaneMode={onSetSecondaryPaneMode}
-                            onChangeBoard={onOpenChangeBoard}
-                            onCreateVariation={onCreateVariation}
+                            onChangeBoard={isMobileLayout ? undefined : onOpenChangeBoard}
+                            onCreateVariation={isMobileLayout ? undefined : onCreateVariation}
                         />
                         <div
                             className={
@@ -431,19 +591,6 @@ export function Kibitz(): React.ReactElement {
                                             "Mobile kibitz panels",
                                         )}
                                     >
-                                        <button
-                                            type="button"
-                                            className={
-                                                "mobile-panel-button" +
-                                                (mobileCompanionPanel === "rooms" ? " active" : "")
-                                            }
-                                            onClick={() => onSelectMobileCompanionPanel("rooms")}
-                                            aria-pressed={mobileCompanionPanel === "rooms"}
-                                        >
-                                            <span className="mobile-panel-label">
-                                                {pgettext("Mobile kibitz panel label", "Rooms")}
-                                            </span>
-                                        </button>
                                         <button
                                             type="button"
                                             className={
@@ -494,17 +641,6 @@ export function Kibitz(): React.ReactElement {
                                         </button>
                                     </div>
                                     <div className="Kibitz-mobile-panel-surface">
-                                        {mobileCompanionPanel === "rooms" ? (
-                                            <div className="Kibitz-mobile-panel Kibitz-mobile-rooms-panel">
-                                                <KibitzRoomList
-                                                    rooms={rooms}
-                                                    activeRoomId={resolvedRoom.id}
-                                                    roomUsersById={roomUsersById}
-                                                    onSelectRoom={onSelectRoom}
-                                                    onCreateRoom={onOpenCreateRoom}
-                                                />
-                                            </div>
-                                        ) : null}
                                         {mobileCompanionPanel === "chat" ? (
                                             <KibitzRoomStream
                                                 mode={mode}

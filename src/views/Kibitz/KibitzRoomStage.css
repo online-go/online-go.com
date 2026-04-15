@@ -807,6 +807,10 @@
             display: none;
         }
 
+        .main-board .board-meta {
+            display: none;
+        }
+
         .board-meta-main {
             display: grid;
             gap: 0.2rem;
