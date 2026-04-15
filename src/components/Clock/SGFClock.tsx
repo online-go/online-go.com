@@ -58,6 +58,23 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
         return null;
     }
 
+    // SGF BL/WL provides a single "seconds remaining" number stored as
+    // main_time. During overtime (byoyomi/canadian), this value IS the
+    // period/block time remaining — the SGF format doesn't separate main
+    // time from overtime time. Therefore period_time_left and
+    // block_time_left are never populated for SGF-sourced clocks.
+    // OB/OW, when present, provide periods_left (byoyomi) or
+    // moves_left (canadian).
+
+    const has_time = player_clock.main_time > 0;
+    const has_overtime_info = player_clock.periods_left != null || player_clock.moves_left != null;
+
+    if (!has_time && !has_overtime_info) {
+        return null;
+    }
+
+    const system = time_settings?.system;
+
     let clock_className = "Clock SGFClock " + color;
     if (player_clock.main_time <= 0) {
         clock_className += " in-overtime";
@@ -66,11 +83,9 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
         clock_className += " " + className;
     }
 
-    const system = time_settings?.system;
-
     return (
         <span className={clock_className}>
-            {player_clock.main_time > 0 && (
+            {has_time && (
                 <span className="main-time boxed">
                     {prettyTime(player_clock.main_time)}
                     {system === "absolute" && <span className="absolute-time">+0</span>}
