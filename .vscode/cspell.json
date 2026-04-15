@@ -1,7 +1,5 @@
 {
-    "ignorePaths": [
-        "src/views/GoTV/twitchLanguageCodes.ts"
-    ],
+    "ignorePaths": ["src/views/GoTV/twitchLanguageCodes.ts"],
     "words": [
         "abcdefghjklmnopqrstuvwxyz",
         "Acked",
@@ -224,7 +222,8 @@
         "yike",
         "yomi",
         "zenmode",
-        "zoomable"
+        "zoomable",
+        "josekisources",
     ],
-    "language": "en,en-GB"
+    "language": "en,en-GB",
 }
