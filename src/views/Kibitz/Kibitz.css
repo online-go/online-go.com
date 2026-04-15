@@ -217,16 +217,6 @@
             padding-bottom: 0.35rem;
         }
 
-        .Kibitz-mobile-panel-switcher {
-            background: var(--card-background-color);
-            border-bottom: 1px solid transparent;
-            border-bottom-color: var(--shade3);
-            display: grid;
-            gap: 0.25rem;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            padding: 0.25rem;
-        }
-
         .mobile-panel-button {
             align-items: center;
             background: var(--shade1);
@@ -239,6 +229,13 @@
             min-height: 2rem;
             min-width: 0;
             padding: 0.45rem 0.55rem;
+        }
+
+        .mobile-panel-button.mobile-panel-button-compact {
+            font-size: 0.72rem;
+            gap: 0.25rem;
+            min-height: 1.75rem;
+            padding: 0.3rem 0.45rem;
         }
 
         .mobile-panel-button.active {

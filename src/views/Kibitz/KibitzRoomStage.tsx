@@ -47,6 +47,12 @@ interface KibitzRoomStageProps {
     onSetSecondaryPaneMode: (mode: "hidden" | "small" | "equal") => void;
     onChangeBoard?: () => void;
     onCreateVariation?: () => void;
+    isMobileLayout?: boolean;
+    mobileCompanionPanel?: "chat" | "vote" | "compare";
+    mobileVoteCountdown?: string | null;
+    mobileVoteHasAlert?: boolean;
+    hasCompareTarget?: boolean;
+    onSelectMobileCompanionPanel?: (panel: "chat" | "vote" | "compare") => void;
 }
 
 function useSquareFitSize<T extends HTMLElement>(layoutKey: string) {
@@ -174,6 +180,12 @@ export function KibitzRoomStage({
     onSetSecondaryPaneMode,
     onChangeBoard,
     onCreateVariation,
+    isMobileLayout = false,
+    mobileCompanionPanel,
+    mobileVoteCountdown,
+    mobileVoteHasAlert = false,
+    hasCompareTarget = false,
+    onSelectMobileCompanionPanel,
 }: KibitzRoomStageProps): React.ReactElement {
     const mainGame = room.current_game;
     const secondaryGameId = secondaryPane.preview_game_id;
@@ -417,13 +429,84 @@ export function KibitzRoomStage({
                                         onReady={setMainBoardController}
                                     />
                                 </div>
-                                <div className="main-board-transport-row">
-                                    <KibitzBoardControls
-                                        controller={mainBoardController}
-                                        variant="minimal"
-                                        totalMoves={displayedMoveNumber}
-                                    />
-                                </div>
+                                {isMobileLayout &&
+                                mobileCompanionPanel &&
+                                onSelectMobileCompanionPanel ? (
+                                    <div className="main-board-mobile-action-row">
+                                        <button
+                                            type="button"
+                                            className={
+                                                "mobile-panel-button mobile-panel-button-chat" +
+                                                (mobileCompanionPanel === "chat" ? " active" : "")
+                                            }
+                                            onClick={() => onSelectMobileCompanionPanel("chat")}
+                                            aria-pressed={mobileCompanionPanel === "chat"}
+                                        >
+                                            <span className="mobile-panel-label">
+                                                {pgettext("Mobile kibitz panel label", "Chat")}
+                                            </span>
+                                        </button>
+                                        <div className="main-board-transport-row">
+                                            <KibitzBoardControls
+                                                controller={mainBoardController}
+                                                variant="minimal"
+                                                totalMoves={displayedMoveNumber}
+                                            />
+                                        </div>
+                                        <div className="main-board-mobile-panel-actions">
+                                            <button
+                                                type="button"
+                                                className={
+                                                    "mobile-panel-button mobile-panel-button-compact vote-panel-button" +
+                                                    (mobileCompanionPanel === "vote"
+                                                        ? " active"
+                                                        : "") +
+                                                    (mobileVoteHasAlert ? " has-alert" : "")
+                                                }
+                                                onClick={() => onSelectMobileCompanionPanel("vote")}
+                                                aria-pressed={mobileCompanionPanel === "vote"}
+                                            >
+                                                <span className="mobile-panel-label">
+                                                    {pgettext("Mobile kibitz panel label", "Vote")}
+                                                </span>
+                                                {mobileVoteCountdown ? (
+                                                    <span className="mobile-panel-badge">
+                                                        {mobileVoteCountdown}
+                                                    </span>
+                                                ) : null}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className={
+                                                    "mobile-panel-button mobile-panel-button-compact compare-panel-button" +
+                                                    (mobileCompanionPanel === "compare"
+                                                        ? " active"
+                                                        : "") +
+                                                    (hasCompareTarget ? " has-alert" : "")
+                                                }
+                                                onClick={() =>
+                                                    onSelectMobileCompanionPanel("compare")
+                                                }
+                                                aria-pressed={mobileCompanionPanel === "compare"}
+                                            >
+                                                <span className="mobile-panel-label">
+                                                    {pgettext(
+                                                        "Mobile kibitz panel label",
+                                                        "Compare",
+                                                    )}
+                                                </span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="main-board-transport-row">
+                                        <KibitzBoardControls
+                                            controller={mainBoardController}
+                                            variant="minimal"
+                                            totalMoves={displayedMoveNumber}
+                                        />
+                                    </div>
+                                )}
                                 {secondaryPaneSize === "equal" ? (
                                     <div className="main-board-analyze-spacer" aria-hidden="true" />
                                 ) : null}

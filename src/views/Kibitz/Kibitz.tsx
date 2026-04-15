@@ -494,6 +494,12 @@ export function Kibitz(): React.ReactElement {
                             onSetSecondaryPaneMode={onSetSecondaryPaneMode}
                             onChangeBoard={isMobileLayout ? undefined : onOpenChangeBoard}
                             onCreateVariation={isMobileLayout ? undefined : onCreateVariation}
+                            isMobileLayout={isMobileLayout}
+                            mobileCompanionPanel={mobileCompanionPanel}
+                            mobileVoteCountdown={mobileVoteCountdown}
+                            mobileVoteHasAlert={Boolean(activeProposal)}
+                            hasCompareTarget={hasCompareTarget}
+                            onSelectMobileCompanionPanel={onSelectMobileCompanionPanel}
                         />
                         <div
                             className={
@@ -503,63 +509,6 @@ export function Kibitz(): React.ReactElement {
                         >
                             {isMobileLayout ? (
                                 <>
-                                    <div
-                                        className="Kibitz-mobile-panel-switcher"
-                                        role="tablist"
-                                        aria-label={pgettext(
-                                            "Aria label for the mobile kibitz panel switcher",
-                                            "Mobile kibitz panels",
-                                        )}
-                                    >
-                                        <button
-                                            type="button"
-                                            className={
-                                                "mobile-panel-button" +
-                                                (mobileCompanionPanel === "chat" ? " active" : "")
-                                            }
-                                            onClick={() => onSelectMobileCompanionPanel("chat")}
-                                            aria-pressed={mobileCompanionPanel === "chat"}
-                                        >
-                                            <span className="mobile-panel-label">
-                                                {pgettext("Mobile kibitz panel label", "Chat")}
-                                            </span>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className={
-                                                "mobile-panel-button vote-panel-button" +
-                                                (mobileCompanionPanel === "vote" ? " active" : "") +
-                                                (activeProposal ? " has-alert" : "")
-                                            }
-                                            onClick={() => onSelectMobileCompanionPanel("vote")}
-                                            aria-pressed={mobileCompanionPanel === "vote"}
-                                        >
-                                            <span className="mobile-panel-label">
-                                                {pgettext("Mobile kibitz panel label", "Vote")}
-                                            </span>
-                                            {mobileVoteCountdown ? (
-                                                <span className="mobile-panel-badge">
-                                                    {mobileVoteCountdown}
-                                                </span>
-                                            ) : null}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className={
-                                                "mobile-panel-button compare-panel-button" +
-                                                (mobileCompanionPanel === "compare"
-                                                    ? " active"
-                                                    : "") +
-                                                (hasCompareTarget ? " has-alert" : "")
-                                            }
-                                            onClick={() => onSelectMobileCompanionPanel("compare")}
-                                            aria-pressed={mobileCompanionPanel === "compare"}
-                                        >
-                                            <span className="mobile-panel-label">
-                                                {pgettext("Mobile kibitz panel label", "Compare")}
-                                            </span>
-                                        </button>
-                                    </div>
                                     <div className="Kibitz-mobile-panel-surface">
                                         {mobileCompanionPanel === "chat" ? (
                                             <KibitzRoomStream
