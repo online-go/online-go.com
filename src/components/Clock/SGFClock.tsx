@@ -59,6 +59,9 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
     }
 
     let clock_className = "Clock SGFClock " + color;
+    if (player_clock.main_time <= 0) {
+        clock_className += " in-overtime";
+    }
     if (className) {
         clock_className += " " + className;
     }
@@ -67,16 +70,14 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
 
     return (
         <span className={clock_className}>
-            {player_clock.main_time > 0 && (
-                <span className="main-time boxed">
-                    {prettyTime(player_clock.main_time)}
-                    {system === "absolute" && <span className="absolute-time">+0</span>}
-                </span>
-            )}
+            <span className="main-time boxed">
+                {prettyTime(player_clock.main_time)}
+                {system === "absolute" && <span className="absolute-time">+0</span>}
+            </span>
 
             {system === "byoyomi" && (player_clock.periods_left ?? 0) >= 1 && (
                 <div className="byo-yomi-container">
-                    {player_clock.main_time > 0 && <span className="periods-delimiter"> + </span>}
+                    <span className="periods-delimiter"> + </span>
                     {time_settings && "period_time" in time_settings && (
                         <span className="period-time boxed">
                             {prettyTime(time_settings.period_time)}
@@ -93,14 +94,10 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
                 </div>
             )}
 
-            {system === "canadian" && time_settings && "period_time" in time_settings && (
+            {system === "canadian" && player_clock.moves_left != null && (
                 <span className="canadian-clock-container">
-                    {player_clock.main_time > 0 && <span className="periods-delimiter"> + </span>}
-                    <span className="period-time boxed">
-                        {prettyTime(time_settings.period_time)}
-                    </span>
                     <span className="periods-delimiter">/</span>
-                    <span className="period-moves boxed">{time_settings.stones_per_period}</span>
+                    <span className="period-moves boxed">{player_clock.moves_left}</span>
                 </span>
             )}
         </span>
