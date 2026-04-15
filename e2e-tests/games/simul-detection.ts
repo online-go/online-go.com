@@ -151,7 +151,7 @@ export const simulDetectionTest = async (
     // Play some moves in game 2 to give it duration
     const moves = ["D9", "E9", "D8", "E8", "D7", "E7", "D6", "E6"];
     log("Playing moves in game 2...");
-    await playMoves(challengerGame2Page, opponent2Page, moves, "9x9", 500);
+    await playMoves(challengerGame2Page, opponent2Page, moves, "9x9", { delay: 500 });
 
     // End game 2 by resignation (while game 1 is still running)
     await resignActiveGame(opponent2Page);

@@ -101,7 +101,7 @@ async function playAndResignGame(
     const goban = challengerPage.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });
 
-    await playMoves(challengerPage, acceptorPage, MOVES_9X9, "9x9", 0);
+    await playMoves(challengerPage, acceptorPage, MOVES_9X9, "9x9");
     await resignActiveGame(challengerPage);
 
     return challengerPage.url();
@@ -271,7 +271,7 @@ export const cmLastWarningInfoTest = async (
             const goban2 = opponentPage.locator(".Goban[data-pointers-bound]");
             await goban2.waitFor({ state: "visible" });
 
-            await playMoves(opponentPage, accusedPage, MOVES_9X9, "9x9", 0);
+            await playMoves(opponentPage, accusedPage, MOVES_9X9, "9x9");
             await resignActiveGame(opponentPage);
 
             // Game 3: opponent challenges accused again, opponent resigns
@@ -281,7 +281,7 @@ export const cmLastWarningInfoTest = async (
             const goban3 = opponentPage.locator(".Goban[data-pointers-bound]");
             await goban3.waitFor({ state: "visible" });
 
-            await playMoves(opponentPage, accusedPage, MOVES_9X9, "9x9", 0);
+            await playMoves(opponentPage, accusedPage, MOVES_9X9, "9x9");
             await resignActiveGame(opponentPage);
 
             // ========================================

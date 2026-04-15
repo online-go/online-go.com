@@ -93,7 +93,7 @@ export const cmVoteNoSandbaggingTest = async (
 
     // Play at least 6 moves (required before resignation is allowed)
     const moves = ["D5", "E5", "D6", "E6", "D7", "E7", "D8", "E8"];
-    await playMoves(accusedPage, otherPage, moves, "9x9", 0);
+    await playMoves(accusedPage, otherPage, moves, "9x9");
 
     // Accused resigns - this means they LOST the game.
     // When reporter submits a "sandbagging" report, the backend will convert

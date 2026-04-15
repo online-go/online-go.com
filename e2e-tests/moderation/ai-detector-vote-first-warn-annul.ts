@@ -134,7 +134,7 @@ export const aiDetectorVoteFirstWarnAndAnnulTest = async (
             "O16",
         ];
 
-        await playMoves(reporterPage, reportedPage, moves, boardSize, handicap);
+        await playMoves(reporterPage, reportedPage, moves, boardSize, { handicap });
         log("Moves played ✓");
 
         // Finish the game with passes

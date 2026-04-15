@@ -158,7 +158,7 @@ async function playOneGame(
     // Convert SGF coordinates to display format
     const moves = sgfMoves.map(sgfToDisplay);
 
-    await playMoves(challengerPage, acceptorPage, moves, boardSize, handicap);
+    await playMoves(challengerPage, acceptorPage, moves, boardSize, { handicap });
 
     // Note: this assumes that it's now black to play.
     const challengerPass = challengerPage.getByText("Pass", { exact: true });

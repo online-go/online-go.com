@@ -105,7 +105,7 @@ export const cmEscalatedEscapingAllOptionsTest = async (
 
     // Play a few moves so the escaping report applicability check passes (needs >= 2 moves)
     const moves = ["D5", "E5", "D6", "E6", "D7", "E7", "D8", "E8"];
-    await playMoves(accusedPage, otherPage, moves, "9x9", 0);
+    await playMoves(accusedPage, otherPage, moves, "9x9");
 
     // Other resigns — accused wins. This means the escaping applicability check
     // won't reject the report (it only rejects if the reported user resigned).

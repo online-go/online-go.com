@@ -98,9 +98,9 @@ export const playMoves = async (
     white: Page,
     moves: string[],
     boardSize: BoardSize = "19x19",
-    delay: number = 0,
-    handicap: number = 0, // Japanese
+    options: { delay?: number; handicap?: number } = {},
 ) => {
+    const { delay = 0, handicap = 0 } = options;
     for (let i = 0; i < moves.length; i++) {
         // Determine which player should move based on handicap
         let page;
@@ -121,7 +121,11 @@ export const playMoves = async (
         const colorMoveText = page.getByText(`${expectedColor} to move`, { exact: true });
         await expect(yourMoveText.or(colorMoveText)).toBeVisible();
         await clickOnGobanIntersection(page, moves[i], boardSize);
-        await page.waitForTimeout(delay);
+        // Wait for "Your move" to disappear, confirming the move was accepted
+        await expect(yourMoveText.or(colorMoveText)).not.toBeVisible();
+        if (delay > 0) {
+            await page.waitForTimeout(delay);
+        }
     }
 };
 

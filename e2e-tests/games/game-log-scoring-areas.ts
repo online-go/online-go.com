@@ -125,7 +125,7 @@ export const gameLogScoringAreasTest = async (
         "G3", // White
     ];
 
-    await playMoves(challengerPage, acceptorPage, moves, "9x9", 300);
+    await playMoves(challengerPage, acceptorPage, moves, "9x9", { delay: 300 });
     log("Moves played ✓");
 
     // 5. Both players pass to enter stone removal

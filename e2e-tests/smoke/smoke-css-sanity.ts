@@ -35,14 +35,14 @@ export const smokeCssSanityTest = async ({
     const page = await userContext.newPage();
     await load(page, "/");
 
-    await await expect(page).toHaveScreenshot("logged-out-initial-page.png", {
+    await expect(page).toHaveScreenshot("logged-out-initial-page.png", {
         fullPage: true,
         stylePath: path.join(currentDir, "signed_out_screenshot_mask.css"), // get rid of the "ObserveGames"
     });
 
     await load(page, "/sign-in");
 
-    await await expect(page).toHaveScreenshot("sign-in-page.png", {
+    await expect(page).toHaveScreenshot("sign-in-page.png", {
         fullPage: true,
         stylePath: path.join(currentDir, "signed_out_screenshot_mask.css"), // get rid of the "Announcements"
     });

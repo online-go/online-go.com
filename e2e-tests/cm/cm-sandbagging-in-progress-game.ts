@@ -104,7 +104,7 @@ export const cmSandbaggingInProgressGameTest = async (
 
     // Play some moves but do NOT end the game
     const moves = ["D5", "E5", "D6", "E6", "D7", "E7", "D8", "E8"];
-    await playMoves(accusedPage, otherPage, moves, "9x9", 0);
+    await playMoves(accusedPage, otherPage, moves, "9x9");
 
     // Capture the game URL while it's still in progress
     const gameUrl = accusedPage.url();

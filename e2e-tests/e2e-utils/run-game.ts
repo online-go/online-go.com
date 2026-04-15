@@ -165,7 +165,7 @@ export const runGame = async ({
         "F9", // W[fi]
     ];
 
-    await playMoves(challengerPage, acceptorPage, moves, boardSize, handicap);
+    await playMoves(challengerPage, acceptorPage, moves, boardSize, { handicap });
 
     // Note: this assumes that it's now black to play.
     const challengerPass = challengerPage.getByText("Pass", { exact: true });

@@ -127,7 +127,7 @@ export const gameLogThumbnailMarksTest = async (
         "G6", // White plays elsewhere
     ];
 
-    await playMoves(challengerPage, acceptorPage, moves, "9x9", 500);
+    await playMoves(challengerPage, acceptorPage, moves, "9x9", { delay: 500 });
     log("Moves played ✓");
 
     // 5. Both players pass to enter stone removal

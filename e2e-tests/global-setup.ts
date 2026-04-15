@@ -41,8 +41,8 @@ async function globalSetup() {
                 console.log("Cleanup complete (no matching processes found)");
             }
 
-            // Wait a moment for processes to terminate
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            // Brief wait for processes to terminate
+            await new Promise((resolve) => setTimeout(resolve, 200));
         } else {
             console.log("No leftover renderer processes found - clean start!");
         }
