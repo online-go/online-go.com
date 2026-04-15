@@ -297,11 +297,12 @@ export function PlayerCard({
                     </div>
                 )}
 
-                {engine.phase !== "finished" && !goban.review_id && (
+                {engine.phase !== "finished" && !goban.review_id ? (
                     <Clock goban={goban} color={color} className="in-game-clock" />
-                )}
-                {!!goban.engine.sgf_time_settings && (
-                    <SGFClock goban={goban} color={color} className="in-game-clock" />
+                ) : (
+                    goban.engine.sgf_time_settings && (
+                        <SGFClock goban={goban} color={color} className="in-game-clock" />
+                    )
                 )}
             </div>
 
