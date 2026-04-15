@@ -700,6 +700,13 @@ export function Joseki(): React.ReactElement {
 
     // ---- Goban initialization ----
     function initializeGoban(initial_position?: string) {
+        // Skip destroy/recreate if the goban already exists and we have no
+        // initial_position to load. This avoids a redundant teardown of the
+        // eagerly-created goban on first mount.
+        if (goban_ref.current != null && !initial_position) {
+            return;
+        }
+
         if (goban_ref.current != null) {
             goban_ref.current.destroy();
         }
@@ -1011,7 +1018,7 @@ export function Joseki(): React.ReactElement {
         }
 
         initializeBoard(target_position);
-    }, [location]);
+    }, [location, pos]);
 
     // ---- Render helpers ----
     const tenuki_type =

@@ -59,7 +59,7 @@ export function ExplorePane(props: ExploreProps): React.ReactElement {
     const [next_comment, set_next_comment] = React.useState("");
     const [extra_throb, set_extra_throb] = React.useState(false);
 
-    const prev_position_id = React.useRef(props.position_id);
+    const prev_position_id = React.useRef<string | undefined>(undefined);
 
     const extractCommentary = React.useCallback(
         (commentary_dto: {
