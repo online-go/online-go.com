@@ -42,6 +42,7 @@ interface KibitzRoomStageProps {
     proposals: KibitzProposal[];
     variations: KibitzVariationSummary[];
     secondaryPane: KibitzSecondaryPaneState;
+    mobilePanelKey?: string;
     onClearPreview: () => void;
     onPostVariation: (controller: GobanController) => void;
     onSetSecondaryPaneMode: (mode: "hidden" | "small" | "equal") => void;
@@ -169,6 +170,7 @@ export function KibitzRoomStage({
     proposals,
     variations,
     secondaryPane,
+    mobilePanelKey,
     onClearPreview,
     onPostVariation,
     onSetSecondaryPaneMode,
@@ -200,11 +202,13 @@ export function KibitzRoomStage({
     const [secondaryMoveTreeContainer, setSecondaryMoveTreeContainer] =
         React.useState<Resizable | null>(null);
     const previousSecondaryControllerRef = React.useRef<GobanController | null>(null);
+    const mobileChatMainBoardSizeRef = React.useRef(0);
+    const sizeLayoutKey = mobilePanelKey ?? "desktop";
     const [mainBoardSlotRef, mainBoardSize] = useSquareFitSize<HTMLDivElement>(
-        `main-${secondaryPaneSize}`,
+        `main-${secondaryPaneSize}-${sizeLayoutKey}`,
     );
     const [secondaryBoardSlotRef, secondaryBoardSize] = useSquareFitSize<HTMLDivElement>(
-        `secondary-${secondaryPaneSize}-${secondaryPane.variation_id ?? ""}-${secondaryPane.preview_game_id ?? ""}`,
+        `secondary-${secondaryPaneSize}-${sizeLayoutKey}-${secondaryPane.variation_id ?? ""}-${secondaryPane.preview_game_id ?? ""}`,
     );
     const secondaryMoveTreeKey = React.useMemo(() => {
         if (secondaryPane.variation_id != null) {
@@ -297,6 +301,21 @@ export function KibitzRoomStage({
         goban.redraw(true);
     }, [secondaryBoardController, selectedVariation]);
 
+    React.useEffect(() => {
+        mobileChatMainBoardSizeRef.current = 0;
+    }, [room.id]);
+
+    React.useEffect(() => {
+        if (mobilePanelKey !== "chat" || secondaryPaneSize !== "hidden" || mainBoardSize <= 0) {
+            return;
+        }
+
+        mobileChatMainBoardSizeRef.current = Math.max(
+            mobileChatMainBoardSizeRef.current,
+            mainBoardSize,
+        );
+    }, [mainBoardSize, mobilePanelKey, secondaryPaneSize]);
+
     const displayedTitle = mainGameDetails?.name || mainGame?.title;
     const displayedBlack = mainGameDetails?.players?.black?.username || mainGame?.black.username;
     const displayedWhite = mainGameDetails?.players?.white?.username || mainGame?.white.username;
@@ -304,6 +323,10 @@ export function KibitzRoomStage({
         mainGameDetails?.gamedata?.moves?.length ??
         mainGameDetails?.gamedata?.clock?.last_move ??
         mainGame?.move_number;
+    const displayedMainBoardSize =
+        mobilePanelKey === "chat" && mobileChatMainBoardSizeRef.current > 0
+            ? mobileChatMainBoardSizeRef.current
+            : mainBoardSize;
     const onConfirmClearSecondaryPane = React.useCallback(() => {
         void alert
             .fire({
@@ -412,7 +435,7 @@ export function KibitzRoomStage({
                                         }
                                         json={mainGame.mock_game_data}
                                         className="main-board-surface"
-                                        size={mainBoardSize}
+                                        size={displayedMainBoardSize}
                                         onReady={setMainBoardController}
                                     />
                                 </div>

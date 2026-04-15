@@ -489,6 +489,7 @@ export function Kibitz(): React.ReactElement {
                             proposals={roomProposals}
                             variations={variations}
                             secondaryPane={secondaryPane}
+                            mobilePanelKey={isMobileLayout ? mobileCompanionPanel : undefined}
                             onClearPreview={onClearPreview}
                             onPostVariation={onPostVariation}
                             onSetSecondaryPaneMode={onSetSecondaryPaneMode}
@@ -577,6 +578,7 @@ export function Kibitz(): React.ReactElement {
                                                     pendingScrollVariationRequest?.requestId ?? null
                                                 }
                                                 onScrolledToVariation={onScrolledToVariation}
+                                                compact={true}
                                             />
                                         ) : null}
                                         {mobileCompanionPanel === "vote" ? (
