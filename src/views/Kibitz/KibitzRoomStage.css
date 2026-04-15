@@ -859,14 +859,46 @@
 
     .mobile-board-controls-row {
         align-items: center;
-        display: flex;
-        justify-content: center;
+        display: grid;
+        gap: 0.35rem;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
         min-width: 0;
         padding: 0 0 0.2rem;
     }
 
-    .mobile-board-controls-row .KibitzBoardControls {
-        width: 100%;
+    .mobile-board-controls-chat {
+        justify-self: start;
+    }
+
+    .mobile-board-controls-transport {
+        display: flex;
+        justify-content: center;
+        min-width: 0;
+    }
+
+    .mobile-board-controls-transport .KibitzBoardControls {
+        max-width: 100%;
+        width: auto;
+    }
+
+    .mobile-board-controls-transport .KibitzBoardControls.minimal-row {
+        grid-template-columns: auto;
+        padding-inline: 0;
+    }
+
+    .mobile-board-controls-transport .KibitzBoardControls.minimal-row .minimal-row-core {
+        grid-column: 1;
+    }
+
+    .mobile-board-controls-panels {
+        display: inline-flex;
+        gap: 0.25rem;
+        justify-self: end;
+        min-width: 0;
+    }
+
+    .kibitz-mobile-stage-panel-button {
+        padding-inline: 0.45rem;
     }
 
     .mobile-board-analyze-row,
