@@ -23,7 +23,7 @@ import { user_uploads_url } from "@/lib/cdn";
 import { CountDown } from "./CountDown";
 import { Flag } from "@/components/Flag";
 import { ChatPresenceIndicator } from "@/components/ChatPresenceIndicator";
-import { Clock } from "@/components/Clock";
+import { Clock, SGFClock } from "@/components/Clock";
 import { useUser } from "@/lib/hooks";
 import { Player } from "@/components/Player";
 import { lookup, fetch } from "@/lib/player_cache";
@@ -299,6 +299,9 @@ export function PlayerCard({
 
                 {engine.phase !== "finished" && !goban.review_id && (
                     <Clock goban={goban} color={color} className="in-game-clock" />
+                )}
+                {!!goban.engine.sgf_time_settings && (
+                    <SGFClock goban={goban} color={color} className="in-game-clock" />
                 )}
             </div>
 
