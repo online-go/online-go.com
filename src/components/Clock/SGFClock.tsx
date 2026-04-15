@@ -52,9 +52,6 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
 
     const time_settings: JGOFTimeControl | undefined = goban.engine.sgf_time_settings;
 
-    // Find the clock for this color. The clock is stored on the node where that
-    // player moved. For Black's clock, look at the most recent node where Black
-    // played (which has a BL value). For White's clock, same for White.
     const player_clock = findClockForColor(curMove, color);
 
     if (!player_clock) {
@@ -112,21 +109,19 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
 
 /**
  * Walk backward through the move tree to find the most recent clock value
- * for the given color. The clock for a color is stored on the node where
- * that color played (i.e., BL is on Black's move node, WL on White's).
- *
- * player === 1 means Black played this node, player === 2 means White.
+ * for the given color. BL/WL can both appear on the same node, so each
+ * color has its own field (black_clock / white_clock).
  */
 function findClockForColor(
     move: MoveTree | null,
     color: "black" | "white",
 ): JGOFPlayerClock | null {
-    const target_player = color === "black" ? 1 : 2;
+    const field = color === "black" ? "black_clock" : "white_clock";
     let current: MoveTree | null = move;
 
     while (current) {
-        if (current.clock && current.player === target_player) {
-            return current.clock;
+        if (current[field]) {
+            return current[field];
         }
         current = current.parent;
     }
