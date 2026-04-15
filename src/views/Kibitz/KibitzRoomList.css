@@ -29,6 +29,15 @@
         white-space: nowrap;
     }
 
+    .KibitzRoomList-actions {
+        display: flex;
+        flex: 0 0 auto;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        justify-content: flex-end;
+        max-width: 100%;
+    }
+
     .KibitzRoomList-title {
         font-size: 0.95rem;
         font-weight: bold;
@@ -162,5 +171,13 @@
 
 @media (max-width: 1000px) {
     .KibitzRoomList {
+        .KibitzRoomList-titleRow {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .KibitzRoomList-actions {
+            justify-content: flex-start;
+        }
     }
 }

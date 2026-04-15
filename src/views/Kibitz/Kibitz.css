@@ -143,20 +143,15 @@
             cursor: pointer;
             display: grid;
             gap: 0.25rem 0.5rem;
-            grid-template-columns: minmax(0, 1fr) auto;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
             padding: 0.35rem 0.5rem;
             text-align: left;
             width: 100%;
         }
 
-        .mobile-room-header-copy {
-            display: flex;
-            flex-direction: column;
-            gap: 0.06rem;
-            min-width: 0;
-        }
-
         .mobile-room-header-title {
+            grid-column: 1;
+            justify-self: start;
             font-size: 0.95rem;
             font-weight: 700;
             line-height: 1.1;
@@ -167,6 +162,8 @@
         }
 
         .mobile-room-header-matchup {
+            grid-column: 2;
+            justify-self: center;
             color: var(--text-color-faded);
             font-size: 0.74rem;
             line-height: 1.15;
@@ -181,16 +178,11 @@
             display: inline-flex;
             flex: 0 0 auto;
             gap: 0.35rem;
+            grid-column: 3;
             justify-self: end;
             min-width: 0;
             position: relative;
             white-space: nowrap;
-        }
-
-        .mobile-room-header-actions {
-            align-items: start;
-            display: flex;
-            justify-content: flex-end;
         }
 
         .mobile-room-viewer-icon {
@@ -215,49 +207,6 @@
             line-height: 1;
         }
 
-        .mobile-room-actions {
-            position: relative;
-        }
-
-        .mobile-room-actions-button {
-            align-items: center;
-            background: var(--shade1);
-            border: 0;
-            color: var(--fg);
-            cursor: pointer;
-            display: inline-flex;
-            font-size: 0.92rem;
-            font-weight: 700;
-            justify-content: center;
-            line-height: 1;
-            min-height: 1.9rem;
-            min-width: 1.9rem;
-            padding: 0 0.35rem;
-        }
-
-        .mobile-room-actions-menu {
-            background: var(--card-background-color);
-            border: 1px solid var(--shade3);
-            display: flex;
-            flex-direction: column;
-            gap: 0.2rem;
-            margin-top: 0.25rem;
-            padding: 0.25rem;
-        }
-
-        .mobile-room-actions-menu-button {
-            background: var(--shade1);
-            border: 0;
-            color: var(--fg);
-            cursor: pointer;
-            font-size: 0.82rem;
-            line-height: 1.15;
-            min-height: 2rem;
-            padding: 0.45rem 0.6rem;
-            text-align: left;
-            white-space: nowrap;
-        }
-
         .Kibitz-mobile-rooms-drawer {
             background: var(--card-background-color);
             display: flex;
@@ -266,18 +215,6 @@
             max-height: min(55vh, 26rem);
             overflow: hidden;
             padding-bottom: 0.35rem;
-        }
-
-        .mobile-rooms-close-button {
-            align-self: stretch;
-            background: var(--shade1);
-            border: 0;
-            color: var(--text-color-faded);
-            cursor: pointer;
-            font-size: 0.82rem;
-            margin: 0 0.35rem;
-            min-height: 2rem;
-            padding: 0.4rem 0.6rem;
         }
 
         .Kibitz-mobile-panel-switcher {

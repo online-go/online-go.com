@@ -26,6 +26,8 @@ interface KibitzRoomListProps {
     roomUsersById?: Record<string, KibitzRoomUser[]>;
     onSelectRoom: (roomId: string) => void;
     onCreateRoom?: () => void;
+    onCreateVariation?: () => void;
+    onChangeBoard?: () => void;
 }
 
 export function KibitzRoomList({
@@ -34,6 +36,8 @@ export function KibitzRoomList({
     roomUsersById: _roomUsersById = {},
     onSelectRoom,
     onCreateRoom,
+    onCreateVariation,
+    onChangeBoard,
 }: KibitzRoomListProps): React.ReactElement {
     return (
         <div className="KibitzRoomList">
@@ -52,17 +56,45 @@ export function KibitzRoomList({
                         )}
                     </div>
                 </div>
-                {onCreateRoom ? (
-                    <button
-                        type="button"
-                        className="xs primary KibitzRoomList-createButton"
-                        onClick={onCreateRoom}
-                    >
-                        {pgettext(
-                            "Button label for opening the Kibitz create room picker",
-                            "Create room",
-                        )}
-                    </button>
+                {onCreateRoom || onCreateVariation || onChangeBoard ? (
+                    <div className="KibitzRoomList-actions">
+                        {onCreateRoom ? (
+                            <button
+                                type="button"
+                                className="xs primary KibitzRoomList-createButton"
+                                onClick={onCreateRoom}
+                            >
+                                {pgettext(
+                                    "Button label for opening the Kibitz create room picker",
+                                    "Create room",
+                                )}
+                            </button>
+                        ) : null}
+                        {onCreateVariation ? (
+                            <button
+                                type="button"
+                                className="xs primary KibitzRoomList-createButton"
+                                onClick={onCreateVariation}
+                            >
+                                {pgettext(
+                                    "Button label for opening Kibitz variation creation",
+                                    "Create variation",
+                                )}
+                            </button>
+                        ) : null}
+                        {onChangeBoard ? (
+                            <button
+                                type="button"
+                                className="xs primary KibitzRoomList-createButton"
+                                onClick={onChangeBoard}
+                            >
+                                {pgettext(
+                                    "Button label for opening Kibitz change board",
+                                    "Change board",
+                                )}
+                            </button>
+                        ) : null}
+                    </div>
                 ) : null}
             </div>
             <div className="KibitzRoomList-items">

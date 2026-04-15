@@ -105,7 +105,6 @@ export function Kibitz(): React.ReactElement {
     const [mobileCompanionPanel, setMobileCompanionPanel] =
         React.useState<MobileCompanionPanel>("chat");
     const [mobileRoomsOpen, setMobileRoomsOpen] = React.useState(false);
-    const [mobileRoomActionsOpen, setMobileRoomActionsOpen] = React.useState(false);
     const [isMobileLayout, setIsMobileLayout] = React.useState(
         () => window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY).matches,
     );
@@ -197,7 +196,6 @@ export function Kibitz(): React.ReactElement {
             if (isMobileLayout) {
                 setMobileCompanionPanel("chat");
                 setMobileRoomsOpen(false);
-                setMobileRoomActionsOpen(false);
             }
             void navigate(`/kibitz/${nextRoomId}`);
         },
@@ -334,13 +332,11 @@ export function Kibitz(): React.ReactElement {
         if (!isMobileLayout) {
             setMobileCompanionPanel("chat");
             setMobileRoomsOpen(false);
-            setMobileRoomActionsOpen(false);
             return;
         }
 
         setMobileCompanionPanel("chat");
         setMobileRoomsOpen(false);
-        setMobileRoomActionsOpen(false);
     }, [isMobileLayout, resolvedRoom?.id]);
 
     React.useEffect(() => {
@@ -398,15 +394,6 @@ export function Kibitz(): React.ReactElement {
 
     const onToggleMobileRooms = React.useCallback(() => {
         setMobileRoomsOpen((open) => !open);
-        setMobileRoomActionsOpen(false);
-    }, []);
-
-    const onCloseMobileRooms = React.useCallback(() => {
-        setMobileRoomsOpen(false);
-    }, []);
-
-    const onCloseMobileRoomActions = React.useCallback(() => {
-        setMobileRoomActionsOpen(false);
     }, []);
 
     const resolvedRoomUsers = resolvedRoom ? controller.getRoomUsers(resolvedRoom.id) : [];
@@ -446,16 +433,12 @@ export function Kibitz(): React.ReactElement {
                                 onClick={onToggleMobileRooms}
                                 aria-expanded={mobileRoomsOpen}
                             >
-                                <div className="mobile-room-header-copy">
-                                    <div className="mobile-room-header-title">
-                                        {resolvedRoom.title}
+                                <div className="mobile-room-header-title">{resolvedRoom.title}</div>
+                                {mobileMatchup ? (
+                                    <div className="mobile-room-header-matchup">
+                                        {mobileMatchup}
                                     </div>
-                                    {mobileMatchup ? (
-                                        <div className="mobile-room-header-matchup">
-                                            {mobileMatchup}
-                                        </div>
-                                    ) : null}
-                                </div>
+                                ) : null}
                                 <div className="mobile-room-header-meta">
                                     <span
                                         className="mobile-room-viewer-icon"
@@ -483,61 +466,6 @@ export function Kibitz(): React.ReactElement {
                                     </span>
                                 </div>
                             </button>
-                            <div className="mobile-room-header-actions">
-                                {onCreateVariation || onOpenChangeBoard ? (
-                                    <div className="mobile-room-actions">
-                                        <button
-                                            type="button"
-                                            className="mobile-room-actions-button"
-                                            onClick={() => {
-                                                setMobileRoomActionsOpen((open) => !open);
-                                                setMobileRoomsOpen(false);
-                                            }}
-                                            aria-expanded={mobileRoomActionsOpen}
-                                            aria-label={pgettext(
-                                                "Aria label for the mobile kibitz room actions menu",
-                                                "Room actions",
-                                            )}
-                                        >
-                                            ...
-                                        </button>
-                                        {mobileRoomActionsOpen ? (
-                                            <div className="mobile-room-actions-menu">
-                                                {onCreateVariation ? (
-                                                    <button
-                                                        type="button"
-                                                        className="mobile-room-actions-menu-button"
-                                                        onClick={() => {
-                                                            onCloseMobileRoomActions();
-                                                            onCreateVariation();
-                                                        }}
-                                                    >
-                                                        {pgettext(
-                                                            "Button label for opening Kibitz variation creation",
-                                                            "Create variation",
-                                                        )}
-                                                    </button>
-                                                ) : null}
-                                                {onOpenChangeBoard ? (
-                                                    <button
-                                                        type="button"
-                                                        className="mobile-room-actions-menu-button"
-                                                        onClick={() => {
-                                                            onCloseMobileRoomActions();
-                                                            onOpenChangeBoard();
-                                                        }}
-                                                    >
-                                                        {pgettext(
-                                                            "Button label for opening Kibitz change board",
-                                                            "Change board",
-                                                        )}
-                                                    </button>
-                                                ) : null}
-                                            </div>
-                                        ) : null}
-                                    </div>
-                                ) : null}
-                            </div>
                             {mobileRoomsOpen ? (
                                 <div className="Kibitz-mobile-rooms-drawer">
                                     <KibitzRoomList
@@ -546,17 +474,9 @@ export function Kibitz(): React.ReactElement {
                                         roomUsersById={roomUsersById}
                                         onSelectRoom={onSelectRoom}
                                         onCreateRoom={onOpenCreateRoom}
+                                        onCreateVariation={onCreateVariation}
+                                        onChangeBoard={onOpenChangeBoard}
                                     />
-                                    <button
-                                        type="button"
-                                        className="mobile-rooms-close-button"
-                                        onClick={onCloseMobileRooms}
-                                    >
-                                        {pgettext(
-                                            "Button label for closing the mobile kibitz room list",
-                                            "Close rooms",
-                                        )}
-                                    </button>
                                 </div>
                             ) : null}
                         </>
