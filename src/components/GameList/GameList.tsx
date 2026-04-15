@@ -394,6 +394,12 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
         // Save a pointer into the goban to use when sorting.
         game.goban = goban;
 
+        // Re-sort when a move is made so games where it's your turn
+        // are sorted to the top.
+        goban.on("move-made", () => {
+            this.forceRender();
+        });
+
         // Render again once goban has a valid clock to set the sorted order.
         if (goban.last_emitted_clock === undefined) {
             goban.once("clock", () => {
