@@ -49,9 +49,6 @@ interface KibitzRoomStageProps {
     onCreateVariation?: () => void;
     isMobileLayout?: boolean;
     mobileCompanionPanel?: "chat" | "vote" | "compare";
-    mobileVoteHasAlert?: boolean;
-    hasCompareTarget?: boolean;
-    onSelectMobileCompanionPanel?: (panel: "chat" | "vote" | "compare") => void;
 }
 
 function useSquareFitSize<T extends HTMLElement>(layoutKey: string) {
@@ -181,9 +178,6 @@ export function KibitzRoomStage({
     onCreateVariation,
     isMobileLayout = false,
     mobileCompanionPanel,
-    mobileVoteHasAlert = false,
-    hasCompareTarget = false,
-    onSelectMobileCompanionPanel,
 }: KibitzRoomStageProps): React.ReactElement {
     const mainGame = room.current_game;
     const secondaryGameId = secondaryPane.preview_game_id;
@@ -215,6 +209,9 @@ export function KibitzRoomStage({
     );
     const [secondaryBoardSlotRef, secondaryBoardSize] = useSquareFitSize<HTMLDivElement>(
         `secondary-${secondaryPaneSize}-${secondaryPane.variation_id ?? ""}-${secondaryPane.preview_game_id ?? ""}`,
+    );
+    const [mobileBoardSlotRef, mobileBoardSize] = useSquareFitSize<HTMLDivElement>(
+        `mobile-${secondaryPane.variation_id ?? ""}-${secondaryPane.preview_game_id ?? ""}-${secondaryPane.variation_source_game_id ?? ""}-${mobileCompanionPanel ?? ""}`,
     );
     const secondaryMoveTreeKey = React.useMemo(() => {
         if (secondaryPane.variation_id != null) {
@@ -314,6 +311,27 @@ export function KibitzRoomStage({
         mainGameDetails?.gamedata?.moves?.length ??
         mainGameDetails?.gamedata?.clock?.last_move ??
         mainGame?.move_number;
+    const mobileCompareActive = Boolean(
+        isMobileLayout &&
+            mobileCompanionPanel === "compare" &&
+            (selectedVariation || secondaryBoardGame),
+    );
+    const mobileBoardLabel = mobileCompareActive
+        ? selectedVariation
+            ? pgettext("Label for the active mobile kibitz variation board", "Variation")
+            : isCreatingVariationFromCurrentBoard
+              ? pgettext("Label for the active mobile kibitz draft board", "New variation")
+              : pgettext("Label for the active mobile kibitz preview board", "Preview")
+        : null;
+    const mobileBoardTitle = mobileCompareActive
+        ? (selectedVariation?.title ??
+          secondaryBoardGame?.title ??
+          pgettext("Fallback title for the active mobile kibitz compare board", "Board preview"))
+        : null;
+    const mobileBoardTotalMoves = mobileCompareActive
+        ? (selectedVariation?.move_count ?? previewDisplayedMoveNumber)
+        : displayedMoveNumber;
+
     const onConfirmClearSecondaryPane = React.useCallback(() => {
         void alert
             .fire({
@@ -338,6 +356,117 @@ export function KibitzRoomStage({
                 }
             });
     }, [onClearPreview]);
+
+    if (isMobileLayout) {
+        const renderMainBoard = Boolean(mainGame && !mobileCompareActive);
+        const renderPreviewBoard = Boolean(mobileCompareActive && secondaryBoardGame);
+        const renderVariationBoard = Boolean(mobileCompareActive && selectedVariation);
+        const mobileBoardController = mobileCompareActive
+            ? secondaryBoardController
+            : mainBoardController;
+
+        return (
+            <div className="KibitzRoomStage KibitzRoomStage-mobile">
+                <div
+                    className={
+                        "Kibitz-mobile-board-host" +
+                        (mobileCompareActive ? " is-compare" : " is-main")
+                    }
+                >
+                    {mobileCompareActive ? (
+                        <div className="Kibitz-mobile-board-meta">
+                            <div className="mobile-board-meta-copy">
+                                <div className="mobile-board-meta-label">{mobileBoardLabel}</div>
+                                <div className="mobile-board-meta-title">{mobileBoardTitle}</div>
+                            </div>
+                            <button
+                                type="button"
+                                className="mobile-board-clear-button"
+                                onClick={onConfirmClearSecondaryPane}
+                            >
+                                {pgettext(
+                                    "Button label for leaving the active mobile kibitz compare board",
+                                    "Back",
+                                )}
+                            </button>
+                        </div>
+                    ) : null}
+                    <div className="mobile-board-fit-slot" ref={mobileBoardSlotRef}>
+                        {renderMainBoard ? (
+                            <KibitzBoard
+                                gameId={mainGame?.mock_game_data ? undefined : mainGame?.game_id}
+                                json={mainGame?.mock_game_data}
+                                className="mobile-main-board-surface"
+                                size={mobileBoardSize}
+                                fitMode="contain"
+                                respectContainerBounds={true}
+                                onReady={setMainBoardController}
+                            />
+                        ) : null}
+                        {renderPreviewBoard ? (
+                            <KibitzBoard
+                                gameId={
+                                    secondaryBoardGame?.mock_game_data ? undefined : secondaryGameId
+                                }
+                                json={secondaryBoardGame?.mock_game_data}
+                                className="mobile-secondary-board-surface"
+                                size={mobileBoardSize}
+                                interactive={true}
+                                fitMode="contain"
+                                respectContainerBounds={true}
+                                onReady={setSecondaryBoardController}
+                            />
+                        ) : null}
+                        {renderVariationBoard ? (
+                            <KibitzBoard
+                                json={selectedVariation?.mock_game_data}
+                                className="mobile-secondary-board-surface"
+                                size={mobileBoardSize}
+                                interactive={true}
+                                fitMode="contain"
+                                respectContainerBounds={true}
+                                onReady={setSecondaryBoardController}
+                            />
+                        ) : null}
+                        {!renderMainBoard && !renderPreviewBoard && !renderVariationBoard ? (
+                            <div className="secondary-board-empty-state">
+                                <div className="secondary-board-empty-message">
+                                    {pgettext(
+                                        "Placeholder for the mobile kibitz board area before a board is available",
+                                        "Board will render here",
+                                    )}
+                                </div>
+                            </div>
+                        ) : null}
+                    </div>
+                    <div className="mobile-board-controls-row">
+                        <KibitzBoardControls
+                            controller={mobileBoardController}
+                            variant="minimal"
+                            totalMoves={mobileBoardTotalMoves}
+                        />
+                    </div>
+                    {mobileCompareActive && secondaryBoardController ? (
+                        <div className="mobile-board-analyze-row">
+                            <GobanAnalyzeButtonBar
+                                controller={secondaryBoardController}
+                                showBackToGame={false}
+                                showConditionalPlannerButton={false}
+                            />
+                        </div>
+                    ) : null}
+                    {mobileCompareActive && secondaryBoardController ? (
+                        <div className="mobile-board-compose-row">
+                            <KibitzVariationComposer
+                                controller={secondaryBoardController}
+                                onSubmit={onPostVariation}
+                            />
+                        </div>
+                    ) : null}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="KibitzRoomStage">
@@ -427,79 +556,13 @@ export function KibitzRoomStage({
                                         onReady={setMainBoardController}
                                     />
                                 </div>
-                                {isMobileLayout &&
-                                mobileCompanionPanel &&
-                                onSelectMobileCompanionPanel ? (
-                                    <div className="main-board-mobile-action-row">
-                                        <button
-                                            type="button"
-                                            className={
-                                                "kibitz-mobile-transport-button" +
-                                                (mobileCompanionPanel === "chat" ? " active" : "")
-                                            }
-                                            onClick={() => onSelectMobileCompanionPanel("chat")}
-                                            aria-pressed={mobileCompanionPanel === "chat"}
-                                        >
-                                            <span className="kibitz-mobile-transport-label">
-                                                {pgettext("Mobile kibitz panel label", "Chat")}
-                                            </span>
-                                        </button>
-                                        <div className="main-board-transport-row">
-                                            <KibitzBoardControls
-                                                controller={mainBoardController}
-                                                variant="minimal"
-                                                totalMoves={displayedMoveNumber}
-                                            />
-                                        </div>
-                                        <div className="main-board-mobile-panel-actions">
-                                            <button
-                                                type="button"
-                                                className={
-                                                    "kibitz-mobile-transport-button kibitz-mobile-transport-button-compact vote-panel-button" +
-                                                    (mobileCompanionPanel === "vote"
-                                                        ? " active"
-                                                        : "") +
-                                                    (mobileVoteHasAlert ? " has-alert" : "")
-                                                }
-                                                onClick={() => onSelectMobileCompanionPanel("vote")}
-                                                aria-pressed={mobileCompanionPanel === "vote"}
-                                            >
-                                                <span className="kibitz-mobile-transport-label">
-                                                    {pgettext("Mobile kibitz panel label", "Vote")}
-                                                </span>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className={
-                                                    "kibitz-mobile-transport-button kibitz-mobile-transport-button-compact compare-panel-button" +
-                                                    (mobileCompanionPanel === "compare"
-                                                        ? " active"
-                                                        : "") +
-                                                    (hasCompareTarget ? " has-alert" : "")
-                                                }
-                                                onClick={() =>
-                                                    onSelectMobileCompanionPanel("compare")
-                                                }
-                                                aria-pressed={mobileCompanionPanel === "compare"}
-                                            >
-                                                <span className="kibitz-mobile-transport-label">
-                                                    {pgettext(
-                                                        "Mobile kibitz panel label",
-                                                        "Compare",
-                                                    )}
-                                                </span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="main-board-transport-row">
-                                        <KibitzBoardControls
-                                            controller={mainBoardController}
-                                            variant="minimal"
-                                            totalMoves={displayedMoveNumber}
-                                        />
-                                    </div>
-                                )}
+                                <div className="main-board-transport-row">
+                                    <KibitzBoardControls
+                                        controller={mainBoardController}
+                                        variant="minimal"
+                                        totalMoves={displayedMoveNumber}
+                                    />
+                                </div>
                                 {secondaryPaneSize === "equal" ? (
                                     <div className="main-board-analyze-spacer" aria-hidden="true" />
                                 ) : null}
@@ -738,7 +801,7 @@ export function KibitzRoomStage({
                                 </div>
                                 <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
                                     <KibitzBoard
-                                        json={selectedVariation.mock_game_data}
+                                        json={selectedVariation?.mock_game_data}
                                         className="secondary-board-surface"
                                         size={secondaryBoardSize}
                                         interactive={secondaryPaneSize === "equal"}

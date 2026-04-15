@@ -124,7 +124,7 @@ export function KibitzBoard({
                 <GobanContainer
                     goban={goban}
                     verticalAlign="top"
-                    sizingMode="width"
+                    sizingMode={respectContainerBounds ? "min" : "width"}
                     fitMode={fitMode}
                     respectContainerBounds={respectContainerBounds}
                 />

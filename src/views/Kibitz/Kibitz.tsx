@@ -205,7 +205,6 @@ export function Kibitz(): React.ReactElement {
             });
             if (isMobileLayout) {
                 setMobileCompanionPanel("compare");
-                setPendingSecondaryPaneMode("equal");
             }
         },
         [controller, isMobileLayout],
@@ -214,7 +213,6 @@ export function Kibitz(): React.ReactElement {
         controller.startVariationFromCurrentBoard();
         if (isMobileLayout) {
             setMobileCompanionPanel("compare");
-            setPendingSecondaryPaneMode("equal");
         }
     }, [controller, isMobileLayout]);
     const onScrolledToVariation = React.useCallback(() => {
@@ -338,28 +336,6 @@ export function Kibitz(): React.ReactElement {
         }
     }, [currentSecondaryPaneMode, hasCompareTarget, isMobileLayout, mobileCompanionPanel]);
 
-    const onSelectMobileCompanionPanel = React.useCallback(
-        (panel: MobileCompanionPanel) => {
-            setMobileCompanionPanel(panel);
-
-            if (!isMobileLayout) {
-                return;
-            }
-
-            if (panel === "compare") {
-                if (hasCompareTarget) {
-                    setPendingSecondaryPaneMode("equal");
-                }
-                return;
-            }
-
-            if (currentSecondaryPaneMode !== "hidden") {
-                setPendingSecondaryPaneMode("hidden");
-            }
-        },
-        [currentSecondaryPaneMode, hasCompareTarget, isMobileLayout],
-    );
-
     const onToggleMobileRooms = React.useCallback(() => {
         setMobileRoomsOpen((open) => !open);
     }, []);
@@ -464,9 +440,6 @@ export function Kibitz(): React.ReactElement {
                             onCreateVariation={isMobileLayout ? undefined : onCreateVariation}
                             isMobileLayout={isMobileLayout}
                             mobileCompanionPanel={mobileCompanionPanel}
-                            mobileVoteHasAlert={Boolean(activeProposal)}
-                            hasCompareTarget={hasCompareTarget}
-                            onSelectMobileCompanionPanel={onSelectMobileCompanionPanel}
                         />
                         <div
                             className={

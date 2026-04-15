@@ -638,37 +638,6 @@
             width: 100%;
         }
 
-        .main-board-mobile-action-row {
-            align-items: center;
-            box-sizing: border-box;
-            display: grid;
-            gap: 0.35rem;
-            grid-template-columns: minmax(4rem, auto) minmax(0, 1fr) auto;
-            min-width: 0;
-            padding: 0.3125rem 0;
-            width: 100%;
-        }
-
-        .main-board-mobile-action-row .main-board-transport-row {
-            padding: 0;
-        }
-
-        .main-board-mobile-panel-actions {
-            align-items: center;
-            display: inline-flex;
-            gap: 0.25rem;
-            justify-content: flex-end;
-            min-width: 0;
-            white-space: nowrap;
-        }
-
-        .main-board-mobile-action-row .kibitz-mobile-transport-button {
-            width: auto;
-        }
-
-        .main-board-mobile-action-row .kibitz-mobile-transport-button-compact {
-            padding-inline: 0.45rem;
-        }
 
         .main-board-variation-spacer {
             height: 0;
@@ -798,6 +767,157 @@
 @media (max-width: 1000px) {
     .KibitzRoomStage {
         padding: 0;
+    }
+
+    .KibitzRoomStage-mobile {
+        background: var(--card-background-color);
+    }
+
+    .Kibitz-mobile-board-host {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        min-height: 0;
+        padding: 0.125rem;
+    }
+
+    .Kibitz-mobile-board-meta {
+        align-items: center;
+        display: flex;
+        gap: 0.5rem;
+        justify-content: space-between;
+        min-width: 0;
+        padding: 0.25rem 0.4rem 0;
+    }
+
+    .mobile-board-meta-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 0.08rem;
+        min-width: 0;
+    }
+
+    .mobile-board-meta-label {
+        color: var(--text-color-faded);
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        line-height: 1.1;
+        text-transform: uppercase;
+    }
+
+    .mobile-board-meta-title {
+        color: var(--fg);
+        font-size: 0.84rem;
+        font-weight: 700;
+        line-height: 1.15;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .mobile-board-clear-button {
+        background: var(--shade2);
+        border: 0;
+        box-shadow: none;
+        color: var(--fg);
+        cursor: pointer;
+        flex: 0 0 auto;
+        font-size: 0.75rem;
+        font-weight: 700;
+        line-height: 1;
+        padding: 0.38rem 0.6rem;
+        white-space: nowrap;
+    }
+
+    .mobile-board-fit-slot {
+        align-items: center;
+        aspect-ratio: 1 / 1;
+        display: grid;
+        justify-items: center;
+        margin: 0 auto;
+        max-width: 100%;
+        min-height: 0;
+        min-width: 0;
+        overflow: hidden;
+        width: min(100%, var(--kibitz-mobile-board-max, 31rem));
+    }
+
+    .mobile-board-fit-slot .KibitzBoard {
+        align-self: center;
+        justify-self: center;
+        max-width: none;
+        width: auto;
+    }
+
+    .mobile-board-fit-slot .KibitzBoard .goban-container {
+        flex: 0 0 auto !important;
+        flex-basis: auto !important;
+        min-height: 0 !important;
+    }
+
+    .mobile-board-controls-row {
+        align-items: center;
+        display: flex;
+        justify-content: center;
+        min-width: 0;
+        padding: 0 0 0.2rem;
+    }
+
+    .mobile-board-controls-row .KibitzBoardControls {
+        width: 100%;
+    }
+
+    .mobile-board-analyze-row,
+    .mobile-board-compose-row {
+        align-items: center;
+        display: flex;
+        justify-content: center;
+        min-width: 0;
+        padding: 0 0.35rem 0.2rem;
+    }
+
+    .mobile-board-analyze-row {
+        overflow: hidden;
+    }
+
+    .mobile-board-analyze-row .game-analyze-button-bar {
+        gap: 0;
+        justify-content: center;
+    }
+
+    .mobile-board-analyze-row .game-analyze-button-bar .btn-group {
+        display: inline-flex;
+        gap: 0;
+    }
+
+    .mobile-board-analyze-row .game-analyze-button-bar button {
+        font-size: 0.78rem;
+        min-height: 1.35rem;
+        min-width: 1.35rem;
+        padding: 0 0.28rem;
+    }
+
+    .mobile-board-analyze-row .game-analyze-button-bar .pass-button {
+        min-width: auto;
+        padding: 0 0.45rem;
+    }
+
+    .mobile-board-analyze-row .game-analyze-button-bar input {
+        height: 1.35rem;
+        width: 1.35rem;
+    }
+
+    .mobile-board-compose-row {
+        padding-top: 0;
+    }
+
+    .mobile-board-compose-row .KibitzVariationComposer {
+        width: 100%;
+    }
+
+    .KibitzRoomStage {
 
         .KibitzRoomStage-boards {
             grid-template-columns: minmax(0, 1fr);

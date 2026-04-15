@@ -132,17 +132,18 @@ export function GobanContainer({
                 }
             }
 
+            const containerWidth = ref_goban_container.current.offsetWidth;
+            const containerHeight = ref_goban_container.current.offsetHeight;
+            const targetDisplayWidth = respectContainerBounds
+                ? Math.min(containerWidth, containerHeight || containerWidth)
+                : sizingMode === "width"
+                  ? containerWidth
+                  : Math.min(containerWidth, containerHeight);
+
             goban.setLastMoveOpacity(last_move_opacity);
             if (no_debounce) {
                 // Debouncing is necessary because setting the square size can be an expensive operation.
-                goban.setSquareSizeBasedOnDisplayWidth(
-                    sizingMode === "width"
-                        ? ref_goban_container.current.offsetWidth
-                        : Math.min(
-                              ref_goban_container.current.offsetWidth,
-                              ref_goban_container.current.offsetHeight,
-                          ),
-                );
+                goban.setSquareSizeBasedOnDisplayWidth(targetDisplayWidth);
             } else {
                 resize_debounce.current = setTimeout(() => onResize(true), 10);
             }
