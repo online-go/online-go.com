@@ -535,7 +535,7 @@ export function Joseki(): React.ReactElement {
             back_stepping.current = false;
             if (S.current.mode === PageMode.Play) {
                 played_mistake.current = false;
-                set_move_string(S.current.move_string); // trigger re-render to clear highlight class
+                set_move_string(ms); // trigger re-render to clear highlight class
                 goban_ref.current!.enableStonePlacement();
             } else if (S.current.current_move_category !== "new") {
                 const stepping_back_to = previous_position_ref.current.node_id as string;
