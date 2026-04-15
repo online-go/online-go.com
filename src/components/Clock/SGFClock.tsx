@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import { Goban, JGOFPlayerClock, JGOFTimeControl, MoveTree } from "goban";
+import { pgettext } from "@/lib/translate";
 import { prettyTime } from "./Clock";
 import "./SGFClock.css";
 
@@ -103,7 +104,11 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
                             (player_clock.periods_left <= 1 ? "sudden-death" : "")
                         }
                     >
-                        ({player_clock.periods_left})
+                        (
+                        {player_clock.periods_left === 1
+                            ? pgettext("Final byo-yomi period (Sudden Death)", "SD")
+                            : `${player_clock.periods_left}`}
+                        )
                     </span>
                 </div>
             )}
