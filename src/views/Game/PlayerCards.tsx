@@ -282,7 +282,7 @@ export function PlayerCard({
     return (
         <div className={`${color} ${highlight_their_turn} player-container`}>
             <div className="player-icon-clock-row">
-                {player && !!player.id && (
+                {player && !!player.id ? (
                     <div className="player-icon-container" style={player_bg}>
                         {!!auto_resign_expiration && (
                             <div className={`auto-resign-overlay`}>
@@ -295,6 +295,8 @@ export function PlayerCard({
                         </div>
                         <ChatPresenceIndicator channel={chat_channel} userId={player.id} />
                     </div>
+                ) : (
+                    !!goban.engine.sgf_time_settings && <div className="player-icon-container" />
                 )}
 
                 {engine.phase !== "finished" && !goban.review_id ? (
