@@ -941,7 +941,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                         }
                                     />
                                     <a
-                                        href="https://forums.online-go.com/t/how-does-rengo-work-at-ogs/42484"
+                                        href="https://github.com/online-go/online-go.com/wiki/Rengo"
                                         className="help"
                                         target="_blank"
                                     >
