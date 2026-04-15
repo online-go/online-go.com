@@ -217,33 +217,29 @@
             padding-bottom: 0.35rem;
         }
 
-        .mobile-panel-button {
+        .kibitz-mobile-transport-button {
             align-items: center;
-            background: var(--shade1);
+            background: var(--shade2);
             border: 0;
+            box-shadow: none;
             color: var(--text-color-faded);
             cursor: pointer;
             display: inline-flex;
-            gap: 0.35rem;
-            justify-content: center;
-            min-height: 2rem;
-            min-width: 0;
-            padding: 0.45rem 0.55rem;
-        }
-
-        .mobile-panel-button.mobile-panel-button-compact {
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             gap: 0.25rem;
-            min-height: 1.75rem;
-            padding: 0.3rem 0.45rem;
+            justify-content: center;
+            height: 1.6rem;
+            min-width: 0;
+            padding: 0 0.55rem;
+            vertical-align: middle;
         }
 
-        .mobile-panel-button.active {
-            background: var(--shade2);
+        .kibitz-mobile-transport-button.active {
+            background: var(--shade3);
             color: var(--fg);
         }
 
-        .mobile-panel-button.has-alert .mobile-panel-label::after {
+        .kibitz-mobile-transport-button.has-alert .kibitz-mobile-transport-label::after {
             background: var(--primary);
             border-radius: 999px;
             content: "";
@@ -254,14 +250,14 @@
             width: 0.38rem;
         }
 
-        .mobile-panel-label {
+        .kibitz-mobile-transport-label {
             min-width: 0;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
 
-        .mobile-panel-badge {
+        .kibitz-mobile-transport-badge {
             color: var(--fg);
             flex: 0 0 auto;
             font-size: 0.7rem;
@@ -281,6 +277,28 @@
             flex-direction: column;
             gap: 0.5rem;
             min-height: 0;
+        }
+
+        .Kibitz-mobile-compare-actions {
+            align-items: center;
+            display: grid;
+            gap: 0.25rem;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+            padding: 0;
+            width: 100%;
+        }
+
+        .Kibitz-mobile-compare-actions.transport-controls {
+            grid-column: auto;
+            justify-self: stretch;
+        }
+
+        .Kibitz-mobile-compare-actions .kibitz-mobile-transport-button {
+            width: 100%;
+        }
+
+        .Kibitz-mobile-compare-actions .kibitz-mobile-transport-button-compact {
+            padding-inline: 0.45rem;
         }
 
         .Kibitz-mobile-panel-empty,

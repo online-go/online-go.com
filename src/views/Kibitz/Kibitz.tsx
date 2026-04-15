@@ -46,19 +46,6 @@ type KibitzGamePickerMode = "create-room" | "change-board" | null;
 
 const MOBILE_LAYOUT_MEDIA_QUERY = "(max-width: 1000px)";
 
-function formatMobileVoteCountdown(endsAt?: number): string | null {
-    if (!endsAt) {
-        return null;
-    }
-
-    const remainingMs = Math.max(0, endsAt - Date.now());
-    const totalSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-
-    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-}
-
 function formatMobileMatchup(
     room: KibitzRoom | KibitzRoomSummary | null | undefined,
 ): string | null {
@@ -108,7 +95,6 @@ export function Kibitz(): React.ReactElement {
     const [isMobileLayout, setIsMobileLayout] = React.useState(
         () => window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY).matches,
     );
-    const [mobileVoteCountdown, setMobileVoteCountdown] = React.useState<string | null>(null);
     const showDebug = React.useMemo(() => {
         const params = new URLSearchParams(location.search);
         return params.get("debug-kibitz") === "1";
@@ -340,24 +326,6 @@ export function Kibitz(): React.ReactElement {
     }, [isMobileLayout, resolvedRoom?.id]);
 
     React.useEffect(() => {
-        if (!activeProposal?.vote_state?.ends_at) {
-            setMobileVoteCountdown(null);
-            return;
-        }
-
-        const sync = () => {
-            setMobileVoteCountdown(formatMobileVoteCountdown(activeProposal.vote_state?.ends_at));
-        };
-
-        sync();
-        const timer = window.setInterval(sync, 1000);
-
-        return () => {
-            window.clearInterval(timer);
-        };
-    }, [activeProposal?.id, activeProposal?.vote_state?.ends_at]);
-
-    React.useEffect(() => {
         if (!isMobileLayout) {
             return;
         }
@@ -496,7 +464,6 @@ export function Kibitz(): React.ReactElement {
                             onCreateVariation={isMobileLayout ? undefined : onCreateVariation}
                             isMobileLayout={isMobileLayout}
                             mobileCompanionPanel={mobileCompanionPanel}
-                            mobileVoteCountdown={mobileVoteCountdown}
                             mobileVoteHasAlert={Boolean(activeProposal)}
                             hasCompareTarget={hasCompareTarget}
                             onSelectMobileCompanionPanel={onSelectMobileCompanionPanel}

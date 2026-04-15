@@ -49,7 +49,6 @@ interface KibitzRoomStageProps {
     onCreateVariation?: () => void;
     isMobileLayout?: boolean;
     mobileCompanionPanel?: "chat" | "vote" | "compare";
-    mobileVoteCountdown?: string | null;
     mobileVoteHasAlert?: boolean;
     hasCompareTarget?: boolean;
     onSelectMobileCompanionPanel?: (panel: "chat" | "vote" | "compare") => void;
@@ -182,7 +181,6 @@ export function KibitzRoomStage({
     onCreateVariation,
     isMobileLayout = false,
     mobileCompanionPanel,
-    mobileVoteCountdown,
     mobileVoteHasAlert = false,
     hasCompareTarget = false,
     onSelectMobileCompanionPanel,
@@ -436,13 +434,13 @@ export function KibitzRoomStage({
                                         <button
                                             type="button"
                                             className={
-                                                "mobile-panel-button mobile-panel-button-chat" +
+                                                "kibitz-mobile-transport-button" +
                                                 (mobileCompanionPanel === "chat" ? " active" : "")
                                             }
                                             onClick={() => onSelectMobileCompanionPanel("chat")}
                                             aria-pressed={mobileCompanionPanel === "chat"}
                                         >
-                                            <span className="mobile-panel-label">
+                                            <span className="kibitz-mobile-transport-label">
                                                 {pgettext("Mobile kibitz panel label", "Chat")}
                                             </span>
                                         </button>
@@ -457,7 +455,7 @@ export function KibitzRoomStage({
                                             <button
                                                 type="button"
                                                 className={
-                                                    "mobile-panel-button mobile-panel-button-compact vote-panel-button" +
+                                                    "kibitz-mobile-transport-button kibitz-mobile-transport-button-compact vote-panel-button" +
                                                     (mobileCompanionPanel === "vote"
                                                         ? " active"
                                                         : "") +
@@ -466,19 +464,14 @@ export function KibitzRoomStage({
                                                 onClick={() => onSelectMobileCompanionPanel("vote")}
                                                 aria-pressed={mobileCompanionPanel === "vote"}
                                             >
-                                                <span className="mobile-panel-label">
+                                                <span className="kibitz-mobile-transport-label">
                                                     {pgettext("Mobile kibitz panel label", "Vote")}
                                                 </span>
-                                                {mobileVoteCountdown ? (
-                                                    <span className="mobile-panel-badge">
-                                                        {mobileVoteCountdown}
-                                                    </span>
-                                                ) : null}
                                             </button>
                                             <button
                                                 type="button"
                                                 className={
-                                                    "mobile-panel-button mobile-panel-button-compact compare-panel-button" +
+                                                    "kibitz-mobile-transport-button kibitz-mobile-transport-button-compact compare-panel-button" +
                                                     (mobileCompanionPanel === "compare"
                                                         ? " active"
                                                         : "") +
@@ -489,7 +482,7 @@ export function KibitzRoomStage({
                                                 }
                                                 aria-pressed={mobileCompanionPanel === "compare"}
                                             >
-                                                <span className="mobile-panel-label">
+                                                <span className="kibitz-mobile-transport-label">
                                                     {pgettext(
                                                         "Mobile kibitz panel label",
                                                         "Compare",

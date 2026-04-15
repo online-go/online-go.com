@@ -662,12 +662,12 @@
             white-space: nowrap;
         }
 
-        .main-board-mobile-panel-actions .mobile-panel-button {
-            padding-inline: 0.4rem;
+        .main-board-mobile-action-row .kibitz-mobile-transport-button {
+            width: auto;
         }
 
-        .main-board-mobile-panel-actions .mobile-panel-button.mobile-panel-button-compact {
-            min-width: 0;
+        .main-board-mobile-action-row .kibitz-mobile-transport-button-compact {
+            padding-inline: 0.45rem;
         }
 
         .main-board-variation-spacer {
