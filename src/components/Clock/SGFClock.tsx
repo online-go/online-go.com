@@ -76,6 +76,9 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
     const system = time_settings?.system;
 
     let clock_className = "Clock SGFClock " + color;
+    // Note: in-overtime rarely triggers for SGF data because BL/WL
+    // records remaining period/block time as a positive main_time
+    // value even during overtime. It only fires when time hits zero.
     if (player_clock.main_time <= 0) {
         clock_className += " in-overtime";
     }

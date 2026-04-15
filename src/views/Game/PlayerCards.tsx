@@ -296,6 +296,7 @@ export function PlayerCard({
                         <ChatPresenceIndicator channel={chat_channel} userId={player.id} />
                     </div>
                 ) : (
+                    /* Placeholder icon for SGF records (gradient background via CSS) */
                     !!goban.engine.sgf_time_settings && <div className="player-icon-container" />
                 )}
 
