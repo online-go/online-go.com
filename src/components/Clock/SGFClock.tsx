@@ -39,11 +39,11 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
             setCurMove(move);
         };
 
-        goban.engine.on("cur_move", onCurMove);
+        goban.on("cur_move", onCurMove);
         setCurMove(goban.engine.cur_move);
 
         return () => {
-            goban.engine.off("cur_move", onCurMove);
+            goban.off("cur_move", onCurMove);
         };
     }, [goban]);
 
