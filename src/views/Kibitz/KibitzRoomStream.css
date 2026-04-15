@@ -98,3 +98,21 @@
         }
     }
 }
+
+@media (max-width: 1000px) {
+    .KibitzRoomStream {
+        .KibitzRoomStream-title {
+            display: none;
+        }
+
+        .KibitzRoomStream-items {
+            padding-top: 0;
+        }
+
+        &.compact {
+            .KibitzRoomStream-items {
+                padding-top: 0;
+            }
+        }
+    }
+}
