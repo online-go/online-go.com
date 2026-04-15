@@ -41,6 +41,8 @@ interface GobanContainerProps {
     sizingMode?: "min" | "width";
     /** Whether to scale the rendered goban to fully contain within the wrapper */
     fitMode?: "native" | "contain";
+    /** When true, trust the caller-provided container bounds instead of applying viewport hacks */
+    respectContainerBounds?: boolean;
 }
 
 /**
@@ -54,6 +56,7 @@ export function GobanContainer({
     verticalAlign = "center",
     sizingMode = "min",
     fitMode = "native",
+    respectContainerBounds = false,
 }: GobanContainerProps): React.ReactElement {
     const goban_controller = useGobanControllerOrNull();
     const ref_goban_container = React.useRef<HTMLDivElement>(null);
@@ -111,7 +114,10 @@ export function GobanContainer({
 
             const view_mode = goban_view_mode();
 
-            if (view_mode === "portrait") {
+            if (respectContainerBounds) {
+                ref_goban_container.current.style.removeProperty("min-height");
+                ref_goban_container.current.style.removeProperty("flex-basis");
+            } else if (view_mode === "portrait") {
                 const w = window.innerWidth + 10;
                 if (ref_goban_container.current.style.minHeight !== `${w}px`) {
                     ref_goban_container.current.style.minHeight = `${w}px`;
@@ -143,7 +149,7 @@ export function GobanContainer({
 
             recenterGoban();
         },
-        [fitMode, goban, goban_div, onResizeCb, sizingMode, verticalAlign],
+        [fitMode, goban, goban_div, onResizeCb, respectContainerBounds, sizingMode, verticalAlign],
     );
 
     React.useEffect(() => {

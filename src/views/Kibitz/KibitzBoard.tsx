@@ -31,6 +31,7 @@ interface KibitzBoardProps {
     interactive?: boolean;
     showLabels?: boolean;
     fitMode?: "native" | "contain";
+    respectContainerBounds?: boolean;
     onReady?: (controller: GobanController | null) => void;
 }
 
@@ -45,6 +46,7 @@ export function KibitzBoard({
     interactive = false,
     showLabels = true,
     fitMode = "native",
+    respectContainerBounds = false,
     onReady,
 }: KibitzBoardProps): React.ReactElement {
     const gobanDiv = React.useRef<HTMLDivElement>(
@@ -124,6 +126,7 @@ export function KibitzBoard({
                     verticalAlign="top"
                     sizingMode="width"
                     fitMode={fitMode}
+                    respectContainerBounds={respectContainerBounds}
                 />
             ) : null}
         </div>

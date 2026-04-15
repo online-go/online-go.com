@@ -489,7 +489,6 @@ export function Kibitz(): React.ReactElement {
                             proposals={roomProposals}
                             variations={variations}
                             secondaryPane={secondaryPane}
-                            mobilePanelKey={isMobileLayout ? mobileCompanionPanel : undefined}
                             onClearPreview={onClearPreview}
                             onPostVariation={onPostVariation}
                             onSetSecondaryPaneMode={onSetSecondaryPaneMode}
