@@ -58,13 +58,8 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
         return null;
     }
 
-    const in_overtime =
-        player_clock.main_time <= 0 ||
-        player_clock.periods_left != null ||
-        player_clock.moves_left != null;
-
     let clock_className = "Clock SGFClock " + color;
-    if (in_overtime) {
+    if (player_clock.main_time <= 0) {
         clock_className += " in-overtime";
     }
     if (className) {
@@ -75,10 +70,12 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
 
     return (
         <span className={clock_className}>
-            <span className="main-time boxed">
-                {prettyTime(player_clock.main_time)}
-                {system === "absolute" && <span className="absolute-time">+0</span>}
-            </span>
+            {player_clock.main_time > 0 && (
+                <span className="main-time boxed">
+                    {prettyTime(player_clock.main_time)}
+                    {system === "absolute" && <span className="absolute-time">+0</span>}
+                </span>
+            )}
 
             {system === "byoyomi" && player_clock.periods_left != null && (
                 <div className="byo-yomi-container">
