@@ -47,25 +47,24 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
         };
     }, [goban]);
 
-    if (!curMove || !goban) {
+    const player_clock = React.useMemo(
+        () => (curMove ? findClockForColor(curMove, color) : null),
+        [curMove, color],
+    );
+
+    if (!curMove || !goban || !player_clock) {
         return null;
     }
 
     const time_settings: JGOFTimeControl | undefined = goban.engine.sgf_time_settings;
 
-    const player_clock = findClockForColor(curMove, color);
-
-    if (!player_clock) {
-        return null;
-    }
-
-    // SGF BL/WL provides a single "seconds remaining" number stored as
-    // main_time. During overtime (byoyomi/canadian), this value IS the
-    // period/block time remaining — the SGF format doesn't separate main
-    // time from overtime time. Therefore period_time_left and
-    // block_time_left are never populated for SGF-sourced clocks.
-    // OB/OW, when present, provide periods_left (byoyomi) or
-    // moves_left (canadian).
+    // SGF BL/WL provides a single remaining-time value (converted to
+    // milliseconds by the parser) stored as main_time. During overtime
+    // (byoyomi/canadian), this value IS the period/block time remaining
+    // — the SGF format doesn't separate main time from overtime time.
+    // Therefore period_time_left and block_time_left are never populated
+    // for SGF-sourced clocks. OB/OW, when present, provide periods_left
+    // (byoyomi) or moves_left (canadian).
 
     const has_time = player_clock.main_time > 0;
     const has_overtime_info = player_clock.periods_left != null || player_clock.moves_left != null;
