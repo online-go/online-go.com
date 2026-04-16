@@ -170,7 +170,7 @@ header.NavBar {
                 &:hover,
                 &.active {
                     background-color: var(--navbar-highlight-background-color);
-                    border-color: var(--primary);
+                    border-color: transparent;
 
                     .Menu-children {
                         flex-direction: column;
@@ -183,6 +183,8 @@ header.NavBar {
                     min-width: 20rem;
                     right: 0;
                     left: auto;
+                    border-start-start-radius: 3px;
+                    border-start-end-radius: 0;
                 }
             }
         }
