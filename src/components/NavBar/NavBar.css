@@ -83,16 +83,21 @@ header.NavBar {
             margin-left: 0.5rem;
             position: relative;
             height: var(--navbar-height);
+            border-inline-start: 2px solid transparent;
 
             .Menu-children {
                 display: none;
                 position: absolute;
-                left: 0;
+                inset-inline-start: -2px;
                 top: var(--navbar-height);
                 min-width: var(--navbar-menu-width);
                 background-color: var(--navbar-background-color);
-                /* border-left: 0.2rem solid transparent; */
-                box-shadow: 2px 4px 3px 0px rgba(0, 0, 0, 0.16);
+                box-shadow: 2px 5px 6px rgba(0, 0, 0, 0.3);
+                border-start-start-radius: 0;
+                border-start-end-radius: 3px;
+                border-end-end-radius: 3px;
+                border-end-start-radius: 3px;
+                border-inline-start: 2px solid transparent;
                 z-index: var(--z-nav-menu-menu);
             }
 
@@ -126,7 +131,7 @@ header.NavBar {
                 left: var(--navbar-menu-width);
                 background-color: var(--shade4);
                 min-width: var(--navbar-menu-width);
-                box-shadow: 2px 4px 3px 0px rgba(0, 0, 0, 0.16);
+                box-shadow: -1px 5px 6px rgba(0, 0, 0, 0.3);
 
                 > a {
                     display: inline-flex;
