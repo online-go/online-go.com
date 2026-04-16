@@ -131,7 +131,7 @@ header.NavBar {
                 left: var(--navbar-menu-width);
                 background-color: var(--shade4);
                 min-width: var(--navbar-menu-width);
-                box-shadow: -1px 5px 6px rgba(0, 0, 0, 0.3);
+                box-shadow: 2px 5px 6px rgba(0, 0, 0, 0.3);
 
                 > a {
                     display: inline-flex;
