@@ -105,6 +105,7 @@
 
         .Kibitz-main {
             order: 1;
+            position: relative;
         }
 
         .Kibitz-left-rail {
@@ -185,6 +186,15 @@
             height: auto;
         }
 
+        .Kibitz-mobile-room-shell {
+            --mobile-room-bar-height: 2.95rem;
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column;
+            min-height: 0;
+            position: relative;
+        }
+
         .Kibitz-mobile-room-bar {
             align-items: start;
             background: var(--card-background-color);
@@ -258,13 +268,33 @@
         }
 
         .Kibitz-mobile-rooms-drawer {
+            bottom: 0.5rem;
+            left: 0.5rem;
             background: var(--card-background-color);
+            border: 1px solid var(--shade3);
+            box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.35);
             display: flex;
             flex-direction: column;
             gap: 0.35rem;
-            max-height: min(55vh, 26rem);
-            overflow: hidden;
+            overflow: auto;
             padding-bottom: 0.35rem;
+            position: absolute;
+            right: 0.5rem;
+            top: calc(var(--mobile-room-bar-height, 2.95rem) + 0.25rem);
+            z-index: 30;
+        }
+
+        .Kibitz-mobile-rooms-backdrop {
+            background: color-mix(in srgb, var(--bg) 55%, transparent);
+            border: 0;
+            bottom: 0.5rem;
+            cursor: default;
+            left: 0.5rem;
+            padding: 0;
+            position: absolute;
+            right: 0.5rem;
+            top: calc(var(--mobile-room-bar-height, 2.95rem) + 0.25rem);
+            z-index: 20;
         }
 
         .kibitz-mobile-transport-button {

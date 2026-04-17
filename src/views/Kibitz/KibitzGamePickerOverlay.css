@@ -1,525 +1,567 @@
 .KibitzGamePickerOverlay {
-  background: var(--bg);
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
-  padding: 0.5rem 0.75rem 0.75rem;
-  position: fixed;
-  z-index: 60;
-
-  .KibitzGamePickerOverlay-shell {
-    background: var(--card-background-color);
-    border: 1px solid var(--shade3);
-    box-shadow: none;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  .KibitzGamePickerOverlay-header {
-    align-items: start;
-    border-bottom: 1px solid var(--shade3);
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
-    padding: 1rem 1.1rem 0.9rem;
-  }
-
-  .KibitzGamePickerOverlay-headerMain {
-    grid-column: 1;
-    min-width: 0;
-  }
-
-  .KibitzGamePickerOverlay-headerControls {
-    grid-column: 2;
-    justify-self: center;
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    width: min(24rem, 100%);
-    min-width: min(24rem, 100%);
-  }
-
-  button.KibitzGamePickerOverlay-actionButton,
-  button.KibitzGamePickerOverlay-dangerButton,
-  button.KibitzGamePickerOverlay-cancelButton,
-  button.KibitzGamePickerOverlay-mobileBackButton,
-  button.KibitzGamePickerOverlay-mobileSourceButton {
-    font-size: 1rem;
-    line-height: 1.2;
-    height: 3rem;
-    padding: 0 1rem;
-  }
-
-  button.KibitzGamePickerOverlay-dangerButton {
-    background-color: #c0392b !important;
-    border-color: #c0392b !important;
-    color: var(--colored-background-fg) !important;
-    box-shadow: none;
-  }
-
-  button.KibitzGamePickerOverlay-dangerButton:hover,
-  button.KibitzGamePickerOverlay-dangerButton:focus {
-    background-color: #d35445 !important;
-    filter: brightness(1.08);
-  }
-
-  button.KibitzGamePickerOverlay-dangerButton:active,
-  button.KibitzGamePickerOverlay-dangerButton.active {
-    background-color: #b03024 !important;
-    filter: brightness(0.92);
-  }
-
-  .ObserveGamesComponent .header > .right > button.xs.primary {
-    font-size: 1rem;
-    line-height: 1.2;
-    height: 3rem;
-    padding: 0 1rem;
-  }
-
-  .KibitzGamePickerOverlay-closeButton {
-    align-self: end;
-    grid-column: 3;
-    justify-self: end;
-  }
-
-  .KibitzGamePickerOverlay-boardWrap {
-    align-self: center;
-    aspect-ratio: 1 / 1;
-    min-height: 15rem;
-    width: min(100%, 22rem);
-  }
-
-  .KibitzGamePickerOverlay-boardWrap-mobile {
-    min-height: 0;
-    width: min(100%, 24rem);
-  }
-
-  .KibitzGamePickerOverlay-board {
-    height: 100%;
-    width: 100%;
-  }
-
-  .KibitzGamePickerOverlay-board .goban-container {
-    height: 100% !important;
-    width: 100% !important;
-  }
-
-  .KibitzGamePickerOverlay-title {
-    color: var(--fg);
-    font-size: 1.25rem;
-    font-weight: 700;
-    line-height: 1.1;
-  }
-
-  .KibitzGamePickerOverlay-subtitle {
-    color: var(--text-color-faded);
-    font-size: 0.9rem;
-    margin-top: 0.25rem;
-  }
-
-  .KibitzGamePickerOverlay-body {
-    display: grid;
-    flex: 1;
-    gap: 0;
-    grid-template-columns: minmax(0, 1.65fr) minmax(18rem, 0.85fr);
-    min-height: 0;
-  }
-
-  .KibitzGamePickerOverlay-observePane {
-    border-right: 1px solid var(--shade3);
-    min-height: 0;
-    overflow: auto;
-  }
-
-  .KibitzGamePickerOverlay-detailsPane {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-    min-height: 0;
-    overflow: auto;
-    padding: 1rem;
-  }
-
-  .KibitzGamePickerOverlay-selectionCard,
-  .KibitzGamePickerOverlay-roomFields,
-  .KibitzGamePickerOverlay-confirmation,
-  .KibitzGamePickerOverlay-mobileRoomFields {
-    background: var(--card-background-color);
-    border: 1px solid var(--shade3);
-    border-radius: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.65rem;
-    min-width: 0;
-    padding: 0.9rem;
-  }
-
-  .KibitzGamePickerOverlay-selectionCard-mobile {
-    border: 0;
-    padding: 0;
-    background: transparent;
-  }
-
-  .KibitzGamePickerOverlay-manualRow {
-    align-items: center;
-    display: flex;
-    gap: 0.5rem;
-  }
-
-  .KibitzGamePickerOverlay-manualRow input,
-  .KibitzGamePickerOverlay-roomFields input,
-  .KibitzGamePickerOverlay-roomFields textarea,
-  .KibitzGamePickerOverlay-mobileRoomFields input,
-  .KibitzGamePickerOverlay-mobileRoomFields textarea,
-  .KibitzGamePickerOverlay-mobileManualPane input {
-    min-width: 0;
-    width: 100%;
-  }
-
-  .KibitzGamePickerOverlay-fieldLabel {
-    color: var(--text-color-faded);
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-
-  .KibitzGamePickerOverlay-error {
-    color: var(--danger-fg, #ff8b8b);
-    font-size: 0.9rem;
-  }
-
-  .KibitzGamePickerOverlay-note {
-    color: var(--text-color-faded);
-    font-size: 0.85rem;
-  }
-
-  .KibitzGamePickerOverlay-selectionHeader {
-    align-items: flex-start;
-    display: flex;
-    gap: 0.5rem;
-    justify-content: space-between;
-  }
-
-  .KibitzGamePickerOverlay-selectionTitle {
-    color: var(--fg);
-    font-size: 1.05rem;
-    font-weight: 700;
-    line-height: 1.2;
-  }
-
-  .KibitzGamePickerOverlay-stateText {
-    font-size: 0.8rem;
-    font-weight: 700;
-    line-height: 1.2;
-    margin-top: 0.1rem;
-  }
-
-  .KibitzGamePickerOverlay-stateLive {
-    color: var(--danger, #c0392b);
-  }
-
-  .KibitzGamePickerOverlay-stateFinished {
-    color: var(--fg);
-  }
-
-  .KibitzGamePickerOverlay-previewMeta,
-  .KibitzGamePickerOverlay-playerRow {
-    color: var(--text-color-faded);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.45rem 0.75rem;
-    font-size: 0.85rem;
-  }
-
-  .KibitzGamePickerOverlay-playerRow {
-    align-items: center;
-    color: var(--fg);
-    font-weight: 600;
-  }
-
-  .KibitzGamePickerOverlay-versus {
-    color: var(--text-color-faded);
-    font-size: 0.8rem;
-    text-transform: uppercase;
-  }
-
-  .KibitzGamePickerOverlay-suggestion {
-    align-items: center;
-    background: var(--card-background-color);
-    border: 1px solid var(--shade3);
-    border-radius: 0;
-    display: flex;
-    gap: 0.75rem;
-    justify-content: space-between;
-    padding: 0.75rem 0.85rem;
-  }
-
-  .KibitzGamePickerOverlay-suggestionText {
-    color: var(--text-color-faded);
-    font-size: 0.86rem;
-    min-width: 0;
-  }
-
-  .KibitzGamePickerOverlay-confirmation {
-    padding: 0;
-    border: 0;
-    background: transparent;
-  }
-
-  .KibitzGamePickerOverlay-confirmationCopy {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-
-  .KibitzGamePickerOverlay-confirmationCopy strong {
-    color: var(--fg);
-    font-size: 0.95rem;
-  }
-
-  .KibitzGamePickerOverlay-confirmationCopy span {
-    color: var(--text-color-faded);
-    font-size: 0.9rem;
-  }
-
-  .KibitzGamePickerOverlay-emptyState {
-    align-items: center;
-    color: var(--text-color-faded);
-    display: flex;
-    justify-content: center;
-    min-height: 16rem;
-    text-align: center;
-  }
-
-  .KibitzGamePickerOverlay-footer {
-    align-items: center;
-    border-top: 1px solid var(--shade3);
-    display: flex;
-    gap: 0.55rem;
-    justify-content: flex-end;
-    padding: 0.75rem 1rem;
-  }
-
-  .KibitzGamePickerOverlay-popupBackdrop {
-    align-items: center;
     background: var(--bg);
-    display: flex;
     inset: 0;
-    justify-content: center;
-    padding: 1rem;
-    position: fixed;
-    z-index: 1;
-  }
-
-  .KibitzGamePickerOverlay-popup {
-    background: var(--card-background-color);
-    border: 1px solid var(--shade3);
-    border-radius: 0;
-    box-shadow: none;
     display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
-    max-height: calc(100vh - 2rem);
-    max-width: 34rem;
-    overflow: auto;
-    padding: 1rem;
-    width: min(34rem, 100%);
-  }
-
-  .KibitzGamePickerOverlay-popupHeader {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .KibitzGamePickerOverlay-popupTitle {
-    color: var(--fg);
-    font-size: 1.05rem;
-    font-weight: 700;
-  }
-
-  .KibitzGamePickerOverlay-popupSubtitle {
-    color: var(--text-color-faded);
-    font-size: 0.9rem;
-  }
-
-  .KibitzGamePickerOverlay-popupBody {
-    display: flex;
-    flex-direction: column;
-    gap: 0.55rem;
-  }
-
-  .KibitzGamePickerOverlay-popupBody input,
-  .KibitzGamePickerOverlay-popupBody textarea {
-    width: 100%;
-  }
-
-  .KibitzGamePickerOverlay-popupFooter {
-    align-items: center;
-    display: flex;
-    gap: 0.55rem;
-    justify-content: flex-end;
-  }
-
-  .KibitzGamePickerOverlay-mobileHeader {
-    border-bottom: 1px solid var(--shade3);
-    display: flex;
-    flex-direction: column;
-    gap: 0.45rem;
-    padding: 0.9rem 1rem 0.8rem;
-  }
-
-  .KibitzGamePickerOverlay-mobileHeaderTop {
-    align-items: center;
-    display: flex;
-    justify-content: space-between;
-    min-height: 3rem;
-  }
-
-  .KibitzGamePickerOverlay-mobileBackSpacer {
-    display: block;
-    height: 3rem;
-    width: 4.5rem;
-  }
-
-  .KibitzGamePickerOverlay-mobileBody {
-    display: flex;
-    flex: 1;
     flex-direction: column;
     min-height: 0;
-  }
-
-  .KibitzGamePickerOverlay-mobileSourceSwitcher {
-    display: grid;
-    gap: 0.55rem;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    padding: 0.85rem 1rem 0;
-  }
-
-  .KibitzGamePickerOverlay-mobileSourceButton {
-    background: var(--shade3);
-    border: 1px solid var(--shade3);
-    color: var(--text-color-faded);
-  }
-
-  .KibitzGamePickerOverlay-mobileSourceButton.active,
-  .KibitzGamePickerOverlay-mobileSourceButton[aria-pressed="true"] {
-    background: var(--shade2);
-    border-color: var(--shade2);
-    color: var(--fg);
-  }
-
-  .KibitzGamePickerOverlay-mobileSelectBody,
-  .KibitzGamePickerOverlay-mobileStepBody {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    min-height: 0;
-    padding: 0.85rem 1rem 1rem;
-  }
-
-  .KibitzGamePickerOverlay-mobileObservePane {
     overflow: hidden;
-    padding-bottom: 0;
-  }
-
-  .KibitzGamePickerOverlay-mobileObservePane .ObserveGamesComponent {
-    min-height: 0;
-    height: 100%;
-  }
-
-  .KibitzGamePickerOverlay-mobileObservePane
-    .ObserveGamesComponent
-    .goban-container {
-    max-height: 6rem;
-  }
-
-  .KibitzGamePickerOverlay-mobileManualPane {
-    gap: 0.75rem;
-    justify-content: flex-start;
-  }
-
-  .KibitzGamePickerOverlay-mobilePrimaryButton {
-    align-self: stretch;
-  }
-
-  .KibitzGamePickerOverlay-mobileRoomFields {
-    background: transparent;
-    border: 0;
-    padding: 0;
-  }
-
-  .KibitzGamePickerOverlay-mobileFooter {
-    align-items: center;
-    border-top: 1px solid var(--shade3);
-    display: flex;
-    gap: 0.6rem;
-    justify-content: space-between;
-    margin-top: auto;
-    padding-top: 0.9rem;
-  }
-
-  .KibitzGamePickerOverlay-mobileFooter > button {
-    flex: 1 1 0;
-    min-width: 0;
-  }
-
-  .KibitzGamePickerOverlay-shell-mobile {
-    border: 0;
-    background: var(--bg);
-  }
-
-  @media (max-width: 1000px) {
-    padding: 0;
+    padding: 0.5rem 0.75rem 0.75rem;
+    position: fixed;
+    z-index: 60;
 
     .KibitzGamePickerOverlay-shell {
-      border-left: 0;
-      border-right: 0;
-      border-top: 0;
-      border-bottom: 0;
-    }
-
-    .KibitzGamePickerOverlay-body {
-      grid-template-columns: minmax(0, 1fr);
-    }
-
-    .KibitzGamePickerOverlay-observePane {
-      border-right: 0;
-      border-bottom: 1px solid var(--shade3);
-    }
-
-    .KibitzGamePickerOverlay-detailsPane {
-      overflow: visible;
+        background: var(--card-background-color);
+        border: 1px solid var(--shade3);
+        box-shadow: none;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
     }
 
     .KibitzGamePickerOverlay-header {
-      display: flex;
-      flex-direction: column;
+        align-items: start;
+        border-bottom: 1px solid var(--shade3);
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+        padding: 1rem 1.1rem 0.9rem;
+    }
+
+    .KibitzGamePickerOverlay-headerMain {
+        grid-column: 1;
+        min-width: 0;
     }
 
     .KibitzGamePickerOverlay-headerControls {
-      grid-column: auto;
-      justify-self: auto;
-      width: 100%;
+        grid-column: 2;
+        justify-self: center;
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        width: min(24rem, 100%);
+        min-width: min(24rem, 100%);
+    }
+
+    button.KibitzGamePickerOverlay-actionButton,
+    button.KibitzGamePickerOverlay-dangerButton,
+    button.KibitzGamePickerOverlay-cancelButton,
+    button.KibitzGamePickerOverlay-mobileBackButton,
+    button.KibitzGamePickerOverlay-mobileSourceButton {
+        font-size: 1rem;
+        line-height: 1.2;
+        height: 3rem;
+        padding: 0 1rem;
+    }
+
+    button.KibitzGamePickerOverlay-dangerButton {
+        background-color: #c0392b !important;
+        border-color: #c0392b !important;
+        color: var(--colored-background-fg) !important;
+        box-shadow: none;
+    }
+
+    button.KibitzGamePickerOverlay-dangerButton:hover,
+    button.KibitzGamePickerOverlay-dangerButton:focus {
+        background-color: #d35445 !important;
+        filter: brightness(1.08);
+    }
+
+    button.KibitzGamePickerOverlay-dangerButton:active,
+    button.KibitzGamePickerOverlay-dangerButton.active {
+        background-color: #b03024 !important;
+        filter: brightness(0.92);
+    }
+
+    .ObserveGamesComponent .header > .right > button.xs.primary {
+        font-size: 1rem;
+        line-height: 1.2;
+        height: 3rem;
+        padding: 0 1rem;
     }
 
     .KibitzGamePickerOverlay-closeButton {
-      align-self: flex-end;
-      grid-column: auto;
+        align-self: end;
+        grid-column: 3;
+        justify-self: end;
+    }
+
+    .KibitzGamePickerOverlay-boardWrap {
+        align-self: center;
+        aspect-ratio: 1 / 1;
+        min-height: 15rem;
+        width: min(100%, 22rem);
+    }
+
+    .KibitzGamePickerOverlay-boardWrap-mobile {
+        min-height: 0;
+        width: min(100%, 18rem);
+    }
+
+    .KibitzGamePickerOverlay-board {
+        height: 100%;
+        width: 100%;
+    }
+
+    .KibitzGamePickerOverlay-board .goban-container {
+        height: 100% !important;
+        width: 100% !important;
+    }
+
+    .KibitzGamePickerOverlay-title {
+        color: var(--fg);
+        font-size: 1.25rem;
+        font-weight: 700;
+        line-height: 1.1;
+    }
+
+    .KibitzGamePickerOverlay-subtitle {
+        color: var(--text-color-faded);
+        font-size: 0.9rem;
+        margin-top: 0.25rem;
+    }
+
+    .KibitzGamePickerOverlay-body {
+        display: grid;
+        flex: 1;
+        gap: 0;
+        grid-template-columns: minmax(0, 1.65fr) minmax(18rem, 0.85fr);
+        min-height: 0;
+    }
+
+    .KibitzGamePickerOverlay-observePane {
+        border-right: 1px solid var(--shade3);
+        min-height: 0;
+        overflow: auto;
+    }
+
+    .KibitzGamePickerOverlay-detailsPane {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        min-height: 0;
+        overflow: auto;
+        padding: 1rem;
+    }
+
+    .KibitzGamePickerOverlay-selectionCard,
+    .KibitzGamePickerOverlay-roomFields,
+    .KibitzGamePickerOverlay-confirmation,
+    .KibitzGamePickerOverlay-mobileRoomFields {
+        background: var(--card-background-color);
+        border: 1px solid var(--shade3);
+        border-radius: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        min-width: 0;
+        padding: 0.9rem;
+    }
+
+    .KibitzGamePickerOverlay-selectionCard-mobile {
+        border: 0;
+        padding: 0;
+        background: transparent;
+    }
+
+    .KibitzGamePickerOverlay-manualRow {
+        align-items: center;
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .KibitzGamePickerOverlay-manualRow input,
+    .KibitzGamePickerOverlay-roomFields input,
+    .KibitzGamePickerOverlay-roomFields textarea,
+    .KibitzGamePickerOverlay-mobileRoomFields input,
+    .KibitzGamePickerOverlay-mobileRoomFields textarea,
+    .KibitzGamePickerOverlay-mobileManualPane input {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .KibitzGamePickerOverlay-fieldLabel {
+        color: var(--text-color-faded);
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .KibitzGamePickerOverlay-error {
+        color: var(--danger-fg, #ff8b8b);
+        font-size: 0.9rem;
+    }
+
+    .KibitzGamePickerOverlay-note {
+        color: var(--text-color-faded);
+        font-size: 0.85rem;
+    }
+
+    .KibitzGamePickerOverlay-selectionHeader {
+        align-items: flex-start;
+        display: flex;
+        gap: 0.5rem;
+        justify-content: space-between;
+    }
+
+    .KibitzGamePickerOverlay-selectionTitle {
+        color: var(--fg);
+        font-size: 1.05rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .KibitzGamePickerOverlay-stateText {
+        font-size: 0.8rem;
+        font-weight: 700;
+        line-height: 1.2;
+        margin-top: 0.1rem;
+    }
+
+    .KibitzGamePickerOverlay-stateLive {
+        color: var(--danger, #c0392b);
+    }
+
+    .KibitzGamePickerOverlay-stateFinished {
+        color: var(--fg);
+    }
+
+    .KibitzGamePickerOverlay-previewMeta,
+    .KibitzGamePickerOverlay-playerRow {
+        color: var(--text-color-faded);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .KibitzGamePickerOverlay-playerRow {
+        align-items: center;
+        color: var(--fg);
+        font-weight: 600;
+    }
+
+    .KibitzGamePickerOverlay-versus {
+        color: var(--text-color-faded);
+        font-size: 0.8rem;
+        text-transform: uppercase;
     }
 
     .KibitzGamePickerOverlay-suggestion {
-      align-items: flex-start;
-      flex-direction: column;
+        align-items: center;
+        background: var(--card-background-color);
+        border: 1px solid var(--shade3);
+        border-radius: 0;
+        display: flex;
+        gap: 0.75rem;
+        justify-content: space-between;
+        padding: 0.75rem 0.85rem;
+    }
+
+    .KibitzGamePickerOverlay-suggestionText {
+        color: var(--text-color-faded);
+        font-size: 0.86rem;
+        min-width: 0;
+    }
+
+    .KibitzGamePickerOverlay-confirmation {
+        padding: 0;
+        border: 0;
+        background: transparent;
+    }
+
+    .KibitzGamePickerOverlay-confirmationCopy {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+
+    .KibitzGamePickerOverlay-confirmationCopy strong {
+        color: var(--fg);
+        font-size: 0.95rem;
+    }
+
+    .KibitzGamePickerOverlay-confirmationCopy span {
+        color: var(--text-color-faded);
+        font-size: 0.9rem;
+    }
+
+    .KibitzGamePickerOverlay-emptyState {
+        align-items: center;
+        color: var(--text-color-faded);
+        display: flex;
+        justify-content: center;
+        min-height: 16rem;
+        text-align: center;
+    }
+
+    .KibitzGamePickerOverlay-footer {
+        align-items: center;
+        border-top: 1px solid var(--shade3);
+        display: flex;
+        gap: 0.55rem;
+        justify-content: flex-end;
+        padding: 0.75rem 1rem;
+    }
+
+    .KibitzGamePickerOverlay-popupBackdrop {
+        align-items: center;
+        background: var(--bg);
+        display: flex;
+        inset: 0;
+        justify-content: center;
+        padding: 1rem;
+        position: fixed;
+        z-index: 1;
     }
 
     .KibitzGamePickerOverlay-popup {
-      width: 100%;
+        background: var(--card-background-color);
+        border: 1px solid var(--shade3);
+        border-radius: 0;
+        box-shadow: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        max-height: calc(100vh - 2rem);
+        max-width: 34rem;
+        overflow: auto;
+        padding: 1rem;
+        width: min(34rem, 100%);
     }
-  }
+
+    .KibitzGamePickerOverlay-popupHeader {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .KibitzGamePickerOverlay-popupTitle {
+        color: var(--fg);
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+
+    .KibitzGamePickerOverlay-popupSubtitle {
+        color: var(--text-color-faded);
+        font-size: 0.9rem;
+    }
+
+    .KibitzGamePickerOverlay-popupBody {
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+    }
+
+    .KibitzGamePickerOverlay-popupBody input,
+    .KibitzGamePickerOverlay-popupBody textarea {
+        width: 100%;
+    }
+
+    .KibitzGamePickerOverlay-popupFooter {
+        align-items: center;
+        display: flex;
+        gap: 0.55rem;
+        justify-content: flex-end;
+    }
+
+    .KibitzGamePickerOverlay-mobileHeader {
+        border-bottom: 1px solid var(--shade3);
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        padding: 0.9rem 1rem 0.8rem;
+    }
+
+    .KibitzGamePickerOverlay-mobileHeaderTop {
+        align-items: center;
+        display: flex;
+        gap: 0.75rem;
+        justify-content: space-between;
+        min-height: 3rem;
+    }
+
+    .KibitzGamePickerOverlay-mobileHeaderTitle,
+    .KibitzGamePickerOverlay-mobileHeaderSubtitle {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .KibitzGamePickerOverlay-mobileHeaderTitle {
+        color: var(--fg);
+        font-size: 1.15rem;
+        font-weight: 700;
+        line-height: 1.15;
+    }
+
+    .KibitzGamePickerOverlay-mobileHeaderSubtitle {
+        color: var(--text-color-faded);
+        font-size: 0.88rem;
+        line-height: 1.15;
+        text-align: right;
+    }
+
+    .KibitzGamePickerOverlay-mobileHeaderActions {
+        align-items: center;
+        display: flex;
+        gap: 0.4rem;
+        justify-content: flex-start;
+        min-width: 0;
+    }
+
+    .KibitzGamePickerOverlay-mobileSourceSwitcher {
+        display: grid;
+        gap: 0.35rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        min-width: min(16rem, 100%);
+        padding: 0;
+        width: min(16rem, 100%);
+    }
+
+    .KibitzGamePickerOverlay-mobileSourceButton {
+        background: var(--shade3);
+        border: 1px solid var(--shade3);
+        color: var(--text-color-faded);
+    }
+
+    .KibitzGamePickerOverlay-mobileSourceButton.active,
+    .KibitzGamePickerOverlay-mobileSourceButton[aria-pressed="true"] {
+        background: var(--shade2);
+        border-color: var(--shade2);
+        color: var(--fg);
+    }
+
+    .KibitzGamePickerOverlay-mobileBody {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .KibitzGamePickerOverlay-mobileSelectBody,
+    .KibitzGamePickerOverlay-mobileStepBody {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-height: 0;
+        padding: 0.85rem 1rem 1rem;
+    }
+
+    .KibitzGamePickerOverlay-mobileObservePane {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        padding-bottom: 0;
+    }
+
+    .KibitzGamePickerOverlay-mobileObservePane .ObserveGamesComponent {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        height: 100%;
+    }
+
+    .KibitzGamePickerOverlay-mobileObservePane .ObserveGamesComponent .goban-container {
+        max-height: 6rem;
+    }
+
+    .KibitzGamePickerOverlay-mobileManualPane {
+        gap: 0.75rem;
+        justify-content: flex-start;
+    }
+
+    .KibitzGamePickerOverlay-mobilePrimaryButton {
+        align-self: stretch;
+    }
+
+    .KibitzGamePickerOverlay-mobileRoomFields {
+        background: transparent;
+        border: 0;
+        padding: 0;
+    }
+
+    .KibitzGamePickerOverlay-mobileFooter {
+        align-items: center;
+        border-top: 1px solid var(--shade3);
+        display: flex;
+        gap: 0.6rem;
+        justify-content: space-between;
+        margin-top: auto;
+        padding-top: 0.9rem;
+    }
+
+    .KibitzGamePickerOverlay-mobileFooter > button {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    .KibitzGamePickerOverlay-shell-mobile {
+        border: 0;
+        background: var(--bg);
+    }
+
+    @media (max-width: 1000px) {
+        padding: 0;
+
+        .KibitzGamePickerOverlay-shell {
+            border-left: 0;
+            border-right: 0;
+            border-top: 0;
+            border-bottom: 0;
+        }
+
+        .KibitzGamePickerOverlay-body {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .KibitzGamePickerOverlay-observePane {
+            border-right: 0;
+            border-bottom: 1px solid var(--shade3);
+        }
+
+        .KibitzGamePickerOverlay-detailsPane {
+            overflow: visible;
+        }
+
+        .KibitzGamePickerOverlay-header {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .KibitzGamePickerOverlay-headerControls {
+            grid-column: auto;
+            justify-self: auto;
+            width: 100%;
+        }
+
+        .KibitzGamePickerOverlay-closeButton {
+            align-self: flex-end;
+            grid-column: auto;
+        }
+
+        .KibitzGamePickerOverlay-mobileHeaderTop {
+            grid-template-columns: minmax(0, 1fr) auto;
+        }
+
+        .KibitzGamePickerOverlay-mobileHeaderActions {
+            max-width: 100%;
+        }
+
+        .KibitzGamePickerOverlay-mobileSourceSwitcher {
+            min-width: min(14.5rem, 100%);
+            width: min(14.5rem, 100%);
+        }
+
+        .KibitzGamePickerOverlay-suggestion {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .KibitzGamePickerOverlay-popup {
+            width: 100%;
+        }
+    }
 }

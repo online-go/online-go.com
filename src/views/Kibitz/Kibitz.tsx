@@ -454,6 +454,10 @@ export function Kibitz(): React.ReactElement {
         setMobileRoomsOpen((open) => !open);
     }, []);
 
+    const onCloseMobileRooms = React.useCallback(() => {
+        setMobileRoomsOpen(false);
+    }, []);
+
     const onMobileDividerPointerDown = React.useCallback(
         (event: React.PointerEvent<HTMLDivElement>) => {
             if (!isMobileLayout) {
@@ -508,7 +512,7 @@ export function Kibitz(): React.ReactElement {
                 </div>
                 <div className="Kibitz-main">
                     {isMobileLayout ? (
-                        <>
+                        <div className="Kibitz-mobile-room-shell">
                             <button
                                 type="button"
                                 className="Kibitz-mobile-room-bar"
@@ -549,129 +553,139 @@ export function Kibitz(): React.ReactElement {
                                 </div>
                             </button>
                             {mobileRoomsOpen ? (
-                                <div className="Kibitz-mobile-rooms-drawer">
-                                    <KibitzRoomList
+                                <>
+                                    <button
+                                        type="button"
+                                        className="Kibitz-mobile-rooms-backdrop"
+                                        onClick={onCloseMobileRooms}
+                                        aria-label={pgettext(
+                                            "Aria label for closing the mobile kibitz room list",
+                                            "Close room list",
+                                        )}
+                                    />
+                                    <div className="Kibitz-mobile-rooms-drawer" role="dialog">
+                                        <KibitzRoomList
+                                            rooms={rooms}
+                                            activeRoomId={resolvedRoom.id}
+                                            roomUsersById={roomUsersById}
+                                            onSelectRoom={onSelectRoom}
+                                            onCreateRoom={onOpenCreateRoom}
+                                            onCreateVariation={onCreateVariation}
+                                            onChangeBoard={onOpenChangeBoard}
+                                        />
+                                    </div>
+                                </>
+                            ) : null}
+                            <div className="Kibitz-mobile-shell" ref={mobileShellRef}>
+                                <div
+                                    className="Kibitz-mobile-top-pane"
+                                    style={{ flexBasis: `${mobileSplitRatio * 100}%` }}
+                                >
+                                    <KibitzRoomStage
+                                        mode={mode}
+                                        room={resolvedRoom}
                                         rooms={rooms}
-                                        activeRoomId={resolvedRoom.id}
-                                        roomUsersById={roomUsersById}
-                                        onSelectRoom={onSelectRoom}
-                                        onCreateRoom={onOpenCreateRoom}
-                                        onCreateVariation={onCreateVariation}
-                                        onChangeBoard={onOpenChangeBoard}
+                                        proposals={roomProposals}
+                                        variations={variations}
+                                        secondaryPane={secondaryPane}
+                                        onClearPreview={onClearPreview}
+                                        onPostVariation={onPostVariation}
+                                        onSetSecondaryPaneMode={onSetSecondaryPaneMode}
+                                        onChangeBoard={undefined}
+                                        onCreateVariation={undefined}
+                                        isMobileLayout={true}
+                                        mobileCompanionPanel={mobileCompanionPanel}
+                                        mobileHasActiveVote={Boolean(activeProposal)}
+                                        mobileHasCompareTarget={hasCompareTarget}
+                                        onSelectMobileCompanionPanel={onSelectMobileCompanionPanel}
                                     />
                                 </div>
-                            ) : null}
-                        </>
-                    ) : null}
-                    {isMobileLayout ? (
-                        <div className="Kibitz-mobile-shell" ref={mobileShellRef}>
-                            <div
-                                className="Kibitz-mobile-top-pane"
-                                style={{ flexBasis: `${mobileSplitRatio * 100}%` }}
-                            >
-                                <KibitzRoomStage
-                                    mode={mode}
-                                    room={resolvedRoom}
-                                    rooms={rooms}
-                                    proposals={roomProposals}
-                                    variations={variations}
-                                    secondaryPane={secondaryPane}
-                                    onClearPreview={onClearPreview}
-                                    onPostVariation={onPostVariation}
-                                    onSetSecondaryPaneMode={onSetSecondaryPaneMode}
-                                    onChangeBoard={undefined}
-                                    onCreateVariation={undefined}
-                                    isMobileLayout={true}
-                                    mobileCompanionPanel={mobileCompanionPanel}
-                                    mobileHasActiveVote={Boolean(activeProposal)}
-                                    mobileHasCompareTarget={hasCompareTarget}
-                                    onSelectMobileCompanionPanel={onSelectMobileCompanionPanel}
-                                />
-                            </div>
-                            <div
-                                ref={mobileDividerRef}
-                                className="Kibitz-mobile-divider"
-                                role="separator"
-                                aria-orientation="horizontal"
-                                aria-label={pgettext(
-                                    "Aria label for the mobile kibitz draggable divider",
-                                    "Resize board and panel",
-                                )}
-                                onPointerDown={onMobileDividerPointerDown}
-                            />
-                            <div className="Kibitz-mobile-bottom-pane">
                                 <div
-                                    className={
-                                        "Kibitz-sidebar" +
-                                        (activeProposal
-                                            ? " has-active-proposal"
-                                            : " no-active-proposal")
-                                    }
-                                >
-                                    <div className="Kibitz-mobile-panel-surface">
-                                        {mobileCompanionPanel === "chat" ? (
-                                            <KibitzRoomStream
-                                                mode={mode}
-                                                room={resolvedRoom}
-                                                items={stream}
-                                                variations={variations}
-                                                onOpenVariation={onOpenVariation}
-                                                onSendMessage={onSendMessage}
-                                                scrollToVariationId={
-                                                    pendingScrollVariationRequest?.variationId ??
-                                                    null
-                                                }
-                                                scrollToVariationRequestId={
-                                                    pendingScrollVariationRequest?.requestId ?? null
-                                                }
-                                                onScrolledToVariation={onScrolledToVariation}
-                                                compact={true}
-                                            />
-                                        ) : null}
-                                        {mobileCompanionPanel === "vote" ? (
-                                            <div className="Kibitz-mobile-panel Kibitz-mobile-vote-panel">
-                                                {activeProposal ? (
-                                                    <KibitzProposalBar
-                                                        proposal={activeProposal}
-                                                        onVote={onVoteProposal}
-                                                    />
-                                                ) : (
-                                                    <div className="Kibitz-mobile-panel-empty">
-                                                        {pgettext(
-                                                            "Empty state shown in the mobile kibitz vote panel when no vote is active",
-                                                            "No live vote right now.",
-                                                        )}
-                                                    </div>
-                                                )}
-                                                {queuedRoomProposals.length > 0 ? (
-                                                    <KibitzProposalQueue
-                                                        proposals={queuedRoomProposals}
-                                                    />
-                                                ) : null}
-                                            </div>
-                                        ) : null}
-                                        {mobileCompanionPanel === "compare" ? (
-                                            <div className="Kibitz-mobile-panel Kibitz-mobile-compare-panel">
-                                                {hasCompareTarget ? (
-                                                    <div className="Kibitz-mobile-panel-note">
-                                                        {pgettext(
-                                                            "Helper text shown in the mobile kibitz compare panel",
-                                                            "Comparison board is active above. Variations and queue stay here.",
-                                                        )}
-                                                    </div>
-                                                ) : (
-                                                    <div className="Kibitz-mobile-panel-empty">
-                                                        {pgettext(
-                                                            "Empty state shown in the mobile kibitz compare panel",
-                                                            "Open a variation or preview to compare here.",
-                                                        )}
-                                                    </div>
-                                                )}
-                                                <div className="Kibitz-footer-panels">
-                                                    {variationPanels}
+                                    ref={mobileDividerRef}
+                                    className="Kibitz-mobile-divider"
+                                    role="separator"
+                                    aria-orientation="horizontal"
+                                    aria-label={pgettext(
+                                        "Aria label for the mobile kibitz draggable divider",
+                                        "Resize board and panel",
+                                    )}
+                                    onPointerDown={onMobileDividerPointerDown}
+                                />
+                                <div className="Kibitz-mobile-bottom-pane">
+                                    <div
+                                        className={
+                                            "Kibitz-sidebar" +
+                                            (activeProposal
+                                                ? " has-active-proposal"
+                                                : " no-active-proposal")
+                                        }
+                                    >
+                                        <div className="Kibitz-mobile-panel-surface">
+                                            {mobileCompanionPanel === "chat" ? (
+                                                <KibitzRoomStream
+                                                    mode={mode}
+                                                    room={resolvedRoom}
+                                                    items={stream}
+                                                    variations={variations}
+                                                    onOpenVariation={onOpenVariation}
+                                                    onSendMessage={onSendMessage}
+                                                    scrollToVariationId={
+                                                        pendingScrollVariationRequest?.variationId ??
+                                                        null
+                                                    }
+                                                    scrollToVariationRequestId={
+                                                        pendingScrollVariationRequest?.requestId ??
+                                                        null
+                                                    }
+                                                    onScrolledToVariation={onScrolledToVariation}
+                                                    compact={true}
+                                                />
+                                            ) : null}
+                                            {mobileCompanionPanel === "vote" ? (
+                                                <div className="Kibitz-mobile-panel Kibitz-mobile-vote-panel">
+                                                    {activeProposal ? (
+                                                        <KibitzProposalBar
+                                                            proposal={activeProposal}
+                                                            onVote={onVoteProposal}
+                                                        />
+                                                    ) : (
+                                                        <div className="Kibitz-mobile-panel-empty">
+                                                            {pgettext(
+                                                                "Empty state shown in the mobile kibitz vote panel when no vote is active",
+                                                                "No live vote right now.",
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                    {queuedRoomProposals.length > 0 ? (
+                                                        <KibitzProposalQueue
+                                                            proposals={queuedRoomProposals}
+                                                        />
+                                                    ) : null}
                                                 </div>
-                                            </div>
-                                        ) : null}
+                                            ) : null}
+                                            {mobileCompanionPanel === "compare" ? (
+                                                <div className="Kibitz-mobile-panel Kibitz-mobile-compare-panel">
+                                                    {hasCompareTarget ? (
+                                                        <div className="Kibitz-mobile-panel-note">
+                                                            {pgettext(
+                                                                "Helper text shown in the mobile kibitz compare panel",
+                                                                "Comparison board is active above. Variations and queue stay here.",
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="Kibitz-mobile-panel-empty">
+                                                            {pgettext(
+                                                                "Empty state shown in the mobile kibitz compare panel",
+                                                                "Open a variation or preview to compare here.",
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                    <div className="Kibitz-footer-panels">
+                                                        {variationPanels}
+                                                    </div>
+                                                </div>
+                                            ) : null}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
