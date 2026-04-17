@@ -638,7 +638,6 @@
             width: 100%;
         }
 
-
         .main-board-variation-spacer {
             height: 0;
             min-height: 0;
@@ -862,8 +861,10 @@
         display: grid;
         gap: 0.35rem;
         grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        margin-left: 3px;
+        margin-right: 3px;
         min-width: 0;
-        padding: 0 0 0.2rem;
+        padding: 0;
     }
 
     .mobile-board-controls-chat {
@@ -950,7 +951,6 @@
     }
 
     .KibitzRoomStage {
-
         .KibitzRoomStage-boards {
             grid-template-columns: minmax(0, 1fr);
             gap: 0;

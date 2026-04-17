@@ -4,7 +4,7 @@
     flex-direction: column;
     height: calc(100dvh - var(--below-navbar));
     overflow: hidden;
-    padding: 0.5rem 0.75rem 0.75rem;
+    padding: 0;
 
     .Kibitz-layout {
         display: grid;
@@ -96,7 +96,7 @@
 
 @media (max-width: 1000px) {
     .Kibitz {
-        padding: 0.25rem 0.25rem 0.5rem;
+        padding: 0;
 
         .Kibitz-layout {
             grid-template-columns: minmax(0, 1fr);
@@ -199,11 +199,13 @@
             align-items: center;
             background: var(--card-background-color);
             border: 0;
+            border-radius: 0;
             box-shadow: none;
             cursor: pointer;
             display: grid;
             gap: 0rem 0.5rem;
             grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            margin: 0;
             padding: 0 0.5rem;
             text-align: left;
             width: 100%;
