@@ -172,6 +172,11 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             challenge.game.ranked = false;
         }
 
+        // Bot games are never ranked
+        if (this.props.mode === "computer") {
+            challenge.game.ranked = false;
+        }
+
         this.state = {
             conf: {
                 mode: this.props.mode,
@@ -409,6 +414,11 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             this.props.mode === "computer"
         ) {
             challenge.game.name = _("Friendly Match");
+        }
+
+        // Bot games are never ranked - ratings are handled server-side
+        if (this.props.mode === "computer") {
+            challenge.game.ranked = false;
         }
 
         if (!conf.restrict_rank) {
@@ -1228,9 +1238,10 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                 type="checkbox"
                                 id="challenge-ranked"
                                 disabled={
-                                    !this.state.challenge.game.ranked &&
-                                    (this.state.challenge.game.private ||
-                                        this.state.challenge.game.rengo)
+                                    this.props.mode === "computer" ||
+                                    (!this.state.challenge.game.ranked &&
+                                        (this.state.challenge.game.private ||
+                                            this.state.challenge.game.rengo))
                                 }
                                 checked={this.state.challenge.game.ranked}
                                 onChange={this.update_ranked}
@@ -1558,7 +1569,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                 rank: user.ranking,
                 width: this.state.challenge.game.width ?? -1,
                 height: this.state.challenge.game.height ?? -1,
-                ranked: true,
+                ranked: false,
                 handicap: this.state.challenge.game.handicap !== 0,
                 system: this.state.time_control.system,
                 speed: this.state.time_control.speed,

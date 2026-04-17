@@ -372,7 +372,7 @@ export function QuickMatch(): React.ReactElement {
               };
 
     const playComputer = React.useCallback(() => {
-        const ranked = preferences.get("automatch.bot-ranked");
+        const ranked = false; // Bot games are never ranked
 
         let size = parseInt(board_size);
         if (game_clock === "multiple") {
@@ -515,7 +515,7 @@ export function QuickMatch(): React.ReactElement {
                 rank: user.ranking,
                 width: parseInt(board_size),
                 height: parseInt(board_size),
-                ranked: true,
+                ranked: false,
                 handicap: handicaps === "disabled" ? false : true,
                 system: time_control_system,
                 speed: game_speed,
