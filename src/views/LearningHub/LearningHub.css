@@ -112,7 +112,7 @@
                 box-sizing: border-box;
 
                 &.clickable:hover {
-                    background-color: var(--shade4);
+                    background-color: var(--shade5);
                 }
 
                 .section-left {

@@ -116,13 +116,13 @@
 /* Light theme mixin */
 @define-mixin light {
     /* Build-time variables for color derivation */
-    $bg: #fff;
+    $bg: #edebe9;
     $fg: #202020;
     $default-button: #c4c4be;
     $primary: #2480ff;
     $success: #32c738;
     $info: #c376fe;
-    $colored-background-fg: $bg;
+    $colored-background-fg: #fff;
 
     --clear: transparent;
 
@@ -132,7 +132,7 @@
     --fg-light: lighten($fg, 30);
     --fg-increased-contrast: #000000;
     --mix-base: #999;
-    --background-color: #edebe9;
+    --background-color: $bg;
     --card-background-color: #f7f7f7;
     --text-color: $fg;
     --text-color-active: #000000;
@@ -140,7 +140,7 @@
     --spectator-text-color: #0a06a8;
     --default-button-color: $fg;
     --toast-bg: $fg;
-    --toast-fg: $bg;
+    --toast-fg: #fff;
     --link-color: #0068f7;
     --link-color-active: #0053c6;
 
@@ -149,7 +149,7 @@
     --default-button-light: lighten($default-button, 15);
     --default-button-dark: darken($default-button, 10);
     --default-button-darker: darken($default-button, 20);
-    --default-button-disabled: #c4c4c0;
+    --default-button-disabled: #a2a2a0;
     --primary: $primary;
     --primary-light: lighten($primary, 30);
     --primary-light-20: lighten($primary, 20);
@@ -251,7 +251,7 @@
 
     /* Navbar */
     --navbar-highlight-background-color: var(--card-background-color);
-    --navbar-background-color: #edebe9;
+    --navbar-background-color: $bg;
     --logo-svg: url("../../assets/ogs_light.svg");
 
     /* Input */
