@@ -35,7 +35,12 @@ import type { CreateContextOptions } from "@helpers";
 import { BrowserContext } from "@playwright/test";
 import { expect } from "@playwright/test";
 
-import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
+import {
+    newTestUsername,
+    prepareNewUser,
+    assertNotificationIndicatorActive,
+    assertNotificationIndicatorInactive,
+} from "@helpers/user-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { log } from "@helpers/logger";
 
@@ -230,6 +235,29 @@ export const tournamentRoundRobinStartTest = async ({
         timeout: 10000,
     });
     log("Both players visible in tournament results");
+
+    // 7. Verify tournament start notifications
+    // The director (who is not a participant) should receive a notification
+    log("Checking director received tournament start notification...");
+    await assertNotificationIndicatorActive(directorPage, 1);
+    await directorPage.locator(".NotificationIndicator").click();
+    await expect(
+        directorPage.getByText("Tournament E2E Round Robin Test has started"),
+    ).toBeVisible();
+    await directorPage.locator(".notification .fa-times-circle").click();
+    await assertNotificationIndicatorInactive(directorPage);
+    log("Director received and dismissed tournament start notification");
+
+    // Player 1 should also receive a notification
+    log("Checking player 1 received tournament start notification...");
+    await assertNotificationIndicatorActive(player1Page, 1);
+    await player1Page.locator(".NotificationIndicator").click();
+    await expect(
+        player1Page.getByText("Tournament E2E Round Robin Test has started"),
+    ).toBeVisible();
+    await player1Page.locator(".notification .fa-times-circle").click();
+    await assertNotificationIndicatorInactive(player1Page);
+    log("Player 1 received and dismissed tournament start notification");
 
     log("=== Round Robin Tournament Start Test Complete ===");
 };
