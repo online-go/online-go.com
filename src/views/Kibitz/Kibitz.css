@@ -307,6 +307,26 @@
             z-index: 45;
         }
 
+        .Kibitz-mobile-overlay-panel {
+            border-radius: 0.45rem;
+            bottom: 0.35rem;
+            box-shadow: 0 0.6rem 1.5rem rgb(0 0 0 / 0.38);
+            left: 0.35rem;
+            right: 0.35rem;
+            top: calc(var(--mobile-room-bar-height, 2.95rem) + 0.2rem);
+        }
+
+        .Kibitz-mobile-overlay-backdrop {
+            bottom: 0.35rem;
+            left: 0.35rem;
+            right: 0.35rem;
+            top: calc(var(--mobile-room-bar-height, 2.95rem) + 0.2rem);
+        }
+
+        .Kibitz-mobile-overlay-scroll {
+            padding-bottom: 0.25rem;
+        }
+
         .kibitz-mobile-transport-button {
             align-items: center;
             background: var(--shade2);
