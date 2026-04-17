@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #Home-Container {
+    // min-height: calc(100dvh - var(--navbar-height));
+
     .welcome {
         margin-top: 2rem;
         text-align: center;
@@ -23,6 +25,7 @@
 }
 
 #Home {
+    // min-height: calc(100dvh - var(--navbar-height));
     padding-left: 0.5rem;
     padding-right: 0.5rem;
     display: flex;
@@ -75,10 +78,11 @@
         flex-grow: 0;
     }
 
-    .left {
+    .center {
         flex: 1;
         min-width: 0;
         max-width: 100dvw;
+        min-height: calc(100dvh - var(--navbar-height) - 0.5rem);
         display: flex;
         flex-direction: column;
         overflow-x: hidden;
@@ -231,6 +235,12 @@
         padding-top: 2rem;
         padding-left: 0rem;
         padding-right: 1rem;
+    }
+
+    @media screen and (max-width: 767px) {
+        .GoldenRules {
+            display: none;
+        }
     }
 
     @media screen and (max-width: 850px) {

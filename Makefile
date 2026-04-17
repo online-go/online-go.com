@@ -3,7 +3,7 @@ PATH:=node_modules/.bin/:$(PATH)
 
 dev: node_modules .husky
 	npm run dev
-	
+
 build:
 	npm run build
 
@@ -35,7 +35,15 @@ node_modules: package.json
 pretty prettier lint-fix format:
 	npm run prettier
 	npm run lint:fix
-	
+
+lint:
+	npm run spellcheck
+	npm run lint
+	npm run prettier
+
+spellcheck cspell:
+	npm run spellcheck
+
 
 analyze visualizer bundle-visualizer:
 	npm run bundle-visualizer
