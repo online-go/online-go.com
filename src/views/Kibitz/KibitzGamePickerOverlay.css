@@ -1086,9 +1086,20 @@
 
     .Kibitz
         .KibitzGamePickerOverlay.KibitzMobileGamePicker
+        .KibitzGamePickerOverlay-mobileSourceButton {
+        flex: 1.35 1 0;
+        min-width: 0;
+    }
+
+    .Kibitz
+        .KibitzGamePickerOverlay.KibitzMobileGamePicker
         .KibitzGamePickerOverlay-mobileBackButton {
+        flex: 0 0 2rem;
+        max-width: 2rem;
+        min-width: 2rem;
         font-size: 0;
         line-height: 0;
+        padding: 0;
     }
 
     .Kibitz
@@ -1100,7 +1111,23 @@
     }
 
     .Kibitz .KibitzGamePickerOverlay.KibitzMobileGamePicker .KibitzGamePickerOverlay-closeButton {
+        background: var(--danger);
+        border-color: var(--danger);
+        color: var(--colored-background-fg);
+        flex: 0 0 2rem;
         margin-left: 0;
+        max-width: 2rem;
+        min-width: 2rem;
+        padding: 0;
+    }
+
+    .Kibitz
+        .KibitzGamePickerOverlay.KibitzMobileGamePicker
+        .KibitzGamePickerOverlay-closeButton:hover {
+        background: var(--danger);
+        border-color: var(--danger);
+        color: var(--colored-background-fg);
+        filter: brightness(0.94);
     }
 
     .Kibitz .KibitzGamePickerOverlay.KibitzMobileGamePicker .KibitzGamePickerOverlay-mobileBody {
@@ -1249,5 +1276,52 @@
         .KibitzGamePickerOverlay-popup {
             width: 100%;
         }
+    }
+}
+
+@media (max-width: 1000px) {
+    .Kibitz
+        .Kibitz-mobile-overlay-panel
+        > .KibitzGamePickerOverlay.KibitzGamePickerOverlay-embedded,
+    .Kibitz .Kibitz-mobile-overlay-panel > .KibitzGamePickerOverlay.KibitzMobileGamePicker {
+        background: transparent;
+        inset: auto;
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+        overflow: hidden;
+        padding: 0;
+        position: static;
+        width: 100%;
+        z-index: auto;
+    }
+
+    .Kibitz
+        .Kibitz-mobile-overlay-panel
+        > .KibitzGamePickerOverlay.KibitzGamePickerOverlay-embedded
+        .KibitzGamePickerOverlay-shell,
+    .Kibitz
+        .Kibitz-mobile-overlay-panel
+        > .KibitzGamePickerOverlay.KibitzGamePickerOverlay-embedded
+        .KibitzGamePickerOverlay-shell-mobile,
+    .Kibitz
+        .Kibitz-mobile-overlay-panel
+        > .KibitzGamePickerOverlay.KibitzMobileGamePicker
+        .KibitzGamePickerOverlay-shell,
+    .Kibitz
+        .Kibitz-mobile-overlay-panel
+        > .KibitzGamePickerOverlay.KibitzMobileGamePicker
+        .KibitzGamePickerOverlay-shell-mobile {
+        background: var(--card-background-color);
+        border: 0;
+        box-shadow: none;
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+        overflow: hidden;
     }
 }

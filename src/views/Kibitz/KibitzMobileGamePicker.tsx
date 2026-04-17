@@ -21,7 +21,6 @@ import { interpolate, pgettext } from "@/lib/translate";
 import { ObserveGamesComponent } from "@/components/ObserveGamesComponent";
 import type { KibitzRoomSummary, KibitzRoomUser, KibitzWatchedGame } from "@/models/kibitz";
 import { KibitzBoard } from "./KibitzBoard";
-import "./KibitzMobileGamePicker.css";
 
 type KibitzGamePickerMode = "create-room" | "change-board";
 type PickerSourceMode = "ongoing" | "game-id";
@@ -656,7 +655,7 @@ export function KibitzMobileGamePicker({
     );
 
     return (
-        <div className="KibitzGamePickerOverlay KibitzMobileGamePicker">
+        <div className="KibitzGamePickerOverlay KibitzMobileGamePicker KibitzGamePickerOverlay-embedded">
             <div className="KibitzGamePickerOverlay-shell KibitzGamePickerOverlay-shell-mobile">
                 <div className="KibitzGamePickerOverlay-mobileHeader">
                     <div className="KibitzGamePickerOverlay-mobileHeaderTop">
