@@ -648,7 +648,7 @@ export function KibitzMobileGamePicker({
     );
 
     return (
-        <div className="KibitzMobileGamePicker">
+        <div className="KibitzGamePickerOverlay KibitzMobileGamePicker">
             <div className="KibitzGamePickerOverlay-shell KibitzGamePickerOverlay-shell-mobile">
                 <div className="KibitzGamePickerOverlay-mobileHeader">
                     <div className="KibitzGamePickerOverlay-mobileHeaderTop">

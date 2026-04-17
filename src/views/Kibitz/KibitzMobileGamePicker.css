@@ -6,3 +6,25 @@
     flex-direction: column;
     min-height: 0;
 }
+
+.KibitzGamePickerOverlay.KibitzMobileGamePicker {
+    background: transparent;
+    inset: auto;
+    flex: 1 1 auto;
+    height: 100%;
+    min-height: 0;
+    padding: 0;
+    position: static;
+    width: 100%;
+    z-index: auto;
+}
+
+.KibitzGamePickerOverlay.KibitzMobileGamePicker .KibitzGamePickerOverlay-shell {
+    background: var(--card-background-color);
+    border: 0;
+    height: 100%;
+}
+
+.KibitzGamePickerOverlay.KibitzMobileGamePicker .KibitzGamePickerOverlay-shell-mobile {
+    background: transparent;
+}
