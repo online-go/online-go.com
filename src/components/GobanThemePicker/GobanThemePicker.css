@@ -30,7 +30,7 @@
     .theme-set, .custom-theme-set {
         display: inline-flex;
         flex-direction: row;
-        width: 320px;
+        width: 380px;
         flex-wrap: wrap;
         justify-content: flex-start;
         text-align: left;
