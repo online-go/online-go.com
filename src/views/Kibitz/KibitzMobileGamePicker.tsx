@@ -550,9 +550,11 @@ export function KibitzMobileGamePicker({
     );
 
     const renderMobilePreviewStep = () => (
-        <div className="KibitzGamePickerOverlay-mobileStepBody">
-            <div className="KibitzGamePickerOverlay-selectionCard KibitzGamePickerOverlay-selectionCard-mobile">
-                {renderSelectedGameCard(true)}
+        <div className="KibitzGamePickerOverlay-mobileStepBody KibitzGamePickerOverlay-mobilePreviewStep">
+            <div className="KibitzGamePickerOverlay-mobilePreviewContent">
+                <div className="KibitzGamePickerOverlay-selectionCard KibitzGamePickerOverlay-selectionCard-mobile">
+                    {renderSelectedGameCard(true)}
+                </div>
             </div>
             <div className="KibitzGamePickerOverlay-mobileFooter">
                 <button

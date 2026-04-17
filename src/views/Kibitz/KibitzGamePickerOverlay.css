@@ -1140,8 +1140,28 @@
     .Kibitz
         .KibitzGamePickerOverlay.KibitzMobileGamePicker
         .KibitzGamePickerOverlay-mobileStepBody {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
         gap: 0.5rem;
+        min-height: 0;
+        overflow: auto;
         padding: 0.5rem 0.6rem 0.6rem;
+    }
+
+    .Kibitz
+        .KibitzGamePickerOverlay.KibitzMobileGamePicker
+        .KibitzGamePickerOverlay-mobilePreviewStep {
+        display: grid;
+        grid-template-rows: minmax(0, 1fr) auto;
+        overflow: hidden;
+    }
+
+    .Kibitz
+        .KibitzGamePickerOverlay.KibitzMobileGamePicker
+        .KibitzGamePickerOverlay-mobilePreviewContent {
+        min-height: 0;
+        overflow: auto;
     }
 
     .Kibitz
@@ -1169,6 +1189,13 @@
         .KibitzGamePickerOverlay.KibitzMobileGamePicker
         .KibitzGamePickerOverlay-selectionCard-mobile {
         gap: 0.45rem;
+    }
+
+    .Kibitz
+        .KibitzGamePickerOverlay.KibitzMobileGamePicker
+        .KibitzGamePickerOverlay-mobilePreviewStep
+        .KibitzGamePickerOverlay-selectionCard-mobile {
+        padding-bottom: 0.15rem;
     }
 
     .Kibitz
@@ -1202,10 +1229,18 @@
     }
 
     .Kibitz .KibitzGamePickerOverlay.KibitzMobileGamePicker .KibitzGamePickerOverlay-mobileFooter {
+        flex: 0 0 auto;
         gap: 0.4rem;
         margin-top: 0.15rem;
         padding: 0.55rem 0 0.1rem;
         z-index: 2;
+    }
+
+    .Kibitz
+        .KibitzGamePickerOverlay.KibitzMobileGamePicker
+        .KibitzGamePickerOverlay-mobilePreviewStep
+        .KibitzGamePickerOverlay-mobileFooter {
+        margin-top: 0;
     }
 
     .Kibitz
