@@ -558,10 +558,14 @@ export function KibitzMobileGamePicker({
             <div className="KibitzGamePickerOverlay-mobileFooter">
                 <button
                     type="button"
-                    className="xs KibitzGamePickerOverlay-cancelButton"
+                    className="xs primary KibitzGamePickerOverlay-cancelButton"
                     onClick={onBackMobile}
+                    aria-label={pgettext(
+                        "Aria label for going back in the mobile kibitz picker",
+                        "Go back",
+                    )}
                 >
-                    {pgettext("Button label for going back in the mobile kibitz picker", "Back")}
+                    {"←"}
                 </button>
                 {mode === "create-room" ? (
                     <button
@@ -630,10 +634,14 @@ export function KibitzMobileGamePicker({
             <div className="KibitzGamePickerOverlay-mobileFooter">
                 <button
                     type="button"
-                    className="xs KibitzGamePickerOverlay-cancelButton"
+                    className="xs primary KibitzGamePickerOverlay-cancelButton"
                     onClick={onBackMobile}
+                    aria-label={pgettext(
+                        "Aria label for going back in the mobile kibitz picker",
+                        "Go back",
+                    )}
                 >
-                    {pgettext("Button label for going back in the mobile kibitz picker", "Back")}
+                    {"←"}
                 </button>
                 <button
                     type="button"
@@ -665,13 +673,14 @@ export function KibitzMobileGamePicker({
                                 {onBackToMenu ? (
                                     <button
                                         type="button"
-                                        className="xs KibitzGamePickerOverlay-mobileBackButton"
+                                        className="xs primary KibitzGamePickerOverlay-mobileBackButton"
                                         onClick={onBackMobile}
-                                    >
-                                        {pgettext(
-                                            "Button label for going back to the mobile kibitz room list",
-                                            "Back",
+                                        aria-label={pgettext(
+                                            "Aria label for going back to the mobile kibitz room list",
+                                            "Go back to room list",
                                         )}
+                                    >
+                                        {"←"}
                                     </button>
                                 ) : null}
                                 <div
@@ -681,6 +690,7 @@ export function KibitzMobileGamePicker({
                                     <button
                                         type="button"
                                         className={
+                                            "xs primary " +
                                             "KibitzGamePickerOverlay-mobileSourceButton" +
                                             (sourceMode === "ongoing" ? " active" : "")
                                         }
@@ -695,6 +705,7 @@ export function KibitzMobileGamePicker({
                                     <button
                                         type="button"
                                         className={
+                                            "xs primary " +
                                             "KibitzGamePickerOverlay-mobileSourceButton" +
                                             (sourceMode === "game-id" ? " active" : "")
                                         }
@@ -711,28 +722,26 @@ export function KibitzMobileGamePicker({
                         ) : (
                             <button
                                 type="button"
-                                className="xs KibitzGamePickerOverlay-mobileBackButton"
+                                className="xs primary KibitzGamePickerOverlay-mobileBackButton"
                                 onClick={onBackMobile}
-                            >
-                                {pgettext(
-                                    "Button label for going back in the mobile kibitz picker",
-                                    "Back",
+                                aria-label={pgettext(
+                                    "Aria label for going back in the mobile kibitz picker",
+                                    "Go back",
                                 )}
+                            >
+                                {"←"}
                             </button>
                         )}
                         <button
                             type="button"
-                            className="xs KibitzGamePickerOverlay-closeButton KibitzGamePickerOverlay-dangerButton"
+                            className="xs primary KibitzGamePickerOverlay-closeButton"
                             onClick={onClose}
                             aria-label={pgettext(
                                 "Aria label for closing the Kibitz game picker overlay",
-                                "Close",
+                                "Quit picker",
                             )}
                         >
-                            {pgettext(
-                                "Button label for closing the Kibitz game picker overlay",
-                                "Close",
-                            )}
+                            {"X"}
                         </button>
                     </div>
                 </div>

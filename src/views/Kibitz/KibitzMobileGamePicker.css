@@ -82,40 +82,47 @@
     .KibitzGamePickerOverlay.KibitzMobileGamePicker .KibitzGamePickerOverlay-mobileHeaderActions {
         align-items: stretch;
         display: flex;
-        flex-wrap: wrap;
-        gap: 0.45rem;
+        flex-wrap: nowrap;
+        gap: 0.35rem;
         justify-content: flex-start;
         min-width: 0;
     }
 
     .KibitzGamePickerOverlay.KibitzMobileGamePicker .KibitzGamePickerOverlay-mobileSourceSwitcher {
-        display: grid;
-        flex: 1 1 100%;
-        gap: 0.35rem;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        min-width: 0;
-        order: 2;
-        width: 100%;
+        display: contents;
     }
 
-    .KibitzGamePickerOverlay.KibitzMobileGamePicker button.KibitzGamePickerOverlay-actionButton,
-    .KibitzGamePickerOverlay.KibitzMobileGamePicker button.KibitzGamePickerOverlay-dangerButton,
-    .KibitzGamePickerOverlay.KibitzMobileGamePicker button.KibitzGamePickerOverlay-cancelButton,
-    .KibitzGamePickerOverlay.KibitzMobileGamePicker button.KibitzGamePickerOverlay-mobileBackButton,
+    .KibitzGamePickerOverlay.KibitzMobileGamePicker .KibitzGamePickerOverlay-mobileSourceButton {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: var(--colored-background-fg);
+    }
+
     .KibitzGamePickerOverlay.KibitzMobileGamePicker
-        button.KibitzGamePickerOverlay-mobileSourceButton {
-        border-radius: 0.45rem;
-        font-size: 0.95rem;
-        height: 2.5rem;
-        line-height: 1.15;
-        padding: 0 0.85rem;
+        .KibitzGamePickerOverlay-mobileSourceButton.active,
+    .KibitzGamePickerOverlay.KibitzMobileGamePicker
+        .KibitzGamePickerOverlay-mobileSourceButton[aria-pressed="true"] {
+        filter: brightness(0.92);
     }
 
     .KibitzGamePickerOverlay.KibitzMobileGamePicker .KibitzGamePickerOverlay-closeButton {
         align-self: auto;
         grid-column: auto;
         justify-self: auto;
-        margin-left: auto;
+    }
+
+    .KibitzGamePickerOverlay.KibitzMobileGamePicker
+        .KibitzGamePickerOverlay-mobileHeaderActions
+        > button {
+        align-items: center;
+        display: flex;
+        flex: 1 1 0;
+        justify-content: center;
+        min-width: 0;
+        margin: 0;
+        line-height: 1;
+        padding-bottom: 0;
+        padding-top: 0;
     }
 
     .KibitzGamePickerOverlay.KibitzMobileGamePicker .KibitzGamePickerOverlay-mobileBody {

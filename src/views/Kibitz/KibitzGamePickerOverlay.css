@@ -44,17 +44,6 @@
         min-width: min(24rem, 100%);
     }
 
-    button.KibitzGamePickerOverlay-actionButton,
-    button.KibitzGamePickerOverlay-dangerButton,
-    button.KibitzGamePickerOverlay-cancelButton,
-    button.KibitzGamePickerOverlay-mobileBackButton,
-    button.KibitzGamePickerOverlay-mobileSourceButton {
-        font-size: 1rem;
-        line-height: 1.2;
-        height: 3rem;
-        padding: 0 1rem;
-    }
-
     button.KibitzGamePickerOverlay-dangerButton {
         background-color: #c0392b !important;
         border-color: #c0392b !important;
