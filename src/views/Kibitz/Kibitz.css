@@ -196,15 +196,15 @@
         }
 
         .Kibitz-mobile-room-bar {
-            align-items: start;
+            align-items: center;
             background: var(--card-background-color);
             border: 0;
             box-shadow: none;
             cursor: pointer;
             display: grid;
-            gap: 0.25rem 0.5rem;
+            gap: 0rem 0.5rem;
             grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-            padding: 0.35rem 0.5rem;
+            padding: 0 0.5rem;
             text-align: left;
             width: 100%;
             position: relative;
@@ -225,14 +225,53 @@
 
         .mobile-room-header-matchup {
             grid-column: 2;
+            align-items: center;
+            display: flex;
+            flex-direction: column;
             justify-self: center;
             color: var(--text-color-faded);
             font-size: 0.74rem;
-            line-height: 1.15;
+            gap: 0.08rem;
+            line-height: 1.05;
+            min-width: 0;
+            overflow: hidden;
+            text-align: center;
+            white-space: normal;
+        }
+
+        .mobile-room-header-matchup-first,
+        .mobile-room-header-matchup-second {
             min-width: 0;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+        }
+
+        .mobile-room-header-matchup-first {
+            font-weight: 700;
+        }
+
+        .mobile-room-header-matchup-vs {
+            font-weight: 400;
+        }
+
+        .mobile-room-header-matchup-second-name {
+            font-weight: 700;
+        }
+
+        .mobile-room-header-matchup-black-dot,
+        .mobile-room-header-matchup-white-dot {
+            font-size: 0.78em;
+            line-height: 1;
+            font-weight: 700;
+        }
+
+        .mobile-room-header-matchup-black-dot {
+            color: #000;
+        }
+
+        .mobile-room-header-matchup-white-dot {
+            color: #fff;
         }
 
         .mobile-room-header-meta {

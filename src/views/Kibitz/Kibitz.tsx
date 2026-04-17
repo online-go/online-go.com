@@ -58,17 +58,17 @@ function clampMobileSplitRatio(value: number): number {
 
 function formatMobileMatchup(
     room: KibitzRoom | KibitzRoomSummary | null | undefined,
-): string | null {
+): { firstPlayer: string; secondPlayer: string } | null {
     const game = room?.current_game;
 
     if (!game) {
         return null;
     }
 
-    return interpolate(pgettext("Mobile kibitz room matchup label", "{{black}} vs {{white}}"), {
-        black: game.black.username,
-        white: game.white.username,
-    });
+    return {
+        firstPlayer: game.black.username,
+        secondPlayer: game.white.username,
+    };
 }
 
 export function Kibitz(): React.ReactElement {
@@ -534,7 +534,26 @@ export function Kibitz(): React.ReactElement {
                                 <div className="mobile-room-header-title">{resolvedRoom.title}</div>
                                 {mobileMatchup ? (
                                     <div className="mobile-room-header-matchup">
-                                        {mobileMatchup}
+                                        <span className="mobile-room-header-matchup-first">
+                                            {mobileMatchup.firstPlayer}{" "}
+                                            <span className="mobile-room-header-matchup-black-dot">
+                                                ●
+                                            </span>
+                                        </span>
+                                        <span className="mobile-room-header-matchup-second">
+                                            <span className="mobile-room-header-matchup-vs">
+                                                {pgettext(
+                                                    "Prefix for the second player in the mobile kibitz room header matchup",
+                                                    "vs",
+                                                )}
+                                            </span>{" "}
+                                            <span className="mobile-room-header-matchup-second-name">
+                                                {mobileMatchup.secondPlayer}
+                                            </span>{" "}
+                                            <span className="mobile-room-header-matchup-white-dot">
+                                                ○
+                                            </span>
+                                        </span>
                                     </div>
                                 ) : null}
                                 <div className="mobile-room-header-meta">
