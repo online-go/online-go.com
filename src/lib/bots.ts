@@ -230,7 +230,7 @@ export function getAcceptableTimeSetting(
                 ),
             ];
         }
-        if (!options.ranked && bot.config.allow_unranked) {
+        if (!options.ranked && !bot.config.allow_unranked) {
             return [
                 null,
                 llm_pgettext(
