@@ -118,7 +118,7 @@
     /* Build-time variables for color derivation */
     $bg: #fff;
     $fg: #202020;
-    $default-button: #e6e6e0;
+    $default-button: #c4c4be;
     $primary: #2480ff;
     $success: #32c738;
     $info: #c376fe;
@@ -132,7 +132,7 @@
     --fg-light: lighten($fg, 30);
     --fg-increased-contrast: #000000;
     --mix-base: #999;
-    --background-color: $bg;
+    --background-color: #edebe9;
     --card-background-color: #f7f7f7;
     --text-color: $fg;
     --text-color-active: #000000;
@@ -225,11 +225,11 @@
 
     /* Shades */
     --shade0: #535353;
-    --shade1: #868686;
-    --shade2: #b9b9b9;
-    --shade3: #d9d9d9;
-    --shade4: #ececec;
-    --shade5: #f5f5f5;
+    --shade1: #646464;
+    --shade2: #979797;
+    --shade3: #b7b7b7;
+    --shade4: #cacaca;
+    --shade5: #d3d3d3;
 
     --search-highlight: #ffea00;
     --other-player-background: rgba(150, 150, 150, 0.3);
@@ -250,8 +250,8 @@
     --react-select-focused-fg: #202020;
 
     /* Navbar */
-    --navbar-highlight-background-color: $bg;
-    --navbar-background-color: $bg;
+    --navbar-highlight-background-color: var(--card-background-color);
+    --navbar-background-color: #edebe9;
     --logo-svg: url("../../assets/ogs_light.svg");
 
     /* Input */

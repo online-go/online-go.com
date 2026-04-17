@@ -101,7 +101,7 @@
             .section-header {
                 height: 80px; /* Fixed height for consistency */
                 padding: 1rem 1.5rem;
-                background-color: var(--shade5);
+                background-color: var(--card-background-color);
                 border-radius: 0.5rem 0.5rem 0 0;
                 display: flex;
                 align-items: center;
@@ -152,7 +152,7 @@
                         .progress-bar {
                             width: 120px;
                             height: 8px;
-                            background-color: var(--shade4);
+                            background-color: var(--shade3);
                             border-radius: 4px;
                             overflow: hidden;
 
@@ -185,7 +185,7 @@
             /* Collapsible content area with proper card styling */
             > .contents {
                 padding: 1.5rem;
-                background-color: var(--shade5); /* Use shade5 instead of shade6 for compatibility */
+                background-color: var(--card-background-color);
                 border-radius: 0 0 0.5rem 0.5rem;
                 border: 1px solid;
                 border-color: var(--shade4);
@@ -324,7 +324,7 @@
             font-size: 1.2rem;
             margin-top: 3rem;
             padding: 2rem;
-            background-color: var(--shade5);
+            background-color: var(--card-background-color);
             border-radius: 0.5rem;
 
             img {
