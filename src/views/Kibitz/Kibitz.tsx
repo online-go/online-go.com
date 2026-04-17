@@ -38,10 +38,12 @@ import { KibitzPresence } from "./KibitzPresence";
 import { KibitzVariationList } from "./KibitzVariationList";
 import { KibitzController } from "./KibitzController";
 import { KibitzGamePickerOverlay } from "./KibitzGamePickerOverlay";
+import { KibitzMobileGamePicker } from "./KibitzMobileGamePicker";
 import "./Kibitz.css";
 
 type SecondaryPaneMode = "hidden" | "small" | "equal";
 type MobileCompanionPanel = "chat" | "vote" | "compare";
+type MobileOverlayMode = "rooms" | "create-room" | "change-board" | null;
 type KibitzGamePickerMode = "create-room" | "change-board" | null;
 
 const MOBILE_LAYOUT_MEDIA_QUERY = "(max-width: 1000px)";
@@ -99,7 +101,7 @@ export function Kibitz(): React.ReactElement {
     const [debug, setDebug] = React.useState<KibitzDebugState>(controller.debug);
     const [mobileCompanionPanel, setMobileCompanionPanel] =
         React.useState<MobileCompanionPanel>("chat");
-    const [mobileRoomsOpen, setMobileRoomsOpen] = React.useState(false);
+    const [mobileOverlayMode, setMobileOverlayMode] = React.useState<MobileOverlayMode>(null);
     const [isMobileLayout, setIsMobileLayout] = React.useState(
         () => window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY).matches,
     );
@@ -272,7 +274,7 @@ export function Kibitz(): React.ReactElement {
         (nextRoomId: string) => {
             if (isMobileLayout) {
                 setMobileCompanionPanel("chat");
-                setMobileRoomsOpen(false);
+                setMobileOverlayMode(null);
             }
             void navigate(`/kibitz/${nextRoomId}`);
         },
@@ -303,7 +305,7 @@ export function Kibitz(): React.ReactElement {
     const onCreateVariation = React.useCallback(() => {
         controller.startVariationFromCurrentBoard();
         if (isMobileLayout) {
-            setMobileRoomsOpen(false);
+            setMobileOverlayMode(null);
             setMobileCompanionPanel("compare");
         }
     }, [controller, isMobileLayout]);
@@ -317,12 +319,22 @@ export function Kibitz(): React.ReactElement {
     const [pickerMode, setPickerMode] = React.useState<KibitzGamePickerMode>(null);
 
     const onOpenCreateRoom = React.useCallback(() => {
+        if (isMobileLayout) {
+            setMobileOverlayMode("create-room");
+            return;
+        }
+
         setPickerMode("create-room");
-    }, []);
+    }, [isMobileLayout]);
 
     const onOpenChangeBoard = React.useCallback(() => {
+        if (isMobileLayout) {
+            setMobileOverlayMode("change-board");
+            return;
+        }
+
         setPickerMode("change-board");
-    }, []);
+    }, [isMobileLayout]);
 
     const onClosePicker = React.useCallback(() => {
         setPickerMode(null);
@@ -407,12 +419,12 @@ export function Kibitz(): React.ReactElement {
     React.useEffect(() => {
         if (!isMobileLayout) {
             setMobileCompanionPanel("chat");
-            setMobileRoomsOpen(false);
+            setMobileOverlayMode(null);
             return;
         }
 
         setMobileCompanionPanel("chat");
-        setMobileRoomsOpen(false);
+        setMobileOverlayMode(null);
     }, [isMobileLayout, resolvedRoom?.id]);
 
     React.useEffect(() => {
@@ -451,11 +463,11 @@ export function Kibitz(): React.ReactElement {
     );
 
     const onToggleMobileRooms = React.useCallback(() => {
-        setMobileRoomsOpen((open) => !open);
+        setMobileOverlayMode((mode) => (mode === "rooms" ? null : "rooms"));
     }, []);
 
-    const onCloseMobileRooms = React.useCallback(() => {
-        setMobileRoomsOpen(false);
+    const onCloseMobileOverlay = React.useCallback(() => {
+        setMobileOverlayMode(null);
     }, []);
 
     const onMobileDividerPointerDown = React.useCallback(
@@ -517,7 +529,7 @@ export function Kibitz(): React.ReactElement {
                                 type="button"
                                 className="Kibitz-mobile-room-bar"
                                 onClick={onToggleMobileRooms}
-                                aria-expanded={mobileRoomsOpen}
+                                aria-expanded={mobileOverlayMode !== null}
                             >
                                 <div className="mobile-room-header-title">{resolvedRoom.title}</div>
                                 {mobileMatchup ? (
@@ -552,27 +564,65 @@ export function Kibitz(): React.ReactElement {
                                     </span>
                                 </div>
                             </button>
-                            {mobileRoomsOpen ? (
+                            {mobileOverlayMode ? (
                                 <>
                                     <button
                                         type="button"
-                                        className="Kibitz-mobile-rooms-backdrop"
-                                        onClick={onCloseMobileRooms}
+                                        className="Kibitz-mobile-overlay-backdrop"
+                                        onClick={onCloseMobileOverlay}
                                         aria-label={pgettext(
-                                            "Aria label for closing the mobile kibitz room list",
-                                            "Close room list",
+                                            "Aria label for closing the mobile kibitz overlay",
+                                            "Close overlay",
                                         )}
                                     />
-                                    <div className="Kibitz-mobile-rooms-drawer" role="dialog">
-                                        <KibitzRoomList
-                                            rooms={rooms}
-                                            activeRoomId={resolvedRoom.id}
-                                            roomUsersById={roomUsersById}
-                                            onSelectRoom={onSelectRoom}
-                                            onCreateRoom={onOpenCreateRoom}
-                                            onCreateVariation={onCreateVariation}
-                                            onChangeBoard={onOpenChangeBoard}
-                                        />
+                                    <div className="Kibitz-mobile-overlay-panel" role="dialog">
+                                        {mobileOverlayMode === "rooms" ? (
+                                            <div className="Kibitz-mobile-overlay-scroll">
+                                                <KibitzRoomList
+                                                    rooms={rooms}
+                                                    activeRoomId={resolvedRoom.id}
+                                                    roomUsersById={roomUsersById}
+                                                    onSelectRoom={onSelectRoom}
+                                                    onCreateRoom={onOpenCreateRoom}
+                                                    onCreateVariation={onCreateVariation}
+                                                    onChangeBoard={onOpenChangeBoard}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <KibitzMobileGamePicker
+                                                key={mobileOverlayMode}
+                                                mode={mobileOverlayMode}
+                                                rooms={rooms}
+                                                currentRoom={resolvedRoom}
+                                                onClose={onCloseMobileOverlay}
+                                                onBackToMenu={() => {
+                                                    setMobileOverlayMode("rooms");
+                                                }}
+                                                onCreateRoom={(game, roomName, description) => {
+                                                    const nextRoomId = controller.createRoom(
+                                                        game,
+                                                        roomName,
+                                                        description,
+                                                    );
+                                                    setMobileOverlayMode(null);
+                                                    if (nextRoomId) {
+                                                        void navigate(`/kibitz/${nextRoomId}`);
+                                                    }
+                                                }}
+                                                onChangeBoard={(game) => {
+                                                    if (!resolvedRoom) {
+                                                        return;
+                                                    }
+
+                                                    controller.changeBoard(resolvedRoom.id, game);
+                                                    setMobileOverlayMode(null);
+                                                }}
+                                                onJoinRoom={(nextRoomId) => {
+                                                    setMobileOverlayMode(null);
+                                                    void navigate(`/kibitz/${nextRoomId}`);
+                                                }}
+                                            />
+                                        )}
                                     </div>
                                 </>
                             ) : null}
