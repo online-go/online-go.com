@@ -23,7 +23,7 @@ import { usePreference } from "@/lib/preferences";
 
 import { Toggle } from "@/components/Toggle";
 
-import { PreferenceLine } from "@/lib/SettingsCommon";
+import { PreferenceLine, PreferenceDropdown } from "@/lib/SettingsCommon";
 
 export function ChatPreferences(): React.ReactElement {
     const [show_empty_chat_notification, toggleEmptyChatNotification] = usePreference(
@@ -41,9 +41,31 @@ export function ChatPreferences(): React.ReactElement {
     const [tournament_chat_mentions, toggleTournamentChatMentions] = usePreference(
         "chat-subscribe-tournament-mentions",
     );
+    const [chat_mode, _setChatMode] = usePreference("chat-mode");
+
+    function setChatMode(value: string) {
+        _setChatMode(value);
+    }
 
     return (
         <div>
+            <PreferenceLine
+                title={_("Set default game chat mode")}
+                description={_(
+                    "The chat mode that is defaulted to when a game is initiated or when the game page is refreshed.",
+                )}
+            >
+                <PreferenceDropdown
+                    value={chat_mode}
+                    options={[
+                        { value: "main", label: _("Chat") },
+                        { value: "malkovich", label: _("Malkovich") },
+                        { value: "personal", label: _("Personal") },
+                    ]}
+                    onChange={setChatMode}
+                />
+            </PreferenceLine>
+
             <PreferenceLine
                 title={_("Show chat notification icon when there are no unread messages.")}
             >
