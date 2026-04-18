@@ -867,6 +867,7 @@
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
         margin-left: 3px;
         margin-right: 3px;
+        min-height: 2rem;
         min-width: 0;
         padding: 0;
     }
