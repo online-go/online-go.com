@@ -954,6 +954,12 @@
         width: 100%;
     }
 
+    .mobile-board-compose-row .KibitzVariationComposer input,
+    .mobile-board-compose-row .KibitzVariationComposer button {
+        box-sizing: border-box;
+        height: 1.6rem;
+    }
+
     .KibitzRoomStage {
         .KibitzRoomStage-boards {
             grid-template-columns: minmax(0, 1fr);
