@@ -483,7 +483,31 @@ export function KibitzRoomStage({
                         ) : null}
                     </div>
                     <div className="mobile-board-controls-row">
-                        <div className="mobile-board-controls-spacer" aria-hidden="true" />
+                        <button
+                            type="button"
+                            className={
+                                "kibitz-mobile-transport-button kibitz-mobile-stage-panel-button mobile-board-controls-toggle" +
+                                (mobileCompanionPanel === "compare" ? " active" : "")
+                            }
+                            onClick={() =>
+                                onSelectMobileCompanionPanel?.(
+                                    mobileCompanionPanel === "compare" ? "chat" : "compare",
+                                )
+                            }
+                            aria-pressed={mobileCompanionPanel === "compare"}
+                        >
+                            <span className="kibitz-mobile-transport-label">
+                                {mobileCompanionPanel === "compare"
+                                    ? pgettext(
+                                          "Mobile kibitz transport-row toggle label",
+                                          "To Main Board",
+                                      )
+                                    : pgettext(
+                                          "Mobile kibitz transport-row toggle label",
+                                          "To Variations",
+                                      )}
+                            </span>
+                        </button>
                         <div className="mobile-board-controls-transport">
                             <KibitzBoardControls
                                 controller={mobileBoardController}
@@ -492,31 +516,6 @@ export function KibitzRoomStage({
                             />
                         </div>
                         <div className="mobile-board-controls-panels">
-                            <button
-                                type="button"
-                                className={
-                                    "kibitz-mobile-transport-button kibitz-mobile-stage-panel-button mobile-board-controls-toggle" +
-                                    (mobileCompanionPanel === "compare" ? " active" : "")
-                                }
-                                onClick={() =>
-                                    onSelectMobileCompanionPanel?.(
-                                        mobileCompanionPanel === "compare" ? "chat" : "compare",
-                                    )
-                                }
-                                aria-pressed={mobileCompanionPanel === "compare"}
-                            >
-                                <span className="kibitz-mobile-transport-label">
-                                    {mobileCompanionPanel === "compare"
-                                        ? pgettext(
-                                              "Mobile kibitz transport-row toggle label",
-                                              "To Main Board",
-                                          )
-                                        : pgettext(
-                                              "Mobile kibitz transport-row toggle label",
-                                              "To Variation",
-                                          )}
-                                </span>
-                            </button>
                             {mobileHasActiveVote ? (
                                 <button
                                     type="button"
