@@ -97,7 +97,12 @@ import { useData } from "./lib/hooks";
 import { MainSection } from "@/components/MainSection";
 import { AccessibilityMenu } from "@/components/AccessibilityMenu";
 import { RecentlyBlocked } from "@moderator-ui/RecentlyBlocked";
-import { FairPlay, FairPlayActions, FairPlaySearch } from "@moderator-ui/FairPlay";
+import {
+    FairPlay,
+    FairPlayActions,
+    FairPlayLogicDump,
+    FairPlaySearch,
+} from "@moderator-ui/FairPlay";
 
 const LearningHub = React.lazy(() =>
     import("@/views/LearningHub/LearningHub").then((m) => ({
@@ -410,6 +415,7 @@ export const routes = (
                 <Route path="/moderator/fair-play/:id" element={<FairPlay />} />
                 <Route path="/moderator/fair-play-search" element={<FairPlaySearch />} />
                 <Route path="/moderator/fair-play-actions" element={<FairPlayActions />} />
+                <Route path="/moderator/fair-play-logic-dump" element={<FairPlayLogicDump />} />
                 <Route path="/admin/merchant_log" element={<MerchantLog />} />
                 <Route path="/admin/firewall" element={<Firewall />} />
                 <Route path="/admin/flagged_games" element={<FlaggedGames />} />
