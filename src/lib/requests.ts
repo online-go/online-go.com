@@ -149,7 +149,7 @@ function request(method: Method): RequestFunction {
                         } else {
                             console.error(res.status, url, data);
                             console.error(traceback.stack);
-                            reject(res);
+                            reject(data);
                         }
                     };
 
