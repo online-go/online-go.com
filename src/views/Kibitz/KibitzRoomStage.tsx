@@ -324,18 +324,6 @@ export function KibitzRoomStage({
             mobileCompanionPanel === "compare" &&
             (selectedVariation || secondaryBoardGame),
     );
-    const mobileBoardLabel = mobileCompareActive
-        ? selectedVariation
-            ? pgettext("Label for the active mobile kibitz variation board", "Variation")
-            : isCreatingVariationFromCurrentBoard
-              ? pgettext("Label for the active mobile kibitz draft board", "New variation")
-              : pgettext("Label for the active mobile kibitz preview board", "Preview")
-        : null;
-    const mobileBoardTitle = mobileCompareActive
-        ? (selectedVariation?.title ??
-          secondaryBoardGame?.title ??
-          pgettext("Fallback title for the active mobile kibitz compare board", "Board preview"))
-        : null;
     const mobileBoardTotalMoves = mobileCompareActive
         ? (selectedVariation?.move_count ?? previewDisplayedMoveNumber)
         : displayedMoveNumber;
@@ -385,24 +373,6 @@ export function KibitzRoomStage({
                         (mobileCompareActive ? " is-compare" : " is-main")
                     }
                 >
-                    {mobileCompareActive ? (
-                        <div className="Kibitz-mobile-board-meta">
-                            <div className="mobile-board-meta-copy">
-                                <div className="mobile-board-meta-label">{mobileBoardLabel}</div>
-                                <div className="mobile-board-meta-title">{mobileBoardTitle}</div>
-                            </div>
-                            <button
-                                type="button"
-                                className="mobile-board-clear-button"
-                                onClick={onConfirmClearSecondaryPane}
-                            >
-                                {pgettext(
-                                    "Button label for clearing the active mobile kibitz compare board",
-                                    "Clear",
-                                )}
-                            </button>
-                        </div>
-                    ) : null}
                     <div
                         className={
                             "mobile-board-fit-slot" +

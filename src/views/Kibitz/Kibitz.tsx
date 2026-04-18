@@ -18,6 +18,7 @@
 import * as React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { GobanController } from "@/lib/GobanController";
+import { alert } from "@/lib/swal_config";
 import { interpolate, pgettext } from "@/lib/translate";
 import type {
     KibitzDebugState,
@@ -289,6 +290,35 @@ export function Kibitz(): React.ReactElement {
         }
     }, [controller, isMobileLayout]);
 
+    const onConfirmClearSecondaryPane = React.useCallback(() => {
+        void alert
+            .fire({
+                customClass: {
+                    confirmButton: "reject",
+                    cancelButton: "",
+                },
+                text: pgettext(
+                    "Confirmation text for clearing the secondary kibitz pane preview",
+                    "Clear this variation? Any variation that isn't shared will be lost.",
+                ),
+                confirmButtonText: pgettext(
+                    "Confirmation button for clearing the secondary kibitz pane preview",
+                    "Clear",
+                ),
+                cancelButtonText: pgettext(
+                    "Cancel button for clearing the secondary kibitz pane preview",
+                    "Cancel",
+                ),
+                showCancelButton: true,
+                focusConfirm: true,
+            })
+            .then(({ value: confirmed }) => {
+                if (confirmed) {
+                    onClearPreview();
+                }
+            });
+    }, [onClearPreview]);
+
     const onOpenVariation = React.useCallback(
         (variationId: string) => {
             controller.openVariation(variationId);
@@ -366,15 +396,34 @@ export function Kibitz(): React.ReactElement {
     const roomProposals = proposals.filter((proposal) => proposal.room_id === resolvedRoom?.id);
     const activeProposal = roomProposals.find((proposal) => proposal.status === "active");
     const queuedRoomProposals = roomProposals.filter((proposal) => proposal.status !== "active");
+    const selectedVariation = variations.find(
+        (variation) => variation.id === secondaryPane.variation_id,
+    );
     const proposalBackedPreview = Boolean(
         secondaryPane.preview_game_id &&
             roomProposals.some(
                 (proposal) => proposal.proposed_game.game_id === secondaryPane.preview_game_id,
             ),
     );
+    const previewGame =
+        rooms.find((candidate) => candidate.current_game?.game_id === secondaryPane.preview_game_id)
+            ?.current_game ??
+        roomProposals.find(
+            (proposal) => proposal.proposed_game.game_id === secondaryPane.preview_game_id,
+        )?.proposed_game;
+    const secondaryBoardGame = previewGame ?? secondaryPane.variation_source_game;
     const hasCompareTarget = Boolean(
         secondaryPane.variation_id || (secondaryPane.preview_game_id && !proposalBackedPreview),
     );
+    const mobileCompareBoardLabel = selectedVariation
+        ? pgettext("Label for the active mobile kibitz variation board", "Variation")
+        : secondaryPane.variation_source_game
+          ? pgettext("Label for the active mobile kibitz draft board", "New variation")
+          : pgettext("Label for the active mobile kibitz preview board", "Preview");
+    const mobileCompareBoardTitle =
+        selectedVariation?.title ??
+        secondaryBoardGame?.title ??
+        pgettext("Fallback title for the active mobile kibitz compare board", "Board preview");
 
     const onPostVariation = React.useCallback(
         (boardController: GobanController) => {
@@ -737,10 +786,28 @@ export function Kibitz(): React.ReactElement {
                                                 <div className="Kibitz-mobile-panel Kibitz-mobile-compare-panel">
                                                     {hasCompareTarget ? (
                                                         <div className="Kibitz-mobile-panel-note">
-                                                            {pgettext(
-                                                                "Helper text shown in the mobile kibitz compare panel",
-                                                                "Comparison board is active above. Variations and queue stay here.",
-                                                            )}
+                                                            <div className="Kibitz-mobile-board-meta">
+                                                                <div className="mobile-board-meta-copy">
+                                                                    <div className="mobile-board-meta-label">
+                                                                        {mobileCompareBoardLabel}
+                                                                    </div>
+                                                                    <div className="mobile-board-meta-title">
+                                                                        {mobileCompareBoardTitle}
+                                                                    </div>
+                                                                </div>
+                                                                <button
+                                                                    type="button"
+                                                                    className="mobile-board-clear-button"
+                                                                    onClick={
+                                                                        onConfirmClearSecondaryPane
+                                                                    }
+                                                                >
+                                                                    {pgettext(
+                                                                        "Button label for clearing the active mobile kibitz compare board",
+                                                                        "Clear",
+                                                                    )}
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     ) : (
                                                         <div className="Kibitz-mobile-panel-empty">
