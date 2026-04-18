@@ -697,7 +697,7 @@ export function Kibitz(): React.ReactElement {
                                         onPostVariation={onPostVariation}
                                         onSetSecondaryPaneMode={onSetSecondaryPaneMode}
                                         onChangeBoard={undefined}
-                                        onCreateVariation={undefined}
+                                        onCreateVariation={onCreateVariation}
                                         isMobileLayout={true}
                                         mobileCompanionPanel={mobileCompanionPanel}
                                         mobileHasActiveVote={Boolean(activeProposal)}
