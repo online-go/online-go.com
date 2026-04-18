@@ -1314,6 +1314,21 @@
     }
 }
 
+.KibitzGamePickerOverlay .ObserveGamesComponent .header > .btn-group {
+    font-size: 0.8em;
+    margin: 0.12em;
+}
+
+.KibitzGamePickerOverlay .ObserveGamesComponent .header > .btn-group > button {
+    font-size: 0.8rem;
+    min-height: 1.6rem;
+    padding: 0 0.65em;
+}
+
+.KibitzGamePickerOverlay .ObserveGamesComponent .header > .btn-group > button .fa {
+    font-size: 0.8em;
+}
+
 @media (max-width: 1000px) {
     .KibitzGamePickerOverlay.KibitzGamePickerOverlay-hideMobileHeader
         .KibitzGamePickerOverlay-mobileHeader {
