@@ -506,6 +506,18 @@
             text-align: center;
         }
 
+        .Kibitz-mobile-compare-empty .kibitz-create-variation-button,
+        .Kibitz-mobile-compare-empty-hint {
+            font-size: 0.75rem;
+            line-height: 1.1;
+        }
+
+        .Kibitz-mobile-compare-empty-hint {
+            color: var(--text-color-faded);
+            margin-top: 0.1rem;
+            max-width: 14rem;
+        }
+
         .Kibitz-mobile-compare-panel .KibitzVariationList {
             padding: 0.75rem 0.75rem 0.4rem 1.15rem;
         }

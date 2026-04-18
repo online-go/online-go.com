@@ -450,12 +450,6 @@ export function KibitzRoomStage({
                         ) : null}
                         {mobileCompareActive && !mobileCompareTargetActive ? (
                             <div className="secondary-board-empty-state mobile-compare-empty-state">
-                                <div className="secondary-board-empty-message">
-                                    {pgettext(
-                                        "Hint for the mobile kibitz compare board before a variation is selected",
-                                        "Or select a shared variation below",
-                                    )}
-                                </div>
                                 <button
                                     type="button"
                                     className="xs primary kibitz-create-variation-button"
@@ -466,9 +460,18 @@ export function KibitzRoomStage({
                                         "Create variation",
                                     )}
                                 </button>
+                                <div className="secondary-board-empty-message mobile-compare-empty-hint">
+                                    {pgettext(
+                                        "Hint for the mobile kibitz compare board before a variation is selected",
+                                        "Or select a shared variation below",
+                                    )}
+                                </div>
                             </div>
                         ) : null}
-                        {!renderMainBoard && !renderPreviewBoard && !renderVariationBoard ? (
+                        {!renderMainBoard &&
+                        !renderPreviewBoard &&
+                        !renderVariationBoard &&
+                        !(mobileCompareActive && !mobileCompareTargetActive) ? (
                             <div className="secondary-board-empty-state">
                                 <div className="secondary-board-empty-message">
                                     {pgettext(

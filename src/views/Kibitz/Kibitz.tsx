@@ -823,14 +823,7 @@ export function Kibitz(): React.ReactElement {
                                                                 </button>
                                                             </div>
                                                         </div>
-                                                    ) : (
-                                                        <div className="Kibitz-mobile-panel-empty">
-                                                            {pgettext(
-                                                                "Empty state shown in the mobile kibitz compare panel",
-                                                                "Open a variation or preview to compare here.",
-                                                            )}
-                                                        </div>
-                                                    )}
+                                                    ) : null}
                                                     <div className="Kibitz-footer-panels">
                                                         {variationPanels}
                                                     </div>
