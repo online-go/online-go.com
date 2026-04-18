@@ -250,6 +250,14 @@ if (cached_config) {
     }
 }
 
+/* In non-prod environments, the backend's cached/refreshed ui/config includes a
+ * prod cdn_release that bypasses the vite /img/* middleware. Re-pin to the dev
+ * server so asset URLs in themes and views resolve against local disk. */
+if (window.cdn_service && !window.cdn_service.includes("cdn.online-go.com")) {
+    data.set("config.cdn", window.cdn_service);
+    data.set("config.cdn_release", window.cdn_service + "/" + (window.ogs_release || ""));
+}
+
 const user = data.get("config.user"); // guaranteed to return anonymous by the defaults, unless they are logged in
 
 try {
