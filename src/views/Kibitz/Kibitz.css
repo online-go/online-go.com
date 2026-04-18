@@ -210,9 +210,22 @@
             margin: 0;
             padding: 2px 0.5rem;
             text-align: left;
+            transition:
+                background-color 0.2s ease,
+                filter 0.2s ease;
             width: 100%;
             position: relative;
             z-index: 40;
+        }
+
+        .Kibitz-mobile-room-bar:hover,
+        .Kibitz-mobile-room-bar:focus,
+        .Kibitz-mobile-room-bar:active {
+            filter: none;
+        }
+
+        .Kibitz-mobile-room-bar[aria-expanded="true"] {
+            filter: brightness(1.1);
         }
 
         .mobile-room-header-title {
