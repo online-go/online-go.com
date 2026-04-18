@@ -130,15 +130,15 @@ function PaginatedTableImpl<RawEntryT = any, GroomedEntryT = RawEntryT>(
         const last_filter = last[3];
         last_loaded.current = cur;
 
-        if (last_filter && !softEquals(last_filter, filter)) {
-            setPage(1);
-            setLoading(false); // avoids loading-overlay flashing twice
-            setLoadAgainRefresh(load_again_refresh + 1);
+        if (loading) {
+            load_again.current = true;
             return;
         }
 
-        if (loading) {
+        if (last_filter && !softEquals(last_filter, filter)) {
+            setPage(1);
             load_again.current = true;
+            setLoadAgainRefresh(load_again_refresh + 1);
             return;
         }
 
