@@ -864,7 +864,7 @@
         align-items: center;
         display: grid;
         gap: 0.35rem;
-        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
         margin-left: 3px;
         margin-right: 3px;
         min-width: 0;
@@ -874,24 +874,21 @@
     .mobile-board-controls-transport {
         align-items: center;
         align-self: center;
-        display: inline-flex;
+        display: flex;
         justify-content: center;
+        justify-self: stretch;
         min-width: 0;
+        width: 100%;
     }
 
     .mobile-board-controls-transport .KibitzBoardControls {
         max-width: 100%;
-        width: auto;
+        width: 100%;
     }
 
     .mobile-board-controls-transport .KibitzBoardControls.minimal-row {
-        grid-template-columns: auto;
         margin-block: 0.2rem;
         padding-inline: 0;
-    }
-
-    .mobile-board-controls-transport .KibitzBoardControls.minimal-row .minimal-row-core {
-        grid-column: 1;
     }
 
     .mobile-board-controls-transport
@@ -916,6 +913,11 @@
         gap: 0.25rem;
         justify-self: end;
         min-width: 0;
+    }
+
+    .mobile-board-controls-transport .KibitzBoardControls.minimal-row .kibitz-return-live-button {
+        margin-block: 0;
+        margin-left: 0.25rem;
     }
 
     .kibitz-mobile-stage-panel-button {
