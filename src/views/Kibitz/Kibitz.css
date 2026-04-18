@@ -395,8 +395,9 @@
             gap: 0.25rem;
             justify-content: center;
             height: 1.6rem;
+            margin: 0;
             min-width: 0;
-            padding: 0 0.55rem;
+            padding: 0 0.45rem;
             vertical-align: middle;
         }
 
