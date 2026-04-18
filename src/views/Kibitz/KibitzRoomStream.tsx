@@ -75,6 +75,7 @@ export function KibitzRoomStream({
     compact = false,
 }: KibitzRoomStreamProps): React.ReactElement {
     const user = useUser();
+    const chatDisabled = user.anonymous || !user.email_validated;
     const chatLinesRef = React.useRef<HTMLDivElement | null>(null);
     const [proxy, setProxy] = React.useState<ChatChannelProxy | null>(null);
     const [, refresh] = React.useState(0);
@@ -337,9 +338,17 @@ export function KibitzRoomStream({
                         ),
                         { who: channelName || room.title },
                     )}
-                    disabled={user.anonymous || !user.email_validated}
+                    disabled={chatDisabled}
                     onKeyPress={onKeyPress}
                 />
+                {chatDisabled ? (
+                    <div className="KibitzRoomStream-disabled-note">
+                        {pgettext(
+                            "Message shown below the kibitz chat input when chatting is disabled",
+                            "Need to be logged in to chat",
+                        )}
+                    </div>
+                ) : null}
             </div>
         </div>
     );

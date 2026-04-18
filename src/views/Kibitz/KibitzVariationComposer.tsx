@@ -48,31 +48,41 @@ export function KibitzVariationComposer({
 
     return (
         <div className="KibitzVariationComposer">
-            <input
-                type="text"
-                className="form-control"
-                placeholder={pgettext(
-                    "Placeholder for naming a kibitz variation before posting it",
-                    "Variation name...",
-                )}
-                value={variationName}
-                onChange={controller.updateVariationName}
-                onKeyDown={(event) => {
-                    if (event.key === "Enter" && !isAnonymous) {
-                        event.preventDefault();
-                        onSubmit(controller);
-                    }
-                }}
-                disabled={isAnonymous}
-            />
-            <button
-                type="button"
-                className="sm"
-                onClick={() => onSubmit(controller)}
-                disabled={isAnonymous}
-            >
-                {pgettext("Button label for posting a kibitz variation", "Post variation")}
-            </button>
+            <div className="KibitzVariationComposer-controls">
+                <input
+                    type="text"
+                    className="form-control"
+                    placeholder={pgettext(
+                        "Placeholder for naming a kibitz variation before posting it",
+                        "Variation name...",
+                    )}
+                    value={variationName}
+                    onChange={controller.updateVariationName}
+                    onKeyDown={(event) => {
+                        if (event.key === "Enter" && !isAnonymous) {
+                            event.preventDefault();
+                            onSubmit(controller);
+                        }
+                    }}
+                    disabled={isAnonymous}
+                />
+                <button
+                    type="button"
+                    className="sm"
+                    onClick={() => onSubmit(controller)}
+                    disabled={isAnonymous}
+                >
+                    {pgettext("Button label for posting a kibitz variation", "Post variation")}
+                </button>
+            </div>
+            {isAnonymous ? (
+                <div className="KibitzVariationComposer-disabled-note">
+                    {pgettext(
+                        "Message shown below the kibitz variation composer when posting is disabled",
+                        "Need to be logged in to add variation",
+                    )}
+                </div>
+            ) : null}
         </div>
     );
 }

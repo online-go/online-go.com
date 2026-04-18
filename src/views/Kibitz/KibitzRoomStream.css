@@ -97,6 +97,13 @@
             width: 100%;
         }
     }
+
+    .KibitzRoomStream-disabled-note {
+        color: var(--text-color-faded);
+        font-size: 0.72rem;
+        line-height: 1.25;
+        padding-top: 0.3rem;
+    }
 }
 
 @media (max-width: 1000px) {
