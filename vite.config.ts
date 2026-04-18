@@ -446,6 +446,39 @@ function ogs_vite_middleware(): Plugin {
          */
         configureServer(server: ViteDevServer) {
             return () => {
+                /* Serve assets/img/* at /img/* so board/stone textures referenced via
+                 * the CDN-rewritten base URL resolve against the repo's assets/ dir in dev.
+                 * In production, Makefile.production copies assets/img/ into the CDN staging area. */
+                server.middlewares.use(async (req, res, next) => {
+                    const url = req.originalUrl || "";
+                    const match = url.match(/^\/+img\/([^?#]+)/);
+                    if (!match) {
+                        return next();
+                    }
+                    const rel = path.posix.normalize(match[1]);
+                    if (rel.startsWith("../") || path.isAbsolute(rel)) {
+                        return next();
+                    }
+                    const file = path.resolve(__dirname, "assets/img", rel);
+                    try {
+                        const body = await fs.readFile(file);
+                        const ext = path.extname(file).toLowerCase();
+                        const types: Record<string, string> = {
+                            ".jpg": "image/jpeg",
+                            ".jpeg": "image/jpeg",
+                            ".png": "image/png",
+                            ".svg": "image/svg+xml",
+                            ".webp": "image/webp",
+                            ".gif": "image/gif",
+                        };
+                        res.setHeader("Content-Type", types[ext] || "application/octet-stream");
+                        res.setHeader("Cache-Control", "no-cache");
+                        res.end(body);
+                    } catch {
+                        return next();
+                    }
+                });
+
                 /* Handle our custom index template, serve it for anything that doesn't look like a file */
                 server.middlewares.use(async (req, res, next) => {
                     const url = req.originalUrl || "";

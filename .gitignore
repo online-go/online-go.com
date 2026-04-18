@@ -48,3 +48,6 @@ i18n/*.tar.gz
 # Playwright
 /playwright/.cache/
 /playwright/.auth/
+
+# Fixtures dropped by dev-cdn-intercept.spec.ts if a run is killed mid-test
+/assets/img/__probe_*.bin
