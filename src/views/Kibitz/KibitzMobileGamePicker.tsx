@@ -566,7 +566,7 @@ export function KibitzMobileGamePicker({
                         "Go back",
                     )}
                 >
-                    {"←"}
+                    {pgettext("Button label for going back in the mobile kibitz picker", "Back")}
                 </button>
                 {mode === "create-room" ? (
                     <button

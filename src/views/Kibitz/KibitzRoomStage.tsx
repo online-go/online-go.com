@@ -341,6 +341,10 @@ export function KibitzRoomStage({
     const onConfirmClearSecondaryPane = React.useCallback(() => {
         void alert
             .fire({
+                customClass: {
+                    confirmButton: "reject",
+                    cancelButton: "",
+                },
                 text: pgettext(
                     "Confirmation text for clearing the secondary kibitz pane preview",
                     "Clear this variation? Any variation that isn't shared will be lost.",
@@ -354,7 +358,7 @@ export function KibitzRoomStage({
                     "Cancel",
                 ),
                 showCancelButton: true,
-                focusCancel: true,
+                focusConfirm: true,
             })
             .then(({ value: confirmed }) => {
                 if (confirmed) {
@@ -391,8 +395,8 @@ export function KibitzRoomStage({
                                 onClick={onConfirmClearSecondaryPane}
                             >
                                 {pgettext(
-                                    "Button label for leaving the active mobile kibitz compare board",
-                                    "Back",
+                                    "Button label for clearing the active mobile kibitz compare board",
+                                    "Clear",
                                 )}
                             </button>
                         </div>
