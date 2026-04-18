@@ -476,19 +476,6 @@ export function Kibitz(): React.ReactElement {
         setMobileOverlayMode(null);
     }, [isMobileLayout, resolvedRoom?.id]);
 
-    React.useEffect(() => {
-        if (!isMobileLayout) {
-            return;
-        }
-
-        if (mobileCompanionPanel === "compare" && !hasCompareTarget) {
-            setMobileCompanionPanel("chat");
-            if (currentSecondaryPaneMode !== "hidden") {
-                setPendingSecondaryPaneMode("hidden");
-            }
-        }
-    }, [currentSecondaryPaneMode, hasCompareTarget, isMobileLayout, mobileCompanionPanel]);
-
     const onSelectMobileCompanionPanel = React.useCallback(
         (panel: MobileCompanionPanel) => {
             setMobileCompanionPanel(panel);
@@ -714,7 +701,6 @@ export function Kibitz(): React.ReactElement {
                                         isMobileLayout={true}
                                         mobileCompanionPanel={mobileCompanionPanel}
                                         mobileHasActiveVote={Boolean(activeProposal)}
-                                        mobileHasCompareTarget={hasCompareTarget}
                                         onSelectMobileCompanionPanel={onSelectMobileCompanionPanel}
                                         onOpenMobileRooms={onToggleMobileRooms}
                                     />
@@ -844,7 +830,6 @@ export function Kibitz(): React.ReactElement {
                                 isMobileLayout={false}
                                 mobileCompanionPanel={mobileCompanionPanel}
                                 mobileHasActiveVote={Boolean(activeProposal)}
-                                mobileHasCompareTarget={hasCompareTarget}
                                 onSelectMobileCompanionPanel={onSelectMobileCompanionPanel}
                                 onOpenMobileRooms={undefined}
                             />

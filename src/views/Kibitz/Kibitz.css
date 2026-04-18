@@ -489,6 +489,16 @@
             color: var(--fg);
         }
 
+        .Kibitz-mobile-compare-empty {
+            align-items: center;
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 0;
+            text-align: center;
+        }
+
         .Kibitz-mobile-compare-panel .KibitzVariationList {
             padding: 0.75rem 0.75rem 0.4rem 1.15rem;
         }
