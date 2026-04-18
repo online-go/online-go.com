@@ -81,7 +81,8 @@ export function KibitzVariationList({
     return (
         <div className="KibitzVariationList">
             <div className="variation-title">
-                {title ?? pgettext("Heading for the variations list in kibitz", "Variations")}
+                {title ??
+                    pgettext("Heading for the variations list in kibitz", "Shared Variations")}
             </div>
             {groupedVariations.length > 0 ? (
                 <div className="variation-items">

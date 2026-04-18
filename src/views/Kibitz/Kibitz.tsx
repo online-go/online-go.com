@@ -416,7 +416,7 @@ export function Kibitz(): React.ReactElement {
         secondaryPane.variation_id || (secondaryPane.preview_game_id && !proposalBackedPreview),
     );
     const mobileCompareBoardLabel = selectedVariation
-        ? pgettext("Label for the active mobile kibitz variation board", "Variation")
+        ? pgettext("Label for the active mobile kibitz variation board", "Variation shown")
         : secondaryPane.variation_source_game
           ? pgettext("Label for the active mobile kibitz draft board", "New variation")
           : pgettext("Label for the active mobile kibitz preview board", "Preview");
