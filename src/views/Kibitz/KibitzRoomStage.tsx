@@ -52,6 +52,7 @@ interface KibitzRoomStageProps {
     mobileHasActiveVote?: boolean;
     onSelectMobileCompanionPanel?: (panel: "chat" | "vote" | "compare") => void;
     onOpenMobileRooms?: () => void;
+    onMobileCompareControllerChange?: (controller: GobanController | null) => void;
 }
 
 function useSquareFitSize<T extends HTMLElement>(layoutKey: string) {
@@ -184,6 +185,7 @@ export function KibitzRoomStage({
     mobileHasActiveVote = false,
     onSelectMobileCompanionPanel,
     onOpenMobileRooms,
+    onMobileCompareControllerChange,
 }: KibitzRoomStageProps): React.ReactElement {
     const mainGame = room.current_game;
     const secondaryGameId = secondaryPane.preview_game_id;
@@ -354,6 +356,16 @@ export function KibitzRoomStage({
             });
     }, [onClearPreview]);
 
+    React.useEffect(() => {
+        onMobileCompareControllerChange?.(
+            mobileCompareTargetActive ? secondaryBoardController : null,
+        );
+
+        return () => {
+            onMobileCompareControllerChange?.(null);
+        };
+    }, [mobileCompareTargetActive, onMobileCompareControllerChange, secondaryBoardController]);
+
     if (isMobileLayout) {
         const renderMainBoard = Boolean(mainGame && !mobileCompareActive);
         const renderPreviewBoard = Boolean(mobileCompareTargetActive && secondaryBoardGame);
@@ -521,23 +533,6 @@ export function KibitzRoomStage({
                             ) : null}
                         </div>
                     </div>
-                    {mobileCompareTargetActive && secondaryBoardController ? (
-                        <div className="mobile-board-analyze-row">
-                            <GobanAnalyzeButtonBar
-                                controller={secondaryBoardController}
-                                showBackToGame={false}
-                                showConditionalPlannerButton={false}
-                            />
-                        </div>
-                    ) : null}
-                    {mobileCompareTargetActive && secondaryBoardController ? (
-                        <div className="mobile-board-compose-row">
-                            <KibitzVariationComposer
-                                controller={secondaryBoardController}
-                                onSubmit={onPostVariation}
-                            />
-                        </div>
-                    ) : null}
                 </div>
             </div>
         );

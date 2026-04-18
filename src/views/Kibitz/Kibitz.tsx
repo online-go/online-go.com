@@ -37,6 +37,8 @@ import { KibitzRoomStage } from "./KibitzRoomStage";
 import { KibitzRoomStream } from "./KibitzRoomStream";
 import { KibitzPresence } from "./KibitzPresence";
 import { KibitzVariationList } from "./KibitzVariationList";
+import { GobanAnalyzeButtonBar } from "@/components/GobanAnalyzeButtonBar/GobanAnalyzeButtonBar";
+import { KibitzVariationComposer } from "./KibitzVariationComposer";
 import { KibitzController } from "./KibitzController";
 import { KibitzGamePickerOverlay } from "./KibitzGamePickerOverlay";
 import { KibitzMobileGamePicker } from "./KibitzMobileGamePicker";
@@ -102,6 +104,8 @@ export function Kibitz(): React.ReactElement {
     const [debug, setDebug] = React.useState<KibitzDebugState>(controller.debug);
     const [mobileCompanionPanel, setMobileCompanionPanel] =
         React.useState<MobileCompanionPanel>("chat");
+    const [mobileCompareController, setMobileCompareController] =
+        React.useState<GobanController | null>(null);
     const [mobileOverlayMode, setMobileOverlayMode] = React.useState<MobileOverlayMode>(null);
     const [isMobileLayout, setIsMobileLayout] = React.useState(
         () => window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY).matches,
@@ -703,6 +707,7 @@ export function Kibitz(): React.ReactElement {
                                         mobileHasActiveVote={Boolean(activeProposal)}
                                         onSelectMobileCompanionPanel={onSelectMobileCompanionPanel}
                                         onOpenMobileRooms={onToggleMobileRooms}
+                                        onMobileCompareControllerChange={setMobileCompareController}
                                     />
                                 </div>
                                 <div
@@ -770,6 +775,29 @@ export function Kibitz(): React.ReactElement {
                                             ) : null}
                                             {mobileCompanionPanel === "compare" ? (
                                                 <div className="Kibitz-mobile-panel Kibitz-mobile-compare-panel">
+                                                    {mobileCompareController ? (
+                                                        <div className="Kibitz-mobile-compare-tools">
+                                                            <div className="mobile-board-analyze-row">
+                                                                <GobanAnalyzeButtonBar
+                                                                    controller={
+                                                                        mobileCompareController
+                                                                    }
+                                                                    showBackToGame={false}
+                                                                    showConditionalPlannerButton={
+                                                                        false
+                                                                    }
+                                                                />
+                                                            </div>
+                                                            <div className="mobile-board-compose-row">
+                                                                <KibitzVariationComposer
+                                                                    controller={
+                                                                        mobileCompareController
+                                                                    }
+                                                                    onSubmit={onPostVariation}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    ) : null}
                                                     {hasCompareTarget ? (
                                                         <div className="Kibitz-mobile-panel-note">
                                                             <div className="Kibitz-mobile-board-meta">
@@ -832,6 +860,7 @@ export function Kibitz(): React.ReactElement {
                                 mobileHasActiveVote={Boolean(activeProposal)}
                                 onSelectMobileCompanionPanel={onSelectMobileCompanionPanel}
                                 onOpenMobileRooms={undefined}
+                                onMobileCompareControllerChange={undefined}
                             />
                             <div
                                 className={

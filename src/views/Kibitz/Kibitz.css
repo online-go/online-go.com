@@ -455,6 +455,12 @@
             overflow: auto;
         }
 
+        .Kibitz-mobile-compare-tools {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
         .Kibitz-mobile-compare-actions {
             align-items: center;
             display: grid;
