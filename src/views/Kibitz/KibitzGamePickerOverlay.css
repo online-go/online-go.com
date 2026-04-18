@@ -1315,6 +1315,11 @@
 }
 
 @media (max-width: 1000px) {
+    .KibitzGamePickerOverlay.KibitzGamePickerOverlay-hideMobileHeader
+        .KibitzGamePickerOverlay-mobileHeader {
+        display: none;
+    }
+
     .Kibitz
         .Kibitz-mobile-overlay-panel
         > .KibitzGamePickerOverlay.KibitzGamePickerOverlay-embedded,

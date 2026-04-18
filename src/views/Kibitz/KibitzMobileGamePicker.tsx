@@ -657,7 +657,12 @@ export function KibitzMobileGamePicker({
     );
 
     return (
-        <div className="KibitzGamePickerOverlay KibitzMobileGamePicker KibitzGamePickerOverlay-embedded">
+        <div
+            className={
+                "KibitzGamePickerOverlay KibitzMobileGamePicker KibitzGamePickerOverlay-embedded" +
+                (mobileStep === "preview" ? " KibitzGamePickerOverlay-hideMobileHeader" : "")
+            }
+        >
             <div className="KibitzGamePickerOverlay-shell KibitzGamePickerOverlay-shell-mobile">
                 <div className="KibitzGamePickerOverlay-mobileHeader">
                     <div className="KibitzGamePickerOverlay-mobileHeaderTop">
