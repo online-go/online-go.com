@@ -30,9 +30,9 @@
     .theme-set, .custom-theme-set {
         display: inline-flex;
         flex-direction: row;
-        width: 380px;
+        width: 365px;
         flex-wrap: wrap;
-        justify-content: flex-start;
+        justify-content: center;
         text-align: left;
         font-size: 10px;
 
