@@ -489,6 +489,10 @@
             color: var(--fg);
         }
 
+        .Kibitz-mobile-compare-panel .KibitzVariationList {
+            padding: 0.75rem 0.75rem 0.4rem 1.15rem;
+        }
+
         .Kibitz-footer-panels {
             display: grid;
             gap: 0.5rem;
