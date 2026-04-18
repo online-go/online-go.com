@@ -667,6 +667,7 @@ export function Kibitz(): React.ReactElement {
                                         mobileHasActiveVote={Boolean(activeProposal)}
                                         mobileHasCompareTarget={hasCompareTarget}
                                         onSelectMobileCompanionPanel={onSelectMobileCompanionPanel}
+                                        onOpenMobileRooms={onToggleMobileRooms}
                                     />
                                 </div>
                                 <div
@@ -778,6 +779,7 @@ export function Kibitz(): React.ReactElement {
                                 mobileHasActiveVote={Boolean(activeProposal)}
                                 mobileHasCompareTarget={hasCompareTarget}
                                 onSelectMobileCompanionPanel={onSelectMobileCompanionPanel}
+                                onOpenMobileRooms={undefined}
                             />
                             <div
                                 className={

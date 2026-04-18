@@ -856,6 +856,10 @@
         min-height: 0 !important;
     }
 
+    .mobile-board-fit-slot-openable {
+        cursor: pointer;
+    }
+
     .mobile-board-controls-row {
         align-items: center;
         display: grid;

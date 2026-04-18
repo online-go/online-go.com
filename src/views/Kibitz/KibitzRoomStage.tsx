@@ -52,6 +52,7 @@ interface KibitzRoomStageProps {
     mobileHasActiveVote?: boolean;
     mobileHasCompareTarget?: boolean;
     onSelectMobileCompanionPanel?: (panel: "chat" | "vote" | "compare") => void;
+    onOpenMobileRooms?: () => void;
 }
 
 function useSquareFitSize<T extends HTMLElement>(layoutKey: string) {
@@ -184,6 +185,7 @@ export function KibitzRoomStage({
     mobileHasActiveVote = false,
     mobileHasCompareTarget = false,
     onSelectMobileCompanionPanel,
+    onOpenMobileRooms,
 }: KibitzRoomStageProps): React.ReactElement {
     const mainGame = room.current_game;
     const secondaryGameId = secondaryPane.preview_game_id;
@@ -401,7 +403,36 @@ export function KibitzRoomStage({
                             </button>
                         </div>
                     ) : null}
-                    <div className="mobile-board-fit-slot" ref={mobileBoardSlotRef}>
+                    <div
+                        className={
+                            "mobile-board-fit-slot" +
+                            (renderMainBoard && onOpenMobileRooms
+                                ? " mobile-board-fit-slot-openable"
+                                : "")
+                        }
+                        ref={mobileBoardSlotRef}
+                        onClick={renderMainBoard ? onOpenMobileRooms : undefined}
+                        role={renderMainBoard && onOpenMobileRooms ? "button" : undefined}
+                        tabIndex={renderMainBoard && onOpenMobileRooms ? 0 : undefined}
+                        aria-label={
+                            renderMainBoard && onOpenMobileRooms
+                                ? pgettext(
+                                      "Aria label for opening the mobile kibitz room drawer from the main board",
+                                      "Open room drawer",
+                                  )
+                                : undefined
+                        }
+                        onKeyDown={
+                            renderMainBoard && onOpenMobileRooms
+                                ? (event) => {
+                                      if (event.key === "Enter" || event.key === " ") {
+                                          event.preventDefault();
+                                          onOpenMobileRooms();
+                                      }
+                                  }
+                                : undefined
+                        }
+                    >
                         {renderMainBoard ? (
                             <KibitzBoard
                                 gameId={mainGame?.mock_game_data ? undefined : mainGame?.game_id}
