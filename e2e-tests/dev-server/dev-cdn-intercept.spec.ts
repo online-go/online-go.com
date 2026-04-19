@@ -38,8 +38,8 @@
  * detect the failure modes above.
  */
 
-import { expect } from "@playwright/test";
-import { ogsTest } from "@helpers";
+import { BrowserContext, expect } from "@playwright/test";
+import { CreateContextOptions, ogsTest } from "@helpers";
 import crypto from "crypto";
 import fs from "fs/promises";
 import path from "path";
@@ -115,8 +115,12 @@ ogsTest.describe("@DevServer dev-server /img middleware + cdn_release pin", () =
 
     ogsTest(
         "cdn_release stays pinned to the dev server across the cached-config rehydrate path",
-        async ({ browser }) => {
-            const ctx = await browser.newContext();
+        async ({
+            createContext,
+        }: {
+            createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
+        }) => {
+            const ctx = await createContext();
             // Seed localStorage to trigger the main.tsx cached-config rehydrate
             // branch that previously overwrote config.cdn_release on every reload.
             await ctx.addInitScript(() => {
@@ -150,7 +154,6 @@ ogsTest.describe("@DevServer dev-server /img middleware + cdn_release pin", () =
                     "config.cdn",
                 ),
             }));
-            await ctx.close();
 
             expect(cdnRelease).toEqual(expect.stringContaining("localhost"));
             expect(cdnRelease).not.toEqual(expect.stringContaining("cdn.online-go.com"));
