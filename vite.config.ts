@@ -483,8 +483,6 @@ function ogs_vite_middleware(): Plugin {
                     const rel = match[1];
                     for (const root of assetRoots) {
                         const file = path.resolve(root, rel);
-                        // Canonical path-containment guard — catches "..", "../x", absolute
-                        // paths, and symlinks that would escape the asset root.
                         if (file !== root && !file.startsWith(root + path.sep)) {
                             continue;
                         }
