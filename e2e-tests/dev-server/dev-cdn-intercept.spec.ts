@@ -96,6 +96,23 @@ ogsTest.describe("@DevServer dev-server /img middleware + cdn_release pin", () =
         expect(missed.ct).toMatch(/text\/plain/);
     });
 
+    ogsTest("/img/* falls back to submodules/goban/assets/img (anime theme)", async ({ page }) => {
+        // anime_*.svg only live in the goban submodule, not in the main repo's
+        // assets/img/. Confirms the middleware searches multiple asset roots.
+        await page.goto("/");
+        const anime = await page.evaluate(async () => {
+            const res = await fetch("/img/anime_board.svg", { cache: "no-store" });
+            return {
+                status: res.status,
+                ct: res.headers.get("content-type"),
+                size: (await res.blob()).size,
+            };
+        });
+        expect(anime.status).toBe(200);
+        expect(anime.ct).toMatch(/svg/);
+        expect(anime.size).toBeGreaterThan(100);
+    });
+
     ogsTest(
         "cdn_release stays pinned to the dev server across the cached-config rehydrate path",
         async ({ browser }) => {
@@ -114,9 +131,16 @@ ogsTest.describe("@DevServer dev-server /img middleware + cdn_release pin", () =
                 );
             });
             const page = await ctx.newPage();
-            await page.goto("/");
-            // Let the debounced cached.refresh.config() call in cached.ts settle.
-            await page.waitForTimeout(5000);
+            // Wait deterministically for the async ui/config refresh to complete —
+            // proves the test exercised the full config rehydrate cycle rather than
+            // reading a transient value set synchronously by main.tsx.
+            const [_configResponse] = await Promise.all([
+                page.waitForResponse(
+                    (r) => /\/api\/v\d+\/ui\/config/.test(r.url()) && r.status() === 200,
+                    { timeout: 15_000 },
+                ),
+                page.goto("/"),
+            ]);
 
             const { cdnRelease, cdn } = await page.evaluate(() => ({
                 cdnRelease: (
