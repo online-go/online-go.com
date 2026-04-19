@@ -252,8 +252,12 @@ if (cached_config) {
 
 /* In dev, the cached ui/config in localStorage (rehydrated by the loop above)
  * includes a prod cdn_release that bypasses the vite /img/* middleware.
- * Re-pin to the dev server so asset URLs in themes resolve against local disk. */
-if (window.cdn_service && !window.cdn_service.includes("cdn.online-go.com")) {
+ * Re-pin to the dev server so asset URLs in themes resolve against local disk.
+ *
+ * Gated on import.meta.env.DEV — statically replaced at build time, so the
+ * whole block is tree-shaken from production bundles and can never clobber a
+ * server-computed cdn_release in prod or self-hosted deployments. */
+if (import.meta.env.DEV && window.cdn_service) {
     data.set("config.cdn", window.cdn_service);
     data.set("config.cdn_release", window.cdn_service + "/" + (window.ogs_release || ""));
 }

@@ -1,4 +1,5 @@
 /// <reference path="js-noise.d.ts" />
+/// <reference types="vite/client" />
 
 // Vite worker URL import: `import url from './worker?worker&url'` returns
 // the URL string of the separately-bundled worker script.
