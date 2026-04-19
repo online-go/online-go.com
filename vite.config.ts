@@ -496,8 +496,10 @@ function ogs_vite_middleware(): Plugin {
                             res.setHeader("Cache-Control", "no-cache");
                             res.end(body);
                             return;
-                        } catch {
-                            /* try next root */
+                        } catch (err) {
+                            const code = (err as NodeJS.ErrnoException).code;
+                            if (code === "ENOENT" || code === "EISDIR") continue;
+                            return next(err);
                         }
                     }
                     send404(
