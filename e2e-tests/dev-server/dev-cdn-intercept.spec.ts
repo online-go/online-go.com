@@ -82,6 +82,20 @@ ogsTest.describe("@DevServer dev-server /img middleware + cdn_release pin", () =
         expect(actualSha).toBe(expectedSha);
     });
 
+    ogsTest("/img/* returns 404 on miss (not the SPA fallback)", async ({ page }) => {
+        // If this starts returning 200, someone restored the `next()` path in the
+        // /img middleware and broken textures will silently show as index.html.
+        await page.goto("/");
+        const missed = await page.evaluate(async () => {
+            const res = await fetch(`/img/__does_not_exist_${Date.now()}.jpg`, {
+                cache: "no-store",
+            });
+            return { status: res.status, ct: res.headers.get("content-type") };
+        });
+        expect(missed.status).toBe(404);
+        expect(missed.ct).toMatch(/text\/plain/);
+    });
+
     ogsTest(
         "cdn_release stays pinned to the dev server across the cached-config rehydrate path",
         async ({ browser }) => {

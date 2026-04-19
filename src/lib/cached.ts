@@ -74,19 +74,6 @@ export const cached = {
                         data.set("user", config.user);
                         data.set("config.user", config.user);
                         data.set("config", config);
-                        /* Same rationale as main.tsx: the backend returns a prod
-                         * cdn_release even when served from localhost/uffizzi.
-                         * Re-pin so the vite /img/* middleware can intercept. */
-                        if (
-                            window.cdn_service &&
-                            !window.cdn_service.includes("cdn.online-go.com")
-                        ) {
-                            data.set("config.cdn", window.cdn_service);
-                            data.set(
-                                "config.cdn_release",
-                                window.cdn_service + "/" + (window.ogs_release || ""),
-                            );
-                        }
                         if (cb) {
                             cb();
                         }

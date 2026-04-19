@@ -448,16 +448,27 @@ function ogs_vite_middleware(): Plugin {
             return () => {
                 /* Serve assets/img/* at /img/* so board/stone textures referenced via
                  * the CDN-rewritten base URL resolve against the repo's assets/ dir in dev.
-                 * In production, Makefile.production copies assets/img/ into the CDN staging area. */
+                 * In production, Makefile.production copies assets/img/ into the CDN staging area.
+                 *
+                 * /img/ is treated as a dev-only mount: a miss returns 404 instead of
+                 * falling through to the SPA catch-all (which would 200 + index.html and
+                 * hide the problem). This is safe because /img/ is never used for SPA
+                 * routes; it is reserved for CDN-mirrored repo assets. */
                 server.middlewares.use(async (req, res, next) => {
                     const url = req.originalUrl || "";
                     const match = url.match(/^\/+img\/([^?#]+)/);
                     if (!match) {
                         return next();
                     }
+                    const send404 = (msg: string) => {
+                        res.statusCode = 404;
+                        res.setHeader("Content-Type", "text/plain; charset=utf-8");
+                        res.setHeader("Cache-Control", "no-cache");
+                        res.end(msg);
+                    };
                     const rel = path.posix.normalize(match[1]);
                     if (rel.startsWith("../") || path.isAbsolute(rel)) {
-                        return next();
+                        return send404(`Rejected /img/ path: ${match[1]}\n`);
                     }
                     const file = path.resolve(__dirname, "assets/img", rel);
                     try {
@@ -475,7 +486,11 @@ function ogs_vite_middleware(): Plugin {
                         res.setHeader("Cache-Control", "no-cache");
                         res.end(body);
                     } catch {
-                        return next();
+                        send404(
+                            `Not Found: /img/${rel}\n` +
+                                `This path is served from assets/img/ during dev.\n` +
+                                `Add the file to assets/img/${rel} or check the filename.\n`,
+                        );
                     }
                 });
 
