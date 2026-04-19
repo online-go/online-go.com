@@ -144,7 +144,7 @@ function request(method: Method): RequestFunction {
                     }
 
                     const onJson = (data: any) => {
-                        if (res.status >= 200 && res.status < 300) {
+                        if (res.ok) {
                             resolve(data);
                         } else {
                             console.error(res.status, url, data);
@@ -157,13 +157,7 @@ function request(method: Method): RequestFunction {
                         reject(res.statusText);
                     };
 
-                    const data_or_promise = res.json();
-
-                    if (data_or_promise instanceof Promise) {
-                        data_or_promise.then(onJson).catch(errorHandler);
-                    } else {
-                        onJson(data_or_promise);
-                    }
+                    res.json().then(onJson).catch(errorHandler);
                 })
                 .catch((err) => {
                     delete requests_in_flight[request_id];
