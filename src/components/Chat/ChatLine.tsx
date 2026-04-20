@@ -15,12 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { moment } from "@/lib/translate";
+import { interpolate, moment, pgettext } from "@/lib/translate";
 import * as React from "react";
 import * as data from "@/lib/data";
 import { Player } from "@/components/Player";
 import { chat_markup } from "./chat_markup";
-import { ChatMessage } from "@/lib/chat_manager";
+import { ChatMessage, TypedChatBody } from "@/lib/chat_manager";
+import { profanity_filter } from "@/lib/profanity_filter";
 
 let name_match_regex = /^loading...$/;
 data.watch("config.user", (user) => {
@@ -50,7 +51,9 @@ export function ChatLine(props: ChatLineInterface): React.ReactElement {
     const user = line;
 
     if (line.system) {
-        return <div className="chat-line system">{chat_markup(line.message.m)}</div>;
+        const sys_body = line.message.m;
+        const sys_text = typeof sys_body === "string" ? sys_body : (sys_body.text ?? "");
+        return <div className="chat-line system">{chat_markup(sys_text)}</div>;
     }
 
     const message = line.message;
@@ -71,6 +74,7 @@ export function ChatLine(props: ChatLineInterface): React.ReactElement {
         }
     }
 
+    let body_rendered: React.ReactNode;
     if (typeof body === "string") {
         if (body.substr(0, 4) === "/me ") {
             third_person = body.substr(0, 4) === "/me ";
@@ -94,9 +98,13 @@ export function ChatLine(props: ChatLineInterface): React.ReactElement {
             /* cspell:disable-next-line */
             body = generateChatSearchLine("https://www.lmgtfy.com/?q=", "/lmgtfy ", body);
         }
+
+        body_rendered = chat_markup(body);
+    } else {
+        body_rendered = renderTypedBody(body);
     }
 
-    const mentions = name_match_regex.test(body);
+    const mentions = typeof body === "string" && name_match_regex.test(body);
 
     let timestamp_str = "";
     if (ts) {
@@ -124,9 +132,39 @@ export function ChatLine(props: ChatLineInterface): React.ReactElement {
                 <Player user={user} flare rank={false} noextracontrols disableCacheUpdate />
             )}
             {third_person ? " " : ": "}
-            <span className="body">{chat_markup(body)}</span>
+            <span className="body">{body_rendered}</span>
         </div>
     );
+}
+
+function renderTypedBody(body: TypedChatBody): React.ReactNode {
+    switch (body.type) {
+        case "analysis": {
+            const name = body.name ? profanity_filter(body.name) : "";
+            return (
+                <span className="variation">
+                    {interpolate(
+                        pgettext(
+                            "Posted analysis variation, non-interactive label",
+                            "Variation: {{name}}",
+                        ),
+                        { name },
+                    )}
+                </span>
+            );
+        }
+        case "system":
+            return <span>{body.text ?? ""}</span>;
+        default:
+            return (
+                <span>
+                    {pgettext(
+                        "Fallback for an unknown typed chat message body",
+                        "[unknown chat message]",
+                    )}
+                </span>
+            );
+    }
 }
 
 function generateChatSearchLine(urlString: string, command: string, body: string) {

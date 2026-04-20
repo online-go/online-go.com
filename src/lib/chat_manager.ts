@@ -32,6 +32,12 @@ import { getBlocks } from "@/components/BlockPlayer";
 import { insert_into_sorted_list, string_splitter, n2s, Timeout } from "@/lib/misc";
 import { User } from "goban";
 
+export interface TypedChatBody {
+    type: string;
+    name?: string;
+    text?: string;
+}
+
 export interface ChatMessage {
     channel: string;
     username: string;
@@ -43,7 +49,7 @@ export interface ChatMessage {
     message: {
         i?: string; // uuid;
         t: number; // epoch in seconds
-        m: string; // the text
+        m: string | TypedChatBody; // text, or a typed body (e.g. analysis, system)
     };
     system_message_type?: "flood";
     system?: boolean; // true if it's a system message
