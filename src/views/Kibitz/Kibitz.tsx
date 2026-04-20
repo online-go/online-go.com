@@ -272,7 +272,7 @@ export function Kibitz(): React.ReactElement {
             return;
         }
 
-        controller.selectRoom(nextRoomId);
+        void controller.selectRoom(nextRoomId);
     }, [controller, navigate, roomId]);
 
     const onSelectRoom = React.useCallback(
@@ -657,8 +657,12 @@ export function Kibitz(): React.ReactElement {
                                                 onBackToMenu={() => {
                                                     setMobileOverlayMode("rooms");
                                                 }}
-                                                onCreateRoom={(game, roomName, description) => {
-                                                    const nextRoomId = controller.createRoom(
+                                                onCreateRoom={async (
+                                                    game,
+                                                    roomName,
+                                                    description,
+                                                ) => {
+                                                    const nextRoomId = await controller.createRoom(
                                                         game,
                                                         roomName,
                                                         description,
@@ -673,7 +677,10 @@ export function Kibitz(): React.ReactElement {
                                                         return;
                                                     }
 
-                                                    controller.changeBoard(resolvedRoom.id, game);
+                                                    void controller.changeBoard(
+                                                        resolvedRoom.id,
+                                                        game,
+                                                    );
                                                     setMobileOverlayMode(null);
                                                 }}
                                                 onJoinRoom={(nextRoomId) => {
@@ -897,8 +904,8 @@ export function Kibitz(): React.ReactElement {
                     rooms={rooms}
                     currentRoom={resolvedRoom}
                     onClose={onClosePicker}
-                    onCreateRoom={(game, roomName, description) => {
-                        const nextRoomId = controller.createRoom(game, roomName, description);
+                    onCreateRoom={async (game, roomName, description) => {
+                        const nextRoomId = await controller.createRoom(game, roomName, description);
                         setPickerMode(null);
                         if (nextRoomId) {
                             void navigate(`/kibitz/${nextRoomId}`);
@@ -909,7 +916,7 @@ export function Kibitz(): React.ReactElement {
                             return;
                         }
 
-                        controller.changeBoard(resolvedRoom.id, game);
+                        void controller.changeBoard(resolvedRoom.id, game);
                         setPickerMode(null);
                     }}
                     onJoinRoom={(nextRoomId) => {
