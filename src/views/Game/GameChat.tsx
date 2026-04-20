@@ -187,7 +187,7 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
 
     const onKeyPress = (event: React.KeyboardEvent<HTMLElement>): boolean | void => {
         if (event.key === "Enter") {
-            const input = event.target as HTMLInputElement;
+            const input = event.target as HTMLTextAreaElement;
             if (input.className === "qc-option") {
                 //saveEdit();
                 console.warn("Quick chat editing not implemented");
@@ -195,6 +195,7 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
             } else {
                 goban.sendChat(input.value, selected_chat_log);
                 input.value = "";
+                input.style.height = "auto";
                 return false;
             }
         }
@@ -384,7 +385,7 @@ export function QuickChat(props: QuickChatProperties): React.ReactElement {
 
     const onKeyPress = (event: React.KeyboardEvent<HTMLElement>) => {
         if (event.key === "Enter") {
-            const input = event.target as HTMLInputElement;
+            const input = event.target as HTMLTextAreaElement;
             if (input.className === "qc-option") {
                 saveEdit();
                 event.preventDefault();

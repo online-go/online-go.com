@@ -152,13 +152,12 @@
     .chat-input-container {
         flex-shrink: 0;
         flex-grow: 0;
-        height: 30px;
         flex-basis: 30px;
         display: flex;
         /* max-width: 100%; */
         /* width: 100%; */
-        overflow: hidden;
-        align-items: stretch;
+        overflow: visible;
+        align-items: flex-end;
 
         button {
             flex-shrink: 0;
@@ -171,11 +170,17 @@
             white-space: nowrap;
         }
 
-        input {
+        textarea {
             min-width: 5rem;
             flex-grow: 1;
             flex-shrink: 1;
             width: 5rem;
+            resize: none !important;
+            border-top-left-radius: 0;
+            margin: 0;
+            box-sizing: border-box;
+            box-shadow: none;
+            line-height: 1.2;
         }
 
         .qc-toggle {
