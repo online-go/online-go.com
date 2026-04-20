@@ -405,9 +405,9 @@ export function Kibitz(): React.ReactElement {
     );
     const proposalBackedPreview = Boolean(
         secondaryPane.preview_game_id &&
-            roomProposals.some(
-                (proposal) => proposal.proposed_game.game_id === secondaryPane.preview_game_id,
-            ),
+        roomProposals.some(
+            (proposal) => proposal.proposed_game.game_id === secondaryPane.preview_game_id,
+        ),
     );
     const previewGame =
         rooms.find((candidate) => candidate.current_game?.game_id === secondaryPane.preview_game_id)
