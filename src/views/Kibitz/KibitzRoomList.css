@@ -6,6 +6,7 @@
     display: flex;
     flex-direction: column;
     min-height: 0;
+    min-width: 0;
 
     .KibitzRoomList-titleRow {
         align-items: flex-start;
@@ -68,9 +69,11 @@
         gap: 0.14rem;
         justify-content: center;
         min-height: 4.2rem;
+        min-width: 0;
         padding: 0.8rem 0.7rem 0.8rem 0.88rem;
         position: relative;
         text-align: left;
+        width: 100%;
         transition:
             background-color 120ms ease,
             box-shadow 120ms ease;
