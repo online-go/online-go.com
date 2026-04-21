@@ -27,10 +27,12 @@
         padding-bottom: 1rem;
     }
 
-    .theme-set, .custom-theme-set {
-        display: inline-flex;
+    .theme-set,
+    .custom-theme-set {
+        display: flex;
         flex-direction: row;
         width: 365px;
+        max-width: 100%;
         flex-wrap: wrap;
         justify-content: center;
         text-align: left;
@@ -47,13 +49,14 @@
             text-transform: uppercase;
         }
 
-        .selector:hover, .selector.active {
+        .selector:hover,
+        .selector.active {
             border-color: var(--primary);
             border-width: 2px;
             opacity: 1;
         }
 
-        input[type=color] {
+        input[type="color"] {
             width: 1.5rem;
             height: 1.5rem;
             margin-left: 1rem;

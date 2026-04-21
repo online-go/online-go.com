@@ -245,7 +245,9 @@ header.NavBar {
             overscroll-behavior: contain;
             visibility: hidden;
             transform: translateX(calc(-100% - 10px));
-            transition: transform 200ms ease, visibility 0s 200ms;
+            transition:
+                transform 200ms ease,
+                visibility 0s 200ms;
 
             & a {
                 opacity: 0;
@@ -360,7 +362,9 @@ header.NavBar {
         &.hamburger-expanded > .left {
             visibility: visible;
             transform: translateX(0);
-            transition: transform 200ms ease, visibility 0s;
+            transition:
+                transform 200ms ease,
+                visibility 0s;
 
             & a {
                 opacity: 1;
@@ -428,7 +432,6 @@ header.NavBar {
             }
         }
     }
-
 
     .Menu {
         img {
@@ -629,7 +632,7 @@ header.NavBar {
         position: absolute;
         right: 0;
         top: var(--navbar-height);
-        width: var(--navbar-menu-width);
+        min-width: var(--navbar-menu-width);
         max-width: 100dvw;
         max-height: calc(100dvh - var(--navbar-height));
         background-color: var(--navbar-background-color);
@@ -666,9 +669,10 @@ header.NavBar {
         }
 
         .MenuLink {
-            margin: 0.5rem;
+            padding: 0.5rem;
             display: inline-flex;
             align-items: center;
+            box-sizing: border-box;
 
             img,
             i {
