@@ -6,6 +6,30 @@
     overflow: hidden;
     padding: 0;
 
+    &.Kibitz-empty {
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+    }
+
+    .Kibitz-empty-state {
+        max-width: 32rem;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .Kibitz-empty-heading {
+        margin: 0;
+    }
+
+    .Kibitz-empty-description {
+        margin: 0;
+        opacity: 0.8;
+    }
+
     .Kibitz-layout {
         display: grid;
         flex: 1;

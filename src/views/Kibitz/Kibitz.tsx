@@ -544,8 +544,54 @@ export function Kibitz(): React.ReactElement {
         [controller, rooms, activeRoom, stream],
     );
 
+    const pickerOverlay = pickerMode ? (
+        <KibitzGamePickerOverlay
+            mode={pickerMode}
+            rooms={rooms}
+            currentRoom={resolvedRoom}
+            onClose={onClosePicker}
+            onCreateRoom={async (game, roomName, description) => {
+                const nextRoomId = await controller.createRoom(game, roomName, description);
+                setPickerMode(null);
+                if (nextRoomId) {
+                    void navigate(`/kibitz/${nextRoomId}`);
+                }
+            }}
+            onChangeBoard={(game) => {
+                if (!resolvedRoom) {
+                    return;
+                }
+
+                void controller.changeBoard(resolvedRoom.id, game);
+                setPickerMode(null);
+            }}
+            onJoinRoom={(nextRoomId) => {
+                setPickerMode(null);
+                void navigate(`/kibitz/${nextRoomId}`);
+            }}
+        />
+    ) : null;
+
     if (!resolvedRoom) {
-        return <div className="Kibitz" />;
+        return (
+            <div className="Kibitz Kibitz-empty">
+                <div className="Kibitz-empty-state">
+                    <h2 className="Kibitz-empty-heading">
+                        {pgettext("Kibitz directory empty state heading", "No Kibitz rooms yet")}
+                    </h2>
+                    <p className="Kibitz-empty-description">
+                        {pgettext(
+                            "Kibitz directory empty state description",
+                            "Kibitz rooms let you watch a game with friends and discuss it together.",
+                        )}
+                    </p>
+                    <button className="primary" onClick={onOpenCreateRoom}>
+                        {pgettext("Kibitz directory empty state CTA", "Create the first room")}
+                    </button>
+                </div>
+                {pickerOverlay}
+            </div>
+        );
     }
 
     return (
@@ -898,33 +944,7 @@ export function Kibitz(): React.ReactElement {
                     )}
                 </div>
             </div>
-            {pickerMode ? (
-                <KibitzGamePickerOverlay
-                    mode={pickerMode}
-                    rooms={rooms}
-                    currentRoom={resolvedRoom}
-                    onClose={onClosePicker}
-                    onCreateRoom={async (game, roomName, description) => {
-                        const nextRoomId = await controller.createRoom(game, roomName, description);
-                        setPickerMode(null);
-                        if (nextRoomId) {
-                            void navigate(`/kibitz/${nextRoomId}`);
-                        }
-                    }}
-                    onChangeBoard={(game) => {
-                        if (!resolvedRoom) {
-                            return;
-                        }
-
-                        void controller.changeBoard(resolvedRoom.id, game);
-                        setPickerMode(null);
-                    }}
-                    onJoinRoom={(nextRoomId) => {
-                        setPickerMode(null);
-                        void navigate(`/kibitz/${nextRoomId}`);
-                    }}
-                />
-            ) : null}
+            {pickerOverlay}
         </div>
     );
 }
