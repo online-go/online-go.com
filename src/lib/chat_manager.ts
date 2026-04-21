@@ -695,6 +695,31 @@ class ChatChannel extends TypedEventEmitter<Events> {
         }
         this.emit("chat", obj);
     }
+    public sendTypedBody(body: TypedChatBody): void {
+        const user = data.get("config.user");
+        const send_obj = {
+            channel: this.channel,
+            uuid: chatSoftUid(user.id),
+            message: body,
+        };
+        socket.send("chat/send", send_obj);
+        const obj: ChatMessage = {
+            channel: send_obj.channel,
+            username: user.username,
+            id: user.id,
+            ranking: user.ranking,
+            professional: user.professional,
+            ui_class: user.ui_class,
+            message: { i: send_obj.uuid, t: Math.floor(Date.now() / 1000), m: body },
+        };
+        this.chat_log.push(obj);
+        if (obj.message.i) {
+            this.chat_ids[obj.message.i] = true;
+        } else {
+            console.error("Chat message missing uuid: ", obj);
+        }
+        this.emit("chat", obj);
+    }
     public setTopic(topic: string) {
         const user = data.get("user");
 

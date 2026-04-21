@@ -20,7 +20,6 @@ import * as data from "@/lib/data";
 import type { GobanController } from "@/lib/GobanController";
 import {
     chat_manager,
-    chatSoftUid,
     updateCachedChannelInformation,
     type ChatChannelProxy,
     type ChatMessage,
@@ -767,11 +766,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         if (!user || user.anonymous) {
             return;
         }
-        socket.send("chat/send", {
-            channel: proxy.channel.channel,
-            uuid: chatSoftUid(user.id),
-            message: body as unknown as string,
-        });
+        proxy.channel.sendTypedBody(body);
     }
 
     public postVariation(roomId: string, boardController: GobanController): boolean {
