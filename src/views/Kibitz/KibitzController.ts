@@ -77,13 +77,19 @@ interface BackendRoomDetailResponse {
 
 const DIRECTORY_CHANNEL = "kibitz-rooms";
 
-function mapBackendRoomToSummary(backend: BackendKibitzRoom): KibitzRoomSummary {
+function mapBackendRoomToSummary(
+    backend: BackendKibitzRoom,
+    existing?: KibitzRoomSummary,
+): KibitzRoomSummary {
     return {
         id: backend.id,
         channel: backend.channel,
         title: backend.title,
         kind: backend.kind,
-        viewer_count: backend.viewer_count ?? 0,
+        // Prefer the backend's viewer_count when present, then the existing
+        // value we already know, then 0. UIPush payloads may omit it; we
+        // must not zero out a good count on those events.
+        viewer_count: backend.viewer_count ?? existing?.viewer_count ?? 0,
         description: backend.description ?? undefined,
     };
 }
@@ -454,7 +460,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
 
         try {
             const payload = (await get("kibitz/rooms")) as BackendKibitzRoom[];
-            const rooms = (payload ?? []).map(mapBackendRoomToSummary);
+            const rooms = (payload ?? []).map((r) => mapBackendRoomToSummary(r));
             this.setRooms(rooms);
             this.setDebug({
                 ...this._debug,
@@ -504,6 +510,14 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         }
     };
 
+    private applyBackendRoomUpdate(incoming: BackendKibitzRoom): void {
+        const existing = this._rooms.find((r) => r.id === incoming.id);
+        const summary = mapBackendRoomToSummary(incoming, existing);
+        this.setRooms(
+            this._rooms.map((room) => (room.id === incoming.id ? { ...room, ...summary } : room)),
+        );
+    }
+
     private onRoomRemoved = (payload: { id?: string } | string | undefined) => {
         const id = typeof payload === "string" ? payload : payload?.id;
         if (!id) {
@@ -522,11 +536,9 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         if (!incoming || !incoming.id) {
             return;
         }
-        const summary = mapBackendRoomToSummary(incoming);
-        this.setRooms(
-            this._rooms.map((room) => (room.id === incoming.id ? { ...room, ...summary } : room)),
-        );
+        this.applyBackendRoomUpdate(incoming);
         if (this._active_room?.id === incoming.id) {
+            const summary = mapBackendRoomToSummary(incoming, this._active_room);
             this.setActiveRoom({
                 ...this._active_room,
                 ...summary,
