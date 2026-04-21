@@ -206,6 +206,7 @@ export const defaults = {
 
     "game-history-size-filter": "all",
     "game-history-ranked-filter": "all",
+    "game-history-bot-filter": "humans" as "humans" | "bots",
 
     "help-system-enabled": true,
 

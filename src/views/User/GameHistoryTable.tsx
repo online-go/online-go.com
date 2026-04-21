@@ -37,10 +37,17 @@ import { useUser } from "@/lib/hooks";
 import { GameNameForList } from "@/components/GobanLineSummary";
 import { get } from "@/lib/requests";
 import { MODERATOR_POWERS } from "@/lib/moderation";
+import {
+    GameHistoryFilterPopover,
+    SizeFilter,
+    RankedFilter,
+    BotFilter,
+} from "./GameHistoryFilterPopover";
 import "./GameHistoryTable.css";
 
 interface GameHistoryProps {
     user_id: number;
+    is_bot?: boolean;
 }
 
 interface AnnulmentGamesResponse {
@@ -95,12 +102,15 @@ interface GroomedGame {
 
 export function GameHistoryTable(props: GameHistoryProps) {
     const [player_filter, setPlayerFilter] = React.useState<number>();
-    const [game_history_board_size_filter, setGameHistoryBoardSizeFilter] = React.useState<string>(
-        preferences.get("game-history-size-filter"),
+    const [game_history_board_size_filter, setGameHistoryBoardSizeFilter] =
+        React.useState<SizeFilter>(preferences.get("game-history-size-filter") as SizeFilter);
+    const [game_history_ranked_filter, setGameHistoryRankedFilter] = React.useState<RankedFilter>(
+        preferences.get("game-history-ranked-filter") as RankedFilter,
     );
-    const [game_history_ranked_filter, setGameHistoryRankedFilter] = React.useState<string>(
-        preferences.get("game-history-ranked-filter"),
+    const [game_history_bot_filter, setGameHistoryBotFilter] = React.useState<BotFilter>(
+        preferences.get("game-history-bot-filter"),
     );
+    const effective_bot_filter: BotFilter = props.is_bot ? "bots" : game_history_bot_filter;
     const [hide_flags] = usePreference("moderator.hide-flags");
     const [selectModeActive, setSelectModeActive] = React.useState<boolean>(false);
     const [aiSelectMode, setAiSelectMode] = React.useState<boolean>(false);
@@ -211,18 +221,19 @@ export function GameHistoryTable(props: GameHistoryProps) {
         setIsAnnulQueueModalOpen(false);
     }
 
-    function toggleBoardSizeFilter(size_filter: string) {
-        const new_size_filter =
-            game_history_board_size_filter === size_filter ? "all" : size_filter;
-        setGameHistoryBoardSizeFilter(new_size_filter);
-        preferences.set("game-history-size-filter", new_size_filter);
+    function handleSizeChange(size: SizeFilter) {
+        setGameHistoryBoardSizeFilter(size);
+        preferences.set("game-history-size-filter", size);
     }
 
-    function toggleRankedFilter(ranked_filter: string) {
-        const new_ranked_filter =
-            game_history_ranked_filter === ranked_filter ? "all" : ranked_filter;
-        setGameHistoryRankedFilter(new_ranked_filter);
-        preferences.set("game-history-ranked-filter", new_ranked_filter);
+    function handleRankedChange(ranked: RankedFilter) {
+        setGameHistoryRankedFilter(ranked);
+        preferences.set("game-history-ranked-filter", ranked);
+    }
+
+    function handleBotChange(bot: BotFilter) {
+        setGameHistoryBotFilter(bot);
+        preferences.set("game-history-bot-filter", bot);
     }
 
     function game_history_groomer(results: rest_api.Game[]): GroomedGame[] {
@@ -396,81 +407,36 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                     </button>
                                 </div>
                             ) : null}
-                            <div className="btn-group">
-                                <button
-                                    className={
-                                        game_history_board_size_filter === "9x9"
-                                            ? "primary sm"
-                                            : "sm"
-                                    }
-                                    onClick={() => toggleBoardSizeFilter("9x9")}
-                                >
-                                    {_("9x9")}
-                                </button>
-                                <button
-                                    className={
-                                        game_history_board_size_filter === "13x13"
-                                            ? "primary sm"
-                                            : "sm"
-                                    }
-                                    onClick={() => toggleBoardSizeFilter("13x13")}
-                                >
-                                    {_("13x13")}
-                                </button>
-                                <button
-                                    className={
-                                        game_history_board_size_filter === "19x19"
-                                            ? "primary sm"
-                                            : "sm"
-                                    }
-                                    onClick={() => toggleBoardSizeFilter("19x19")}
-                                >
-                                    {_("19x19")}
-                                </button>
-                            </div>
-                            <div className="btn-group">
-                                <button
-                                    className={
-                                        game_history_ranked_filter === "ranked"
-                                            ? "primary sm"
-                                            : "sm"
-                                    }
-                                    onClick={() => toggleRankedFilter("ranked")}
-                                >
-                                    {_("Ranked")}
-                                </button>
-                                <button
-                                    className={
-                                        game_history_ranked_filter === "unranked"
-                                            ? "primary sm"
-                                            : "sm"
-                                    }
-                                    onClick={() => toggleRankedFilter("unranked")}
-                                >
-                                    {_("Unranked")}
-                                </button>
-                            </div>
+                            <GameHistoryFilterPopover
+                                sizeFilter={game_history_board_size_filter}
+                                onSizeChange={handleSizeChange}
+                                rankedFilter={game_history_ranked_filter}
+                                onRankedChange={handleRankedChange}
+                                botFilter={effective_bot_filter}
+                                onBotChange={handleBotChange}
+                                botDisabled={props.is_bot}
+                            />
                         </div>
                     </div>
                     <PaginatedTable
                         className="GameHistoryTable"
                         name="game-history"
                         method="GET"
-                        source={`players/${props.user_id}/games/`}
+                        source={`players/${props.user_id}/game_history/`}
                         filter={{
-                            source: "play",
-                            ended__isnull: false,
+                            bot_game: effective_bot_filter === "bots",
                             ...(player_filter !== undefined && {
-                                alt_player: player_filter,
+                                opponent: player_filter,
                             }),
                             ...(game_history_board_size_filter !== "all" && {
                                 height: getBoardSize(game_history_board_size_filter),
                                 width: getBoardSize(game_history_board_size_filter),
                             }),
-                            ...(game_history_ranked_filter !== "all" && {
-                                ranked: game_history_ranked_filter === "ranked",
-                                annulled: false, // Assume the user wants to filter annulled games
-                            }),
+                            ...(effective_bot_filter !== "bots" &&
+                                game_history_ranked_filter !== "all" && {
+                                    ranked: game_history_ranked_filter === "ranked",
+                                    annulled: false, // Assume the user wants to filter annulled games
+                                }),
                         }}
                         orderBy={["-ended"]}
                         groom={game_history_groomer}
