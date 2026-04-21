@@ -53,6 +53,7 @@ interface KibitzControllerEvents {
     "variations-changed": (variations: KibitzVariationSummary[]) => void;
     "secondary-pane-changed": (state: KibitzSecondaryPaneState) => void;
     "debug-changed": (state: KibitzDebugState) => void;
+    "permissions-changed": (permissions: KibitzPermissions) => void;
 }
 
 type UIPushHandler = ReturnType<typeof push_manager.on>;
@@ -98,6 +99,24 @@ function mapBackendRoomToFull(backend: BackendKibitzRoom): KibitzRoom {
         active_variation_ids: [],
     };
 }
+
+export interface KibitzPermissions {
+    can_read: boolean;
+    can_chat: boolean;
+    can_post_variation: boolean;
+    can_change_board_directly: boolean;
+    can_create_room: boolean;
+    can_edit_room: boolean;
+}
+
+const DEFAULT_PERMISSIONS: KibitzPermissions = {
+    can_read: true,
+    can_chat: false,
+    can_post_variation: false,
+    can_change_board_directly: false,
+    can_create_room: false,
+    can_edit_room: false,
+};
 
 interface BackendGameForKibitz {
     id: number;
@@ -293,6 +312,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     private _proposals: KibitzProposal[] = [];
     private _variations: KibitzVariationSummary[] = [];
     private _secondary_pane: KibitzSecondaryPaneState = { collapsed: true, size: "small" };
+    private _permissions: KibitzPermissions = DEFAULT_PERMISSIONS;
     private _debug: KibitzDebugState = {
         mode: "live",
         socket_connected: socket.connected,
@@ -342,6 +362,15 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
 
     public get secondary_pane(): KibitzSecondaryPaneState {
         return this._secondary_pane;
+    }
+
+    public get permissions(): KibitzPermissions {
+        return this._permissions;
+    }
+
+    public setPermissions(permissions: KibitzPermissions): void {
+        this._permissions = permissions;
+        this.emit("permissions-changed", this._permissions);
     }
 
     public get debug(): KibitzDebugState {
@@ -600,6 +629,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             this.setStream([]);
             this.setVariations([]);
             this.setProposals([]);
+            this.setPermissions(DEFAULT_PERMISSIONS);
             return;
         }
 
@@ -610,6 +640,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             }
 
             const full = mapBackendRoomToFull(payload.room);
+            this.setPermissions({ ...DEFAULT_PERMISSIONS, ...payload.permissions });
             this.subscribeActiveRoom(full.channel);
             this.setActiveRoom(full);
             // Stream + variations come from chat history in 1C-b; empty for now.

@@ -102,6 +102,7 @@ export function Kibitz(): React.ReactElement {
     const [pendingSecondaryPaneMode, setPendingSecondaryPaneMode] =
         React.useState<SecondaryPaneMode | null>(null);
     const [debug, setDebug] = React.useState<KibitzDebugState>(controller.debug);
+    const [permissions, setPermissions] = React.useState(controller.permissions);
     const [mobileCompanionPanel, setMobileCompanionPanel] =
         React.useState<MobileCompanionPanel>("chat");
     const [mobileCompareController, setMobileCompareController] =
@@ -226,6 +227,7 @@ export function Kibitz(): React.ReactElement {
         controller.on("variations-changed", setVariations);
         controller.on("secondary-pane-changed", setSecondaryPane);
         controller.on("debug-changed", setDebug);
+        controller.on("permissions-changed", setPermissions);
 
         return () => {
             controller.off("rooms-changed", setRooms);
@@ -235,6 +237,7 @@ export function Kibitz(): React.ReactElement {
             controller.off("variations-changed", setVariations);
             controller.off("secondary-pane-changed", setSecondaryPane);
             controller.off("debug-changed", setDebug);
+            controller.off("permissions-changed", setPermissions);
             controller.destroy();
         };
     }, [controller]);
@@ -371,6 +374,10 @@ export function Kibitz(): React.ReactElement {
 
         setPickerMode("change-board");
     }, [isMobileLayout]);
+
+    const handleOpenChangeBoard = permissions.can_change_board_directly
+        ? onOpenChangeBoard
+        : undefined;
 
     const onClosePicker = React.useCallback(() => {
         setPickerMode(null);
@@ -752,7 +759,7 @@ export function Kibitz(): React.ReactElement {
                                                     onSelectRoom={onSelectRoom}
                                                     onCreateRoom={onOpenCreateRoom}
                                                     onCreateVariation={onCreateVariation}
-                                                    onChangeBoard={onOpenChangeBoard}
+                                                    onChangeBoard={handleOpenChangeBoard}
                                                 />
                                             </div>
                                         ) : (
@@ -961,7 +968,7 @@ export function Kibitz(): React.ReactElement {
                                 onClearPreview={onClearPreview}
                                 onPostVariation={onPostVariation}
                                 onSetSecondaryPaneMode={onSetSecondaryPaneMode}
-                                onChangeBoard={onOpenChangeBoard}
+                                onChangeBoard={handleOpenChangeBoard}
                                 onCreateVariation={onCreateVariation}
                                 isMobileLayout={false}
                                 mobileCompanionPanel={mobileCompanionPanel}
