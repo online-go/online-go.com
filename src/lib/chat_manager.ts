@@ -700,7 +700,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         const send_obj = {
             channel: this.channel,
             uuid: chatSoftUid(user.id),
-            message: body,
+            message: body as unknown as string,
         };
         socket.send("chat/send", send_obj);
         const obj: ChatMessage = {
