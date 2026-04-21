@@ -344,6 +344,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
     user_list: { [k: string]: User } = {};
     users_by_rank: User[] = [];
     users_by_name: User[] = [];
+    users_by_join: User[] = [];
     user_count = 0;
     rtl_mode = false;
     last_seen_timestamp: number;
@@ -545,6 +546,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
             if (!(user.id in this.user_list)) {
                 this.user_count++;
                 this._insert_into_sorted_lists(user);
+                this.users_by_join.push(user);
             }
             this.user_list[user.id] = user;
         }
@@ -559,6 +561,9 @@ class ChatChannel extends TypedEventEmitter<Events> {
         if (user.id in this.user_list) {
             this.user_count--;
             this._remove_from_sorted_lists(user);
+            this.users_by_join = this.users_by_join.filter(
+                (existing_user) => existing_user.id !== user.id,
+            );
             delete this.user_list[user.id];
         }
 
@@ -571,7 +576,13 @@ class ChatChannel extends TypedEventEmitter<Events> {
     handleUserUpdate(_old_player_id: number, user: User): void {
         if (user.id in this.user_list) {
             const old_entry = this.user_list[user.id];
-            this.handlePart(old_entry);
+            this.user_list[user.id] = user;
+            this.users_by_join = this.users_by_join.map((existing_user) =>
+                existing_user.id === user.id ? user : existing_user,
+            );
+            this._remove_from_sorted_lists(old_entry);
+            this._insert_into_sorted_lists(user);
+            return;
         }
         this.handleJoins([user]);
     }

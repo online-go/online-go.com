@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { Player } from "@/components/Player";
-import { chat_manager, ChatChannelProxy, users_by_rank } from "@/lib/chat_manager";
+import { chat_manager, ChatChannelProxy } from "@/lib/chat_manager";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { KibitzMode, KibitzRoomSummary, KibitzRoomUser } from "@/models/kibitz";
 import { User } from "goban";
@@ -101,9 +101,7 @@ export function KibitzPresence({ mode, room, users }: KibitzPresenceProps): Reac
         };
     }, [mode, room.channel]);
 
-    const channelUsers: User[] = proxy
-        ? Object.values(proxy.channel.user_list).sort(users_by_rank)
-        : [];
+    const channelUsers: User[] = proxy ? [...proxy.channel.users_by_join].reverse() : [];
     const visibleUsers = mode === "demo" ? users : channelUsers;
     return (
         <div className="KibitzPresence">
