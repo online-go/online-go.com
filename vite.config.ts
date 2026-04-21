@@ -446,6 +446,70 @@ function ogs_vite_middleware(): Plugin {
          */
         configureServer(server: ViteDevServer) {
             return () => {
+                /* Serve /img/* from the repo's asset directories so board/stone textures
+                 * referenced via the CDN-rewritten base URL resolve against local disk in dev.
+                 * Roots are searched in order; the anime_*.svg assets live in the goban
+                 * submodule only, so we need it as a fallback.
+                 * In production, the contents of these directories are mirrored onto the CDN.
+                 *
+                 * /img/ is treated as a dev-only mount: a miss returns 404 instead of
+                 * falling through to the SPA catch-all (which would 200 + index.html and
+                 * hide the problem). This is safe because /img/ is never used for SPA
+                 * routes; it is reserved for CDN-mirrored repo assets. */
+                const assetRoots = [
+                    path.resolve(__dirname, "assets/img"),
+                    path.resolve(__dirname, "submodules/goban/assets/img"),
+                ];
+                const mimeByExt: Record<string, string> = {
+                    ".jpg": "image/jpeg",
+                    ".jpeg": "image/jpeg",
+                    ".png": "image/png",
+                    ".svg": "image/svg+xml",
+                    ".webp": "image/webp",
+                    ".gif": "image/gif",
+                };
+                server.middlewares.use(async (req, res, next) => {
+                    const url = req.originalUrl || "";
+                    const match = url.match(/^\/+img\/([^?#]+)/);
+                    if (!match) {
+                        return next();
+                    }
+                    const send404 = (msg: string) => {
+                        res.statusCode = 404;
+                        res.setHeader("Content-Type", "text/plain; charset=utf-8");
+                        res.setHeader("Cache-Control", "no-cache");
+                        res.end(msg);
+                    };
+                    const rel = match[1];
+                    for (const root of assetRoots) {
+                        const file = path.resolve(root, rel);
+                        if (file !== root && !file.startsWith(root + path.sep)) {
+                            continue;
+                        }
+                        try {
+                            const body = await fs.readFile(file);
+                            const ext = path.extname(file).toLowerCase();
+                            res.setHeader(
+                                "Content-Type",
+                                mimeByExt[ext] || "application/octet-stream",
+                            );
+                            res.setHeader("Cache-Control", "no-cache");
+                            res.end(body);
+                            return;
+                        } catch (err) {
+                            const code = (err as NodeJS.ErrnoException).code;
+                            if (code === "ENOENT" || code === "EISDIR") continue;
+                            return next(err);
+                        }
+                    }
+                    send404(
+                        `Not Found: /img/${rel}\n` +
+                            `Looked in:\n` +
+                            assetRoots.map((r) => `  ${r}\n`).join("") +
+                            `Add the file to one of those directories or check the filename.\n`,
+                    );
+                });
+
                 /* Handle our custom index template, serve it for anything that doesn't look like a file */
                 server.middlewares.use(async (req, res, next) => {
                     const url = req.originalUrl || "";

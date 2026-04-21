@@ -17,8 +17,8 @@
 
 import * as React from "react";
 
-import { _, interpolate } from "@/lib/translate";
-import { put, del } from "@/lib/requests";
+import { _, interpolate, ngettext } from "@/lib/translate";
+import { get, put, del, abort_requests_in_flight } from "@/lib/requests";
 import { errorAlerter } from "@/lib/misc";
 
 import { durationString } from "@/components/TimeControl";
@@ -26,10 +26,18 @@ import { Toggle } from "@/components/Toggle";
 
 import { SettingGroupPageProps, PreferenceLine } from "@/lib/SettingsCommon";
 
+interface DisableVacationGame {
+    id: number;
+    name: string;
+}
+
 export function VacationSettings(props: SettingGroupPageProps): React.ReactElement {
     const [vacation_left, set_vacation_left]: [number, (x: number) => void] = React.useState(
         props.state.profile.vacation_left - (Date.now() - props.vacation_base_time) / 1000,
     );
+    const [disable_vacation_games, set_disable_vacation_games] = React.useState<
+        DisableVacationGame[]
+    >([]);
 
     React.useEffect(() => {
         const vacation_interval = setInterval(() => {
@@ -45,6 +53,28 @@ export function VacationSettings(props: SettingGroupPageProps): React.ReactEleme
             clearInterval(vacation_interval);
         };
     });
+
+    React.useEffect(() => {
+        let canceled = false;
+        get("ui/overview")
+            .then((result: { active_games: rest_api.players.full.Game[] }) => {
+                if (!canceled) {
+                    const games = result.active_games.filter(
+                        (g) => g.disable_vacation && (g.time_per_move ?? 0) >= 3600,
+                    );
+                    set_disable_vacation_games(games.map((g) => ({ id: g.id, name: g.name })));
+                }
+            })
+            .catch((err) => {
+                if (!canceled) {
+                    errorAlerter(err);
+                }
+            });
+        return () => {
+            canceled = true;
+            abort_requests_in_flight("ui/overview");
+        };
+    }, []);
 
     function endVacation() {
         del("me/vacation")
@@ -102,6 +132,27 @@ export function VacationSettings(props: SettingGroupPageProps): React.ReactEleme
                     })}
                 </div>
             </div>
+
+            {disable_vacation_games.length > 0 && (
+                <div className="disable-vacation-warning">
+                    <i className="fa fa-exclamation-triangle"></i>{" "}
+                    {interpolate(
+                        ngettext(
+                            "You have {{count}} active correspondence game that will not be paused by vacation:",
+                            "You have {{count}} active correspondence games that will not be paused by vacation:",
+                            disable_vacation_games.length,
+                        ),
+                        { count: disable_vacation_games.length },
+                    )}
+                    <ul>
+                        {disable_vacation_games.map((g) => (
+                            <li key={g.id}>
+                                <a href={`/game/${g.id}`}>{g.name || `#${g.id}`}</a>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
 
             <PreferenceLine
                 title={_("Auto-vacation")}

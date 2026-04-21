@@ -71,6 +71,10 @@ export function Settings(): React.ReactElement {
 
     React.useEffect(refresh, []);
 
+    React.useEffect(() => {
+        window.document.title = _("Settings");
+    }, []);
+
     function select(s: string): void {
         data.set("settings.page-selected", s);
         browserHistory.push(`/settings/${s}`);

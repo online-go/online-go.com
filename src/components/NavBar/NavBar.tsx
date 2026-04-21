@@ -41,6 +41,7 @@ import { Menu, MenuContext } from "./Menu";
 import { logout } from "@/lib/auth";
 import { useUser, useData } from "@/lib/hooks";
 import { OmniSearch } from "./OmniSearch";
+import { Hamburger } from "./Hamburger";
 import { forwardRef, useId, useState } from "react";
 import { MODERATOR_POWERS } from "@/lib/moderation";
 import { openDemoBoardModal } from "../DemoBoardModal";
@@ -163,16 +164,7 @@ export function NavBar(): React.ReactElement {
 
                 {banned_user_id && show_appeal_box ? <BanIndicator /> : null}
 
-                <span className="hamburger">
-                    {hamburger_expanded ? (
-                        <i className="fa fa-times" onClick={toggleHamburgerExpanded} />
-                    ) : (
-                        <i className="fa fa-bars" onClick={toggleHamburgerExpanded} />
-                    )}
-                    <Link to="/">
-                        <span className="ogs-nav-logo" />
-                    </Link>
-                </span>
+                <Hamburger onClick={toggleHamburgerExpanded} open={hamburger_expanded} />
 
                 <nav className="left" aria-label={_("Main Navigation")}>
                     <ul>
@@ -374,7 +366,7 @@ export function NavBar(): React.ReactElement {
                                 (user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR) !== 0) && (
                                 <MenuLink
                                     title={_("AI Detection")}
-                                    to="/moderator/ai-detection"
+                                    to="/moderator/fair-play-search?mode=basic"
                                     icon={<i className="fa fa-search" />}
                                 />
                             )}

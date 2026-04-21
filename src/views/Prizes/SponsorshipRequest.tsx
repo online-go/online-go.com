@@ -18,7 +18,7 @@
 import React, { useState, useEffect } from "react";
 import { get, post } from "@/lib/requests";
 import { useNavigate } from "react-router-dom";
-import { interpolate, llm_pgettext } from "@/lib/translate";
+import { _, interpolate, llm_pgettext } from "@/lib/translate";
 import { toast } from "@/lib/toast";
 import {
     calculateRowCost,
@@ -36,6 +36,10 @@ export function SponsorshipRequest(): React.ReactElement {
     const navigate = useNavigate();
 
     const [pricing, setPricing] = useState<SupporterPricing | null>(null);
+
+    React.useEffect(() => {
+        window.document.title = _("Sponsorship Request");
+    }, []);
 
     const dev = process.env.NODE_ENV === "development";
 

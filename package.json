@@ -15,9 +15,9 @@
         "build-ci": "vite build --emptyOutDir",
         "build:i18n": "OGS_I18N_BUILD_MODE=true vite build",
         "type-check": "tsc --skipLibCheck --noEmit",
-        "prettier": "prettier --write \"src/**/*.{ts,tsx}\"",
-        "prettier:file": "prettier --write",
-        "prettier:check": "prettier --check \"src/**/*.{ts,tsx}\"",
+        "prettier": "pprettier --write \"src/**/*.{ts,tsx}\"",
+        "prettier:file": "pprettier --write",
+        "prettier:check": "pprettier --check \"src/**/*.{ts,tsx}\"",
         "lint": "eslint src/",
         "lint:fix": "eslint --fix src/",
         "spellcheck": "cspell \"src/**/*.{ts,tsx}\"",
@@ -33,7 +33,7 @@
         "test:e2e:debug": "node scripts/run-playwright.js --debug",
         "test:ci": "yarn test:e2e:docker:smoke && yarn test",
         "test:e2e:docker:smoke": "CI=true yarn test:e2e:docker --grep @Smoke",
-        "test:e2e:docker": "PLAYWRIGHT_DOCKER=mcr.microsoft.com/playwright:v1.51.0-noble scripts/run-playwright-in-docker.sh"
+        "test:e2e:docker": "PLAYWRIGHT_DOCKER=mcr.microsoft.com/playwright:v1.59.1-noble scripts/run-playwright-in-docker.sh"
     },
     "browserslist": [
         "last 8 years, not dead"
@@ -44,7 +44,8 @@
         "@eslint/js": "9.38.0",
         "@google-cloud/translate": "^9.2.1",
         "@openrouter/sdk": "^0.9.11",
-        "@playwright/test": "^1.56.1",
+        "@playwright/test": "^1.59.1",
+        "@rdil/parallel-prettier": "^3.0.0",
         "@stylistic/eslint-plugin": "^5.5.0",
         "@testing-library/dom": "^10.4.1",
         "@testing-library/jest-dom": "^6.9.1",
@@ -107,7 +108,7 @@
         "postcss-simple-vars": "^7.0.1",
         "postcss-url": "^10.1.3",
         "postcss-viewport-unit-fallback": "^1.0.1",
-        "prettier": "3.6.2",
+        "prettier": "3.8.2",
         "prettier-eslint": "^16.4.2",
         "supervisor": "^0.12.0",
         "terser": "^5.44.0",
@@ -179,6 +180,7 @@
         "**/react-dom": "19.2.4",
         "**/@types/react": "19.2.13",
         "**/@types/react-dom": "19.2.3",
+        "**/prettier": "3.8.2",
         "**/vite": "^7.3.1"
     },
     "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"

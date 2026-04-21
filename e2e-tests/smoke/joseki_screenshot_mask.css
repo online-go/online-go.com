@@ -27,3 +27,16 @@ section.right { /* NavBar changeable icons and user name */
 .continuations-pane {
   visibility: hidden !important;
 }
+
+div.WhatsNewBanner {
+  visibility: hidden !important;
+}
+
+.OmniSearch-container { /* flex layout causes sub-pixel jitter between runs */
+  flex-grow: 0 !important;
+  width: 20rem !important;
+}
+
+.OmniSearch-input-container { /* text/border rendering jitter inside the input */
+  visibility: hidden !important;
+}

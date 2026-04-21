@@ -18,8 +18,13 @@
 import { ogsTest } from "@helpers";
 import { tournamentMcMahonStartTest } from "./tournament-mcmahon-start";
 import { tournamentRoundRobinStartTest } from "./tournament-round-robin-start";
+import { tournamentDisableVacationTest } from "./tournament-disable-vacation";
 
 ogsTest.describe("@Tournament Tests", () => {
     ogsTest("Create and start a round robin tournament", tournamentRoundRobinStartTest);
     ogsTest("Create and start a McMahon tournament", tournamentMcMahonStartTest);
+    ogsTest(
+        "Disable-vacation tournament shows banner and warning in vacation settings",
+        tournamentDisableVacationTest,
+    );
 });

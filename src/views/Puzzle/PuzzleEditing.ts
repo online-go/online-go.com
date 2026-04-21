@@ -18,7 +18,6 @@
 import { decodeMoves, GobanRendererConfig, PuzzleConfig, PuzzlePlacementSetting } from "goban";
 import { errorAlerter, dup } from "@/lib/misc";
 import { PuzzleTransform } from "./PuzzleTransform";
-import { _Puzzle } from "./Puzzle";
 import * as data from "@/lib/data";
 import { abort_requests_in_flight, post, get } from "@/lib/requests";
 import * as preferences from "@/lib/preferences";
@@ -26,11 +25,9 @@ import * as preferences from "@/lib/preferences";
 export class PuzzleEditor {
     orig_puzzle_config?: PuzzleConfig;
     puzzle_config?: PuzzleConfig;
-    puzzle: _Puzzle;
     transform: PuzzleTransform;
 
-    constructor(puzzle: _Puzzle, transform: PuzzleTransform) {
-        this.puzzle = puzzle;
+    constructor(transform: PuzzleTransform) {
         this.transform = transform;
     }
 

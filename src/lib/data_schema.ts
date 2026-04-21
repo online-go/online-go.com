@@ -42,6 +42,8 @@ interface CachedSchema {
     blocks: any /* /me/blocks */;
     friends: any /* ui/friends */;
     group_invitations: any /* me/groups/invitations */;
+    friend_invitations: rest_api.FriendInvitations /* me/friends/invitations */;
+    tournament_invitations: rest_api.me.TournamentInvitation[] /* me/tournaments/invitations */;
 }
 
 export interface DismissableMessagesSchema {

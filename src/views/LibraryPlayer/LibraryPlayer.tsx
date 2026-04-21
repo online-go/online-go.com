@@ -121,6 +121,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
     ];
 
     componentDidMount() {
+        window.document.title = _("Library");
         this.refresh(this.state.player_id).then(ignore).catch(ignore);
     }
     componentDidUpdate(prev_props: LibraryPlayerProperties) {

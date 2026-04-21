@@ -18,7 +18,14 @@
 /* cspell: words groupadmin cotsen */
 
 import * as React from "react";
-import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from "react-router-dom";
+import {
+    BrowserRouter as Router,
+    Route,
+    Routes,
+    Navigate,
+    useNavigate,
+    useSearchParams,
+} from "react-router-dom";
 
 import * as data from "@/lib/data";
 import { _ } from "@/lib/translate";
@@ -90,9 +97,13 @@ import * as docs from "@/views/docs";
 import { useData } from "./lib/hooks";
 import { MainSection } from "@/components/MainSection";
 import { AccessibilityMenu } from "@/components/AccessibilityMenu";
-import { AIDetection } from "@moderator-ui/AIDetection";
 import { RecentlyBlocked } from "@moderator-ui/RecentlyBlocked";
-import { FairPlay, FairPlayActions, FairPlaySearch } from "@moderator-ui/FairPlay";
+import {
+    FairPlay,
+    FairPlayActions,
+    FairPlayLogicDump,
+    FairPlaySearch,
+} from "@moderator-ui/FairPlay";
 
 const LearningHub = React.lazy(() =>
     import("@/views/LearningHub/LearningHub").then((m) => ({
@@ -252,6 +263,34 @@ function SettingsRedirect(): React.ReactElement {
     return <Navigate to={`/settings/${last_settings_page}`} replace />;
 }
 
+function AIDetectionRedirect(): React.ReactElement {
+    const [searchParams] = useSearchParams();
+    const newParams = new URLSearchParams();
+    newParams.set("mode", "basic");
+
+    // Preserve the player filter from the old AI Detection URL
+    const player = searchParams.get("player");
+    if (player) {
+        newParams.set("player", player);
+    }
+
+    // Map old threshold params to new field names
+    const apl = searchParams.get("apl");
+    if (apl) {
+        newParams.set("asl", apl);
+    }
+    const minMoves = searchParams.get("min_moves");
+    if (minMoves) {
+        newParams.set("min_moves", minMoves);
+    }
+    const applyFilters = searchParams.get("apply_filters");
+    if (applyFilters) {
+        newParams.set("apply_filters", applyFilters);
+    }
+
+    return <Navigate to={`/moderator/fair-play-search?${newParams.toString()}`} replace />;
+}
+
 function WaitForUser(): React.ReactElement | null {
     const navigate = useNavigate();
     data.watch("config.user", (user) => {
@@ -373,12 +412,13 @@ export const routes = (
                     element={<OnlineLeagueSpectatorLanding />}
                 />
                 <Route path="/developer" element={<Developer />} />
-                <Route path="/moderator/ai-detection" element={<AIDetection />} />
+                <Route path="/moderator/ai-detection" element={<AIDetectionRedirect />} />
                 <Route path="/moderator/recently-blocked" element={<RecentlyBlocked />} />
                 <Route path="/moderator/fair-play" element={<FairPlay />} />
                 <Route path="/moderator/fair-play/:id" element={<FairPlay />} />
                 <Route path="/moderator/fair-play-search" element={<FairPlaySearch />} />
                 <Route path="/moderator/fair-play-actions" element={<FairPlayActions />} />
+                <Route path="/moderator/fair-play-logic-dump" element={<FairPlayLogicDump />} />
                 <Route path="/admin/merchant_log" element={<MerchantLog />} />
                 <Route path="/admin/firewall" element={<Firewall />} />
                 <Route path="/admin/flagged_games" element={<FlaggedGames />} />

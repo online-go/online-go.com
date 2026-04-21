@@ -36,6 +36,7 @@ import { aiDetectorVoteWarnAndAnnulTest } from "./ai-detector-vote-warn-annul";
 import { aiDetectorVoteFirstWarnAndAnnulTest } from "./ai-detector-vote-first-warn-annul";
 import { aiDetectorVoteCancelTicketTest } from "./ai-detector-vote-cancel-ticket";
 import { aiDetectorSeesSuspensionModlogTest } from "./ai-detector-sees-suspension-modlog";
+import { appealTemplateSelectorTest } from "./appeal-template-selector";
 
 ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest("@Slow Auto-warn first turn disconnectors", modWarnFirstTurnDisconnectorTest);
@@ -52,10 +53,13 @@ ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest("Suspended user can login to reach appeal page", suspendedUserCanLoginToAppealTest);
     ogsTest("Auto-suspend users with previously suspended accounts", autoSuspensionTest);
     ogsTest("System PM button appears for non-suspended users", systemPMButtonTest);
-    ogsTest("AI Detection player filter button works correctly", aiDetectionPlayerFilterTest);
+    ogsTest("Fair Play Search player filter button works correctly", aiDetectionPlayerFilterTest);
     // TODO: aiDetectionFastSMRReportTest needs assertion rework - temporarily disabled
     // ogsTest("AI Detection FastSMR report button works correctly", aiDetectionFastSMRReportTest);
-    ogsTest("Player dropdown Check AI button navigates to AI Detection", playerCheckAIButtonTest);
+    ogsTest(
+        "Player dropdown Check AI button navigates to Fair Play Search",
+        playerCheckAIButtonTest,
+    );
     ogsTest("AI Detector can vote to suspend and annul AI user", aiDetectorVoteSuspendAndAnnulTest);
     ogsTest("AI Detector can vote to warn and annul AI user", aiDetectorVoteWarnAndAnnulTest);
     ogsTest(
@@ -66,5 +70,9 @@ ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest(
         "@Slow AI Detector can see SUSPENSION ModLog entries in ViewReport",
         aiDetectorSeesSuspensionModlogTest,
+    );
+    ogsTest(
+        "Appeal template selector shows AI-use templates for AI suspension",
+        appealTemplateSelectorTest,
     );
 });

@@ -124,6 +124,24 @@
         }
     }
 
+    .disable-vacation-warning {
+        background-color: var(--warning-bg);
+        color: var(--warning-fg);
+        border-radius: 0.25rem;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1rem;
+
+        ul {
+            margin: 0.5rem 0 0 0;
+            padding-left: 1.5rem;
+        }
+
+        a {
+            color: var(--warning-fg);
+            text-decoration: underline;
+        }
+    }
+
     h3 {
         margin-top: 0;
     }
@@ -264,7 +282,8 @@
         }
     }
 
-    .PreferenceToggle, .EmailNotificationToggle {
+    .PreferenceToggle,
+    .EmailNotificationToggle {
         margin-top: 0.2rem;
         margin-bottom: 0.2rem;
         display: flex;
@@ -346,11 +365,11 @@
                 width: 20rem;
                 min-width: 20rem;
 
-                input[type='number'] {
+                input[type="number"] {
                     width: 7rem;
                 }
 
-                input[type='text'] {
+                input[type="text"] {
                     width: 7rem;
                 }
 
@@ -361,7 +380,8 @@
         }
     }
 
-    #BlockedPlayers, #AnnouncementPreferences {
+    #BlockedPlayers,
+    #AnnouncementPreferences {
         .blocked-player-row {
             display: flex;
             margin-bottom: 0.5rem;
@@ -466,7 +486,8 @@
 .announcement-history {
     font-size: small;
 
-    td, th {
+    td,
+    th {
         padding-right: 0.4rem;
     }
 
@@ -474,7 +495,8 @@
         white-space: nowrap;
     }
 
-    .announcement-message, .announcement-link {
+    .announcement-message,
+    .announcement-link {
         width: 17rem;
     }
 }

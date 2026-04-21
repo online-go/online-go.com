@@ -351,6 +351,7 @@ extended_countries.push(["_Wales", gettext("Wales")]);
 extended_countries.push(["_cat", gettext("Catalonia")]);
 extended_countries.push(["_eus", gettext("Basque Country")]);
 extended_countries.push(["_by-alt", gettext("Belarus (alternative)")]);
+extended_countries.push(["_nz_mi", gettext("Tino Rangatiratanga")]);
 
 const fantasy_countries: [string, string][] = [];
 const fantasy_countries_cc: { [key: string]: boolean } = {};
