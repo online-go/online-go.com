@@ -296,6 +296,14 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 status: "ready",
                 last_hydration_finished_at: Date.now(),
             });
+
+            // Resolve each room's current_game in parallel so the room cards
+            // show the watched game instead of "No game selected".
+            for (const backend of payload ?? []) {
+                if (backend.current_game_id) {
+                    void this.hydrateRoomCardGame(backend.id, backend.current_game_id);
+                }
+            }
         } catch (error) {
             this.setDebug({
                 ...this._debug,
@@ -306,12 +314,29 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         }
     }
 
+    private async hydrateRoomCardGame(roomId: string, gameId: number): Promise<void> {
+        const game = await lookupGameForKibitz(gameId);
+        if (this._destroyed || !game) {
+            return;
+        }
+        const updated = this._rooms.map((room) =>
+            room.id === roomId ? { ...room, current_game: game } : room,
+        );
+        // Reference equality check: only update if something actually changed.
+        if (updated.some((room, i) => room !== this._rooms[i])) {
+            this.setRooms(updated);
+        }
+    }
+
     private onRoomCreated = (incoming: BackendKibitzRoom) => {
         if (this._rooms.some((room) => room.id === incoming.id)) {
             return;
         }
         const summary = mapBackendRoomToSummary(incoming);
         this.setRooms([summary, ...this._rooms]);
+        if (incoming.current_game_id) {
+            void this.hydrateRoomCardGame(incoming.id, incoming.current_game_id);
+        }
     };
 
     private onRoomRemoved = (payload: { id?: string } | string | undefined) => {
@@ -342,6 +367,9 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 ...summary,
             });
             void this.hydrateActiveRoomGame(incoming.current_game_id, this._select_room_token);
+        }
+        if (incoming.current_game_id) {
+            void this.hydrateRoomCardGame(incoming.id, incoming.current_game_id);
         }
     };
 
