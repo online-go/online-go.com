@@ -571,6 +571,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     }
 
     private unsubscribeActiveRoom(): void {
+        const leavingRoomId = this._active_room?.id;
         for (const handler of this._active_room_handlers) {
             push_manager.off(handler);
         }
@@ -580,6 +581,27 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             this._active_room_channel = null;
         }
         this.partActiveChat();
+        // We were counted in the leaving room's roster while joined; now
+        // that we've parted, the server-side count drops by 1. No one
+        // pushes that update to us for a room we're no longer subscribed
+        // to, so adjust the directory card optimistically.
+        if (leavingRoomId) {
+            this.decrementRoomViewerCount(leavingRoomId);
+        }
+    }
+
+    private decrementRoomViewerCount(roomId: string): void {
+        const index = this._rooms.findIndex((r) => r.id === roomId);
+        if (index === -1) {
+            return;
+        }
+        const current = this._rooms[index].viewer_count;
+        if (current <= 0) {
+            return;
+        }
+        this.setRooms(
+            this._rooms.map((r) => (r.id === roomId ? { ...r, viewer_count: current - 1 } : r)),
+        );
     }
 
     private joinActiveChat(channel: string): void {
