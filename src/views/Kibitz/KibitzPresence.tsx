@@ -97,20 +97,25 @@ export function KibitzPresence({ room }: KibitzPresenceProps): React.ReactElemen
         };
     }, [room.channel]);
 
+    // Prefer the live roster count from chat_manager; the backend's
+    // viewer_count is only populated for the directory response, not the
+    // hydration response, so it falls back to 0 in the active-room context.
+    const viewerCount = proxy ? proxy.channel.user_count : room.viewer_count;
+
     React.useEffect(() => {
         if (previousViewerCountRef.current == null) {
-            previousViewerCountRef.current = room.viewer_count;
+            previousViewerCountRef.current = viewerCount;
             return;
         }
 
-        if (previousViewerCountRef.current === room.viewer_count) {
+        if (previousViewerCountRef.current === viewerCount) {
             return;
         }
 
         const previousViewerCount = previousViewerCountRef.current;
-        previousViewerCountRef.current = room.viewer_count;
+        previousViewerCountRef.current = viewerCount;
 
-        if (room.viewer_count <= previousViewerCount) {
+        if (viewerCount <= previousViewerCount) {
             setViewerCountFlash(false);
             return;
         }
@@ -123,7 +128,7 @@ export function KibitzPresence({ room }: KibitzPresenceProps): React.ReactElemen
         return () => {
             window.clearTimeout(timeout);
         };
-    }, [room.viewer_count]);
+    }, [viewerCount]);
 
     const visibleUsers: User[] = proxy ? [...proxy.channel.users_by_join].reverse() : [];
     return (
@@ -155,7 +160,7 @@ export function KibitzPresence({ room }: KibitzPresenceProps): React.ReactElemen
                                     "Viewer count summary inside a kibitz room",
                                     "{{count}} watching",
                                 ),
-                                { count: room.viewer_count },
+                                { count: viewerCount },
                             )}
                         </span>
                     </div>
