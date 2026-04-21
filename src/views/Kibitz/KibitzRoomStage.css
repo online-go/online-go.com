@@ -400,10 +400,15 @@
 
             .board-title {
                 color: var(--fg);
-                flex: 0 0 auto;
+                flex: 0 1 auto;
                 font-size: 0.98rem;
                 font-weight: bold;
                 line-height: 1.15;
+                max-width: 100%;
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
 
             .board-subtitle {
