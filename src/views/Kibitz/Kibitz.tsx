@@ -574,20 +574,27 @@ export function Kibitz(): React.ReactElement {
 
     if (!resolvedRoom) {
         return (
-            <div className="Kibitz Kibitz-empty">
-                <div className="Kibitz-empty-state">
-                    <h2 className="Kibitz-empty-heading">
-                        {pgettext("Kibitz directory empty state heading", "No Kibitz rooms yet")}
-                    </h2>
-                    <p className="Kibitz-empty-description">
-                        {pgettext(
-                            "Kibitz directory empty state description",
-                            "Kibitz rooms let you watch a game with friends and discuss it together.",
-                        )}
-                    </p>
-                    <button className="primary" onClick={onOpenCreateRoom}>
-                        {pgettext("Kibitz directory empty state CTA", "Create the first room")}
-                    </button>
+            <div className="Kibitz">
+                {showDebug ? <KibitzDebugPanel debug={debug} /> : null}
+                <div className="Kibitz-layout">
+                    <div className="Kibitz-left-rail">
+                        <KibitzRoomList
+                            rooms={rooms}
+                            activeRoomId=""
+                            onSelectRoom={onSelectRoom}
+                            onCreateRoom={onOpenCreateRoom}
+                        />
+                    </div>
+                    <div className="Kibitz-main">
+                        <div className="Kibitz-empty-stage">
+                            <p>
+                                {pgettext(
+                                    "Kibitz placeholder shown in the main area when no rooms exist",
+                                    "Create a Kibitz room to start watching a game with friends.",
+                                )}
+                            </p>
+                        </div>
+                    </div>
                 </div>
                 {pickerOverlay}
             </div>
