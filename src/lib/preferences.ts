@@ -83,6 +83,7 @@ export const defaults = {
     "dock-delay": 0, // seconds.
     "double-click-submit-correspondence": false,
     "double-click-submit-live": false,
+    "fuzzy-stone-placement": false,
     "last-move-opacity": 1.0,
     "variation-stone-opacity": 0.6,
     "variation-move-count": 10,
@@ -206,6 +207,7 @@ export const defaults = {
 
     "game-history-size-filter": "all",
     "game-history-ranked-filter": "all",
+    "game-history-bot-filter": "humans" as "humans" | "bots",
 
     "help-system-enabled": true,
 
