@@ -573,6 +573,10 @@ export function Kibitz(): React.ReactElement {
     ) : null;
 
     if (!resolvedRoom) {
+        const emptyMessage = pgettext(
+            "Kibitz placeholder shown in panels when no rooms exist",
+            "Create a Kibitz room to start watching a game with friends.",
+        );
         return (
             <div className="Kibitz">
                 {showDebug ? <KibitzDebugPanel debug={debug} /> : null}
@@ -586,13 +590,17 @@ export function Kibitz(): React.ReactElement {
                         />
                     </div>
                     <div className="Kibitz-main">
-                        <div className="Kibitz-empty-stage">
-                            <p>
-                                {pgettext(
-                                    "Kibitz placeholder shown in the main area when no rooms exist",
-                                    "Create a Kibitz room to start watching a game with friends.",
-                                )}
-                            </p>
+                        <div className="Kibitz-content">
+                            <div className="Kibitz-empty-stage">
+                                <p>{emptyMessage}</p>
+                            </div>
+                            <div className="Kibitz-sidebar no-active-proposal">
+                                <div className="Kibitz-sidebar-proposal-slot" />
+                                <div className="Kibitz-empty-stage">
+                                    <p>{emptyMessage}</p>
+                                </div>
+                                <div className="Kibitz-footer-panels" />
+                            </div>
                         </div>
                     </div>
                 </div>
