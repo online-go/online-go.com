@@ -32,10 +32,34 @@
     }
 
     .presence-stat {
+        align-items: center;
         color: var(--text-color-faded);
+        display: inline-flex;
         font-size: 0.76rem;
+        gap: 0.28rem;
         line-height: 1.1;
+        transition:
+            color 180ms ease,
+            filter 180ms ease;
         white-space: nowrap;
+    }
+
+    .presence-stat-icon {
+        display: inline-flex;
+        flex: 0 0 auto;
+        height: 0.9rem;
+        width: 0.9rem;
+
+        svg {
+            display: block;
+            height: 100%;
+            width: 100%;
+        }
+    }
+
+    .presence-stat.viewer-count-flash {
+        color: #2f9d5d;
+        filter: saturate(1.1);
     }
 
     .presence-avatar {

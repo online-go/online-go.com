@@ -310,7 +310,20 @@
             justify-self: end;
             min-width: 0;
             position: relative;
+            transition:
+                color 180ms ease,
+                filter 180ms ease;
             white-space: nowrap;
+        }
+
+        .mobile-room-header-meta-flash {
+            color: #2f9d5d;
+            filter: saturate(1.1);
+        }
+
+        .mobile-room-header-meta-flash .mobile-room-viewer-icon,
+        .mobile-room-header-meta-flash .mobile-room-viewer-count {
+            color: #2f9d5d;
         }
 
         .mobile-room-viewer-icon {

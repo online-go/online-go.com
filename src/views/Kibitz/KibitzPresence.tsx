@@ -79,6 +79,8 @@ function PresenceAvatar({
 export function KibitzPresence({ mode, room, users }: KibitzPresenceProps): React.ReactElement {
     const [proxy, setProxy] = React.useState<ChatChannelProxy | null>(null);
     const [, refresh] = React.useState(0);
+    const [viewerCountFlash, setViewerCountFlash] = React.useState(false);
+    const previousViewerCountRef = React.useRef<number | null>(null);
 
     React.useEffect(() => {
         if (mode === "demo") {
@@ -101,6 +103,34 @@ export function KibitzPresence({ mode, room, users }: KibitzPresenceProps): Reac
         };
     }, [mode, room.channel]);
 
+    React.useEffect(() => {
+        if (previousViewerCountRef.current == null) {
+            previousViewerCountRef.current = room.viewer_count;
+            return;
+        }
+
+        if (previousViewerCountRef.current === room.viewer_count) {
+            return;
+        }
+
+        const previousViewerCount = previousViewerCountRef.current;
+        previousViewerCountRef.current = room.viewer_count;
+
+        if (room.viewer_count <= previousViewerCount) {
+            setViewerCountFlash(false);
+            return;
+        }
+
+        setViewerCountFlash(true);
+        const timeout = window.setTimeout(() => {
+            setViewerCountFlash(false);
+        }, 700);
+
+        return () => {
+            window.clearTimeout(timeout);
+        };
+    }, [room.viewer_count]);
+
     const channelUsers: User[] = proxy ? [...proxy.channel.users_by_join].reverse() : [];
     const visibleUsers = mode === "demo" ? users : channelUsers;
     return (
@@ -113,14 +143,28 @@ export function KibitzPresence({ mode, room, users }: KibitzPresenceProps): Reac
                             "In the room",
                         )}
                     </div>
-                    <div className="presence-stat">
-                        {interpolate(
-                            pgettext(
-                                "Viewer count summary inside a kibitz room",
-                                "{{count}} watching",
-                            ),
-                            { count: room.viewer_count },
-                        )}
+                    <div
+                        className={
+                            "presence-stat" + (viewerCountFlash ? " viewer-count-flash" : "")
+                        }
+                    >
+                        <span className="presence-stat-icon" aria-hidden="true">
+                            <svg viewBox="0 0 16 16" focusable="false">
+                                <path
+                                    d="M8 8a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm0 1c-2.7 0-5 1.4-5 3.2V14h10v-1.8C13 10.4 10.7 9 8 9Z"
+                                    fill="currentColor"
+                                />
+                            </svg>
+                        </span>
+                        <span className="presence-stat-text">
+                            {interpolate(
+                                pgettext(
+                                    "Viewer count summary inside a kibitz room",
+                                    "{{count}} watching",
+                                ),
+                                { count: room.viewer_count },
+                            )}
+                        </span>
                     </div>
                 </div>
                 {visibleUsers.length > 0 ? (

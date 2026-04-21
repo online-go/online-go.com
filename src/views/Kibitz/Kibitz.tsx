@@ -120,8 +120,10 @@ export function Kibitz(): React.ReactElement {
 
         return DEFAULT_MOBILE_SPLIT_RATIO;
     });
+    const [mobileViewerCountFlash, setMobileViewerCountFlash] = React.useState(false);
     const mobileShellRef = React.useRef<HTMLDivElement | null>(null);
     const mobileDividerRef = React.useRef<HTMLDivElement | null>(null);
+    const previousMobileViewerCountRef = React.useRef<number | null>(null);
     const mobileDragStateRef = React.useRef<{
         pointerId: number;
         startY: number;
@@ -544,6 +546,46 @@ export function Kibitz(): React.ReactElement {
         [controller, rooms, activeRoom, stream],
     );
 
+    React.useEffect(() => {
+        if (!resolvedRoom) {
+            setMobileViewerCountFlash(false);
+            previousMobileViewerCountRef.current = null;
+            return;
+        }
+
+        if (!isMobileLayout) {
+            setMobileViewerCountFlash(false);
+            previousMobileViewerCountRef.current = resolvedRoom.viewer_count;
+            return;
+        }
+
+        if (previousMobileViewerCountRef.current == null) {
+            previousMobileViewerCountRef.current = resolvedRoom.viewer_count;
+            return;
+        }
+
+        if (previousMobileViewerCountRef.current === resolvedRoom.viewer_count) {
+            return;
+        }
+
+        const previousViewerCount = previousMobileViewerCountRef.current;
+        previousMobileViewerCountRef.current = resolvedRoom.viewer_count;
+
+        if (resolvedRoom.viewer_count <= previousViewerCount) {
+            setMobileViewerCountFlash(false);
+            return;
+        }
+
+        setMobileViewerCountFlash(true);
+        const timeout = window.setTimeout(() => {
+            setMobileViewerCountFlash(false);
+        }, 700);
+
+        return () => {
+            window.clearTimeout(timeout);
+        };
+    }, [isMobileLayout, resolvedRoom?.id, resolvedRoom?.viewer_count]);
+
     const pickerOverlay = pickerMode ? (
         <KibitzGamePickerOverlay
             mode={pickerMode}
@@ -655,7 +697,14 @@ export function Kibitz(): React.ReactElement {
                                         </span>
                                     </div>
                                 ) : null}
-                                <div className="mobile-room-header-meta">
+                                <div
+                                    className={
+                                        "mobile-room-header-meta" +
+                                        (mobileViewerCountFlash
+                                            ? " mobile-room-header-meta-flash"
+                                            : "")
+                                    }
+                                >
                                     <span
                                         className="mobile-room-viewer-icon"
                                         title={interpolate(
