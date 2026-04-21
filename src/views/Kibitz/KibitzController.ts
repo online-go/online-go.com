@@ -18,10 +18,19 @@
 import { EventEmitter } from "eventemitter3";
 import * as data from "@/lib/data";
 import type { GobanController } from "@/lib/GobanController";
-import { updateCachedChannelInformation } from "@/lib/chat_manager";
+import {
+    chat_manager,
+    chatSoftUid,
+    updateCachedChannelInformation,
+    type ChatChannelProxy,
+    type ChatMessage,
+    type TypedChatBody,
+} from "@/lib/chat_manager";
 import { get, post } from "@/lib/requests";
 import { socket } from "@/lib/sockets";
 import { push_manager } from "@/components/UIPush/UIPush";
+import { interpolate, pgettext } from "@/lib/translate";
+import type { User } from "goban";
 import type {
     KibitzDebugState,
     KibitzMode,
@@ -31,6 +40,7 @@ import type {
     KibitzRoomUser,
     KibitzSecondaryPaneState,
     KibitzStreamItem,
+    KibitzStreamItemType,
     KibitzVariationSummary,
     KibitzWatchedGame,
 } from "@/models/kibitz";
@@ -142,6 +152,84 @@ async function lookupGameForKibitz(gameId: number): Promise<KibitzWatchedGame | 
     }
 }
 
+function mapChatUserToKibitzUser(user: User): KibitzRoomUser {
+    return {
+        id: user.id,
+        username: user.username,
+        ranking: user.ranking ?? 0,
+        professional: user.professional ?? false,
+        ui_class: user.ui_class ?? "",
+        country: user.country,
+    };
+}
+
+function mapChatToStreamItem(msg: ChatMessage, roomId: string): KibitzStreamItem {
+    const m = msg.message.m;
+    const id = msg.message.i ?? `chat-${msg.message.t}-${msg.id}`;
+    const created_at = (msg.message.t || 0) * 1000;
+    const author: KibitzRoomUser = {
+        id: msg.id,
+        username: msg.username,
+        ranking: msg.ranking,
+        professional: msg.professional,
+        ui_class: msg.ui_class,
+        country: msg.country,
+    };
+
+    if (msg.system) {
+        return {
+            id,
+            room_id: roomId,
+            type: "system",
+            created_at,
+            text: typeof m === "string" ? m : (m.text ?? ""),
+        };
+    }
+
+    if (typeof m === "object" && m !== null) {
+        const typed = m as TypedChatBody & { game_id?: number };
+        if (typed.type === "system") {
+            return {
+                id,
+                room_id: roomId,
+                type: "system",
+                created_at,
+                author,
+                text: typed.text ?? "",
+            };
+        }
+        if (typed.type === "analysis") {
+            return {
+                id,
+                room_id: roomId,
+                type: "variation_posted",
+                created_at,
+                author,
+                text: typed.name ?? "",
+                variation_id: id,
+                game_id: typed.game_id,
+            };
+        }
+        return {
+            id,
+            room_id: roomId,
+            type: "chat" as KibitzStreamItemType,
+            created_at,
+            author,
+            text: "",
+        };
+    }
+
+    return {
+        id,
+        room_id: roomId,
+        type: "chat",
+        created_at,
+        author,
+        text: m,
+    };
+}
+
 export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     private _destroyed = false;
     private _rooms: KibitzRoomSummary[] = [];
@@ -160,6 +248,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     private _directory_handlers: UIPushHandler[] = [];
     private _active_room_handlers: UIPushHandler[] = [];
     private _active_room_channel: string | null = null;
+    private _active_chat_proxy: ChatChannelProxy | null = null;
 
     /**
      * Monotonically increasing token incremented on every selectRoom call.
@@ -390,6 +479,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         );
         push_manager.subscribe(channel);
         this._active_room_channel = channel;
+        this.joinActiveChat(channel);
     }
 
     private unsubscribeActiveRoom(): void {
@@ -401,7 +491,40 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             push_manager.unsubscribe(this._active_room_channel);
             this._active_room_channel = null;
         }
+        this.partActiveChat();
     }
+
+    private joinActiveChat(channel: string): void {
+        this.partActiveChat();
+        const proxy = chat_manager.join(channel);
+        this._active_chat_proxy = proxy;
+        proxy.on("chat", this.syncFromChat);
+        proxy.on("chat-removed", this.syncFromChat);
+        proxy.on("join", this.syncFromChat);
+        proxy.on("part", this.syncFromChat);
+        // Initial sync; chat_log will be populated by the join's history replay.
+        this.syncFromChat();
+    }
+
+    private partActiveChat(): void {
+        if (this._active_chat_proxy) {
+            this._active_chat_proxy.part();
+            this._active_chat_proxy = null;
+        }
+    }
+
+    private syncFromChat = (): void => {
+        const proxy = this._active_chat_proxy;
+        const room = this._active_room;
+        if (!proxy || !room) {
+            return;
+        }
+        const items = proxy.channel.chat_log.map((msg) => mapChatToStreamItem(msg, room.id));
+        this.setStream(items);
+
+        const users = Object.values(proxy.channel.user_list).map(mapChatUserToKibitzUser);
+        this.setActiveRoom({ ...room, users });
+    };
 
     public async selectRoom(roomId: string | null): Promise<void> {
         const token = ++this._select_room_token;
@@ -506,6 +629,9 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             // Apply locally; board-changed UIPush will arrive and be a no-op
             // because the resulting summary will already match.
             this.onBoardChanged(payload);
+            // Per briefing § 2.8: the initiating client posts the resulting
+            // system chat line so the room's stream has a record of the swap.
+            this.postChangeBoardSystemMessage(game);
             return true;
         } catch (error) {
             console.warn("kibitz: changeBoard failed", roomId, error);
@@ -513,12 +639,43 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         }
     }
 
-    /**
-     * Phase 1C-a: chat send is not yet wired (1C-b will route through
-     * chat_manager). Keep the signature so callers in Kibitz.tsx don't break.
-     */
-    public sendMessage(_roomId: string, _text: string): void {
-        // 1C-b
+    public sendMessage(_roomId: string, text: string): void {
+        const proxy = this._active_chat_proxy;
+        if (!proxy) {
+            return;
+        }
+        proxy.channel.send(text);
+    }
+
+    private postChangeBoardSystemMessage(game: KibitzWatchedGame): void {
+        const user = data.get("config.user");
+        if (!user || user.anonymous) {
+            return;
+        }
+        const text = interpolate(
+            pgettext(
+                "Kibitz system message announcing the new watched game",
+                "{{username}} changed the watched game to {{title}}",
+            ),
+            { username: user.username, title: game.title || `#${game.game_id}` },
+        );
+        this.sendTypedToActiveChannel({ type: "system", text });
+    }
+
+    private sendTypedToActiveChannel(body: TypedChatBody): void {
+        const proxy = this._active_chat_proxy;
+        if (!proxy) {
+            return;
+        }
+        const user = data.get("config.user");
+        if (!user || user.anonymous) {
+            return;
+        }
+        socket.send("chat/send", {
+            channel: proxy.channel.channel,
+            uuid: chatSoftUid(user.id),
+            message: body as unknown as string,
+        });
     }
 
     /**
@@ -651,7 +808,3 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         return this._active_room?.id === roomId ? this._active_room.users : [];
     }
 }
-
-// Suppress unused-import warning while we keep `data` available for Phase 1C-b
-// (it is used to read config.user when wiring chat-side identity).
-void data;

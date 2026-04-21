@@ -50,7 +50,13 @@ export function ChatLine(props: ChatLineInterface): React.ReactElement {
     const last_line = props.lastLine;
     const user = line;
 
-    if (line.system) {
+    const sys_body_typed =
+        typeof line.message.m === "object" &&
+        line.message.m !== null &&
+        line.message.m.type === "system"
+            ? line.message.m
+            : null;
+    if (line.system || sys_body_typed) {
         const sys_body = line.message.m;
         const sys_text = typeof sys_body === "string" ? sys_body : (sys_body.text ?? "");
         return <div className="chat-line system">{chat_markup(sys_text)}</div>;
