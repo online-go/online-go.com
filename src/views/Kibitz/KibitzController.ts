@@ -657,8 +657,13 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
 
             const full = mapBackendRoomToFull(payload.room);
             this.setPermissions({ ...DEFAULT_PERMISSIONS, ...payload.permissions });
-            this.subscribeActiveRoom(full.channel);
+            // setActiveRoom must precede subscribeActiveRoom: joinActiveChat's
+            // initial syncFromChat reads _active_room to decide which rooms
+            // entry to mirror user_count into, and _active_chat_proxy for the
+            // count. If set in the wrong order, we'd write the new proxy's
+            // (empty, pre-roster) count to the OLD room's entry — zeroing it.
             this.setActiveRoom(full);
+            this.subscribeActiveRoom(full.channel);
             // Stream + variations come from chat history in 1C-b; empty for now.
             this.setStream([]);
             this.setVariations([]);
