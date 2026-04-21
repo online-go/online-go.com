@@ -610,6 +610,18 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
 
         const users = Object.values(proxy.channel.user_list).map(mapChatUserToKibitzUser);
         this.setActiveRoom({ ...room, users });
+
+        // Mirror the live channel user_count back into the rooms list so the
+        // directory card for the active room reflects real-time presence.
+        // Non-active rooms don't have a proxy; their counts stay at the
+        // backend snapshot until the next directory refresh.
+        const liveCount = proxy.channel.user_count;
+        const indexInRooms = this._rooms.findIndex((r) => r.id === room.id);
+        if (indexInRooms !== -1 && this._rooms[indexInRooms].viewer_count !== liveCount) {
+            this.setRooms(
+                this._rooms.map((r) => (r.id === room.id ? { ...r, viewer_count: liveCount } : r)),
+            );
+        }
     };
 
     public async selectRoom(roomId: string | null): Promise<void> {
