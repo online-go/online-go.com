@@ -303,6 +303,16 @@ export function KibitzRoomStage({
 
         const goban = secondaryBoardController.goban;
 
+        if (
+            typeof selectedVariation.analysis_from === "number" &&
+            typeof selectedVariation.analysis_moves === "string"
+        ) {
+            goban.engine.followPath(
+                selectedVariation.analysis_from,
+                selectedVariation.analysis_moves,
+            );
+        }
+
         if (selectedVariation.analysis_marks) {
             goban.setMarks(selectedVariation.analysis_marks);
         }
@@ -873,6 +883,11 @@ export function KibitzRoomStage({
                                 </div>
                                 <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
                                     <KibitzBoard
+                                        gameId={
+                                            selectedVariation?.mock_game_data
+                                                ? undefined
+                                                : selectedVariation?.game_id
+                                        }
                                         json={selectedVariation?.mock_game_data}
                                         className="secondary-board-surface"
                                         size={secondaryBoardSize}
