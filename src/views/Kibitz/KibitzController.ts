@@ -163,6 +163,61 @@ function mapChatUserToKibitzUser(user: User): KibitzRoomUser {
     };
 }
 
+interface AnalysisChatBody extends TypedChatBody {
+    type: "analysis";
+    from?: number;
+    moves?: string;
+    name?: string;
+    marks?: Record<string, string>;
+    pen_marks?: unknown[];
+    game_id?: number;
+}
+
+function asAnalysisBody(value: unknown): AnalysisChatBody | null {
+    if (typeof value !== "object" || value === null) {
+        return null;
+    }
+    const candidate = value as Partial<AnalysisChatBody>;
+    return candidate.type === "analysis" ? (candidate as AnalysisChatBody) : null;
+}
+
+function mapAnalysisToVariation(
+    msg: ChatMessage,
+    roomId: string,
+    fallbackGameId: number | undefined,
+): KibitzVariationSummary | null {
+    const body = asAnalysisBody(msg.message.m);
+    if (!body) {
+        return null;
+    }
+    const gameId = body.game_id ?? fallbackGameId;
+    if (gameId == null) {
+        return null;
+    }
+    const id = msg.message.i ?? `var-${msg.message.t}-${msg.id}`;
+    return {
+        id,
+        room_id: roomId,
+        game_id: gameId,
+        creator: {
+            id: msg.id,
+            username: msg.username,
+            ranking: msg.ranking,
+            professional: msg.professional,
+            ui_class: msg.ui_class,
+            country: msg.country,
+        },
+        created_at: (msg.message.t || 0) * 1000,
+        viewer_count: 0,
+        current_viewers: [],
+        title: body.name,
+        analysis_from: body.from,
+        analysis_moves: body.moves,
+        analysis_marks: body.marks,
+        analysis_pen_marks: body.pen_marks as KibitzVariationSummary["analysis_pen_marks"],
+    };
+}
+
 function mapChatToStreamItem(msg: ChatMessage, roomId: string): KibitzStreamItem {
     const m = msg.message.m;
     const id = msg.message.i ?? `chat-${msg.message.t}-${msg.id}`;
@@ -519,8 +574,18 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         if (!proxy || !room) {
             return;
         }
-        const items = proxy.channel.chat_log.map((msg) => mapChatToStreamItem(msg, room.id));
+        const items: KibitzStreamItem[] = [];
+        const variations: KibitzVariationSummary[] = [];
+        const fallbackGameId = room.current_game?.game_id;
+        for (const msg of proxy.channel.chat_log) {
+            items.push(mapChatToStreamItem(msg, room.id));
+            const variation = mapAnalysisToVariation(msg, room.id, fallbackGameId);
+            if (variation) {
+                variations.push(variation);
+            }
+        }
         this.setStream(items);
+        this.setVariations(variations);
 
         const users = Object.values(proxy.channel.user_list).map(mapChatUserToKibitzUser);
         this.setActiveRoom({ ...room, users });
@@ -678,12 +743,26 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         });
     }
 
-    /**
-     * Phase 1C-a: variation posting is not yet wired (1C-b adapts shareAnalysis).
-     * Keep the signature so callers in Kibitz.tsx don't break.
-     */
-    public postVariation(_roomId: string, _boardController: GobanController): boolean {
-        return false;
+    public postVariation(roomId: string, boardController: GobanController): boolean {
+        const proxy = this._active_chat_proxy;
+        if (!proxy || !this._active_room || this._active_room.id !== roomId) {
+            return false;
+        }
+        const prepared = boardController.buildAnalysisSnapshot();
+        if (prepared.is_duplicate) {
+            return false;
+        }
+        const gameId = this._active_room.current_game?.game_id;
+        if (!gameId) {
+            return false;
+        }
+        const body = {
+            ...prepared.analysis,
+            game_id: gameId,
+        } as AnalysisChatBody;
+        this.sendTypedToActiveChannel(body);
+        boardController.recordAnalysisSent(prepared.analysis);
+        return true;
     }
 
     /**
