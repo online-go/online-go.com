@@ -386,6 +386,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this._directory_handlers.push(
             push_manager.on("room-created", this.onRoomCreated),
             push_manager.on("room-removed", this.onRoomRemoved),
+            push_manager.on("viewer-count-changed", this.onViewerCountChanged),
         );
         push_manager.subscribe(DIRECTORY_CHANNEL);
 
@@ -518,6 +519,27 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         );
     }
 
+    private onViewerCountChanged = (payload: { channel?: string; viewer_count?: number }) => {
+        if (!payload?.channel || typeof payload.viewer_count !== "number") {
+            return;
+        }
+        const index = this._rooms.findIndex((r) => r.channel === payload.channel);
+        if (index === -1) {
+            return;
+        }
+        if (this._rooms[index].viewer_count === payload.viewer_count) {
+            return;
+        }
+        this.setRooms(
+            this._rooms.map((r) =>
+                r.channel === payload.channel ? { ...r, viewer_count: payload.viewer_count! } : r,
+            ),
+        );
+        if (this._active_room?.channel === payload.channel) {
+            this.setActiveRoom({ ...this._active_room, viewer_count: payload.viewer_count });
+        }
+    };
+
     private onRoomRemoved = (payload: { id?: string } | string | undefined) => {
         const id = typeof payload === "string" ? payload : payload?.id;
         if (!id) {
@@ -582,20 +604,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.partActiveChat();
     }
 
-    private decrementRoomViewerCount(roomId: string): void {
-        const index = this._rooms.findIndex((r) => r.id === roomId);
-        if (index === -1) {
-            return;
-        }
-        const current = this._rooms[index].viewer_count;
-        if (current <= 0) {
-            return;
-        }
-        this.setRooms(
-            this._rooms.map((r) => (r.id === roomId ? { ...r, viewer_count: current - 1 } : r)),
-        );
-    }
-
     private joinActiveChat(channel: string): void {
         this.partActiveChat();
         const proxy = chat_manager.join(channel);
@@ -610,17 +618,8 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
 
     private partActiveChat(): void {
         if (this._active_chat_proxy) {
-            // Capture the channel (== kibitz-<roomId>) before parting so we
-            // can decrement the directory card for the room we just left.
-            // We were counted in the roster while joined; no one pushes the
-            // post-part count to a room we're no longer subscribed to.
-            const leavingChannel = this._active_chat_proxy.channel.channel;
             this._active_chat_proxy.part();
             this._active_chat_proxy = null;
-            const leavingRoomId = this._rooms.find((r) => r.channel === leavingChannel)?.id;
-            if (leavingRoomId) {
-                this.decrementRoomViewerCount(leavingRoomId);
-            }
         }
     }
 
@@ -645,18 +644,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
 
         const users = Object.values(proxy.channel.user_list).map(mapChatUserToKibitzUser);
         this.setActiveRoom({ ...room, users });
-
-        // Mirror the live channel user_count back into the rooms list so the
-        // directory card for the active room reflects real-time presence.
-        // Non-active rooms don't have a proxy; their counts stay at the
-        // backend snapshot until the next directory refresh.
-        const liveCount = proxy.channel.user_count;
-        const indexInRooms = this._rooms.findIndex((r) => r.id === room.id);
-        if (indexInRooms !== -1 && this._rooms[indexInRooms].viewer_count !== liveCount) {
-            this.setRooms(
-                this._rooms.map((r) => (r.id === room.id ? { ...r, viewer_count: liveCount } : r)),
-            );
-        }
     };
 
     public async selectRoom(roomId: string | null): Promise<void> {
