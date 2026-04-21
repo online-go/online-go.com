@@ -677,11 +677,13 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         if (!game) {
             return;
         }
-        if (this._active_room && this._active_room.current_game?.game_id !== gameId) {
+        if (this._active_room) {
             this.setActiveRoom({ ...this._active_room, current_game: game });
-        } else if (this._active_room) {
-            // Same game id; refresh in case other fields changed.
-            this.setActiveRoom({ ...this._active_room, current_game: game });
+            // Re-derive variations/stream: if chat history replay finished
+            // before the game lookup did, variations whose body lacked a
+            // game_id were dropped because the fallback (room.current_game)
+            // wasn't set yet. Now it is.
+            this.syncFromChat();
         }
     }
 
