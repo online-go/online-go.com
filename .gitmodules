@@ -1,6 +1,7 @@
 [submodule "submodules/goban"]
 	path = submodules/goban
 	url = https://github.com/online-go/goban.git
+	branch = kibitz
 	update = merge
 [submodule "submodules/react-dynamic-help"]
 	path = submodules/react-dynamic-help
