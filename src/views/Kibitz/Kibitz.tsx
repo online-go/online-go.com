@@ -596,9 +596,7 @@ export function Kibitz(): React.ReactElement {
                             </div>
                             <div className="Kibitz-sidebar no-active-proposal">
                                 <div className="Kibitz-sidebar-proposal-slot" />
-                                <div className="Kibitz-empty-stage">
-                                    <p>{emptyMessage}</p>
-                                </div>
+                                <div />
                                 <div className="Kibitz-footer-panels" />
                             </div>
                         </div>
