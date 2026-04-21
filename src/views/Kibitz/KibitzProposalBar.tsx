@@ -277,12 +277,7 @@ export function KibitzProposalBar({
                     >
                         <span className="proposal-preview-thumb">
                             <KibitzBoard
-                                gameId={
-                                    proposal.proposed_game.mock_game_data
-                                        ? undefined
-                                        : proposal.proposed_game.game_id
-                                }
-                                json={proposal.proposed_game.mock_game_data}
+                                gameId={proposal.proposed_game.game_id}
                                 className="proposal-preview-board-surface"
                                 size={PROPOSAL_PREVIEW_SIZE}
                                 showLabels={false}
@@ -436,12 +431,7 @@ export function KibitzProposalBar({
                     </div>
                     <div className="proposal-expanded-board-wrap">
                         <KibitzBoard
-                            gameId={
-                                proposal.proposed_game.mock_game_data
-                                    ? undefined
-                                    : proposal.proposed_game.game_id
-                            }
-                            json={proposal.proposed_game.mock_game_data}
+                            gameId={proposal.proposed_game.game_id}
                             className="proposal-expanded-board-surface"
                         />
                     </div>

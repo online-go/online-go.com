@@ -26,49 +26,22 @@ import {
 } from "@/lib/chat_manager";
 import { interpolate, pgettext } from "@/lib/translate";
 import { useUser } from "@/lib/hooks";
-import type {
-    KibitzMode,
-    KibitzRoomSummary,
-    KibitzStreamItem,
-    KibitzVariationSummary,
-} from "@/models/kibitz";
+import type { KibitzRoomSummary, KibitzStreamItem } from "@/models/kibitz";
 import "./KibitzRoomStream.css";
 import "@/components/Chat/ChatLog.css";
 
 interface KibitzRoomStreamProps {
-    mode: KibitzMode;
     room: KibitzRoomSummary;
     items: KibitzStreamItem[];
-    variations: KibitzVariationSummary[];
-    onOpenVariation: (variationId: string) => void;
-    onSendMessage: (text: string) => void;
     scrollToVariationId?: string | null;
     scrollToVariationRequestId?: number | null;
     onScrolledToVariation?: () => void;
     compact?: boolean;
 }
 
-type DemoStreamEntry =
-    | {
-          kind: "chat";
-          key: string;
-          createdAt: number;
-          line: ChatMessage;
-      }
-    | {
-          kind: "variation";
-          key: string;
-          createdAt: number;
-          item: KibitzStreamItem;
-      };
-
 export function KibitzRoomStream({
-    mode,
     room,
     items,
-    variations,
-    onOpenVariation,
-    onSendMessage,
     scrollToVariationId,
     scrollToVariationRequestId,
     onScrolledToVariation,
@@ -85,12 +58,6 @@ export function KibitzRoomStream({
     );
 
     React.useEffect(() => {
-        if (mode === "demo") {
-            setProxy(null);
-            setChannelName(room.title);
-            return;
-        }
-
         const nextProxy = chat_manager.join(room.channel);
         setProxy(nextProxy);
 
@@ -114,7 +81,7 @@ export function KibitzRoomStream({
             nextProxy.off("part", sync);
             nextProxy.part();
         };
-    }, [mode, room.channel, room.title]);
+    }, [room.channel, room.title]);
 
     const onKeyPress = React.useCallback(
         (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -125,10 +92,6 @@ export function KibitzRoomStream({
             const input = event.target as HTMLInputElement;
             const value = input.value.trim();
             if (!value || !proxy) {
-                if (mode === "demo") {
-                    onSendMessage(value);
-                    input.value = "";
-                }
                 return false;
             }
 
@@ -136,49 +99,11 @@ export function KibitzRoomStream({
             input.value = "";
             return false;
         },
-        [mode, onSendMessage, proxy],
+        [proxy],
     );
 
     const chatLog = proxy?.channel.chat_log.slice(-200) ?? [];
-    const demoEntries: DemoStreamEntry[] = items
-        .map<DemoStreamEntry | null>((item) => {
-            if (item.type === "variation_posted") {
-                return {
-                    kind: "variation",
-                    key: item.id,
-                    createdAt: item.created_at,
-                    item,
-                };
-            }
-
-            if (!item.author && item.type !== "system" && item.type !== "proposal_result") {
-                return null;
-            }
-
-            return {
-                kind: "chat",
-                key: item.id,
-                createdAt: item.created_at,
-                line: {
-                    channel: room.channel,
-                    username: item.author?.username ?? "",
-                    id: item.author?.id ?? 0,
-                    ranking: item.author?.ranking ?? 0,
-                    professional: item.author?.professional ?? false,
-                    ui_class: item.author?.ui_class ?? "",
-                    country: item.author?.country,
-                    system: item.type !== "chat",
-                    message: {
-                        i: item.id,
-                        t: Math.floor(item.created_at / 1000),
-                        m: item.text,
-                    },
-                },
-            };
-        })
-        .filter((entry): entry is DemoStreamEntry => entry !== null)
-        .sort((left, right) => left.createdAt - right.createdAt);
-    const renderedLineCount = mode === "demo" ? demoEntries.length : chatLog.length;
+    const renderedLineCount = chatLog.length;
     let lastLine: ChatMessage | undefined;
 
     const updateFollowLatest = React.useCallback(() => {
@@ -255,69 +180,20 @@ export function KibitzRoomStream({
                 </div>
             )}
             <div className="KibitzRoomStream-items">
-                {(mode === "demo" ? demoEntries.length > 0 : chatLog.length > 0) ? (
+                {chatLog.length > 0 ? (
                     <div ref={chatLinesRef} className="chat-lines" onScroll={updateFollowLatest}>
-                        {mode === "demo"
-                            ? demoEntries.map((entry) => {
-                                  if (entry.kind === "variation") {
-                                      const variation = variations.find(
-                                          (variationEntry) =>
-                                              variationEntry.id === entry.item.variation_id,
-                                      );
-                                      const label = `${entry.item.author?.username ?? ""} ${pgettext(
-                                          "Lead-in for a variation post line in the kibitz stream",
-                                          "posted variation",
-                                      )}: ${
-                                          variation?.title ??
-                                          pgettext(
-                                              "Fallback title for a variation link in the kibitz stream",
-                                              "Open variation",
-                                          )
-                                      }`;
-                                      return (
-                                          <button
-                                              key={entry.key}
-                                              type="button"
-                                              className="variation-post"
-                                              data-variation-id={entry.item.variation_id}
-                                              onClick={() =>
-                                                  entry.item.variation_id &&
-                                                  onOpenVariation(entry.item.variation_id)
-                                              }
-                                          >
-                                              {label}
-                                          </button>
-                                      );
-                                  }
-
-                                  const previousLine = lastLine;
-                                  lastLine = entry.line;
-                                  return (
-                                      <ChatLine
-                                          key={entry.key}
-                                          line={entry.line}
-                                          lastLine={previousLine}
-                                      />
-                                  );
-                              })
-                            : chatLog.map((line) => {
-                                  const previousLine = lastLine;
-                                  lastLine = line;
-                                  return (
-                                      <ChatLine
-                                          key={line.message.i || `system-${line.message.t}`}
-                                          line={line}
-                                          lastLine={previousLine}
-                                      />
-                                  );
-                              })}
+                        {chatLog.map((line) => {
+                            const previousLine = lastLine;
+                            lastLine = line;
+                            return (
+                                <ChatLine
+                                    key={line.message.i || `system-${line.message.t}`}
+                                    line={line}
+                                    lastLine={previousLine}
+                                />
+                            );
+                        })}
                     </div>
-                ) : items.length > 0 ? (
-                    items.map((item) => (
-                        <div key={item.id} className={"stream-item " + item.type}>
-                            {item.text}
-                        </div>
-                    ))
                 ) : (
                     <div className="stream-empty">
                         {pgettext(

@@ -22,7 +22,6 @@ import { get } from "@/lib/requests";
 import { alert } from "@/lib/swal_config";
 import { pgettext } from "@/lib/translate";
 import type {
-    KibitzMode,
     KibitzProposal,
     KibitzRoomSummary,
     KibitzSecondaryPaneState,
@@ -36,7 +35,6 @@ import { KibitzVariationComposer } from "./KibitzVariationComposer";
 import "./KibitzRoomStage.css";
 
 interface KibitzRoomStageProps {
-    mode: KibitzMode;
     room: KibitzRoomSummary;
     rooms: KibitzRoomSummary[];
     proposals: KibitzProposal[];
@@ -169,7 +167,6 @@ function renderInlineAvatar(
 }
 
 export function KibitzRoomStage({
-    mode,
     room,
     rooms,
     proposals,
@@ -272,7 +269,7 @@ export function KibitzRoomStage({
     }, [secondaryBoardController, secondaryMoveTreeContainer, secondaryMoveTreeKey]);
 
     React.useEffect(() => {
-        if (!mainGame?.game_id || mainGame.mock_game_data || mode === "demo") {
+        if (!mainGame?.game_id) {
             setMainGameDetails(null);
             return;
         }
@@ -294,7 +291,7 @@ export function KibitzRoomStage({
         return () => {
             canceled = true;
         };
-    }, [mainGame?.game_id, mainGame?.mock_game_data, mode]);
+    }, [mainGame?.game_id]);
 
     React.useEffect(() => {
         if (!selectedVariation || !secondaryBoardController) {
@@ -424,8 +421,7 @@ export function KibitzRoomStage({
                     >
                         {renderMainBoard ? (
                             <KibitzBoard
-                                gameId={mainGame?.mock_game_data ? undefined : mainGame?.game_id}
-                                json={mainGame?.mock_game_data}
+                                gameId={mainGame?.game_id}
                                 className="mobile-main-board-surface"
                                 size={mobileBoardSize}
                                 fitMode="contain"
@@ -435,10 +431,7 @@ export function KibitzRoomStage({
                         ) : null}
                         {renderPreviewBoard ? (
                             <KibitzBoard
-                                gameId={
-                                    secondaryBoardGame?.mock_game_data ? undefined : secondaryGameId
-                                }
-                                json={secondaryBoardGame?.mock_game_data}
+                                gameId={secondaryGameId}
                                 className="mobile-secondary-board-surface"
                                 size={mobileBoardSize}
                                 interactive={true}
@@ -449,7 +442,7 @@ export function KibitzRoomStage({
                         ) : null}
                         {renderVariationBoard ? (
                             <KibitzBoard
-                                json={selectedVariation?.mock_game_data}
+                                gameId={selectedVariation?.game_id}
                                 className="mobile-secondary-board-surface"
                                 size={mobileBoardSize}
                                 interactive={true}
@@ -628,10 +621,7 @@ export function KibitzRoomStage({
                                 </div>
                                 <div className="board-fit-slot" ref={mainBoardSlotRef}>
                                     <KibitzBoard
-                                        gameId={
-                                            mainGame.mock_game_data ? undefined : mainGame.game_id
-                                        }
-                                        json={mainGame.mock_game_data}
+                                        gameId={mainGame.game_id}
                                         className="main-board-surface"
                                         size={mainBoardSize}
                                         respectContainerBounds={true}
@@ -782,12 +772,7 @@ export function KibitzRoomStage({
                                 </div>
                                 <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
                                     <KibitzBoard
-                                        gameId={
-                                            secondaryBoardGame?.mock_game_data
-                                                ? undefined
-                                                : secondaryGameId
-                                        }
-                                        json={secondaryBoardGame?.mock_game_data}
+                                        gameId={secondaryGameId}
                                         className="secondary-board-surface"
                                         size={secondaryBoardSize}
                                         interactive={secondaryPaneSize === "equal"}
@@ -883,12 +868,7 @@ export function KibitzRoomStage({
                                 </div>
                                 <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
                                     <KibitzBoard
-                                        gameId={
-                                            selectedVariation?.mock_game_data
-                                                ? undefined
-                                                : selectedVariation?.game_id
-                                        }
-                                        json={selectedVariation?.mock_game_data}
+                                        gameId={selectedVariation?.game_id}
                                         className="secondary-board-surface"
                                         size={secondaryBoardSize}
                                         interactive={secondaryPaneSize === "equal"}

@@ -19,12 +19,11 @@ import * as React from "react";
 import { Player } from "@/components/Player";
 import { chat_manager, ChatChannelProxy } from "@/lib/chat_manager";
 import { interpolate, pgettext } from "@/lib/translate";
-import type { KibitzMode, KibitzRoomSummary, KibitzRoomUser } from "@/models/kibitz";
+import type { KibitzRoomSummary, KibitzRoomUser } from "@/models/kibitz";
 import { User } from "goban";
 import "./KibitzPresence.css";
 
 interface KibitzPresenceProps {
-    mode: KibitzMode;
     room: KibitzRoomSummary;
     users: KibitzRoomUser[];
 }
@@ -76,18 +75,13 @@ function PresenceAvatar({
     );
 }
 
-export function KibitzPresence({ mode, room, users }: KibitzPresenceProps): React.ReactElement {
+export function KibitzPresence({ room }: KibitzPresenceProps): React.ReactElement {
     const [proxy, setProxy] = React.useState<ChatChannelProxy | null>(null);
     const [, refresh] = React.useState(0);
     const [viewerCountFlash, setViewerCountFlash] = React.useState(false);
     const previousViewerCountRef = React.useRef<number | null>(null);
 
     React.useEffect(() => {
-        if (mode === "demo") {
-            setProxy(null);
-            return;
-        }
-
         const nextProxy = chat_manager.join(room.channel);
         setProxy(nextProxy);
 
@@ -101,7 +95,7 @@ export function KibitzPresence({ mode, room, users }: KibitzPresenceProps): Reac
             nextProxy.off("part", sync);
             nextProxy.part();
         };
-    }, [mode, room.channel]);
+    }, [room.channel]);
 
     React.useEffect(() => {
         if (previousViewerCountRef.current == null) {
@@ -131,8 +125,7 @@ export function KibitzPresence({ mode, room, users }: KibitzPresenceProps): Reac
         };
     }, [room.viewer_count]);
 
-    const channelUsers: User[] = proxy ? [...proxy.channel.users_by_join].reverse() : [];
-    const visibleUsers = mode === "demo" ? users : channelUsers;
+    const visibleUsers: User[] = proxy ? [...proxy.channel.users_by_join].reverse() : [];
     return (
         <div className="KibitzPresence">
             <div className="KibitzPresence-body">

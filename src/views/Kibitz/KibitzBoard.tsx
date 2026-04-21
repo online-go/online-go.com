@@ -20,12 +20,10 @@ import { GobanRendererConfig } from "goban";
 import { GobanContainer } from "@/components/GobanContainer/GobanContainer";
 import { GobanController } from "@/lib/GobanController";
 import * as preferences from "@/lib/preferences";
-import type { KibitzWatchedGame } from "@/models/kibitz";
 import "./KibitzBoard.css";
 
 interface KibitzBoardProps {
     gameId?: number;
-    json?: KibitzWatchedGame["mock_game_data"];
     className?: string;
     size?: number;
     interactive?: boolean;
@@ -35,12 +33,8 @@ interface KibitzBoardProps {
     onReady?: (controller: GobanController | null) => void;
 }
 
-type KibitzBoardConfig = Partial<GobanRendererConfig> &
-    NonNullable<KibitzWatchedGame["mock_game_data"]>;
-
 export function KibitzBoard({
     gameId,
-    json,
     className,
     size,
     interactive = false,
@@ -61,7 +55,6 @@ export function KibitzBoard({
 
     React.useEffect(() => {
         const labelPosition = preferences.get("label-positioning");
-        const configJson = json as KibitzBoardConfig | undefined;
         const themes = preferences.getSelectedThemes();
         const config: GobanRendererConfig = {
             board_div: gobanDiv.current,
@@ -79,9 +72,8 @@ export function KibitzBoard({
             stone_font_scale: preferences.get("stone-font-scale"),
             square_size: "auto",
             game_id: gameId,
-            width: configJson?.width ?? 19,
-            height: configJson?.height ?? 19,
-            ...(configJson ?? {}),
+            width: 19,
+            height: 19,
         };
 
         controllerRef.current?.destroy();
@@ -105,7 +97,7 @@ export function KibitzBoard({
             controllerRef.current = null;
             setGoban(null);
         };
-    }, [gameId, interactive, json, onReady, showLabels]);
+    }, [gameId, interactive, onReady, showLabels]);
 
     return (
         <div

@@ -32,7 +32,6 @@ import { interpolate, pgettext } from "@/lib/translate";
 import type { User } from "goban";
 import type {
     KibitzDebugState,
-    KibitzMode,
     KibitzProposal,
     KibitzRoom,
     KibitzRoomSummary,
@@ -313,7 +312,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     private _secondary_pane: KibitzSecondaryPaneState = { collapsed: true, size: "small" };
     private _permissions: KibitzPermissions = DEFAULT_PERMISSIONS;
     private _debug: KibitzDebugState = {
-        mode: "live",
         socket_connected: socket.connected,
         status: "idle",
         rooms: [],
@@ -330,10 +328,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
      * it, the result is stale and should be discarded.
      */
     private _select_room_token = 0;
-
-    public get mode(): KibitzMode {
-        return "live";
-    }
 
     public get destroyed(): boolean {
         return this._destroyed;
@@ -451,7 +445,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     private async refreshRooms(): Promise<void> {
         this.setDebug({
             ...this._debug,
-            mode: "live",
             socket_connected: socket.connected,
             status: "loading",
             error: undefined,
@@ -732,14 +725,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             console.warn("kibitz: changeBoard failed", roomId, error);
             return false;
         }
-    }
-
-    public sendMessage(_roomId: string, text: string): void {
-        const proxy = this._active_chat_proxy;
-        if (!proxy) {
-            return;
-        }
-        proxy.channel.send(text);
     }
 
     private postChangeBoardSystemMessage(game: KibitzWatchedGame): void {

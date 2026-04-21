@@ -22,7 +22,6 @@ import { alert } from "@/lib/swal_config";
 import { interpolate, pgettext } from "@/lib/translate";
 import type {
     KibitzDebugState,
-    KibitzMode,
     KibitzProposal,
     KibitzRoom,
     KibitzRoomSummary,
@@ -86,7 +85,6 @@ export function Kibitz(): React.ReactElement {
     }
 
     const controller = controllerRef.current;
-    const [mode] = React.useState<KibitzMode>(controller.mode);
     const [rooms, setRooms] = React.useState<KibitzRoomSummary[]>(controller.rooms);
     const [activeRoom, setActiveRoom] = React.useState<KibitzRoom | null>(controller.active_room);
     const [stream, setStream] = React.useState<KibitzStreamItem[]>(controller.stream);
@@ -241,29 +239,6 @@ export function Kibitz(): React.ReactElement {
             controller.destroy();
         };
     }, [controller]);
-
-    React.useEffect(() => {
-        if (mode !== "demo") {
-            return;
-        }
-
-        const syncDemoState = () => {
-            setRooms(controller.rooms);
-            setActiveRoom(controller.active_room);
-            setStream(controller.stream);
-            setProposals(controller.proposals);
-            setVariations(controller.variations);
-            setSecondaryPane(controller.secondary_pane);
-            setDebug(controller.debug);
-        };
-
-        syncDemoState();
-        const timer = window.setInterval(syncDemoState, 1000);
-
-        return () => {
-            window.clearInterval(timer);
-        };
-    }, [controller, mode]);
 
     React.useEffect(() => {
         const nextRoomId = roomId ?? controller.default_room_id;
@@ -442,15 +417,6 @@ export function Kibitz(): React.ReactElement {
         (boardController: GobanController) => {
             if (resolvedRoom) {
                 controller.postVariation(resolvedRoom.id, boardController);
-            }
-        },
-        [controller, resolvedRoom],
-    );
-
-    const onSendMessage = React.useCallback(
-        (text: string) => {
-            if (resolvedRoom) {
-                controller.sendMessage(resolvedRoom.id, text);
             }
         },
         [controller, resolvedRoom],
@@ -668,7 +634,7 @@ export function Kibitz(): React.ReactElement {
                         onSelectRoom={onSelectRoom}
                         onCreateRoom={onOpenCreateRoom}
                     />
-                    <KibitzPresence mode={mode} room={resolvedRoom} users={resolvedRoomUsers} />
+                    <KibitzPresence room={resolvedRoom} users={resolvedRoomUsers} />
                 </div>
                 <div className="Kibitz-main">
                     {isMobileLayout ? (
@@ -813,7 +779,6 @@ export function Kibitz(): React.ReactElement {
                                     style={{ flexBasis: `${mobileSplitRatio * 100}%` }}
                                 >
                                     <KibitzRoomStage
-                                        mode={mode}
                                         room={resolvedRoom}
                                         rooms={rooms}
                                         proposals={roomProposals}
@@ -855,12 +820,8 @@ export function Kibitz(): React.ReactElement {
                                         <div className="Kibitz-mobile-panel-surface">
                                             {mobileCompanionPanel === "chat" ? (
                                                 <KibitzRoomStream
-                                                    mode={mode}
                                                     room={resolvedRoom}
                                                     items={stream}
-                                                    variations={variations}
-                                                    onOpenVariation={onOpenVariation}
-                                                    onSendMessage={onSendMessage}
                                                     scrollToVariationId={
                                                         pendingScrollVariationRequest?.variationId ??
                                                         null
@@ -959,7 +920,6 @@ export function Kibitz(): React.ReactElement {
                     ) : (
                         <div className="Kibitz-content">
                             <KibitzRoomStage
-                                mode={mode}
                                 room={resolvedRoom}
                                 rooms={rooms}
                                 proposals={roomProposals}
@@ -992,12 +952,8 @@ export function Kibitz(): React.ReactElement {
                                     />
                                 </div>
                                 <KibitzRoomStream
-                                    mode={mode}
                                     room={resolvedRoom}
                                     items={stream}
-                                    variations={variations}
-                                    onOpenVariation={onOpenVariation}
-                                    onSendMessage={onSendMessage}
                                     scrollToVariationId={
                                         pendingScrollVariationRequest?.variationId ?? null
                                     }
