@@ -89,6 +89,59 @@ function mapBackendRoomToFull(backend: BackendKibitzRoom): KibitzRoom {
     };
 }
 
+interface BackendGameForKibitz {
+    id: number;
+    name?: string | null;
+    width?: number;
+    height?: number;
+    black?: { id: number; username: string; ranking?: number } | null;
+    white?: { id: number; username: string; ranking?: number } | null;
+    ended?: string | null;
+    json?: { moves?: unknown[] } | null;
+    tournament_name?: string;
+}
+
+function mapBackendUser(
+    raw: { id: number; username: string; ranking?: number } | null | undefined,
+): KibitzRoomUser {
+    if (!raw) {
+        return { id: 0, username: "", ranking: 0, professional: false, ui_class: "" };
+    }
+    return {
+        id: raw.id,
+        username: raw.username,
+        ranking: raw.ranking ?? 0,
+        professional: false,
+        ui_class: "",
+    };
+}
+
+function mapBackendGameToWatched(game: BackendGameForKibitz): KibitzWatchedGame | undefined {
+    if (typeof game.width !== "number" || typeof game.height !== "number") {
+        return undefined;
+    }
+    return {
+        game_id: game.id,
+        board_size: `${game.width}x${game.height}` as `${number}x${number}`,
+        title: game.name ?? "",
+        black: mapBackendUser(game.black),
+        white: mapBackendUser(game.white),
+        tournament_name: game.tournament_name,
+        move_number: game.json?.moves?.length,
+        live: game.ended == null,
+    };
+}
+
+async function lookupGameForKibitz(gameId: number): Promise<KibitzWatchedGame | undefined> {
+    try {
+        const game = (await get(`games/${gameId}`)) as BackendGameForKibitz;
+        return mapBackendGameToWatched(game);
+    } catch (error) {
+        console.warn("kibitz: game lookup failed", gameId, error);
+        return undefined;
+    }
+}
+
 export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     private _destroyed = false;
     private _rooms: KibitzRoomSummary[] = [];
@@ -288,6 +341,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 ...this._active_room,
                 ...summary,
             });
+            void this.hydrateActiveRoomGame(incoming.current_game_id, this._select_room_token);
         }
     };
 
@@ -350,6 +404,8 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 collapsed: true,
                 size: "small",
             });
+
+            void this.hydrateActiveRoomGame(payload.room.current_game_id, token);
         } catch (error) {
             if (token !== this._select_room_token || this._destroyed) {
                 return;
@@ -360,6 +416,33 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             this.setVariations([]);
             this.setProposals([]);
             console.warn("kibitz: failed to hydrate room", roomId, error);
+        }
+    }
+
+    /**
+     * Resolve `current_game_id` to a populated `KibitzWatchedGame` for the
+     * active room. Fired async after hydration / board changes so the board
+     * pane can render the actual game rather than a placeholder.
+     */
+    private async hydrateActiveRoomGame(
+        gameId: number | null | undefined,
+        token: number,
+    ): Promise<void> {
+        if (!gameId) {
+            return;
+        }
+        const game = await lookupGameForKibitz(gameId);
+        if (token !== this._select_room_token || this._destroyed) {
+            return;
+        }
+        if (!game) {
+            return;
+        }
+        if (this._active_room && this._active_room.current_game?.game_id !== gameId) {
+            this.setActiveRoom({ ...this._active_room, current_game: game });
+        } else if (this._active_room) {
+            // Same game id; refresh in case other fields changed.
+            this.setActiveRoom({ ...this._active_room, current_game: game });
         }
     }
 
