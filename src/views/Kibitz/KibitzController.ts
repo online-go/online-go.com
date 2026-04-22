@@ -461,6 +461,9 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
 
         try {
             const payload = (await get("kibitz/rooms")) as BackendKibitzRoom[];
+            if (this._destroyed) {
+                return;
+            }
             const rooms = (payload ?? []).map((r) => mapBackendRoomToSummary(r));
             this.setRooms(rooms);
             this.setDebug({
@@ -477,6 +480,9 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 }
             }
         } catch (error) {
+            if (this._destroyed) {
+                return;
+            }
             this.setDebug({
                 ...this._debug,
                 status: "error",
