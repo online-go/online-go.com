@@ -3,16 +3,6 @@
   "eslint.run": "onSave",
   "eslint.workingDirectories": [{ "mode": "auto" }],
   "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
-  "eslint.rules.customizations": [
-    {
-      "rule": "linebreak-style",
-      "severity": "off"
-    },
-    {
-      "rule": "prettier/prettier",
-      "severity": "off"
-    }
-  ],
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   }
