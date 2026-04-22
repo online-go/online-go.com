@@ -276,23 +276,10 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
                 />
             )}
             <div className="chat-input-container input-group">
-                {((userIsPlayer && data.get("user").email_validated) || null) && (
-                    <ChatLogToggleButton
-                        selected_chat_log={selected_chat_log}
-                        toggleChatLog={toggleChatLog}
-                        isUserModerator={false}
-                    />
-                )}
-                {((!userIsPlayer && data.get("user").is_moderator) || null) && (
-                    <ChatLogToggleButton
-                        selected_chat_log={selected_chat_log}
-                        toggleChatLog={toggleChatLog}
-                        isUserModerator={true}
-                    />
-                )}
                 <TabCompleteInput
                     className={`chat-input  ${selected_chat_log}`}
                     disabled={user.anonymous || !data.get("user").email_validated}
+                    maxMessageLength={1024}
                     placeholder={
                         user.anonymous
                             ? _("Sign in to chat")
@@ -320,22 +307,47 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
                     onKeyPress={onKeyPress}
                     onFocus={() => setShowQuickChat(false)}
                 />
-                {userIsPlayer &&
-                user.email_validated &&
-                props.game_id &&
-                selected_chat_log === "main" ? (
-                    <i
-                        className={
-                            "qc-toggle fa " + (show_quick_chat ? "fa-caret-down" : "fa-caret-up")
-                        }
-                        onClick={() => setShowQuickChat(!show_quick_chat)}
-                    />
-                ) : null}
-                <ChatUserCount
-                    onClick={togglePlayerList}
-                    active={show_player_list}
-                    channel={channel}
-                />
+                <div className="chat-toolbar">
+                    <div className="chat-toolbar-left">
+                        {((userIsPlayer && data.get("user").email_validated) || null) && (
+                            <ChatLogToggleButton
+                                selected_chat_log={selected_chat_log}
+                                toggleChatLog={toggleChatLog}
+                                isUserModerator={false}
+                            />
+                        )}
+                        {((!userIsPlayer && data.get("user").is_moderator) || null) && (
+                            <ChatLogToggleButton
+                                selected_chat_log={selected_chat_log}
+                                toggleChatLog={toggleChatLog}
+                                isUserModerator={true}
+                            />
+                        )}
+                    </div>
+
+                    <div className="chat-toolbar-right">
+                        {/* quick chat toggle */}
+                        {userIsPlayer &&
+                        user.email_validated &&
+                        props.game_id &&
+                        selected_chat_log === "main" ? (
+                            <i
+                                className={
+                                    "qc-toggle fa " +
+                                    (show_quick_chat ? "fa-caret-down" : "fa-caret-up")
+                                }
+                                onClick={() => setShowQuickChat(!show_quick_chat)}
+                            />
+                        ) : null}
+
+                        {/* ChatUserCount */}
+                        <ChatUserCount
+                            onClick={togglePlayerList}
+                            active={show_player_list}
+                            channel={channel}
+                        />
+                    </div>
+                </div>
             </div>
         </div>
     );

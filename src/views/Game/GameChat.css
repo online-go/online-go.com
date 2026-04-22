@@ -158,10 +158,18 @@
         /* width: 100%; */
         overflow: visible;
         align-items: flex-end;
+        flex-direction: column;
+        border-top: 1px solid var(--shade3);
 
         button {
             flex-shrink: 0;
-            height: 30px;
+            height: 20px;
+            font-size:small;
+            margin-left: 4px;
+            margin-right: 4px;
+            /* box-sizing: border-box; */
+            /* background-color: var(--default-button-dark); */
+            /* border: 3px solid var(--default-button-light); */
         }
 
         .chat-input-chat-log-toggle {
@@ -174,13 +182,42 @@
             min-width: 5rem;
             flex-grow: 1;
             flex-shrink: 1;
-            width: 5rem;
-            resize: none !important;
-            border-top-left-radius: 0;
+            width: 100%;
+            resize: none;
             margin: 0;
             box-sizing: border-box;
-            box-shadow: none;
             line-height: 1.2;
+            border: 4px solid var(--default-button);
+            border-bottom: none;
+            border-radius: 0px 0px 0 0;
+
+            &:focus {
+                outline: none;
+            }
+        }
+
+        .chat-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 28px;
+            flex-shrink: 0;
+            width: 100%;
+            background-color: var(--default-button);
+        }
+
+        .chat-toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 0px;
+            /* min-width: 0; */
+        }
+
+        /* 右侧按钮组 */
+        .chat-toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 0px;
         }
 
         .qc-toggle {
@@ -191,6 +228,7 @@
             background-color: var(--default-button);
             color: var(--default-button-color);
             transition: background-color 0.3s ease;
+            height: 20px;
 
             &:hover, &:focus {
                 text-decoration: none;
