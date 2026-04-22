@@ -550,7 +550,7 @@ function ChatInput({
 
     const onKeyPress = useCallback(
         (event: React.KeyboardEvent<HTMLTextAreaElement>): boolean | undefined => {
-            if (event.charCode === 13) {
+            if (event.key === "Enter") {
                 const input = event.target as HTMLTextAreaElement;
                 if (!socket.connected) {
                     void alert.fire(_("Connection to server lost"));

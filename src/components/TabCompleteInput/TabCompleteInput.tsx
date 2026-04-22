@@ -23,6 +23,7 @@ interface TabCompleteInputProperties extends React.HTMLProps<HTMLTextAreaElement
     id?: string;
     placeholder?: string;
     disabled?: boolean;
+    maxMessageLength?: number; // optional, undefined means unlimited.
     onKeyPress?: React.KeyboardEventHandler<HTMLTextAreaElement>;
     className?: string;
     onFocus?: (event: React.FocusEvent<HTMLTextAreaElement>) => void;
@@ -114,11 +115,52 @@ export const TabCompleteInput = React.forwardRef<HTMLTextAreaElement, TabComplet
         const defaultRef = React.useRef<HTMLTextAreaElement>(null);
         const inputRef = (ref as React.RefObject<HTMLTextAreaElement>) || defaultRef;
         const [lastKey, setLastKey] = React.useState<number>(0);
+        const [charCount, setCharCount] = React.useState<number>(0);
+        const [showWarning, setShowWarning] = React.useState<boolean>(false);
 
         const adjustHeight = React.useCallback((textarea: HTMLTextAreaElement) => {
-            textarea.style.height = "auto";
-            textarea.style.height = `${Math.min(textarea.scrollHeight, 150)}px`;
+            const style = window.getComputedStyle(textarea);
+            const borderY = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+            textarea.style.height = "0px";
+            textarea.style.height = `${Math.min(textarea.scrollHeight + borderY, 150)}px`;
         }, []);
+
+        const maxMessageLength = props.maxMessageLength;
+
+        const checkCharCount = React.useCallback(
+            (text: string) => {
+                if (maxMessageLength === undefined) {
+                    setShowWarning(false);
+                    return;
+                }
+
+                const length = text.length;
+                setCharCount(length);
+
+                const remaining = maxMessageLength - length;
+
+                if (remaining < 50) {
+                    setShowWarning(true);
+                } else {
+                    setShowWarning(false);
+                }
+            },
+            [maxMessageLength],
+        );
+
+        React.useEffect(() => {
+            const textarea = inputRef.current;
+            if (!textarea) {
+                return;
+            }
+
+            const observer = new ResizeObserver(() => {
+                adjustHeight(textarea);
+            });
+
+            observer.observe(textarea);
+            return () => observer.disconnect();
+        }, [adjustHeight]);
 
         const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
             if (e.key === "Enter") {
@@ -126,8 +168,8 @@ export const TabCompleteInput = React.forwardRef<HTMLTextAreaElement, TabComplet
                 props.onKeyPress?.(e);
                 // Reset height after sending
                 if (inputRef.current) {
-                    inputRef.current.style.height = "auto";
                     adjustHeight(inputRef.current);
+                    setShowWarning(false);
                 }
                 return;
             }
@@ -232,20 +274,31 @@ export const TabCompleteInput = React.forwardRef<HTMLTextAreaElement, TabComplet
 
         const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
             props.onChange?.(e);
-            adjustHeight(inputRef.current);
+            if (inputRef.current) {
+                adjustHeight(inputRef.current);
+            }
+            checkCharCount(inputRef.current.value);
         };
 
         return (
-            <textarea
-                ref={inputRef}
-                enterKeyHint="send"
-                {...props}
-                onKeyDown={handleKeyDown}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-                onChange={handleChange}
-                rows={1}
-            />
+            <div className="chat-input-wrapper">
+                <textarea
+                    ref={inputRef}
+                    enterKeyHint="send"
+                    {...props}
+                    maxLength={maxMessageLength}
+                    onKeyDown={handleKeyDown}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                    onChange={handleChange}
+                    rows={1}
+                />
+                {showWarning && (
+                    <div className="chat-count-warning">
+                        ⚠ {charCount}/{maxMessageLength} chars
+                    </div>
+                )}
+            </div>
         );
     },
 );

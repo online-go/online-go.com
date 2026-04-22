@@ -17,3 +17,34 @@
 .TabCompleteInput {
     /* here */
 }
+
+.chat-input-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: visible;
+}
+
+.chat-count-warning {
+    position: absolute;
+    bottom: 100%;
+    right: 0px;
+    width: calc(100% - 12px);
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    color: #ff6b6b;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    font-family: monospace;
+    pointer-events: none;
+}
+
+.chat-input-wrapper textarea {
+    width: 100%;
+    min-width: 5rem;
+    resize: none;
+    box-sizing: border-box;
+    line-height: 1.2;
+    outline: none;
+}
