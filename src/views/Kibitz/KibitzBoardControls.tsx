@@ -46,11 +46,11 @@ export function KibitzBoardControls({
             return;
         }
 
-        const goban = controller.goban as any;
+        const goban = controller.goban;
         const sync = () => {
-            const currentMoveNumber = goban?.engine?.cur_move?.move_number;
+            const currentMoveNumber = goban.engine?.cur_move?.move_number;
             const officialMoveNumber =
-                goban?.engine?.last_official_move?.move_number ?? totalMoves ?? 0;
+                goban.engine?.last_official_move?.move_number ?? totalMoves ?? 0;
 
             setLatestMoveNumber(officialMoveNumber);
             setMoveNumber(
@@ -59,13 +59,13 @@ export function KibitzBoardControls({
                     : officialMoveNumber,
             );
         };
-        const syncEvents = ["cur_move", "last_official_move", "load", "gamedata"];
+        const syncEvents = ["cur_move", "last_official_move", "load", "gamedata"] as const;
 
         sync();
-        syncEvents.forEach((eventName) => goban?.on?.(eventName, sync));
+        syncEvents.forEach((eventName) => goban.on(eventName, sync));
 
         return () => {
-            syncEvents.forEach((eventName) => goban?.off?.(eventName, sync));
+            syncEvents.forEach((eventName) => goban.off(eventName, sync));
         };
     }, [controller, totalMoves]);
 

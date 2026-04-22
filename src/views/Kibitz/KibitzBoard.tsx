@@ -82,7 +82,7 @@ export function KibitzBoard({
 
         controllerRef.current?.destroy();
         controllerRef.current = new GobanController(config);
-        (controllerRef.current.goban as any).setTheme(
+        controllerRef.current.goban.setTheme(
             {
                 ...themes,
                 board: "Kaya",
