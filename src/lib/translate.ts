@@ -569,6 +569,8 @@ export function setCurrentLanguage(language_code: string) {
         Slate: _("Slate"),
         "Worn Glass": _("Worn Glass"),
         Anime: _("Anime"),
+        BadukTV: _("BadukTV"),
+        "Community Favorite": _("Community Favorite"),
 
         "%swk": pgettext("Short time (weeks)", "%swk"),
         "%sd": pgettext("Short time (days)", "%sd"),

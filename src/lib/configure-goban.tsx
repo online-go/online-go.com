@@ -108,6 +108,7 @@ export function configure_goban() {
         getMoveTreeNumbering: (): "none" | "move-number" | "move-coordinates" =>
             preferences.get("move-tree-numbering"),
         getStoneFontScale: (): number => preferences.get("stone-font-scale"),
+        getFuzzyPlacementEnabled: (): boolean => preferences.get("fuzzy-stone-placement"),
         getCDNReleaseBase: (): string => data.get("config.cdn_release", ""),
         getSoundEnabled: (): boolean => sfx.getVolume("master") > 0,
         getSoundVolume: (): number => sfx.getVolume("master"),

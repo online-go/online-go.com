@@ -3,3 +3,9 @@
 *.mp3 filter=lfs diff=lfs merge=lfs -text
 *.webp filter=lfs diff=lfs merge=lfs -text
 *.webm filter=lfs diff=lfs merge=lfs -text
+assets/img/baduktv.png filter=lfs diff=lfs merge=lfs -text
+assets/img/baduktv_black.png filter=lfs diff=lfs merge=lfs -text
+assets/img/baduktv_white.png filter=lfs diff=lfs merge=lfs -text
+assets/img/community_favorite.jpg filter=lfs diff=lfs merge=lfs -text
+assets/img/anime_black.svg filter=lfs diff=lfs merge=lfs -text
+assets/img/anime_white.svg filter=lfs diff=lfs merge=lfs -text
