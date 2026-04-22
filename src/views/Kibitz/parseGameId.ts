@@ -20,7 +20,7 @@
  *
  * Accepts either a bare integer ("12345") or a URL containing /game/ID or
  * /game/view/ID. The optional /view segment in the regex covers both forms,
- * so a single match handles all the manually-pastable variants.
+ * so a single match handles all the manually-paste-able variants.
  */
 export function parseGameId(input: string): number | null {
     const trimmed = input.trim();
