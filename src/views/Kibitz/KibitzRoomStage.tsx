@@ -18,7 +18,6 @@
 import * as React from "react";
 import { Resizable } from "@/components/Resizable";
 import { GobanController } from "@/lib/GobanController";
-import { get } from "@/lib/requests";
 import { alert } from "@/lib/swal_config";
 import { pgettext } from "@/lib/translate";
 import type {
@@ -207,7 +206,6 @@ export function KibitzRoomStage({
     const selectedVariation = variations.find(
         (variation) => variation.id === secondaryPane.variation_id,
     );
-    const [mainGameDetails, setMainGameDetails] = React.useState<rest_api.GameDetails | null>(null);
     const previewGame =
         rooms.find((candidate) => candidate.current_game?.game_id === secondaryGameId)
             ?.current_game ??
@@ -283,31 +281,6 @@ export function KibitzRoomStage({
     }, [secondaryBoardController, secondaryMoveTreeContainer, secondaryMoveTreeKey]);
 
     React.useEffect(() => {
-        if (!mainGame?.game_id) {
-            setMainGameDetails(null);
-            return;
-        }
-
-        let canceled = false;
-
-        get(`games/${mainGame.game_id}`)
-            .then((details: rest_api.GameDetails) => {
-                if (!canceled) {
-                    setMainGameDetails(details);
-                }
-            })
-            .catch(() => {
-                if (!canceled) {
-                    setMainGameDetails(null);
-                }
-            });
-
-        return () => {
-            canceled = true;
-        };
-    }, [mainGame?.game_id]);
-
-    React.useEffect(() => {
         if (!selectedVariation || !secondaryBoardController) {
             return;
         }
@@ -333,13 +306,15 @@ export function KibitzRoomStage({
         goban.redraw(true);
     }, [secondaryBoardController, selectedVariation]);
 
-    const displayedTitle = mainGameDetails?.name || mainGame?.title;
-    const displayedBlack = mainGameDetails?.players?.black?.username || mainGame?.black.username;
-    const displayedWhite = mainGameDetails?.players?.white?.username || mainGame?.white.username;
-    const displayedMoveNumber =
-        mainGameDetails?.gamedata?.moves?.length ??
-        mainGameDetails?.gamedata?.clock?.last_move ??
-        mainGame?.move_number;
+    // mainGame is populated by KibitzController.lookupGameForKibitz from
+    // GET /games/<id>; the stage previously re-fetched the same endpoint
+    // for "mainGameDetails", producing up to three concurrent calls per
+    // board change (controller hydrateRoomCardGame + hydrateActiveRoomGame
+    // + this stage's effect). Read the controller's data directly.
+    const displayedTitle = mainGame?.title;
+    const displayedBlack = mainGame?.black.username;
+    const displayedWhite = mainGame?.white.username;
+    const displayedMoveNumber = mainGame?.move_number;
     const mobileCompareActive = Boolean(isMobileLayout && mobileCompanionPanel === "compare");
     const mobileCompareTargetActive = Boolean(
         mobileCompareActive && (selectedVariation || secondaryBoardGame),
