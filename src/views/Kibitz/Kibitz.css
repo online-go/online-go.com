@@ -462,7 +462,6 @@
             overflow: hidden;
         }
 
-        .Kibitz-mobile-panel-surface > .KibitzRoomStream,
         .Kibitz-mobile-panel-surface > .KibitzSharedStreamPanel,
         .Kibitz-mobile-panel-surface > .Kibitz-mobile-panel {
             flex: 1 1 auto;

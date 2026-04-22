@@ -34,7 +34,6 @@ import type {
     KibitzVariationSummary,
 } from "@/models/kibitz";
 import "./KibitzSharedStreamPanel.css";
-import "./KibitzRoomStream.css";
 import "@/components/Chat/ChatLog.css";
 
 type DesktopSplitState =
