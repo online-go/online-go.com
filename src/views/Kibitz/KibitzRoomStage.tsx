@@ -122,6 +122,20 @@ function useSquareFitSize<T extends HTMLElement>(layoutKey: string) {
     return [ref, size] as const;
 }
 
+function boardDimensionsOf(game: { board_size?: `${number}x${number}` } | null | undefined): {
+    width?: number;
+    height?: number;
+} {
+    if (!game?.board_size) {
+        return {};
+    }
+    const [w, h] = game.board_size.split("x").map(Number);
+    if (Number.isFinite(w) && Number.isFinite(h)) {
+        return { width: w, height: h };
+    }
+    return {};
+}
+
 function getUserInitials(username: string | undefined): string {
     const trimmedUsername = (username ?? "").trim();
 
@@ -422,6 +436,7 @@ export function KibitzRoomStage({
                         {renderMainBoard ? (
                             <KibitzBoard
                                 gameId={mainGame?.game_id}
+                                {...boardDimensionsOf(mainGame)}
                                 className="mobile-main-board-surface"
                                 size={mobileBoardSize}
                                 fitMode="contain"
@@ -432,6 +447,7 @@ export function KibitzRoomStage({
                         {renderPreviewBoard ? (
                             <KibitzBoard
                                 gameId={secondaryGameId}
+                                {...boardDimensionsOf(secondaryBoardGame)}
                                 className="mobile-secondary-board-surface"
                                 size={mobileBoardSize}
                                 interactive={true}
@@ -443,6 +459,7 @@ export function KibitzRoomStage({
                         {renderVariationBoard ? (
                             <KibitzBoard
                                 gameId={selectedVariation?.game_id}
+                                {...boardDimensionsOf(mainGame)}
                                 className="mobile-secondary-board-surface"
                                 size={mobileBoardSize}
                                 interactive={true}
@@ -622,6 +639,7 @@ export function KibitzRoomStage({
                                 <div className="board-fit-slot" ref={mainBoardSlotRef}>
                                     <KibitzBoard
                                         gameId={mainGame.game_id}
+                                        {...boardDimensionsOf(mainGame)}
                                         className="main-board-surface"
                                         size={mainBoardSize}
                                         respectContainerBounds={true}
@@ -773,6 +791,7 @@ export function KibitzRoomStage({
                                 <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
                                     <KibitzBoard
                                         gameId={secondaryGameId}
+                                        {...boardDimensionsOf(secondaryBoardGame)}
                                         className="secondary-board-surface"
                                         size={secondaryBoardSize}
                                         interactive={secondaryPaneSize === "equal"}
@@ -869,6 +888,7 @@ export function KibitzRoomStage({
                                 <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
                                     <KibitzBoard
                                         gameId={selectedVariation?.game_id}
+                                        {...boardDimensionsOf(mainGame)}
                                         className="secondary-board-surface"
                                         size={secondaryBoardSize}
                                         interactive={secondaryPaneSize === "equal"}

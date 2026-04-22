@@ -21,6 +21,7 @@ import { interpolate, pgettext } from "@/lib/translate";
 import { ObserveGamesComponent } from "@/components/ObserveGamesComponent";
 import type { KibitzRoomSummary, KibitzRoomUser, KibitzWatchedGame } from "@/models/kibitz";
 import { KibitzBoard } from "./KibitzBoard";
+import { parseGameId } from "./parseGameId";
 
 type KibitzGamePickerMode = "create-room" | "change-board";
 type PickerSourceMode = "ongoing" | "game-id";
@@ -44,23 +45,6 @@ interface SelectedGameState {
     isFinished: boolean;
     analysisDisabled: boolean;
     isPublic: boolean;
-}
-
-function parseGameId(input: string): number | null {
-    const trimmed = input.trim();
-
-    if (/^\d+$/.test(trimmed)) {
-        return Number(trimmed);
-    }
-
-    const match =
-        trimmed.match(/\/game(?:\/view)?\/(\d+)(?:\/|$|\?)/i) ??
-        trimmed.match(/\/game\/(\d+)(?:\/|$|\?)/i);
-    if (match) {
-        return Number(match[1]);
-    }
-
-    return null;
 }
 
 function toRoomUser(player: rest_api.games.Player): KibitzRoomUser {

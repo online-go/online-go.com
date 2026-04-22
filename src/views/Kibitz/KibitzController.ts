@@ -648,7 +648,9 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.setStream(items);
         this.setVariations(variations);
 
-        const users = Object.values(proxy.channel.user_list).map(mapChatUserToKibitzUser);
+        // users_by_join keeps insertion order (oldest-first); reverse so the
+        // KibitzPresence roster shows newest joiners at the top.
+        const users = [...proxy.channel.users_by_join].reverse().map(mapChatUserToKibitzUser);
         this.setActiveRoom({ ...room, users });
     };
 

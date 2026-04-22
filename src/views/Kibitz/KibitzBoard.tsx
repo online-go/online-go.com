@@ -24,6 +24,8 @@ import "./KibitzBoard.css";
 
 interface KibitzBoardProps {
     gameId?: number;
+    width?: number;
+    height?: number;
     className?: string;
     size?: number;
     interactive?: boolean;
@@ -35,6 +37,8 @@ interface KibitzBoardProps {
 
 export function KibitzBoard({
     gameId,
+    width = 19,
+    height = 19,
     className,
     size,
     interactive = false,
@@ -72,8 +76,8 @@ export function KibitzBoard({
             stone_font_scale: preferences.get("stone-font-scale"),
             square_size: "auto",
             game_id: gameId,
-            width: 19,
-            height: 19,
+            width,
+            height,
         };
 
         controllerRef.current?.destroy();
@@ -97,7 +101,7 @@ export function KibitzBoard({
             controllerRef.current = null;
             setGoban(null);
         };
-    }, [gameId, interactive, onReady, showLabels]);
+    }, [gameId, width, height, interactive, onReady, showLabels]);
 
     return (
         <div

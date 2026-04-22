@@ -17,10 +17,8 @@
 
 import * as React from "react";
 import { Player } from "@/components/Player";
-import { chat_manager, ChatChannelProxy } from "@/lib/chat_manager";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { KibitzRoomSummary, KibitzRoomUser } from "@/models/kibitz";
-import { User } from "goban";
 import "./KibitzPresence.css";
 
 interface KibitzPresenceProps {
@@ -44,21 +42,18 @@ function getUserInitials(username: string | undefined): string {
     return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
-function getUserIcon(user: KibitzRoomUser | User | null | undefined): string | undefined {
-    if (!user || typeof user !== "object") {
+function getUserIcon(user: KibitzRoomUser | null | undefined): string | undefined {
+    if (!user) {
         return undefined;
     }
-
-    const icon = "icon" in user ? user.icon : undefined;
-
-    return typeof icon === "string" && icon.length > 0 ? icon : undefined;
+    return typeof user.icon === "string" && user.icon.length > 0 ? user.icon : undefined;
 }
 
 function PresenceAvatar({
     user,
     className,
 }: {
-    user: KibitzRoomUser | User;
+    user: KibitzRoomUser;
     className: string;
 }): React.ReactElement {
     const username = user.username ?? "";
@@ -75,32 +70,13 @@ function PresenceAvatar({
     );
 }
 
-export function KibitzPresence({ room }: KibitzPresenceProps): React.ReactElement {
-    const [proxy, setProxy] = React.useState<ChatChannelProxy | null>(null);
-    const [, refresh] = React.useState(0);
+export function KibitzPresence({ room, users }: KibitzPresenceProps): React.ReactElement {
     const [viewerCountFlash, setViewerCountFlash] = React.useState(false);
     const previousViewerCountRef = React.useRef<number | null>(null);
 
-    React.useEffect(() => {
-        const nextProxy = chat_manager.join(room.channel);
-        setProxy(nextProxy);
-
-        const sync = () => refresh((value) => value + 1);
-        nextProxy.on("join", sync);
-        nextProxy.on("part", sync);
-        sync();
-
-        return () => {
-            nextProxy.off("join", sync);
-            nextProxy.off("part", sync);
-            nextProxy.part();
-        };
-    }, [room.channel]);
-
-    // Prefer the live roster count from chat_manager; the backend's
-    // viewer_count is only populated for the directory response, not the
-    // hydration response, so it falls back to 0 in the active-room context.
-    const viewerCount = proxy ? proxy.channel.user_count : room.viewer_count;
+    // The active-room viewer_count is kept current by the controller via the
+    // viewer-count-changed UIPush event; no per-component chat join is needed.
+    const viewerCount = room.viewer_count;
 
     React.useEffect(() => {
         if (previousViewerCountRef.current == null) {
@@ -130,7 +106,6 @@ export function KibitzPresence({ room }: KibitzPresenceProps): React.ReactElemen
         };
     }, [viewerCount]);
 
-    const visibleUsers: User[] = proxy ? [...proxy.channel.users_by_join].reverse() : [];
     return (
         <div className="KibitzPresence">
             <div className="KibitzPresence-body">
@@ -165,9 +140,9 @@ export function KibitzPresence({ room }: KibitzPresenceProps): React.ReactElemen
                         </span>
                     </div>
                 </div>
-                {visibleUsers.length > 0 ? (
+                {users.length > 0 ? (
                     <div className="presence-users">
-                        {visibleUsers.map((user) => (
+                        {users.map((user) => (
                             <div key={user.id} className="presence-user">
                                 <PresenceAvatar user={user} className="presence-avatar inline" />
                                 <Player user={user} flag rank noextracontrols />
