@@ -588,13 +588,12 @@ class ChatChannel extends TypedEventEmitter<Events> {
     }
 
     public send(text: string): void {
-        if (text.length > 300) {
-            for (const split_str of string_splitter(text)) {
-                this.send(split_str);
-            }
-            return;
+        for (const split_str of string_splitter(text)) {
+            this.send_(split_str);
         }
-
+        return;
+    }
+    public send_(text: string): void {
         if (this.flood_protection) {
             return;
         }

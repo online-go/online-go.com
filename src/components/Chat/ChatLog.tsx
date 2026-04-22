@@ -557,7 +557,7 @@ function ChatInput({
 
     const onKeyPress = useCallback(
         (event: React.KeyboardEvent<HTMLTextAreaElement>): boolean | undefined => {
-            if (event.key === "Enter") {
+            if (!event.shiftKey && event.key === "Enter") {
                 const input = event.target as HTMLTextAreaElement;
                 if (!socket.connected) {
                     void alert.fire(_("Connection to server lost"));
@@ -596,6 +596,7 @@ function ChatInput({
             className={rtl_mode ? "rtl" : ""}
             autoFocus={autoFocus}
             autoComplete={"off"}
+            maxMessageLength={1024}
             placeholder={
                 !user.email_validated
                     ? _("Chat will be enabled once your email address has been validated")

@@ -148,22 +148,8 @@ export const TabCompleteInput = React.forwardRef<HTMLTextAreaElement, TabComplet
             [maxMessageLength],
         );
 
-        React.useEffect(() => {
-            const textarea = inputRef.current;
-            if (!textarea) {
-                return;
-            }
-
-            const observer = new ResizeObserver(() => {
-                adjustHeight(textarea);
-            });
-
-            observer.observe(textarea);
-            return () => observer.disconnect();
-        }, [adjustHeight]);
-
         const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-            if (e.key === "Enter") {
+            if (!e.shiftKey && e.key === "Enter") {
                 e.preventDefault();
                 props.onKeyPress?.(e);
                 // Reset height after sending
@@ -276,8 +262,8 @@ export const TabCompleteInput = React.forwardRef<HTMLTextAreaElement, TabComplet
             props.onChange?.(e);
             if (inputRef.current) {
                 adjustHeight(inputRef.current);
+                checkCharCount(inputRef.current.value);
             }
-            checkCharCount(inputRef.current.value);
         };
 
         return (

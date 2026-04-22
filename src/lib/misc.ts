@@ -386,32 +386,36 @@ export function errorLogger(...args: any[]) {
     }
     console.error(err);
 }
-export function string_splitter(str: string, max_length: number = 200): Array<string> {
-    const words = str.split(/(\W+)/g);
-
+export function string_splitter(str: string, max_length: number = 1024): Array<string> {
+    const paragraphs = str.split("\n");
     const lines: string[] = [];
-    let cur = "";
-    for (let word of words) {
-        while (word.length > max_length) {
-            if (cur !== "") {
-                lines.push(cur);
-                cur = "";
+
+    for (const paragraph of paragraphs) {
+        const words = paragraph.split(/(\W+)/g);
+
+        let cur = "";
+        for (let word of words) {
+            while (word.length > max_length) {
+                if (cur !== "") {
+                    lines.push(cur);
+                    cur = "";
+                }
+
+                lines.push(word.substring(0, max_length - 1) + "-");
+                word = word.substring(max_length - 1);
             }
 
-            lines.push(word.substring(0, max_length - 1) + "-");
-            word = word.substring(max_length - 1);
+            if (cur === "" || (cur + word).length < max_length) {
+                cur += word;
+            } else {
+                lines.push(cur);
+                cur = word;
+            }
         }
 
-        if (cur === "" || (cur + word).length < max_length) {
-            cur += word;
-        } else {
+        if (cur !== "") {
             lines.push(cur);
-            cur = word;
         }
-    }
-
-    if (cur !== "") {
-        lines.push(cur);
     }
 
     return lines;

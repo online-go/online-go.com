@@ -134,9 +134,8 @@
     }
 
     .chat-line {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: normal;
+        display: inline;
+        white-space: pre-wrap;
 
         .date {
             font-size: 8pt;
