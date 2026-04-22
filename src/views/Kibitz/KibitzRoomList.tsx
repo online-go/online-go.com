@@ -100,7 +100,12 @@ export function KibitzRoomList({
             <div className="KibitzRoomList-items">
                 {rooms.map((room) => {
                     const isActive = room.id === activeRoomId;
-                    const roomGame = room.current_game;
+                    const roomDescription =
+                        room.description ??
+                        pgettext(
+                            "Fallback subtitle shown in the kibitz room list when no room description exists",
+                            "No room description",
+                        );
 
                     return (
                         <button
@@ -114,12 +119,8 @@ export function KibitzRoomList({
                                     <span className="room-title">{room.title}</span>
                                 </div>
                                 <div className="room-bottom-row">
-                                    <span className="room-subtitle">
-                                        {roomGame?.title ??
-                                            pgettext(
-                                                "Fallback subtitle shown in the kibitz room list when no current game exists",
-                                                "No game selected",
-                                            )}
+                                    <span className="room-subtitle" title={roomDescription}>
+                                        {roomDescription}
                                     </span>
                                     <span
                                         className="room-viewer-count"

@@ -1,0 +1,277 @@
+.KibitzSharedStreamPanel {
+    background: var(--card-background-color);
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.KibitzSharedStreamPanel-stack {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.KibitzSharedStreamPanel-pane {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+    transition: flex-basis 180ms ease;
+}
+
+.KibitzSharedStreamPanel.is-dragging .KibitzSharedStreamPanel-pane {
+    transition: none;
+}
+
+.KibitzSharedStreamPanel-pane.hidden {
+    display: none;
+}
+
+.KibitzSharedStreamPanel-unreadDot {
+    background: var(--primary);
+    border-radius: 999px;
+    display: inline-block;
+    flex: 0 0 auto;
+    height: 0.4rem;
+    width: 0.4rem;
+}
+
+.KibitzSharedStreamPanel-paneBody {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.KibitzSharedStreamPanel-paneFeed {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+    padding: 0.25rem 0.75rem 0.5rem;
+}
+
+.KibitzSharedStreamPanel-gamePane .KibitzSharedStreamPanel-paneFeed {
+    background: color-mix(in srgb, var(--primary) 6%, var(--card-background-color));
+}
+
+.KibitzSharedStreamPanel-paneFeed .chat-lines,
+.KibitzSharedStreamPanel-paneFeed .stream-empty {
+    min-width: 0;
+}
+
+.KibitzSharedStreamPanel-paneFeed .chat-lines {
+    box-sizing: border-box;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    width: 100%;
+}
+
+.KibitzSharedStreamPanel-paneFeed .stream-empty {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+}
+
+.KibitzSharedStreamPanel-composer {
+    padding: 0 0.75rem 0.5rem;
+}
+
+.KibitzSharedStreamPanel.desktop .KibitzSharedStreamPanel-composer {
+    box-shadow:
+        0 0 0px 0px color-mix(in srgb, var(--primary) 60%, transparent),
+        inset 0 0 0px 0 rgba(0, 255, 0, 1),
+        inset 0 0 5px 0 color-mix(in srgb, var(--primary) 40%, transparent);
+    border-radius: 3px;
+}
+
+.KibitzSharedStreamPanel-composer .TabCompleteInput {
+    width: 100%;
+}
+
+.KibitzSharedStreamPanel-disabledComposer {
+    display: flex;
+    align-items: stretch;
+    flex: 0 0 30px;
+    height: 30px;
+    min-height: 30px;
+    overflow: hidden;
+    padding: 0 0.75rem 0.5rem;
+}
+
+.KibitzSharedStreamPanel-disabledComposer.chat-input-container {
+    box-sizing: border-box;
+    margin: 0;
+    width: 100%;
+}
+
+.KibitzSharedStreamPanel-mobileSwitcher {
+    background: var(--card-background-color);
+    border-bottom: 1px solid var(--shade3);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    min-width: 0;
+}
+
+.KibitzSharedStreamPanel-mobileSwitchButton {
+    background: transparent;
+    border: 0;
+    color: var(--text-color-faded);
+    display: flex;
+    justify-content: center;
+    min-width: 0;
+    padding: 0.45rem 0.75rem;
+    transition:
+        background-color 120ms ease,
+        color 120ms ease;
+}
+
+.KibitzSharedStreamPanel-mobileSwitchButton.active,
+.KibitzSharedStreamPanel-mobileSwitchButton[aria-pressed="true"] {
+    background: color-mix(in srgb, var(--shade2) 65%, transparent);
+    color: var(--fg);
+}
+
+.KibitzSharedStreamPanel-mobileSwitchContent {
+    align-items: center;
+    display: grid;
+    grid-template-columns: 1rem auto 1rem;
+    min-width: 0;
+    width: max-content;
+    max-width: 100%;
+}
+
+.KibitzSharedStreamPanel-mobileSwitchLabel {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.1;
+    grid-column: 2;
+    min-width: 0;
+    overflow: hidden;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.KibitzSharedStreamPanel-mobileSwitchSpacer {
+    grid-column: 1;
+    min-width: 0;
+}
+
+.KibitzSharedStreamPanel-mobileSwitchIndicator {
+    align-items: center;
+    display: inline-flex;
+    grid-column: 3;
+    justify-content: flex-end;
+    justify-self: end;
+    min-width: 0;
+}
+
+.KibitzSharedStreamPanel-mobileSwitchIndicator .KibitzSharedStreamPanel-unreadDot {
+    background: #2f9d5d;
+    box-shadow: 0 0 0 1px color-mix(in srgb, #2f9d5d 35%, transparent);
+    margin-left: 0;
+}
+
+.KibitzSharedStreamPanel-divider {
+    align-items: center;
+    background: color-mix(in srgb, var(--card-background-color) 78%, var(--shade4));
+    border: 0;
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, var(--shade3) 50%, transparent),
+        inset 0 -1px 0 color-mix(in srgb, var(--shade3) 50%, transparent);
+    cursor: ns-resize;
+    display: flex;
+    gap: 0.55rem;
+    justify-content: space-between;
+    min-height: 1.55rem;
+    padding: 0.15rem 0.75rem;
+    position: relative;
+    touch-action: none;
+    user-select: none;
+    width: 100%;
+}
+
+.KibitzSharedStreamPanel-divider.is-dragging {
+    cursor: ns-resize;
+}
+
+.KibitzSharedStreamPanel-dividerHandle {
+    align-items: center;
+    color: var(--text-color-faded);
+    display: inline-flex;
+    flex: 0 0 auto;
+    justify-content: center;
+    line-height: 1;
+    min-width: 3rem;
+    text-align: center;
+}
+
+.KibitzSharedStreamPanel-dividerHandleDot {
+    background: var(--shade2);
+    border-radius: 999px;
+    display: inline-block;
+    height: 0.24rem;
+    margin: 0 0.12rem;
+    vertical-align: middle;
+    width: 0.24rem;
+}
+
+.KibitzSharedStreamPanel-dividerSide {
+    align-items: center;
+    color: var(--text-color-faded);
+    display: inline-flex;
+    flex: 1 1 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    gap: 0.35rem;
+    justify-content: center;
+    line-height: 1;
+    min-width: 0;
+}
+
+.KibitzSharedStreamPanel-dividerSide.left {
+    justify-content: flex-end;
+}
+
+.KibitzSharedStreamPanel-dividerSide.right {
+    justify-content: flex-start;
+}
+
+.KibitzSharedStreamPanel-dividerArrow {
+    color: color-mix(in srgb, var(--text-color-faded) 75%, var(--primary));
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.KibitzSharedStreamPanel-dividerLabel {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 1000px) {
+    .KibitzSharedStreamPanel-paneFeed {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+}

@@ -19,6 +19,10 @@
 
 export type KibitzRoomKind = "preset" | "user" | "broadcast";
 
+export type KibitzMode = "live" | "demo";
+
+export type KibitzStreamItemSource = "room-chat" | "game-chat" | "room-stream";
+
 export type KibitzProposalStatus = "queued" | "active" | "accepted" | "rejected" | "expired";
 export type KibitzVariationPenMarks = Array<{
     color: string;
@@ -117,6 +121,7 @@ export interface KibitzStreamItem {
     variation_id?: string;
     game_id?: number;
     proposal_id?: string;
+    source?: KibitzStreamItemSource;
 }
 
 export interface KibitzSecondaryPaneState {

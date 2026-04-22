@@ -394,18 +394,17 @@
                 align-items: center;
                 display: flex;
                 gap: 0.35rem;
-                flex-wrap: wrap;
+                flex-wrap: nowrap;
                 min-width: 0;
             }
 
             .board-title {
                 color: var(--fg);
-                flex: 0 1 auto;
+                flex: 0 1 40%;
+                min-width: 0;
                 font-size: 0.98rem;
                 font-weight: bold;
                 line-height: 1.15;
-                max-width: 100%;
-                min-width: 0;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
@@ -413,10 +412,14 @@
 
             .board-subtitle {
                 color: var(--text-color-faded);
+                display: block;
+                flex: 1 1 auto;
                 min-width: 0;
                 font-size: 0.82rem;
                 line-height: 1.15;
-                overflow-wrap: anywhere;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
 
             .board-meta-actions {

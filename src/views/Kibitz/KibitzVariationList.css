@@ -1,12 +1,23 @@
 .KibitzVariationList {
+    display: flex;
+    flex-direction: column;
     min-height: 0;
-    overflow-y: auto;
+    overflow: hidden;
     padding: 0.4rem 0.75rem;
+    box-shadow: 0 -1px 0 color-mix(in srgb, var(--shade3) 55%, transparent);
 
     .variation-title {
+        flex: 0 0 auto;
         font-weight: bold;
         font-size: 0.85rem;
         margin-bottom: 0.25rem;
+    }
+
+    .variation-scroll {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        padding-bottom: 0.05rem;
     }
 
     .variation-divider {
@@ -26,35 +37,83 @@
     }
 
     .variation-item {
+        align-items: flex-start;
         background: transparent;
         border: 0;
-        border-top: 1px solid transparent;
-        border-top-color: var(--shade3);
+        box-sizing: border-box;
         cursor: pointer;
         display: flex;
-        flex-direction: column;
-        gap: 0.22rem;
-        min-height: 3.1rem;
-        padding: 0.35rem 0 0;
+        flex-direction: row;
+        gap: 0.14rem;
+        justify-content: center;
+        min-height: 4.2rem;
+        min-width: 0;
+        padding: 0.8rem 0.7rem 0.8rem 0.88rem;
+        position: relative;
         text-align: left;
+        transition:
+            background-color 120ms ease,
+            box-shadow 120ms ease;
         width: 100%;
+
+        &:hover {
+            background: color-mix(in srgb, var(--shade2) 50%, transparent);
+        }
+
+        &:active {
+            background: color-mix(in srgb, var(--shade2) 65%, transparent);
+        }
     }
 
-    .variation-item:first-child {
-        border-top: 0;
-        padding-top: 0;
+    .variation-main {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        gap: 0.14rem;
+        min-width: 0;
     }
 
     .variation-name {
         color: var(--fg);
+        display: block;
+        font-size: 0.88rem;
         font-weight: bold;
+        line-height: 1.1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 100%;
     }
 
     .variation-meta-row {
         align-items: center;
-        display: inline-flex;
-        gap: 0.3rem;
+        display: grid;
+        gap: 0.35rem;
+        grid-template-columns: auto minmax(0, 1fr);
         min-width: 0;
+    }
+
+    .variation-preview {
+        align-items: center;
+        display: inline-flex;
+        flex: 0 0 auto;
+        justify-content: flex-end;
+        margin-left: 0.5rem;
+        min-width: 2.95rem;
+    }
+
+    .variation-preview-goban.MiniGoban {
+        height: 2.95rem;
+        width: 2.95rem;
+    }
+
+    .variation-preview-goban .inner-container {
+        transform-origin: left top;
+    }
+
+    .variation-preview-goban .board {
+        box-shadow: none !important;
     }
 
     .variation-avatar {
@@ -75,6 +134,16 @@
     .variation-meta,
     .variation-empty {
         color: var(--text-color-faded);
-        font-size: 0.8rem;
+        font-size: 0.76rem;
+        line-height: 1.1;
+        padding: 0.4rem 0 0;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .variation-empty {
+        padding: 0.4rem 0 0;
     }
 }

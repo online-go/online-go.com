@@ -5,17 +5,21 @@
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    min-height: 0;
     min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    width: 100%;
 
     .KibitzRoomList-titleRow {
-        align-items: flex-start;
+        align-items: stretch;
         box-sizing: border-box;
         display: flex;
         gap: 0.5rem;
         justify-content: space-between;
         min-height: var(--kibitz-header-block-height);
+        min-width: 0;
         padding: 0.5rem 0.75rem 0.55rem;
+        width: 100%;
     }
 
     .KibitzRoomList-titleBlock {
@@ -63,20 +67,21 @@
         align-items: flex-start;
         background: transparent;
         border: 0;
+        box-sizing: border-box;
         cursor: pointer;
         display: flex;
         flex-direction: column;
         gap: 0.14rem;
         justify-content: center;
-        min-height: 4.2rem;
         min-width: 0;
+        min-height: 4.2rem;
         padding: 0.8rem 0.7rem 0.8rem 0.88rem;
         position: relative;
         text-align: left;
-        width: 100%;
         transition:
             background-color 120ms ease,
             box-shadow 120ms ease;
+        width: 100%;
 
         &:hover {
             background: color-mix(in srgb, var(--shade2) 50%, transparent);
@@ -100,6 +105,7 @@
         }
 
         .room-main {
+            align-self: stretch;
             display: flex;
             flex-direction: column;
             gap: 0.14rem;
@@ -109,36 +115,47 @@
 
         .room-top-row,
         .room-bottom-row {
-            align-items: center;
-            display: flex;
-            gap: 0.35rem;
-            justify-content: space-between;
             min-width: 0;
             width: 100%;
         }
 
-        .room-title,
-        .room-subtitle {
-            display: block;
-            min-width: 0;
+        .room-top-row {
             overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+        }
+
+        .room-bottom-row {
+            align-items: start;
+            display: grid;
+            gap: 0.35rem;
+            grid-template-columns: minmax(0, 1fr) auto;
         }
 
         .room-title {
             color: var(--fg);
-            flex: 1 1 auto;
+            display: block;
             font-size: 0.88rem;
             font-weight: bold;
             line-height: 1.1;
+            max-width: 100%;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 100%;
         }
 
         .room-subtitle {
             color: var(--text-color-faded);
-            flex: 1 1 auto;
+            display: -webkit-box;
             font-size: 0.76rem;
             line-height: 1.1;
+            max-width: 100%;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: normal;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
         }
 
         .room-viewer-count {

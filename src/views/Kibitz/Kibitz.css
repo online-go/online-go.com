@@ -6,29 +6,24 @@
     overflow: hidden;
     padding: 0;
 
-    .Kibitz-empty-stage {
-        display: flex;
-        flex: 1;
-        align-items: center;
-        justify-content: center;
-        padding: 2rem;
-        text-align: center;
-        opacity: 0.7;
-    }
-
     .Kibitz-layout {
         display: grid;
         flex: 1;
         gap: 0;
         grid-template-columns: minmax(10.5rem, 12.75rem) minmax(0, 1fr);
         align-items: stretch;
+        min-width: 0;
         min-height: 0;
     }
 
     .Kibitz-left-rail {
         display: grid;
         grid-template-rows: minmax(0, 1fr) auto;
+        max-width: 12.75rem;
+        min-width: 0;
         min-height: 0;
+        overflow: hidden;
+        width: 100%;
     }
 
     .Kibitz-main {
@@ -223,6 +218,7 @@
             transition:
                 background-color 0.2s ease,
                 filter 0.2s ease;
+            min-width: 0;
             width: 100%;
             position: relative;
             z-index: 40;
@@ -244,10 +240,12 @@
             font-size: 0.95rem;
             font-weight: 700;
             line-height: 1.1;
+            max-width: 100%;
             min-width: 0;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            width: 100%;
         }
 
         .mobile-room-header-matchup {
@@ -465,6 +463,7 @@
         }
 
         .Kibitz-mobile-panel-surface > .KibitzRoomStream,
+        .Kibitz-mobile-panel-surface > .KibitzSharedStreamPanel,
         .Kibitz-mobile-panel-surface > .Kibitz-mobile-panel {
             flex: 1 1 auto;
             min-height: 0;
