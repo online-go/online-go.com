@@ -18,7 +18,6 @@
 import * as React from "react";
 import {
     AnalysisTool,
-    ConditionalMoveResponseTree,
     ConditionalMoveTree,
     GobanModes,
     GobanRenderer,
@@ -357,54 +356,6 @@ export function GobanAnalyzeButtonBar({
     );
 }
 
-function diffToConditionalMove(moves: string): ConditionalMoveTree {
-    let tree = new ConditionalMoveTree(null);
-
-    for (let i = 0; i < moves.length; i += 2) {
-        const move = moves.slice(i, i + 2);
-        const parent = new ConditionalMoveTree(null, tree);
-        parent.move = move;
-        tree = parent;
-    }
-
-    return tree;
-}
-
-function mergeConditionalMoves(
-    a: ConditionalMoveTree,
-    b: ConditionalMoveTree,
-): ConditionalMoveTree {
-    const treeA = a.encode()[1];
-    const treeB = b.encode()[1];
-    mergeConditionalTrees(treeA, treeB);
-    return ConditionalMoveTree.decode([null, treeA]);
-}
-
-function mergeConditionalTrees(
-    a: ConditionalMoveResponseTree,
-    b: ConditionalMoveResponseTree,
-): void {
-    if (a === b) {
-        return;
-    }
-
-    for (const move in b) {
-        if (!Object.prototype.hasOwnProperty.call(a, move)) {
-            a[move] = JSON.parse(JSON.stringify(b[move]));
-            continue;
-        }
-
-        const [responseA, nextA] = a[move];
-        const [responseB, nextB] = b[move];
-        if (responseA !== responseB) {
-            a[move] = JSON.parse(JSON.stringify(b[move]));
-            continue;
-        }
-
-        mergeConditionalTrees(nextA, nextB);
-    }
-}
-
 function automateBranch(goban: GobanRenderer): void {
     if (goban.engine.phase === "finished") {
         return;
@@ -428,7 +379,7 @@ function automateBranch(goban: GobanRenderer): void {
     }
 
     const before = goban.conditional_tree.duplicate();
-    const tree = mergeConditionalMoves(before, diffToConditionalMove(diff.moves));
+    const tree = before.merge(ConditionalMoveTree.fromMoveDiff(diff.moves));
 
     goban.setConditionalTree(tree);
     goban.saveConditionalMoves();
