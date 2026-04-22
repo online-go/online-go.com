@@ -626,7 +626,7 @@ export function KibitzMobileGamePicker({
                         "Go back",
                     )}
                 >
-                    {"←"}
+                    {pgettext("Back-arrow glyph for the mobile kibitz picker back button", "←")}
                 </button>
                 <button
                     type="button"
@@ -670,7 +670,10 @@ export function KibitzMobileGamePicker({
                                             "Go back to room list",
                                         )}
                                     >
-                                        {"←"}
+                                        {pgettext(
+                                            "Back-arrow glyph for the mobile kibitz picker back button",
+                                            "←",
+                                        )}
                                     </button>
                                 ) : null}
                                 <div
@@ -719,7 +722,10 @@ export function KibitzMobileGamePicker({
                                     "Go back",
                                 )}
                             >
-                                {"←"}
+                                {pgettext(
+                                    "Back-arrow glyph for the mobile kibitz picker back button",
+                                    "←",
+                                )}
                             </button>
                         )}
                         <button
@@ -731,7 +737,7 @@ export function KibitzMobileGamePicker({
                                 "Quit picker",
                             )}
                         >
-                            {"X"}
+                            {pgettext("Close-glyph for the mobile kibitz picker close button", "X")}
                         </button>
                     </div>
                 </div>

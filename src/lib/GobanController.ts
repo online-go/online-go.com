@@ -871,7 +871,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         }
 
         if (!data.get("user").anonymous) {
-            this.goban.sendChat(prepared.analysis as unknown as string, this.selected_chat_log);
+            this.goban.sendChat(prepared.analysis, this.selected_chat_log);
             this.recordAnalysisSent(prepared.analysis);
         } else {
             this.goban.showMessage("error", {

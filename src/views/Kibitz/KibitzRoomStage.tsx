@@ -287,23 +287,44 @@ export function KibitzRoomStage({
 
         const goban = secondaryBoardController.goban;
 
-        if (
-            typeof selectedVariation.analysis_from === "number" &&
-            typeof selectedVariation.analysis_moves === "string"
-        ) {
-            goban.engine.followPath(
-                selectedVariation.analysis_from,
-                selectedVariation.analysis_moves,
-            );
+        const apply = () => {
+            if (
+                typeof selectedVariation.analysis_from === "number" &&
+                typeof selectedVariation.analysis_moves === "string"
+            ) {
+                goban.engine.followPath(
+                    selectedVariation.analysis_from,
+                    selectedVariation.analysis_moves,
+                );
+            }
+
+            if (selectedVariation.analysis_marks) {
+                goban.setMarks(selectedVariation.analysis_marks);
+            }
+            goban.pen_marks = selectedVariation.analysis_pen_marks
+                ? [...selectedVariation.analysis_pen_marks]
+                : [];
+            goban.redraw(true);
+        };
+
+        // Engine.last_official_move is set as part of the game-data load.
+        // If it's already there, apply immediately; otherwise wait for the
+        // load event so a variation selected before the board finishes
+        // loading still renders. Without this listener followPath would
+        // silently noop on an empty engine and the board would stay blank.
+        if (goban.engine?.last_official_move) {
+            apply();
+            return;
         }
 
-        if (selectedVariation.analysis_marks) {
-            goban.setMarks(selectedVariation.analysis_marks);
-        }
-        goban.pen_marks = selectedVariation.analysis_pen_marks
-            ? [...selectedVariation.analysis_pen_marks]
-            : [];
-        goban.redraw(true);
+        const onLoad = () => {
+            goban.off("load", onLoad);
+            apply();
+        };
+        goban.on("load", onLoad);
+        return () => {
+            goban.off("load", onLoad);
+        };
     }, [secondaryBoardController, selectedVariation]);
 
     // mainGame is populated by KibitzController.lookupGameForKibitz from

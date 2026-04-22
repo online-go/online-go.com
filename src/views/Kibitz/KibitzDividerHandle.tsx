@@ -27,24 +27,27 @@ interface KibitzDividerHandleProps {
     onSetMode: (mode: DividerMode) => void;
 }
 
-const MODE_OPTIONS: Array<{ id: DividerMode; label: string; className: string }> = [
-    {
-        id: "hidden",
-        label: pgettext("Kibitz divider mode label", "Main board"),
-        className: "watch-view",
-    },
-    {
-        id: "equal",
-        label: pgettext("Kibitz divider mode label", "Show variations"),
-        className: "compare-view",
-    },
-];
-
 export function KibitzDividerHandle({
     secondaryPane,
     onSetMode,
 }: KibitzDividerHandleProps): React.ReactElement {
     const mode: DividerMode = secondaryPane.collapsed ? "hidden" : "equal";
+
+    // Built inside the component so pgettext runs after the i18n catalog
+    // has loaded; called at module-init time the labels would be locked
+    // to the catalog state at first import.
+    const modeOptions: Array<{ id: DividerMode; label: string; className: string }> = [
+        {
+            id: "hidden",
+            label: pgettext("Kibitz divider mode label", "Main board"),
+            className: "watch-view",
+        },
+        {
+            id: "equal",
+            label: pgettext("Kibitz divider mode label", "Show variations"),
+            className: "compare-view",
+        },
+    ];
 
     return (
         <div
@@ -53,7 +56,7 @@ export function KibitzDividerHandle({
             aria-label={pgettext("Aria label for kibitz divider mode switch", "Board view mode")}
         >
             <div className="divider-mode-switch">
-                {MODE_OPTIONS.map((option) => {
+                {modeOptions.map((option) => {
                     const active = option.id === mode;
                     return (
                         <button
