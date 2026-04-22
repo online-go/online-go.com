@@ -461,9 +461,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
 
         try {
             const payload = (await get("kibitz/rooms")) as BackendKibitzRoom[];
-            if (this._destroyed) {
-                return;
-            }
             const rooms = (payload ?? []).map((r) => mapBackendRoomToSummary(r));
             this.setRooms(rooms);
             this.setDebug({
@@ -471,6 +468,16 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 status: "ready",
                 last_hydration_finished_at: Date.now(),
             });
+
+            // The destroyed-check skips the N per-room game lookups in the
+            // genuine-destroy case. setRooms above MUST fire regardless: in
+            // React StrictMode the controller is destroyed and remounted on
+            // the same instance, with React-state listeners re-attached,
+            // and we still want the rooms list populated for the surviving
+            // component.
+            if (this._destroyed) {
+                return;
+            }
 
             // Resolve each room's current_game in parallel so the room cards
             // show the watched game instead of "No game selected".
