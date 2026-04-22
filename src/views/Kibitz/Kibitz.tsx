@@ -445,12 +445,9 @@ export function Kibitz(): React.ReactElement {
     );
 
     React.useEffect(() => {
-        if (!isMobileLayout) {
-            setMobileCompanionPanel("chat");
-            setMobileOverlayMode(null);
-            return;
-        }
-
+        // Reset mobile UI state on layout-mode changes and room switches.
+        // Both desktop and mobile use the same reset; the dead branch noted
+        // in code review has been collapsed.
         setMobileCompanionPanel("chat");
         setMobileOverlayMode(null);
     }, [isMobileLayout, resolvedRoom?.id]);
@@ -516,7 +513,7 @@ export function Kibitz(): React.ReactElement {
             Object.fromEntries(
                 rooms.map((room) => [room.id, controller.getRoomUsers(room.id)]),
             ) as Record<string, ReturnType<typeof controller.getRoomUsers>>,
-        [controller, rooms, activeRoom, stream],
+        [controller, rooms],
     );
 
     React.useEffect(() => {

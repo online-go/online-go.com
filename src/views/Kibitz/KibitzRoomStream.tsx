@@ -85,7 +85,7 @@ export function KibitzRoomStream({
 
     const onKeyPress = React.useCallback(
         (event: React.KeyboardEvent<HTMLInputElement>) => {
-            if (event.charCode !== 13) {
+            if (event.key !== "Enter") {
                 return;
             }
 
