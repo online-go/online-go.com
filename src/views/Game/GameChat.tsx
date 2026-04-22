@@ -251,19 +251,22 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
                         className="chat-log autoscrolling"
                         onScroll={updateScrollPosition}
                     >
-                        {chat_lines.current.map((line: ChatLine) => {
-                            const ll = last_line;
-                            last_line = line;
-                            return (
-                                <GameChatLine
-                                    key={line.chat_id}
-                                    line={line}
-                                    last_line={ll}
-                                    game_id={props.game_id}
-                                    review_id={props.review_id}
-                                />
-                            );
-                        })}
+                        <div className="chat-log-spacer" />
+                        <div className="chat-log-inner">
+                            {chat_lines.current.map((line: ChatLine) => {
+                                const ll = last_line;
+                                last_line = line;
+                                return (
+                                    <GameChatLine
+                                        key={line.chat_id}
+                                        line={line}
+                                        last_line={ll}
+                                        game_id={props.game_id}
+                                        review_id={props.review_id}
+                                    />
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
                 {(show_player_list || null) && <ChatUserList channel={channel} />}

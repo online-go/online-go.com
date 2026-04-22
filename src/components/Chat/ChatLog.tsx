@@ -513,13 +513,20 @@ function ChatLines({
             onScroll={onScroll}
             onClick={focusInput}
         >
-            {proxy?.channel.chat_log.slice(-500).map((line, idx) => {
-                const ll = last_line;
-                last_line = line;
-                return (
-                    <ChatLine key={line.message.i || `system-${idx}`} line={line} lastLine={ll} />
-                );
-            })}
+            <div className="chat-lines-spacer" />
+            <div className="chat-lines-inner">
+                {proxy?.channel.chat_log.slice(-500).map((line, idx) => {
+                    const ll = last_line;
+                    last_line = line;
+                    return (
+                        <ChatLine
+                            key={line.message.i || `system-${idx}`}
+                            line={line}
+                            lastLine={ll}
+                        />
+                    );
+                })}
+            </div>
         </div>
     );
 }

@@ -34,18 +34,17 @@
         flex-shrink: 1;
         display: flex;
         width: 100%;
-        max-height: calc(100% - 30px);
+        min-height: 0;
         position: relative;
     }
 
     .chat-log-container {
         background-color: red !important;
-        display: inline-block;
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
+        display: flex;
+        position: relative;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
     }
 
     .ChatUserList {
@@ -61,12 +60,24 @@
     }
 
     .chat-log {
-        height: 100%;
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
         background-color: var(--shade5);
         border-bottom: 1px solid transparent;
-        overflow-y: scroll;
+        display: flex;
+        flex-direction: column-reverse;
     }
 
+    .chat-log-spacer {
+        flex: 1;
+    }
+
+    .chat-log-inner {
+        display: flex;
+        flex-direction: column;
+    }
+    
     .chat-log.autoscrolling {
         border-bottom-color: var(--success);
     }
@@ -152,11 +163,11 @@
     .chat-input-container {
         flex-shrink: 0;
         flex-grow: 0;
-        flex-basis: 30px;
+        /* flex-basis: auto; */
         display: flex;
         /* max-width: 100%; */
         /* width: 100%; */
-        overflow: visible;
+        overflow: hidden;
         align-items: flex-end;
         flex-direction: column;
         border-top: 1px solid var(--shade3);
@@ -190,10 +201,6 @@
             border: 4px solid var(--default-button);
             border-bottom: none;
             border-radius: 0px 0px 0 0;
-
-            &:focus {
-                outline: none;
-            }
         }
 
         .chat-toolbar {

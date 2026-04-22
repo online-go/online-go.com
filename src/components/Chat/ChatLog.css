@@ -53,12 +53,23 @@
         overflow-y: scroll;
         border-bottom: 1px solid transparent;
         border-bottom-color: var(--shade3);
+        display: flex;
+        flex-direction: column-reverse;
 
         .Player {
             color: var(--fg);
         }
 
         word-wrap: break-word;
+    }
+
+    .chat-lines-spacer {
+        flex: 1;
+    }
+
+    .chat-lines-inner {
+        display: flex;
+        flex-direction: column;
     }
 
     .timestamp {

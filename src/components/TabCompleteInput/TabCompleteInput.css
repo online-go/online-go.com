@@ -47,4 +47,7 @@
     box-sizing: border-box;
     line-height: 1.2;
     outline: none;
+    border-left: none;
+    border-right: none;
+    border-top: none;
 }
