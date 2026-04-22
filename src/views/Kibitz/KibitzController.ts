@@ -204,24 +204,22 @@ function asAnalysisBody(value: unknown): AnalysisChatBody | null {
     return candidate.type === "analysis" ? (candidate as AnalysisChatBody) : null;
 }
 
-function mapAnalysisToVariation(
-    msg: ChatMessage,
-    roomId: string,
-    fallbackGameId: number | undefined,
-): KibitzVariationSummary | null {
+function mapAnalysisToVariation(msg: ChatMessage, roomId: string): KibitzVariationSummary | null {
     const body = asAnalysisBody(msg.message.m);
-    if (!body) {
-        return null;
-    }
-    const gameId = body.game_id ?? fallbackGameId;
-    if (gameId == null) {
+    if (!body || body.game_id == null) {
+        // Per briefing §2.9 the posting client embeds game_id in every analysis
+        // body so the variation can be grouped by source game even after the
+        // room's current_game changes. Bodies without it are pre-1C and ignored
+        // — earlier versions fell back to the room's current_game, which made
+        // variation rendering depend on the timing of GET /games/:id and
+        // produced races where the list silently disappeared on slow backends.
         return null;
     }
     const id = msg.message.i ?? `var-${msg.message.t}-${msg.id}`;
     return {
         id,
         room_id: roomId,
-        game_id: gameId,
+        game_id: body.game_id,
         creator: {
             id: msg.id,
             username: msg.username,
@@ -644,10 +642,9 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         }
         const items: KibitzStreamItem[] = [];
         const variations: KibitzVariationSummary[] = [];
-        const fallbackGameId = room.current_game?.game_id;
         for (const msg of proxy.channel.chat_log) {
             items.push(mapChatToStreamItem(msg, room.id));
-            const variation = mapAnalysisToVariation(msg, room.id, fallbackGameId);
+            const variation = mapAnalysisToVariation(msg, room.id);
             if (variation) {
                 variations.push(variation);
             }
@@ -688,10 +685,14 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             // count. If set in the wrong order, we'd write the new proxy's
             // (empty, pre-roster) count to the OLD room's entry — zeroing it.
             this.setActiveRoom(full);
+            // joinActiveChat fires syncFromChat, which sets stream/variations
+            // from the channel's chat_log — empty if this is a fresh join,
+            // populated if chat_manager was already holding the channel for
+            // another subscriber (KibitzSharedStreamPanel also joins it). The
+            // previous explicit setStream/setVariations([]) here was a leftover
+            // placeholder from before 1C-b wired chat-derived state and would
+            // wipe whatever syncFromChat had just produced.
             this.subscribeActiveRoom(full.channel);
-            // Stream + variations come from chat history in 1C-b; empty for now.
-            this.setStream([]);
-            this.setVariations([]);
             this.setProposals([]);
             this.setSecondaryPane({
                 collapsed: true,
@@ -733,11 +734,9 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         }
         if (this._active_room) {
             this.setActiveRoom({ ...this._active_room, current_game: game });
-            // Re-derive variations/stream: if chat history replay finished
-            // before the game lookup did, variations whose body lacked a
-            // game_id were dropped because the fallback (room.current_game)
-            // wasn't set yet. Now it is.
-            this.syncFromChat();
+            // No syncFromChat needed here any more: variation derivation no
+            // longer depends on room.current_game now that bodies carry their
+            // own game_id (see mapAnalysisToVariation).
         }
     }
 
