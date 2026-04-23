@@ -23,7 +23,6 @@ interface TabCompleteInputProperties extends React.HTMLProps<HTMLTextAreaElement
     id?: string;
     placeholder?: string;
     disabled?: boolean;
-    maxMessageLength?: number; // optional, undefined means unlimited.
     onKeyPress?: React.KeyboardEventHandler<HTMLTextAreaElement>;
     className?: string;
     onFocus?: (event: React.FocusEvent<HTMLTextAreaElement>) => void;
@@ -125,15 +124,11 @@ export const TabCompleteInput = React.forwardRef<HTMLTextAreaElement, TabComplet
             textarea.style.height = `${Math.min(textarea.scrollHeight + borderY, 150)}px`;
         }, []);
 
-        const maxMessageLength = props.maxMessageLength;
+        // max length support in server is 1024
+        const maxMessageLength = 1024;
 
         const checkCharCount = React.useCallback(
             (text: string) => {
-                if (maxMessageLength === undefined) {
-                    setShowWarning(false);
-                    return;
-                }
-
                 const length = text.length;
                 setCharCount(length);
 
@@ -155,6 +150,7 @@ export const TabCompleteInput = React.forwardRef<HTMLTextAreaElement, TabComplet
                 // Reset height after sending
                 if (inputRef.current) {
                     adjustHeight(inputRef.current);
+                    setCharCount(0);
                     setShowWarning(false);
                 }
                 return;
@@ -272,7 +268,6 @@ export const TabCompleteInput = React.forwardRef<HTMLTextAreaElement, TabComplet
                     ref={inputRef}
                     enterKeyHint="send"
                     {...props}
-                    maxLength={maxMessageLength}
                     onKeyDown={handleKeyDown}
                     onFocus={handleFocus}
                     onBlur={handleBlur}

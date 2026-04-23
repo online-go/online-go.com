@@ -596,7 +596,6 @@ function ChatInput({
             className={rtl_mode ? "rtl" : ""}
             autoFocus={autoFocus}
             autoComplete={"off"}
-            maxMessageLength={1024}
             placeholder={
                 !user.email_validated
                     ? _("Chat will be enabled once your email address has been validated")

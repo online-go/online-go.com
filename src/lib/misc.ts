@@ -386,36 +386,33 @@ export function errorLogger(...args: any[]) {
     }
     console.error(err);
 }
+// max length support in server is 1024
 export function string_splitter(str: string, max_length: number = 1024): Array<string> {
-    const paragraphs = str.split("\n");
+    const words = str.split(/(\W+)/g);
+
     const lines: string[] = [];
-
-    for (const paragraph of paragraphs) {
-        const words = paragraph.split(/(\W+)/g);
-
-        let cur = "";
-        for (let word of words) {
-            while (word.length > max_length) {
-                if (cur !== "") {
-                    lines.push(cur);
-                    cur = "";
-                }
-
-                lines.push(word.substring(0, max_length - 1) + "-");
-                word = word.substring(max_length - 1);
-            }
-
-            if (cur === "" || (cur + word).length < max_length) {
-                cur += word;
-            } else {
+    let cur = "";
+    for (let word of words) {
+        while (word.length > max_length) {
+            if (cur !== "") {
                 lines.push(cur);
-                cur = word;
+                cur = "";
             }
+
+            lines.push(word.substring(0, max_length - 1) + "-");
+            word = word.substring(max_length - 1);
         }
 
-        if (cur !== "") {
+        if (cur === "" || (cur + word).length < max_length) {
+            cur += word;
+        } else {
             lines.push(cur);
+            cur = word;
         }
+    }
+
+    if (cur !== "") {
+        lines.push(cur);
     }
 
     return lines;

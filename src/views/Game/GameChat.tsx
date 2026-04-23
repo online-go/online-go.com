@@ -282,7 +282,6 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
                 <TabCompleteInput
                     className={`chat-input  ${selected_chat_log}`}
                     disabled={user.anonymous || !data.get("user").email_validated}
-                    maxMessageLength={1024}
                     placeholder={
                         user.anonymous
                             ? _("Sign in to chat")

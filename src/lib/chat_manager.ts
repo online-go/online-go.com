@@ -588,12 +588,16 @@ class ChatChannel extends TypedEventEmitter<Events> {
     }
 
     public send(text: string): void {
-        for (const split_str of string_splitter(text)) {
-            this.send_(split_str);
+        if (text.length > 1024) {
+            // TODO: Split logic kept but unreachable
+            // server hard caps all messages at 1024 chars.
+            // Re-enable if per-context limits or chunked sending is restored.
+            for (const split_str of string_splitter(text)) {
+                this.send(split_str);
+            }
+            return;
         }
-        return;
-    }
-    public send_(text: string): void {
+
         if (this.flood_protection) {
             return;
         }
