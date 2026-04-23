@@ -39,7 +39,7 @@
     }
 
     .chat-log-container {
-        background-color: red !important;
+        /* background-color: red !important; */
         display: flex;
         position: relative;
         flex: 1;
@@ -168,7 +168,7 @@
         display: flex;
         /* max-width: 100%; */
         /* width: 100%; */
-        overflow: hidden;
+        /* overflow: hidden; */
         align-items: flex-end;
         flex-direction: column;
         border-top: 1px solid var(--shade3);
@@ -221,7 +221,6 @@
             /* min-width: 0; */
         }
 
-        /* 右侧按钮组 */
         .chat-toolbar-right {
             display: flex;
             align-items: center;

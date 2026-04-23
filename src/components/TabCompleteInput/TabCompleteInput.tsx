@@ -109,6 +109,9 @@ function setCaretPosition(input: HTMLTextAreaElement, position: number) {
     input.setSelectionRange(position, position);
 }
 
+// max length support in server is 1024
+const maxMessageLength = 1024;
+
 export const TabCompleteInput = React.forwardRef<HTMLTextAreaElement, TabCompleteInputProperties>(
     (props: TabCompleteInputProperties, ref): React.ReactElement => {
         const defaultRef = React.useRef<HTMLTextAreaElement>(null);
@@ -124,24 +127,18 @@ export const TabCompleteInput = React.forwardRef<HTMLTextAreaElement, TabComplet
             textarea.style.height = `${Math.min(textarea.scrollHeight + borderY, 150)}px`;
         }, []);
 
-        // max length support in server is 1024
-        const maxMessageLength = 1024;
+        const checkCharCount = React.useCallback((text: string) => {
+            const length = text.length;
+            setCharCount(length);
 
-        const checkCharCount = React.useCallback(
-            (text: string) => {
-                const length = text.length;
-                setCharCount(length);
+            const remaining = maxMessageLength - length;
 
-                const remaining = maxMessageLength - length;
-
-                if (remaining < 50) {
-                    setShowWarning(true);
-                } else {
-                    setShowWarning(false);
-                }
-            },
-            [maxMessageLength],
-        );
+            if (remaining < 50) {
+                setShowWarning(true);
+            } else {
+                setShowWarning(false);
+            }
+        }, []);
 
         const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
             if (!e.shiftKey && e.key === "Enter") {
@@ -264,6 +261,11 @@ export const TabCompleteInput = React.forwardRef<HTMLTextAreaElement, TabComplet
 
         return (
             <div className="chat-input-wrapper">
+                {showWarning && (
+                    <div className="chat-count-warning">
+                        ⚠ {charCount}/{maxMessageLength} chars
+                    </div>
+                )}
                 <textarea
                     ref={inputRef}
                     enterKeyHint="send"
@@ -274,11 +276,6 @@ export const TabCompleteInput = React.forwardRef<HTMLTextAreaElement, TabComplet
                     onChange={handleChange}
                     rows={1}
                 />
-                {showWarning && (
-                    <div className="chat-count-warning">
-                        ⚠ {charCount}/{maxMessageLength} chars
-                    </div>
-                )}
             </div>
         );
     },
