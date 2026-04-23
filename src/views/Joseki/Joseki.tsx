@@ -701,9 +701,10 @@ export function Joseki(): React.ReactElement {
     // ---- Goban initialization ----
     function initializeGoban(initial_position?: string) {
         // Skip destroy/recreate if the goban already exists and we have no
-        // last_click set. This avoids a redundant teardown of the
-        // eagerly-created goban on first mount.
-        if (goban_ref.current != null && !last_click.current) {
+        // initial_position to load and we just completed the first mount
+        // (detected by checking last_click). This avoids a redundant teardown
+        // of the eagerly-created goban on first mount.
+        if (goban_ref.current != null && !initial_position && !last_click.current) {
             return;
         }
 
