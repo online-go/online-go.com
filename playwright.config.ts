@@ -69,9 +69,11 @@ export default defineConfig({
     testMatch: process.env.CI ? ["smoketests.spec.ts"] : ["**/*.spec.ts"],
     testIgnore: process.env.CI ? [] : ["**/smoke/**"],
     // If you change this you need to change report-utils to match, noting the delta there from here.
-    timeout: 180 * 1000, // 3 minutes - longest regular test is ~108s; @Slow tests override with test.setTimeout()
+    // CI (smoke tests): 60s is plenty - smoke tests must complete quickly or they fail loudly.
+    // Dev/E2E (full suite): 180s covers longer regular tests (~108s); @Slow tests override with test.setTimeout().
+    timeout: process.env.CI ? 60 * 1000 : 180 * 1000,
     expect: {
-        timeout: process.env.CI ? 30000 : 15000,
+        timeout: 15000,
     },
 
     /* Run tests in files in parallel */

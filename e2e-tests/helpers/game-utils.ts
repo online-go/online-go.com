@@ -119,9 +119,16 @@ export const playMoves = async (
         // "{Color} to move" appears when player_id isn't set or during initialization
         const yourMoveText = page.getByText("Your move", { exact: true });
         const colorMoveText = page.getByText(`${expectedColor} to move`, { exact: true });
-        await expect(yourMoveText.or(colorMoveText)).toBeVisible();
+        const turnIndicator = yourMoveText.or(colorMoveText);
+        await expect(turnIndicator).toBeVisible();
         await clickOnGobanIntersection(page, moves[i], boardSize);
-        await page.waitForTimeout(delay);
+        // Wait for the turn indicator to clear, confirming the server accepted the move.
+        // This lets us fail fast on dropped clicks instead of waiting for the next
+        // iteration to time out on the other player's "Your move".
+        await expect(turnIndicator).toBeHidden();
+        if (delay > 0) {
+            await page.waitForTimeout(delay);
+        }
     }
 };
 

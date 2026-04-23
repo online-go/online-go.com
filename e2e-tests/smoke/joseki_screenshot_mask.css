@@ -28,6 +28,10 @@ section.right { /* NavBar changeable icons and user name */
   visibility: hidden !important;
 }
 
+.move-controls .fa { /* nav icons toggle visibility based on async-loaded next_moves and mode state */
+  visibility: hidden !important;
+}
+
 div.WhatsNewBanner {
   visibility: hidden !important;
 }

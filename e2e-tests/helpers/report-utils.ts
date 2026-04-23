@@ -70,7 +70,7 @@ class IncidentIndicatorLock {
 export async function withIncidentIndicatorLock<T>(
     testInfo: TestInfo,
     fn: () => Promise<T>,
-    timeoutMs: number = 180042, // default matches playwright.config.ts; 42 makes it identifiable
+    timeoutMs: number = 180042, // default matches playwright.config.ts dev/E2E timeout; 42 makes it identifiable. Report tests don't run under CI (smoke-only).
 ): Promise<T> {
     setWorkerIndex(testInfo); // Initialize logger with worker index
     testInfo.setTimeout(0); // Disable timeout while waiting for lock

@@ -82,13 +82,8 @@ export const basicScoringTest = async (
     const goban = challengerPage.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });
 
-    await challengerPage.waitForTimeout(1000);
-
     // Wait for the game state to indicate it's the challenger's move
-    let challengersMove = challengerPage.getByText("Your move", { exact: true });
-    await expect(challengersMove).toBeVisible();
-
-    challengersMove = challengerPage.getByText("Your move", { exact: true });
+    const challengersMove = challengerPage.getByText("Your move", { exact: true });
     await expect(challengersMove).toBeVisible();
 
     const moves = [
