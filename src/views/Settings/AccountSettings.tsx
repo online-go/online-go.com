@@ -475,9 +475,6 @@ export function AccountSettings(props: SettingGroupPageProps): React.ReactElemen
                                         {account.provider === "facebook" && (
                                             <span className="facebook facebook-icon" />
                                         )}
-                                        {account.provider === "twitter" && (
-                                            <i className="twitter twitter-icon fa fa-twitter" />
-                                        )}
                                         {account.provider === "apple-id" && (
                                             <i className="apple apple-id-icon fa fa-apple" />
                                         )}

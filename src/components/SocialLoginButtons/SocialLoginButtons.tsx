@@ -34,10 +34,6 @@ export function SocialLoginButtons(props: SocialLoginButtonsProps): React.ReactE
             <a href={`/login/facebook/${next}`} className="s btn md-icon" target="_self">
                 <span className="facebook facebook-icon" /> {_("Sign in with Facebook")}
             </a>
-            <a href={`/login/twitter/${next}`} className="s btn md-icon" target="_self">
-                <i className="twitter twitter-icon fa fa-twitter" />
-                {_("Sign in with Twitter")}
-            </a>
             <a href={`/login/apple-id/${next}`} className="s btn md-icon" target="_self">
                 <i className="apple apple-id-icon fa fa-apple" />
                 {_("Sign in with Apple")}

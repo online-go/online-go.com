@@ -82,7 +82,11 @@
     }
 }
 
-.email-icon, .google-oauth2-icon, .twitter-icon, .facebook-icon, .apple-id-icon, .github-icon {
+.email-icon,
+.google-oauth2-icon,
+.facebook-icon,
+.apple-id-icon,
+.github-icon {
     display: inline-block;
     width: 20px;
     height: 20px;
@@ -92,16 +96,11 @@
 }
 
 .google-oauth2-icon {
-    background-image: svg-load('google-icon.svg');
+    background-image: svg-load("google-icon.svg");
 }
 
 .facebook-icon {
-    background-image: svg-load('facebook-icon.svg');
-}
-
-.twitter-icon.fa-twitter {
-    color: #1DA1F2;
-    margin-right: 0.5rem;
+    background-image: svg-load("facebook-icon.svg");
 }
 
 .apple-id-icon.fa-apple {
