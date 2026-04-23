@@ -343,6 +343,83 @@ describe("ChallengeModalBody", () => {
         expect(mockModal.close).toHaveBeenCalled();
     });
 
+    it("sends custom komi for a bot challenge", async () => {
+        const { bot_count, getAcceptableTimeSetting } = jest.requireMock("@/lib/bots");
+        (bots_list as jest.Mock).mockReturnValue([
+            { id: 42, username: "TestBot", ranking: 20, config: {} as any },
+        ]);
+        bot_count.mockReturnValue(1);
+        getAcceptableTimeSetting.mockReturnValue([{}, ""]);
+
+        const botProps = {
+            ...defaultProps,
+            mode: "computer" as const,
+            config: {
+                ...defaultProps.config,
+                conf: {
+                    restrict_rank: false,
+                    selected_board_size: "19x19",
+                },
+                challenge: {
+                    ...defaultProps.config?.challenge,
+                    min_ranking: 5,
+                    max_ranking: 36,
+                    challenger_color: "automatic",
+                    invite_only: false,
+                    game: {
+                        name: "Bot Match",
+                        rules: "japanese",
+                        ranked: true,
+                        width: 19,
+                        height: 19,
+                        handicap: 0,
+                        komi_auto: "automatic",
+                        disable_analysis: false,
+                        initial_state: null,
+                        private: false,
+                    },
+                },
+                time_control: {
+                    system: "byoyomi",
+                    speed: "live",
+                    main_time: 1200,
+                    period_time: 30,
+                    periods: 5,
+                    pause_on_weekends: false,
+                },
+            },
+        } as const;
+
+        (post as jest.Mock).mockResolvedValueOnce({ id: 999 });
+
+        render(<ChallengeModalBody {...botProps} modal={mockModal} />);
+
+        // Expand the custom settings panel.
+        const customBtn = screen.getByRole("button", { name: /Show Custom Settings/i });
+        fireEvent.click(customBtn);
+
+        // Switch komi to custom.
+        const komiSelect = document.getElementById("challenge-komi") as HTMLSelectElement;
+        fireEvent.change(komiSelect, { target: { value: "custom" } });
+
+        // Type 16.5 into the custom komi number input.
+        const komiInput = document.querySelector(
+            'input[type="number"][step="0.5"]',
+        ) as HTMLInputElement;
+        fireEvent.change(komiInput, { target: { value: "16.5" } });
+
+        // Submit via the Play button.
+        const playBtn = screen.getByRole("button", { name: /^Play$/ });
+        fireEvent.click(playBtn);
+
+        expect(post).toHaveBeenCalled();
+        const [url, payload] = (post as jest.Mock).mock.calls[0];
+        expect(url).toBe("players/42/challenge");
+        expect(payload.game.ranked).toBe(false);
+        expect(payload.game.komi_auto).toBe("custom");
+        expect(payload.game.komi).toBe(16.5);
+    });
+
     it("sanitizes legacy data", () => {
         const challengeDetails: any = {
             initialized: false,
