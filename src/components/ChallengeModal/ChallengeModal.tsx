@@ -1906,8 +1906,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                         </button>
                     )}
                 </div>
-                {(mode !== "computer" || this.state.show_computer_settings) &&
-                    this.preferredGameSettings()}
+                {mode !== "computer" && this.preferredGameSettings()}
             </div>
         );
     }
