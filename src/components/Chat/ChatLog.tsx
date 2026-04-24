@@ -477,13 +477,19 @@ function ChatLines({
             return;
         }
 
-        const tf = div.scrollHeight - div.scrollTop - 10 < div.offsetHeight;
+        // Because chat-log uses flex-direction: column-reverse to achieve
+        // bottom-anchoring, the scroll direction is inverted: scrollTop is 0
+        // when at the bottom, and becomes negative as the user scrolls up.
+        // Therefore the "is at bottom" check changes from the normal
+        //   scrollHeight - scrollTop - 10 < offsetHeight
+        // to simply checking whether scrollTop is close to 0.
+        const tf = div.scrollTop > 10;
         if (tf !== scrolled_to_bottom) {
             scrolled_to_bottom = tf;
             div.className =
                 (rtl_mode ? "rtl chat-lines " : "chat-lines ") + (tf ? "autoscrolling" : "");
         }
-        scrolled_to_bottom = div.scrollHeight - div.scrollTop - 10 < div.offsetHeight;
+        scrolled_to_bottom = div.scrollTop > 10;
     }, [channel]);
 
     window.requestAnimationFrame(() => {
@@ -493,10 +499,10 @@ function ChatLines({
         }
 
         if (scrolled_to_bottom) {
-            div.scrollTop = div.scrollHeight;
+            div.scrollTop = 0;
             setTimeout(() => {
                 try {
-                    div.scrollTop = div.scrollHeight;
+                    div.scrollTop = 0;
                 } catch {
                     // ignore error
                 }
