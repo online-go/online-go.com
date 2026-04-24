@@ -483,13 +483,13 @@ function ChatLines({
         // Therefore the "is at bottom" check changes from the normal
         //   scrollHeight - scrollTop - 10 < offsetHeight
         // to simply checking whether scrollTop is close to 0.
-        const tf = div.scrollTop > 10;
+        const tf = div.scrollTop > -10;
         if (tf !== scrolled_to_bottom) {
             scrolled_to_bottom = tf;
             div.className =
                 (rtl_mode ? "rtl chat-lines " : "chat-lines ") + (tf ? "autoscrolling" : "");
         }
-        scrolled_to_bottom = div.scrollTop > 10;
+        scrolled_to_bottom = div.scrollTop > -10;
     }, [channel]);
 
     window.requestAnimationFrame(() => {

@@ -18,6 +18,7 @@
 import * as React from "react";
 import * as player_cache from "@/lib/player_cache";
 import "./TabCompleteInput.css";
+import { interpolate, pgettext } from "@/lib/translate";
 
 interface TabCompleteInputProperties extends React.HTMLProps<HTMLTextAreaElement> {
     id?: string;
@@ -266,8 +267,12 @@ export const TabCompleteInput = React.forwardRef<HTMLTextAreaElement, TabComplet
                         className={`chat-count-warning ${charCount > maxMessageLength ? "error" : "warning"}`}
                     >
                         {charCount > maxMessageLength
-                            ? `${charCount - maxMessageLength} over limit`
-                            : `${maxMessageLength - charCount} left`}
+                            ? interpolate(pgettext("chat character count", "%d over limit"), [
+                                  charCount - maxMessageLength,
+                              ])
+                            : interpolate(pgettext("chat character count", "%d left"), [
+                                  maxMessageLength - charCount,
+                              ])}
                     </div>
                 )}
                 <textarea
