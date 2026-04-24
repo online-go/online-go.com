@@ -207,13 +207,19 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
             return;
         }
 
-        const tf = chat_log.scrollHeight - chat_log.scrollTop - 10 < chat_log.offsetHeight;
+        // Because chat-log uses flex-direction: column-reverse to achieve
+        // bottom-anchoring, the scroll direction is inverted: scrollTop is 0
+        // when at the bottom, and becomes negative as the user scrolls up.
+        // Therefore the "is at bottom" check changes from the normal
+        //   scrollHeight - scrollTop - 10 < offsetHeight
+        // to simply checking whether scrollTop is close to 0.
+        const tf = chat_log.scrollTop > -10;
+
         if (tf !== scrolled_to_bottom.current) {
             scrolled_to_bottom.current = tf;
             chat_log.className = "chat-log " + (tf ? "autoscrolling" : "");
         }
-        scrolled_to_bottom.current =
-            chat_log.scrollHeight - chat_log.scrollTop - 10 < chat_log.offsetHeight;
+        scrolled_to_bottom.current = chat_log.scrollTop > -10;
     };
 
     const autoscroll = () => {
