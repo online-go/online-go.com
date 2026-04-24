@@ -239,10 +239,12 @@ export function KibitzRoomStage({
         variationId: string | null;
         requestId: number;
         visibleVariationKey: string;
+        focusedPath: string | null;
     }>({
         variationId: null,
         requestId: -1,
         visibleVariationKey: "",
+        focusedPath: null,
     });
     const appliedDraftBaseRef = React.useRef<{
         controller: GobanController | null;
@@ -251,6 +253,10 @@ export function KibitzRoomStage({
         controller: null,
         variationId: null,
     });
+    const pendingLoadFocusRequestRef = React.useRef<{
+        variationId: string;
+        requestId: number;
+    } | null>(null);
     const [mainBoardSlotRef, mainBoardSize] = useSquareFitSize<HTMLDivElement>(
         `main-${secondaryPaneSize}`,
     );
@@ -287,6 +293,9 @@ export function KibitzRoomStage({
     const handleSecondaryMoveTreeContainerRef = React.useCallback((instance: Resizable | null) => {
         setSecondaryMoveTreeContainer(instance);
     }, []);
+    const handleSecondaryMoveTreeResize = React.useCallback(() => {
+        secondaryBoardController?.goban.move_tree_redraw(true);
+    }, [secondaryBoardController]);
 
     React.useEffect(() => {
         const previousController = previousSecondaryControllerRef.current;
@@ -295,6 +304,7 @@ export function KibitzRoomStage({
         if (previousController && previousController !== secondaryBoardController) {
             previousController.setMoveTreeContainer(null);
         }
+        previousSecondaryControllerRef.current = secondaryBoardController;
 
         if (container) {
             while (container.firstChild) {
@@ -304,9 +314,15 @@ export function KibitzRoomStage({
 
         if (secondaryBoardController && container) {
             secondaryBoardController.setMoveTreeContainer(secondaryMoveTreeContainer);
-        }
+            const redrawFrame = window.requestAnimationFrame(() => {
+                secondaryBoardController.goban.move_tree_redraw(true);
+            });
 
-        previousSecondaryControllerRef.current = secondaryBoardController;
+            return () => {
+                window.cancelAnimationFrame(redrawFrame);
+                secondaryBoardController.setMoveTreeContainer(null);
+            };
+        }
 
         return () => {
             if (secondaryBoardController) {
@@ -337,83 +353,106 @@ export function KibitzRoomStage({
                 return 0;
             });
 
-        const apply = () => {
+        let applyingVariation = false;
+        const apply = (forceFocusSelected: boolean = false) => {
+            if (applyingVariation) {
+                return;
+            }
+
+            applyingVariation = true;
             const previousFocusPath = goban.engine.cur_move?.getMoveStringToThisPoint();
             const shouldFocusSelected =
                 lastVariationFocusRequestRef.current.variationId !== selectedVariation.id ||
                 lastVariationFocusRequestRef.current.requestId !== variationFocusRequestId ||
                 lastVariationFocusRequestRef.current.visibleVariationKey !== visibleVariationKey;
 
-            goban.load(goban.engine.config);
+            try {
+                goban.load(goban.engine.config);
 
-            let selectedEndpoint: MoveTree | null = null;
+                let selectedEndpoint: MoveTree | null = null;
 
-            for (const variation of visibleVariations) {
-                const applied = applyKibitzVariationToController(
-                    secondaryBoardController,
-                    variation,
-                    variationColorIndexes[variation.id] ?? 0,
-                    variation.id === selectedVariation.id,
-                );
+                for (const variation of visibleVariations) {
+                    const applied = applyKibitzVariationToController(
+                        secondaryBoardController,
+                        variation,
+                        variationColorIndexes[variation.id] ?? 0,
+                        variation.id === selectedVariation.id,
+                    );
 
-                if (variation.id === selectedVariation.id) {
+                    if (variation.id === selectedVariation.id) {
+                        selectedEndpoint = applied.endpoint;
+                    }
+                }
+
+                if (!selectedEndpoint) {
+                    const applied = applyKibitzVariationToController(
+                        secondaryBoardController,
+                        selectedVariation,
+                        variationColorIndexes[selectedVariation.id] ?? 0,
+                        true,
+                    );
                     selectedEndpoint = applied.endpoint;
                 }
-            }
 
-            if (!selectedEndpoint) {
-                const applied = applyKibitzVariationToController(
-                    secondaryBoardController,
-                    selectedVariation,
-                    variationColorIndexes[selectedVariation.id] ?? 0,
-                    true,
-                );
-                selectedEndpoint = applied.endpoint;
-            }
-
-            if (selectedEndpoint && shouldFocusSelected) {
-                goban.engine.jumpTo(selectedEndpoint);
-                lastVariationFocusRequestRef.current = {
-                    variationId: selectedVariation.id,
-                    requestId: variationFocusRequestId,
-                    visibleVariationKey,
-                };
-            } else if (previousFocusPath) {
-                goban.engine.followPath(0, previousFocusPath);
-            }
-
-            if (!selectedVariation.analysis_line_tree) {
-                if (selectedVariation.analysis_marks) {
-                    goban.setMarks(selectedVariation.analysis_marks);
+                if (selectedEndpoint && (shouldFocusSelected || forceFocusSelected)) {
+                    goban.engine.jumpTo(selectedEndpoint);
+                    lastVariationFocusRequestRef.current = {
+                        variationId: selectedVariation.id,
+                        requestId: variationFocusRequestId,
+                        visibleVariationKey,
+                        focusedPath: selectedEndpoint.getMoveStringToThisPoint(),
+                    };
+                    if (shouldFocusSelected) {
+                        pendingLoadFocusRequestRef.current = {
+                            variationId: selectedVariation.id,
+                            requestId: variationFocusRequestId,
+                        };
+                    }
+                    if (forceFocusSelected) {
+                        pendingLoadFocusRequestRef.current = null;
+                    }
+                } else if (previousFocusPath) {
+                    goban.engine.followPath(0, previousFocusPath);
                 }
-                goban.pen_marks = selectedVariation.analysis_pen_marks
-                    ? [...selectedVariation.analysis_pen_marks]
-                    : [];
-            }
-            goban.redraw(true);
-            goban.move_tree_redraw();
-        };
 
-        // Engine.last_official_move is set as part of the game-data load.
-        // If it's already there, apply immediately; otherwise wait for the
-        // load event so a variation selected before the board finishes
-        // loading still renders. Without this listener followPath would
-        // silently noop on an empty engine and the board would stay blank.
-        if (goban.engine?.last_official_move) {
-            apply();
-            return;
-        }
+                if (!selectedVariation.analysis_line_tree) {
+                    if (selectedVariation.analysis_marks) {
+                        goban.setMarks(selectedVariation.analysis_marks);
+                    }
+                    goban.pen_marks = selectedVariation.analysis_pen_marks
+                        ? [...selectedVariation.analysis_pen_marks]
+                        : [];
+                }
+                goban.redraw(true);
+                goban.move_tree_redraw();
+            } finally {
+                applyingVariation = false;
+            }
+        };
 
         const onLoad = () => {
-            goban.off("load", onLoad);
-            apply();
+            const pendingLoadFocus = pendingLoadFocusRequestRef.current;
+            apply(
+                pendingLoadFocus?.variationId === selectedVariation.id &&
+                    pendingLoadFocus.requestId === variationFocusRequestId,
+            );
         };
         goban.on("load", onLoad);
+
+        // The engine can have a root/last_official_move before the async game
+        // load has populated the full official tree. Apply immediately for
+        // already-loaded boards, but keep the load listener so first-click
+        // variation recall is replayed after the game data arrives.
+        if (goban.engine?.last_official_move) {
+            apply();
+        }
+
         return () => {
             goban.off("load", onLoad);
         };
     }, [
         secondaryBoardController,
+        secondaryMoveTreeContainer,
         secondaryPane.preview_game_id,
         selectedVariation,
         variationColorIndexes,
@@ -445,34 +484,43 @@ export function KibitzRoomStage({
         }
 
         const goban = secondaryBoardController.goban;
+        let applyingDraftBase = false;
         const apply = () => {
-            const applied = applyKibitzVariationToController(
-                secondaryBoardController,
-                draftBaseVariation,
-                variationColorIndexes[draftBaseVariation.id] ?? 0,
-                true,
-            );
-            if (applied.endpoint) {
-                goban.engine.jumpTo(applied.endpoint);
+            if (applyingDraftBase) {
+                return;
             }
-            goban.redraw(true);
-            goban.move_tree_redraw();
-            appliedDraftBaseRef.current = {
-                controller: secondaryBoardController,
-                variationId: draftBaseVariation.id,
-            };
+
+            applyingDraftBase = true;
+            try {
+                const applied = applyKibitzVariationToController(
+                    secondaryBoardController,
+                    draftBaseVariation,
+                    variationColorIndexes[draftBaseVariation.id] ?? 0,
+                    true,
+                );
+                if (applied.endpoint) {
+                    goban.engine.jumpTo(applied.endpoint);
+                }
+                goban.redraw(true);
+                goban.move_tree_redraw();
+                appliedDraftBaseRef.current = {
+                    controller: secondaryBoardController,
+                    variationId: draftBaseVariation.id,
+                };
+            } finally {
+                applyingDraftBase = false;
+            }
         };
 
-        if (goban.engine?.last_official_move) {
-            apply();
-            return;
-        }
-
         const onLoad = () => {
-            goban.off("load", onLoad);
             apply();
         };
         goban.on("load", onLoad);
+
+        if (goban.engine?.last_official_move) {
+            apply();
+        }
+
         return () => {
             goban.off("load", onLoad);
         };
@@ -1010,6 +1058,7 @@ export function KibitzRoomStage({
                                         key={secondaryMoveTreeKey}
                                         id="kibitz-secondary-move-tree-container"
                                         className="kibitz-move-tree-container"
+                                        onResize={handleSecondaryMoveTreeResize}
                                         ref={handleSecondaryMoveTreeContainerRef}
                                     />
                                 ) : null}
@@ -1107,6 +1156,7 @@ export function KibitzRoomStage({
                                         key={secondaryMoveTreeKey}
                                         id="kibitz-secondary-move-tree-container"
                                         className="kibitz-move-tree-container"
+                                        onResize={handleSecondaryMoveTreeResize}
                                         ref={handleSecondaryMoveTreeContainerRef}
                                     />
                                 ) : null}
