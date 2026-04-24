@@ -45,11 +45,12 @@
     min-width: 5rem;
     resize: none;
     box-sizing: border-box;
+    font-family: inherit;
+    font-size: inherit;
     line-height: 1.2;
-    outline: none;
     border-left: none;
     border-right: none;
     border-top: none;
-    margin-top: 0px;
-    margin-bottom: 0px;
+    padding: 3px 3px;
+    outline: none;
 }

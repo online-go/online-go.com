@@ -34,17 +34,19 @@
         flex-shrink: 1;
         display: flex;
         width: 100%;
+        max-height: calc(100% - 30px);
         min-height: 0;
         position: relative;
     }
 
     .chat-log-container {
         /* background-color: red !important; */
-        display: flex;
-        position: relative;
-        flex: 1;
-        min-height: 0;
-        overflow: hidden;
+        display: inline-block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
     }
 
     .ChatUserList {
@@ -61,8 +63,8 @@
 
     .chat-log {
         flex: 1;
-        min-height: 0;
-        overflow-y: auto;
+        height: 100%;
+        overflow-y: scroll;
         background-color: var(--shade5);
         border-bottom: 1px solid transparent;
         display: flex;
@@ -170,18 +172,12 @@
         /* width: 100%; */
         /* overflow: hidden; */
         align-items: flex-end;
-        flex-direction: column;
+        /* flex-direction: column; */
         border-top: 1px solid var(--shade3);
 
         button {
             flex-shrink: 0;
-            height: 20px;
-            font-size:small;
-            margin-left: 4px;
-            margin-right: 4px;
-            /* box-sizing: border-box; */
-            /* background-color: var(--default-button-dark); */
-            /* border: 3px solid var(--default-button-light); */
+            height: 30px;
         }
 
         .chat-input-chat-log-toggle {
@@ -191,40 +187,10 @@
         }
 
         textarea {
+            min-height: 30px;
             min-width: 5rem;
             flex-grow: 1;
             flex-shrink: 1;
-            width: 100%;
-            resize: none;
-            margin: 0;
-            box-sizing: border-box;
-            line-height: 1.2;
-            border: 4px solid var(--default-button);
-            border-bottom: none;
-            border-radius: 0px 0px 0 0;
-        }
-
-        .chat-toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 28px;
-            flex-shrink: 0;
-            width: 100%;
-            background-color: var(--default-button);
-        }
-
-        .chat-toolbar-left {
-            display: flex;
-            align-items: center;
-            gap: 0px;
-            /* min-width: 0; */
-        }
-
-        .chat-toolbar-right {
-            display: flex;
-            align-items: center;
-            gap: 0px;
         }
 
         .qc-toggle {
@@ -235,7 +201,7 @@
             background-color: var(--default-button);
             color: var(--default-button-color);
             transition: background-color 0.3s ease;
-            height: 20px;
+            height: 30px;
 
             &:hover, &:focus {
                 text-decoration: none;
