@@ -44,10 +44,12 @@ interface KibitzRoomStageProps {
     variationColorIndexes: Record<string, number>;
     secondaryPane: KibitzSecondaryPaneState;
     onClearPreview: () => void;
-    onPostVariation: (controller: GobanController) => void;
+    onPostVariation: (controller: GobanController, sourceGameId: number | undefined) => void;
     onSetSecondaryPaneMode: (mode: "hidden" | "small" | "equal") => void;
     onChangeBoard?: () => void;
     onCreateVariation?: () => void;
+    onCreateVariationFromPostedVariation?: (variation: KibitzVariationSummary) => void;
+    variationFocusRequestId: number;
     isMobileLayout?: boolean;
     mobileCompanionPanel?: "chat" | "vote" | "compare";
     mobileHasActiveVote?: boolean;
@@ -196,6 +198,8 @@ export function KibitzRoomStage({
     onSetSecondaryPaneMode,
     onChangeBoard,
     onCreateVariation,
+    onCreateVariationFromPostedVariation,
+    variationFocusRequestId,
     isMobileLayout = false,
     mobileCompanionPanel,
     mobileHasActiveVote = false,
@@ -212,6 +216,10 @@ export function KibitzRoomStage({
     const selectedVariation = variations.find(
         (variation) => variation.id === secondaryPane.variation_id,
     );
+    const draftBaseVariation = variations.find(
+        (variation) => variation.id === secondaryPane.variation_draft_base_id,
+    );
+    const isDraftingVariation = secondaryPane.variation_source_game_id != null;
     const previewGame =
         rooms.find((candidate) => candidate.current_game?.game_id === secondaryGameId)
             ?.current_game ??
@@ -227,6 +235,22 @@ export function KibitzRoomStage({
     const [secondaryMoveTreeContainer, setSecondaryMoveTreeContainer] =
         React.useState<Resizable | null>(null);
     const previousSecondaryControllerRef = React.useRef<GobanController | null>(null);
+    const lastVariationFocusRequestRef = React.useRef<{
+        variationId: string | null;
+        requestId: number;
+        visibleVariationKey: string;
+    }>({
+        variationId: null,
+        requestId: -1,
+        visibleVariationKey: "",
+    });
+    const appliedDraftBaseRef = React.useRef<{
+        controller: GobanController | null;
+        variationId: string | null;
+    }>({
+        controller: null,
+        variationId: null,
+    });
     const [mainBoardSlotRef, mainBoardSize] = useSquareFitSize<HTMLDivElement>(
         `main-${secondaryPaneSize}`,
     );
@@ -242,7 +266,7 @@ export function KibitzRoomStage({
         }
 
         if (secondaryPane.variation_source_game_id != null) {
-            return `draft-${secondaryPane.variation_source_game_id}`;
+            return `draft-${secondaryPane.variation_source_game_id}-${secondaryPane.variation_draft_base_id ?? ""}`;
         }
 
         if (secondaryPane.preview_game_id != null) {
@@ -253,8 +277,13 @@ export function KibitzRoomStage({
     }, [
         secondaryPane.preview_game_id,
         secondaryPane.variation_id,
+        secondaryPane.variation_draft_base_id,
         secondaryPane.variation_source_game_id,
     ]);
+    const visibleVariationKey = React.useMemo(
+        () => visibleVariationIds.join("\n"),
+        [visibleVariationIds],
+    );
     const handleSecondaryMoveTreeContainerRef = React.useCallback((instance: Resizable | null) => {
         setSecondaryMoveTreeContainer(instance);
     }, []);
@@ -309,6 +338,12 @@ export function KibitzRoomStage({
             });
 
         const apply = () => {
+            const previousFocusPath = goban.engine.cur_move?.getMoveStringToThisPoint();
+            const shouldFocusSelected =
+                lastVariationFocusRequestRef.current.variationId !== selectedVariation.id ||
+                lastVariationFocusRequestRef.current.requestId !== variationFocusRequestId ||
+                lastVariationFocusRequestRef.current.visibleVariationKey !== visibleVariationKey;
+
             goban.load(goban.engine.config);
 
             let selectedEndpoint: MoveTree | null = null;
@@ -336,8 +371,15 @@ export function KibitzRoomStage({
                 selectedEndpoint = applied.endpoint;
             }
 
-            if (selectedEndpoint) {
+            if (selectedEndpoint && shouldFocusSelected) {
                 goban.engine.jumpTo(selectedEndpoint);
+                lastVariationFocusRequestRef.current = {
+                    variationId: selectedVariation.id,
+                    requestId: variationFocusRequestId,
+                    visibleVariationKey,
+                };
+            } else if (previousFocusPath) {
+                goban.engine.followPath(0, previousFocusPath);
             }
 
             if (!selectedVariation.analysis_line_tree) {
@@ -375,8 +417,71 @@ export function KibitzRoomStage({
         secondaryPane.preview_game_id,
         selectedVariation,
         variationColorIndexes,
+        variationFocusRequestId,
         variations,
+        visibleVariationKey,
         visibleVariationIds,
+    ]);
+
+    React.useEffect(() => {
+        if (
+            !draftBaseVariation ||
+            !secondaryBoardController ||
+            secondaryPane.preview_game_id == null ||
+            secondaryPane.variation_source_game_id == null
+        ) {
+            appliedDraftBaseRef.current = {
+                controller: secondaryBoardController,
+                variationId: null,
+            };
+            return;
+        }
+
+        if (
+            appliedDraftBaseRef.current.controller === secondaryBoardController &&
+            appliedDraftBaseRef.current.variationId === draftBaseVariation.id
+        ) {
+            return;
+        }
+
+        const goban = secondaryBoardController.goban;
+        const apply = () => {
+            const applied = applyKibitzVariationToController(
+                secondaryBoardController,
+                draftBaseVariation,
+                variationColorIndexes[draftBaseVariation.id] ?? 0,
+                true,
+            );
+            if (applied.endpoint) {
+                goban.engine.jumpTo(applied.endpoint);
+            }
+            goban.redraw(true);
+            goban.move_tree_redraw();
+            appliedDraftBaseRef.current = {
+                controller: secondaryBoardController,
+                variationId: draftBaseVariation.id,
+            };
+        };
+
+        if (goban.engine?.last_official_move) {
+            apply();
+            return;
+        }
+
+        const onLoad = () => {
+            goban.off("load", onLoad);
+            apply();
+        };
+        goban.on("load", onLoad);
+        return () => {
+            goban.off("load", onLoad);
+        };
+    }, [
+        draftBaseVariation,
+        secondaryBoardController,
+        secondaryPane.preview_game_id,
+        secondaryPane.variation_source_game_id,
+        variationColorIndexes,
     ]);
 
     // mainGame is populated by KibitzController.lookupGameForKibitz from
@@ -498,7 +603,7 @@ export function KibitzRoomStage({
                                 {...boardDimensionsOf(secondaryBoardGame)}
                                 className="mobile-secondary-board-surface"
                                 size={mobileBoardSize}
-                                interactive={true}
+                                interactive={isDraftingVariation}
                                 fitMode="contain"
                                 respectContainerBounds={true}
                                 onReady={setSecondaryBoardController}
@@ -510,7 +615,7 @@ export function KibitzRoomStage({
                                 {...boardDimensionsOf(mainGame)}
                                 className="mobile-secondary-board-surface"
                                 size={mobileBoardSize}
-                                interactive={true}
+                                interactive={false}
                                 fitMode="contain"
                                 respectContainerBounds={true}
                                 onReady={setSecondaryBoardController}
@@ -874,7 +979,9 @@ export function KibitzRoomStage({
                                         </button>
                                     </div>
                                 </div>
-                                {secondaryPaneSize === "equal" && secondaryBoardController ? (
+                                {isDraftingVariation &&
+                                secondaryPaneSize === "equal" &&
+                                secondaryBoardController ? (
                                     <div className="secondary-board-analyze-row">
                                         <GobanAnalyzeButtonBar
                                             controller={secondaryBoardController}
@@ -883,11 +990,18 @@ export function KibitzRoomStage({
                                         />
                                     </div>
                                 ) : null}
-                                {secondaryPaneSize === "equal" && secondaryBoardController ? (
+                                {isDraftingVariation &&
+                                secondaryPaneSize === "equal" &&
+                                secondaryBoardController ? (
                                     <div className="secondary-board-compose-row">
                                         <KibitzVariationComposer
                                             controller={secondaryBoardController}
-                                            onSubmit={onPostVariation}
+                                            onSubmit={(controller) =>
+                                                onPostVariation(
+                                                    controller,
+                                                    secondaryPane.variation_source_game_id,
+                                                )
+                                            }
                                         />
                                     </div>
                                 ) : null}
@@ -939,7 +1053,7 @@ export function KibitzRoomStage({
                                         {...boardDimensionsOf(mainGame)}
                                         className="secondary-board-surface"
                                         size={secondaryBoardSize}
-                                        interactive={secondaryPaneSize === "equal"}
+                                        interactive={false}
                                         respectContainerBounds={true}
                                         onReady={setSecondaryBoardController}
                                     />
@@ -954,6 +1068,23 @@ export function KibitzRoomStage({
                                         />
                                     </div>
                                     <div className="board-actions board-actions-inline">
+                                        {secondaryPaneSize === "equal" &&
+                                        onCreateVariationFromPostedVariation ? (
+                                            <button
+                                                type="button"
+                                                className="preview-action-button"
+                                                onClick={() =>
+                                                    onCreateVariationFromPostedVariation(
+                                                        selectedVariation,
+                                                    )
+                                                }
+                                            >
+                                                {pgettext(
+                                                    "Button label for starting a new editable Kibitz variation from a posted variation",
+                                                    "Create variation from here",
+                                                )}
+                                            </button>
+                                        ) : null}
                                         <button
                                             type="button"
                                             className="preview-action-button clear-preview symbol-button"
@@ -971,23 +1102,6 @@ export function KibitzRoomStage({
                                         </button>
                                     </div>
                                 </div>
-                                {secondaryPaneSize === "equal" && secondaryBoardController ? (
-                                    <div className="secondary-board-analyze-row">
-                                        <GobanAnalyzeButtonBar
-                                            controller={secondaryBoardController}
-                                            showBackToGame={false}
-                                            showConditionalPlannerButton={false}
-                                        />
-                                    </div>
-                                ) : null}
-                                {secondaryPaneSize === "equal" && secondaryBoardController ? (
-                                    <div className="secondary-board-compose-row">
-                                        <KibitzVariationComposer
-                                            controller={secondaryBoardController}
-                                            onSubmit={onPostVariation}
-                                        />
-                                    </div>
-                                ) : null}
                                 {secondaryPaneSize === "equal" ? (
                                     <Resizable
                                         key={secondaryMoveTreeKey}

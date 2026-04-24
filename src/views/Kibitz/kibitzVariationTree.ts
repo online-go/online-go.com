@@ -15,19 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { MoveTree, MoveTreeJson } from "goban";
+import { MoveTree as GobanMoveTree, type MoveTree, type MoveTreeJson } from "goban";
 import type { GobanController } from "@/lib/GobanController";
 import type { KibitzVariationSummary } from "@/models/kibitz";
 
-export const KIBITZ_VARIATION_COLORS = [
-    "#ff0000",
-    "#00aa00",
-    "#0000ff",
-    "#008c99",
-    "#b59b00",
-    "#c26700",
-    "#9200ff",
-] as const;
+export const KIBITZ_VARIATION_COLORS = GobanMoveTree.line_colors;
 
 export type KibitzVariationColorIndex = number;
 
@@ -46,6 +38,25 @@ function lineTreeNodes(lineTree: MoveTreeJson | undefined): MoveTreeJson[] {
     }
 
     return nodes;
+}
+
+function sameMove(left: MoveTree, right: MoveTreeJson): boolean {
+    return left.x === right.x && left.y === right.y;
+}
+
+function alignLineTreeNodes(pathNodes: MoveTree[], annotatedNodes: MoveTreeJson[]): MoveTreeJson[] {
+    if (pathNodes.length === 0 || annotatedNodes.length === 0) {
+        return [];
+    }
+
+    const firstPathNode = pathNodes[0];
+    const firstMatchingIndex = annotatedNodes.findIndex((node) => sameMove(firstPathNode, node));
+
+    if (firstMatchingIndex < 0) {
+        return [];
+    }
+
+    return annotatedNodes.slice(firstMatchingIndex);
 }
 
 function pathNodesAfterMove(controller: GobanController, from: number): MoveTree[] {
@@ -68,11 +79,16 @@ function applyLineAnnotations(
     lineTree: MoveTreeJson | undefined,
     includeMarks: boolean,
 ): void {
-    const annotatedNodes = lineTreeNodes(lineTree);
+    const annotatedNodes = alignLineTreeNodes(nodes, lineTreeNodes(lineTree));
     const count = Math.min(nodes.length, annotatedNodes.length);
 
     for (let i = 0; i < count; ++i) {
         const source = annotatedNodes[i];
+
+        if (!sameMove(nodes[i], source)) {
+            continue;
+        }
+
         const annotation: MoveTreeJson = {
             x: source.x,
             y: source.y,

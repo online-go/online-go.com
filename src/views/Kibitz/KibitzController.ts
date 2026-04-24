@@ -811,26 +811,29 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         proxy.channel.sendTypedBody(body);
     }
 
-    public postVariation(roomId: string, boardController: GobanController): boolean {
+    public postVariation(
+        roomId: string,
+        boardController: GobanController,
+        sourceGameId: number | undefined,
+    ): AnalysisChatBody | null {
         const proxy = this._active_chat_proxy;
         if (!proxy || !this._active_room || this._active_room.id !== roomId) {
-            return false;
+            return null;
         }
         const prepared = boardController.buildAnalysisSnapshot();
         if (prepared.is_duplicate) {
-            return false;
+            return null;
         }
-        const gameId = this._active_room.current_game?.game_id;
-        if (!gameId) {
-            return false;
+        if (!sourceGameId) {
+            return null;
         }
         const body = {
             ...prepared.analysis,
-            game_id: gameId,
+            game_id: sourceGameId,
         } as AnalysisChatBody;
         this.sendTypedToActiveChannel(body);
         boardController.recordAnalysisSent(prepared.analysis);
-        return true;
+        return body;
     }
 
     /**
@@ -849,6 +852,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             variation_id: undefined,
             variation_source_game_id: undefined,
             variation_source_game: undefined,
+            variation_draft_base_id: undefined,
         });
     }
 
@@ -868,6 +872,25 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             variation_source_game: this._active_room?.current_game
                 ? { ...this._active_room.current_game }
                 : undefined,
+            variation_draft_base_id: undefined,
+        });
+    }
+
+    public startVariationFromPostedVariation(variation: KibitzVariationSummary): void {
+        const sourceGame =
+            this._active_room?.current_game?.game_id === variation.game_id
+                ? this._active_room.current_game
+                : undefined;
+
+        this.setSecondaryPane({
+            ...this._secondary_pane,
+            collapsed: false,
+            size: "equal",
+            preview_game_id: variation.game_id,
+            variation_id: undefined,
+            variation_source_game_id: variation.game_id,
+            variation_source_game: sourceGame ? { ...sourceGame } : undefined,
+            variation_draft_base_id: variation.id,
         });
     }
 
@@ -879,6 +902,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             variation_id: undefined,
             variation_source_game_id: undefined,
             variation_source_game: undefined,
+            variation_draft_base_id: undefined,
         });
     }
 
@@ -891,6 +915,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             variation_id: variationId,
             variation_source_game_id: undefined,
             variation_source_game: undefined,
+            variation_draft_base_id: undefined,
         });
     }
 

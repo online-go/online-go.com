@@ -110,109 +110,95 @@ export function KibitzVariationList({
                                         )}
                                     </div>
                                 ) : null}
-                                {group.variations.map((variation) => (
-                                    <button
-                                        key={variation.id}
-                                        type="button"
-                                        className={
-                                            "variation-item" +
-                                            (visibleVariationIdSet.has(variation.id)
-                                                ? " visible"
-                                                : "") +
-                                            (selectedVariationId === variation.id
-                                                ? " selected"
-                                                : "")
-                                        }
-                                        onClick={() => onRecallVariation(variation.id)}
-                                    >
-                                        <span
-                                            className="variation-color-chip"
-                                            style={
-                                                visibleVariationIdSet.has(variation.id)
-                                                    ? {
-                                                          backgroundColor: getKibitzVariationColor(
-                                                              variationColorIndexes[variation.id] ??
-                                                                  0,
-                                                          ),
-                                                      }
-                                                    : undefined
+                                {group.variations.map((variation) => {
+                                    const isVisible = visibleVariationIdSet.has(variation.id);
+                                    const toggleLabel = isVisible
+                                        ? pgettext(
+                                              "Tooltip for hiding a Kibitz variation in the tree",
+                                              "Hide variation",
+                                          )
+                                        : pgettext(
+                                              "Tooltip for showing a Kibitz variation in the tree",
+                                              "Show variation",
+                                          );
+
+                                    return (
+                                        <div
+                                            key={variation.id}
+                                            className={
+                                                "variation-item" +
+                                                (isVisible ? " visible" : "") +
+                                                (selectedVariationId === variation.id
+                                                    ? " selected"
+                                                    : "")
                                             }
-                                            aria-hidden="true"
-                                        />
-                                        <span className="variation-main">
-                                            <span className="variation-name">
-                                                {variation.title ||
-                                                    pgettext(
-                                                        "Fallback title for an untitled variation in kibitz",
-                                                        "Untitled variation",
-                                                    )}
-                                            </span>
-                                            <span className="variation-meta-row">
-                                                <span
-                                                    className="variation-avatar"
-                                                    aria-hidden="true"
-                                                    title={variation.creator.username}
-                                                >
-                                                    {getUserInitials(variation.creator.username)}
-                                                </span>
-                                                <span className="variation-meta">
-                                                    {variation.creator.username}
-                                                </span>
-                                            </span>
-                                        </span>
-                                        {/* TODO: render a MiniGoban preview here once the
-                                            variation's source game data + analysis_moves
-                                            are plumbed through to the variation list.
-                                            The Johnniedarkoo POC drove this from a mock
-                                            mock_game_data field; the live equivalent
-                                            needs the actual game state + variation moves. */}
-                                        {onToggleVariation ? (
-                                            <span
-                                                className="variation-toggle"
-                                                role="button"
-                                                tabIndex={0}
-                                                aria-pressed={visibleVariationIdSet.has(
-                                                    variation.id,
-                                                )}
-                                                title={
-                                                    visibleVariationIdSet.has(variation.id)
-                                                        ? pgettext(
-                                                              "Tooltip for hiding a Kibitz variation in the tree",
-                                                              "Hide variation",
-                                                          )
-                                                        : pgettext(
-                                                              "Tooltip for showing a Kibitz variation in the tree",
-                                                              "Show variation",
-                                                          )
-                                                }
-                                                onClick={(event) => {
-                                                    event.stopPropagation();
-                                                    onToggleVariation(variation.id);
-                                                }}
-                                                onKeyDown={(event) => {
-                                                    if (
-                                                        event.key === "Enter" ||
-                                                        event.key === " "
-                                                    ) {
-                                                        event.preventDefault();
-                                                        event.stopPropagation();
-                                                        onToggleVariation(variation.id);
-                                                    }
-                                                }}
+                                        >
+                                            <button
+                                                type="button"
+                                                className="variation-recall"
+                                                onClick={() => onRecallVariation(variation.id)}
                                             >
-                                                <i
-                                                    className={
-                                                        "fa " +
-                                                        (visibleVariationIdSet.has(variation.id)
-                                                            ? "fa-eye"
-                                                            : "fa-eye-slash")
+                                                <span
+                                                    className="variation-color-chip"
+                                                    style={
+                                                        isVisible
+                                                            ? {
+                                                                  backgroundColor:
+                                                                      getKibitzVariationColor(
+                                                                          variationColorIndexes[
+                                                                              variation.id
+                                                                          ] ?? 0,
+                                                                      ),
+                                                              }
+                                                            : undefined
                                                     }
                                                     aria-hidden="true"
                                                 />
-                                            </span>
-                                        ) : null}
-                                    </button>
-                                ))}
+                                                <span className="variation-main">
+                                                    <span className="variation-name">
+                                                        {variation.title ||
+                                                            pgettext(
+                                                                "Fallback title for an untitled variation in kibitz",
+                                                                "Untitled variation",
+                                                            )}
+                                                    </span>
+                                                    <span className="variation-meta-row">
+                                                        <span
+                                                            className="variation-avatar"
+                                                            aria-hidden="true"
+                                                            title={variation.creator.username}
+                                                        >
+                                                            {getUserInitials(
+                                                                variation.creator.username,
+                                                            )}
+                                                        </span>
+                                                        <span className="variation-meta">
+                                                            {variation.creator.username}
+                                                        </span>
+                                                    </span>
+                                                </span>
+                                            </button>
+                                            {onToggleVariation ? (
+                                                <button
+                                                    type="button"
+                                                    className="variation-toggle"
+                                                    aria-pressed={isVisible}
+                                                    aria-label={toggleLabel}
+                                                    title={toggleLabel}
+                                                    onClick={() => onToggleVariation(variation.id)}
+                                                >
+                                                    <i
+                                                        className={
+                                                            "fa " +
+                                                            (isVisible ? "fa-eye" : "fa-eye-slash")
+                                                        }
+                                                        aria-hidden="true"
+                                                    />
+                                                </button>
+                                            ) : null}
+                                        </div>
+                                    );
+                                })}
                             </React.Fragment>
                         ))}
                     </div>

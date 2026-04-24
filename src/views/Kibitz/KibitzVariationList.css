@@ -39,16 +39,13 @@
     .variation-item {
         align-items: flex-start;
         background: transparent;
-        border: 0;
         box-sizing: border-box;
-        cursor: pointer;
         display: flex;
         flex-direction: row;
         gap: 0.14rem;
         justify-content: center;
         min-height: 4.2rem;
         min-width: 0;
-        padding: 0.8rem 0.7rem 0.8rem 0.88rem;
         position: relative;
         text-align: left;
         transition:
@@ -64,12 +61,31 @@
             background: color-mix(in srgb, var(--shade2) 55%, transparent);
         }
 
-        &:hover {
+        &:hover,
+        &:focus-within {
             background: color-mix(in srgb, var(--shade2) 50%, transparent);
         }
 
         &:active {
             background: color-mix(in srgb, var(--shade2) 65%, transparent);
+        }
+    }
+
+    .variation-recall {
+        align-items: flex-start;
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+        display: flex;
+        flex: 1 1 auto;
+        gap: 0.14rem;
+        min-height: 4.2rem;
+        min-width: 0;
+        padding: 0.8rem 0.2rem 0.8rem 0.88rem;
+        text-align: left;
+
+        &:focus-visible {
+            outline: none;
         }
     }
 
@@ -91,12 +107,16 @@
 
     .variation-toggle {
         align-items: center;
+        background: transparent;
+        border: 0;
         color: var(--text-color-faded);
         cursor: pointer;
         display: inline-flex;
         flex: 0 0 auto;
         height: 1.65rem;
         justify-content: center;
+        margin: 0.55rem 0.45rem 0 0;
+        padding: 0;
         width: 1.65rem;
 
         &:hover,

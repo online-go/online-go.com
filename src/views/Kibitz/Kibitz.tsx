@@ -18,6 +18,7 @@
 import * as React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { GobanController } from "@/lib/GobanController";
+import * as data from "@/lib/data";
 import { alert } from "@/lib/swal_config";
 import { interpolate, pgettext } from "@/lib/translate";
 import type {
@@ -27,6 +28,7 @@ import type {
     KibitzRoomSummary,
     KibitzSecondaryPaneState,
     KibitzStreamItem,
+    KibitzVariationSummary,
 } from "@/models/kibitz";
 import { KibitzProposalBar } from "./KibitzProposalBar";
 import { KibitzProposalQueue } from "./KibitzProposalQueue";
@@ -47,6 +49,13 @@ type SecondaryPaneMode = "hidden" | "small" | "equal";
 type MobileCompanionPanel = "chat" | "vote" | "compare";
 type MobileOverlayMode = "rooms" | "create-room" | "change-board" | null;
 type KibitzGamePickerMode = "create-room" | "change-board" | null;
+interface PendingPostedVariation {
+    gameId: number;
+    creatorId: number;
+    from?: number;
+    moves?: string;
+    title?: string;
+}
 
 const MOBILE_LAYOUT_MEDIA_QUERY = "(max-width: 1000px)";
 const MOBILE_SPLIT_STORAGE_KEY = "kibitz-mobile-split-ratio";
@@ -119,6 +128,9 @@ export function Kibitz(): React.ReactElement {
     const [variationColorIndexes, setVariationColorIndexes] = React.useState<
         Record<string, number>
     >({});
+    const [variationFocusRequestId, setVariationFocusRequestId] = React.useState(0);
+    const [pendingPostedVariation, setPendingPostedVariation] =
+        React.useState<PendingPostedVariation | null>(null);
     const mobileShellRef = React.useRef<HTMLDivElement | null>(null);
     const mobileDividerRef = React.useRef<HTMLDivElement | null>(null);
     const previousMobileViewerCountRef = React.useRef<number | null>(null);
@@ -317,6 +329,7 @@ export function Kibitz(): React.ReactElement {
                     [variationId]: Object.keys(previous).length,
                 };
             });
+            setVariationFocusRequestId((previous) => previous + 1);
             controller.openVariation(variationId);
             if (isMobileLayout) {
                 setMobileCompanionPanel("compare");
@@ -347,10 +360,15 @@ export function Kibitz(): React.ReactElement {
                         [variationId]: Object.keys(previousColorIndexes).length,
                     };
                 });
+                setVariationFocusRequestId((previousFocusRequestId) => previousFocusRequestId + 1);
+                controller.openVariation(variationId);
+                if (isMobileLayout) {
+                    setMobileCompanionPanel("compare");
+                }
                 return [...previous, variationId];
             });
         },
-        [controller, secondaryPane.variation_id],
+        [controller, isMobileLayout, secondaryPane.variation_id],
     );
     const onCreateVariation = React.useCallback(() => {
         controller.startVariationFromCurrentBoard();
@@ -359,6 +377,16 @@ export function Kibitz(): React.ReactElement {
             setMobileCompanionPanel("compare");
         }
     }, [controller, isMobileLayout]);
+    const onCreateVariationFromPostedVariation = React.useCallback(
+        (variation: KibitzVariationSummary) => {
+            controller.startVariationFromPostedVariation(variation);
+            if (isMobileLayout) {
+                setMobileOverlayMode(null);
+                setMobileCompanionPanel("compare");
+            }
+        },
+        [controller, isMobileLayout],
+    );
     const onSetSecondaryPaneMode = React.useCallback((nextMode: SecondaryPaneMode) => {
         setPendingSecondaryPaneMode(nextMode);
     }, []);
@@ -421,24 +449,12 @@ export function Kibitz(): React.ReactElement {
         (variation) => variation.id === secondaryPane.variation_id,
     );
     React.useEffect(() => {
-        if (currentGameId == null) {
-            setVisibleVariationIds([]);
-            return;
-        }
-
         setVisibleVariationIds((previous) =>
             previous.filter((variationId) =>
-                variations.some(
-                    (variation) =>
-                        variation.id === variationId && variation.game_id === currentGameId,
-                ),
+                variations.some((variation) => variation.id === variationId),
             ),
         );
-
-        if (selectedVariation && selectedVariation.game_id !== currentGameId) {
-            controller.clearPreviewGame();
-        }
-    }, [controller, currentGameId, selectedVariation, variations]);
+    }, [variations]);
     const proposalBackedPreview = Boolean(
         secondaryPane.preview_game_id &&
         roomProposals.some(
@@ -466,13 +482,52 @@ export function Kibitz(): React.ReactElement {
         pgettext("Fallback title for the active mobile kibitz compare board", "Board preview");
 
     const onPostVariation = React.useCallback(
-        (boardController: GobanController) => {
+        (boardController: GobanController, sourceGameId: number | undefined) => {
             if (resolvedRoom) {
-                controller.postVariation(resolvedRoom.id, boardController);
+                const posted = controller.postVariation(
+                    resolvedRoom.id,
+                    boardController,
+                    sourceGameId,
+                );
+                const currentUser = data.get("config.user") as
+                    | { id?: number; anonymous?: boolean }
+                    | undefined;
+
+                if (posted && currentUser?.id != null && posted.game_id != null) {
+                    setPendingPostedVariation({
+                        gameId: posted.game_id,
+                        creatorId: currentUser.id,
+                        from: posted.from,
+                        moves: posted.moves,
+                        title: posted.name,
+                    });
+                }
             }
         },
         [controller, resolvedRoom],
     );
+
+    React.useEffect(() => {
+        if (!pendingPostedVariation) {
+            return;
+        }
+
+        const postedVariation = variations.find(
+            (variation) =>
+                variation.game_id === pendingPostedVariation.gameId &&
+                variation.creator.id === pendingPostedVariation.creatorId &&
+                variation.analysis_from === pendingPostedVariation.from &&
+                variation.analysis_moves === pendingPostedVariation.moves &&
+                variation.title === pendingPostedVariation.title,
+        );
+
+        if (!postedVariation) {
+            return;
+        }
+
+        setPendingPostedVariation(null);
+        onOpenVariation(postedVariation.id);
+    }, [onOpenVariation, pendingPostedVariation, variations]);
 
     const variationPanels = (
         <>
@@ -844,6 +899,10 @@ export function Kibitz(): React.ReactElement {
                                         onSetSecondaryPaneMode={onSetSecondaryPaneMode}
                                         onChangeBoard={undefined}
                                         onCreateVariation={onCreateVariation}
+                                        onCreateVariationFromPostedVariation={
+                                            onCreateVariationFromPostedVariation
+                                        }
+                                        variationFocusRequestId={variationFocusRequestId}
                                         isMobileLayout={true}
                                         mobileCompanionPanel={mobileCompanionPanel}
                                         mobileHasActiveVote={Boolean(activeProposal)}
@@ -909,7 +968,9 @@ export function Kibitz(): React.ReactElement {
                                             ) : null}
                                             {mobileCompanionPanel === "compare" ? (
                                                 <div className="Kibitz-mobile-panel Kibitz-mobile-compare-panel">
-                                                    {mobileCompareController ? (
+                                                    {mobileCompareController &&
+                                                    secondaryPane.variation_source_game_id !=
+                                                        null ? (
                                                         <div className="Kibitz-mobile-compare-tools">
                                                             <div className="mobile-board-analyze-row">
                                                                 <GobanAnalyzeButtonBar
@@ -927,7 +988,12 @@ export function Kibitz(): React.ReactElement {
                                                                     controller={
                                                                         mobileCompareController
                                                                     }
-                                                                    onSubmit={onPostVariation}
+                                                                    onSubmit={(controller) =>
+                                                                        onPostVariation(
+                                                                            controller,
+                                                                            secondaryPane.variation_source_game_id,
+                                                                        )
+                                                                    }
                                                                 />
                                                             </div>
                                                         </div>
@@ -955,6 +1021,22 @@ export function Kibitz(): React.ReactElement {
                                                                         "Clear",
                                                                     )}
                                                                 </button>
+                                                                {selectedVariation ? (
+                                                                    <button
+                                                                        type="button"
+                                                                        className="mobile-board-clear-button"
+                                                                        onClick={() =>
+                                                                            onCreateVariationFromPostedVariation(
+                                                                                selectedVariation,
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        {pgettext(
+                                                                            "Button label for starting a new editable Kibitz variation from a posted variation",
+                                                                            "Create variation from here",
+                                                                        )}
+                                                                    </button>
+                                                                ) : null}
                                                             </div>
                                                         </div>
                                                     ) : null}
@@ -983,6 +1065,10 @@ export function Kibitz(): React.ReactElement {
                                 onSetSecondaryPaneMode={onSetSecondaryPaneMode}
                                 onChangeBoard={handleOpenChangeBoard}
                                 onCreateVariation={onCreateVariation}
+                                onCreateVariationFromPostedVariation={
+                                    onCreateVariationFromPostedVariation
+                                }
+                                variationFocusRequestId={variationFocusRequestId}
                                 isMobileLayout={false}
                                 mobileCompanionPanel={mobileCompanionPanel}
                                 mobileHasActiveVote={Boolean(activeProposal)}
