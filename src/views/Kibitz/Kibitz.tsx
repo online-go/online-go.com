@@ -344,7 +344,25 @@ export function Kibitz(): React.ReactElement {
                     const next = previous.filter((id) => id !== variationId);
 
                     if (secondaryPane.variation_id === variationId) {
-                        controller.clearPreviewGame();
+                        const hiddenVariation = variations.find(
+                            (variation) => variation.id === variationId,
+                        );
+                        const nextActiveVariation =
+                            next
+                                .map((id) => variations.find((variation) => variation.id === id))
+                                .find(
+                                    (variation) =>
+                                        variation && variation.game_id === hiddenVariation?.game_id,
+                                ) ??
+                            next
+                                .map((id) => variations.find((variation) => variation.id === id))
+                                .find((variation) => variation);
+
+                        if (nextActiveVariation) {
+                            controller.openVariation(nextActiveVariation.id);
+                        } else {
+                            controller.clearPreviewGame();
+                        }
                     }
 
                     return next;
@@ -368,7 +386,7 @@ export function Kibitz(): React.ReactElement {
                 return [...previous, variationId];
             });
         },
-        [controller, isMobileLayout, secondaryPane.variation_id],
+        [controller, isMobileLayout, secondaryPane.variation_id, variations],
     );
     const onCreateVariation = React.useCallback(() => {
         controller.startVariationFromCurrentBoard();
