@@ -19,21 +19,61 @@ import { decodeMoves, GobanRendererConfig, PuzzleConfig, PuzzlePlacementSetting 
 import { errorAlerter, dup } from "@/lib/misc";
 import { PuzzleTransform } from "./PuzzleTransform";
 import * as data from "@/lib/data";
-import { abort_requests_in_flight, post, get } from "@/lib/requests";
+import { post, get } from "@/lib/requests";
 import * as preferences from "@/lib/preferences";
+
+type PuzzleFetchTuple = [rest_api.PuzzleDetail, any, any];
 
 export class PuzzleEditor {
     orig_puzzle_config?: PuzzleConfig;
     puzzle_config?: PuzzleConfig;
     transform: PuzzleTransform;
+    // Keyed by puzzle id. Entries are kept for the editor's lifetime so
+    // revisiting a puzzle is instant — puzzle data itself doesn't change in
+    // a session (a stale /rate response is the only staleness risk and is
+    // self-correcting the next time the user rates). Failed prefetches are
+    // removed so fetchPuzzle falls back to a fresh request.
+    private prefetched = new Map<number, Promise<PuzzleFetchTuple>>();
 
     constructor(transform: PuzzleTransform) {
         this.transform = transform;
     }
 
-    clearPuzzles() {
-        this.orig_puzzle_config = undefined;
-        this.puzzle_config = undefined;
+    /** Drop every cached fetch. Call after any action that mutates the
+     *  server-side collection (reorder, rename, delete, flag toggles) — the
+     *  cached responses encode the previous collection summary and would
+     *  otherwise revert the optimistic state on the next navigation. */
+    invalidateAll() {
+        this.prefetched.clear();
+    }
+
+    /** Drop the cached fetch for `puzzle_id` so the next visit goes to the
+     *  server — call this when something client-visible changed (e.g. the
+     *  user just rated the puzzle). */
+    invalidatePuzzle(puzzle_id: number) {
+        this.prefetched.delete(puzzle_id);
+    }
+
+    /**
+     * Kick off the same GETs `fetchPuzzle` will use, stashing the result so
+     * the eventual call can skip the network. No-op if we already have an
+     * entry for this id.
+     */
+    prefetchPuzzle(puzzle_id: number) {
+        if (isNaN(puzzle_id) || this.prefetched.has(puzzle_id)) {
+            return;
+        }
+        const promise = Promise.all([
+            get(`puzzles/${puzzle_id}`),
+            get(`puzzles/${puzzle_id}/collection_summary`),
+            get(`puzzles/${puzzle_id}/rate`),
+        ]) as Promise<PuzzleFetchTuple>;
+        this.prefetched.set(puzzle_id, promise);
+        promise.catch(() => {
+            if (this.prefetched.get(puzzle_id) === promise) {
+                this.prefetched.delete(puzzle_id);
+            }
+        });
     }
 
     /**
@@ -127,7 +167,6 @@ export class PuzzleEditor {
      * @param callback assigns new state and editing status
      */
     fetchPuzzle(puzzle_id: number, callback: (state: any, editing: boolean) => void) {
-        abort_requests_in_flight(`puzzles/`, "GET");
         if (isNaN(puzzle_id)) {
             getAllPuzzleCollections(data.get("user").id)
                 .then((collections) => {
@@ -141,12 +180,27 @@ export class PuzzleEditor {
             return;
         }
 
-        Promise.all([
-            get(`puzzles/${puzzle_id}`),
-            get(`puzzles/${puzzle_id}/collection_summary`),
-            get(`puzzles/${puzzle_id}/rate`),
-        ])
-            .then((arr: [rest_api.PuzzleDetail, any, any]) => {
+        // Reuse a cached promise if we have one; it stays in the map so later
+        // navigations back to the same puzzle are also instant.
+        const cached = this.prefetched.get(puzzle_id);
+        const promise: Promise<PuzzleFetchTuple> =
+            cached ??
+            (Promise.all([
+                get(`puzzles/${puzzle_id}`),
+                get(`puzzles/${puzzle_id}/collection_summary`),
+                get(`puzzles/${puzzle_id}/rate`),
+            ]) as Promise<PuzzleFetchTuple>);
+        if (!cached) {
+            this.prefetched.set(puzzle_id, promise);
+            promise.catch(() => {
+                if (this.prefetched.get(puzzle_id) === promise) {
+                    this.prefetched.delete(puzzle_id);
+                }
+            });
+        }
+
+        promise
+            .then((arr) => {
                 const rating = arr[2];
                 const puzzle = arr[0].puzzle;
                 const collection = arr[0].collection;

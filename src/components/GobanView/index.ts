@@ -14,22 +14,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#PuzzleCollection {
-    .center {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
 
-    .horizontal {
-        overflow-x: hidden;
-
-        dt, dd {
-            width: 45%;
-        }
-    }
-
-    .update {
-        text-align: center;
-    }
-}
+export { GobanView } from "./GobanView";
+export type { GobanViewRef, TabDefinition } from "./GobanView";
+export { GobanViewTab } from "./GobanViewTab";
+export type { GobanViewTabProps } from "./GobanViewTab";
+export {
+    GobanControllerContext,
+    useGobanController,
+    useGobanControllerOrNull,
+} from "./GobanViewContext";
+export { goban_view_mode, goban_view_squashed } from "./util";
+export type { ViewMode } from "./util";
+export { generateGobanHook, subscribeAllEvents, useViewMode, useZenMode } from "./hooks";

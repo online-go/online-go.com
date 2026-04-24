@@ -15,9 +15,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Re-export from shared location for backward compatibility
-export {
-    GobanControllerContext,
-    useGobanController,
-    useGobanControllerOrNull,
-} from "@/components/GobanView";
+import * as React from "react";
+import { longRankString } from "@/lib/rank_utils";
+import "./PuzzleInfo.css";
+
+interface PuzzleInfoProps {
+    name?: string;
+    collection_name: string;
+    owner: { username?: string } | null | undefined;
+    rank: number;
+}
+
+export function PuzzleInfo({
+    name,
+    collection_name,
+    owner,
+    rank,
+}: PuzzleInfoProps): React.ReactElement {
+    const parts = [name, longRankString(rank || 0), collection_name, owner?.username].filter(
+        Boolean,
+    );
+
+    return (
+        <div className="PuzzleInfo">
+            <div className="PuzzleInfo-summary">{parts.join(", ")}</div>
+        </div>
+    );
+}
