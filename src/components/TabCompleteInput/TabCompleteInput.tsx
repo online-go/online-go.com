@@ -262,8 +262,12 @@ export const TabCompleteInput = React.forwardRef<HTMLTextAreaElement, TabComplet
         return (
             <div className="chat-input-wrapper">
                 {showWarning && (
-                    <div className="chat-count-warning">
-                        ⚠ {charCount}/{maxMessageLength} chars
+                    <div
+                        className={`chat-count-warning ${charCount > maxMessageLength ? "error" : "warning"}`}
+                    >
+                        {charCount > maxMessageLength
+                            ? `${charCount - maxMessageLength} over limit`
+                            : `${maxMessageLength - charCount} left`}
                     </div>
                 )}
                 <textarea

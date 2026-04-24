@@ -26,18 +26,30 @@
 
 .chat-count-warning {
     position: absolute;
-    bottom: 100%;
-    right: 0px;
-    width: calc(100% - 12px);
-    background-color: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(4px);
-    color: #ff6b6b;
+    top: -25px;
+    right: 0;
+    width: auto;
+    
+    
+    border: 0.5px solid rgba(245, 166, 35, 0.25);
     padding: 2px 6px;
     border-radius: 4px;
-    font-size: 12px;
-    font-weight: bold;
-    font-family: monospace;
+    font-size: 11px;
+    font-family: inherit;
+    text-align: right;
+    box-sizing: border-box;
     pointer-events: none;
+}
+
+.chat-count-warning.warning {
+    background-color: rgba(40, 28, 8, 0.92);
+    backdrop-filter: blur(4px);
+    color: #f5a623;
+}
+.chat-count-warning.error {
+    background-color: #7c2d12;
+    color: #fed7aa;
+    border-color: #7c2d12;
 }
 
 .chat-input-wrapper textarea {
