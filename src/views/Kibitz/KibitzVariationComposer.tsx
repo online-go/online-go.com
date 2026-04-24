@@ -31,6 +31,7 @@ export function KibitzVariationComposer({
     onSubmit,
 }: KibitzVariationComposerProps): React.ReactElement {
     const [variationName, setVariationName] = React.useState(controller.variation_name);
+    const [nodeText, setNodeText] = React.useState(controller.goban.engine.cur_move?.text ?? "");
     const isAnonymous = !!data.get("config.user")?.anonymous;
 
     React.useEffect(() => {
@@ -46,8 +47,40 @@ export function KibitzVariationComposer({
         };
     }, [controller]);
 
+    React.useEffect(() => {
+        const syncNodeText = () => {
+            setNodeText(controller.goban.engine.cur_move?.text ?? "");
+        };
+
+        controller.goban.on("load", syncNodeText);
+        controller.goban.on("cur_move", syncNodeText);
+        syncNodeText();
+
+        return () => {
+            controller.goban.off("load", syncNodeText);
+            controller.goban.off("cur_move", syncNodeText);
+        };
+    }, [controller]);
+
     return (
         <div className="KibitzVariationComposer">
+            <textarea
+                className="form-control KibitzVariationComposer-nodeText"
+                placeholder={pgettext(
+                    "Placeholder for Kibitz variation move-node comments",
+                    "Move comments...",
+                )}
+                rows={3}
+                value={nodeText}
+                onChange={(event) => {
+                    const nextText = event.target.value;
+
+                    controller.goban.engine.cur_move.text = nextText;
+                    setNodeText(nextText);
+                    controller.goban.move_tree_redraw(true);
+                }}
+                disabled={isAnonymous}
+            />
             <div className="KibitzVariationComposer-controls">
                 <input
                     type="text"

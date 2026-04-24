@@ -115,6 +115,10 @@ export function Kibitz(): React.ReactElement {
         return DEFAULT_MOBILE_SPLIT_RATIO;
     });
     const [mobileViewerCountFlash, setMobileViewerCountFlash] = React.useState(false);
+    const [visibleVariationIds, setVisibleVariationIds] = React.useState<string[]>([]);
+    const [variationColorIndexes, setVariationColorIndexes] = React.useState<
+        Record<string, number>
+    >({});
     const mobileShellRef = React.useRef<HTMLDivElement | null>(null);
     const mobileDividerRef = React.useRef<HTMLDivElement | null>(null);
     const previousMobileViewerCountRef = React.useRef<number | null>(null);
@@ -300,12 +304,53 @@ export function Kibitz(): React.ReactElement {
 
     const onOpenVariation = React.useCallback(
         (variationId: string) => {
+            setVisibleVariationIds((previous) =>
+                previous.includes(variationId) ? previous : [...previous, variationId],
+            );
+            setVariationColorIndexes((previous) => {
+                if (variationId in previous) {
+                    return previous;
+                }
+
+                return {
+                    ...previous,
+                    [variationId]: Object.keys(previous).length,
+                };
+            });
             controller.openVariation(variationId);
             if (isMobileLayout) {
                 setMobileCompanionPanel("compare");
             }
         },
         [controller, isMobileLayout],
+    );
+    const onToggleVariation = React.useCallback(
+        (variationId: string) => {
+            setVisibleVariationIds((previous) => {
+                if (previous.includes(variationId)) {
+                    const next = previous.filter((id) => id !== variationId);
+
+                    if (secondaryPane.variation_id === variationId) {
+                        controller.clearPreviewGame();
+                    }
+
+                    return next;
+                }
+
+                setVariationColorIndexes((previousColorIndexes) => {
+                    if (variationId in previousColorIndexes) {
+                        return previousColorIndexes;
+                    }
+
+                    return {
+                        ...previousColorIndexes,
+                        [variationId]: Object.keys(previousColorIndexes).length,
+                    };
+                });
+                return [...previous, variationId];
+            });
+        },
+        [controller, secondaryPane.variation_id],
     );
     const onCreateVariation = React.useCallback(() => {
         controller.startVariationFromCurrentBoard();
@@ -375,6 +420,25 @@ export function Kibitz(): React.ReactElement {
     const selectedVariation = variations.find(
         (variation) => variation.id === secondaryPane.variation_id,
     );
+    React.useEffect(() => {
+        if (currentGameId == null) {
+            setVisibleVariationIds([]);
+            return;
+        }
+
+        setVisibleVariationIds((previous) =>
+            previous.filter((variationId) =>
+                variations.some(
+                    (variation) =>
+                        variation.id === variationId && variation.game_id === currentGameId,
+                ),
+            ),
+        );
+
+        if (selectedVariation && selectedVariation.game_id !== currentGameId) {
+            controller.clearPreviewGame();
+        }
+    }, [controller, currentGameId, selectedVariation, variations]);
     const proposalBackedPreview = Boolean(
         secondaryPane.preview_game_id &&
         roomProposals.some(
@@ -423,7 +487,11 @@ export function Kibitz(): React.ReactElement {
                 <KibitzVariationList
                     variations={variations}
                     currentGameId={currentGameId}
-                    onOpenVariation={onOpenVariation}
+                    visibleVariationIds={visibleVariationIds}
+                    selectedVariationId={secondaryPane.variation_id}
+                    variationColorIndexes={variationColorIndexes}
+                    onRecallVariation={onOpenVariation}
+                    onToggleVariation={onToggleVariation}
                 />
             )}
             {queuedRoomProposals.length > 0 ? (
@@ -768,6 +836,8 @@ export function Kibitz(): React.ReactElement {
                                         rooms={rooms}
                                         proposals={roomProposals}
                                         variations={variations}
+                                        visibleVariationIds={visibleVariationIds}
+                                        variationColorIndexes={variationColorIndexes}
                                         secondaryPane={secondaryPane}
                                         onClearPreview={onClearPreview}
                                         onPostVariation={onPostVariation}
@@ -905,6 +975,8 @@ export function Kibitz(): React.ReactElement {
                                 rooms={rooms}
                                 proposals={roomProposals}
                                 variations={variations}
+                                visibleVariationIds={visibleVariationIds}
+                                variationColorIndexes={variationColorIndexes}
                                 secondaryPane={secondaryPane}
                                 onClearPreview={onClearPreview}
                                 onPostVariation={onPostVariation}

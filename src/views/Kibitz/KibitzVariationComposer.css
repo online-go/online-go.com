@@ -4,6 +4,11 @@
     gap: 0.35rem;
     width: 100%;
 
+    .KibitzVariationComposer-nodeText {
+        min-height: 4.5rem;
+        resize: vertical;
+    }
+
     .KibitzVariationComposer-controls {
         display: flex;
         gap: 0.35rem;

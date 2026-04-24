@@ -56,6 +56,14 @@
             box-shadow 120ms ease;
         width: 100%;
 
+        &.visible {
+            box-shadow: inset 2px 0 0 var(--shade3);
+        }
+
+        &.selected {
+            background: color-mix(in srgb, var(--shade2) 55%, transparent);
+        }
+
         &:hover {
             background: color-mix(in srgb, var(--shade2) 50%, transparent);
         }
@@ -65,12 +73,37 @@
         }
     }
 
+    .variation-color-chip {
+        background: var(--shade3);
+        flex: 0 0 auto;
+        height: 2.1rem;
+        margin-top: 0.1rem;
+        width: 0.28rem;
+    }
+
     .variation-main {
         display: flex;
         flex: 1 1 auto;
         flex-direction: column;
         gap: 0.14rem;
         min-width: 0;
+    }
+
+    .variation-toggle {
+        align-items: center;
+        color: var(--text-color-faded);
+        cursor: pointer;
+        display: inline-flex;
+        flex: 0 0 auto;
+        height: 1.65rem;
+        justify-content: center;
+        width: 1.65rem;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--fg);
+            outline: none;
+        }
     }
 
     .variation-name {

@@ -28,6 +28,7 @@ export type KibitzVariationPenMarks = Array<{
     color: string;
     points: number[];
 }>;
+export type KibitzVariationLineTree = import("goban").MoveTreeJson;
 
 export type KibitzStreamItemType =
     | "chat"
@@ -109,6 +110,7 @@ export interface KibitzVariationSummary {
     analysis_moves?: string;
     analysis_marks?: Record<string, string>;
     analysis_pen_marks?: KibitzVariationPenMarks;
+    analysis_line_tree?: KibitzVariationLineTree;
 }
 
 export interface KibitzStreamItem {

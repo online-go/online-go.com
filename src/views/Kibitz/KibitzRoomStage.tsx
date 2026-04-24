@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import type { MoveTree } from "goban";
 import { Resizable } from "@/components/Resizable";
 import { GobanController } from "@/lib/GobanController";
 import { alert } from "@/lib/swal_config";
@@ -31,6 +32,7 @@ import { KibitzBoardControls } from "./KibitzBoardControls";
 import { KibitzDividerHandle } from "./KibitzDividerHandle";
 import { GobanAnalyzeButtonBar } from "@/components/GobanAnalyzeButtonBar/GobanAnalyzeButtonBar";
 import { KibitzVariationComposer } from "./KibitzVariationComposer";
+import { applyKibitzVariationToController } from "./kibitzVariationTree";
 import "./KibitzRoomStage.css";
 
 interface KibitzRoomStageProps {
@@ -38,6 +40,8 @@ interface KibitzRoomStageProps {
     rooms: KibitzRoomSummary[];
     proposals: KibitzProposal[];
     variations: KibitzVariationSummary[];
+    visibleVariationIds: string[];
+    variationColorIndexes: Record<string, number>;
     secondaryPane: KibitzSecondaryPaneState;
     onClearPreview: () => void;
     onPostVariation: (controller: GobanController) => void;
@@ -184,6 +188,8 @@ export function KibitzRoomStage({
     rooms,
     proposals,
     variations,
+    visibleVariationIds,
+    variationColorIndexes,
     secondaryPane,
     onClearPreview,
     onPostVariation,
@@ -281,30 +287,69 @@ export function KibitzRoomStage({
     }, [secondaryBoardController, secondaryMoveTreeContainer, secondaryMoveTreeKey]);
 
     React.useEffect(() => {
-        if (!selectedVariation || !secondaryBoardController) {
+        if (!selectedVariation || !secondaryBoardController || secondaryPane.preview_game_id) {
             return;
         }
 
         const goban = secondaryBoardController.goban;
+        const visibleVariations = variations
+            .filter(
+                (variation) =>
+                    variation.game_id === selectedVariation.game_id &&
+                    visibleVariationIds.includes(variation.id),
+            )
+            .sort((left, right) => {
+                if (left.id === selectedVariation.id) {
+                    return 1;
+                }
+                if (right.id === selectedVariation.id) {
+                    return -1;
+                }
+                return 0;
+            });
 
         const apply = () => {
-            if (
-                typeof selectedVariation.analysis_from === "number" &&
-                typeof selectedVariation.analysis_moves === "string"
-            ) {
-                goban.engine.followPath(
-                    selectedVariation.analysis_from,
-                    selectedVariation.analysis_moves,
+            goban.load(goban.engine.config);
+
+            let selectedEndpoint: MoveTree | null = null;
+
+            for (const variation of visibleVariations) {
+                const applied = applyKibitzVariationToController(
+                    secondaryBoardController,
+                    variation,
+                    variationColorIndexes[variation.id] ?? 0,
+                    variation.id === selectedVariation.id,
                 );
+
+                if (variation.id === selectedVariation.id) {
+                    selectedEndpoint = applied.endpoint;
+                }
             }
 
-            if (selectedVariation.analysis_marks) {
-                goban.setMarks(selectedVariation.analysis_marks);
+            if (!selectedEndpoint) {
+                const applied = applyKibitzVariationToController(
+                    secondaryBoardController,
+                    selectedVariation,
+                    variationColorIndexes[selectedVariation.id] ?? 0,
+                    true,
+                );
+                selectedEndpoint = applied.endpoint;
             }
-            goban.pen_marks = selectedVariation.analysis_pen_marks
-                ? [...selectedVariation.analysis_pen_marks]
-                : [];
+
+            if (selectedEndpoint) {
+                goban.engine.jumpTo(selectedEndpoint);
+            }
+
+            if (!selectedVariation.analysis_line_tree) {
+                if (selectedVariation.analysis_marks) {
+                    goban.setMarks(selectedVariation.analysis_marks);
+                }
+                goban.pen_marks = selectedVariation.analysis_pen_marks
+                    ? [...selectedVariation.analysis_pen_marks]
+                    : [];
+            }
             goban.redraw(true);
+            goban.move_tree_redraw();
         };
 
         // Engine.last_official_move is set as part of the game-data load.
@@ -325,7 +370,14 @@ export function KibitzRoomStage({
         return () => {
             goban.off("load", onLoad);
         };
-    }, [secondaryBoardController, selectedVariation]);
+    }, [
+        secondaryBoardController,
+        secondaryPane.preview_game_id,
+        selectedVariation,
+        variationColorIndexes,
+        variations,
+        visibleVariationIds,
+    ]);
 
     // mainGame is populated by KibitzController.lookupGameForKibitz from
     // GET /games/<id>; the stage previously re-fetched the same endpoint

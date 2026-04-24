@@ -27,6 +27,8 @@ import {
     encodeMove,
     JGOFClock,
     JGOFSealingIntersection,
+    MarkInterface,
+    MoveTreeJson,
     MoveTreePenMarks,
 } from "goban";
 import { EventEmitter } from "eventemitter3";
@@ -75,6 +77,7 @@ export interface SerializedAnalysisChatLineBody {
     name: string;
     marks?: Record<string, string>;
     pen_marks?: MoveTreePenMarks;
+    line_tree?: MoveTreeJson;
 }
 
 export interface PreparedAnalysisSnapshot {
@@ -98,6 +101,102 @@ export interface PreparedAnalysisSnapshot {
         x: number;
         y: number;
     }>;
+}
+
+function cloneMarkValue(
+    value: MarkInterface[keyof MarkInterface],
+): MarkInterface[keyof MarkInterface] {
+    return value;
+}
+
+function cloneMoveTreeMarks(node: MoveTree): MoveTreeJson["marks"] {
+    const marks: MoveTreeJson["marks"] = [];
+
+    node.foreachMarkedPosition((x, y) => {
+        const source = node.getMarks(x, y);
+        const cloned: MarkInterface = {};
+
+        for (const key in source) {
+            const value = source[key];
+
+            if (value !== undefined) {
+                cloned[key] = cloneMarkValue(value);
+            }
+        }
+
+        marks.push({ x, y, marks: cloned });
+    });
+
+    return marks.length > 0 ? marks : undefined;
+}
+
+function serializeMoveTreeLineNode(node: MoveTree): MoveTreeJson {
+    const ret: MoveTreeJson = {
+        x: node.x,
+        y: node.y,
+    };
+    const marks = cloneMoveTreeMarks(node);
+
+    if (marks) {
+        ret.marks = marks;
+    }
+    if (node.pen_marks.length > 0) {
+        ret.pen_marks = node.pen_marks.map((penMark) => ({
+            color: penMark.color,
+            points: [...penMark.points],
+        }));
+    }
+    if (node.text) {
+        ret.text = node.text;
+    }
+    if (node.correct_answer) {
+        ret.correct_answer = node.correct_answer;
+    }
+    if (node.wrong_answer) {
+        ret.wrong_answer = node.wrong_answer;
+    }
+
+    return ret;
+}
+
+function serializeActiveMoveTreeLine(
+    branchPoint: MoveTree,
+    activeNode: MoveTree,
+): MoveTreeJson | undefined {
+    const nodes: MoveTree[] = [];
+    let current: MoveTree | null = activeNode;
+
+    while (current && current.id !== branchPoint.id) {
+        nodes.push(current);
+        current = current.parent;
+    }
+
+    if (nodes.length === 0) {
+        return undefined;
+    }
+
+    nodes.reverse();
+
+    const root = serializeMoveTreeLineNode(nodes[0]);
+    let lineCursor = root;
+
+    for (let i = 1; i < nodes.length; ++i) {
+        const next = serializeMoveTreeLineNode(nodes[i]);
+        lineCursor.trunk_next = next;
+        lineCursor = next;
+    }
+
+    return root;
+}
+
+function getLineTreeEndpoint(lineTree: MoveTreeJson): MoveTreeJson {
+    let cursor = lineTree;
+
+    while (cursor.trunk_next) {
+        cursor = cursor.trunk_next;
+    }
+
+    return cursor;
 }
 
 export interface ReviewListEntry {
@@ -760,6 +859,8 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     };
     private prepareAnalysisSnapshot = (): PreparedAnalysisSnapshot => {
         const diff = this.goban.engine.getMoveDiff();
+        const branchPoint = this.goban.engine.cur_move.getBranchPoint();
+        const lineTree = serializeActiveMoveTreeLine(branchPoint, this.goban.engine.cur_move);
         let name = this.variation_name;
         let auto_named = false;
 
@@ -810,6 +911,15 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             name,
         };
 
+        if (lineTree) {
+            if (this.goban.pen_marks.length) {
+                getLineTreeEndpoint(lineTree).pen_marks = this.goban.pen_marks.map((penMark) => ({
+                    color: penMark.color,
+                    points: [...penMark.points],
+                }));
+            }
+            analysis.line_tree = lineTree;
+        }
         if (mark_ct) {
             analysis.marks = marks;
         }
@@ -824,7 +934,8 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             las.moves === analysis.moves &&
             (auto_named || las.name === analysis.name) &&
             JSON.stringify(las.marks ?? null) === JSON.stringify(analysis.marks ?? null) &&
-            JSON.stringify(las.pen_marks ?? null) === JSON.stringify(analysis.pen_marks ?? null);
+            JSON.stringify(las.pen_marks ?? null) === JSON.stringify(analysis.pen_marks ?? null) &&
+            JSON.stringify(las.line_tree ?? null) === JSON.stringify(analysis.line_tree ?? null);
 
         if (is_duplicate && auto_named) {
             --this.last_variation_number;

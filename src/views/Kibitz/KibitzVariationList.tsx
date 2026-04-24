@@ -18,12 +18,17 @@
 import * as React from "react";
 import { pgettext } from "@/lib/translate";
 import type { KibitzVariationSummary } from "@/models/kibitz";
+import { getKibitzVariationColor } from "./kibitzVariationTree";
 import "./KibitzVariationList.css";
 
 interface KibitzVariationListProps {
     variations: KibitzVariationSummary[];
     currentGameId?: number | null;
-    onOpenVariation: (variationId: string) => void;
+    visibleVariationIds?: string[];
+    selectedVariationId?: string | null;
+    variationColorIndexes?: Record<string, number>;
+    onRecallVariation: (variationId: string) => void;
+    onToggleVariation?: (variationId: string) => void;
     title?: string;
 }
 
@@ -46,9 +51,17 @@ function getUserInitials(username: string | undefined): string {
 export function KibitzVariationList({
     variations,
     currentGameId,
-    onOpenVariation,
+    visibleVariationIds = [],
+    selectedVariationId = null,
+    variationColorIndexes = {},
+    onRecallVariation,
+    onToggleVariation,
     title,
 }: KibitzVariationListProps): React.ReactElement {
+    const visibleVariationIdSet = React.useMemo(
+        () => new Set(visibleVariationIds),
+        [visibleVariationIds],
+    );
     const groupedVariations = React.useMemo(() => {
         const groups = new Map<number, KibitzVariationSummary[]>();
         const order: number[] = [];
@@ -101,9 +114,31 @@ export function KibitzVariationList({
                                     <button
                                         key={variation.id}
                                         type="button"
-                                        className="variation-item"
-                                        onClick={() => onOpenVariation(variation.id)}
+                                        className={
+                                            "variation-item" +
+                                            (visibleVariationIdSet.has(variation.id)
+                                                ? " visible"
+                                                : "") +
+                                            (selectedVariationId === variation.id
+                                                ? " selected"
+                                                : "")
+                                        }
+                                        onClick={() => onRecallVariation(variation.id)}
                                     >
+                                        <span
+                                            className="variation-color-chip"
+                                            style={
+                                                visibleVariationIdSet.has(variation.id)
+                                                    ? {
+                                                          backgroundColor: getKibitzVariationColor(
+                                                              variationColorIndexes[variation.id] ??
+                                                                  0,
+                                                          ),
+                                                      }
+                                                    : undefined
+                                            }
+                                            aria-hidden="true"
+                                        />
                                         <span className="variation-main">
                                             <span className="variation-name">
                                                 {variation.title ||
@@ -131,6 +166,51 @@ export function KibitzVariationList({
                                             The Johnniedarkoo POC drove this from a mock
                                             mock_game_data field; the live equivalent
                                             needs the actual game state + variation moves. */}
+                                        {onToggleVariation ? (
+                                            <span
+                                                className="variation-toggle"
+                                                role="button"
+                                                tabIndex={0}
+                                                aria-pressed={visibleVariationIdSet.has(
+                                                    variation.id,
+                                                )}
+                                                title={
+                                                    visibleVariationIdSet.has(variation.id)
+                                                        ? pgettext(
+                                                              "Tooltip for hiding a Kibitz variation in the tree",
+                                                              "Hide variation",
+                                                          )
+                                                        : pgettext(
+                                                              "Tooltip for showing a Kibitz variation in the tree",
+                                                              "Show variation",
+                                                          )
+                                                }
+                                                onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    onToggleVariation(variation.id);
+                                                }}
+                                                onKeyDown={(event) => {
+                                                    if (
+                                                        event.key === "Enter" ||
+                                                        event.key === " "
+                                                    ) {
+                                                        event.preventDefault();
+                                                        event.stopPropagation();
+                                                        onToggleVariation(variation.id);
+                                                    }
+                                                }}
+                                            >
+                                                <i
+                                                    className={
+                                                        "fa " +
+                                                        (visibleVariationIdSet.has(variation.id)
+                                                            ? "fa-eye"
+                                                            : "fa-eye-slash")
+                                                    }
+                                                    aria-hidden="true"
+                                                />
+                                            </span>
+                                        ) : null}
                                     </button>
                                 ))}
                             </React.Fragment>

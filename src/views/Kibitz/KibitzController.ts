@@ -193,6 +193,7 @@ interface AnalysisChatBody extends TypedChatBody {
     name?: string;
     marks?: Record<string, string>;
     pen_marks?: unknown[];
+    line_tree?: KibitzVariationSummary["analysis_line_tree"];
     game_id?: number;
 }
 
@@ -236,6 +237,7 @@ function mapAnalysisToVariation(msg: ChatMessage, roomId: string): KibitzVariati
         analysis_moves: body.moves,
         analysis_marks: body.marks,
         analysis_pen_marks: body.pen_marks as KibitzVariationSummary["analysis_pen_marks"],
+        analysis_line_tree: body.line_tree,
     };
 }
 
