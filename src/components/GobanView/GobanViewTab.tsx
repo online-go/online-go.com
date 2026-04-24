@@ -28,10 +28,14 @@ export interface GobanViewTabProps {
     active?: boolean;
     disabled?: boolean;
     onClick?: () => void;
-    /** For takeover tabs: fires on any activation/deactivation driven by a
-     *  user tab click. That includes deactivation caused by another
-     *  takeover being opened (displacement). Not fired when the tab is
-     *  removed or disabled while active. */
+    /** For takeover tabs: fires whenever this tab transitions between active
+     *  and inactive. Called with `true` when the user clicks the tab to open
+     *  it, and with `false` when the tab deactivates — whether by the user
+     *  clicking it again to close, another takeover being opened
+     *  (displacement), or GobanView forcibly closing it because the tab has
+     *  been removed from the render tree or gained `disabled`. Consumers
+     *  should treat this as the sole authoritative signal to tear down
+     *  per-tab state. */
     onToggle?: (active: boolean) => void;
     children?: React.ReactNode;
 }
