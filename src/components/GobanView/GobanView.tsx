@@ -98,6 +98,16 @@ function GobanViewComponent({
 }: GobanViewProps): React.ReactElement {
     const { tabs, others } = React.useMemo(() => partitionChildren(children), [children]);
 
+    // `children` is a fresh reference every parent render, so the memo above
+    // invalidates every render and `tabs` gets a new identity even when the
+    // tab set is semantically unchanged. Build a structural signature of the
+    // fields the reconciliation effects actually depend on, and key the
+    // effects off that instead — so they only fire when the tab list has
+    // meaningfully changed rather than on every parent re-render.
+    const tabsSignature = tabs
+        .map((t) => `${t.id}:${t.type}:${t.disabled ? 1 : 0}:${t.defaultVisible ? 1 : 0}`)
+        .join(",");
+
     const [viewMode, setViewMode] = React.useState<ViewMode>(() => goban_view_mode());
     const [squashed, setSquashed] = React.useState<boolean>(() => goban_view_squashed());
     const [toggleVisibility, setToggleVisibility] = React.useState<Record<string, boolean>>({});
@@ -127,7 +137,7 @@ function GobanViewComponent({
             }
             return next;
         });
-    }, [tabs]);
+    }, [tabsSignature]);
 
     // Clear activeTakeover if the matching tab was removed or disabled, and
     // notify its owner via `onToggle(false)` so they can tear down state.
@@ -146,7 +156,7 @@ function GobanViewComponent({
             }
         }
         prevTabsRef.current = tabs;
-    }, [tabs, activeTakeover]);
+    }, [tabsSignature, activeTakeover]);
 
     const setToggle = React.useCallback((id: string, visible: boolean) => {
         setToggleVisibility((prev) => ({ ...prev, [id]: visible }));
