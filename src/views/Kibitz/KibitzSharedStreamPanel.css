@@ -123,12 +123,12 @@
     font-size: 0.85rem;
     font-weight: bold;
     line-height: 1.25;
-    margin-top: 0.4rem;
-    min-height: 2.6rem;
-    padding: 0.75rem 0.75rem;
+    margin: 0.4rem 0 0 0.1rem;
+    min-height: 1.25rem;
+    padding: 0.25rem 0.75rem;
     text-align: left;
     transition: background-color 120ms ease;
-    width: 100%;
+    width: calc(100% - 0.1rem);
 }
 
 .KibitzSharedStreamPanel-paneFeed .variation-post:hover {
