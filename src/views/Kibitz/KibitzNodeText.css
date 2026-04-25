@@ -1,0 +1,13 @@
+.KibitzNodeText {
+    box-sizing: border-box;
+    min-height: 4.2rem;
+    resize: vertical;
+    width: 100%;
+
+    &.read-only {
+        background: color-mix(in srgb, var(--shade1) 82%, transparent);
+        color: var(--fg);
+        cursor: default;
+        resize: none;
+    }
+}

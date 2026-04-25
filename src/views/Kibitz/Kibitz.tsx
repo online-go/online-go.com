@@ -40,6 +40,7 @@ import { KibitzPresence } from "./KibitzPresence";
 import { KibitzVariationList } from "./KibitzVariationList";
 import { GobanAnalyzeButtonBar } from "@/components/GobanAnalyzeButtonBar/GobanAnalyzeButtonBar";
 import { KibitzVariationComposer } from "./KibitzVariationComposer";
+import { KibitzNodeText } from "./KibitzNodeText";
 import { KibitzController } from "./KibitzController";
 import { KibitzGamePickerOverlay } from "./KibitzGamePickerOverlay";
 import { KibitzMobileGamePicker } from "./KibitzMobileGamePicker";
@@ -986,34 +987,49 @@ export function Kibitz(): React.ReactElement {
                                             ) : null}
                                             {mobileCompanionPanel === "compare" ? (
                                                 <div className="Kibitz-mobile-panel Kibitz-mobile-compare-panel">
-                                                    {mobileCompareController &&
-                                                    secondaryPane.variation_source_game_id !=
-                                                        null ? (
+                                                    {mobileCompareController ? (
                                                         <div className="Kibitz-mobile-compare-tools">
-                                                            <div className="mobile-board-analyze-row">
-                                                                <GobanAnalyzeButtonBar
+                                                            {secondaryPane.variation_source_game_id !=
+                                                            null ? (
+                                                                <div className="mobile-board-analyze-row">
+                                                                    <GobanAnalyzeButtonBar
+                                                                        controller={
+                                                                            mobileCompareController
+                                                                        }
+                                                                        showBackToGame={false}
+                                                                        showConditionalPlannerButton={
+                                                                            false
+                                                                        }
+                                                                    />
+                                                                </div>
+                                                            ) : null}
+                                                            <div className="mobile-board-node-text-row">
+                                                                <KibitzNodeText
                                                                     controller={
                                                                         mobileCompareController
                                                                     }
-                                                                    showBackToGame={false}
-                                                                    showConditionalPlannerButton={
-                                                                        false
+                                                                    editable={
+                                                                        secondaryPane.variation_source_game_id !=
+                                                                        null
                                                                     }
                                                                 />
                                                             </div>
-                                                            <div className="mobile-board-compose-row">
-                                                                <KibitzVariationComposer
-                                                                    controller={
-                                                                        mobileCompareController
-                                                                    }
-                                                                    onSubmit={(controller) =>
-                                                                        onPostVariation(
-                                                                            controller,
-                                                                            secondaryPane.variation_source_game_id,
-                                                                        )
-                                                                    }
-                                                                />
-                                                            </div>
+                                                            {secondaryPane.variation_source_game_id !=
+                                                            null ? (
+                                                                <div className="mobile-board-compose-row">
+                                                                    <KibitzVariationComposer
+                                                                        controller={
+                                                                            mobileCompareController
+                                                                        }
+                                                                        onSubmit={(controller) =>
+                                                                            onPostVariation(
+                                                                                controller,
+                                                                                secondaryPane.variation_source_game_id,
+                                                                            )
+                                                                        }
+                                                                    />
+                                                                </div>
+                                                            ) : null}
                                                         </div>
                                                     ) : null}
                                                     {hasCompareTarget ? (

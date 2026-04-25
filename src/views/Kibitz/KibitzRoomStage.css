@@ -90,9 +90,10 @@
             --equal-secondary-track: minmax(20.5rem, 1.42fr);
             --equal-meta-height: var(--kibitz-header-block-height);
             --equal-transport-height: 2.35rem;
-            --equal-analyze-height: 3.5rem;
-            --equal-compose-height: 2.4rem;
-            --equal-variation-height: 4.5rem;
+            --equal-analyze-height: 1.9rem;
+            --equal-node-text-height: 4.35rem;
+            --equal-compose-height: 2.15rem;
+            --equal-variation-height: 5.6rem;
             grid-template-columns:
                 var(--equal-main-track)
                 var(--board-divider-width)
@@ -114,9 +115,10 @@
                     var(--equal-meta-height)
                     minmax(0, 1fr)
                     auto
-                    var(--equal-analyze-height)
-                    var(--equal-compose-height)
-                    var(--equal-variation-height)
+                    auto
+                    auto
+                    auto
+                    minmax(var(--equal-variation-height), auto)
                     auto;
             }
 
@@ -215,6 +217,7 @@
 
             .secondary-board .board-meta,
             .secondary-board-analyze-row,
+            .secondary-board-node-text-row,
             .secondary-board-compose-row,
             .secondary-board .kibitz-move-tree-container {
                 max-width: min(100%, 48rem, 78vh);
@@ -312,6 +315,17 @@
                         width: 1.35rem;
                     }
                 }
+            }
+
+            .secondary-board-node-text-row {
+                align-items: stretch;
+                box-sizing: border-box;
+                display: flex;
+                min-height: var(--equal-node-text-height);
+                min-width: 0;
+                padding: 0.15rem 0.75rem 0;
+                position: relative;
+                z-index: 1;
             }
 
             .secondary-board-compose-row {
@@ -675,6 +689,10 @@
             display: none;
         }
 
+        .secondary-board-node-text-row {
+            display: none;
+        }
+
         .secondary-board-compose-row {
             display: none;
         }
@@ -935,6 +953,7 @@
     }
 
     .mobile-board-analyze-row,
+    .mobile-board-node-text-row,
     .mobile-board-compose-row {
         align-items: center;
         display: flex;
@@ -978,8 +997,16 @@
         padding-top: 0;
     }
 
+    .mobile-board-node-text-row {
+        padding-top: 0;
+    }
+
     .mobile-board-compose-row .KibitzVariationComposer {
         width: 100%;
+    }
+
+    .mobile-board-node-text-row .KibitzNodeText {
+        min-height: 3.6rem;
     }
 
     .mobile-board-compose-row .KibitzVariationComposer input,

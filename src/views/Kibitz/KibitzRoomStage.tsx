@@ -32,6 +32,7 @@ import { KibitzBoardControls } from "./KibitzBoardControls";
 import { KibitzDividerHandle } from "./KibitzDividerHandle";
 import { GobanAnalyzeButtonBar } from "@/components/GobanAnalyzeButtonBar/GobanAnalyzeButtonBar";
 import { KibitzVariationComposer } from "./KibitzVariationComposer";
+import { KibitzNodeText } from "./KibitzNodeText";
 import { applyKibitzVariationToController } from "./kibitzVariationTree";
 import "./KibitzRoomStage.css";
 
@@ -1038,6 +1039,14 @@ export function KibitzRoomStage({
                                         />
                                     </div>
                                 ) : null}
+                                {secondaryPaneSize === "equal" && secondaryBoardController ? (
+                                    <div className="secondary-board-node-text-row">
+                                        <KibitzNodeText
+                                            controller={secondaryBoardController}
+                                            editable={isDraftingVariation}
+                                        />
+                                    </div>
+                                ) : null}
                                 {isDraftingVariation &&
                                 secondaryPaneSize === "equal" &&
                                 secondaryBoardController ? (
@@ -1151,6 +1160,14 @@ export function KibitzRoomStage({
                                         </button>
                                     </div>
                                 </div>
+                                {secondaryPaneSize === "equal" && secondaryBoardController ? (
+                                    <div className="secondary-board-node-text-row">
+                                        <KibitzNodeText
+                                            controller={secondaryBoardController}
+                                            editable={false}
+                                        />
+                                    </div>
+                                ) : null}
                                 {secondaryPaneSize === "equal" ? (
                                     <Resizable
                                         key={secondaryMoveTreeKey}
