@@ -44,7 +44,7 @@
         flex-direction: row;
         gap: 0.14rem;
         justify-content: center;
-        min-height: 4.2rem;
+        min-height: 3rem;
         min-width: 0;
         position: relative;
         text-align: left;
@@ -53,10 +53,6 @@
             box-shadow 120ms ease;
         width: 100%;
 
-        &.visible {
-            box-shadow: inset 2px 0 0 var(--shade3);
-        }
-
         &.selected {
             background: color-mix(in srgb, var(--shade2) 55%, transparent);
         }
@@ -64,10 +60,6 @@
         &:hover,
         &:focus-within {
             background: color-mix(in srgb, var(--shade2) 50%, transparent);
-        }
-
-        &:active {
-            background: color-mix(in srgb, var(--shade2) 65%, transparent);
         }
     }
 
@@ -79,9 +71,9 @@
         display: flex;
         flex: 1 1 auto;
         gap: 0.14rem;
-        min-height: 4.2rem;
+        min-height: 3rem;
         min-width: 0;
-        padding: 0.8rem 0.2rem 0.8rem 0.88rem;
+        padding: 0.36rem 0.2rem 0.36rem 0.88rem;
         text-align: left;
 
         &:focus-visible {
@@ -115,7 +107,7 @@
         flex: 0 0 auto;
         height: 1.65rem;
         justify-content: center;
-        margin: 0.55rem 0.45rem 0 0;
+        margin: 0.42rem 0.45rem 0 0;
         padding: 0;
         width: 1.65rem;
 

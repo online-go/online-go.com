@@ -254,10 +254,6 @@ export function KibitzRoomStage({
         controller: null,
         variationId: null,
     });
-    const pendingLoadFocusRequestRef = React.useRef<{
-        variationId: string;
-        requestId: number;
-    } | null>(null);
     const [mainBoardSlotRef, mainBoardSize] = useSquareFitSize<HTMLDivElement>(
         `main-${secondaryPaneSize}`,
     );
@@ -346,7 +342,7 @@ export function KibitzRoomStage({
             );
 
         let applyingVariation = false;
-        const apply = (forceFocusSelected: boolean = false) => {
+        const apply = () => {
             if (applyingVariation) {
                 return;
             }
@@ -395,7 +391,7 @@ export function KibitzRoomStage({
                     selectedEndpoint = applied.endpoint;
                 }
 
-                if (selectedEndpoint && (shouldFocusSelected || forceFocusSelected)) {
+                if (selectedEndpoint && shouldFocusSelected) {
                     goban.engine.jumpTo(selectedEndpoint);
                     lastVariationFocusRequestRef.current = {
                         variationId: selectedVariation.id,
@@ -403,15 +399,6 @@ export function KibitzRoomStage({
                         visibleVariationKey,
                         focusedPath: selectedEndpoint.getMoveStringToThisPoint(),
                     };
-                    if (shouldFocusSelected) {
-                        pendingLoadFocusRequestRef.current = {
-                            variationId: selectedVariation.id,
-                            requestId: variationFocusRequestId,
-                        };
-                    }
-                    if (forceFocusSelected) {
-                        pendingLoadFocusRequestRef.current = null;
-                    }
                 } else if (previousFocusPath) {
                     goban.engine.followPath(0, previousFocusPath);
                 }
@@ -432,20 +419,13 @@ export function KibitzRoomStage({
         };
 
         const onLoad = () => {
-            const pendingLoadFocus = pendingLoadFocusRequestRef.current;
-            apply(
-                pendingLoadFocus?.variationId === selectedVariation.id &&
-                    pendingLoadFocus.requestId === variationFocusRequestId,
-            );
+            goban.off("load", onLoad);
+            apply();
         };
-        goban.on("load", onLoad);
-
-        // The engine can have a root/last_official_move before the async game
-        // load has populated the full official tree. Apply immediately for
-        // already-loaded boards, but keep the load listener so first-click
-        // variation recall is replayed after the game data arrives.
         if (goban.engine?.last_official_move) {
             apply();
+        } else {
+            goban.on("load", onLoad);
         }
 
         return () => {
