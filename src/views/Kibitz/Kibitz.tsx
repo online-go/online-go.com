@@ -42,6 +42,7 @@ import { GobanAnalyzeButtonBar } from "@/components/GobanAnalyzeButtonBar/GobanA
 import { KibitzVariationComposer } from "./KibitzVariationComposer";
 import { KibitzNodeText } from "./KibitzNodeText";
 import { KibitzController } from "./KibitzController";
+import { KIBITZ_VARIATION_COLORS } from "./kibitzVariationTree";
 import { KibitzGamePickerOverlay } from "./KibitzGamePickerOverlay";
 import { KibitzMobileGamePicker } from "./KibitzMobileGamePicker";
 import "./Kibitz.css";
@@ -63,6 +64,7 @@ const MOBILE_SPLIT_STORAGE_KEY = "kibitz-mobile-split-ratio";
 const DEFAULT_MOBILE_SPLIT_RATIO = 0.56;
 const MIN_MOBILE_SPLIT_RATIO = 0.36;
 const MAX_MOBILE_SPLIT_RATIO = 0.78;
+const MAX_VISIBLE_VARIATIONS = KIBITZ_VARIATION_COLORS.length;
 
 function clampMobileSplitRatio(value: number): number {
     return Math.min(MAX_MOBILE_SPLIT_RATIO, Math.max(MIN_MOBILE_SPLIT_RATIO, value));
@@ -334,18 +336,23 @@ export function Kibitz(): React.ReactElement {
 
     const onOpenVariation = React.useCallback(
         (variationId: string) => {
-            setVisibleVariationIds((previous) =>
-                previous.includes(variationId) ? previous : [...previous, variationId],
-            );
-            setVariationColorIndexes((previous) => {
-                if (variationId in previous) {
+            if (
+                !visibleVariationIds.includes(variationId) &&
+                visibleVariationIds.length >= MAX_VISIBLE_VARIATIONS
+            ) {
+                return;
+            }
+
+            setVisibleVariationIds((previous) => {
+                if (previous.includes(variationId)) {
                     return previous;
                 }
 
-                return {
-                    ...previous,
-                    [variationId]: Object.keys(previous).length,
-                };
+                if (previous.length >= MAX_VISIBLE_VARIATIONS) {
+                    return previous;
+                }
+
+                return [...previous, variationId];
             });
             setVariationFocusRequestId((previous) => previous + 1);
             controller.openVariation(variationId);
@@ -353,7 +360,7 @@ export function Kibitz(): React.ReactElement {
                 setMobileCompanionPanel("compare");
             }
         },
-        [controller, isMobileLayout],
+        [controller, isMobileLayout, visibleVariationIds],
     );
     const onToggleVariation = React.useCallback(
         (variationId: string) => {
@@ -389,16 +396,10 @@ export function Kibitz(): React.ReactElement {
                     return next;
                 }
 
-                setVariationColorIndexes((previousColorIndexes) => {
-                    if (variationId in previousColorIndexes) {
-                        return previousColorIndexes;
-                    }
+                if (previous.length >= MAX_VISIBLE_VARIATIONS) {
+                    return previous;
+                }
 
-                    return {
-                        ...previousColorIndexes,
-                        [variationId]: Object.keys(previousColorIndexes).length,
-                    };
-                });
                 setVariationFocusRequestId((previousFocusRequestId) => previousFocusRequestId + 1);
                 controller.openVariation(variationId);
                 if (isMobileLayout) {
@@ -494,6 +495,44 @@ export function Kibitz(): React.ReactElement {
             ),
         );
     }, [variations]);
+    React.useEffect(() => {
+        setVariationColorIndexes((previous) => {
+            const next: Record<string, number> = {};
+            const taken = new Set<number>();
+
+            for (const variationId of visibleVariationIds) {
+                const previousIndex = previous[variationId];
+                if (
+                    typeof previousIndex === "number" &&
+                    previousIndex >= 0 &&
+                    previousIndex < MAX_VISIBLE_VARIATIONS &&
+                    !taken.has(previousIndex)
+                ) {
+                    next[variationId] = previousIndex;
+                    taken.add(previousIndex);
+                    continue;
+                }
+
+                const freeIndex = KIBITZ_VARIATION_COLORS.findIndex(
+                    (_, index) => !taken.has(index),
+                );
+                const colorIndex = freeIndex >= 0 ? freeIndex : 0;
+                next[variationId] = colorIndex;
+                taken.add(colorIndex);
+            }
+
+            const previousKeys = Object.keys(previous);
+            const nextKeys = Object.keys(next);
+            if (
+                previousKeys.length === nextKeys.length &&
+                previousKeys.every((key) => next[key] === previous[key])
+            ) {
+                return previous;
+            }
+
+            return next;
+        });
+    }, [visibleVariationIds]);
     const proposalBackedPreview = Boolean(
         secondaryPane.preview_game_id &&
         roomProposals.some(

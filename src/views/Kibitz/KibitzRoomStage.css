@@ -259,7 +259,8 @@
             .secondary-board-compose-row,
             .secondary-board .kibitz-move-tree-container {
                 max-width: min(100%, 48rem, 78vh);
-                width: 100%;
+                justify-self: center;
+                width: min(100%, 48rem, 78vh);
             }
 
             .secondary-board .board-actions {
@@ -661,7 +662,7 @@
         }
 
         .secondary-board .kibitz-move-tree-container {
-            align-self: center;
+            justify-self: center;
             width: min(100%, 14rem, 34vh);
         }
 
