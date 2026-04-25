@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { writeFileSync } from "fs";
 import { expect, Page, TestInfo } from "@playwright/test";
 import { ogsTest, load } from "@helpers";
 
@@ -45,7 +46,8 @@ async function captureKibitzLayout(
             .locator(".KibitzRoomStream .variation-post, .KibitzVariationList .variation-item")
             .first();
         if (await variationTrigger.count()) {
-            await variationTrigger.click();
+            await variationTrigger.scrollIntoViewIfNeeded();
+            await variationTrigger.click({ force: true });
             await page.waitForTimeout(250);
         }
     }
@@ -289,6 +291,267 @@ async function captureKibitzLayout(
     });
 }
 
+async function captureKibitzRowSizing(
+    page: Page,
+    route: string,
+    testInfo: TestInfo,
+    options?: {
+        openVariation?: boolean;
+    },
+) {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await load(page, route);
+    await page.waitForTimeout(1000);
+
+    const roomItems = page.locator(".KibitzRoomList-item");
+    const roomItemCount = await roomItems.count();
+    for (let index = 0; index < roomItemCount; index++) {
+        const roomItem = roomItems.nth(index);
+        await roomItem.scrollIntoViewIfNeeded();
+        await roomItem.click({ force: true });
+        await page.waitForTimeout(600);
+        const variationCount = await page
+            .locator(
+                ".KibitzVariationList .variation-recall, .KibitzVariationList .variation-item, .KibitzRoomStream .variation-post",
+            )
+            .count();
+        if (variationCount > 0) {
+            break;
+        }
+    }
+
+    if (options?.openVariation) {
+        const variationTrigger = page
+            .locator(
+                ".KibitzVariationList .variation-recall, .KibitzVariationList .variation-item, .KibitzRoomStream .variation-post",
+            )
+            .first();
+        if (await variationTrigger.count()) {
+            await expect(variationTrigger).toBeVisible({ timeout: 15000 });
+            await variationTrigger.scrollIntoViewIfNeeded();
+            await variationTrigger.click({ force: true });
+            await page.waitForTimeout(400);
+        } else {
+            const createVariationButton = page
+                .locator(
+                    ".board-panel .kibitz-create-variation-button, .secondary-board-empty-state .kibitz-create-variation-button",
+                )
+                .first();
+            await expect(createVariationButton).toBeVisible({ timeout: 15000 });
+            await createVariationButton.scrollIntoViewIfNeeded();
+            await createVariationButton.click({ force: true });
+            await page.waitForTimeout(400);
+        }
+
+        const stageBoards = page.locator(".KibitzRoomStage-boards");
+        const viewModeButton = page.locator(
+            ".KibitzDividerHandle .divider-mode-button.compare-view",
+        );
+        const stageClassAfterOpen = await stageBoards.first().getAttribute("class");
+        if (
+            !stageClassAfterOpen?.includes("secondary-pane-equal") &&
+            (await viewModeButton.count())
+        ) {
+            await viewModeButton.first().click({ force: true });
+            await page.waitForTimeout(400);
+        }
+    }
+
+    const increaseButton = page.locator(".KibitzDividerHandle .divider-arrow.increase");
+    const stageBoards = page.locator(".KibitzRoomStage-boards");
+
+    for (let i = 0; i < 4; i++) {
+        const className = await stageBoards.first().getAttribute("class");
+        if (className?.includes("secondary-pane-equal")) {
+            break;
+        }
+
+        if (await increaseButton.count()) {
+            await increaseButton.first().click({ force: true });
+            await page.waitForTimeout(200);
+        }
+    }
+
+    await expect(stageBoards.first()).toHaveClass(/secondary-pane-equal/);
+    await page.waitForTimeout(500);
+
+    const rowData = await page.evaluate(() => {
+        function describeRect(element: Element | null) {
+            if (!element) {
+                return null;
+            }
+
+            const bounds = element.getBoundingClientRect();
+            return {
+                top: Math.round(bounds.top),
+                bottom: Math.round(bounds.bottom),
+                left: Math.round(bounds.left),
+                right: Math.round(bounds.right),
+                width: Math.round(bounds.width),
+                height: Math.round(bounds.height),
+            };
+        }
+
+        function describeStyle(element: Element | null) {
+            if (!element) {
+                return null;
+            }
+
+            const style = window.getComputedStyle(element);
+            return {
+                display: style.display,
+                position: style.position,
+                height: style.height,
+                minHeight: style.minHeight,
+                maxHeight: style.maxHeight,
+                gridTemplateRows: style.gridTemplateRows,
+                gridAutoRows: style.gridAutoRows,
+                alignContent: style.alignContent,
+                rowGap: style.rowGap,
+                paddingTop: style.paddingTop,
+                paddingBottom: style.paddingBottom,
+                overflow: style.overflow,
+            };
+        }
+
+        function describeChild(element: Element | null) {
+            if (!element) {
+                return null;
+            }
+
+            const htmlElement = element as HTMLElement;
+            return {
+                className: htmlElement.className,
+                rect: describeRect(element),
+                style: describeStyle(element),
+            };
+        }
+
+        function collectMatchedRules(element: Element | null, selectorFragment: string) {
+            if (!element) {
+                return [];
+            }
+
+            const matchedRules: Array<{
+                selectorText: string;
+                alignSelf: string;
+                height: string;
+                minHeight: string;
+                width: string;
+                overflow: string;
+            }> = [];
+
+            for (const styleSheet of Array.from(document.styleSheets)) {
+                let rules: CSSRuleList;
+                try {
+                    rules = styleSheet.cssRules;
+                } catch {
+                    continue;
+                }
+
+                for (const rule of Array.from(rules)) {
+                    if (!(rule instanceof CSSStyleRule)) {
+                        continue;
+                    }
+
+                    if (!rule.selectorText.includes(selectorFragment)) {
+                        continue;
+                    }
+
+                    if (!element.matches(rule.selectorText)) {
+                        continue;
+                    }
+
+                    const style = rule.style;
+                    matchedRules.push({
+                        selectorText: rule.selectorText,
+                        alignSelf: style.alignSelf,
+                        height: style.height,
+                        minHeight: style.minHeight,
+                        width: style.width,
+                        overflow: style.overflow,
+                    });
+                }
+            }
+
+            return matchedRules;
+        }
+
+        const secondaryBoardContent = document.querySelector(
+            ".board-panel.secondary-board .board-content",
+        );
+        const secondaryBoardPanel = document.querySelector(".board-panel.secondary-board");
+        const boardFitSlot = document.querySelector(".board-panel.secondary-board .board-fit-slot");
+        const transportRow = document.querySelector(".secondary-board-transport-row");
+        const analyzeRow = document.querySelector(".secondary-board-analyze-row");
+        const nodeTextRow = document.querySelector(".secondary-board-node-text-row");
+        const composeRow = document.querySelector(".secondary-board-compose-row");
+        const moveTreeContainer = document.querySelector(".kibitz-move-tree-container");
+        const moveTreeCanvas = document.querySelector(
+            "#kibitz-secondary-move-tree-container canvas",
+        );
+
+        return {
+            secondaryBoardPanel: {
+                rect: describeRect(secondaryBoardPanel),
+                style: describeStyle(secondaryBoardPanel),
+            },
+            secondaryBoardContent: {
+                rect: describeRect(secondaryBoardContent),
+                style: describeStyle(secondaryBoardContent),
+                children: Array.from(secondaryBoardContent?.children ?? []).map((child) =>
+                    describeChild(child),
+                ),
+            },
+            boardFitSlot: {
+                rect: describeRect(boardFitSlot),
+                style: describeStyle(boardFitSlot),
+            },
+            transportRow: {
+                rect: describeRect(transportRow),
+                style: describeStyle(transportRow),
+            },
+            analyzeRow: {
+                rect: describeRect(analyzeRow),
+                style: describeStyle(analyzeRow),
+            },
+            nodeTextRow: {
+                rect: describeRect(nodeTextRow),
+                style: describeStyle(nodeTextRow),
+            },
+            composeRow: {
+                rect: describeRect(composeRow),
+                style: describeStyle(composeRow),
+            },
+            moveTreeContainer: {
+                rect: describeRect(moveTreeContainer),
+                style: describeStyle(moveTreeContainer),
+            },
+            moveTreeCanvas: {
+                rect: describeRect(moveTreeCanvas),
+                style: describeStyle(moveTreeCanvas),
+            },
+            moveTreeMatchedRules: collectMatchedRules(
+                moveTreeContainer,
+                "kibitz-move-tree-container",
+            ),
+        };
+    });
+
+    const screenshotPath = testInfo.outputPath("kibitz-row-sizing.png");
+    const rowSizingPath = testInfo.outputPath("kibitz-row-sizing.json");
+    await page.screenshot({ path: screenshotPath, fullPage: true });
+    writeFileSync(rowSizingPath, JSON.stringify(rowData, null, 2), "utf8");
+    await testInfo.attach("kibitz-row-sizing.png", {
+        path: screenshotPath,
+        contentType: "image/png",
+    });
+    await testInfo.attach("kibitz-row-sizing.json", {
+        path: rowSizingPath,
+        contentType: "application/json",
+    });
+}
+
 ogsTest.describe("@Manual Kibitz visual inspection harness", () => {
     ogsTest.skip(
         !process.env.KIBITZ_VISUAL,
@@ -353,5 +616,11 @@ ogsTest.describe("@Manual Kibitz visual inspection harness", () => {
             testInfo,
             { equalMode: true },
         );
+    });
+
+    ogsTest("Kibitz equal layout row sizing diagnostics", async ({ page }, testInfo) => {
+        await captureKibitzRowSizing(page, "/kibitz/user-fea5dced", testInfo, {
+            openVariation: true,
+        });
     });
 });
