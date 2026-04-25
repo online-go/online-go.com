@@ -25,7 +25,7 @@ import {
     ChatMessage,
 } from "@/lib/chat_manager";
 import { useUser } from "@/lib/hooks";
-import { interpolate, pgettext } from "@/lib/translate";
+import { interpolate, moment, pgettext } from "@/lib/translate";
 import type {
     KibitzMode,
     KibitzRoomSummary,
@@ -222,7 +222,7 @@ export function KibitzSharedStreamPanel({
     const roomScrollRef = React.useRef<HTMLDivElement | null>(null);
     const gameScrollRef = React.useRef<HTMLDivElement | null>(null);
     const [roomProxy, setRoomProxy] = React.useState<ChatChannelProxy | null>(null);
-    const [gameProxy, setGameProxy] = React.useState<ChatChannelProxy | null>(null);
+    const [, setGameProxy] = React.useState<ChatChannelProxy | null>(null);
     const [, refresh] = React.useState(0);
     const [desktopSplit, setDesktopSplit] = React.useState<DesktopSplitState>(readDesktopSplit);
     const [desktopDragRatio, setDesktopDragRatio] = React.useState<number | null>(null);
@@ -249,49 +249,8 @@ export function KibitzSharedStreamPanel({
         ? `game-${room.current_game.game_id}`
         : null;
     const channelName = cachedChannelInformation(room.channel)?.name ?? room.title;
-    const roomChatLogLength = roomProxy?.channel.chat_log.length ?? 0;
-    const gameChatLogLength = gameProxy?.channel.chat_log.length ?? 0;
-
     const roomEntries = React.useMemo<PaneEntry[]>(() => {
         const entries: PaneEntry[] = [];
-
-        if (mode === "demo") {
-            for (const item of items) {
-                const source = item.source ?? "room-stream";
-                if (source === "game-chat") {
-                    continue;
-                }
-
-                if (item.type === "variation_posted") {
-                    entries.push({
-                        kind: "variation",
-                        key: item.id,
-                        createdAt: item.created_at,
-                        item,
-                    });
-                    continue;
-                }
-
-                const chatEntry = createChatLineFromItem(room, item, source);
-                if (chatEntry) {
-                    entries.push(chatEntry);
-                }
-            }
-
-            return entries.sort(sortEntries);
-        }
-
-        if (roomProxy) {
-            for (const line of roomProxy.channel.chat_log.slice(-200)) {
-                entries.push({
-                    kind: "chat",
-                    key: line.message.i || `room-chat-${line.message.t}`,
-                    createdAt: line.message.t * 1000,
-                    source: "room-chat",
-                    line,
-                });
-            }
-        }
 
         for (const item of items) {
             const source = item.source ?? "room-stream";
@@ -316,40 +275,24 @@ export function KibitzSharedStreamPanel({
         }
 
         return entries.sort(sortEntries);
-    }, [items, mode, room, roomProxy, roomChatLogLength]);
+    }, [items, room]);
 
     const gameEntries = React.useMemo<PaneEntry[]>(() => {
         const entries: PaneEntry[] = [];
 
-        if (mode === "demo") {
-            for (const item of items) {
-                if ((item.source ?? "room-stream") !== "game-chat") {
-                    continue;
-                }
-
-                const chatEntry = createChatLineFromItem(room, item, "game-chat");
-                if (chatEntry) {
-                    entries.push(chatEntry);
-                }
+        for (const item of items) {
+            if ((item.source ?? "room-stream") !== "game-chat") {
+                continue;
             }
 
-            return entries.sort(sortEntries);
-        }
-
-        if (gameProxy) {
-            for (const line of gameProxy.channel.chat_log.slice(-200)) {
-                entries.push({
-                    kind: "chat",
-                    key: line.message.i || `game-chat-${line.message.t}`,
-                    createdAt: line.message.t * 1000,
-                    source: "game-chat",
-                    line,
-                });
+            const chatEntry = createChatLineFromItem(room, item, "game-chat");
+            if (chatEntry) {
+                entries.push(chatEntry);
             }
         }
 
         return entries.sort(sortEntries);
-    }, [gameChatLogLength, gameProxy, items, mode, room]);
+    }, [items, room]);
 
     React.useEffect(() => {
         if (mode === "demo") {
@@ -628,10 +571,7 @@ export function KibitzSharedStreamPanel({
                         const variation = variations.find(
                             (candidate) => candidate.id === entry.item.variation_id,
                         );
-                        const label = `${entry.item.author?.username ?? ""} ${pgettext(
-                            "Lead-in for a variation post line in the kibitz stream",
-                            "posted variation",
-                        )}: ${
+                        const label = `${moment(entry.createdAt).format("HH:mm")} ${
                             variation?.title ??
                             pgettext(
                                 "Fallback title for a variation link in the kibitz stream",
