@@ -338,21 +338,12 @@ export function KibitzRoomStage({
         }
 
         const goban = secondaryBoardController.goban;
-        const visibleVariations = variations
+        const visibleVariations = visibleVariationIds
+            .map((variationId) => variations.find((variation) => variation.id === variationId))
             .filter(
-                (variation) =>
-                    variation.game_id === selectedVariation.game_id &&
-                    visibleVariationIds.includes(variation.id),
-            )
-            .sort((left, right) => {
-                if (left.id === selectedVariation.id) {
-                    return 1;
-                }
-                if (right.id === selectedVariation.id) {
-                    return -1;
-                }
-                return 0;
-            });
+                (variation): variation is KibitzVariationSummary =>
+                    variation != null && variation.game_id === selectedVariation.game_id,
+            );
 
         let applyingVariation = false;
         const apply = (forceFocusSelected: boolean = false) => {
@@ -373,16 +364,25 @@ export function KibitzRoomStage({
                 let selectedEndpoint: MoveTree | null = null;
 
                 for (const variation of visibleVariations) {
-                    const applied = applyKibitzVariationToController(
+                    applyKibitzVariationToController(
                         secondaryBoardController,
                         variation,
                         variationColorIndexes[variation.id] ?? 0,
-                        variation.id === selectedVariation.id,
+                        false,
                     );
+                }
 
-                    if (variation.id === selectedVariation.id) {
-                        selectedEndpoint = applied.endpoint;
-                    }
+                if (
+                    selectedVariation.game_id === visibleVariations[0]?.game_id ||
+                    visibleVariations.length === 0
+                ) {
+                    const applied = applyKibitzVariationToController(
+                        secondaryBoardController,
+                        selectedVariation,
+                        variationColorIndexes[selectedVariation.id] ?? 0,
+                        true,
+                    );
+                    selectedEndpoint = applied.endpoint;
                 }
 
                 if (!selectedEndpoint) {
