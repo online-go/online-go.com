@@ -128,7 +128,9 @@
                     minmax(0, 1fr)
                     auto
                     auto
-                    minmax(var(--equal-variation-height), 1fr);
+                    minmax(var(--equal-variation-height), 1fr)
+                    auto
+                    auto;
             }
 
             .board-panel .board-content-preview {
@@ -136,7 +138,8 @@
                     var(--equal-meta-height)
                     minmax(0, 1fr)
                     auto
-                    minmax(var(--equal-variation-height), 1fr);
+                    minmax(var(--equal-variation-height), 1fr)
+                    auto;
             }
 
             .board-fit-slot {
@@ -168,9 +171,16 @@
                 align-self: stretch !important;
                 height: 100% !important;
                 min-height: var(--equal-variation-height);
-                grid-row: 7;
                 resize: none !important;
                 width: min(100%, 39rem, 78vh);
+            }
+
+            .secondary-board .board-content-variation .kibitz-move-tree-container {
+                grid-row: 5;
+            }
+
+            .secondary-board .board-content-preview .kibitz-move-tree-container {
+                grid-row: 4;
             }
 
             .secondary-board .board-meta-variation-inline {

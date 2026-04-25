@@ -1026,6 +1026,15 @@ export function KibitzRoomStage({
                                         />
                                     </div>
                                 ) : null}
+                                {secondaryPaneSize === "equal" ? (
+                                    <Resizable
+                                        key={secondaryMoveTreeKey}
+                                        id="kibitz-secondary-move-tree-container"
+                                        className="kibitz-move-tree-container"
+                                        onResize={handleSecondaryMoveTreeResize}
+                                        ref={handleSecondaryMoveTreeContainerRef}
+                                    />
+                                ) : null}
                                 {secondaryPaneSize === "equal" && secondaryBoardController ? (
                                     <div className="secondary-board-node-text-row">
                                         <KibitzNodeText
@@ -1048,15 +1057,6 @@ export function KibitzRoomStage({
                                             }
                                         />
                                     </div>
-                                ) : null}
-                                {secondaryPaneSize === "equal" ? (
-                                    <Resizable
-                                        key={secondaryMoveTreeKey}
-                                        id="kibitz-secondary-move-tree-container"
-                                        className="kibitz-move-tree-container"
-                                        onResize={handleSecondaryMoveTreeResize}
-                                        ref={handleSecondaryMoveTreeContainerRef}
-                                    />
                                 ) : null}
                                 {secondaryPaneSize !== "equal" ? (
                                     <div className="board-content-spacer" aria-hidden="true" />
@@ -1147,14 +1147,6 @@ export function KibitzRoomStage({
                                         </button>
                                     </div>
                                 </div>
-                                {secondaryPaneSize === "equal" && secondaryBoardController ? (
-                                    <div className="secondary-board-node-text-row">
-                                        <KibitzNodeText
-                                            controller={secondaryBoardController}
-                                            editable={false}
-                                        />
-                                    </div>
-                                ) : null}
                                 {secondaryPaneSize === "equal" ? (
                                     <Resizable
                                         key={secondaryMoveTreeKey}
@@ -1163,6 +1155,14 @@ export function KibitzRoomStage({
                                         onResize={handleSecondaryMoveTreeResize}
                                         ref={handleSecondaryMoveTreeContainerRef}
                                     />
+                                ) : null}
+                                {secondaryPaneSize === "equal" && secondaryBoardController ? (
+                                    <div className="secondary-board-node-text-row">
+                                        <KibitzNodeText
+                                            controller={secondaryBoardController}
+                                            editable={false}
+                                        />
+                                    </div>
                                 ) : null}
                                 {secondaryPaneSize !== "equal" ? (
                                     <div className="board-content-spacer" aria-hidden="true" />
