@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import * as player_cache from "@/lib/player_cache";
-import { maxMessageLength } from "@/lib/chat_manager";
+import { maxMessageLength } from "@/lib/misc";
 import "./TabCompleteInput.css";
 import { interpolate, pgettext } from "@/lib/translate";
 

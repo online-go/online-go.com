@@ -31,14 +31,13 @@ import { _, interpolate } from "@/lib/translate";
 import { getBlocks } from "@/components/BlockPlayer";
 import {
     insert_into_sorted_list,
+    maxMessageLength,
     sanitizeMessage,
     string_splitter,
     n2s,
     Timeout,
 } from "@/lib/misc";
 import { User } from "goban";
-
-export const maxMessageLength = 1024;
 
 export interface ChatMessage {
     channel: string;

@@ -117,7 +117,7 @@
             font-size: 0.85rem;
         }
 
-        input {
+        .chat-input-wrapper {
             flex: 1;
             overflow: hidden;
         }
@@ -235,7 +235,8 @@
         }
     }
 
-    input {
+    input,
+    textarea {
         background: var(--bg);
         padding: 0.5rem;
     }

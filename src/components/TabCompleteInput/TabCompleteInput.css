@@ -41,12 +41,10 @@
 .chat-count-warning.warning {
     background-color: var(--warning-bg);
     color: var(--warning-fg);
-    border-color: none;
 }
 .chat-count-warning.error {
     background-color: var(--error-boundary-bg);
     color: var(--error-boundary-fg);
-    border-color: none;
 }
 
 .chat-input-wrapper textarea {

@@ -21,7 +21,8 @@ import { browserHistory } from "@/lib/ogsHistory";
 import * as preferences from "@/lib/preferences";
 import { alert } from "@/lib/swal_config";
 import React from "react";
-import { maxMessageLength } from "@/lib/chat_manager";
+
+export const maxMessageLength = 1024;
 
 export type Timeout = ReturnType<typeof setTimeout>;
 
