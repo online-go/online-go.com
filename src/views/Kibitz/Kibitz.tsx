@@ -279,12 +279,29 @@ export function Kibitz(): React.ReactElement {
     );
 
     const onClearPreview = React.useCallback(() => {
-        controller.clearPreviewGame();
-        if (isMobileLayout) {
-            setMobileCompanionPanel("chat");
-            setPendingSecondaryPaneMode("hidden");
+        const currentVariation = variations.find(
+            (variation) => variation.id === secondaryPane.variation_id,
+        );
+        const visibleVariations = visibleVariationIds
+            .map((variationId) => variations.find((variation) => variation.id === variationId))
+            .filter((variation): variation is KibitzVariationSummary => variation != null);
+        const nextVisibleVariation =
+            visibleVariations.find(
+                (variation) =>
+                    currentVariation != null && variation.game_id === currentVariation.game_id,
+            ) ?? visibleVariations[0];
+
+        if (nextVisibleVariation) {
+            setVariationFocusRequestId((previous) => previous + 1);
+            controller.openVariation(nextVisibleVariation.id);
+        } else {
+            controller.clearPreviewGame();
+            if (isMobileLayout) {
+                setMobileCompanionPanel("chat");
+                setPendingSecondaryPaneMode("hidden");
+            }
         }
-    }, [controller, isMobileLayout]);
+    }, [controller, isMobileLayout, secondaryPane.variation_id, variations, visibleVariationIds]);
 
     const onConfirmClearSecondaryPane = React.useCallback(() => {
         void alert
@@ -360,6 +377,9 @@ export function Kibitz(): React.ReactElement {
                                 .find((variation) => variation);
 
                         if (nextActiveVariation) {
+                            setVariationFocusRequestId(
+                                (previousFocusRequestId) => previousFocusRequestId + 1,
+                            );
                             controller.openVariation(nextActiveVariation.id);
                         } else {
                             controller.clearPreviewGame();

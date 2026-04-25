@@ -342,9 +342,9 @@ export function KibitzRoomStage({
             );
 
         let applyingVariation = false;
-        const apply = () => {
+        const apply = (forceFocusSelected: boolean = false): boolean => {
             if (applyingVariation) {
-                return;
+                return false;
             }
 
             applyingVariation = true;
@@ -391,7 +391,7 @@ export function KibitzRoomStage({
                     selectedEndpoint = applied.endpoint;
                 }
 
-                if (selectedEndpoint && shouldFocusSelected) {
+                if (selectedEndpoint && (shouldFocusSelected || forceFocusSelected)) {
                     goban.engine.jumpTo(selectedEndpoint);
                     lastVariationFocusRequestRef.current = {
                         variationId: selectedVariation.id,
@@ -413,19 +413,19 @@ export function KibitzRoomStage({
                 }
                 goban.redraw(true);
                 goban.move_tree_redraw();
+                return selectedEndpoint != null;
             } finally {
                 applyingVariation = false;
             }
         };
 
         const onLoad = () => {
-            goban.off("load", onLoad);
-            apply();
+            apply(true);
         };
+        goban.on("load", onLoad);
+
         if (goban.engine?.last_official_move) {
             apply();
-        } else {
-            goban.on("load", onLoad);
         }
 
         return () => {
