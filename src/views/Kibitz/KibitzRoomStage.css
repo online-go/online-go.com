@@ -128,7 +128,7 @@
                     minmax(0, 1fr)
                     auto
                     auto
-                    minmax(var(--equal-variation-height), 1fr)
+                    minmax(var(--equal-variation-height), 0.3fr)
                     auto
                     auto;
             }
@@ -139,6 +139,15 @@
                     minmax(0, 1fr)
                     auto
                     minmax(var(--equal-variation-height), 1fr)
+                    auto;
+            }
+
+            .board-panel .board-content-posted-variation {
+                grid-template-rows:
+                    var(--equal-meta-height)
+                    minmax(0, 1fr)
+                    auto
+                    minmax(var(--equal-variation-height), 0.3fr)
                     auto;
             }
 
@@ -179,7 +188,7 @@
                 grid-row: 5;
             }
 
-            .secondary-board .board-content-preview .kibitz-move-tree-container {
+            .secondary-board .board-content-posted-variation .kibitz-move-tree-container {
                 grid-row: 4;
             }
 

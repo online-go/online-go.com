@@ -1063,7 +1063,7 @@ export function KibitzRoomStage({
                                 ) : null}
                             </div>
                         ) : selectedVariation ? (
-                            <div className="board-content">
+                            <div className="board-content board-content-posted-variation">
                                 <div
                                     className={
                                         "board-meta" +
