@@ -90,6 +90,10 @@
         width: 100%;
     }
 
+    .presence-avatar-icon {
+        display: block;
+    }
+
     .presence-users {
         display: flex;
         flex: 1;

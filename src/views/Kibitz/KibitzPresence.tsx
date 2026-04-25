@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import { Player } from "@/components/Player";
+import { PlayerIcon } from "@/components/PlayerIcon";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { KibitzRoomSummary, KibitzRoomUser } from "@/models/kibitz";
 import "./KibitzPresence.css";
@@ -24,29 +25,6 @@ import "./KibitzPresence.css";
 interface KibitzPresenceProps {
     room: KibitzRoomSummary;
     users: KibitzRoomUser[];
-}
-
-function getUserInitials(username: string | undefined): string {
-    const trimmedUsername = (username ?? "").trim();
-
-    if (!trimmedUsername) {
-        return "?";
-    }
-
-    const parts = trimmedUsername.split(/\s+/).filter(Boolean);
-
-    if (parts.length === 1) {
-        return parts[0].slice(0, 2).toUpperCase();
-    }
-
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-}
-
-function getUserIcon(user: KibitzRoomUser | null | undefined): string | undefined {
-    if (!user) {
-        return undefined;
-    }
-    return typeof user.icon === "string" && user.icon.length > 0 ? user.icon : undefined;
 }
 
 function PresenceAvatar({
@@ -57,15 +35,10 @@ function PresenceAvatar({
     className: string;
 }): React.ReactElement {
     const username = user.username ?? "";
-    const icon = getUserIcon(user);
 
     return (
         <span className={className} title={username} aria-hidden="true">
-            {icon ? (
-                <img className="presence-avatar-image" src={icon} alt="" aria-hidden="true" />
-            ) : (
-                getUserInitials(username)
-            )}
+            <PlayerIcon user={user} size={16} className="presence-avatar-icon" />
         </span>
     );
 }

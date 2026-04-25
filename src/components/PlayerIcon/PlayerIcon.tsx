@@ -40,17 +40,27 @@ export function PlayerIcon(props: PlayerIconProps): React.ReactElement {
     const [url, setUrl] = React.useState<string | undefined>(undefined);
 
     const subscriber = React.useRef<player_cache.Subscriber | undefined>(undefined);
+    const previousId = React.useRef<number | null>(null);
     const id = getId(props);
 
     React.useEffect(() => {
         if (!id) {
             setUrl(undefined);
+            previousId.current = null;
             return;
         }
 
         const user = player_cache.lookup(id);
         const size = typeof props.size === "number" ? props.size : parseInt(props.size);
-        setUrl(user_uploads_url(user?.icon, size));
+        const nextUrl = user_uploads_url(user?.icon, size);
+        const isNewId = previousId.current !== id;
+        previousId.current = id;
+
+        if (nextUrl) {
+            setUrl(nextUrl);
+        } else if (isNewId) {
+            setUrl(undefined);
+        }
 
         if (!url) {
             fetchIconUrl(id, props);
@@ -70,7 +80,7 @@ export function PlayerIcon(props: PlayerIconProps): React.ReactElement {
         function fetchIconUrl(id: number, props: PlayerIconProps): void {
             getPlayerIconURL(id, parseInt(`${props.size}`))
                 .then((url) => {
-                    if (!cancelled) {
+                    if (!cancelled && url) {
                         setUrl(url);
                     }
                 })
