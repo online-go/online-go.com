@@ -571,7 +571,7 @@ export function KibitzSharedStreamPanel({
                         const variation = variations.find(
                             (candidate) => candidate.id === entry.item.variation_id,
                         );
-                        const label = `${moment(entry.createdAt).format("HH:mm")} ${
+                        const label = `${moment(entry.createdAt).format("HH:mm")} ${entry.item.author?.username ?? pgettext("Fallback username for a variation post in the kibitz stream", "Someone")} shared variation: ${
                             variation?.title ??
                             pgettext(
                                 "Fallback title for a variation link in the kibitz stream",
