@@ -1130,21 +1130,6 @@ export function KibitzRoomStage({
                                                 )}
                                             </button>
                                         ) : null}
-                                        <button
-                                            type="button"
-                                            className="preview-action-button clear-preview symbol-button"
-                                            onClick={onConfirmClearSecondaryPane}
-                                            aria-label={pgettext(
-                                                "Aria label for closing a variation preview in the secondary kibitz pane",
-                                                "Clear",
-                                            )}
-                                            title={pgettext(
-                                                "Tooltip label for closing a variation preview in the secondary kibitz pane",
-                                                "Clear",
-                                            )}
-                                        >
-                                            X
-                                        </button>
                                     </div>
                                 </div>
                                 {secondaryPaneSize === "equal" ? (
