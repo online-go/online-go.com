@@ -748,7 +748,14 @@ export function KibitzRoomStage({
                 <div className="board-panel main-board">
                     <div className="panel-body">
                         {mainGame ? (
-                            <div className="board-content">
+                            <div
+                                className={
+                                    "board-content " +
+                                    (isDraftingVariation
+                                        ? "board-content-draft"
+                                        : "board-content-preview")
+                                }
+                            >
                                 <div
                                     className={
                                         "board-meta" +
@@ -888,7 +895,7 @@ export function KibitzRoomStage({
                                 "Secondary pane is collapsed",
                             )
                         ) : secondaryGameId ? (
-                            <div className="board-content">
+                            <div className="board-content board-content-variation">
                                 <div
                                     className={
                                         "board-meta" +

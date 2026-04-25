@@ -122,6 +122,23 @@
                     auto;
             }
 
+            .board-panel .board-content-variation {
+                grid-template-rows:
+                    var(--equal-meta-height)
+                    minmax(0, 1fr)
+                    auto
+                    auto
+                    minmax(var(--equal-variation-height), auto);
+            }
+
+            .board-panel .board-content-preview {
+                grid-template-rows:
+                    var(--equal-meta-height)
+                    minmax(0, 1fr)
+                    auto
+                    minmax(var(--equal-variation-height), auto);
+            }
+
             .board-fit-slot {
                 padding-top: 0.25rem;
                 position: relative;
