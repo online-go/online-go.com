@@ -102,13 +102,36 @@
 
     .presence-user {
         align-items: center;
+        box-sizing: border-box;
         display: flex;
         gap: 0.35rem;
+        height: 1.4rem;
+        min-height: 1.4rem;
         line-height: 1;
+        padding: 0 0.05rem;
+
+        > .presence-avatar {
+            align-self: center;
+        }
+
+        > span:not(.presence-avatar) {
+            align-items: center;
+            display: flex;
+            height: 100%;
+            line-height: 1;
+            min-width: 0;
+        }
 
         .Player {
+            align-items: center;
+            display: inline-flex;
             font-size: 0.8rem;
             line-height: 1.05;
+        }
+
+        .Player-username,
+        .Player-rank {
+            align-self: center;
         }
     }
 
