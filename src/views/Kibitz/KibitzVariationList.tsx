@@ -52,7 +52,6 @@ export function KibitzVariationList({
     variations,
     currentGameId,
     visibleVariationIds = [],
-    selectedVariationId = null,
     variationColorIndexes = {},
     onRecallVariation,
     onToggleVariation,
@@ -126,11 +125,7 @@ export function KibitzVariationList({
                                         <div
                                             key={variation.id}
                                             className={
-                                                "variation-item" +
-                                                (isVisible ? " visible" : "") +
-                                                (selectedVariationId === variation.id
-                                                    ? " selected"
-                                                    : "")
+                                                "variation-item" + (isVisible ? " visible" : "")
                                             }
                                         >
                                             <button

@@ -52,16 +52,9 @@
         width: 100%;
     }
 
-    .variation-item.selected .variation-recall,
-    .variation-item.selected .variation-toggle {
+    .variation-item.visible .variation-recall,
+    .variation-item.visible .variation-toggle {
         background: color-mix(in srgb, var(--shade2) 55%, transparent);
-    }
-
-    .variation-item:hover .variation-recall,
-    .variation-item:hover .variation-toggle,
-    .variation-item:focus-within .variation-recall,
-    .variation-item:focus-within .variation-toggle {
-        background: color-mix(in srgb, var(--shade2) 50%, transparent);
     }
 
     .variation-recall {
