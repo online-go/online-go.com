@@ -745,6 +745,10 @@
             width: auto;
         }
 
+        .board-actions.board-actions-inline.board-actions-left {
+            justify-self: start;
+        }
+
         .secondary-board-empty-state {
             align-items: center;
             display: flex;
@@ -760,11 +764,11 @@
             max-width: 18rem;
         }
 
-        .preview-action-button {
+        .create-variation-button {
             box-shadow: none;
-            background: var(--shade2);
+            background: var(--primary);
             border: 0;
-            color: var(--fg);
+            color: var(--colored-background-fg);
             cursor: pointer;
             font-size: 0.8rem;
             line-height: 1.1;
@@ -772,7 +776,7 @@
             text-align: left;
         }
 
-        .preview-action-button.compact {
+        .create-variation-button.compact {
             font-size: 0.75rem;
             line-height: 1.1;
         }

@@ -1112,12 +1112,12 @@ export function KibitzRoomStage({
                                             totalMoves={selectedVariation.move_count}
                                         />
                                     </div>
-                                    <div className="board-actions board-actions-inline">
+                                    <div className="board-actions board-actions-inline board-actions-left">
                                         {secondaryPaneSize === "equal" &&
                                         onCreateVariationFromPostedVariation ? (
                                             <button
                                                 type="button"
-                                                className="preview-action-button"
+                                                className="create-variation-button"
                                                 onClick={() =>
                                                     onCreateVariationFromPostedVariation(
                                                         selectedVariation,
@@ -1126,7 +1126,7 @@ export function KibitzRoomStage({
                                             >
                                                 {pgettext(
                                                     "Button label for starting a new editable Kibitz variation from a posted variation",
-                                                    "Create variation from here",
+                                                    "New variation",
                                                 )}
                                             </button>
                                         ) : null}
