@@ -1,0 +1,151 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.PuzzleLibrary {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex-grow: 1;
+    gap: 0.5rem;
+
+    .PuzzleLibrary-title-row {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+
+        &.editing {
+            gap: 0.25rem;
+        }
+    }
+
+    .PuzzleLibrary-title {
+        flex-grow: 1;
+        margin: 0;
+        font-size: 1.1rem;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .PuzzleLibrary-title-input {
+        flex-grow: 1;
+        min-width: 0;
+        font-size: 1rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .PuzzleLibrary-title-btn {
+        flex-shrink: 0;
+        padding: 0.25rem 0.5rem;
+        border: none;
+        background: transparent;
+        color: var(--shade1);
+        cursor: pointer;
+
+        &:hover {
+            color: var(--primary);
+        }
+    }
+
+    .PuzzleLibrary-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        overflow-y: auto;
+        min-height: 0;
+        flex-grow: 1;
+    }
+
+    .PuzzleLibrary-entry {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0;
+        margin: 0;
+
+        &.current .PuzzleLibrary-entry-link {
+            background: var(--primary);
+            color: var(--colored-background-fg);
+            font-weight: 600;
+        }
+    }
+
+    .PuzzleLibrary-entry-handle {
+        flex-shrink: 0;
+        padding: 0.5rem 0.25rem;
+        color: var(--shade2);
+        cursor: grab;
+        user-select: none;
+        touch-action: none;
+
+        &:active {
+            cursor: grabbing;
+        }
+    }
+
+    .PuzzleLibrary-entry-link {
+        flex-grow: 1;
+        min-width: 0;
+        padding: 0.5rem 0.75rem;
+        border-radius: 4px;
+        color: var(--fg);
+        text-decoration: none;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        &:hover {
+            background: var(--shade3);
+        }
+    }
+
+    .PuzzleLibrary-entry-delete {
+        flex-shrink: 0;
+        padding: 0.5rem 0.5rem;
+        border: none;
+        background: transparent;
+        color: var(--shade1);
+        cursor: pointer;
+
+        &:hover {
+            color: var(--reject);
+        }
+    }
+
+    .PuzzleLibrary-footer {
+        padding-top: 0.5rem;
+        border-top: 1px solid var(--shade3);
+    }
+
+    .PuzzleLibrary-new-puzzle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        border: 1px dashed var(--shade3);
+        border-radius: 4px;
+        color: var(--shade1);
+        text-decoration: none;
+
+        &:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+    }
+}

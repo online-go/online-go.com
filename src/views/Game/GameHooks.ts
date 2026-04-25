@@ -17,65 +17,20 @@
 
 import * as React from "react";
 import { ConditionalMoveTree, Goban } from "goban";
-import { GobanEvents } from "goban";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
-import { useGobanController } from "./goban_context";
+import { useGobanController } from "@/components/GobanView";
 import { GobanController } from "@/lib/GobanController";
-import { ViewMode, goban_view_mode } from "./util";
 import { ChatMode } from "./GameChat";
 
-/**
- * Generates a custom react hook that can return a prop that is derived from a
- * goban object.  It trigger an update on any of the specified events, in
- * addition to the first time it is called and when the goban first loads.
- * @param deriveProp a function that takes in a Goban-like object and returns a value.
- * @param events a list of events that should trigger a recalculation of this value.
- * @returns a React Hook.
- */
-export function generateGobanHook<T, G extends Goban | null>(
-    deriveProp: (goban: G) => T,
-    events: Array<keyof Omit<GobanEvents, "load">> = [],
-): (goban: G) => T {
-    return (goban: G) => {
-        const [prop, setProp] = React.useState(deriveProp(goban));
-        React.useEffect(() => {
-            const syncProp = () => {
-                setProp(deriveProp(goban));
-            };
-            syncProp();
-
-            if (!goban) {
-                return;
-            }
-
-            return subscribeAllEvents(goban, events, syncProp);
-        }, [goban]);
-        return prop;
-    };
-}
-
-/**
- * @param goban the goban object
- * @param events the events to which we want to subscribe (excluding load)
- * @param cb the callback which should be triggered on emit.
- * @returns a callback that will unsubscribe from all events that were just subscribed.
- */
-export function subscribeAllEvents(
-    goban: Goban,
-    events: Array<keyof Omit<GobanEvents, "load">> = [],
-    cb: () => void,
-) {
-    const events_with_load: Array<keyof GobanEvents> = ["load", ...events];
-    for (const e of events_with_load) {
-        goban.on(e, cb);
-    }
-    return () => {
-        for (const e of events_with_load) {
-            goban.off(e, cb);
-        }
-    };
-}
+// Shared hooks live in GobanView; import locally and re-export for callers.
+import {
+    generateGobanHook,
+    subscribeAllEvents,
+    useViewMode,
+    useZenMode,
+} from "@/components/GobanView/hooks";
+export { generateGobanHook, subscribeAllEvents, useViewMode, useZenMode };
 
 /** React hook that returns true if an undo was requested on the current move */
 export function useShowUndoRequested(goban: Goban): boolean {
@@ -179,20 +134,6 @@ export const useShowTitle = generateGobanHook(
 export const useTitle = generateGobanHook((goban: Goban | null) => goban?.title, ["title"]);
 export const useMode = generateGobanHook((goban: Goban | null) => goban?.mode, ["mode"]);
 
-export function useViewMode(controller: GobanController | null): ViewMode {
-    const [view_mode, set_view_mode] = React.useState(controller?.view_mode ?? goban_view_mode());
-    React.useEffect(() => {
-        if (controller) {
-            controller.on("view_mode", set_view_mode);
-            return () => {
-                controller.off("view_mode", set_view_mode);
-            };
-        }
-        return undefined;
-    }, [controller]);
-    return view_mode;
-}
-
 export function useVariationName(controller: GobanController | null): string {
     const [variation_name, set_variation_name] = React.useState(controller?.variation_name ?? "");
     React.useEffect(() => {
@@ -231,23 +172,6 @@ export function useAnnulled(controller: GobanController): boolean {
         };
     }, [controller]);
     return annulled;
-}
-
-export function useZenMode(controller: GobanController | null): boolean {
-    const [zen_mode, set_zen_mode] = React.useState(
-        controller?.zen_mode ?? preferences.get("start-in-zen-mode"),
-    );
-    React.useEffect(() => {
-        if (!controller) {
-            return;
-        }
-
-        controller.on("zen_mode", set_zen_mode);
-        return () => {
-            controller.off("zen_mode", set_zen_mode);
-        };
-    }, [controller]);
-    return zen_mode;
 }
 
 export function useStashedConditionalMoves(

@@ -1,0 +1,165 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.GobanView {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    position: absolute;
+    top: var(--below-navbar);
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    /* Desktop: goban on left, sidebar on right */
+    .GobanView-center {
+        flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        overflow: hidden;
+        z-index: 1;
+
+        .goban-container {
+            flex-grow: 1;
+            flex-basis: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+
+            .Goban {
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+        }
+    }
+
+    .GobanView-sidebar {
+        display: flex;
+        flex-direction: column;
+        width: var(--goban-view-sidebar-width);
+        flex-shrink: 0;
+        z-index: 2;
+        background: var(--shade5);
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        margin: 1rem 1rem 1rem 0;
+        overflow: hidden;
+    }
+
+    .GobanView-sidebar-content {
+        flex-grow: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 0.75rem;
+    }
+
+    /* Tab panels */
+    .GobanView-tab-panel {
+        padding: 0.875rem 0;
+
+        &.hidden {
+            display: none;
+        }
+
+        &.takeover {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        &.takeover:not(.active) {
+            display: none;
+        }
+    }
+
+    /* Portrait / mobile layout */
+    &.portrait {
+        flex-direction: column;
+
+        .GobanView-sidebar {
+            border-radius: 0;
+            box-shadow: none;
+            margin: 0;
+            width: auto;
+        }
+
+        .GobanView-sidebar-content {
+            padding: 0.5rem;
+            gap: 0.5rem;
+        }
+
+        .GobanView-center {
+            /* The goban area is square on portrait, so its height follows the
+               viewport width. Cap at the remaining viewport height (minus the
+               navbar and the tab bar) so the scroll area below always fits. */
+            --goban-view-portrait-max-height: calc(
+                100dvh - var(--below-navbar) - var(--goban-view-tab-bar-height) -
+                    env(safe-area-inset-bottom)
+            );
+            flex-basis: auto;
+            flex-shrink: 0;
+            height: min(100dvw, var(--goban-view-portrait-max-height));
+            min-height: min(100dvw, var(--goban-view-portrait-max-height));
+            max-height: min(100dvw, var(--goban-view-portrait-max-height));
+        }
+
+        .GobanView-mobile-scroll {
+            flex-grow: 1;
+            flex-basis: 0;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: var(--shade5);
+
+            .GobanView-tab-panel {
+                padding: 0.75rem 0;
+            }
+        }
+
+        /* Takeover panels overlay the scroll area */
+        .GobanView-tab-panel.takeover {
+            display: none;
+            padding: 0.75rem 0;
+
+            &.active {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: calc(var(--goban-view-tab-bar-height) + env(safe-area-inset-bottom));
+                z-index: 10;
+                background: var(--bg);
+                overflow-y: auto;
+            }
+        }
+    }
+}

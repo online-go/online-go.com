@@ -128,6 +128,7 @@ export const defaults = {
     "profanity-filter": { en: true } as { [cc: string]: true },
     "puzzle.randomize.color": true,
     "puzzle.randomize.transform": true,
+    "puzzle.sound": true,
     "puzzle.zoom": true,
     "rating-graph-always-use": false,
     "rating-graph-plot-by-games": false,

@@ -19,12 +19,9 @@ import * as React from "react";
 import { PersistentElement } from "@/components/PersistentElement";
 import { OgsResizeDetector } from "@/components/OgsResizeDetector";
 import { GobanRenderer, GobanRendererConfig } from "goban";
-// Pull this out its own util
-import { goban_view_mode } from "@/views/Game/util";
-//import { generateGobanHook } from "@/views/Game/GameHooks";
+import { goban_view_mode, useGobanControllerOrNull } from "@/components/GobanView";
 
 import { usePreference } from "@/lib/preferences";
-import { useGobanControllerOrNull } from "@/views/Game/goban_context";
 
 interface GobanContainerProps {
     /** The goban to render. If not provided, the goban context goban will be used */
