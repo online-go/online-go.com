@@ -628,6 +628,7 @@ export function KibitzSharedStreamPanel({
                 <div className="KibitzSharedStreamPanel-composer">
                     <TabCompleteInput
                         id={`kibitz-chat-input-${room.id}`}
+                        className="TabCompleteInput"
                         autoComplete="off"
                         placeholder={interpolate(
                             pgettext(
@@ -665,7 +666,7 @@ export function KibitzSharedStreamPanel({
         <div className="KibitzSharedStreamPanel-disabledComposer chat-input-container input-group">
             <TabCompleteInput
                 id={`kibitz-chat-disabled-${room.id}`}
-                className="chat-input"
+                className="TabCompleteInput chat-input"
                 autoComplete="off"
                 placeholder={pgettext(
                     "Placeholder text shown when the kibitz game chat composer is disabled",
