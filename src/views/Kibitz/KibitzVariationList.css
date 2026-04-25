@@ -70,10 +70,10 @@
         cursor: pointer;
         display: flex;
         flex: 1 1 auto;
-        gap: 0.14rem;
+        gap: 0.35rem;
         min-height: 3rem;
         min-width: 0;
-        padding: 0.36rem 0.2rem 0.36rem 0.88rem;
+        padding: 0.36rem 0.2rem 0.36rem 0.1rem;
         text-align: left;
 
         &:focus-visible {
@@ -83,9 +83,10 @@
 
     .variation-color-chip {
         background: var(--shade3);
+        align-self: stretch;
         flex: 0 0 auto;
-        height: 2.1rem;
-        margin-top: 0.1rem;
+        height: auto;
+        margin-top: 0;
         width: 0.28rem;
     }
 
@@ -101,15 +102,19 @@
         align-items: center;
         background: transparent;
         border: 0;
+        box-sizing: border-box;
         color: var(--text-color-faded);
         cursor: pointer;
         display: inline-flex;
         flex: 0 0 auto;
-        height: 1.65rem;
+        align-self: stretch;
+        aspect-ratio: 1 / 1;
+        height: auto;
+        min-height: 3rem;
         justify-content: center;
-        margin: 0.42rem 0.45rem 0 0;
-        padding: 0;
-        width: 1.65rem;
+        margin: 0.15em;
+        padding: 0.36rem 0.2rem 0.36rem 0.1rem;
+        width: auto;
 
         &:hover,
         &:focus-visible {
@@ -181,11 +186,15 @@
         color: var(--text-color-faded);
         font-size: 0.76rem;
         line-height: 1.1;
-        padding: 0.4rem 0 0;
+        padding: 0;
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+
+    .variation-meta {
+        align-self: center;
     }
 
     .variation-empty {
