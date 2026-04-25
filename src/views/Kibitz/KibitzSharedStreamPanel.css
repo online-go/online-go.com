@@ -152,10 +152,22 @@
     border-radius: 3px;
 }
 
+.KibitzSharedStreamPanel.desktop .KibitzSharedStreamPanel-composer:focus-within {
+    box-shadow:
+        0 0 0px 0px color-mix(in srgb, var(--primary) 60%, transparent),
+        inset 0 0 0px 0 rgba(0, 255, 0, 1),
+        inset 0 0 7px 0 color-mix(in srgb, var(--primary) 85%, transparent);
+}
+
 .KibitzSharedStreamPanel-composer .TabCompleteInput {
     box-sizing: border-box;
     display: block;
     width: 100%;
+}
+
+.KibitzSharedStreamPanel-composer .TabCompleteInput:focus,
+.KibitzSharedStreamPanel-composer .TabCompleteInput:focus-visible {
+    outline: none;
 }
 
 .KibitzSharedStreamPanel-disabledComposer {
