@@ -236,6 +236,13 @@ export function KibitzRoomStage({
     const [secondaryMoveTreeContainer, setSecondaryMoveTreeContainer] =
         React.useState<Resizable | null>(null);
     const previousSecondaryControllerRef = React.useRef<GobanController | null>(null);
+    const appliedDraftAnalyzeToolRef = React.useRef<{
+        controller: GobanController | null;
+        draftKey: string | null;
+    }>({
+        controller: null,
+        draftKey: null,
+    });
     const lastVariationFocusRequestRef = React.useRef<{
         variationId: string | null;
         requestId: number;
@@ -511,6 +518,71 @@ export function KibitzRoomStage({
         secondaryPane.preview_game_id,
         secondaryPane.variation_source_game_id,
         variationColorIndexes,
+    ]);
+
+    React.useEffect(() => {
+        const draftKey =
+            secondaryPane.variation_source_game_id != null
+                ? `${secondaryPane.preview_game_id ?? ""}-${secondaryPane.variation_source_game_id}-${secondaryPane.variation_draft_base_id ?? ""}`
+                : null;
+
+        if (
+            !isDraftingVariation ||
+            !secondaryBoardController ||
+            secondaryPane.preview_game_id == null ||
+            secondaryPane.variation_source_game_id == null
+        ) {
+            appliedDraftAnalyzeToolRef.current = {
+                controller: secondaryBoardController,
+                draftKey: null,
+            };
+            return;
+        }
+
+        if (
+            appliedDraftAnalyzeToolRef.current.controller === secondaryBoardController &&
+            appliedDraftAnalyzeToolRef.current.draftKey === draftKey
+        ) {
+            return;
+        }
+
+        const goban = secondaryBoardController.goban;
+        let applyingDraftAnalyzeTool = false;
+        const apply = () => {
+            if (applyingDraftAnalyzeTool) {
+                return;
+            }
+
+            applyingDraftAnalyzeTool = true;
+            try {
+                secondaryBoardController.setAnalyzeTool("stone", "alternate");
+                appliedDraftAnalyzeToolRef.current = {
+                    controller: secondaryBoardController,
+                    draftKey,
+                };
+            } finally {
+                applyingDraftAnalyzeTool = false;
+            }
+        };
+
+        const onLoad = () => {
+            apply();
+        };
+        goban.on("load", onLoad);
+
+        if (goban.engine?.last_official_move) {
+            apply();
+        }
+
+        return () => {
+            goban.off("load", onLoad);
+        };
+    }, [
+        isDraftingVariation,
+        secondaryBoardController,
+        secondaryPane.preview_game_id,
+        secondaryPane.variation_draft_base_id,
+        secondaryPane.variation_source_game_id,
     ]);
 
     // mainGame is populated by KibitzController.lookupGameForKibitz from
