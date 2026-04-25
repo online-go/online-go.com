@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import * as player_cache from "@/lib/player_cache";
+import { maxMessageLength } from "@/lib/chat_manager";
 import "./TabCompleteInput.css";
 import { interpolate, pgettext } from "@/lib/translate";
 
@@ -109,9 +110,6 @@ function matchFullName(input: string, nicknames: string[]): MatchResult {
 function setCaretPosition(input: HTMLTextAreaElement, position: number) {
     input.setSelectionRange(position, position);
 }
-
-// max length support in server is 1024
-const maxMessageLength = 1024;
 
 export const TabCompleteInput = React.forwardRef<HTMLTextAreaElement, TabCompleteInputProperties>(
     (props: TabCompleteInputProperties, ref): React.ReactElement => {

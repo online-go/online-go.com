@@ -29,9 +29,6 @@
     top: -25px;
     right: 0;
     width: auto;
-    
-    
-    border: 0.5px solid rgba(245, 166, 35, 0.25);
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 11px;
@@ -42,14 +39,14 @@
 }
 
 .chat-count-warning.warning {
-    background-color: rgba(40, 28, 8, 0.92);
-    backdrop-filter: blur(4px);
-    color: #f5a623;
+    background-color: var(--warning-bg);
+    color: var(--warning-fg);
+    border-color: none;
 }
 .chat-count-warning.error {
-    background-color: #7c2d12;
-    color: #fed7aa;
-    border-color: #7c2d12;
+    background-color: var(--error-boundary-bg);
+    color: var(--error-boundary-fg);
+    border-color: none;
 }
 
 .chat-input-wrapper textarea {

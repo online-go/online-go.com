@@ -19,6 +19,7 @@ import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
 import * as React from "react";
 import { LineText } from "@/components/misc-ui";
+import { sanitizeMessage } from "@/lib/misc";
 import { Link } from "react-router-dom";
 import { _, pgettext, interpolate, current_language, moment } from "@/lib/translate";
 import { Player } from "@/components/Player";
@@ -193,7 +194,7 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
                 console.warn("Quick chat editing not implemented");
                 event.preventDefault();
             } else {
-                goban.sendChat(input.value, selected_chat_log);
+                goban.sendChat(sanitizeMessage(input.value), selected_chat_log);
                 input.value = "";
                 input.style.height = "auto";
                 return false;
