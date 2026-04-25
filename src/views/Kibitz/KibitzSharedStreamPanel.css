@@ -84,10 +84,60 @@
     width: 100%;
 }
 
+.KibitzSharedStreamPanel-paneFeed .chat-lines .chat-line,
+.KibitzSharedStreamPanel-paneFeed .chat-lines .variation-post {
+    max-width: 100%;
+    min-width: 0;
+}
+
 .KibitzSharedStreamPanel-paneFeed .stream-empty {
     flex: 1 1 auto;
     min-height: 0;
     overflow: auto;
+}
+
+.KibitzSharedStreamPanel-paneFeed .kibitz-chat-entry {
+    max-width: 100%;
+    min-width: 0;
+}
+
+.KibitzSharedStreamPanel-paneFeed .kibitz-chat-entry.game-chat {
+    background: color-mix(in srgb, var(--primary) 8%, var(--card-background-color));
+    border-left: 2px solid color-mix(in srgb, var(--primary) 28%, transparent);
+    margin-top: 0.18rem;
+    padding: 0.28rem 0.5rem 0.35rem;
+}
+
+.KibitzSharedStreamPanel-paneFeed .kibitz-chat-entry.game-chat .chat-line {
+    margin-top: 0;
+}
+
+.KibitzSharedStreamPanel-paneFeed .variation-post {
+    align-items: center;
+    background: var(--shade4);
+    border: 0;
+    box-sizing: border-box;
+    color: var(--variation);
+    cursor: pointer;
+    display: flex;
+    font-size: 0.85rem;
+    font-weight: bold;
+    line-height: 1.25;
+    margin-top: 0.4rem;
+    min-height: 2.6rem;
+    padding: 0.75rem 0.75rem;
+    text-align: left;
+    transition: background-color 120ms ease;
+    width: 100%;
+}
+
+.KibitzSharedStreamPanel-paneFeed .variation-post:hover {
+    background: color-mix(in srgb, var(--shade1) 100%, transparent);
+}
+
+.KibitzSharedStreamPanel-paneFeed .variation-post-flash {
+    background: color-mix(in srgb, var(--primary) 14%, var(--shade4));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 35%, transparent);
 }
 
 .KibitzSharedStreamPanel-composer {
