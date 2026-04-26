@@ -74,12 +74,23 @@
         min-width: 0;
         padding: 0.36rem 0.2rem 0.36rem 0.1rem;
         text-align: left;
+        transition:
+            background-color 120ms ease,
+            box-shadow 120ms ease;
 
         &:hover,
         &:focus-visible {
             background: color-mix(in srgb, var(--shade2) 70%, transparent);
             outline: none;
         }
+    }
+
+    .variation-item.selected .variation-recall {
+        background: color-mix(in srgb, var(--variation-selected-color) 8%, transparent);
+        box-shadow:
+            0 0 0 1px color-mix(in srgb, var(--variation-selected-color) 18%, transparent),
+            0 0 0.9rem color-mix(in srgb, var(--variation-selected-color) 12%, transparent);
+        border-radius: 0.22rem;
     }
 
     .variation-color-chip {
@@ -115,6 +126,10 @@
         justify-content: center;
         margin: 0.15em;
         padding: 0.36rem 0.2rem 0.36rem 0.1rem;
+        transition:
+            background-color 120ms ease,
+            box-shadow 120ms ease,
+            color 120ms ease;
         width: auto;
 
         &:hover,
@@ -122,6 +137,14 @@
             color: var(--fg);
             outline: none;
         }
+    }
+
+    .variation-item.selected .variation-toggle {
+        background: color-mix(in srgb, var(--variation-selected-color) 4%, transparent);
+        box-shadow:
+            0 0 0 1px color-mix(in srgb, var(--variation-selected-color) 16%, transparent),
+            0 0 0.7rem color-mix(in srgb, var(--variation-selected-color) 10%, transparent);
+        border-radius: 0.22rem;
     }
 
     @keyframes variation-limit-flash {
@@ -225,5 +248,33 @@
 
     .variation-empty {
         padding: 0.4rem 0 0;
+    }
+}
+
+[data-theme="light"] .KibitzVariationList {
+    .variation-item:not(.visible) .variation-recall,
+    .variation-item:not(.visible) .variation-toggle {
+        background: color-mix(in srgb, var(--shade2) 56%, transparent);
+    }
+
+    .variation-item.visible .variation-recall,
+    .variation-item.visible .variation-toggle {
+        background: var(--card-background-color);
+    }
+
+    .variation-item.selected .variation-recall {
+        background: color-mix(
+            in srgb,
+            var(--variation-selected-color) 8%,
+            var(--card-background-color)
+        );
+    }
+
+    .variation-item.selected .variation-toggle {
+        background: color-mix(
+            in srgb,
+            var(--variation-selected-color) 4%,
+            var(--card-background-color)
+        );
     }
 }

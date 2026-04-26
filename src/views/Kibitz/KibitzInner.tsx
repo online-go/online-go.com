@@ -556,21 +556,12 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             return next;
         });
     }, [visibleVariationIds]);
-    const proposalBackedPreview = Boolean(
-        secondaryPane.preview_game_id &&
-        roomProposals.some(
-            (proposal) => proposal.proposed_game.game_id === secondaryPane.preview_game_id,
-        ),
-    );
-    const previewGame =
-        rooms.find((candidate) => candidate.current_game?.game_id === secondaryPane.preview_game_id)
-            ?.current_game ??
-        roomProposals.find(
-            (proposal) => proposal.proposed_game.game_id === secondaryPane.preview_game_id,
-        )?.proposed_game;
-    const secondaryBoardGame = previewGame ?? secondaryPane.variation_source_game;
     const hasCompareTarget = Boolean(
-        secondaryPane.variation_id || (secondaryPane.preview_game_id && !proposalBackedPreview),
+        secondaryPane.variation_id ||
+        (secondaryPane.preview_game_id &&
+            !roomProposals.some(
+                (proposal) => proposal.proposed_game.game_id === secondaryPane.preview_game_id,
+            )),
     );
 
     const onPostVariation = React.useCallback(
@@ -1077,36 +1068,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                         selectedVariation={
                                                             selectedVariation ?? null
                                                         }
-                                                        draftBaseVariation={
-                                                            variations.find(
-                                                                (variation) =>
-                                                                    variation.id ===
-                                                                    secondaryPane.variation_draft_base_id,
-                                                            ) ?? null
-                                                        }
-                                                        secondaryBoardGameTitle={
-                                                            secondaryBoardGame?.title ??
-                                                            pgettext(
-                                                                "Fallback title for the active mobile kibitz compare board",
-                                                                "Board preview",
-                                                            )
-                                                        }
-                                                        secondaryBoardGameAuthor={
-                                                            secondaryBoardGame
-                                                                ? interpolate(
-                                                                      pgettext(
-                                                                          "Fallback author label for the active mobile kibitz compare board",
-                                                                          "{{black}} vs {{white}}",
-                                                                      ),
-                                                                      {
-                                                                          black: secondaryBoardGame
-                                                                              .black.username,
-                                                                          white: secondaryBoardGame
-                                                                              .white.username,
-                                                                      },
-                                                                  )
-                                                                : null
-                                                        }
                                                         isDraftingVariation={
                                                             secondaryPane.variation_source_game_id !=
                                                             null
@@ -1115,9 +1076,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                         onToggleVariation={onToggleVariation}
                                                         onPostVariation={onPostVariation}
                                                         onDiscardDraft={onClearPreview}
-                                                        onOpenMobileCompare={() =>
-                                                            onSelectMobileCompanionPanel?.("chat")
-                                                        }
                                                     />
                                                 </div>
                                             ) : null}

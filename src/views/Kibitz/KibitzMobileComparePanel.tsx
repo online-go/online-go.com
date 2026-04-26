@@ -27,12 +27,10 @@ import type {
 } from "@/models/kibitz";
 import { GobanAnalyzeButtonBar } from "@/components/GobanAnalyzeButtonBar/GobanAnalyzeButtonBar";
 import { KibitzProposalQueue } from "./KibitzProposalQueue";
-import { KibitzUserAvatar } from "./KibitzUserAvatar";
 import { KibitzVariationComposer } from "./KibitzVariationComposer";
 import { KibitzVariationList } from "./KibitzVariationList";
 import { KibitzNodeText } from "./KibitzNodeText";
 import { KibitzMoveTreeStrip } from "./KibitzMoveTreeStrip";
-import { getKibitzVariationColor } from "./kibitzVariationTree";
 import "./KibitzMobileComparePanel.css";
 
 interface KibitzMobileComparePanelProps {
@@ -45,22 +43,11 @@ interface KibitzMobileComparePanelProps {
     blockedVariationFlashId: string | null;
     secondaryPane: KibitzSecondaryPaneState;
     selectedVariation: KibitzVariationSummary | null;
-    draftBaseVariation: KibitzVariationSummary | null;
-    secondaryBoardGameTitle: string;
-    secondaryBoardGameAuthor: string | null;
     isDraftingVariation: boolean;
     onOpenVariation: (variationId: string) => void;
     onToggleVariation: (variationId: string) => void;
     onPostVariation: (controller: GobanController, sourceGameId: number | undefined) => void;
     onDiscardDraft?: () => void;
-    onOpenMobileCompare?: () => void;
-}
-
-function variationTitle(variation: KibitzVariationSummary | null): string {
-    return (
-        variation?.title ??
-        pgettext("Fallback title for an untitled variation in kibitz compare", "Untitled variation")
-    );
 }
 
 function splitNodeText(text: string): { summary: string; body: string | null } {
@@ -85,17 +72,12 @@ export function KibitzMobileComparePanel({
     blockedVariationFlashId,
     secondaryPane,
     selectedVariation,
-    draftBaseVariation,
-    secondaryBoardGameTitle,
-    secondaryBoardGameAuthor,
     isDraftingVariation,
     onOpenVariation,
     onToggleVariation,
     onPostVariation,
     onDiscardDraft,
-    onOpenMobileCompare,
 }: KibitzMobileComparePanelProps): React.ReactElement {
-    const [sharedVariationsOpen, setSharedVariationsOpen] = React.useState(true);
     const [nodeText, setNodeText] = React.useState(controller?.goban.engine.cur_move?.text ?? "");
 
     const panelModeKey = React.useMemo(() => {
@@ -120,10 +102,6 @@ export function KibitzMobileComparePanel({
     ]);
 
     React.useEffect(() => {
-        setSharedVariationsOpen(!isDraftingVariation && variations.length > 0);
-    }, [isDraftingVariation, panelModeKey, variations.length]);
-
-    React.useEffect(() => {
         if (!controller) {
             setNodeText("");
             return;
@@ -143,27 +121,6 @@ export function KibitzMobileComparePanel({
         };
     }, [controller]);
 
-    const selectedColor = selectedVariation
-        ? getKibitzVariationColor(variationColorIndexes[selectedVariation.id] ?? 0)
-        : draftBaseVariation
-          ? getKibitzVariationColor(variationColorIndexes[draftBaseVariation.id] ?? 0)
-          : "var(--shade3)";
-    const headerTitle = isDraftingVariation
-        ? pgettext("Title for a new Kibitz variation draft", "New variation")
-        : selectedVariation
-          ? variationTitle(selectedVariation)
-          : secondaryBoardGameTitle;
-    const headerAuthor = isDraftingVariation
-        ? (draftBaseVariation?.creator.username ??
-          pgettext("Label for a draft Kibitz variation", "Draft"))
-        : selectedVariation
-          ? selectedVariation.creator.username
-          : secondaryBoardGameAuthor;
-    const stateLabel = isDraftingVariation
-        ? pgettext("State label for the mobile kibitz compare draft header", "New variation")
-        : selectedVariation
-          ? pgettext("State label for the mobile kibitz compare view header", "Viewing variation")
-          : pgettext("State label for the mobile kibitz compare preview header", "Preview");
     const handleDiscardDraft = React.useCallback(() => {
         void alert
             .fire({
@@ -200,41 +157,6 @@ export function KibitzMobileComparePanel({
     return (
         <div className="KibitzMobileComparePanel">
             <KibitzMoveTreeStrip controller={controller} layoutKey={panelModeKey} />
-            <div className="KibitzMobileComparePanel-header">
-                <div className="KibitzMobileComparePanel-headerCopy">
-                    <div className="KibitzMobileComparePanel-stateRow">
-                        <span
-                            className="KibitzMobileComparePanel-colorChip"
-                            style={{ backgroundColor: selectedColor }}
-                            aria-hidden="true"
-                        />
-                        <span className="KibitzMobileComparePanel-stateLabel">{stateLabel}</span>
-                    </div>
-                    <div className="KibitzMobileComparePanel-title">{headerTitle}</div>
-                    <div className="KibitzMobileComparePanel-authorRow">
-                        <KibitzUserAvatar
-                            user={selectedVariation?.creator ?? draftBaseVariation?.creator ?? null}
-                            size={16}
-                            className="KibitzMobileComparePanel-avatar"
-                            iconClassName="KibitzMobileComparePanel-avatarImage"
-                        />
-                        <span className="KibitzMobileComparePanel-author">{headerAuthor}</span>
-                    </div>
-                </div>
-                {onOpenMobileCompare ? (
-                    <button
-                        type="button"
-                        className="KibitzMobileComparePanel-closeButton"
-                        onClick={onOpenMobileCompare}
-                        aria-label={pgettext(
-                            "Aria label for leaving the Kibitz mobile compare panel",
-                            "Close compare panel",
-                        )}
-                    >
-                        <i className="fa fa-times" aria-hidden="true" />
-                    </button>
-                ) : null}
-            </div>
             {isDraftingVariation ? (
                 <div className="KibitzMobileComparePanel-tools">
                     {controller ? (
@@ -325,19 +247,14 @@ export function KibitzMobileComparePanel({
                 </div>
             ) : null}
             <div className="KibitzMobileComparePanel-sharedSection">
-                <button
-                    type="button"
-                    className="KibitzMobileComparePanel-sharedToggle"
-                    onClick={() => setSharedVariationsOpen((value) => !value)}
-                    aria-expanded={sharedVariationsOpen}
-                >
+                <div className="KibitzMobileComparePanel-sharedHeader">
                     <span>
                         {pgettext(
                             "Heading for the shared variations section in the mobile kibitz compare panel",
                             "Shared variations",
                         )}
                     </span>
-                    <span className="KibitzMobileComparePanel-sharedToggleMeta">
+                    <span className="KibitzMobileComparePanel-sharedHeaderMeta">
                         {interpolate(
                             pgettext(
                                 "Count label for shared variations in the mobile kibitz compare panel",
@@ -346,34 +263,32 @@ export function KibitzMobileComparePanel({
                             { count: variations.length },
                         )}
                     </span>
-                </button>
-                {sharedVariationsOpen ? (
-                    <div className="KibitzMobileComparePanel-sharedBody">
-                        {variations.length > 0 ? (
-                            <KibitzVariationList
-                                variations={variations}
-                                currentGameId={room.current_game?.game_id}
-                                visibleVariationIds={visibleVariationIds}
-                                selectedVariationId={secondaryPane.variation_id}
-                                variationColorIndexes={variationColorIndexes}
-                                blockedVariationFlashId={blockedVariationFlashId}
-                                onRecallVariation={onOpenVariation}
-                                onToggleVariation={onToggleVariation}
-                                title=""
-                            />
-                        ) : (
-                            <div className="KibitzMobileComparePanel-empty">
-                                {pgettext(
-                                    "Empty state for the mobile kibitz shared variations section",
-                                    "No active variations yet.",
-                                )}
-                            </div>
-                        )}
-                        {queuedRoomProposals.length > 0 ? (
-                            <KibitzProposalQueue proposals={queuedRoomProposals} />
-                        ) : null}
-                    </div>
-                ) : null}
+                </div>
+                <div className="KibitzMobileComparePanel-sharedBody">
+                    {variations.length > 0 ? (
+                        <KibitzVariationList
+                            variations={variations}
+                            currentGameId={room.current_game?.game_id}
+                            visibleVariationIds={visibleVariationIds}
+                            selectedVariationId={secondaryPane.variation_id}
+                            variationColorIndexes={variationColorIndexes}
+                            blockedVariationFlashId={blockedVariationFlashId}
+                            onRecallVariation={onOpenVariation}
+                            onToggleVariation={onToggleVariation}
+                            title=""
+                        />
+                    ) : (
+                        <div className="KibitzMobileComparePanel-empty">
+                            {pgettext(
+                                "Empty state for the mobile kibitz shared variations section",
+                                "No active variations yet.",
+                            )}
+                        </div>
+                    )}
+                    {queuedRoomProposals.length > 0 ? (
+                        <KibitzProposalQueue proposals={queuedRoomProposals} />
+                    ) : null}
+                </div>
             </div>
         </div>
     );

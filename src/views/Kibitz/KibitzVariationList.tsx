@@ -38,12 +38,15 @@ export function KibitzVariationList({
     variations,
     currentGameId,
     visibleVariationIds = [],
+    selectedVariationId = null,
     variationColorIndexes = {},
     blockedVariationFlashId = null,
     onRecallVariation,
     onToggleVariation,
     title,
 }: KibitzVariationListProps): React.ReactElement {
+    const selectedVariationElementRef = React.useRef<HTMLDivElement | null>(null);
+    const previousSelectedVariationIdRef = React.useRef<string | null>(null);
     const visibleVariationIdSet = React.useMemo(
         () => new Set(visibleVariationIds),
         [visibleVariationIds],
@@ -77,6 +80,23 @@ export function KibitzVariationList({
         }));
     }, [currentGameId, variations]);
 
+    React.useEffect(() => {
+        if (!selectedVariationId) {
+            previousSelectedVariationIdRef.current = null;
+            return;
+        }
+
+        if (previousSelectedVariationIdRef.current === selectedVariationId) {
+            return;
+        }
+
+        previousSelectedVariationIdRef.current = selectedVariationId;
+        selectedVariationElementRef.current?.scrollIntoView({
+            block: "center",
+            behavior: "smooth",
+        });
+    }, [selectedVariationId]);
+
     return (
         <div className="KibitzVariationList">
             {title === "" ? null : (
@@ -100,6 +120,7 @@ export function KibitzVariationList({
                                 ) : null}
                                 {group.variations.map((variation) => {
                                     const isVisible = visibleVariationIdSet.has(variation.id);
+                                    const isSelected = selectedVariationId === variation.id;
                                     const isBlockedFlash = blockedVariationFlashId === variation.id;
                                     const toggleLabel = isVisible
                                         ? pgettext(
@@ -114,10 +135,26 @@ export function KibitzVariationList({
                                     return (
                                         <div
                                             key={variation.id}
+                                            ref={
+                                                isSelected ? selectedVariationElementRef : undefined
+                                            }
                                             className={
                                                 "variation-item" +
+                                                (isSelected ? " selected" : "") +
                                                 (isVisible ? " visible" : "") +
                                                 (isBlockedFlash ? " limit-flash" : "")
+                                            }
+                                            style={
+                                                isSelected
+                                                    ? ({
+                                                          "--variation-selected-color":
+                                                              getKibitzVariationColor(
+                                                                  variationColorIndexes[
+                                                                      variation.id
+                                                                  ] ?? 0,
+                                                              ),
+                                                      } as React.CSSProperties)
+                                                    : undefined
                                             }
                                         >
                                             <button
@@ -131,7 +168,7 @@ export function KibitzVariationList({
                                                 <span
                                                     className="variation-color-chip"
                                                     style={
-                                                        isVisible
+                                                        isVisible || isSelected
                                                             ? {
                                                                   backgroundColor:
                                                                       getKibitzVariationColor(
