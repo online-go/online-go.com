@@ -453,7 +453,7 @@ function RengoListItem(props: RengoComponentProps): React.ReactElement {
             >
                 {challenge.width}x{challenge.height}
             </td>
-            <td>{shortShortTimeControl(challenge.time_control_parameters)}</td>
+            <td className="cell">{shortShortTimeControl(challenge.time_control_parameters)}</td>
             <td className="cell">{rengo_casual_mode_text}</td>
             <td className="cell">{rengo_auto_start_text}</td>
             <td className="cell">{challenge.rengo_participants.length}</td>
