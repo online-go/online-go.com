@@ -221,6 +221,33 @@ export function KibitzRoomStage({
         (variation) => variation.id === secondaryPane.variation_draft_base_id,
     );
     const isDraftingVariation = secondaryPane.variation_source_game_id != null;
+    const selectedVariationGameId = selectedVariation?.game_id ?? null;
+    const visibleVariations = React.useMemo(() => {
+        if (selectedVariationGameId == null) {
+            return [];
+        }
+
+        return visibleVariationIds
+            .map((variationId) => variations.find((variation) => variation.id === variationId))
+            .filter(
+                (variation): variation is KibitzVariationSummary =>
+                    variation != null && variation.game_id === selectedVariationGameId,
+            );
+    }, [selectedVariationGameId, variations, visibleVariationIds]);
+    const selectedVariationApplyKey = React.useMemo(() => {
+        if (!selectedVariation) {
+            return "none";
+        }
+
+        return `${selectedVariation.id}:${variationColorIndexes[selectedVariation.id] ?? 0}`;
+    }, [selectedVariation, variationColorIndexes]);
+    const visibleVariationApplyKey = React.useMemo(
+        () =>
+            visibleVariations
+                .map((variation) => `${variation.id}:${variationColorIndexes[variation.id] ?? 0}`)
+                .join("\n"),
+        [variationColorIndexes, visibleVariations],
+    );
     const previewGame =
         rooms.find((candidate) => candidate.current_game?.game_id === secondaryGameId)
             ?.current_game ??
@@ -290,10 +317,6 @@ export function KibitzRoomStage({
         secondaryPane.variation_draft_base_id,
         secondaryPane.variation_source_game_id,
     ]);
-    const visibleVariationKey = React.useMemo(
-        () => visibleVariationIds.join("\n"),
-        [visibleVariationIds],
-    );
     const handleSecondaryMoveTreeContainerRef = React.useCallback((instance: Resizable | null) => {
         setSecondaryMoveTreeContainer(instance);
     }, []);
@@ -341,12 +364,6 @@ export function KibitzRoomStage({
         }
 
         const goban = secondaryBoardController.goban;
-        const visibleVariations = visibleVariationIds
-            .map((variationId) => variations.find((variation) => variation.id === variationId))
-            .filter(
-                (variation): variation is KibitzVariationSummary =>
-                    variation != null && variation.game_id === selectedVariation.game_id,
-            );
 
         let applyingVariation = false;
         const apply = (forceFocusSelected: boolean = false): boolean => {
@@ -359,7 +376,8 @@ export function KibitzRoomStage({
             const shouldFocusSelected =
                 lastVariationFocusRequestRef.current.variationId !== selectedVariation.id ||
                 lastVariationFocusRequestRef.current.requestId !== variationFocusRequestId ||
-                lastVariationFocusRequestRef.current.visibleVariationKey !== visibleVariationKey;
+                lastVariationFocusRequestRef.current.visibleVariationKey !==
+                    visibleVariationApplyKey;
 
             try {
                 goban.load(goban.engine.config);
@@ -403,7 +421,7 @@ export function KibitzRoomStage({
                     lastVariationFocusRequestRef.current = {
                         variationId: selectedVariation.id,
                         requestId: variationFocusRequestId,
-                        visibleVariationKey,
+                        visibleVariationKey: visibleVariationApplyKey,
                         focusedPath: selectedEndpoint.getMoveStringToThisPoint(),
                     };
                 } else if (previousFocusPath) {
@@ -442,12 +460,9 @@ export function KibitzRoomStage({
         secondaryBoardController,
         secondaryMoveTreeContainer,
         secondaryPane.preview_game_id,
-        selectedVariation,
-        variationColorIndexes,
+        selectedVariationApplyKey,
+        visibleVariationApplyKey,
         variationFocusRequestId,
-        variations,
-        visibleVariationKey,
-        visibleVariationIds,
     ]);
 
     React.useEffect(() => {
