@@ -224,7 +224,7 @@ export function RengoList(props: RengoComponentProps): React.ReactElement {
 
     if (!anyChallengesToShow(filter, list)) {
         return (
-            <table id="rengo-table">
+            <table className="rengo-table">
                 <tbody>
                     <tr key="none-available">
                         <td colSpan={11}>
@@ -250,25 +250,35 @@ export function RengoList(props: RengoComponentProps): React.ReactElement {
     const corr_list = list.filter((c) => !isLiveGame(c.time_control_parameters, c.width, c.height));
 
     return (
-        <table id="rengo-table">
-            <tbody>
-                <tr className="challenge-row">
-                    <td className="cell break" colSpan={11}>
-                        {_("Rengo Live")}
-                    </td>
-                </tr>
-                {anyChallengesToShow(filter, live_list) && <RengoListHeaders />}
-                <RengoChallengeManagementList {...props} list={live_list} key="live" />
+        <>
+            <table className="rengo-table">
+                <thead>
+                    <tr className="challenge-row">
+                        <td className="cell break" colSpan={11}>
+                            {_("Rengo Live")}
+                        </td>
+                    </tr>
+                    {anyChallengesToShow(filter, live_list) && <RengoListHeaders />}
+                </thead>
+                <tbody>
+                    <RengoChallengeManagementList {...props} list={live_list} />
+                </tbody>
+            </table>
 
-                <tr className="challenge-row">
-                    <td className="cell break" colSpan={11}>
-                        {_("Rengo Correspondence")}
-                    </td>
-                </tr>
-                {anyChallengesToShow(filter, corr_list) && <RengoListHeaders />}
-                <RengoChallengeManagementList {...props} list={corr_list} key="corr" />
-            </tbody>
-        </table>
+            <table className="rengo-table">
+                <thead>
+                    <tr className="challenge-row">
+                        <td className="cell break" colSpan={11}>
+                            {_("Rengo Correspondence")}
+                        </td>
+                    </tr>
+                    {anyChallengesToShow(filter, corr_list) && <RengoListHeaders />}
+                </thead>
+                <tbody>
+                    <RengoChallengeManagementList {...props} list={corr_list} />
+                </tbody>
+            </table>
+        </>
     );
 }
 
