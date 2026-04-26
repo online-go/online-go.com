@@ -20,6 +20,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { GobanController } from "@/lib/GobanController";
 import * as data from "@/lib/data";
 import { alert } from "@/lib/swal_config";
+import { toast } from "@/lib/toast";
 import { interpolate, pgettext } from "@/lib/translate";
 import type {
     KibitzDebugState,
@@ -65,6 +66,8 @@ const DEFAULT_MOBILE_SPLIT_RATIO = 0.56;
 const MIN_MOBILE_SPLIT_RATIO = 0.36;
 const MAX_MOBILE_SPLIT_RATIO = 0.78;
 const MAX_VISIBLE_VARIATIONS = KIBITZ_VARIATION_COLORS.length;
+const VARIATION_LIMIT_TOAST_MS = 1800;
+const VARIATION_LIMIT_FLASH_MS = 900;
 
 function clampMobileSplitRatio(value: number): number {
     return Math.min(MAX_MOBILE_SPLIT_RATIO, Math.max(MIN_MOBILE_SPLIT_RATIO, value));
@@ -132,8 +135,12 @@ export function Kibitz(): React.ReactElement {
         Record<string, number>
     >({});
     const [variationFocusRequestId, setVariationFocusRequestId] = React.useState(0);
+    const [blockedVariationFlashId, setBlockedVariationFlashId] = React.useState<string | null>(
+        null,
+    );
     const [pendingPostedVariation, setPendingPostedVariation] =
         React.useState<PendingPostedVariation | null>(null);
+    const blockedVariationFlashTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
     const mobileShellRef = React.useRef<HTMLDivElement | null>(null);
     const mobileDividerRef = React.useRef<HTMLDivElement | null>(null);
     const previousMobileViewerCountRef = React.useRef<number | null>(null);
@@ -340,6 +347,23 @@ export function Kibitz(): React.ReactElement {
                 !visibleVariationIds.includes(variationId) &&
                 visibleVariationIds.length >= MAX_VISIBLE_VARIATIONS
             ) {
+                if (blockedVariationFlashTimerRef.current) {
+                    clearTimeout(blockedVariationFlashTimerRef.current);
+                }
+                setBlockedVariationFlashId(variationId);
+                blockedVariationFlashTimerRef.current = setTimeout(() => {
+                    setBlockedVariationFlashId(null);
+                    blockedVariationFlashTimerRef.current = null;
+                }, VARIATION_LIMIT_FLASH_MS);
+                toast(
+                    <div>
+                        {pgettext(
+                            "Warning shown when too many Kibitz variations are already visible",
+                            "Hide one variation before showing another.",
+                        )}
+                    </div>,
+                    VARIATION_LIMIT_TOAST_MS,
+                );
                 return;
             }
 
@@ -364,6 +388,28 @@ export function Kibitz(): React.ReactElement {
     );
     const onToggleVariation = React.useCallback(
         (variationId: string) => {
+            const isVisible = visibleVariationIds.includes(variationId);
+            if (!isVisible && visibleVariationIds.length >= MAX_VISIBLE_VARIATIONS) {
+                if (blockedVariationFlashTimerRef.current) {
+                    clearTimeout(blockedVariationFlashTimerRef.current);
+                }
+                setBlockedVariationFlashId(variationId);
+                blockedVariationFlashTimerRef.current = setTimeout(() => {
+                    setBlockedVariationFlashId(null);
+                    blockedVariationFlashTimerRef.current = null;
+                }, VARIATION_LIMIT_FLASH_MS);
+                toast(
+                    <div>
+                        {pgettext(
+                            "Warning shown when too many Kibitz variations are already visible",
+                            "Hide one variation before showing another.",
+                        )}
+                    </div>,
+                    VARIATION_LIMIT_TOAST_MS,
+                );
+                return;
+            }
+
             setVisibleVariationIds((previous) => {
                 if (previous.includes(variationId)) {
                     const next = previous.filter((id) => id !== variationId);
@@ -396,10 +442,6 @@ export function Kibitz(): React.ReactElement {
                     return next;
                 }
 
-                if (previous.length >= MAX_VISIBLE_VARIATIONS) {
-                    return previous;
-                }
-
                 setVariationFocusRequestId((previousFocusRequestId) => previousFocusRequestId + 1);
                 controller.openVariation(variationId);
                 if (isMobileLayout) {
@@ -410,6 +452,15 @@ export function Kibitz(): React.ReactElement {
         },
         [controller, isMobileLayout, secondaryPane.variation_id, variations],
     );
+
+    React.useEffect(() => {
+        return () => {
+            if (blockedVariationFlashTimerRef.current) {
+                clearTimeout(blockedVariationFlashTimerRef.current);
+                blockedVariationFlashTimerRef.current = null;
+            }
+        };
+    }, []);
     const onCreateVariation = React.useCallback(() => {
         controller.startVariationFromCurrentBoard();
         if (isMobileLayout) {
@@ -623,6 +674,7 @@ export function Kibitz(): React.ReactElement {
                     visibleVariationIds={visibleVariationIds}
                     selectedVariationId={secondaryPane.variation_id}
                     variationColorIndexes={variationColorIndexes}
+                    blockedVariationFlashId={blockedVariationFlashId}
                     onRecallVariation={onOpenVariation}
                     onToggleVariation={onToggleVariation}
                 />

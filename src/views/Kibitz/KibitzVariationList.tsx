@@ -27,6 +27,7 @@ interface KibitzVariationListProps {
     visibleVariationIds?: string[];
     selectedVariationId?: string | null;
     variationColorIndexes?: Record<string, number>;
+    blockedVariationFlashId?: string | null;
     onRecallVariation: (variationId: string) => void;
     onToggleVariation?: (variationId: string) => void;
     title?: string;
@@ -53,6 +54,7 @@ export function KibitzVariationList({
     currentGameId,
     visibleVariationIds = [],
     variationColorIndexes = {},
+    blockedVariationFlashId = null,
     onRecallVariation,
     onToggleVariation,
     title,
@@ -111,6 +113,7 @@ export function KibitzVariationList({
                                 ) : null}
                                 {group.variations.map((variation) => {
                                     const isVisible = visibleVariationIdSet.has(variation.id);
+                                    const isBlockedFlash = blockedVariationFlashId === variation.id;
                                     const toggleLabel = isVisible
                                         ? pgettext(
                                               "Tooltip for hiding a Kibitz variation in the tree",
@@ -125,12 +128,17 @@ export function KibitzVariationList({
                                         <div
                                             key={variation.id}
                                             className={
-                                                "variation-item" + (isVisible ? " visible" : "")
+                                                "variation-item" +
+                                                (isVisible ? " visible" : "") +
+                                                (isBlockedFlash ? " limit-flash" : "")
                                             }
                                         >
                                             <button
                                                 type="button"
-                                                className="variation-recall"
+                                                className={
+                                                    "variation-recall" +
+                                                    (isBlockedFlash ? " limit-flash" : "")
+                                                }
                                                 onClick={() => onRecallVariation(variation.id)}
                                             >
                                                 <span
@@ -176,7 +184,10 @@ export function KibitzVariationList({
                                             {onToggleVariation ? (
                                                 <button
                                                     type="button"
-                                                    className="variation-toggle"
+                                                    className={
+                                                        "variation-toggle" +
+                                                        (isBlockedFlash ? " limit-flash" : "")
+                                                    }
                                                     aria-pressed={isVisible}
                                                     aria-label={toggleLabel}
                                                     title={toggleLabel}

@@ -57,6 +57,11 @@
         background: color-mix(in srgb, var(--shade2) 55%, transparent);
     }
 
+    .variation-item.limit-flash .variation-recall,
+    .variation-item.limit-flash .variation-toggle {
+        animation: variation-limit-flash 900ms ease;
+    }
+
     .variation-recall {
         align-items: flex-start;
         background: transparent;
@@ -116,6 +121,23 @@
         &:focus-visible {
             color: var(--fg);
             outline: none;
+        }
+    }
+
+    @keyframes variation-limit-flash {
+        0% {
+            background: color-mix(in srgb, var(--shade4) 72%, #a34b4b 28%);
+            box-shadow: inset 0 0 0 1px color-mix(in srgb, #a34b4b 40%, transparent);
+        }
+
+        55% {
+            background: color-mix(in srgb, var(--shade4) 62%, #a34b4b 38%);
+            box-shadow: inset 0 0 0 1px color-mix(in srgb, #a34b4b 52%, transparent);
+        }
+
+        100% {
+            background: color-mix(in srgb, var(--shade2) 55%, transparent);
+            box-shadow: none;
         }
     }
 
