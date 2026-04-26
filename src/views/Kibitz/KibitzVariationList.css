@@ -70,7 +70,9 @@
         padding: 0.36rem 0.2rem 0.36rem 0.1rem;
         text-align: left;
 
+        &:hover,
         &:focus-visible {
+            background: color-mix(in srgb, var(--shade2) 70%, transparent);
             outline: none;
         }
     }

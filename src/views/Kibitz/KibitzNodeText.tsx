@@ -64,7 +64,9 @@ export function KibitzNodeText({
 
                 const nextText = event.target.value;
 
-                controller.goban.engine.cur_move.text = nextText;
+                if (controller.goban.engine.cur_move) {
+                    controller.goban.engine.cur_move.text = nextText;
+                }
                 setNodeText(nextText);
                 controller.goban.move_tree_redraw(true);
             }}

@@ -103,12 +103,6 @@ export interface PreparedAnalysisSnapshot {
     }>;
 }
 
-function cloneMarkValue(
-    value: MarkInterface[keyof MarkInterface],
-): MarkInterface[keyof MarkInterface] {
-    return value;
-}
-
 function cloneMoveTreeMarks(node: MoveTree): MoveTreeJson["marks"] {
     const marks: MoveTreeJson["marks"] = [];
 
@@ -120,7 +114,7 @@ function cloneMoveTreeMarks(node: MoveTree): MoveTreeJson["marks"] {
             const value = source[key];
 
             if (value !== undefined) {
-                cloned[key] = cloneMarkValue(value);
+                cloned[key] = value;
             }
         }
 
