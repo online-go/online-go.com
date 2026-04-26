@@ -310,16 +310,20 @@
     .variation-item.selected .variation-recall {
         background: color-mix(
             in srgb,
-            var(--variation-selected-color) 8%,
+            var(--variation-selected-color) 20%,
             var(--card-background-color)
         );
+        box-shadow: inset 0 0 3px 1px
+            color-mix(in srgb, var(--variation-selected-color) 26%, transparent);
     }
 
     .variation-item.selected .variation-toggle {
         background: color-mix(
             in srgb,
-            var(--variation-selected-color) 4%,
+            var(--variation-selected-color) 10%,
             var(--card-background-color)
         );
+        box-shadow: inset 0 0 3px 1px
+            color-mix(in srgb, var(--variation-selected-color) 26%, transparent);
     }
 }
