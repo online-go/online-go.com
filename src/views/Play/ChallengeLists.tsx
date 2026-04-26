@@ -325,7 +325,7 @@ function RengoManageListItem(props: RengoComponentProps): React.ReactElement {
 
     return (
         <tr className={"challenge-row rengo-management-row"}>
-            <td className="cell" colSpan={10}>
+            <td className="cell" colSpan={11}>
                 <Card className="rengo-management-list-item">
                     <div className="rengo-management-header">
                         <span>{challenge.name}</span>
