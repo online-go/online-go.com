@@ -57,7 +57,7 @@ export class StarRating extends React.PureComponent<StarRatingProperties, { rati
 
     componentDidUpdate(oldProps: StarRatingProperties) {
         if (this.props.value !== oldProps.value) {
-            this.setState({ rating: Math.max(0, Math.min(5, oldProps.value)) });
+            this.setState({ rating: Math.max(0, Math.min(5, this.props.value)) });
         }
     }
 

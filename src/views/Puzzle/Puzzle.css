@@ -15,93 +15,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 .Puzzle {
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    position: absolute;
-    top: var(--below-navbar);
-    bottom: 0;
-    left: 0;
-    right: 0;
-
-    &.portrait {
-        flex-direction: column;
-    }
-
-    .left-col {
-    }
-
-    .center-col {
-        flex-grow: 1;
-        flex-shrink: 1;
-        flex-basis: 50%;
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        overflow: hidden;
-        z-index: 1;
-    }
-
-    &.portrait .center-col {
-        height: 100dvw;
-        min-height: 100dvw; /* firefox needs this */
-        max-height: 100dvw; /* firefox needs this */
-        flex-basis: 99%;
-    }
-
-    .left-col, .right-col {
-        max-width: 400px;
-        overflow-y: auto;
-        overflow-x: hidden;
-        min-height: auto;
-        padding: 0.5rem;
-        z-index: 2;
-
-        .game-state {
-            text-align: center;
-            font-size: 1.3rem;
-            font-weight: 700;
-            padding: 0.5rem;
-        }
-    }
-
-    &.portrait .right-col {
-        overflow-y: visible;
-        overflow-x: visible;
-        align-self: center;
-        min-height: 100dvh;
-        max-width: calc(100dvw - 1rem);
-    }
-
     .btn-container {
         text-align: center;
     }
 
-    .goban-container {
+    .GobanView-tab-panel.always:not(.hidden) {
         flex-grow: 1;
-        /* flex-shrink: 1; */
-        flex-basis: 100%;
         display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-
-        .Goban {
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 1rem;
     }
 
     .horizontal {
         overflow-x: hidden;
 
-        dt, dd {
+        dt,
+        dd {
             width: 45%;
         }
     }
 
-    input, textarea {
+    input,
+    textarea {
         width: 100%;
     }
 
@@ -109,10 +45,57 @@
         padding: 0.5rem;
     }
 
+    .game-state {
+        text-align: center;
+        font-size: 1.3rem;
+        font-weight: 700;
+        padding: 0.5rem;
+    }
+
+    .try-again {
+        margin-top: 0.75rem;
+        display: flex;
+        justify-content: center;
+
+        .try-again-button {
+            background-color: var(--success);
+            color: var(--colored-background-fg);
+            border: none;
+            padding: 0.5rem 1.25rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+
+            &:hover {
+                filter: brightness(1.1);
+            }
+        }
+    }
+
     .puzzle-node-content {
         border: 1px solid transparent;
         border-color: var(--shade4);
         margin-top: 1rem;
+
+        .rate-puzzle {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 1rem 0.5rem 0.5rem;
+
+            .rate-puzzle-label {
+                font-size: 0.9rem;
+                color: var(--shade1);
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+
+            .StarRating {
+                font-size: 1.75rem;
+            }
+        }
 
         .actions {
             padding-top: 1rem;
@@ -124,7 +107,8 @@
             padding-right: 0.5rem;
         }
 
-        .incorrect, .success {
+        .incorrect,
+        .success {
             font-size: var(--font-size-big);
             text-align: center;
             padding: 1rem;

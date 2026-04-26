@@ -15,9 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Re-export from shared location for backward compatibility
-export {
-    GobanControllerContext,
-    useGobanController,
-    useGobanControllerOrNull,
-} from "@/components/GobanView";
+export type ViewMode = "portrait" | "wide" | "square";
+
+export function goban_view_mode(bar_width?: number): ViewMode {
+    if (!bar_width) {
+        bar_width = 300;
+    }
+
+    const h = window.innerHeight || 1;
+    const w = window.innerWidth || 1;
+    const aspect_ratio = w / h;
+
+    if ((aspect_ratio <= 0.8 || w < bar_width * 2) && w < 1280) {
+        return "portrait";
+    }
+
+    return "wide";
+}
+
+export function goban_view_squashed(): boolean {
+    /* This value needs to match the "dock-inline-height" found in Dock.css */
+    return window.innerHeight <= 500;
+}
