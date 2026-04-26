@@ -67,6 +67,11 @@
         .btn {
             padding-bottom: 0; /* override default that makes these look bottom heavy */
         }
+
+        .btn.success {
+            min-width: 6.0em;
+        }
+
     }
 
     .rengo-management-list-item {

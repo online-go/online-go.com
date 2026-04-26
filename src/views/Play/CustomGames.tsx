@@ -664,19 +664,14 @@ export function CustomGames(): React.ReactElement {
                             </div>
                             {filter.showRengo && (
                                 <div id="challenge-list">
-                                    <table id="rengo-table">
-                                        <thead></thead>
-                                        <tbody>
-                                            <RengoList
-                                                filter={filter}
-                                                list={rengo_list}
-                                                show_in_rengo_management_pane={
-                                                    show_in_rengo_management_pane
-                                                }
-                                                rengo_manage_pane_lock={rengo_manage_pane_lock}
-                                            />
-                                        </tbody>
-                                    </table>
+                                    <RengoList
+                                        filter={filter}
+                                        list={rengo_list}
+                                        show_in_rengo_management_pane={
+                                            show_in_rengo_management_pane
+                                        }
+                                        rengo_manage_pane_lock={rengo_manage_pane_lock}
+                                    />
                                 </div>
                             )}
                         </div>
