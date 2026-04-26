@@ -245,6 +245,15 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         controller.on("debug-changed", setDebug);
         controller.on("permissions-changed", setPermissions);
 
+        setRooms(controller.rooms);
+        setActiveRoom(controller.active_room);
+        setStream(controller.stream);
+        setProposals(controller.proposals);
+        setVariations(controller.variations);
+        setSecondaryPane(controller.secondary_pane);
+        setDebug(controller.debug);
+        setPermissions(controller.permissions);
+
         return () => {
             controller.off("rooms-changed", setRooms);
             controller.off("room-changed", setActiveRoom);
