@@ -25,6 +25,7 @@ import type {
     KibitzProposal,
     KibitzRoomSummary,
     KibitzSecondaryPaneState,
+    KibitzRoomUser,
     KibitzVariationSummary,
 } from "@/models/kibitz";
 import { KibitzBoard } from "./KibitzBoard";
@@ -33,6 +34,7 @@ import { KibitzDividerHandle } from "./KibitzDividerHandle";
 import { GobanAnalyzeButtonBar } from "@/components/GobanAnalyzeButtonBar/GobanAnalyzeButtonBar";
 import { KibitzVariationComposer } from "./KibitzVariationComposer";
 import { KibitzNodeText } from "./KibitzNodeText";
+import { KibitzUserAvatar } from "./KibitzUserAvatar";
 import { applyKibitzVariationToController } from "./kibitzVariationTree";
 import "./KibitzRoomStage.css";
 
@@ -142,47 +144,18 @@ function boardDimensionsOf(game: { board_size?: `${number}x${number}` } | null |
     return {};
 }
 
-function getUserInitials(username: string | undefined): string {
-    const trimmedUsername = (username ?? "").trim();
-
-    if (!trimmedUsername) {
-        return "?";
-    }
-
-    const parts = trimmedUsername.split(/\s+/).filter(Boolean);
-
-    if (parts.length === 1) {
-        return parts[0].slice(0, 2).toUpperCase();
-    }
-
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-}
-
-function getUserIcon(user: unknown): string | undefined {
-    if (!user || typeof user !== "object") {
-        return undefined;
-    }
-
-    const icon = "icon" in user ? user.icon : undefined;
-
-    return typeof icon === "string" && icon.length > 0 ? icon : undefined;
-}
-
 function renderInlineAvatar(
-    user: unknown,
-    username: string | undefined,
+    user: KibitzRoomUser | null | undefined,
     className: string,
+    iconClassName: string,
 ): React.ReactElement {
-    const icon = getUserIcon(user);
-
     return (
-        <span className={className} title={username} aria-hidden="true">
-            {icon ? (
-                <img className="stage-avatar-image" src={icon} alt="" aria-hidden="true" />
-            ) : (
-                getUserInitials(username)
-            )}
-        </span>
+        <KibitzUserAvatar
+            user={user}
+            size={16}
+            className={className}
+            iconClassName={iconClassName}
+        />
     );
 }
 
@@ -863,8 +836,8 @@ export function KibitzRoomStage({
                                         <div className="player-badge">
                                             {renderInlineAvatar(
                                                 mainGame?.black,
-                                                displayedBlack,
                                                 "stage-avatar",
+                                                "stage-avatar-image",
                                             )}
                                             <span className="player-name">{displayedBlack}</span>
                                         </div>
@@ -877,8 +850,8 @@ export function KibitzRoomStage({
                                         <div className="player-badge">
                                             {renderInlineAvatar(
                                                 mainGame?.white,
-                                                displayedWhite,
                                                 "stage-avatar",
+                                                "stage-avatar-image",
                                             )}
                                             <span className="player-name">{displayedWhite}</span>
                                         </div>
@@ -998,8 +971,8 @@ export function KibitzRoomStage({
                                                     <div className="player-badge">
                                                         {renderInlineAvatar(
                                                             secondaryBoardGame.black,
-                                                            secondaryBoardGame.black.username,
                                                             "stage-avatar",
+                                                            "stage-avatar-image",
                                                         )}
                                                         <span className="player-name">
                                                             {secondaryBoardGame.black.username}
@@ -1014,8 +987,8 @@ export function KibitzRoomStage({
                                                     <div className="player-badge">
                                                         {renderInlineAvatar(
                                                             secondaryBoardGame.white,
-                                                            secondaryBoardGame.white.username,
                                                             "stage-avatar",
+                                                            "stage-avatar-image",
                                                         )}
                                                         <span className="player-name">
                                                             {secondaryBoardGame.white.username}
@@ -1036,8 +1009,8 @@ export function KibitzRoomStage({
                                                 <div className="player-badge">
                                                     {renderInlineAvatar(
                                                         previewGame?.black,
-                                                        previewGame?.black.username,
                                                         "stage-avatar",
+                                                        "stage-avatar-image",
                                                     )}
                                                     <span className="player-name">
                                                         {previewGame?.black.username ?? ""}
@@ -1052,8 +1025,8 @@ export function KibitzRoomStage({
                                                 <div className="player-badge">
                                                     {renderInlineAvatar(
                                                         previewGame?.white,
-                                                        previewGame?.white.username,
                                                         "stage-avatar",
+                                                        "stage-avatar-image",
                                                     )}
                                                     <span className="player-name">
                                                         {previewGame?.white.username ?? ""}
@@ -1163,8 +1136,8 @@ export function KibitzRoomStage({
                                         <div className="player-badge">
                                             {renderInlineAvatar(
                                                 selectedVariation.creator,
-                                                selectedVariation.creator.username,
                                                 "stage-avatar",
+                                                "stage-avatar-image",
                                             )}
                                             <span className="player-name">
                                                 {selectedVariation.creator.username}

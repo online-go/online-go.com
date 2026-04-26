@@ -17,30 +17,14 @@
 
 import * as React from "react";
 import { Player } from "@/components/Player";
-import { PlayerIcon } from "@/components/PlayerIcon";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { KibitzRoomSummary, KibitzRoomUser } from "@/models/kibitz";
+import { KibitzUserAvatar } from "./KibitzUserAvatar";
 import "./KibitzPresence.css";
 
 interface KibitzPresenceProps {
     room: KibitzRoomSummary;
     users: KibitzRoomUser[];
-}
-
-function PresenceAvatar({
-    user,
-    className,
-}: {
-    user: KibitzRoomUser;
-    className: string;
-}): React.ReactElement {
-    const username = user.username ?? "";
-
-    return (
-        <span className={className} title={username} aria-hidden="true">
-            <PlayerIcon user={user} size={16} className="presence-avatar-icon" />
-        </span>
-    );
 }
 
 export function KibitzPresence({ room, users }: KibitzPresenceProps): React.ReactElement {
@@ -117,7 +101,12 @@ export function KibitzPresence({ room, users }: KibitzPresenceProps): React.Reac
                     <div className="presence-users">
                         {users.map((user) => (
                             <div key={user.id} className="presence-user">
-                                <PresenceAvatar user={user} className="presence-avatar inline" />
+                                <KibitzUserAvatar
+                                    user={user}
+                                    size={16}
+                                    className="presence-avatar inline"
+                                    iconClassName="presence-avatar-icon"
+                                />
                                 <Player user={user} flag rank noextracontrols />
                             </div>
                         ))}

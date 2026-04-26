@@ -70,17 +70,17 @@
         flex: 0 0 auto;
         font-size: 0.56rem;
         font-weight: bold;
-        height: 1.1rem;
+        height: 16px;
         justify-content: center;
         line-height: 1;
-        min-width: 1.1rem;
+        min-width: 16px;
         overflow: hidden;
         text-transform: uppercase;
     }
 
     .presence-avatar.inline {
-        height: 1.2rem;
-        min-width: 1.2rem;
+        height: 16px;
+        min-width: 16px;
     }
 
     .presence-avatar-image {

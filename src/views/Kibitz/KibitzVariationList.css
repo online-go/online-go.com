@@ -196,7 +196,15 @@
         justify-content: center;
         line-height: 1;
         min-width: 1.1rem;
+        overflow: hidden;
         text-transform: uppercase;
+    }
+
+    .variation-avatar-image {
+        display: block;
+        height: 100%;
+        object-fit: cover;
+        width: 100%;
     }
 
     .variation-meta,

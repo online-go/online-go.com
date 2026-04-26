@@ -19,6 +19,7 @@ import * as React from "react";
 import { pgettext } from "@/lib/translate";
 import type { KibitzVariationSummary } from "@/models/kibitz";
 import { getKibitzVariationColor } from "./kibitzVariationTree";
+import { KibitzUserAvatar } from "./KibitzUserAvatar";
 import "./KibitzVariationList.css";
 
 interface KibitzVariationListProps {
@@ -31,22 +32,6 @@ interface KibitzVariationListProps {
     onRecallVariation: (variationId: string) => void;
     onToggleVariation?: (variationId: string) => void;
     title?: string;
-}
-
-function getUserInitials(username: string | undefined): string {
-    const trimmedUsername = (username ?? "").trim();
-
-    if (!trimmedUsername) {
-        return "?";
-    }
-
-    const parts = trimmedUsername.split(/\s+/).filter(Boolean);
-
-    if (parts.length === 1) {
-        return parts[0].slice(0, 2).toUpperCase();
-    }
-
-    return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
 export function KibitzVariationList({
@@ -166,15 +151,12 @@ export function KibitzVariationList({
                                                             )}
                                                     </span>
                                                     <span className="variation-meta-row">
-                                                        <span
+                                                        <KibitzUserAvatar
+                                                            user={variation.creator}
+                                                            size={16}
                                                             className="variation-avatar"
-                                                            aria-hidden="true"
-                                                            title={variation.creator.username}
-                                                        >
-                                                            {getUserInitials(
-                                                                variation.creator.username,
-                                                            )}
-                                                        </span>
+                                                            iconClassName="variation-avatar-image"
+                                                        />
                                                         <span className="variation-meta">
                                                             {variation.creator.username}
                                                         </span>
