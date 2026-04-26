@@ -17,6 +17,11 @@
     overflow: hidden;
 }
 
+.KibitzSharedStreamPanel.mobile .KibitzSharedStreamPanel-stack {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
 .KibitzSharedStreamPanel-pane {
     background: var(--card-background-color);
     display: flex;
@@ -25,6 +30,11 @@
     min-width: 0;
     overflow: hidden;
     transition: flex-basis 180ms ease;
+}
+
+.KibitzSharedStreamPanel.mobile .KibitzSharedStreamPanel-pane {
+    flex: 1 1 auto;
+    min-height: 0;
 }
 
 .KibitzSharedStreamPanel.is-dragging .KibitzSharedStreamPanel-pane {
