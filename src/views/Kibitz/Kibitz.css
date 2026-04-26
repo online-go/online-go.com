@@ -213,7 +213,7 @@
             gap: 0rem 0.5rem;
             grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
             margin: 0;
-            padding: 2px 0.5rem;
+            padding: 2px 0.4rem;
             text-align: left;
             transition:
                 background-color 0.2s ease,
@@ -422,6 +422,11 @@
             vertical-align: middle;
         }
 
+        .kibitz-mobile-transport-button.primary {
+            background: var(--primary);
+            color: var(--colored-background-fg);
+        }
+
         .kibitz-mobile-transport-button.active {
             background: var(--shade3);
             color: var(--fg);
@@ -502,6 +507,10 @@
 
         .Kibitz-mobile-compare-actions .kibitz-mobile-transport-button-compact {
             padding-inline: 0.45rem;
+        }
+
+        .KibitzMobileGamePicker .KibitzGamePickerOverlay-mobileFooter {
+            padding-inline: 0.4rem;
         }
 
         .Kibitz-mobile-panel-empty,

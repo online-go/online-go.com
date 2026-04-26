@@ -192,6 +192,7 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     min-width: 0;
+    padding: 0.45rem 0.4rem 0;
 }
 
 .KibitzSharedStreamPanel-mobileSwitchButton {

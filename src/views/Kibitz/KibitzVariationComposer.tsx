@@ -24,11 +24,13 @@ import "./KibitzVariationComposer.css";
 interface KibitzVariationComposerProps {
     controller: GobanController;
     onSubmit: (controller: GobanController) => void;
+    showSubmitButton?: boolean;
 }
 
 export function KibitzVariationComposer({
     controller,
     onSubmit,
+    showSubmitButton = true,
 }: KibitzVariationComposerProps): React.ReactElement {
     const [variationName, setVariationName] = React.useState(controller.variation_name);
     const isAnonymous = !!data.get("config.user")?.anonymous;
@@ -66,14 +68,16 @@ export function KibitzVariationComposer({
                     }}
                     disabled={isAnonymous}
                 />
-                <button
-                    type="button"
-                    className="sm"
-                    onClick={() => onSubmit(controller)}
-                    disabled={isAnonymous}
-                >
-                    {pgettext("Button label for posting a kibitz variation", "Post variation")}
-                </button>
+                {showSubmitButton ? (
+                    <button
+                        type="button"
+                        className="sm"
+                        onClick={() => onSubmit(controller)}
+                        disabled={isAnonymous}
+                    >
+                        {pgettext("Button label for posting a kibitz variation", "Post variation")}
+                    </button>
+                ) : null}
             </div>
             {isAnonymous ? (
                 <div className="KibitzVariationComposer-disabled-note">

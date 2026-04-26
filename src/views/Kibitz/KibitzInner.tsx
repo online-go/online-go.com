@@ -19,7 +19,6 @@ import * as React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { GobanController } from "@/lib/GobanController";
 import * as data from "@/lib/data";
-import { alert } from "@/lib/swal_config";
 import { toast } from "@/lib/toast";
 import { interpolate, pgettext } from "@/lib/translate";
 import type {
@@ -39,9 +38,7 @@ import { KibitzRoomStage } from "./KibitzRoomStage";
 import { KibitzSharedStreamPanel } from "./KibitzSharedStreamPanel";
 import { KibitzPresence } from "./KibitzPresence";
 import { KibitzVariationList } from "./KibitzVariationList";
-import { GobanAnalyzeButtonBar } from "@/components/GobanAnalyzeButtonBar/GobanAnalyzeButtonBar";
-import { KibitzVariationComposer } from "./KibitzVariationComposer";
-import { KibitzNodeText } from "./KibitzNodeText";
+import { KibitzMobileComparePanel } from "./KibitzMobileComparePanel";
 import type { KibitzController } from "./KibitzController";
 import { KIBITZ_VARIATION_COLORS } from "./kibitzVariationTree";
 import { KibitzGamePickerOverlay } from "./KibitzGamePickerOverlay";
@@ -317,35 +314,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         }
     }, [controller, isMobileLayout, secondaryPane.variation_id, variations, visibleVariationIds]);
 
-    const onConfirmClearSecondaryPane = React.useCallback(() => {
-        void alert
-            .fire({
-                customClass: {
-                    confirmButton: "reject",
-                    cancelButton: "",
-                },
-                text: pgettext(
-                    "Confirmation text for clearing the secondary kibitz pane preview",
-                    "Clear this variation? Any variation that isn't shared will be lost.",
-                ),
-                confirmButtonText: pgettext(
-                    "Confirmation button for clearing the secondary kibitz pane preview",
-                    "Clear",
-                ),
-                cancelButtonText: pgettext(
-                    "Cancel button for clearing the secondary kibitz pane preview",
-                    "Cancel",
-                ),
-                showCancelButton: true,
-                focusConfirm: true,
-            })
-            .then(({ value: confirmed }) => {
-                if (confirmed) {
-                    onClearPreview();
-                }
-            });
-    }, [onClearPreview]);
-
     const onOpenVariation = React.useCallback(
         (variationId: string) => {
             if (
@@ -604,15 +572,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const hasCompareTarget = Boolean(
         secondaryPane.variation_id || (secondaryPane.preview_game_id && !proposalBackedPreview),
     );
-    const mobileCompareBoardLabel = selectedVariation
-        ? pgettext("Label for the active mobile kibitz variation board", "Variation shown")
-        : secondaryPane.variation_source_game
-          ? pgettext("Label for the active mobile kibitz draft board", "New variation")
-          : pgettext("Label for the active mobile kibitz preview board", "Preview");
-    const mobileCompareBoardTitle =
-        selectedVariation?.title ??
-        secondaryBoardGame?.title ??
-        pgettext("Fallback title for the active mobile kibitz compare board", "Board preview");
 
     const onPostVariation = React.useCallback(
         (boardController: GobanController, sourceGameId: number | undefined) => {
@@ -1102,96 +1061,64 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                             ) : null}
                                             {mobileCompanionPanel === "compare" ? (
                                                 <div className="Kibitz-mobile-panel Kibitz-mobile-compare-panel">
-                                                    {mobileCompareController ? (
-                                                        <div className="Kibitz-mobile-compare-tools">
-                                                            {secondaryPane.variation_source_game_id !=
-                                                            null ? (
-                                                                <div className="mobile-board-analyze-row">
-                                                                    <GobanAnalyzeButtonBar
-                                                                        controller={
-                                                                            mobileCompareController
-                                                                        }
-                                                                        showBackToGame={false}
-                                                                        showConditionalPlannerButton={
-                                                                            false
-                                                                        }
-                                                                    />
-                                                                </div>
-                                                            ) : null}
-                                                            <div className="mobile-board-node-text-row">
-                                                                <KibitzNodeText
-                                                                    controller={
-                                                                        mobileCompareController
-                                                                    }
-                                                                    editable={
-                                                                        secondaryPane.variation_source_game_id !=
-                                                                        null
-                                                                    }
-                                                                />
-                                                            </div>
-                                                            {secondaryPane.variation_source_game_id !=
-                                                            null ? (
-                                                                <div className="mobile-board-compose-row">
-                                                                    <KibitzVariationComposer
-                                                                        controller={
-                                                                            mobileCompareController
-                                                                        }
-                                                                        onSubmit={(controller) =>
-                                                                            onPostVariation(
-                                                                                controller,
-                                                                                secondaryPane.variation_source_game_id,
-                                                                            )
-                                                                        }
-                                                                    />
-                                                                </div>
-                                                            ) : null}
-                                                        </div>
-                                                    ) : null}
-                                                    {hasCompareTarget ? (
-                                                        <div className="Kibitz-mobile-panel-note">
-                                                            <div className="Kibitz-mobile-board-meta">
-                                                                <div className="mobile-board-meta-copy">
-                                                                    <div className="mobile-board-meta-label">
-                                                                        {mobileCompareBoardLabel}
-                                                                    </div>
-                                                                    <div className="mobile-board-meta-title">
-                                                                        {mobileCompareBoardTitle}
-                                                                    </div>
-                                                                </div>
-                                                                <button
-                                                                    type="button"
-                                                                    className="mobile-board-clear-button"
-                                                                    onClick={
-                                                                        onConfirmClearSecondaryPane
-                                                                    }
-                                                                >
-                                                                    {pgettext(
-                                                                        "Button label for clearing the active mobile kibitz compare board",
-                                                                        "Clear",
-                                                                    )}
-                                                                </button>
-                                                                {selectedVariation ? (
-                                                                    <button
-                                                                        type="button"
-                                                                        className="mobile-board-clear-button"
-                                                                        onClick={() =>
-                                                                            onCreateVariationFromPostedVariation(
-                                                                                selectedVariation,
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        {pgettext(
-                                                                            "Button label for starting a new editable Kibitz variation from a posted variation",
-                                                                            "Create variation from here",
-                                                                        )}
-                                                                    </button>
-                                                                ) : null}
-                                                            </div>
-                                                        </div>
-                                                    ) : null}
-                                                    <div className="Kibitz-footer-panels">
-                                                        {variationPanels}
-                                                    </div>
+                                                    <KibitzMobileComparePanel
+                                                        controller={mobileCompareController}
+                                                        room={resolvedRoom}
+                                                        variations={variations}
+                                                        queuedRoomProposals={queuedRoomProposals}
+                                                        visibleVariationIds={visibleVariationIds}
+                                                        variationColorIndexes={
+                                                            variationColorIndexes
+                                                        }
+                                                        blockedVariationFlashId={
+                                                            blockedVariationFlashId
+                                                        }
+                                                        secondaryPane={secondaryPane}
+                                                        selectedVariation={
+                                                            selectedVariation ?? null
+                                                        }
+                                                        draftBaseVariation={
+                                                            variations.find(
+                                                                (variation) =>
+                                                                    variation.id ===
+                                                                    secondaryPane.variation_draft_base_id,
+                                                            ) ?? null
+                                                        }
+                                                        secondaryBoardGameTitle={
+                                                            secondaryBoardGame?.title ??
+                                                            pgettext(
+                                                                "Fallback title for the active mobile kibitz compare board",
+                                                                "Board preview",
+                                                            )
+                                                        }
+                                                        secondaryBoardGameAuthor={
+                                                            secondaryBoardGame
+                                                                ? interpolate(
+                                                                      pgettext(
+                                                                          "Fallback author label for the active mobile kibitz compare board",
+                                                                          "{{black}} vs {{white}}",
+                                                                      ),
+                                                                      {
+                                                                          black: secondaryBoardGame
+                                                                              .black.username,
+                                                                          white: secondaryBoardGame
+                                                                              .white.username,
+                                                                      },
+                                                                  )
+                                                                : null
+                                                        }
+                                                        isDraftingVariation={
+                                                            secondaryPane.variation_source_game_id !=
+                                                            null
+                                                        }
+                                                        onOpenVariation={onOpenVariation}
+                                                        onToggleVariation={onToggleVariation}
+                                                        onPostVariation={onPostVariation}
+                                                        onDiscardDraft={onClearPreview}
+                                                        onOpenMobileCompare={() =>
+                                                            onSelectMobileCompanionPanel?.("chat")
+                                                        }
+                                                    />
                                                 </div>
                                             ) : null}
                                         </div>

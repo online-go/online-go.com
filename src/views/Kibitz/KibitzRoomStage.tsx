@@ -621,13 +621,23 @@ export function KibitzRoomStage({
 
     React.useEffect(() => {
         onMobileCompareControllerChange?.(
-            mobileCompareTargetActive ? secondaryBoardController : null,
+            mobileCompareActive
+                ? mobileCompareTargetActive
+                    ? secondaryBoardController
+                    : mainBoardController
+                : null,
         );
 
         return () => {
             onMobileCompareControllerChange?.(null);
         };
-    }, [mobileCompareTargetActive, onMobileCompareControllerChange, secondaryBoardController]);
+    }, [
+        mainBoardController,
+        mobileCompareActive,
+        mobileCompareTargetActive,
+        onMobileCompareControllerChange,
+        secondaryBoardController,
+    ]);
 
     if (isMobileLayout) {
         const renderMainBoard = Boolean(mainGame && !mobileCompareActive);
@@ -762,7 +772,7 @@ export function KibitzRoomStage({
                                 {mobileCompanionPanel === "compare"
                                     ? pgettext(
                                           "Mobile kibitz transport-row toggle label",
-                                          "To Main Board",
+                                          "To room board",
                                       )
                                     : pgettext(
                                           "Mobile kibitz transport-row toggle label",
@@ -791,6 +801,32 @@ export function KibitzRoomStage({
                                         {pgettext(
                                             "Mobile kibitz transport-row panel button label",
                                             "Vote",
+                                        )}
+                                    </span>
+                                </button>
+                            ) : null}
+                            {mobileCompareActive &&
+                            mobileCompareTargetActive &&
+                            !isDraftingVariation ? (
+                                <button
+                                    type="button"
+                                    className="kibitz-mobile-transport-button kibitz-mobile-stage-panel-button primary mobile-board-controls-new-variation"
+                                    onClick={() => {
+                                        if (
+                                            selectedVariation &&
+                                            onCreateVariationFromPostedVariation
+                                        ) {
+                                            onCreateVariationFromPostedVariation(selectedVariation);
+                                            return;
+                                        }
+
+                                        onCreateVariation?.();
+                                    }}
+                                >
+                                    <span className="kibitz-mobile-transport-label">
+                                        {pgettext(
+                                            "Mobile kibitz transport-row action for starting a new variation",
+                                            "New variation",
                                         )}
                                     </span>
                                 </button>
