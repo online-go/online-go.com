@@ -249,15 +249,27 @@
         justify-content: center;
         line-height: 1;
         min-width: 1.1rem;
+        width: 1.1rem;
         overflow: hidden;
         text-transform: uppercase;
     }
 
     .variation-avatar-image {
         display: block;
-        height: 100%;
+        flex: 0 0 auto;
+        height: 1.1rem !important;
+        max-height: 1.1rem;
+        max-width: 1.1rem;
+        min-height: 1.1rem;
+        min-width: 1.1rem;
         object-fit: cover;
-        width: 100%;
+        width: 1.1rem !important;
+    }
+
+    .variation-avatar-image.PlayerIcon {
+        display: block;
+        flex: 0 0 auto;
+        object-fit: cover;
     }
 
     .variation-meta,
