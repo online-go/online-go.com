@@ -469,12 +469,9 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 last_hydration_finished_at: Date.now(),
             });
 
-            // The destroyed-check skips the N per-room game lookups in the
-            // genuine-destroy case. setRooms above MUST fire regardless: in
-            // React StrictMode the controller is destroyed and remounted on
-            // the same instance, with React-state listeners re-attached,
-            // and we still want the rooms list populated for the surviving
-            // component.
+            // The destroyed-check skips the per-room game lookups after this
+            // controller instance has been torn down. `setRooms` above still
+            // needs to run so any mounted consumer gets the latest room list.
             if (this._destroyed) {
                 return;
             }
