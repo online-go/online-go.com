@@ -67,6 +67,11 @@
         .btn {
             padding-bottom: 0; /* override default that makes these look bottom heavy */
         }
+
+        .btn.success {
+            min-width: 6.0em;
+        }
+
     }
 
     .rengo-management-list-item {
@@ -129,6 +134,7 @@
 
     #rengo-table {
         width: 100%;
+        border-collapse: collapse;
     }
 
     .MiniGoban {
@@ -211,31 +217,26 @@
         cursor: help;
     }
 
-    /* Flex to escape from the containing table formats */
     .challenge-row {
-        padding-top: 0.2em;
-        padding-bottom: 0.2em;
         display: table-row;
         font-size: 0.85em;
         white-space: nowrap;
 
         .head {
-            padding-left: 0.5em;
+            padding: 0.7em 0.5em;
             display: table-cell;
             text-align: left;
-            font-weight: bold;
+            font-weight: 400;
             font-size: 0.8em;
-        }
-
-        .head.time-control-header {
-            /* padding-left: 4em; */
-            text-align: left;
+            color: var(--shade1);
+            border-bottom: 1px solid var(--shade4);
         }
 
         .cell {
-            padding-left: 0.5em;
+            padding: 0.4em 0.5em;
             display: table-cell;
             text-align: left;
+            border-bottom: 1px solid var(--shade4);
             position: relative;
         }
 
@@ -275,8 +276,12 @@
         }
 
         .break {
-            border-top: 1px solid #888;
-            border-bottom: 1px solid #888;
+            padding-top: 1.5em;
+            padding-bottom: 0.3em;
+            font-weight: bold;
+            font-size: 0.9em;
+            color: var(--shade1);
+            border-bottom: 1px solid var(--shade3);
         }
 
         .bold {

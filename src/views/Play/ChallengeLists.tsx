@@ -224,21 +224,25 @@ export function RengoList(props: RengoComponentProps): React.ReactElement {
 
     if (!anyChallengesToShow(filter, list)) {
         return (
-            <tr key="none-available">
-                <td colSpan={9}>
-                    <div className="ineligible">
-                        {
-                            filter.showIneligible
-                                ? _(
-                                      "(none)",
-                                  ) /* translators: There are no challenges in the system, nothing to list here */
-                                : _(
-                                      "(none available)",
-                                  ) /* translators: There are no challenges that this person is eligible for */
-                        }
-                    </div>
-                </td>
-            </tr>
+            <table id="rengo-table">
+                <tbody>
+                    <tr key="none-available">
+                        <td colSpan={11}>
+                            <div className="ineligible">
+                                {
+                                    filter.showIneligible
+                                        ? _(
+                                              "(none)",
+                                          ) /* translators: There are no challenges in the system, nothing to list here */
+                                        : _(
+                                              "(none available)",
+                                          ) /* translators: There are no challenges that this person is eligible for */
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         );
     }
 
@@ -246,23 +250,25 @@ export function RengoList(props: RengoComponentProps): React.ReactElement {
     const corr_list = list.filter((c) => !isLiveGame(c.time_control_parameters, c.width, c.height));
 
     return (
-        <>
-            <tr className="challenge-row">
-                <td className="cell">{_("Live:")}</td>
-            </tr>
-            <RengoChallengeManagementList {...props} list={live_list} key="live" />
+        <table id="rengo-table">
+            <tbody>
+                <tr className="challenge-row">
+                    <td className="cell break" colSpan={11}>
+                        {_("Rengo Live")}
+                    </td>
+                </tr>
+                {anyChallengesToShow(filter, live_list) && <RengoListHeaders />}
+                <RengoChallengeManagementList {...props} list={live_list} key="live" />
 
-            <tr className="challenge-row">
-                <td className="cell" colSpan={10}>
-                    <hr />
-                </td>
-            </tr>
-
-            <tr className="challenge-row">
-                <td className="cell">{_("Correspondence:")}</td>
-            </tr>
-            <RengoChallengeManagementList {...props} list={corr_list} key="corr" />
-        </>
+                <tr className="challenge-row">
+                    <td className="cell break" colSpan={11}>
+                        {_("Rengo Correspondence")}
+                    </td>
+                </tr>
+                {anyChallengesToShow(filter, corr_list) && <RengoListHeaders />}
+                <RengoChallengeManagementList {...props} list={corr_list} key="corr" />
+            </tbody>
+        </table>
     );
 }
 
@@ -319,7 +325,7 @@ function RengoManageListItem(props: RengoComponentProps): React.ReactElement {
 
     return (
         <tr className={"challenge-row rengo-management-row"}>
-            <td className="cell" colSpan={10}>
+            <td className="cell" colSpan={11}>
                 <Card className="rengo-management-list-item">
                     <div className="rengo-management-header">
                         <span>{challenge.name}</span>
@@ -453,7 +459,7 @@ function RengoListItem(props: RengoComponentProps): React.ReactElement {
             >
                 {challenge.width}x{challenge.height}
             </td>
-            <td>{shortShortTimeControl(challenge.time_control_parameters)}</td>
+            <td className="cell">{shortShortTimeControl(challenge.time_control_parameters)}</td>
             <td className="cell">{rengo_casual_mode_text}</td>
             <td className="cell">{rengo_auto_start_text}</td>
             <td className="cell">{challenge.rengo_participants.length}</td>
