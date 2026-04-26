@@ -248,19 +248,19 @@ export function RengoList(props: RengoComponentProps): React.ReactElement {
     return (
         <>
             <tr className="challenge-row">
-                <td className="cell">{_("Live:")}</td>
+                <td className="cell break" colSpan={11}>
+                    {_("Rengo Live")}
+                </td>
             </tr>
+            {anyChallengesToShow(filter, live_list) && <RengoListHeaders />}
             <RengoChallengeManagementList {...props} list={live_list} key="live" />
 
             <tr className="challenge-row">
-                <td className="cell" colSpan={10}>
-                    <hr />
+                <td className="cell break" colSpan={11}>
+                    {_("Rengo Correspondence")}
                 </td>
             </tr>
-
-            <tr className="challenge-row">
-                <td className="cell">{_("Correspondence:")}</td>
-            </tr>
+            {anyChallengesToShow(filter, corr_list) && <RengoListHeaders />}
             <RengoChallengeManagementList {...props} list={corr_list} key="corr" />
         </>
     );
