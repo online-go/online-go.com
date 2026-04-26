@@ -1014,6 +1014,12 @@
         margin-left: auto;
     }
 
+    [data-theme="light"] .Kibitz {
+        .mobile-board-controls-toggle:not(.active):not([aria-pressed="true"]) {
+            background: var(--shade2) !important;
+        }
+    }
+
     .mobile-board-analyze-row,
     .mobile-board-node-text-row,
     .mobile-board-compose-row {

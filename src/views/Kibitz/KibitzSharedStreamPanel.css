@@ -246,6 +246,18 @@
     color: var(--fg);
 }
 
+[data-theme="light"] {
+    .KibitzSharedStreamPanel-mobileSwitchButton:not(.active):not([aria-pressed="true"]) {
+        background-color: var(--shade2) !important;
+    }
+
+    .KibitzSharedStreamPanel-mobileSwitchButton.active,
+    .KibitzSharedStreamPanel-mobileSwitchButton[aria-pressed="true"] {
+        background-color: var(--shade1) !important;
+        color: var(--bg);
+    }
+}
+
 .KibitzSharedStreamPanel-mobileSwitchContent {
     align-items: center;
     display: grid;

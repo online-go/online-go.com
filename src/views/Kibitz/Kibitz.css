@@ -448,6 +448,26 @@
             color: var(--fg);
         }
 
+        [data-theme="light"] .Kibitz {
+            .mobile-board-controls-toggle:not(.active):not([aria-pressed="true"]) {
+                background: var(--shade2) !important;
+            }
+
+            .kibitz-mobile-transport-button {
+                background-color: var(--shade2) !important;
+            }
+
+            .kibitz-mobile-transport-button.primary {
+                background-color: var(--shade2) !important;
+                color: var(--fg);
+            }
+
+            .kibitz-mobile-transport-button.active {
+                background-color: var(--shade1) !important;
+                color: var(--fg);
+            }
+        }
+
         .kibitz-mobile-transport-button.has-alert .kibitz-mobile-transport-label::after {
             background: var(--primary);
             border-radius: 999px;
