@@ -985,19 +985,15 @@
     }
 
     .mobile-board-controls-panels {
-        align-items: center;
         align-self: center;
         display: flex;
-        gap: 0.25rem;
-        justify-content: flex-end;
+        flex-direction: column;
+        gap: 0.2rem;
+        justify-content: flex-start;
         justify-self: stretch;
+        align-items: flex-end;
         min-width: 0;
         width: 100%;
-    }
-
-    .mobile-board-controls-transport .KibitzBoardControls.minimal-row .kibitz-return-live-button {
-        margin-block: 0;
-        margin-left: 0.25rem;
     }
 
     .kibitz-mobile-stage-panel-button {
@@ -1011,6 +1007,10 @@
     }
 
     .mobile-board-controls-new-variation {
+        margin-left: auto;
+    }
+
+    .mobile-board-controls-return-live {
         margin-left: auto;
     }
 

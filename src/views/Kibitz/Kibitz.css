@@ -439,8 +439,8 @@
         }
 
         .kibitz-mobile-transport-button.primary {
-            background: color-mix(in srgb, var(--shade2) 70%, transparent);
-            color: var(--fg);
+            background: var(--primary);
+            color: var(--colored-background-fg);
         }
 
         .kibitz-mobile-transport-button.active {
@@ -458,8 +458,8 @@
             }
 
             .kibitz-mobile-transport-button.primary {
-                background-color: var(--shade2) !important;
-                color: var(--fg);
+                background-color: var(--primary) !important;
+                color: var(--colored-background-fg) !important;
             }
 
             .kibitz-mobile-transport-button.active {

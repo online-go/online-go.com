@@ -26,6 +26,8 @@ interface KibitzBoardControlsProps {
     variant: "minimal" | "full";
     showMoveTree?: boolean;
     totalMoves?: number;
+    showReturnLiveButton?: boolean;
+    onReturnLiveVisibilityChange?: (canReturnToLive: boolean) => void;
 }
 
 export function KibitzBoardControls({
@@ -33,6 +35,8 @@ export function KibitzBoardControls({
     variant,
     showMoveTree = false,
     totalMoves,
+    showReturnLiveButton = true,
+    onReturnLiveVisibilityChange,
 }: KibitzBoardControlsProps): React.ReactElement | null {
     const [moveNumber, setMoveNumber] = React.useState(() => totalMoves ?? 0);
     const [latestMoveNumber, setLatestMoveNumber] = React.useState(() => totalMoves ?? 0);
@@ -43,6 +47,7 @@ export function KibitzBoardControls({
         if (!controller) {
             setMoveNumber(totalMoves ?? 0);
             setLatestMoveNumber(totalMoves ?? 0);
+            onReturnLiveVisibilityChange?.(false);
             return;
         }
 
@@ -64,10 +69,18 @@ export function KibitzBoardControls({
         sync();
         syncEvents.forEach((eventName) => goban.on(eventName, sync));
 
+        onReturnLiveVisibilityChange?.(false);
+
         return () => {
             syncEvents.forEach((eventName) => goban.off(eventName, sync));
         };
     }, [controller, totalMoves]);
+
+    const canReturnToLive = latestMoveNumber > 0 && moveNumber < latestMoveNumber;
+
+    React.useEffect(() => {
+        onReturnLiveVisibilityChange?.(canReturnToLive);
+    }, [canReturnToLive, onReturnLiveVisibilityChange]);
 
     React.useEffect(() => {
         if (!showMoveTree) {
@@ -110,8 +123,6 @@ export function KibitzBoardControls({
     }
 
     if (variant === "minimal") {
-        const canReturnToLive = latestMoveNumber > 0 && moveNumber < latestMoveNumber;
-
         return (
             <div className="KibitzBoardControls minimal-row">
                 <div className="minimal-row-core">
@@ -144,7 +155,7 @@ export function KibitzBoardControls({
                         <i className="fa fa-step-forward" />
                     </button>
                 </div>
-                {canReturnToLive ? (
+                {showReturnLiveButton && canReturnToLive ? (
                     <button
                         type="button"
                         className="kibitz-return-live-button"

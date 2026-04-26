@@ -233,6 +233,7 @@ export function KibitzRoomStage({
     );
     const [secondaryBoardController, setSecondaryBoardController] =
         React.useState<GobanController | null>(null);
+    const [mobileReturnLiveAvailable, setMobileReturnLiveAvailable] = React.useState(false);
     const [secondaryMoveTreeContainer, setSecondaryMoveTreeContainer] =
         React.useState<Resizable | null>(null);
     const previousSecondaryControllerRef = React.useRef<GobanController | null>(null);
@@ -785,9 +786,27 @@ export function KibitzRoomStage({
                                 controller={mobileBoardController}
                                 variant="minimal"
                                 totalMoves={mobileBoardTotalMoves}
+                                showReturnLiveButton={false}
+                                onReturnLiveVisibilityChange={setMobileReturnLiveAvailable}
                             />
                         </div>
                         <div className="mobile-board-controls-panels">
+                            {/* Back to live is intentionally only exposed in chat mode on mobile;
+                                compare mode keeps the right column reserved for New variation. */}
+                            {mobileReturnLiveAvailable && mobileCompanionPanel !== "compare" ? (
+                                <button
+                                    type="button"
+                                    className="kibitz-mobile-transport-button kibitz-mobile-stage-panel-button primary mobile-board-controls-return-live"
+                                    onClick={() => mobileBoardController?.gotoLastMove()}
+                                >
+                                    <span className="kibitz-mobile-transport-label">
+                                        {pgettext(
+                                            "Mobile kibitz transport-row action for returning to the latest move",
+                                            "Back to live",
+                                        )}
+                                    </span>
+                                </button>
+                            ) : null}
                             {mobileHasActiveVote ? (
                                 <button
                                     type="button"
