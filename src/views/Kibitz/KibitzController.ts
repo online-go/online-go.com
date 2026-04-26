@@ -632,6 +632,10 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
 
     private partActiveChat(): void {
         if (this._active_chat_proxy) {
+            this._active_chat_proxy.off("chat", this.syncMessagesFromChat);
+            this._active_chat_proxy.off("chat-removed", this.syncMessagesFromChat);
+            this._active_chat_proxy.off("join", this.syncPresenceFromChat);
+            this._active_chat_proxy.off("part", this.syncPresenceFromChat);
             this._active_chat_proxy.part();
             this._active_chat_proxy = null;
         }
