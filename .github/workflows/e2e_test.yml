@@ -2,10 +2,10 @@ name: Playwright Smoke Test
 
 on:
     workflow_dispatch:
-    push:
-        branches: [main]
-    pull_request:
-        branches: [main]
+#    push:
+#        branches: [main]
+#    pull_request:
+#        branches: [main]
 
 env:
     PLAYWRIGHT_DOCKER: mcr.microsoft.com/playwright:v1.59.1-noble
