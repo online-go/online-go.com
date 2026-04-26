@@ -1,0 +1,197 @@
+.KibitzVariationList {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    padding: 0.4rem 0.75rem;
+    box-shadow: 0 -1px 0 color-mix(in srgb, var(--shade3) 55%, transparent);
+
+    .variation-title {
+        flex: 0 0 auto;
+        font-weight: bold;
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .variation-scroll {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        padding-bottom: 0.05rem;
+    }
+
+    .variation-divider {
+        border-top: 1px solid var(--shade3);
+        color: var(--text-color-faded);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        padding: 0.4rem 0 0.25rem;
+        text-transform: uppercase;
+    }
+
+    .variation-items {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .variation-item {
+        align-items: flex-start;
+        background: transparent;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: row;
+        gap: 0.14rem;
+        justify-content: center;
+        min-height: 3rem;
+        min-width: 0;
+        position: relative;
+        text-align: left;
+        transition: background-color 120ms ease;
+        width: 100%;
+    }
+
+    .variation-item.visible .variation-recall,
+    .variation-item.visible .variation-toggle {
+        background: color-mix(in srgb, var(--shade2) 55%, transparent);
+    }
+
+    .variation-recall {
+        align-items: flex-start;
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+        display: flex;
+        flex: 1 1 auto;
+        gap: 0.35rem;
+        min-height: 3rem;
+        min-width: 0;
+        padding: 0.36rem 0.2rem 0.36rem 0.1rem;
+        text-align: left;
+
+        &:focus-visible {
+            outline: none;
+        }
+    }
+
+    .variation-color-chip {
+        background: var(--shade3);
+        align-self: stretch;
+        flex: 0 0 auto;
+        height: auto;
+        margin-top: 0;
+        width: 0.28rem;
+    }
+
+    .variation-main {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        gap: 0.14rem;
+        min-width: 0;
+    }
+
+    .variation-toggle {
+        align-items: center;
+        background: transparent;
+        border: 0;
+        box-sizing: border-box;
+        color: var(--text-color-faded);
+        cursor: pointer;
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-self: stretch;
+        aspect-ratio: 1 / 1;
+        height: auto;
+        min-height: 3rem;
+        justify-content: center;
+        margin: 0.15em;
+        padding: 0.36rem 0.2rem 0.36rem 0.1rem;
+        width: auto;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--fg);
+            outline: none;
+        }
+    }
+
+    .variation-name {
+        color: var(--fg);
+        display: block;
+        font-size: 0.88rem;
+        font-weight: bold;
+        line-height: 1.1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 100%;
+    }
+
+    .variation-meta-row {
+        align-items: center;
+        display: grid;
+        gap: 0.35rem;
+        grid-template-columns: auto minmax(0, 1fr);
+        min-width: 0;
+    }
+
+    .variation-preview {
+        align-items: center;
+        display: inline-flex;
+        flex: 0 0 auto;
+        justify-content: flex-end;
+        margin-left: 0.5rem;
+        min-width: 2.95rem;
+    }
+
+    .variation-preview-goban.MiniGoban {
+        height: 2.95rem;
+        width: 2.95rem;
+    }
+
+    .variation-preview-goban .inner-container {
+        transform-origin: left top;
+    }
+
+    .variation-preview-goban .board {
+        box-shadow: none !important;
+    }
+
+    .variation-avatar {
+        align-items: center;
+        background: var(--shade2);
+        color: var(--fg);
+        display: inline-flex;
+        flex: 0 0 auto;
+        font-size: 0.6rem;
+        font-weight: bold;
+        height: 1.1rem;
+        justify-content: center;
+        line-height: 1;
+        min-width: 1.1rem;
+        text-transform: uppercase;
+    }
+
+    .variation-meta,
+    .variation-empty {
+        color: var(--text-color-faded);
+        font-size: 0.76rem;
+        line-height: 1.1;
+        padding: 0;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .variation-meta {
+        align-self: center;
+    }
+
+    .variation-empty {
+        padding: 0.4rem 0 0;
+    }
+}

@@ -1,0 +1,467 @@
+.KibitzProposalBar {
+    --proposal-preview-size: 2.75rem;
+
+    background: var(--card-background-color);
+    border-bottom: 1px solid transparent;
+    border-bottom-color: var(--shade3);
+    color: var(--fg);
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    min-height: 0;
+
+    .proposal-announcement {
+        align-items: stretch;
+        background: var(--primary);
+        color: var(--colored-background-fg);
+        display: flex;
+        gap: 0.6rem;
+        justify-content: space-between;
+        min-width: 0;
+        padding: 0.45rem 0.6rem;
+    }
+
+    .proposal-announcement-main {
+        align-items: flex-start;
+        display: flex;
+        flex: 1 1 auto;
+        gap: 0.55rem;
+        min-width: 0;
+    }
+
+    .proposal-announcement-side {
+        align-items: center;
+        display: flex;
+        flex: 0 0 var(--proposal-preview-size);
+        justify-content: flex-end;
+        width: var(--proposal-preview-size);
+        min-width: 0;
+    }
+
+    .proposal-proposer-avatar,
+    .proposal-voter-avatar {
+        align-items: center;
+        background: rgba(0, 0, 0, 0.18);
+        border: 0;
+        color: var(--colored-background-fg);
+        display: inline-flex;
+        flex: 0 0 auto;
+        font-size: 0.64rem;
+        font-weight: bold;
+        height: 1.45rem;
+        justify-content: center;
+        line-height: 1;
+        min-width: 1.45rem;
+        overflow: hidden;
+        text-transform: uppercase;
+        vertical-align: middle;
+    }
+
+    .proposal-avatar-image {
+        display: block;
+        height: 100%;
+        object-fit: cover;
+        width: 100%;
+    }
+
+    .proposal-announcement-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 0.08rem;
+        min-width: 0;
+    }
+
+    .proposal-summary-prefix {
+        color: rgba(255, 255, 255, 0.88);
+        font-size: 0.78rem;
+        line-height: 1.1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .proposal-title {
+        color: var(--colored-background-fg);
+        font-size: 1.02rem;
+        font-weight: bold;
+        line-height: 1.08;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .proposal-game-meta {
+        color: rgba(255, 255, 255, 0.84);
+        font-size: 0.76rem;
+        line-height: 1.1;
+    }
+
+    .proposal-game-meta {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .proposal-vote-rail {
+        align-items: stretch;
+        background: var(--card-background-color);
+        display: grid;
+        gap: 0.25rem;
+        grid-template-columns: minmax(0, 1fr) 4.25rem minmax(0, 1fr);
+        min-width: 0;
+        padding: 0.5rem 0.6rem 0.6rem;
+    }
+
+    .proposal-choice {
+        background: transparent;
+        display: flex;
+        min-width: 0;
+    }
+
+    .proposal-choice-main {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        gap: 0.35rem;
+        min-width: 0;
+    }
+
+    .proposal-choice-label-row {
+        align-items: center;
+        display: flex;
+        gap: 0.45rem;
+        justify-content: space-between;
+        min-width: 0;
+    }
+
+    .proposal-choice-label {
+        color: var(--text-color-faded);
+        font-size: 0.74rem;
+        font-weight: bold;
+        letter-spacing: 0.03em;
+        line-height: 1.08;
+        min-width: 0;
+        text-transform: uppercase;
+    }
+
+    .proposal-choice-label.leading,
+    .proposal-choice-label.tied {
+        color: var(--fg);
+    }
+
+    .proposal-vote-count {
+        align-items: center;
+        background: var(--shade1);
+        color: var(--text-color-faded);
+        display: inline-flex;
+        flex: 0 0 auto;
+        font-size: 0.76rem;
+        font-weight: bold;
+        height: 1.35rem;
+        justify-content: center;
+        line-height: 1;
+        min-width: 1.6rem;
+        padding: 0 0.34rem;
+    }
+
+    .proposal-vote-count.leading {
+        background: var(--primary);
+        color: var(--colored-background-fg);
+    }
+
+    .proposal-vote-count.tied {
+        background: color-mix(in srgb, var(--primary) 18%, var(--shade1));
+        color: var(--fg);
+    }
+
+    .proposal-vote-avatars {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+        min-height: 1.3rem;
+        min-width: 0;
+    }
+
+    .proposal-voter-avatar {
+        background: var(--shade2);
+        color: var(--fg);
+        font-size: 0.58rem;
+        height: 1.25rem;
+        min-width: 1.25rem;
+    }
+
+    .proposal-voter-avatar-overflow {
+        background: var(--shade1);
+        color: var(--text-color-faded);
+        min-width: 1.45rem;
+    }
+
+    .proposal-vote-empty {
+        color: var(--text-color-faded);
+        font-size: 0.72rem;
+        line-height: 1.1;
+        min-height: 1.25rem;
+    }
+
+    .proposal-action {
+        background: var(--shade2);
+        border: 0;
+        box-shadow: none;
+        color: var(--fg);
+        cursor: pointer;
+        font-size: 0.82rem;
+        font-weight: bold;
+        line-height: 1;
+        margin-top: auto;
+        min-height: 2.1rem;
+        min-width: 0;
+        padding: 0.5rem 0.7rem;
+        white-space: nowrap;
+        width: 100%;
+    }
+
+    .proposal-action.primary {
+        background: var(--primary);
+        color: var(--colored-background-fg);
+    }
+
+    .proposal-action.secondary {
+        background: var(--shade2);
+        color: var(--fg);
+    }
+
+    .proposal-preview-toggle {
+        align-items: center;
+        background: transparent;
+        border: 0;
+        color: var(--colored-background-fg);
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        flex: 0 0 auto;
+        gap: 0;
+        justify-content: center;
+        height: var(--proposal-preview-size);
+        padding: 0;
+        width: var(--proposal-preview-size);
+    }
+
+    .proposal-preview-thumb {
+        align-items: center;
+        display: inline-flex;
+        flex: 0 0 auto;
+        height: var(--proposal-preview-size);
+        justify-content: center;
+        overflow: hidden;
+        width: var(--proposal-preview-size);
+    }
+
+    .proposal-preview-thumb .KibitzBoard {
+        height: 100%;
+        width: 100%;
+    }
+
+    .proposal-preview-thumb .KibitzBoard .goban-container {
+        height: 100% !important;
+        width: 100% !important;
+    }
+
+    .proposal-timer-spine {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        gap: 0.22rem;
+        justify-content: center;
+        min-width: 0;
+        padding: 0.05rem 0;
+    }
+
+    .proposal-timer-value {
+        color: var(--fg);
+        font-size: 0.96rem;
+        font-weight: bold;
+        line-height: 1;
+        white-space: nowrap;
+    }
+
+    .proposal-timer-label {
+        color: var(--text-color-faded);
+        font-size: 0.66rem;
+        font-weight: bold;
+        letter-spacing: 0.04em;
+        line-height: 1;
+        text-transform: uppercase;
+    }
+
+    .proposal-timer-track {
+        align-items: flex-end;
+        background: var(--shade1);
+        display: flex;
+        height: 2.7rem;
+        justify-content: center;
+        overflow: hidden;
+        width: 0.22rem;
+    }
+
+    .proposal-timer-fill {
+        background: var(--primary);
+        flex: 1 1 auto;
+        transform-origin: bottom center;
+        transition: transform 180ms linear;
+        width: 100%;
+    }
+    .proposal-expanded-preview {
+        background: var(--card-background-color);
+        border-top: 1px solid transparent;
+        border-top-color: var(--shade3);
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        padding: 0.55rem 0.6rem 0.65rem;
+    }
+
+    .proposal-expanded-preview-header {
+        align-items: flex-start;
+        display: flex;
+        gap: 0.45rem;
+        justify-content: space-between;
+    }
+
+    .proposal-expanded-preview-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 0.12rem;
+        min-width: 0;
+    }
+
+    .proposal-expanded-preview-title {
+        color: var(--fg);
+        font-size: 0.74rem;
+        font-weight: bold;
+        letter-spacing: 0.03em;
+        line-height: 1.08;
+        text-transform: uppercase;
+    }
+
+    .proposal-expanded-preview-meta {
+        color: var(--text-color-faded);
+        font-size: 0.74rem;
+        line-height: 1.2;
+    }
+
+    .proposal-expanded-preview-close {
+        background: var(--shade2);
+        border: 0;
+        box-shadow: none;
+        color: var(--fg);
+        cursor: pointer;
+        font-size: 0.76rem;
+        font-weight: bold;
+        line-height: 1;
+        padding: 0.38rem 0.6rem;
+        white-space: nowrap;
+    }
+
+    .proposal-expanded-board-wrap {
+        align-items: center;
+        display: flex;
+        justify-content: center;
+        min-width: 0;
+    }
+
+    .proposal-expanded-board-wrap .KibitzBoard {
+        height: min(17rem, 58vw);
+        width: min(17rem, 58vw);
+    }
+
+    .proposal-expanded-board-wrap .KibitzBoard .goban-container {
+        height: 100% !important;
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 1200px) {
+    .KibitzProposalBar {
+        .proposal-announcement {
+            flex-direction: column;
+        }
+
+        .proposal-announcement-side {
+            justify-content: flex-start;
+        }
+
+        .proposal-vote-rail {
+            grid-template-columns: minmax(0, 1fr) 3.75rem minmax(0, 1fr);
+        }
+    }
+}
+
+@media (max-width: 900px) {
+    .KibitzProposalBar {
+        .proposal-vote-rail {
+            gap: 0.5rem;
+            grid-template-columns: minmax(0, 1fr);
+            padding-top: 0.6rem;
+        }
+
+        .proposal-timer-spine {
+            align-items: center;
+            flex-direction: row;
+            gap: 0.45rem;
+            justify-content: flex-start;
+            order: -1;
+            padding: 0;
+        }
+
+        .proposal-preview-toggle {
+            align-items: center;
+            flex-direction: row;
+            gap: 0.4rem;
+            height: 2.8rem;
+            width: 2.8rem;
+        }
+
+        .proposal-preview-thumb {
+            height: 2.8rem;
+            width: 2.8rem;
+        }
+
+        .proposal-preview-thumb .KibitzBoard {
+            height: 2.8rem;
+            width: 2.8rem;
+        }
+
+        .proposal-timer-track {
+            height: 0.22rem;
+            width: 3rem;
+        }
+
+        .proposal-timer-fill {
+            height: 100%;
+            transform: none !important;
+            transform-origin: left center;
+            width: 100%;
+        }
+
+        .proposal-choice {
+            padding: 0;
+        }
+
+        .proposal-expanded-preview-header {
+            flex-direction: column;
+        }
+
+        .proposal-expanded-preview-close {
+            align-self: flex-start;
+        }
+
+        .proposal-expanded-board-wrap .KibitzBoard {
+            height: min(15rem, 74vw);
+            width: min(15rem, 74vw);
+        }
+    }
+}

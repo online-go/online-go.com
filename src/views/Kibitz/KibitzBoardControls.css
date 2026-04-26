@@ -1,0 +1,109 @@
+.KibitzBoardControls {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+    padding: 0 0.125rem;
+    width: 100%;
+
+    .control-row {
+        align-items: center;
+        display: inline-flex;
+        gap: 0.25rem;
+        justify-content: center;
+        margin: 0 auto;
+        min-height: 1.6rem;
+        white-space: nowrap;
+        width: auto;
+    }
+
+    .kibitz-move-control,
+    .kibitz-return-live-button {
+        align-items: center;
+        background: var(--shade2);
+        border: 0;
+        box-shadow: none;
+        color: var(--fg);
+        cursor: pointer;
+        display: inline-flex;
+        font-size: 0.75rem;
+        height: 1.6rem;
+        justify-content: center;
+        line-height: 1;
+        min-width: 1.65rem;
+        padding: 0 0.45rem;
+        vertical-align: middle;
+    }
+
+    .kibitz-return-live-button {
+        background: var(--primary);
+        color: var(--colored-background-fg);
+        min-width: auto;
+        padding-inline: 0.55rem;
+    }
+
+    .move-number {
+        align-items: center;
+        color: var(--text-color-faded);
+        display: inline-flex;
+        font-size: 0.8rem;
+        height: 1.6rem;
+        min-width: 4.25rem;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .kibitz-move-tree-container {
+        align-self: stretch;
+        background: var(--shade1);
+        box-sizing: border-box;
+        border-top: 1px solid transparent;
+        border-top-color: var(--shade3);
+        height: 6.5rem;
+        margin: 0;
+        max-width: 100%;
+        min-height: 6.5rem;
+        min-width: 0;
+        overflow: auto;
+        overflow-x: hidden;
+        resize: vertical;
+        width: 100%;
+    }
+
+    #move-tree-canvas {
+        cursor: pointer;
+    }
+}
+
+.KibitzBoardControls.minimal-row {
+    align-items: center;
+    display: grid;
+    height: 1.6rem;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    line-height: 1.6rem;
+    margin: 0;
+    padding: 0 0.125rem;
+    width: 100%;
+
+    > * {
+        flex: 0 0 auto;
+    }
+
+    .minimal-row-core {
+        align-items: center;
+        display: inline-flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 0.25rem;
+        justify-content: center;
+        grid-column: 2;
+        justify-self: center;
+    }
+
+    .kibitz-return-live-button {
+        grid-column: 3;
+        justify-self: start;
+        margin-left: 0.25rem;
+    }
+}

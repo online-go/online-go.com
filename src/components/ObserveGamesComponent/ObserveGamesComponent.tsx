@@ -32,6 +32,9 @@ interface ObserveGamesComponentProperties {
     channel?: string;
     namesByGobans?: boolean;
     preferenceNamespace?: string;
+    forceList?: boolean;
+    initialMiniGoban?: boolean;
+    onSelectGameId?: (gameId: number) => void;
 }
 
 interface GameListWhere {
@@ -68,6 +71,7 @@ interface ObserveGamesComponentState {
     corr_game_count: number;
     show_filters: boolean;
     force_list: boolean;
+    show_mini_goban: boolean;
     filters: GameListWhere;
 }
 
@@ -94,6 +98,7 @@ export class ObserveGamesComponent extends React.PureComponent<
             corr_game_count: 0,
             show_filters: false,
             force_list: this.namespacedPreferenceGet("observed-games-force-list") as boolean,
+            show_mini_goban: Boolean(this.props.initialMiniGoban),
             filters: this.namespacedPreferenceGet("observed-games-filter") as GameListWhere,
         };
         this.channel = props.channel;
@@ -321,17 +326,22 @@ export class ObserveGamesComponent extends React.PureComponent<
     toggleShowFilters = () => {
         this.setState({ show_filters: !this.state.show_filters });
     };
-    toggleForceList = () => {
+    toggleGameListView = () => {
+        const nextShowMiniGoban = !this.state.show_mini_goban;
         this.namespacedPreferenceSet(
             "observed-games-force-list",
-            !this.state.force_list,
+            !nextShowMiniGoban,
             data.Replication.REMOTE_OVERWRITES_LOCAL,
         );
-        this.setState({ force_list: !this.state.force_list });
+        this.setState({
+            force_list: !nextShowMiniGoban,
+            show_mini_goban: nextShowMiniGoban,
+        });
     };
 
     render() {
         const n_filters = Object.keys(this.state.filters).length;
+        const forceList = this.state.force_list || Boolean(this.props.forceList);
 
         return (
             <div className="ObserveGamesComponent">
@@ -361,8 +371,11 @@ export class ObserveGamesComponent extends React.PureComponent<
                                     {n_filters ? `(${n_filters})` : ""}
                                 </button>
                                 <button
-                                    className={this.state.force_list ? "active" : ""}
-                                    onClick={this.toggleForceList}
+                                    className={forceList ? "active" : ""}
+                                    onClick={
+                                        this.props.forceList ? undefined : this.toggleGameListView
+                                    }
+                                    disabled={Boolean(this.props.forceList)}
                                 >
                                     <i className="fa fa-list"></i>
                                 </button>
@@ -425,8 +438,10 @@ export class ObserveGamesComponent extends React.PureComponent<
                     emptyMessage={_("No games being played")}
                     miniGobanProps={this.props.miniGobanProps}
                     namesByGobans={this.props.namesByGobans}
-                    forceList={this.state.force_list}
+                    forceList={forceList}
+                    forceMiniGoban={this.state.show_mini_goban}
                     lineSummaryMode={"both-players"}
+                    onSelectGameId={this.props.onSelectGameId}
                 />
             </div>
         );
