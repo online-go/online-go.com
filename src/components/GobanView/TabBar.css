@@ -1,0 +1,82 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.GobanView-tab-bar {
+    display: flex;
+    align-items: center;
+    border-top: 1px solid var(--shade3);
+    background: var(--shade4);
+    padding: 0.25rem 0.5rem;
+    padding-bottom: calc(0.25rem + constant(safe-area-inset-bottom));
+    padding-bottom: calc(0.25rem + env(safe-area-inset-bottom));
+    padding-left: calc(0.5rem + env(safe-area-inset-left));
+    padding-right: calc(0.5rem + env(safe-area-inset-right));
+    flex-shrink: 0;
+    min-height: calc(var(--goban-view-tab-bar-height) + env(safe-area-inset-bottom));
+    z-index: 5;
+
+    .GobanView-tab-bar-left {
+        display: flex;
+        gap: 0.5rem;
+        margin-right: auto;
+    }
+
+    .GobanView-tab-bar-center {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .GobanView-tab-bar-right {
+        display: flex;
+        gap: 0.5rem;
+        margin-left: auto;
+    }
+
+    .GobanView-tab-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        border: none;
+        border-radius: 0.25rem;
+        background: transparent;
+        color: var(--fg);
+        cursor: pointer;
+        position: relative;
+        font-size: 1.1rem;
+        opacity: 0.6;
+        transition:
+            opacity 0.15s ease,
+            color 0.15s ease;
+
+        &:hover:not(:disabled) {
+            opacity: 1;
+        }
+
+        &:disabled {
+            opacity: 0.25;
+            cursor: not-allowed;
+        }
+
+        &.active {
+            opacity: 1;
+            background: var(--shade2);
+            border-color: var(--shade2);
+        }
+    }
+}

@@ -20,12 +20,16 @@
     display: inline-block;
 
     .GameHistoryFilterPopover-toggle {
-        &.filter-active {
+        [data-theme="light"] &.filter-active {
             color: var(--primary);
+        }
 
-            .fa-filter {
-                color: var(--primary);
-            }
+        [data-theme="accessible"] &.filter-active {
+            color: var(--primary-light);
+        }
+
+        [data-theme="dark"] &.filter-active {
+            color: var(--primary-light);
         }
     }
 

@@ -30,6 +30,8 @@
     --private-chat-width: 20rem;
     --navbar-height: 3rem;
     --below-navbar: 3.3rem;
+    --goban-view-sidebar-width: 400px;
+    --goban-view-tab-bar-height: 3rem;
 
     /* Chat */
     --channel-utils-height: 8.4rem;
