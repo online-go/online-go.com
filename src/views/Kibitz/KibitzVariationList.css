@@ -17,6 +17,7 @@
         flex: 1 1 auto;
         min-height: 0;
         overflow-y: auto;
+        touch-action: pan-y;
         padding-bottom: 0.05rem;
     }
 
@@ -77,9 +78,13 @@
         transition:
             background-color 120ms ease,
             box-shadow 120ms ease;
+        touch-action: pan-y;
+        -webkit-touch-callout: none;
+    }
 
-        &:hover,
-        &:focus-visible {
+    @media (hover: hover) and (pointer: fine) {
+        .variation-recall:hover,
+        .variation-recall:focus-visible {
             background: color-mix(in srgb, var(--shade2) 70%, transparent);
             outline: none;
         }
@@ -130,12 +135,37 @@
             background-color 120ms ease,
             box-shadow 120ms ease,
             color 120ms ease;
+        touch-action: pan-y;
+        -webkit-touch-callout: none;
         width: auto;
+    }
 
-        &:hover,
-        &:focus-visible {
+    @media (hover: hover) and (pointer: fine) {
+        .variation-toggle:hover,
+        .variation-toggle:focus-visible {
             color: var(--fg);
             outline: none;
+        }
+    }
+
+    @media (hover: none) and (pointer: coarse) {
+        .variation-scroll,
+        .variation-recall,
+        .variation-toggle {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            user-select: none;
+        }
+
+        .variation-recall:active,
+        .variation-recall:focus,
+        .variation-toggle:active,
+        .variation-toggle:focus {
+            background: transparent;
+            box-shadow: none;
+            color: inherit;
+            outline: none;
+            transition: none;
         }
     }
 
@@ -249,6 +279,15 @@
     .variation-empty {
         padding: 0.4rem 0 0;
     }
+}
+
+:root .KibitzVariationList,
+[data-theme="light"] .KibitzVariationList {
+    background: #fff;
+}
+
+[data-theme="dark"] .KibitzVariationList {
+    background: #000;
 }
 
 [data-theme="light"] .KibitzVariationList {

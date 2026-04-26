@@ -65,7 +65,7 @@ interface KibitzSharedStreamPanelProps {
     room: KibitzRoomSummary;
     items: KibitzStreamItem[];
     variations: KibitzVariationSummary[];
-    onOpenVariation: (variationId: string) => void;
+    onOpenVariation: (variationId: string, focusVariation?: boolean) => void;
     onSendMessage: (text: string) => void;
     isMobileLayout: boolean;
     compact?: boolean;
@@ -587,7 +587,7 @@ export function KibitzSharedStreamPanel({
                                 data-variation-id={entry.item.variation_id}
                                 onClick={() =>
                                     entry.item.variation_id &&
-                                    onOpenVariation(entry.item.variation_id)
+                                    onOpenVariation(entry.item.variation_id, true)
                                 }
                             >
                                 {label}

@@ -315,7 +315,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     }, [controller, isMobileLayout, secondaryPane.variation_id, variations, visibleVariationIds]);
 
     const onOpenVariation = React.useCallback(
-        (variationId: string) => {
+        (variationId: string, focusVariation: boolean = false) => {
             if (
                 !visibleVariationIds.includes(variationId) &&
                 visibleVariationIds.length >= MAX_VISIBLE_VARIATIONS
@@ -351,7 +351,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
                 return [...previous, variationId];
             });
-            setVariationFocusRequestId((previous) => previous + 1);
+            if (focusVariation) {
+                setVariationFocusRequestId((previous) => previous + 1);
+            }
             controller.openVariation(variationId);
             if (isMobileLayout) {
                 setMobileCompanionPanel("compare");
@@ -609,7 +611,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         }
 
         setPendingPostedVariation(null);
-        onOpenVariation(postedVariation.id);
+        onOpenVariation(postedVariation.id, true);
     }, [onOpenVariation, pendingPostedVariation, variations]);
 
     const variationPanels = (
@@ -627,6 +629,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                     currentGameId={currentGameId}
                     visibleVariationIds={visibleVariationIds}
                     selectedVariationId={secondaryPane.variation_id}
+                    variationFocusRequestId={variationFocusRequestId}
                     variationColorIndexes={variationColorIndexes}
                     blockedVariationFlashId={blockedVariationFlashId}
                     onRecallVariation={onOpenVariation}
@@ -1071,6 +1074,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                         isDraftingVariation={
                                                             secondaryPane.variation_source_game_id !=
                                                             null
+                                                        }
+                                                        variationFocusRequestId={
+                                                            variationFocusRequestId
                                                         }
                                                         onOpenVariation={onOpenVariation}
                                                         onToggleVariation={onToggleVariation}

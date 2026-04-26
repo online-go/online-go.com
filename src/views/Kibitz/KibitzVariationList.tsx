@@ -27,6 +27,7 @@ interface KibitzVariationListProps {
     currentGameId?: number | null;
     visibleVariationIds?: string[];
     selectedVariationId?: string | null;
+    variationFocusRequestId?: number;
     variationColorIndexes?: Record<string, number>;
     blockedVariationFlashId?: string | null;
     onRecallVariation: (variationId: string) => void;
@@ -39,6 +40,7 @@ export function KibitzVariationList({
     currentGameId,
     visibleVariationIds = [],
     selectedVariationId = null,
+    variationFocusRequestId = 0,
     variationColorIndexes = {},
     blockedVariationFlashId = null,
     onRecallVariation,
@@ -46,7 +48,7 @@ export function KibitzVariationList({
     title,
 }: KibitzVariationListProps): React.ReactElement {
     const selectedVariationElementRef = React.useRef<HTMLDivElement | null>(null);
-    const previousSelectedVariationIdRef = React.useRef<string | null>(null);
+    const previousFocusRequestIdRef = React.useRef<number>(variationFocusRequestId);
     const visibleVariationIdSet = React.useMemo(
         () => new Set(visibleVariationIds),
         [visibleVariationIds],
@@ -81,21 +83,21 @@ export function KibitzVariationList({
     }, [currentGameId, variations]);
 
     React.useEffect(() => {
+        if (previousFocusRequestIdRef.current === variationFocusRequestId) {
+            return;
+        }
+
+        previousFocusRequestIdRef.current = variationFocusRequestId;
+
         if (!selectedVariationId) {
-            previousSelectedVariationIdRef.current = null;
             return;
         }
 
-        if (previousSelectedVariationIdRef.current === selectedVariationId) {
-            return;
-        }
-
-        previousSelectedVariationIdRef.current = selectedVariationId;
         selectedVariationElementRef.current?.scrollIntoView({
             block: "center",
             behavior: "smooth",
         });
-    }, [selectedVariationId]);
+    }, [selectedVariationId, variationFocusRequestId]);
 
     return (
         <div className="KibitzVariationList">

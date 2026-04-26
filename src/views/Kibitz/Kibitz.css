@@ -459,6 +459,7 @@
         }
 
         .Kibitz-mobile-panel-surface {
+            background: #fff;
             display: flex;
             flex: 1 1 auto;
             flex-direction: column;
@@ -474,6 +475,7 @@
         }
 
         .Kibitz-mobile-panel {
+            background: #fff;
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
@@ -515,7 +517,7 @@
 
         .Kibitz-mobile-panel-empty,
         .Kibitz-mobile-panel-note {
-            background: var(--card-background-color);
+            background: #fff;
             color: var(--text-color-faded);
             font-size: 0.8rem;
             line-height: 1.25;
@@ -524,6 +526,15 @@
 
         .Kibitz-mobile-panel-note {
             color: var(--fg);
+        }
+
+        [data-theme="dark"] {
+            .Kibitz-mobile-panel-surface,
+            .Kibitz-mobile-panel,
+            .Kibitz-mobile-panel-empty,
+            .Kibitz-mobile-panel-note {
+                background: #000;
+            }
         }
 
         .Kibitz-mobile-compare-empty {

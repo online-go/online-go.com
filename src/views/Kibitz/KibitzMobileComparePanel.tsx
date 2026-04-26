@@ -44,7 +44,8 @@ interface KibitzMobileComparePanelProps {
     secondaryPane: KibitzSecondaryPaneState;
     selectedVariation: KibitzVariationSummary | null;
     isDraftingVariation: boolean;
-    onOpenVariation: (variationId: string) => void;
+    variationFocusRequestId: number;
+    onOpenVariation: (variationId: string, focusVariation?: boolean) => void;
     onToggleVariation: (variationId: string) => void;
     onPostVariation: (controller: GobanController, sourceGameId: number | undefined) => void;
     onDiscardDraft?: () => void;
@@ -73,6 +74,7 @@ export function KibitzMobileComparePanel({
     secondaryPane,
     selectedVariation,
     isDraftingVariation,
+    variationFocusRequestId,
     onOpenVariation,
     onToggleVariation,
     onPostVariation,
@@ -271,6 +273,7 @@ export function KibitzMobileComparePanel({
                             currentGameId={room.current_game?.game_id}
                             visibleVariationIds={visibleVariationIds}
                             selectedVariationId={secondaryPane.variation_id}
+                            variationFocusRequestId={variationFocusRequestId}
                             variationColorIndexes={variationColorIndexes}
                             blockedVariationFlashId={blockedVariationFlashId}
                             onRecallVariation={onOpenVariation}

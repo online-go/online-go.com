@@ -1,5 +1,5 @@
 .KibitzSharedStreamPanel {
-    background: var(--card-background-color);
+    background: #fff;
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
@@ -18,6 +18,7 @@
 }
 
 .KibitzSharedStreamPanel-pane {
+    background: #fff;
     display: flex;
     flex-direction: column;
     min-height: 0;
@@ -44,6 +45,7 @@
 }
 
 .KibitzSharedStreamPanel-paneBody {
+    background: #fff;
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
@@ -53,6 +55,7 @@
 }
 
 .KibitzSharedStreamPanel-paneFeed {
+    background: #fff;
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
@@ -63,7 +66,7 @@
 }
 
 .KibitzSharedStreamPanel-gamePane .KibitzSharedStreamPanel-paneFeed {
-    background: color-mix(in srgb, var(--primary) 6%, var(--card-background-color));
+    background: #fff;
 }
 
 .KibitzSharedStreamPanel-paneFeed .chat-lines,
@@ -102,7 +105,7 @@
 }
 
 .KibitzSharedStreamPanel-paneFeed .kibitz-chat-entry.game-chat {
-    background: color-mix(in srgb, var(--primary) 8%, var(--card-background-color));
+    background: #fff;
     border-left: 2px solid color-mix(in srgb, var(--primary) 28%, transparent);
     margin-top: 0.18rem;
     padding: 0.28rem 0.5rem 0.35rem;
@@ -141,6 +144,7 @@
 }
 
 .KibitzSharedStreamPanel-composer {
+    background: #fff;
     padding: 0 0.75rem 0.5rem;
 }
 
@@ -177,6 +181,7 @@
     height: 30px;
     min-height: 30px;
     overflow: hidden;
+    background: #fff;
     padding: 0 0.75rem 0.5rem;
 }
 
@@ -184,6 +189,19 @@
     box-sizing: border-box;
     margin: 0;
     width: 100%;
+}
+
+[data-theme="dark"] {
+    .KibitzSharedStreamPanel,
+    .KibitzSharedStreamPanel-pane,
+    .KibitzSharedStreamPanel-paneBody,
+    .KibitzSharedStreamPanel-paneFeed,
+    .KibitzSharedStreamPanel-gamePane .KibitzSharedStreamPanel-paneFeed,
+    .KibitzSharedStreamPanel-paneFeed .kibitz-chat-entry.game-chat,
+    .KibitzSharedStreamPanel-composer,
+    .KibitzSharedStreamPanel-disabledComposer {
+        background: #000;
+    }
 }
 
 .KibitzSharedStreamPanel-mobileSwitcher {
