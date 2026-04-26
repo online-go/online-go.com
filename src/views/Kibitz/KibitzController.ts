@@ -621,12 +621,13 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.partActiveChat();
         const proxy = chat_manager.join(channel);
         this._active_chat_proxy = proxy;
-        proxy.on("chat", this.syncFromChat);
-        proxy.on("chat-removed", this.syncFromChat);
-        proxy.on("join", this.syncFromChat);
-        proxy.on("part", this.syncFromChat);
+        proxy.on("chat", this.syncMessagesFromChat);
+        proxy.on("chat-removed", this.syncMessagesFromChat);
+        proxy.on("join", this.syncPresenceFromChat);
+        proxy.on("part", this.syncPresenceFromChat);
         // Initial sync; chat_log will be populated by the join's history replay.
-        this.syncFromChat();
+        this.syncMessagesFromChat();
+        this.syncPresenceFromChat();
     }
 
     private partActiveChat(): void {
@@ -636,7 +637,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         }
     }
 
-    private syncFromChat = (): void => {
+    private syncMessagesFromChat = (): void => {
         const proxy = this._active_chat_proxy;
         const room = this._active_room;
         if (!proxy || !room) {
@@ -653,6 +654,14 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         }
         this.setStream(items);
         this.setVariations(variations);
+    };
+
+    private syncPresenceFromChat = (): void => {
+        const proxy = this._active_chat_proxy;
+        const room = this._active_room;
+        if (!proxy || !room) {
+            return;
+        }
 
         // users_by_join keeps insertion order (oldest-first); reverse so the
         // KibitzPresence roster shows newest joiners at the top.
@@ -682,18 +691,18 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             const full = mapBackendRoomToFull(payload.room);
             this.setPermissions({ ...DEFAULT_PERMISSIONS, ...payload.permissions });
             // setActiveRoom must precede subscribeActiveRoom: joinActiveChat's
-            // initial syncFromChat reads _active_room to decide which rooms
+            // initial syncMessagesFromChat reads _active_room to decide which rooms
             // entry to mirror user_count into, and _active_chat_proxy for the
             // count. If set in the wrong order, we'd write the new proxy's
             // (empty, pre-roster) count to the OLD room's entry — zeroing it.
             this.setActiveRoom(full);
-            // joinActiveChat fires syncFromChat, which sets stream/variations
+            // joinActiveChat fires syncMessagesFromChat and syncPresenceFromChat, which set stream/variations
             // from the channel's chat_log — empty if this is a fresh join,
             // populated if chat_manager was already holding the channel for
             // another subscriber (KibitzSharedStreamPanel also joins it). The
             // previous explicit setStream/setVariations([]) here was a leftover
             // placeholder from before 1C-b wired chat-derived state and would
-            // wipe whatever syncFromChat had just produced.
+            // wipe whatever syncMessagesFromChat had just produced.
             this.subscribeActiveRoom(full.channel);
             this.setProposals([]);
             this.setSecondaryPane({
@@ -736,7 +745,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         }
         if (this._active_room) {
             this.setActiveRoom({ ...this._active_room, current_game: game });
-            // No syncFromChat needed here any more: variation derivation no
+            // No syncMessagesFromChat needed here any more: variation derivation no
             // longer depends on room.current_game now that bodies carry their
             // own game_id (see mapAnalysisToVariation).
         }

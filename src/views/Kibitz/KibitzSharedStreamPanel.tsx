@@ -513,7 +513,7 @@ export function KibitzSharedStreamPanel({
 
     const onRoomKeyPress = React.useCallback(
         (event: React.KeyboardEvent<HTMLInputElement>) => {
-            if (event.charCode !== 13) {
+            if (event.key !== "Enter") {
                 return;
             }
 
