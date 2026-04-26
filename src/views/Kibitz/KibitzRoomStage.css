@@ -934,7 +934,7 @@
     [data-theme="dark"] {
         .Kibitz-mobile-board-host,
         .mobile-board-fit-slot {
-            background: #000;
+            background: var(--card-background-color);
         }
     }
 

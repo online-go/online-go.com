@@ -838,7 +838,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                 type="button"
                                 className="Kibitz-mobile-room-bar"
                                 style={{
-                                    backgroundColor: "var(--mobile-room-bar-bg)",
+                                    backgroundColor: "var(--card-background-color)",
                                     backgroundImage: "none",
                                 }}
                                 onClick={onToggleMobileRooms}
@@ -1026,7 +1026,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                         <div
                                             className="Kibitz-mobile-panel-surface"
                                             style={{
-                                                background: "var(--mobile-room-bar-bg)",
+                                                background: "var(--card-background-color)",
                                             }}
                                         >
                                             {mobileCompanionPanel === "chat" ? (
@@ -1067,7 +1067,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                 <div
                                                     className="Kibitz-mobile-panel Kibitz-mobile-compare-panel"
                                                     style={{
-                                                        background: "var(--mobile-room-bar-bg)",
+                                                        background: "var(--card-background-color)",
                                                     }}
                                                 >
                                                     <KibitzMobileComparePanel

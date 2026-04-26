@@ -226,9 +226,13 @@
         color 120ms ease;
 }
 
+.KibitzSharedStreamPanel-mobileSwitchButton:not(.active):not([aria-pressed="true"]) {
+    background: color-mix(in srgb, var(--shade2) 45%, transparent);
+}
+
 .KibitzSharedStreamPanel-mobileSwitchButton.active,
 .KibitzSharedStreamPanel-mobileSwitchButton[aria-pressed="true"] {
-    background: color-mix(in srgb, var(--shade2) 65%, transparent);
+    background: color-mix(in srgb, var(--shade2) 70%, transparent);
     color: var(--fg);
 }
 
