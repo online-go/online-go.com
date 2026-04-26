@@ -92,9 +92,6 @@
 
     .variation-item.selected .variation-recall {
         background: color-mix(in srgb, var(--variation-selected-color) 8%, transparent);
-        box-shadow:
-            0 0 0 1px color-mix(in srgb, var(--variation-selected-color) 18%, transparent),
-            0 0 0.9rem color-mix(in srgb, var(--variation-selected-color) 12%, transparent);
         border-radius: 0.22rem;
     }
 
@@ -171,9 +168,6 @@
 
     .variation-item.selected .variation-toggle {
         background: color-mix(in srgb, var(--variation-selected-color) 4%, transparent);
-        box-shadow:
-            0 0 0 1px color-mix(in srgb, var(--variation-selected-color) 16%, transparent),
-            0 0 0.7rem color-mix(in srgb, var(--variation-selected-color) 10%, transparent);
         border-radius: 0.22rem;
     }
 

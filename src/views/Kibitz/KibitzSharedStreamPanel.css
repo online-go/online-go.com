@@ -144,6 +144,24 @@
     width: calc(100% - 0.1rem);
 }
 
+[data-theme="light"] {
+    .KibitzSharedStreamPanel.mobile .KibitzSharedStreamPanel-paneFeed .variation-post {
+        background: var(--shade3);
+        box-shadow: 0 0.08rem 0.24rem color-mix(in srgb, var(--shade1) 70%, transparent);
+    }
+
+    .KibitzSharedStreamPanel.mobile .KibitzSharedStreamPanel-paneFeed .variation-post:hover {
+        background: var(--shade2);
+    }
+
+    .KibitzSharedStreamPanel.mobile .KibitzSharedStreamPanel-paneFeed .variation-post-flash {
+        background: color-mix(in srgb, var(--primary) 14%, var(--shade3));
+        box-shadow:
+            inset 0 0 0 1px color-mix(in srgb, var(--primary) 35%, transparent),
+            0 0.08rem 0.24rem color-mix(in srgb, var(--shade1) 30%, transparent);
+    }
+}
+
 .KibitzSharedStreamPanel-paneFeed .variation-post:hover {
     background: color-mix(in srgb, var(--shade1) 100%, transparent);
 }
