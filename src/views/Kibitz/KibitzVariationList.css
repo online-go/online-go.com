@@ -295,11 +295,11 @@
 
 :root .KibitzVariationList,
 [data-theme="light"] .KibitzVariationList {
-    background: #fff;
+    background: var(--card-background-color);
 }
 
 [data-theme="dark"] .KibitzVariationList {
-    background: #000;
+    background: var(--card-background-color);
 }
 
 [data-theme="light"] .KibitzVariationList {

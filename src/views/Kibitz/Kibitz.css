@@ -5,6 +5,7 @@
     height: calc(100dvh - var(--below-navbar));
     overflow: hidden;
     padding: 0;
+    --mobile-room-bar-bg: #fff;
 
     .Kibitz-layout {
         display: grid;
@@ -97,6 +98,10 @@
     .Kibitz-mobile-panel-surface {
         display: none;
     }
+}
+
+[data-theme="dark"] .Kibitz {
+    --mobile-room-bar-bg: #000;
 }
 
 @media (max-width: 1000px) {
@@ -203,25 +208,31 @@
         }
 
         .Kibitz-mobile-room-bar {
+            all: unset;
             align-items: center;
-            background: var(--card-background-color);
-            border: 0;
-            border-radius: 0;
-            box-shadow: none;
+            box-sizing: border-box;
             cursor: pointer;
             display: grid;
             gap: 0rem 0.5rem;
             grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
             margin: 0;
+            min-width: 0;
             padding: 2px 0.4rem;
+            position: relative;
             text-align: left;
             transition:
                 background-color 0.2s ease,
                 filter 0.2s ease;
-            min-width: 0;
             width: 100%;
-            position: relative;
             z-index: 40;
+        }
+
+        .Kibitz-mobile-room-bar::before {
+            background: var(--mobile-room-bar-bg);
+            content: "";
+            inset: 0;
+            pointer-events: none;
+            position: absolute;
         }
 
         .Kibitz-mobile-room-bar:hover,
@@ -560,7 +571,14 @@
         }
 
         .Kibitz-mobile-compare-panel .KibitzVariationList {
+            background: var(--mobile-room-bar-bg);
             padding: 0.75rem 0.75rem 0.4rem 1.15rem;
+        }
+
+        .Kibitz-mobile-panel-surface > .KibitzSharedStreamPanel,
+        .Kibitz-mobile-panel-surface > .Kibitz-mobile-panel,
+        .Kibitz-mobile-panel-surface > .Kibitz-mobile-panel .KibitzVariationList {
+            background: var(--mobile-room-bar-bg);
         }
 
         .Kibitz-footer-panels {
@@ -571,4 +589,8 @@
             overflow: visible;
         }
     }
+}
+
+[data-theme="dark"] .Kibitz-mobile-room-bar {
+    background: #000 !important;
 }

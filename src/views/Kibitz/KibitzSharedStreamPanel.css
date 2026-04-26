@@ -1,5 +1,5 @@
 .KibitzSharedStreamPanel {
-    background: #fff;
+    background: var(--card-background-color);
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
@@ -18,7 +18,7 @@
 }
 
 .KibitzSharedStreamPanel-pane {
-    background: #fff;
+    background: var(--card-background-color);
     display: flex;
     flex-direction: column;
     min-height: 0;
@@ -45,7 +45,7 @@
 }
 
 .KibitzSharedStreamPanel-paneBody {
-    background: #fff;
+    background: var(--card-background-color);
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
@@ -55,7 +55,7 @@
 }
 
 .KibitzSharedStreamPanel-paneFeed {
-    background: #fff;
+    background: var(--card-background-color);
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
@@ -66,7 +66,7 @@
 }
 
 .KibitzSharedStreamPanel-gamePane .KibitzSharedStreamPanel-paneFeed {
-    background: #fff;
+    background: var(--card-background-color);
 }
 
 .KibitzSharedStreamPanel-paneFeed .chat-lines,
@@ -105,7 +105,7 @@
 }
 
 .KibitzSharedStreamPanel-paneFeed .kibitz-chat-entry.game-chat {
-    background: #fff;
+    background: var(--card-background-color);
     border-left: 2px solid color-mix(in srgb, var(--primary) 28%, transparent);
     margin-top: 0.18rem;
     padding: 0.28rem 0.5rem 0.35rem;
@@ -144,7 +144,7 @@
 }
 
 .KibitzSharedStreamPanel-composer {
-    background: #fff;
+    background: var(--card-background-color);
     padding: 0 0.75rem 0.5rem;
 }
 
@@ -181,7 +181,7 @@
     height: 30px;
     min-height: 30px;
     overflow: hidden;
-    background: #fff;
+    background: var(--card-background-color);
     padding: 0 0.75rem 0.5rem;
 }
 
@@ -200,7 +200,7 @@
     .KibitzSharedStreamPanel-paneFeed .kibitz-chat-entry.game-chat,
     .KibitzSharedStreamPanel-composer,
     .KibitzSharedStreamPanel-disabledComposer {
-        background: #000;
+        background: var(--card-background-color);
     }
 }
 

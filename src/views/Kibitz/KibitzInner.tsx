@@ -837,6 +837,10 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                             <button
                                 type="button"
                                 className="Kibitz-mobile-room-bar"
+                                style={{
+                                    backgroundColor: "var(--mobile-room-bar-bg)",
+                                    backgroundImage: "none",
+                                }}
                                 onClick={onToggleMobileRooms}
                                 aria-expanded={mobileOverlayMode !== null}
                             >
@@ -1001,6 +1005,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                 <div
                                     ref={mobileDividerRef}
                                     className="Kibitz-mobile-divider"
+                                    style={{ background: "var(--mobile-room-bar-bg)" }}
                                     role="separator"
                                     aria-orientation="horizontal"
                                     aria-label={pgettext(
@@ -1018,7 +1023,12 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                 : " no-active-proposal")
                                         }
                                     >
-                                        <div className="Kibitz-mobile-panel-surface">
+                                        <div
+                                            className="Kibitz-mobile-panel-surface"
+                                            style={{
+                                                background: "var(--mobile-room-bar-bg)",
+                                            }}
+                                        >
                                             {mobileCompanionPanel === "chat" ? (
                                                 <KibitzSharedStreamPanel
                                                     mode="live"
@@ -1054,7 +1064,12 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                 </div>
                                             ) : null}
                                             {mobileCompanionPanel === "compare" ? (
-                                                <div className="Kibitz-mobile-panel Kibitz-mobile-compare-panel">
+                                                <div
+                                                    className="Kibitz-mobile-panel Kibitz-mobile-compare-panel"
+                                                    style={{
+                                                        background: "var(--mobile-room-bar-bg)",
+                                                    }}
+                                                >
                                                     <KibitzMobileComparePanel
                                                         controller={mobileCompareController}
                                                         room={resolvedRoom}

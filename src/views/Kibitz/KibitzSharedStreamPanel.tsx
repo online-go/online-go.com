@@ -690,7 +690,10 @@ export function KibitzSharedStreamPanel({
             }
         >
             {showMobileSwitcher ? (
-                <div className="KibitzSharedStreamPanel-mobileSwitcher">
+                <div
+                    className="KibitzSharedStreamPanel-mobileSwitcher"
+                    style={{ background: "var(--mobile-room-bar-bg)" }}
+                >
                     <button
                         type="button"
                         className={
