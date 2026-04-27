@@ -102,7 +102,12 @@ function useSquareFitSize<T extends HTMLElement>(layoutKey: string) {
             const slotRect = element.getBoundingClientRect();
             const slotWidth = Math.floor(slotRect.width || element.clientWidth || 0);
             const slotHeight = Math.floor(slotRect.height || element.clientHeight || 0);
-            const usableHeight = Math.max(slotHeight, fallbackHeight);
+            // Clamp to the space actually available in the parent layout so the goban
+            // does not keep its previous taller size when the controls row grows.
+            const usableHeight =
+                fallbackHeight > 0
+                    ? Math.min(slotHeight || fallbackHeight, fallbackHeight)
+                    : slotHeight;
             const nextSize = Math.max(0, Math.floor(Math.min(slotWidth, usableHeight)));
             setSize((previousSize) => (previousSize === nextSize ? previousSize : nextSize));
         };
