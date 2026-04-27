@@ -61,7 +61,10 @@ interface KibitzRoomStageProps {
     onMobileCompareControllerChange?: (controller: GobanController | null) => void;
 }
 
-function useSquareFitSize<T extends HTMLElement>(layoutKey: string) {
+function useSquareFitSize<T extends HTMLElement>(
+    layoutKey: string,
+    constrainToParentHeight = false,
+) {
     const [element, setElement] = React.useState<T | null>(null);
     const [size, setSize] = React.useState(0);
     const ref = React.useCallback((node: T | null) => {
@@ -102,12 +105,11 @@ function useSquareFitSize<T extends HTMLElement>(layoutKey: string) {
             const slotRect = element.getBoundingClientRect();
             const slotWidth = Math.floor(slotRect.width || element.clientWidth || 0);
             const slotHeight = Math.floor(slotRect.height || element.clientHeight || 0);
-            // Clamp to the space actually available in the parent layout so the goban
-            // does not keep its previous taller size when the controls row grows.
-            const usableHeight =
-                fallbackHeight > 0
+            const usableHeight = constrainToParentHeight
+                ? fallbackHeight > 0
                     ? Math.min(slotHeight || fallbackHeight, fallbackHeight)
-                    : slotHeight;
+                    : slotHeight
+                : Math.max(slotHeight, fallbackHeight);
             const nextSize = Math.max(0, Math.floor(Math.min(slotWidth, usableHeight)));
             setSize((previousSize) => (previousSize === nextSize ? previousSize : nextSize));
         };
@@ -130,7 +132,7 @@ function useSquareFitSize<T extends HTMLElement>(layoutKey: string) {
             window.removeEventListener("resize", scheduleMeasure);
             resizeObserver.disconnect();
         };
-    }, [element, layoutKey]);
+    }, [constrainToParentHeight, element, layoutKey]);
 
     return [ref, size] as const;
 }
@@ -275,6 +277,7 @@ export function KibitzRoomStage({
     );
     const [mobileBoardSlotRef, mobileBoardSize] = useSquareFitSize<HTMLDivElement>(
         `mobile-${secondaryPane.variation_id ?? ""}-${secondaryPane.preview_game_id ?? ""}-${secondaryPane.variation_source_game_id ?? ""}-${mobileCompanionPanel ?? ""}`,
+        true,
     );
     const secondaryMoveTreeKey = React.useMemo(() => {
         if (secondaryPane.variation_id != null) {
