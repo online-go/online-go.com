@@ -477,13 +477,19 @@ function ChatLines({
             return;
         }
 
-        const tf = div.scrollHeight - div.scrollTop - 10 < div.offsetHeight;
+        // Because chat-log uses flex-direction: column-reverse to achieve
+        // bottom-anchoring, the scroll direction is inverted: scrollTop is 0
+        // when at the bottom, and becomes negative as the user scrolls up.
+        // Therefore the "is at bottom" check changes from the normal
+        //   scrollHeight - scrollTop - 10 < offsetHeight
+        // to simply checking whether scrollTop is close to 0.
+        const tf = div.scrollTop > -10;
         if (tf !== scrolled_to_bottom) {
             scrolled_to_bottom = tf;
             div.className =
                 (rtl_mode ? "rtl chat-lines " : "chat-lines ") + (tf ? "autoscrolling" : "");
         }
-        scrolled_to_bottom = div.scrollHeight - div.scrollTop - 10 < div.offsetHeight;
+        scrolled_to_bottom = div.scrollTop > -10;
     }, [channel]);
 
     window.requestAnimationFrame(() => {
@@ -493,10 +499,10 @@ function ChatLines({
         }
 
         if (scrolled_to_bottom) {
-            div.scrollTop = div.scrollHeight;
+            div.scrollTop = 0;
             setTimeout(() => {
                 try {
-                    div.scrollTop = div.scrollHeight;
+                    div.scrollTop = 0;
                 } catch {
                     // ignore error
                 }
@@ -513,13 +519,20 @@ function ChatLines({
             onScroll={onScroll}
             onClick={focusInput}
         >
-            {proxy?.channel.chat_log.slice(-500).map((line, idx) => {
-                const ll = last_line;
-                last_line = line;
-                return (
-                    <ChatLine key={line.message.i || `system-${idx}`} line={line} lastLine={ll} />
-                );
-            })}
+            <div className="chat-lines-spacer" />
+            <div className="chat-lines-inner">
+                {proxy?.channel.chat_log.slice(-500).map((line, idx) => {
+                    const ll = last_line;
+                    last_line = line;
+                    return (
+                        <ChatLine
+                            key={line.message.i || `system-${idx}`}
+                            line={line}
+                            lastLine={ll}
+                        />
+                    );
+                })}
+            </div>
         </div>
     );
 }
@@ -549,9 +562,9 @@ function ChatInput({
     }, [channel]);
 
     const onKeyPress = useCallback(
-        (event: React.KeyboardEvent<HTMLInputElement>): boolean | undefined => {
-            if (event.charCode === 13) {
-                const input = event.target as HTMLInputElement;
+        (event: React.KeyboardEvent<HTMLTextAreaElement>): boolean | undefined => {
+            if (!event.shiftKey && event.key === "Enter") {
+                const input = event.target as HTMLTextAreaElement;
                 if (!socket.connected) {
                     void alert.fire(_("Connection to server lost"));
                     return false;

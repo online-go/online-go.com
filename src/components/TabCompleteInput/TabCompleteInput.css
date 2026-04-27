@@ -17,3 +17,47 @@
 .TabCompleteInput {
     /* here */
 }
+
+.chat-input-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: visible;
+}
+
+.chat-count-warning {
+    position: absolute;
+    top: -25px;
+    right: 0;
+    width: auto;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: inherit;
+    text-align: right;
+    box-sizing: border-box;
+    pointer-events: none;
+}
+
+.chat-count-warning.warning {
+    background-color: var(--warning-bg);
+    color: var(--warning-fg);
+}
+.chat-count-warning.error {
+    background-color: var(--error-boundary-bg);
+    color: var(--error-boundary-fg);
+}
+
+.chat-input-wrapper textarea {
+    width: 100%;
+    min-width: 5rem;
+    resize: none;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: 1.2;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    padding: 3px 3px;
+    outline: none;
+}

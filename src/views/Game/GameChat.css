@@ -35,11 +35,12 @@
         display: flex;
         width: 100%;
         max-height: calc(100% - 30px);
+        min-height: 0;
         position: relative;
     }
 
     .chat-log-container {
-        background-color: red !important;
+        /* background-color: red !important; */
         display: inline-block;
         position: absolute;
         top: 0;
@@ -61,12 +62,24 @@
     }
 
     .chat-log {
+        flex: 1;
         height: 100%;
+        overflow-y: scroll;
         background-color: var(--shade5);
         border-bottom: 1px solid transparent;
-        overflow-y: scroll;
+        display: flex;
+        flex-direction: column-reverse;
     }
 
+    .chat-log-spacer {
+        flex: 1;
+    }
+
+    .chat-log-inner {
+        display: flex;
+        flex-direction: column;
+    }
+    
     .chat-log.autoscrolling {
         border-bottom-color: var(--success);
     }
@@ -90,6 +103,7 @@
     .chat-line {
         width: 100%;
         overflow-wrap: break-word;
+        white-space: pre-wrap;
     }
 
     .timestamp {
@@ -152,13 +166,14 @@
     .chat-input-container {
         flex-shrink: 0;
         flex-grow: 0;
-        height: 30px;
-        flex-basis: 30px;
+        /* flex-basis: auto; */
         display: flex;
         /* max-width: 100%; */
         /* width: 100%; */
-        overflow: hidden;
-        align-items: stretch;
+        /* overflow: hidden; */
+        align-items: flex-end;
+        /* flex-direction: column; */
+        border-top: 1px solid var(--shade3);
 
         button {
             flex-shrink: 0;
@@ -171,11 +186,11 @@
             white-space: nowrap;
         }
 
-        input {
+        textarea {
+            min-height: 30px;
             min-width: 5rem;
             flex-grow: 1;
             flex-shrink: 1;
-            width: 5rem;
         }
 
         .qc-toggle {
@@ -186,6 +201,7 @@
             background-color: var(--default-button);
             color: var(--default-button-color);
             transition: background-color 0.3s ease;
+            height: 30px;
 
             &:hover, &:focus {
                 text-decoration: none;

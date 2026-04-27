@@ -19,6 +19,7 @@ import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
 import * as React from "react";
 import { LineText } from "@/components/misc-ui";
+import { sanitizeMessage } from "@/lib/misc";
 import { Link } from "react-router-dom";
 import { _, pgettext, interpolate, current_language, moment } from "@/lib/translate";
 import { Player } from "@/components/Player";
@@ -186,15 +187,16 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
     }, []);
 
     const onKeyPress = (event: React.KeyboardEvent<HTMLElement>): boolean | void => {
-        if (event.key === "Enter") {
-            const input = event.target as HTMLInputElement;
+        if (!event.shiftKey && event.key === "Enter") {
+            const input = event.target as HTMLTextAreaElement;
             if (input.className === "qc-option") {
                 //saveEdit();
                 console.warn("Quick chat editing not implemented");
                 event.preventDefault();
             } else {
-                goban.sendChat(input.value, selected_chat_log);
+                goban.sendChat(sanitizeMessage(input.value), selected_chat_log);
                 input.value = "";
+                input.style.height = "auto";
                 return false;
             }
         }
@@ -206,23 +208,29 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
             return;
         }
 
-        const tf = chat_log.scrollHeight - chat_log.scrollTop - 10 < chat_log.offsetHeight;
+        // Because chat-log uses flex-direction: column-reverse to achieve
+        // bottom-anchoring, the scroll direction is inverted: scrollTop is 0
+        // when at the bottom, and becomes negative as the user scrolls up.
+        // Therefore the "is at bottom" check changes from the normal
+        //   scrollHeight - scrollTop - 10 < offsetHeight
+        // to simply checking whether scrollTop is close to 0.
+        const tf = chat_log.scrollTop > -10;
+
         if (tf !== scrolled_to_bottom.current) {
             scrolled_to_bottom.current = tf;
             chat_log.className = "chat-log " + (tf ? "autoscrolling" : "");
         }
-        scrolled_to_bottom.current =
-            chat_log.scrollHeight - chat_log.scrollTop - 10 < chat_log.offsetHeight;
+        scrolled_to_bottom.current = chat_log.scrollTop > -10;
     };
 
     const autoscroll = () => {
         const chat_log = ref_chat_log.current;
 
         if (chat_log && scrolled_to_bottom.current) {
-            chat_log.scrollTop = chat_log.scrollHeight;
+            chat_log.scrollTop = 0;
             setTimeout(() => {
                 if (chat_log) {
-                    chat_log.scrollTop = chat_log.scrollHeight;
+                    chat_log.scrollTop = 0;
                 }
             }, 100);
         }
@@ -250,19 +258,22 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
                         className="chat-log autoscrolling"
                         onScroll={updateScrollPosition}
                     >
-                        {chat_lines.current.map((line: ChatLine) => {
-                            const ll = last_line;
-                            last_line = line;
-                            return (
-                                <GameChatLine
-                                    key={line.chat_id}
-                                    line={line}
-                                    last_line={ll}
-                                    game_id={props.game_id}
-                                    review_id={props.review_id}
-                                />
-                            );
-                        })}
+                        <div className="chat-log-spacer" />
+                        <div className="chat-log-inner">
+                            {chat_lines.current.map((line: ChatLine) => {
+                                const ll = last_line;
+                                last_line = line;
+                                return (
+                                    <GameChatLine
+                                        key={line.chat_id}
+                                        line={line}
+                                        last_line={ll}
+                                        game_id={props.game_id}
+                                        review_id={props.review_id}
+                                    />
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
                 {(show_player_list || null) && <ChatUserList channel={channel} />}
@@ -319,6 +330,7 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
                     onKeyPress={onKeyPress}
                     onFocus={() => setShowQuickChat(false)}
                 />
+                {/* quick chat toggle */}
                 {userIsPlayer &&
                 user.email_validated &&
                 props.game_id &&
@@ -330,6 +342,7 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
                         onClick={() => setShowQuickChat(!show_quick_chat)}
                     />
                 ) : null}
+                {/* ChatUserCount */}
                 <ChatUserCount
                     onClick={togglePlayerList}
                     active={show_player_list}
@@ -384,7 +397,7 @@ export function QuickChat(props: QuickChatProperties): React.ReactElement {
 
     const onKeyPress = (event: React.KeyboardEvent<HTMLElement>) => {
         if (event.key === "Enter") {
-            const input = event.target as HTMLInputElement;
+            const input = event.target as HTMLTextAreaElement;
             if (input.className === "qc-option") {
                 saveEdit();
                 event.preventDefault();
