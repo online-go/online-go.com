@@ -36,6 +36,7 @@ import { TournamentIndicator } from "@/components/Announcements";
 import { FriendIndicator } from "@/components/FriendList";
 import { ChatIndicator } from "@/components/Chat";
 import { GoTVIndicator } from "@/views/GoTV";
+import kibitzIcon from "../../../assets/icons/Kibitz96.png";
 import { Menu, MenuContext } from "./Menu";
 
 import { logout } from "@/lib/auth";
@@ -234,6 +235,20 @@ export function NavBar(): React.ReactElement {
                                 to="/observe-games"
                                 icon={<i className="fa fa-eye" />}
                             />
+                            <MenuLink
+                                title={_("Kibitz")}
+                                to="/kibitz"
+                                icon={
+                                    <span
+                                        className="kibitz-nav-icon"
+                                        aria-hidden={true}
+                                        style={{
+                                            WebkitMaskImage: `url(${kibitzIcon})`,
+                                            maskImage: `url(${kibitzIcon})`,
+                                        }}
+                                    />
+                                }
+                            />
                             <MenuLink title={"GoTV"} to="/gotv" icon={<i className="fa fa-tv" />} />
                         </Menu>
                         <Menu
@@ -253,11 +268,6 @@ export function NavBar(): React.ReactElement {
                                 title={_("Chat")}
                                 to="/chat"
                                 icon={<i className="fa fa-comment-o" />}
-                            />
-                            <MenuLink
-                                title={_("Kibitz")}
-                                to="/kibitz"
-                                icon={<i className="fa fa-eye" />}
                             />
                             <MenuLink
                                 title={_("Groups")}
