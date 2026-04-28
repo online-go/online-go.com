@@ -284,7 +284,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         }
 
         void controller.selectRoom(nextRoomId);
-    }, [controller, navigate, roomId]);
+    }, [controller, navigate, roomId, rooms]);
 
     const onSelectRoom = React.useCallback(
         (nextRoomId: string) => {
