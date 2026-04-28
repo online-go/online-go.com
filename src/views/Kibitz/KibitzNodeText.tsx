@@ -51,10 +51,14 @@ export function KibitzNodeText({
     return (
         <textarea
             className={"form-control KibitzNodeText" + (editable ? " editable" : " read-only")}
-            placeholder={pgettext(
-                "Placeholder for Kibitz variation move-node comments",
-                "Move comments...",
-            )}
+            placeholder={
+                editable
+                    ? pgettext(
+                          "Placeholder for Kibitz variation move-node comments",
+                          "Move comments...",
+                      )
+                    : undefined
+            }
             rows={3}
             value={nodeText}
             onChange={(event) => {
