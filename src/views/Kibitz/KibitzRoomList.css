@@ -189,6 +189,12 @@
     }
 }
 
+@media (min-width: 1001px) {
+    [data-theme="light"] .KibitzRoomList {
+        background: var(--bg);
+    }
+}
+
 @media (max-width: 1000px) {
     .KibitzRoomList {
         .KibitzRoomList-titleRow {

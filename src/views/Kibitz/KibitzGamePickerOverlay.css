@@ -1380,3 +1380,15 @@
         overflow: hidden;
     }
 }
+
+@media (min-width: 1001px) {
+    [data-theme="light"] .KibitzGamePickerOverlay-shell,
+    [data-theme="light"] .KibitzGamePickerOverlay-selectionCard,
+    [data-theme="light"] .KibitzGamePickerOverlay-roomFields,
+    [data-theme="light"] .KibitzGamePickerOverlay-confirmation,
+    [data-theme="light"] .KibitzGamePickerOverlay-mobileRoomFields,
+    [data-theme="light"] .KibitzGamePickerOverlay-suggestion,
+    [data-theme="light"] .KibitzGamePickerOverlay-popup {
+        background: var(--bg);
+    }
+}

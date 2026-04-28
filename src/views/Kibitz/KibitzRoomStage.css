@@ -1169,3 +1169,13 @@
         }
     }
 }
+
+@media (min-width: 1001px) {
+    [data-theme="light"] .KibitzRoomStage {
+        background: var(--card-background-color);
+    }
+
+    [data-theme="light"] .KibitzRoomStage .board-panel {
+        background: var(--bg);
+    }
+}

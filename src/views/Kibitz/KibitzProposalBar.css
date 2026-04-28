@@ -384,6 +384,20 @@
     }
 }
 
+@media (min-width: 1001px) {
+    [data-theme="light"] .KibitzProposalBar {
+        background: var(--bg);
+    }
+
+    [data-theme="light"] .KibitzProposalBar .proposal-vote-rail {
+        background: var(--bg);
+    }
+
+    [data-theme="light"] .KibitzProposalBar .proposal-expanded-preview {
+        background: var(--bg);
+    }
+}
+
 @media (max-width: 1200px) {
     .KibitzProposalBar {
         .proposal-announcement {

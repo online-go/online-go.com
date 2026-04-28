@@ -619,3 +619,21 @@
 [data-theme="dark"] .Kibitz-mobile-room-bar {
     background: var(--card-background-color) !important;
 }
+
+@media (min-width: 1001px) {
+    [data-theme="light"] .Kibitz {
+        background: var(--card-background-color);
+    }
+
+    [data-theme="light"] .KibitzRoomStage {
+        background: var(--card-background-color);
+    }
+
+    [data-theme="light"] .Kibitz-sidebar {
+        background: var(--card-background-color);
+    }
+
+    [data-theme="light"] .Kibitz-footer-panels {
+        background: var(--bg);
+    }
+}

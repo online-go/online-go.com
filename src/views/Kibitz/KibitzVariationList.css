@@ -327,3 +327,22 @@
             color-mix(in srgb, var(--variation-selected-color) 26%, transparent);
     }
 }
+
+@media (min-width: 1001px) {
+    [data-theme="light"] .KibitzVariationList {
+        background: var(--bg);
+    }
+
+    [data-theme="light"] .KibitzVariationList .variation-item.visible .variation-recall,
+    [data-theme="light"] .KibitzVariationList .variation-item.visible .variation-toggle {
+        background: var(--bg);
+    }
+
+    [data-theme="light"] .KibitzVariationList .variation-item.selected .variation-recall {
+        background: color-mix(in srgb, var(--variation-selected-color) 20%, var(--bg));
+    }
+
+    [data-theme="light"] .KibitzVariationList .variation-item.selected .variation-toggle {
+        background: color-mix(in srgb, var(--variation-selected-color) 10%, var(--bg));
+    }
+}

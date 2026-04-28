@@ -66,3 +66,13 @@
         margin-top: 0.375rem;
     }
 }
+
+@media (min-width: 1001px) {
+    [data-theme="light"] .KibitzDebugPanel {
+        background: var(--bg);
+    }
+
+    [data-theme="light"] .KibitzDebugPanel .room-debug {
+        background: var(--bg);
+    }
+}

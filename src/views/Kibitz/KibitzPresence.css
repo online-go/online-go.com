@@ -145,3 +145,9 @@
         line-height: 1.2;
     }
 }
+
+@media (min-width: 1001px) {
+    [data-theme="light"] .KibitzPresence {
+        background: var(--bg);
+    }
+}

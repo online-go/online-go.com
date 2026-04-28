@@ -119,6 +119,21 @@
    from room chat visually, so the per-line wrapper styling that used to
    distinguish them was producing roughly a blank line of vertical space
    per chat line. */
+
+@media (min-width: 1001px) {
+    [data-theme="light"] .KibitzSharedStreamPanel {
+        background: var(--bg);
+    }
+
+    [data-theme="light"] .KibitzSharedStreamPanel-pane,
+    [data-theme="light"] .KibitzSharedStreamPanel-paneBody,
+    [data-theme="light"] .KibitzSharedStreamPanel-paneFeed,
+    [data-theme="light"] .KibitzSharedStreamPanel-gamePane .KibitzSharedStreamPanel-paneFeed,
+    [data-theme="light"] .KibitzSharedStreamPanel-composer,
+    [data-theme="light"] .KibitzSharedStreamPanel-disabledComposer {
+        background: var(--bg);
+    }
+}
 .KibitzSharedStreamPanel-paneFeed .kibitz-chat-entry.game-chat .chat-line {
     margin-top: 0;
 }
