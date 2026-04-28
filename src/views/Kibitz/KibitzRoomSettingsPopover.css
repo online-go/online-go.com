@@ -1,15 +1,19 @@
 .KibitzRoomSettingsPopover {
+    background: var(--card-background-color);
+    border: 1px solid var(--shade3);
+    box-shadow: 0 12px 28px color-mix(in srgb, var(--shade1) 20%, transparent);
     color: var(--fg);
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
     min-width: 0;
-    padding: 0.6rem 0.65rem;
+    padding: 0.75rem 0.8rem;
 
     .KibitzRoomSettingsPopover-title {
         font-size: 0.9rem;
         font-weight: 700;
         line-height: 1.2;
+        padding-bottom: 0.1rem;
     }
 
     .KibitzRoomSettingsPopover-fieldLabel {
@@ -42,6 +46,7 @@
 
     .KibitzRoomSettingsPopover-action,
     .KibitzRoomSettingsPopover-secondaryAction {
+        appearance: none;
         border-radius: 0.35rem;
         cursor: pointer;
         font-size: 0.88rem;
@@ -52,9 +57,9 @@
     }
 
     .KibitzRoomSettingsPopover-action {
-        background: var(--button-primary-bg);
-        border: 0;
-        color: var(--button-primary-fg);
+        background: var(--primary);
+        border: 1px solid var(--primary);
+        color: var(--colored-background-fg);
     }
 
     .KibitzRoomSettingsPopover-action:hover,
@@ -63,13 +68,13 @@
     }
 
     .KibitzRoomSettingsPopover-secondaryAction {
-        background: transparent;
+        background: var(--shade2);
         border: 1px solid var(--border-color);
         color: var(--fg);
     }
 
     .KibitzRoomSettingsPopover-secondaryAction:hover,
     .KibitzRoomSettingsPopover-secondaryAction:focus-visible {
-        background: color-mix(in srgb, var(--shade1) 20%, transparent);
+        background: var(--shade3);
     }
 }
