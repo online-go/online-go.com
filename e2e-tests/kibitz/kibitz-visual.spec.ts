@@ -552,6 +552,139 @@ async function captureKibitzRowSizing(
     });
 }
 
+async function openKibitzEqualCompareMode(page: Page, route: string) {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await load(page, route);
+    await page.waitForTimeout(1000);
+
+    const variationTrigger = page
+        .locator(
+            ".KibitzVariationList .variation-recall, .KibitzVariationList .variation-item, .KibitzRoomStream .variation-post",
+        )
+        .first();
+    if (await variationTrigger.count()) {
+        await expect(variationTrigger).toBeVisible({ timeout: 15000 });
+        await variationTrigger.scrollIntoViewIfNeeded();
+        await variationTrigger.click({ force: true });
+    } else {
+        const createVariationButton = page
+            .locator(
+                ".board-panel .kibitz-create-variation-button, .secondary-board-empty-state .kibitz-create-variation-button",
+            )
+            .first();
+        await expect(createVariationButton).toBeVisible({ timeout: 15000 });
+        await createVariationButton.scrollIntoViewIfNeeded();
+        await createVariationButton.click({ force: true });
+    }
+    await page.waitForTimeout(400);
+
+    const stageBoards = page.locator(".KibitzRoomStage-boards");
+    const viewModeButton = page.locator(".KibitzDividerHandle .divider-mode-button.compare-view");
+    const stageClassAfterOpen = await stageBoards.first().getAttribute("class");
+    if (!stageClassAfterOpen?.includes("secondary-pane-equal") && (await viewModeButton.count())) {
+        await viewModeButton.first().click({ force: true });
+        await page.waitForTimeout(400);
+    }
+
+    const increaseButton = page.locator(".KibitzDividerHandle .divider-arrow.increase");
+    for (let i = 0; i < 4; i++) {
+        const className = await stageBoards.first().getAttribute("class");
+        if (className?.includes("secondary-pane-equal")) {
+            break;
+        }
+
+        if (await increaseButton.count()) {
+            await increaseButton.first().click({ force: true });
+            await page.waitForTimeout(200);
+        }
+    }
+
+    await expect(stageBoards.first()).toHaveClass(/secondary-pane-equal/);
+    await expect(
+        page.locator(".board-panel.main-board .KibitzBoard.main-board-surface"),
+    ).toBeVisible({
+        timeout: 15000,
+    });
+    await page.waitForTimeout(500);
+}
+
+interface LayoutRect {
+    top: number;
+    bottom: number;
+    left: number;
+    right: number;
+    width: number;
+    height: number;
+}
+
+interface MainCompareBoardLayout {
+    boardFitSlot: LayoutRect;
+    kibitzBoard: LayoutRect;
+    gobanContainer: LayoutRect;
+    goban: LayoutRect;
+    transportRow: LayoutRect;
+}
+
+async function measureMainCompareBoardLayout(page: Page): Promise<MainCompareBoardLayout> {
+    return page.evaluate(() => {
+        function rectOf(selector: string): LayoutRect {
+            const element = document.querySelector(selector);
+            if (!element) {
+                throw new Error(`Missing Kibitz layout element: ${selector}`);
+            }
+
+            const bounds = element.getBoundingClientRect();
+            return {
+                top: bounds.top,
+                bottom: bounds.bottom,
+                left: bounds.left,
+                right: bounds.right,
+                width: bounds.width,
+                height: bounds.height,
+            };
+        }
+
+        return {
+            boardFitSlot: rectOf(".board-panel.main-board .board-fit-slot"),
+            kibitzBoard: rectOf(".board-panel.main-board .KibitzBoard.main-board-surface"),
+            gobanContainer: rectOf(
+                ".board-panel.main-board .KibitzBoard.main-board-surface .goban-container",
+            ),
+            goban: rectOf(".board-panel.main-board .KibitzBoard.main-board-surface .Goban .Goban"),
+            transportRow: rectOf(".board-panel.main-board .main-board-transport-row"),
+        };
+    });
+}
+
+ogsTest.describe("@Kibitz layout regressions", () => {
+    ogsTest("left compare board wrappers stay tight to the rendered goban", async ({ page }) => {
+        await openKibitzEqualCompareMode(page, "/kibitz/top-19x19?demo-kibitz=1");
+
+        const layout = await measureMainCompareBoardLayout(page);
+        const wrapperTolerance = 4;
+        const transportGapTolerance = 8;
+
+        expect(layout.kibitzBoard.width - layout.goban.width).toBeLessThanOrEqual(wrapperTolerance);
+        expect(layout.kibitzBoard.height - layout.goban.height).toBeLessThanOrEqual(
+            wrapperTolerance,
+        );
+        expect(layout.gobanContainer.width - layout.goban.width).toBeLessThanOrEqual(
+            wrapperTolerance,
+        );
+        expect(layout.gobanContainer.height - layout.goban.height).toBeLessThanOrEqual(
+            wrapperTolerance,
+        );
+        expect(layout.boardFitSlot.height - layout.goban.height).toBeLessThanOrEqual(
+            wrapperTolerance,
+        );
+        expect(layout.transportRow.top - layout.goban.bottom).toBeLessThanOrEqual(
+            transportGapTolerance,
+        );
+        expect(layout.goban.left - layout.kibitzBoard.left).toBeLessThanOrEqual(2);
+        expect(layout.kibitzBoard.right - layout.goban.right).toBeLessThanOrEqual(2);
+    });
+});
+
 ogsTest.describe("@Manual Kibitz visual inspection harness", () => {
     ogsTest.skip(
         !process.env.KIBITZ_VISUAL,

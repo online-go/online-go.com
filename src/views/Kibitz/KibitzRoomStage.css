@@ -159,6 +159,7 @@
 
             .main-board .board-fit-slot {
                 justify-items: start;
+                padding-top: 0;
             }
 
             .secondary-board .board-fit-slot {
@@ -236,6 +237,19 @@
                 padding-right: 0.5rem;
             }
 
+            .main-board .board-content-draft,
+            .main-board .board-content-preview {
+                grid-template-rows:
+                    var(--equal-meta-height)
+                    auto
+                    auto
+                    auto
+                    auto
+                    auto
+                    auto
+                    auto;
+            }
+
             .main-board .board-title {
                 font-size: 0.92rem;
             }
@@ -285,8 +299,13 @@
             }
 
             .main-board .KibitzBoard {
+                max-height: min(100%, 20rem, 30vh);
                 max-width: min(100%, 20rem, 30vh);
                 width: auto;
+            }
+
+            .main-board .KibitzBoard.main-board-surface {
+                padding: 0;
             }
 
             .main-board .KibitzBoardControls {
