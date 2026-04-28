@@ -342,7 +342,7 @@
 
 .KibitzSharedStreamPanel-divider {
     align-items: center;
-    background: color-mix(in srgb, var(--card-background-color) 78%, var(--shade4));
+    background: color-mix(in srgb, var(--card-background-color) 78%, var(--shade3));
     border: 0;
     box-shadow:
         inset 0 1px 0 color-mix(in srgb, var(--shade3) 50%, transparent),
@@ -359,7 +359,16 @@
     width: 100%;
 }
 
+@media (min-width: 1001px) {
+    [data-theme="light"] .KibitzSharedStreamPanel-divider:hover {
+        background-color: var(--shade5);
+        background-image: none;
+        filter: none;
+    }
+}
+
 .KibitzSharedStreamPanel-divider.is-dragging {
+    background: color-mix(in srgb, var(--card-background-color) 78%, var(--shade2));
     cursor: ns-resize;
 }
 
