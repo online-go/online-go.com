@@ -894,7 +894,11 @@ export function KibitzRoomStage({
                                 <div
                                     className={
                                         "board-meta" +
-                                        (secondaryPaneSize === "hidden" ? " board-meta-main" : "")
+                                        (secondaryPaneSize === "hidden"
+                                            ? " board-meta-main"
+                                            : secondaryPaneSize === "equal"
+                                              ? " board-meta-compare-inline"
+                                              : "")
                                     }
                                 >
                                     <div className="board-title-row">
@@ -933,7 +937,9 @@ export function KibitzRoomStage({
                                     </div>
                                     {onCreateVariation || onChangeBoard ? (
                                         <div className="board-meta-actions">
-                                            {mainGame && onCreateVariation ? (
+                                            {mainGame &&
+                                            onCreateVariation &&
+                                            secondaryPaneSize !== "equal" ? (
                                                 <button
                                                     type="button"
                                                     className="xs primary kibitz-create-variation-button"

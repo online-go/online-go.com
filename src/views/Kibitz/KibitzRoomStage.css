@@ -112,7 +112,7 @@
                 display: grid;
                 align-content: start;
                 grid-template-rows:
-                    var(--equal-meta-height)
+                    auto
                     minmax(0, 1fr)
                     auto
                     auto
@@ -124,7 +124,7 @@
 
             .board-panel .board-content-variation {
                 grid-template-rows:
-                    var(--equal-meta-height)
+                    auto
                     minmax(0, 1fr)
                     auto
                     auto
@@ -135,7 +135,7 @@
 
             .board-panel .board-content-preview {
                 grid-template-rows:
-                    var(--equal-meta-height)
+                    auto
                     minmax(0, 1fr)
                     auto
                     minmax(var(--equal-variation-height), 1fr)
@@ -144,7 +144,7 @@
 
             .board-panel .board-content-posted-variation {
                 grid-template-rows:
-                    var(--equal-meta-height)
+                    auto
                     minmax(0, 1fr)
                     auto
                     minmax(var(--equal-variation-height), 0.3fr)
@@ -164,12 +164,15 @@
 
             .secondary-board .board-fit-slot {
                 justify-items: center;
+                padding-top: 0;
             }
 
             .board-meta {
-                height: var(--equal-meta-height);
                 justify-content: flex-start;
+                min-height: var(--equal-meta-height);
                 overflow: hidden;
+                padding-bottom: 0.25rem;
+                padding-top: 0;
             }
 
             .players {
@@ -200,7 +203,6 @@
                 grid-template-columns: auto minmax(0, 1fr);
                 justify-content: flex-start;
                 padding-left: 0.75rem;
-                padding-top: 0.5rem;
             }
 
             .secondary-board .board-meta-variation-inline .players.player-single {
@@ -237,10 +239,29 @@
                 padding-right: 0.5rem;
             }
 
+            .main-board .board-meta-compare-inline {
+                align-items: center;
+                display: grid;
+                gap: 0.5rem;
+                grid-template-columns: minmax(0, 1fr) auto;
+                padding-left: 0;
+            }
+
+            .main-board .board-meta-compare-inline .players.player-pair {
+                flex-wrap: nowrap;
+                min-width: 0;
+            }
+
+            .main-board .board-meta-compare-inline .board-meta-actions {
+                align-self: center;
+                grid-column: 2;
+                margin-left: 0;
+            }
+
             .main-board .board-content-draft,
             .main-board .board-content-preview {
                 grid-template-rows:
-                    var(--equal-meta-height)
+                    auto
                     auto
                     auto
                     auto

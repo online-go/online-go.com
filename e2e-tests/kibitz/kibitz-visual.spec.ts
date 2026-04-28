@@ -618,15 +618,21 @@ interface LayoutRect {
 }
 
 interface MainCompareBoardLayout {
+    mainBoardMeta: LayoutRect;
     boardFitSlot: LayoutRect;
-    kibitzBoard: LayoutRect;
-    gobanContainer: LayoutRect;
-    goban: LayoutRect;
-    transportRow: LayoutRect;
+    kibitzBoard?: LayoutRect;
+    gobanContainer?: LayoutRect;
+    goban?: LayoutRect;
+    transportRow?: LayoutRect;
+    secondaryBoardMeta?: LayoutRect;
+    secondaryBoardFitSlot?: LayoutRect;
 }
 
-async function measureMainCompareBoardLayout(page: Page): Promise<MainCompareBoardLayout> {
-    return page.evaluate(() => {
+async function measureMainCompareBoardLayout(
+    page: Page,
+    options?: { includeSecondary?: boolean },
+): Promise<MainCompareBoardLayout> {
+    return page.evaluate((evaluateOptions) => {
         function rectOf(selector: string): LayoutRect {
             const element = document.querySelector(selector);
             if (!element) {
@@ -644,7 +650,8 @@ async function measureMainCompareBoardLayout(page: Page): Promise<MainCompareBoa
             };
         }
 
-        return {
+        const result: MainCompareBoardLayout = {
+            mainBoardMeta: rectOf(".board-panel.main-board .board-meta"),
             boardFitSlot: rectOf(".board-panel.main-board .board-fit-slot"),
             kibitzBoard: rectOf(".board-panel.main-board .KibitzBoard.main-board-surface"),
             gobanContainer: rectOf(
@@ -653,7 +660,14 @@ async function measureMainCompareBoardLayout(page: Page): Promise<MainCompareBoa
             goban: rectOf(".board-panel.main-board .KibitzBoard.main-board-surface .Goban .Goban"),
             transportRow: rectOf(".board-panel.main-board .main-board-transport-row"),
         };
-    });
+
+        if (evaluateOptions?.includeSecondary) {
+            result.secondaryBoardMeta = rectOf(".board-panel.secondary-board .board-meta");
+            result.secondaryBoardFitSlot = rectOf(".board-panel.secondary-board .board-fit-slot");
+        }
+
+        return result;
+    }, options);
 }
 
 ogsTest.describe("@Kibitz layout regressions", () => {
@@ -664,24 +678,38 @@ ogsTest.describe("@Kibitz layout regressions", () => {
         const wrapperTolerance = 4;
         const transportGapTolerance = 8;
 
-        expect(layout.kibitzBoard.width - layout.goban.width).toBeLessThanOrEqual(wrapperTolerance);
-        expect(layout.kibitzBoard.height - layout.goban.height).toBeLessThanOrEqual(
+        expect(layout.kibitzBoard!.width - layout.goban!.width).toBeLessThanOrEqual(
             wrapperTolerance,
         );
-        expect(layout.gobanContainer.width - layout.goban.width).toBeLessThanOrEqual(
+        expect(layout.kibitzBoard!.height - layout.goban!.height).toBeLessThanOrEqual(
             wrapperTolerance,
         );
-        expect(layout.gobanContainer.height - layout.goban.height).toBeLessThanOrEqual(
+        expect(layout.gobanContainer!.width - layout.goban!.width).toBeLessThanOrEqual(
             wrapperTolerance,
         );
-        expect(layout.boardFitSlot.height - layout.goban.height).toBeLessThanOrEqual(
+        expect(layout.gobanContainer!.height - layout.goban!.height).toBeLessThanOrEqual(
             wrapperTolerance,
         );
-        expect(layout.transportRow.top - layout.goban.bottom).toBeLessThanOrEqual(
+        expect(layout.boardFitSlot.height - layout.goban!.height).toBeLessThanOrEqual(
+            wrapperTolerance,
+        );
+        expect(layout.transportRow!.top - layout.goban!.bottom).toBeLessThanOrEqual(
             transportGapTolerance,
         );
-        expect(layout.goban.left - layout.kibitzBoard.left).toBeLessThanOrEqual(2);
-        expect(layout.kibitzBoard.right - layout.goban.right).toBeLessThanOrEqual(2);
+        expect(layout.goban!.left - layout.kibitzBoard!.left).toBeLessThanOrEqual(2);
+        expect(layout.kibitzBoard!.right - layout.goban!.right).toBeLessThanOrEqual(2);
+        expect(layout.boardFitSlot.top).toBeGreaterThanOrEqual(layout.mainBoardMeta.bottom);
+    });
+
+    ogsTest("compare board meta rows finish before their board fit slots", async ({ page }) => {
+        await openKibitzEqualCompareMode(page, "/kibitz/user-fea5dced");
+
+        const layout = await measureMainCompareBoardLayout(page, { includeSecondary: true });
+
+        expect(layout.boardFitSlot.top).toBeGreaterThanOrEqual(layout.mainBoardMeta.bottom);
+        expect(layout.secondaryBoardFitSlot!.top).toBeGreaterThanOrEqual(
+            layout.secondaryBoardMeta!.bottom,
+        );
     });
 });
 
