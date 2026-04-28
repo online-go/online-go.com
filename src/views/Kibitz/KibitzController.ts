@@ -622,6 +622,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         proxy.on("chat-removed", this.syncMessagesFromChat);
         proxy.on("join", this.syncPresenceFromChat);
         proxy.on("part", this.syncPresenceFromChat);
+        proxy.on("user-metadata-update", this.syncPresenceFromChat);
         // Initial sync; chat_log will be populated by the join's history replay.
         this.syncMessagesFromChat();
         this.syncPresenceFromChat();
@@ -633,6 +634,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             this._active_chat_proxy.off("chat-removed", this.syncMessagesFromChat);
             this._active_chat_proxy.off("join", this.syncPresenceFromChat);
             this._active_chat_proxy.off("part", this.syncPresenceFromChat);
+            this._active_chat_proxy.off("user-metadata-update", this.syncPresenceFromChat);
             this._active_chat_proxy.part();
             this._active_chat_proxy = null;
         }

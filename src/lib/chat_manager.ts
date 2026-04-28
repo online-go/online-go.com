@@ -95,6 +95,7 @@ interface Events {
     "chat-removed": any;
     join: Array<any>;
     part: any;
+    "user-metadata-update": { user: User; previous_user: User };
     "unread-count-changed": any;
 }
 
@@ -589,6 +590,14 @@ class ChatChannel extends TypedEventEmitter<Events> {
             );
             this._remove_from_sorted_lists(old_entry);
             this._insert_into_sorted_lists(user);
+            try {
+                this.emit("user-metadata-update", {
+                    user,
+                    previous_user: old_entry,
+                });
+            } catch (e) {
+                console.error(e);
+            }
             return;
         }
         this.handleJoins([user]);
@@ -820,6 +829,7 @@ export class ChatChannelProxy extends TypedEventEmitter<Events> {
         this.channel.on("topic", this._onTopic);
         this.channel.on("join", this._onJoin);
         this.channel.on("part", this._onPart);
+        this.channel.on("user-metadata-update", this._onUserMetadataUpdate);
         this.channel.on("chat-removed", this._onChatRemoved);
         this.channel.on("unread-count-changed", this._onUnreadChanged);
     }
@@ -840,6 +850,12 @@ export class ChatChannelProxy extends TypedEventEmitter<Events> {
     _onPart = (...args: any[]) => {
         this.emit.apply(this, ["part", args]);
     };
+    _onUserMetadataUpdate = (update?: { user: User; previous_user: User }) => {
+        if (!update) {
+            return;
+        }
+        this.emit("user-metadata-update", update);
+    };
     _onChatRemoved = (...args: any[]) => {
         this.emit.apply(this, ["chat-removed", args]);
     };
@@ -851,6 +867,7 @@ export class ChatChannelProxy extends TypedEventEmitter<Events> {
         this.channel.off("topic", this._onTopic);
         this.channel.off("join", this._onJoin);
         this.channel.off("part", this._onPart);
+        this.channel.off("user-metadata-update", this._onUserMetadataUpdate);
         this.channel.off("chat-removed", this._onChatRemoved);
         this.channel.off("unread-count-changed", this._onUnreadChanged);
         this.removeAllListeners();

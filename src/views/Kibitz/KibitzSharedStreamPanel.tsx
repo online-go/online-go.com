@@ -381,6 +381,7 @@ export function KibitzSharedStreamPanel({
         nextRoomProxy.on("chat-removed", sync);
         nextRoomProxy.on("join", sync);
         nextRoomProxy.on("part", sync);
+        nextRoomProxy.on("user-metadata-update", sync);
         sync();
 
         return () => {
@@ -388,6 +389,7 @@ export function KibitzSharedStreamPanel({
             nextRoomProxy.off("chat-removed", sync);
             nextRoomProxy.off("join", sync);
             nextRoomProxy.off("part", sync);
+            nextRoomProxy.off("user-metadata-update", sync);
             nextRoomProxy.part();
         };
     }, [mode, room.channel]);
