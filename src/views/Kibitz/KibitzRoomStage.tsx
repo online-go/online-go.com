@@ -935,22 +935,8 @@ export function KibitzRoomStage({
                                             <span className="player-name">{displayedWhite}</span>
                                         </div>
                                     </div>
-                                    {onCreateVariation || onChangeBoard ? (
+                                    {onChangeBoard ? (
                                         <div className="board-meta-actions">
-                                            {mainGame &&
-                                            onCreateVariation &&
-                                            secondaryPaneSize !== "equal" ? (
-                                                <button
-                                                    type="button"
-                                                    className="xs primary kibitz-create-variation-button"
-                                                    onClick={onCreateVariation}
-                                                >
-                                                    {pgettext(
-                                                        "Button label for opening Kibitz variation creation",
-                                                        "Create variation",
-                                                    )}
-                                                </button>
-                                            ) : null}
                                             {onChangeBoard ? (
                                                 <button
                                                     type="button"
@@ -976,12 +962,39 @@ export function KibitzRoomStage({
                                         onReady={setMainBoardController}
                                     />
                                 </div>
-                                <div className="main-board-transport-row">
-                                    <KibitzBoardControls
-                                        controller={mainBoardController}
-                                        variant="minimal"
-                                        totalMoves={displayedMoveNumber}
-                                    />
+                                <div
+                                    className={
+                                        "main-board-transport-row" +
+                                        (secondaryPaneSize === "hidden" &&
+                                        mainGame &&
+                                        onCreateVariation
+                                            ? " has-new-variation"
+                                            : "")
+                                    }
+                                >
+                                    <div className="transport-controls">
+                                        <KibitzBoardControls
+                                            controller={mainBoardController}
+                                            variant="minimal"
+                                            totalMoves={displayedMoveNumber}
+                                        />
+                                    </div>
+                                    {secondaryPaneSize === "hidden" &&
+                                    mainGame &&
+                                    onCreateVariation ? (
+                                        <div className="board-actions board-actions-inline board-actions-left main-board-new-variation-action">
+                                            <button
+                                                type="button"
+                                                className="kibitz-move-control create-variation-button"
+                                                onClick={onCreateVariation}
+                                            >
+                                                {pgettext(
+                                                    "Button label for opening Kibitz variation creation",
+                                                    "New variation",
+                                                )}
+                                            </button>
+                                        </div>
+                                    ) : null}
                                 </div>
                                 {secondaryPaneSize === "equal" ? (
                                     <div className="main-board-analyze-spacer" aria-hidden="true" />

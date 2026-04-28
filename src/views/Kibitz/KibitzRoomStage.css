@@ -739,6 +739,13 @@
             width: 100%;
         }
 
+        .main-board-transport-row.has-new-variation {
+            display: grid;
+            gap: 0.35rem;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            justify-content: initial;
+        }
+
         .main-board-variation-spacer {
             height: 0;
             min-height: 0;
@@ -757,6 +764,19 @@
             grid-column: 2;
             justify-self: center;
             min-width: 0;
+        }
+
+        .main-board-transport-row.has-new-variation .create-variation-button {
+            grid-column: 3;
+            justify-self: start;
+        }
+
+        .main-board-new-variation-action {
+            margin-top: 3.6px;
+        }
+
+        .secondary-board-transport-row .create-variation-button {
+            height: 29.1875px;
         }
 
         .secondary-board-transport-row .transport-controls .KibitzBoardControls.full {
@@ -806,14 +826,18 @@
         }
 
         .create-variation-button {
+            align-items: center;
             box-shadow: none;
             background: var(--primary);
             border: 0;
             color: var(--colored-background-fg);
             cursor: pointer;
+            display: inline-flex;
             font-size: 0.8rem;
+            height: 1.6rem;
+            justify-content: center;
             line-height: 1.1;
-            padding: 0.3rem 0.55rem;
+            padding: 0 0.55rem;
             text-align: left;
         }
 

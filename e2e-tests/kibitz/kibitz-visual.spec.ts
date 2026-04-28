@@ -672,32 +672,26 @@ async function measureMainCompareBoardLayout(
 
 ogsTest.describe("@Kibitz layout regressions", () => {
     ogsTest("left compare board wrappers stay tight to the rendered goban", async ({ page }) => {
-        await openKibitzEqualCompareMode(page, "/kibitz/top-19x19?demo-kibitz=1");
+        await openKibitzEqualCompareMode(page, "/kibitz/user-fea5dced");
 
         const layout = await measureMainCompareBoardLayout(page);
         const wrapperTolerance = 4;
         const transportGapTolerance = 8;
 
-        expect(layout.kibitzBoard!.width - layout.goban!.width).toBeLessThanOrEqual(
+        expect(layout.kibitzBoard!.width - layout.gobanContainer!.width).toBeLessThanOrEqual(
             wrapperTolerance,
         );
-        expect(layout.kibitzBoard!.height - layout.goban!.height).toBeLessThanOrEqual(
+        expect(layout.kibitzBoard!.height - layout.gobanContainer!.height).toBeLessThanOrEqual(
             wrapperTolerance,
         );
-        expect(layout.gobanContainer!.width - layout.goban!.width).toBeLessThanOrEqual(
+        expect(layout.boardFitSlot.height - layout.gobanContainer!.height).toBeLessThanOrEqual(
             wrapperTolerance,
         );
-        expect(layout.gobanContainer!.height - layout.goban!.height).toBeLessThanOrEqual(
-            wrapperTolerance,
-        );
-        expect(layout.boardFitSlot.height - layout.goban!.height).toBeLessThanOrEqual(
-            wrapperTolerance,
-        );
-        expect(layout.transportRow!.top - layout.goban!.bottom).toBeLessThanOrEqual(
+        expect(layout.transportRow!.top - layout.gobanContainer!.bottom).toBeLessThanOrEqual(
             transportGapTolerance,
         );
-        expect(layout.goban!.left - layout.kibitzBoard!.left).toBeLessThanOrEqual(2);
-        expect(layout.kibitzBoard!.right - layout.goban!.right).toBeLessThanOrEqual(2);
+        expect(layout.gobanContainer!.left - layout.kibitzBoard!.left).toBeLessThanOrEqual(2);
+        expect(layout.kibitzBoard!.right - layout.gobanContainer!.right).toBeLessThanOrEqual(2);
         expect(layout.boardFitSlot.top).toBeGreaterThanOrEqual(layout.mainBoardMeta.bottom);
     });
 
@@ -710,6 +704,28 @@ ogsTest.describe("@Kibitz layout regressions", () => {
         expect(layout.secondaryBoardFitSlot!.top).toBeGreaterThanOrEqual(
             layout.secondaryBoardMeta!.bottom,
         );
+        await expect(
+            page.locator(
+                ".board-panel.main-board .main-board-transport-row .create-variation-button",
+            ),
+        ).toHaveCount(0);
+        await expect(
+            page.locator(".board-panel.secondary-board .board-actions .create-variation-button"),
+        ).toBeVisible();
+    });
+
+    ogsTest("focus mode puts new variation beside the transport controls", async ({ page }) => {
+        await load(page, "/kibitz/user-fea5dced");
+        await page.waitForTimeout(500);
+
+        await expect(
+            page.locator(".board-panel.main-board .board-meta .kibitz-create-variation-button"),
+        ).toHaveCount(0);
+        await expect(
+            page.locator(
+                ".board-panel.main-board .main-board-transport-row .create-variation-button",
+            ),
+        ).toBeVisible();
     });
 });
 
