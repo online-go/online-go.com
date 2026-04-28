@@ -42,10 +42,12 @@
         display: flex;
         gap: 0.5rem;
         justify-content: flex-end;
+        flex-wrap: nowrap;
     }
 
     .KibitzRoomSettingsPopover-action,
-    .KibitzRoomSettingsPopover-secondaryAction {
+    .KibitzRoomSettingsPopover-secondaryAction,
+    .KibitzRoomSettingsPopover-deleteAction {
         appearance: none;
         border-radius: 0.35rem;
         cursor: pointer;
@@ -76,5 +78,16 @@
     .KibitzRoomSettingsPopover-secondaryAction:hover,
     .KibitzRoomSettingsPopover-secondaryAction:focus-visible {
         background: var(--shade3);
+    }
+
+    .KibitzRoomSettingsPopover-deleteAction {
+        background: var(--reject);
+        border: 1px solid var(--reject);
+        color: var(--colored-background-fg);
+    }
+
+    .KibitzRoomSettingsPopover-deleteAction:hover,
+    .KibitzRoomSettingsPopover-deleteAction:focus-visible {
+        filter: brightness(1.04);
     }
 }

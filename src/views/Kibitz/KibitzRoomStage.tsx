@@ -54,6 +54,7 @@ interface KibitzRoomStageProps {
     onChangeBoard?: () => void;
     canEditRoom?: boolean;
     onSaveRoomDetails?: (title: string, description: string) => Promise<boolean>;
+    onDeleteRoom?: () => Promise<boolean>;
     onCreateVariation?: () => void;
     onCreateVariationFromPostedVariation?: (variation: KibitzVariationSummary) => void;
     variationFocusRequestId: number;
@@ -185,6 +186,7 @@ export function KibitzRoomStage({
     onChangeBoard,
     canEditRoom = false,
     onSaveRoomDetails,
+    onDeleteRoom,
     onCreateVariation,
     onCreateVariationFromPostedVariation,
     variationFocusRequestId,
@@ -223,6 +225,7 @@ export function KibitzRoomStage({
                             close_all_popovers();
                             onChangeBoard?.();
                         }}
+                        onDeleteRoom={onDeleteRoom ?? (async () => false)}
                         onSaveRoomDetails={onSaveRoomDetails ?? (async () => false)}
                     />
                 ),
@@ -231,7 +234,7 @@ export function KibitzRoomStage({
                 container_class: "KibitzRoomStage-settingsPopoverContainer",
             });
         },
-        [canEditRoom, onChangeBoard, onSaveRoomDetails, room],
+        [canEditRoom, onChangeBoard, onDeleteRoom, onSaveRoomDetails, room],
     );
     const selectedVariationGameId = selectedVariation?.game_id ?? null;
     const visibleVariations = React.useMemo(() => {

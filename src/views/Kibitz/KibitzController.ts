@@ -25,7 +25,7 @@ import {
     type ChatMessage,
     type TypedChatBody,
 } from "@/lib/chat_manager";
-import { get, post, put } from "@/lib/requests";
+import { del, get, post, put } from "@/lib/requests";
 import { socket } from "@/lib/sockets";
 import { push_manager } from "@/components/UIPush/UIPush";
 import { interpolate, pgettext } from "@/lib/translate";
@@ -846,6 +846,17 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             return true;
         } catch (error) {
             console.warn("kibitz: updateRoomDetails failed", roomId, error);
+            return false;
+        }
+    }
+
+    public async deleteRoom(roomId: string): Promise<boolean> {
+        try {
+            await del(`kibitz/rooms/${roomId}`);
+            this.onRoomRemoved(roomId);
+            return true;
+        } catch (error) {
+            console.warn("kibitz: deleteRoom failed", roomId, error);
             return false;
         }
     }

@@ -691,6 +691,21 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         setMobileOverlayMode(null);
     }, []);
 
+    const handleDeleteRoom = React.useCallback(async (): Promise<boolean> => {
+        if (!resolvedRoom) {
+            return false;
+        }
+
+        const deleted = await controller.deleteRoom(resolvedRoom.id);
+        if (!deleted) {
+            return false;
+        }
+
+        setPickerMode(null);
+        void navigate("/kibitz");
+        return true;
+    }, [controller, navigate, resolvedRoom]);
+
     const onMobileDividerPointerDown = React.useCallback(
         (event: React.PointerEvent<HTMLDivElement>) => {
             if (!isMobileLayout) {
@@ -1007,6 +1022,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                 description,
                                             )
                                         }
+                                        onDeleteRoom={handleDeleteRoom}
                                         onCreateVariation={onCreateVariation}
                                         onCreateVariationFromPostedVariation={
                                             onCreateVariationFromPostedVariation
@@ -1150,6 +1166,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                         description,
                                     )
                                 }
+                                onDeleteRoom={handleDeleteRoom}
                                 onCreateVariation={onCreateVariation}
                                 onCreateVariationFromPostedVariation={
                                     onCreateVariationFromPostedVariation

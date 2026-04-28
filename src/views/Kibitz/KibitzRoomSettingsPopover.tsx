@@ -28,6 +28,7 @@ interface KibitzRoomSettingsPopoverProps {
     canChangeBoard: boolean;
     onClose: () => void;
     onRequestChangeBoard: () => void;
+    onDeleteRoom: () => Promise<boolean>;
     onSaveRoomDetails: (title: string, description: string) => Promise<boolean>;
 }
 
@@ -36,6 +37,7 @@ export function KibitzRoomSettingsPopover({
     canEditRoom,
     canChangeBoard,
     onClose,
+    onDeleteRoom,
     onRequestChangeBoard,
     onSaveRoomDetails,
 }: KibitzRoomSettingsPopoverProps): React.ReactElement {
@@ -44,12 +46,14 @@ export function KibitzRoomSettingsPopover({
     const [roomDescription, setRoomDescription] = React.useState(room.description ?? "");
     const [saving, setSaving] = React.useState(false);
     const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+    const [deleting, setDeleting] = React.useState(false);
 
     React.useEffect(() => {
         setView("menu");
         setRoomTitle(room.title);
         setRoomDescription(room.description ?? "");
         setSaving(false);
+        setDeleting(false);
         setErrorMessage(null);
     }, [room.description, room.title, room.id]);
 
@@ -75,6 +79,39 @@ export function KibitzRoomSettingsPopover({
             ),
         );
     }, [canEditRoom, onClose, onSaveRoomDetails, roomDescription, roomTitle, saving]);
+
+    const onDelete = React.useCallback(async () => {
+        if (!canEditRoom || deleting) {
+            return;
+        }
+
+        const confirmed = window.confirm(
+            pgettext(
+                "Confirmation for deleting a Kibitz room",
+                "Delete this room? This cannot be undone.",
+            ),
+        );
+        if (!confirmed) {
+            return;
+        }
+
+        setDeleting(true);
+        setErrorMessage(null);
+        const deleted = await onDeleteRoom();
+        setDeleting(false);
+
+        if (deleted) {
+            onClose();
+            return;
+        }
+
+        setErrorMessage(
+            pgettext(
+                "Error shown when room deletion fails in the Kibitz room settings popover",
+                "Could not delete room.",
+            ),
+        );
+    }, [canEditRoom, deleting, onClose, onDeleteRoom]);
 
     return (
         <div className="KibitzRoomSettingsPopover">
@@ -205,6 +242,21 @@ export function KibitzRoomSettingsPopover({
                                       "Saving...",
                                   )
                                 : pgettext("Button label for saving Kibitz room details", "Save")}
+                        </button>
+                        <button
+                            type="button"
+                            className="KibitzRoomSettingsPopover-deleteAction"
+                            onClick={() => {
+                                void onDelete();
+                            }}
+                            disabled={!canEditRoom || deleting || saving}
+                        >
+                            {deleting
+                                ? pgettext(
+                                      "Button label shown while deleting a Kibitz room",
+                                      "Deleting...",
+                                  )
+                                : pgettext("Button label for deleting a Kibitz room", "Delete")}
                         </button>
                     </div>
                 </>
