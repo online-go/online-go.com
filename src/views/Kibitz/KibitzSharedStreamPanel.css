@@ -133,6 +133,10 @@
     [data-theme="light"] .KibitzSharedStreamPanel-disabledComposer {
         background: var(--bg);
     }
+
+    [data-theme="light"] .KibitzSharedStreamPanel-paneFeed .variation-post:hover {
+        background: color-mix(in srgb, var(--shade2) 100%, transparent);
+    }
 }
 .KibitzSharedStreamPanel-paneFeed .kibitz-chat-entry.game-chat .chat-line {
     margin-top: 0;
