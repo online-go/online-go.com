@@ -1,0 +1,75 @@
+.KibitzRoomSettingsPopover {
+    color: var(--fg);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 0;
+    padding: 0.6rem 0.65rem;
+
+    .KibitzRoomSettingsPopover-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .KibitzRoomSettingsPopover-fieldLabel {
+        color: var(--text-color-faded);
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .KibitzRoomSettingsPopover-note,
+    .KibitzRoomSettingsPopover-error {
+        font-size: 0.84rem;
+        line-height: 1.35;
+    }
+
+    .KibitzRoomSettingsPopover-note {
+        color: var(--text-color-faded);
+    }
+
+    .KibitzRoomSettingsPopover-error {
+        color: var(--danger-fg, #ff8b8b);
+    }
+
+    .KibitzRoomSettingsPopover-actions {
+        align-items: center;
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+    }
+
+    .KibitzRoomSettingsPopover-action,
+    .KibitzRoomSettingsPopover-secondaryAction {
+        border-radius: 0.35rem;
+        cursor: pointer;
+        font-size: 0.88rem;
+        font-weight: 700;
+        line-height: 1.2;
+        min-width: 0;
+        padding: 0.35rem 0.55rem;
+    }
+
+    .KibitzRoomSettingsPopover-action {
+        background: var(--button-primary-bg);
+        border: 0;
+        color: var(--button-primary-fg);
+    }
+
+    .KibitzRoomSettingsPopover-action:hover,
+    .KibitzRoomSettingsPopover-action:focus-visible {
+        filter: brightness(1.05);
+    }
+
+    .KibitzRoomSettingsPopover-secondaryAction {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--fg);
+    }
+
+    .KibitzRoomSettingsPopover-secondaryAction:hover,
+    .KibitzRoomSettingsPopover-secondaryAction:focus-visible {
+        background: color-mix(in srgb, var(--shade1) 20%, transparent);
+    }
+}

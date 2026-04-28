@@ -25,7 +25,7 @@ import {
     type ChatMessage,
     type TypedChatBody,
 } from "@/lib/chat_manager";
-import { get, post } from "@/lib/requests";
+import { get, post, put } from "@/lib/requests";
 import { socket } from "@/lib/sockets";
 import { push_manager } from "@/components/UIPush/UIPush";
 import { interpolate, pgettext } from "@/lib/translate";
@@ -792,6 +792,32 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             return true;
         } catch (error) {
             console.warn("kibitz: changeBoard failed", roomId, error);
+            return false;
+        }
+    }
+
+    public async updateRoomDetails(
+        roomId: string,
+        title: string,
+        description: string,
+    ): Promise<boolean> {
+        try {
+            const payload = (await put(`kibitz/rooms/${roomId}`, {
+                title: title.trim(),
+                description: description.trim() || undefined,
+            })) as BackendKibitzRoom;
+
+            this.applyBackendRoomUpdate(payload);
+            if (this._active_room?.id === roomId) {
+                const summary = mapBackendRoomToSummary(payload, this._active_room);
+                this.setActiveRoom({
+                    ...this._active_room,
+                    ...summary,
+                });
+            }
+            return true;
+        } catch (error) {
+            console.warn("kibitz: updateRoomDetails failed", roomId, error);
             return false;
         }
     }

@@ -534,55 +534,6 @@
                 line-height: 1;
             }
 
-            .board-subtitle {
-                color: var(--text-color-faded);
-                display: block;
-                flex: 1 1 auto;
-                min-width: 0;
-                font-size: 0.82rem;
-                line-height: 1.15;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-            }
-
-            .KibitzRoomStage-settingsPopover {
-                color: var(--fg);
-                display: flex;
-                flex-direction: column;
-                gap: 0.5rem;
-                padding: 0.5rem 0.65rem;
-            }
-
-            .KibitzRoomStage-settingsPopoverTitle {
-                font-size: 0.9rem;
-                font-weight: bold;
-                line-height: 1.2;
-            }
-
-            .KibitzRoomStage-settingsPopoverAction {
-                background: var(--button-primary-bg);
-                border: 0;
-                border-radius: 0.35rem;
-                color: var(--button-primary-fg);
-                cursor: pointer;
-                font-size: 0.88rem;
-                font-weight: bold;
-                padding: 0.35rem 0.55rem;
-                text-align: left;
-            }
-
-            .KibitzRoomStage-settingsPopoverAction:hover,
-            .KibitzRoomStage-settingsPopoverAction:focus-visible {
-                filter: brightness(1.05);
-            }
-
-            .KibitzRoomStage-settingsPopoverNote {
-                color: var(--text-color-faded);
-                font-size: 0.84rem;
-                line-height: 1.35;
-            }
-
             .board-meta-actions {
                 align-items: flex-start;
                 display: flex;

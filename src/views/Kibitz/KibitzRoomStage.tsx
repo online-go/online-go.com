@@ -34,6 +34,7 @@ import { KibitzBoardControls } from "./KibitzBoardControls";
 import { KibitzDividerHandle } from "./KibitzDividerHandle";
 import { GobanAnalyzeButtonBar } from "@/components/GobanAnalyzeButtonBar/GobanAnalyzeButtonBar";
 import { KibitzVariationComposer } from "./KibitzVariationComposer";
+import { KibitzRoomSettingsPopover } from "./KibitzRoomSettingsPopover";
 import { KibitzNodeText } from "./KibitzNodeText";
 import { KibitzUserAvatar } from "./KibitzUserAvatar";
 import { applyKibitzVariationToController } from "./kibitzVariationTree";
@@ -51,6 +52,8 @@ interface KibitzRoomStageProps {
     onPostVariation: (controller: GobanController, sourceGameId: number | undefined) => void;
     onSetSecondaryPaneMode: (mode: "hidden" | "small" | "equal") => void;
     onChangeBoard?: () => void;
+    canEditRoom?: boolean;
+    onSaveRoomDetails?: (title: string, description: string) => Promise<boolean>;
     onCreateVariation?: () => void;
     onCreateVariationFromPostedVariation?: (variation: KibitzVariationSummary) => void;
     variationFocusRequestId: number;
@@ -168,38 +171,6 @@ function renderInlineAvatar(
     );
 }
 
-function renderRoomSettingsPopover(onChangeBoard?: () => void): React.ReactElement {
-    return (
-        <div className="KibitzRoomStage-settingsPopover">
-            <div className="KibitzRoomStage-settingsPopoverTitle">
-                {pgettext("Heading for the Kibitz room settings popover", "Room settings")}
-            </div>
-            {onChangeBoard ? (
-                <button
-                    type="button"
-                    className="KibitzRoomStage-settingsPopoverAction"
-                    onClick={() => {
-                        close_all_popovers();
-                        onChangeBoard();
-                    }}
-                >
-                    {pgettext(
-                        "Button label for opening Kibitz change board from room settings",
-                        "Change live game",
-                    )}
-                </button>
-            ) : (
-                <div className="KibitzRoomStage-settingsPopoverNote">
-                    {pgettext(
-                        "Note shown in Kibitz room settings when management actions are unavailable",
-                        "Room management actions are not available here yet.",
-                    )}
-                </div>
-            )}
-        </div>
-    );
-}
-
 export function KibitzRoomStage({
     room,
     rooms,
@@ -212,6 +183,8 @@ export function KibitzRoomStage({
     onPostVariation,
     onSetSecondaryPaneMode,
     onChangeBoard,
+    canEditRoom = false,
+    onSaveRoomDetails,
     onCreateVariation,
     onCreateVariationFromPostedVariation,
     variationFocusRequestId,
@@ -240,13 +213,25 @@ export function KibitzRoomStage({
         (event: React.MouseEvent<HTMLButtonElement>) => {
             close_all_popovers();
             popover({
-                elt: renderRoomSettingsPopover(onChangeBoard),
+                elt: (
+                    <KibitzRoomSettingsPopover
+                        room={room}
+                        canEditRoom={canEditRoom}
+                        canChangeBoard={Boolean(onChangeBoard)}
+                        onClose={close_all_popovers}
+                        onRequestChangeBoard={() => {
+                            close_all_popovers();
+                            onChangeBoard?.();
+                        }}
+                        onSaveRoomDetails={onSaveRoomDetails ?? (async () => false)}
+                    />
+                ),
                 below: event.currentTarget,
                 minWidth: 220,
                 container_class: "KibitzRoomStage-settingsPopoverContainer",
             });
         },
-        [onChangeBoard],
+        [canEditRoom, onChangeBoard, onSaveRoomDetails, room],
     );
     const selectedVariationGameId = selectedVariation?.game_id ?? null;
     const visibleVariations = React.useMemo(() => {
@@ -948,7 +933,6 @@ export function KibitzRoomStage({
                                 >
                                     <div className="board-title-row">
                                         <div className="board-titleRowMain">
-                                            <div className="board-title">{room.title}</div>
                                             <button
                                                 type="button"
                                                 className="board-settings-button"
@@ -960,6 +944,7 @@ export function KibitzRoomStage({
                                             >
                                                 <i className="fa fa-gear" aria-hidden="true" />
                                             </button>
+                                            <div className="board-title">{room.title}</div>
                                         </div>
                                         <div className="board-subtitle">
                                             {displayedTitle ??

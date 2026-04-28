@@ -999,6 +999,14 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                         onPostVariation={onPostVariation}
                                         onSetSecondaryPaneMode={onSetSecondaryPaneMode}
                                         onChangeBoard={undefined}
+                                        canEditRoom={permissions.can_edit_room}
+                                        onSaveRoomDetails={async (title, description) =>
+                                            controller.updateRoomDetails(
+                                                resolvedRoom.id,
+                                                title,
+                                                description,
+                                            )
+                                        }
                                         onCreateVariation={onCreateVariation}
                                         onCreateVariationFromPostedVariation={
                                             onCreateVariationFromPostedVariation
@@ -1134,6 +1142,14 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                 onPostVariation={onPostVariation}
                                 onSetSecondaryPaneMode={onSetSecondaryPaneMode}
                                 onChangeBoard={handleOpenChangeBoard}
+                                canEditRoom={permissions.can_edit_room}
+                                onSaveRoomDetails={async (title, description) =>
+                                    controller.updateRoomDetails(
+                                        resolvedRoom.id,
+                                        title,
+                                        description,
+                                    )
+                                }
                                 onCreateVariation={onCreateVariation}
                                 onCreateVariationFromPostedVariation={
                                     onCreateVariationFromPostedVariation
