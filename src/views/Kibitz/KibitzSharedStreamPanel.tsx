@@ -25,7 +25,9 @@ import {
     ChatMessage,
 } from "@/lib/chat_manager";
 import { useUser } from "@/lib/hooks";
+import { useGobanControllerOrNull } from "@/components/GobanView";
 import { interpolate, moment, pgettext } from "@/lib/translate";
+import type { protocol } from "goban";
 import type {
     KibitzMode,
     KibitzRoomSummary,
@@ -159,6 +161,47 @@ function ratioFromPointerPosition(
     return clampPercentage((centeredPosition / availableHeight) * 100);
 }
 
+// Goban chat lines come off goban.chat_log (fed by game-server / Scylla).
+// We surface only the "main" channel — spectator/malkovich/shadowban are
+// audience-restricted on the source side and not appropriate to mirror into
+// a kibitz room.
+function createChatLineFromGobanLine(
+    room: KibitzRoomSummary,
+    line: protocol.GameChatLine,
+): PaneEntry | null {
+    if (line.channel !== "main") {
+        return null;
+    }
+    const body = line.body;
+    const text =
+        typeof body === "string"
+            ? body
+            : body.type === "analysis"
+              ? (body.name ?? "Analysis")
+              : "Review";
+    return {
+        kind: "chat",
+        key: `goban-${line.chat_id}`,
+        createdAt: line.date * 1000,
+        source: "game-chat",
+        line: {
+            channel: room.channel,
+            username: line.username ?? "",
+            id: line.player_id,
+            ranking: 0,
+            professional: false,
+            ui_class: "",
+            country: undefined,
+            system: false,
+            message: {
+                i: line.chat_id,
+                t: line.date,
+                m: text,
+            },
+        },
+    };
+}
+
 function createChatLineFromItem(
     room: KibitzRoomSummary,
     item: KibitzStreamItem,
@@ -219,10 +262,15 @@ export function KibitzSharedStreamPanel({
 }: KibitzSharedStreamPanelProps): React.ReactElement {
     const user = useUser();
     const chatDisabled = user.anonymous || !user.email_validated;
+    // The watched-game's GobanController is provided by KibitzInner via
+    // GobanControllerContext. The game pane reads chat off goban.chat_log
+    // (which is fed by game-server via Scylla — the real game chat path).
+    // chat_manager.join("game-X") would join an unrelated comm-server Redis
+    // channel and stay empty.
+    const watchedController = useGobanControllerOrNull();
     const roomScrollRef = React.useRef<HTMLDivElement | null>(null);
     const gameScrollRef = React.useRef<HTMLDivElement | null>(null);
     const [roomProxy, setRoomProxy] = React.useState<ChatChannelProxy | null>(null);
-    const [, setGameProxy] = React.useState<ChatChannelProxy | null>(null);
     const [, refresh] = React.useState(0);
     const [desktopSplit, setDesktopSplit] = React.useState<DesktopSplitState>(readDesktopSplit);
     const [desktopDragRatio, setDesktopDragRatio] = React.useState<number | null>(null);
@@ -245,9 +293,6 @@ export function KibitzSharedStreamPanel({
     const desktopRoomRatio = 100 - desktopGameRatio;
     const roomVisible = isMobileLayout ? mobileTab === "room" : desktopRoomRatio > 0;
     const gameVisible = isMobileLayout ? mobileTab === "game" : desktopGameRatio > 0;
-    const currentGameChannel = room.current_game?.game_id
-        ? `game-${room.current_game.game_id}`
-        : null;
     const channelName = cachedChannelInformation(room.channel)?.name ?? room.title;
     const roomEntries = React.useMemo<PaneEntry[]>(() => {
         const entries: PaneEntry[] = [];
@@ -277,9 +322,14 @@ export function KibitzSharedStreamPanel({
         return entries.sort(sortEntries);
     }, [items, room]);
 
+    const gameChatLog = watchedController?.goban?.chat_log;
+    const gameChatLogLength = gameChatLog?.length ?? 0;
     const gameEntries = React.useMemo<PaneEntry[]>(() => {
         const entries: PaneEntry[] = [];
 
+        // Mock-mode items get filtered for game-chat source; live mode uses
+        // the watched goban's chat_log instead (game chat doesn't flow
+        // through the room's stream items in live mode).
         for (const item of items) {
             if ((item.source ?? "room-stream") !== "game-chat") {
                 continue;
@@ -291,24 +341,32 @@ export function KibitzSharedStreamPanel({
             }
         }
 
+        if (gameChatLog) {
+            for (const line of gameChatLog) {
+                const entry = createChatLineFromGobanLine(room, line);
+                if (entry) {
+                    entries.push(entry);
+                }
+            }
+        }
+
         return entries.sort(sortEntries);
-    }, [items, room]);
+        // gameChatLogLength tracks in-place mutations of goban.chat_log so
+        // the memo recomputes when new chat lines arrive (the array
+        // reference itself is stable across pushes).
+    }, [items, room, gameChatLog, gameChatLogLength]);
 
     React.useEffect(() => {
         if (mode === "demo") {
             setRoomProxy(null);
-            setGameProxy(null);
             return;
         }
 
         const nextRoomProxy = chat_manager.join(room.channel);
-        const nextGameProxy = currentGameChannel ? chat_manager.join(currentGameChannel) : null;
         setRoomProxy(nextRoomProxy);
-        setGameProxy(nextGameProxy);
 
         const sync = () => {
             nextRoomProxy.channel.markAsRead();
-            nextGameProxy?.channel.markAsRead();
             refresh((value) => value + 1);
         };
 
@@ -316,8 +374,6 @@ export function KibitzSharedStreamPanel({
         nextRoomProxy.on("chat-removed", sync);
         nextRoomProxy.on("join", sync);
         nextRoomProxy.on("part", sync);
-        nextGameProxy?.on("chat", sync);
-        nextGameProxy?.on("chat-removed", sync);
         sync();
 
         return () => {
@@ -325,12 +381,28 @@ export function KibitzSharedStreamPanel({
             nextRoomProxy.off("chat-removed", sync);
             nextRoomProxy.off("join", sync);
             nextRoomProxy.off("part", sync);
-            nextGameProxy?.off("chat", sync);
-            nextGameProxy?.off("chat-removed", sync);
             nextRoomProxy.part();
-            nextGameProxy?.part();
         };
-    }, [currentGameChannel, mode, room.channel]);
+    }, [mode, room.channel]);
+
+    // Subscribe to the watched game's chat. The chat lives on the goban
+    // instance (fed by game-server / Scylla), so we re-render whenever the
+    // goban emits a chat event; gameEntries reads goban.chat_log directly.
+    React.useEffect(() => {
+        const goban = watchedController?.goban;
+        if (!goban) {
+            return;
+        }
+        const onChat = () => refresh((value) => value + 1);
+        goban.on("chat", onChat);
+        goban.on("chat-remove", onChat);
+        // Initial refresh in case chat_log was already populated.
+        onChat();
+        return () => {
+            goban.off("chat", onChat);
+            goban.off("chat-remove", onChat);
+        };
+    }, [watchedController]);
 
     React.useEffect(() => {
         const previous = roomPreviousEntryCountRef.current;

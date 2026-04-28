@@ -18,6 +18,7 @@
 import * as React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { GobanController } from "@/lib/GobanController";
+import { GobanControllerContext } from "@/components/GobanView";
 import * as data from "@/lib/data";
 import { toast } from "@/lib/toast";
 import { interpolate, pgettext } from "@/lib/translate";
@@ -109,6 +110,13 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         React.useState<MobileCompanionPanel>("chat");
     const [mobileCompareController, setMobileCompareController] =
         React.useState<GobanController | null>(null);
+    // Lifted from KibitzRoomStage so we can provide it via GobanControllerContext
+    // around KibitzSharedStreamPanel — that's how the panel's game pane reads
+    // the watched game's chat (off goban.chat_log via the existing context hook)
+    // instead of incorrectly trying to join a comm-server Redis channel.
+    const [mainBoardController, setMainBoardController] = React.useState<GobanController | null>(
+        null,
+    );
     const [mobileOverlayMode, setMobileOverlayMode] = React.useState<MobileOverlayMode>(null);
     const [isMobileLayout, setIsMobileLayout] = React.useState(
         () => window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY).matches,
@@ -1000,6 +1008,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                         onSelectMobileCompanionPanel={onSelectMobileCompanionPanel}
                                         onOpenMobileRooms={onToggleMobileRooms}
                                         onMobileCompareControllerChange={setMobileCompareController}
+                                        onMainBoardControllerChange={setMainBoardController}
                                     />
                                 </div>
                                 <div
@@ -1030,16 +1039,20 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                             }}
                                         >
                                             {mobileCompanionPanel === "chat" ? (
-                                                <KibitzSharedStreamPanel
-                                                    mode="live"
-                                                    room={resolvedRoom}
-                                                    items={stream}
-                                                    variations={variations}
-                                                    onOpenVariation={onOpenVariation}
-                                                    onSendMessage={() => undefined}
-                                                    isMobileLayout={true}
-                                                    compact={true}
-                                                />
+                                                <GobanControllerContext.Provider
+                                                    value={mainBoardController}
+                                                >
+                                                    <KibitzSharedStreamPanel
+                                                        mode="live"
+                                                        room={resolvedRoom}
+                                                        items={stream}
+                                                        variations={variations}
+                                                        onOpenVariation={onOpenVariation}
+                                                        onSendMessage={() => undefined}
+                                                        isMobileLayout={true}
+                                                        compact={true}
+                                                    />
+                                                </GobanControllerContext.Provider>
                                             ) : null}
                                             {mobileCompanionPanel === "vote" ? (
                                                 <div className="Kibitz-mobile-panel Kibitz-mobile-vote-panel">
@@ -1130,6 +1143,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                 onSelectMobileCompanionPanel={onSelectMobileCompanionPanel}
                                 onOpenMobileRooms={undefined}
                                 onMobileCompareControllerChange={undefined}
+                                onMainBoardControllerChange={setMainBoardController}
                             />
                             <div
                                 className={
@@ -1145,16 +1159,18 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                         onVote={onVoteProposal}
                                     />
                                 </div>
-                                <KibitzSharedStreamPanel
-                                    mode="live"
-                                    room={resolvedRoom}
-                                    items={stream}
-                                    variations={variations}
-                                    onOpenVariation={onOpenVariation}
-                                    onSendMessage={() => undefined}
-                                    isMobileLayout={false}
-                                    compact={Boolean(activeProposal)}
-                                />
+                                <GobanControllerContext.Provider value={mainBoardController}>
+                                    <KibitzSharedStreamPanel
+                                        mode="live"
+                                        room={resolvedRoom}
+                                        items={stream}
+                                        variations={variations}
+                                        onOpenVariation={onOpenVariation}
+                                        onSendMessage={() => undefined}
+                                        isMobileLayout={false}
+                                        compact={Boolean(activeProposal)}
+                                    />
+                                </GobanControllerContext.Provider>
                                 <div className="Kibitz-footer-panels">{variationPanels}</div>
                             </div>
                         </div>

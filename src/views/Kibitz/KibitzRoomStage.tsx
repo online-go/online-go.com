@@ -59,6 +59,7 @@ interface KibitzRoomStageProps {
     onSelectMobileCompanionPanel?: (panel: "chat" | "vote" | "compare") => void;
     onOpenMobileRooms?: () => void;
     onMobileCompareControllerChange?: (controller: GobanController | null) => void;
+    onMainBoardControllerChange?: (controller: GobanController | null) => void;
 }
 
 function useSquareFitSize<T extends HTMLElement>(
@@ -187,6 +188,7 @@ export function KibitzRoomStage({
     onSelectMobileCompanionPanel,
     onOpenMobileRooms,
     onMobileCompareControllerChange,
+    onMainBoardControllerChange,
 }: KibitzRoomStageProps): React.ReactElement {
     const mainGame = room.current_game;
     const secondaryGameId = secondaryPane.preview_game_id;
@@ -235,8 +237,18 @@ export function KibitzRoomStage({
             ?.proposed_game;
     const secondaryBoardGame = previewGame ?? secondaryPane.variation_source_game;
     const previewDisplayedMoveNumber = secondaryBoardGame?.move_number;
-    const [mainBoardController, setMainBoardController] = React.useState<GobanController | null>(
-        null,
+    const [mainBoardController, setMainBoardControllerState] =
+        React.useState<GobanController | null>(null);
+    // Wrap the setter so the parent (KibitzInner) is notified whenever the
+    // main board's controller is (re)created. Lets the parent provide it via
+    // GobanControllerContext so descendants like KibitzSharedStreamPanel can
+    // hook into the watched game's chat without prop drilling.
+    const setMainBoardController = React.useCallback(
+        (controller: GobanController | null) => {
+            setMainBoardControllerState(controller);
+            onMainBoardControllerChange?.(controller);
+        },
+        [onMainBoardControllerChange],
     );
     const [secondaryBoardController, setSecondaryBoardController] =
         React.useState<GobanController | null>(null);
