@@ -29,7 +29,14 @@ import { bounded_rank } from "@/lib/rank_utils";
 import { ActiveTournamentList, GroupList } from "@/lib/types";
 import { _, interpolate } from "@/lib/translate";
 import { getBlocks } from "@/components/BlockPlayer";
-import { insert_into_sorted_list, string_splitter, n2s, Timeout } from "@/lib/misc";
+import {
+    insert_into_sorted_list,
+    maxMessageLength,
+    sanitizeMessage,
+    string_splitter,
+    n2s,
+    Timeout,
+} from "@/lib/misc";
 import { User } from "goban";
 
 export interface TypedChatBody {
@@ -607,7 +614,8 @@ class ChatChannel extends TypedEventEmitter<Events> {
     }
 
     public send(text: string): void {
-        if (text.length > 300) {
+        text = sanitizeMessage(text);
+        if (text.length > maxMessageLength) {
             for (const split_str of string_splitter(text)) {
                 this.send(split_str);
             }

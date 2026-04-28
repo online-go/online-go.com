@@ -53,12 +53,23 @@
         overflow-y: scroll;
         border-bottom: 1px solid transparent;
         border-bottom-color: var(--shade3);
+        display: flex;
+        flex-direction: column-reverse;
 
         .Player {
             color: var(--fg);
         }
 
         word-wrap: break-word;
+    }
+
+    .chat-lines-spacer {
+        flex: 1;
+    }
+
+    .chat-lines-inner {
+        display: flex;
+        flex-direction: column;
     }
 
     .timestamp {
@@ -106,7 +117,7 @@
             font-size: 0.85rem;
         }
 
-        input {
+        .chat-input-wrapper {
             flex: 1;
             overflow: hidden;
         }
@@ -123,9 +134,8 @@
     }
 
     .chat-line {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: normal;
+        display: inline;
+        white-space: pre-wrap;
 
         .date {
             font-size: 8pt;
@@ -225,7 +235,8 @@
         }
     }
 
-    input {
+    input,
+    textarea {
         background: var(--bg);
         padding: 0.5rem;
     }
