@@ -124,6 +124,35 @@ function cloneMoveTreeMarks(node: MoveTree): MoveTreeJson["marks"] {
     return marks.length > 0 ? marks : undefined;
 }
 
+function marksEntries(marks: Record<string, string> | null | undefined): Array<[string, string]> {
+    return Object.entries(marks ?? {}).sort(([leftKey], [rightKey]) =>
+        leftKey.localeCompare(rightKey),
+    );
+}
+
+function marksEqual(
+    left: Record<string, string> | null | undefined,
+    right: Record<string, string> | null | undefined,
+): boolean {
+    const leftEntries = marksEntries(left);
+    const rightEntries = marksEntries(right);
+
+    if (leftEntries.length !== rightEntries.length) {
+        return false;
+    }
+
+    for (let i = 0; i < leftEntries.length; ++i) {
+        const [leftKey, leftValue] = leftEntries[i];
+        const [rightKey, rightValue] = rightEntries[i];
+
+        if (leftKey !== rightKey || leftValue !== rightValue) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 function serializeMoveTreeLineNode(node: MoveTree): MoveTreeJson {
     const ret: MoveTreeJson = {
         x: node.x,
@@ -927,7 +956,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             las.from === analysis.from &&
             las.moves === analysis.moves &&
             (auto_named || las.name === analysis.name) &&
-            JSON.stringify(las.marks ?? null) === JSON.stringify(analysis.marks ?? null) &&
+            marksEqual(las.marks, analysis.marks) &&
             JSON.stringify(las.pen_marks ?? null) === JSON.stringify(analysis.pen_marks ?? null) &&
             JSON.stringify(las.line_tree ?? null) === JSON.stringify(analysis.line_tree ?? null);
 
