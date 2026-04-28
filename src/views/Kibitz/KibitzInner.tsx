@@ -271,20 +271,23 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         };
     }, [controller]);
 
+    const defaultRoomId = rooms[0]?.id ?? null;
+
     React.useEffect(() => {
-        const nextRoomId = roomId ?? controller.default_room_id;
-
-        if (!nextRoomId) {
+        if (roomId || !defaultRoomId) {
             return;
         }
 
-        if (!roomId) {
-            void navigate(`/kibitz/${nextRoomId}`, { replace: true });
+        void navigate(`/kibitz/${defaultRoomId}`, { replace: true });
+    }, [defaultRoomId, navigate, roomId]);
+
+    React.useEffect(() => {
+        if (!roomId || activeRoom?.id === roomId) {
             return;
         }
 
-        void controller.selectRoom(nextRoomId);
-    }, [controller, navigate, roomId, rooms]);
+        void controller.selectRoom(roomId);
+    }, [activeRoom?.id, controller, roomId]);
 
     const onSelectRoom = React.useCallback(
         (nextRoomId: string) => {
