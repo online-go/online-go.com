@@ -1222,12 +1222,23 @@ export function Puzzle(): React.ReactElement {
                         )}
                         {(have_content || null) && renderPuzzleContent(show_correct)}
                     </div>
-                    <PuzzleInfo
-                        name={state.name}
-                        collection_name={playState.collection.name}
-                        owner={loadedState.owner}
-                        rank={state.rank || 0}
-                    />
+                    <div className="puzzle-controls-bottom">
+                        {state.rated && (
+                            <div className="rate-puzzle rate-puzzle-compact">
+                                <StarRating
+                                    value={state.my_rating}
+                                    rated={state.rated}
+                                    onChange={ratePuzzle}
+                                />
+                            </div>
+                        )}
+                        <PuzzleInfo
+                            name={state.name}
+                            collection_name={playState.collection.name}
+                            owner={loadedState.owner}
+                            rank={state.rank || 0}
+                        />
+                    </div>
                 </GobanView.Tab>
 
                 <GobanView.Tab
