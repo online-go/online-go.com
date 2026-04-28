@@ -114,15 +114,22 @@
     min-width: 0;
 }
 
-.KibitzSharedStreamPanel-paneFeed .kibitz-chat-entry.game-chat {
-    background: var(--card-background-color);
-    border-left: 2px solid color-mix(in srgb, var(--primary) 28%, transparent);
-    margin-top: 0.18rem;
-    padding: 0.28rem 0.5rem 0.35rem;
-}
-
+/* Game-chat lines flow tight in the dedicated game pane — no per-entry
+   padding/margin/background. The pane itself already separates game chat
+   from room chat visually, so the per-line wrapper styling that used to
+   distinguish them was producing roughly a blank line of vertical space
+   per chat line. */
 .KibitzSharedStreamPanel-paneFeed .kibitz-chat-entry.game-chat .chat-line {
     margin-top: 0;
+}
+
+/* Player vs spectator coloration mirrors GameChat.css's
+   `.chat-line.spectator { color: var(--spectator-text-color) }`. The
+   class lives on the kibitz wrapper because <ChatLine> doesn't know
+   about goban channels. */
+.KibitzSharedStreamPanel-paneFeed .kibitz-chat-entry.spectator,
+.KibitzSharedStreamPanel-paneFeed .kibitz-chat-entry.spectator .chat-line {
+    color: var(--spectator-text-color);
 }
 
 .KibitzSharedStreamPanel-paneFeed .variation-post {

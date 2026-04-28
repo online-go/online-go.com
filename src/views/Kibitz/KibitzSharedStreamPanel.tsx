@@ -54,6 +54,11 @@ type PaneEntry =
           createdAt: number;
           line: ChatMessage;
           source: KibitzStreamItemSource;
+          // For game-chat entries this is the goban channel ("main" or
+          // "spectator"); rendered as an extra class on the wrapper so the
+          // CSS can color spectator chat differently from player chat,
+          // matching GameChat.css's .chat-line.spectator rule.
+          gobanChannel?: string;
       }
     | {
           kind: "variation";
@@ -162,14 +167,15 @@ function ratioFromPointerPosition(
 }
 
 // Goban chat lines come off goban.chat_log (fed by game-server / Scylla).
-// We surface only the "main" channel — spectator/malkovich/shadowban are
-// audience-restricted on the source side and not appropriate to mirror into
-// a kibitz room.
+// Kibitz users are functionally spectators of the watched game, so we
+// surface both player ("main") and spectator chat. Malkovich is a
+// player-only side channel and shadowban is per-user — neither belongs in
+// a kibitz pane.
 function createChatLineFromGobanLine(
     room: KibitzRoomSummary,
     line: protocol.GameChatLine,
 ): PaneEntry | null {
-    if (line.channel !== "main") {
+    if (line.channel !== "main" && line.channel !== "spectator") {
         return null;
     }
     const body = line.body;
@@ -184,6 +190,7 @@ function createChatLineFromGobanLine(
         key: `goban-${line.chat_id}`,
         createdAt: line.date * 1000,
         source: "game-chat",
+        gobanChannel: line.channel,
         line: {
             channel: room.channel,
             username: line.username ?? "",
@@ -675,7 +682,14 @@ export function KibitzSharedStreamPanel({
                     }
 
                     return (
-                        <div key={entry.key} className={"kibitz-chat-entry " + entry.source}>
+                        <div
+                            key={entry.key}
+                            className={
+                                "kibitz-chat-entry " +
+                                entry.source +
+                                (entry.gobanChannel ? " " + entry.gobanChannel : "")
+                            }
+                        >
                             <ChatLine line={entry.line} lastLine={previousLine} />
                         </div>
                     );

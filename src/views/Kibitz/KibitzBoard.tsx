@@ -63,7 +63,10 @@ export function KibitzBoard({
         const config: GobanRendererConfig = {
             board_div: gobanDiv.current,
             interactive,
-            connect_to_chat: false,
+            // Subscribe to game chat so the kibitz room's game pane can
+            // surface what players are saying. Kibitz users count as
+            // spectators on the watched game while subscribed.
+            connect_to_chat: true,
             draw_top_labels:
                 showLabels && (labelPosition === "all" || labelPosition.indexOf("top") >= 0),
             draw_left_labels:
