@@ -512,12 +512,12 @@ export function KibitzSharedStreamPanel({
     }, [gameEntries.length, gameFollowLatest, gameVisible]);
 
     const onRoomKeyPress = React.useCallback(
-        (event: React.KeyboardEvent<HTMLInputElement>) => {
+        (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
             if (event.key !== "Enter") {
                 return;
             }
 
-            const input = event.target as HTMLInputElement;
+            const input = event.target as HTMLTextAreaElement;
             const value = input.value.trim();
             if (!value) {
                 return false;
