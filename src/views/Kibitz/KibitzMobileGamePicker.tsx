@@ -92,6 +92,7 @@ export function KibitzMobileGamePicker({
     onJoinRoom,
     onBackToMenu,
 }: KibitzMobileGamePickerProps): React.ReactElement {
+    const resolveGameRequestIdRef = React.useRef(0);
     const [selectedGame, setSelectedGame] = React.useState<SelectedGameState | null>(null);
     const [manualInput, setManualInput] = React.useState("");
     const [roomName, setRoomName] = React.useState("");
@@ -181,11 +182,15 @@ export function KibitzMobileGamePicker({
 
     const resolveGame = React.useCallback(
         async (gameId: number) => {
+            const requestId = ++resolveGameRequestIdRef.current;
             setLoading(true);
             setErrorMessage(null);
 
             try {
                 const details = (await get(`games/${gameId}`)) as rest_api.GameDetails;
+                if (requestId !== resolveGameRequestIdRef.current) {
+                    return;
+                }
                 const game = mapGameDetailsToWatchedGame(details);
                 const isFinished = Boolean(details.ended);
                 const analysisDisabled = Boolean(
@@ -215,6 +220,9 @@ export function KibitzMobileGamePicker({
                     setMobileStep("preview");
                 }
             } catch {
+                if (requestId !== resolveGameRequestIdRef.current) {
+                    return;
+                }
                 setSelectedGame(null);
                 setErrorMessage(
                     pgettext(
@@ -223,7 +231,9 @@ export function KibitzMobileGamePicker({
                     ),
                 );
             } finally {
-                setLoading(false);
+                if (requestId === resolveGameRequestIdRef.current) {
+                    setLoading(false);
+                }
             }
         },
         [isMobileLayout, mode],
