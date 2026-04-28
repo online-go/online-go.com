@@ -814,6 +814,10 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                     ...this._active_room,
                     ...summary,
                 });
+                void this.hydrateActiveRoomGame(payload.current_game_id, this._select_room_token);
+            }
+            if (payload.current_game_id) {
+                void this.hydrateRoomCardGame(payload.id, payload.current_game_id);
             }
             return true;
         } catch (error) {

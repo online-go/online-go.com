@@ -909,6 +909,52 @@ export function KibitzRoomStage({
 
     return (
         <div className="KibitzRoomStage">
+            <div className="room-stage-header">
+                <div className="board-title-row">
+                    <div className="board-titleRowMain">
+                        <button
+                            type="button"
+                            className="board-settings-button"
+                            onClick={openRoomSettings}
+                            aria-label={pgettext(
+                                "Aria label for opening room settings in Kibitz",
+                                "Room settings",
+                            )}
+                        >
+                            <i className="fa fa-gear" aria-hidden="true" />
+                        </button>
+                        <div className="board-title">{room.title}</div>
+                    </div>
+                    <div className="players player-pair">
+                        <div className="player-badge">
+                            {renderInlineAvatar(
+                                mainGame?.black,
+                                "stage-avatar",
+                                "stage-avatar-image",
+                            )}
+                            <span className="player-name">{displayedBlack}</span>
+                        </div>
+                        <span className="player-vs">
+                            {pgettext("Versus label shown between players in kibitz", "vs")}
+                        </span>
+                        <div className="player-badge">
+                            {renderInlineAvatar(
+                                mainGame?.white,
+                                "stage-avatar",
+                                "stage-avatar-image",
+                            )}
+                            <span className="player-name">{displayedWhite}</span>
+                        </div>
+                    </div>
+                    <div className="board-subtitle">
+                        {displayedTitle ??
+                            pgettext(
+                                "Placeholder when no main game is loaded in a kibitz room",
+                                "No main board selected yet",
+                            )}
+                    </div>
+                </div>
+            </div>
             <div className={`KibitzRoomStage-boards secondary-pane-${secondaryPaneSize}`}>
                 <div className="board-panel main-board">
                     <div className="panel-body">
@@ -921,64 +967,6 @@ export function KibitzRoomStage({
                                         : "board-content-preview")
                                 }
                             >
-                                <div
-                                    className={
-                                        "board-meta" +
-                                        (secondaryPaneSize === "hidden"
-                                            ? " board-meta-main"
-                                            : secondaryPaneSize === "equal"
-                                              ? " board-meta-compare-inline"
-                                              : "")
-                                    }
-                                >
-                                    <div className="board-title-row">
-                                        <div className="board-titleRowMain">
-                                            <button
-                                                type="button"
-                                                className="board-settings-button"
-                                                onClick={openRoomSettings}
-                                                aria-label={pgettext(
-                                                    "Aria label for opening room settings in Kibitz",
-                                                    "Room settings",
-                                                )}
-                                            >
-                                                <i className="fa fa-gear" aria-hidden="true" />
-                                            </button>
-                                            <div className="board-title">{room.title}</div>
-                                        </div>
-                                        <div className="board-subtitle">
-                                            {displayedTitle ??
-                                                pgettext(
-                                                    "Placeholder when no main game is loaded in a kibitz room",
-                                                    "No main board selected yet",
-                                                )}
-                                        </div>
-                                    </div>
-                                    <div className="players player-pair">
-                                        <div className="player-badge">
-                                            {renderInlineAvatar(
-                                                mainGame?.black,
-                                                "stage-avatar",
-                                                "stage-avatar-image",
-                                            )}
-                                            <span className="player-name">{displayedBlack}</span>
-                                        </div>
-                                        <span className="player-vs">
-                                            {pgettext(
-                                                "Versus label shown between players in kibitz",
-                                                "vs",
-                                            )}
-                                        </span>
-                                        <div className="player-badge">
-                                            {renderInlineAvatar(
-                                                mainGame?.white,
-                                                "stage-avatar",
-                                                "stage-avatar-image",
-                                            )}
-                                            <span className="player-name">{displayedWhite}</span>
-                                        </div>
-                                    </div>
-                                </div>
                                 <div className="board-fit-slot" ref={mainBoardSlotRef}>
                                     <KibitzBoard
                                         gameId={mainGame.game_id}
