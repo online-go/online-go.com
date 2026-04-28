@@ -122,21 +122,34 @@ const DEFAULT_PERMISSIONS: KibitzPermissions = {
     can_edit_room: false,
 };
 
+interface BackendGamePlayerForKibitz {
+    id: number;
+    username: string;
+    ranking?: number;
+    professional?: boolean;
+    ui_class?: string;
+    country?: string;
+    icon?: string;
+}
+
 interface BackendGameForKibitz {
     id: number;
     name?: string | null;
     width?: number;
     height?: number;
-    black?: { id: number; username: string; ranking?: number } | null;
-    white?: { id: number; username: string; ranking?: number } | null;
+    players?: {
+        black?: BackendGamePlayerForKibitz | null;
+        white?: BackendGamePlayerForKibitz | null;
+    } | null;
+    black?: number | BackendGamePlayerForKibitz | null;
+    white?: number | BackendGamePlayerForKibitz | null;
     ended?: string | null;
     json?: { moves?: unknown[] } | null;
+    gamedata?: { moves?: unknown[] } | null;
     tournament_name?: string;
 }
 
-function mapBackendUser(
-    raw: { id: number; username: string; ranking?: number } | null | undefined,
-): KibitzRoomUser {
+function mapBackendUser(raw: BackendGamePlayerForKibitz | null | undefined): KibitzRoomUser {
     if (!raw) {
         return { id: 0, username: "", ranking: 0, professional: false, ui_class: "" };
     }
@@ -144,23 +157,34 @@ function mapBackendUser(
         id: raw.id,
         username: raw.username,
         ranking: raw.ranking ?? 0,
-        professional: false,
-        ui_class: "",
+        professional: raw.professional ?? false,
+        ui_class: raw.ui_class ?? "",
+        country: raw.country,
+        icon: raw.icon,
     };
+}
+
+function getGamePlayer(
+    player: number | BackendGamePlayerForKibitz | null | undefined,
+): BackendGamePlayerForKibitz | null {
+    return typeof player === "object" ? player : null;
 }
 
 function mapBackendGameToWatched(game: BackendGameForKibitz): KibitzWatchedGame | undefined {
     if (typeof game.width !== "number" || typeof game.height !== "number") {
         return undefined;
     }
+    const black = game.players?.black ?? getGamePlayer(game.black);
+    const white = game.players?.white ?? getGamePlayer(game.white);
+
     return {
         game_id: game.id,
         board_size: `${game.width}x${game.height}` as `${number}x${number}`,
         title: game.name ?? "",
-        black: mapBackendUser(game.black),
-        white: mapBackendUser(game.white),
+        black: mapBackendUser(black),
+        white: mapBackendUser(white),
         tournament_name: game.tournament_name,
-        move_number: game.json?.moves?.length,
+        move_number: game.gamedata?.moves?.length ?? game.json?.moves?.length,
         live: game.ended == null,
     };
 }
