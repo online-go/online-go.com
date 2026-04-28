@@ -62,7 +62,7 @@ export function PlayerIcon(props: PlayerIconProps): React.ReactElement {
             setUrl(undefined);
         }
 
-        if (!url) {
+        if (!nextUrl) {
             fetchIconUrl(id, props);
         }
 
