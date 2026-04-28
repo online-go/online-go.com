@@ -491,6 +491,13 @@
                 min-width: 0;
             }
 
+            .board-titleRowMain {
+                align-items: center;
+                display: flex;
+                gap: 0.25rem;
+                min-width: 0;
+            }
+
             .board-title {
                 color: var(--fg);
                 flex: 0 1 40%;
@@ -503,6 +510,30 @@
                 white-space: nowrap;
             }
 
+            .board-settings-button {
+                align-items: center;
+                background: transparent;
+                border: 1px solid transparent;
+                border-radius: 0.35rem;
+                color: var(--text-color-faded);
+                cursor: pointer;
+                display: inline-flex;
+                flex: 0 0 auto;
+                justify-content: center;
+                padding: 0.1rem 0.25rem;
+            }
+
+            .board-settings-button:hover,
+            .board-settings-button:focus-visible {
+                border-color: var(--border-color);
+                color: var(--fg);
+            }
+
+            .board-settings-button > i {
+                font-size: 0.95rem;
+                line-height: 1;
+            }
+
             .board-subtitle {
                 color: var(--text-color-faded);
                 display: block;
@@ -513,6 +544,43 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
+            }
+
+            .KibitzRoomStage-settingsPopover {
+                color: var(--fg);
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+                padding: 0.5rem 0.65rem;
+            }
+
+            .KibitzRoomStage-settingsPopoverTitle {
+                font-size: 0.9rem;
+                font-weight: bold;
+                line-height: 1.2;
+            }
+
+            .KibitzRoomStage-settingsPopoverAction {
+                background: var(--button-primary-bg);
+                border: 0;
+                border-radius: 0.35rem;
+                color: var(--button-primary-fg);
+                cursor: pointer;
+                font-size: 0.88rem;
+                font-weight: bold;
+                padding: 0.35rem 0.55rem;
+                text-align: left;
+            }
+
+            .KibitzRoomStage-settingsPopoverAction:hover,
+            .KibitzRoomStage-settingsPopoverAction:focus-visible {
+                filter: brightness(1.05);
+            }
+
+            .KibitzRoomStage-settingsPopoverNote {
+                color: var(--text-color-faded);
+                font-size: 0.84rem;
+                line-height: 1.35;
             }
 
             .board-meta-actions {

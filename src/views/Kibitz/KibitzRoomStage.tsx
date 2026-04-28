@@ -19,6 +19,7 @@ import * as React from "react";
 import type { MoveTree } from "goban";
 import { Resizable } from "@/components/Resizable";
 import { GobanController } from "@/lib/GobanController";
+import { close_all_popovers, popover } from "@/lib/popover";
 import { alert } from "@/lib/swal_config";
 import { pgettext } from "@/lib/translate";
 import type {
@@ -167,6 +168,38 @@ function renderInlineAvatar(
     );
 }
 
+function renderRoomSettingsPopover(onChangeBoard?: () => void): React.ReactElement {
+    return (
+        <div className="KibitzRoomStage-settingsPopover">
+            <div className="KibitzRoomStage-settingsPopoverTitle">
+                {pgettext("Heading for the Kibitz room settings popover", "Room settings")}
+            </div>
+            {onChangeBoard ? (
+                <button
+                    type="button"
+                    className="KibitzRoomStage-settingsPopoverAction"
+                    onClick={() => {
+                        close_all_popovers();
+                        onChangeBoard();
+                    }}
+                >
+                    {pgettext(
+                        "Button label for opening Kibitz change board from room settings",
+                        "Change live game",
+                    )}
+                </button>
+            ) : (
+                <div className="KibitzRoomStage-settingsPopoverNote">
+                    {pgettext(
+                        "Note shown in Kibitz room settings when management actions are unavailable",
+                        "Room management actions are not available here yet.",
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}
+
 export function KibitzRoomStage({
     room,
     rooms,
@@ -203,6 +236,18 @@ export function KibitzRoomStage({
         (variation) => variation.id === secondaryPane.variation_draft_base_id,
     );
     const isDraftingVariation = secondaryPane.variation_source_game_id != null;
+    const openRoomSettings = React.useCallback(
+        (event: React.MouseEvent<HTMLButtonElement>) => {
+            close_all_popovers();
+            popover({
+                elt: renderRoomSettingsPopover(onChangeBoard),
+                below: event.currentTarget,
+                minWidth: 220,
+                container_class: "KibitzRoomStage-settingsPopoverContainer",
+            });
+        },
+        [onChangeBoard],
+    );
     const selectedVariationGameId = selectedVariation?.game_id ?? null;
     const visibleVariations = React.useMemo(() => {
         if (selectedVariationGameId == null) {
@@ -902,7 +947,20 @@ export function KibitzRoomStage({
                                     }
                                 >
                                     <div className="board-title-row">
-                                        <div className="board-title">{room.title}</div>
+                                        <div className="board-titleRowMain">
+                                            <div className="board-title">{room.title}</div>
+                                            <button
+                                                type="button"
+                                                className="board-settings-button"
+                                                onClick={openRoomSettings}
+                                                aria-label={pgettext(
+                                                    "Aria label for opening room settings in Kibitz",
+                                                    "Room settings",
+                                                )}
+                                            >
+                                                <i className="fa fa-gear" aria-hidden="true" />
+                                            </button>
+                                        </div>
                                         <div className="board-subtitle">
                                             {displayedTitle ??
                                                 pgettext(
@@ -935,22 +993,6 @@ export function KibitzRoomStage({
                                             <span className="player-name">{displayedWhite}</span>
                                         </div>
                                     </div>
-                                    {onChangeBoard ? (
-                                        <div className="board-meta-actions">
-                                            {onChangeBoard ? (
-                                                <button
-                                                    type="button"
-                                                    className="xs primary kibitz-change-board-button"
-                                                    onClick={onChangeBoard}
-                                                >
-                                                    {pgettext(
-                                                        "Button label for opening Kibitz change board",
-                                                        "Change board",
-                                                    )}
-                                                </button>
-                                            ) : null}
-                                        </div>
-                                    ) : null}
                                 </div>
                                 <div className="board-fit-slot" ref={mainBoardSlotRef}>
                                     <KibitzBoard
@@ -1020,18 +1062,6 @@ export function KibitzRoomStage({
                                         "Shared board will render here",
                                     )}
                                 </div>
-                                {onChangeBoard ? (
-                                    <button
-                                        type="button"
-                                        className="xs primary kibitz-change-board-button"
-                                        onClick={onChangeBoard}
-                                    >
-                                        {pgettext(
-                                            "Button label for opening Kibitz change board",
-                                            "Change board",
-                                        )}
-                                    </button>
-                                ) : null}
                             </div>
                         )}
                     </div>

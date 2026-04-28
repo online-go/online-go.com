@@ -935,7 +935,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                     onSelectRoom={onSelectRoom}
                                                     onCreateRoom={onOpenCreateRoom}
                                                     onCreateVariation={onCreateVariation}
-                                                    onChangeBoard={handleOpenChangeBoard}
                                                 />
                                             </div>
                                         ) : (

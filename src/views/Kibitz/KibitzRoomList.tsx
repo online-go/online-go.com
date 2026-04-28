@@ -27,7 +27,6 @@ interface KibitzRoomListProps {
     onSelectRoom: (roomId: string) => void;
     onCreateRoom?: () => void;
     onCreateVariation?: () => void;
-    onChangeBoard?: () => void;
 }
 
 export function KibitzRoomList({
@@ -37,7 +36,6 @@ export function KibitzRoomList({
     onSelectRoom,
     onCreateRoom,
     onCreateVariation,
-    onChangeBoard,
 }: KibitzRoomListProps): React.ReactElement {
     return (
         <div className="KibitzRoomList">
@@ -56,7 +54,7 @@ export function KibitzRoomList({
                         )}
                     </div>
                 </div>
-                {onCreateRoom || onCreateVariation || onChangeBoard ? (
+                {onCreateRoom || onCreateVariation ? (
                     <div className="KibitzRoomList-actions">
                         {onCreateRoom ? (
                             <button
@@ -79,18 +77,6 @@ export function KibitzRoomList({
                                 {pgettext(
                                     "Button label for opening Kibitz variation creation",
                                     "Create variation",
-                                )}
-                            </button>
-                        ) : null}
-                        {onChangeBoard ? (
-                            <button
-                                type="button"
-                                className="xs primary KibitzRoomList-createButton"
-                                onClick={onChangeBoard}
-                            >
-                                {pgettext(
-                                    "Button label for opening Kibitz change board",
-                                    "Change board",
                                 )}
                             </button>
                         ) : null}
