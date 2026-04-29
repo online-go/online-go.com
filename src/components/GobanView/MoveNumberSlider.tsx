@@ -64,14 +64,21 @@ export function MoveNumberSlider(): React.ReactElement {
     // `goban.mode` isn't reliable later) and constrain the slider's max to a
     // session high-water mark of the user's actual position. Reset whenever
     // the goban changes so loading a new puzzle starts from move 0.
-    const initial_mode_ref = React.useRef<string | null>(null);
-    const [hwm, setHwm] = React.useState(0);
-    React.useEffect(() => {
+    //
+    // Both the mode and the hwm need to be reset *synchronously* on goban
+    // change, before the first render with the new goban — otherwise that
+    // render uses stale values and briefly exposes the saved solution.
+    // Using the ref/`set during render` pattern from the React docs.
+    const last_goban_ref = React.useRef(goban);
+    const initial_mode_ref = React.useRef<string | null>(goban?.mode ?? null);
+    const [hwm, setHwm] = React.useState(goban?.engine.cur_move.move_number ?? 0);
+    if (last_goban_ref.current !== goban) {
+        last_goban_ref.current = goban;
         initial_mode_ref.current = goban?.mode ?? null;
         setHwm(goban?.engine.cur_move.move_number ?? 0);
-    }, [goban]);
+    }
     React.useEffect(() => {
-        setHwm((prev) => Math.max(prev, current));
+        setHwm((prev) => (prev < current ? current : prev));
     }, [current]);
 
     const restrict_forward = initial_mode_ref.current === "puzzle";
