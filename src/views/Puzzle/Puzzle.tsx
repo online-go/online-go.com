@@ -1254,7 +1254,7 @@ export function Puzzle(): React.ReactElement {
                 {at_start ? (
                     <GobanView.Tab
                         id="puzzle-back"
-                        icon="step-backward"
+                        icon="arrow-left"
                         type="action"
                         align="right"
                         title={pgettext("Go to the previous puzzle", "Previous puzzle")}
@@ -1274,7 +1274,7 @@ export function Puzzle(): React.ReactElement {
 
                 <GobanView.Tab
                     id="puzzle-skip"
-                    icon="step-forward"
+                    icon="arrow-right"
                     type="action"
                     align="right"
                     title={pgettext("Skip to the next puzzle", "Skip")}
