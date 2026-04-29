@@ -98,8 +98,15 @@ export function MoveNumberSlider(): React.ReactElement {
                     goban.showNext(i < delta - 1);
                 }
             } else {
+                // Mirror GobanController.previousMove: when analysis is
+                // disabled (live game), each backward step must clear branches
+                // off the node we just left so they don't accumulate.
                 for (let i = 0; i < -delta; i++) {
+                    const prev_node = goban.engine.cur_move;
                     goban.showPrevious(i < -delta - 1);
+                    if (goban.isAnalysisDisabled()) {
+                        goban.engine.cur_move.clearBranchesExceptFor(prev_node);
+                    }
                 }
             }
             goban.syncReviewMove();
