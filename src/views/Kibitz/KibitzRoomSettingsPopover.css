@@ -29,6 +29,46 @@
         line-height: 1.35;
     }
 
+    .KibitzRoomSettingsPopover-owner {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        min-width: 0;
+    }
+
+    .KibitzRoomSettingsPopover-ownerRow {
+        align-items: center;
+        display: flex;
+        gap: 0.35rem;
+        min-width: 0;
+
+        .Player {
+            align-items: center;
+            display: inline-flex;
+            line-height: 1.05;
+        }
+    }
+
+    .KibitzRoomSettingsPopover-ownerAvatar {
+        align-items: center;
+        background: var(--shade2);
+        color: var(--fg);
+        display: inline-flex;
+        flex: 0 0 auto;
+        font-size: 0.56rem;
+        font-weight: bold;
+        height: 16px;
+        justify-content: center;
+        line-height: 1;
+        min-width: 16px;
+        overflow: hidden;
+        text-transform: uppercase;
+    }
+
+    .KibitzRoomSettingsPopover-ownerAvatarIcon {
+        display: block;
+    }
+
     .KibitzRoomSettingsPopover-note {
         color: var(--text-color-faded);
     }

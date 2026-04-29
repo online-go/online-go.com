@@ -16,8 +16,11 @@
  */
 
 import * as React from "react";
+import { Player } from "@/components/Player";
+import * as player_cache from "@/lib/player_cache";
 import { pgettext } from "@/lib/translate";
-import type { KibitzRoomSummary } from "@/models/kibitz";
+import type { KibitzRoomSummary, KibitzRoomUser } from "@/models/kibitz";
+import { KibitzUserAvatar } from "./KibitzUserAvatar";
 import "./KibitzRoomSettingsPopover.css";
 
 type KibitzRoomSettingsPopoverView = "menu" | "edit-details";
@@ -47,6 +50,7 @@ export function KibitzRoomSettingsPopover({
     const [saving, setSaving] = React.useState(false);
     const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
     const [deleting, setDeleting] = React.useState(false);
+    const [owner, setOwner] = React.useState<KibitzRoomUser | null>(null);
 
     React.useEffect(() => {
         setView("menu");
@@ -56,6 +60,54 @@ export function KibitzRoomSettingsPopover({
         setDeleting(false);
         setErrorMessage(null);
     }, [room.description, room.title, room.id]);
+
+    React.useEffect(() => {
+        let cancelled = false;
+
+        if (canEditRoom || !room.creator_id) {
+            setOwner(null);
+            return undefined;
+        }
+
+        const cachedOwner = player_cache.lookup(room.creator_id);
+        if (cachedOwner?.username) {
+            setOwner({
+                id: cachedOwner.id,
+                username: cachedOwner.username,
+                ranking: cachedOwner.ranking ?? 0,
+                professional: cachedOwner.pro ?? false,
+                ui_class: cachedOwner.ui_class ?? "",
+                country: cachedOwner.country,
+                icon: cachedOwner.icon,
+            });
+        }
+
+        void player_cache
+            .fetch(room.creator_id)
+            .then((nextOwner) => {
+                if (cancelled) {
+                    return;
+                }
+                setOwner({
+                    id: nextOwner.id,
+                    username: nextOwner.username ?? "",
+                    ranking: nextOwner.ranking ?? 0,
+                    professional: nextOwner.pro ?? false,
+                    ui_class: nextOwner.ui_class ?? "",
+                    country: nextOwner.country,
+                    icon: nextOwner.icon,
+                });
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setOwner(null);
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [canEditRoom, room.creator_id]);
 
     const onSave = React.useCallback(async () => {
         if (!canEditRoom || saving) {
@@ -148,6 +200,25 @@ export function KibitzRoomSettingsPopover({
                                 "Change live game",
                             )}
                         </button>
+                    ) : null}
+                    {!canEditRoom && owner ? (
+                        <div className="KibitzRoomSettingsPopover-owner">
+                            <div className="KibitzRoomSettingsPopover-fieldLabel">
+                                {pgettext(
+                                    "Label for the room owner entry in the Kibitz settings popover",
+                                    "Room owner",
+                                )}
+                            </div>
+                            <div className="KibitzRoomSettingsPopover-ownerRow">
+                                <KibitzUserAvatar
+                                    user={owner}
+                                    size={16}
+                                    className="KibitzRoomSettingsPopover-ownerAvatar"
+                                    iconClassName="KibitzRoomSettingsPopover-ownerAvatarIcon"
+                                />
+                                <Player user={owner} flag rank noextracontrols />
+                            </div>
+                        </div>
                     ) : null}
                     {!canEditRoom && !canChangeBoard ? (
                         <div className="KibitzRoomSettingsPopover-note">

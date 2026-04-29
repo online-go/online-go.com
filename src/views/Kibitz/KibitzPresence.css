@@ -104,6 +104,13 @@
         overflow-y: auto;
     }
 
+    .presence-owner {
+        display: flex;
+        flex-direction: column;
+        gap: 0.12rem;
+        min-width: 0;
+    }
+
     .presence-user {
         align-items: center;
         box-sizing: border-box;
@@ -137,6 +144,14 @@
         .Player-rank {
             align-self: center;
         }
+    }
+
+    .presence-owner-tag {
+        color: var(--primary);
+        font-size: 0.7rem;
+        font-weight: 700;
+        line-height: 1;
+        text-transform: lowercase;
     }
 
     .presence-empty {

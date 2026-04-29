@@ -19,6 +19,7 @@ import * as React from "react";
 import { Player } from "@/components/Player";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { KibitzRoomSummary, KibitzRoomUser } from "@/models/kibitz";
+import * as player_cache from "@/lib/player_cache";
 import { KibitzUserAvatar } from "./KibitzUserAvatar";
 import "./KibitzPresence.css";
 
@@ -29,6 +30,7 @@ interface KibitzPresenceProps {
 
 export function KibitzPresence({ room, users }: KibitzPresenceProps): React.ReactElement {
     const [viewerCountFlash, setViewerCountFlash] = React.useState(false);
+    const [owner, setOwner] = React.useState<player_cache.PlayerCacheEntry | null>(null);
     const previousViewerCountRef = React.useRef<number | null>(null);
 
     // The active-room viewer_count is kept current by the controller via the
@@ -62,6 +64,50 @@ export function KibitzPresence({ room, users }: KibitzPresenceProps): React.Reac
             window.clearTimeout(timeout);
         };
     }, [viewerCount]);
+
+    React.useEffect(() => {
+        let cancelled = false;
+
+        if (!room.creator_id) {
+            setOwner(null);
+            return undefined;
+        }
+
+        const cachedOwner = player_cache.lookup(room.creator_id);
+        if (cachedOwner?.username) {
+            setOwner(cachedOwner);
+        }
+
+        void player_cache
+            .fetch(room.creator_id)
+            .then((nextOwner) => {
+                if (!cancelled) {
+                    setOwner(nextOwner);
+                }
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setOwner(null);
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [room.creator_id]);
+
+    const ownerUser: KibitzRoomUser | null = owner?.username
+        ? {
+              id: owner.id,
+              username: owner.username,
+              ranking: owner.ranking ?? 0,
+              professional: owner.pro ?? false,
+              ui_class: owner.ui_class ?? "",
+              country: owner.country,
+              icon: owner.icon,
+          }
+        : null;
+    const regularUsers = ownerUser ? users.filter((user) => user.id !== ownerUser.id) : users;
 
     return (
         <div className="KibitzPresence">
@@ -97,9 +143,25 @@ export function KibitzPresence({ room, users }: KibitzPresenceProps): React.Reac
                         </span>
                     </div>
                 </div>
-                {users.length > 0 ? (
+                {ownerUser ? (
+                    <div className="presence-owner">
+                        <div className="presence-user">
+                            <KibitzUserAvatar
+                                user={ownerUser}
+                                size={16}
+                                className="presence-avatar inline"
+                                iconClassName="presence-avatar-icon"
+                            />
+                            <Player user={ownerUser} flag rank noextracontrols />
+                            <span className="presence-owner-tag">
+                                {pgettext("Owner tag shown after the room owner's name", "owner")}
+                            </span>
+                        </div>
+                    </div>
+                ) : null}
+                {regularUsers.length > 0 ? (
                     <div className="presence-users">
-                        {users.map((user) => (
+                        {regularUsers.map((user) => (
                             <div key={user.id} className="presence-user">
                                 <KibitzUserAvatar
                                     user={user}

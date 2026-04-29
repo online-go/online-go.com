@@ -86,6 +86,7 @@ function mapBackendRoomToSummary(
         channel: backend.channel,
         title: backend.title,
         kind: backend.kind,
+        creator_id: backend.creator_id,
         // Prefer the backend's viewer_count when present, then the existing
         // value we already know, then 0. UIPush payloads may omit it; we
         // must not zero out a good count on those events.

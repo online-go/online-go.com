@@ -66,6 +66,7 @@ export interface KibitzRoomSummary {
     kind: KibitzRoomKind;
     viewer_count: number;
     description?: string;
+    creator_id?: number | null;
     current_game?: KibitzWatchedGame;
     pinned?: boolean;
     proposals_enabled?: boolean;
