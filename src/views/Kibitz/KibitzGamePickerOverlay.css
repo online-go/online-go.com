@@ -1388,6 +1388,7 @@
     [data-theme="light"] .KibitzGamePickerOverlay-confirmation,
     [data-theme="light"] .KibitzGamePickerOverlay-mobileRoomFields,
     [data-theme="light"] .KibitzGamePickerOverlay-suggestion,
+    [data-theme="light"] .KibitzGamePickerOverlay-header,
     [data-theme="light"] .KibitzGamePickerOverlay-popup {
         background: var(--bg);
     }

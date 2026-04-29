@@ -33,12 +33,14 @@
         flex: 1 1 0;
         gap: 0.25rem;
         justify-self: start;
+        max-width: 100%;
         min-width: 0;
+        overflow: hidden;
     }
 
     .room-stage-header .board-title {
         color: var(--fg);
-        flex: 0 1 auto;
+        flex: 1 1 auto;
         font-size: 0.98rem;
         font-weight: bold;
         line-height: 1.15;
@@ -1374,6 +1376,10 @@
 @media (min-width: 1001px) {
     [data-theme="light"] .KibitzRoomStage {
         background: var(--card-background-color);
+    }
+
+    [data-theme="light"] .KibitzRoomStage .room-stage-header {
+        background: var(--bg);
     }
 
     [data-theme="light"] .KibitzRoomStage .board-panel {
