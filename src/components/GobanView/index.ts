@@ -19,6 +19,7 @@ export { GobanView } from "./GobanView";
 export type { GobanViewRef, TabDefinition } from "./GobanView";
 export { GobanViewTab } from "./GobanViewTab";
 export type { GobanViewTabProps } from "./GobanViewTab";
+export { MoveNumberSlider } from "./MoveNumberSlider";
 export {
     GobanControllerContext,
     useGobanController,
