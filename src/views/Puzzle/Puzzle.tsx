@@ -280,11 +280,6 @@ export function Puzzle(): React.ReactElement {
             show_correct: true,
             show_wrong: false,
         });
-        setTimeout(() => {
-            const position = window.pageYOffset;
-            (next_link.current as HTMLElement)?.focus();
-            window.scrollTo(0, position);
-        }, 1);
     }, [transform]);
 
     const replacementSettingFunction = React.useCallback((): PuzzlePlacementSetting => {
