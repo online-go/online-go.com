@@ -83,14 +83,17 @@ export function MoveNumberSlider(): React.ReactElement {
             // sync review move) so the slider behaves the same way in
             // collaborative reviews and during autoplay/score estimation.
             const goban = controller.goban;
+            const last_estimate_move = controller.stopEstimatingScore();
+            controller.stopAutoplay();
+            controller.checkAndEnterAnalysis(last_estimate_move);
+            // Read cur AFTER checkAndEnterAnalysis: in puzzle mode it may
+            // jumpTo(last_estimate_move) and shift cur_move out from under
+            // us. Mirrors the previousMove / nextMove pattern.
             const cur = goban.engine.cur_move.move_number;
             const delta = target - cur;
             if (delta === 0) {
                 return;
             }
-            const last_estimate_move = controller.stopEstimatingScore();
-            controller.stopAutoplay();
-            controller.checkAndEnterAnalysis(last_estimate_move);
             // Defer the display redraw until the last hop, mirroring the
             // pattern used by PuzzleNavigation.nav_prev_10 / nav_next_10.
             if (delta > 0) {
