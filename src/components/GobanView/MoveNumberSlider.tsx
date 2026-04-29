@@ -24,27 +24,27 @@ import "./MoveNumberSlider.css";
 
 interface MoveBounds {
     current: number;
-    max: number;
+    /** Deepest move reachable from `cur` along the trunk_next/hint_next chain.
+     *  Includes the puzzle's saved solution branches when the goban is in
+     *  puzzle mode, so consumers must clamp this against a high-water mark
+     *  before exposing it to the user. */
+    reachable: number;
 }
 
 const useMoveBounds = generateGobanHook<MoveBounds, GobanRenderer | null>(
     (goban) => {
         if (!goban) {
-            return { current: 0, max: 0 };
+            return { current: 0, reachable: 0 };
         }
         const cur = goban.engine.cur_move;
         const current = cur.move_number;
-        // Walk forward from the current node, following trunk_next first then
-        // the remembered branch, to find the deepest reachable position. The
-        // slider's max is that depth, so the user can drag forward as far as
-        // the current line goes.
         let node = cur;
         let next = node.next(false);
         while (next) {
             node = next;
             next = node.next(false);
         }
-        return { current, max: Math.max(current, node.move_number) };
+        return { current, reachable: Math.max(current, node.move_number) };
     },
     // Don't subscribe to "update" — it fires on every repaint (hover marks,
     // score estimation, etc.) and would re-render the slider for visual
@@ -55,7 +55,27 @@ const useMoveBounds = generateGobanHook<MoveBounds, GobanRenderer | null>(
 export function MoveNumberSlider(): React.ReactElement {
     const controller = useGobanController();
     const goban = controller.goban;
-    const { current, max } = useMoveBounds(goban);
+    const { current, reachable } = useMoveBounds(goban);
+
+    // Puzzles save their solution as the move tree's trunk_next chain. Walking
+    // it forward via `next()` would let the slider drag through unplayed
+    // solution moves, spoiling the puzzle. Detect puzzle mode at mount time
+    // (the slider switches the goban to "analyze" on first navigation, so
+    // `goban.mode` isn't reliable later) and constrain the slider's max to a
+    // session high-water mark of the user's actual position. Reset whenever
+    // the goban changes so loading a new puzzle starts from move 0.
+    const initial_mode_ref = React.useRef<string | null>(null);
+    const [hwm, setHwm] = React.useState(0);
+    React.useEffect(() => {
+        initial_mode_ref.current = goban?.mode ?? null;
+        setHwm(goban?.engine.cur_move.move_number ?? 0);
+    }, [goban]);
+    React.useEffect(() => {
+        setHwm((prev) => Math.max(prev, current));
+    }, [current]);
+
+    const restrict_forward = initial_mode_ref.current === "puzzle";
+    const max = restrict_forward ? Math.max(current, hwm) : reachable;
 
     const at_start = current <= 0;
     const at_end = current >= max;
