@@ -78,14 +78,19 @@ export function MoveNumberSlider(): React.ReactElement {
             // controller.gotoMove(), which always restarts from move 0. For
             // continuous drag events that's O(N²) total work on a long game;
             // delta-based navigation is O(|delta|) per event, O(N) for the
-            // whole drag.
+            // whole drag. Mirror the side-effects every other navigation
+            // method on GobanController performs (stop estimate/autoplay,
+            // sync review move) so the slider behaves the same way in
+            // collaborative reviews and during autoplay/score estimation.
             const goban = controller.goban;
             const cur = goban.engine.cur_move.move_number;
             const delta = target - cur;
             if (delta === 0) {
                 return;
             }
-            controller.checkAndEnterAnalysis();
+            const last_estimate_move = controller.stopEstimatingScore();
+            controller.stopAutoplay();
+            controller.checkAndEnterAnalysis(last_estimate_move);
             // Defer the display redraw until the last hop, mirroring the
             // pattern used by PuzzleNavigation.nav_prev_10 / nav_next_10.
             if (delta > 0) {
@@ -97,6 +102,7 @@ export function MoveNumberSlider(): React.ReactElement {
                     goban.showPrevious(i < -delta - 1);
                 }
             }
+            goban.syncReviewMove();
         },
         [controller],
     );
