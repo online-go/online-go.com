@@ -46,7 +46,10 @@ const useMoveBounds = generateGobanHook<MoveBounds, GobanRenderer | null>(
         }
         return { current, max: Math.max(current, node.move_number) };
     },
-    ["cur_move", "last_official_move", "update"],
+    // Don't subscribe to "update" — it fires on every repaint (hover marks,
+    // score estimation, etc.) and would re-render the slider for visual
+    // changes that don't shift the move position.
+    ["cur_move", "last_official_move"],
 );
 
 export function MoveNumberSlider(): React.ReactElement {
@@ -68,8 +71,31 @@ export function MoveNumberSlider(): React.ReactElement {
     const handleSliderChange = React.useCallback(
         (ev: React.ChangeEvent<HTMLInputElement>) => {
             const target = parseInt(ev.target.value, 10);
-            if (!isNaN(target)) {
-                controller.gotoMove(target);
+            if (isNaN(target)) {
+                return;
+            }
+            // Walk by the delta from the current move rather than calling
+            // controller.gotoMove(), which always restarts from move 0. For
+            // continuous drag events that's O(N²) total work on a long game;
+            // delta-based navigation is O(|delta|) per event, O(N) for the
+            // whole drag.
+            const goban = controller.goban;
+            const cur = goban.engine.cur_move.move_number;
+            const delta = target - cur;
+            if (delta === 0) {
+                return;
+            }
+            controller.checkAndEnterAnalysis();
+            // Defer the display redraw until the last hop, mirroring the
+            // pattern used by PuzzleNavigation.nav_prev_10 / nav_next_10.
+            if (delta > 0) {
+                for (let i = 0; i < delta; i++) {
+                    goban.showNext(i < delta - 1);
+                }
+            } else {
+                for (let i = 0; i < -delta; i++) {
+                    goban.showPrevious(i < -delta - 1);
+                }
             }
         },
         [controller],
