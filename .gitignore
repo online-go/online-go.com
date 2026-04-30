@@ -53,3 +53,4 @@ i18n/*.tar.gz
 /assets/img/__probe_*.bin
 
 # Kibitz folder John
+/kibitz-docs

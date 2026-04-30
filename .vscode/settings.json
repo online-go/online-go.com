@@ -1,8 +1,9 @@
 {
-    "files.eol": "\n",
-    "eslint.workingDirectories": [{ "mode": "auto" }],
-    "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
-    "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": "explicit"
+  "files.eol": "\n",
+  "eslint.run": "onSave",
+  "eslint.workingDirectories": [{ "mode": "auto" }],
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
     }
 }
