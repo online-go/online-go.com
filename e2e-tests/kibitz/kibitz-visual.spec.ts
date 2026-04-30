@@ -27,6 +27,135 @@ function describeDebugData(debugData: unknown) {
     return JSON.stringify(debugData, null, 2);
 }
 
+async function waitForKibitzReady(page: Page) {
+    await expect(page.locator(".Kibitz")).toBeVisible({ timeout: 15000 });
+    await expect(page.locator(".KibitzRoomStage")).toBeVisible({ timeout: 15000 });
+    await expect(page.locator(".KibitzRoomStage-boards")).toBeVisible({ timeout: 15000 });
+    await expect(page.locator(".board-panel.main-board")).toBeVisible({ timeout: 15000 });
+    await expect(
+        page.locator(".board-panel.main-board .KibitzBoard.main-board-surface"),
+    ).toBeVisible({ timeout: 15000 });
+    await expect(
+        page.locator(".board-panel.main-board .KibitzBoard.main-board-surface .Goban").first(),
+    ).toBeVisible({ timeout: 15000 });
+}
+
+async function waitForStableRect(page: Page, selector: string, timeout = 5000) {
+    await page.waitForFunction(
+        ({ targetSelector }) => {
+            const element = document.querySelector(targetSelector);
+            if (!element) {
+                return false;
+            }
+
+            const rect = element.getBoundingClientRect();
+            const current = {
+                top: Math.round(rect.top),
+                left: Math.round(rect.left),
+                width: Math.round(rect.width),
+                height: Math.round(rect.height),
+            };
+
+            const key = `__kibitz_stable_rect_${targetSelector}`;
+            const store = window as unknown as Record<string, unknown>;
+            const previous = store[key] as typeof current | undefined;
+            store[key] = current;
+
+            return (
+                previous != null &&
+                previous.top === current.top &&
+                previous.left === current.left &&
+                previous.width === current.width &&
+                previous.height === current.height &&
+                current.width > 0 &&
+                current.height > 0
+            );
+        },
+        { targetSelector: selector },
+        { timeout },
+    );
+}
+
+async function waitForKibitzLayoutStable(page: Page) {
+    await waitForStableRect(page, ".KibitzRoomStage-boards");
+    await waitForStableRect(page, ".board-panel.main-board .board-fit-slot");
+}
+
+async function waitForCompareLayoutStable(page: Page) {
+    await waitForKibitzLayoutStable(page);
+    await waitForStableRect(page, ".board-panel.secondary-board .board-fit-slot");
+}
+
+async function waitForCompareMode(page: Page) {
+    const stageBoards = page.locator(".KibitzRoomStage-boards").first();
+    await expect(stageBoards).toHaveClass(/secondary-pane-equal/, { timeout: 5000 });
+    await expect(page.locator(".board-panel.secondary-board")).toBeVisible({ timeout: 5000 });
+    await waitForCompareLayoutStable(page);
+}
+
+async function clickUntilCompareMode(page: Page) {
+    const stageBoards = page.locator(".KibitzRoomStage-boards").first();
+
+    if ((await stageBoards.getAttribute("class"))?.includes("secondary-pane-equal")) {
+        await waitForCompareMode(page);
+        return;
+    }
+
+    const compareButton = page.locator(".KibitzDividerHandle .divider-mode-button.compare-view");
+    if (await compareButton.count()) {
+        await compareButton.first().click({ force: true });
+        await waitForCompareMode(page);
+        return;
+    }
+
+    const increaseButton = page.locator(".KibitzDividerHandle .divider-arrow.increase");
+
+    for (let i = 0; i < 4; i++) {
+        if ((await stageBoards.getAttribute("class"))?.includes("secondary-pane-equal")) {
+            await waitForCompareMode(page);
+            return;
+        }
+
+        if (!(await increaseButton.count())) {
+            break;
+        }
+
+        await increaseButton.first().click({ force: true });
+        await expect(stageBoards).toHaveClass(/secondary-pane-(small|equal)/, {
+            timeout: 3000,
+        });
+    }
+
+    await waitForCompareMode(page);
+}
+
+async function openFirstVariationOrCreateDraft(page: Page) {
+    const variationTrigger = page
+        .locator(
+            ".KibitzVariationList .variation-recall, .KibitzVariationList .variation-item, .KibitzRoomStream .variation-post",
+        )
+        .first();
+
+    if (await variationTrigger.count()) {
+        await expect(variationTrigger).toBeVisible({ timeout: 15000 });
+        await variationTrigger.scrollIntoViewIfNeeded();
+        await variationTrigger.click({ force: true });
+    } else {
+        const createVariationButton = page
+            .locator(
+                ".board-panel .kibitz-create-variation-button, .secondary-board-empty-state .kibitz-create-variation-button",
+            )
+            .first();
+
+        await expect(createVariationButton).toBeVisible({ timeout: 15000 });
+        await createVariationButton.scrollIntoViewIfNeeded();
+        await createVariationButton.click({ force: true });
+    }
+
+    await expect(page.locator(".board-panel.secondary-board")).toBeVisible({ timeout: 15000 });
+    await waitForCompareLayoutStable(page);
+}
+
 async function measureMainTransportRow(page: Page) {
     return page.evaluate(() => {
         function rect(selector: string) {
@@ -138,37 +267,22 @@ async function captureKibitzLayout(
 ) {
     await page.setViewportSize({ width: 1920, height: 1080 });
     await load(page, route);
-    await page.waitForTimeout(1000);
+    await waitForKibitzReady(page);
+    await waitForKibitzLayoutStable(page);
 
     if (options?.openVariation) {
-        const variationTrigger = page
-            .locator(".KibitzRoomStream .variation-post, .KibitzVariationList .variation-item")
-            .first();
-        if (await variationTrigger.count()) {
-            await variationTrigger.scrollIntoViewIfNeeded();
-            await variationTrigger.click({ force: true });
-            await page.waitForTimeout(250);
-        }
+        await openFirstVariationOrCreateDraft(page);
     }
 
     if (options?.equalMode) {
-        const increaseButton = page.locator(".KibitzDividerHandle .divider-arrow.increase");
-        const stageBoards = page.locator(".KibitzRoomStage-boards");
-
-        for (let i = 0; i < 4; i++) {
-            const className = await stageBoards.first().getAttribute("class");
-            if (className?.includes("secondary-pane-equal")) {
-                break;
-            }
-
-            if (await increaseButton.count()) {
-                await increaseButton.first().click({ force: true });
-                await page.waitForTimeout(200);
-            }
-        }
-
-        await expect(stageBoards.first()).toHaveClass(/secondary-pane-equal/);
+        await clickUntilCompareMode(page);
     }
+
+    if (options?.equalMode) {
+        await waitForCompareLayoutStable(page);
+    }
+
+    await waitForKibitzLayoutStable(page);
 
     const measurements = await page.evaluate(() => {
         function rect(selector: string) {
@@ -400,7 +514,8 @@ async function captureKibitzRowSizing(
 ) {
     await page.setViewportSize({ width: 1920, height: 1080 });
     await load(page, route);
-    await page.waitForTimeout(1000);
+    await waitForKibitzReady(page);
+    await waitForKibitzLayoutStable(page);
 
     const roomItems = page.locator(".KibitzRoomList-item");
     const roomItemCount = await roomItems.count();
@@ -408,7 +523,9 @@ async function captureKibitzRowSizing(
         const roomItem = roomItems.nth(index);
         await roomItem.scrollIntoViewIfNeeded();
         await roomItem.click({ force: true });
-        await page.waitForTimeout(600);
+        await expect(roomItem).toHaveClass(/active/, { timeout: 10000 });
+        await waitForKibitzReady(page);
+        await waitForKibitzLayoutStable(page);
         const variationCount = await page
             .locator(
                 ".KibitzVariationList .variation-recall, .KibitzVariationList .variation-item, .KibitzRoomStream .variation-post",
@@ -420,59 +537,16 @@ async function captureKibitzRowSizing(
     }
 
     if (options?.openVariation) {
-        const variationTrigger = page
-            .locator(
-                ".KibitzVariationList .variation-recall, .KibitzVariationList .variation-item, .KibitzRoomStream .variation-post",
-            )
-            .first();
-        if (await variationTrigger.count()) {
-            await expect(variationTrigger).toBeVisible({ timeout: 15000 });
-            await variationTrigger.scrollIntoViewIfNeeded();
-            await variationTrigger.click({ force: true });
-            await page.waitForTimeout(400);
-        } else {
-            const createVariationButton = page
-                .locator(
-                    ".board-panel .kibitz-create-variation-button, .secondary-board-empty-state .kibitz-create-variation-button",
-                )
-                .first();
-            await expect(createVariationButton).toBeVisible({ timeout: 15000 });
-            await createVariationButton.scrollIntoViewIfNeeded();
-            await createVariationButton.click({ force: true });
-            await page.waitForTimeout(400);
-        }
-
-        const stageBoards = page.locator(".KibitzRoomStage-boards");
-        const viewModeButton = page.locator(
-            ".KibitzDividerHandle .divider-mode-button.compare-view",
-        );
-        const stageClassAfterOpen = await stageBoards.first().getAttribute("class");
-        if (
-            !stageClassAfterOpen?.includes("secondary-pane-equal") &&
-            (await viewModeButton.count())
-        ) {
-            await viewModeButton.first().click({ force: true });
-            await page.waitForTimeout(400);
-        }
+        await openFirstVariationOrCreateDraft(page);
+        await clickUntilCompareMode(page);
     }
 
-    const increaseButton = page.locator(".KibitzDividerHandle .divider-arrow.increase");
-    const stageBoards = page.locator(".KibitzRoomStage-boards");
-
-    for (let i = 0; i < 4; i++) {
-        const className = await stageBoards.first().getAttribute("class");
-        if (className?.includes("secondary-pane-equal")) {
-            break;
-        }
-
-        if (await increaseButton.count()) {
-            await increaseButton.first().click({ force: true });
-            await page.waitForTimeout(200);
-        }
+    if (!options?.openVariation) {
+        await clickUntilCompareMode(page);
     }
 
-    await expect(stageBoards.first()).toHaveClass(/secondary-pane-equal/);
-    await page.waitForTimeout(500);
+    await waitForCompareLayoutStable(page);
+    await waitForStableRect(page, ".kibitz-move-tree-container");
 
     const rowData = await page.evaluate(() => {
         function describeRect(element: Element | null) {
@@ -654,57 +728,16 @@ async function captureKibitzRowSizing(
 async function openKibitzEqualCompareMode(page: Page, route: string) {
     await page.setViewportSize({ width: 1920, height: 1080 });
     await load(page, route);
-    await page.waitForTimeout(1000);
-
-    const variationTrigger = page
-        .locator(
-            ".KibitzVariationList .variation-recall, .KibitzVariationList .variation-item, .KibitzRoomStream .variation-post",
-        )
-        .first();
-    if (await variationTrigger.count()) {
-        await expect(variationTrigger).toBeVisible({ timeout: 15000 });
-        await variationTrigger.scrollIntoViewIfNeeded();
-        await variationTrigger.click({ force: true });
-    } else {
-        const createVariationButton = page
-            .locator(
-                ".board-panel .kibitz-create-variation-button, .secondary-board-empty-state .kibitz-create-variation-button",
-            )
-            .first();
-        await expect(createVariationButton).toBeVisible({ timeout: 15000 });
-        await createVariationButton.scrollIntoViewIfNeeded();
-        await createVariationButton.click({ force: true });
-    }
-    await page.waitForTimeout(400);
-
-    const stageBoards = page.locator(".KibitzRoomStage-boards");
-    const viewModeButton = page.locator(".KibitzDividerHandle .divider-mode-button.compare-view");
-    const stageClassAfterOpen = await stageBoards.first().getAttribute("class");
-    if (!stageClassAfterOpen?.includes("secondary-pane-equal") && (await viewModeButton.count())) {
-        await viewModeButton.first().click({ force: true });
-        await page.waitForTimeout(400);
-    }
-
-    const increaseButton = page.locator(".KibitzDividerHandle .divider-arrow.increase");
-    for (let i = 0; i < 4; i++) {
-        const className = await stageBoards.first().getAttribute("class");
-        if (className?.includes("secondary-pane-equal")) {
-            break;
-        }
-
-        if (await increaseButton.count()) {
-            await increaseButton.first().click({ force: true });
-            await page.waitForTimeout(200);
-        }
-    }
-
-    await expect(stageBoards.first()).toHaveClass(/secondary-pane-equal/);
+    await waitForKibitzReady(page);
+    await waitForKibitzLayoutStable(page);
+    await openFirstVariationOrCreateDraft(page);
+    await clickUntilCompareMode(page);
     await expect(
         page.locator(".board-panel.main-board .KibitzBoard.main-board-surface"),
     ).toBeVisible({
         timeout: 15000,
     });
-    await page.waitForTimeout(500);
+    await waitForCompareLayoutStable(page);
 }
 
 interface LayoutRect {
@@ -817,7 +850,8 @@ ogsTest.describe("@Kibitz layout regressions", () => {
         "@Visual main transport row keeps symmetry when Back to live appears",
         async ({ page }) => {
             await load(page, "/kibitz/user-fea5dced");
-            await page.waitForTimeout(1000);
+            await waitForKibitzReady(page);
+            await waitForKibitzLayoutStable(page);
 
             const mainRow = page.locator(".board-panel.main-board .main-board-transport-row");
             await expect(mainRow).toBeVisible({ timeout: 15000 });
@@ -827,12 +861,14 @@ ogsTest.describe("@Kibitz layout regressions", () => {
             );
 
             const noLive = await measureMainTransportRow(page);
+            await waitForStableRect(page, ".board-panel.main-board .main-board-transport-row");
             await expect(mainRow).toHaveScreenshot("kibitz-main-transport-row-no-live.png", {
                 animations: "disabled",
             });
 
             await invokeMainBoardController(page, "previousMove");
             await expect(backToLiveButton).toBeVisible({ timeout: 15000 });
+            await waitForStableRect(page, ".board-panel.main-board .main-board-transport-row");
 
             const withLive = await measureMainTransportRow(page);
             await expect(mainRow).toHaveScreenshot("kibitz-main-transport-row-with-live.png", {
@@ -882,7 +918,11 @@ ogsTest.describe("@Kibitz layout regressions", () => {
             await expect(variationTrigger).toBeVisible({ timeout: 15000 });
             await variationTrigger.scrollIntoViewIfNeeded();
             await variationTrigger.click({ force: true });
-            await page.waitForTimeout(500);
+            await waitForCompareLayoutStable(page);
+            await waitForStableRect(
+                page,
+                ".board-panel.secondary-board .secondary-board-transport-row",
+            );
 
             const backToLiveButton = page.locator(
                 ".board-panel.secondary-board .secondary-board-return-live-action .kibitz-return-live-button",
