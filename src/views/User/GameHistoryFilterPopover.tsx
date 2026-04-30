@@ -22,6 +22,7 @@ import "./GameHistoryFilterPopover.css";
 export type SizeFilter = "all" | "9x9" | "13x13" | "19x19";
 export type RankedFilter = "all" | "ranked" | "unranked";
 export type BotFilter = "humans" | "bots";
+export type AnnulledFilter = "all" | "hide";
 
 interface GameHistoryFilterPopoverProps {
     sizeFilter: SizeFilter;
@@ -31,6 +32,8 @@ interface GameHistoryFilterPopoverProps {
     botFilter: BotFilter;
     onBotChange: (bot: BotFilter) => void;
     botDisabled?: boolean;
+    annulledFilter: AnnulledFilter;
+    onAnnulledChange: (annulled: AnnulledFilter) => void;
 }
 
 export function GameHistoryFilterPopover(props: GameHistoryFilterPopoverProps) {
@@ -41,7 +44,8 @@ export function GameHistoryFilterPopover(props: GameHistoryFilterPopoverProps) {
     const hasActiveFilter =
         props.sizeFilter !== "all" ||
         (!props.botDisabled && props.botFilter !== "humans") ||
-        (!rankedDisabled && props.rankedFilter !== "all");
+        (!rankedDisabled && props.rankedFilter !== "all") ||
+        props.annulledFilter !== "all";
 
     React.useEffect(() => {
         if (!open) {
@@ -141,6 +145,18 @@ export function GameHistoryFilterPopover(props: GameHistoryFilterPopoverProps) {
                             onClick={() => props.onBotChange("bots")}
                         >
                             {_("Bots")}
+                        </button>
+                    </div>
+                    <div className="btn-group">
+                        <button
+                            className={props.annulledFilter === "hide" ? "primary sm" : "sm"}
+                            onClick={() =>
+                                props.onAnnulledChange(
+                                    props.annulledFilter === "hide" ? "all" : "hide",
+                                )
+                            }
+                        >
+                            {_("Hide Annulled")}
                         </button>
                     </div>
                 </div>

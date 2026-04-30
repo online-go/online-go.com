@@ -42,6 +42,7 @@ import {
     SizeFilter,
     RankedFilter,
     BotFilter,
+    AnnulledFilter,
 } from "./GameHistoryFilterPopover";
 import "./GameHistoryTable.css";
 
@@ -110,6 +111,10 @@ export function GameHistoryTable(props: GameHistoryProps) {
     const [game_history_bot_filter, setGameHistoryBotFilter] = React.useState<BotFilter>(
         preferences.get("game-history-bot-filter"),
     );
+    const [game_history_annulled_filter, setGameHistoryAnnulledFilter] =
+        React.useState<AnnulledFilter>(
+            preferences.get("game-history-annulled-filter") as AnnulledFilter,
+        );
     const effective_bot_filter: BotFilter = props.is_bot ? "bots" : game_history_bot_filter;
     const [hide_flags] = usePreference("moderator.hide-flags");
     const [selectModeActive, setSelectModeActive] = React.useState<boolean>(false);
@@ -234,6 +239,11 @@ export function GameHistoryTable(props: GameHistoryProps) {
     function handleBotChange(bot: BotFilter) {
         setGameHistoryBotFilter(bot);
         preferences.set("game-history-bot-filter", bot);
+    }
+
+    function handleAnnulledChange(annulled: AnnulledFilter) {
+        setGameHistoryAnnulledFilter(annulled);
+        preferences.set("game-history-annulled-filter", annulled);
     }
 
     function game_history_groomer(results: rest_api.Game[]): GroomedGame[] {
@@ -415,6 +425,8 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                 botFilter={effective_bot_filter}
                                 onBotChange={handleBotChange}
                                 botDisabled={props.is_bot}
+                                annulledFilter={game_history_annulled_filter}
+                                onAnnulledChange={handleAnnulledChange}
                             />
                         </div>
                     </div>
@@ -435,8 +447,10 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             ...(effective_bot_filter !== "bots" &&
                                 game_history_ranked_filter !== "all" && {
                                     ranked: game_history_ranked_filter === "ranked",
-                                    annulled: false, // Assume the user wants to filter annulled games
                                 }),
+                            ...(game_history_annulled_filter === "hide" && {
+                                annulled: false,
+                            }),
                         }}
                         orderBy={["-ended"]}
                         groom={game_history_groomer}
