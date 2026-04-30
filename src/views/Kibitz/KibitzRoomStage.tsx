@@ -172,6 +172,71 @@ function renderInlineAvatar(
     );
 }
 
+function hasUsableMoveTreeContainerSize(container: HTMLElement | null): boolean {
+    if (!container) {
+        return false;
+    }
+
+    const rect = container.getBoundingClientRect();
+
+    return rect.width > 20 && rect.height > 20;
+}
+
+function scheduleNoWarpMoveTreeRedrawWhenReady(
+    goban: { move_tree_redraw?: (no_warp?: boolean) => void } | null | undefined,
+    container: HTMLElement | null,
+    attempts = 5,
+): () => void {
+    let frame1: number | null = null;
+    let frame2: number | null = null;
+    let cancelled = false;
+
+    const scheduleAttempt = (remainingAttempts: number) => {
+        if (cancelled) {
+            return;
+        }
+
+        frame1 = window.requestAnimationFrame(() => {
+            frame1 = null;
+
+            if (cancelled) {
+                return;
+            }
+
+            frame2 = window.requestAnimationFrame(() => {
+                frame2 = null;
+
+                if (cancelled) {
+                    return;
+                }
+
+                if (container && !hasUsableMoveTreeContainerSize(container)) {
+                    if (remainingAttempts > 0) {
+                        scheduleAttempt(remainingAttempts - 1);
+                    }
+                    return;
+                }
+
+                goban?.move_tree_redraw?.(true);
+            });
+        });
+    };
+
+    scheduleAttempt(attempts);
+
+    return () => {
+        cancelled = true;
+
+        if (frame1 !== null) {
+            window.cancelAnimationFrame(frame1);
+        }
+
+        if (frame2 !== null) {
+            window.cancelAnimationFrame(frame2);
+        }
+    };
+}
+
 function getVariationColorIndex(
     variationColorIndexes: Record<string, number>,
     variationId: string,
@@ -333,6 +398,7 @@ export function KibitzRoomStage({
         controller: null,
         variationId: null,
     });
+    const pendingSecondaryMoveTreeRedrawCancelRef = React.useRef<(() => void) | null>(null);
     const [mainBoardSlotRef, mainBoardSize] = useSquareFitSize<HTMLDivElement>(
         `main-${secondaryPaneSize}`,
     );
@@ -369,6 +435,27 @@ export function KibitzRoomStage({
     const handleSecondaryMoveTreeResize = React.useCallback(() => {
         secondaryBoardController?.goban.move_tree_redraw(true);
     }, [secondaryBoardController]);
+    const scheduleSecondaryMoveTreeRedraw = React.useCallback(() => {
+        pendingSecondaryMoveTreeRedrawCancelRef.current?.();
+
+        const container = secondaryMoveTreeContainer?.div ?? null;
+        if (!secondaryBoardController || !container) {
+            pendingSecondaryMoveTreeRedrawCancelRef.current = null;
+            return;
+        }
+
+        pendingSecondaryMoveTreeRedrawCancelRef.current = scheduleNoWarpMoveTreeRedrawWhenReady(
+            secondaryBoardController.goban,
+            container,
+        );
+    }, [secondaryBoardController, secondaryMoveTreeContainer]);
+
+    React.useEffect(() => {
+        return () => {
+            pendingSecondaryMoveTreeRedrawCancelRef.current?.();
+            pendingSecondaryMoveTreeRedrawCancelRef.current = null;
+        };
+    }, []);
 
     React.useEffect(() => {
         const previousController = previousSecondaryControllerRef.current;
@@ -383,16 +470,18 @@ export function KibitzRoomStage({
             while (container.firstChild) {
                 container.removeChild(container.firstChild);
             }
+
+            container.scrollLeft = 0;
+            container.scrollTop = 0;
         }
 
         if (secondaryBoardController && container) {
             secondaryBoardController.setMoveTreeContainer(secondaryMoveTreeContainer);
-            const redrawFrame = window.requestAnimationFrame(() => {
-                secondaryBoardController.goban.move_tree_redraw(true);
-            });
+            scheduleSecondaryMoveTreeRedraw();
 
             return () => {
-                window.cancelAnimationFrame(redrawFrame);
+                pendingSecondaryMoveTreeRedrawCancelRef.current?.();
+                pendingSecondaryMoveTreeRedrawCancelRef.current = null;
                 secondaryBoardController.setMoveTreeContainer(null);
             };
         }
@@ -402,7 +491,12 @@ export function KibitzRoomStage({
                 secondaryBoardController.setMoveTreeContainer(null);
             }
         };
-    }, [secondaryBoardController, secondaryMoveTreeContainer, secondaryMoveTreeKey]);
+    }, [
+        scheduleSecondaryMoveTreeRedraw,
+        secondaryBoardController,
+        secondaryMoveTreeContainer,
+        secondaryMoveTreeKey,
+    ]);
 
     React.useEffect(() => {
         if (!selectedVariation || !secondaryBoardController || secondaryPane.preview_game_id) {
@@ -508,7 +602,7 @@ export function KibitzRoomStage({
                         : [];
                 }
                 goban.redraw(true);
-                goban.move_tree_redraw();
+                scheduleSecondaryMoveTreeRedraw();
                 return selectedEndpoint != null;
             } finally {
                 applyingVariation = false;
@@ -533,6 +627,8 @@ export function KibitzRoomStage({
 
         return () => {
             goban.off("load", onLoad);
+            pendingSecondaryMoveTreeRedrawCancelRef.current?.();
+            pendingSecondaryMoveTreeRedrawCancelRef.current = null;
             if (suppressSelectedVariationLoadTimerRef.current) {
                 clearTimeout(suppressSelectedVariationLoadTimerRef.current);
                 suppressSelectedVariationLoadTimerRef.current = null;
@@ -546,6 +642,7 @@ export function KibitzRoomStage({
         selectedVariationApplyKey,
         visibleVariationApplyKey,
         variationFocusRequestId,
+        scheduleSecondaryMoveTreeRedraw,
     ]);
 
     React.useEffect(() => {
@@ -593,7 +690,7 @@ export function KibitzRoomStage({
                     goban.engine.jumpTo(applied.endpoint);
                 }
                 goban.redraw(true);
-                goban.move_tree_redraw();
+                scheduleSecondaryMoveTreeRedraw();
                 appliedDraftBaseRef.current = {
                     controller: secondaryBoardController,
                     variationId: draftBaseVariation.id,
@@ -614,6 +711,8 @@ export function KibitzRoomStage({
 
         return () => {
             goban.off("load", onLoad);
+            pendingSecondaryMoveTreeRedrawCancelRef.current?.();
+            pendingSecondaryMoveTreeRedrawCancelRef.current = null;
         };
     }, [
         draftBaseVariation,
@@ -621,6 +720,7 @@ export function KibitzRoomStage({
         secondaryPane.preview_game_id,
         secondaryPane.variation_source_game_id,
         variationColorIndexes,
+        scheduleSecondaryMoveTreeRedraw,
     ]);
 
     React.useEffect(() => {

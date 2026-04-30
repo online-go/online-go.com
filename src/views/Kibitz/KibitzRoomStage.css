@@ -322,7 +322,9 @@
                 align-self: stretch !important;
                 height: 100% !important;
                 min-height: var(--equal-variation-height);
+                min-width: 0;
                 resize: none !important;
+                max-width: 100%;
                 width: min(100%, 39rem, 78vh);
             }
 
@@ -402,6 +404,7 @@
             .secondary-board-compose-row,
             .secondary-board .kibitz-move-tree-container {
                 max-width: min(100%, 48rem, 78vh);
+                min-width: 0;
                 justify-self: center;
                 width: min(100%, 48rem, 78vh);
             }
@@ -1409,6 +1412,7 @@
 
         .secondary-board .KibitzBoardControls,
         .secondary-board .kibitz-move-tree-container {
+            min-width: 0;
             width: min(100%, 30rem, calc(100vw - 1rem));
         }
     }
