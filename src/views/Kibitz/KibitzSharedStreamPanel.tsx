@@ -174,7 +174,7 @@ function ratioFromPointerPosition(
 // player-only side channel and shadowban is per-user — neither belongs in
 // a kibitz pane.
 function createChatLineFromGobanLine(
-    room: KibitzRoomSummary,
+    roomChannel: string,
     line: protocol.GameChatLine,
 ): PaneEntry | null {
     if (line.channel !== "main" && line.channel !== "spectator") {
@@ -189,13 +189,13 @@ function createChatLineFromGobanLine(
               : "Review";
     return {
         kind: "chat",
-        key: `goban-${line.chat_id}`,
+        key: `goban-${line.channel}-${line.chat_id}`,
         createdAt: line.date * 1000,
         source: "game-chat",
         gobanChannel: line.channel,
         gobanLine: line,
         line: {
-            channel: room.channel,
+            channel: roomChannel,
             username: line.username ?? "",
             id: line.player_id,
             ranking: 0,
@@ -210,6 +210,43 @@ function createChatLineFromGobanLine(
             },
         },
     };
+}
+
+function buildGobanGameEntries(
+    roomChannel: string,
+    chatLog: protocol.GameChatLine[] | undefined,
+): PaneEntry[] {
+    if (!chatLog) {
+        return [];
+    }
+
+    const entries: PaneEntry[] = [];
+
+    for (const line of chatLog) {
+        const entry = createChatLineFromGobanLine(roomChannel, line);
+        if (entry) {
+            entries.push(entry);
+        }
+    }
+
+    return entries.sort(sortEntries);
+}
+
+function appendGobanGameEntry(
+    current: PaneEntry[],
+    roomChannel: string,
+    line: protocol.GameChatLine,
+): PaneEntry[] {
+    const entry = createChatLineFromGobanLine(roomChannel, line);
+    if (!entry) {
+        return current;
+    }
+
+    if (current.some((candidate) => candidate.key === entry.key)) {
+        return current;
+    }
+
+    return [...current, entry].sort(sortEntries);
 }
 
 function createChatLineFromItem(
@@ -282,6 +319,8 @@ export function KibitzSharedStreamPanel({
     const gameScrollRef = React.useRef<HTMLDivElement | null>(null);
     const [roomProxy, setRoomProxy] = React.useState<ChatChannelProxy | null>(null);
     const [, refresh] = React.useState(0);
+    const [gobanGameEntries, setGobanGameEntries] = React.useState<PaneEntry[]>([]);
+    const gobanGameEntryKeysRef = React.useRef<Set<string>>(new Set());
     const [desktopSplit, setDesktopSplit] = React.useState<DesktopSplitState>(readDesktopSplit);
     const [desktopDragRatio, setDesktopDragRatio] = React.useState<number | null>(null);
     const [desktopDragging, setDesktopDragging] = React.useState(false);
@@ -297,6 +336,7 @@ export function KibitzSharedStreamPanel({
         height: number;
         dividerHeight: number;
     } | null>(null);
+    const roomChannel = room.channel;
     const roomPreviousEntryCountRef = React.useRef(0);
     const gamePreviousEntryCountRef = React.useRef(0);
     const desktopGameRatio = desktopDragRatio ?? splitPercentage(desktopSplit).game;
@@ -331,15 +371,10 @@ export function KibitzSharedStreamPanel({
 
         return entries.sort(sortEntries);
     }, [items, room]);
-
-    const gameChatLog = watchedController?.goban?.chat_log;
-    const gameChatLogLength = gameChatLog?.length ?? 0;
     const gameEntries = React.useMemo<PaneEntry[]>(() => {
         const entries: PaneEntry[] = [];
 
-        // Mock-mode items get filtered for game-chat source; live mode uses
-        // the watched goban's chat_log instead (game chat doesn't flow
-        // through the room's stream items in live mode).
+        // Mock/demo game-chat items still come through the room stream.
         for (const item of items) {
             if ((item.source ?? "room-stream") !== "game-chat") {
                 continue;
@@ -351,20 +386,10 @@ export function KibitzSharedStreamPanel({
             }
         }
 
-        if (gameChatLog) {
-            for (const line of gameChatLog) {
-                const entry = createChatLineFromGobanLine(room, line);
-                if (entry) {
-                    entries.push(entry);
-                }
-            }
-        }
+        entries.push(...gobanGameEntries);
 
         return entries.sort(sortEntries);
-        // gameChatLogLength tracks in-place mutations of goban.chat_log so
-        // the memo recomputes when new chat lines arrive (the array
-        // reference itself is stable across pushes).
-    }, [items, room, gameChatLog, gameChatLogLength]);
+    }, [gobanGameEntries, items, room]);
 
     React.useEffect(() => {
         if (mode === "demo") {
@@ -398,23 +423,83 @@ export function KibitzSharedStreamPanel({
     }, [mode, room.channel]);
 
     // Subscribe to the watched game's chat. The chat lives on the goban
-    // instance (fed by game-server / Scylla), so we re-render whenever the
-    // goban emits a chat event; gameEntries reads goban.chat_log directly.
+    // instance (fed by game-server / Scylla), so we append one entry for
+    // normal chat events and only rebuild from chat_log for resets/removals.
     React.useEffect(() => {
         const goban = watchedController?.goban;
         if (!goban) {
+            gobanGameEntryKeysRef.current = new Set();
+            setGobanGameEntries([]);
             return;
         }
-        const onChat = () => refresh((value) => value + 1);
+
+        const initialEntries = buildGobanGameEntries(roomChannel, goban.chat_log);
+        gobanGameEntryKeysRef.current = new Set(initialEntries.map((entry) => entry.key));
+        setGobanGameEntries(initialEntries);
+
+        const rebuild = () => {
+            const rebuilt = buildGobanGameEntries(roomChannel, goban.chat_log);
+            gobanGameEntryKeysRef.current = new Set(rebuilt.map((entry) => entry.key));
+            setGobanGameEntries(rebuilt);
+        };
+
+        const onChat = (line?: protocol.GameChatLine) => {
+            if (line) {
+                const entry = createChatLineFromGobanLine(roomChannel, line);
+                if (!entry) {
+                    return;
+                }
+
+                if (gobanGameEntryKeysRef.current.has(entry.key)) {
+                    return;
+                }
+
+                gobanGameEntryKeysRef.current.add(entry.key);
+                setGobanGameEntries((current) => appendGobanGameEntry(current, roomChannel, line));
+                return;
+            }
+
+            const latest = goban.chat_log?.[goban.chat_log.length - 1];
+            if (latest) {
+                const entry = createChatLineFromGobanLine(roomChannel, latest);
+                if (!entry) {
+                    rebuild();
+                    return;
+                }
+
+                if (gobanGameEntryKeysRef.current.has(entry.key)) {
+                    return;
+                }
+
+                gobanGameEntryKeysRef.current.add(entry.key);
+                setGobanGameEntries((current) =>
+                    appendGobanGameEntry(current, roomChannel, latest),
+                );
+                return;
+            }
+
+            rebuild();
+        };
+
+        const onChatRemove = () => {
+            // Rare path: if goban removes chat, rebuild from source of truth.
+            rebuild();
+        };
+
+        const onChatReset = () => {
+            rebuild();
+        };
+
         goban.on("chat", onChat);
-        goban.on("chat-remove", onChat);
-        // Initial refresh in case chat_log was already populated.
-        onChat();
+        goban.on("chat-remove", onChatRemove);
+        goban.on("chat-reset", onChatReset);
         return () => {
             goban.off("chat", onChat);
-            goban.off("chat-remove", onChat);
+            goban.off("chat-remove", onChatRemove);
+            goban.off("chat-reset", onChatReset);
+            gobanGameEntryKeysRef.current = new Set();
         };
-    }, [watchedController]);
+    }, [roomChannel, watchedController]);
 
     React.useEffect(() => {
         const previous = roomPreviousEntryCountRef.current;
