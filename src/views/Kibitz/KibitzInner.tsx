@@ -22,6 +22,7 @@ import { GobanControllerContext } from "@/components/GobanView";
 import * as data from "@/lib/data";
 import { toast } from "@/lib/toast";
 import { interpolate, pgettext } from "@/lib/translate";
+import { protocol } from "goban";
 import type {
     KibitzDebugState,
     KibitzProposal,
@@ -90,6 +91,59 @@ function formatMobileMatchup(
     };
 }
 
+function mapGameChatLineToVariation(
+    roomId: string,
+    line: protocol.GameChatLine,
+    fallbackGameId: number | undefined,
+): KibitzVariationSummary | null {
+    if (typeof line.body !== "object" || line.body === null || line.body.type !== "analysis") {
+        return null;
+    }
+
+    const analysisBody = line.body as {
+        type: "analysis";
+        name?: string;
+        from?: number;
+        moves?: string;
+        marks?: Record<string, string>;
+        pen_marks?: KibitzVariationSummary["analysis_pen_marks"];
+        line_tree?: KibitzVariationSummary["analysis_line_tree"];
+        game_id?: number;
+    };
+
+    const gameId =
+        typeof analysisBody.game_id === "number" && Number.isFinite(analysisBody.game_id)
+            ? analysisBody.game_id
+            : typeof fallbackGameId === "number" && Number.isFinite(fallbackGameId)
+              ? fallbackGameId
+              : null;
+    if (!gameId || gameId <= 0) {
+        return null;
+    }
+
+    return {
+        id: line.chat_id,
+        room_id: roomId,
+        game_id: gameId,
+        creator: {
+            id: line.player_id,
+            username: line.username ?? "",
+            ranking: 0,
+            professional: false,
+            ui_class: "",
+        },
+        created_at: line.date * 1000,
+        viewer_count: 0,
+        current_viewers: [],
+        title: analysisBody.name,
+        analysis_from: analysisBody.from,
+        analysis_moves: analysisBody.moves,
+        analysis_marks: analysisBody.marks,
+        analysis_pen_marks: analysisBody.pen_marks,
+        analysis_line_tree: analysisBody.line_tree,
+    };
+}
+
 export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElement {
     const location = useLocation();
     const navigate = useNavigate();
@@ -117,6 +171,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const [mainBoardController, setMainBoardController] = React.useState<GobanController | null>(
         null,
     );
+    const [gameVariations, setGameVariations] = React.useState<KibitzVariationSummary[]>([]);
     const [mobileOverlayMode, setMobileOverlayMode] = React.useState<MobileOverlayMode>(null);
     const [isMobileLayout, setIsMobileLayout] = React.useState(
         () => window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY).matches,
@@ -300,12 +355,35 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         [isMobileLayout, navigate],
     );
 
+    const displayedVariations = React.useMemo(() => {
+        const merged = [...variations, ...gameVariations];
+        merged.sort((left, right) => {
+            if (left.created_at === right.created_at) {
+                return left.id.localeCompare(right.id);
+            }
+            return left.created_at - right.created_at;
+        });
+
+        const seen = new Set<string>();
+        const next: KibitzVariationSummary[] = [];
+        for (const variation of merged) {
+            if (seen.has(variation.id)) {
+                continue;
+            }
+            seen.add(variation.id);
+            next.push(variation);
+        }
+        return next;
+    }, [gameVariations, variations]);
+
     const onClearPreview = React.useCallback(() => {
-        const currentVariation = variations.find(
+        const currentVariation = displayedVariations.find(
             (variation) => variation.id === secondaryPane.variation_id,
         );
         const visibleVariations = visibleVariationIds
-            .map((variationId) => variations.find((variation) => variation.id === variationId))
+            .map((variationId) =>
+                displayedVariations.find((variation) => variation.id === variationId),
+            )
             .filter((variation): variation is KibitzVariationSummary => variation != null);
         const nextVisibleVariation =
             visibleVariations.find(
@@ -323,7 +401,13 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 setPendingSecondaryPaneMode("hidden");
             }
         }
-    }, [controller, isMobileLayout, secondaryPane.variation_id, variations, visibleVariationIds]);
+    }, [
+        controller,
+        displayedVariations,
+        isMobileLayout,
+        secondaryPane.variation_id,
+        visibleVariationIds,
+    ]);
 
     const onOpenVariation = React.useCallback(
         (variationId: string, focusVariation: boolean = false) => {
@@ -403,11 +487,11 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 setVisibleVariationIds(nextVisibleVariationIds);
 
                 if (secondaryPane.variation_id === variationId) {
-                    const hiddenVariation = variations.find(
+                    const hiddenVariation = displayedVariations.find(
                         (variation) => variation.id === variationId,
                     );
                     const nextVisibleVariations = nextVisibleVariationIds
-                        .map((id) => variations.find((variation) => variation.id === id))
+                        .map((id) => displayedVariations.find((variation) => variation.id === id))
                         .filter(
                             (variation): variation is KibitzVariationSummary => variation != null,
                         );
@@ -435,7 +519,13 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 setMobileCompanionPanel("compare");
             }
         },
-        [controller, isMobileLayout, secondaryPane.variation_id, variations, visibleVariationIds],
+        [
+            controller,
+            displayedVariations,
+            isMobileLayout,
+            secondaryPane.variation_id,
+            visibleVariationIds,
+        ],
     );
 
     React.useEffect(() => {
@@ -521,16 +611,46 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const roomProposals = proposals.filter((proposal) => proposal.room_id === resolvedRoom?.id);
     const activeProposal = roomProposals.find((proposal) => proposal.status === "active");
     const queuedRoomProposals = roomProposals.filter((proposal) => proposal.status !== "active");
-    const selectedVariation = variations.find(
+    React.useEffect(() => {
+        const goban = mainBoardController?.goban;
+        if (!goban || !resolvedRoom) {
+            setGameVariations([]);
+            return;
+        }
+
+        const syncGameVariations = () => {
+            const next: KibitzVariationSummary[] = [];
+            for (const line of goban.chat_log) {
+                const variation = mapGameChatLineToVariation(resolvedRoom.id, line, goban.game_id);
+                if (variation) {
+                    next.push(variation);
+                }
+            }
+            setGameVariations(next);
+        };
+
+        goban.on("chat", syncGameVariations);
+        goban.on("chat-remove", syncGameVariations);
+        goban.on("chat-reset", syncGameVariations);
+        syncGameVariations();
+
+        return () => {
+            goban.off("chat", syncGameVariations);
+            goban.off("chat-remove", syncGameVariations);
+            goban.off("chat-reset", syncGameVariations);
+        };
+    }, [mainBoardController, resolvedRoom]);
+
+    const selectedVariation = displayedVariations.find(
         (variation) => variation.id === secondaryPane.variation_id,
     );
     React.useEffect(() => {
         setVisibleVariationIds((previous) =>
             previous.filter((variationId) =>
-                variations.some((variation) => variation.id === variationId),
+                displayedVariations.some((variation) => variation.id === variationId),
             ),
         );
-    }, [variations]);
+    }, [displayedVariations]);
     React.useEffect(() => {
         setVariationColorIndexes((previous) => {
             const next: Record<string, number> = {};
@@ -608,7 +728,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             return;
         }
 
-        const postedVariation = variations.find(
+        const postedVariation = displayedVariations.find(
             (variation) =>
                 variation.game_id === pendingPostedVariation.gameId &&
                 variation.creator.id === pendingPostedVariation.creatorId &&
@@ -623,11 +743,11 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
         setPendingPostedVariation(null);
         onOpenVariation(postedVariation.id, true);
-    }, [onOpenVariation, pendingPostedVariation, variations]);
+    }, [displayedVariations, onOpenVariation, pendingPostedVariation]);
 
     const variationPanels = (
         <>
-            {variations.length === 0 ? (
+            {displayedVariations.length === 0 ? (
                 <div className="Kibitz-footer-empty">
                     {pgettext(
                         "Compact empty state shown below the kibitz room stream when there are no variations or queued proposals",
@@ -636,7 +756,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 </div>
             ) : (
                 <KibitzVariationList
-                    variations={variations}
+                    variations={displayedVariations}
                     currentGameId={currentGameId}
                     visibleVariationIds={visibleVariationIds}
                     selectedVariationId={secondaryPane.variation_id}
@@ -1006,7 +1126,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                         room={resolvedRoom}
                                         rooms={rooms}
                                         proposals={roomProposals}
-                                        variations={variations}
+                                        variations={displayedVariations}
                                         visibleVariationIds={visibleVariationIds}
                                         variationColorIndexes={variationColorIndexes}
                                         secondaryPane={secondaryPane}
@@ -1072,7 +1192,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                         mode="live"
                                                         room={resolvedRoom}
                                                         items={stream}
-                                                        variations={variations}
+                                                        variations={displayedVariations}
                                                         onOpenVariation={onOpenVariation}
                                                         onSendMessage={() => undefined}
                                                         isMobileLayout={true}
@@ -1112,7 +1232,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                     <KibitzMobileComparePanel
                                                         controller={mobileCompareController}
                                                         room={resolvedRoom}
-                                                        variations={variations}
+                                                        variations={displayedVariations}
                                                         queuedRoomProposals={queuedRoomProposals}
                                                         visibleVariationIds={visibleVariationIds}
                                                         variationColorIndexes={
@@ -1150,7 +1270,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                 room={resolvedRoom}
                                 rooms={rooms}
                                 proposals={roomProposals}
-                                variations={variations}
+                                variations={displayedVariations}
                                 visibleVariationIds={visibleVariationIds}
                                 variationColorIndexes={variationColorIndexes}
                                 secondaryPane={secondaryPane}
@@ -1199,7 +1319,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                         mode="live"
                                         room={resolvedRoom}
                                         items={stream}
-                                        variations={variations}
+                                        variations={displayedVariations}
                                         onOpenVariation={onOpenVariation}
                                         onSendMessage={() => undefined}
                                         isMobileLayout={false}

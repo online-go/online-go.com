@@ -76,7 +76,8 @@ export function KibitzBoardControls({
         };
     }, [controller, totalMoves]);
 
-    const canReturnToLive = latestMoveNumber > 0 && moveNumber < latestMoveNumber;
+    const isOnLiveMove = controller?.goban.engine?.isLastOfficialMove() ?? true;
+    const canReturnToLive = latestMoveNumber > 0 && !isOnLiveMove;
 
     React.useEffect(() => {
         onReturnLiveVisibilityChange?.(canReturnToLive);

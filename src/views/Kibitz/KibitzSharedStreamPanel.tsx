@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import { ChatLine } from "@/components/Chat";
+import { GameChatLine } from "@/components/Chat/GameChatLine";
 import { TabCompleteInput } from "@/components/TabCompleteInput";
 import {
     cachedChannelInformation,
@@ -27,7 +28,7 @@ import {
 import { useUser } from "@/lib/hooks";
 import { useGobanControllerOrNull } from "@/components/GobanView";
 import { interpolate, moment, pgettext } from "@/lib/translate";
-import type { protocol } from "goban";
+import { protocol } from "goban";
 import type {
     KibitzMode,
     KibitzRoomSummary,
@@ -59,6 +60,7 @@ type PaneEntry =
           // CSS can color spectator chat differently from player chat,
           // matching GameChat.css's .chat-line.spectator rule.
           gobanChannel?: string;
+          gobanLine?: protocol.GameChatLine;
       }
     | {
           kind: "variation";
@@ -191,6 +193,7 @@ function createChatLineFromGobanLine(
         createdAt: line.date * 1000,
         source: "game-chat",
         gobanChannel: line.channel,
+        gobanLine: line,
         line: {
             channel: room.channel,
             username: line.username ?? "",
@@ -622,7 +625,7 @@ export function KibitzSharedStreamPanel({
     );
 
     let roomLastLine: ChatMessage | undefined;
-    let gameLastLine: ChatMessage | undefined;
+    let gameLastLine: protocol.GameChatLine | undefined;
 
     const renderEntries = (entries: PaneEntry[], source: "room" | "game") => {
         if (entries.length === 0) {
@@ -676,11 +679,12 @@ export function KibitzSharedStreamPanel({
                         );
                     }
 
-                    const previousLine = source === "room" ? roomLastLine : gameLastLine;
+                    const previousRoomLine = roomLastLine;
+                    const previousGameLine = gameLastLine;
                     if (source === "room") {
                         roomLastLine = entry.line;
-                    } else {
-                        gameLastLine = entry.line;
+                    } else if (entry.gobanLine) {
+                        gameLastLine = entry.gobanLine;
                     }
 
                     return (
@@ -692,7 +696,15 @@ export function KibitzSharedStreamPanel({
                                 (entry.gobanChannel ? " " + entry.gobanChannel : "")
                             }
                         >
-                            <ChatLine line={entry.line} lastLine={previousLine} />
+                            {entry.gobanLine ? (
+                                <GameChatLine
+                                    line={entry.gobanLine}
+                                    lastLine={previousGameLine}
+                                    gameId={watchedController?.goban.game_id}
+                                />
+                            ) : (
+                                <ChatLine line={entry.line} lastLine={previousRoomLine} />
+                            )}
                         </div>
                     );
                 })}
