@@ -19,7 +19,6 @@ import * as React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { GobanController } from "@/lib/GobanController";
 import { GobanControllerContext } from "@/components/GobanView";
-import * as data from "@/lib/data";
 import { toast } from "@/lib/toast";
 import { interpolate, pgettext } from "@/lib/translate";
 import { protocol } from "goban";
@@ -45,6 +44,12 @@ import type { KibitzController } from "./KibitzController";
 import { KIBITZ_VARIATION_COLORS } from "./kibitzVariationTree";
 import { KibitzGamePickerOverlay } from "./KibitzGamePickerOverlay";
 import { KibitzMobileGamePicker } from "./KibitzMobileGamePicker";
+import { getKibitzAccessPolicyForUser, isKibitzAccessBlockedForUser } from "./kibitzAnalysisPolicy";
+import {
+    getKibitzBlockedRoomFollowupMessage,
+    getKibitzBlockedRoomMessage,
+} from "./kibitzAnalysisPolicyCopy";
+import { useCurrentKibitzUser } from "./useCurrentKibitzUser";
 import "./Kibitz.css";
 
 type SecondaryPaneMode = "hidden" | "small" | "equal";
@@ -200,6 +205,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         React.useState<SecondaryPaneMode | null>(null);
     const [debug, setDebug] = React.useState<KibitzDebugState>(controller.debug);
     const [permissions, setPermissions] = React.useState(controller.permissions);
+    const [accessBlocked, setAccessBlocked] = React.useState(controller.access_blocked);
+    const currentUser = useCurrentKibitzUser();
     const [mobileCompanionPanel, setMobileCompanionPanel] =
         React.useState<MobileCompanionPanel>("chat");
     const [mobileCompareController, setMobileCompareController] =
@@ -345,6 +352,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         controller.on("secondary-pane-changed", setSecondaryPane);
         controller.on("debug-changed", setDebug);
         controller.on("permissions-changed", setPermissions);
+        controller.on("access-changed", setAccessBlocked);
 
         setRooms(controller.rooms);
         setActiveRoom(controller.active_room);
@@ -354,6 +362,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         setSecondaryPane(controller.secondary_pane);
         setDebug(controller.debug);
         setPermissions(controller.permissions);
+        setAccessBlocked(controller.access_blocked);
 
         return () => {
             controller.off("rooms-changed", setRooms);
@@ -364,10 +373,33 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             controller.off("secondary-pane-changed", setSecondaryPane);
             controller.off("debug-changed", setDebug);
             controller.off("permissions-changed", setPermissions);
+            controller.off("access-changed", setAccessBlocked);
         };
     }, [controller]);
 
     const defaultRoomId = rooms[0]?.id ?? null;
+    const blockedRoomIds = React.useMemo(() => {
+        if (!currentUser) {
+            return new Set<string>();
+        }
+
+        const blockedIds = new Set<string>();
+        for (const room of rooms) {
+            if (isKibitzAccessBlockedForUser(currentUser, room.current_game)) {
+                blockedIds.add(room.id);
+            }
+        }
+        return blockedIds;
+    }, [currentUser, rooms]);
+    const selectedRoom =
+        activeRoom ??
+        (roomId ? (rooms.find((room) => room.id === roomId) ?? null) : (rooms[0] ?? null));
+    const selectedRoomPolicy = React.useMemo(
+        () => getKibitzAccessPolicyForUser(currentUser, selectedRoom?.current_game),
+        [currentUser, selectedRoom?.current_game],
+    );
+    const isSelectedRoomBlocked = !selectedRoomPolicy.allowed;
+    const isBlockedRoom = Boolean(accessBlocked?.room_id === roomId || isSelectedRoomBlocked);
 
     React.useEffect(() => {
         if (roomId || !defaultRoomId) {
@@ -378,12 +410,34 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     }, [defaultRoomId, navigate, roomId]);
 
     React.useEffect(() => {
-        if (!roomId || activeRoom?.id === roomId) {
+        if (!roomId) {
+            return;
+        }
+
+        if (isSelectedRoomBlocked) {
+            controller.setAccessBlocked({
+                room_id: roomId,
+                room_title: selectedRoom?.title ?? roomId,
+            });
+            return;
+        }
+
+        if (activeRoom?.id === roomId || accessBlocked?.room_id === roomId) {
+            if (accessBlocked?.room_id === roomId) {
+                controller.setAccessBlocked(null);
+            }
             return;
         }
 
         void controller.selectRoom(roomId);
-    }, [activeRoom?.id, controller, roomId]);
+    }, [
+        accessBlocked?.room_id,
+        activeRoom?.id,
+        controller,
+        isSelectedRoomBlocked,
+        roomId,
+        selectedRoom?.title,
+    ]);
 
     const onSelectRoom = React.useCallback(
         (nextRoomId: string) => {
@@ -649,7 +703,10 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         [controller],
     );
 
-    const resolvedRoom = activeRoom ?? rooms.find((room) => room.id === roomId) ?? rooms[0];
+    const resolvedRoom = isBlockedRoom
+        ? null
+        : (activeRoom ??
+          (roomId ? (rooms.find((room) => room.id === roomId) ?? null) : (rooms[0] ?? null)));
     const currentGameId = resolvedRoom?.current_game?.game_id ?? null;
     const roomProposals = proposals.filter((proposal) => proposal.room_id === resolvedRoom?.id);
     const activeProposal = roomProposals.find((proposal) => proposal.status === "active");
@@ -748,15 +805,19 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                     boardController,
                     sourceGameId,
                 );
-                const currentUser = data.get("config.user") as
-                    | { id?: number; anonymous?: boolean }
-                    | undefined;
 
-                if (posted && currentUser?.id != null && posted.game_id != null) {
+                const creatorId =
+                    typeof currentUser?.id === "number"
+                        ? currentUser.id
+                        : typeof currentUser?.id === "string"
+                          ? Number(currentUser.id)
+                          : NaN;
+
+                if (posted && Number.isFinite(creatorId) && posted.game_id != null) {
                     setPendingPostedVariation({
                         pendingId: posted.kibitz_pending_id ?? "",
                         gameId: posted.game_id,
-                        creatorId: currentUser.id,
+                        creatorId,
                         from: posted.from,
                         moves: posted.moves,
                         title: posted.name,
@@ -764,7 +825,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 }
             }
         },
-        [controller, resolvedRoom],
+        [controller, currentUser, resolvedRoom],
     );
 
     React.useEffect(() => {
@@ -958,18 +1019,24 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             onClose={onClosePicker}
             onCreateRoom={async (game, roomName, description) => {
                 const nextRoomId = await controller.createRoom(game, roomName, description);
-                setPickerMode(null);
                 if (nextRoomId) {
+                    setPickerMode(null);
                     void navigate(`/kibitz/${nextRoomId}`);
                 }
+                return nextRoomId;
             }}
             onChangeBoard={(game) => {
                 if (!resolvedRoom) {
-                    return;
+                    return false;
                 }
 
-                void controller.changeBoard(resolvedRoom.id, game);
-                setPickerMode(null);
+                return controller.changeBoard(resolvedRoom.id, game).then((success) => {
+                    if (success) {
+                        setPickerMode(null);
+                    }
+
+                    return success;
+                });
             }}
             onJoinRoom={(nextRoomId) => {
                 setPickerMode(null);
@@ -977,6 +1044,41 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             }}
         />
     ) : null;
+
+    if (isBlockedRoom) {
+        const blockedTitle = accessBlocked?.room_title ?? selectedRoom?.title ?? roomId ?? "";
+        return (
+            <div className="Kibitz">
+                {showDebug ? <KibitzDebugPanel debug={debug} /> : null}
+                <div className="Kibitz-layout">
+                    <div className="Kibitz-left-rail">
+                        <KibitzRoomList
+                            rooms={rooms}
+                            activeRoomId=""
+                            onSelectRoom={onSelectRoom}
+                            onCreateRoom={onOpenCreateRoom}
+                            onCreateVariation={onCreateVariation}
+                            blockedRoomIds={blockedRoomIds}
+                        />
+                    </div>
+                    <div className="Kibitz-main">
+                        <div className="Kibitz-content">
+                            <div className="Kibitz-empty-stage">
+                                <p>{getKibitzBlockedRoomMessage(blockedTitle)}</p>
+                                <p>{getKibitzBlockedRoomFollowupMessage()}</p>
+                            </div>
+                            <div className="Kibitz-sidebar no-active-proposal">
+                                <div className="Kibitz-sidebar-proposal-slot" />
+                                <div />
+                                <div className="Kibitz-footer-panels" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {pickerOverlay}
+            </div>
+        );
+    }
 
     if (!resolvedRoom) {
         const emptyMessage = pgettext(
@@ -993,6 +1095,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                             activeRoomId=""
                             onSelectRoom={onSelectRoom}
                             onCreateRoom={onOpenCreateRoom}
+                            blockedRoomIds={blockedRoomIds}
                         />
                     </div>
                     <div className="Kibitz-main">
@@ -1023,6 +1126,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                         activeRoomId={resolvedRoom.id}
                         onSelectRoom={onSelectRoom}
                         onCreateRoom={onOpenCreateRoom}
+                        blockedRoomIds={blockedRoomIds}
                     />
                     <KibitzPresence room={resolvedRoom} users={resolvedRoomUsers} />
                 </div>
@@ -1118,6 +1222,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                     onSelectRoom={onSelectRoom}
                                                     onCreateRoom={onOpenCreateRoom}
                                                     onCreateVariation={onCreateVariation}
+                                                    blockedRoomIds={blockedRoomIds}
                                                 />
                                             </div>
                                         ) : (
@@ -1140,21 +1245,26 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                         roomName,
                                                         description,
                                                     );
-                                                    setMobileOverlayMode(null);
                                                     if (nextRoomId) {
+                                                        setMobileOverlayMode(null);
                                                         void navigate(`/kibitz/${nextRoomId}`);
                                                     }
+                                                    return nextRoomId;
                                                 }}
                                                 onChangeBoard={(game) => {
                                                     if (!resolvedRoom) {
-                                                        return;
+                                                        return false;
                                                     }
 
-                                                    void controller.changeBoard(
-                                                        resolvedRoom.id,
-                                                        game,
-                                                    );
-                                                    setMobileOverlayMode(null);
+                                                    return controller
+                                                        .changeBoard(resolvedRoom.id, game)
+                                                        .then((success) => {
+                                                            if (success) {
+                                                                setMobileOverlayMode(null);
+                                                            }
+
+                                                            return success;
+                                                        });
                                                 }}
                                                 onJoinRoom={(nextRoomId) => {
                                                     setMobileOverlayMode(null);

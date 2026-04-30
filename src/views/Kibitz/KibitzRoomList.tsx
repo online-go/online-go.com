@@ -18,6 +18,7 @@
 import * as React from "react";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { KibitzRoomSummary } from "@/models/kibitz";
+import { getKibitzRoomLockedLabel, getKibitzRoomLockedTooltip } from "./kibitzAnalysisPolicyCopy";
 import "./KibitzRoomList.css";
 
 interface KibitzRoomListProps {
@@ -26,6 +27,7 @@ interface KibitzRoomListProps {
     onSelectRoom: (roomId: string) => void;
     onCreateRoom?: () => void;
     onCreateVariation?: () => void;
+    blockedRoomIds?: Set<string>;
 }
 
 export function KibitzRoomList({
@@ -34,6 +36,7 @@ export function KibitzRoomList({
     onSelectRoom,
     onCreateRoom,
     onCreateVariation,
+    blockedRoomIds,
 }: KibitzRoomListProps): React.ReactElement {
     return (
         <div className="KibitzRoomList">
@@ -84,6 +87,7 @@ export function KibitzRoomList({
             <div className="KibitzRoomList-items">
                 {rooms.map((room) => {
                     const isActive = room.id === activeRoomId;
+                    const isBlocked = blockedRoomIds?.has(room.id) ?? false;
                     const roomDescription =
                         room.description ??
                         pgettext(
@@ -95,6 +99,8 @@ export function KibitzRoomList({
                         <button
                             key={room.id}
                             className={"KibitzRoomList-item" + (isActive ? " active" : "")}
+                            disabled={isBlocked}
+                            title={isBlocked ? getKibitzRoomLockedTooltip() : undefined}
                             onClick={() => onSelectRoom(room.id)}
                         >
                             <span className="room-active-rail" aria-hidden="true" />
@@ -133,6 +139,9 @@ export function KibitzRoomList({
                                         </span>
                                     </span>
                                 </div>
+                                {isBlocked ? (
+                                    <div className="room-status">{getKibitzRoomLockedLabel()}</div>
+                                ) : null}
                             </div>
                         </button>
                     );

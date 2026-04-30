@@ -57,6 +57,7 @@ export interface KibitzWatchedGame {
     tournament_name?: string;
     move_number?: number;
     live?: boolean;
+    analysis_disabled?: boolean;
 }
 
 export interface KibitzRoomSummary {

@@ -21,7 +21,15 @@ import { interpolate, pgettext } from "@/lib/translate";
 import { ObserveGamesComponent } from "@/components/ObserveGamesComponent";
 import type { KibitzRoomSummary, KibitzRoomUser, KibitzWatchedGame } from "@/models/kibitz";
 import { KibitzBoard } from "./KibitzBoard";
+import { getKibitzAccessPolicyForUser } from "./kibitzAnalysisPolicy";
+import {
+    getKibitzAccessBlockedMessage,
+    getKibitzAnalysisDisabledSpectatorMessage,
+    getKibitzPickerFailedChangeMessage,
+    getKibitzPickerFailedCreateMessage,
+} from "./kibitzAnalysisPolicyCopy";
 import { parseGameId } from "./parseGameId";
+import { useCurrentKibitzUser } from "./useCurrentKibitzUser";
 
 type KibitzGamePickerMode = "create-room" | "change-board";
 type PickerSourceMode = "ongoing" | "game-id";
@@ -33,8 +41,12 @@ interface KibitzMobileGamePickerProps {
     rooms: KibitzRoomSummary[];
     currentRoom?: KibitzRoomSummary | null;
     onClose: () => void;
-    onCreateRoom: (game: KibitzWatchedGame, roomName: string, description: string) => void;
-    onChangeBoard: (game: KibitzWatchedGame) => void;
+    onCreateRoom: (
+        game: KibitzWatchedGame,
+        roomName: string,
+        description: string,
+    ) => Promise<string | null> | string | null;
+    onChangeBoard: (game: KibitzWatchedGame) => Promise<boolean> | boolean;
     onJoinRoom: (roomId: string) => void;
     onBackToMenu?: () => void;
 }
@@ -43,7 +55,6 @@ interface SelectedGameState {
     details: rest_api.GameDetails;
     game: KibitzWatchedGame;
     isFinished: boolean;
-    analysisDisabled: boolean;
     isPublic: boolean;
 }
 
@@ -68,6 +79,11 @@ function mapGameDetailsToWatchedGame(details: rest_api.GameDetails): KibitzWatch
         white: toRoomUser(details.players.white),
         move_number: details.gamedata.moves.length,
         live: !details.ended,
+        analysis_disabled: Boolean(
+            (details as { analysis_disabled?: boolean | null }).analysis_disabled ||
+            details.disable_analysis ||
+            details.gamedata.disable_analysis,
+        ),
     };
 }
 
@@ -102,6 +118,7 @@ export function KibitzMobileGamePicker({
     const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
     const [sourceMode, setSourceMode] = React.useState<PickerSourceMode>("ongoing");
     const [mobileStep, setMobileStep] = React.useState<MobilePickerStep>("select");
+    const currentUser = useCurrentKibitzUser();
     const [isMobileLayout, setIsMobileLayout] = React.useState(
         () => window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY).matches,
     );
@@ -144,11 +161,20 @@ export function KibitzMobileGamePicker({
     const selectionIsSameAsCurrent = Boolean(
         mode === "change-board" && selectedGame && currentGameId === selectedGame.game.game_id,
     );
+    const accessPolicy = selectedGame
+        ? getKibitzAccessPolicyForUser(currentUser, selectedGame.details)
+        : { allowed: true as const };
+    const blockedMessage =
+        !accessPolicy.allowed && accessPolicy.reason === "own-active-analysis-disabled-game"
+            ? getKibitzAccessBlockedMessage()
+            : null;
+    const selectionErrorMessage = errorMessage ?? blockedMessage;
+    const selectionInfoMessage =
+        accessPolicy.allowed && accessPolicy.reason === "analysis-disabled-spectator"
+            ? getKibitzAnalysisDisabledSpectatorMessage()
+            : null;
     const selectionIsEligible =
-        Boolean(selectedGame) &&
-        Boolean(selectedGame?.isPublic) &&
-        !errorMessage &&
-        !(selectedGame?.analysisDisabled && !selectedGame.isFinished);
+        Boolean(selectedGame) && Boolean(selectedGame?.isPublic) && !selectionErrorMessage;
     const canOpenRoomDetailsPopup =
         mode === "create-room" && Boolean(selectedGame) && selectionIsEligible && !loading;
     const canCreateRoom =
@@ -193,16 +219,12 @@ export function KibitzMobileGamePicker({
                 }
                 const game = mapGameDetailsToWatchedGame(details);
                 const isFinished = Boolean(details.ended);
-                const analysisDisabled = Boolean(
-                    details.disable_analysis || details.gamedata.disable_analysis,
-                );
                 const isPublic = !details.gamedata.private;
 
                 setSelectedGame({
                     details,
                     game,
                     isFinished,
-                    analysisDisabled,
                     isPublic,
                 });
                 setNameTouched(false);
@@ -268,8 +290,17 @@ export function KibitzMobileGamePicker({
             return;
         }
 
-        onCreateRoom(selectedGame.game, roomName.trim(), roomDescription.trim());
-    }, [canCreateRoom, onCreateRoom, roomDescription, roomName, selectedGame]);
+        void Promise.resolve(
+            onCreateRoom(selectedGame.game, roomName.trim(), roomDescription.trim()),
+        ).then((nextRoomId) => {
+            if (nextRoomId) {
+                onClose();
+                return;
+            }
+
+            setErrorMessage(getKibitzPickerFailedCreateMessage());
+        });
+    }, [canCreateRoom, onClose, onCreateRoom, roomDescription, roomName, selectedGame]);
 
     const onOpenRoomDetailsPopup = React.useCallback(() => {
         if (!canOpenRoomDetailsPopup) {
@@ -287,8 +318,15 @@ export function KibitzMobileGamePicker({
             return;
         }
 
-        onChangeBoard(selectedGame.game);
-    }, [canChangeBoard, onChangeBoard, selectedGame]);
+        void Promise.resolve(onChangeBoard(selectedGame.game)).then((success) => {
+            if (success) {
+                onClose();
+                return;
+            }
+
+            setErrorMessage(getKibitzPickerFailedChangeMessage());
+        });
+    }, [canChangeBoard, onChangeBoard, onClose, selectedGame]);
 
     const onBackMobile = React.useCallback(() => {
         if (mobileStep === "details") {
@@ -378,13 +416,11 @@ export function KibitzMobileGamePicker({
                         className="KibitzGamePickerOverlay-board"
                     />
                 </div>
-                {selectedGame?.analysisDisabled && !selectedGame.isFinished ? (
-                    <div className="KibitzGamePickerOverlay-error">
-                        {pgettext(
-                            "Error shown when a live Kibitz game cannot be used",
-                            "This live game cannot be used because analysis is disabled.",
-                        )}
-                    </div>
+                {selectionErrorMessage ? (
+                    <div className="KibitzGamePickerOverlay-error">{selectionErrorMessage}</div>
+                ) : null}
+                {selectionInfoMessage ? (
+                    <div className="KibitzGamePickerOverlay-note">{selectionInfoMessage}</div>
                 ) : null}
                 {existingRoom ? (
                     <div className="KibitzGamePickerOverlay-suggestion">
@@ -399,19 +435,23 @@ export function KibitzMobileGamePicker({
                                 },
                             )}
                         </div>
-                        <button
-                            type="button"
-                            className="xs"
-                            onClick={() => {
-                                onClose();
-                                onJoinRoom(existingRoom.id);
-                            }}
-                        >
-                            {pgettext(
-                                "Button label for joining an existing Kibitz room",
-                                "Join existing room",
-                            )}
-                        </button>
+                        {blockedMessage ? (
+                            <div className="KibitzGamePickerOverlay-note">{blockedMessage}</div>
+                        ) : (
+                            <button
+                                type="button"
+                                className="xs"
+                                onClick={() => {
+                                    onClose();
+                                    onJoinRoom(existingRoom.id);
+                                }}
+                            >
+                                {pgettext(
+                                    "Button label for joining an existing Kibitz room",
+                                    "Join existing room",
+                                )}
+                            </button>
+                        )}
                     </div>
                 ) : null}
                 {mode === "create-room" ? (
@@ -527,8 +567,8 @@ export function KibitzMobileGamePicker({
                     >
                         {pgettext("Button label for loading a Kibitz game by ID", "Load")}
                     </button>
-                    {errorMessage ? (
-                        <div className="KibitzGamePickerOverlay-error">{errorMessage}</div>
+                    {selectionErrorMessage ? (
+                        <div className="KibitzGamePickerOverlay-error">{selectionErrorMessage}</div>
                     ) : null}
                     {loading ? (
                         <div className="KibitzGamePickerOverlay-note">

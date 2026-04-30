@@ -16,7 +16,6 @@
  */
 
 import { EventEmitter } from "eventemitter3";
-import * as data from "@/lib/data";
 import type { GobanController } from "@/lib/GobanController";
 import {
     chat_manager,
@@ -30,6 +29,7 @@ import { socket } from "@/lib/sockets";
 import { push_manager } from "@/components/UIPush/UIPush";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { User } from "goban";
+import { getCurrentKibitzUser, isKibitzAccessBlockedForUser } from "./kibitzAnalysisPolicy";
 import type {
     KibitzDebugState,
     KibitzProposal,
@@ -52,6 +52,7 @@ interface KibitzControllerEvents {
     "secondary-pane-changed": (state: KibitzSecondaryPaneState) => void;
     "debug-changed": (state: KibitzDebugState) => void;
     "permissions-changed": (permissions: KibitzPermissions) => void;
+    "access-changed": (block: KibitzAccessBlock | null) => void;
 }
 
 type UIPushHandler = ReturnType<typeof push_manager.on>;
@@ -73,6 +74,11 @@ interface BackendKibitzRoom {
 interface BackendRoomDetailResponse {
     room: BackendKibitzRoom;
     permissions: Record<string, boolean>;
+}
+
+interface KibitzAccessBlock {
+    room_id: string;
+    room_title: string;
 }
 
 const DIRECTORY_CHANNEL = "kibitz-rooms";
@@ -138,6 +144,7 @@ interface BackendGameForKibitz {
     name?: string | null;
     width?: number;
     height?: number;
+    disable_analysis?: boolean;
     players?: {
         black?: BackendGamePlayerForKibitz | null;
         white?: BackendGamePlayerForKibitz | null;
@@ -145,8 +152,9 @@ interface BackendGameForKibitz {
     black?: number | BackendGamePlayerForKibitz | null;
     white?: number | BackendGamePlayerForKibitz | null;
     ended?: string | null;
+    live?: boolean;
     json?: { moves?: unknown[] } | null;
-    gamedata?: { moves?: unknown[] } | null;
+    gamedata?: { moves?: unknown[]; disable_analysis?: boolean } | null;
     tournament_name?: string;
 }
 
@@ -187,6 +195,7 @@ function mapBackendGameToWatched(game: BackendGameForKibitz): KibitzWatchedGame 
         tournament_name: game.tournament_name,
         move_number: game.gamedata?.moves?.length ?? game.json?.moves?.length,
         live: game.ended == null,
+        analysis_disabled: Boolean(game.disable_analysis || game.gamedata?.disable_analysis),
     };
 }
 
@@ -348,6 +357,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     private _variations: KibitzVariationSummary[] = [];
     private _secondary_pane: KibitzSecondaryPaneState = { collapsed: true, size: "small" };
     private _permissions: KibitzPermissions = DEFAULT_PERMISSIONS;
+    private _access_blocked: KibitzAccessBlock | null = null;
     private _debug: KibitzDebugState = {
         socket_connected: socket.connected,
         status: "idle",
@@ -398,9 +408,18 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         return this._permissions;
     }
 
+    public get access_blocked(): KibitzAccessBlock | null {
+        return this._access_blocked;
+    }
+
     public setPermissions(permissions: KibitzPermissions): void {
         this._permissions = permissions;
         this.emit("permissions-changed", this._permissions);
+    }
+
+    public setAccessBlocked(block: KibitzAccessBlock | null): void {
+        this._access_blocked = block;
+        this.emit("access-changed", this._access_blocked);
     }
 
     public get debug(): KibitzDebugState {
@@ -478,6 +497,29 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     public setDebug(state: KibitzDebugState): void {
         this._debug = state;
         this.emit("debug-changed", this._debug);
+    }
+
+    private clearAccessBlocked(): void {
+        if (this._access_blocked !== null) {
+            this.setAccessBlocked(null);
+        }
+    }
+
+    private blockAccessToRoom(room: { id: string; title: string }): void {
+        this.unsubscribeActiveRoom();
+        this.setActiveRoom(null);
+        this.setStream([]);
+        this.setVariations([]);
+        this.setProposals([]);
+        this.setSecondaryPane({
+            collapsed: true,
+            size: "small",
+        });
+        this.setPermissions(DEFAULT_PERMISSIONS);
+        this.setAccessBlocked({
+            room_id: room.id,
+            room_title: room.title,
+        });
     }
 
     private async refreshRooms(): Promise<void> {
@@ -649,6 +691,9 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             this.setStream([]);
             this.setVariations([]);
         }
+        if (this._access_blocked?.room_id === id) {
+            this.clearAccessBlocked();
+        }
     };
 
     private onBoardChanged = (incoming: BackendKibitzRoom) => {
@@ -817,6 +862,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             this.setVariations([]);
             this.setProposals([]);
             this.setPermissions(DEFAULT_PERMISSIONS);
+            this.clearAccessBlocked();
             return;
         }
 
@@ -827,6 +873,21 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             }
 
             const full = mapBackendRoomToFull(payload.room);
+            const currentGame = payload.room.current_game_id
+                ? await this.lookupGameForKibitzCached(payload.room.current_game_id)
+                : undefined;
+            if (token !== this._select_room_token || this._destroyed) {
+                return;
+            }
+            if (isKibitzAccessBlockedForUser(getCurrentKibitzUser(), currentGame)) {
+                this.blockAccessToRoom({
+                    id: full.id,
+                    title: full.title,
+                });
+                return;
+            }
+
+            this.clearAccessBlocked();
             this.setPermissions({ ...DEFAULT_PERMISSIONS, ...payload.permissions });
             // setActiveRoom must precede subscribeActiveRoom: joinActiveChat's
             // initial syncMessagesFromChat reads _active_room to decide which rooms
@@ -848,6 +909,9 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 size: "small",
             });
 
+            if (currentGame) {
+                this.setActiveRoom({ ...full, current_game: currentGame });
+            }
             void this.hydrateActiveRoomGame(full.id, payload.room.current_game_id, token);
         } catch (error) {
             if (token !== this._select_room_token || this._destroyed) {
@@ -858,6 +922,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             this.setStream([]);
             this.setVariations([]);
             this.setProposals([]);
+            this.clearAccessBlocked();
             console.warn("kibitz: failed to hydrate room", roomId, error);
         }
     }
@@ -886,6 +951,13 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         if (!game) {
             return;
         }
+        if (isKibitzAccessBlockedForUser(getCurrentKibitzUser(), game)) {
+            this.blockAccessToRoom({
+                id: roomId,
+                title: this._active_room?.title ?? `#${roomId}`,
+            });
+            return;
+        }
         if (this._active_room) {
             this.setActiveRoom({ ...this._active_room, current_game: game });
             // No syncMessagesFromChat needed here any more: variation derivation no
@@ -900,6 +972,12 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         description: string,
     ): Promise<string | null> {
         try {
+            // Frontend guard only. The backend must enforce the same rule on
+            // room creation, board changes, room hydration, chat/presence join,
+            // and variation posting.
+            if (isKibitzAccessBlockedForUser(getCurrentKibitzUser(), game)) {
+                return null;
+            }
             const payload = (await post("kibitz/rooms", {
                 source_game_id: game.game_id,
                 title: roomName.trim() || game.title,
@@ -919,6 +997,12 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
 
     public async changeBoard(roomId: string, game: KibitzWatchedGame): Promise<boolean> {
         try {
+            // Frontend guard only. The backend must enforce the same rule on
+            // room creation, board changes, room hydration, chat/presence join,
+            // and variation posting.
+            if (isKibitzAccessBlockedForUser(getCurrentKibitzUser(), game)) {
+                return false;
+            }
             const payload = (await post(`kibitz/rooms/${roomId}/change-board`, {
                 game_id: game.game_id,
             })) as BackendKibitzRoom;
@@ -986,7 +1070,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     }
 
     private postChangeBoardSystemMessage(game: KibitzWatchedGame): void {
-        const user = data.get("config.user");
+        const user = getCurrentKibitzUser();
         if (!user || user.anonymous) {
             return;
         }
@@ -1005,7 +1089,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         if (!proxy) {
             return;
         }
-        const user = data.get("config.user");
+        const user = getCurrentKibitzUser();
         if (!user || user.anonymous) {
             return;
         }

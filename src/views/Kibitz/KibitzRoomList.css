@@ -83,8 +83,17 @@
             box-shadow 120ms ease;
         width: 100%;
 
+        &:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
         &:hover {
             background: color-mix(in srgb, var(--shade2) 50%, transparent);
+        }
+
+        &:disabled:hover {
+            background: transparent;
         }
 
         &.active {
@@ -128,6 +137,13 @@
             display: grid;
             gap: 0.35rem;
             grid-template-columns: minmax(0, 1fr) auto;
+        }
+
+        .room-status {
+            color: var(--primary);
+            font-size: 0.72rem;
+            line-height: 1.1;
+            margin-top: 0.14rem;
         }
 
         .room-title {
