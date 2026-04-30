@@ -25,6 +25,7 @@ import {
 } from "./GobanViewContext";
 import { GobanViewTab, GobanViewTabProps } from "./GobanViewTab";
 import { TabBar } from "./TabBar";
+import { MoveNumberSlider } from "./MoveNumberSlider";
 import { goban_view_mode, goban_view_squashed, ViewMode } from "./util";
 import "./GobanView.css";
 
@@ -238,6 +239,7 @@ function GobanViewComponent({
                             {orderedPanels.map((t) => renderPanel(t, isInlineVisible(t)))}
                         </div>
                         {takeoverPanels.map((t) => renderPanel(t, activeTakeover === t.id))}
+                        {!hasTakeover && <MoveNumberSlider />}
                         <TabBar tabs={tabs} />
                         {others}
                     </div>
@@ -265,6 +267,7 @@ function GobanViewComponent({
                             {inlinePanels.map((t) => renderPanel(t, isInlineVisible(t)))}
                             {takeoverPanels.map((t) => renderPanel(t, activeTakeover === t.id))}
                         </div>
+                        {!hasTakeover && <MoveNumberSlider />}
                         <TabBar tabs={tabs} />
                     </div>
                     {others}

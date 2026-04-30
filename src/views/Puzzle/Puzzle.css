@@ -73,29 +73,37 @@
         }
     }
 
+    .rate-puzzle {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 1rem 0.5rem 0.5rem;
+
+        .rate-puzzle-label {
+            font-size: 0.9rem;
+            color: var(--shade1);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .StarRating {
+            font-size: 1.75rem;
+        }
+
+        &.rate-puzzle-compact {
+            padding: 0.25rem 0.5rem;
+
+            .StarRating {
+                font-size: 1.1rem;
+            }
+        }
+    }
+
     .puzzle-node-content {
         border: 1px solid transparent;
         border-color: var(--shade4);
         margin-top: 1rem;
-
-        .rate-puzzle {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.25rem;
-            padding: 1rem 0.5rem 0.5rem;
-
-            .rate-puzzle-label {
-                font-size: 0.9rem;
-                color: var(--shade1);
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-            }
-
-            .StarRating {
-                font-size: 1.75rem;
-            }
-        }
 
         .actions {
             padding-top: 1rem;

@@ -1,0 +1,151 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.MoveNumberSlider {
+    --thumb-size: 1.4rem;
+    --track-height: 0.35rem;
+
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.5rem;
+    flex-shrink: 0;
+    border-top: 1px solid var(--shade3);
+    background: var(--shade4);
+
+    .MoveNumberSlider-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: var(--thumb-size);
+        height: var(--thumb-size);
+        flex-shrink: 0;
+        border: none;
+        border-radius: 0.25rem;
+        background: transparent;
+        color: var(--fg);
+        cursor: pointer;
+        /* Match the knob's diameter so the prev/next glyphs read at the
+           same visual weight as the knob. */
+        font-size: var(--thumb-size);
+        line-height: 1;
+        opacity: 0.6;
+        transition:
+            opacity 0.15s ease,
+            color 0.15s ease;
+
+        &:hover:not(:disabled) {
+            opacity: 1;
+        }
+
+        &:disabled {
+            opacity: 0.25;
+            cursor: not-allowed;
+        }
+    }
+
+    .MoveNumberSlider-track {
+        flex-grow: 1;
+        position: relative;
+        display: flex;
+        align-items: center;
+        height: var(--thumb-size);
+    }
+
+    .MoveNumberSlider-input {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 100%;
+        height: var(--track-height);
+        background: var(--shade2);
+        border-radius: calc(var(--track-height) / 2);
+        outline: none;
+        margin: 0;
+        cursor: pointer;
+        position: relative;
+        z-index: 1;
+
+        &:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        /* Hide the native thumb visually but keep its hit-target so the user
+           can still drag, click, and keyboard-navigate. The custom knob below
+           paints over it with the move number; pointer-events are disabled on
+           the knob so events fall through to this input. */
+        &::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: var(--thumb-size);
+            height: var(--thumb-size);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        &::-moz-range-thumb {
+            width: var(--thumb-size);
+            height: var(--thumb-size);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+    }
+
+    .MoveNumberSlider-knob {
+        position: absolute;
+        /* Sit above the native input (z-index: 1) so the bar doesn't
+           cover the knob's lower edge. */
+        z-index: 2;
+        top: 50%;
+        /* The native thumb's center is offset from each track edge by
+           thumb_size/2; mirror that with calc so our overlay tracks the
+           thumb exactly. --move-frac is a 0..1 unitless value set inline. */
+        left: calc(var(--thumb-size) / 2 + (100% - var(--thumb-size)) * var(--move-frac, 0));
+        transform: translate(-50%, -50%);
+        width: var(--thumb-size);
+        height: var(--thumb-size);
+        border-radius: 50%;
+        background: var(--toast-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        user-select: none;
+        transition: transform 0.1s ease;
+    }
+
+    .MoveNumberSlider-knob-text {
+        /* Same background as the knob so longer numbers (e.g. 100+) extend
+           beyond the circle into a readable pill rather than overflowing
+           onto the bar. */
+        background: var(--toast-bg);
+        color: var(--toast-fg);
+        font-size: 0.7rem;
+        line-height: 1;
+        padding: 0.15rem 0.3rem;
+        border-radius: 0.7rem;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    .MoveNumberSlider-input:hover ~ .MoveNumberSlider-knob,
+    .MoveNumberSlider-input:active ~ .MoveNumberSlider-knob {
+        transform: translate(-50%, -50%) scale(1.08);
+    }
+}
