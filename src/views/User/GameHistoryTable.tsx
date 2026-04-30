@@ -112,9 +112,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
         preferences.get("game-history-bot-filter"),
     );
     const [game_history_annulled_filter, setGameHistoryAnnulledFilter] =
-        React.useState<AnnulledFilter>(
-            preferences.get("game-history-annulled-filter") as AnnulledFilter,
-        );
+        React.useState<AnnulledFilter>(preferences.get("game-history-annulled-filter"));
     const effective_bot_filter: BotFilter = props.is_bot ? "bots" : game_history_bot_filter;
     const [hide_flags] = usePreference("moderator.hide-flags");
     const [selectModeActive, setSelectModeActive] = React.useState<boolean>(false);
@@ -447,6 +445,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             ...(effective_bot_filter !== "bots" &&
                                 game_history_ranked_filter !== "all" && {
                                     ranked: game_history_ranked_filter === "ranked",
+                                    annulled: false, // Assume the user wants to filter annulled games
                                 }),
                             ...(game_history_annulled_filter === "hide" && {
                                 annulled: false,
