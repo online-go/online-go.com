@@ -882,18 +882,11 @@
             box-sizing: border-box;
             display: grid;
             gap: 0.35rem;
-            grid-template-columns: auto auto auto;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
             height: var(--equal-transport-height, auto);
-            justify-content: center;
-            margin: 0 auto;
-            max-width: 100%;
             min-width: 0;
-            width: fit-content;
+            width: 100%;
             padding: 0.3125rem 0;
-        }
-
-        .main-board-transport-row.has-new-variation {
-            justify-content: center;
         }
 
         .main-board-transport-row > * {
@@ -915,10 +908,14 @@
         }
 
         .main-board-transport-row .transport-controls {
-            min-width: 0;
+            grid-column: 2;
+            justify-self: center;
+            min-width: 9.75rem;
         }
 
         .main-board-new-variation-action {
+            grid-column: 3;
+            justify-self: start;
             margin-top: 3.6px;
         }
 
@@ -951,14 +948,16 @@
             justify-content: flex-start;
         }
 
+        .board-actions.board-actions-inline.board-actions-right {
+            justify-content: flex-end;
+        }
+
         .main-board-return-live-action {
             align-items: center;
-            display: flex;
             height: 1.6rem;
-            justify-content: flex-end;
             margin-top: 3.6px;
             margin-left: 0;
-            margin-right: 0.125rem;
+            justify-self: end;
         }
 
         .main-board-return-live-action .kibitz-return-live-button,
@@ -977,6 +976,11 @@
             min-width: auto;
             padding: 0 0.55rem;
             white-space: nowrap;
+        }
+
+        .main-board-return-live-action .kibitz-return-live-button.compact {
+            font-size: 0.68rem;
+            padding: 0 0.35rem;
         }
 
         .kibitz-return-live-button.is-hidden {

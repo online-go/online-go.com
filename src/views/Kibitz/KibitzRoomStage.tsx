@@ -270,6 +270,16 @@ export function KibitzRoomStage({
             ?.proposed_game;
     const secondaryBoardGame = previewGame ?? secondaryPane.variation_source_game;
     const previewDisplayedMoveNumber = secondaryBoardGame?.move_number;
+    const mainReturnLiveLabel =
+        secondaryPaneSize === "equal"
+            ? pgettext(
+                  "Button label for returning the kibitz main board to the live move in compare mode",
+                  "To live",
+              )
+            : pgettext(
+                  "Button label for returning the kibitz main board to the live move",
+                  "Back to live",
+              );
     const [mainBoardController, setMainBoardControllerState] =
         React.useState<GobanController | null>(null);
     const [mainReturnLiveAvailable, setMainReturnLiveAvailable] = React.useState(false);
@@ -992,21 +1002,19 @@ export function KibitzRoomStage({
                                             : "")
                                     }
                                 >
-                                    <div className="main-board-return-live-action">
+                                    <div className="board-actions board-actions-inline board-actions-right main-board-return-live-action">
                                         <button
                                             type="button"
                                             className={
                                                 "kibitz-return-live-button" +
+                                                (secondaryPaneSize === "equal" ? " compact" : "") +
                                                 (mainReturnLiveAvailable ? "" : " is-hidden")
                                             }
                                             onClick={() => mainBoardController?.gotoLastMove()}
                                             aria-hidden={!mainReturnLiveAvailable}
                                             tabIndex={mainReturnLiveAvailable ? 0 : -1}
                                         >
-                                            {pgettext(
-                                                "Button label for returning the kibitz board to the live move",
-                                                "Back to live",
-                                            )}
+                                            {mainReturnLiveLabel}
                                         </button>
                                     </div>
                                     <div className="transport-controls">

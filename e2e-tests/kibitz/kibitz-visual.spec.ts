@@ -18,7 +18,6 @@
 import { writeFileSync } from "fs";
 import { expect, Page, TestInfo } from "@playwright/test";
 import { ogsTest, load } from "@helpers";
-import { expectOGSClickableByName } from "@helpers/matchers";
 
 function describeMeasurements(measurements: unknown) {
     return JSON.stringify(measurements, null, 2);
@@ -38,12 +37,12 @@ async function measureMainTransportRow(page: Page) {
 
             const bounds = element.getBoundingClientRect();
             return {
-                left: Math.round(bounds.left),
-                right: Math.round(bounds.right),
-                top: Math.round(bounds.top),
-                bottom: Math.round(bounds.bottom),
-                width: Math.round(bounds.width),
-                height: Math.round(bounds.height),
+                left: bounds.left,
+                right: bounds.right,
+                top: bounds.top,
+                bottom: bounds.bottom,
+                width: bounds.width,
+                height: bounds.height,
             };
         }
 
@@ -55,6 +54,12 @@ async function measureMainTransportRow(page: Page) {
             ),
             transportControls: rect(
                 ".board-panel.main-board .main-board-transport-row .transport-controls",
+            ),
+            previousMoveButton: rect(
+                '.board-panel.main-board .main-board-transport-row .transport-controls .kibitz-move-control[aria-label*="Previous move"]',
+            ),
+            nextMoveButton: rect(
+                '.board-panel.main-board .main-board-transport-row .transport-controls .kibitz-move-control[aria-label*="Next move"]',
             ),
             newVariationAction: rect(".board-panel.main-board .main-board-new-variation-action"),
             newVariationButton: rect(
@@ -752,68 +757,63 @@ ogsTest.describe("@Kibitz layout regressions", () => {
     });
 
     ogsTest(
-        "@Visual main board transport row stays fixed as Back to live appears",
+        "@Visual main transport row keeps symmetry when Back to live appears",
         async ({ page }) => {
             await load(page, "/kibitz/user-fea5dced");
-            await page.waitForTimeout(500);
+            await page.waitForTimeout(1000);
 
-            await expect(
-                page.locator(
-                    ".board-panel.main-board .main-board-transport-row .create-variation-button",
-                ),
-            ).toBeVisible();
             const mainRow = page.locator(".board-panel.main-board .main-board-transport-row");
             await expect(mainRow).toBeVisible({ timeout: 15000 });
-
-            const beforeBackToLive = await measureMainTransportRow(page);
-            await expect(mainRow).toHaveScreenshot("kibitz-main-transport-row-no-live.png", {
-                animations: "disabled",
-            });
-
-            const previousMoveButton = await expectOGSClickableByName(page, /Previous move/);
-            await previousMoveButton.click();
-            await page.waitForTimeout(500);
 
             const backToLiveButton = page.locator(
                 ".board-panel.main-board .main-board-return-live-action .kibitz-return-live-button",
             );
+            const previousMoveButton = page
+                .locator(".board-panel.main-board")
+                .getByRole("button", { name: /Previous move/ });
+
+            const noLive = await measureMainTransportRow(page);
+            await expect(mainRow).toHaveScreenshot("kibitz-main-transport-row-no-live.png", {
+                animations: "disabled",
+            });
+
+            await expect(previousMoveButton).toBeVisible({ timeout: 15000 });
+            await previousMoveButton.click({ force: true });
+            await page.waitForTimeout(500);
             await expect(backToLiveButton).toBeVisible({ timeout: 15000 });
 
-            const afterBackToLive = await measureMainTransportRow(page);
+            const withLive = await measureMainTransportRow(page);
             await expect(mainRow).toHaveScreenshot("kibitz-main-transport-row-with-live.png", {
                 animations: "disabled",
             });
 
             expect(
-                Math.abs(
-                    beforeBackToLive.transportControls!.left -
-                        afterBackToLive.transportControls!.left,
-                ),
-            ).toBeLessThanOrEqual(2);
+                Math.abs(withLive.transportControls!.left - noLive.transportControls!.left),
+            ).toBeLessThanOrEqual(1);
+            expect(
+                Math.abs(withLive.transportControls!.right - noLive.transportControls!.right),
+            ).toBeLessThanOrEqual(1);
             expect(
                 Math.abs(
-                    beforeBackToLive.transportControls!.right -
-                        afterBackToLive.transportControls!.right,
+                    withLive.previousMoveButton!.left -
+                        withLive.liveButton!.right -
+                        (withLive.newVariationButton!.left - withLive.nextMoveButton!.right),
                 ),
-            ).toBeLessThanOrEqual(2);
+            ).toBeLessThanOrEqual(1);
             expect(
                 Math.abs(
-                    beforeBackToLive.newVariationButton!.left -
-                        afterBackToLive.newVariationButton!.left,
+                    withLive.transportControls!.left -
+                        withLive.liveButton!.right -
+                        (withLive.newVariationButton!.left - withLive.transportControls!.right),
                 ),
-            ).toBeLessThanOrEqual(2);
+            ).toBeLessThanOrEqual(1);
             expect(
                 Math.abs(
-                    beforeBackToLive.newVariationButton!.right -
-                        afterBackToLive.newVariationButton!.right,
+                    withLive.transportControls!.left -
+                        withLive.liveAction!.right -
+                        (withLive.newVariationAction!.left - withLive.transportControls!.right),
                 ),
-            ).toBeLessThanOrEqual(2);
-            expect(
-                afterBackToLive.liveAction!.right <= afterBackToLive.transportControls!.left - 4,
-            ).toBe(true);
-            expect(
-                afterBackToLive.newVariationButton!.left - afterBackToLive.transportControls!.right,
-            ).toBeLessThanOrEqual(24);
+            ).toBeLessThanOrEqual(1);
         },
     );
 

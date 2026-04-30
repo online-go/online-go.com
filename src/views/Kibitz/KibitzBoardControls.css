@@ -89,6 +89,7 @@
 
 .KibitzBoardControls.minimal-row {
     align-items: center;
+    box-sizing: border-box;
     display: grid;
     height: 1.6rem;
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
