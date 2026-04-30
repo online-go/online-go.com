@@ -18,6 +18,7 @@
 import { writeFileSync } from "fs";
 import { expect, Page, TestInfo } from "@playwright/test";
 import { ogsTest, load } from "@helpers";
+import { expectOGSClickableByName } from "@helpers/matchers";
 
 function describeMeasurements(measurements: unknown) {
     return JSON.stringify(measurements, null, 2);
@@ -25,6 +26,42 @@ function describeMeasurements(measurements: unknown) {
 
 function describeDebugData(debugData: unknown) {
     return JSON.stringify(debugData, null, 2);
+}
+
+async function measureMainTransportRow(page: Page) {
+    return page.evaluate(() => {
+        function rect(selector: string) {
+            const element = document.querySelector(selector);
+            if (!element) {
+                return null;
+            }
+
+            const bounds = element.getBoundingClientRect();
+            return {
+                left: Math.round(bounds.left),
+                right: Math.round(bounds.right),
+                top: Math.round(bounds.top),
+                bottom: Math.round(bounds.bottom),
+                width: Math.round(bounds.width),
+                height: Math.round(bounds.height),
+            };
+        }
+
+        return {
+            row: rect(".board-panel.main-board .main-board-transport-row"),
+            liveAction: rect(".board-panel.main-board .main-board-return-live-action"),
+            liveButton: rect(
+                ".board-panel.main-board .main-board-return-live-action .kibitz-return-live-button",
+            ),
+            transportControls: rect(
+                ".board-panel.main-board .main-board-transport-row .transport-controls",
+            ),
+            newVariationAction: rect(".board-panel.main-board .main-board-new-variation-action"),
+            newVariationButton: rect(
+                ".board-panel.main-board .main-board-transport-row .create-variation-button",
+            ),
+        };
+    });
 }
 
 async function captureKibitzLayout(
@@ -714,19 +751,105 @@ ogsTest.describe("@Kibitz layout regressions", () => {
         ).toBeVisible();
     });
 
-    ogsTest("focus mode puts new variation beside the transport controls", async ({ page }) => {
-        await load(page, "/kibitz/user-fea5dced");
-        await page.waitForTimeout(500);
+    ogsTest(
+        "@Visual main board transport row stays fixed as Back to live appears",
+        async ({ page }) => {
+            await load(page, "/kibitz/user-fea5dced");
+            await page.waitForTimeout(500);
 
-        await expect(
-            page.locator(".board-panel.main-board .board-meta .kibitz-create-variation-button"),
-        ).toHaveCount(0);
-        await expect(
-            page.locator(
-                ".board-panel.main-board .main-board-transport-row .create-variation-button",
-            ),
-        ).toBeVisible();
-    });
+            await expect(
+                page.locator(
+                    ".board-panel.main-board .main-board-transport-row .create-variation-button",
+                ),
+            ).toBeVisible();
+            const mainRow = page.locator(".board-panel.main-board .main-board-transport-row");
+            await expect(mainRow).toBeVisible({ timeout: 15000 });
+
+            const beforeBackToLive = await measureMainTransportRow(page);
+            await expect(mainRow).toHaveScreenshot("kibitz-main-transport-row-no-live.png", {
+                animations: "disabled",
+            });
+
+            const previousMoveButton = await expectOGSClickableByName(page, /Previous move/);
+            await previousMoveButton.click();
+            await page.waitForTimeout(500);
+
+            const backToLiveButton = page.locator(
+                ".board-panel.main-board .main-board-return-live-action .kibitz-return-live-button",
+            );
+            await expect(backToLiveButton).toBeVisible({ timeout: 15000 });
+
+            const afterBackToLive = await measureMainTransportRow(page);
+            await expect(mainRow).toHaveScreenshot("kibitz-main-transport-row-with-live.png", {
+                animations: "disabled",
+            });
+
+            expect(
+                Math.abs(
+                    beforeBackToLive.transportControls!.left -
+                        afterBackToLive.transportControls!.left,
+                ),
+            ).toBeLessThanOrEqual(2);
+            expect(
+                Math.abs(
+                    beforeBackToLive.transportControls!.right -
+                        afterBackToLive.transportControls!.right,
+                ),
+            ).toBeLessThanOrEqual(2);
+            expect(
+                Math.abs(
+                    beforeBackToLive.newVariationButton!.left -
+                        afterBackToLive.newVariationButton!.left,
+                ),
+            ).toBeLessThanOrEqual(2);
+            expect(
+                Math.abs(
+                    beforeBackToLive.newVariationButton!.right -
+                        afterBackToLive.newVariationButton!.right,
+                ),
+            ).toBeLessThanOrEqual(2);
+            expect(
+                afterBackToLive.liveAction!.right <= afterBackToLive.transportControls!.left - 4,
+            ).toBe(true);
+            expect(
+                afterBackToLive.newVariationButton!.left - afterBackToLive.transportControls!.right,
+            ).toBeLessThanOrEqual(24);
+        },
+    );
+
+    ogsTest(
+        "@Visual secondary board transport row keeps Back to live aligned",
+        async ({ page }) => {
+            await openKibitzEqualCompareMode(page, "/kibitz/user-fea5dced");
+
+            const variationTrigger = page
+                .locator(
+                    ".KibitzVariationList .variation-recall, .KibitzVariationList .variation-item",
+                )
+                .first();
+            await expect(variationTrigger).toBeVisible({ timeout: 15000 });
+            await variationTrigger.scrollIntoViewIfNeeded();
+            await variationTrigger.click({ force: true });
+            await page.waitForTimeout(500);
+
+            const backToLiveButton = page.locator(
+                ".board-panel.secondary-board .secondary-board-return-live-action .kibitz-return-live-button",
+            );
+            const transportRow = page.locator(
+                ".board-panel.secondary-board .secondary-board-transport-row",
+            );
+
+            await expect(backToLiveButton).toBeVisible({ timeout: 15000 });
+            await expect(transportRow).toBeVisible({ timeout: 15000 });
+
+            await expect(transportRow).toHaveScreenshot(
+                "kibitz-secondary-transport-row-with-live-button.png",
+                {
+                    animations: "disabled",
+                },
+            );
+        },
+    );
 });
 
 ogsTest.describe("@Manual Kibitz visual inspection harness", () => {

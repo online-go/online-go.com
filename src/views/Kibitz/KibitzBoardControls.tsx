@@ -126,6 +126,18 @@ export function KibitzBoardControls({
     if (variant === "minimal") {
         return (
             <div className="KibitzBoardControls minimal-row">
+                {showReturnLiveButton && canReturnToLive ? (
+                    <button
+                        type="button"
+                        className="kibitz-return-live-button"
+                        onClick={controller.gotoLastMove}
+                    >
+                        {pgettext(
+                            "Button label for returning the kibitz main board to the live move",
+                            "Back to live",
+                        )}
+                    </button>
+                ) : null}
                 <div className="minimal-row-core">
                     <button
                         type="button"
@@ -156,18 +168,6 @@ export function KibitzBoardControls({
                         <i className="fa fa-step-forward" />
                     </button>
                 </div>
-                {showReturnLiveButton && canReturnToLive ? (
-                    <button
-                        type="button"
-                        className="kibitz-return-live-button"
-                        onClick={controller.gotoLastMove}
-                    >
-                        {pgettext(
-                            "Button label for returning the kibitz main board to the live move",
-                            "Back to live",
-                        )}
-                    </button>
-                ) : null}
             </div>
         );
     }
@@ -225,18 +225,6 @@ export function KibitzBoardControls({
                 >
                     <i className="fa fa-fast-forward" />
                 </button>
-                {showReturnLiveButton && canReturnToLive ? (
-                    <button
-                        type="button"
-                        className="kibitz-return-live-button"
-                        onClick={controller.gotoLastMove}
-                    >
-                        {pgettext(
-                            "Button label for returning the kibitz board to the live move",
-                            "Back to live",
-                        )}
-                    </button>
-                ) : null}
             </div>
             {showMoveTree ? (
                 <Resizable

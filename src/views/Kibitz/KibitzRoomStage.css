@@ -835,31 +835,69 @@
         .secondary-board-transport-row {
             align-items: center;
             box-sizing: border-box;
-            display: grid;
+            display: flex;
             gap: 0.35rem;
-            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
             height: var(--equal-transport-height, auto);
+            justify-content: center;
+            margin: 0 auto;
+            max-width: 100%;
             min-width: 0;
+            width: fit-content;
             padding: 0.3125rem 0;
-            width: 100%;
+        }
+
+        .secondary-board-transport-row > * {
+            align-self: center;
+            flex: 0 0 auto;
+        }
+
+        .secondary-board-return-live-action {
+            align-items: center;
+            display: flex;
+            height: 1.6rem;
+            justify-content: flex-end;
+            margin-left: 0;
+            margin-right: 0.125rem;
+        }
+
+        .secondary-board-return-live-action .kibitz-return-live-button {
+            align-items: center;
+            background: var(--primary);
+            border: 0;
+            box-shadow: none;
+            color: var(--colored-background-fg);
+            cursor: pointer;
+            display: inline-flex;
+            font-size: 0.75rem;
+            height: 1.6rem;
+            justify-content: center;
+            line-height: 1;
+            min-width: auto;
+            padding: 0 0.55rem;
+            white-space: nowrap;
         }
 
         .main-board-transport-row {
             align-items: center;
             box-sizing: border-box;
-            display: flex;
+            display: grid;
+            gap: 0.35rem;
+            grid-template-columns: auto auto auto;
             height: var(--equal-transport-height, auto);
             justify-content: center;
+            margin: 0 auto;
+            max-width: 100%;
             min-width: 0;
+            width: fit-content;
             padding: 0.3125rem 0;
-            width: 100%;
         }
 
         .main-board-transport-row.has-new-variation {
-            display: grid;
-            gap: 0.35rem;
-            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-            justify-content: initial;
+            justify-content: center;
+        }
+
+        .main-board-transport-row > * {
+            align-self: center;
         }
 
         .main-board-variation-spacer {
@@ -876,23 +914,12 @@
             display: none;
         }
 
-        .transport-controls {
-            grid-column: 2;
-            justify-self: center;
+        .main-board-transport-row .transport-controls {
             min-width: 0;
-        }
-
-        .main-board-transport-row.has-new-variation .create-variation-button {
-            grid-column: 3;
-            justify-self: start;
         }
 
         .main-board-new-variation-action {
             margin-top: 3.6px;
-        }
-
-        .secondary-board-transport-row .create-variation-button {
-            height: 29.1875px;
         }
 
         .secondary-board-transport-row .transport-controls .KibitzBoardControls.full {
@@ -915,15 +942,46 @@
         .board-actions.board-actions-inline {
             flex-wrap: nowrap;
             gap: 0.25rem;
-            grid-column: 3;
-            justify-self: end;
             margin-left: 0;
             padding: 0 0.125rem;
             width: auto;
         }
 
         .board-actions.board-actions-inline.board-actions-left {
-            justify-self: start;
+            justify-content: flex-start;
+        }
+
+        .main-board-return-live-action {
+            align-items: center;
+            display: flex;
+            height: 1.6rem;
+            justify-content: flex-end;
+            margin-top: 3.6px;
+            margin-left: 0;
+            margin-right: 0.125rem;
+        }
+
+        .main-board-return-live-action .kibitz-return-live-button,
+        .secondary-board-return-live-action .kibitz-return-live-button {
+            align-items: center;
+            background: var(--primary);
+            border: 0;
+            box-shadow: none;
+            color: var(--colored-background-fg);
+            cursor: pointer;
+            display: inline-flex;
+            font-size: 0.75rem;
+            height: 1.6rem;
+            justify-content: center;
+            line-height: 1;
+            min-width: auto;
+            padding: 0 0.55rem;
+            white-space: nowrap;
+        }
+
+        .kibitz-return-live-button.is-hidden {
+            pointer-events: none;
+            visibility: hidden;
         }
 
         .secondary-board-empty-state {

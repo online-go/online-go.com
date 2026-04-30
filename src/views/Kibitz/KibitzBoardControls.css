@@ -18,6 +18,17 @@
         width: auto;
     }
 
+    .full-row-core {
+        align-items: center;
+        display: inline-flex;
+        gap: 0.25rem;
+        justify-content: center;
+        margin: 0 auto;
+        min-height: 1.6rem;
+        white-space: nowrap;
+        width: auto;
+    }
+
     .kibitz-move-control,
     .kibitz-return-live-button {
         align-items: center;
@@ -101,9 +112,10 @@
         justify-self: center;
     }
 
-    .kibitz-return-live-button {
-        grid-column: 3;
-        justify-self: start;
-        margin-left: 0.25rem;
+    .KibitzBoardControls.minimal-row .kibitz-return-live-button {
+        grid-column: 1;
+        justify-self: end;
+        margin-left: 0;
+        margin-right: 0.25rem;
     }
 }

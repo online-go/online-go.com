@@ -272,6 +272,7 @@ export function KibitzRoomStage({
     const previewDisplayedMoveNumber = secondaryBoardGame?.move_number;
     const [mainBoardController, setMainBoardControllerState] =
         React.useState<GobanController | null>(null);
+    const [mainReturnLiveAvailable, setMainReturnLiveAvailable] = React.useState(false);
     // Wrap the setter so the parent (KibitzInner) is notified whenever the
     // main board's controller is (re)created. Lets the parent provide it via
     // GobanControllerContext so descendants like KibitzSharedStreamPanel can
@@ -285,6 +286,7 @@ export function KibitzRoomStage({
     );
     const [secondaryBoardController, setSecondaryBoardController] =
         React.useState<GobanController | null>(null);
+    const [secondaryReturnLiveAvailable, setSecondaryReturnLiveAvailable] = React.useState(false);
     const [mobileReturnLiveAvailable, setMobileReturnLiveAvailable] = React.useState(false);
     const [secondaryMoveTreeContainer, setSecondaryMoveTreeContainer] =
         React.useState<Resizable | null>(null);
@@ -990,11 +992,32 @@ export function KibitzRoomStage({
                                             : "")
                                     }
                                 >
+                                    <div className="main-board-return-live-action">
+                                        <button
+                                            type="button"
+                                            className={
+                                                "kibitz-return-live-button" +
+                                                (mainReturnLiveAvailable ? "" : " is-hidden")
+                                            }
+                                            onClick={() => mainBoardController?.gotoLastMove()}
+                                            aria-hidden={!mainReturnLiveAvailable}
+                                            tabIndex={mainReturnLiveAvailable ? 0 : -1}
+                                        >
+                                            {pgettext(
+                                                "Button label for returning the kibitz board to the live move",
+                                                "Back to live",
+                                            )}
+                                        </button>
+                                    </div>
                                     <div className="transport-controls">
                                         <KibitzBoardControls
                                             controller={mainBoardController}
                                             variant="minimal"
                                             totalMoves={displayedMoveNumber}
+                                            showReturnLiveButton={false}
+                                            onReturnLiveVisibilityChange={
+                                                setMainReturnLiveAvailable
+                                            }
                                         />
                                     </div>
                                     {secondaryPaneSize === "hidden" &&
@@ -1149,12 +1172,31 @@ export function KibitzRoomStage({
                                     />
                                 </div>
                                 <div className="secondary-board-transport-row">
+                                    <div className="secondary-board-return-live-action">
+                                        {secondaryReturnLiveAvailable ? (
+                                            <button
+                                                type="button"
+                                                className="kibitz-return-live-button"
+                                                onClick={() =>
+                                                    secondaryBoardController?.gotoLastMove()
+                                                }
+                                            >
+                                                {pgettext(
+                                                    "Button label for returning the kibitz board to the live move",
+                                                    "Back to live",
+                                                )}
+                                            </button>
+                                        ) : null}
+                                    </div>
                                     <div className="transport-controls">
                                         <KibitzBoardControls
                                             controller={secondaryBoardController}
                                             variant="full"
                                             showMoveTree={false}
                                             totalMoves={previewDisplayedMoveNumber}
+                                            onReturnLiveVisibilityChange={
+                                                setSecondaryReturnLiveAvailable
+                                            }
                                         />
                                     </div>
                                     <div className="board-actions board-actions-inline">
@@ -1236,12 +1278,31 @@ export function KibitzRoomStage({
                                     />
                                 </div>
                                 <div className="secondary-board-transport-row">
+                                    <div className="secondary-board-return-live-action">
+                                        {secondaryReturnLiveAvailable ? (
+                                            <button
+                                                type="button"
+                                                className="kibitz-return-live-button"
+                                                onClick={() =>
+                                                    secondaryBoardController?.gotoLastMove()
+                                                }
+                                            >
+                                                {pgettext(
+                                                    "Button label for returning the kibitz board to the live move",
+                                                    "Back to live",
+                                                )}
+                                            </button>
+                                        ) : null}
+                                    </div>
                                     <div className="transport-controls">
                                         <KibitzBoardControls
                                             controller={secondaryBoardController}
                                             variant="full"
                                             showMoveTree={false}
                                             totalMoves={selectedVariation.move_count}
+                                            onReturnLiveVisibilityChange={
+                                                setSecondaryReturnLiveAvailable
+                                            }
                                         />
                                     </div>
                                     <div className="board-actions board-actions-inline board-actions-left">
@@ -1249,7 +1310,7 @@ export function KibitzRoomStage({
                                         onCreateVariationFromPostedVariation ? (
                                             <button
                                                 type="button"
-                                                className="create-variation-button"
+                                                className="kibitz-move-control create-variation-button"
                                                 onClick={() =>
                                                     onCreateVariationFromPostedVariation(
                                                         selectedVariation,
