@@ -643,20 +643,22 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.partActiveChat();
         const proxy = chat_manager.join(channel);
         this._active_chat_proxy = proxy;
-        proxy.on("chat", this.syncMessagesFromChat);
-        proxy.on("chat-removed", this.syncMessagesFromChat);
+        proxy.on("chat", this.onChatMessage);
+        proxy.on("chat-removed", this.onChatMessageRemoved);
         proxy.on("join", this.syncPresenceFromChat);
         proxy.on("part", this.syncPresenceFromChat);
         proxy.on("user-metadata-update", this.syncPresenceFromChat);
-        // Initial sync; chat_log will be populated by the join's history replay.
+        // Initial full sync; chat_log may already be populated if another
+        // subscriber held the channel (e.g. KibitzSharedStreamPanel) and
+        // gets fed by replay events afterwards.
         this.syncMessagesFromChat();
         this.syncPresenceFromChat();
     }
 
     private partActiveChat(): void {
         if (this._active_chat_proxy) {
-            this._active_chat_proxy.off("chat", this.syncMessagesFromChat);
-            this._active_chat_proxy.off("chat-removed", this.syncMessagesFromChat);
+            this._active_chat_proxy.off("chat", this.onChatMessage);
+            this._active_chat_proxy.off("chat-removed", this.onChatMessageRemoved);
             this._active_chat_proxy.off("join", this.syncPresenceFromChat);
             this._active_chat_proxy.off("part", this.syncPresenceFromChat);
             this._active_chat_proxy.off("user-metadata-update", this.syncPresenceFromChat);
@@ -665,6 +667,10 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         }
     }
 
+    // Full rebuild of stream/variations from the channel's chat_log. Used
+    // for the initial sync only; per-message updates use the incremental
+    // onChatMessage / onChatMessageRemoved handlers below to avoid O(n)
+    // work per chat event over the room's lifetime.
     private syncMessagesFromChat = (): void => {
         const proxy = this._active_chat_proxy;
         const room = this._active_room;
@@ -682,6 +688,46 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         }
         this.setStream(items);
         this.setVariations(variations);
+    };
+
+    private onChatMessage = (msg?: ChatMessage | null): void => {
+        const room = this._active_room;
+        if (!room) {
+            return;
+        }
+        // chat_manager emits ("chat", null) on bulk system-message resets
+        // (clearSystemMessages); fall back to a full rebuild for that path.
+        if (!msg) {
+            this.syncMessagesFromChat();
+            return;
+        }
+        // chat_manager.handleChat dedupes by message.i before emitting, so
+        // every ("chat", msg) event corresponds to a genuinely new entry.
+        // Spread into a new array so React's setState ref-compare fires.
+        const item = mapChatToStreamItem(msg, room.id);
+        this.setStream([...this._stream, item]);
+        const variation = mapAnalysisToVariation(msg, room.id);
+        if (variation) {
+            this.setVariations([...this._variations, variation]);
+        }
+    };
+
+    private onChatMessageRemoved = (obj?: { uuid?: string } | null): void => {
+        if (!obj?.uuid) {
+            return;
+        }
+        const uuid = obj.uuid;
+        // Items and variations both key on msg.message.i (== uuid) for
+        // messages that have one (mapChatToStreamItem / mapAnalysisToVariation
+        // both use it), so a single id-equality filter covers both.
+        const nextStream = this._stream.filter((i) => i.id !== uuid);
+        if (nextStream.length !== this._stream.length) {
+            this.setStream(nextStream);
+        }
+        const nextVariations = this._variations.filter((v) => v.id !== uuid);
+        if (nextVariations.length !== this._variations.length) {
+            this.setVariations(nextVariations);
+        }
     };
 
     private syncPresenceFromChat = (): void => {
