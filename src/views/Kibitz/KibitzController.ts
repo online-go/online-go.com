@@ -644,20 +644,22 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.partActiveChat();
         const proxy = chat_manager.join(channel);
         this._active_chat_proxy = proxy;
-        proxy.on("chat", this.syncMessagesFromChat);
-        proxy.on("chat-removed", this.syncMessagesFromChat);
+        proxy.on("chat", this.onChatMessage);
+        proxy.on("chat-removed", this.onChatMessageRemoved);
         proxy.on("join", this.syncPresenceFromChat);
         proxy.on("part", this.syncPresenceFromChat);
         proxy.on("user-metadata-update", this.syncPresenceFromChat);
-        // Initial sync; chat_log will be populated by the join's history replay.
+        // Initial full sync; chat_log may already be populated if another
+        // subscriber held the channel (e.g. KibitzSharedStreamPanel) and
+        // gets fed by replay events afterwards.
         this.syncMessagesFromChat();
         this.syncPresenceFromChat();
     }
 
     private partActiveChat(): void {
         if (this._active_chat_proxy) {
-            this._active_chat_proxy.off("chat", this.syncMessagesFromChat);
-            this._active_chat_proxy.off("chat-removed", this.syncMessagesFromChat);
+            this._active_chat_proxy.off("chat", this.onChatMessage);
+            this._active_chat_proxy.off("chat-removed", this.onChatMessageRemoved);
             this._active_chat_proxy.off("join", this.syncPresenceFromChat);
             this._active_chat_proxy.off("part", this.syncPresenceFromChat);
             this._active_chat_proxy.off("user-metadata-update", this.syncPresenceFromChat);
@@ -666,6 +668,10 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         }
     }
 
+    // Full rebuild of stream/variations from the channel's chat_log. Used
+    // for the initial sync only; per-message updates use the incremental
+    // onChatMessage / onChatMessageRemoved handlers below to avoid O(n)
+    // work per chat event over the room's lifetime.
     private syncMessagesFromChat = (): void => {
         const proxy = this._active_chat_proxy;
         const room = this._active_room;
@@ -683,6 +689,42 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         }
         this.setStream(items);
         this.setVariations(variations);
+    };
+
+    // ChatChannelProxy._onChat / _onChatRemoved (chat_manager.ts:841-861)
+    // collect (...args) and re-emit with args wrapped in an array
+    // (`emit.apply(this, ["chat", args])`), so listeners can't trust the
+    // event payload — every other consumer in the codebase ignores it and
+    // re-derives from proxy.channel.chat_log. We do the same, but stay
+    // incremental by inspecting whether the log grew by one (the common
+    // path for both send and receive) vs. some other delta (initial sync,
+    // bulk clear via clearSystemMessages, etc.) which falls back to a full
+    // rebuild.
+    private onChatMessage = (): void => {
+        const proxy = this._active_chat_proxy;
+        const room = this._active_room;
+        if (!proxy || !room) {
+            return;
+        }
+        const log = proxy.channel.chat_log;
+        if (log.length !== this._stream.length + 1) {
+            this.syncMessagesFromChat();
+            return;
+        }
+        const msg = log[log.length - 1];
+        const item = mapChatToStreamItem(msg, room.id);
+        this.setStream([...this._stream, item]);
+        const variation = mapAnalysisToVariation(msg, room.id);
+        if (variation) {
+            this.setVariations([...this._variations, variation]);
+        }
+    };
+
+    private onChatMessageRemoved = (): void => {
+        // chat-removed is a rare path; full rebuild from chat_log keeps
+        // the controller honest about whatever just got spliced out
+        // upstream without depending on the broken proxy payload.
+        this.syncMessagesFromChat();
     };
 
     private syncPresenceFromChat = (): void => {

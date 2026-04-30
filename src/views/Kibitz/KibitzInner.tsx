@@ -659,7 +659,12 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             return;
         }
 
-        const syncGameVariations = () => {
+        // Full rebuild — used for the initial sync (chat_log may already be
+        // populated from a prior subscriber) and for "chat-reset" (goban
+        // emits this on bulk wipes). Per-message updates take the
+        // incremental paths below to avoid scanning the whole log on every
+        // chat event.
+        const rebuildGameVariations = () => {
             const next: KibitzVariationSummary[] = [];
             for (const line of goban.chat_log) {
                 const variation = mapGameChatLineToVariation(resolvedRoom.id, line, goban.game_id);
@@ -670,15 +675,43 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             setGameVariations(next);
         };
 
-        goban.on("chat", syncGameVariations);
-        goban.on("chat-remove", syncGameVariations);
-        goban.on("chat-reset", syncGameVariations);
-        syncGameVariations();
+        const onGameChat = (line?: protocol.GameChatLine) => {
+            if (!line) {
+                return;
+            }
+            const variation = mapGameChatLineToVariation(resolvedRoom.id, line, goban.game_id);
+            if (!variation) {
+                return;
+            }
+            // Goban doesn't dedupe "chat" emissions itself (GameChat.tsx
+            // maintains its own dedupe table for the same reason), so guard
+            // against double-appending the same variation on replay edges.
+            setGameVariations((current) =>
+                current.some((v) => v.id === variation.id) ? current : [...current, variation],
+            );
+        };
+
+        const onGameChatRemove = (obj?: { chat_ids?: string[] }) => {
+            const ids = obj?.chat_ids;
+            if (!ids || ids.length === 0) {
+                return;
+            }
+            const removed = new Set(ids);
+            setGameVariations((current) => {
+                const next = current.filter((v) => !removed.has(v.id));
+                return next.length === current.length ? current : next;
+            });
+        };
+
+        goban.on("chat", onGameChat);
+        goban.on("chat-remove", onGameChatRemove);
+        goban.on("chat-reset", rebuildGameVariations);
+        rebuildGameVariations();
 
         return () => {
-            goban.off("chat", syncGameVariations);
-            goban.off("chat-remove", syncGameVariations);
-            goban.off("chat-reset", syncGameVariations);
+            goban.off("chat", onGameChat);
+            goban.off("chat-remove", onGameChatRemove);
+            goban.off("chat-reset", rebuildGameVariations);
         };
     }, [mainBoardController, resolvedRoom]);
 
