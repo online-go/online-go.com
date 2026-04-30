@@ -17,13 +17,12 @@
 
 import * as React from "react";
 import { interpolate, pgettext } from "@/lib/translate";
-import type { KibitzRoomSummary, KibitzRoomUser } from "@/models/kibitz";
+import type { KibitzRoomSummary } from "@/models/kibitz";
 import "./KibitzRoomList.css";
 
 interface KibitzRoomListProps {
     rooms: KibitzRoomSummary[];
     activeRoomId: string;
-    roomUsersById?: Record<string, KibitzRoomUser[]>;
     onSelectRoom: (roomId: string) => void;
     onCreateRoom?: () => void;
     onCreateVariation?: () => void;
@@ -32,7 +31,6 @@ interface KibitzRoomListProps {
 export function KibitzRoomList({
     rooms,
     activeRoomId,
-    roomUsersById: _roomUsersById = {},
     onSelectRoom,
     onCreateRoom,
     onCreateVariation,

@@ -220,6 +220,7 @@ interface AnalysisChatBody extends TypedChatBody {
     pen_marks?: unknown[];
     line_tree?: KibitzVariationSummary["analysis_line_tree"];
     game_id?: number;
+    kibitz_pending_id?: string;
 }
 
 function asAnalysisBody(value: unknown): AnalysisChatBody | null {
@@ -259,6 +260,7 @@ function mapAnalysisToVariation(msg: ChatMessage, roomId: string): KibitzVariati
         viewer_count: 0,
         current_viewers: [],
         title: body.name,
+        client_pending_id: body.kibitz_pending_id,
         analysis_from: body.from,
         analysis_moves: body.moves,
         analysis_marks: body.marks,
@@ -320,7 +322,7 @@ function mapChatToStreamItem(msg: ChatMessage, roomId: string): KibitzStreamItem
             type: "chat" as KibitzStreamItemType,
             created_at,
             author,
-            text: "",
+            text: typed.text ?? "",
         };
     }
 
@@ -337,6 +339,9 @@ function mapChatToStreamItem(msg: ChatMessage, roomId: string): KibitzStreamItem
 export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     private _destroyed = false;
     private _rooms: KibitzRoomSummary[] = [];
+    private _game_lookup_cache = new Map<number, KibitzWatchedGame>();
+    private _game_lookup_inflight = new Map<number, Promise<KibitzWatchedGame | undefined>>();
+    private _room_card_game_requests = new Map<string, number>();
     private _active_room: KibitzRoom | null = null;
     private _stream: KibitzStreamItem[] = [];
     private _proposals: KibitzProposal[] = [];
@@ -489,6 +494,12 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             const payload = (await get("kibitz/rooms")) as BackendKibitzRoom[];
             const rooms = (payload ?? []).map((r) => mapBackendRoomToSummary(r));
             this.setRooms(rooms);
+            const roomIds = new Set(rooms.map((room) => room.id));
+            for (const roomId of Array.from(this._room_card_game_requests.keys())) {
+                if (!roomIds.has(roomId)) {
+                    this._room_card_game_requests.delete(roomId);
+                }
+            }
             this.setDebug({
                 ...this._debug,
                 status: "ready",
@@ -522,16 +533,53 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         }
     }
 
+    private lookupGameForKibitzCached(gameId: number): Promise<KibitzWatchedGame | undefined> {
+        const cached = this._game_lookup_cache.get(gameId);
+        if (cached) {
+            return Promise.resolve(cached);
+        }
+
+        const inflight = this._game_lookup_inflight.get(gameId);
+        if (inflight) {
+            return inflight;
+        }
+
+        const promise = lookupGameForKibitz(gameId)
+            .then((game) => {
+                if (game) {
+                    this._game_lookup_cache.set(gameId, game);
+                }
+                return game;
+            })
+            .finally(() => {
+                this._game_lookup_inflight.delete(gameId);
+            });
+
+        this._game_lookup_inflight.set(gameId, promise);
+        return promise;
+    }
+
     private async hydrateRoomCardGame(roomId: string, gameId: number): Promise<void> {
-        const game = await lookupGameForKibitz(gameId);
-        if (this._destroyed || !game) {
+        this._room_card_game_requests.set(roomId, gameId);
+
+        const game = await this.lookupGameForKibitzCached(gameId);
+        if (this._destroyed || this._room_card_game_requests.get(roomId) !== gameId || !game) {
             return;
         }
-        const updated = this._rooms.map((room) =>
-            room.id === roomId ? { ...room, current_game: game } : room,
-        );
-        // Reference equality check: only update if something actually changed.
-        if (updated.some((room, i) => room !== this._rooms[i])) {
+        let changed = false;
+        const updated = this._rooms.map((room) => {
+            if (room.id !== roomId) {
+                return room;
+            }
+
+            if (room.current_game?.game_id === game.game_id) {
+                return room;
+            }
+
+            changed = true;
+            return { ...room, current_game: game };
+        });
+        if (changed) {
             this.setRooms(updated);
         }
     }
@@ -551,8 +599,20 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         const existing = this._rooms.find((r) => r.id === incoming.id);
         const summary = mapBackendRoomToSummary(incoming, existing);
         this.setRooms(
-            this._rooms.map((room) => (room.id === incoming.id ? { ...room, ...summary } : room)),
+            this._rooms.map((room) =>
+                room.id === incoming.id
+                    ? {
+                          ...room,
+                          ...summary,
+                          current_game:
+                              incoming.current_game_id == null ? undefined : room.current_game,
+                      }
+                    : room,
+            ),
         );
+        if (incoming.current_game_id == null) {
+            this._room_card_game_requests.delete(incoming.id);
+        }
     }
 
     private onViewerCountChanged = (payload: { channel?: string; viewer_count?: number }) => {
@@ -582,6 +642,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             return;
         }
         this.setRooms(this._rooms.filter((room) => room.id !== id));
+        this._room_card_game_requests.delete(id);
         if (this._active_room?.id === id) {
             this.unsubscribeActiveRoom();
             this.setActiveRoom(null);
@@ -600,8 +661,14 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             this.setActiveRoom({
                 ...this._active_room,
                 ...summary,
+                current_game:
+                    incoming.current_game_id == null ? undefined : this._active_room.current_game,
             });
-            void this.hydrateActiveRoomGame(incoming.current_game_id, this._select_room_token);
+            void this.hydrateActiveRoomGame(
+                incoming.id,
+                incoming.current_game_id,
+                this._select_room_token,
+            );
         }
         if (incoming.current_game_id) {
             void this.hydrateRoomCardGame(incoming.id, incoming.current_game_id);
@@ -781,7 +848,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 size: "small",
             });
 
-            void this.hydrateActiveRoomGame(payload.room.current_game_id, token);
+            void this.hydrateActiveRoomGame(full.id, payload.room.current_game_id, token);
         } catch (error) {
             if (token !== this._select_room_token || this._destroyed) {
                 return;
@@ -801,14 +868,19 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
      * pane can render the actual game rather than a placeholder.
      */
     private async hydrateActiveRoomGame(
+        roomId: string,
         gameId: number | null | undefined,
         token: number,
     ): Promise<void> {
         if (!gameId) {
             return;
         }
-        const game = await lookupGameForKibitz(gameId);
-        if (token !== this._select_room_token || this._destroyed) {
+        const game = await this.lookupGameForKibitzCached(gameId);
+        if (
+            token !== this._select_room_token ||
+            this._destroyed ||
+            this._active_room?.id !== roomId
+        ) {
             return;
         }
         if (!game) {
@@ -881,8 +953,16 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 this.setActiveRoom({
                     ...this._active_room,
                     ...summary,
+                    current_game:
+                        payload.current_game_id == null
+                            ? undefined
+                            : this._active_room.current_game,
                 });
-                void this.hydrateActiveRoomGame(payload.current_game_id, this._select_room_token);
+                void this.hydrateActiveRoomGame(
+                    payload.id,
+                    payload.current_game_id,
+                    this._select_room_token,
+                );
             }
             if (payload.current_game_id) {
                 void this.hydrateRoomCardGame(payload.id, payload.current_game_id);
@@ -948,9 +1028,11 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         if (!sourceGameId) {
             return null;
         }
+        const pendingId = `kibitz-post:${Date.now()}:${Math.random().toString(36).slice(2)}`;
         const body = {
             ...prepared.analysis,
             game_id: sourceGameId,
+            kibitz_pending_id: pendingId,
         } as AnalysisChatBody;
         this.sendTypedToActiveChannel(body);
         boardController.recordAnalysisSent(prepared.analysis);

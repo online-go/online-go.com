@@ -102,6 +102,7 @@ export interface KibitzVariationSummary {
     room_id: string;
     source?: "room" | "game-chat";
     game_id: number;
+    client_pending_id?: string;
     creator: KibitzRoomUser;
     created_at: number;
     viewer_count: number;

@@ -52,6 +52,7 @@ type MobileCompanionPanel = "chat" | "vote" | "compare";
 type MobileOverlayMode = "rooms" | "create-room" | "change-board" | null;
 type KibitzGamePickerMode = "create-room" | "change-board" | null;
 interface PendingPostedVariation {
+    pendingId: string;
     gameId: number;
     creatorId: number;
     from?: number;
@@ -240,6 +241,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const mobileShellRef = React.useRef<HTMLDivElement | null>(null);
     const mobileDividerRef = React.useRef<HTMLDivElement | null>(null);
     const previousMobileViewerCountRef = React.useRef<number | null>(null);
+    const previousMobileViewerRoomIdRef = React.useRef<string | null>(null);
     const mobileDragStateRef = React.useRef<{
         pointerId: number;
         startY: number;
@@ -725,7 +727,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             ),
         );
     }, [displayedVariations]);
-    React.useEffect(() => {
+    React.useLayoutEffect(() => {
         setVariationColorIndexes((previous) => {
             return assignVisibleVariationColorIndexes(previous, visibleVariationIds);
         });
@@ -752,6 +754,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
                 if (posted && currentUser?.id != null && posted.game_id != null) {
                     setPendingPostedVariation({
+                        pendingId: posted.kibitz_pending_id ?? "",
                         gameId: posted.game_id,
                         creatorId: currentUser.id,
                         from: posted.from,
@@ -770,6 +773,10 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         }
 
         const postedVariation = displayedVariations.find(
+            (variation) => variation.client_pending_id === pendingPostedVariation.pendingId,
+        );
+
+        const fallbackVariation = displayedVariations.find(
             (variation) =>
                 variation.game_id === pendingPostedVariation.gameId &&
                 variation.creator.id === pendingPostedVariation.creatorId &&
@@ -777,13 +784,14 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 variation.analysis_moves === pendingPostedVariation.moves &&
                 variation.title === pendingPostedVariation.title,
         );
+        const matchedVariation = postedVariation ?? fallbackVariation;
 
-        if (!postedVariation) {
+        if (!matchedVariation) {
             return;
         }
 
         setPendingPostedVariation(null);
-        onOpenVariation(postedVariation.id, true);
+        onOpenVariation(matchedVariation.id, true);
     }, [displayedVariations, onOpenVariation, pendingPostedVariation]);
 
     const variationPanels = (
@@ -893,18 +901,18 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
     const resolvedRoomUsers = resolvedRoom ? controller.getRoomUsers(resolvedRoom.id) : [];
     const mobileMatchup = formatMobileMatchup(resolvedRoom);
-    const roomUsersById = React.useMemo(
-        () =>
-            Object.fromEntries(
-                rooms.map((room) => [room.id, controller.getRoomUsers(room.id)]),
-            ) as Record<string, ReturnType<typeof controller.getRoomUsers>>,
-        [controller, rooms],
-    );
-
     React.useEffect(() => {
         if (!resolvedRoom) {
             setMobileViewerCountFlash(false);
             previousMobileViewerCountRef.current = null;
+            previousMobileViewerRoomIdRef.current = null;
+            return;
+        }
+
+        if (previousMobileViewerRoomIdRef.current !== resolvedRoom.id) {
+            previousMobileViewerRoomIdRef.current = resolvedRoom.id;
+            previousMobileViewerCountRef.current = resolvedRoom.viewer_count;
+            setMobileViewerCountFlash(false);
             return;
         }
 
@@ -915,6 +923,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         }
 
         if (previousMobileViewerCountRef.current == null) {
+            previousMobileViewerRoomIdRef.current = resolvedRoom.id;
             previousMobileViewerCountRef.current = resolvedRoom.viewer_count;
             return;
         }
@@ -1012,7 +1021,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                     <KibitzRoomList
                         rooms={rooms}
                         activeRoomId={resolvedRoom.id}
-                        roomUsersById={roomUsersById}
                         onSelectRoom={onSelectRoom}
                         onCreateRoom={onOpenCreateRoom}
                     />
@@ -1107,7 +1115,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                 <KibitzRoomList
                                                     rooms={rooms}
                                                     activeRoomId={resolvedRoom.id}
-                                                    roomUsersById={roomUsersById}
                                                     onSelectRoom={onSelectRoom}
                                                     onCreateRoom={onOpenCreateRoom}
                                                     onCreateVariation={onCreateVariation}

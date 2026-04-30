@@ -1,7 +1,5 @@
 {
-    "ignorePaths": [
-        "src/views/GoTV/twitchLanguageCodes.ts"
-    ],
+    "ignorePaths": ["src/views/GoTV/twitchLanguageCodes.ts"],
     "words": [
         "abcdefghjklmnopqrstuvwxyz",
         "Acked",
@@ -94,7 +92,6 @@
         "istartswith",
         "JGOF",
         "JGOFAI",
-        "Johnniedarkoo",
         "joseki",
         "josekipedia",
         "josekis",

@@ -58,8 +58,74 @@ function parsePosition(position: string, goban: Goban | null): { i: number; j: n
     return { i, j };
 }
 
-const positionSplitRegex = /((?<=^|\s)\b[a-zA-Z][0-9]{1,2}\b[,.!?]*(?=\s|$))/m;
-const positionPatternRegex = /(?<=^|\s)\b([a-zA-Z][0-9]{1,2})\b([,.!?]*)(?=\s|$)/m;
+const positionTokenRegex = /(^|\s)([a-zA-Z][0-9]{1,2})([,.!?]*)(?=\s|$)/gm;
+
+function renderChatBodyText(bodyText: string, goban: Goban | null): React.ReactNode[] {
+    if (!goban) {
+        return chat_markup(bodyText);
+    }
+
+    const nodes: React.ReactNode[] = [];
+    let cursor = 0;
+    let tokenIndex = 0;
+
+    positionTokenRegex.lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = positionTokenRegex.exec(bodyText)) !== null) {
+        const start = match.index;
+        const prefix = match[1] ?? "";
+        const position = match[2];
+        const punctuation = match[3] ?? "";
+
+        if (start > cursor) {
+            nodes.push(...chat_markup(bodyText.slice(cursor, start)));
+        }
+
+        const parsed = parsePosition(position, goban);
+        nodes.push(
+            <React.Fragment key={`position-${tokenIndex++}`}>
+                {prefix}
+                {parsed.i < 0 ? (
+                    `${position}${punctuation}`
+                ) : (
+                    <>
+                        <span
+                            className={punctuation ? "position tight-right" : "position"}
+                            data-position={position}
+                            onMouseEnter={() => {
+                                const point = parsePosition(position, goban);
+                                if (point.i >= 0) {
+                                    goban.getMarks(point.i, point.j).chat_triangle = true;
+                                    goban.drawSquare(point.i, point.j);
+                                }
+                            }}
+                            onMouseLeave={() => {
+                                const point = parsePosition(position, goban);
+                                if (point.i >= 0) {
+                                    goban.getMarks(point.i, point.j).chat_triangle = false;
+                                    goban.drawSquare(point.i, point.j);
+                                }
+                            }}
+                        >
+                            {position}
+                        </span>
+                        {punctuation ? (
+                            <span className="position-trailing">{punctuation}</span>
+                        ) : null}
+                    </>
+                )}
+            </React.Fragment>,
+        );
+
+        cursor = start + match[0].length;
+    }
+
+    if (cursor < bodyText.length) {
+        nodes.push(...chat_markup(bodyText.slice(cursor)));
+    }
+
+    return nodes;
+}
 
 function getChatIdPrefix(gameId?: number, reviewId?: number): string {
     if (reviewId != null) {
@@ -170,64 +236,7 @@ export function GameChatLine(props: GameChatLineProps): React.ReactElement {
                     <span className="body">
                         {isMe ? " " : ": "}
                         {typeof bodyText === "string" ? (
-                            <React.Fragment>
-                                {chat_markup(bodyText, [
-                                    {
-                                        split: positionSplitRegex,
-                                        pattern: positionPatternRegex,
-                                        replacement: (m, idx) => {
-                                            const pos = m[1];
-                                            if (parsePosition(pos, goban).i < 0) {
-                                                return <span key={idx}>{m[1]}</span>;
-                                            }
-
-                                            const highlight_position = () => {
-                                                if (!goban) {
-                                                    return;
-                                                }
-                                                const p = parsePosition(pos, goban);
-                                                if (p.i >= 0) {
-                                                    goban.getMarks(p.i, p.j).chat_triangle = true;
-                                                    goban.drawSquare(p.i, p.j);
-                                                }
-                                            };
-
-                                            const unhighlight_position = () => {
-                                                if (!goban) {
-                                                    return;
-                                                }
-                                                const p = parsePosition(pos, goban);
-                                                if (p.i >= 0) {
-                                                    goban.getMarks(p.i, p.j).chat_triangle = false;
-                                                    goban.drawSquare(p.i, p.j);
-                                                }
-                                            };
-
-                                            return (
-                                                <React.Fragment key={idx}>
-                                                    <span
-                                                        className={
-                                                            m[2]
-                                                                ? "position tight-right"
-                                                                : "position"
-                                                        }
-                                                        data-position={m[1]}
-                                                        onMouseEnter={highlight_position}
-                                                        onMouseLeave={unhighlight_position}
-                                                    >
-                                                        {m[1]}
-                                                    </span>
-                                                    {(m[2] || null) && (
-                                                        <span className="position-trailing">
-                                                            {m[2]}
-                                                        </span>
-                                                    )}
-                                                </React.Fragment>
-                                            );
-                                        },
-                                    },
-                                ])}
-                            </React.Fragment>
+                            <React.Fragment>{renderChatBodyText(bodyText, goban)}</React.Fragment>
                         ) : (
                             <TypedGameChatBody
                                 body={bodyText}

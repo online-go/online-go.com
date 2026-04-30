@@ -88,6 +88,8 @@ export function KibitzBoard({
         controllerRef.current.goban.setTheme(
             {
                 ...themes,
+                // Kibitz keeps a stable Kaya board theme so the compact room
+                // layouts have consistent contrast across the embedded boards.
                 board: "Kaya",
             },
             false,

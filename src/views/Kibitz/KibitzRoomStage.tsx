@@ -172,6 +172,14 @@ function renderInlineAvatar(
     );
 }
 
+function getVariationColorIndex(
+    variationColorIndexes: Record<string, number>,
+    variationId: string,
+): number | null {
+    const value = variationColorIndexes[variationId];
+    return typeof value === "number" ? value : null;
+}
+
 export function KibitzRoomStage({
     room,
     rooms,
@@ -254,14 +262,11 @@ export function KibitzRoomStage({
             return "none";
         }
 
-        return `${selectedVariation.id}:${variationColorIndexes[selectedVariation.id] ?? 0}`;
-    }, [selectedVariation, variationColorIndexes]);
+        return selectedVariation.id;
+    }, [selectedVariation]);
     const visibleVariationApplyKey = React.useMemo(
-        () =>
-            visibleVariations
-                .map((variation) => `${variation.id}:${variationColorIndexes[variation.id] ?? 0}`)
-                .join("\n"),
-        [variationColorIndexes, visibleVariations],
+        () => visibleVariations.map((variation) => variation.id).join("\n"),
+        [visibleVariations],
     );
     const previewGame =
         rooms.find((candidate) => candidate.current_game?.game_id === secondaryGameId)
@@ -412,6 +417,20 @@ export function KibitzRoomStage({
                 return false;
             }
 
+            const selectedVariationColorIndex = getVariationColorIndex(
+                variationColorIndexes,
+                selectedVariation.id,
+            );
+            const visibleVariationColorIndexes = visibleVariations.map((variation) =>
+                getVariationColorIndex(variationColorIndexes, variation.id),
+            );
+            if (
+                selectedVariationColorIndex == null ||
+                visibleVariationColorIndexes.some((colorIndex) => colorIndex == null)
+            ) {
+                return false;
+            }
+
             applyingVariation = true;
             if (suppressSelectedVariationLoadTimerRef.current) {
                 clearTimeout(suppressSelectedVariationLoadTimerRef.current);
@@ -424,17 +443,23 @@ export function KibitzRoomStage({
                 lastVariationFocusRequestRef.current.requestId !== variationFocusRequestId ||
                 lastVariationFocusRequestRef.current.visibleVariationKey !==
                     visibleVariationApplyKey;
+            const selectedColorIndex = selectedVariationColorIndex;
 
             try {
                 goban.load(goban.engine.config);
 
                 let selectedEndpoint: MoveTree | null = null;
 
-                for (const variation of visibleVariations) {
+                for (let index = 0; index < visibleVariations.length; ++index) {
+                    const variation = visibleVariations[index];
+                    const colorIndex = visibleVariationColorIndexes[index];
+                    if (colorIndex == null) {
+                        return false;
+                    }
                     applyKibitzVariationToController(
                         secondaryBoardController,
                         variation,
-                        variationColorIndexes[variation.id] ?? 0,
+                        colorIndex,
                         false,
                     );
                 }
@@ -446,7 +471,7 @@ export function KibitzRoomStage({
                     const applied = applyKibitzVariationToController(
                         secondaryBoardController,
                         selectedVariation,
-                        variationColorIndexes[selectedVariation.id] ?? 0,
+                        selectedColorIndex,
                         true,
                     );
                     selectedEndpoint = applied.endpoint;
@@ -456,7 +481,7 @@ export function KibitzRoomStage({
                     const applied = applyKibitzVariationToController(
                         secondaryBoardController,
                         selectedVariation,
-                        variationColorIndexes[selectedVariation.id] ?? 0,
+                        selectedColorIndex,
                         true,
                     );
                     selectedEndpoint = applied.endpoint;
@@ -551,12 +576,17 @@ export function KibitzRoomStage({
                 return;
             }
 
+            const colorIndex = getVariationColorIndex(variationColorIndexes, draftBaseVariation.id);
+            if (colorIndex == null) {
+                return;
+            }
+
             applyingDraftBase = true;
             try {
                 const applied = applyKibitzVariationToController(
                     secondaryBoardController,
                     draftBaseVariation,
-                    variationColorIndexes[draftBaseVariation.id] ?? 0,
+                    colorIndex,
                     true,
                 );
                 if (applied.endpoint) {
