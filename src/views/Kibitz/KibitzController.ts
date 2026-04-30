@@ -690,20 +690,27 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.setVariations(variations);
     };
 
-    private onChatMessage = (msg?: ChatMessage | null): void => {
+    // ChatChannelProxy._onChat / _onChatRemoved (chat_manager.ts:841-861)
+    // collect (...args) and re-emit with args wrapped in an array
+    // (`emit.apply(this, ["chat", args])`), so listeners can't trust the
+    // event payload — every other consumer in the codebase ignores it and
+    // re-derives from proxy.channel.chat_log. We do the same, but stay
+    // incremental by inspecting whether the log grew by one (the common
+    // path for both send and receive) vs. some other delta (initial sync,
+    // bulk clear via clearSystemMessages, etc.) which falls back to a full
+    // rebuild.
+    private onChatMessage = (): void => {
+        const proxy = this._active_chat_proxy;
         const room = this._active_room;
-        if (!room) {
+        if (!proxy || !room) {
             return;
         }
-        // chat_manager emits ("chat", null) on bulk system-message resets
-        // (clearSystemMessages); fall back to a full rebuild for that path.
-        if (!msg) {
+        const log = proxy.channel.chat_log;
+        if (log.length !== this._stream.length + 1) {
             this.syncMessagesFromChat();
             return;
         }
-        // chat_manager.handleChat dedupes by message.i before emitting, so
-        // every ("chat", msg) event corresponds to a genuinely new entry.
-        // Spread into a new array so React's setState ref-compare fires.
+        const msg = log[log.length - 1];
         const item = mapChatToStreamItem(msg, room.id);
         this.setStream([...this._stream, item]);
         const variation = mapAnalysisToVariation(msg, room.id);
@@ -712,22 +719,11 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         }
     };
 
-    private onChatMessageRemoved = (obj?: { uuid?: string } | null): void => {
-        if (!obj?.uuid) {
-            return;
-        }
-        const uuid = obj.uuid;
-        // Items and variations both key on msg.message.i (== uuid) for
-        // messages that have one (mapChatToStreamItem / mapAnalysisToVariation
-        // both use it), so a single id-equality filter covers both.
-        const nextStream = this._stream.filter((i) => i.id !== uuid);
-        if (nextStream.length !== this._stream.length) {
-            this.setStream(nextStream);
-        }
-        const nextVariations = this._variations.filter((v) => v.id !== uuid);
-        if (nextVariations.length !== this._variations.length) {
-            this.setVariations(nextVariations);
-        }
+    private onChatMessageRemoved = (): void => {
+        // chat-removed is a rare path; full rebuild from chat_log keeps
+        // the controller honest about whatever just got spliced out
+        // upstream without depending on the broken proxy payload.
+        this.syncMessagesFromChat();
     };
 
     private syncPresenceFromChat = (): void => {
