@@ -334,29 +334,6 @@
                 grid-row: 4;
             }
 
-            .secondary-board .board-meta-variation-inline {
-                align-items: start;
-                display: grid;
-                gap: 0.5rem;
-                grid-template-columns: auto minmax(0, 1fr);
-                justify-content: flex-start;
-                padding-left: 0.75rem;
-            }
-
-            .secondary-board .board-meta-variation-inline .players.player-single {
-                flex-wrap: nowrap;
-                min-width: 0;
-            }
-
-            .secondary-board .board-meta-variation-title {
-                color: var(--fg);
-                line-height: 1.15;
-                min-width: 0;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-            }
-
             .main-board .main-board-analyze-spacer {
                 min-height: var(--equal-analyze-height);
                 visibility: hidden;
@@ -972,12 +949,14 @@
             color: var(--colored-background-fg);
             cursor: pointer;
             display: inline-flex;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             height: 1.6rem;
             justify-content: center;
-            line-height: 1.1;
-            padding: 0 0.55rem;
-            text-align: left;
+            line-height: 1;
+            min-width: 1.65rem;
+            padding: 0 0.45rem;
+            text-align: center;
+            white-space: nowrap;
         }
 
         .create-variation-button.compact {

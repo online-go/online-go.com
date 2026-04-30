@@ -1224,34 +1224,6 @@ export function KibitzRoomStage({
                             </div>
                         ) : selectedVariation ? (
                             <div className="board-content board-content-posted-variation">
-                                <div
-                                    className={
-                                        "board-meta" +
-                                        (secondaryPaneSize === "equal"
-                                            ? " board-meta-variation-inline"
-                                            : "")
-                                    }
-                                >
-                                    <div className="players player-single">
-                                        <div className="player-badge">
-                                            {renderInlineAvatar(
-                                                selectedVariation.creator,
-                                                "stage-avatar",
-                                                "stage-avatar-image",
-                                            )}
-                                            <span className="player-name">
-                                                {selectedVariation.creator.username}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className="board-meta-variation-title">
-                                        {selectedVariation.title ??
-                                            pgettext(
-                                                "Fallback title for an untitled kibitz variation",
-                                                "Variation preview",
-                                            )}
-                                    </div>
-                                </div>
                                 <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
                                     <KibitzBoard
                                         gameId={selectedVariation?.game_id}

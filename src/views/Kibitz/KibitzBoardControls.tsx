@@ -225,6 +225,18 @@ export function KibitzBoardControls({
                 >
                     <i className="fa fa-fast-forward" />
                 </button>
+                {showReturnLiveButton && canReturnToLive ? (
+                    <button
+                        type="button"
+                        className="kibitz-return-live-button"
+                        onClick={controller.gotoLastMove}
+                    >
+                        {pgettext(
+                            "Button label for returning the kibitz board to the live move",
+                            "Back to live",
+                        )}
+                    </button>
+                ) : null}
             </div>
             {showMoveTree ? (
                 <Resizable
