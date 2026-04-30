@@ -245,6 +245,7 @@ function mapAnalysisToVariation(msg: ChatMessage, roomId: string): KibitzVariati
     return {
         id,
         room_id: roomId,
+        source: "room",
         game_id: body.game_id,
         creator: {
             id: msg.id,

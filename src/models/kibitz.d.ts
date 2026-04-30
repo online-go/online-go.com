@@ -100,6 +100,7 @@ export interface KibitzProposal {
 export interface KibitzVariationSummary {
     id: string;
     room_id: string;
+    source?: "room" | "game-chat";
     game_id: number;
     creator: KibitzRoomUser;
     created_at: number;

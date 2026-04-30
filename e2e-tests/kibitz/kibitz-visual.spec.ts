@@ -69,6 +69,63 @@ async function measureMainTransportRow(page: Page) {
     });
 }
 
+async function invokeMainBoardController(page: Page, methodName: "previousMove" | "gotoLastMove") {
+    await page.evaluate((requestedMethodName) => {
+        const element = document.querySelector(".board-panel.main-board .main-board-transport-row");
+        if (!element) {
+            throw new Error("Missing Kibitz main transport row");
+        }
+
+        const fiberKey = Object.keys(element).find((key) => key.startsWith("__reactFiber$"));
+        if (!fiberKey) {
+            throw new Error("Missing Kibitz transport row fiber");
+        }
+
+        let fiber = (element as unknown as { [key: string]: unknown })[fiberKey] as
+            | {
+                  elementType?: { name?: string };
+                  type?: { name?: string; displayName?: string };
+                  memoizedState?: {
+                      memoizedState?: unknown;
+                      next?: unknown;
+                  };
+                  return?: unknown;
+              }
+            | undefined;
+
+        while (fiber) {
+            const name =
+                fiber.elementType?.name || fiber.type?.name || fiber.type?.displayName || null;
+            if (name === "KibitzRoomStage") {
+                break;
+            }
+            fiber = fiber.return as typeof fiber | undefined;
+        }
+
+        if (!fiber) {
+            throw new Error("Missing KibitzRoomStage fiber");
+        }
+
+        let hook = fiber.memoizedState;
+        while (hook) {
+            const state = hook.memoizedState as
+                | {
+                      previousMove?: () => void;
+                      gotoLastMove?: () => void;
+                  }
+                | null
+                | undefined;
+            if (state && typeof state[requestedMethodName] === "function") {
+                state[requestedMethodName]?.();
+                return;
+            }
+            hook = hook.next as typeof hook | undefined;
+        }
+
+        throw new Error(`Missing main board controller method: ${requestedMethodName}`);
+    }, methodName);
+}
+
 async function captureKibitzLayout(
     page: Page,
     route: string,
@@ -768,18 +825,13 @@ ogsTest.describe("@Kibitz layout regressions", () => {
             const backToLiveButton = page.locator(
                 ".board-panel.main-board .main-board-return-live-action .kibitz-return-live-button",
             );
-            const previousMoveButton = page
-                .locator(".board-panel.main-board")
-                .getByRole("button", { name: /Previous move/ });
 
             const noLive = await measureMainTransportRow(page);
             await expect(mainRow).toHaveScreenshot("kibitz-main-transport-row-no-live.png", {
                 animations: "disabled",
             });
 
-            await expect(previousMoveButton).toBeVisible({ timeout: 15000 });
-            await previousMoveButton.click({ force: true });
-            await page.waitForTimeout(500);
+            await invokeMainBoardController(page, "previousMove");
             await expect(backToLiveButton).toBeVisible({ timeout: 15000 });
 
             const withLive = await measureMainTransportRow(page);

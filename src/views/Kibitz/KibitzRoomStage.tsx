@@ -301,6 +301,8 @@ export function KibitzRoomStage({
     const [secondaryMoveTreeContainer, setSecondaryMoveTreeContainer] =
         React.useState<Resizable | null>(null);
     const previousSecondaryControllerRef = React.useRef<GobanController | null>(null);
+    const suppressSelectedVariationLoadRef = React.useRef(false);
+    const suppressSelectedVariationLoadTimerRef = React.useRef<number | null>(null);
     const appliedDraftAnalyzeToolRef = React.useRef<{
         controller: GobanController | null;
         draftKey: string | null;
@@ -411,6 +413,11 @@ export function KibitzRoomStage({
             }
 
             applyingVariation = true;
+            if (suppressSelectedVariationLoadTimerRef.current) {
+                clearTimeout(suppressSelectedVariationLoadTimerRef.current);
+                suppressSelectedVariationLoadTimerRef.current = null;
+            }
+            suppressSelectedVariationLoadRef.current = true;
             const previousFocusPath = goban.engine.cur_move?.getMoveStringToThisPoint();
             const shouldFocusSelected =
                 lastVariationFocusRequestRef.current.variationId !== selectedVariation.id ||
@@ -480,10 +487,17 @@ export function KibitzRoomStage({
                 return selectedEndpoint != null;
             } finally {
                 applyingVariation = false;
+                suppressSelectedVariationLoadTimerRef.current = window.setTimeout(() => {
+                    suppressSelectedVariationLoadRef.current = false;
+                    suppressSelectedVariationLoadTimerRef.current = null;
+                }, 0);
             }
         };
 
         const onLoad = () => {
+            if (suppressSelectedVariationLoadRef.current) {
+                return;
+            }
             apply(true);
         };
         goban.on("load", onLoad);
@@ -494,6 +508,11 @@ export function KibitzRoomStage({
 
         return () => {
             goban.off("load", onLoad);
+            if (suppressSelectedVariationLoadTimerRef.current) {
+                clearTimeout(suppressSelectedVariationLoadTimerRef.current);
+                suppressSelectedVariationLoadTimerRef.current = null;
+            }
+            suppressSelectedVariationLoadRef.current = false;
         };
     }, [
         secondaryBoardController,

@@ -122,8 +122,9 @@ function mapGameChatLineToVariation(
     }
 
     return {
-        id: line.chat_id,
+        id: `game-chat:${roomId}:${gameId}:${line.channel ?? "game"}:${line.chat_id}`,
         room_id: roomId,
+        source: "game-chat",
         game_id: gameId,
         creator: {
             id: line.player_id,
@@ -142,6 +143,44 @@ function mapGameChatLineToVariation(
         analysis_pen_marks: analysisBody.pen_marks,
         analysis_line_tree: analysisBody.line_tree,
     };
+}
+
+function assignVisibleVariationColorIndexes(
+    previous: Record<string, number>,
+    visibleVariationIds: string[],
+): Record<string, number> {
+    const next: Record<string, number> = {};
+    const taken = new Set<number>();
+
+    for (const variationId of visibleVariationIds) {
+        const previousIndex = previous[variationId];
+        if (
+            typeof previousIndex === "number" &&
+            previousIndex >= 0 &&
+            previousIndex < MAX_VISIBLE_VARIATIONS &&
+            !taken.has(previousIndex)
+        ) {
+            next[variationId] = previousIndex;
+            taken.add(previousIndex);
+            continue;
+        }
+
+        const freeIndex = KIBITZ_VARIATION_COLORS.findIndex((_, index) => !taken.has(index));
+        const colorIndex = freeIndex >= 0 ? freeIndex : 0;
+        next[variationId] = colorIndex;
+        taken.add(colorIndex);
+    }
+
+    const previousKeys = Object.keys(previous);
+    const nextKeys = Object.keys(next);
+    if (
+        previousKeys.length === nextKeys.length &&
+        previousKeys.every((key) => next[key] === previous[key])
+    ) {
+        return previous;
+    }
+
+    return next;
 }
 
 export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElement {
@@ -435,17 +474,13 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 return;
             }
 
-            setVisibleVariationIds((previous) => {
-                if (previous.includes(variationId)) {
-                    return previous;
-                }
-
-                if (previous.length >= MAX_VISIBLE_VARIATIONS) {
-                    return previous;
-                }
-
-                return [...previous, variationId];
-            });
+            if (!visibleVariationIds.includes(variationId)) {
+                const nextVisibleVariationIds = [...visibleVariationIds, variationId];
+                setVisibleVariationIds(nextVisibleVariationIds);
+                setVariationColorIndexes((previous) =>
+                    assignVisibleVariationColorIndexes(previous, nextVisibleVariationIds),
+                );
+            }
             if (focusVariation) {
                 setVariationFocusRequestId((previous) => previous + 1);
             }
@@ -485,6 +520,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                     (id) => id !== variationId,
                 );
                 setVisibleVariationIds(nextVisibleVariationIds);
+                setVariationColorIndexes((previous) =>
+                    assignVisibleVariationColorIndexes(previous, nextVisibleVariationIds),
+                );
 
                 if (secondaryPane.variation_id === variationId) {
                     const hiddenVariation = displayedVariations.find(
@@ -513,6 +551,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
             const nextVisibleVariationIds = [...visibleVariationIds, variationId];
             setVisibleVariationIds(nextVisibleVariationIds);
+            setVariationColorIndexes((previous) =>
+                assignVisibleVariationColorIndexes(previous, nextVisibleVariationIds),
+            );
             setVariationFocusRequestId((previous) => previous + 1);
             controller.openVariation(variationId);
             if (isMobileLayout) {
@@ -653,40 +694,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     }, [displayedVariations]);
     React.useEffect(() => {
         setVariationColorIndexes((previous) => {
-            const next: Record<string, number> = {};
-            const taken = new Set<number>();
-
-            for (const variationId of visibleVariationIds) {
-                const previousIndex = previous[variationId];
-                if (
-                    typeof previousIndex === "number" &&
-                    previousIndex >= 0 &&
-                    previousIndex < MAX_VISIBLE_VARIATIONS &&
-                    !taken.has(previousIndex)
-                ) {
-                    next[variationId] = previousIndex;
-                    taken.add(previousIndex);
-                    continue;
-                }
-
-                const freeIndex = KIBITZ_VARIATION_COLORS.findIndex(
-                    (_, index) => !taken.has(index),
-                );
-                const colorIndex = freeIndex >= 0 ? freeIndex : 0;
-                next[variationId] = colorIndex;
-                taken.add(colorIndex);
-            }
-
-            const previousKeys = Object.keys(previous);
-            const nextKeys = Object.keys(next);
-            if (
-                previousKeys.length === nextKeys.length &&
-                previousKeys.every((key) => next[key] === previous[key])
-            ) {
-                return previous;
-            }
-
-            return next;
+            return assignVisibleVariationColorIndexes(previous, visibleVariationIds);
         });
     }, [visibleVariationIds]);
     const hasCompareTarget = Boolean(
