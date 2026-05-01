@@ -1,18 +1,16 @@
 .KibitzPresence {
     background: var(--card-background-color);
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
+    min-width: 0;
     max-height: 22rem;
     min-height: 12rem;
-
-    .KibitzPresence-body {
-        display: flex;
-        flex: 1;
-        flex-direction: column;
-        gap: 0.35rem;
-        min-height: 0;
-        padding: 0.4rem 0.75rem;
-    }
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+    gap: 0.35rem;
+    padding: 0.4rem 0.75rem;
 
     .presence-header {
         align-items: center;
@@ -109,6 +107,7 @@
         flex-direction: column;
         gap: 0.12rem;
         min-width: 0;
+        max-width: 100%;
     }
 
     .presence-user {
@@ -118,8 +117,11 @@
         gap: 0.35rem;
         height: 1.4rem;
         min-height: 1.4rem;
+        min-width: 0;
         line-height: 1;
         padding: 0 0.05rem;
+        width: 100%;
+        max-width: 100%;
 
         > .presence-avatar {
             align-self: center;
@@ -138,6 +140,7 @@
             display: inline-flex;
             font-size: 0.8rem;
             line-height: 1.05;
+            min-width: 0;
         }
 
         .Player-username,
@@ -158,6 +161,8 @@
         color: var(--text-color-faded);
         font-size: 0.78rem;
         line-height: 1.2;
+        min-width: 0;
+        max-width: 100%;
     }
 }
 

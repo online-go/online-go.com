@@ -111,77 +111,68 @@ export function KibitzPresence({ room, users }: KibitzPresenceProps): React.Reac
 
     return (
         <div className="KibitzPresence">
-            <div className="KibitzPresence-body">
-                <div className="presence-header">
-                    <div className="presence-users-heading">
-                        {pgettext(
-                            "Heading for the current room user list in kibitz",
-                            "In the room",
+            <div className="presence-header">
+                <div className="presence-users-heading">
+                    {pgettext("Heading for the current room user list in kibitz", "In the room")}
+                </div>
+                <div className={"presence-stat" + (viewerCountFlash ? " viewer-count-flash" : "")}>
+                    <span className="presence-stat-icon" aria-hidden="true">
+                        <svg viewBox="0 0 16 16" focusable="false">
+                            <path
+                                d="M8 8a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm0 1c-2.7 0-5 1.4-5 3.2V14h10v-1.8C13 10.4 10.7 9 8 9Z"
+                                fill="currentColor"
+                            />
+                        </svg>
+                    </span>
+                    <span className="presence-stat-text">
+                        {interpolate(
+                            pgettext(
+                                "Viewer count summary inside a kibitz room",
+                                "{{count}} watching",
+                            ),
+                            { count: viewerCount },
                         )}
-                    </div>
-                    <div
-                        className={
-                            "presence-stat" + (viewerCountFlash ? " viewer-count-flash" : "")
-                        }
-                    >
-                        <span className="presence-stat-icon" aria-hidden="true">
-                            <svg viewBox="0 0 16 16" focusable="false">
-                                <path
-                                    d="M8 8a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm0 1c-2.7 0-5 1.4-5 3.2V14h10v-1.8C13 10.4 10.7 9 8 9Z"
-                                    fill="currentColor"
-                                />
-                            </svg>
-                        </span>
-                        <span className="presence-stat-text">
-                            {interpolate(
-                                pgettext(
-                                    "Viewer count summary inside a kibitz room",
-                                    "{{count}} watching",
-                                ),
-                                { count: viewerCount },
-                            )}
+                    </span>
+                </div>
+            </div>
+            {ownerUser ? (
+                <div className="presence-owner">
+                    <div className="presence-user">
+                        <KibitzUserAvatar
+                            user={ownerUser}
+                            size={16}
+                            className="presence-avatar inline"
+                            iconClassName="presence-avatar-icon"
+                        />
+                        <Player user={ownerUser} flag rank noextracontrols />
+                        <span className="presence-owner-tag">
+                            {pgettext("Owner tag shown after the room owner's name", "owner")}
                         </span>
                     </div>
                 </div>
-                {ownerUser ? (
-                    <div className="presence-owner">
-                        <div className="presence-user">
+            ) : null}
+            {regularUsers.length > 0 ? (
+                <div className="presence-users">
+                    {regularUsers.map((user) => (
+                        <div key={user.id} className="presence-user">
                             <KibitzUserAvatar
-                                user={ownerUser}
+                                user={user}
                                 size={16}
                                 className="presence-avatar inline"
                                 iconClassName="presence-avatar-icon"
                             />
-                            <Player user={ownerUser} flag rank noextracontrols />
-                            <span className="presence-owner-tag">
-                                {pgettext("Owner tag shown after the room owner's name", "owner")}
-                            </span>
+                            <Player user={user} flag rank noextracontrols />
                         </div>
-                    </div>
-                ) : null}
-                {regularUsers.length > 0 ? (
-                    <div className="presence-users">
-                        {regularUsers.map((user) => (
-                            <div key={user.id} className="presence-user">
-                                <KibitzUserAvatar
-                                    user={user}
-                                    size={16}
-                                    className="presence-avatar inline"
-                                    iconClassName="presence-avatar-icon"
-                                />
-                                <Player user={user} flag rank noextracontrols />
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="presence-empty">
-                        {pgettext(
-                            "Empty state for the room presence roster in kibitz",
-                            "No one is in the room yet.",
-                        )}
-                    </div>
-                )}
-            </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="presence-empty">
+                    {pgettext(
+                        "Empty state for the room presence roster in kibitz",
+                        "No one is in the room yet.",
+                    )}
+                </div>
+            )}
         </div>
     );
 }

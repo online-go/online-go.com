@@ -802,6 +802,31 @@ async function measureMainCompareBoardLayout(
     }, options);
 }
 
+async function measureKibitzLeftRailWidths(page: Page) {
+    return page.evaluate(() => {
+        function rect(selector: string) {
+            const element = document.querySelector(selector);
+            if (!element) {
+                return null;
+            }
+
+            return element.getBoundingClientRect().width;
+        }
+
+        return {
+            leftRail: rect(".Kibitz-left-rail"),
+            roomList: rect(".KibitzRoomList"),
+            roomListItems: Array.from(document.querySelectorAll(".KibitzRoomList-item")).map(
+                (element) => element.getBoundingClientRect().width,
+            ),
+            presence: rect(".KibitzPresence"),
+            presenceUsers: Array.from(
+                document.querySelectorAll(".KibitzPresence .presence-user"),
+            ).map((element) => element.getBoundingClientRect().width),
+        };
+    });
+}
+
 ogsTest.describe("@Kibitz layout regressions", () => {
     ogsTest("left compare board wrappers stay tight to the rendered goban", async ({ page }) => {
         await openKibitzEqualCompareMode(page, "/kibitz/user-fea5dced");
@@ -845,6 +870,37 @@ ogsTest.describe("@Kibitz layout regressions", () => {
             page.locator(".board-panel.secondary-board .board-actions .create-variation-button"),
         ).toBeVisible();
     });
+
+    ogsTest(
+        "left rail width keeps Kibitz room and presence lists inside the rail",
+        async ({ page }) => {
+            await page.setViewportSize({ width: 1920, height: 1080 });
+            await load(page, "/kibitz/user-fea5dced");
+            await expect(page.locator(".Kibitz-left-rail")).toBeVisible({ timeout: 15000 });
+            await expect(page.locator(".KibitzRoomList")).toBeVisible({ timeout: 15000 });
+            await expect(page.locator(".KibitzPresence")).toBeVisible({ timeout: 15000 });
+            await waitForStableRect(page, ".Kibitz-left-rail");
+
+            const widths = await measureKibitzLeftRailWidths(page);
+
+            expect(widths.leftRail).not.toBeNull();
+            expect(widths.roomList).not.toBeNull();
+            expect(widths.presence).not.toBeNull();
+
+            const maxAllowedWidth = (widths.leftRail ?? 0) + 1;
+
+            expect(widths.roomList!).toBeLessThanOrEqual(maxAllowedWidth);
+            expect(widths.presence!).toBeLessThanOrEqual(maxAllowedWidth);
+
+            for (const roomItemWidth of widths.roomListItems) {
+                expect(roomItemWidth).toBeLessThanOrEqual(maxAllowedWidth);
+            }
+
+            for (const presenceUserWidth of widths.presenceUsers) {
+                expect(presenceUserWidth).toBeLessThanOrEqual(maxAllowedWidth);
+            }
+        },
+    );
 
     ogsTest(
         "@Visual main transport row keeps symmetry when Back to live appears",

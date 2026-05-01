@@ -5,13 +5,14 @@
     height: calc(100dvh - var(--below-navbar));
     overflow: hidden;
     padding: 0;
+    --kibitz-left-rail-width: clamp(9rem, 19vw, 15rem);
     --mobile-room-bar-bg: #fff;
 
     .Kibitz-layout {
         display: grid;
         flex: 1;
         gap: 0;
-        grid-template-columns: minmax(10.5rem, 12.75rem) minmax(0, 1fr);
+        grid-template-columns: var(--kibitz-left-rail-width) minmax(0, 1fr);
         align-items: stretch;
         min-width: 0;
         min-height: 0;
@@ -20,7 +21,6 @@
     .Kibitz-left-rail {
         display: grid;
         grid-template-rows: minmax(0, 1fr) auto;
-        max-width: 12.75rem;
         min-width: 0;
         min-height: 0;
         overflow: hidden;
