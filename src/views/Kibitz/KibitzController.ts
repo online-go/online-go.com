@@ -101,6 +101,17 @@ function mapBackendRoomToSummary(
     };
 }
 
+function sortRoomSummariesByPopulation(rooms: KibitzRoomSummary[]): KibitzRoomSummary[] {
+    return [...rooms].sort((roomA, roomB) => {
+        const viewerDiff = roomB.viewer_count - roomA.viewer_count;
+        if (viewerDiff !== 0) {
+            return viewerDiff;
+        }
+
+        return roomA.id.localeCompare(roomB.id);
+    });
+}
+
 function mapBackendRoomToFull(backend: BackendKibitzRoom): KibitzRoom {
     return {
         ...mapBackendRoomToSummary(backend),
@@ -534,7 +545,9 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
 
         try {
             const payload = (await get("kibitz/rooms")) as BackendKibitzRoom[];
-            const rooms = (payload ?? []).map((r) => mapBackendRoomToSummary(r));
+            const rooms = sortRoomSummariesByPopulation(
+                (payload ?? []).map((r) => mapBackendRoomToSummary(r)),
+            );
             this.setRooms(rooms);
             const roomIds = new Set(rooms.map((room) => room.id));
             for (const roomId of Array.from(this._room_card_game_requests.keys())) {
@@ -631,7 +644,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             return;
         }
         const summary = mapBackendRoomToSummary(incoming);
-        this.setRooms([summary, ...this._rooms]);
+        this.setRooms([...this._rooms, summary]);
         if (incoming.current_game_id) {
             void this.hydrateRoomCardGame(incoming.id, incoming.current_game_id);
         }
