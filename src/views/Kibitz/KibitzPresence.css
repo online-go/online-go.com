@@ -11,7 +11,7 @@
     max-width: 100%;
     gap: 0.35rem;
     padding: 0.4rem 0.75rem;
-    box-shadow: 0 0rem 1rem rgb(0 0 0 / 0.40);
+    box-shadow: 0 0rem 1rem rgb(0 0 0 / 0.4);
 
     .presence-summary {
         color: var(--text-color-faded);
@@ -127,6 +127,12 @@
         gap: 0.15rem;
         min-height: 0;
         overflow-y: auto;
+        scrollbar-gutter: stable;
+        direction: rtl;
+    }
+
+    .presence-users > .presence-user {
+        direction: ltr;
     }
 
     .presence-empty {
@@ -141,5 +147,6 @@
 @media (min-width: 1001px) {
     [data-theme="light"] .KibitzPresence {
         background: var(--bg);
+        box-shadow: 0 0rem 1rem rgb(110 110 110 / 0.2);
     }
 }

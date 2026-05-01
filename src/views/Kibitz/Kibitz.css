@@ -53,7 +53,7 @@
     }
 
     .Kibitz-sidebar.has-stream-spacer {
-        grid-template-rows: auto minmax(0, 1fr) 20px minmax(9rem, 0.3fr);
+        grid-template-rows: auto minmax(0, 1fr) 12px minmax(9rem, 0.3fr);
     }
 
     .Kibitz-sidebar.no-active-proposal {
@@ -61,7 +61,7 @@
     }
 
     .Kibitz-sidebar.has-stream-spacer.no-active-proposal {
-        grid-template-rows: 0 minmax(0, 1fr) 20px minmax(10rem, 0.4fr);
+        grid-template-rows: 0 minmax(0, 1fr) 12px minmax(10rem, 0.4fr);
     }
 
     .Kibitz-sidebar-proposal-slot {
@@ -76,7 +76,7 @@
 
     .Kibitz-sidebar-stream-spacer {
         background: var(--card-background-color);
-        min-height: 20px;
+        min-height: 12px;
         overflow: hidden;
     }
 
@@ -658,6 +658,7 @@
 
     [data-theme="light"] .Kibitz-footer-panels {
         background: var(--bg);
+        box-shadow: 0 0rem 1rem rgb(110 110 110 / 0.2);
     }
 
     [data-theme="light"] .Kibitz-sidebar-stream-spacer {
