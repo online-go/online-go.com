@@ -325,6 +325,12 @@
         text-align: center;
     }
 
+    .comment-post-error {
+        padding: 0.4rem 0.25rem;
+        font-size: 0.8rem;
+        color: var(--reject);
+    }
+
     /* ---- Changes (audit log) takeover ---- */
 
     .audit-container {

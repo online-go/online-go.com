@@ -45,7 +45,7 @@ export function JosekiActionsPanel(props: JosekiActionsPanelProps): React.ReactE
             <button className="JosekiActionsPanel-item" onClick={wrap(props.onOpenComments)}>
                 <i className="fa fa-comment-o" />
                 <span>{_("Comments")}</span>
-                {!!props.comment_count && props.comment_count > 0 && (
+                {!!props.comment_count && (
                     <span className="JosekiActionsPanel-count">{props.comment_count}</span>
                 )}
             </button>

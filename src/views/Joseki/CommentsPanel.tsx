@@ -83,12 +83,15 @@ export function CommentsPanel(props: CommentsPanelProps): React.ReactElement {
         };
     }, [props.position_id, extractCommentary]);
 
+    const [post_error, set_post_error] = React.useState<string | null>(null);
+
     const onCommentChange = React.useCallback(
         (e: React.ChangeEvent<HTMLTextAreaElement>) => {
             // Newline submits — no Send button to keep the narrow column tidy.
             if (/\r|\n/.exec(e.target.value) && e.target.value.length > 1) {
                 const comment_url = server_url + "comment?id=" + props.position_id;
                 const comment = next_comment;
+                set_post_error(null);
                 post(comment_url, { comment })
                     .then((body) => {
                         extractCommentary(body);
@@ -98,10 +101,16 @@ export function CommentsPanel(props: CommentsPanelProps): React.ReactElement {
                         const proxy = chat_manager.join("global-joseki");
                         proxy.channel.send(`/me said at joseki ${props.position_id}: "${comment}"`);
                         proxy.part();
+                        // Only clear after a confirmed write — keeps the
+                        // user's text intact if the server rejects the post.
+                        set_next_comment("");
                     })
-                    .catch((r) => console.log("Comment POST failed:", r));
-                set_next_comment("");
+                    .catch((r) => {
+                        console.log("Comment POST failed:", r);
+                        set_post_error(_("Failed to post comment, please try again."));
+                    });
             } else if (e.target.value.length < 200 && props.can_comment) {
+                set_post_error(null);
                 set_next_comment(e.target.value);
             }
         },
@@ -130,6 +139,7 @@ export function CommentsPanel(props: CommentsPanelProps): React.ReactElement {
                     </div>
                 ))}
             </div>
+            {post_error && <div className="comment-post-error">{post_error}</div>}
             {props.can_comment && (
                 <textarea
                     className="comment-input"
