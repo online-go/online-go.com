@@ -11,6 +11,7 @@
     max-width: 100%;
     gap: 0.35rem;
     padding: 0.4rem 0.75rem;
+    box-shadow: 0 0rem 1rem rgb(0 0 0 / 0.40);
 
     .presence-summary {
         color: var(--text-color-faded);

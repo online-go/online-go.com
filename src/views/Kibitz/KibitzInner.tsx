@@ -1460,7 +1460,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                             />
                             <div
                                 className={
-                                    "Kibitz-sidebar" +
+                                    "Kibitz-sidebar has-stream-spacer" +
                                     (activeProposal
                                         ? " has-active-proposal"
                                         : " no-active-proposal")
@@ -1484,6 +1484,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                         compact={Boolean(activeProposal)}
                                     />
                                 </GobanControllerContext.Provider>
+                                <div className="Kibitz-sidebar-stream-spacer" aria-hidden="true" />
                                 <div className="Kibitz-footer-panels">{variationPanels}</div>
                             </div>
                         </div>
