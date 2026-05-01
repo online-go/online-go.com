@@ -59,11 +59,28 @@ export function CommentsPanel(props: CommentsPanelProps): React.ReactElement {
         if (!props.position_id) {
             return;
         }
+        let cancelled = false;
         set_throb(true);
         get(server_url + "commentary?id=" + props.position_id)
-            .then((body) => extractCommentary(body))
-            .catch((r) => console.log("Comments GET failed:", r))
-            .finally(() => set_throb(false));
+            .then((body) => {
+                if (cancelled) {
+                    return;
+                }
+                extractCommentary(body);
+            })
+            .catch((r) => {
+                if (!cancelled) {
+                    console.log("Comments GET failed:", r);
+                }
+            })
+            .finally(() => {
+                if (!cancelled) {
+                    set_throb(false);
+                }
+            });
+        return () => {
+            cancelled = true;
+        };
     }, [props.position_id, extractCommentary]);
 
     const onCommentChange = React.useCallback(
@@ -75,8 +92,12 @@ export function CommentsPanel(props: CommentsPanelProps): React.ReactElement {
                 post(comment_url, { comment })
                     .then((body) => {
                         extractCommentary(body);
+                        // chat_manager.join() creates a fresh ChatChannelProxy
+                        // every call; .part() releases its listeners so we
+                        // don't accumulate proxies for every comment posted.
                         const proxy = chat_manager.join("global-joseki");
                         proxy.channel.send(`/me said at joseki ${props.position_id}: "${comment}"`);
+                        proxy.part();
                     })
                     .catch((r) => console.log("Comment POST failed:", r));
                 set_next_comment("");

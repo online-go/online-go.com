@@ -40,11 +40,28 @@ export function AuditLogPanel(props: AuditLogPanelProps): React.ReactElement {
         if (!props.position_id) {
             return;
         }
+        let cancelled = false;
         set_throb(true);
         get(server_url + "audits?id=" + props.position_id)
-            .then((body) => set_audit_log(body))
-            .catch((r) => console.log("Audits GET failed:", r))
-            .finally(() => set_throb(false));
+            .then((body) => {
+                if (cancelled) {
+                    return;
+                }
+                set_audit_log(body);
+            })
+            .catch((r) => {
+                if (!cancelled) {
+                    console.log("Audits GET failed:", r);
+                }
+            })
+            .finally(() => {
+                if (!cancelled) {
+                    set_throb(false);
+                }
+            });
+        return () => {
+            cancelled = true;
+        };
     }, [props.position_id]);
 
     return (

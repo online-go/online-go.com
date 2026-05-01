@@ -1042,9 +1042,13 @@ export function Joseki(): React.ReactElement {
         if (slider_target === null) {
             return;
         }
-        if (throb || back_stepping.current) {
+        if (throb) {
             return;
         }
+        // back_stepping.current is intentionally not checked here: it's a
+        // ref so a transition true→false can't retrigger the effect, and
+        // backOneMove already guards against re-entry. Relying on the throb
+        // dep's natural cycle is enough.
         const goban = goban_ref.current;
         if (!goban) {
             return;
