@@ -28,18 +28,23 @@ import * as preferences from "@/lib/preferences";
 import { _, interpolate, pgettext } from "@/lib/translate";
 import { get, put, post } from "@/lib/requests";
 import { KBShortcut } from "@/components/KBShortcut";
-import { GobanRenderer, GobanRendererConfig, JGOFMove, createGoban } from "goban";
+import { GobanRenderer, GobanRendererConfig, JGOFMove } from "goban";
 import { Player } from "@/components/Player";
 import { JosekiAdmin } from "@/components/JosekiAdmin";
-import { JosekiFilter } from "@/components/JosekiVariationFilter";
+import { JosekiFilter, JosekiVariationFilter } from "@/components/JosekiVariationFilter";
 import { OJEJosekiTag } from "@/components/JosekiTagSelector";
 import { Throbber } from "@/components/Throbber";
 import { IdType } from "@/lib/types";
-import { GobanContainer } from "@/components/GobanContainer";
+import { GobanController } from "@/lib/GobanController";
+import { GobanView, GobanViewRef } from "@/components/GobanView";
 
 import { ExplorePane } from "./ExplorePane";
 import { PlayPane } from "./PlayPane";
 import { EditPane } from "./EditPane";
+import { CommentsPanel } from "./CommentsPanel";
+import { AuditLogPanel } from "./AuditLogPanel";
+import { JosekiActionsPanel } from "./JosekiActionsPanel";
+import { popover, PopOver } from "@/lib/popover";
 import {
     server_url,
     prefetch_url,
@@ -106,7 +111,6 @@ export function Joseki(): React.ReactElement {
     const { pos } = useParams<{ pos: string }>();
     const location = useLocation();
 
-    // ---- State ----
     const [move_string, set_move_string] = React.useState("");
     const [current_node_id, set_current_node_id] = React.useState<string | undefined>(
         pos || "root",
@@ -121,9 +125,13 @@ export function Joseki(): React.ReactElement {
     const [pass_available, set_pass_available] = React.useState<boolean | string>(false);
     const [contributor_id, set_contributor_id] = React.useState(-1);
     const [child_count, set_child_count] = React.useState(0);
-    const goban_container_left_padding = 0;
 
     const [throb, set_throb] = React.useState(false);
+
+    // Walking target for the move-number slider. The advance effect steps
+    // toward this once per idle cycle since each navigation step fires a
+    // server fetch and they can't be queued concurrently.
+    const [slider_target, set_slider_target] = React.useState<number | null>(null);
 
     const [mode, set_mode] = React.useState<PageMode>(PageMode.Explore);
     const [user_can_edit, set_user_can_edit] = React.useState(false);
@@ -132,10 +140,6 @@ export function Joseki(): React.ReactElement {
 
     const [move_type_sequence, set_move_type_sequence] = React.useState<MoveTypeWithComment[]>([]);
     const [joseki_errors, set_joseki_errors] = React.useState(0);
-    const [josekis_played, set_josekis_played] = React.useState<number | undefined>();
-    const [josekis_completed, set_josekis_completed] = React.useState<number | undefined>();
-    const [joseki_successes, set_joseki_successes] = React.useState<number | undefined>();
-    const [joseki_best_attempt, set_joseki_best_attempt] = React.useState<number | undefined>();
 
     const [joseki_source, set_joseki_source] = React.useState<
         { url: string; description: string; id?: IdType } | undefined
@@ -156,23 +160,27 @@ export function Joseki(): React.ReactElement {
 
     const [current_comment_count, set_current_comment_count] = React.useState<number | undefined>();
 
-    // ---- Refs for mutable instance variables ----
+    const [share_confirmed, set_share_confirmed] = React.useState(false);
+
+    const gobanViewRef = React.useRef<GobanViewRef>(null);
+    const moreActionsPopoverRef = React.useRef<PopOver | null>(null);
     const goban_div = React.useMemo(() => {
         const div = document.createElement("div");
         div.className = "Goban";
         return div;
     }, []);
     const goban_opts_ref = React.useRef<GobanRendererConfig>({} as GobanRendererConfig);
+    const controller_ref = React.useRef<GobanController | null>(null);
     const goban_ref = React.useRef<GobanRenderer | null>(null);
 
-    // Function ref for goban callbacks -- declared early so the eager
-    // goban init below can reference it. Updated every render (see below)
-    // so the goban "update" handler always calls the latest onBoardUpdate.
+    // Updated every render so the goban "update" handler always calls the
+    // latest onBoardUpdate (which closes over up-to-date state).
     const on_board_update_ref = React.useRef<() => void>(() => {});
 
-    // Eagerly create the initial goban on first render (matches class constructor
-    // behavior) so GobanContainer always has a non-null goban to render.
-    if (goban_ref.current === null) {
+    // Eagerly create on first render so GobanView always has a non-null
+    // controller. Sounds disabled to match the legacy joseki view, which
+    // used createGoban directly and never bound audio events.
+    if (controller_ref.current === null) {
         const opts: GobanRendererConfig = {
             board_div: goban_div,
             interactive: true,
@@ -183,7 +191,8 @@ export function Joseki(): React.ReactElement {
             stone_font_scale: preferences.get("stone-font-scale"),
         };
         goban_opts_ref.current = opts;
-        goban_ref.current = createGoban(opts);
+        controller_ref.current = new GobanController({ ...opts, enable_sounds: false });
+        goban_ref.current = controller_ref.current.goban;
         goban_ref.current.setMode("puzzle");
         goban_ref.current.on("update", () => on_board_update_ref.current());
         (window as unknown as Record<string, unknown>).global_goban = goban_ref.current;
@@ -214,10 +223,9 @@ export function Joseki(): React.ReactElement {
 
     const last_click = React.useRef<number | undefined>(undefined);
 
-    // ---- Ref to hold latest state for goban callbacks ----
-    // Async fetch callbacks (.then handlers) and the goban "update" event
-    // capture closures at registration time. This ref is updated every
-    // render so those handlers always read current state values.
+    // Async fetch callbacks and the goban "update" handler capture closures
+    // at registration time; this ref is refreshed every render so they
+    // always read current state values.
     const S = React.useRef({
         move_string,
         mode,
@@ -242,8 +250,6 @@ export function Joseki(): React.ReactElement {
         variation_filter,
         throb,
     };
-
-    // ---- Core functions ----
 
     function renderCurrentJosekiPosition() {
         const goban = goban_ref.current;
@@ -352,30 +358,14 @@ export function Joseki(): React.ReactElement {
             });
     }
 
-    function extractPlayResults(results_dto: {
-        josekis_played: number;
-        josekis_completed: number;
-        error_count: number;
-        successes: number;
-    }) {
-        set_josekis_played(results_dto.josekis_played);
-        set_josekis_completed(results_dto.josekis_completed);
-        set_joseki_best_attempt(results_dto.error_count);
-        set_joseki_successes(results_dto.successes);
-    }
-
     function updatePlayerJosekiRecord(node_id: string) {
         if (!data.get("user").anonymous) {
             put(server_url + "playrecord", {
                 position_id: node_id,
                 errors: S.current.joseki_errors,
-            })
-                .then((body) => {
-                    extractPlayResults(body);
-                })
-                .catch((r) => {
-                    console.log("Play record PUT failed:", r);
-                });
+            }).catch((r) => {
+                console.log("Play record PUT failed:", r);
+            });
         }
     }
 
@@ -469,11 +459,15 @@ export function Joseki(): React.ReactElement {
             ? show_comments_requested.current
             : false;
 
-        if (
-            S.current.mode === PageMode.Explore &&
-            cached_positions_ref.current.hasOwnProperty(node_id)
-        ) {
-            processNewMoves(node_id, cached_positions_ref.current[node_id]);
+        // The prefetch endpoint returns a lighter record without `play`, so
+        // when we need it (load_sequence_to_board) skip the cache and refetch
+        // — otherwise loadSequenceToBoard feeds undefined into substr.
+        const cached = cached_positions_ref.current[node_id];
+        const cache_usable =
+            cached !== undefined &&
+            (!load_sequence_to_board.current || typeof cached.play === "string");
+        if (S.current.mode === PageMode.Explore && cache_usable) {
+            processNewMoves(node_id, cached);
             prefetchFor(node_id, filter);
         } else {
             get(position_url(node_id, filter, S.current.mode))
@@ -660,7 +654,6 @@ export function Joseki(): React.ReactElement {
         }
     }
 
-    // The onBoardUpdate function - defined here and assigned to the ref each render
     function onBoardUpdate() {
         last_click.current = new Date().valueOf();
         const goban = goban_ref.current;
@@ -686,7 +679,13 @@ export function Joseki(): React.ReactElement {
             the_move = undefined;
         }
 
-        if (ms !== S.current.move_string) {
+        // The ms-vs-S.current guard skips redundant updates from spurious
+        // goban events, but when load_sequence_to_board fires this handler
+        // synchronously inside the navigation that just queued
+        // set_move_string(""), S.current still holds the pre-nav value and
+        // often matches the just-loaded ms — force the update through so
+        // the queued "" doesn't win the batch and leave the pane hidden.
+        if (ms !== S.current.move_string || load_sequence_to_board.current) {
             goban.disableStonePlacement();
             set_move_string(ms);
             processPlacement(the_move, ms);
@@ -695,21 +694,17 @@ export function Joseki(): React.ReactElement {
         }
     }
 
-    // Keep the ref pointing to the latest version
     on_board_update_ref.current = onBoardUpdate;
 
-    // ---- Goban initialization ----
     function initializeGoban(initial_position?: string) {
-        // Skip destroy/recreate if the goban already exists and we have no
-        // initial_position to load and we just completed the first mount
-        // (detected by checking last_click). This avoids a redundant teardown
-        // of the eagerly-created goban on first mount.
-        if (goban_ref.current != null && !initial_position && !last_click.current) {
+        // Skip the redundant destroy/recreate of the eagerly-created
+        // controller on first mount (no last_click yet, no initial_position).
+        if (controller_ref.current != null && !initial_position && !last_click.current) {
             return;
         }
 
-        if (goban_ref.current != null) {
-            goban_ref.current.destroy();
+        if (controller_ref.current != null) {
+            controller_ref.current.destroy();
         }
 
         const opts: GobanRendererConfig = {
@@ -726,7 +721,8 @@ export function Joseki(): React.ReactElement {
             (opts as Record<string, unknown>)["moves"] = initial_position;
         }
         goban_opts_ref.current = opts;
-        goban_ref.current = createGoban(opts);
+        controller_ref.current = new GobanController({ ...opts, enable_sounds: false });
+        goban_ref.current = controller_ref.current.goban;
         goban_ref.current.setMode("puzzle");
         goban_ref.current.on("update", () => on_board_update_ref.current());
         (window as unknown as Record<string, unknown>).global_goban = goban_ref.current;
@@ -744,11 +740,8 @@ export function Joseki(): React.ReactElement {
         set_current_move_category("");
         set_move_type_sequence([]);
         set_joseki_errors(0);
-        set_joseki_successes(undefined);
-        set_joseki_best_attempt(undefined);
 
         initializeGoban();
-        // Ask the server for the moves from this position
         fetchNextFilteredMovesFor(target_position, S.current.variation_filter);
     }
 
@@ -757,41 +750,37 @@ export function Joseki(): React.ReactElement {
         initializeBoard("root");
     }
 
-    // ---- Mode setters ----
-    function setAdminMode() {
-        resetBoard();
-        set_mode(PageMode.Admin);
-    }
-
     function setExploreMode() {
+        gobanViewRef.current?.setActiveTakeover(null);
         set_mode(PageMode.Explore);
     }
 
-    function setPlayMode() {
-        set_mode(PageMode.Play);
-        set_move_type_sequence([]);
-        set_joseki_errors(0);
-        set_joseki_successes(undefined);
-        set_joseki_best_attempt(undefined);
-        set_count_details_open(false);
-        played_mistake.current = false;
-        computer_turn.current = false;
-
-        // Fetch play results
-        get(server_url + "playrecord")
-            .then((body) => {
-                extractPlayResults(body);
-            })
-            .catch((r) => {
-                console.log("Play results GET failed:", r);
-            });
+    function handlePlayToggle(active: boolean) {
+        if (active) {
+            set_mode(PageMode.Play);
+            set_move_type_sequence([]);
+            set_joseki_errors(0);
+            set_count_details_open(false);
+            played_mistake.current = false;
+            computer_turn.current = false;
+        } else {
+            set_mode(PageMode.Explore);
+        }
     }
 
-    function setEditMode() {
-        set_mode(PageMode.Edit);
+    function handleEditToggle(active: boolean) {
+        set_mode(active ? PageMode.Edit : PageMode.Explore);
     }
 
-    // ---- Navigation ----
+    function handleAdminToggle(active: boolean) {
+        if (active) {
+            resetBoard();
+            set_mode(PageMode.Admin);
+        } else {
+            set_mode(PageMode.Explore);
+        }
+    }
+
     function backOneMove() {
         if (!back_stepping.current && !S.current.throb) {
             back_stepping.current = true;
@@ -859,7 +848,6 @@ export function Joseki(): React.ReactElement {
         on_board_update_ref.current();
     }
 
-    // ---- Filter and misc ----
     function updateVariationFilter(filter: JosekiFilter) {
         set_variation_filter_state(filter);
         data.set("oje-variation-filter", filter);
@@ -896,7 +884,22 @@ export function Joseki(): React.ReactElement {
         trace_index.current = -1;
     }
 
-    // ---- Save position ----
+    function copyPositionLink() {
+        if (!current_node_id || current_node_id === undefined) {
+            return;
+        }
+        const url = `${window.location.origin}/joseki/${current_node_id}`;
+        void navigator.clipboard
+            .writeText(url)
+            .then(() => {
+                set_share_confirmed(true);
+                setTimeout(() => set_share_confirmed(false), 1500);
+            })
+            .catch((e) => {
+                console.log("Clipboard write failed:", e);
+            });
+    }
+
     function saveNewPositionInfo(
         move_type: string,
         vl: string,
@@ -953,18 +956,16 @@ export function Joseki(): React.ReactElement {
         }
     }
 
-    // ---- Effects ----
-
-    // Destroy the goban when the component unmounts to avoid leaking the
-    // renderer, its canvas element, and the 'update' event listener.
     React.useEffect(() => {
         return () => {
-            goban_ref.current?.destroy();
+            controller_ref.current?.destroy();
+            controller_ref.current = null;
             goban_ref.current = null;
+            moreActionsPopoverRef.current?.close();
+            moreActionsPopoverRef.current = null;
         };
     }, []);
 
-    // One-time setup: fetch user permissions and tags (these don't change per-position)
     React.useEffect(() => {
         get(server_url + "user-permissions")
             .then((body) => {
@@ -1003,7 +1004,6 @@ export function Joseki(): React.ReactElement {
             });
     }, []);
 
-    // Board initialization - runs on mount and re-runs when location changes
     React.useEffect(() => {
         window.document.title = _("Joseki");
 
@@ -1021,9 +1021,51 @@ export function Joseki(): React.ReactElement {
         initializeBoard(target_position);
     }, [location, pos]);
 
-    // ---- Render helpers ----
-    const tenuki_type =
-        pass_available && mode !== PageMode.Play && move_string !== "" ? pass_available : "";
+    React.useEffect(() => {
+        if (
+            show_comments_requested.current &&
+            gobanViewRef.current &&
+            current_node_id &&
+            current_node_id !== "root"
+        ) {
+            gobanViewRef.current.setActiveTakeover("joseki-comments");
+            show_comments_requested.current = false;
+        }
+    }, [current_node_id]);
+
+    // Walk toward the slider target one step per idle cycle, since each
+    // step fires a server fetch that can't be queued concurrently. If a
+    // step call no-ops (move number didn't change and no fetch queued),
+    // clear the target so the slider doesn't stick on an unreachable
+    // move number.
+    React.useEffect(() => {
+        if (slider_target === null) {
+            return;
+        }
+        if (throb || back_stepping.current) {
+            return;
+        }
+        const goban = goban_ref.current;
+        if (!goban) {
+            return;
+        }
+        const current = goban.engine.cur_move.move_number;
+        if (current === slider_target) {
+            set_slider_target(null);
+            return;
+        }
+        if (current < slider_target) {
+            forwardOneMove();
+        } else {
+            backOneMove();
+        }
+        const after = goban.engine.cur_move.move_number;
+        if (after === current && !back_stepping.current) {
+            set_slider_target(null);
+        }
+    }, [slider_target, throb, move_string]);
+
+    const tenuki_active = !!pass_available && mode !== PageMode.Play && move_string !== "";
 
     const count_details = count_details_open ? (
         <React.Fragment>
@@ -1050,49 +1092,399 @@ export function Joseki(): React.ReactElement {
                   </div>
               ));
 
-    function renderModeControl() {
+    // Reuses .MoveNumberSlider classes for visual parity with the standard
+    // bar but is wired to joseki's own server-driven nav (back_stepping flag
+    // + per-step fetch) rather than the controller's previousMove/nextMove.
+    function renderMoveControls() {
+        const goban = goban_ref.current;
+        const move_number = goban?.engine.cur_move.move_number ?? 0;
+        const knob_max = Math.max(move_number, move_trace.current.length - 1, 1);
+        const at_start = move_number === 0;
+        const can_back = mode !== PageMode.Play || played_mistake.current;
+        const can_forward =
+            mode !== PageMode.Play &&
+            ((move_trace.current.length > 1 &&
+                trace_index.current < move_trace.current.length - 1) ||
+                next_moves_ref.current.length > 0);
+
         return (
-            <div className="mode-control btn-group">
+            <div
+                className={
+                    "Joseki-move-bar MoveNumberSlider" +
+                    (played_mistake.current ? " highlight" : "")
+                }
+            >
                 <button
-                    className={"btn s  " + (mode === PageMode.Explore ? "primary" : "")}
-                    onClick={setExploreMode}
+                    className="MoveNumberSlider-button"
+                    onClick={resetBoard}
+                    disabled={at_start}
+                    title={pgettext("Move navigation: reset to root", "Reset to root")}
                 >
-                    {_("Explore")}
+                    <i className="fa fa-fast-backward" />
                 </button>
                 <button
-                    className={"btn s  " + (mode === PageMode.Play ? "primary" : "")}
-                    onClick={setPlayMode}
+                    className="MoveNumberSlider-button"
+                    onClick={backOneMove}
+                    disabled={!can_back}
+                    title={pgettext("Move navigation: previous move", "Previous move")}
                 >
-                    {_("Play")}
+                    <i className="fa fa-step-backward" />
                 </button>
-                {user_can_edit && !db_locked_down && (
-                    <button
-                        className={"btn s  " + (mode === PageMode.Edit ? "primary" : "")}
-                        onClick={setEditMode}
-                    >
-                        {current_move_category === "new" && mode === PageMode.Explore
-                            ? _("Save")
-                            : _("Edit")}
-                    </button>
-                )}
-                {user_can_edit && db_locked_down && (
-                    <button className={"s"} disabled>
-                        Edit <i className="fa fa-lock" />
-                    </button>
-                )}
+                <div
+                    className="MoveNumberSlider-track"
+                    style={
+                        {
+                            "--move-frac": (slider_target ?? move_number) / Math.max(knob_max, 1),
+                        } as React.CSSProperties
+                    }
+                >
+                    <input
+                        className="MoveNumberSlider-input"
+                        type="range"
+                        min={0}
+                        max={Math.max(knob_max, 1)}
+                        value={slider_target ?? move_number}
+                        onChange={(e) => {
+                            const v = parseInt(e.target.value, 10);
+                            if (!isNaN(v)) {
+                                set_slider_target(v);
+                            }
+                        }}
+                        aria-label={pgettext("Move navigation slider", "Move number")}
+                    />
+                    <div className="MoveNumberSlider-knob">
+                        <span className="MoveNumberSlider-knob-text">
+                            {slider_target ?? move_number}
+                        </span>
+                    </div>
+                </div>
                 <button
-                    className={"btn s  " + (mode === PageMode.Admin ? "primary" : "")}
-                    onClick={setAdminMode}
+                    className="MoveNumberSlider-button"
+                    onClick={forwardOneMove}
+                    disabled={!can_forward}
+                    title={pgettext("Move navigation: next move", "Next move")}
                 >
-                    {user_can_administer ? _("Admin") : _("Updates")}
+                    <i className="fa fa-step-forward" />
                 </button>
+                <button
+                    className={"Joseki-tenuki-button" + (tenuki_active ? " primary" : "")}
+                    onClick={doPass}
+                    disabled={!pass_available}
+                    title={
+                        pass_available
+                            ? pgettext(
+                                  "Joseki move navigation: play a tenuki (pass) move",
+                                  "Tenuki",
+                              )
+                            : pgettext(
+                                  "Joseki move navigation: tenuki disabled because the database has no continuation past a tenuki here",
+                                  "No documented tenuki continuation from this position",
+                              )
+                    }
+                >
+                    {_("Tenuki")}
+                </button>
+                <div className="Joseki-throbber-overlay" aria-hidden="true">
+                    <Throbber throb={throb} />
+                </div>
             </div>
         );
     }
 
-    function renderModeMainPane() {
-        if (mode === PageMode.Admin) {
-            return (
+    function renderPositionDetails() {
+        return (
+            <div className="position-details">
+                <div className={"status-info" + (move_string === "" ? " hide" : "")}>
+                    <div className="position-other-info">
+                        {tag_elements}
+                        {joseki_source && joseki_source.url.length > 0 && (
+                            <div className="position-joseki-source">
+                                <span>{_("Source")}:</span>
+                                <a href={joseki_source.url}>{joseki_source.description}</a>
+                            </div>
+                        )}
+                        {joseki_source && joseki_source.url.length === 0 && (
+                            <div className="position-joseki-source">
+                                <span>{_("Source")}:</span>
+                                <span>{joseki_source.description}</span>
+                            </div>
+                        )}
+                    </div>
+                    {current_move_category !== "" && (
+                        <div className="move-category">
+                            {_("Last move")}:{" "}
+                            {current_move_category === "new" ? (
+                                <span className="move-category-label">
+                                    {mode === PageMode.Explore
+                                        ? _("Experiment")
+                                        : _("Proposed Move")}
+                                </span>
+                            ) : (
+                                <span
+                                    className="move-category-label"
+                                    style={{ color: ColorMap[current_move_category] }}
+                                >
+                                    {pgettext("Joseki move category", current_move_category)}
+                                </span>
+                            )}
+                        </div>
+                    )}
+
+                    <div
+                        className={"contributor" + (current_move_category === "new" ? " hide" : "")}
+                    >
+                        <span>{_("Contributor")}:</span> <Player user={contributor_id} />
+                    </div>
+                    <div>{_("Moves made")}:</div>
+                    <div className="moves-made">
+                        {current_move_category !== "new" ? (
+                            <Link className="moves-made-string" to={"/joseki/" + current_node_id}>
+                                {move_string}
+                            </Link>
+                        ) : (
+                            <span className="moves-made-string">{move_string}</span>
+                        )}
+                        {current_move_category !== "new" && current_node_id && (
+                            <button
+                                className="moves-made-share"
+                                onClick={copyPositionLink}
+                                title={pgettext(
+                                    "Copy a sharable link to this joseki position",
+                                    "Copy link",
+                                )}
+                            >
+                                <i
+                                    className={
+                                        "fa " + (share_confirmed ? "fa-check" : "fa-share-alt")
+                                    }
+                                />
+                            </button>
+                        )}
+                    </div>
+                </div>
+                <div className="continuations-pane">
+                    {!!child_count && (
+                        <React.Fragment>
+                            <button
+                                className="position-child-count"
+                                onClick={toggleContinuationCountDetail}
+                            >
+                                {interpolate(_("This position leads to {{count}} others"), {
+                                    count: child_count,
+                                })}
+                                {!count_details_open && <i className="fa fa-lg fa-caret-right"></i>}
+                                {count_details_open && <i className="fa fa-lg fa-caret-down"></i>}
+                            </button>
+                            <div
+                                className={
+                                    "child-count-details-pane" +
+                                    (count_details_open ? " details-pane-open" : "")
+                                }
+                            >
+                                {count_details_open && (
+                                    <div className="count-details">
+                                        <Throbber throb={counts_throb} />
+                                        {count_details}
+                                    </div>
+                                )}
+                            </div>
+                        </React.Fragment>
+                    )}
+                    {!child_count && (
+                        <React.Fragment>
+                            <div className="position-child-count">
+                                {_("This position has no continuations") + "."}
+                            </div>
+                            <div className="child-count-details-pane"></div>
+                        </React.Fragment>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    function renderExplorePane() {
+        return (
+            <ExplorePane
+                description={position_description}
+                position_type={current_move_category}
+                see_also={see_also}
+                position_id={current_node_id as string}
+            />
+        );
+    }
+
+    // The Edit tab falls back to ExplorePane on the empty board (nothing
+    // to edit yet); the editor proper appears once a stone is placed.
+    const editPaneIsExplore = move_string === "";
+
+    const active_filter_count =
+        (variation_filter.tags?.length ?? 0) +
+        (variation_filter.contributor ? 1 : 0) +
+        (variation_filter.source ? 1 : 0);
+
+    const edit_label = db_locked_down
+        ? _("Edit (database is locked)")
+        : current_move_category === "new" && mode === PageMode.Explore
+          ? _("Save new position")
+          : _("Edit position");
+
+    function openMoreActions(event?: React.MouseEvent<HTMLButtonElement>) {
+        if (!event) {
+            return;
+        }
+        const close = () => {
+            moreActionsPopoverRef.current?.close();
+            moreActionsPopoverRef.current = null;
+        };
+        const open = (id: string) => () => {
+            gobanViewRef.current?.setActiveTakeover(id);
+        };
+        const instance = popover({
+            elt: (
+                <JosekiActionsPanel
+                    user_can_edit={user_can_edit}
+                    user_can_administer={user_can_administer}
+                    db_locked_down={db_locked_down}
+                    edit_label={edit_label}
+                    comment_count={current_comment_count}
+                    onOpenComments={open("joseki-comments")}
+                    onOpenChanges={open("joseki-changes")}
+                    onOpenEdit={open("joseki-edit")}
+                    onOpenAdmin={open("joseki-admin")}
+                    onClose={close}
+                />
+            ),
+            below: event.currentTarget,
+            minWidth: 220,
+        });
+        instance.on("close", () => {
+            if (moreActionsPopoverRef.current === instance) {
+                moreActionsPopoverRef.current = null;
+            }
+        });
+        moreActionsPopoverRef.current = instance;
+    }
+
+    return (
+        <GobanView
+            ref={gobanViewRef}
+            controller={controller_ref.current!}
+            className="Joseki"
+            customSlider={renderMoveControls()}
+        >
+            <KBShortcut shortcut="home" action={resetBoard} />
+            <KBShortcut shortcut="left" action={backOneMoveKey} />
+            <KBShortcut shortcut="right" action={forwardOneMoveKey} />
+
+            <GobanView.Tab
+                id="joseki-filter"
+                type="takeover"
+                icon={
+                    <span className="joseki-tab-icon-with-badge">
+                        <i className="fa fa-filter" />
+                        {active_filter_count > 0 && (
+                            <span className="joseki-tab-badge">{active_filter_count}</span>
+                        )}
+                    </span>
+                }
+                title={_("Filter joseki variations")}
+            >
+                <div className="joseki-filter-panel">
+                    <h3 className="joseki-filter-heading">{_("Filter joseki variations")}</h3>
+                    <JosekiVariationFilter
+                        contributor_list_url={server_url + "contributors"}
+                        source_list_url={server_url + "josekisources"}
+                        current_filter={variation_filter}
+                        set_variation_filter={updateVariationFilter}
+                        joseki_tags={joseki_tags_ref.current || []}
+                    />
+                    <p className="joseki-filter-hint">
+                        {_("Tag “Joseki: Done” narrows results to verified joseki sequences.")}
+                    </p>
+                </div>
+            </GobanView.Tab>
+
+            <GobanView.Tab
+                id="joseki-comments"
+                type="takeover"
+                icon="comment-o"
+                title={_("Comments")}
+                hideFromBar
+            >
+                <CommentsPanel
+                    position_id={current_node_id as string}
+                    can_comment={user_can_comment}
+                />
+            </GobanView.Tab>
+
+            <GobanView.Tab
+                id="joseki-changes"
+                type="takeover"
+                icon="history"
+                title={_("Position changes")}
+                hideFromBar
+            >
+                <AuditLogPanel position_id={current_node_id as string} />
+            </GobanView.Tab>
+
+            <GobanView.Tab
+                id="joseki-play"
+                type="takeover"
+                align="center"
+                icon={<i className="ogs-goban" />}
+                title={_("Play")}
+                onToggle={handlePlayToggle}
+            >
+                <PlayPane
+                    move_type_sequence={move_type_sequence}
+                    the_joseki_tag={
+                        the_joseki_tag_ref.current || { label: "<error>", value: "<error>" }
+                    }
+                    set_variation_filter={updateVariationFilter}
+                    current_filter={variation_filter}
+                />
+                {renderPositionDetails()}
+            </GobanView.Tab>
+
+            {user_can_edit && (
+                <GobanView.Tab
+                    id="joseki-edit"
+                    type="takeover"
+                    icon={db_locked_down ? "lock" : "pencil"}
+                    title={edit_label}
+                    disabled={db_locked_down}
+                    onToggle={handleEditToggle}
+                    hideFromBar
+                >
+                    {editPaneIsExplore ? (
+                        renderExplorePane()
+                    ) : (
+                        <EditPane
+                            node_id={current_node_id as unknown as number}
+                            category={current_move_category}
+                            description={position_description}
+                            variation_label={variation_label}
+                            joseki_source_id={(joseki_source ? joseki_source.id : "none") as number}
+                            tags={tags}
+                            contributor={contributor_id}
+                            available_tags={joseki_tags_ref.current || []}
+                            save_new_info={saveNewPositionInfo}
+                            update_marks={updateMarks}
+                        />
+                    )}
+                    {renderPositionDetails()}
+                </GobanView.Tab>
+            )}
+
+            <GobanView.Tab
+                id="joseki-admin"
+                type="takeover"
+                icon="gavel"
+                title={user_can_administer ? _("Admin") : _("Updates")}
+                onToggle={handleAdminToggle}
+                hideFromBar
+            >
                 <JosekiAdmin
                     server_url={server_url}
                     user_can_administer={user_can_administer}
@@ -1101,217 +1493,21 @@ export function Joseki(): React.ReactElement {
                     loadPositionToBoard={loadPosition}
                     updateDBLockStatus={updateDBLockStatus}
                 />
-            );
-        } else if (
-            mode === PageMode.Explore ||
-            (mode === PageMode.Edit && move_string === "") // you can't edit the empty board
-        ) {
-            return (
-                <ExplorePane
-                    description={position_description}
-                    position_type={current_move_category}
-                    see_also={see_also}
-                    comment_count={current_comment_count as number}
-                    position_id={current_node_id as string}
-                    can_comment={user_can_comment}
-                    joseki_source={joseki_source as { url: string; description: string }}
-                    tags={tags}
-                    joseki_tags={joseki_tags_ref.current || []}
-                    set_variation_filter={updateVariationFilter}
-                    current_filter={variation_filter}
-                    child_count={child_count}
-                    show_comments={show_comments_requested.current}
-                />
-            );
-        } else if (mode === PageMode.Edit) {
-            return (
-                <EditPane
-                    node_id={current_node_id as unknown as number}
-                    category={current_move_category}
-                    description={position_description}
-                    variation_label={variation_label}
-                    joseki_source_id={(joseki_source ? joseki_source.id : "none") as number}
-                    tags={tags}
-                    contributor={contributor_id}
-                    available_tags={joseki_tags_ref.current || []}
-                    save_new_info={saveNewPositionInfo}
-                    update_marks={updateMarks}
-                />
-            );
-        } else {
-            return (
-                <PlayPane
-                    move_type_sequence={move_type_sequence}
-                    joseki_errors={joseki_errors}
-                    josekis_played={josekis_played as number}
-                    josekis_completed={josekis_completed as number}
-                    joseki_best_attempt={joseki_best_attempt as number}
-                    joseki_successes={joseki_successes as number}
-                    the_joseki_tag={
-                        the_joseki_tag_ref.current || { label: "<error>", value: "<error>" }
-                    }
-                    joseki_tags={joseki_tags_ref.current || []}
-                    set_variation_filter={updateVariationFilter}
-                    current_filter={variation_filter}
-                />
-            );
-        }
-    }
+            </GobanView.Tab>
 
-    return (
-        <div className={"Joseki"}>
-            <KBShortcut shortcut="home" action={resetBoard} />
-            <KBShortcut shortcut="left" action={backOneMoveKey} />
-            <KBShortcut shortcut="right" action={forwardOneMoveKey} />
+            <GobanView.Tab
+                id="joseki-more-actions"
+                type="action"
+                align="right"
+                icon="ellipsis-h"
+                title={_("More actions")}
+                onClick={openMoreActions}
+            />
 
-            <div className={"left-col" + (mode === PageMode.Admin ? " admin-mode" : "")}>
-                <GobanContainer
-                    goban={goban_ref.current!}
-                    extra_props={{
-                        style: { paddingLeft: goban_container_left_padding },
-                    }}
-                />
-            </div>
-            <div className="right-col">
-                <div className="top-bar">
-                    {/* Note: played_mistake, move_trace, trace_index, and next_moves_ref are refs
-                        used in the JSX below for button visibility. This is safe because every code
-                        path that modifies them also triggers a state change (e.g., set_move_string,
-                        set_throb), ensuring a re-render with fresh ref values. */}
-                    <div className={"move-controls" + (played_mistake.current ? " highlight" : "")}>
-                        <i className="fa fa-fast-backward" onClick={resetBoard}></i>
-                        <i
-                            className={
-                                "fa fa-step-backward" +
-                                (mode !== PageMode.Play || played_mistake.current ? "" : " hide")
-                            }
-                            onClick={backOneMove}
-                        ></i>
-                        <i
-                            className={
-                                "fa fa-step-forward" +
-                                (mode !== PageMode.Play &&
-                                ((move_trace.current.length > 1 &&
-                                    trace_index.current < move_trace.current.length - 1) ||
-                                    next_moves_ref.current.length > 0)
-                                    ? ""
-                                    : " hide")
-                            }
-                            onClick={forwardOneMove}
-                        ></i>
-                        <button className={"pass-button " + tenuki_type} onClick={doPass}>
-                            {_("Tenuki")}
-                        </button>
-                        <div className="throbber-spacer">
-                            <Throbber throb={throb} />
-                        </div>
-                    </div>
-                    <div className="top-bar-other">
-                        {renderModeControl()}
-                        <a
-                            href="https://github.com/online-go/online-go.com/wiki/OGS-Joseki-Explorer"
-                            className="joseki-help"
-                        >
-                            <i className="fa fa-question-circle-o"></i>
-                        </a>
-                    </div>
-                </div>
-
-                {renderModeMainPane()}
-
-                <div className="position-details">
-                    <div className={"status-info" + (move_string === "" ? " hide" : "")}>
-                        <div className="position-other-info">
-                            {tag_elements}
-                            {joseki_source && joseki_source.url.length > 0 && (
-                                <div className="position-joseki-source">
-                                    <span>{_("Source")}:</span>
-                                    <a href={joseki_source.url}>{joseki_source.description}</a>
-                                </div>
-                            )}
-                            {joseki_source && joseki_source.url.length === 0 && (
-                                <div className="position-joseki-source">
-                                    <span>{_("Source")}:</span>
-                                    <span>{joseki_source.description}</span>
-                                </div>
-                            )}
-                        </div>
-                        <div className="move-category">
-                            {current_move_category === ""
-                                ? ""
-                                : _("Last move") +
-                                  ": " +
-                                  (current_move_category === "new"
-                                      ? mode === PageMode.Explore
-                                          ? _("Experiment")
-                                          : _("Proposed Move")
-                                      : pgettext("Joseki move category", current_move_category))}
-                        </div>
-
-                        <div
-                            className={
-                                "contributor" + (current_move_category === "new" ? " hide" : "")
-                            }
-                        >
-                            <span>{_("Contributor")}:</span> <Player user={contributor_id} />
-                        </div>
-                        <div>{_("Moves made")}:</div>
-                        <div className="moves-made">
-                            {current_move_category !== "new" ? (
-                                <Link
-                                    className="moves-made-string"
-                                    to={"/joseki/" + current_node_id}
-                                >
-                                    {move_string}
-                                </Link>
-                            ) : (
-                                <span className="moves-made-string">{move_string}</span>
-                            )}
-                        </div>
-                    </div>
-                    <div className="continuations-pane">
-                        {!!child_count && (
-                            <React.Fragment>
-                                <button
-                                    className="position-child-count"
-                                    onClick={toggleContinuationCountDetail}
-                                >
-                                    {interpolate(_("This position leads to {{count}} others"), {
-                                        count: child_count,
-                                    })}
-                                    {!count_details_open && (
-                                        <i className="fa fa-lg fa-caret-right"></i>
-                                    )}
-                                    {count_details_open && (
-                                        <i className="fa fa-lg fa-caret-down"></i>
-                                    )}
-                                </button>
-                                <div
-                                    className={
-                                        "child-count-details-pane" +
-                                        (count_details_open ? " details-pane-open" : "")
-                                    }
-                                >
-                                    {count_details_open && (
-                                        <div className="count-details">
-                                            <Throbber throb={counts_throb} />
-                                            {count_details}
-                                        </div>
-                                    )}
-                                </div>
-                            </React.Fragment>
-                        )}
-                        {!child_count && (
-                            <React.Fragment>
-                                <div className="position-child-count">
-                                    {_("This position has no continuations") + "."}
-                                </div>
-                                <div className="child-count-details-pane"></div>
-                            </React.Fragment>
-                        )}
-                    </div>
-                </div>
-            </div>
-        </div>
+            <GobanView.Tab id="joseki-explore" type="always">
+                {renderExplorePane()}
+                {renderPositionDetails()}
+            </GobanView.Tab>
+        </GobanView>
     );
 }

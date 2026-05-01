@@ -1,0 +1,87 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.popover-container .JosekiActionsPanel {
+    background: var(--shade5);
+    border: 1px solid var(--shade3);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    padding: 0.4rem;
+    min-width: 14rem;
+    max-width: 18rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.JosekiActionsPanel-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.45rem 0.5rem;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--fg);
+    text-align: left;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+
+    i {
+        width: 1.1rem;
+        text-align: center;
+        color: var(--shade1);
+        flex-shrink: 0;
+    }
+
+    span {
+        flex-grow: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &:hover:not(.disabled):not(:disabled) {
+        background: var(--shade4);
+    }
+
+    &.disabled,
+    &:disabled {
+        color: var(--shade2);
+        cursor: not-allowed;
+
+        i {
+            color: var(--shade3);
+        }
+    }
+}
+
+.JosekiActionsPanel-count {
+    flex-shrink: 0;
+    min-width: 1.1rem;
+    height: 1.1rem;
+    padding: 0 0.3rem;
+    border-radius: 0.55rem;
+    background: var(--primary);
+    color: var(--colored-background-fg);
+    font-size: 0.7rem;
+    line-height: 1.1rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    text-align: center;
+}

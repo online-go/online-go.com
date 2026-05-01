@@ -14,645 +14,700 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 .Joseki {
-    top: var(--below-navbar);
-    bottom: 0;
-    right: 0;
-    left: 0;
-    display: flex;
-
-    @media screen and (max-width: 800px) {
+    .GobanView-tab-panel.always:not(.hidden),
+    .GobanView-tab-panel.takeover.active {
+        flex-grow: 1;
+        display: flex;
         flex-direction: column;
+        min-height: 0;
+        gap: 0.5rem;
+        padding-top: 0;
     }
 
-    @media screen and (min-width: 801px) {
-        flex-direction: row;
+    /* ---- Move bar (reset / back / [knob] / forward / tenuki / throbber) ---- */
+
+    .Joseki-move-bar {
+        gap: 0.25rem;
+        position: relative;
+    }
+
+    .Joseki-move-bar.highlight {
+        .fa-step-backward {
+            color: gold;
+        }
+    }
+
+    .Joseki-tenuki-button {
+        flex-shrink: 0;
+        cursor: pointer;
+        border: 1px solid var(--shade3);
+        border-radius: 4px;
+        padding: 0 0.5rem;
+        margin-left: 0.5rem;
+        background: transparent;
+        box-shadow: none;
+        line-height: 1.6;
+        height: fit-content;
+        color: var(--fg);
+
+        &:focus {
+            outline: 0;
+        }
+
+        &:hover:not(:disabled):not(.primary) {
+            background-color: var(--shade5);
+        }
+
+        &:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: transparent;
+            border-color: var(--shade4);
+            color: var(--shade2);
+            box-shadow: none;
+        }
+    }
+
+    .Joseki-throbber-overlay {
         position: absolute;
+        right: 0.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .lds-spinner {
+            transform: scale(0.5);
+            transform-origin: center center;
+        }
     }
 
-    align-items: stretch;
+    .joseki-tab-icon-with-badge {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-    .left-col {
+    .joseki-tab-badge {
+        position: absolute;
+        top: -0.35rem;
+        right: -0.4rem;
+        min-width: 0.85rem;
+        height: 0.85rem;
+        padding: 0 0.15rem;
+        border-radius: 0.5rem;
+        background: var(--primary);
+        color: var(--colored-background-fg);
+        font-size: 0.6rem;
+        line-height: 0.85rem;
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    /* ---- Filter takeover ---- */
+
+    .joseki-filter-panel {
         flex-grow: 1;
-        flex-shrink: 1;
-        flex-basis: 45%;
         display: flex;
         flex-direction: column;
-        align-items: stretch;
-        width: 100%;
-
-        .goban-container {
-            flex-grow: 1;
-            /* flex-shrink: 1; */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-
-            .Goban {
-                position: absolute;
-                top: 0;
-                left: 0;
-            }
-        }
-
-        @media screen and (min-width: 801px) {
-            padding-left: 1em;
-        }
-
-        padding-top: 1em;
-
-        @media screen and (max-width: 800px) {
-            height: 100dvw;
-            min-height: 100dvw; /* firefox needs this */
-            max-height: 100dvw; /* firefox needs this */
-            flex-basis: 99%;
-        }
+        gap: 0.75rem;
+        min-height: 0;
+        overflow-y: auto;
     }
 
-    .admin-mode {
-        flex-basis: 15%;
+    .joseki-filter-heading {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
     }
 
-    .right-col {
+    .joseki-filter-hint {
+        margin: 0;
+        font-size: 0.85rem;
+        color: var(--shade1);
+        font-style: italic;
+    }
+
+    /* ---- Empty/root onboarding hint ---- */
+
+    .joseki-root-hint {
+        font-size: 0.9rem;
+        color: var(--shade1);
+        line-height: 1.5;
+        padding: 0.5rem 0;
+    }
+
+    /* ---- Explore pane ---- */
+
+    .explore-pane {
         flex-grow: 1;
-        flex-shrink: 1;
-        flex-basis: 55%;
-        overflow-x: hidden;
-        min-height: auto;
-        flex-direction: column;
-        padding-left: 0.5rem;
-        min-width: 340px;
-        padding-right: 0;
         display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        min-height: 0;
+        overflow-y: auto;
+    }
 
-        @media screen and (min-width: 1161px) {
-            height: 100%;
-            max-height: 100%;
+    .description-column {
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        gap: 0.5rem;
+
+        .position-description {
+            line-height: 1.4;
         }
 
-        @media screen and (max-width: 1160px) {
-            overflow-y: visible;
-        }
+        .see-also-block {
+            font-size: 0.9em;
 
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-
-            @media screen and (max-width: 800px) {
-                flex-direction: column;
-            }
-
-            @media screen and (min-width: 800px) {
-                flex-direction: row;
-            }
-
-            .throbber-spacer {
-                min-height: 38px;
-                min-width: 32px;
-            }
-
-            .top-right {
-                display: flex;
-                flex-direction: row;
-                justify-content: flex-end;
-                alighn-items: center;
-
-                a {
-                    margin: 0.2rem;
-                }
-            }
-
-            .top-bar-other {
-                display: flex;
-                flex-direction: row;
-            }
-
-            .backend-control {
-                display: flex;
-                flex-direction: column;
-                align-content: center;
-                color: var(--shade1);
-
-                .fa {
-                    padding: 0.3rem;
-                }
-
-                span {
-                    font-size: x-small;
-                    padding: 0 0.3rem 0 0.3rem;
-                }
-            }
-
-            .joseki-help {
-                .fa {
-                    color: var(--shade1);
-                    padding: 0.3rem;
-                }
-            }
-
-            .move-controls {
-                display: flex;
-                align-items: center;
-
-                i {
-                    cursor: pointer;
-                    margin-right: 2em;
-                }
-
-                .pass-button {
-                    cursor: pointer;
-                    border: #bbb;
-                    border-style: solid;
-                    border-width: 1px;
-                    padding: 0px 5px 0 5px;
-                    border-radius: 4px;
-                    margin-right: 1rem;
-                    background: inherit;
-                    box-shadow: none;
-                    line-height: unset;
-                    height: fit-content;
-                }
-
-                /* get rid of ugly selected-border on button */
-                /* not accessibility friendly, but OGS isn't anyhow */
-                .pass-button:focus {
-                    outline: 0;
-                }
-
-                .pass-button:hover {
-                    background-color: var(--shade5);
-                }
-
-                .ideal {
-                    border-color: var(--joseki-ideal);
-                    border-width: 2px;
-                    box-shadow: 0 0 0.8rem var(--joseki-ideal);
-                }
-
-                .good {
-                    border-color: var(--joseki-good);
-                    border-width: 2px;
-                    box-shadow: 0 0 0.8rem var(--joseki-good);
-                }
-
-                .trick {
-                    border-color: var(--joseki-trick);
-                    border-width: 2px;
-                    box-shadow: 0 0 0.8rem var(--joseki-trick);
-                }
-
-                .question {
-                    border-color: var(--joseki-question);
-                    border-width: 2px;
-                    box-shadow: 0 0 0.8rem var(--joseki-question);
-                }
-
-                .mistake {
-                    border-color: var(--joseki-mistake);
-                    border-width: 2px;
-                    box-shadow: 0 0 0.8rem var(--joseki-mistake);
-                }
-            }
-
-            .move-controls.highlight {
-                .fa {
-                    color: gold;
-                }
-            }
-
-            .mode-control {
-                display: flex;
-                flex-direction: row;
-                justify-content: flex-end;
-                margin-right: 0.5rem; /* space for the help icon in the top right */
-
-                .btn {
-                    min-width: 5em;
-                }
-
-                .selected {
-                    background-color: var(--success);
-                    border-color: var(--success-dark);
-                }
+            a {
+                margin-right: 0.8rem;
             }
         }
+    }
 
-        .play-columns {
-            flex-grow: 1;
-            flex-basis: auto;
-            display: flex;
+    /* ---- Comments takeover ---- */
 
-            .fa-filter {
-                align-self: flex-end;
-                margin-right: 0.5em;
-                padding: 3px;
-            }
-        }
+    .discussion-container {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        gap: 0;
+    }
 
-        .play-dashboard {
-            flex-grow: 1;
-            flex-basis: 50%;
-            display: flex;
-            flex-direction: column;
-            padding-top: 3rem;
-            padding-bottom: 1rem;
+    .discussion-lines {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 0.25rem 0.25rem 0.5rem 0;
 
-            .fa {
-                margin-right: 3px;
-                min-width: 1.25rem;
-            }
-
-            .fa-check, .fa-star {
-                color: gold;
-            }
-
-            .fa-times {
-                color: red;
-            }
-        }
-
-        .edit-container {
-            flex-grow: 1;
-            flex-shrink: 0;
-            flex-basis: auto;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .position-child-count {
-            margin-bottom: 5px;
+        .no-comments {
+            display: block;
+            text-align: center;
+            color: var(--shade3);
             font-style: italic;
-            padding-right: 0.2rem;
+            padding: 1.5rem 0.5rem;
+            font-size: 0.85rem;
         }
+    }
 
-        .explore-pane {
-            @media screen and (min-width: 1161px) {
-                flex-direction: row;
-                min-height: 20rem; /* prevent this from being shrunk too small when continuations pane grows big */
-            }
+    .comment {
+        padding: 0.35rem 0.5rem;
+        border-radius: 4px;
+        transition: background-color 120ms ease;
 
-            @media screen and (max-width: 1160px) {
-                flex-direction: column;
-                overflow-y: visible;
-                justify-content: space-between;
-                min-height: fit-content;
-            }
-
-            flex-grow: 1;
-            flex-basis: auto;
-            display: flex;
-            margin-left: 0.5rem;
-            margin-bottom: 0.2rem;
-            overflow-y: hidden;
-        }
-
-        .description-column {
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-            flex-basis: 50%;
-
-            .position-description {
-                flex-basis: 80%;
-            }
-
-            .see-also-block {
-                a {
-                    margin-right: 0.8rem;
-                }
-            }
-        }
-
-        .position-tag {
-            margin-bottom: 0.2rem;
-        }
-
-        .position-tag span {
-            margin: auto;
-            padding-left: 3px;
-            padding-right: 3px;
-            border-radius: 3px;
+        &:hover {
             background-color: var(--shade4);
         }
 
-        .position-joseki-source {
-            padding-bottom: 1.5em;
-
-            span {
-                padding-right: 0.5em;
-            }
+        & + .comment {
+            margin-top: 0.15rem;
         }
+    }
 
-        .extra-info-open {
-            background-color: var(--shade5);
-            border-radius: 5px;
-        }
+    .comment-header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 0.5rem;
+        margin-bottom: 0.1rem;
 
-        .extra-info-column {
-            margin-top: 3em;
-            margin-bottom: 1em;
-            margin-left: 1em;
+        .Player {
+            font-weight: 600;
+            font-size: 0.85rem;
 
-            @media screen and (max-width: 800px) {
-                margin-left: 0rem;
-            }
-
-            @media screen and (max-width: 1160px) {
-                margin-right: 1em;
-                min-height: 17rem;
-            }
-
-            flex-grow: 1;
-            flex-basis: 50%; /* 50-50 left/right columns */
-            display: flex;
-            flex-direction: column;
-            overflow-y: hidden; /* needed to contain the audit-container to the right size. */
-
-            .extra-info-selector {
-                margin-bottom: 0.5rem;
-                text-align: center;
-            }
-
-            .audit-container {
-                flex-grow: 1;
-                overflow-y: scroll;
-                /* a hack to make it fit along with the extra-info-selector into extra-info pane */
-                /* I wish I knew why the overflow-y of extra-info-column doesn't contain this div, instead this div grows unlimited */
-                /* without this statement. */
-                max-height: 90%;
-            }
-
-            .extra-info-header {
-                display: flex;
-                padding-left: 3px;
-                flex-direction: row;
-                justify-content: space-between;
-                padding-right: 0.5em;
-                align-items: center;
-                background-color: var(--shade4);
-            }
-
-            .filter-container.filter-active {
-                .joseki-tag-selector.filter-active {
-                    .ogs-react-select__value-container {
-                        background: var(--shade0);
-                    }
-                }
-            }
-
-            .joseki-variation-filter {
-                select.filter-active {
-                    background: var(--shade0);
-                }
-            }
-
-            .discussion-container {
-                display: flex;
-                flex-direction: column;
-                flex-grow: 1;
-                justify-content: space-between;
-                overflow-y: hidden;
-
-                .discussion-lines {
-                    overflow-y: scroll;
-
-                    .comment-text {
-                        padding-left: 0.5em;
-                        overflow-wrap: break-word;
-
-                        p { /* This p is generated by the <Markdown> */
-                            margin: 0 0 0.3rem 0;
-                        }
-                    }
-                }
-
-                .comment-input {
-                    resize: vertical;
-                    margin-bottom: 3px;
-                    overflow-y: hidden;
-                    padding: 3px;
-                    border-radius: 3px;
-                    min-height: 1.5rem;
-                    border-color: var(--shade3);
-                }
-            }
-
-            .comment-header, .audit-header {
-                display: flex;
-                padding-left: 3px;
-                flex-direction: row;
-                justify-content: space-between;
-            }
-
-            .comment-date, .audit-date {
-                font-size: smaller;
-                padding-right: 0.5em;
-            }
-
-            .extra-info-header .fa {
-                margin-bottom: 0;
-            }
-
-            .fa-filter {
-                padding-left: 0.5em;
-                color: grey;
-            }
-
-            .filter-active {
-                color: #0062e9;
-                border-radius: 4px;
-            }
-
-            .play-results-container {
-                padding-left: 1rem;
-
-                h4 {
-                    margin-bottom: 0.3rem;
-                }
-
-                div {
-                    margin-left: 0.5rem;
-                }
-            }
-
-            .extra-info-selector.filter-active {
-                .ogs-react-select__value-container {
-                    background: var(--shade0);
-                }
-            }
-        }
-
-        .hide {
-            visibility: hidden;
-        }
-
-        .move-attributes {
-            display: grid;
-            /* grid-template-columns: 1fr 1fr; */
-            grid-template-rows: auto;
-            grid-row-gap: 1em;
-            margin-top: 1em;
-            margin-bottom: 1em;
-            padding-right: 1em;
-
-            .move-type-selection {
-                span {
-                    margin-right: 0.5em;
-                }
-
-                button {
-                    margin-left: 1em;
-                }
-            }
-
-            .variation-order-select {
-                grid-column: 2 / 2;
-                justify-self: end;
-
-                span {
-                    margin-right: 0.5em;
-                }
-            }
-
-            .joseki-source-edit {
-                display: flex;
-                flex-direction: column;
-                justify-content: flex-end;
-
-                .joseki-source-edit-controls {
-                    display: flex;
-                    align-items: center;
-
-                    .fa {
-                        padding-left: 0.5rem;
-                    }
-                }
-            }
-
-            .joseki-source-edit, .tag-edit {
-                @media screen and (max-width: 1160px) {
-                    grid-column: span 2;
-                }
-            }
-        }
-
-        .description-edit {
-            flex-grow: 2;
-            display: flex;
-            flex-direction: column;
-            margin-right: 0.5rem;
-
-            .edit-label {
-                font-style: italic;
-                font-size: smaller;
-            }
-
-            textarea {
-                resize: vertical;
-            }
-
-            .description-preview {
-                padding-left: 0.5rem;
-            }
-
-            .position-edit-button {
-                width: 100%;
-                display: flex;
-                justify-content: flex-end;
-            }
-        }
-
-        .position-details {
-            @media screen and (min-width: 1160px) {
-                flex-direction: row;
-            }
-
-            @media screen and (max-width: 1160px) {
-                flex-direction: column;
-            }
-
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            padding-top: 0.3rem;
-        }
-
-        .status-info {
-            @media screen and (min-width: 1160px) {
-                flex-basis: 50%; /* share the space with continuations pane */
-                overflow-x: hidden; /* Make sure long "Moves Made" doesn't grow this box */
-                min-height: 12rem; /* Match continuations pane */
-            }
-
-            display: flex;
-            flex-direction: column;
-
-            .hide {
+            /* Suppress the avatar block — username and rank only in this panel. */
+            .PlayerIcon {
                 display: none;
             }
 
-            .moves-made {
-                display: flex;
-                justify-content: flex-start;
-                padding-right: 1em;
+            &.Player-with-icon .Player-username {
+                margin-left: 0;
+            }
+        }
+    }
 
-                .moves-made-string {
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    direction: rtl; /* ellipsis on left */
-                }
+    .comment-date,
+    .audit-date {
+        font-size: 0.75rem;
+        color: var(--shade2);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    /* AutoTranslate puts our `className` ("comment-text") on the same element
+       as its `.AutoTranslate` class, so .primary / .placeholder / .language-map
+       are direct children. Override the global .primary background here so
+       comments read as a flat stream rather than blue button blocks. */
+    .comment-text {
+        padding: 0;
+        font-size: var(--font-size);
+        line-height: 1.45;
+        color: var(--fg);
+        overflow-wrap: break-word;
+
+        .primary,
+        .placeholder {
+            background-color: transparent;
+            border: none;
+            color: inherit;
+            padding: 0;
+            margin: 0;
+            text-shadow: none;
+            box-shadow: none;
+        }
+
+        p {
+            margin: 0 0 0.3rem 0;
+        }
+
+        p:last-child {
+            margin-bottom: 0;
+        }
+
+        .language-map {
+            background: transparent;
+            color: var(--shade2);
+            font-size: 0.7rem;
+            padding-top: 0.15rem;
+            text-align: left;
+            font-style: italic;
+        }
+
+        .translation-original {
+            background: transparent;
+            border-top: 1px dashed var(--shade4);
+            margin-top: 0.2rem;
+            padding: 0.2rem 0 0 0;
+            font-size: 0.8rem;
+            color: var(--shade2);
+            font-style: normal;
+        }
+    }
+
+    .comment-input {
+        resize: none;
+        max-height: 8rem;
+        min-height: 2.5rem;
+        padding: 0.5rem 0.25rem;
+        background: transparent;
+        color: var(--fg);
+        border: none;
+        border-top: 1px solid var(--shade4);
+        border-radius: 0;
+        font: inherit;
+
+        &::placeholder {
+            color: var(--shade3);
+            font-style: italic;
+        }
+
+        &:focus {
+            outline: none;
+            border-top-color: var(--primary);
+        }
+    }
+
+    .comment-input-disabled {
+        border-top: 1px solid var(--shade4);
+        padding: 0.5rem 0.25rem;
+        font-size: 0.8rem;
+        color: var(--shade3);
+        font-style: italic;
+        text-align: center;
+    }
+
+    /* ---- Changes (audit log) takeover ---- */
+
+    .audit-container {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 0.25rem 0.25rem 0.5rem 0;
+    }
+
+    .no-audit {
+        display: block;
+        text-align: center;
+        color: var(--shade3);
+        font-style: italic;
+        padding: 1.5rem 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    .audit-entry {
+        padding: 0.3rem 0.5rem;
+        border-radius: 4px;
+        color: var(--shade2);
+        font-size: 0.8rem;
+        transition: background-color 120ms ease;
+
+        &:hover {
+            background-color: var(--shade4);
+        }
+
+        & + .audit-entry {
+            margin-top: 0.1rem;
+        }
+    }
+
+    .audit-header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 0.5rem;
+        padding-left: 0;
+        margin-bottom: 0.1rem;
+
+        .Player {
+            font-size: 0.8rem;
+
+            .PlayerIcon {
+                display: none;
+            }
+        }
+    }
+
+    /* ---- Play pane ---- */
+
+    .play-columns {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        min-height: 0;
+    }
+
+    .play-dashboard {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        padding: 0.25rem 0;
+        min-height: 0;
+        overflow-y: auto;
+
+        .play-prompt {
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            padding: 1.5rem 0.5rem;
+            color: var(--fg);
+        }
+
+        .fa {
+            margin-right: 0.4rem;
+            min-width: 1.25rem;
+        }
+
+        .fa-check,
+        .fa-star {
+            color: gold;
+        }
+
+        .fa-times {
+            color: red;
+        }
+    }
+
+    /* ---- Edit pane ---- */
+
+    .edit-container {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        min-height: 0;
+        overflow-y: auto;
+    }
+
+    .move-attributes {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-row-gap: 0.5rem;
+        grid-column-gap: 0.5rem;
+
+        .move-type-selection {
+            grid-column: span 2;
+
+            span {
+                margin-right: 0.5em;
             }
         }
 
-        .continuations-pane {
-            flex-basis: 50%; /* 50/50 share the space with status info */
+        .variation-order-select {
+            grid-column: span 2;
 
-            @media screen and (max-width: 1160px) {
-                align-items: flex-start;
-                padding-top: 1em;
+            span {
+                margin-right: 0.5em;
             }
+        }
 
+        .joseki-source-edit {
+            grid-column: span 2;
             display: flex;
             flex-direction: column;
-            align-items: flex-end;
-            min-height: 12rem;
-            margin-bottom: 0.3rem;
 
-            .position-child-count {
-                background: inherit;
-                border: none;
-                box-shadow: none;
+            .joseki-source-edit-controls {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                min-width: 0;
 
-                .fa {
-                    padding-left: 0.3rem;
-                    padding-right: 0.3rem;
+                .joseki-edit-select {
+                    flex: 1;
+                    min-width: 0;
+                }
+
+                .fa-plus-circle {
+                    flex-shrink: 0;
+                    cursor: pointer;
+                    color: var(--shade1);
+                    transition: color 120ms ease;
+
+                    &:hover {
+                        color: var(--primary);
+                    }
                 }
             }
+        }
 
-            .child-count-details-pane {
-                min-width: 18rem;
-                display: flex;
-                flex-direction: column;
-                align-items: flex-end;
+        .tag-edit {
+            grid-column: span 2;
+        }
+    }
+
+    .description-edit {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        min-height: 0;
+    }
+
+    .description-edit-tabs {
+        display: flex;
+        gap: 0.25rem;
+        border-bottom: 1px solid var(--shade4);
+        flex-shrink: 0;
+    }
+
+    .description-edit-save {
+        display: flex;
+        justify-content: flex-end;
+        flex-shrink: 0;
+        padding-top: 0.25rem;
+    }
+
+    .description-edit-tab {
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        padding: 0.35rem 0.75rem;
+        margin-bottom: -1px;
+        color: var(--shade1);
+        cursor: pointer;
+        font-size: 0.85rem;
+        line-height: 1.2;
+        box-shadow: none;
+        border-radius: 0;
+        transition:
+            color 120ms ease,
+            border-color 120ms ease;
+
+        &:hover {
+            color: var(--fg);
+        }
+
+        &.active {
+            color: var(--fg);
+            border-bottom-color: var(--primary);
+        }
+
+        &:focus {
+            outline: none;
+        }
+    }
+
+    .description-edit .description-textarea {
+        flex-grow: 1;
+        min-height: 30rem;
+        width: 100%;
+        resize: vertical;
+        padding: 0.5rem;
+        border: 1px solid var(--shade4);
+        border-radius: 4px;
+        background: var(--bg);
+        color: var(--fg);
+        font: inherit;
+        line-height: 1.45;
+    }
+
+    .description-edit .description-preview {
+        flex-grow: 1;
+        min-height: 30rem;
+        padding: 0.5rem;
+        border: 1px solid var(--shade4);
+        border-radius: 4px;
+        background: var(--bg);
+        overflow-y: auto;
+    }
+
+    .description-edit .edit-label {
+        font-style: italic;
+        font-size: smaller;
+    }
+
+    /* ---- Position details (tags / source / contributor / moves / continuations) ---- */
+
+    .position-details {
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid var(--shade4);
+    }
+
+    .position-tag {
+        display: inline-block;
+        margin-right: 0.25rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .position-tag span {
+        padding: 0.05em 0.4em;
+        border-radius: 3px;
+        background-color: var(--shade4);
+        font-size: 0.85em;
+    }
+
+    .position-joseki-source {
+        padding-bottom: 0.5em;
+
+        span {
+            padding-right: 0.5em;
+        }
+    }
+
+    .status-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        font-size: 0.9rem;
+
+        &.hide {
+            display: none;
+        }
+
+        .move-category {
+            font-style: italic;
+        }
+
+        .move-category-label {
+            font-weight: 600;
+        }
+
+        .moves-made {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.35rem;
+            padding-right: 1em;
+            min-width: 0;
+
+            .moves-made-string {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                direction: rtl; /* ellipsis on left */
+                flex-shrink: 1;
+                min-width: 0;
             }
 
-            .details-pane-open {
-                align-items: flex-start;
-                background-color: var(--shade5);
-            }
+            .moves-made-share {
+                flex-shrink: 0;
+                background: transparent;
+                border: none;
+                padding: 0.1rem 0.25rem;
+                cursor: pointer;
+                color: var(--shade1);
+                opacity: 0.6;
+                transition: opacity 0.15s ease;
 
-            .count-details {
-                padding-left: 0.2rem;
-                padding-right: 0.5rem;
-            }
+                &:hover {
+                    opacity: 1;
+                }
 
-            .variation-count-item span {
-                margin-right: 0.5rem;
+                .fa-check {
+                    color: var(--success);
+                    opacity: 1;
+                }
             }
         }
+
+        .contributor.hide {
+            display: none;
+        }
+    }
+
+    .continuations-pane {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+
+        .position-child-count {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            font-style: italic;
+            font-size: 0.9rem;
+            padding: 0.1rem 0.2rem;
+            color: var(--fg);
+            cursor: pointer;
+
+            .fa {
+                padding-left: 0.3rem;
+                padding-right: 0.3rem;
+            }
+        }
+
+        .child-count-details-pane {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        .details-pane-open {
+            background-color: var(--shade5);
+            border-radius: 4px;
+        }
+
+        .count-details {
+            padding: 0.25rem 0.5rem;
+        }
+
+        .variation-count-item {
+            display: flex;
+            justify-content: space-between;
+            min-width: 12rem;
+        }
+
+        .variation-count-item span {
+            margin-right: 0.5rem;
+        }
+    }
+
+    .hide {
+        visibility: hidden;
     }
 }

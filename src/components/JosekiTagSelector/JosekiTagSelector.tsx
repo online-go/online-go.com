@@ -51,22 +51,6 @@ export function JosekiTagSelector(props: JosekiTagSelectorProps) {
             onChange={onTagChange}
             getOptionLabel={(o) => pgettext("This is a Joseki Tag", o.label)}
             getOptionValue={(o) => o.value}
-            components={{
-                Option: ({ innerRef, innerProps, isFocused, isSelected, data }) => (
-                    <div
-                        ref={innerRef}
-                        {...innerProps}
-                        className={(isFocused ? "focused " : "") + (isSelected ? "selected" : "")}
-                    >
-                        {
-                            pgettext(
-                                "This is a Joseki Tag",
-                                data.label,
-                            ) /* translation of tag labels is forced in Joseki constructor */
-                        }
-                    </div>
-                ),
-            }}
         />
     );
 }
