@@ -107,36 +107,30 @@ export function KibitzPresence({ room, users }: KibitzPresenceProps): React.Reac
               icon: owner.icon,
           }
         : null;
+    const ownerIsPresent = ownerUser !== null && users.some((user) => user.id === ownerUser.id);
     const regularUsers = ownerUser ? users.filter((user) => user.id !== ownerUser.id) : users;
+    const ownerStatus = ownerUser
+        ? ownerIsPresent
+            ? null
+            : pgettext("Status shown for pinned kibitz room owners who are not in the room", "away")
+        : null;
 
     return (
         <div className="KibitzPresence">
-            <div className="presence-header">
-                <div className="presence-users-heading">
-                    {pgettext("Heading for the current room user list in kibitz", "In the room")}
-                </div>
-                <div className={"presence-stat" + (viewerCountFlash ? " viewer-count-flash" : "")}>
-                    <span className="presence-stat-icon" aria-hidden="true">
-                        <svg viewBox="0 0 16 16" focusable="false">
-                            <path
-                                d="M8 8a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm0 1c-2.7 0-5 1.4-5 3.2V14h10v-1.8C13 10.4 10.7 9 8 9Z"
-                                fill="currentColor"
-                            />
-                        </svg>
-                    </span>
-                    <span className="presence-stat-text">
-                        {interpolate(
-                            pgettext(
-                                "Viewer count summary inside a kibitz room",
-                                "{{count}} watching",
-                            ),
-                            { count: viewerCount },
-                        )}
-                    </span>
-                </div>
+            <div className={"presence-summary" + (viewerCountFlash ? " viewer-count-flash" : "")}>
+                {interpolate(
+                    pgettext(
+                        "Kibitz presence summary line showing live room occupancy",
+                        "In the room · {{count}} watching",
+                    ),
+                    { count: viewerCount },
+                )}
             </div>
             {ownerUser ? (
-                <div className="presence-owner">
+                <section
+                    className="presence-owner"
+                    aria-label={pgettext("Pinned kibitz room owner section label", "Room owner")}
+                >
                     <div className="presence-user">
                         <KibitzUserAvatar
                             user={ownerUser}
@@ -148,31 +142,39 @@ export function KibitzPresence({ room, users }: KibitzPresenceProps): React.Reac
                         <span className="presence-owner-tag">
                             {pgettext("Owner tag shown after the room owner's name", "owner")}
                         </span>
+                        {ownerStatus ? (
+                            <span className="presence-owner-status">{ownerStatus}</span>
+                        ) : null}
                     </div>
-                </div>
+                </section>
             ) : null}
-            {regularUsers.length > 0 ? (
-                <div className="presence-users">
-                    {regularUsers.map((user) => (
-                        <div key={user.id} className="presence-user">
-                            <KibitzUserAvatar
-                                user={user}
-                                size={16}
-                                className="presence-avatar inline"
-                                iconClassName="presence-avatar-icon"
-                            />
-                            <Player user={user} flag rank noextracontrols />
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <div className="presence-empty">
-                    {pgettext(
-                        "Empty state for the room presence roster in kibitz",
-                        "No one is in the room yet.",
-                    )}
-                </div>
-            )}
+            <section
+                className="presence-room"
+                aria-label={pgettext("Current kibitz room roster section label", "In the room")}
+            >
+                {regularUsers.length > 0 ? (
+                    <div className="presence-users">
+                        {regularUsers.map((user) => (
+                            <div key={user.id} className="presence-user">
+                                <KibitzUserAvatar
+                                    user={user}
+                                    size={16}
+                                    className="presence-avatar inline"
+                                    iconClassName="presence-avatar-icon"
+                                />
+                                <Player user={user} flag rank noextracontrols />
+                            </div>
+                        ))}
+                    </div>
+                ) : !ownerIsPresent ? (
+                    <div className="presence-empty">
+                        {pgettext(
+                            "Empty state for the room presence roster in kibitz",
+                            "No one is in the room yet.",
+                        )}
+                    </div>
+                ) : null}
+            </section>
         </div>
     );
 }
