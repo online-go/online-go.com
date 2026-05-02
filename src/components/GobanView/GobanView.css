@@ -78,6 +78,7 @@
     /* Tab panels */
     .GobanView-tab-panel {
         padding: 0.875rem 0;
+        position: relative;
 
         &.hidden {
             display: none;
@@ -92,6 +93,38 @@
 
         &.takeover:not(.active) {
             display: none;
+        }
+    }
+
+    .GobanView-tab-panel-close {
+        position: absolute;
+        top: 0.25rem;
+        right: 0.25rem;
+        z-index: 3;
+        width: 1.75rem;
+        height: 1.75rem;
+        padding: 0;
+        border: none;
+        border-radius: 4px;
+        background: transparent;
+        color: var(--shade1);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        opacity: 0.65;
+        transition:
+            opacity 120ms ease,
+            background-color 120ms ease;
+
+        &:hover {
+            opacity: 1;
+            background-color: var(--shade4);
+        }
+
+        &:focus {
+            outline: none;
         }
     }
 
@@ -161,5 +194,12 @@
                 overflow-y: auto;
             }
         }
+    }
+
+    /* customSlider renders during takeovers, so raise the takeover
+       overlay's bottom by the slider's intrinsic height so the strip stays
+       visible above the tab bar. */
+    &.has-custom-slider.portrait .GobanView-tab-panel.takeover.active {
+        bottom: calc(var(--goban-view-tab-bar-height) + 2.6rem + env(safe-area-inset-bottom));
     }
 }

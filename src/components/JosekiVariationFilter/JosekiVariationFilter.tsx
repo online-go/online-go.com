@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import * as ReactSelect from "react-select";
+import Select, { MultiValue, SingleValue } from "react-select";
 import { _ } from "@/lib/translate";
 import * as DynamicHelp from "react-dynamic-help";
 
@@ -25,6 +25,9 @@ import { JosekiTagSelector, OJEJosekiTag } from "../JosekiTagSelector";
 import { PlayerCacheEntry } from "@/lib/player_cache";
 import { get } from "@/lib/requests";
 import "./JosekiVariationFilter.css";
+
+type ContributorOption = { value: number; label: string };
+type SourceOption = { value: number; label: string };
 
 export type JosekiFilter = { contributor?: number; tags: OJEJosekiTag[]; source?: number };
 
@@ -49,27 +52,27 @@ export function JosekiVariationFilter(props: JosekiVariationFilterProps) {
     const { ref: joseki_tag_filter } = registerTargetItem("joseki-tag-filter");
 
     React.useEffect(() => {
-        // Get the list of contributors to chose from
         get(props.contributor_list_url)
             .then((body) => {
-                //console.log("Server response to contributors GET:", body);
                 const new_contributor_list: ContributorList = [];
-                body.forEach((id: number, idx: number) => {
-                    //console.log("Looking up player", id, idx);
+                // Server occasionally returns null/undefined ids; drop them so
+                // they don't render as "(player null)".
+                const ids = (body as Array<number | null | undefined>).filter(
+                    (id): id is number => id != null,
+                );
+                ids.forEach((id: number, idx: number) => {
                     const player = player_cache.lookup(id);
-                    (new_contributor_list as any)[idx] = {
+                    new_contributor_list[idx] = {
                         resolved: player !== null,
-                        player: player === null ? id : player,
+                        player: (player === null ? id : player) as any,
                     };
 
                     if (player === null) {
-                        //console.log("fetching player", id, idx);
                         player_cache
                             .fetch(id)
                             .then((p) => {
-                                //console.log("fetched player", p.username, id, idx);
                                 new_contributor_list[idx] = { resolved: true, player: p };
-                                setContributorList(new_contributor_list);
+                                setContributorList([...new_contributor_list]);
                             })
                             .catch((r) => {
                                 console.log("Player cache fetch failed:", r);
@@ -94,64 +97,48 @@ export function JosekiVariationFilter(props: JosekiVariationFilterProps) {
             });
     }, []);
 
-    const onTagChange = (tags: ReactSelect.MultiValue<OJEJosekiTag>) => {
+    const onTagChange = (tags: MultiValue<OJEJosekiTag>) => {
         const new_filter = { ...props.current_filter, tags };
 
-        props.set_variation_filter(new_filter); // tell parent the filter changed, so the view needs to change
+        props.set_variation_filter(new_filter);
         signalUsed("joseki-position-filter");
         signalUsed("joseki-tag-filter");
     };
 
-    const onContributorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const val = e.target.value === "none" ? null : parseInt(e.target.value);
-        const new_filter = { ...props.current_filter, contributor: val };
-        props.set_variation_filter(new_filter);
+    const onContributorChange = (opt: SingleValue<ContributorOption>) => {
+        props.set_variation_filter({
+            ...props.current_filter,
+            contributor: opt ? opt.value : undefined,
+        });
     };
 
-    const onSourceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const val = e.target.value === "none" ? null : parseInt(e.target.value);
-        const new_filter = { ...props.current_filter, source: val };
-        props.set_variation_filter(new_filter);
+    const onSourceChange = (opt: SingleValue<SourceOption>) => {
+        props.set_variation_filter({
+            ...props.current_filter,
+            source: opt ? opt.value : undefined,
+        });
     };
 
-    const contributors = contributor_list.map((c, i) => {
-        if (c.resolved === true) {
-            return (
-                <option key={i} value={c.player.id}>
-                    {c.player.username}
-                </option>
-            );
-        } else {
-            return (
-                <option key={i} value={c.player}>
-                    {"(player " + c.player + ")"}
-                </option>
-            );
-        }
-    });
+    const contributorOptions: ContributorOption[] = contributor_list
+        .map((c) =>
+            c.resolved === true
+                ? { value: c.player.id as number, label: c.player.username ?? "" }
+                : { value: c.player as number, label: `(player ${c.player})` },
+        )
+        .filter((o) => o.value != null);
 
-    contributors.unshift(
-        <option key={-1} value={"none"}>
-            ({_("none")})
-        </option>,
-    );
+    const sourceOptions: SourceOption[] = source_list
+        .map((s) => ({ value: parseInt(s.id), label: s.description }))
+        .filter((o) => !isNaN(o.value));
 
-    const sources = source_list.map((s, i) => (
-        <option key={i} value={s.id}>
-            {s.description}
-        </option>
-    ));
-    sources.unshift(
-        <option key={-1} value={"none"}>
-            ({_("none")})
-        </option>,
-    );
-
-    const current_contributor =
-        props.current_filter.contributor === null ? "none" : props.current_filter.contributor;
-
-    const current_source =
-        props.current_filter.source === null ? "none" : props.current_filter.source;
+    const selectedContributor =
+        props.current_filter.contributor != null
+            ? (contributorOptions.find((o) => o.value === props.current_filter.contributor) ?? null)
+            : null;
+    const selectedSource =
+        props.current_filter.source != null
+            ? (sourceOptions.find((o) => o.value === props.current_filter.source) ?? null)
+            : null;
 
     return (
         <div className="joseki-variation-filter" ref={joseki_position_filter}>
@@ -166,24 +153,32 @@ export function JosekiVariationFilter(props: JosekiVariationFilterProps) {
 
             <div className="filter-set">
                 <div className="filter-label">{_("Filter by Contributor")}</div>
-                <select
-                    value={current_contributor}
+                <Select
+                    className={
+                        "joseki-filter-select" + (selectedContributor ? " filter-active" : "")
+                    }
+                    classNamePrefix="ogs-react-select"
+                    value={selectedContributor}
+                    options={contributorOptions}
                     onChange={onContributorChange}
-                    className={current_contributor !== "none" ? "filter-active" : ""}
-                >
-                    {contributors}
-                </select>
+                    isClearable={true}
+                    isSearchable={true}
+                    placeholder={_("Any contributor")}
+                />
             </div>
 
             <div className="filter-set">
                 <div className="filter-label">{_("Filter by Source")}</div>
-                <select
-                    value={current_source}
+                <Select
+                    className={"joseki-filter-select" + (selectedSource ? " filter-active" : "")}
+                    classNamePrefix="ogs-react-select"
+                    value={selectedSource}
+                    options={sourceOptions}
                     onChange={onSourceChange}
-                    className={current_source !== "none" ? "filter-active" : ""}
-                >
-                    {sources}
-                </select>
+                    isClearable={true}
+                    isSearchable={true}
+                    placeholder={_("Any source")}
+                />
             </div>
         </div>
     );

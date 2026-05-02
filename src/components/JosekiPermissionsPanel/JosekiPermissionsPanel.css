@@ -14,17 +14,69 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 .joseki-permissions-panel {
     display: flex;
-    align-items: flex-end;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
 
-    input {
-        max-width: 6em;
-        margin-right: 1em;
-        margin-left: 1em;
+    .joseki-permissions-user {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        font-size: 0.75rem;
+        color: var(--shade2);
+
+        span {
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        input {
+            font-size: 0.85rem;
+            padding: 0.35rem 0.5rem;
+            box-sizing: border-box;
+            width: 100%;
+            margin: 0;
+        }
     }
 
-    .Player {
-        margin-right: 1em;
+    .joseki-permissions-player {
+        font-size: 0.85rem;
+        color: var(--shade1);
+    }
+
+    .joseki-permissions-flags {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        padding-top: 0.25rem;
+        border-top: 1px solid var(--shade4);
+    }
+
+    .joseki-permissions-flag {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        color: var(--fg);
+        cursor: pointer;
+
+        input {
+            margin: 0;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        input:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        input:disabled + span {
+            color: var(--shade2);
+            cursor: not-allowed;
+        }
     }
 }

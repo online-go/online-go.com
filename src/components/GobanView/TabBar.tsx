@@ -35,27 +35,26 @@ interface TabBarProps {
 export function TabBar({ tabs }: TabBarProps): React.ReactElement {
     const state = useGobanViewState();
 
-    const barTabs = tabs.filter((t) => t.type !== "always");
+    const barTabs = tabs.filter((t) => t.type !== "always" && !t.hideFromBar);
     const leftTabs = barTabs.filter((t) => (t.align ?? "left") === "left");
     const centerTabs = barTabs.filter((t) => t.align === "center");
     const rightTabs = barTabs.filter((t) => t.align === "right");
 
-    const handleClick = (tab: TabDefinition) => {
+    const handleClick = (tab: TabDefinition, event: React.MouseEvent<HTMLButtonElement>) => {
         if (tab.type === "toggle") {
             state.setToggle(tab.id, !state.toggleVisibility[tab.id]);
         } else if (tab.type === "takeover") {
             const prevActiveId = state.activeTakeover;
             const willBeActive = prevActiveId !== tab.id;
             state.setActiveTakeover(willBeActive ? tab.id : null);
-            // A different takeover being opened is a deactivation for the
-            // one that was active. Notify it so it can tear down state.
+            // Opening a different takeover deactivates the previous one.
             if (prevActiveId && prevActiveId !== tab.id) {
                 const displaced = tabs.find((t) => t.id === prevActiveId);
                 displaced?.onToggle?.(false);
             }
             tab.onToggle?.(willBeActive);
         } else {
-            tab.onClick?.();
+            tab.onClick?.(event);
         }
     };
 
@@ -82,7 +81,7 @@ export function TabBar({ tabs }: TabBarProps): React.ReactElement {
             className={`GobanView-tab-button ${isActive(tab) ? "active" : ""}`}
             title={tab.title}
             disabled={tab.disabled}
-            onClick={() => handleClick(tab)}
+            onClick={(e) => handleClick(tab, e)}
         >
             {renderIcon(tab)}
         </button>
