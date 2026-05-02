@@ -170,16 +170,18 @@
                         }
                     }
                 }
-            }
 
-            &:has(.contents.expanded) .section-header {
-                position: sticky;
-                top: 0;
-                z-index: 10;
-                /*border-top-left-radius: 0.5rem; */
-                /*border-top-right-radius: 0.5rem; */
-                border: 1px solid;
-                border-color: var(--shade4);
+                &:has(+ .contents.collapsed) {
+                    border-radius: 0.5rem;
+                }
+
+                &:has(+ .contents.expanded) {
+                    position: sticky;
+                    top: 0;
+                    z-index: 10;
+                    border: 1px solid;
+                    border-color: var(--shade4);
+                }
             }
 
             /* Collapsible content area with proper card styling */
@@ -187,9 +189,6 @@
                 padding: 1.5rem;
                 background-color: var(--shade5); /* Use shade5 instead of shade6 for compatibility */
                 border-radius: 0 0 0.5rem 0.5rem;
-                border: 1px solid;
-                border-color: var(--shade4);
-                border-top: none;
                 display: grid;
                 /* Use auto-fit with a smaller minimum to allow more flexibility */
                 grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
