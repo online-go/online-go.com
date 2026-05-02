@@ -607,6 +607,28 @@
         padding: 0.65rem 0.75rem 0.75rem;
     }
 
+    .KibitzMobileGamePicker .KibitzGamePickerOverlay-mobilePreviewStep {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        height: 100%;
+        min-height: 0;
+        overflow-x: hidden;
+        overflow-y: auto !important;
+        overscroll-behavior: contain;
+        touch-action: pan-y;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .KibitzMobileGamePicker .KibitzGamePickerOverlay-mobilePreviewContent {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        gap: 0.55rem;
+        min-height: 0;
+        overflow: visible;
+    }
+
     .KibitzMobileGamePicker .KibitzGamePickerOverlay-mobileObservePane {
         min-height: 0;
         overflow: auto;
@@ -1152,16 +1174,34 @@
     .Kibitz
         .KibitzGamePickerOverlay.KibitzMobileGamePicker
         .KibitzGamePickerOverlay-mobilePreviewStep {
-        display: grid;
-        grid-template-rows: minmax(0, 1fr) auto;
-        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        height: 100%;
+        min-height: 0;
+        overflow-x: hidden;
+        overflow-y: auto !important;
+        overscroll-behavior: contain;
+        touch-action: pan-y;
+        -webkit-overflow-scrolling: touch;
     }
 
     .Kibitz
         .KibitzGamePickerOverlay.KibitzMobileGamePicker
         .KibitzGamePickerOverlay-mobilePreviewContent {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        gap: 0.55rem;
         min-height: 0;
-        overflow: auto;
+        overflow: visible;
+    }
+
+    .Kibitz
+        .KibitzGamePickerOverlay.KibitzMobileGamePicker
+        .KibitzGamePickerOverlay-mobileCreateButton {
+        align-self: stretch;
+        width: 100%;
     }
 
     .Kibitz
@@ -1378,6 +1418,28 @@
         height: 100%;
         min-height: 0;
         overflow: hidden;
+    }
+
+    .KibitzGamePickerOverlay.KibitzMobileGamePicker .KibitzGamePickerOverlay-mobilePreviewStep {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        height: 100%;
+        min-height: 0;
+        overflow-x: hidden;
+        overflow-y: auto !important;
+        overscroll-behavior: contain;
+        touch-action: pan-y;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .KibitzGamePickerOverlay.KibitzMobileGamePicker .KibitzGamePickerOverlay-mobilePreviewContent {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        gap: 0.55rem;
+        min-height: 0;
+        overflow: visible;
     }
 }
 

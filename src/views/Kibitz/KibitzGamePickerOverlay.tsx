@@ -679,37 +679,30 @@ export function KibitzGamePickerOverlay({
     );
 
     const mobileHeaderTitle =
-        mobileStep === "details"
-            ? pgettext("Title for the mobile room details step in kibitz", "Room details")
-            : mode === "create-room"
-              ? pgettext("Title for Kibitz create room overlay", "Create room")
-              : pgettext("Title for Kibitz change board overlay", "Change board");
+        mode === "create-room"
+            ? pgettext("Title for Kibitz create room overlay", "Create room")
+            : pgettext("Title for Kibitz change board overlay", "Change board");
 
     const mobileHeaderSubtitle =
-        mobileStep === "details"
-            ? pgettext(
-                  "Subtitle for the mobile room details step in kibitz",
-                  "Set a room name and optional description.",
-              )
-            : mobileStep === "preview"
-              ? mode === "create-room"
-                  ? pgettext(
-                        "Subtitle for the mobile create room preview step",
-                        "Review the selected game before continuing.",
-                    )
-                  : pgettext(
-                        "Subtitle for the mobile change board preview step",
-                        "Review the selected game and confirm the switch.",
-                    )
-              : mode === "create-room"
+        mobileStep === "preview"
+            ? mode === "create-room"
                 ? pgettext(
-                      "Subtitle for the mobile create room selection step",
-                      "Choose a game from Observe or load a game by ID.",
+                      "Subtitle for the mobile create room preview step",
+                      "Review the selected game before creating the room.",
                   )
                 : pgettext(
-                      "Subtitle for the mobile change board selection step",
-                      "Choose a new game for this room.",
-                  );
+                      "Subtitle for the mobile change board preview step",
+                      "Review the selected game and confirm the switch.",
+                  )
+            : mode === "create-room"
+              ? pgettext(
+                    "Subtitle for the mobile create room selection step",
+                    "Choose a game from Observe or load a game by ID.",
+                )
+              : pgettext(
+                    "Subtitle for the mobile change board selection step",
+                    "Choose a new game for this room.",
+                );
 
     const renderMobileSelectStep = () => (
         <>
@@ -771,9 +764,59 @@ export function KibitzGamePickerOverlay({
     );
 
     const renderMobilePreviewStep = () => (
-        <div className="KibitzGamePickerOverlay-mobileStepBody">
-            <div className="KibitzGamePickerOverlay-selectionCard KibitzGamePickerOverlay-selectionCard-mobile">
-                {renderSelectedGameCard({ mobile: true, showBoardPreview: true })}
+        <div className="KibitzGamePickerOverlay-mobileStepBody KibitzGamePickerOverlay-mobilePreviewStep">
+            <div className="KibitzGamePickerOverlay-mobilePreviewContent">
+                <div className="KibitzGamePickerOverlay-selectionCard KibitzGamePickerOverlay-selectionCard-mobile">
+                    {renderSelectedGameCard({ mobile: true, showBoardPreview: true })}
+                </div>
+                {mode === "create-room" ? (
+                    <>
+                        <div className="KibitzGamePickerOverlay-mobileRoomFields">
+                            <label
+                                className="KibitzGamePickerOverlay-fieldLabel"
+                                htmlFor="kibitz-room-name-mobile"
+                            >
+                                {pgettext("Label for the Kibitz room name field", "Room name")}
+                            </label>
+                            <input
+                                id="kibitz-room-name-mobile"
+                                type="text"
+                                value={roomName}
+                                onChange={(event) => {
+                                    setNameTouched(true);
+                                    setRoomName(event.target.value);
+                                }}
+                                disabled={!selectedGameSummary}
+                            />
+                            <label
+                                className="KibitzGamePickerOverlay-fieldLabel"
+                                htmlFor="kibitz-room-description-mobile"
+                            >
+                                {pgettext(
+                                    "Label for the Kibitz room description field",
+                                    "Description",
+                                )}
+                            </label>
+                            <textarea
+                                id="kibitz-room-description-mobile"
+                                value={roomDescription}
+                                onChange={(event) => {
+                                    setRoomDescription(event.target.value);
+                                }}
+                                disabled={!selectedGameSummary}
+                                rows={5}
+                            />
+                        </div>
+                        <button
+                            type="button"
+                            className="xs primary KibitzGamePickerOverlay-actionButton KibitzGamePickerOverlay-mobileCreateButton"
+                            onClick={onSubmitCreateRoom}
+                            disabled={!canCreateRoom}
+                        >
+                            {pgettext("Button label for creating a Kibitz room", "Create room")}
+                        </button>
+                    </>
+                ) : null}
             </div>
             <div className="KibitzGamePickerOverlay-mobileFooter">
                 <button
@@ -783,21 +826,7 @@ export function KibitzGamePickerOverlay({
                 >
                     {pgettext("Button label for going back in the mobile kibitz picker", "Back")}
                 </button>
-                {mode === "create-room" ? (
-                    <button
-                        type="button"
-                        className="xs primary KibitzGamePickerOverlay-actionButton"
-                        onClick={() => {
-                            setMobileStep("details");
-                        }}
-                        disabled={!selectedGameSummary || loading}
-                    >
-                        {pgettext(
-                            "Button label for continuing to room details in the mobile kibitz picker",
-                            "Continue",
-                        )}
-                    </button>
-                ) : (
+                {mode !== "create-room" ? (
                     <button
                         type="button"
                         className="xs primary KibitzGamePickerOverlay-actionButton"
@@ -809,62 +838,7 @@ export function KibitzGamePickerOverlay({
                             "Change board",
                         )}
                     </button>
-                )}
-            </div>
-        </div>
-    );
-
-    const renderMobileDetailsStep = () => (
-        <div className="KibitzGamePickerOverlay-mobileStepBody">
-            <div className="KibitzGamePickerOverlay-mobileRoomFields">
-                <label
-                    className="KibitzGamePickerOverlay-fieldLabel"
-                    htmlFor="kibitz-room-name-mobile"
-                >
-                    {pgettext("Label for the Kibitz room name field", "Room name")}
-                </label>
-                <input
-                    id="kibitz-room-name-mobile"
-                    type="text"
-                    value={roomName}
-                    onChange={(event) => {
-                        setNameTouched(true);
-                        setRoomName(event.target.value);
-                    }}
-                    disabled={!selectedGameSummary}
-                />
-                <label
-                    className="KibitzGamePickerOverlay-fieldLabel"
-                    htmlFor="kibitz-room-description-mobile"
-                >
-                    {pgettext("Label for the Kibitz room description field", "Description")}
-                </label>
-                <textarea
-                    id="kibitz-room-description-mobile"
-                    value={roomDescription}
-                    onChange={(event) => {
-                        setRoomDescription(event.target.value);
-                    }}
-                    disabled={!selectedGameSummary}
-                    rows={5}
-                />
-            </div>
-            <div className="KibitzGamePickerOverlay-mobileFooter">
-                <button
-                    type="button"
-                    className="xs KibitzGamePickerOverlay-cancelButton"
-                    onClick={onBackMobile}
-                >
-                    {pgettext("Button label for going back in the mobile kibitz picker", "Back")}
-                </button>
-                <button
-                    type="button"
-                    className="xs primary KibitzGamePickerOverlay-actionButton"
-                    onClick={onSubmitCreateRoom}
-                    disabled={!canCreateRoom}
-                >
-                    {pgettext("Button label for creating a Kibitz room", "Create room")}
-                </button>
+                ) : null}
             </div>
         </div>
     );
@@ -927,28 +901,10 @@ export function KibitzGamePickerOverlay({
                             )}
                         </button>
                     )}
-                    <button
-                        type="button"
-                        className="xs KibitzGamePickerOverlay-closeButton KibitzGamePickerOverlay-dangerButton"
-                        onClick={onClose}
-                        aria-label={pgettext(
-                            "Aria label for closing the Kibitz game picker overlay",
-                            "Close",
-                        )}
-                    >
-                        {pgettext(
-                            "Button label for closing the Kibitz game picker overlay",
-                            "Close",
-                        )}
-                    </button>
                 </div>
             </div>
             <div className="KibitzGamePickerOverlay-mobileBody">
-                {mobileStep === "select"
-                    ? renderMobileSelectStep()
-                    : mobileStep === "preview"
-                      ? renderMobilePreviewStep()
-                      : renderMobileDetailsStep()}
+                {mobileStep === "select" ? renderMobileSelectStep() : renderMobilePreviewStep()}
             </div>
         </div>
     );
