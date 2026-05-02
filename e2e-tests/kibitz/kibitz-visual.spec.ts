@@ -86,6 +86,31 @@ async function waitForCompareLayoutStable(page: Page) {
     await waitForStableRect(page, ".board-panel.secondary-board .board-fit-slot");
 }
 
+async function openKibitzMobileCreateRoomPreview(page: Page) {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await load(page, "/kibitz/user-fea5dced");
+    await expect(page.locator(".Kibitz")).toBeVisible({ timeout: 15000 });
+
+    await page.getByRole("button", { name: "Open room drawer" }).click();
+    await page
+        .locator(".KibitzRoomList-createButton")
+        .first()
+        .evaluate((element) => {
+            (element as HTMLButtonElement).click();
+        });
+    await expect(page.locator(".KibitzGamePickerOverlay-mobileHeader")).toBeVisible({
+        timeout: 15000,
+    });
+
+    await page.getByRole("button", { name: "Game ID" }).click();
+    await page.locator("#kibitz-game-picker-input-mobile").fill("12459");
+    await page.getByRole("button", { name: "Load" }).click();
+
+    await expect(page.locator(".KibitzGamePickerOverlay-mobilePreviewStep")).toBeVisible({
+        timeout: 15000,
+    });
+}
+
 async function waitForCompareMode(page: Page) {
     const stageBoards = page.locator(".KibitzRoomStage-boards").first();
     await expect(stageBoards).toHaveClass(/secondary-pane-equal/, { timeout: 5000 });
@@ -899,6 +924,80 @@ ogsTest.describe("@Kibitz layout regressions", () => {
             for (const presenceUserWidth of widths.presenceUsers) {
                 expect(presenceUserWidth).toBeLessThanOrEqual(maxAllowedWidth);
             }
+        },
+    );
+
+    ogsTest(
+        "mobile create-room preview keeps the header and fields laid out correctly",
+        async ({ page }) => {
+            await openKibitzMobileCreateRoomPreview(page);
+
+            const prefix = page.locator(".KibitzGamePickerOverlay-mobileHeaderTitlePreviewPrefix");
+            const game = page.locator(".KibitzGamePickerOverlay-mobileHeaderTitlePreviewGame");
+            const header = page.locator(".KibitzGamePickerOverlay-mobileHeaderTop-preview");
+            const badge = page.locator(".KibitzGamePickerOverlay-mobileHeaderStateBadge");
+            const backButton = page.locator(".KibitzGamePickerOverlay-mobileBackButtonInline");
+            const roomRow = page.locator(".KibitzGamePickerOverlay-mobileRoomNameRow");
+            const roomLabel = roomRow.locator(".KibitzGamePickerOverlay-fieldLabel");
+            const roomInput = roomRow.locator("input");
+            const playerRows = page.locator(".KibitzGamePickerOverlay-playerRow");
+            const separator = page.locator(".KibitzGamePickerOverlay-playerSeparator");
+
+            await expect(prefix).toBeVisible();
+            await expect(game).toBeVisible();
+            await expect(header).toBeVisible();
+            await expect(badge).toBeVisible();
+            await expect(
+                page.locator(".KibitzGamePickerOverlay-mobileHeaderStateBadge"),
+            ).toHaveCount(1);
+            await expect(backButton).toBeVisible();
+            await expect(roomLabel).toBeVisible();
+            await expect(roomInput).toBeVisible();
+            await expect(playerRows).toHaveCount(2);
+            await expect(separator).toHaveCount(1);
+
+            const bounds = await page.evaluate(() => {
+                const rectOf = (selector: string) => {
+                    const element = document.querySelector(selector);
+                    if (!element) {
+                        throw new Error(`Missing Kibitz preview element: ${selector}`);
+                    }
+
+                    const rect = element.getBoundingClientRect();
+                    return {
+                        top: rect.top,
+                        bottom: rect.bottom,
+                        left: rect.left,
+                        right: rect.right,
+                        width: rect.width,
+                        height: rect.height,
+                    };
+                };
+
+                return {
+                    prefix: rectOf(".KibitzGamePickerOverlay-mobileHeaderTitlePreviewPrefix"),
+                    game: rectOf(".KibitzGamePickerOverlay-mobileHeaderTitlePreviewGame"),
+                    header: rectOf(".KibitzGamePickerOverlay-mobileHeaderTop-preview"),
+                    badge: rectOf(".KibitzGamePickerOverlay-mobileHeaderStateBadge"),
+                    backButton: rectOf(".KibitzGamePickerOverlay-mobileBackButtonInline"),
+                    roomLabel: rectOf(
+                        ".KibitzGamePickerOverlay-mobileRoomNameRow .KibitzGamePickerOverlay-fieldLabel",
+                    ),
+                    roomInput: rectOf(".KibitzGamePickerOverlay-mobileRoomNameRow input"),
+                    blackRow: rectOf(".KibitzGamePickerOverlay-playerRow"),
+                    whiteRow: rectOf(".KibitzGamePickerOverlay-playerRow:nth-of-type(2)"),
+                    separator: rectOf(".KibitzGamePickerOverlay-playerSeparator"),
+                };
+            });
+
+            expect(bounds.game.top - bounds.prefix.top).toBeGreaterThan(10);
+            expect(bounds.header.right - bounds.badge.right).toBeLessThanOrEqual(2);
+            expect(bounds.badge.left).toBeGreaterThan(bounds.backButton.right);
+            expect(bounds.badge.left).toBeGreaterThan(bounds.game.right - 1);
+            expect(Math.abs(bounds.roomLabel.top - bounds.roomInput.top)).toBeLessThanOrEqual(5);
+            expect(bounds.roomInput.left).toBeGreaterThan(bounds.roomLabel.right - 1);
+            expect(bounds.blackRow.right).toBeLessThan(bounds.separator.left + 1);
+            expect(bounds.whiteRow.left).toBeGreaterThan(bounds.separator.right - 1);
         },
     );
 

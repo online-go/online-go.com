@@ -18,9 +18,11 @@
 import * as React from "react";
 import { get } from "@/lib/requests";
 import { interpolate, pgettext } from "@/lib/translate";
+import { Player } from "@/components/Player";
 import { ObserveGamesComponent } from "@/components/ObserveGamesComponent";
 import type { KibitzRoomSummary, KibitzRoomUser, KibitzWatchedGame } from "@/models/kibitz";
 import { KibitzBoard } from "./KibitzBoard";
+import { KibitzUserAvatar } from "./KibitzUserAvatar";
 import { getKibitzAccessPolicyForUser } from "./kibitzAnalysisPolicy";
 import {
     getKibitzAccessBlockedMessage,
@@ -344,42 +346,28 @@ export function KibitzMobileGamePicker({
 
         return (
             <>
-                <div className="KibitzGamePickerOverlay-selectionHeader">
-                    <div className="KibitzGamePickerOverlay-selectionTitle">
-                        {selectedGameSummary.title}
+                <div className="KibitzGamePickerOverlay-playerStack">
+                    <div className="KibitzGamePickerOverlay-playerRow">
+                        <KibitzUserAvatar
+                            user={selectedGameSummary.black}
+                            size={16}
+                            className="KibitzGamePickerOverlay-playerAvatar inline"
+                            iconClassName="KibitzGamePickerOverlay-playerAvatarIcon"
+                        />
+                        <Player user={selectedGameSummary.black} flag rank noextracontrols />
                     </div>
-                    {selectedGameStateLabel ? (
-                        <div className={selectedGameStateClassName}>{selectedGameStateLabel}</div>
-                    ) : null}
-                </div>
-                <div className="KibitzGamePickerOverlay-previewMeta">
-                    <span>
-                        {interpolate(
-                            pgettext("Game size label in the Kibitz picker", "{{size}} board"),
-                            {
-                                size: selectedGameSummary.board_size,
-                            },
-                        )}
+                    <span className="KibitzGamePickerOverlay-playerSeparator" aria-hidden="true">
+                        -
                     </span>
-                    <span>
-                        {interpolate(
-                            pgettext("Move count label in the Kibitz picker", "{{count}} moves"),
-                            {
-                                count: selectedGameSummary.move_number ?? 0,
-                            },
-                        )}
-                    </span>
-                </div>
-                <div className="KibitzGamePickerOverlay-playerRow">
-                    <span className="KibitzGamePickerOverlay-playerName">
-                        {selectedGameSummary.black.username}
-                    </span>
-                    <span className="KibitzGamePickerOverlay-versus">
-                        {pgettext("Versus label in the Kibitz picker", "vs")}
-                    </span>
-                    <span className="KibitzGamePickerOverlay-playerName">
-                        {selectedGameSummary.white.username}
-                    </span>
+                    <div className="KibitzGamePickerOverlay-playerRow">
+                        <KibitzUserAvatar
+                            user={selectedGameSummary.white}
+                            size={16}
+                            className="KibitzGamePickerOverlay-playerAvatar inline"
+                            iconClassName="KibitzGamePickerOverlay-playerAvatarIcon"
+                        />
+                        <Player user={selectedGameSummary.white} flag rank noextracontrols />
+                    </div>
                 </div>
                 <div
                     className={
@@ -430,14 +418,7 @@ export function KibitzMobileGamePicker({
                         )}
                     </div>
                 ) : null}
-                {mode === "create-room" ? (
-                    <div className="KibitzGamePickerOverlay-note">
-                        {pgettext(
-                            "Note shown before room name and description fields in the mobile kibitz picker",
-                            "Set a room name and optional description below.",
-                        )}
-                    </div>
-                ) : (
+                {mode === "create-room" ? null : (
                     <div className="KibitzGamePickerOverlay-confirmation">
                         <div className="KibitzGamePickerOverlay-confirmationCopy">
                             <strong>
@@ -468,21 +449,50 @@ export function KibitzMobileGamePicker({
     };
 
     const mobileHeaderTitle =
-        mode === "create-room"
-            ? pgettext("Title for Kibitz create room overlay", "Create room")
-            : pgettext("Title for Kibitz change board overlay", "Change board");
+        mobileStep === "preview" && mode === "create-room" && selectedGameSummary
+            ? interpolate(
+                  pgettext(
+                      "Title for Kibitz create room preview overlay with selected game",
+                      "Create room with game: {{game}}",
+                  ),
+                  { game: selectedGameSummary.title },
+              )
+            : mode === "create-room"
+              ? pgettext("Title for Kibitz create room overlay", "Create room")
+              : pgettext("Title for Kibitz change board overlay", "Change board");
+
+    const mobileHeaderTitleContent =
+        mobileStep === "preview" && mode === "create-room" && selectedGameSummary ? (
+            <div className="KibitzGamePickerOverlay-mobileHeaderTitlePreview">
+                <span className="KibitzGamePickerOverlay-mobileHeaderTitlePreviewPrefix">
+                    {pgettext(
+                        "Prefix for Kibitz create room preview overlay title",
+                        "Create room with game:",
+                    )}
+                </span>
+                <br />
+                <span className="KibitzGamePickerOverlay-mobileHeaderTitlePreviewGame">
+                    {selectedGameSummary.title}
+                </span>
+            </div>
+        ) : (
+            mobileHeaderTitle
+        );
+
+    const mobileHeaderStateLabel =
+        mobileStep === "preview" && selectedGameStateLabel ? (
+            <div
+                className={
+                    selectedGameStateClassName + " KibitzGamePickerOverlay-mobileHeaderStateBadge"
+                }
+            >
+                {selectedGameStateLabel}
+            </div>
+        ) : null;
 
     const mobileHeaderSubtitle =
         mobileStep === "preview"
-            ? mode === "create-room"
-                ? pgettext(
-                      "Subtitle for the mobile create room preview step",
-                      "Review the selected game before creating the room.",
-                  )
-                : pgettext(
-                      "Subtitle for the mobile change board preview step",
-                      "Review the selected game and confirm the switch.",
-                  )
+            ? null
             : mode === "create-room"
               ? pgettext(
                     "Subtitle for the mobile create room selection step",
@@ -561,22 +571,24 @@ export function KibitzMobileGamePicker({
                 {mode === "create-room" ? (
                     <>
                         <div className="KibitzGamePickerOverlay-mobileRoomFields">
-                            <label
-                                className="KibitzGamePickerOverlay-fieldLabel"
-                                htmlFor="kibitz-room-name-mobile"
-                            >
-                                {pgettext("Label for the Kibitz room name field", "Room name")}
-                            </label>
-                            <input
-                                id="kibitz-room-name-mobile"
-                                type="text"
-                                value={roomName}
-                                onChange={(event) => {
-                                    setNameTouched(true);
-                                    setRoomName(event.target.value);
-                                }}
-                                disabled={!selectedGameSummary}
-                            />
+                            <div className="KibitzGamePickerOverlay-mobileRoomNameRow">
+                                <label
+                                    className="KibitzGamePickerOverlay-fieldLabel"
+                                    htmlFor="kibitz-room-name-mobile"
+                                >
+                                    {pgettext("Label for the Kibitz room name field", "ROOM NAME")}
+                                </label>
+                                <input
+                                    id="kibitz-room-name-mobile"
+                                    type="text"
+                                    value={roomName}
+                                    onChange={(event) => {
+                                        setNameTouched(true);
+                                        setRoomName(event.target.value);
+                                    }}
+                                    disabled={!selectedGameSummary}
+                                />
+                            </div>
                             <label
                                 className="KibitzGamePickerOverlay-fieldLabel"
                                 htmlFor="kibitz-room-description-mobile"
@@ -608,17 +620,6 @@ export function KibitzMobileGamePicker({
                 ) : null}
             </div>
             <div className="KibitzGamePickerOverlay-mobileFooter">
-                <button
-                    type="button"
-                    className="xs primary KibitzGamePickerOverlay-cancelButton"
-                    onClick={onBackMobile}
-                    aria-label={pgettext(
-                        "Aria label for going back in the mobile kibitz picker",
-                        "Go back",
-                    )}
-                >
-                    {pgettext("Button label for going back in the mobile kibitz picker", "Back")}
-                </button>
                 {mode !== "create-room" ? (
                     <button
                         type="button"
@@ -644,13 +645,46 @@ export function KibitzMobileGamePicker({
         >
             <div className="KibitzGamePickerOverlay-shell KibitzGamePickerOverlay-shell-mobile">
                 <div className="KibitzGamePickerOverlay-mobileHeader">
-                    <div className="KibitzGamePickerOverlay-mobileHeaderTop">
-                        <div className="KibitzGamePickerOverlay-mobileHeaderTitle">
-                            {mobileHeaderTitle}
+                    <div
+                        className={
+                            "KibitzGamePickerOverlay-mobileHeaderTop" +
+                            (mobileStep === "preview"
+                                ? " KibitzGamePickerOverlay-mobileHeaderTop-preview"
+                                : "")
+                        }
+                    >
+                        {mobileStep === "preview" ? (
+                            <button
+                                type="button"
+                                className="xs KibitzGamePickerOverlay-mobileBackButton KibitzGamePickerOverlay-mobileBackButtonInline"
+                                onClick={onBackMobile}
+                                aria-label={pgettext(
+                                    "Aria label for going back in the mobile kibitz picker",
+                                    "Go back",
+                                )}
+                            >
+                                {pgettext(
+                                    "Back-arrow glyph for the mobile kibitz picker back button",
+                                    "←",
+                                )}
+                            </button>
+                        ) : null}
+                        <div
+                            className={
+                                "KibitzGamePickerOverlay-mobileHeaderTitle" +
+                                (mobileStep === "preview"
+                                    ? " KibitzGamePickerOverlay-mobileHeaderTitle-preview"
+                                    : "")
+                            }
+                        >
+                            {mobileHeaderTitleContent}
                         </div>
-                        <div className="KibitzGamePickerOverlay-mobileHeaderSubtitle">
-                            {mobileHeaderSubtitle}
-                        </div>
+                        {mobileHeaderStateLabel}
+                        {mobileHeaderSubtitle ? (
+                            <div className="KibitzGamePickerOverlay-mobileHeaderSubtitle">
+                                {mobileHeaderSubtitle}
+                            </div>
+                        ) : null}
                     </div>
                     <div className="KibitzGamePickerOverlay-mobileHeaderActions">
                         {mobileStep === "select" ? (
@@ -707,22 +741,7 @@ export function KibitzMobileGamePicker({
                                     </button>
                                 </div>
                             </>
-                        ) : (
-                            <button
-                                type="button"
-                                className="xs primary KibitzGamePickerOverlay-mobileBackButton"
-                                onClick={onBackMobile}
-                                aria-label={pgettext(
-                                    "Aria label for going back in the mobile kibitz picker",
-                                    "Go back",
-                                )}
-                            >
-                                {pgettext(
-                                    "Back-arrow glyph for the mobile kibitz picker back button",
-                                    "←",
-                                )}
-                            </button>
-                        )}
+                        ) : null}
                     </div>
                 </div>
                 <div className="KibitzGamePickerOverlay-mobileBody">
