@@ -207,6 +207,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const [permissions, setPermissions] = React.useState(controller.permissions);
     const [accessBlocked, setAccessBlocked] = React.useState(controller.access_blocked);
     const currentUser = useCurrentKibitzUser();
+    const canManageRoom = permissions.can_edit_room || Boolean(currentUser?.is_moderator);
     const [mobileCompanionPanel, setMobileCompanionPanel] =
         React.useState<MobileCompanionPanel>("chat");
     const [mobileCompareController, setMobileCompareController] =
@@ -1292,7 +1293,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                         onPostVariation={onPostVariation}
                                         onSetSecondaryPaneMode={onSetSecondaryPaneMode}
                                         onChangeBoard={undefined}
-                                        canEditRoom={permissions.can_edit_room}
+                                        canEditRoom={canManageRoom}
                                         onSaveRoomDetails={async (title, description) =>
                                             controller.updateRoomDetails(
                                                 resolvedRoom.id,
@@ -1436,7 +1437,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                 onPostVariation={onPostVariation}
                                 onSetSecondaryPaneMode={onSetSecondaryPaneMode}
                                 onChangeBoard={handleOpenChangeBoard}
-                                canEditRoom={permissions.can_edit_room}
+                                canEditRoom={canManageRoom}
                                 onSaveRoomDetails={async (title, description) =>
                                     controller.updateRoomDetails(
                                         resolvedRoom.id,

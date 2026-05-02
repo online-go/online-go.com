@@ -24,6 +24,8 @@ export interface KibitzAnalysisUser {
     username?: string;
     user?: KibitzAnalysisUser | number | string | null;
     anonymous?: boolean;
+    is_moderator?: boolean;
+    moderator_powers?: number;
 }
 
 export interface KibitzAnalysisGameLike {
