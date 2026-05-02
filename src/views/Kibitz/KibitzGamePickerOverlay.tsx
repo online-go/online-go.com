@@ -89,11 +89,28 @@ function mapGameDetailsToWatchedGame(details: rest_api.GameDetails): KibitzWatch
     };
 }
 
-function buildDefaultRoomName(game: KibitzWatchedGame): string {
-    return interpolate(pgettext("Default room name for a Kibitz room", "{{black}} vs {{white}}"), {
-        black: game.black.username,
-        white: game.white.username,
-    });
+function buildDefaultRoomName(username?: string | null): string {
+    const resolvedUsername = username?.trim();
+
+    return resolvedUsername
+        ? interpolate(pgettext("Default room name for a Kibitz room", "{{username}}'s Room"), {
+              username: resolvedUsername,
+          })
+        : pgettext("Fallback room name for a Kibitz room", "Room");
+}
+
+function buildDefaultRoomDescription(game: KibitzWatchedGame): string {
+    return interpolate(
+        pgettext(
+            "Default room description for a Kibitz room",
+            "{{game}} - {{black}} vs. {{white}}",
+        ),
+        {
+            game: game.title,
+            black: game.black.username,
+            white: game.white.username,
+        },
+    );
 }
 
 function findExistingRoom(rooms: KibitzRoomSummary[], gameId: number): KibitzRoomSummary | null {
@@ -115,6 +132,7 @@ export function KibitzGamePickerOverlay({
     const [roomName, setRoomName] = React.useState("");
     const [roomDescription, setRoomDescription] = React.useState("");
     const [nameTouched, setNameTouched] = React.useState(false);
+    const [descriptionTouched, setDescriptionTouched] = React.useState(false);
     const [loading, setLoading] = React.useState(false);
     const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
     const [sourceMode, setSourceMode] = React.useState<PickerSourceMode>("ongoing");
@@ -195,9 +213,13 @@ export function KibitzGamePickerOverlay({
         }
 
         if (!nameTouched) {
-            setRoomName(buildDefaultRoomName(selectedGame.game));
+            setRoomName(buildDefaultRoomName(currentUser?.username));
         }
-    }, [mode, nameTouched, selectedGame]);
+
+        if (!descriptionTouched) {
+            setRoomDescription(buildDefaultRoomDescription(selectedGame.game));
+        }
+    }, [descriptionTouched, mode, nameTouched, selectedGame, currentUser]);
 
     React.useEffect(() => {
         if (mode !== "create-room" && mobileStep === "details") {
@@ -227,8 +249,10 @@ export function KibitzGamePickerOverlay({
                     isPublic,
                 });
                 setNameTouched(false);
+                setDescriptionTouched(false);
                 if (mode === "create-room") {
-                    setRoomName(buildDefaultRoomName(game));
+                    setRoomName(buildDefaultRoomName(currentUser?.username));
+                    setRoomDescription(buildDefaultRoomDescription(game));
                 }
                 if (!isPublic) {
                     setErrorMessage(
@@ -619,6 +643,7 @@ export function KibitzGamePickerOverlay({
                                     id="kibitz-room-description"
                                     value={roomDescription}
                                     onChange={(event) => {
+                                        setDescriptionTouched(true);
                                         setRoomDescription(event.target.value);
                                     }}
                                     disabled={!selectedGameSummary}
@@ -814,6 +839,7 @@ export function KibitzGamePickerOverlay({
                                 id="kibitz-room-description-mobile"
                                 value={roomDescription}
                                 onChange={(event) => {
+                                    setDescriptionTouched(true);
                                     setRoomDescription(event.target.value);
                                 }}
                                 disabled={!selectedGameSummary}

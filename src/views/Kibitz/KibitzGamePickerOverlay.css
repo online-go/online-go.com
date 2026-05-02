@@ -246,8 +246,28 @@
         white-space: nowrap;
     }
 
+    .KibitzGamePickerOverlay-playerRow > span {
+        align-items: center;
+        display: inline-flex;
+    }
+
+    .KibitzGamePickerOverlay-playerRow > span > .Player {
+        align-items: center;
+    }
+
+    .KibitzGamePickerOverlay-playerRow .Player-username {
+        align-self: center;
+    }
+
     .KibitzGamePickerOverlay-playerAvatar {
         flex: 0 0 auto;
+        align-self: center;
+        display: inline-flex;
+        line-height: 0;
+    }
+
+    .KibitzGamePickerOverlay-playerAvatar .PlayerIcon {
+        display: block;
     }
 
     .KibitzGamePickerOverlay-versus {

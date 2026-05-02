@@ -932,29 +932,42 @@ ogsTest.describe("@Kibitz layout regressions", () => {
         async ({ page }) => {
             await openKibitzMobileCreateRoomPreview(page);
 
-            const prefix = page.locator(".KibitzGamePickerOverlay-mobileHeaderTitlePreviewPrefix");
-            const game = page.locator(".KibitzGamePickerOverlay-mobileHeaderTitlePreviewGame");
-            const header = page.locator(".KibitzGamePickerOverlay-mobileHeaderTop-preview");
+            const title = page.locator(".KibitzGamePickerOverlay-mobileHeaderTitle");
             const badge = page.locator(".KibitzGamePickerOverlay-mobileHeaderStateBadge");
             const backButton = page.locator(".KibitzGamePickerOverlay-mobileBackButtonInline");
+            const actions = page.locator(".KibitzGamePickerOverlay-mobileHeaderActions-preview");
+            const createButton = page.locator(".KibitzGamePickerOverlay-mobileCreateButton");
+            const gameNameRow = page.locator(".KibitzGamePickerOverlay-mobileGameNameRow");
+            const gameNameLabel = gameNameRow.locator(".KibitzGamePickerOverlay-fieldLabel");
+            const gameNameValue = page.locator(".KibitzGamePickerOverlay-mobileGameNameValue");
             const roomRow = page.locator(".KibitzGamePickerOverlay-mobileRoomNameRow");
             const roomLabel = roomRow.locator(".KibitzGamePickerOverlay-fieldLabel");
             const roomInput = roomRow.locator("input");
             const playerRows = page.locator(".KibitzGamePickerOverlay-playerRow");
             const separator = page.locator(".KibitzGamePickerOverlay-playerSeparator");
 
-            await expect(prefix).toBeVisible();
-            await expect(game).toBeVisible();
-            await expect(header).toBeVisible();
+            await expect(title).toBeVisible();
             await expect(badge).toBeVisible();
+            await expect(actions).toBeVisible();
             await expect(
                 page.locator(".KibitzGamePickerOverlay-mobileHeaderStateBadge"),
             ).toHaveCount(1);
+            await expect(createButton).toBeVisible();
             await expect(backButton).toBeVisible();
+            await expect(gameNameRow).toBeVisible();
+            await expect(gameNameLabel).toBeVisible();
+            await expect(gameNameValue).toBeVisible();
             await expect(roomLabel).toBeVisible();
             await expect(roomInput).toBeVisible();
             await expect(playerRows).toHaveCount(2);
             await expect(separator).toHaveCount(1);
+            await expect(page.locator(".KibitzGamePickerOverlay-mobileFooter")).toHaveCount(0);
+            await expect(
+                page.locator(".KibitzGamePickerOverlay-mobileHeaderTitlePreviewPrefix"),
+            ).toHaveCount(0);
+            await expect(
+                page.locator(".KibitzGamePickerOverlay-mobileHeaderTitlePreviewGame"),
+            ).toHaveCount(0);
 
             const bounds = await page.evaluate(() => {
                 const rectOf = (selector: string) => {
@@ -975,11 +988,16 @@ ogsTest.describe("@Kibitz layout regressions", () => {
                 };
 
                 return {
-                    prefix: rectOf(".KibitzGamePickerOverlay-mobileHeaderTitlePreviewPrefix"),
-                    game: rectOf(".KibitzGamePickerOverlay-mobileHeaderTitlePreviewGame"),
-                    header: rectOf(".KibitzGamePickerOverlay-mobileHeaderTop-preview"),
+                    title: rectOf(".KibitzGamePickerOverlay-mobileHeaderTitle"),
+                    actions: rectOf(".KibitzGamePickerOverlay-mobileHeaderActions-preview"),
                     badge: rectOf(".KibitzGamePickerOverlay-mobileHeaderStateBadge"),
                     backButton: rectOf(".KibitzGamePickerOverlay-mobileBackButtonInline"),
+                    createButton: rectOf(".KibitzGamePickerOverlay-mobileCreateButton"),
+                    gameNameRow: rectOf(".KibitzGamePickerOverlay-mobileGameNameRow"),
+                    gameNameLabel: rectOf(
+                        ".KibitzGamePickerOverlay-mobileGameNameRow .KibitzGamePickerOverlay-fieldLabel",
+                    ),
+                    gameNameValue: rectOf(".KibitzGamePickerOverlay-mobileGameNameValue"),
                     roomLabel: rectOf(
                         ".KibitzGamePickerOverlay-mobileRoomNameRow .KibitzGamePickerOverlay-fieldLabel",
                     ),
@@ -990,10 +1008,22 @@ ogsTest.describe("@Kibitz layout regressions", () => {
                 };
             });
 
-            expect(bounds.game.top - bounds.prefix.top).toBeGreaterThan(10);
-            expect(bounds.header.right - bounds.badge.right).toBeLessThanOrEqual(2);
-            expect(bounds.badge.left).toBeGreaterThan(bounds.backButton.right);
-            expect(bounds.badge.left).toBeGreaterThan(bounds.game.right - 1);
+            expect(bounds.title.right).toBeLessThanOrEqual(bounds.actions.left + 1);
+            expect(bounds.createButton.left).toBeGreaterThan(bounds.backButton.right);
+            expect(bounds.createButton.right).toBeLessThan(bounds.badge.left + 1);
+            expect(bounds.createButton.width).toBeGreaterThanOrEqual(112);
+            expect(bounds.createButton.width).toBeLessThanOrEqual(144);
+            expect(bounds.gameNameRow.top).toBeGreaterThan(bounds.createButton.bottom - 1);
+            expect(bounds.gameNameLabel.top).toBeLessThanOrEqual(bounds.gameNameValue.top + 5);
+            expect(bounds.gameNameValue.left).toBeGreaterThan(bounds.gameNameLabel.right - 1);
+            expect(bounds.actions.left).toBeLessThan(bounds.createButton.left + 1);
+            expect(bounds.actions.right).toBeGreaterThan(bounds.createButton.right - 1);
+            expect(
+                Math.abs(
+                    (bounds.createButton.left + bounds.createButton.right) / 2 -
+                        (bounds.actions.left + bounds.actions.right) / 2,
+                ),
+            ).toBeLessThanOrEqual(2);
             expect(Math.abs(bounds.roomLabel.top - bounds.roomInput.top)).toBeLessThanOrEqual(5);
             expect(bounds.roomInput.left).toBeGreaterThan(bounds.roomLabel.right - 1);
             expect(bounds.blackRow.right).toBeLessThan(bounds.separator.left + 1);
