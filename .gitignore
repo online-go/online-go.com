@@ -51,6 +51,3 @@ i18n/*.tar.gz
 
 # Fixtures dropped by dev-cdn-intercept.spec.ts if a run is killed mid-test
 /assets/img/__probe_*.bin
-
-# Graphify generated output
-/graphify-out/
