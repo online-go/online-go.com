@@ -209,7 +209,7 @@ export const defaults = {
     "game-history-size-filter": "all",
     "game-history-ranked-filter": "all",
     "game-history-bot-filter": "humans" as "humans" | "bots",
-    "game-history-annulled-filter": "hide" as "all" | "hide",
+    "game-history-annulled-filter": "all" as "all" | "hide",
 
     "help-system-enabled": true,
 

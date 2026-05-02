@@ -156,7 +156,7 @@ export function GameHistoryFilterPopover(props: GameHistoryFilterPopoverProps) {
                                 )
                             }
                         >
-                            {_("Hide Annulled")}
+                            {_("Hide annulled games")}
                         </button>
                     </div>
                 </div>

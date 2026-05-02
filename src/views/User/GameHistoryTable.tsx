@@ -445,7 +445,6 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             ...(effective_bot_filter !== "bots" &&
                                 game_history_ranked_filter !== "all" && {
                                     ranked: game_history_ranked_filter === "ranked",
-                                    annulled: false, // Assume the user wants to filter annulled games
                                 }),
                             ...(game_history_annulled_filter === "hide" && {
                                 annulled: false,
