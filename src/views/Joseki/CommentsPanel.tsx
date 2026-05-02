@@ -60,6 +60,9 @@ export function CommentsPanel(props: CommentsPanelProps): React.ReactElement {
             return;
         }
         let cancelled = false;
+        // Clear the previous position's comments so the throbber takes
+        // over the panel cleanly while the new fetch is in flight.
+        set_commentary([]);
         set_throb(true);
         get(server_url + "commentary?id=" + props.position_id)
             .then((body) => {

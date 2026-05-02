@@ -1337,6 +1337,10 @@ export function Joseki(): React.ReactElement {
         if (!event) {
             return;
         }
+        // Close any existing instance first so a repeated trigger
+        // (e.g. keyboard) doesn't stack two popovers.
+        moreActionsPopoverRef.current?.close();
+        moreActionsPopoverRef.current = null;
         const close = () => {
             moreActionsPopoverRef.current?.close();
             moreActionsPopoverRef.current = null;

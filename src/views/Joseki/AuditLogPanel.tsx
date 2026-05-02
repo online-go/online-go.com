@@ -41,6 +41,9 @@ export function AuditLogPanel(props: AuditLogPanelProps): React.ReactElement {
             return;
         }
         let cancelled = false;
+        // Clear the previous position's entries so the throbber takes
+        // over the panel cleanly while the new fetch is in flight.
+        set_audit_log([]);
         set_throb(true);
         get(server_url + "audits?id=" + props.position_id)
             .then((body) => {

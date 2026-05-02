@@ -117,6 +117,7 @@ export function EditPane(props: EditProps): React.ReactElement {
                     : props.tags.map((t) => ({ label: t.description, value: t.id })),
             );
             set_variation_label(props.variation_label || "1");
+            set_description_view("edit");
         }
     }, [
         props.node_id,
