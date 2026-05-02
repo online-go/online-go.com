@@ -1124,9 +1124,7 @@ export function Joseki(): React.ReactElement {
         const can_back = mode !== PageMode.Play || played_mistake.current;
         const can_forward =
             mode !== PageMode.Play &&
-            ((move_trace.current.length > 1 &&
-                trace_index.current < move_trace.current.length - 1) ||
-                next_moves_ref.current.length > 0);
+            (next_moves_ref.current.length > 0 || forward_history_count.current > 0);
 
         return (
             <div

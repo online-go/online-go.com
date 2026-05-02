@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import { _ } from "@/lib/translate";
 import { GobanController } from "@/lib/GobanController";
 import { GobanContainer } from "@/components/GobanContainer";
 import {
@@ -264,8 +265,8 @@ function GobanViewComponent({
                     <button
                         type="button"
                         className="GobanView-tab-panel-close"
-                        title={tab.title}
-                        aria-label="Close"
+                        title={_("Close")}
+                        aria-label={_("Close")}
                         onClick={() => handleTakeoverClose(tab)}
                     >
                         <i className="fa fa-times" />
