@@ -18,7 +18,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 
-import { _ } from "@/lib/translate";
+import { _, pgettext } from "@/lib/translate";
 import { AutoTranslate } from "@/components/AutoTranslate";
 import { applyJosekiMarkdown } from "./joseki-utils";
 
@@ -27,6 +27,31 @@ export interface ExploreProps {
     description: string;
     position_type: string;
     see_also: number[];
+    /** Lowercased category string (e.g. "ideal", "good", "mistake", "trick",
+     *  "question") when a documented pass continuation exists at this
+     *  position; false otherwise. */
+    pass_available: boolean | string;
+    onExploreTenuki: () => void;
+}
+
+function tenukiMessage(category: string): string | null {
+    switch (category) {
+        // Ideal / good show only the button — colored border carries the meaning.
+        case "ideal":
+        case "good":
+            return null;
+        case "mistake":
+            return pgettext("Joseki: tenuki outcome label", "Tenuki would be a mistake here.");
+        case "trick":
+            return pgettext("Joseki: tenuki outcome label", "Tenuki would be a trick move here.");
+        case "question":
+            return pgettext("Joseki: tenuki outcome label", "Tenuki is questioned here.");
+        default:
+            return pgettext(
+                "Joseki: tenuki outcome label",
+                "A tenuki continuation is documented here.",
+            );
+    }
 }
 
 export function ExplorePane(props: ExploreProps): React.ReactElement {
@@ -34,6 +59,8 @@ export function ExplorePane(props: ExploreProps): React.ReactElement {
 
     // Onboarding hint shown only at root with no curated description.
     const show_root_hint = props.position_id === "root" && !props.description;
+
+    const tenuki_category = typeof props.pass_available === "string" ? props.pass_available : null;
 
     return (
         <div className="explore-pane">
@@ -58,6 +85,18 @@ export function ExplorePane(props: ExploreProps): React.ReactElement {
                                 {node}
                             </Link>
                         ))}
+                    </div>
+                )}
+                {tenuki_category && (
+                    <div className="joseki-tenuki-info">
+                        {tenukiMessage(tenuki_category) && (
+                            <span className="joseki-tenuki-message">
+                                {tenukiMessage(tenuki_category)}
+                            </span>
+                        )}
+                        <button className="joseki-tenuki-explore" onClick={props.onExploreTenuki}>
+                            {pgettext("Joseki: explore the tenuki continuation", "Explore tenuki")}
+                        </button>
                     </div>
                 )}
             </div>

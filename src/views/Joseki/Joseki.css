@@ -39,35 +39,17 @@
         }
     }
 
-    .Joseki-tenuki-button {
-        flex-shrink: 0;
-        cursor: pointer;
-        border: 1px solid var(--shade3);
-        border-radius: 4px;
-        padding: 0 0.5rem;
-        margin-left: 0.5rem;
-        background: transparent;
-        box-shadow: none;
-        line-height: 1.6;
-        height: fit-content;
+    .joseki-tenuki-info {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+        padding-top: 0.25rem;
+        font-size: 0.9rem;
+    }
+
+    .joseki-tenuki-message {
         color: var(--fg);
-
-        &:focus {
-            outline: 0;
-        }
-
-        &:hover:not(:disabled):not(.primary) {
-            background-color: var(--shade5);
-        }
-
-        &:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            background: transparent;
-            border-color: var(--shade4);
-            color: var(--shade2);
-            box-shadow: none;
-        }
     }
 
     .Joseki-throbber-overlay {

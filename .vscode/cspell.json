@@ -47,6 +47,7 @@
         "deepwiki",
         "deinit",
         "deinitialize",
+        "desync",
         "devel",
         "Dismissable",
         "dndkit",

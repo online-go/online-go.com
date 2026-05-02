@@ -164,6 +164,13 @@ export function Joseki(): React.ReactElement {
 
     const gobanViewRef = React.useRef<GobanViewRef>(null);
     const moreActionsPopoverRef = React.useRef<PopOver | null>(null);
+    // Tracks how many history.forward() steps are available because the
+    // user just walked back via the move bar (or browser back). Reset to
+    // zero whenever a new push happens (forward exploration). Browser-
+    // initiated forward/back can desync this slightly; the worst case is
+    // the move-bar forward briefly falls back to placing a best_move
+    // instead of replaying the redo entry.
+    const forward_history_count = React.useRef(0);
     const goban_div = React.useMemo(() => {
         const div = document.createElement("div");
         div.className = "Goban";
@@ -322,7 +329,21 @@ export function Joseki(): React.ReactElement {
             renderCurrentJosekiPosition();
         }
 
-        window.history.replaceState({}, document.title, "/joseki/" + position.node_id);
+        // Keep the URL aligned with the loaded position. Push for forward
+        // navigation (stone clicks from a /joseki/<id> URL move on to a
+        // new /joseki/<id>) so each move gets its own history entry; replace
+        // for the initial /joseki → /joseki/<root> settle; skip when the
+        // URL already matches (popstate-driven loads).
+        const new_url = "/joseki/" + position.node_id;
+        const old_pathname = window.location.pathname;
+        if (old_pathname !== new_url) {
+            if (old_pathname.startsWith("/joseki/")) {
+                window.history.pushState({}, "", new_url);
+                forward_history_count.current = 0;
+            } else {
+                window.history.replaceState({}, "", new_url);
+            }
+        }
     }
 
     function showVariationCounts(node_id: string) {
@@ -782,10 +803,14 @@ export function Joseki(): React.ReactElement {
     }
 
     function backOneMove() {
-        if (!back_stepping.current && !S.current.throb) {
-            back_stepping.current = true;
-            goban_ref.current?.showPrevious();
+        if (S.current.throb) {
+            return;
         }
+        // Drive back through the browser history. Each forward move was
+        // pushed by processNewJosekiPosition, so popstate / location effect
+        // takes care of reloading the previous position.
+        forward_history_count.current++;
+        window.history.back();
     }
 
     function backOneMoveKey() {
@@ -795,29 +820,29 @@ export function Joseki(): React.ReactElement {
     }
 
     function forwardOneMove() {
-        if (move_trace.current.length < 2 || trace_index.current > move_trace.current.length - 2) {
-            if (next_moves_ref.current.length > 0) {
-                const best_move = next_moves_ref.current.reduce(
-                    (
-                        prev_move: { [key: string]: string | number },
-                        next_move: { [key: string]: string | number },
-                    ) =>
-                        (prev_move.variation_label as string) >
-                            (next_move.variation_label as string) && next_move.placement !== "pass"
-                            ? next_move
-                            : prev_move,
-                );
-                doPlacement(best_move.placement as string);
-            }
+        if (S.current.throb) {
             return;
         }
-
-        const target_forward_move = move_trace.current[trace_index.current + 1];
-        if (cached_positions_ref.current.hasOwnProperty(target_forward_move)) {
-            const step_to = (
-                cached_positions_ref.current[target_forward_move] as Record<string, string>
-            ).placement;
-            doPlacement(step_to);
+        // Redo a back via browser history when one is available.
+        if (forward_history_count.current > 0) {
+            forward_history_count.current--;
+            window.history.forward();
+            return;
+        }
+        // At the leaf of explored history — pick the best next move and
+        // place it. processNewJosekiPosition will push the resulting URL.
+        if (next_moves_ref.current.length > 0) {
+            const best_move = next_moves_ref.current.reduce(
+                (
+                    prev_move: { [key: string]: string | number },
+                    next_move: { [key: string]: string | number },
+                ) =>
+                    (prev_move.variation_label as string) > (next_move.variation_label as string) &&
+                    next_move.placement !== "pass"
+                        ? next_move
+                        : prev_move,
+            );
+            doPlacement(best_move.placement as string);
         }
     }
 
@@ -1033,11 +1058,13 @@ export function Joseki(): React.ReactElement {
         }
     }, [current_node_id]);
 
-    // Walk toward the slider target one step per idle cycle, since each
-    // step fires a server fetch that can't be queued concurrently. If a
-    // step call no-ops (move number didn't change and no fetch queued),
-    // clear the target so the slider doesn't stick on an unreachable
-    // move number.
+    // Walk toward the slider target one step per idle cycle. Each step
+    // fires a browser-history navigation (or a placement) that resolves
+    // through location-effect → fetch → loadSequenceToBoard, so we can't
+    // observe progress synchronously — rely on throb / move_string
+    // changes to retrigger the effect for the next step. A step that
+    // genuinely can't progress (e.g. no next_moves) just leaves the
+    // slider parked at its target until the user moves it again.
     React.useEffect(() => {
         if (slider_target === null) {
             return;
@@ -1045,10 +1072,6 @@ export function Joseki(): React.ReactElement {
         if (throb) {
             return;
         }
-        // back_stepping.current is intentionally not checked here: it's a
-        // ref so a transition true→false can't retrigger the effect, and
-        // backOneMove already guards against re-entry. Relying on the throb
-        // dep's natural cycle is enough.
         const goban = goban_ref.current;
         if (!goban) {
             return;
@@ -1063,13 +1086,7 @@ export function Joseki(): React.ReactElement {
         } else {
             backOneMove();
         }
-        const after = goban.engine.cur_move.move_number;
-        if (after === current && !back_stepping.current) {
-            set_slider_target(null);
-        }
     }, [slider_target, throb, move_string]);
-
-    const tenuki_active = !!pass_available && mode !== PageMode.Play && move_string !== "";
 
     const count_details = count_details_open ? (
         <React.Fragment>
@@ -1169,24 +1186,6 @@ export function Joseki(): React.ReactElement {
                     title={pgettext("Move navigation: next move", "Next move")}
                 >
                     <i className="fa fa-step-forward" />
-                </button>
-                <button
-                    className={"Joseki-tenuki-button" + (tenuki_active ? " primary" : "")}
-                    onClick={doPass}
-                    disabled={!pass_available}
-                    title={
-                        pass_available
-                            ? pgettext(
-                                  "Joseki move navigation: play a tenuki (pass) move",
-                                  "Tenuki",
-                              )
-                            : pgettext(
-                                  "Joseki move navigation: tenuki disabled because the database has no continuation past a tenuki here",
-                                  "No documented tenuki continuation from this position",
-                              )
-                    }
-                >
-                    {_("Tenuki")}
                 </button>
                 <div className="Joseki-throbber-overlay" aria-hidden="true">
                     <Throbber throb={throb} />
@@ -1314,6 +1313,8 @@ export function Joseki(): React.ReactElement {
                 position_type={current_move_category}
                 see_also={see_also}
                 position_id={current_node_id as string}
+                pass_available={pass_available}
+                onExploreTenuki={doPass}
             />
         );
     }
