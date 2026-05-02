@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { KibitzPresence } from "./KibitzPresence";
 import * as player_cache from "@/lib/player_cache";
 import type { KibitzRoomSummary, KibitzRoomUser } from "@/models/kibitz";
@@ -98,15 +98,17 @@ describe("KibitzPresence", () => {
 
         expect(screen.getByText("In the room · 1 watching")).toBeInTheDocument();
 
-        const ownerRegion = await screen.findByRole("region", { name: "Room owner" });
         const roomRegion = screen.getByRole("region", { name: "In the room" });
 
-        expect(within(ownerRegion).getByText("avatar:Owner")).toBeInTheDocument();
-        expect(within(ownerRegion).getByText("player:Owner")).toBeInTheDocument();
+        const rows = roomRegion.querySelectorAll(".presence-user");
+        expect(rows).toHaveLength(2);
 
-        expect(within(ownerRegion).getByText("owner")).toBeInTheDocument();
-        expect(within(ownerRegion).getByText("away")).toBeInTheDocument();
-        expect(within(roomRegion).getByText("player:CurrentUser")).toBeInTheDocument();
-        expect(within(roomRegion).queryByText("player:Owner")).not.toBeInTheDocument();
+        expect(rows[0]).toHaveTextContent("avatar:Owner");
+        expect(rows[0]).toHaveTextContent("player:Owner");
+        expect(rows[0]).toHaveTextContent("owner");
+        expect(rows[0]).toHaveTextContent("away");
+
+        expect(rows[1]).toHaveTextContent("avatar:CurrentUser");
+        expect(rows[1]).toHaveTextContent("player:CurrentUser");
     });
 });

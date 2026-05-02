@@ -28,41 +28,12 @@
     }
 
     .presence-summary,
-    .presence-owner,
-    .presence-room {
+    .presence-users {
         max-width: 100%;
     }
 
-    .presence-summary,
-    .presence-owner {
+    .presence-summary {
         flex: 0 0 auto;
-    }
-
-    .presence-owner,
-    .presence-room {
-        min-width: 0;
-    }
-
-    .presence-room {
-        display: flex;
-        flex: 1;
-        flex-direction: column;
-        gap: 0.35rem;
-        min-height: 0;
-        overflow: hidden;
-    }
-
-    .presence-owner {
-        display: flex;
-        flex-direction: column;
-        gap: 0.12rem;
-        min-width: 0;
-        max-width: 100%;
-    }
-
-    .presence-owner .presence-user {
-        height: auto;
-        min-height: 1.4rem;
     }
 
     .presence-owner-status {
@@ -93,6 +64,11 @@
         padding: 0 0.05rem;
         width: 100%;
         max-width: 100%;
+    }
+
+    .presence-user.presence-owner {
+        height: auto;
+        min-height: 1.4rem;
     }
 
     .presence-user > .presence-avatar {
