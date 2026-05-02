@@ -399,6 +399,16 @@ export function KibitzGamePickerOverlay({
                         )}
                     </div>
                 )}
+                {mobile && mode === "create-room" && selectedGameSummary ? (
+                    <div className="KibitzGamePickerOverlay-mobileGameNameRow">
+                        <div className="KibitzGamePickerOverlay-fieldLabel">
+                            {pgettext("Label for the Kibitz game name field", "Game Name")}
+                        </div>
+                        <div className="KibitzGamePickerOverlay-mobileGameNameValue">
+                            {selectedGameSummary.title}
+                        </div>
+                    </div>
+                ) : null}
                 {selectionErrorMessage ? (
                     <div className="KibitzGamePickerOverlay-error">{selectionErrorMessage}</div>
                 ) : null}
@@ -679,25 +689,9 @@ export function KibitzGamePickerOverlay({
               ? pgettext("Title for Kibitz create room overlay", "Create room")
               : pgettext("Title for Kibitz change board overlay", "Change board");
 
-    const mobileHeaderTitleContent =
-        mobileStep === "preview" && mode === "create-room" && selectedGameSummary ? (
-            <div className="KibitzGamePickerOverlay-mobileHeaderTitlePreview">
-                <span className="KibitzGamePickerOverlay-mobileHeaderTitlePreviewPrefix">
-                    {pgettext(
-                        "Prefix for Kibitz create room preview overlay title",
-                        "Create room with game:",
-                    )}
-                </span>
-                <br />
-                <span className="KibitzGamePickerOverlay-mobileHeaderTitlePreviewGame">
-                    {selectedGameSummary.title}
-                </span>
-            </div>
-        ) : (
-            mobileHeaderTitle
-        );
+    const mobileHeaderTitleContent = mobileHeaderTitle;
 
-    const mobileHeaderStateLabel =
+    const mobileHeaderStateBadge =
         mobileStep === "preview" && selectedGameStateLabel ? (
             <div
                 className={
@@ -826,30 +820,7 @@ export function KibitzGamePickerOverlay({
                                 rows={5}
                             />
                         </div>
-                        <button
-                            type="button"
-                            className="xs primary KibitzGamePickerOverlay-actionButton KibitzGamePickerOverlay-mobileCreateButton"
-                            onClick={onSubmitCreateRoom}
-                            disabled={!canCreateRoom}
-                        >
-                            {pgettext("Button label for creating a Kibitz room", "Create room")}
-                        </button>
                     </>
-                ) : null}
-            </div>
-            <div className="KibitzGamePickerOverlay-mobileFooter">
-                {mode !== "create-room" ? (
-                    <button
-                        type="button"
-                        className="xs primary KibitzGamePickerOverlay-actionButton"
-                        onClick={onSubmitChangeBoard}
-                        disabled={!canChangeBoard}
-                    >
-                        {pgettext(
-                            "Button label for confirming a Kibitz board change",
-                            "Change board",
-                        )}
-                    </button>
                 ) : null}
             </div>
         </div>
@@ -858,83 +829,100 @@ export function KibitzGamePickerOverlay({
     const renderMobile = () => (
         <div className="KibitzGamePickerOverlay-shell KibitzGamePickerOverlay-shell-mobile">
             <div className="KibitzGamePickerOverlay-mobileHeader">
+                {mobileStep !== "preview" ? (
+                    <div className="KibitzGamePickerOverlay-mobileHeaderTop">
+                        <div className="KibitzGamePickerOverlay-mobileHeaderTitle">
+                            {mobileHeaderTitleContent}
+                        </div>
+                        {mobileHeaderSubtitle ? (
+                            <div className="KibitzGamePickerOverlay-mobileHeaderSubtitle">
+                                {mobileHeaderSubtitle}
+                            </div>
+                        ) : null}
+                    </div>
+                ) : null}
                 <div
                     className={
-                        "KibitzGamePickerOverlay-mobileHeaderTop" +
+                        "KibitzGamePickerOverlay-mobileHeaderActions" +
                         (mobileStep === "preview"
-                            ? " KibitzGamePickerOverlay-mobileHeaderTop-preview"
+                            ? " KibitzGamePickerOverlay-mobileHeaderActions-preview"
                             : "")
                     }
                 >
                     {mobileStep === "preview" ? (
-                        <button
-                            type="button"
-                            className="xs KibitzGamePickerOverlay-mobileBackButton KibitzGamePickerOverlay-mobileBackButtonInline"
-                            onClick={onBackMobile}
-                            aria-label={pgettext(
-                                "Aria label for going back in the mobile kibitz picker",
-                                "Go back",
-                            )}
-                        >
-                            {pgettext(
-                                "Back-arrow glyph for the mobile kibitz picker back button",
-                                "←",
-                            )}
-                        </button>
-                    ) : null}
-                    <div
-                        className={
-                            "KibitzGamePickerOverlay-mobileHeaderTitle" +
-                            (mobileStep === "preview"
-                                ? " KibitzGamePickerOverlay-mobileHeaderTitle-preview"
-                                : "")
-                        }
-                    >
-                        {mobileHeaderTitleContent}
-                    </div>
-                    {mobileHeaderStateLabel}
-                    {mobileHeaderSubtitle ? (
-                        <div className="KibitzGamePickerOverlay-mobileHeaderSubtitle">
-                            {mobileHeaderSubtitle}
-                        </div>
-                    ) : null}
-                </div>
-                <div className="KibitzGamePickerOverlay-mobileHeaderActions">
-                    {mobileStep === "select" ? (
-                        <div
-                            className="KibitzGamePickerOverlay-mobileSourceSwitcher"
-                            role="tablist"
-                        >
+                        <>
                             <button
                                 type="button"
-                                className={
-                                    "KibitzGamePickerOverlay-mobileSourceButton" +
-                                    (sourceMode === "ongoing" ? " active" : "")
-                                }
-                                aria-pressed={sourceMode === "ongoing"}
-                                onClick={() => setSourceMode("ongoing")}
-                            >
-                                {pgettext(
-                                    "Mobile source switch label in kibitz game picker",
-                                    "Ongoing",
+                                className="xs KibitzGamePickerOverlay-mobileBackButton KibitzGamePickerOverlay-mobileBackButtonInline"
+                                onClick={onBackMobile}
+                                aria-label={pgettext(
+                                    "Aria label for going back in the mobile kibitz picker",
+                                    "Go back",
                                 )}
+                            >
+                                <i className="fa fa-arrow-left" aria-hidden="true" />
                             </button>
                             <button
                                 type="button"
-                                className={
-                                    "KibitzGamePickerOverlay-mobileSourceButton" +
-                                    (sourceMode === "game-id" ? " active" : "")
+                                className="xs primary KibitzGamePickerOverlay-actionButton KibitzGamePickerOverlay-mobileCreateButton"
+                                onClick={
+                                    mode === "create-room"
+                                        ? onSubmitCreateRoom
+                                        : onSubmitChangeBoard
                                 }
-                                aria-pressed={sourceMode === "game-id"}
-                                onClick={() => setSourceMode("game-id")}
+                                disabled={mode === "create-room" ? !canCreateRoom : !canChangeBoard}
                             >
-                                {pgettext(
-                                    "Mobile source switch label in kibitz game picker",
-                                    "Game ID",
-                                )}
+                                {mode === "create-room"
+                                    ? pgettext(
+                                          "Button label for creating a Kibitz room",
+                                          "Create room",
+                                      )
+                                    : pgettext(
+                                          "Button label for confirming a Kibitz board change",
+                                          "Change board",
+                                      )}
                             </button>
-                        </div>
-                    ) : null}
+                            {mobileHeaderStateBadge}
+                        </>
+                    ) : (
+                        <>
+                            <div
+                                className="KibitzGamePickerOverlay-mobileSourceSwitcher"
+                                role="tablist"
+                            >
+                                <button
+                                    type="button"
+                                    className={
+                                        "xs primary " +
+                                        "KibitzGamePickerOverlay-mobileSourceButton" +
+                                        (sourceMode === "ongoing" ? " active" : "")
+                                    }
+                                    aria-pressed={sourceMode === "ongoing"}
+                                    onClick={() => setSourceMode("ongoing")}
+                                >
+                                    {pgettext(
+                                        "Mobile source switch label in kibitz game picker",
+                                        "Ongoing",
+                                    )}
+                                </button>
+                                <button
+                                    type="button"
+                                    className={
+                                        "xs primary " +
+                                        "KibitzGamePickerOverlay-mobileSourceButton" +
+                                        (sourceMode === "game-id" ? " active" : "")
+                                    }
+                                    aria-pressed={sourceMode === "game-id"}
+                                    onClick={() => setSourceMode("game-id")}
+                                >
+                                    {pgettext(
+                                        "Mobile source switch label in kibitz game picker",
+                                        "Game ID",
+                                    )}
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
             <div className="KibitzGamePickerOverlay-mobileBody">
