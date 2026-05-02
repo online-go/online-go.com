@@ -61,6 +61,7 @@ export function ExplorePane(props: ExploreProps): React.ReactElement {
     const show_root_hint = props.position_id === "root" && !props.description;
 
     const tenuki_category = typeof props.pass_available === "string" ? props.pass_available : null;
+    const tenuki_msg = tenuki_category ? tenukiMessage(tenuki_category) : null;
 
     return (
         <div className="explore-pane">
@@ -89,11 +90,7 @@ export function ExplorePane(props: ExploreProps): React.ReactElement {
                 )}
                 {tenuki_category && (
                     <div className="joseki-tenuki-info">
-                        {tenukiMessage(tenuki_category) && (
-                            <span className="joseki-tenuki-message">
-                                {tenukiMessage(tenuki_category)}
-                            </span>
-                        )}
+                        {tenuki_msg && <span className="joseki-tenuki-message">{tenuki_msg}</span>}
                         <button className="joseki-tenuki-explore" onClick={props.onExploreTenuki}>
                             {pgettext("Joseki: explore the tenuki continuation", "Explore tenuki")}
                         </button>

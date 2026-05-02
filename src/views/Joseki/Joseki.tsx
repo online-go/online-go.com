@@ -1081,12 +1081,23 @@ export function Joseki(): React.ReactElement {
             set_slider_target(null);
             return;
         }
+        // Mirror the move-bar buttons' direction gating: Play mode
+        // restricts navigation to back-after-mistake and never forward.
+        // Without this guard the slider could drag past those rules.
+        const can_step_back = mode !== PageMode.Play || played_mistake.current;
+        const can_step_fwd = mode !== PageMode.Play;
         if (current < slider_target) {
-            forwardOneMove();
-        } else {
+            if (can_step_fwd) {
+                forwardOneMove();
+            } else {
+                set_slider_target(null);
+            }
+        } else if (can_step_back) {
             backOneMove();
+        } else {
+            set_slider_target(null);
         }
-    }, [slider_target, throb, move_string]);
+    }, [slider_target, throb, move_string, mode]);
 
     const count_details = count_details_open ? (
         <React.Fragment>
@@ -1163,6 +1174,7 @@ export function Joseki(): React.ReactElement {
                         min={0}
                         max={Math.max(knob_max, 1)}
                         value={slider_target ?? move_number}
+                        disabled={mode === PageMode.Play}
                         onChange={(e) => {
                             const v = parseInt(e.target.value, 10);
                             if (!isNaN(v)) {
