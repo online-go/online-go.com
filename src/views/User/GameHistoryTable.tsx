@@ -114,6 +114,9 @@ export function GameHistoryTable(props: GameHistoryProps) {
     const [game_history_annulled_filter, setGameHistoryAnnulledFilter] =
         React.useState<AnnulledFilter>(preferences.get("game-history-annulled-filter"));
     const effective_bot_filter: BotFilter = props.is_bot ? "bots" : game_history_bot_filter;
+    const show_annulled_styling = effective_bot_filter !== "bots";
+    const effective_annulled_filter: AnnulledFilter =
+        effective_bot_filter === "bots" ? "all" : game_history_annulled_filter;
     const [hide_flags] = usePreference("moderator.hide-flags");
     const [selectModeActive, setSelectModeActive] = React.useState<boolean>(false);
     const [aiSelectMode, setAiSelectMode] = React.useState<boolean>(false);
@@ -298,7 +301,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
             }
 
             item.href = `/game/${item.id as number}`;
-            item.result = getGameResultRichText(r);
+            item.result = getGameResultRichText(r, show_annulled_styling);
             item.flags = r.flags && props.user_id in r.flags ? r.flags[props.user_id] : undefined;
             item.bot_detection_results = r.bot_detection_results ?? undefined;
 
@@ -425,6 +428,8 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                 botDisabled={props.is_bot}
                                 annulledFilter={game_history_annulled_filter}
                                 onAnnulledChange={handleAnnulledChange}
+                                annulledHidden={props.is_bot}
+                                annulledDisabled={effective_bot_filter === "bots"}
                             />
                         </div>
                     </div>
@@ -446,7 +451,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                 game_history_ranked_filter !== "all" && {
                                     ranked: game_history_ranked_filter === "ranked",
                                 }),
-                            ...(game_history_annulled_filter === "hide" && {
+                            ...(effective_annulled_filter === "hide" && {
                                 annulled: false,
                             }),
                         }}
@@ -459,7 +464,8 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             {
                                 header: _("User"),
                                 className: (X) =>
-                                    "user_info" + (X && X.annulled ? " annulled" : ""),
+                                    "user_info" +
+                                    (X && X.annulled && show_annulled_styling ? " annulled" : ""),
                                 render: (X) => (
                                     <React.Fragment>
                                         <span>
@@ -477,7 +483,8 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             {
                                 header: "",
                                 className: (X) =>
-                                    "winner_marker" + (X && X.annulled ? " annulled" : ""),
+                                    "winner_marker" +
+                                    (X && X.annulled && show_annulled_styling ? " annulled" : ""),
                                 render: (X) =>
                                     X.player_won ? (
                                         <i className="fa fa-trophy game-history-winner" />
@@ -487,12 +494,16 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             },
                             {
                                 header: _("Date"),
-                                className: (X) => "date" + (X && X.annulled ? " annulled" : ""),
+                                className: (X) =>
+                                    "date" +
+                                    (X && X.annulled && show_annulled_styling ? " annulled" : ""),
                                 render: (X) => moment(X.date).format("YYYY-MM-DD"),
                             },
                             {
                                 header: _("Opponent"),
-                                className: (X) => "player" + (X && X.annulled ? " annulled" : ""),
+                                className: (X) =>
+                                    "player" +
+                                    (X && X.annulled && show_annulled_styling ? " annulled" : ""),
                                 render: (X) => (
                                     <>
                                         {X.rengo_vs_text ? (
@@ -505,24 +516,30 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             },
                             {
                                 header: "",
-                                className: (X) => "speed" + (X && X.annulled ? " annulled" : ""),
+                                className: (X) =>
+                                    "speed" +
+                                    (X && X.annulled && show_annulled_styling ? " annulled" : ""),
                                 render: (X) => <i className={X.speed_icon_class} title={X.speed} />,
                             },
                             {
                                 header: _("Size"),
                                 className: (X) =>
-                                    "board_size" + (X && X.annulled ? " annulled" : ""),
+                                    "board_size" +
+                                    (X && X.annulled && show_annulled_styling ? " annulled" : ""),
                                 render: (X) => `${X.width}x${X.height}`,
                             },
                             {
                                 header: pgettext("Handicap abbreviation", "HC"),
-                                className: (X) => "handicap" + (X && X.annulled ? " annulled" : ""),
+                                className: (X) =>
+                                    "handicap" +
+                                    (X && X.annulled && show_annulled_styling ? " annulled" : ""),
                                 render: (X) => X.handicap,
                             },
                             {
                                 header: _("Name"),
                                 className: (X) =>
-                                    "game_name" + (X && X.annulled ? " annulled" : ""),
+                                    "game_name" +
+                                    (X && X.annulled && show_annulled_styling ? " annulled" : ""),
                                 render: (X) => (
                                     <Link to={X.href} onClick={(e) => handleLinkClick(e)}>
                                         {!X.name &&
@@ -540,7 +557,10 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             {
                                 header: _("Result"),
                                 className: (X) =>
-                                    X ? X.result_class + (X.annulled ? " annulled" : "") : "",
+                                    X
+                                        ? X.result_class +
+                                          (X.annulled && show_annulled_styling ? " annulled" : "")
+                                        : "",
                                 render: (X) => {
                                     if (
                                         !hide_flags &&
@@ -590,14 +610,14 @@ export function GameHistoryTable(props: GameHistoryProps) {
     );
 }
 
-export function getGameResultRichText(game: rest_api.Game) {
+export function getGameResultRichText(game: rest_api.Game, show_annulled_styling = true) {
     let resultText = getGameResultText(game.outcome, game.white_lost, game.black_lost);
 
     if (game.ranked) {
         resultText += ", ";
         resultText += _("ranked");
     }
-    if (game.annulled) {
+    if (game.annulled && show_annulled_styling) {
         return (
             <span>
                 <span style={{ textDecoration: "line-through" }}>{resultText}</span>

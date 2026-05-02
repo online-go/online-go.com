@@ -34,6 +34,8 @@ interface GameHistoryFilterPopoverProps {
     botDisabled?: boolean;
     annulledFilter: AnnulledFilter;
     onAnnulledChange: (annulled: AnnulledFilter) => void;
+    annulledHidden?: boolean;
+    annulledDisabled?: boolean;
 }
 
 export function GameHistoryFilterPopover(props: GameHistoryFilterPopoverProps) {
@@ -45,7 +47,7 @@ export function GameHistoryFilterPopover(props: GameHistoryFilterPopoverProps) {
         props.sizeFilter !== "all" ||
         (!props.botDisabled && props.botFilter !== "humans") ||
         (!rankedDisabled && props.rankedFilter !== "all") ||
-        props.annulledFilter !== "all";
+        (!props.annulledHidden && !props.annulledDisabled && props.annulledFilter !== "all");
 
     React.useEffect(() => {
         if (!open) {
@@ -103,62 +105,67 @@ export function GameHistoryFilterPopover(props: GameHistoryFilterPopoverProps) {
                             {_("19x19")}
                         </button>
                     </div>
-                    <div className="btn-group">
-                        <button
-                            className={
-                                !rankedDisabled && props.rankedFilter === "ranked"
-                                    ? "primary sm"
-                                    : "sm"
-                            }
-                            disabled={rankedDisabled}
-                            onClick={() => toggleRanked("ranked")}
-                        >
-                            {_("Ranked")}
-                        </button>
-                        <button
-                            className={
-                                !rankedDisabled && props.rankedFilter === "unranked"
-                                    ? "primary sm"
-                                    : "sm"
-                            }
-                            disabled={rankedDisabled}
-                            onClick={() => toggleRanked("unranked")}
-                        >
-                            {_("Unranked")}
-                        </button>
-                    </div>
-                    <div className="btn-group">
-                        <button
-                            className={
-                                !props.botDisabled && props.botFilter === "humans"
-                                    ? "primary sm"
-                                    : "sm"
-                            }
-                            disabled={props.botDisabled}
-                            onClick={() => props.onBotChange("humans")}
-                        >
-                            {_("Humans")}
-                        </button>
-                        <button
-                            className={props.botFilter === "bots" ? "primary sm" : "sm"}
-                            disabled={props.botDisabled}
-                            onClick={() => props.onBotChange("bots")}
-                        >
-                            {_("Bots")}
-                        </button>
-                    </div>
-                    <div className="btn-group">
-                        <button
-                            className={props.annulledFilter === "hide" ? "primary sm" : "sm"}
-                            onClick={() =>
-                                props.onAnnulledChange(
-                                    props.annulledFilter === "hide" ? "all" : "hide",
-                                )
-                            }
-                        >
-                            {_("Hide annulled games")}
-                        </button>
-                    </div>
+                    {!props.botDisabled && (
+                        <div className="btn-group">
+                            <button
+                                className={
+                                    !rankedDisabled && props.rankedFilter === "ranked"
+                                        ? "primary sm"
+                                        : "sm"
+                                }
+                                disabled={rankedDisabled}
+                                onClick={() => toggleRanked("ranked")}
+                            >
+                                {_("Ranked")}
+                            </button>
+                            <button
+                                className={
+                                    !rankedDisabled && props.rankedFilter === "unranked"
+                                        ? "primary sm"
+                                        : "sm"
+                                }
+                                disabled={rankedDisabled}
+                                onClick={() => toggleRanked("unranked")}
+                            >
+                                {_("Unranked")}
+                            </button>
+                        </div>
+                    )}
+                    {!props.botDisabled && (
+                        <div className="btn-group">
+                            <button
+                                className={props.botFilter === "humans" ? "primary sm" : "sm"}
+                                onClick={() => props.onBotChange("humans")}
+                            >
+                                {_("Humans")}
+                            </button>
+                            <button
+                                className={props.botFilter === "bots" ? "primary sm" : "sm"}
+                                onClick={() => props.onBotChange("bots")}
+                            >
+                                {_("Bots")}
+                            </button>
+                        </div>
+                    )}
+                    {!props.annulledHidden && (
+                        <div className="btn-group">
+                            <button
+                                className={
+                                    !props.annulledDisabled && props.annulledFilter === "hide"
+                                        ? "primary sm"
+                                        : "sm"
+                                }
+                                disabled={props.annulledDisabled}
+                                onClick={() =>
+                                    props.onAnnulledChange(
+                                        props.annulledFilter === "hide" ? "all" : "hide",
+                                    )
+                                }
+                            >
+                                {_("Hide annulled games")}
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
