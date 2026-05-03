@@ -28,6 +28,7 @@ type KibitzRoomSettingsPopoverView = "menu" | "edit-details";
 interface KibitzRoomSettingsPopoverProps {
     room: KibitzRoomSummary;
     canEditRoom: boolean;
+    canDeleteRoom: boolean;
     canChangeBoard: boolean;
     onClose: () => void;
     onRequestChangeBoard: () => void;
@@ -38,6 +39,7 @@ interface KibitzRoomSettingsPopoverProps {
 export function KibitzRoomSettingsPopover({
     room,
     canEditRoom,
+    canDeleteRoom,
     canChangeBoard,
     onClose,
     onDeleteRoom,
@@ -133,7 +135,7 @@ export function KibitzRoomSettingsPopover({
     }, [canEditRoom, onClose, onSaveRoomDetails, roomDescription, roomTitle, saving]);
 
     const onDelete = React.useCallback(async () => {
-        if (!canEditRoom || deleting) {
+        if (!canDeleteRoom || deleting) {
             return;
         }
 
@@ -163,7 +165,7 @@ export function KibitzRoomSettingsPopover({
                 "Could not delete room.",
             ),
         );
-    }, [canEditRoom, deleting, onClose, onDeleteRoom]);
+    }, [canDeleteRoom, deleting, onClose, onDeleteRoom]);
 
     return (
         <div className="KibitzRoomSettingsPopover">
@@ -172,7 +174,7 @@ export function KibitzRoomSettingsPopover({
             </div>
             {view === "menu" ? (
                 <>
-                    {canEditRoom ? (
+                    {canEditRoom || canDeleteRoom ? (
                         <button
                             type="button"
                             className="KibitzRoomSettingsPopover-action"
@@ -220,7 +222,7 @@ export function KibitzRoomSettingsPopover({
                             </div>
                         </div>
                     ) : null}
-                    {!canEditRoom && !canChangeBoard ? (
+                    {!canEditRoom && !canChangeBoard && !canDeleteRoom ? (
                         <div className="KibitzRoomSettingsPopover-note">
                             {pgettext(
                                 "Note shown when the Kibitz room settings popover has no actions available",
@@ -320,7 +322,7 @@ export function KibitzRoomSettingsPopover({
                             onClick={() => {
                                 void onDelete();
                             }}
-                            disabled={!canEditRoom || deleting || saving}
+                            disabled={!canDeleteRoom || deleting || saving}
                         >
                             {deleting
                                 ? pgettext(

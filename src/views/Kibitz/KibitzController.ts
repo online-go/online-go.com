@@ -129,6 +129,7 @@ export interface KibitzPermissions {
     can_change_board_directly: boolean;
     can_create_room: boolean;
     can_edit_room: boolean;
+    can_delete_room: boolean;
 }
 
 const DEFAULT_PERMISSIONS: KibitzPermissions = {
@@ -138,6 +139,7 @@ const DEFAULT_PERMISSIONS: KibitzPermissions = {
     can_change_board_directly: false,
     can_create_room: false,
     can_edit_room: false,
+    can_delete_room: false,
 };
 
 interface BackendGamePlayerForKibitz {
