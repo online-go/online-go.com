@@ -1,0 +1,348 @@
+.KibitzVariationList {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    padding: 0.4rem 0.75rem;
+    box-shadow: 0 -1px 0 color-mix(in srgb, var(--shade3) 55%, transparent);
+
+    .variation-title {
+        flex: 0 0 auto;
+        font-weight: bold;
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .variation-scroll {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        touch-action: pan-y;
+        padding-bottom: 0.05rem;
+    }
+
+    .variation-divider {
+        border-top: 1px solid var(--shade3);
+        color: var(--text-color-faded);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        padding: 0.4rem 0 0.25rem;
+        text-transform: uppercase;
+    }
+
+    .variation-items {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .variation-item {
+        align-items: flex-start;
+        background: transparent;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: row;
+        gap: 0.14rem;
+        justify-content: center;
+        min-height: 3rem;
+        min-width: 0;
+        position: relative;
+        text-align: left;
+        transition: background-color 120ms ease;
+        width: 100%;
+    }
+
+    .variation-item.visible .variation-recall,
+    .variation-item.visible .variation-toggle {
+        background: color-mix(in srgb, var(--shade2) 55%, transparent);
+    }
+
+    .variation-item.limit-flash .variation-recall,
+    .variation-item.limit-flash .variation-toggle {
+        animation: variation-limit-flash 900ms ease;
+    }
+
+    .variation-recall {
+        align-items: flex-start;
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+        display: flex;
+        flex: 1 1 auto;
+        gap: 0.35rem;
+        min-height: 3rem;
+        min-width: 0;
+        padding: 0.36rem 0.2rem 0.36rem 0.1rem;
+        text-align: left;
+        transition:
+            background-color 120ms ease,
+            box-shadow 120ms ease;
+        touch-action: pan-y;
+        -webkit-touch-callout: none;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .variation-recall:hover,
+        .variation-recall:focus-visible {
+            background: color-mix(in srgb, var(--shade2) 70%, transparent);
+            outline: none;
+        }
+    }
+
+    .variation-item.selected .variation-recall {
+        background: color-mix(in srgb, var(--variation-selected-color) 8%, transparent);
+        border-radius: 0.22rem;
+    }
+
+    .variation-color-chip {
+        background: var(--shade3);
+        align-self: stretch;
+        flex: 0 0 auto;
+        height: auto;
+        margin-top: 0;
+        width: 0.28rem;
+    }
+
+    .variation-main {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        gap: 0.14rem;
+        min-width: 0;
+    }
+
+    .variation-toggle {
+        align-items: center;
+        background: transparent;
+        border: 0;
+        box-sizing: border-box;
+        color: var(--text-color-faded);
+        cursor: pointer;
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-self: stretch;
+        aspect-ratio: 1 / 1;
+        height: auto;
+        min-height: 3rem;
+        justify-content: center;
+        margin: 0.15em;
+        padding: 0.36rem 0.2rem 0.36rem 0.1rem;
+        transition:
+            background-color 120ms ease,
+            box-shadow 120ms ease,
+            color 120ms ease;
+        touch-action: pan-y;
+        -webkit-touch-callout: none;
+        width: auto;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .variation-toggle:hover,
+        .variation-toggle:focus-visible {
+            color: var(--fg);
+            outline: none;
+        }
+    }
+
+    @media (hover: none) and (pointer: coarse) {
+        .variation-scroll,
+        .variation-recall,
+        .variation-toggle {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            user-select: none;
+        }
+
+        .variation-recall:active,
+        .variation-recall:focus,
+        .variation-toggle:active,
+        .variation-toggle:focus {
+            background: transparent;
+            box-shadow: none;
+            color: inherit;
+            outline: none;
+            transition: none;
+        }
+    }
+
+    .variation-item.selected .variation-toggle {
+        background: color-mix(in srgb, var(--variation-selected-color) 4%, transparent);
+        border-radius: 0.22rem;
+    }
+
+    @keyframes variation-limit-flash {
+        0% {
+            background: color-mix(in srgb, var(--shade4) 72%, #a34b4b 28%);
+            box-shadow: inset 0 0 0 1px color-mix(in srgb, #a34b4b 40%, transparent);
+        }
+
+        55% {
+            background: color-mix(in srgb, var(--shade4) 62%, #a34b4b 38%);
+            box-shadow: inset 0 0 0 1px color-mix(in srgb, #a34b4b 52%, transparent);
+        }
+
+        100% {
+            background: color-mix(in srgb, var(--shade2) 55%, transparent);
+            box-shadow: none;
+        }
+    }
+
+    .variation-name {
+        color: var(--fg);
+        display: block;
+        font-size: 0.88rem;
+        font-weight: bold;
+        line-height: 1.1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 100%;
+    }
+
+    .variation-meta-row {
+        align-items: center;
+        display: grid;
+        gap: 0.35rem;
+        grid-template-columns: auto minmax(0, 1fr);
+        min-width: 0;
+    }
+
+    .variation-preview {
+        align-items: center;
+        display: inline-flex;
+        flex: 0 0 auto;
+        justify-content: flex-end;
+        margin-left: 0.5rem;
+        min-width: 2.95rem;
+    }
+
+    .variation-preview-goban.MiniGoban {
+        height: 2.95rem;
+        width: 2.95rem;
+    }
+
+    .variation-preview-goban .inner-container {
+        transform-origin: left top;
+    }
+
+    .variation-preview-goban .board {
+        box-shadow: none !important;
+    }
+
+    .variation-avatar {
+        align-items: center;
+        background: var(--shade2);
+        color: var(--fg);
+        display: inline-flex;
+        flex: 0 0 auto;
+        font-size: 0.5rem;
+        font-weight: bold;
+        height: 0.85rem;
+        justify-content: center;
+        line-height: 1;
+        min-width: 0.85rem;
+        width: 0.85rem;
+        overflow: hidden;
+        text-transform: uppercase;
+    }
+
+    .variation-avatar-image {
+        display: block;
+        flex: 0 0 auto;
+        height: 0.85rem !important;
+        max-height: 0.85rem;
+        max-width: 0.85rem;
+        min-height: 0.85rem;
+        min-width: 0.85rem;
+        object-fit: cover;
+        width: 0.85rem !important;
+    }
+
+    .variation-avatar-image.PlayerIcon {
+        display: block;
+        flex: 0 0 auto;
+        object-fit: cover;
+    }
+
+    .variation-meta,
+    .variation-empty {
+        color: var(--text-color-faded);
+        font-size: 0.76rem;
+        line-height: 1.1;
+        padding: 0;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .variation-meta {
+        align-self: center;
+    }
+
+    .variation-empty {
+        padding: 0.4rem 0 0;
+    }
+}
+
+:root .KibitzVariationList,
+[data-theme="light"] .KibitzVariationList {
+    background: var(--card-background-color);
+}
+
+[data-theme="dark"] .KibitzVariationList {
+    background: var(--card-background-color);
+}
+
+[data-theme="light"] .KibitzVariationList {
+    .variation-item:not(.visible) .variation-recall,
+    .variation-item:not(.visible) .variation-toggle {
+        background: color-mix(in srgb, var(--shade2) 56%, transparent);
+    }
+
+    .variation-item.visible .variation-recall,
+    .variation-item.visible .variation-toggle {
+        background: var(--card-background-color);
+    }
+
+    .variation-item.selected .variation-recall {
+        background: color-mix(
+            in srgb,
+            var(--variation-selected-color) 20%,
+            var(--card-background-color)
+        );
+        box-shadow: inset 0 0 3px 1px
+            color-mix(in srgb, var(--variation-selected-color) 26%, transparent);
+    }
+
+    .variation-item.selected .variation-toggle {
+        background: color-mix(
+            in srgb,
+            var(--variation-selected-color) 10%,
+            var(--card-background-color)
+        );
+        box-shadow: inset 0 0 3px 1px
+            color-mix(in srgb, var(--variation-selected-color) 26%, transparent);
+    }
+}
+
+@media (min-width: 1001px) {
+    [data-theme="light"] .KibitzVariationList {
+        background: var(--bg);
+    }
+
+    [data-theme="light"] .KibitzVariationList .variation-item.visible .variation-recall,
+    [data-theme="light"] .KibitzVariationList .variation-item.visible .variation-toggle {
+        background: var(--bg);
+    }
+
+    [data-theme="light"] .KibitzVariationList .variation-item.selected .variation-recall {
+        background: color-mix(in srgb, var(--variation-selected-color) 20%, var(--bg));
+    }
+
+    [data-theme="light"] .KibitzVariationList .variation-item.selected .variation-toggle {
+        background: color-mix(in srgb, var(--variation-selected-color) 10%, var(--bg));
+    }
+}

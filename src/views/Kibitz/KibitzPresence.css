@@ -1,0 +1,128 @@
+.KibitzPresence {
+    background: var(--card-background-color);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    max-height: 22rem;
+    min-height: 12rem;
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+    gap: 0.35rem;
+    padding: 0.4rem 0.75rem;
+    box-shadow: 0 0rem 1rem rgb(0 0 0 / 0.4);
+
+    .presence-summary {
+        color: var(--text-color-faded);
+        font-size: 0.76rem;
+        font-weight: 700;
+        line-height: 1.1;
+        min-width: 0;
+        white-space: nowrap;
+    }
+
+    .presence-summary.viewer-count-flash {
+        color: #2f9d5d;
+        filter: saturate(1.1);
+    }
+
+    .presence-summary,
+    .presence-users {
+        max-width: 100%;
+    }
+
+    .presence-summary {
+        flex: 0 0 auto;
+    }
+
+    .presence-owner-status {
+        color: var(--text-color-faded);
+        font-size: 0.7rem;
+        font-weight: 700;
+        line-height: 1;
+        text-transform: lowercase;
+    }
+
+    .presence-owner-tag {
+        color: var(--primary);
+        font-size: 0.7rem;
+        font-weight: 700;
+        line-height: 1;
+        text-transform: lowercase;
+    }
+
+    .presence-user {
+        align-items: center;
+        box-sizing: border-box;
+        display: flex;
+        gap: 0.35rem;
+        height: 1.4rem;
+        min-height: 1.4rem;
+        min-width: 0;
+        line-height: 1;
+        padding: 0 0.05rem;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .presence-user.presence-owner {
+        height: auto;
+        min-height: 1.4rem;
+    }
+
+    .presence-user > .presence-avatar {
+        align-self: center;
+    }
+
+    .presence-user > span:not(.presence-avatar) {
+        align-items: center;
+        display: flex;
+        height: 100%;
+        line-height: 1;
+        min-width: 0;
+    }
+
+    .presence-user .Player {
+        align-items: center;
+        display: inline-flex;
+        font-size: 0.8rem;
+        line-height: 1.05;
+        min-width: 0;
+    }
+
+    .presence-user .Player-username,
+    .presence-user .Player-rank {
+        align-self: center;
+    }
+
+    .presence-users {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: 0.15rem;
+        min-height: 0;
+        overflow-y: auto;
+        scrollbar-gutter: stable;
+        direction: rtl;
+    }
+
+    .presence-users > .presence-user {
+        direction: ltr;
+    }
+
+    .presence-empty {
+        color: var(--text-color-faded);
+        font-size: 0.78rem;
+        line-height: 1.2;
+        min-width: 0;
+        max-width: 100%;
+    }
+}
+
+@media (min-width: 1001px) {
+    [data-theme="light"] .KibitzPresence {
+        background: var(--bg);
+        box-shadow: 0 0rem 1rem rgb(110 110 110 / 0.2);
+    }
+}

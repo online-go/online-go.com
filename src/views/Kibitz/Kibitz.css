@@ -1,0 +1,667 @@
+.Kibitz {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - var(--below-navbar));
+    overflow: hidden;
+    padding: 0;
+    --kibitz-left-rail-width: clamp(9rem, 19vw, 15rem);
+    --mobile-room-bar-bg: #fff;
+
+    .Kibitz-layout {
+        display: grid;
+        flex: 1;
+        gap: 0;
+        grid-template-columns: var(--kibitz-left-rail-width) minmax(0, 1fr);
+        align-items: stretch;
+        min-width: 0;
+        min-height: 0;
+    }
+
+    .Kibitz-left-rail {
+        display: grid;
+        grid-template-rows: minmax(0, 1fr) auto;
+        min-width: 0;
+        min-height: 0;
+        overflow: hidden;
+        width: 100%;
+    }
+
+    .Kibitz-main {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        min-width: 0;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .Kibitz-content {
+        display: grid;
+        flex: 1;
+        gap: 0;
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+        min-height: 0;
+    }
+
+    .Kibitz-sidebar {
+        background: var(--bg);
+        display: grid;
+        gap: 0;
+        grid-template-rows: auto minmax(0, 1fr) minmax(9rem, 0.3fr);
+        min-height: 0;
+    }
+
+    .Kibitz-sidebar.has-stream-spacer {
+        grid-template-rows: auto minmax(0, 1fr) 12px minmax(9rem, 0.3fr);
+    }
+
+    .Kibitz-sidebar.no-active-proposal {
+        grid-template-rows: 0 minmax(0, 1fr) minmax(10rem, 0.4fr);
+    }
+
+    .Kibitz-sidebar.has-stream-spacer.no-active-proposal {
+        grid-template-rows: 0 minmax(0, 1fr) 12px minmax(10rem, 0.4fr);
+    }
+
+    .Kibitz-sidebar-proposal-slot {
+        gap: 0;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .Kibitz-sidebar-proposal-slot:empty {
+        background: transparent;
+    }
+
+    .Kibitz-sidebar-stream-spacer {
+        background: var(--card-background-color);
+        min-height: 12px;
+        overflow: hidden;
+    }
+
+    .Kibitz-footer-panels {
+        background: var(--card-background-color);
+        box-shadow: 0 0rem 1rem rgb(0 0 0 / 0.4);
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        grid-auto-rows: auto;
+        gap: 0;
+        min-height: 0;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .Kibitz-footer-empty {
+        color: var(--text-color-faded);
+        font-size: 0.8rem;
+        line-height: 1.2;
+        padding: 0.4rem 0.75rem;
+    }
+
+    .Kibitz-footer-divider {
+        border-top: 1px solid var(--shade3);
+        color: var(--text-color-faded);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        padding: 0.4rem 0.75rem 0.25rem;
+        text-transform: uppercase;
+    }
+
+    .Kibitz-mobile-panel-switcher,
+    .Kibitz-mobile-panel-surface {
+        display: none;
+    }
+}
+
+[data-theme="dark"] .Kibitz {
+    --mobile-room-bar-bg: var(--card-background-color);
+}
+
+@media (max-width: 1000px) {
+    .Kibitz {
+        padding: 0;
+
+        .Kibitz-layout {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 0.5rem;
+        }
+
+        .Kibitz-main {
+            order: 1;
+            position: relative;
+        }
+
+        .Kibitz-left-rail {
+            display: none;
+        }
+
+        .Kibitz-content {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 0.5rem;
+        }
+
+        .Kibitz-mobile-shell {
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column;
+            gap: 0;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .Kibitz-mobile-top-pane {
+            display: flex;
+            flex: 0 0 auto;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .Kibitz-mobile-top-pane .KibitzRoomStage {
+            flex: 1 1 auto;
+            min-height: 0;
+        }
+
+        .Kibitz-mobile-divider {
+            align-items: center;
+            cursor: ns-resize;
+            display: flex;
+            flex: 0 0 auto;
+            height: 1rem;
+            justify-content: center;
+            position: relative;
+            touch-action: none;
+            z-index: 1;
+        }
+
+        .Kibitz-mobile-divider::before {
+            background: var(--shade2);
+            border-radius: 999px;
+            content: "";
+            display: block;
+            height: 0.24rem;
+            width: 2.6rem;
+        }
+
+        .Kibitz-mobile-bottom-pane {
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .Kibitz-sidebar {
+            background: var(--bg);
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column;
+            gap: 0.5rem;
+            grid-template-rows: none;
+            min-height: 0;
+            order: 3;
+            overflow: hidden;
+        }
+
+        .Kibitz-sidebar.has-stream-spacer {
+            grid-template-rows: none;
+        }
+
+        .KibitzPresence {
+            display: none;
+        }
+
+        .Kibitz-sidebar-proposal-slot,
+        .Kibitz-footer-panels {
+            height: auto;
+        }
+
+        .Kibitz-sidebar-stream-spacer {
+            display: none;
+        }
+
+        .Kibitz-mobile-room-shell {
+            --mobile-room-bar-height: 2.95rem;
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column;
+            min-height: 0;
+            position: relative;
+        }
+
+        .Kibitz-mobile-room-bar {
+            all: unset;
+            background: transparent !important;
+            -webkit-appearance: none;
+            align-items: center;
+            box-sizing: border-box;
+            cursor: pointer;
+            display: grid;
+            gap: 0rem 0.5rem;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            margin: 0;
+            min-width: 0;
+            isolation: isolate;
+            padding: 2px 0.4rem;
+            position: relative;
+            text-align: left;
+            transition:
+                background-color 0.2s ease,
+                filter 0.2s ease;
+            width: 100%;
+            z-index: 40;
+        }
+
+        .Kibitz-mobile-room-bar::before {
+            background: var(--mobile-room-bar-bg);
+            content: "";
+            inset: 0;
+            pointer-events: none;
+            position: absolute;
+            z-index: -1;
+        }
+
+        .Kibitz-mobile-room-bar:hover,
+        .Kibitz-mobile-room-bar:focus,
+        .Kibitz-mobile-room-bar:active {
+            filter: none;
+        }
+
+        .Kibitz-mobile-room-bar[aria-expanded="true"] {
+            filter: brightness(1.1);
+        }
+
+        .mobile-room-header-title {
+            grid-column: 1;
+            justify-self: start;
+            color: var(--text-color) !important;
+            font-size: 0.95rem;
+            font-weight: 700;
+            line-height: 1.1;
+            max-width: 100%;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 100%;
+        }
+
+        .mobile-room-header-matchup {
+            grid-column: 2;
+            align-items: center;
+            display: flex;
+            flex-direction: column;
+            justify-self: center;
+            color: var(--text-color) !important;
+            font-size: 0.74rem;
+            gap: 0.08rem;
+            line-height: 1.05;
+            min-width: 0;
+            overflow: hidden;
+            text-align: center;
+            white-space: normal;
+        }
+
+        .mobile-room-header-matchup-first,
+        .mobile-room-header-matchup-second {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .mobile-room-header-matchup-first {
+            font-weight: 700;
+        }
+
+        .mobile-room-header-matchup-vs {
+            font-weight: 400;
+        }
+
+        .mobile-room-header-matchup-second-name {
+            font-weight: 700;
+        }
+
+        .mobile-room-header-matchup-black-dot,
+        .mobile-room-header-matchup-white-dot {
+            font-size: 0.78em;
+            line-height: 1;
+            font-weight: 700;
+        }
+
+        .mobile-room-header-matchup-black-dot {
+            color: #000;
+        }
+
+        .mobile-room-header-matchup-white-dot {
+            color: #fff;
+        }
+
+        .mobile-room-header-meta {
+            align-items: center;
+            display: inline-flex;
+            flex: 0 0 auto;
+            gap: 0.35rem;
+            grid-column: 3;
+            justify-self: end;
+            min-width: 0;
+            position: relative;
+            transition:
+                color 180ms ease,
+                filter 180ms ease;
+            white-space: nowrap;
+        }
+
+        .mobile-room-header-meta-flash {
+            color: #2f9d5d;
+            filter: saturate(1.1);
+        }
+
+        .mobile-room-header-meta-flash .mobile-room-viewer-icon,
+        .mobile-room-header-meta-flash .mobile-room-viewer-count {
+            color: #2f9d5d;
+        }
+
+        .mobile-room-viewer-icon {
+            align-items: center;
+            color: var(--text-color) !important;
+            display: inline-flex;
+            height: 0.85rem;
+            justify-content: center;
+            width: 0.85rem;
+        }
+
+        .mobile-room-viewer-icon svg {
+            display: block;
+            height: 100%;
+            width: 100%;
+        }
+
+        .mobile-room-viewer-count {
+            color: var(--text-color) !important;
+            font-size: 0.76rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .Kibitz-mobile-overlay-panel {
+            bottom: 0.5rem;
+            left: 0.5rem;
+            background: var(--card-background-color);
+            border: 1px solid var(--shade3);
+            box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.35);
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            min-height: 0;
+            overflow: hidden;
+            position: absolute;
+            right: 0.5rem;
+            top: calc(var(--mobile-room-bar-height, 2.95rem) + 0.25rem);
+            z-index: 50;
+        }
+
+        .Kibitz-mobile-overlay-scroll {
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column;
+            min-height: 0;
+            overflow: auto;
+        }
+
+        .Kibitz-mobile-overlay-backdrop {
+            background: color-mix(in srgb, var(--bg) 55%, transparent);
+            border: 0;
+            bottom: 0.5rem;
+            cursor: default;
+            left: 0.5rem;
+            padding: 0;
+            position: absolute;
+            right: 0.5rem;
+            top: calc(var(--mobile-room-bar-height, 2.95rem) + 0.25rem);
+            z-index: 45;
+        }
+
+        .Kibitz-mobile-overlay-panel {
+            border-radius: 0.45rem;
+            bottom: 0.35rem;
+            box-shadow: 0 0.6rem 1.5rem rgb(0 0 0 / 0.38);
+            left: 0.35rem;
+            right: 0.35rem;
+            top: calc(var(--mobile-room-bar-height, 2.95rem) + 0.2rem);
+        }
+
+        .Kibitz-mobile-overlay-backdrop {
+            bottom: 0.35rem;
+            left: 0.35rem;
+            right: 0.35rem;
+            top: calc(var(--mobile-room-bar-height, 2.95rem) + 0.2rem);
+        }
+
+        .Kibitz-mobile-overlay-scroll {
+            padding-bottom: 0.25rem;
+        }
+
+        .kibitz-mobile-transport-button {
+            align-items: center;
+            background: color-mix(in srgb, var(--shade2) 70%, transparent);
+            border: 0;
+            box-shadow: none;
+            color: var(--text-color-faded);
+            cursor: pointer;
+            display: inline-flex;
+            font-size: 0.75rem;
+            gap: 0.25rem;
+            justify-content: center;
+            height: 1.6rem;
+            margin: 0;
+            min-width: 0;
+            padding: 0 0.45rem;
+            vertical-align: middle;
+        }
+
+        .kibitz-mobile-transport-button.primary {
+            background: var(--primary);
+            color: var(--colored-background-fg);
+        }
+
+        .kibitz-mobile-transport-button.active {
+            background: color-mix(in srgb, var(--shade2) 80%, transparent);
+            color: var(--fg);
+        }
+
+        [data-theme="light"] .Kibitz {
+            .mobile-board-controls-toggle:not(.active):not([aria-pressed="true"]) {
+                background: var(--shade2) !important;
+            }
+
+            .kibitz-mobile-transport-button {
+                background-color: var(--shade2) !important;
+            }
+
+            .kibitz-mobile-transport-button.primary {
+                background-color: var(--primary) !important;
+                color: var(--colored-background-fg) !important;
+            }
+
+            .kibitz-mobile-transport-button.active {
+                background-color: var(--shade1) !important;
+                color: var(--fg);
+            }
+        }
+
+        .kibitz-mobile-transport-button.has-alert .kibitz-mobile-transport-label::after {
+            background: var(--primary);
+            border-radius: 999px;
+            content: "";
+            display: inline-block;
+            height: 0.38rem;
+            margin-left: 0.35rem;
+            vertical-align: middle;
+            width: 0.38rem;
+        }
+
+        .kibitz-mobile-transport-label {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .kibitz-mobile-transport-badge {
+            color: var(--fg);
+            flex: 0 0 auto;
+            font-size: 0.7rem;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .Kibitz-mobile-panel-surface {
+            background: #fff;
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column;
+            gap: 0.5rem;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .Kibitz-mobile-panel-surface > .KibitzSharedStreamPanel,
+        .Kibitz-mobile-panel-surface > .Kibitz-mobile-panel {
+            flex: 1 1 auto;
+            min-height: 0;
+        }
+
+        .Kibitz-mobile-panel {
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            min-height: 0;
+            overflow: auto;
+        }
+
+        .Kibitz-mobile-compare-tools {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .Kibitz-mobile-compare-actions {
+            align-items: center;
+            display: grid;
+            gap: 0.25rem;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+            padding: 0;
+            width: 100%;
+        }
+
+        .Kibitz-mobile-compare-actions.transport-controls {
+            grid-column: auto;
+            justify-self: stretch;
+        }
+
+        .Kibitz-mobile-compare-actions .kibitz-mobile-transport-button {
+            width: 100%;
+        }
+
+        .Kibitz-mobile-compare-actions .kibitz-mobile-transport-button-compact {
+            padding-inline: 0.45rem;
+        }
+
+        .KibitzMobileGamePicker .KibitzGamePickerOverlay-mobileFooter {
+            padding-inline: 0.4rem;
+        }
+
+        .Kibitz-mobile-panel-empty,
+        .Kibitz-mobile-panel-note {
+            background: #fff;
+            color: var(--text-color-faded);
+            font-size: 0.8rem;
+            line-height: 1.25;
+            padding: 0.5rem 0.75rem;
+        }
+
+        .Kibitz-mobile-panel-note {
+            color: var(--fg);
+        }
+
+        [data-theme="dark"] {
+            .Kibitz-mobile-panel-surface,
+            .Kibitz-mobile-panel,
+            .Kibitz-mobile-panel-empty,
+            .Kibitz-mobile-panel-note {
+                background: var(--card-background-color);
+            }
+        }
+
+        .Kibitz-mobile-compare-empty {
+            align-items: center;
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 0;
+            text-align: center;
+        }
+
+        .Kibitz-mobile-compare-empty .kibitz-create-variation-button,
+        .Kibitz-mobile-compare-empty-hint {
+            font-size: 0.75rem;
+            line-height: 1.1;
+        }
+
+        .Kibitz-mobile-compare-empty-hint {
+            color: var(--text-color-faded);
+            margin-top: 0.1rem;
+            max-width: 14rem;
+        }
+
+        .Kibitz-mobile-compare-panel .KibitzVariationList {
+            background: var(--mobile-room-bar-bg);
+            padding: 0.75rem 0.75rem 0.4rem 1.15rem;
+        }
+
+        .Kibitz-mobile-panel-surface > .KibitzSharedStreamPanel,
+        .Kibitz-mobile-panel-surface > .Kibitz-mobile-panel,
+        .Kibitz-mobile-panel-surface > .Kibitz-mobile-panel .KibitzVariationList {
+            background: var(--card-background-color);
+        }
+
+        .Kibitz-footer-panels {
+            display: grid;
+            gap: 0.5rem;
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: auto;
+            overflow: hidden;
+        }
+    }
+}
+
+[data-theme="dark"] .Kibitz-mobile-room-bar {
+    background: var(--card-background-color) !important;
+}
+
+@media (min-width: 1001px) {
+    [data-theme="light"] .Kibitz {
+        background: var(--card-background-color);
+    }
+
+    [data-theme="light"] .KibitzRoomStage {
+        background: var(--card-background-color);
+    }
+
+    [data-theme="light"] .Kibitz-sidebar {
+        background: var(--card-background-color);
+    }
+
+    [data-theme="light"] .Kibitz-footer-panels {
+        background: var(--bg);
+        box-shadow: 0 0rem 1rem rgb(110 110 110 / 0.2);
+    }
+
+    [data-theme="light"] .Kibitz-sidebar-stream-spacer {
+        background: var(--bg);
+    }
+}

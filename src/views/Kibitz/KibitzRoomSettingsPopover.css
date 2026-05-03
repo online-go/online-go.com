@@ -1,0 +1,133 @@
+.KibitzRoomSettingsPopover {
+    background: var(--card-background-color);
+    border: 1px solid var(--shade3);
+    box-shadow: 0 12px 28px color-mix(in srgb, var(--shade1) 20%, transparent);
+    color: var(--fg);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 0;
+    padding: 0.75rem 0.8rem;
+
+    .KibitzRoomSettingsPopover-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        line-height: 1.2;
+        padding-bottom: 0.1rem;
+    }
+
+    .KibitzRoomSettingsPopover-fieldLabel {
+        color: var(--text-color-faded);
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .KibitzRoomSettingsPopover-note,
+    .KibitzRoomSettingsPopover-error {
+        font-size: 0.84rem;
+        line-height: 1.35;
+    }
+
+    .KibitzRoomSettingsPopover-owner {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        min-width: 0;
+    }
+
+    .KibitzRoomSettingsPopover-ownerRow {
+        align-items: center;
+        display: flex;
+        gap: 0.35rem;
+        min-width: 0;
+
+        .Player {
+            align-items: center;
+            display: inline-flex;
+            line-height: 1.05;
+        }
+    }
+
+    .KibitzRoomSettingsPopover-ownerAvatar {
+        align-items: center;
+        background: var(--shade2);
+        color: var(--fg);
+        display: inline-flex;
+        flex: 0 0 auto;
+        font-size: 0.56rem;
+        font-weight: bold;
+        height: 16px;
+        justify-content: center;
+        line-height: 1;
+        min-width: 16px;
+        overflow: hidden;
+        text-transform: uppercase;
+    }
+
+    .KibitzRoomSettingsPopover-ownerAvatarIcon {
+        display: block;
+    }
+
+    .KibitzRoomSettingsPopover-note {
+        color: var(--text-color-faded);
+    }
+
+    .KibitzRoomSettingsPopover-error {
+        color: var(--danger-fg, #ff8b8b);
+    }
+
+    .KibitzRoomSettingsPopover-actions {
+        align-items: center;
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+    }
+
+    .KibitzRoomSettingsPopover-action,
+    .KibitzRoomSettingsPopover-secondaryAction,
+    .KibitzRoomSettingsPopover-deleteAction {
+        appearance: none;
+        border-radius: 0.35rem;
+        cursor: pointer;
+        font-size: 0.88rem;
+        font-weight: 700;
+        line-height: 1.2;
+        min-width: 0;
+        padding: 0.35rem 0.55rem;
+    }
+
+    .KibitzRoomSettingsPopover-action {
+        background: var(--primary);
+        border: 1px solid var(--primary);
+        color: var(--colored-background-fg);
+    }
+
+    .KibitzRoomSettingsPopover-action:hover,
+    .KibitzRoomSettingsPopover-action:focus-visible {
+        filter: brightness(1.05);
+    }
+
+    .KibitzRoomSettingsPopover-secondaryAction {
+        background: var(--shade2);
+        border: 1px solid var(--border-color);
+        color: var(--fg);
+    }
+
+    .KibitzRoomSettingsPopover-secondaryAction:hover,
+    .KibitzRoomSettingsPopover-secondaryAction:focus-visible {
+        background: var(--shade3);
+    }
+
+    .KibitzRoomSettingsPopover-deleteAction {
+        background: var(--reject);
+        border: 1px solid var(--reject);
+        color: var(--colored-background-fg);
+    }
+
+    .KibitzRoomSettingsPopover-deleteAction:hover,
+    .KibitzRoomSettingsPopover-deleteAction:focus-visible {
+        filter: brightness(1.04);
+    }
+}

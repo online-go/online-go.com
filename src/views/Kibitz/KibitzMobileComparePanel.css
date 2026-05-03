@@ -1,0 +1,356 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.KibitzMobileComparePanel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0.35rem 0.4rem 0.5rem;
+    -webkit-overflow-scrolling: touch;
+}
+
+.KibitzMobileComparePanel-header {
+    align-items: center;
+    display: grid;
+    gap: 0.35rem;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    min-width: 0;
+}
+
+.KibitzMobileComparePanel-colorChip,
+.KibitzMobileComparePanel-stateLabel,
+.KibitzMobileComparePanel-title,
+.KibitzMobileComparePanel-authorRow {
+    align-self: center;
+}
+
+.KibitzMobileComparePanel-authorRow {
+    align-items: center;
+    display: flex;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.KibitzMobileComparePanel-colorChip {
+    border-radius: 999px;
+    flex: 0 0 auto;
+    height: 0.55rem;
+    width: 0.55rem;
+}
+
+.KibitzMobileComparePanel-stateLabel {
+    color: var(--primary);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-transform: uppercase;
+}
+
+.KibitzMobileComparePanel-title {
+    color: var(--fg);
+    font-size: 0.88rem;
+    font-weight: 700;
+    line-height: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.KibitzMobileComparePanel-authorRow {
+    color: var(--text-color-faded);
+    font-size: 0.74rem;
+    line-height: 1;
+}
+
+.KibitzMobileComparePanel-avatar {
+    align-items: center;
+    background: var(--shade2);
+    color: var(--fg);
+    display: inline-flex;
+    flex: 0 0 auto;
+    font-size: 0.6rem;
+    font-weight: bold;
+    height: 1rem;
+    justify-content: center;
+    line-height: 1;
+    min-width: 1rem;
+    overflow: hidden;
+    text-transform: uppercase;
+}
+
+.KibitzMobileComparePanel-avatarImage {
+    display: block;
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+}
+
+.KibitzMobileComparePanel-author {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.KibitzMobileComparePanel-tools {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.KibitzMobileComparePanel-toolRow {
+    display: flex;
+    min-width: 0;
+}
+
+.KibitzMobileComparePanel-analyzeRow {
+    overflow: hidden;
+
+    .game-analyze-button-bar {
+        gap: 0;
+        justify-content: center;
+        width: 100%;
+
+        .btn-group {
+            display: inline-flex;
+            gap: 0;
+        }
+
+        button {
+            font-size: 0.76rem;
+            min-height: 1.35rem;
+            min-width: 1.35rem;
+            padding: 0 0.28rem;
+        }
+
+        .pass-button {
+            min-width: auto;
+            padding: 0 0.45rem;
+        }
+
+        input {
+            height: 1.35rem;
+            width: 1.35rem;
+        }
+    }
+}
+
+.KibitzMobileComparePanel-nodeRow {
+    .KibitzNodeText {
+        min-height: 3.25rem;
+    }
+}
+
+.KibitzMobileComparePanel-composeRow {
+    .KibitzVariationComposer {
+        width: 100%;
+    }
+
+    .KibitzVariationComposer input,
+    .KibitzVariationComposer button {
+        box-sizing: border-box;
+        height: 1.6rem;
+    }
+}
+
+.KibitzMobileComparePanel-notes {
+    background: color-mix(in srgb, var(--shade1) 78%, transparent);
+    border: 1px solid var(--shade3);
+    border-radius: 0.3rem;
+    padding: 0.35rem 0.45rem;
+
+    summary {
+        align-items: center;
+        color: var(--fg);
+        cursor: pointer;
+        display: flex;
+        font-size: 0.76rem;
+        gap: 0.35rem;
+        list-style: none;
+        min-width: 0;
+        outline: none;
+    }
+
+    summary::-webkit-details-marker {
+        display: none;
+    }
+}
+
+.KibitzMobileComparePanel-notesTriangle {
+    border-bottom: 0.28rem solid transparent;
+    border-left: 0.34rem solid var(--text-color-faded);
+    border-top: 0.28rem solid transparent;
+    flex: 0 0 auto;
+    height: 0;
+    transition: transform 120ms ease;
+    width: 0;
+}
+
+.KibitzMobileComparePanel-notesSummaryText {
+    color: var(--text-color-faded);
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.KibitzMobileComparePanel-notes[open] .KibitzMobileComparePanel-notesTriangle {
+    transform: rotate(90deg);
+}
+
+.KibitzMobileComparePanel-notes[open] summary {
+    margin-bottom: 0.3rem;
+}
+
+.KibitzMobileComparePanel-notesBody {
+    color: var(--fg);
+    font-size: 0.78rem;
+    line-height: 1.35;
+    white-space: pre-wrap;
+}
+
+.KibitzMobileComparePanel-notesSingle {
+    color: var(--fg);
+    font-size: 0.78rem;
+    line-height: 1.35;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.KibitzMobileComparePanel-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.KibitzMobileComparePanel-actionButton {
+    background: var(--shade2);
+    border: 0;
+    box-shadow: none;
+    color: var(--fg);
+    cursor: pointer;
+    flex: 1 1 9rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.15;
+    min-height: 2rem;
+    padding: 0.35rem 0.55rem;
+}
+
+.KibitzMobileComparePanel-actionButton.primary {
+    background: var(--primary);
+    color: var(--colored-background-fg);
+}
+
+.KibitzMobileComparePanel-sharedSection {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-height: 0;
+    min-width: 0;
+}
+
+.KibitzMobileComparePanel-sharedHeader {
+    align-items: center;
+    color: var(--fg);
+    display: flex;
+    gap: 0.4rem;
+    justify-content: space-between;
+    min-width: 0;
+    padding: 0.1rem 0;
+    text-align: left;
+    width: 100%;
+}
+
+.KibitzMobileComparePanel-sharedHeader > span:first-child {
+    color: var(--text-color-faded);
+    flex: 1 1 auto;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.KibitzMobileComparePanel-sharedHeaderMeta {
+    color: var(--text-color-faded);
+    font-size: 0.68rem;
+    font-weight: 600;
+    line-height: 1.1;
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.KibitzMobileComparePanel-sharedBody {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.KibitzMobileComparePanel-empty {
+    color: var(--text-color-faded);
+    font-size: 0.78rem;
+    line-height: 1.25;
+}
+
+.KibitzMobileComparePanel-currentMove {
+    color: var(--text-color-faded);
+    font-size: 0.72rem;
+    line-height: 1.15;
+}
+
+@media (max-width: 1000px) {
+    .KibitzMobileComparePanel .KibitzVariationList {
+        padding-inline: 0.1rem;
+    }
+
+    .KibitzMobileComparePanel .KibitzVariationList .variation-title {
+        font-size: 0.8rem;
+    }
+
+    .KibitzMobileComparePanel .KibitzVariationList .variation-item,
+    .KibitzMobileComparePanel .KibitzVariationList .variation-recall,
+    .KibitzMobileComparePanel .KibitzVariationList .variation-toggle {
+        min-height: 2.7rem;
+    }
+
+    .KibitzMobileComparePanel .KibitzVariationList .variation-name {
+        font-size: 0.82rem;
+    }
+
+    .KibitzMobileComparePanel .KibitzVariationList .variation-meta,
+    .KibitzMobileComparePanel .KibitzVariationList .variation-empty {
+        font-size: 0.72rem;
+    }
+}
