@@ -18,6 +18,7 @@
 import * as React from "react";
 
 import * as data from "@/lib/data";
+import { pgettext } from "@/lib/translate";
 import { get, put } from "@/lib/requests";
 
 import { Player } from "@/components/Player";
@@ -111,59 +112,53 @@ export class JosekiPermissionsPanel extends React.PureComponent<
     };
 
     render = () => {
-        const protect_self = data.get("user").id === parseInt(this.state.user_id); // don't let people dis-admin themselves!
+        const user_id_int = parseInt(this.state.user_id);
+        const has_user = !isNaN(user_id_int) && this.state.user_id !== "";
+        // Don't let admins remove their own admin permission.
+        const protect_self = data.get("user").id === user_id_int;
+        const disabled = this.state.throb || !has_user;
 
         return (
             <div className="joseki-permissions-panel">
-                <div>User id:</div>
-                <input value={this.state.user_id} onChange={this.onUserIdChange} />
-                <Player user={parseInt(this.state.user_id)} />
-                <div>comment</div>
-                {this.state.throb ? (
-                    <React.Fragment>
-                        <input
-                            type="checkbox"
-                            checked={this.state.can_comment}
-                            onChange={this.onCommentChange}
-                            disabled={true}
-                        />
-                        <div>edit</div>
-                        <input
-                            type="checkbox"
-                            checked={this.state.can_edit}
-                            onChange={this.onEditChange}
-                            disabled={true}
-                        />
-                        <div>admin</div>
-                        <input
-                            type="checkbox"
-                            checked={this.state.can_admin}
-                            onChange={this.onAdminChange}
-                            disabled={true}
-                        />
-                    </React.Fragment>
-                ) : (
-                    <React.Fragment>
-                        <input
-                            type="checkbox"
-                            checked={this.state.can_comment}
-                            onChange={this.onCommentChange}
-                        />
-                        <div>edit</div>
-                        <input
-                            type="checkbox"
-                            checked={this.state.can_edit}
-                            onChange={this.onEditChange}
-                        />
-                        <div>admin</div>
-                        <input
-                            type="checkbox"
-                            checked={this.state.can_admin}
-                            onChange={this.onAdminChange}
-                            disabled={protect_self}
-                        />
-                    </React.Fragment>
+                <label className="joseki-permissions-user">
+                    <span>{pgettext("Joseki permissions: user id field", "User id")}</span>
+                    <input value={this.state.user_id} onChange={this.onUserIdChange} />
+                </label>
+                {has_user && (
+                    <div className="joseki-permissions-player">
+                        <Player user={user_id_int} />
+                    </div>
                 )}
+
+                <div className="joseki-permissions-flags">
+                    <label className="joseki-permissions-flag">
+                        <input
+                            type="checkbox"
+                            checked={this.state.can_comment}
+                            onChange={this.onCommentChange}
+                            disabled={disabled}
+                        />
+                        <span>{pgettext("Joseki permission flag", "Can comment")}</span>
+                    </label>
+                    <label className="joseki-permissions-flag">
+                        <input
+                            type="checkbox"
+                            checked={this.state.can_edit}
+                            onChange={this.onEditChange}
+                            disabled={disabled}
+                        />
+                        <span>{pgettext("Joseki permission flag", "Can edit")}</span>
+                    </label>
+                    <label className="joseki-permissions-flag">
+                        <input
+                            type="checkbox"
+                            checked={this.state.can_admin}
+                            onChange={this.onAdminChange}
+                            disabled={disabled || protect_self}
+                        />
+                        <span>{pgettext("Joseki permission flag", "Can administer")}</span>
+                    </label>
+                </div>
             </div>
         );
     };

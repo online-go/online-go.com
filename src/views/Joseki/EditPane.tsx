@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import * as ReactSelect from "react-select";
+import Select, { MultiValue, SingleValue } from "react-select";
 
 import { _, pgettext } from "@/lib/translate";
 import { get, post } from "@/lib/requests";
@@ -25,6 +25,10 @@ import { openModal } from "@/components/Modal";
 import { JosekiSourceModal } from "@/components/JosekiSourceModal";
 import { JosekiTagSelector, OJEJosekiTag } from "@/components/JosekiTagSelector";
 import { joseki_sources_url, applyJosekiMarkdown, MoveCategory } from "./joseki-utils";
+
+type DescriptionView = "edit" | "preview";
+type StringOption = { value: string; label: string };
+type SourceOption = { value: string | number; label: string };
 
 export interface EditProps {
     node_id: number;
@@ -83,10 +87,10 @@ export function EditPane(props: EditProps): React.ReactElement {
         props.tags === null ? [] : props.tags.map((t) => ({ label: t.description, value: t.id })),
     );
     const [variation_label, set_variation_label] = React.useState(props.variation_label || "1");
+    const [description_view, set_description_view] = React.useState<DescriptionView>("edit");
 
     const prev_node_id = React.useRef(props.node_id);
 
-    // Fetch joseki sources on mount
     React.useEffect(() => {
         get(joseki_sources_url)
             .then((body) => {
@@ -97,7 +101,8 @@ export function EditPane(props: EditProps): React.ReactElement {
             });
     }, []);
 
-    // getDerivedStateFromProps: update state when node_id changes (board click)
+    // Reset edit-form state when the active node changes (e.g. user clicks
+    // a different stone on the board).
     React.useEffect(() => {
         if (props.node_id !== prev_node_id.current) {
             prev_node_id.current = props.node_id;
@@ -112,6 +117,7 @@ export function EditPane(props: EditProps): React.ReactElement {
                     : props.tags.map((t) => ({ label: t.description, value: t.id })),
             );
             set_variation_label(props.variation_label || "1");
+            set_description_view("edit");
         }
     }, [
         props.node_id,
@@ -122,15 +128,17 @@ export function EditPane(props: EditProps): React.ReactElement {
         props.variation_label,
     ]);
 
-    const onTypeChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-        set_move_category(e.target.value);
+    const onTypeChange = React.useCallback((opt: SingleValue<StringOption>) => {
+        if (opt) {
+            set_move_category(opt.value);
+        }
     }, []);
 
-    const onSourceChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-        set_joseki_source(e.target.value);
+    const onSourceChange = React.useCallback((opt: SingleValue<SourceOption>) => {
+        set_joseki_source(opt?.value ?? "none");
     }, []);
 
-    const onTagChange = React.useCallback((e: ReactSelect.MultiValue<OJEJosekiTag>) => {
+    const onTagChange = React.useCallback((e: MultiValue<OJEJosekiTag>) => {
         set_tags(e as unknown as { label: string; value: number }[]);
     }, []);
 
@@ -178,39 +186,37 @@ export function EditPane(props: EditProps): React.ReactElement {
         );
     }, [props.save_new_info, move_category, variation_label, tags, new_description, joseki_source]);
 
-    const onLabelChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-        set_variation_label(e.target.value);
+    const onLabelChange = React.useCallback((opt: SingleValue<StringOption>) => {
+        if (opt) {
+            set_variation_label(opt.value);
+        }
     }, []);
 
-    // Create the set of select option elements from the valid MoveCategory items
-    const selections = Object.keys(MoveCategory).map((selection, i) => (
-        <option key={i} value={(MoveCategory as Record<string, string>)[selection]}>
-            {pgettext("Joseki move category", (MoveCategory as Record<string, string>)[selection])}
-        </option>
-    ));
+    const categoryOptions: StringOption[] = Object.entries(MoveCategory).map(([key, value]) => ({
+        value: key,
+        label: pgettext("Joseki move category", value as string),
+    }));
 
-    if (move_category !== "new") {
-        selections.unshift(
-            <option key={-1} value={(MoveCategory as Record<string, string>)[move_category]}>
-                {pgettext(
-                    "Joseki move category",
-                    (MoveCategory as Record<string, string>)[move_category],
-                )}
-            </option>,
-        );
+    if (move_category !== "new" && !(move_category in MoveCategory)) {
+        categoryOptions.unshift({
+            value: move_category,
+            label: pgettext("Joseki move category", move_category),
+        });
     }
 
-    const labels = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "_"].map((label, i) => (
-        <option key={i} value={label}>
-            {label}
-        </option>
-    ));
+    const selectedCategory =
+        categoryOptions.find((o) => o.value === move_category) ?? categoryOptions[0];
 
-    const sources = joseki_source_list.map((selection, i) => (
-        <option key={i} value={selection["id"]}>
-            {_(selection["description"])}
-        </option>
-    ));
+    const labelOptions: StringOption[] = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "_"].map(
+        (l) => ({ value: l, label: l }),
+    );
+    const selectedLabel = labelOptions.find((o) => o.value === variation_label) ?? labelOptions[0];
+
+    const sourceOptions: SourceOption[] = joseki_source_list.map((s) => ({
+        value: s.id,
+        label: _(s.description),
+    }));
+    const selectedSource = sourceOptions.find((o) => o.value === joseki_source) ?? null;
 
     const preview = applyJosekiMarkdown(new_description);
 
@@ -219,23 +225,39 @@ export function EditPane(props: EditProps): React.ReactElement {
             <div className="move-attributes">
                 <div className="move-type-selection">
                     <span>{_("This sequence is")}:</span>
-                    <select value={move_category} onChange={onTypeChange}>
-                        {selections}
-                    </select>
+                    <Select
+                        className="joseki-edit-select"
+                        classNamePrefix="ogs-react-select"
+                        value={selectedCategory}
+                        options={categoryOptions}
+                        onChange={onTypeChange}
+                        isSearchable={false}
+                    />
                 </div>
                 <div className="variation-order-select">
                     <span>{_("Variation label")}:</span>
-                    <select value={variation_label} onChange={onLabelChange}>
-                        {labels}
-                    </select>
+                    <Select
+                        className="joseki-edit-select"
+                        classNamePrefix="ogs-react-select"
+                        value={selectedLabel}
+                        options={labelOptions}
+                        onChange={onLabelChange}
+                        isSearchable={false}
+                    />
                 </div>
 
                 <div className="joseki-source-edit">
                     <div>{_("Source")}:</div>
                     <div className="joseki-source-edit-controls">
-                        <select value={joseki_source} onChange={onSourceChange}>
-                            {sources}
-                        </select>
+                        <Select
+                            className="joseki-edit-select"
+                            classNamePrefix="ogs-react-select"
+                            value={selectedSource}
+                            options={sourceOptions}
+                            onChange={onSourceChange}
+                            isSearchable={true}
+                            placeholder={_("(unknown)")}
+                        />
                         <i className="fa fa-plus-circle" onClick={promptForJosekiSource} />
                     </div>
                 </div>
@@ -249,26 +271,46 @@ export function EditPane(props: EditProps): React.ReactElement {
                 </div>
             </div>
             <div className="description-edit">
-                <div className="edit-label">{_("Position description")}:</div>
-
-                <textarea onChange={handleEditInput} value={new_description} />
-
-                <div className="position-edit-button">
-                    <button className="xs primary" onClick={saveNewInfo}>
-                        {_("Save")}
+                <div className="description-edit-tabs">
+                    <button
+                        className={
+                            "description-edit-tab" + (description_view === "edit" ? " active" : "")
+                        }
+                        onClick={() => set_description_view("edit")}
+                    >
+                        {pgettext("Joseki position description editor tab", "Edit")}
+                    </button>
+                    <button
+                        className={
+                            "description-edit-tab" +
+                            (description_view === "preview" ? " active" : "")
+                        }
+                        onClick={() => set_description_view("preview")}
+                    >
+                        {pgettext("Joseki position description preview tab", "Preview")}
                     </button>
                 </div>
-                <div className="edit-label">{_("Preview")}:</div>
 
-                {new_description.length !== 0 && (
+                {description_view === "edit" ? (
+                    <textarea
+                        className="description-textarea"
+                        onChange={handleEditInput}
+                        value={new_description}
+                        placeholder={_("Position description")}
+                    />
+                ) : new_description.length !== 0 ? (
                     <Markdown className="description-preview" source={preview} />
-                )}
-
-                {new_description.length === 0 && (
+                ) : (
                     <div className="description-preview edit-label">
                         ({_("position description")})
                     </div>
                 )}
+
+                <div className="description-edit-save">
+                    <button className="xs primary" onClick={saveNewInfo}>
+                        {_("Save")}
+                    </button>
+                </div>
             </div>
         </div>
     );

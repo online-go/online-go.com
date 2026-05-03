@@ -21,22 +21,9 @@
 
     .filter-set {
         margin-bottom: 0.5em;
-
-        select, .joseki-tag-selector {
-            margin-left: 0.5em;
-        }
-
-        .filter-set-inactive {
-            background-color: var(--shade4);
-        }
     }
 
     .filter-label {
         margin-right: 0.5em;
-    }
-
-    .filter-notes {
-        text-align: center;
-        font-style: italic;
     }
 }

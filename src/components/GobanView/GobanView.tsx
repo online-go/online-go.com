@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import { _ } from "@/lib/translate";
 import { GobanController } from "@/lib/GobanController";
 import { GobanContainer } from "@/components/GobanContainer";
 import {
@@ -39,7 +40,8 @@ export interface TabDefinition {
     title?: string;
     active?: boolean;
     disabled?: boolean;
-    onClick?: () => void;
+    hideFromBar?: boolean;
+    onClick?: (event?: React.MouseEvent<HTMLButtonElement>) => void;
     onToggle?: (active: boolean) => void;
     children: React.ReactNode;
 }
@@ -57,6 +59,13 @@ interface GobanViewProps {
     /** Open this takeover on initial mount. Only read once; subsequent
      *  renders ignore changes. Use the ref API for mid-lifetime control. */
     defaultActiveTakeover?: string;
+    /** Replace the built-in MoveNumberSlider. Renders unconditionally —
+     *  including during takeovers — so consumers whose navigation model
+     *  needs to remain visible across modes (e.g. joseki) keep a single
+     *  control strip in the standard location. The "has-custom-slider"
+     *  class is added to the GobanView root so portrait CSS can leave room
+     *  for it above the tab bar. */
+    customSlider?: React.ReactNode;
     ref?: React.Ref<GobanViewRef>;
 }
 
@@ -79,6 +88,7 @@ function partitionChildren(children: React.ReactNode): {
                 title: props.title,
                 active: props.active,
                 disabled: props.disabled,
+                hideFromBar: props.hideFromBar,
                 onClick: props.onClick,
                 onToggle: props.onToggle,
                 children: props.children,
@@ -95,16 +105,15 @@ function GobanViewComponent({
     className,
     children,
     defaultActiveTakeover,
+    customSlider,
     ref,
 }: GobanViewProps): React.ReactElement {
     const { tabs, others } = React.useMemo(() => partitionChildren(children), [children]);
 
-    // `children` is a fresh reference every parent render, so the memo above
-    // invalidates every render and `tabs` gets a new identity even when the
-    // tab set is semantically unchanged. Build a structural signature of the
-    // fields the reconciliation effects actually depend on, and key the
-    // effects off that instead — so they only fire when the tab list has
-    // meaningfully changed rather than on every parent re-render.
+    // `children` is a fresh reference every parent render, so `tabs` gets a
+    // new identity even when the tab set is semantically unchanged. Key the
+    // reconciliation effects off a structural signature instead so they
+    // only fire when the tab list has meaningfully changed.
     const tabsSignature = tabs
         .map((t) => `${t.id}:${t.type}:${t.disabled ? 1 : 0}:${t.defaultVisible ? 1 : 0}`)
         .join(",");
@@ -116,8 +125,6 @@ function GobanViewComponent({
         defaultActiveTakeover ?? null,
     );
 
-    // Reconcile toggle defaults with the current tab list: seed any new toggle
-    // tabs with their defaultVisible, and drop keys for tabs that no longer exist.
     React.useEffect(() => {
         setToggleVisibility((prev) => {
             const next: Record<string, boolean> = {};
@@ -140,10 +147,9 @@ function GobanViewComponent({
         });
     }, [tabsSignature]);
 
-    // Clear activeTakeover if the matching tab was removed or disabled, and
-    // notify its owner via `onToggle(false)` so they can tear down state.
-    // The previous tab list is kept in a ref so we can resolve the onToggle
-    // even when the tab has been removed entirely from the current render.
+    // Clear activeTakeover if the matching tab was removed or disabled.
+    // prevTabsRef preserves the previous tab list so onToggle(false) can
+    // still be resolved when the tab is no longer in the current render.
     const prevTabsRef = React.useRef<TabDefinition[]>(tabs);
     React.useEffect(() => {
         if (activeTakeover !== null) {
@@ -163,7 +169,41 @@ function GobanViewComponent({
         setToggleVisibility((prev) => ({ ...prev, [id]: visible }));
     }, []);
 
-    React.useImperativeHandle(ref, () => ({ setActiveTakeover }), []);
+    // The imperative ref must fire displaced.onToggle(false) and
+    // opened.onToggle(true) the same way the click-path does, otherwise
+    // takeovers opened from outside the tab bar (e.g. a More actions
+    // popover) leave consumer mode flags out of sync with the visible UI.
+    // Refs let the handle read the latest values without churning identity.
+    const tabsRef = React.useRef(tabs);
+    tabsRef.current = tabs;
+    const activeTakeoverRef = React.useRef(activeTakeover);
+    activeTakeoverRef.current = activeTakeover;
+
+    React.useImperativeHandle(
+        ref,
+        () => ({
+            setActiveTakeover: (id: string | null) => {
+                const prevActiveId = activeTakeoverRef.current;
+                if (prevActiveId === id) {
+                    return;
+                }
+                setActiveTakeover(id);
+                if (prevActiveId) {
+                    const displaced = tabsRef.current.find(
+                        (t) => t.id === prevActiveId && t.type === "takeover",
+                    );
+                    displaced?.onToggle?.(false);
+                }
+                if (id) {
+                    const opened = tabsRef.current.find(
+                        (t) => t.id === id && t.type === "takeover",
+                    );
+                    opened?.onToggle?.(true);
+                }
+            },
+        }),
+        [],
+    );
 
     const onResize = React.useCallback(() => {
         const newMode = goban_view_mode();
@@ -203,18 +243,47 @@ function GobanViewComponent({
         return !!toggleVisibility[tab.id];
     };
 
-    const renderPanel = (tab: TabDefinition, visible: boolean) => (
-        <div
-            key={tab.id}
-            className={
-                `GobanView-tab-panel ${tab.type}` +
-                (visible ? "" : " hidden") +
-                (tab.type === "takeover" && activeTakeover === tab.id ? " active" : "")
-            }
-        >
-            {tab.children}
-        </div>
-    );
+    const handleTakeoverClose = (tab: TabDefinition) => {
+        setActiveTakeover(null);
+        tab.onToggle?.(false);
+    };
+
+    const renderPanel = (tab: TabDefinition, visible: boolean) => {
+        // hideFromBar takeovers have no tab-bar button to click again, so
+        // they need an in-panel close button.
+        const showCloseButton = tab.type === "takeover" && tab.hideFromBar;
+        return (
+            <div
+                key={tab.id}
+                className={
+                    `GobanView-tab-panel ${tab.type}` +
+                    (visible ? "" : " hidden") +
+                    (tab.type === "takeover" && activeTakeover === tab.id ? " active" : "")
+                }
+            >
+                {showCloseButton && (
+                    <button
+                        type="button"
+                        className="GobanView-tab-panel-close"
+                        title={_("Close")}
+                        aria-label={_("Close")}
+                        onClick={() => handleTakeoverClose(tab)}
+                    >
+                        <i className="fa fa-times" />
+                    </button>
+                )}
+                {tab.children}
+            </div>
+        );
+    };
+
+    // A `customSlider` renders during takeovers too; the built-in slider
+    // keeps its existing "hide during takeover" rule.
+    const sliderSlot: React.ReactNode = customSlider
+        ? customSlider
+        : !hasTakeover && <MoveNumberSlider />;
+
+    const customSliderClass = customSlider ? " has-custom-slider" : "";
 
     if (isPortrait) {
         const topPanels = inlinePanels.filter((t) => t.mobilePosition === "top");
@@ -229,6 +298,7 @@ function GobanViewComponent({
                             `GobanView portrait` +
                             (squashed ? " squashed" : "") +
                             (hasTakeover ? " has-takeover" : "") +
+                            customSliderClass +
                             (className ? ` ${className}` : "")
                         }
                     >
@@ -239,7 +309,7 @@ function GobanViewComponent({
                             {orderedPanels.map((t) => renderPanel(t, isInlineVisible(t)))}
                         </div>
                         {takeoverPanels.map((t) => renderPanel(t, activeTakeover === t.id))}
-                        {!hasTakeover && <MoveNumberSlider />}
+                        {sliderSlot}
                         <TabBar tabs={tabs} />
                         {others}
                     </div>
@@ -256,6 +326,7 @@ function GobanViewComponent({
                         `GobanView ${viewMode}` +
                         (squashed ? " squashed" : "") +
                         (hasTakeover ? " has-takeover" : "") +
+                        customSliderClass +
                         (className ? ` ${className}` : "")
                     }
                 >
@@ -267,7 +338,7 @@ function GobanViewComponent({
                             {inlinePanels.map((t) => renderPanel(t, isInlineVisible(t)))}
                             {takeoverPanels.map((t) => renderPanel(t, activeTakeover === t.id))}
                         </div>
-                        {!hasTakeover && <MoveNumberSlider />}
+                        {sliderSlot}
                         <TabBar tabs={tabs} />
                     </div>
                     {others}
@@ -279,7 +350,6 @@ function GobanViewComponent({
 
 GobanViewComponent.displayName = "GobanView";
 
-// Attach Tab as a static property for the compound component pattern
 type GobanViewType = typeof GobanViewComponent & { Tab: typeof GobanViewTab };
 export const GobanView = GobanViewComponent as GobanViewType;
 GobanView.Tab = GobanViewTab;

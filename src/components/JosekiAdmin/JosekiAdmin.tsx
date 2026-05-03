@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import moment from "moment";
 import { _, interpolate, pgettext } from "@/lib/translate";
 import { get, post, put } from "@/lib/requests";
 
@@ -55,6 +56,8 @@ interface AuditRow {
     new_value: string;
 }
 
+type AdminSubTab = "audit" | "tags" | "perms" | "misc";
+
 interface JosekiAdminState {
     data: AuditRow[];
     pages: number;
@@ -66,25 +69,11 @@ interface JosekiAdminState {
     schema_version: string;
     filter_user_id: string;
     filter_position_id: string;
-    filter_tag: string;
-    filter_audit_type: string;
     page_visits?: string;
     daily_visits: JosekiPageVisits[];
     rowSelection: Record<string, boolean>;
+    sub_tab: AdminSubTab;
 }
-
-const AuditTypes = [
-    "CREATED",
-    "CATEGORY_CHANGE",
-    "DESCRIPTION_CHANGE",
-    "SOURCE_CHANGE",
-    "ADD_CHILD",
-    "REMOVE_CHILD",
-    "ADD_COMMENT",
-    "REMOVE_COMMENT",
-    "DEACTIVATE",
-    "REACTIVATE",
-];
 
 interface AuditTableProps {
     data: AuditRow[];
@@ -141,91 +130,69 @@ function AuditTable(props: AuditTableProps) {
         getRowId: (row) => row._id,
     });
 
-    return (
-        <div className="ReactTable">
-            <table>
-                <thead>
-                    {table.getHeaderGroups().map((headerGroup) => (
-                        <tr key={headerGroup.id}>
-                            {headerGroup.headers.map((header) => (
-                                <th key={header.id}>
-                                    {header.isPlaceholder
-                                        ? null
-                                        : flexRender(
-                                              header.column.columnDef.header,
-                                              header.getContext(),
-                                          )}
-                                </th>
-                            ))}
-                        </tr>
-                    ))}
-                </thead>
-                <tbody>
-                    {props.loading ? (
-                        <tr>
-                            <td colSpan={props.columns.length}>Loading...</td>
-                        </tr>
-                    ) : table.getRowModel().rows.length === 0 ? (
-                        <tr>
-                            <td colSpan={props.columns.length}>No results</td>
-                        </tr>
-                    ) : (
-                        table.getRowModel().rows.map((row) => (
-                            <tr key={row.id}>
-                                {row.getVisibleCells().map((cell) => (
-                                    <td key={cell.id}>
-                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                    </td>
-                                ))}
-                            </tr>
-                        ))
-                    )}
-                </tbody>
-            </table>
+    const rows = table.getRowModel().rows;
 
-            <div className="pagination-bottom">
-                <div className="-pagination">
-                    <button
-                        className="-btn"
-                        onClick={() => table.previousPage()}
-                        disabled={!table.getCanPreviousPage()}
-                    >
-                        Previous
-                    </button>
-                    <span>
-                        Page{" "}
-                        <input
-                            type="number"
-                            value={table.getState().pagination.pageIndex + 1}
-                            onChange={(e) => {
-                                const page = e.target.value ? Number(e.target.value) - 1 : 0;
-                                table.setPageIndex(page);
-                            }}
-                            min="1"
-                            max={table.getPageCount()}
-                        />{" "}
-                        of {table.getPageCount()}
-                    </span>
-                    <select
-                        value={table.getState().pagination.pageSize}
-                        onChange={(e) => {
-                            table.setPageSize(Number(e.target.value));
-                        }}
-                    >
-                        {[5, 10, 15, 30, 50, 100].map((pageSize) => (
-                            <option key={pageSize} value={pageSize}>
-                                {pageSize} rows
-                            </option>
-                        ))}
-                    </select>
-                    <button
-                        className="-btn"
-                        onClick={() => table.nextPage()}
-                        disabled={!table.getCanNextPage()}
-                    >
-                        Next
-                    </button>
-                </div>
+    const renderCell = (row: (typeof rows)[number], id: string): React.ReactNode | null => {
+        const cell = row.getVisibleCells().find((c) => c.column.id === id);
+        if (!cell) {
+            return null;
+        }
+        return flexRender(cell.column.columnDef.cell, cell.getContext());
+    };
+
+    return (
+        <div className="audit-list">
+            {props.loading ? (
+                <div className="audit-empty">{_("Loading…")}</div>
+            ) : rows.length === 0 ? (
+                <div className="audit-empty">{_("No results")}</div>
+            ) : (
+                rows.map((row) => (
+                    <div className="audit-row" key={row.id}>
+                        <div className="audit-row-line1">
+                            {props.userCanAdminister && (
+                                <span className="audit-row-select">
+                                    {renderCell(row, "select")}
+                                </span>
+                            )}
+                            <span className="audit-row-pos">{renderCell(row, "placement")}</span>
+                            <span className="audit-row-date">{renderCell(row, "date")}</span>
+                        </div>
+                        <div className="audit-row-line2">
+                            <span className="audit-row-user">{renderCell(row, "user_id")}</span>
+                            <span className="audit-row-action">{renderCell(row, "comment")}</span>
+                            <span className="audit-row-result">{renderCell(row, "new_value")}</span>
+                        </div>
+                    </div>
+                ))
+            )}
+
+            <div className="audit-pagination">
+                <button
+                    className="audit-pagination-btn"
+                    onClick={() => table.previousPage()}
+                    disabled={!table.getCanPreviousPage()}
+                    title={_("Previous page")}
+                >
+                    <i className="fa fa-chevron-left" />
+                </button>
+                <span className="audit-pagination-info">
+                    {interpolate(
+                        pgettext("Pagination: page X of Y", "Page {{page}} of {{total}}"),
+                        {
+                            page: table.getState().pagination.pageIndex + 1,
+                            total: table.getPageCount() || 1,
+                        },
+                    )}
+                </span>
+                <button
+                    className="audit-pagination-btn"
+                    onClick={() => table.nextPage()}
+                    disabled={!table.getCanNextPage()}
+                    title={_("Next page")}
+                >
+                    <i className="fa fa-chevron-right" />
+                </button>
             </div>
         </div>
     );
@@ -245,11 +212,10 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
             schema_version: "",
             filter_user_id: "",
             filter_position_id: "",
-            filter_tag: "",
-            filter_audit_type: "",
             page_visits: undefined,
             daily_visits: [],
             rowSelection: {},
+            sub_tab: "audit",
         };
     }
 
@@ -328,11 +294,6 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
             audits_url += `&user=${this.state.filter_user_id}`;
         }
 
-        // Not supported in new backend yet
-        //if (this.state.filter_audit_type !== "") {
-        //    audits_url += `&type=${this.state.filter_audit_type}`;
-        //}
-
         get(audits_url)
             .then((body) => {
                 this.setState({
@@ -368,32 +329,26 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
         const new_id = e.target.value;
         if (!/^\d*$/.test(new_id)) {
             return;
-        } else {
-            this.setState({ filter_user_id: new_id }, this.reloadData);
         }
+        // Reset to page 0 on filter change so a stale page index doesn't
+        // land outside the filtered result's page count.
+        this.setState({ filter_user_id: new_id, current_page: 0, loading: true }, this.reloadData);
     };
 
     onFilterPositionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const new_id = e.target.value;
         if (!/^\d*$/.test(new_id)) {
             return;
-        } else {
-            this.setState({ filter_position_id: new_id }, this.renderFilteredPosition);
         }
-    };
-
-    onFilterTagChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const new_tag = e.target.value;
-        this.setState({ filter_tag: new_tag }, this.reloadData);
+        this.setState(
+            { filter_position_id: new_id, current_page: 0, loading: true },
+            this.renderFilteredPosition,
+        );
     };
 
     renderFilteredPosition = () => {
         this.reloadData();
         this.props.loadPositionToBoard(this.state.filter_position_id);
-    };
-
-    onFilterAuditTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        this.setState({ filter_audit_type: e.target.value }, this.reloadData);
     };
 
     showVisitStats = () => {
@@ -466,6 +421,10 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
         {
             header: _("Date"),
             accessorKey: "date",
+            cell: ({ row }: CellContext<AuditRow, string>) => {
+                const m = moment(row.original.date);
+                return m.isValid() ? m.format("YYYY-MM-DD HH:mm") : row.original.date;
+            },
         },
         {
             header: _("Action"),
@@ -478,130 +437,143 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
     ];
 
     render = () => {
-        const audit_type_selections = Object.keys(AuditTypes).map((selection, i) => (
-            <option key={i} value={AuditTypes[selection as keyof typeof AuditTypes] as any}>
-                {(AuditTypes[selection as keyof typeof AuditTypes] as string).toLowerCase()}
-            </option>
-        ));
-
-        audit_type_selections.unshift(<option key={-1} value=""></option>);
-
         const reversions = Array.from(this.state.reversions.values());
+        const has_selection = Object.values(this.state.rowSelection).some((v) => v);
+        const sub_tab = this.state.sub_tab;
+
+        const tabs: { id: AdminSubTab; label: string }[] = [
+            { id: "audit", label: pgettext("Joseki admin sub-tab", "Audit") },
+        ];
+        if (this.props.user_can_edit) {
+            tabs.push({ id: "tags", label: pgettext("Joseki admin sub-tab", "Tags") });
+        }
+        if (this.props.user_can_administer) {
+            tabs.push({ id: "perms", label: pgettext("Joseki admin sub-tab", "Perms") });
+            tabs.push({ id: "misc", label: pgettext("Joseki admin sub-tab", "Misc") });
+        }
+        const active_tab = tabs.some((t) => t.id === sub_tab) ? sub_tab : "audit";
 
         return (
             <div className="admin-container">
-                {this.props.user_can_edit && (
-                    <>
-                        <h3>Audit Admin</h3>
-                        <div className="audit-actions">
+                <div className="joseki-admin-tabs">
+                    {tabs.map((t) => (
+                        <button
+                            key={t.id}
+                            className={"joseki-admin-tab" + (active_tab === t.id ? " active" : "")}
+                            onClick={() => this.setState({ sub_tab: t.id })}
+                        >
+                            {t.label}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="joseki-admin-meta">
+                    <span>
+                        {interpolate(_("Page visits: {{count}}"), {
+                            count: this.state.page_visits || "…",
+                        })}
+                    </span>
+                    <button className="joseki-admin-meta-link" onClick={this.showVisitStats}>
+                        {pgettext("Joseki admin: open visit-stats modal", "details")}
+                    </button>
+                </div>
+
+                {active_tab === "audit" && (
+                    <div className="admin-pane admin-pane-audit">
+                        {this.props.user_can_edit && (
                             <div className="audit-filters">
-                                <div className="audit-filter">
-                                    <div>Filter by position:</div>
+                                <label className="audit-filter">
+                                    <span>
+                                        {pgettext("Joseki admin filter label", "Position id")}
+                                    </span>
                                     <input
                                         value={this.state.filter_position_id}
                                         onChange={this.onFilterPositionChange}
                                     />
-                                </div>
-                                <div className="audit-filter">
-                                    <div>Filter by user (id):</div>
+                                </label>
+                                <label className="audit-filter">
+                                    <span>{pgettext("Joseki admin filter label", "User id")}</span>
                                     <input
                                         value={this.state.filter_user_id}
                                         onChange={this.onUserIdChange}
                                     />
-                                    <span>
-                                        (<Player user={parseInt(this.state.filter_user_id)} />)
-                                    </span>
-                                </div>
-                                <div
-                                    className={
-                                        "hide audit-filter" +
-                                        (this.state.filter_position_id === "" &&
-                                        this.state.filter_user_id === ""
-                                            ? ""
-                                            : " audit-filter-overridden")
-                                    }
-                                >
-                                    <div>Filter by type:</div>
-                                    <select
-                                        value={this.state.filter_audit_type}
-                                        onChange={this.onFilterAuditTypeChange}
-                                    >
-                                        {audit_type_selections}
-                                    </select>
-                                </div>
+                                </label>
+                                {this.state.filter_user_id !== "" && (
+                                    <div className="audit-filter-resolved">
+                                        <Player user={parseInt(this.state.filter_user_id)} />
+                                    </div>
+                                )}
                             </div>
-                            {this.props.user_can_administer && (
-                                <button
-                                    className={
-                                        "btn" +
-                                        (Object.values(this.state.rowSelection).some((val) => val)
-                                            ? " danger"
-                                            : " disabled")
-                                    }
-                                    onClick={this.revertAllSelectedChanges}
-                                    disabled={
-                                        !Object.values(this.state.rowSelection).some((val) => val)
-                                    }
-                                >
-                                    {_("Revert")}
-                                </button>
-                            )}
-                        </div>
-                    </>
-                )}
-                {reversions.length > 0 &&
-                    reversions.map((reversion, idx) => <div key={idx}>{reversion}</div>)}
-                <AuditTable
-                    data={this.state.data}
-                    pageCount={this.state.pages}
-                    loading={this.state.loading}
-                    rowSelection={this.state.rowSelection}
-                    onRowSelectionChange={(rowSelection) => {
-                        this.setState({ rowSelection });
-                    }}
-                    currentPage={this.state.current_page}
-                    pageSize={this.state.current_pageSize}
-                    onPageChange={(page) => {
-                        this.setState({ current_page: page, loading: true }, this.reloadData);
-                    }}
-                    onPageSizeChange={(pageSize) => {
-                        this.setState(
-                            { current_pageSize: pageSize, loading: true },
-                            this.reloadData,
-                        );
-                    }}
-                    columns={this.getColumns()}
-                    userCanAdminister={this.props.user_can_administer}
-                    onInitialLoad={this.handleInitialLoad}
-                />
-                <div className="explorer-stats">
-                    <span>
-                        {interpolate(_("Page visits: {{count}}"), {
-                            count: this.state.page_visits || "...",
-                        })}
-                    </span>
-                    <button className="s" onClick={this.showVisitStats}>
-                        {pgettext(
-                            "A button that shows details of joseki visit statistics",
-                            "details",
                         )}
-                    </button>
-                </div>
-                <h3>Tag Editor</h3>
-                <JosekiTagEditor />
-                {this.props.user_can_administer && (
-                    <div className="bottom-admin-stuff">
-                        <h3>{_("Permissions Admin")}</h3>
-                        <div className="user-admin">
-                            <JosekiPermissionsPanel server_url={this.props.server_url} />
+
+                        {reversions.length > 0 && (
+                            <div className="audit-reversions">
+                                {reversions.map((reversion, idx) => (
+                                    <div key={idx}>{reversion}</div>
+                                ))}
+                            </div>
+                        )}
+
+                        <AuditTable
+                            data={this.state.data}
+                            pageCount={this.state.pages}
+                            loading={this.state.loading}
+                            rowSelection={this.state.rowSelection}
+                            onRowSelectionChange={(rowSelection) => {
+                                this.setState({ rowSelection });
+                            }}
+                            currentPage={this.state.current_page}
+                            pageSize={this.state.current_pageSize}
+                            onPageChange={(page) => {
+                                this.setState(
+                                    { current_page: page, loading: true },
+                                    this.reloadData,
+                                );
+                            }}
+                            onPageSizeChange={(pageSize) => {
+                                this.setState(
+                                    { current_pageSize: pageSize, loading: true },
+                                    this.reloadData,
+                                );
+                            }}
+                            columns={this.getColumns()}
+                            userCanAdminister={this.props.user_can_administer}
+                            onInitialLoad={this.handleInitialLoad}
+                        />
+
+                        {this.props.user_can_administer && has_selection && (
+                            <div className="audit-revert-bar">
+                                <button className="reject" onClick={this.revertAllSelectedChanges}>
+                                    {_("Revert selected")}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {active_tab === "tags" && this.props.user_can_edit && (
+                    <div className="admin-pane">
+                        <JosekiTagEditor />
+                    </div>
+                )}
+
+                {active_tab === "perms" && this.props.user_can_administer && (
+                    <div className="admin-pane">
+                        <JosekiPermissionsPanel server_url={this.props.server_url} />
+                    </div>
+                )}
+
+                {active_tab === "misc" && this.props.user_can_administer && (
+                    <div className="admin-pane admin-pane-misc">
+                        <div className="joseki-admin-subhead">
+                            {pgettext("Joseki admin subsection heading", "Database")}
                         </div>
-                        <h3>{_("Misc Admin")}</h3>
-                        <div className="misc-admin">
-                            <button className="" onClick={this.toggleLockdown}>
-                                {this.props.db_locked_down ? _("Unlock") : _("Lockdown")}
-                            </button>
+                        <button onClick={this.toggleLockdown}>
+                            {this.props.db_locked_down ? _("Unlock") : _("Lockdown")}
+                        </button>
+                        <div className="joseki-admin-meta">
                             <span>
-                                {_("Schema version")}: {this.state.schema_version}
+                                {_("Schema version")}: {this.state.schema_version || "…"}
                             </span>
                         </div>
                     </div>

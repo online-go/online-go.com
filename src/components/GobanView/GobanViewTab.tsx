@@ -27,7 +27,10 @@ export interface GobanViewTabProps {
     title?: string;
     active?: boolean;
     disabled?: boolean;
-    onClick?: () => void;
+    /** Suppress the tab's button in the bottom tab bar. The panel still
+     *  renders when activated via the imperative setActiveTakeover ref. */
+    hideFromBar?: boolean;
+    onClick?: (event?: React.MouseEvent<HTMLButtonElement>) => void;
     /** For takeover tabs: fires whenever this tab transitions between active
      *  and inactive. Called with `true` when the user clicks the tab to open
      *  it, and with `false` when the tab deactivates — whether by the user

@@ -14,40 +14,102 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 .joseki-tag-editor {
-    .tags-table-container {
-        max-height: calc(3 * 3rem);
-        width: 50%;
-        overflow-y: auto;
-        margin-bottom: 1rem;
-        border: 1px solid;
-        border-color: var(--shade1);
-        border-radius: 5px;
-    }
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 
     .tags-table {
         width: 100%;
         border-collapse: collapse;
+        font-size: 0.85rem;
 
-        th, td {
-            padding: 0.5rem;
+        th,
+        td {
+            padding: 0.35rem 0.4rem;
             text-align: left;
-            border-bottom: 1px solid;
-            border-color: var(--shade1);
+            border-bottom: 1px solid var(--shade5);
         }
 
         th {
-            background: var(--bg);
-            position: sticky;
-            top: 0;
-            z-index: 1;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--shade2);
+            font-weight: 500;
+            background: transparent;
         }
 
-        tbody tr:last-child td {
-            border-bottom: none;
+        td.tag-count {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            color: var(--shade2);
+        }
+
+        td.tag-delete {
+            width: 1.75rem;
+            text-align: center;
+        }
+
+        .delete-tag-button {
+            background: transparent;
+            border: none;
+            color: var(--shade2);
+            cursor: pointer;
+            padding: 0 0.25rem;
+            font-size: 0.85rem;
+            line-height: 1;
+
+            &:hover {
+                color: var(--reject);
+            }
         }
     }
+
+    .add-tag-form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding-top: 0.25rem;
+        border-top: 1px solid var(--shade4);
+
+        input,
+        button {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .add-tag-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            font-size: 0.75rem;
+            color: var(--shade2);
+
+            span {
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+            }
+
+            input {
+                font-size: 0.85rem;
+                padding: 0.35rem 0.5rem;
+            }
+        }
+    }
+
+    .joseki-admin-subhead {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--shade2);
+        margin: 0.5rem 0 0.25rem;
+        font-weight: 500;
+    }
+
     .error {
-        color: red;
+        color: var(--reject);
+        font-size: 0.85rem;
     }
 }

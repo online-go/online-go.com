@@ -82,7 +82,7 @@ export function JosekiTagEditor(_props: JosekiTagEditorProps) {
             setNewTagSeq(0);
             setError(null);
         } catch (err) {
-            setError("Failed to add tag (see console)");
+            setError(_("Failed to add tag (see console)"));
             console.error("Failed to add tag:", err);
         }
     };
@@ -93,7 +93,7 @@ export function JosekiTagEditor(_props: JosekiTagEditorProps) {
             setTags(tags.filter((tag) => tag.id !== tagId));
             setError(null);
         } catch (err) {
-            setError("Failed to delete tag (see console)");
+            setError(_("Failed to delete tag (see console)"));
             console.error("Failed to delete tag:", err);
         }
     };
@@ -106,62 +106,70 @@ export function JosekiTagEditor(_props: JosekiTagEditorProps) {
         <div className="joseki-tag-editor">
             {error && <div className="error">{error}</div>}
 
-            <div className="tags-table-container">
-                <table className="tags-table">
-                    <thead>
-                        <tr>
-                            <th>{_("Description")}</th>
-                            <th>{_("Group")}</th>
-                            <th>{_("Sequence")}</th>
-                            <th>{_("Count")}</th>
-                            <th>{_("Delete")}</th>
+            <table className="tags-table">
+                <thead>
+                    <tr>
+                        <th>{_("Description")}</th>
+                        <th>{_("Group")}</th>
+                        <th>{_("Seq")}</th>
+                        <th className="tag-count">{_("Count")}</th>
+                        <th className="tag-delete"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {tags.map((tag) => (
+                        <tr key={tag.id}>
+                            <td>{tag.description}</td>
+                            <td>{tag.group}</td>
+                            <td>{tag.seq}</td>
+                            <td className="tag-count">{tag.count}</td>
+                            <td className="tag-delete">
+                                {tag?.count === 0 && (
+                                    <button
+                                        className="delete-tag-button"
+                                        onClick={() => handleDeleteTag(tag.id)}
+                                        title={_("Delete tag")}
+                                    >
+                                        <i className="fa fa-times" />
+                                    </button>
+                                )}
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {tags.map((tag) => (
-                            <tr key={tag.id}>
-                                <td>{tag.description}</td>
-                                <td>{tag.group}</td>
-                                <td>{tag.seq}</td>
-                                <td>{tag.count}</td>
-                                <td>
-                                    {tag?.count === 0 && (
-                                        <button
-                                            className="delete-tag-button"
-                                            onClick={() => handleDeleteTag(tag.id)}
-                                            title={_("Delete tag")}
-                                        >
-                                            X
-                                        </button>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                    ))}
+                </tbody>
+            </table>
+
             <form onSubmit={handleAddTag} className="add-tag-form">
-                <input
-                    type="text"
-                    value={newTagLabel}
-                    onChange={(e) => setNewTagLabel(e.target.value)}
-                    placeholder={_("New tag description")}
-                />
-                <input
-                    type="number"
-                    value={newTagGroup}
-                    onChange={(e) => setNewTagGroup(parseInt(e.target.value) || 0)}
-                    placeholder={_("Group")}
-                    min="0"
-                />
-                <input
-                    type="number"
-                    value={newTagSeq}
-                    onChange={(e) => setNewTagSeq(parseInt(e.target.value) || 0)}
-                    placeholder={_("Sequence")}
-                    min="0"
-                />
-                <button type="submit">{_("Add Tag")}</button>
+                <div className="joseki-admin-subhead">{_("Add tag")}</div>
+                <label className="add-tag-field">
+                    <span>{_("Description")}</span>
+                    <input
+                        type="text"
+                        value={newTagLabel}
+                        onChange={(e) => setNewTagLabel(e.target.value)}
+                    />
+                </label>
+                <label className="add-tag-field">
+                    <span>{_("Group")}</span>
+                    <input
+                        type="number"
+                        value={newTagGroup}
+                        onChange={(e) => setNewTagGroup(parseInt(e.target.value) || 0)}
+                        min="0"
+                    />
+                </label>
+                <label className="add-tag-field">
+                    <span>{_("Sequence")}</span>
+                    <input
+                        type="number"
+                        value={newTagSeq}
+                        onChange={(e) => setNewTagSeq(parseInt(e.target.value) || 0)}
+                        min="0"
+                    />
+                </label>
+                <button type="submit" className="primary">
+                    {_("Add Tag")}
+                </button>
             </form>
         </div>
     );

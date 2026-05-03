@@ -17,25 +17,17 @@
 
 import * as React from "react";
 
-import { _, interpolate, npgettext } from "@/lib/translate";
-import { JosekiVariationFilter, JosekiFilter } from "@/components/JosekiVariationFilter";
+import { _ } from "@/lib/translate";
+import { JosekiFilter } from "@/components/JosekiVariationFilter";
 import { OJEJosekiTag } from "@/components/JosekiTagSelector";
-import { server_url, MoveTypeWithComment } from "./joseki-utils";
+import { MoveTypeWithComment } from "./joseki-utils";
 
 export interface PlayProps {
     move_type_sequence: MoveTypeWithComment[];
-    joseki_errors: number;
-    josekis_played: number;
-    josekis_completed: number;
-    joseki_best_attempt: number;
-    joseki_successes: number;
     the_joseki_tag: OJEJosekiTag;
-    joseki_tags: OJEJosekiTag[];
     set_variation_filter(filter: JosekiFilter): void;
     current_filter: JosekiFilter;
 }
-
-type ExtraInfoPane = "none" | "variation-filter" | "results";
 
 function iconFor(move_type: string): React.ReactElement | string {
     switch (move_type) {
@@ -53,23 +45,8 @@ function iconFor(move_type: string): React.ReactElement | string {
 }
 
 export function PlayPane(props: PlayProps): React.ReactElement {
-    const [extra_info_selected, set_extra_info_selected] = React.useState<ExtraInfoPane>("none");
-    const [forced_filter, set_forced_filter] = React.useState(false);
-
-    const showFilterSelector = React.useCallback(() => {
-        set_extra_info_selected("variation-filter");
-    }, []);
-
-    const showResults = React.useCallback(() => {
-        set_extra_info_selected("results");
-    }, []);
-
-    const hideExtraInfo = React.useCallback(() => {
-        set_extra_info_selected("none");
-    }, []);
-
-    // Mount-only: matches original componentDidMount behavior.
-    // Intentionally omits deps -- this should only run once on mount.
+    // Relax all-three-axes filter combinations on entry — they usually
+    // return nothing playable.
     React.useEffect(() => {
         if (
             props.current_filter.contributor &&
@@ -81,114 +58,21 @@ export function PlayPane(props: PlayProps): React.ReactElement {
                 contributor: undefined,
                 source: undefined,
             });
-            showFilterSelector();
-            set_forced_filter(true);
-        } else {
-            showResults();
         }
     }, []);
-
-    // getDerivedStateFromProps equivalent: switch from filter to results after first moves
-    React.useEffect(() => {
-        if (forced_filter && props.move_type_sequence.length > 1) {
-            set_extra_info_selected("results");
-            set_forced_filter(false);
-        }
-    }, [forced_filter, props.move_type_sequence.length]);
-
-    const filter_active =
-        (props.current_filter.tags && props.current_filter.tags.length !== 0) ||
-        props.current_filter.contributor ||
-        props.current_filter.source;
 
     return (
         <div className="play-columns">
             <div className="play-dashboard">
-                {props.move_type_sequence.length === 0 && <div> Your move...</div>}
+                {props.move_type_sequence.length === 0 && (
+                    <div className="play-prompt">{_("Your move...")}</div>
+                )}
                 {props.move_type_sequence.map((move_type, id) => (
                     <div key={id}>
                         {iconFor(move_type["type"])}
                         {move_type["comment"]}
                     </div>
                 ))}
-            </div>
-            <div className={"extra-info-column extra-info-open"}>
-                <div className="btn-group extra-info-selector">
-                    <button
-                        className={"btn s " + (extra_info_selected === "results" ? " primary" : "")}
-                        onClick={extra_info_selected === "results" ? hideExtraInfo : showResults}
-                    >
-                        {_("Results")}
-                    </button>
-                    <button
-                        className={
-                            "btn s " +
-                            (extra_info_selected === "variation-filter" ? " primary" : "")
-                        }
-                        onClick={
-                            extra_info_selected === "variation-filter"
-                                ? hideExtraInfo
-                                : showFilterSelector
-                        }
-                    >
-                        <span>{_("Filter")}</span>
-                        {extra_info_selected === "variation-filter" ? (
-                            <i className={"fa fa-filter hide"} />
-                        ) : (
-                            <i
-                                className={"fa fa-filter" + (filter_active ? " filter-active" : "")}
-                            />
-                        )}
-                    </button>
-                </div>
-                {extra_info_selected === "results" && (
-                    <div className="play-results-container">
-                        <h4>{_("Overall:")}</h4>
-                        <div>
-                            {_("Josekis played")}: {props.josekis_played}
-                        </div>
-                        <div>
-                            {_("Josekis played correctly")}: {props.josekis_completed}
-                        </div>
-
-                        <h4>{_("This Sequence:")}</h4>
-                        <div>
-                            {_("Mistakes so far")}: {props.joseki_errors}
-                        </div>
-
-                        {!!props.joseki_successes && (
-                            <div>
-                                {_("Correct plays of this position")}: {props.joseki_successes}
-                            </div>
-                        )}
-                        {!!props.joseki_best_attempt && (
-                            <div>
-                                {interpolate(_("Best attempt: {{mistakes}}"), {
-                                    mistakes: props.joseki_best_attempt,
-                                }) +
-                                    " " +
-                                    npgettext(
-                                        "mistakes",
-                                        "mistake",
-                                        "mistakes",
-                                        props.joseki_best_attempt,
-                                    )}
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {extra_info_selected === "variation-filter" && (
-                    <div className="filter-container">
-                        <JosekiVariationFilter
-                            contributor_list_url={server_url + "contributors"}
-                            source_list_url={server_url + "josekisources"}
-                            current_filter={props.current_filter}
-                            set_variation_filter={props.set_variation_filter}
-                            joseki_tags={props.joseki_tags}
-                        />
-                    </div>
-                )}
             </div>
         </div>
     );
