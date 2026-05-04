@@ -563,6 +563,12 @@ function ChatInput({
 
     const onKeyPress = useCallback(
         (event: React.KeyboardEvent<HTMLTextAreaElement>): boolean | undefined => {
+            const lines = document.querySelector(".chat-lines") as HTMLElement | null;
+            if (lines) {
+                lines.scrollTop = 0;
+                scrolled_to_bottom = true;
+            }
+
             if (!event.shiftKey && event.key === "Enter") {
                 const input = event.target as HTMLTextAreaElement;
                 if (!socket.connected) {
