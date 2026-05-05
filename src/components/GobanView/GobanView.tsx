@@ -70,6 +70,9 @@ interface GobanViewProps {
      *  above the goban (portrait). Stays visible across takeovers so
      *  consumers can use it to label the current view. */
     header?: React.ReactNode;
+    /** Forwarded to the GobanContainer — fires when the user scrolls the wheel
+     *  over the board. Used by the Game view for scroll-to-navigate. */
+    onWheel?: React.WheelEventHandler<HTMLDivElement>;
     ref?: React.Ref<GobanViewRef>;
 }
 
@@ -111,6 +114,7 @@ function GobanViewComponent({
     defaultActiveTakeover,
     customSlider,
     header,
+    onWheel,
     ref,
 }: GobanViewProps): React.ReactElement {
     const { tabs, others } = React.useMemo(() => partitionChildren(children), [children]);
@@ -309,7 +313,7 @@ function GobanViewComponent({
                     >
                         {header && <div className="GobanView-header">{header}</div>}
                         <div className="GobanView-center">
-                            <GobanContainer onResize={onResize} />
+                            <GobanContainer onResize={onResize} onWheel={onWheel} />
                         </div>
                         <div className="GobanView-mobile-scroll">
                             {orderedPanels.map((t) => renderPanel(t, isInlineVisible(t)))}
@@ -337,7 +341,7 @@ function GobanViewComponent({
                     }
                 >
                     <div className="GobanView-center">
-                        <GobanContainer onResize={onResize} />
+                        <GobanContainer onResize={onResize} onWheel={onWheel} />
                     </div>
                     <div className="GobanView-sidebar">
                         {header && <div className="GobanView-header">{header}</div>}
