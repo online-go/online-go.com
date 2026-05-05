@@ -25,9 +25,9 @@
     border-radius: 0.3rem;
     /* box-shadow: 0 3px 4px rgba(0,0,0,.400); */
     /* height: 100%; */
-    border: 1px solid transparent;
-    border-color: var(--shade4);
-    flex-basis: 100dvh;
+    border-top: 1px solid var(--shade4);
+    flex-basis: 0;
+    flex-grow: 1;
 
     .log-player-container {
         flex-grow: 1;
@@ -159,6 +159,7 @@
 
     .chat-input-player-list-toggle {
         border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
         box-shadow: none;
         white-space: nowrap;
     }
@@ -182,6 +183,7 @@
 
         .chat-input-chat-log-toggle {
             border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
             box-shadow: none;
             white-space: nowrap;
         }
