@@ -44,7 +44,6 @@ import {
     useUserIsParticipant,
     usePlayerToMove,
     useShowTitle,
-    useViewMode,
     useVariationName,
     useSelectedChatLog,
     useAnnulled,
@@ -97,9 +96,13 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
     const annulled = useAnnulled(goban_controller);
     const onVariationKeyPress = useOnVariationKeyPress();
     const show_title = useShowTitle(goban);
-    const view_mode = useViewMode(goban_controller);
     const zen_mode = useZenMode(goban_controller);
-    const show_cancel = view_mode !== "portrait" ? true : zen_mode;
+    // PlayButtons owns the cancel/resign button in every layout now. The old
+    // `view_mode !== "portrait" ? true : zen_mode` carve-out existed only
+    // because Game.tsx used to render its own portrait-non-zen CancelButton
+    // outside PlayControls; the GobanView migration consolidated everything
+    // into one stack, so PlayButtons handles it unconditionally.
+    const show_cancel = true;
     const variation_name = useVariationName(goban_controller);
     const selected_chat_log = useSelectedChatLog(goban_controller);
     const phase = usePhase(goban);

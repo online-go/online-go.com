@@ -37,6 +37,8 @@ export interface GobanViewTabProps {
      *  the area below the goban instead of the entire view. No effect in
      *  landscape, where the goban is always visible beside the sidebar. */
     keepGobanVisible?: boolean;
+    /** Action-tab click handler. The MouseEvent is forwarded so consumers can
+     *  use `event.currentTarget` to anchor a popover, etc. */
     onClick?: (event?: React.MouseEvent<HTMLButtonElement>) => void;
     /** For takeover tabs: fires whenever this tab transitions between active
      *  and inactive. Called with `true` when the user clicks the tab to open

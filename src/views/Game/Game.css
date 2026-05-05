@@ -14,24 +14,30 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-.Game {
-    position: absolute;
-    top: var(--below-navbar);
-    bottom: 0;
-    bottom: constant(safe-area-inset-bottom);
-    bottom: env(safe-area-inset-bottom);
-    right: 0;
-    left: 0;
 
-    .hidden, .hidden.active, .hidden:focus, .hidden:hover {
+/* The Game view applies both `Game` and `MainGobanView` classes to the
+ * GobanView root. `MainGobanView` is preserved for backward compat with
+ * Players.css and Clock.css selectors. */
+
+.Game {
+    .hidden,
+    .hidden.active,
+    .hidden:focus,
+    .hidden:hover {
         background-color: var(--hidden-bg);
     }
 
-    .malkovich, .malkovich.active, .malkovich:focus, .malkovich:hover {
+    .malkovich,
+    .malkovich.active,
+    .malkovich:focus,
+    .malkovich:hover {
         background-color: var(--malkovich-bg);
     }
 
-    .personal, .personal.active, .personal:focus, .personal:hover {
+    .personal,
+    .personal.active,
+    .personal:focus,
+    .personal:hover {
         background-color: var(--personal-bg);
     }
 
@@ -39,7 +45,7 @@
         white-space: nowrap;
     }
     .autofocus-submit-button:focus::after {
-        content: ' ⏎';
+        content: " ⏎";
     }
     .autofocus-submit-button:active::after {
         content: none;
@@ -69,27 +75,33 @@
     }
 }
 
-.Game.wide {
-    overflow: hidden;
-}
-
-.Game.portrait.squashed {
-    overflow-y: scroll;
-}
-
-.Game.zen {
+/* Game.zen overrides GobanView's top offset so the board can fill the screen. */
+.GobanView.Game.zen {
     top: 0;
 }
 
 .MainGobanView {
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
+    /* Game page wants the sidebar flush against the bottom edge. */
+    .GobanView-sidebar {
+        margin-bottom: 0;
+    }
+    .GobanView-sidebar-content {
+        padding-bottom: 0;
+    }
+    .GobanView-tab-panel {
+        padding-bottom: 0;
+    }
 
-    /* align-content: stretch; */
-    /* justify-content: stretch; */
+    /* The always-panel needs to be a flex column that fills the sidebar so
+     * the chat (its last child) can stretch to the bottom. */
+    .GobanView-tab-panel.always:not(.hidden) {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
 
-    /* .players is handled in Players.styl */
+    /* .players is handled in Players.css */
     .game-state {
         font-size: 1.3rem;
         font-weight: 700;
@@ -101,34 +113,9 @@
         font-size: smaller;
     }
 
-    .black.player-container.their-turn, .white.player-container.their-turn {
+    .black.player-container.their-turn,
+    .white.player-container.their-turn {
         box-shadow: 0 3px 5px 1px rgba(50, 50, 50, 0.51) !important;
-    }
-
-    .filler {
-        flex-grow: 1;
-        flex-basis: 95%;
-    }
-
-    .center-col {
-        .PlayControls {
-            flex-grow: 0;
-            padding-top: 0;
-        }
-    }
-
-    &.wide .right-col {
-        .PlayControls {
-            flex-grow: 1;
-            flex-shrink: 0;
-            /* justify-content: center; */
-        }
-    }
-
-    /* See if we can make folk who want wider chat happy */
-    &.wide .right-col.experimental {
-        flex-grow: 1 !important;
-        margin-left: 2rem;
     }
 
     .conditional-move-planner {
@@ -176,74 +163,22 @@
         flex-grow: 1;
     }
 
-    .center-col {
-        .chat-container {
-            flex-grow: 1;
-            flex-basis: 250px;
-        }
-    }
-
-    &.portrait .center-col {
-        .chat-container {
-            flex-grow: 1;
-            flex-basis: 250px;
-            /* margin-bottom: 2rem; */
-        }
-    }
-
-    /* }}} */
     input.volume-slider {
         width: 8rem;
         max-width: 70%;
         display: inline-block;
     }
 
-    .right-col {
-        .ad-container {
-            padding-top: 0.3rem;
-        }
-    }
-
-    .center-col {
-        .ad-container {
-            padding-top: 0.3rem;
-            padding-bottom: 0.3rem;
-        }
-    }
-
-    &.squashed {
-        .right-col, .center-col {
-            .ad-container {
-                padding-top: 0;
-                padding-bottom: 0;
-            }
-        }
-    }
-
-    .goban-container {
-        flex-grow: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-
-        .Goban {
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-    }
-
     .action-bar {
         display: flex;
         min-height: 2rem;
-        /* justify-content: space-between; */
         justify-content: center;
         align-items: center;
         user-select: none;
         color: var(--shade0);
 
-        .move-number, .icons {
+        .move-number,
+        .icons {
             flex-shrink: 0;
             flex-grow: 1;
             white-space: nowrap;
@@ -254,12 +189,14 @@
             text-align: right;
         }
 
-        .fa-trophy, .fa-lock {
+        .fa-trophy,
+        .fa-lock {
             color: var(--shade0);
             margin-left: 0.2rem;
         }
 
-        .fa-trophy:hover, .fa-lock:hover {
+        .fa-trophy:hover,
+        .fa-lock:hover {
             color: var(--fg);
         }
 
@@ -276,255 +213,34 @@
                 text-align: center;
             }
 
-            .move-control:hover, .move-number:hover, .icons:hover {
+            .move-control:hover,
+            .move-number:hover,
+            .icons:hover {
                 color: var(--fg);
             }
-        }
-    }
-
-    &.portrait .action-bar {
-        .icons {
-            /* padding-left: 1.0rem; */
-        }
-
-        .move-number {
-        }
-    }
-
-    .tab-icon {
-        position: fixed;
-        right: 0;
-        bottom: 0;
-        font-size: 1.2rem;
-        cursor: pointer;
-        color: var(--shade2);
-        z-index: var(--z-goban-tab-icon);
-        padding: 0.5rem;
-    }
-
-    .tab-icon:hover {
-        color: var(--fg);
-    }
-
-    .leave-zen-mode-button {
-        display: none;
-        position: fixed;
-        top: 0.5rem;
-        right: 0.5rem;
-        font-size: 2rem;
-        color: var(--shade3);
-        z-index: var(--z-goban-exit-zenmode);
-        cursor: pointer;
-    }
-
-    .leave-zen-mode-button:hover {
-        color: var(--fg);
-    }
-
-    .center-col {
-        flex-grow: 1;
-        flex-shrink: 1;
-        flex-basis: 50%;
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        width: 100%;
-    }
-
-    &.portrait .center-col {
-        .cancel-button {
-            align-self: center;
-            flex-shrink: 0;
-            position: relative;
-            top: 25px;
-        }
-
-        .cancel-button-zen {
-          align-self: center;
-          flex-shrink: 0;
-          position: inherit;
-        }
-    }
-
-    .left-col, .right-col {
-        display: flex;
-        width: auto;
-        overflow-y: auto;
-        overflow-x: hidden;
-        min-height: auto;
-        flex-direction: column;
-        /* align-content: stretch; */
-        /* align-items: stretch; */
-        justify-content: space-between;
-    }
-
-    .left-col {
-        flex-basis: 0%;
-        flex-shrink: 1;
-        align-content: center;
-        justify-content: center;
-        padding-right: 0.3rem;
-        min-width: 0px;
-    }
-
-    .right-col {
-        flex-basis: 25%;
-        padding-left: 0.3rem;
-        padding-right: 0.3rem;
-        margin-right: var(--dock-collapsed-width);
-        min-width: 340px;
-    }
-
-    &.wide {
-        /* background-color: red; */
-        .right-col {
-            .player {
-                display: none;
-            }
-        }
-    }
-
-    &.square {
-        /* background-color: blue; */
-        .left-col {
-            display: none;
-        }
-    }
-
-    &.squashed {
-        .right-col {
-            padding-right: 0;
-            margin-right: 0;
-        }
-    }
-
-    &.portrait {
-        /* background-color: green; */
-        .left-col {
-            display: none;
-        }
-
-        .right-col {
-            display: none;
-        }
-    }
-
-    &.portrait {
-        .Dock {
-            flex-shrink: 0;
-            flex-grow: 1;
-            margin-bottom: 3rem;
-        }
-    }
-
-    @media (min-height: 500px) {
-        .MainGobanView .Dock {
-            flex-shrink: 0;
-            flex-grow: 1;
-            margin-bottom: 3rem;
         }
     }
 
     &.zen {
         background-color: var(--bg);
 
-        .left-col, .right-col {
-            padding: 0px;
-        }
-
-        .leave-zen-mode-button {
-            display: inline-block;
-        }
-
-        .Dock, .action-bar {
+        /* Hide the tab bar and chat in zen mode. */
+        .GobanView-tab-bar,
+        .chat-container,
+        .game-analyze-button-bar,
+        #move-tree-container {
             display: none;
         }
 
-        .right-col {
-            .chat-container, .game-analyze-button-bar, #move-tree-container {
-                display: none;
-            }
-
-            .PlayControls {
-                flex-grow: 0;
-                /*
-                .accept-undo-button {
-                    display: none
-                }
-                */
-            }
-
-            justify-content: center;
-            width: auto;
+        .PlayControls {
             flex-grow: 0;
-
-            .players {
-                flex-direction: column;
-
-                .player-container {
-                    width: 100%;
-                }
-            }
-
-            min-width: 170px;
-        }
-
-        .center-col {
-            .goban-container {
-                flex-grow: 0;
-            }
-
-            flex-basis: 100dvh;
-            justify-content: flex-start;
-            flex-grow: 0;
-        }
-
-        &.portrait {
-            .center-col {
-                flex-basis: 100%;
-            }
-        }
-
-        .align-row-start, .align-col-start {
-            align-self: flex-start;
-        }
-
-        .align-row-end, .align-col-end {
-            align-self: flex-end;
-        }
-
-        .align-row-start, .align-row-end {
-            flex-grow: 1;
-        }
-    }
-
-    .review-list {
-        text-align: center;
-    }
-
-    .return-url {
-        text-align: center;
-        margin: 1rem;
-    }
-
-    #game-move-node-text {
-        width: 100%;
-    }
-
-    .Dock {
-        a.disabled {
-            color: var(--shade2);
-        }
-
-        .unannulable {
-            transform: rotate(-55deg);
         }
     }
 }
 
 .chat-container {
     /* Prevent silly Firefox from collapsing empty editable lines */
-    .qc-option[contenteditable=true] {
+    .qc-option[contenteditable="true"] {
         min-height: 1em;
     }
 }
@@ -544,8 +260,9 @@
     text-align: left;
     padding-top: 0.3rem;
 
-    ul.tree, ul.tree ul {
-        background: url('tree-vline.png') repeat-y;
+    ul.tree,
+    ul.tree ul {
+        background: url("tree-vline.png") repeat-y;
     }
 
     ul.tree {
@@ -564,17 +281,18 @@
             margin: 0;
             padding: 0 12px;
             line-height: 20px;
-            /* color: #369; */
             font-weight: bold;
-            background: url('tree-node.png') no-repeat;
+            background: url("tree-node.png") no-repeat;
         }
 
-        li.last, li:last-child {
-            background: url('tree-lastnode.png') no-repeat;
+        li.last,
+        li:last-child {
+            background: url("tree-lastnode.png") no-repeat;
         }
     }
 
-    .move-row, .move-current {
+    .move-row,
+    .move-current {
         white-space: nowrap;
         cursor: pointer;
         font-weight: bold;
@@ -614,13 +332,15 @@
             border-color: var(--primary);
         }
 
-        .entry.selected, &.selected {
+        .entry.selected,
+        &.selected {
             background-color: var(--shade4);
             border: 1px solid transparent;
             border-color: var(--primary);
         }
 
-        .entry.selected:hover, &.selected:hover {
+        .entry.selected:hover,
+        &.selected:hover {
             background-color: var(--shade3);
             border: 1px solid transparent;
             border-color: var(--primary);
