@@ -21,7 +21,7 @@ import { useParams, useLocation, useSearchParams } from "react-router-dom";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
 import { _, interpolate, pgettext } from "@/lib/translate";
-import { popover } from "@/lib/popover";
+import { popover, PopOver } from "@/lib/popover";
 import { get, abort_requests_in_flight } from "@/lib/requests";
 import { UIPush } from "@/components/UIPush";
 import { GobanRendererConfig, JGOFNumericPlayerColor } from "goban";
@@ -30,26 +30,23 @@ import { setExtraActionCallback, PlayerDetails } from "@/components/Player";
 import * as player_cache from "@/lib/player_cache";
 import { notification_manager } from "@/components/Notifications";
 import { GameChat } from "./GameChat";
-import { goban_view_mode, goban_view_squashed } from "./util";
+import { goban_view_mode } from "./util";
 import { PlayerCards } from "./PlayerCards";
 import { PlayControls, ReviewControls } from "./PlayControls";
-import { CancelButton } from "./PlayButtons";
-import { GameDock } from "./GameDock";
 import { alert } from "@/lib/swal_config";
-import { useMode, usePhase, useUserIsParticipant, useViewMode, useZenMode } from "./GameHooks";
-import { GobanContainer } from "@/components/GobanContainer";
-import { GobanControllerContext } from "./goban_context";
+import { useMode, usePhase, useUserIsParticipant, useZenMode } from "./GameHooks";
+import { GobanControllerContext, GobanView } from "@/components/GobanView";
+import { ModalContext } from "@/components/ModalProvider";
+import { useUser } from "@/lib/hooks";
+import { MODERATOR_POWERS } from "@/lib/moderation";
 import { is_valid_url } from "@/lib/url_validation";
 import { BotDetectionResults } from "./BotDetectionResults";
 import { ActiveTournament } from "@/lib/types";
 import { GobanController } from "@/lib/GobanController";
-import {
-    FragAIReview,
-    FragBelowBoardControls,
-    GameInformation,
-    GameKeyboardShortcuts,
-    RengoHeader,
-} from "./fragments";
+import { FragAIReview, GameInformation, GameKeyboardShortcuts, RengoHeader } from "./fragments";
+import { GameSettingsPanel } from "./GameSettingsPanel";
+import { GameActionsPanel } from "./GameActionsPanel";
+import { GameModToolsPanel } from "./GameModToolsPanel";
 import { toast } from "@/lib/toast";
 import { ignore } from "@/lib/misc";
 import { updateAntiGriefGameState } from "./AntiGrief";
@@ -88,10 +85,8 @@ export function Game(): React.ReactElement | null {
     let goban = goban_controller.current?.goban ?? null;
 
     /* State */
-    const [squashed, set_squashed] = React.useState<boolean>(goban_view_squashed());
     const [estimating_score, _set_estimating_score] = React.useState<boolean>(false);
     const estimating_score_ref = React.useRef(estimating_score);
-    const user_is_player = useUserIsParticipant(goban);
     const [historical_black, set_historical_black] = React.useState<rest_api.games.Player | null>(
         null,
     );
@@ -102,9 +97,7 @@ export function Game(): React.ReactElement | null {
     const [white_flags, set_white_flags] = React.useState<null | rest_api.GamePlayerFlags>(null);
     const [annulment_reason, set_annulment_reason] =
         React.useState<rest_api.AnnulmentReason | null>(null);
-    const [scroll_to_navigate, _setScrollToNavigate] = React.useState(
-        preferences.get("scroll-to-navigate"),
-    );
+    const [scroll_to_navigate] = React.useState(preferences.get("scroll-to-navigate"));
     const phase = usePhase(goban);
     const [show_game_timing, set_show_game_timing] = React.useState(false);
     const [tournament, set_tournament] = React.useState<ActiveTournament>();
@@ -113,9 +106,12 @@ export function Game(): React.ReactElement | null {
     const [show_bot_detection_results, set_show_bot_detection_results] = React.useState(false);
     const [simul_black, set_simul_black] = React.useState<boolean | null>(null);
     const [simul_white, set_simul_white] = React.useState<boolean | null>(null);
-    const view_mode = useViewMode(goban_controller.current);
-    const mode = useMode(goban);
     const zen_mode = useZenMode(goban_controller.current);
+    const user = useUser();
+    const user_is_player = useUserIsParticipant(goban);
+    const mode = useMode(goban);
+    const modal_context = React.useContext(ModalContext);
+    const more_actions_popover_ref = React.useRef<PopOver | null>(null);
 
     /* Functions */
     const getLocation = (): string => {
@@ -172,23 +168,23 @@ export function Game(): React.ReactElement | null {
         window.document.title = on_refocus_title.current;
     };
 
-    /*** Common stuff ***/
-    const onResize = React.useCallback(
-        (_no_debounce: boolean = false, skip_state_update: boolean = false) => {
-            if (!skip_state_update) {
-                if (
-                    goban_view_mode() !== goban_controller.current?.view_mode ||
-                    goban_view_squashed() !== squashed
-                ) {
-                    set_squashed(goban_view_squashed());
-                    if (goban_controller.current) {
-                        goban_controller.current.setViewMode(goban_view_mode());
-                    }
-                }
+    /* Keep goban_controller.view_mode in sync on viewport changes for any
+     * downstream consumer that still subscribes via useViewMode. GobanView
+     * tracks its own layout independently. */
+    React.useEffect(() => {
+        const onResize = () => {
+            const controller = goban_controller.current;
+            if (!controller) {
+                return;
             }
-        },
-        [set_squashed, squashed, goban_controller.current?.view_mode],
-    );
+            const new_mode = goban_view_mode();
+            if (new_mode !== controller.view_mode) {
+                controller.setViewMode(new_mode);
+            }
+        };
+        window.addEventListener("resize", onResize);
+        return () => window.removeEventListener("resize", onResize);
+    }, []);
 
     React.useEffect(() => {
         if (!goban_controller.current) {
@@ -198,16 +194,14 @@ export function Game(): React.ReactElement | null {
 
         controller.on("show_game_timing", set_show_game_timing);
         controller.on("show_bot_detection_results", set_show_bot_detection_results);
-        controller.on("resize", onResize);
         controller.on("estimating_score", set_estimating_score);
 
         return () => {
             controller.off("show_game_timing", set_show_game_timing);
             controller.off("show_bot_detection_results", set_show_bot_detection_results);
-            controller.off("resize", onResize);
             controller.off("estimating_score", set_estimating_score);
         };
-    }, [goban_controller.current, set_show_game_timing, set_show_bot_detection_results, onResize]);
+    }, [goban_controller.current, set_show_game_timing, set_show_bot_detection_results]);
 
     const onWheel: React.WheelEventHandler<HTMLDivElement> = React.useCallback(
         (event) => {
@@ -295,7 +289,8 @@ export function Game(): React.ReactElement | null {
         const setLabelHandler = goban_controller.current.setLabelHandler;
         document.addEventListener("keypress", setLabelHandler);
 
-        onResize(true);
+        // Seed goban_controller.view_mode now that the controller exists.
+        goban_controller.current.setViewMode(goban_view_mode());
         if (review_id) {
             goban.setMode("analyze");
         }
@@ -373,7 +368,6 @@ export function Game(): React.ReactElement | null {
         onLoad();
 
         goban.on("move-made", auto_advance);
-        goban.on("gamedata", onResize);
 
         goban.on("played-by-click", (event) => {
             const target = ref_move_tree_container.current?.getBoundingClientRect();
@@ -645,20 +639,42 @@ export function Game(): React.ReactElement | null {
     /* RENDER */
     /**********/
 
-    if (goban === null) {
+    if (goban === null || goban_controller.current === null) {
         return null;
     }
 
     const review = !!review_id;
-    const experimental: boolean = data.get("experiments.v6") === "enabled";
+    const game = !!game_id;
 
-    const CHAT = zen_mode ? null : (
-        <GameChat
-            channel={game_id ? `game-${game_id}` : `review-${review_id}`}
-            game_id={game_id}
-            review_id={review_id}
-        />
-    );
+    const ai_suspected = (bot_detection_results?.ai_suspected?.length ?? 0) > 0;
+    const user_detects_ai = ((user?.moderator_powers ?? 0) & MODERATOR_POWERS.AI_DETECTOR) !== 0;
+    const show_mod_tab =
+        !review && (!!user?.is_moderator || !!user?.is_superuser || user_detects_ai);
+
+    const analysis_disabled = goban.isAnalysisDisabled();
+    const is_analyzing = mode === "analyze";
+
+    // Toggle behavior: if the mode is already on, clicking exits back to play.
+    // Reading the live `mode`/`estimating_score` for the `active` prop also
+    // means anything else that exits the mode (Escape key, navigation,
+    // estimator finishing, etc.) flips the button off automatically.
+    const onAnalyzeClick = () => {
+        const controller = goban_controller.current;
+        if (!controller) {
+            return;
+        }
+        if (is_analyzing) {
+            controller.goban.setMode("play");
+        } else {
+            controller.gameAnalyze();
+        }
+    };
+
+    // "Review this game" is for spectators reviewing a live game and for
+    // anyone (including the players) once it's finished — never for an
+    // active player mid-game.
+    const show_review_tab =
+        game && !analysis_disabled && !user.anonymous && (phase === "finished" || !user_is_player);
 
     const CONTROLS = review ? (
         <ReviewControls review_id={review_id} />
@@ -666,161 +682,190 @@ export function Game(): React.ReactElement | null {
         <PlayControls annulment_reason={annulment_reason} />
     );
 
-    const renderGameDock = (inline: boolean) => (
-        <GameDock
-            tournament_id={tournament_id.current}
-            tournament_name={tournament?.name}
-            ladder_id={ladder_id.current}
-            historical_black={historical_black}
-            historical_white={historical_white}
-            ai_suspected={bot_detection_results?.ai_suspected.length > 0}
-            className={inline ? "inline" : undefined}
-        />
-    );
+    const openMoreActions = (event?: React.MouseEvent<HTMLButtonElement>) => {
+        if (!event || !goban_controller.current) {
+            return;
+        }
+        const controller = goban_controller.current;
+        const close = () => {
+            more_actions_popover_ref.current?.close();
+            more_actions_popover_ref.current = null;
+        };
+        // popover() spins up a fresh React root, so the providers from the
+        // main tree (goban controller, modal manager) don't reach the panel.
+        // Re-establish them inline.
+        const button = event.currentTarget;
+        const instance = popover({
+            elt: (
+                <GobanControllerContext.Provider value={controller}>
+                    <ModalContext.Provider value={modal_context}>
+                        <div className="GameMoreActionsPopover">
+                            <GameActionsPanel
+                                tournament_id={tournament_id.current}
+                                tournament_name={tournament?.name}
+                                ladder_id={ladder_id.current}
+                                historical_black={historical_black}
+                                historical_white={historical_white}
+                                onClose={close}
+                            />
+                            {show_mod_tab && (
+                                <GameModToolsPanel
+                                    historical_black={historical_black}
+                                    historical_white={historical_white}
+                                    ai_suspected={ai_suspected}
+                                    onClose={close}
+                                />
+                            )}
+                        </div>
+                    </ModalContext.Provider>
+                </GobanControllerContext.Provider>
+            ),
+            below: button,
+            minWidth: 220,
+        });
+        // The popover utility anchors the LEFT edge of the popover to the
+        // button. The More-actions button lives at the right edge of the
+        // tab bar, and (especially in the two-column moderator layout) the
+        // popover would extend off-screen to the right. Re-anchor the RIGHT
+        // edge to the button's right edge so the popover grows leftward.
+        const button_rect = button.getBoundingClientRect();
+        const offset_from_right = Math.max(0, window.innerWidth - button_rect.right);
+        instance.container.style.left = "auto";
+        instance.container.style.right = `${offset_from_right}px`;
+        instance.on("close", () => {
+            if (more_actions_popover_ref.current === instance) {
+                more_actions_popover_ref.current = null;
+            }
+        });
+        more_actions_popover_ref.current = instance;
+    };
 
     (window as any)["goban_controller"] = goban_controller.current;
 
     return (
-        <div>
-            <div
-                className={
-                    "Game MainGobanView " +
-                    (zen_mode ? "zen " : "") +
-                    view_mode +
-                    " " +
-                    (squashed ? "squashed" : "")
-                }
-            >
-                <GobanControllerContext.Provider value={goban_controller.current}>
-                    {game_id > 0 && (
-                        <UIPush
-                            event="review-added"
-                            channel={`game-${game_id}`}
-                            action={goban_controller.current?.addReview}
-                        />
+        <GobanView
+            controller={goban_controller.current}
+            className="Game MainGobanView"
+            onWheel={onWheel}
+        >
+            {game_id > 0 && (
+                <UIPush
+                    event="review-added"
+                    channel={`game-${game_id}`}
+                    action={goban_controller.current.addReview}
+                />
+            )}
+            <GameKeyboardShortcuts />
+
+            <GobanView.Tab id="game-main" type="always">
+                <PlayerCards
+                    historical_black={historical_black}
+                    historical_white={historical_white}
+                    estimating_score={estimating_score}
+                    black_flags={black_flags}
+                    white_flags={white_flags}
+                    black_ai_suspected={bot_detection_results?.ai_suspected.includes(
+                        historical_black?.id,
                     )}
-                    <GameKeyboardShortcuts />
-                    <i
-                        onClick={goban_controller.current?.toggleZenMode}
-                        className="leave-zen-mode-button ogs-zen-mode"
-                    ></i>
+                    white_ai_suspected={bot_detection_results?.ai_suspected.includes(
+                        historical_white?.id,
+                    )}
+                />
+                <GameInformation />
+                <RengoHeader />
 
-                    <div className="align-row-start"></div>
-                    <div className="left-col"></div>
+                {!zen_mode && (
+                    <FragAIReview
+                        simul_black={simul_black}
+                        simul_white={simul_white}
+                        showGameTimings={show_game_timing}
+                    />
+                )}
 
-                    <div className="center-col">
-                        {view_mode === "portrait" && (
-                            <div>
-                                <PlayerCards
-                                    historical_black={historical_black}
-                                    historical_white={historical_white}
-                                    estimating_score={estimating_score}
-                                    black_flags={black_flags}
-                                    white_flags={white_flags}
-                                    black_ai_suspected={bot_detection_results?.ai_suspected.includes(
-                                        historical_black?.id,
-                                    )}
-                                    white_ai_suspected={bot_detection_results?.ai_suspected.includes(
-                                        historical_white?.id,
-                                    )}
-                                />
-                                <GameInformation />
-                                <RengoHeader />
+                {show_bot_detection_results && ai_suspected && (
+                    <>
+                        {(simul_black || simul_white) && (
+                            <div className="simul-warning">
+                                {pgettext(
+                                    "A label that means the game is played at the same time as another game",
+                                    "Simul",
+                                )}
+                                {simul_black && simul_white
+                                    ? " (both players)"
+                                    : simul_black
+                                      ? " (black)"
+                                      : " (white)"}
                             </div>
                         )}
-                        <GobanContainer onResize={onResize} onWheel={onWheel} />
+                        <BotDetectionResults
+                            bot_detection_results={bot_detection_results}
+                            game_id={game_id}
+                            updateBotDetectionResults={set_bot_detection_results}
+                        />
+                    </>
+                )}
 
-                        <FragBelowBoardControls />
+                {CONTROLS}
 
-                        {view_mode === "square" && !squashed && CHAT}
+                {!zen_mode && (
+                    <GameChat
+                        channel={game_id ? `game-${game_id}` : `review-${review_id}`}
+                        game_id={game_id}
+                        review_id={review_id}
+                    />
+                )}
+            </GobanView.Tab>
 
-                        {view_mode === "portrait" && !zen_mode && (
-                            <FragAIReview simul_black={simul_black} simul_white={simul_white} />
-                        )}
+            {/* Left: settings + the two analysis tools that used to live in
+             *  the More-actions takeover. Move navigation comes from
+             *  GobanView's built-in MoveNumberSlider above the tab bar. */}
+            <GobanView.Tab
+                id="game-settings"
+                type="takeover"
+                align="left"
+                icon="gear"
+                title={_("Settings")}
+            >
+                <GameSettingsPanel />
+            </GobanView.Tab>
 
-                        {view_mode === "portrait" && CONTROLS}
+            {game && (
+                <GobanView.Tab
+                    id="game-analyze"
+                    type="action"
+                    align="left"
+                    icon="sitemap"
+                    title={_("Analyze game")}
+                    disabled={analysis_disabled}
+                    active={is_analyzing}
+                    onClick={onAnalyzeClick}
+                />
+            )}
 
-                        {view_mode === "portrait" && !zen_mode && CHAT}
+            {/* Center: contextual single-purpose actions. Pausing is offered
+             *  via an overlay on the player clocks; Review here is for
+             *  spectators or once the game is finished. */}
+            {show_review_tab && (
+                <GobanView.Tab
+                    id="game-review"
+                    type="action"
+                    align="center"
+                    icon="refresh"
+                    title={_("Review this game")}
+                    onClick={goban_controller.current.startReview}
+                />
+            )}
 
-                        {view_mode === "portrait" &&
-                            !zen_mode &&
-                            user_is_player &&
-                            mode === "play" &&
-                            phase === "play" && <CancelButton className="bold reject" />}
-
-                        {view_mode === "portrait" && !zen_mode && renderGameDock(true)}
-                    </div>
-
-                    {view_mode !== "portrait" && (
-                        <div className={"right-col" + (experimental ? " experimental" : "")}>
-                            {zen_mode && <div className="align-col-start"></div>}
-                            {(view_mode === "square" || view_mode === "wide") && (
-                                <div>
-                                    <PlayerCards
-                                        historical_black={historical_black}
-                                        historical_white={historical_white}
-                                        estimating_score={estimating_score}
-                                        black_flags={black_flags}
-                                        white_flags={white_flags}
-                                        black_ai_suspected={bot_detection_results?.ai_suspected.includes(
-                                            historical_black?.id,
-                                        )}
-                                        white_ai_suspected={bot_detection_results?.ai_suspected.includes(
-                                            historical_white?.id,
-                                        )}
-                                    />
-                                    <GameInformation />
-                                    <RengoHeader />
-                                </div>
-                            )}
-
-                            {(view_mode === "square" || view_mode === "wide") && !zen_mode && (
-                                <FragAIReview
-                                    simul_black={simul_black}
-                                    simul_white={simul_white}
-                                    showGameTimings={show_game_timing}
-                                />
-                            )}
-
-                            {(view_mode === "square" || view_mode === "wide") &&
-                                show_bot_detection_results &&
-                                bot_detection_results?.ai_suspected.length > 0 && (
-                                    <>
-                                        {(simul_black || simul_white) && (
-                                            <div className="simul-warning">
-                                                {pgettext(
-                                                    "A label that means the game is played at the same time as another game",
-                                                    "Simul",
-                                                )}
-                                                {simul_black && simul_white
-                                                    ? " (both players)"
-                                                    : simul_black
-                                                      ? " (black)"
-                                                      : " (white)"}
-                                            </div>
-                                        )}
-                                        <BotDetectionResults
-                                            bot_detection_results={bot_detection_results}
-                                            game_id={game_id}
-                                            updateBotDetectionResults={set_bot_detection_results}
-                                        />
-                                    </>
-                                )}
-
-                            {CONTROLS}
-
-                            {view_mode === "wide" && CHAT}
-                            {view_mode === "square" && squashed && CHAT}
-                            {view_mode === "square" && squashed && CHAT}
-
-                            {renderGameDock(false)}
-                            {zen_mode && <div className="align-col-end"></div>}
-                        </div>
-                    )}
-
-                    <div className="align-row-end"></div>
-                </GobanControllerContext.Provider>
-            </div>
-        </div>
+            {/* Right: More actions on the far right. Moderator tools are
+             *  consolidated into the popover when the user has them. */}
+            <GobanView.Tab
+                id="game-actions"
+                type="action"
+                align="right"
+                icon="ellipsis-h"
+                title={_("More actions")}
+                onClick={openMoreActions}
+            />
+        </GobanView>
     );
 }
