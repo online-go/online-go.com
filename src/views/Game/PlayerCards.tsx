@@ -18,7 +18,13 @@
 import * as React from "react";
 import { get } from "@/lib/requests";
 
-import { GobanRenderer, Goban, PlayerScore, JGOFPlayerSummary } from "goban";
+import {
+    GobanRenderer,
+    Goban,
+    JGOFClockWithTransmitting,
+    PlayerScore,
+    JGOFPlayerSummary,
+} from "goban";
 import { user_uploads_url } from "@/lib/cdn";
 import { CountDown } from "./CountDown";
 import { Flag } from "@/components/Flag";
@@ -301,7 +307,7 @@ export function PlayerCard({
                 )}
 
                 {engine.phase !== "finished" && !goban.review_id ? (
-                    <Clock goban={goban} color={color} className="in-game-clock" />
+                    <ClockWithPauseOverlay goban={goban} color={color} />
                 ) : (
                     goban.engine.sgf_time_settings && (
                         <SGFClock goban={goban} color={color} className="in-game-clock" />
@@ -395,6 +401,69 @@ export function PlayerCard({
                         </div>
                     ))}
                 </div>
+            )}
+        </div>
+    );
+}
+
+interface ClockWithPauseOverlayProps {
+    goban: GobanRenderer;
+    color: "black" | "white";
+}
+
+/**
+ * Wraps the live in-game Clock with a hover-revealed pause/resume overlay.
+ * The overlay only renders for users allowed to control the pause state (a
+ * participant in a non-rengo, vacation-eligible game still in progress).
+ * When the game is currently paused the icon and click handler flip to
+ * "resume"; otherwise they "pause".
+ */
+function ClockWithPauseOverlay({ goban, color }: ClockWithPauseOverlayProps): React.ReactElement {
+    const user = useUser();
+    const engine = goban.engine;
+    const user_is_player =
+        !user.anonymous &&
+        (user.id === engine.players.black?.id || user.id === engine.players.white?.id);
+    const can_pause =
+        !goban.review_id &&
+        user_is_player &&
+        engine.phase !== "finished" &&
+        !engine.rengo &&
+        !engine.config.disable_vacation;
+
+    const [paused, set_paused] = React.useState<boolean>(false);
+    React.useEffect(() => {
+        const onClock = (clock: JGOFClockWithTransmitting | null) => {
+            set_paused(!!clock?.pause_state);
+        };
+        goban.on("clock", onClock);
+        return () => {
+            goban.off("clock", onClock);
+        };
+    }, [goban]);
+
+    const onClick = () => {
+        if (paused) {
+            goban.resumeGame();
+        } else {
+            goban.pauseGame();
+        }
+    };
+    const label = paused ? _("Resume game") : _("Pause game");
+
+    return (
+        <div className="clock-pause-host">
+            <Clock goban={goban} color={color} className="in-game-clock" />
+            {can_pause && (
+                <button
+                    type="button"
+                    className="clock-pause-overlay"
+                    onClick={onClick}
+                    title={label}
+                    aria-label={label}
+                >
+                    <i className={"fa " + (paused ? "fa-play" : "fa-pause")} />
+                </button>
             )}
         </div>
     );
