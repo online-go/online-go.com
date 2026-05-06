@@ -569,7 +569,6 @@ function ChatInput({
                     ?.querySelector(".chat-lines") as HTMLElement | null;
                 if (lines) {
                     lines.scrollTop = 0;
-                    scrolled_to_bottom = true;
                 }
             }
 
