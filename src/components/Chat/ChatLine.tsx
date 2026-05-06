@@ -88,12 +88,6 @@ export function ChatLine(props: ChatLineInterface): React.ReactElement {
         if (body.substr(0, 8) === "/google ") {
             body = generateChatSearchLine("https://www.google.com/#q=", "/google ", body);
         }
-
-        /* cspell:disable-next-line */
-        if (body.substr(0, 8) === "/lmgtfy ") {
-            /* cspell:disable-next-line */
-            body = generateChatSearchLine("https://www.lmgtfy.com/?q=", "/lmgtfy ", body);
-        }
     }
 
     const mentions = name_match_regex.test(body);
