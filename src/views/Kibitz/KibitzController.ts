@@ -546,7 +546,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         });
 
         try {
-            const payload = (await get("kibitz/rooms")) as BackendKibitzRoom[];
+            const payload = (await get("kibitz/directory")) as BackendKibitzRoom[];
             const rooms = sortRoomSummariesByPopulation(
                 (payload ?? []).map((r) => mapBackendRoomToSummary(r)),
             );
