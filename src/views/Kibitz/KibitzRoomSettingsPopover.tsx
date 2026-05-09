@@ -30,6 +30,7 @@ interface KibitzRoomSettingsPopoverProps {
     canEditRoom: boolean;
     canDeleteRoom: boolean;
     canChangeBoard: boolean;
+    isMobileLayout: boolean;
     onClose: () => void;
     onRequestChangeBoard: () => void;
     onDeleteRoom: () => Promise<boolean>;
@@ -41,6 +42,7 @@ export function KibitzRoomSettingsPopover({
     canEditRoom,
     canDeleteRoom,
     canChangeBoard,
+    isMobileLayout: _isMobileLayout,
     onClose,
     onDeleteRoom,
     onRequestChangeBoard,

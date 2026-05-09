@@ -230,6 +230,18 @@
             position: relative;
         }
 
+        .Kibitz-mobile-room-header {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            min-height: var(--mobile-room-bar-height);
+            position: relative;
+            z-index: 40;
+        }
+
+        .Kibitz-mobile-room-header.has-settings {
+            grid-template-columns: minmax(0, 1fr) 2.35rem;
+        }
+
         .Kibitz-mobile-room-bar {
             all: unset;
             background: transparent !important;
@@ -270,6 +282,40 @@
 
         .Kibitz-mobile-room-bar[aria-expanded="true"] {
             filter: brightness(1.1);
+        }
+
+        .Kibitz-mobile-room-settings-button {
+            all: unset;
+            -webkit-appearance: none;
+            align-items: center;
+            background: var(--mobile-room-bar-bg);
+            box-sizing: border-box;
+            color: var(--text-color) !important;
+            cursor: pointer;
+            display: inline-flex;
+            font-size: 1rem;
+            justify-content: center;
+            min-width: 0;
+            padding: 0 0.35rem;
+            transition:
+                background-color 0.2s ease,
+                filter 0.2s ease;
+            width: 100%;
+        }
+
+        .Kibitz-mobile-room-settings-button:hover,
+        .Kibitz-mobile-room-settings-button:focus,
+        .Kibitz-mobile-room-settings-button:active {
+            filter: none;
+        }
+
+        .Kibitz-mobile-room-settings-button[aria-expanded="true"] {
+            filter: brightness(1.1);
+        }
+
+        .Kibitz-mobile-room-settings-button:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: -2px;
         }
 
         .mobile-room-header-title {
@@ -441,6 +487,33 @@
 
         .Kibitz-mobile-overlay-scroll {
             padding-bottom: 0.25rem;
+        }
+
+        .Kibitz-mobile-room-settings-panel {
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column;
+            min-height: 0;
+            overflow: auto;
+            padding: 0.5rem;
+        }
+
+        .Kibitz-mobile-room-settings-panel .KibitzRoomSettingsPopover {
+            border: 0;
+            box-shadow: none;
+            flex: 1 1 auto;
+            min-height: 0;
+            padding: 0.65rem;
+        }
+
+        .Kibitz-mobile-room-settings-panel .KibitzRoomSettingsPopover-action,
+        .Kibitz-mobile-room-settings-panel .KibitzRoomSettingsPopover-secondaryAction,
+        .Kibitz-mobile-room-settings-panel .KibitzRoomSettingsPopover-deleteAction {
+            min-height: 2.2rem;
+        }
+
+        .Kibitz-mobile-room-settings-panel .KibitzRoomSettingsPopover-actions {
+            flex-wrap: wrap;
         }
 
         .kibitz-mobile-transport-button {
@@ -639,7 +712,8 @@
     }
 }
 
-[data-theme="dark"] .Kibitz-mobile-room-bar {
+[data-theme="dark"] .Kibitz-mobile-room-bar,
+[data-theme="dark"] .Kibitz-mobile-room-settings-button {
     background: var(--card-background-color) !important;
 }
 

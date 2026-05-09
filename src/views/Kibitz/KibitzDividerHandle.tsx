@@ -44,7 +44,7 @@ export function KibitzDividerHandle({
         },
         {
             id: "equal",
-            label: pgettext("Kibitz divider mode label", "Show variations"),
+            label: pgettext("Kibitz divider mode label", "Variations"),
             className: "compare-view",
         },
     ];

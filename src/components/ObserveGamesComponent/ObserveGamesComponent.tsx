@@ -35,6 +35,7 @@ interface ObserveGamesComponentProperties {
     forceList?: boolean;
     initialMiniGoban?: boolean;
     onSelectGameId?: (gameId: number) => void;
+    compactControls?: boolean;
 }
 
 interface GameListWhere {
@@ -339,9 +340,57 @@ export class ObserveGamesComponent extends React.PureComponent<
         });
     };
 
+    private renderPageControls(compact = false): React.ReactElement | null {
+        const showPagination = Boolean(
+            this.state.num_pages && this.state.num_pages > (compact ? 1 : 0),
+        );
+
+        if (compact && !showPagination) {
+            return null;
+        }
+
+        return (
+            <div className={"page-controls" + (compact ? " page-controls-compact" : "")}>
+                {showPagination && (
+                    <div className="left">
+                        {(this.state.page as number) > 1 ? (
+                            <i className="fa fa-step-backward" onClick={this.prevPage} />
+                        ) : (
+                            <i className="fa" />
+                        )}
+                        <input onChange={this.setPage} value={this.state.page} />
+                        <span className="of"> / </span>
+                        <span className="total">{this.state.num_pages.toString()}</span>
+                        {(this.state.page as number) < this.state.num_pages ? (
+                            <i className="fa fa-step-forward" onClick={this.nextPage} />
+                        ) : (
+                            <i className="fa" />
+                        )}
+                    </div>
+                )}
+
+                {!compact ? (
+                    <div className="right">
+                        <label className="label_show">{_("Show") + ":"}</label>
+                        <input
+                            className="show"
+                            onChange={this.setPageSize}
+                            value={this.state.page_size_text_input}
+                            type="number"
+                            min="3"
+                            max="100"
+                            step="1"
+                        />
+                    </div>
+                ) : null}
+            </div>
+        );
+    }
+
     render() {
         const n_filters = Object.keys(this.state.filters).length;
         const forceList = this.state.force_list || Boolean(this.props.forceList);
+        const compactControls = Boolean(this.props.compactControls);
 
         return (
             <div className="ObserveGamesComponent">
@@ -385,45 +434,7 @@ export class ObserveGamesComponent extends React.PureComponent<
                                 <i className="fa fa-refresh"></i> {_("Refresh")}
                             </button>
 
-                            <div className="page-controls">
-                                {((this.state.num_pages && this.state.num_pages > 0) || null) && (
-                                    <div className="left">
-                                        {(this.state.page as number) > 1 ? (
-                                            <i
-                                                className="fa fa-step-backward"
-                                                onClick={this.prevPage}
-                                            />
-                                        ) : (
-                                            <i className="fa" />
-                                        )}
-                                        <input onChange={this.setPage} value={this.state.page} />
-                                        <span className="of"> / </span>
-                                        <span className="total">
-                                            {this.state.num_pages.toString()}
-                                        </span>
-                                        {(this.state.page as number) < this.state.num_pages ? (
-                                            <i
-                                                className="fa fa-step-forward"
-                                                onClick={this.nextPage}
-                                            />
-                                        ) : (
-                                            <i className="fa" />
-                                        )}
-                                    </div>
-                                )}
-                                <div className="right">
-                                    <label className="label_show">{_("Show") + ":"}</label>
-                                    <input
-                                        className="show"
-                                        onChange={this.setPageSize}
-                                        value={this.state.page_size_text_input}
-                                        type="number"
-                                        min="3"
-                                        max="100"
-                                        step="1"
-                                    />
-                                </div>
-                            </div>
+                            {!compactControls ? this.renderPageControls() : null}
                         </div>
                     </div>
 
@@ -443,6 +454,7 @@ export class ObserveGamesComponent extends React.PureComponent<
                     lineSummaryMode={"both-players"}
                     onSelectGameId={this.props.onSelectGameId}
                 />
+                {compactControls ? this.renderPageControls(true) : null}
             </div>
         );
     }

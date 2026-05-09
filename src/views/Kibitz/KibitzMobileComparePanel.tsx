@@ -31,6 +31,8 @@ import { KibitzVariationComposer } from "./KibitzVariationComposer";
 import { KibitzVariationList } from "./KibitzVariationList";
 import { KibitzNodeText } from "./KibitzNodeText";
 import { KibitzMoveTreeStrip } from "./KibitzMoveTreeStrip";
+import { KIBITZ_HELP_TARGETS } from "./HelpFlows/KibitzHelpTargets";
+import { useKibitzHelpTarget } from "./HelpFlows/useKibitzHelpTarget";
 import "./KibitzMobileComparePanel.css";
 
 interface KibitzMobileComparePanelProps {
@@ -80,6 +82,7 @@ export function KibitzMobileComparePanel({
     onPostVariation,
     onDiscardDraft,
 }: KibitzMobileComparePanelProps): React.ReactElement {
+    const variationsPanelTarget = useKibitzHelpTarget(KIBITZ_HELP_TARGETS.mobileVariationsPanel);
     const [nodeText, setNodeText] = React.useState(controller?.goban.engine.cur_move?.text ?? "");
 
     const panelModeKey = React.useMemo(() => {
@@ -157,7 +160,7 @@ export function KibitzMobileComparePanel({
     const hasFoldoutBody = nodeTextParts.body != null;
 
     return (
-        <div className="KibitzMobileComparePanel">
+        <div className="KibitzMobileComparePanel" ref={variationsPanelTarget?.ref}>
             <KibitzMoveTreeStrip controller={controller} layoutKey={panelModeKey} />
             {isDraftingVariation ? (
                 <div className="KibitzMobileComparePanel-tools">

@@ -36,6 +36,8 @@ import type {
     KibitzStreamItemSource,
     KibitzVariationSummary,
 } from "@/models/kibitz";
+import { KIBITZ_HELP_TARGETS } from "./HelpFlows/KibitzHelpTargets";
+import { useKibitzHelpTarget } from "./HelpFlows/useKibitzHelpTarget";
 import "./KibitzSharedStreamPanel.css";
 import "@/components/Chat/ChatLog.css";
 
@@ -330,6 +332,8 @@ export function KibitzSharedStreamPanel({
     const [roomUnread, setRoomUnread] = React.useState(false);
     const [gameUnread, setGameUnread] = React.useState(false);
     const desktopStackRef = React.useRef<HTMLDivElement | null>(null);
+    const desktopStreamTarget = useKibitzHelpTarget(KIBITZ_HELP_TARGETS.desktopStream);
+    const mobileChatTabTarget = useKibitzHelpTarget(KIBITZ_HELP_TARGETS.mobileChatTab);
     const desktopDragStateRef = React.useRef<{
         pointerId: number;
         top: number;
@@ -873,6 +877,7 @@ export function KibitzSharedStreamPanel({
                 " split-" +
                 (isMobileLayout ? mobileTab : desktopSplit)
             }
+            ref={desktopStreamTarget?.ref}
         >
             {showMobileSwitcher ? (
                 <div
@@ -885,6 +890,7 @@ export function KibitzSharedStreamPanel({
                             "KibitzSharedStreamPanel-mobileSwitchButton" +
                             (mobileTab === "room" ? " active" : "")
                         }
+                        ref={mobileChatTabTarget?.ref}
                         aria-pressed={mobileTab === "room"}
                         onClick={() => handleMobileTabChange("room")}
                     >

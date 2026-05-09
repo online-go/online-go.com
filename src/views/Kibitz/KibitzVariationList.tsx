@@ -20,6 +20,8 @@ import { pgettext } from "@/lib/translate";
 import type { KibitzVariationSummary } from "@/models/kibitz";
 import { getKibitzVariationColor } from "./kibitzVariationTree";
 import { KibitzUserAvatar } from "./KibitzUserAvatar";
+import { KIBITZ_HELP_TARGETS } from "./HelpFlows/KibitzHelpTargets";
+import { useKibitzHelpTarget } from "./HelpFlows/useKibitzHelpTarget";
 import "./KibitzVariationList.css";
 
 interface KibitzVariationListProps {
@@ -33,6 +35,7 @@ interface KibitzVariationListProps {
     onRecallVariation: (variationId: string) => void;
     onToggleVariation?: (variationId: string) => void;
     title?: string;
+    helpTargetId?: (typeof KIBITZ_HELP_TARGETS)[keyof typeof KIBITZ_HELP_TARGETS];
 }
 
 export function KibitzVariationList({
@@ -46,7 +49,9 @@ export function KibitzVariationList({
     onRecallVariation,
     onToggleVariation,
     title,
+    helpTargetId,
 }: KibitzVariationListProps): React.ReactElement {
+    const variationListTarget = useKibitzHelpTarget(helpTargetId);
     const selectedVariationElementRef = React.useRef<HTMLDivElement | null>(null);
     const previousFocusRequestIdRef = React.useRef<number>(variationFocusRequestId);
     const visibleVariationIdSet = React.useMemo(
@@ -100,7 +105,7 @@ export function KibitzVariationList({
     }, [selectedVariationId, variationFocusRequestId]);
 
     return (
-        <div className="KibitzVariationList">
+        <div className="KibitzVariationList" ref={variationListTarget?.ref}>
             {title === "" ? null : (
                 <div className="variation-title">
                     {title ??

@@ -565,6 +565,12 @@ socket.on("disconnect", () => {
 
 let currently_synchronizing = false;
 let need_another_synchronization_call = false;
+let remote_data_sync_complete = false;
+
+export function isRemoteDataSyncComplete(): boolean {
+    const user = store["config.user"];
+    return Boolean(user && !user.anonymous && remote_data_sync_complete);
+}
 
 function remote_sync() {
     const user = store["config.user"];
@@ -654,6 +660,7 @@ socket.on("remote_storage/update", (row) => {
 });
 
 socket.on("remote_storage/sync_complete", () => {
+    remote_data_sync_complete = true;
     events.emit("remote_data_sync_complete");
 });
 
@@ -682,6 +689,7 @@ function load_from_local_storage_and_sync() {
         return;
     }
     loaded_user_id = user.id;
+    remote_data_sync_complete = false;
 
     remote_store = {};
     wal = {};
