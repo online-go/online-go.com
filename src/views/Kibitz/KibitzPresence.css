@@ -36,16 +36,24 @@
         flex: 0 0 auto;
     }
 
-    .presence-owner-status {
-        color: var(--text-color-faded);
-        font-size: 0.7rem;
-        font-weight: 700;
+    .presence-owner-line {
+        align-items: center;
+        display: flex;
+        flex: 0 0 auto;
+        gap: 0.35rem;
         line-height: 1;
-        text-transform: lowercase;
+        min-width: 0;
+        max-width: 100%;
     }
 
-    .presence-owner-tag {
-        color: var(--primary);
+    .presence-owner-label {
+        color: var(--text-color-faded);
+        font-size: 0.76rem;
+        font-weight: 700;
+    }
+
+    .presence-owner-status {
+        color: var(--text-color-faded);
         font-size: 0.7rem;
         font-weight: 700;
         line-height: 1;
@@ -64,11 +72,6 @@
         padding: 0 0.05rem;
         width: 100%;
         max-width: 100%;
-    }
-
-    .presence-user.presence-owner {
-        height: auto;
-        min-height: 1.4rem;
     }
 
     .presence-user > .presence-avatar {
@@ -109,14 +112,6 @@
 
     .presence-users > .presence-user {
         direction: ltr;
-    }
-
-    .presence-empty {
-        color: var(--text-color-faded);
-        font-size: 0.78rem;
-        line-height: 1.2;
-        min-width: 0;
-        max-width: 100%;
     }
 }
 

@@ -107,16 +107,32 @@ export function KibitzPresence({ room, users }: KibitzPresenceProps): React.Reac
               icon: owner.icon,
           }
         : null;
-    const regularUsers = ownerUser ? users.filter((user) => user.id !== ownerUser.id) : users;
-    const visibleUsers = ownerUser ? [ownerUser, ...regularUsers] : regularUsers;
-    const ownerStatus = ownerUser
-        ? users.some((user) => user.id === ownerUser.id)
-            ? null
-            : pgettext("Status shown for pinned kibitz room owners who are not in the room", "away")
-        : null;
+    // The owner's "away" badge is driven by chat-channel presence, not the
+    // room record: if the owner is currently subscribed to the room channel
+    // they appear in `users` and are considered present; otherwise they show
+    // as away here. The owner is not injected into the roster — when present,
+    // they appear in `users` like any other subscriber.
+    const ownerAway =
+        ownerUser !== null && !users.some((user) => user.id === ownerUser.id)
+            ? pgettext("Status shown next to a kibitz room owner who is not in the room", "away")
+            : null;
 
     return (
         <div className="KibitzPresence">
+            {ownerUser ? (
+                <div className="presence-owner-line">
+                    <span className="presence-owner-label">
+                        {pgettext(
+                            "Label preceding the room owner's name in the kibitz presence panel",
+                            "Owner:",
+                        )}
+                    </span>
+                    <Player user={ownerUser} flag rank noextracontrols />
+                    {ownerAway ? (
+                        <span className="presence-owner-status">[{ownerAway}]</span>
+                    ) : null}
+                </div>
+            ) : null}
             <div className={"presence-summary" + (viewerCountFlash ? " viewer-count-flash" : "")}>
                 {interpolate(
                     pgettext(
@@ -130,44 +146,17 @@ export function KibitzPresence({ room, users }: KibitzPresenceProps): React.Reac
                 className="presence-users"
                 aria-label={pgettext("Current kibitz room roster section label", "In the room")}
             >
-                {visibleUsers.length > 0 ? (
-                    visibleUsers.map((user) => {
-                        const isOwner = ownerUser !== null && user.id === ownerUser.id;
-
-                        return (
-                            <div
-                                key={user.id}
-                                className={"presence-user" + (isOwner ? " presence-owner" : "")}
-                            >
-                                <KibitzUserAvatar
-                                    user={user}
-                                    size={16}
-                                    className="presence-avatar inline"
-                                    iconClassName="presence-avatar-icon"
-                                />
-                                <Player user={user} flag rank noextracontrols />
-                                {isOwner ? (
-                                    <span className="presence-owner-tag">
-                                        {pgettext(
-                                            "Owner tag shown after the room owner's name",
-                                            "owner",
-                                        )}
-                                    </span>
-                                ) : null}
-                                {isOwner && ownerStatus ? (
-                                    <span className="presence-owner-status">{ownerStatus}</span>
-                                ) : null}
-                            </div>
-                        );
-                    })
-                ) : (
-                    <div className="presence-empty">
-                        {pgettext(
-                            "Empty state for the room presence roster in kibitz",
-                            "No one is in the room yet.",
-                        )}
+                {users.map((user) => (
+                    <div key={user.id} className="presence-user">
+                        <KibitzUserAvatar
+                            user={user}
+                            size={16}
+                            className="presence-avatar inline"
+                            iconClassName="presence-avatar-icon"
+                        />
+                        <Player user={user} flag rank noextracontrols />
                     </div>
-                )}
+                ))}
             </section>
         </div>
     );

@@ -904,6 +904,20 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
 
             this.clearAccessBlocked();
             this.setPermissions({ ...DEFAULT_PERMISSIONS, ...payload.permissions });
+            // Ensure the active room is in the rail. The directory snapshot is
+            // taken before the caller joins the chat channel, so a non-owned
+            // room with no other watchers gets filtered out for viewer_count=0
+            // even when the caller is about to become viewer #1. The rail must
+            // always show the room the user is currently looking at, so merge
+            // it in if missing.
+            if (!this._rooms.some((r) => r.id === full.id)) {
+                this.setRooms(
+                    sortRoomSummariesByPopulation([
+                        ...this._rooms,
+                        mapBackendRoomToSummary(payload.room),
+                    ]),
+                );
+            }
             // setActiveRoom must precede subscribeActiveRoom: joinActiveChat's
             // initial syncMessagesFromChat reads _active_room to decide which rooms
             // entry to mirror user_count into, and _active_chat_proxy for the
@@ -924,8 +938,14 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 size: "small",
             });
 
-            if (currentGame) {
-                this.setActiveRoom({ ...full, current_game: currentGame });
+            if (currentGame && this._active_room) {
+                // Spread this._active_room rather than `full` so the users array
+                // populated by syncPresenceFromChat (run synchronously inside
+                // subscribeActiveRoom above, often non-empty when the chat
+                // channel was already held by KibitzSharedStreamPanel) is
+                // preserved instead of being clobbered back to `full.users`,
+                // which is always [] from mapBackendRoomToFull.
+                this.setActiveRoom({ ...this._active_room, current_game: currentGame });
             }
             void this.hydrateActiveRoomGame(full.id, payload.room.current_game_id, token);
         } catch (error) {
@@ -1277,8 +1297,10 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     }
 
     public getRoomUsers(roomId: string): KibitzRoomUser[] {
-        // 1C-a has no presence wiring; the chat-channel join in 1C-b will
-        // populate active_room.users from the chat-join roster event.
+        // Only the active room carries a roster: syncPresenceFromChat writes
+        // active_room.users from the chat-channel join event, and there is
+        // no equivalent state for non-active rooms. Callers asking about a
+        // different room get an empty list.
         return this._active_room?.id === roomId ? this._active_room.users : [];
     }
 }

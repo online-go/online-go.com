@@ -85,7 +85,7 @@ describe("KibitzPresence", () => {
         mockedPlayerCache.lookup.mockReturnValue(null);
     });
 
-    it("renders the owner as a separate section from the live room roster", async () => {
+    it("renders the owner on a separate line above the room roster, marked away when not in users", async () => {
         mockedPlayerCache.fetch.mockResolvedValue({
             id: 1,
             username: "Owner",
@@ -94,21 +94,56 @@ describe("KibitzPresence", () => {
             ui_class: "",
         });
 
-        render(<KibitzPresence room={makeRoom()} users={[makeUser(2, "CurrentUser")]} />);
+        const { container } = render(
+            <KibitzPresence room={makeRoom()} users={[makeUser(2, "CurrentUser")]} />,
+        );
 
         expect(screen.getByText("In the room · 1 watching")).toBeInTheDocument();
 
-        const roomRegion = screen.getByRole("region", { name: "In the room" });
+        // The owner is loaded via a fetch promise inside useEffect, so wait
+        // for the resulting re-render before asserting on the owner line.
+        await screen.findByText("Owner:");
 
+        const ownerLine = container.querySelector(".presence-owner-line");
+        expect(ownerLine).not.toBeNull();
+        expect(ownerLine).toHaveTextContent("Owner:");
+        expect(ownerLine).toHaveTextContent("player:Owner");
+        expect(ownerLine).toHaveTextContent("[away]");
+
+        const roomRegion = screen.getByRole("region", { name: "In the room" });
+        const rows = roomRegion.querySelectorAll(".presence-user");
+        expect(rows).toHaveLength(1);
+        expect(rows[0]).toHaveTextContent("avatar:CurrentUser");
+        expect(rows[0]).toHaveTextContent("player:CurrentUser");
+        expect(roomRegion).not.toHaveTextContent("player:Owner");
+    });
+
+    it("does not mark the owner away when they are present in the roster", async () => {
+        mockedPlayerCache.fetch.mockResolvedValue({
+            id: 1,
+            username: "Owner",
+            ranking: 0,
+            pro: false,
+            ui_class: "",
+        });
+
+        const { container } = render(
+            <KibitzPresence
+                room={makeRoom()}
+                users={[makeUser(1, "Owner"), makeUser(2, "CurrentUser")]}
+            />,
+        );
+
+        await screen.findByText("Owner:");
+
+        const ownerLine = container.querySelector(".presence-owner-line");
+        expect(ownerLine).not.toBeNull();
+        expect(ownerLine).toHaveTextContent("Owner:");
+        expect(ownerLine).toHaveTextContent("player:Owner");
+        expect(ownerLine).not.toHaveTextContent("[away]");
+
+        const roomRegion = screen.getByRole("region", { name: "In the room" });
         const rows = roomRegion.querySelectorAll(".presence-user");
         expect(rows).toHaveLength(2);
-
-        expect(rows[0]).toHaveTextContent("avatar:Owner");
-        expect(rows[0]).toHaveTextContent("player:Owner");
-        expect(rows[0]).toHaveTextContent("owner");
-        expect(rows[0]).toHaveTextContent("away");
-
-        expect(rows[1]).toHaveTextContent("avatar:CurrentUser");
-        expect(rows[1]).toHaveTextContent("player:CurrentUser");
     });
 });
