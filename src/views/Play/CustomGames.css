@@ -96,7 +96,8 @@
     }
 
     button {
-        height: 3rem;
+        height: auto;
+        min-height: 3rem;
         font-size: 1.3rem;
         width: 17rem;
     }

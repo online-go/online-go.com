@@ -214,6 +214,11 @@
         align-items: center;
         gap: 1rem;
 
+        button {
+            height: auto;
+            min-height: 2em;
+        }
+
         input[type='text'] {
             min-width: 200px;
             margin: 0;

@@ -254,7 +254,7 @@
                 text-decoration: none;
                 width: 100%; /* Make cards responsive to grid cell width */
                 max-width: 23rem; /* But don't exceed original max size */
-                height: 5rem;
+                min-height: 5rem;
                 color: #f9f9f9;
                 border-radius: 0.3rem;
                 text-align: left;
