@@ -38,6 +38,7 @@ import { KibitzRoomList } from "./KibitzRoomList";
 import { KibitzRoomStage } from "./KibitzRoomStage";
 import { KibitzSharedStreamPanel } from "./KibitzSharedStreamPanel";
 import { KibitzPresence } from "./KibitzPresence";
+import { KibitzPresencePanel } from "./KibitzPresencePanel";
 import { KibitzVariationList } from "./KibitzVariationList";
 import { KibitzMobileComparePanel } from "./KibitzMobileComparePanel";
 import type { KibitzController } from "./KibitzController";
@@ -59,7 +60,13 @@ import "./Kibitz.css";
 
 type SecondaryPaneMode = "hidden" | "small" | "equal";
 type MobileCompanionPanel = "chat" | "vote" | "compare";
-type MobileOverlayMode = "rooms" | "room-settings" | "create-room" | "change-board" | null;
+type MobileOverlayMode =
+    | "rooms"
+    | "presence"
+    | "room-settings"
+    | "create-room"
+    | "change-board"
+    | null;
 type KibitzGamePickerMode = "create-room" | "change-board" | null;
 interface PendingPostedVariation {
     pendingId: string;
@@ -996,6 +1003,10 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         setMobileOverlayMode((mode) => (mode === "rooms" ? null : "rooms"));
     }, []);
 
+    const onToggleMobilePresence = React.useCallback(() => {
+        setMobileOverlayMode((mode) => (mode === "presence" ? null : "presence"));
+    }, []);
+
     const onToggleMobileRoomSettings = React.useCallback(() => {
         setMobileOverlayMode((mode) => (mode === "room-settings" ? null : "room-settings"));
     }, []);
@@ -1262,39 +1273,49 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                             </span>
                                         </div>
                                     ) : null}
-                                    <div
-                                        className={
-                                            "mobile-room-header-meta" +
-                                            (mobileViewerCountFlash
-                                                ? " mobile-room-header-meta-flash"
-                                                : "")
-                                        }
+                                </button>
+                                <button
+                                    type="button"
+                                    className={
+                                        "mobile-room-header-meta" +
+                                        (mobileViewerCountFlash
+                                            ? " mobile-room-header-meta-flash"
+                                            : "")
+                                    }
+                                    onClick={onToggleMobilePresence}
+                                    aria-expanded={mobileOverlayMode === "presence"}
+                                    aria-label={interpolate(
+                                        pgettext(
+                                            "Aria label for opening mobile kibitz room presence",
+                                            "Show {{count}} people in this room",
+                                        ),
+                                        { count: resolvedRoom.viewer_count },
+                                    )}
+                                >
+                                    <span
+                                        className="mobile-room-viewer-icon"
+                                        title={interpolate(
+                                            pgettext(
+                                                "Tooltip for the viewer count shown in the mobile kibitz room header",
+                                                "{{count}} people here",
+                                            ),
+                                            { count: resolvedRoom.viewer_count },
+                                        )}
                                     >
-                                        <span
-                                            className="mobile-room-viewer-icon"
-                                            title={interpolate(
-                                                pgettext(
-                                                    "Tooltip for the viewer count shown in the mobile kibitz room header",
-                                                    "{{count}} people here",
-                                                ),
-                                                { count: resolvedRoom.viewer_count },
-                                            )}
+                                        <svg
+                                            viewBox="0 0 16 16"
+                                            focusable="false"
+                                            aria-hidden="true"
                                         >
-                                            <svg
-                                                viewBox="0 0 16 16"
-                                                focusable="false"
-                                                aria-hidden="true"
-                                            >
-                                                <path
-                                                    d="M8 8a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm0 1c-2.7 0-5 1.4-5 3.2V14h10v-1.8C13 10.4 10.7 9 8 9Z"
-                                                    fill="currentColor"
-                                                />
-                                            </svg>
-                                        </span>
-                                        <span className="mobile-room-viewer-count">
-                                            {resolvedRoom.viewer_count}
-                                        </span>
-                                    </div>
+                                            <path
+                                                d="M8 8a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm0 1c-2.7 0-5 1.4-5 3.2V14h10v-1.8C13 10.4 10.7 9 8 9Z"
+                                                fill="currentColor"
+                                            />
+                                        </svg>
+                                    </span>
+                                    <span className="mobile-room-viewer-count">
+                                        {resolvedRoom.viewer_count}
+                                    </span>
                                 </button>
                                 {canOpenRoomSettings ? (
                                     <button
@@ -1336,6 +1357,13 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                     onCreateRoom={onOpenCreateRoom}
                                                     onCreateVariation={onCreateVariation}
                                                     blockedRoomIds={blockedRoomIds}
+                                                />
+                                            </div>
+                                        ) : mobileOverlayMode === "presence" ? (
+                                            <div className="Kibitz-mobile-presence-panel">
+                                                <KibitzPresencePanel
+                                                    room={resolvedRoom}
+                                                    users={resolvedRoomUsers}
                                                 />
                                             </div>
                                         ) : mobileOverlayMode === "room-settings" ? (
