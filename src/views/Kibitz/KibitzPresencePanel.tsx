@@ -32,7 +32,7 @@ export function KibitzPresencePanel({ room, users }: KibitzPresencePanelProps): 
     return (
         <div className="KibitzPresencePanel">
             <div className="KibitzPresencePanel-title">
-                {pgettext("Heading for the Kibitz presence panel", "In the room")}
+                {pgettext("Heading for the Kibitz presence panel", "Room")}
             </div>
             <KibitzPresence room={room} users={users} />
         </div>
