@@ -176,6 +176,10 @@ export function KibitzGamePickerOverlay({
         "Placeholder for the Kibitz game ID input",
         "Paste a game ID or OGS game URL",
     );
+    const loadingGameDetailsLabel = pgettext(
+        "Loading note for the Kibitz game picker",
+        "Loading game details...",
+    );
 
     const selectionIsSameAsCurrent = Boolean(
         mode === "change-board" && selectedGame && currentGameId === selectedGame.game.game_id,
@@ -367,6 +371,16 @@ export function KibitzGamePickerOverlay({
 
     const renderSelectedGameCard = (options: { mobile: boolean; showBoardPreview: boolean }) => {
         const { mobile, showBoardPreview } = options;
+        const loadingPlayerStack = (
+            <div className="KibitzGamePickerOverlay-playerStack KibitzGamePickerOverlay-playerStackLoading">
+                {loadingGameDetailsLabel}
+            </div>
+        );
+
+        if (loading && !selectedGameSummary) {
+            return loadingPlayerStack;
+        }
+
         if (!selectedGameSummary) {
             return (
                 <div className="KibitzGamePickerOverlay-emptyState">
@@ -380,29 +394,36 @@ export function KibitzGamePickerOverlay({
 
         return (
             <>
-                <div className="KibitzGamePickerOverlay-playerStack">
-                    <div className="KibitzGamePickerOverlay-playerRow">
-                        <KibitzUserAvatar
-                            user={selectedGameSummary.black}
-                            size={16}
-                            className="KibitzGamePickerOverlay-playerAvatar inline"
-                            iconClassName="KibitzGamePickerOverlay-playerAvatarIcon"
-                        />
-                        <Player user={selectedGameSummary.black} flag rank noextracontrols />
+                {loading ? (
+                    loadingPlayerStack
+                ) : (
+                    <div className="KibitzGamePickerOverlay-playerStack">
+                        <div className="KibitzGamePickerOverlay-playerRow">
+                            <KibitzUserAvatar
+                                user={selectedGameSummary.black}
+                                size={16}
+                                className="KibitzGamePickerOverlay-playerAvatar inline"
+                                iconClassName="KibitzGamePickerOverlay-playerAvatarIcon"
+                            />
+                            <Player user={selectedGameSummary.black} flag rank noextracontrols />
+                        </div>
+                        <span
+                            className="KibitzGamePickerOverlay-playerSeparator"
+                            aria-hidden="true"
+                        >
+                            -
+                        </span>
+                        <div className="KibitzGamePickerOverlay-playerRow">
+                            <KibitzUserAvatar
+                                user={selectedGameSummary.white}
+                                size={16}
+                                className="KibitzGamePickerOverlay-playerAvatar inline"
+                                iconClassName="KibitzGamePickerOverlay-playerAvatarIcon"
+                            />
+                            <Player user={selectedGameSummary.white} flag rank noextracontrols />
+                        </div>
                     </div>
-                    <span className="KibitzGamePickerOverlay-playerSeparator" aria-hidden="true">
-                        -
-                    </span>
-                    <div className="KibitzGamePickerOverlay-playerRow">
-                        <KibitzUserAvatar
-                            user={selectedGameSummary.white}
-                            size={16}
-                            className="KibitzGamePickerOverlay-playerAvatar inline"
-                            iconClassName="KibitzGamePickerOverlay-playerAvatarIcon"
-                        />
-                        <Player user={selectedGameSummary.white} flag rank noextracontrols />
-                    </div>
-                </div>
+                )}
                 {showBoardPreview ? (
                     <div
                         className={
@@ -415,14 +436,7 @@ export function KibitzGamePickerOverlay({
                             className="KibitzGamePickerOverlay-board"
                         />
                     </div>
-                ) : (
-                    <div className="KibitzGamePickerOverlay-note">
-                        {pgettext(
-                            "Note shown when the Kibitz picker selection uses an Observe preview",
-                            "Board preview is already shown in Observe.",
-                        )}
-                    </div>
-                )}
+                ) : null}
                 {mobile && mode === "create-room" && selectedGameSummary ? (
                     <div className="KibitzGamePickerOverlay-mobileGameNameRow">
                         <div className="KibitzGamePickerOverlay-fieldLabel">
@@ -568,14 +582,6 @@ export function KibitzGamePickerOverlay({
                                 {selectionErrorMessage}
                             </div>
                         ) : null}
-                        {loading ? (
-                            <div className="KibitzGamePickerOverlay-note">
-                                {pgettext(
-                                    "Loading note for the Kibitz game picker",
-                                    "Loading game details...",
-                                )}
-                            </div>
-                        ) : null}
                     </div>
                     <button
                         type="button"
@@ -649,15 +655,6 @@ export function KibitzGamePickerOverlay({
                                     disabled={!selectedGameSummary}
                                     rows={4}
                                 />
-                            </div>
-                        ) : null}
-
-                        {mode === "create-room" ? (
-                            <div className="KibitzGamePickerOverlay-note">
-                                {pgettext(
-                                    "Note shown when room details are edited inline in the Kibitz picker",
-                                    "Room details are edited inline here.",
-                                )}
                             </div>
                         ) : null}
 
@@ -785,14 +782,6 @@ export function KibitzGamePickerOverlay({
                     </button>
                     {selectionErrorMessage ? (
                         <div className="KibitzGamePickerOverlay-error">{selectionErrorMessage}</div>
-                    ) : null}
-                    {loading ? (
-                        <div className="KibitzGamePickerOverlay-note">
-                            {pgettext(
-                                "Loading note for the Kibitz game picker",
-                                "Loading game details...",
-                            )}
-                        </div>
                     ) : null}
                 </div>
             )}
