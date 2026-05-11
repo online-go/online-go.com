@@ -107,6 +107,47 @@ try {
     console.log(e);
 }
 
+function tenukiBorderClass(pass_available: boolean | string): string {
+    if (typeof pass_available !== "string") {
+        return "tenuki-border-gray";
+    }
+    switch (pass_available) {
+        case "ideal":
+        case "good":
+            return "tenuki-border-green";
+        case "trick":
+        case "question":
+            return "tenuki-border-yellow";
+        case "mistake":
+            return "tenuki-border-red";
+        default:
+            return "tenuki-border-gray";
+    }
+}
+
+function tenukiButtonTitle(pass_available: boolean | string): string {
+    if (typeof pass_available !== "string") {
+        return pgettext(
+            "Joseki: tooltip when no documented tenuki continuation exists at this position",
+            "No documented tenuki continuation here — playing one creates a new variation.",
+        );
+    }
+    switch (pass_available) {
+        case "ideal":
+            return pgettext("Joseki tenuki tooltip", "Tenuki is an ideal continuation here.");
+        case "good":
+            return pgettext("Joseki tenuki tooltip", "Tenuki is a good continuation here.");
+        case "mistake":
+            return pgettext("Joseki tenuki tooltip", "Tenuki would be a mistake here.");
+        case "trick":
+            return pgettext("Joseki tenuki tooltip", "Tenuki would be a trick move here.");
+        case "question":
+            return pgettext("Joseki tenuki tooltip", "Tenuki is questioned here.");
+        default:
+            return pgettext("Joseki tenuki tooltip", "A tenuki continuation is documented here.");
+    }
+}
+
 export function Joseki(): React.ReactElement {
     const { pos } = useParams<{ pos: string }>();
     const location = useLocation();
@@ -163,6 +204,7 @@ export function Joseki(): React.ReactElement {
     const [share_confirmed, set_share_confirmed] = React.useState(false);
 
     const [show_comments, set_show_comments] = React.useState(false);
+    const [filter_takeover_active, set_filter_takeover_active] = React.useState(false);
 
     const gobanViewRef = React.useRef<GobanViewRef>(null);
     const moreActionsPopoverRef = React.useRef<PopOver | null>(null);
@@ -1154,7 +1196,7 @@ export function Joseki(): React.ReactElement {
                     disabled={at_start}
                     title={pgettext("Move navigation: reset to root", "Reset to root")}
                 >
-                    <i className="fa fa-fast-backward" />
+                    <i className="fa fa-refresh" />
                 </button>
                 <button
                     className="MoveNumberSlider-button"
@@ -1192,6 +1234,9 @@ export function Joseki(): React.ReactElement {
                             {slider_target ?? move_number}
                         </span>
                     </div>
+                    <div className="Joseki-throbber-overlay" aria-hidden="true">
+                        <Throbber throb={throb} />
+                    </div>
                 </div>
                 <button
                     className="MoveNumberSlider-button"
@@ -1201,9 +1246,26 @@ export function Joseki(): React.ReactElement {
                 >
                     <i className="fa fa-step-forward" />
                 </button>
-                <div className="Joseki-throbber-overlay" aria-hidden="true">
-                    <Throbber throb={throb} />
-                </div>
+                <button
+                    className={
+                        "Joseki-tenuki-button " +
+                        (mode === PageMode.Play
+                            ? "tenuki-border-gray"
+                            : tenukiBorderClass(pass_available))
+                    }
+                    onClick={doPass}
+                    disabled={throb}
+                    title={
+                        mode === PageMode.Play
+                            ? pgettext(
+                                  "Joseki tenuki tooltip (play mode hides the outcome)",
+                                  "Tenuki",
+                              )
+                            : tenukiButtonTitle(pass_available)
+                    }
+                >
+                    {pgettext("Joseki: play a tenuki (skip) move from this position", "Tenuki")}
+                </button>
             </div>
         );
     }
@@ -1327,8 +1389,6 @@ export function Joseki(): React.ReactElement {
                 position_type={current_move_category}
                 see_also={see_also}
                 position_id={current_node_id as string}
-                pass_available={pass_available}
-                onExploreTenuki={doPass}
             />
         );
     }
@@ -1347,6 +1407,16 @@ export function Joseki(): React.ReactElement {
         : current_move_category === "new" && mode === PageMode.Explore
           ? _("Save new position")
           : _("Edit");
+
+    const joseki_header = filter_takeover_active
+        ? pgettext("Joseki view title: the filter takeover is open", "Filter")
+        : mode === PageMode.Play
+          ? pgettext("Joseki view title: play mode", "Play Joseki")
+          : mode === PageMode.Edit
+            ? pgettext("Joseki view title: edit mode", "Edit Joseki")
+            : mode === PageMode.Admin
+              ? pgettext("Joseki view title: admin mode", "Admin")
+              : pgettext("Joseki view title: default explore mode", "Explore Joseki");
 
     function openMoreActions(event?: React.MouseEvent<HTMLButtonElement>) {
         if (!event) {
@@ -1393,6 +1463,7 @@ export function Joseki(): React.ReactElement {
             controller={controller_ref.current!}
             className="Joseki"
             customSlider={renderMoveControls()}
+            header={joseki_header}
         >
             <KBShortcut shortcut="home" action={resetBoard} />
             <KBShortcut shortcut="left" action={backOneMoveKey} />
@@ -1402,6 +1473,7 @@ export function Joseki(): React.ReactElement {
                 id="joseki-filter"
                 type="takeover"
                 disabled={mode !== PageMode.Explore}
+                onToggle={set_filter_takeover_active}
                 icon={
                     <span className="joseki-tab-icon-with-badge">
                         <i className="fa fa-filter" />
@@ -1424,6 +1496,17 @@ export function Joseki(): React.ReactElement {
                     <p className="joseki-filter-hint">
                         {_("Tag “Joseki: Done” narrows results to verified joseki sequences.")}
                     </p>
+                    <div className="joseki-filter-actions">
+                        <button
+                            className="joseki-filter-apply primary"
+                            onClick={() => gobanViewRef.current?.setActiveTakeover(null)}
+                        >
+                            {pgettext(
+                                "Joseki filter: dismiss the filter panel (filter changes apply automatically as you make them)",
+                                "Apply",
+                            )}
+                        </button>
+                    </div>
                 </div>
             </GobanView.Tab>
 
@@ -1431,6 +1514,7 @@ export function Joseki(): React.ReactElement {
                 id="joseki-comments-toggle"
                 type="action"
                 active={show_comments}
+                disabled={mode === PageMode.Play}
                 icon={
                     <span className="joseki-tab-icon-with-badge">
                         <i className="fa fa-comment-o" />

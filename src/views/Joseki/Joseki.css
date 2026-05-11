@@ -39,22 +39,34 @@
         }
     }
 
-    .joseki-tenuki-info {
-        display: flex;
-        flex-wrap: wrap;
+    .Joseki-tenuki-button {
+        flex-shrink: 0;
+        padding: 0.15rem 0.6rem;
+        height: var(--thumb-size);
+        display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        padding-top: 0.25rem;
-        font-size: 0.9rem;
-    }
+        font-size: 0.8rem;
+        line-height: 1;
+        border-left-width: 0.25rem;
+        border-left-style: solid;
 
-    .joseki-tenuki-message {
-        color: var(--fg);
+        &.tenuki-border-gray {
+            border-left-color: color-mix(in srgb, var(--shade2) 50%, transparent);
+        }
+        &.tenuki-border-green {
+            border-left-color: #00830080;
+        }
+        &.tenuki-border-yellow {
+            border-left-color: #c79a0080;
+        }
+        &.tenuki-border-red {
+            border-left-color: #b3001e80;
+        }
     }
 
     .Joseki-throbber-overlay {
         position: absolute;
-        right: 0.5rem;
+        right: 0;
         top: 50%;
         transform: translateY(-50%);
         pointer-events: none;
@@ -114,6 +126,13 @@
         font-size: 0.85rem;
         color: var(--shade1);
         font-style: italic;
+    }
+
+    .joseki-filter-actions {
+        margin-top: auto;
+        display: flex;
+        justify-content: flex-end;
+        padding-top: 0.5rem;
     }
 
     /* ---- Empty/root onboarding hint ---- */
@@ -393,14 +412,6 @@
         min-height: 0;
         overflow-y: auto;
 
-        .play-prompt {
-            font-size: 1.5rem;
-            font-weight: 600;
-            text-align: center;
-            padding: 1.5rem 0.5rem;
-            color: var(--fg);
-        }
-
         .fa {
             margin-right: 0.4rem;
             min-width: 1.25rem;
@@ -414,6 +425,15 @@
         .fa-times {
             color: red;
         }
+    }
+
+    .play-prompt {
+        flex-shrink: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        text-align: center;
+        padding: 1rem 0.5rem;
+        color: var(--fg);
     }
 
     /* ---- Edit pane ---- */
