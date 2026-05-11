@@ -166,13 +166,6 @@ export function Joseki(): React.ReactElement {
 
     const gobanViewRef = React.useRef<GobanViewRef>(null);
     const moreActionsPopoverRef = React.useRef<PopOver | null>(null);
-    // Tracks how many history.forward() steps are available because the
-    // user just walked back via the move bar (or browser back). Reset to
-    // zero whenever a new push happens (forward exploration). Browser-
-    // initiated forward/back can desync this slightly; the worst case is
-    // the move-bar forward briefly falls back to placing a best_move
-    // instead of replaying the redo entry.
-    const forward_history_count = React.useRef(0);
     const goban_div = React.useMemo(() => {
         const div = document.createElement("div");
         div.className = "Goban";
@@ -331,20 +324,17 @@ export function Joseki(): React.ReactElement {
             renderCurrentJosekiPosition();
         }
 
-        // Keep the URL aligned with the loaded position. Push for forward
-        // navigation (stone clicks from a /joseki/<id> URL move on to a
-        // new /joseki/<id>) so each move gets its own history entry; replace
-        // for the initial /joseki → /joseki/<root> settle; skip when the
-        // URL already matches (popstate-driven loads).
+        // Keep the URL aligned with the loaded position via replaceState
+        // only — joseki is a sub-app with its own internal navigation
+        // (move_trace / trace_index), so we deliberately do not pollute
+        // the browser's history with one entry per stone click. Browser
+        // back leaves the joseki view, which is the expected behavior;
+        // in-page navigation goes through backOneMove / forwardOneMove
+        // and never touches window.history.
         const new_url = "/joseki/" + position.node_id;
         const old_pathname = window.location.pathname;
         if (old_pathname !== new_url) {
-            if (old_pathname.startsWith("/joseki/")) {
-                window.history.pushState({}, "", new_url);
-                forward_history_count.current = 0;
-            } else {
-                window.history.replaceState({}, "", new_url);
-            }
+            window.history.replaceState({}, "", new_url);
         }
     }
 
@@ -555,23 +545,29 @@ export function Joseki(): React.ReactElement {
                 set_move_string(ms); // trigger re-render to clear highlight class
                 goban_ref.current!.enableStonePlacement();
             } else if (S.current.current_move_category !== "new") {
-                const stepping_back_to = previous_position_ref.current.node_id as string;
-                fetchNextMovesFor(stepping_back_to);
-                trace_index.current--;
-                if (trace_index.current === -1) {
-                    trace_index.current = 0;
-                    move_trace.current.unshift(stepping_back_to);
-                } else if (
-                    move_trace.current[trace_index.current] !== stepping_back_to &&
-                    move_trace.current[trace_index.current] !== "root"
-                ) {
-                    console.log(
-                        "** whoa, move trace out of sync",
-                        move_trace.current[trace_index.current],
-                        stepping_back_to,
-                    );
-                    trace_index.current = 0;
-                    move_trace.current = [stepping_back_to];
+                const parent_node_id = previous_position_ref.current?.node_id;
+                if (parent_node_id === undefined) {
+                    // At the root of the joseki tree; nothing to back to.
+                    goban_ref.current!.enableStonePlacement();
+                } else {
+                    const stepping_back_to = parent_node_id + "";
+                    fetchNextMovesFor(stepping_back_to);
+                    trace_index.current--;
+                    if (trace_index.current === -1) {
+                        trace_index.current = 0;
+                        move_trace.current.unshift(stepping_back_to);
+                    } else if (
+                        move_trace.current[trace_index.current] !== stepping_back_to &&
+                        move_trace.current[trace_index.current] !== "root"
+                    ) {
+                        console.log(
+                            "** whoa, move trace out of sync",
+                            move_trace.current[trace_index.current],
+                            stepping_back_to,
+                        );
+                        trace_index.current = 0;
+                        move_trace.current = [stepping_back_to];
+                    }
                 }
             } else {
                 const play = ".root." + ms.replace(/,/g, ".");
@@ -808,11 +804,24 @@ export function Joseki(): React.ReactElement {
         if (S.current.throb) {
             return;
         }
-        // Drive back through the browser history. Each forward move was
-        // pushed by processNewJosekiPosition, so popstate / location effect
-        // takes care of reloading the previous position.
-        forward_history_count.current++;
-        window.history.back();
+        if (back_stepping.current) {
+            return;
+        }
+        const goban = goban_ref.current;
+        if (!goban || goban.engine.cur_move.move_number === 0) {
+            return;
+        }
+        // Step back on the goban's own move tree; the back_stepping flag
+        // routes the resulting onBoardUpdate into processPlacement's
+        // recovery branch, which fetches the parent's metadata and adjusts
+        // trace_index / move_trace. We deliberately do NOT touch
+        // window.history here — the move bar is in-view navigation only and
+        // must never escape the joseki view. (history.back() from a deep-
+        // linked /joseki/<id> would otherwise jump back to whatever
+        // non-joseki page the user came from, which is the "back sent me
+        // home" symptom.)
+        back_stepping.current = true;
+        goban.showPrevious();
     }
 
     function backOneMoveKey() {
@@ -825,33 +834,18 @@ export function Joseki(): React.ReactElement {
         if (S.current.throb) {
             return;
         }
-        // Redo a back via browser history when one is available.
-        if (forward_history_count.current > 0) {
-            forward_history_count.current--;
-            window.history.forward();
+        // Forward only retraces a branch the user actually walked — we
+        // deliberately do not auto-place a "best next move" when at the
+        // leaf of the trace.
+        if (trace_index.current >= move_trace.current.length - 1) {
             return;
         }
-        // At the leaf of explored history — pick the best next move and
-        // place it. processNewJosekiPosition will push the resulting URL.
-        if (next_moves_ref.current.length > 0) {
-            const best_move = next_moves_ref.current.reduce(
-                (
-                    prev_move: { [key: string]: string | number },
-                    next_move: { [key: string]: string | number },
-                ) =>
-                    (prev_move.variation_label as string) > (next_move.variation_label as string) &&
-                    next_move.placement !== "pass"
-                        ? next_move
-                        : prev_move,
-            );
-            doPlacement(best_move.placement as string);
+        const target_id = move_trace.current[trace_index.current + 1];
+        const cached = cached_positions_ref.current[target_id];
+        if (!cached || typeof cached.placement !== "string") {
+            return;
         }
-    }
-
-    function forwardOneMoveKey() {
-        if (S.current.mode !== PageMode.Play) {
-            forwardOneMove();
-        }
+        doPlacement(cached.placement);
     }
 
     function doPlacement(placement: string) {
@@ -865,6 +859,12 @@ export function Joseki(): React.ReactElement {
                 console.warn(e);
             }
             on_board_update_ref.current();
+        }
+    }
+
+    function forwardOneMoveKey() {
+        if (S.current.mode !== PageMode.Play) {
+            forwardOneMove();
         }
     }
 
@@ -1080,9 +1080,12 @@ export function Joseki(): React.ReactElement {
         }
         // Mirror the move-bar buttons' direction gating: Play mode
         // restricts navigation to back-after-mistake and never forward.
-        // Without this guard the slider could drag past those rules.
-        const can_step_back = mode !== PageMode.Play || played_mistake.current;
-        const can_step_fwd = mode !== PageMode.Play;
+        // Also gate on what backOneMove / forwardOneMove will actually
+        // do — otherwise the slider can drag to an unreachable target
+        // and park indefinitely calling a no-op handler.
+        const can_step_back = (mode !== PageMode.Play || played_mistake.current) && current > 0;
+        const can_step_fwd =
+            mode !== PageMode.Play && trace_index.current < move_trace.current.length - 1;
         if (current < slider_target) {
             if (can_step_fwd) {
                 forwardOneMove();
@@ -1127,12 +1130,16 @@ export function Joseki(): React.ReactElement {
     function renderMoveControls() {
         const goban = goban_ref.current;
         const move_number = goban?.engine.cur_move.move_number ?? 0;
-        const knob_max = Math.max(move_number, move_trace.current.length - 1, 1);
+        // Slider range covers the visited branch: 0 (root) → current
+        // move_number → current + (trace entries forward of current). At a
+        // freshly loaded root with no trace this collapses to 0, making the
+        // <input> degenerate (un-draggable) — the CSS denominator already
+        // applies its own Math.max(..., 1) so --move-frac stays defined.
+        const knob_max = move_number + (move_trace.current.length - 1 - trace_index.current);
         const at_start = move_number === 0;
-        const can_back = mode !== PageMode.Play || played_mistake.current;
+        const can_back = (mode !== PageMode.Play || played_mistake.current) && move_number > 0;
         const can_forward =
-            mode !== PageMode.Play &&
-            (next_moves_ref.current.length > 0 || forward_history_count.current > 0);
+            mode !== PageMode.Play && trace_index.current < move_trace.current.length - 1;
 
         return (
             <div
@@ -1169,9 +1176,9 @@ export function Joseki(): React.ReactElement {
                         className="MoveNumberSlider-input"
                         type="range"
                         min={0}
-                        max={Math.max(knob_max, 1)}
+                        max={knob_max}
                         value={slider_target ?? move_number}
-                        disabled={mode === PageMode.Play}
+                        disabled={mode === PageMode.Play || knob_max === 0}
                         onChange={(e) => {
                             const v = parseInt(e.target.value, 10);
                             if (!isNaN(v)) {
