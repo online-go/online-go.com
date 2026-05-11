@@ -70,18 +70,3 @@
         }
     }
 }
-
-.JosekiActionsPanel-count {
-    flex-shrink: 0;
-    min-width: 1.1rem;
-    height: 1.1rem;
-    padding: 0 0.3rem;
-    border-radius: 0.55rem;
-    background: var(--primary);
-    color: var(--colored-background-fg);
-    font-size: 0.7rem;
-    line-height: 1.1rem;
-    font-variant-numeric: tabular-nums;
-    font-weight: 600;
-    text-align: center;
-}

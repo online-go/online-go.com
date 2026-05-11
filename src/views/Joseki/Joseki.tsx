@@ -162,6 +162,8 @@ export function Joseki(): React.ReactElement {
 
     const [share_confirmed, set_share_confirmed] = React.useState(false);
 
+    const [show_comments, set_show_comments] = React.useState(false);
+
     const gobanViewRef = React.useRef<GobanViewRef>(null);
     const moreActionsPopoverRef = React.useRef<PopOver | null>(null);
     // Tracks how many history.forward() steps are available because the
@@ -1018,7 +1020,7 @@ export function Joseki(): React.ReactElement {
                     saved_filter
                         ? saved_filter
                         : {
-                              tags: joseki_tags_ref.current ? [joseki_tags_ref.current[0]] : [],
+                              tags: [],
                               contributor: undefined,
                               source: undefined,
                           },
@@ -1047,13 +1049,8 @@ export function Joseki(): React.ReactElement {
     }, [location, pos]);
 
     React.useEffect(() => {
-        if (
-            show_comments_requested.current &&
-            gobanViewRef.current &&
-            current_node_id &&
-            current_node_id !== "root"
-        ) {
-            gobanViewRef.current.setActiveTakeover("joseki-comments");
+        if (show_comments_requested.current && current_node_id && current_node_id !== "root") {
+            set_show_comments(true);
             show_comments_requested.current = false;
         }
     }, [current_node_id]);
@@ -1342,7 +1339,7 @@ export function Joseki(): React.ReactElement {
         ? _("Edit (database is locked)")
         : current_move_category === "new" && mode === PageMode.Explore
           ? _("Save new position")
-          : _("Edit position");
+          : _("Edit");
 
     function openMoreActions(event?: React.MouseEvent<HTMLButtonElement>) {
         if (!event) {
@@ -1366,8 +1363,6 @@ export function Joseki(): React.ReactElement {
                     user_can_administer={user_can_administer}
                     db_locked_down={db_locked_down}
                     edit_label={edit_label}
-                    comment_count={current_comment_count}
-                    onOpenComments={open("joseki-comments")}
                     onOpenChanges={open("joseki-changes")}
                     onOpenEdit={open("joseki-edit")}
                     onOpenAdmin={open("joseki-admin")}
@@ -1399,6 +1394,7 @@ export function Joseki(): React.ReactElement {
             <GobanView.Tab
                 id="joseki-filter"
                 type="takeover"
+                disabled={mode !== PageMode.Explore}
                 icon={
                     <span className="joseki-tab-icon-with-badge">
                         <i className="fa fa-filter" />
@@ -1425,17 +1421,20 @@ export function Joseki(): React.ReactElement {
             </GobanView.Tab>
 
             <GobanView.Tab
-                id="joseki-comments"
-                type="takeover"
-                icon="comment-o"
+                id="joseki-comments-toggle"
+                type="action"
+                active={show_comments}
+                icon={
+                    <span className="joseki-tab-icon-with-badge">
+                        <i className="fa fa-comment-o" />
+                        {!!current_comment_count && (
+                            <span className="joseki-tab-badge">{current_comment_count}</span>
+                        )}
+                    </span>
+                }
                 title={_("Comments")}
-                hideFromBar
-            >
-                <CommentsPanel
-                    position_id={current_node_id as string}
-                    can_comment={user_can_comment}
-                />
-            </GobanView.Tab>
+                onClick={() => set_show_comments((s) => !s)}
+            />
 
             <GobanView.Tab
                 id="joseki-changes"
@@ -1525,6 +1524,14 @@ export function Joseki(): React.ReactElement {
 
             <GobanView.Tab id="joseki-explore" type="always">
                 {renderExplorePane()}
+                {show_comments && current_node_id && current_node_id !== "root" && (
+                    <div className="joseki-inline-comments">
+                        <CommentsPanel
+                            position_id={current_node_id}
+                            can_comment={user_can_comment}
+                        />
+                    </div>
+                )}
                 {renderPositionDetails()}
             </GobanView.Tab>
         </GobanView>
