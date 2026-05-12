@@ -57,7 +57,7 @@ import { KibitzUserAvatar } from "./KibitzUserAvatar";
 import {
     getKibitzBlockedRoomFollowupMessage,
     getKibitzBlockedRoomMessage,
-} from "./kibitzAnalysisPolicyCopy";
+} from "./kibitzAnalysisPolicyText";
 import { useCurrentKibitzUser } from "./useCurrentKibitzUser";
 import "./Kibitz.css";
 

@@ -29,7 +29,7 @@ import {
     getKibitzAnalysisDisabledSpectatorMessage,
     getKibitzPickerFailedChangeMessage,
     getKibitzPickerFailedCreateMessage,
-} from "./kibitzAnalysisPolicyCopy";
+} from "./kibitzAnalysisPolicyText";
 import { parseGameId } from "./parseGameId";
 import { useCurrentKibitzUser } from "./useCurrentKibitzUser";
 import "./KibitzGamePickerOverlay.css";
