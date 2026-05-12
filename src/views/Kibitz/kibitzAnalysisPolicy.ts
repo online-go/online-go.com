@@ -52,7 +52,7 @@ export type KibitzAccessPolicyResult =
       }
     | {
           allowed: false;
-          reason: "own-active-analysis-disabled-game";
+          reason: "own-active-game";
       };
 
 function getId(value: unknown): number | null {
@@ -83,22 +83,25 @@ export function getCurrentKibitzUser(): KibitzAnalysisUser | null {
     return (data.get("config.user") ?? data.get("user") ?? null) as KibitzAnalysisUser | null;
 }
 
-export function isActiveAnalysisDisabledGame(
-    game: KibitzAnalysisGameLike | null | undefined,
-): boolean {
+export function isActiveGame(game: KibitzAnalysisGameLike | null | undefined): boolean {
     if (!game) {
         return false;
     }
+    return game.ended == null && game.live !== false;
+}
 
-    const active = game.ended == null && game.live !== false;
-    const analysisDisabled = Boolean(
-        game.analysis_disabled ||
-        game.disable_analysis ||
-        game.gamedata?.analysis_disabled ||
-        game.gamedata?.disable_analysis,
+export function isActiveAnalysisDisabledGame(
+    game: KibitzAnalysisGameLike | null | undefined,
+): boolean {
+    if (!isActiveGame(game)) {
+        return false;
+    }
+    return Boolean(
+        game!.analysis_disabled ||
+        game!.disable_analysis ||
+        game!.gamedata?.analysis_disabled ||
+        game!.gamedata?.disable_analysis,
     );
-
-    return active && analysisDisabled;
 }
 
 export function isCurrentUserGamePlayer(
@@ -124,21 +127,21 @@ export function getKibitzAccessPolicyForUser(
         return { allowed: true };
     }
 
-    if (!isActiveAnalysisDisabledGame(game)) {
-        return { allowed: true };
-    }
-
-    if (isCurrentUserGamePlayer(user, game)) {
+    if (isActiveGame(game) && isCurrentUserGamePlayer(user, game)) {
         return {
             allowed: false,
-            reason: "own-active-analysis-disabled-game",
+            reason: "own-active-game",
         };
     }
 
-    return {
-        allowed: true,
-        reason: "analysis-disabled-spectator",
-    };
+    if (isActiveAnalysisDisabledGame(game)) {
+        return {
+            allowed: true,
+            reason: "analysis-disabled-spectator",
+        };
+    }
+
+    return { allowed: true };
 }
 
 export function isKibitzAccessBlockedForUser(

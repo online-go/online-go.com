@@ -188,7 +188,7 @@ export function KibitzGamePickerOverlay({
         ? getKibitzAccessPolicyForUser(currentUser, selectedGame.details)
         : { allowed: true as const };
     const blockedMessage =
-        !accessPolicy.allowed && accessPolicy.reason === "own-active-analysis-disabled-game"
+        !accessPolicy.allowed && accessPolicy.reason === "own-active-game"
             ? getKibitzAccessBlockedMessage()
             : null;
     const selectionErrorMessage = errorMessage ?? blockedMessage;
