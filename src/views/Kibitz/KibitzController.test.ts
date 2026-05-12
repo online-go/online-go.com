@@ -178,4 +178,58 @@ describe("KibitzController room ordering", () => {
 
         expect(controller.rooms.map((room) => room.id)).toEqual(["room-a", "room-c", "room-new"]);
     });
+
+    it("deduplicates overlapping room directory refreshes", async () => {
+        let resolveDirectory: (value: unknown[]) => void = () => undefined;
+        const directoryPromise = new Promise<unknown[]>((resolve) => {
+            resolveDirectory = resolve;
+        });
+
+        mockedGet.mockReturnValueOnce(directoryPromise);
+
+        const controller = new KibitzController();
+        const firstRefresh = controller.refreshRoomDirectory();
+        const secondRefresh = controller.refreshRoomDirectory();
+
+        expect(firstRefresh).toBe(secondRefresh);
+        expect(mockedGet).toHaveBeenCalledTimes(1);
+
+        resolveDirectory([]);
+        await firstRefresh;
+        await flushPromises();
+
+        mockedGet.mockResolvedValueOnce([]);
+        const nextRefresh = controller.refreshRoomDirectory();
+
+        expect(nextRefresh).not.toBe(firstRefresh);
+        await nextRefresh;
+        expect(mockedGet).toHaveBeenCalledTimes(2);
+    });
+
+    it("refreshes the room directory when the directory refresh push arrives", async () => {
+        mockedGet.mockResolvedValueOnce([]);
+
+        const controller = new KibitzController();
+        await flushPromises();
+
+        mockedGet.mockResolvedValueOnce([
+            {
+                id: "room-refresh",
+                channel: "channel-refresh",
+                title: "Room Refresh",
+                kind: "preset",
+                description: null,
+                current_game_id: null,
+                creator_id: null,
+                created_at: "2026-05-01T10:00:00Z",
+                last_activity_at: "2026-05-01T10:00:00Z",
+                viewer_count: 7,
+            },
+        ]);
+
+        pushHandlers["rooms-refresh"]?.({});
+        await flushPromises();
+
+        expect(controller.rooms.map((room) => room.id)).toEqual(["room-refresh"]);
+    });
 });

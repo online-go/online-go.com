@@ -1026,8 +1026,16 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     );
 
     const onToggleMobileRooms = React.useCallback(() => {
-        setMobileOverlayMode((mode) => (mode === "rooms" ? null : "rooms"));
-    }, []);
+        setMobileOverlayMode((mode) => {
+            const nextMode = mode === "rooms" ? null : "rooms";
+
+            if (nextMode === "rooms") {
+                void controller.refreshRoomDirectory();
+            }
+
+            return nextMode;
+        });
+    }, [controller]);
 
     const onToggleMobilePresence = React.useCallback(() => {
         setMobileOverlayMode((mode) => (mode === "presence" ? null : "presence"));

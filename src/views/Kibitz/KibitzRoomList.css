@@ -13,9 +13,9 @@
     .KibitzRoomList-titleRow {
         align-items: stretch;
         box-sizing: border-box;
-        display: flex;
+        display: grid;
         gap: 0.5rem;
-        justify-content: space-between;
+        grid-template-columns: minmax(4.5rem, 1fr) auto;
         min-height: var(--kibitz-header-block-height);
         min-width: 0;
         padding: 0.5rem 0.75rem 0.55rem;
@@ -41,6 +41,7 @@
         gap: 0.35rem;
         justify-content: flex-end;
         max-width: 100%;
+        min-width: 0;
     }
 
     .KibitzRoomList-title {
@@ -66,7 +67,7 @@
         overflow-x: hidden;
         overflow-y: auto;
         scrollbar-gutter: stable;
-        padding-inline: 0.2rem;
+        padding-inline: 0.1rem;
         padding-top: 0.5rem;
         direction: rtl;
     }
@@ -86,7 +87,7 @@
         min-width: 0;
         min-height: 4.2rem;
         overflow: hidden;
-        padding: 0.8rem 0.7rem 0.8rem 0.88rem;
+        padding: 0.8rem 0.7rem 0.8rem 0.8rem;
         position: relative;
         text-align: left;
         transition:
@@ -228,7 +229,7 @@
     .KibitzRoomList {
         .KibitzRoomList-titleRow {
             align-items: stretch;
-            flex-direction: column;
+            grid-template-columns: 1fr;
         }
 
         .KibitzRoomList-actions {

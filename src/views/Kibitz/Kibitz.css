@@ -422,20 +422,28 @@
             background: var(--shade2);
             color: var(--fg);
             display: inline-flex;
-            flex: 0 0 auto;
+            flex: 0 0 0.78rem;
             font-size: 0.42rem;
             height: 0.78rem;
             justify-content: center;
             line-height: 1;
+            max-height: 0.78rem;
+            max-width: 0.78rem;
             min-width: 0.78rem;
             overflow: hidden;
+            width: 0.78rem;
         }
 
         .mobile-room-header-player-avatar-image {
             display: block;
-            height: 100%;
+            flex: 0 0 auto;
+            height: 0.78rem !important;
+            max-height: 0.78rem;
+            max-width: 0.78rem;
+            min-height: 0;
+            min-width: 0;
             object-fit: cover;
-            width: 100%;
+            width: 0.78rem !important;
         }
 
         .mobile-room-header-player .Player {

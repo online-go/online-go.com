@@ -373,6 +373,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     private _game_lookup_cache = new Map<number, KibitzWatchedGame>();
     private _game_lookup_inflight = new Map<number, Promise<KibitzWatchedGame | undefined>>();
     private _room_card_game_requests = new Map<string, number>();
+    private _refresh_rooms_promise: Promise<void> | null = null;
     private _active_room: KibitzRoom | null = null;
     private _stream: KibitzStreamItem[] = [];
     private _proposals: KibitzProposal[] = [];
@@ -458,11 +459,12 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this._directory_handlers.push(
             push_manager.on("room-created", this.onRoomCreated),
             push_manager.on("room-removed", this.onRoomRemoved),
+            push_manager.on("rooms-refresh", this.onRoomsRefresh),
             push_manager.on("viewer-count-changed", this.onViewerCountChanged),
         );
         push_manager.subscribe(DIRECTORY_CHANNEL);
 
-        void this.refreshRooms();
+        void this.refreshRoomDirectory();
     }
 
     public destroy(): void {
@@ -519,6 +521,18 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     public setDebug(state: KibitzDebugState): void {
         this._debug = state;
         this.emit("debug-changed", this._debug);
+    }
+
+    public refreshRoomDirectory(): Promise<void> {
+        if (this._refresh_rooms_promise) {
+            return this._refresh_rooms_promise;
+        }
+
+        this._refresh_rooms_promise = this.refreshRooms().finally(() => {
+            this._refresh_rooms_promise = null;
+        });
+
+        return this._refresh_rooms_promise;
     }
 
     private clearAccessBlocked(): void {
@@ -718,6 +732,10 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         if (this._access_blocked?.room_id === id) {
             this.clearAccessBlocked();
         }
+    };
+
+    private onRoomsRefresh = () => {
+        void this.refreshRoomDirectory();
     };
 
     private onBoardChanged = (incoming: BackendKibitzRoom) => {
