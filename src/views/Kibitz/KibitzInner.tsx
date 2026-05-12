@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Player } from "@/components/Player";
 import { GobanController } from "@/lib/GobanController";
 import { GobanControllerContext } from "@/components/GobanView";
 import { toast } from "@/lib/toast";
@@ -27,6 +28,7 @@ import type {
     KibitzProposal,
     KibitzRoom,
     KibitzRoomSummary,
+    KibitzRoomUser,
     KibitzSecondaryPaneState,
     KibitzStreamItem,
     KibitzVariationSummary,
@@ -52,6 +54,7 @@ import { KibitzGamePickerOverlay } from "./KibitzGamePickerOverlay";
 import { KibitzMobileGamePicker } from "./KibitzMobileGamePicker";
 import { KibitzRoomSettingsPopover } from "./KibitzRoomSettingsPopover";
 import { getKibitzAccessPolicyForUser, isKibitzAccessBlockedForUser } from "./kibitzAnalysisPolicy";
+import { KibitzUserAvatar } from "./KibitzUserAvatar";
 import {
     getKibitzBlockedRoomFollowupMessage,
     getKibitzBlockedRoomMessage,
@@ -97,7 +100,7 @@ function clampMobileSplitRatio(value: number): number {
 
 function formatMobileMatchup(
     room: KibitzRoom | KibitzRoomSummary | null | undefined,
-): { firstPlayer: string; secondPlayer: string } | null {
+): { black: KibitzRoomUser; white: KibitzRoomUser } | null {
     const game = room?.current_game;
 
     if (!game) {
@@ -105,9 +108,30 @@ function formatMobileMatchup(
     }
 
     return {
-        firstPlayer: game.black.username,
-        secondPlayer: game.white.username,
+        black: game.black,
+        white: game.white,
     };
+}
+
+function renderMobileHeaderPlayer(
+    user: KibitzRoomUser,
+    stoneColor: "black" | "white",
+): React.ReactElement {
+    return (
+        <span className="mobile-room-header-player">
+            <span
+                className={`mobile-room-header-player-stone mobile-room-header-player-stone-${stoneColor}`}
+                aria-hidden="true"
+            />
+            <KibitzUserAvatar
+                user={user}
+                size={16}
+                className="mobile-room-header-player-avatar"
+                iconClassName="mobile-room-header-player-avatar-image"
+            />
+            <Player user={user} flag rank nolink noextracontrols />
+        </span>
+    );
 }
 
 function mapGameChatLineToVariation(
@@ -1260,7 +1284,10 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                     {mobileMatchup ? (
                                         <div className="mobile-room-header-matchup">
                                             <span className="mobile-room-header-matchup-first">
-                                                {mobileMatchup.firstPlayer}{" "}
+                                                {renderMobileHeaderPlayer(
+                                                    mobileMatchup.black,
+                                                    "black",
+                                                )}
                                                 <span className="mobile-room-header-matchup-black-dot">
                                                     ●
                                                 </span>
@@ -1273,7 +1300,10 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                     )}
                                                 </span>{" "}
                                                 <span className="mobile-room-header-matchup-second-name">
-                                                    {mobileMatchup.secondPlayer}
+                                                    {renderMobileHeaderPlayer(
+                                                        mobileMatchup.white,
+                                                        "white",
+                                                    )}
                                                 </span>{" "}
                                                 <span className="mobile-room-header-matchup-white-dot">
                                                     ○

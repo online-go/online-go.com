@@ -351,10 +351,10 @@
             flex-direction: column;
             left: 50%;
             color: var(--text-color) !important;
-            font-size: 0.74rem;
+            font-size: 0.66rem;
             gap: 0.08rem;
             line-height: 1.05;
-            max-width: min(11rem, calc(100vw - 9.5rem));
+            max-width: min(12rem, calc(100vw - 9.5rem));
             min-width: 0;
             overflow: hidden;
             pointer-events: none;
@@ -368,6 +368,9 @@
 
         .mobile-room-header-matchup-first,
         .mobile-room-header-matchup-second {
+            align-items: center;
+            display: inline-flex;
+            justify-content: center;
             min-width: 0;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -379,18 +382,90 @@
         }
 
         .mobile-room-header-matchup-vs {
+            flex: 0 0 auto;
             font-weight: 400;
+            margin-right: 0.18rem;
         }
 
         .mobile-room-header-matchup-second-name {
+            align-items: center;
+            display: inline-flex;
+            min-width: 0;
             font-weight: 700;
+        }
+
+        .mobile-room-header-player {
+            align-items: center;
+            display: inline-flex;
+            gap: 0.16rem;
+            min-width: 0;
+        }
+
+        .mobile-room-header-player-stone {
+            border-radius: 50%;
+            box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-color) 18%, transparent);
+            flex: 0 0 auto;
+            height: 0.44rem;
+            width: 0.44rem;
+        }
+
+        .mobile-room-header-player-stone-black {
+            background: #111;
+        }
+
+        .mobile-room-header-player-stone-white {
+            background: #fff;
+        }
+
+        .mobile-room-header-player-avatar {
+            align-items: center;
+            background: var(--shade2);
+            color: var(--fg);
+            display: inline-flex;
+            flex: 0 0 auto;
+            font-size: 0.42rem;
+            height: 0.78rem;
+            justify-content: center;
+            line-height: 1;
+            min-width: 0.78rem;
+            overflow: hidden;
+        }
+
+        .mobile-room-header-player-avatar-image {
+            display: block;
+            height: 100%;
+            object-fit: cover;
+            width: 100%;
+        }
+
+        .mobile-room-header-player .Player {
+            align-items: center;
+            display: inline-flex !important;
+            font-size: 0.66rem;
+            line-height: 1;
+            min-width: 0;
+        }
+
+        .mobile-room-header-player .flag {
+            font-size: 0.76rem;
+            margin-left: 0.04rem;
+            margin-right: 0.12rem;
+        }
+
+        .mobile-room-header-player .Player-username {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .mobile-room-header-player .Player-rank {
+            font-size: 0.86em;
+            margin-left: 0.12rem;
         }
 
         .mobile-room-header-matchup-black-dot,
         .mobile-room-header-matchup-white-dot {
-            font-size: 0.78em;
-            line-height: 1;
-            font-weight: 700;
+            display: none;
         }
 
         .mobile-room-header-matchup-black-dot {
