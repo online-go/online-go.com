@@ -727,9 +727,30 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.applyBackendRoomUpdate(incoming);
         if (this._active_room?.id === incoming.id) {
             const summary = mapBackendRoomToSummary(incoming, this._active_room);
+            // Clear pending preset state only when the board change matches the
+            // pending game. Belt-and-braces against unrelated room-updated events
+            // (which delegate to this handler) accidentally resolving the pending
+            // state.
+            const preset = this._active_room?.preset;
+            const updatedPreset =
+                preset &&
+                preset.selection_status === "change_pending" &&
+                preset.pending_game_id !== null &&
+                incoming.current_game_id === preset.pending_game_id
+                    ? {
+                          ...preset,
+                          selection_status: "watching" as const,
+                          pending_game_id: null,
+                          change_effective_at: null,
+                      }
+                    : preset;
             this.setActiveRoom({
                 ...this._active_room,
                 ...summary,
+                // Backend's board-changed payload doesn't include the preset block,
+                // so this override is the authoritative source for the resolved
+                // preset state — not a bug, even though it shadows summary.preset.
+                preset: updatedPreset,
                 current_game:
                     incoming.current_game_id == null ? undefined : this._active_room.current_game,
             });
@@ -742,6 +763,52 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         if (incoming.current_game_id) {
             void this.hydrateRoomCardGame(incoming.id, incoming.current_game_id);
         }
+    };
+
+    private onGameChangePending = (payload: {
+        room_id?: string;
+        pending_game_id?: number;
+        change_effective_at?: string;
+    }) => {
+        if (!payload?.room_id || !this._active_room || this._active_room.id !== payload.room_id) {
+            return;
+        }
+        if (typeof payload.pending_game_id !== "number" || !payload.change_effective_at) {
+            return;
+        }
+        const existing = this._active_room.preset;
+        if (!existing) {
+            // Defensive: only preset rooms should ever receive this event.
+            return;
+        }
+        this.setActiveRoom({
+            ...this._active_room,
+            preset: {
+                ...existing,
+                selection_status: "change_pending",
+                pending_game_id: payload.pending_game_id,
+                change_effective_at: payload.change_effective_at,
+            },
+        });
+    };
+
+    private onGameChangeCancelled = (payload: { room_id?: string }) => {
+        if (!payload?.room_id || !this._active_room || this._active_room.id !== payload.room_id) {
+            return;
+        }
+        const existing = this._active_room.preset;
+        if (!existing) {
+            return;
+        }
+        this.setActiveRoom({
+            ...this._active_room,
+            preset: {
+                ...existing,
+                selection_status: "watching",
+                pending_game_id: null,
+                change_effective_at: null,
+            },
+        });
     };
 
     private onRoomUpdated = (incoming: BackendKibitzRoom) => {
@@ -758,6 +825,8 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this._active_room_handlers.push(
             push_manager.on("board-changed", this.onBoardChanged),
             push_manager.on("room-updated", this.onRoomUpdated),
+            push_manager.on("room-game-change-pending", this.onGameChangePending),
+            push_manager.on("room-game-change-cancelled", this.onGameChangeCancelled),
         );
         push_manager.subscribe(channel);
         this._active_room_channel = channel;
