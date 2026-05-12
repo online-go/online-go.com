@@ -18,6 +18,7 @@
 import * as React from "react";
 import type { MoveTree } from "goban";
 import { Resizable } from "@/components/Resizable";
+import { Player } from "@/components/Player";
 import { GobanController } from "@/lib/GobanController";
 import { close_all_popovers, popover } from "@/lib/popover";
 import { alert } from "@/lib/swal_config";
@@ -172,6 +173,22 @@ function renderInlineAvatar(
             className={className}
             iconClassName={iconClassName}
         />
+    );
+}
+
+function renderRichPlayerBadge(
+    user: KibitzRoomUser | null | undefined,
+    fallbackName: string | undefined,
+): React.ReactElement {
+    return (
+        <div className="player-badge">
+            {renderInlineAvatar(user, "stage-avatar", "stage-avatar-image")}
+            {user ? (
+                <Player user={user} flag rank noextracontrols />
+            ) : (
+                <span className="player-name">{fallbackName}</span>
+            )}
+        </div>
     );
 }
 
@@ -1126,25 +1143,11 @@ export function KibitzRoomStage({
                         </div>
                     </div>
                     <div className="players player-pair">
-                        <div className="player-badge">
-                            {renderInlineAvatar(
-                                mainGame?.black,
-                                "stage-avatar",
-                                "stage-avatar-image",
-                            )}
-                            <span className="player-name">{displayedBlack}</span>
-                        </div>
+                        {renderRichPlayerBadge(mainGame?.black, displayedBlack)}
                         <span className="player-vs">
                             {pgettext("Versus label shown between players in kibitz", "vs")}
                         </span>
-                        <div className="player-badge">
-                            {renderInlineAvatar(
-                                mainGame?.white,
-                                "stage-avatar",
-                                "stage-avatar-image",
-                            )}
-                            <span className="player-name">{displayedWhite}</span>
-                        </div>
+                        {renderRichPlayerBadge(mainGame?.white, displayedWhite)}
                     </div>
                     <div className="board-subtitle">
                         {displayedTitle ??
@@ -1290,32 +1293,20 @@ export function KibitzRoomStage({
                                         <>
                                             {secondaryBoardGame ? (
                                                 <div className="players player-pair">
-                                                    <div className="player-badge">
-                                                        {renderInlineAvatar(
-                                                            secondaryBoardGame.black,
-                                                            "stage-avatar",
-                                                            "stage-avatar-image",
-                                                        )}
-                                                        <span className="player-name">
-                                                            {secondaryBoardGame.black.username}
-                                                        </span>
-                                                    </div>
+                                                    {renderRichPlayerBadge(
+                                                        secondaryBoardGame.black,
+                                                        secondaryBoardGame.black.username,
+                                                    )}
                                                     <span className="player-vs">
                                                         {pgettext(
                                                             "Versus label shown between players in kibitz",
                                                             "vs",
                                                         )}
                                                     </span>
-                                                    <div className="player-badge">
-                                                        {renderInlineAvatar(
-                                                            secondaryBoardGame.white,
-                                                            "stage-avatar",
-                                                            "stage-avatar-image",
-                                                        )}
-                                                        <span className="player-name">
-                                                            {secondaryBoardGame.white.username}
-                                                        </span>
-                                                    </div>
+                                                    {renderRichPlayerBadge(
+                                                        secondaryBoardGame.white,
+                                                        secondaryBoardGame.white.username,
+                                                    )}
                                                 </div>
                                             ) : null}
                                             <div className="board-meta-variation-title">
@@ -1328,32 +1319,20 @@ export function KibitzRoomStage({
                                     ) : (
                                         <>
                                             <div className="players player-pair">
-                                                <div className="player-badge">
-                                                    {renderInlineAvatar(
-                                                        previewGame?.black,
-                                                        "stage-avatar",
-                                                        "stage-avatar-image",
-                                                    )}
-                                                    <span className="player-name">
-                                                        {previewGame?.black.username ?? ""}
-                                                    </span>
-                                                </div>
+                                                {renderRichPlayerBadge(
+                                                    previewGame?.black,
+                                                    previewGame?.black.username,
+                                                )}
                                                 <span className="player-vs">
                                                     {pgettext(
                                                         "Versus label shown between players in kibitz",
                                                         "vs",
                                                     )}
                                                 </span>
-                                                <div className="player-badge">
-                                                    {renderInlineAvatar(
-                                                        previewGame?.white,
-                                                        "stage-avatar",
-                                                        "stage-avatar-image",
-                                                    )}
-                                                    <span className="player-name">
-                                                        {previewGame?.white.username ?? ""}
-                                                    </span>
-                                                </div>
+                                                {renderRichPlayerBadge(
+                                                    previewGame?.white,
+                                                    previewGame?.white.username,
+                                                )}
                                             </div>
                                             {previewGame?.title ?? ""}
                                         </>

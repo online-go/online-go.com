@@ -117,6 +117,24 @@
         white-space: nowrap;
     }
 
+    .room-stage-header .player-badge .Player {
+        align-items: center;
+        display: inline-flex;
+        min-width: 0;
+    }
+
+    .room-stage-header .player-badge > span {
+        align-items: center;
+        display: inline-flex;
+        min-width: 0;
+    }
+
+    .room-stage-header .player-badge .Player-username {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
     .room-stage-header .player-vs {
         color: var(--text-color-faded);
         font-size: 0.76rem;
@@ -709,6 +727,24 @@
 
             .player-name {
                 min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .player-badge .Player {
+                align-items: center;
+                display: inline-flex;
+                min-width: 0;
+            }
+
+            .player-badge > span {
+                align-items: center;
+                display: inline-flex;
+                min-width: 0;
+            }
+
+            .player-badge .Player-username {
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
