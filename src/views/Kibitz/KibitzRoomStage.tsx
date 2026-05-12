@@ -1150,11 +1150,23 @@ export function KibitzRoomStage({
                         {renderRichPlayerBadge(mainGame?.white, displayedWhite)}
                     </div>
                     <div className="board-subtitle">
-                        {displayedTitle ??
+                        {mainGame ? (
+                            <a
+                                className="board-subtitle-link"
+                                href={`/game/${mainGame.game_id}`}
+                                aria-label={pgettext(
+                                    "Aria label for opening the original game from Kibitz",
+                                    "Open original game",
+                                )}
+                            >
+                                {displayedTitle}
+                            </a>
+                        ) : (
                             pgettext(
                                 "Placeholder when no main game is loaded in a kibitz room",
                                 "No main board selected yet",
-                            )}
+                            )
+                        )}
                     </div>
                 </div>
             </div>

@@ -102,6 +102,16 @@
         white-space: nowrap;
     }
 
+    .room-stage-header .board-subtitle-link {
+        color: inherit;
+        display: inline-block;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: bottom;
+        white-space: nowrap;
+    }
+
     .room-stage-header .player-badge {
         align-items: center;
         display: inline-flex;
