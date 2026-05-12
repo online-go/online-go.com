@@ -66,6 +66,10 @@ interface GobanViewProps {
      *  class is added to the GobanView root so portrait CSS can leave room
      *  for it above the tab bar. */
     customSlider?: React.ReactNode;
+    /** Optional title bar rendered at the top of the sidebar (landscape) or
+     *  above the goban (portrait). Stays visible across takeovers so
+     *  consumers can use it to label the current view. */
+    header?: React.ReactNode;
     ref?: React.Ref<GobanViewRef>;
 }
 
@@ -106,6 +110,7 @@ function GobanViewComponent({
     children,
     defaultActiveTakeover,
     customSlider,
+    header,
     ref,
 }: GobanViewProps): React.ReactElement {
     const { tabs, others } = React.useMemo(() => partitionChildren(children), [children]);
@@ -302,6 +307,7 @@ function GobanViewComponent({
                             (className ? ` ${className}` : "")
                         }
                     >
+                        {header && <div className="GobanView-header">{header}</div>}
                         <div className="GobanView-center">
                             <GobanContainer onResize={onResize} />
                         </div>
@@ -334,6 +340,7 @@ function GobanViewComponent({
                         <GobanContainer onResize={onResize} />
                     </div>
                     <div className="GobanView-sidebar">
+                        {header && <div className="GobanView-header">{header}</div>}
                         <div className="GobanView-sidebar-content">
                             {inlinePanels.map((t) => renderPanel(t, isInlineVisible(t)))}
                             {takeoverPanels.map((t) => renderPanel(t, activeTakeover === t.id))}

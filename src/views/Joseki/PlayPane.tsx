@@ -61,12 +61,17 @@ export function PlayPane(props: PlayProps): React.ReactElement {
         }
     }, []);
 
+    const last_type = props.move_type_sequence[props.move_type_sequence.length - 1]?.type;
+    // It's the user's turn at the start of a session and after each
+    // computer reply. After a "good" the computer is about to move; after
+    // "bad" the user is in the mistake state; after "complete" the joseki
+    // is finished.
+    const show_your_move = props.move_type_sequence.length === 0 || last_type === "computer";
+
     return (
         <div className="play-columns">
+            {show_your_move && <div className="play-prompt">{_("Your move...")}</div>}
             <div className="play-dashboard">
-                {props.move_type_sequence.length === 0 && (
-                    <div className="play-prompt">{_("Your move...")}</div>
-                )}
                 {props.move_type_sequence.map((move_type, id) => (
                     <div key={id}>
                         {iconFor(move_type["type"])}
