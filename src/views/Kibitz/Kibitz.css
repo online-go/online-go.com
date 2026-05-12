@@ -113,6 +113,13 @@
     .Kibitz-mobile-panel-surface {
         display: none;
     }
+
+    .KibitzPresetEmptyState {
+        color: var(--text-color-faded);
+        font-size: 0.95rem;
+        padding: 2rem 1rem;
+        text-align: center;
+    }
 }
 
 [data-theme="dark"] .Kibitz {
