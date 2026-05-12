@@ -747,9 +747,10 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             this.setActiveRoom({
                 ...this._active_room,
                 ...summary,
-                // Backend's board-changed payload doesn't include the preset block,
-                // so this override is the authoritative source for the resolved
-                // preset state — not a bug, even though it shadows summary.preset.
+                // The condition above checks current_game_id matches pending_game_id,
+                // so this override only fires on actual board changes (not unrelated
+                // room-updated events that delegate to this handler). Belt-and-braces
+                // for the change-pending → watching transition.
                 preset: updatedPreset,
                 current_game:
                     incoming.current_game_id == null ? undefined : this._active_room.current_game,
