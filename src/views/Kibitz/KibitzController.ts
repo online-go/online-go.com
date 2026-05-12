@@ -450,6 +450,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this._directory_handlers.push(
             push_manager.on("room-created", this.onRoomCreated),
             push_manager.on("room-removed", this.onRoomRemoved),
+            push_manager.on("rooms-refresh", this.onRoomsRefresh),
             push_manager.on("viewer-count-changed", this.onViewerCountChanged),
         );
         push_manager.subscribe(DIRECTORY_CHANNEL);
@@ -722,6 +723,10 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         if (this._access_blocked?.room_id === id) {
             this.clearAccessBlocked();
         }
+    };
+
+    private onRoomsRefresh = () => {
+        void this.refreshRoomDirectory();
     };
 
     private onBoardChanged = (incoming: BackendKibitzRoom) => {

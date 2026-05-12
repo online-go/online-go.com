@@ -205,4 +205,31 @@ describe("KibitzController room ordering", () => {
         await nextRefresh;
         expect(mockedGet).toHaveBeenCalledTimes(2);
     });
+
+    it("refreshes the room directory when the directory refresh push arrives", async () => {
+        mockedGet.mockResolvedValueOnce([]);
+
+        const controller = new KibitzController();
+        await flushPromises();
+
+        mockedGet.mockResolvedValueOnce([
+            {
+                id: "room-refresh",
+                channel: "channel-refresh",
+                title: "Room Refresh",
+                kind: "preset",
+                description: null,
+                current_game_id: null,
+                creator_id: null,
+                created_at: "2026-05-01T10:00:00Z",
+                last_activity_at: "2026-05-01T10:00:00Z",
+                viewer_count: 7,
+            },
+        ]);
+
+        pushHandlers["rooms-refresh"]?.({});
+        await flushPromises();
+
+        expect(controller.rooms.map((room) => room.id)).toEqual(["room-refresh"]);
+    });
 });
