@@ -92,6 +92,7 @@ const MAX_MOBILE_SPLIT_RATIO = 0.78;
 const MAX_VISIBLE_VARIATIONS = KIBITZ_VARIATION_COLORS.length;
 const VARIATION_LIMIT_TOAST_MS = 1800;
 const VARIATION_LIMIT_FLASH_MS = 900;
+const DESKTOP_ROOM_DIRECTORY_POLL_MS = 8000;
 
 function clampMobileSplitRatio(value: number): number {
     return Math.min(MAX_MOBILE_SPLIT_RATIO, Math.max(MIN_MOBILE_SPLIT_RATIO, value));
@@ -399,6 +400,20 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             document.body.style.cursor = "";
         }
     }, [isMobileLayout]);
+
+    React.useEffect(() => {
+        if (isMobileLayout) {
+            return;
+        }
+
+        const intervalId = window.setInterval(() => {
+            void controller.refreshRoomDirectory();
+        }, DESKTOP_ROOM_DIRECTORY_POLL_MS);
+
+        return () => {
+            window.clearInterval(intervalId);
+        };
+    }, [controller, isMobileLayout]);
 
     const currentSecondaryPaneMode: SecondaryPaneMode = secondaryPane.collapsed
         ? "hidden"
@@ -1024,8 +1039,16 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     );
 
     const onToggleMobileRooms = React.useCallback(() => {
-        setMobileOverlayMode((mode) => (mode === "rooms" ? null : "rooms"));
-    }, []);
+        setMobileOverlayMode((mode) => {
+            const nextMode = mode === "rooms" ? null : "rooms";
+
+            if (nextMode === "rooms") {
+                void controller.refreshRoomDirectory();
+            }
+
+            return nextMode;
+        });
+    }, [controller]);
 
     const onToggleMobilePresence = React.useCallback(() => {
         setMobileOverlayMode((mode) => (mode === "presence" ? null : "presence"));

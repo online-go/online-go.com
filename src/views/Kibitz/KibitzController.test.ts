@@ -178,4 +178,31 @@ describe("KibitzController room ordering", () => {
 
         expect(controller.rooms.map((room) => room.id)).toEqual(["room-a", "room-c", "room-new"]);
     });
+
+    it("deduplicates overlapping room directory refreshes", async () => {
+        let resolveDirectory: (value: unknown[]) => void = () => undefined;
+        const directoryPromise = new Promise<unknown[]>((resolve) => {
+            resolveDirectory = resolve;
+        });
+
+        mockedGet.mockReturnValueOnce(directoryPromise);
+
+        const controller = new KibitzController();
+        const firstRefresh = controller.refreshRoomDirectory();
+        const secondRefresh = controller.refreshRoomDirectory();
+
+        expect(firstRefresh).toBe(secondRefresh);
+        expect(mockedGet).toHaveBeenCalledTimes(1);
+
+        resolveDirectory([]);
+        await firstRefresh;
+        await flushPromises();
+
+        mockedGet.mockResolvedValueOnce([]);
+        const nextRefresh = controller.refreshRoomDirectory();
+
+        expect(nextRefresh).not.toBe(firstRefresh);
+        await nextRefresh;
+        expect(mockedGet).toHaveBeenCalledTimes(2);
+    });
 });
