@@ -57,6 +57,13 @@ interface KibitzControllerEvents {
 
 type UIPushHandler = ReturnType<typeof push_manager.on>;
 
+interface BackendPresetBlock {
+    preset_key: string;
+    selection_status: "finding_game" | "watching" | "change_pending";
+    pending_game_id: number | null;
+    change_effective_at: string | null;
+}
+
 interface BackendKibitzRoom {
     id: string;
     channel: string;
@@ -69,6 +76,7 @@ interface BackendKibitzRoom {
     last_activity_at: string;
     settings?: Record<string, unknown>;
     viewer_count?: number;
+    preset?: BackendPresetBlock | null;
 }
 
 interface BackendRoomDetailResponse {
@@ -98,6 +106,7 @@ function mapBackendRoomToSummary(
         // must not zero out a good count on those events.
         viewer_count: backend.viewer_count ?? existing?.viewer_count ?? 0,
         description: backend.description ?? undefined,
+        preset: backend.preset ?? undefined,
     };
 }
 
