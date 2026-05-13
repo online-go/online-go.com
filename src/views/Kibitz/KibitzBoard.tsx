@@ -60,6 +60,13 @@ export function KibitzBoard({
     );
     const controllerRef = React.useRef<GobanController | null>(null);
     const [goban, setGoban] = React.useState<GobanController["goban"] | null>(null);
+    const moveTreeRef = React.useRef(moveTree);
+    const movePathRef = React.useRef(movePath);
+
+    React.useEffect(() => {
+        moveTreeRef.current = moveTree;
+        movePathRef.current = movePath;
+    }, [movePath, moveTree]);
 
     React.useEffect(() => {
         const labelPosition = preferences.get("label-positioning");
@@ -83,7 +90,7 @@ export function KibitzBoard({
             stone_font_scale: preferences.get("stone-font-scale"),
             square_size: "auto",
             game_id: gameId,
-            move_tree: moveTree,
+            move_tree: moveTreeRef.current,
             width,
             height,
         };
@@ -103,27 +110,20 @@ export function KibitzBoard({
         gobanDiv.current.style.setProperty("background-image", "none", "important");
         gobanDiv.current.style.setProperty("box-shadow", "none", "important");
 
-        const syncMovePath = () => {
-            if (!movePath) {
-                return;
-            }
-
-            controllerRef.current?.goban.engine.followPath(0, movePath);
-            controllerRef.current?.goban.redraw(true);
-        };
-        controllerRef.current.goban.on("load", syncMovePath);
-        syncMovePath();
+        if (movePathRef.current) {
+            controllerRef.current.goban.engine.followPath(0, movePathRef.current);
+            controllerRef.current.goban.redraw(true);
+        }
         setGoban(controllerRef.current.goban);
         onReady?.(controllerRef.current);
 
         return () => {
             onReady?.(null);
-            controllerRef.current?.goban.off("load", syncMovePath);
             controllerRef.current?.destroy();
             controllerRef.current = null;
             setGoban(null);
         };
-    }, [gameId, width, height, interactive, onReady, showLabels, movePath, moveTree]);
+    }, [gameId, width, height, interactive, onReady, showLabels]);
 
     return (
         <div
