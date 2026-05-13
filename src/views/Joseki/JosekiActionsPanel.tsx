@@ -24,8 +24,6 @@ interface JosekiActionsPanelProps {
     user_can_administer: boolean;
     db_locked_down: boolean;
     edit_label: string;
-    comment_count?: number;
-    onOpenComments: () => void;
     onOpenChanges: () => void;
     onOpenEdit: () => void;
     onOpenAdmin: () => void;
@@ -42,14 +40,6 @@ export function JosekiActionsPanel(props: JosekiActionsPanelProps): React.ReactE
 
     return (
         <div className="JosekiActionsPanel">
-            <button className="JosekiActionsPanel-item" onClick={wrap(props.onOpenComments)}>
-                <i className="fa fa-comment-o" />
-                <span>{_("Comments")}</span>
-                {!!props.comment_count && (
-                    <span className="JosekiActionsPanel-count">{props.comment_count}</span>
-                )}
-            </button>
-
             <button className="JosekiActionsPanel-item" onClick={wrap(props.onOpenChanges)}>
                 <i className="fa fa-history" />
                 <span>{_("Position changes")}</span>
