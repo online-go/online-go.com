@@ -99,12 +99,6 @@ export function ChatLine(props: ChatLineInterface): React.ReactElement {
             body = generateChatSearchLine("https://www.google.com/#q=", "/google ", body);
         }
 
-        /* cspell:disable-next-line */
-        if (body.substr(0, 8) === "/lmgtfy ") {
-            /* cspell:disable-next-line */
-            body = generateChatSearchLine("https://www.lmgtfy.com/?q=", "/lmgtfy ", body);
-        }
-
         body_rendered = chat_markup(body);
     } else {
         body_rendered = renderTypedBody(body);

@@ -65,6 +65,17 @@
         overflow: hidden;
     }
 
+    .GobanView-header {
+        flex-shrink: 0;
+        padding: 0.6rem 0.875rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+        text-align: center;
+        color: var(--fg);
+        background: var(--shade4);
+        border-bottom: 1px solid var(--shade3);
+    }
+
     .GobanView-sidebar-content {
         flex-grow: 1;
         overflow-y: auto;
