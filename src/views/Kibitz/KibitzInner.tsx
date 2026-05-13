@@ -401,6 +401,12 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         }
     }, [isMobileLayout]);
 
+    React.useEffect(() => {
+        if (mobileOverlayMode === "rooms") {
+            void controller.refreshRoomDirectory();
+        }
+    }, [controller, mobileOverlayMode]);
+
     const currentSecondaryPaneMode: SecondaryPaneMode = secondaryPane.collapsed
         ? "hidden"
         : (secondaryPane.size ?? "small");
@@ -1026,16 +1032,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     );
 
     const onToggleMobileRooms = React.useCallback(() => {
-        setMobileOverlayMode((mode) => {
-            const nextMode = mode === "rooms" ? null : "rooms";
-
-            if (nextMode === "rooms") {
-                void controller.refreshRoomDirectory();
-            }
-
-            return nextMode;
-        });
-    }, [controller]);
+        setMobileOverlayMode((mode) => (mode === "rooms" ? null : "rooms"));
+    }, []);
 
     const onToggleMobilePresence = React.useCallback(() => {
         setMobileOverlayMode((mode) => (mode === "presence" ? null : "presence"));

@@ -1154,6 +1154,8 @@ export function KibitzRoomStage({
                             <a
                                 className="board-subtitle-link"
                                 href={`/game/${mainGame.game_id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 aria-label={pgettext(
                                     "Aria label for opening the original game from Kibitz",
                                     "Open original game",
