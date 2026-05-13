@@ -319,16 +319,25 @@ export function KibitzGamePickerOverlay({
             return;
         }
 
+        setLoading(true);
+        setErrorMessage(null);
         void Promise.resolve(
             onCreateRoom(selectedGame.game, roomName.trim(), roomDescription.trim()),
-        ).then((nextRoomId) => {
-            if (nextRoomId) {
-                onClose();
-                return;
-            }
+        )
+            .then((nextRoomId) => {
+                if (nextRoomId) {
+                    onClose();
+                    return;
+                }
 
-            setErrorMessage(getKibitzPickerFailedCreateMessage());
-        });
+                setErrorMessage(getKibitzPickerFailedCreateMessage());
+            })
+            .catch(() => {
+                setErrorMessage(getKibitzPickerFailedCreateMessage());
+            })
+            .finally(() => {
+                setLoading(false);
+            });
     }, [canCreateRoom, onClose, onCreateRoom, roomDescription, roomName, selectedGame]);
 
     const onSubmitChangeBoard = React.useCallback(() => {
@@ -336,14 +345,23 @@ export function KibitzGamePickerOverlay({
             return;
         }
 
-        void Promise.resolve(onChangeBoard(selectedGame.game)).then((success) => {
-            if (success) {
-                onClose();
-                return;
-            }
+        setLoading(true);
+        setErrorMessage(null);
+        void Promise.resolve(onChangeBoard(selectedGame.game))
+            .then((success) => {
+                if (success) {
+                    onClose();
+                    return;
+                }
 
-            setErrorMessage(getKibitzPickerFailedChangeMessage());
-        });
+                setErrorMessage(getKibitzPickerFailedChangeMessage());
+            })
+            .catch(() => {
+                setErrorMessage(getKibitzPickerFailedChangeMessage());
+            })
+            .finally(() => {
+                setLoading(false);
+            });
     }, [canChangeBoard, onChangeBoard, onClose, selectedGame]);
 
     const onBackMobile = React.useCallback(() => {
@@ -671,7 +689,7 @@ export function KibitzGamePickerOverlay({
                                     type="button"
                                     className="xs primary KibitzGamePickerOverlay-actionButton"
                                     onClick={onSubmitCreateRoom}
-                                    disabled={!canCreateRoom}
+                                    disabled={!canCreateRoom || loading}
                                 >
                                     {pgettext(
                                         "Button label for creating a Kibitz room",
@@ -683,7 +701,7 @@ export function KibitzGamePickerOverlay({
                                     type="button"
                                     className="xs primary KibitzGamePickerOverlay-actionButton"
                                     onClick={onSubmitChangeBoard}
-                                    disabled={!canChangeBoard}
+                                    disabled={!canChangeBoard || loading}
                                 >
                                     {pgettext(
                                         "Button label for confirming a Kibitz board change",
@@ -885,7 +903,11 @@ export function KibitzGamePickerOverlay({
                                         ? onSubmitCreateRoom
                                         : onSubmitChangeBoard
                                 }
-                                disabled={mode === "create-room" ? !canCreateRoom : !canChangeBoard}
+                                disabled={
+                                    mode === "create-room"
+                                        ? !canCreateRoom || loading
+                                        : !canChangeBoard || loading
+                                }
                             >
                                 {mode === "create-room"
                                     ? pgettext(
