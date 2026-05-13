@@ -81,68 +81,74 @@ export function LadderList(): React.ReactElement {
 
     return (
         <div className="page-width">
-            <div className="page-nav">
-                <h2 style={{ marginLeft: "1rem" }}>
-                    <i className="fa fa-list-ol"></i> {_("Ladders")}
-                </h2>
-                <div>
-                    {ladders.map((ladder, idx) => (
-                        <Link key={idx} to={`/ladder/${ladder.id}`}>
-                            {_(ladder.board_size + "x" + ladder.board_size)}
-                        </Link>
-                    ))}
-                </div>
-            </div>
             <div className="LadderList">
-                {ladders.map((ladder, idx) => (
-                    <Card key={idx}>
-                        <h2>{_(ladder.name)}</h2>
-                        {(ladder.player_rank < 0 || null) && (
-                            <button
-                                className="primary sm"
-                                disabled={user.anonymous}
-                                onClick={() => join(ladder.id)}
-                            >
-                                {_("Join")}
-                            </button>
-                        )}
-                        <Link className="btn primary sm" to={`/ladder/${ladder.id}`}>
-                            {_("Full View") /* translators: View details of the selected ladder */}
-                        </Link>
-
-                        <h4>
-                            {interpolate(_("{{ladder_size}} players"), {
-                                ladder_size: ladder.size,
-                            })}
-                        </h4>
-
-                        <LadderComponent ladderId={ladder.id} />
-                    </Card>
-                ))}
-            </div>
-            {joinedLadders.length > 0 && (
-                <div className="MyLadders">
-                    <h2 style={{ marginLeft: "1rem" }}>
-                        <i className="fa fa-list-ol"></i> {_("My Ladders")}
+                <div className="page-nav">
+                    <h2>
+                        <i className="fa fa-list-ol"></i> {_("Ladders")}
                     </h2>
-                    {joinedLadders.map((ladder, idx) => (
-                        <div className="MyLadders-row" key={idx}>
-                            <span className="player-rank">#{ladder.player_rank}</span>
-                            {ladder.group?.icon ? (
-                                <img
-                                    className="group-icon"
-                                    src={user_uploads_url(ladder.group.icon, 16)}
-                                    title={ladder.group.name}
-                                    alt={ladder.group.name}
-                                />
-                            ) : (
-                                <i className="fa fa-list-ol"></i>
+                    <div>
+                        {ladders.map((ladder, idx) => (
+                            <Link key={idx} to={`/ladder/${ladder.id}`}>
+                                {_(ladder.board_size + "x" + ladder.board_size)}
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+                <div className="ladder-list-container">
+                    {ladders.map((ladder, idx) => (
+                        <Card key={idx}>
+                            <h2>{_(ladder.name)}</h2>
+                            {(ladder.player_rank < 0 || null) && (
+                                <button
+                                    className="primary sm"
+                                    disabled={user.anonymous}
+                                    onClick={() => join(ladder.id)}
+                                >
+                                    {_("Join")}
+                                </button>
                             )}
-                            <Link to={`/ladder/${ladder.id}`}>{ladder.name}</Link>
-                        </div>
+                            <Link className="btn primary sm" to={`/ladder/${ladder.id}`}>
+                                {
+                                    _(
+                                        "Full View",
+                                    ) /* translators: View details of the selected ladder */
+                                }
+                            </Link>
+
+                            <h4>
+                                {interpolate(_("{{ladder_size}} players"), {
+                                    ladder_size: ladder.size,
+                                })}
+                            </h4>
+
+                            <LadderComponent ladderId={ladder.id} />
+                        </Card>
                     ))}
                 </div>
-            )}
+                {joinedLadders.length > 0 && (
+                    <div className="MyLadders">
+                        <h2 style={{ marginLeft: "1rem" }}>
+                            <i className="fa fa-list-ol"></i> {_("My Ladders")}
+                        </h2>
+                        {joinedLadders.map((ladder, idx) => (
+                            <div className="MyLadders-row" key={idx}>
+                                <span className="player-rank">#{ladder.player_rank}</span>
+                                {ladder.group?.icon ? (
+                                    <img
+                                        className="group-icon"
+                                        src={user_uploads_url(ladder.group.icon, 16)}
+                                        title={ladder.group.name}
+                                        alt={ladder.group.name}
+                                    />
+                                ) : (
+                                    <i className="fa fa-list-ol"></i>
+                                )}
+                                <Link to={`/ladder/${ladder.id}`}>{ladder.name}</Link>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
