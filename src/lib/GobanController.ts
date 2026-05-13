@@ -23,9 +23,13 @@ import {
     GobanRenderer,
     MoveTree,
     createGoban,
+    decodeMoves,
     encodeMove,
     JGOFClock,
     JGOFSealingIntersection,
+    MarkInterface,
+    MoveTreeJson,
+    MoveTreePenMarks,
 } from "goban";
 import { EventEmitter } from "eventemitter3";
 import { sfx, SFXSprite, ValidSound } from "@/lib/sfx";
@@ -66,6 +70,158 @@ interface GobanControllerEvents {
     stashed_conditional_moves: (stashed_conditional_moves: ConditionalMoveTree | null) => void;
 }
 
+export interface SerializedAnalysisChatLineBody {
+    type: "analysis";
+    from: number;
+    moves: string;
+    name: string;
+    marks?: Record<string, string>;
+    pen_marks?: MoveTreePenMarks;
+    line_tree?: MoveTreeJson;
+}
+
+export interface PreparedAnalysisSnapshot {
+    analysis: SerializedAnalysisChatLineBody;
+    auto_named: boolean;
+    is_duplicate: boolean;
+    move_count: number;
+    width: number;
+    height: number;
+    players: {
+        black: {
+            id: number;
+            username: string;
+        };
+        white: {
+            id: number;
+            username: string;
+        };
+    };
+    moves: Array<{
+        x: number;
+        y: number;
+    }>;
+}
+
+function cloneMoveTreeMarks(node: MoveTree): MoveTreeJson["marks"] {
+    const marks: MoveTreeJson["marks"] = [];
+
+    node.foreachMarkedPosition((x, y) => {
+        const source = node.getMarks(x, y);
+        const cloned: MarkInterface = {};
+
+        for (const key in source) {
+            const value = source[key];
+
+            if (value !== undefined) {
+                cloned[key] = value;
+            }
+        }
+
+        marks.push({ x, y, marks: cloned });
+    });
+
+    return marks.length > 0 ? marks : undefined;
+}
+
+function marksEntries(marks: Record<string, string> | null | undefined): Array<[string, string]> {
+    return Object.entries(marks ?? {}).sort(([leftKey], [rightKey]) =>
+        leftKey.localeCompare(rightKey),
+    );
+}
+
+function marksEqual(
+    left: Record<string, string> | null | undefined,
+    right: Record<string, string> | null | undefined,
+): boolean {
+    const leftEntries = marksEntries(left);
+    const rightEntries = marksEntries(right);
+
+    if (leftEntries.length !== rightEntries.length) {
+        return false;
+    }
+
+    for (let i = 0; i < leftEntries.length; ++i) {
+        const [leftKey, leftValue] = leftEntries[i];
+        const [rightKey, rightValue] = rightEntries[i];
+
+        if (leftKey !== rightKey || leftValue !== rightValue) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function serializeMoveTreeLineNode(node: MoveTree): MoveTreeJson {
+    const ret: MoveTreeJson = {
+        x: node.x,
+        y: node.y,
+    };
+    const marks = cloneMoveTreeMarks(node);
+
+    if (marks) {
+        ret.marks = marks;
+    }
+    if (node.pen_marks.length > 0) {
+        ret.pen_marks = node.pen_marks.map((penMark) => ({
+            color: penMark.color,
+            points: [...penMark.points],
+        }));
+    }
+    if (node.text) {
+        ret.text = node.text;
+    }
+    if (node.correct_answer) {
+        ret.correct_answer = node.correct_answer;
+    }
+    if (node.wrong_answer) {
+        ret.wrong_answer = node.wrong_answer;
+    }
+
+    return ret;
+}
+
+function serializeActiveMoveTreeLine(
+    branchPoint: MoveTree,
+    activeNode: MoveTree,
+): MoveTreeJson | undefined {
+    const nodes: MoveTree[] = [];
+    let current: MoveTree | null = activeNode;
+
+    while (current && current.id !== branchPoint.id) {
+        nodes.push(current);
+        current = current.parent;
+    }
+
+    if (nodes.length === 0) {
+        return undefined;
+    }
+
+    nodes.reverse();
+
+    const root = serializeMoveTreeLineNode(nodes[0]);
+    let lineCursor = root;
+
+    for (let i = 1; i < nodes.length; ++i) {
+        const next = serializeMoveTreeLineNode(nodes[i]);
+        lineCursor.trunk_next = next;
+        lineCursor = next;
+    }
+
+    return root;
+}
+
+function getLineTreeEndpoint(lineTree: MoveTreeJson): MoveTreeJson {
+    let cursor = lineTree;
+
+    while (cursor.trunk_next) {
+        cursor = cursor.trunk_next;
+    }
+
+    return cursor;
+}
+
 export interface ReviewListEntry {
     owner: PlayerCacheEntry;
     id: number;
@@ -91,7 +247,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     public onPushAnalysisLeft?: () => void;
     public last_variation_number: number = 0;
     public creator_id?: number;
-    private last_analysis_sent: any;
+    private last_analysis_sent?: SerializedAnalysisChatLineBody;
     private game_id?: number;
     private review_id?: number;
     public _selected_chat_log: ChatMode;
@@ -176,6 +332,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             console.warn("GobanController.destroy() called twice");
             return;
         }
+        this.goban.setMoveTreeContainer(null);
         this.destroyed = true;
         if (this.chat_proxy?.part) {
             this.chat_proxy.part();
@@ -488,12 +645,12 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         return this._variation_name;
     }
 
-    public setMoveTreeContainer = (resizable: Resizable) => {
+    public setMoveTreeContainer = (resizable: Resizable | null) => {
         if (this.destroyed) {
             return;
         }
-        if (this.goban && resizable?.div) {
-            this.goban.setMoveTreeContainer(resizable.div);
+        if (this.goban) {
+            this.goban.setMoveTreeContainer(resizable?.div ?? null);
         }
     };
 
@@ -736,8 +893,10 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     updateVariationName = (ev: ChangeEvent<HTMLInputElement>) => {
         this.setVariationName(ev.target.value);
     };
-    shareAnalysis = () => {
+    private prepareAnalysisSnapshot = (): PreparedAnalysisSnapshot => {
         const diff = this.goban.engine.getMoveDiff();
+        const branchPoint = this.goban.engine.cur_move.getBranchPoint();
+        const lineTree = serializeActiveMoveTreeLine(branchPoint, this.goban.engine.cur_move);
         let name = this.variation_name;
         let auto_named = false;
 
@@ -781,14 +940,22 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             }
         }
 
-        const analysis: any = {
+        const analysis: SerializedAnalysisChatLineBody = {
             type: "analysis",
             from: diff.from,
             moves: diff.moves,
-            name: name,
+            name,
         };
-        console.log(analysis);
 
+        if (lineTree) {
+            if (this.goban.pen_marks.length) {
+                getLineTreeEndpoint(lineTree).pen_marks = this.goban.pen_marks.map((penMark) => ({
+                    color: penMark.color,
+                    points: [...penMark.points],
+                }));
+            }
+            analysis.line_tree = lineTree;
+        }
         if (mark_ct) {
             analysis.marks = marks;
         }
@@ -797,23 +964,62 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         }
 
         const las = this.last_analysis_sent;
-        if (
+        const is_duplicate =
             las &&
             las.from === analysis.from &&
             las.moves === analysis.moves &&
             (auto_named || las.name === analysis.name) &&
-            ((!analysis.marks && !las.marks) || las.marks === analysis.marks) &&
-            ((!analysis.pen_marks && !las.pen_marks) || las.pen_marks === analysis.pen_marks)
-        ) {
-            if (auto_named) {
-                --this.last_variation_number;
-            }
+            marksEqual(las.marks, analysis.marks) &&
+            JSON.stringify(las.pen_marks ?? null) === JSON.stringify(analysis.pen_marks ?? null) &&
+            JSON.stringify(las.line_tree ?? null) === JSON.stringify(analysis.line_tree ?? null);
+
+        if (is_duplicate && auto_named) {
+            --this.last_variation_number;
+        }
+
+        const move_string = this.goban.engine.cur_move.getMoveStringToThisPoint();
+
+        return {
+            analysis,
+            auto_named,
+            is_duplicate: !!is_duplicate,
+            move_count: this.goban.engine.cur_move.move_number,
+            width: this.goban.width,
+            height: this.goban.height,
+            players: {
+                black: {
+                    id: this.goban.engine.players.black.id,
+                    username: this.goban.engine.players.black.username,
+                },
+                white: {
+                    id: this.goban.engine.players.white.id,
+                    username: this.goban.engine.players.white.username,
+                },
+            },
+            moves: decodeMoves(move_string, this.goban.height, this.goban.width).map((move) => ({
+                x: move.x,
+                y: move.y,
+            })),
+        };
+    };
+
+    public buildAnalysisSnapshot = (): PreparedAnalysisSnapshot => {
+        return this.prepareAnalysisSnapshot();
+    };
+
+    public recordAnalysisSent = (analysis: SerializedAnalysisChatLineBody) => {
+        this.last_analysis_sent = analysis;
+    };
+
+    shareAnalysis = () => {
+        const prepared = this.prepareAnalysisSnapshot();
+        if (prepared.is_duplicate) {
             return;
         }
 
         if (!data.get("user").anonymous) {
-            this.goban.sendChat(analysis, this.selected_chat_log);
-            this.last_analysis_sent = analysis;
+            this.goban.sendChat(prepared.analysis, this.selected_chat_log);
+            this.recordAnalysisSent(prepared.analysis);
         } else {
             this.goban.showMessage("error", {
                 error: { message: "Can't send to the " + this.selected_chat_log + " chat_log" },

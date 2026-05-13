@@ -1,7 +1,5 @@
 {
-    "ignorePaths": [
-        "src/views/GoTV/twitchLanguageCodes.ts"
-    ],
+    "ignorePaths": ["src/views/GoTV/twitchLanguageCodes.ts"],
     "words": [
         "abcdefghjklmnopqrstuvwxyz",
         "Acked",

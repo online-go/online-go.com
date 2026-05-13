@@ -1,0 +1,114 @@
+.KibitzDividerHandle {
+    --divider-width: 2.5rem;
+
+    align-items: flex-start;
+    background: transparent;
+    display: flex;
+    justify-content: flex-start;
+    min-height: 0;
+    overflow: visible;
+    padding: 0;
+    position: absolute;
+    left: 0.375rem;
+    bottom: 0.375rem;
+    width: auto;
+    z-index: 3;
+
+    .divider-mode-switch {
+        background: var(--card-background-color);
+        border: 1px solid transparent;
+        border-color: var(--shade3);
+        border-radius: 0.45rem;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        padding: 0.3rem;
+        position: static;
+    }
+
+    .divider-mode-button {
+        align-items: center;
+        background: transparent;
+        border: 0;
+        border-radius: 0.3rem;
+        color: var(--text-color-faded);
+        cursor: pointer;
+        display: inline-flex;
+        gap: 0.45rem;
+        height: 2rem;
+        justify-content: flex-start;
+        padding: 0 0.65rem 0 0.55rem;
+        transition:
+            background-color 120ms ease,
+            color 120ms ease,
+            transform 120ms ease,
+            box-shadow 120ms ease;
+        white-space: nowrap;
+        width: auto;
+    }
+
+    .divider-mode-button:not(.active):hover {
+        background: var(--shade1);
+        color: var(--fg);
+    }
+
+    .divider-mode-button:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 1px;
+    }
+
+    .divider-mode-button.active {
+        box-shadow: inset 0 0 0 1px var(--shade3);
+        color: var(--colored-background-fg);
+    }
+
+    .divider-mode-button.watch-view.active,
+    .divider-mode-button.watch-view.active:hover {
+        background: var(--primary);
+    }
+
+    .divider-mode-button.compare-view.active,
+    .divider-mode-button.compare-view.active:hover {
+        background: var(--success);
+    }
+
+    .layout-glyph {
+        align-items: stretch;
+        display: grid;
+        gap: 0.12rem;
+        height: 0.95rem;
+        width: 0.95rem;
+    }
+
+    .divider-mode-label {
+        font-size: 0.78rem;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+        line-height: 1;
+    }
+
+    .layout-glyph .pane {
+        background: currentColor;
+        border-radius: 0.12rem;
+        opacity: 0.92;
+    }
+
+    .divider-mode-button.watch-view .layout-glyph {
+        grid-template-columns: 1fr;
+    }
+
+    .divider-mode-button.watch-view .pane-secondary {
+        display: none;
+    }
+
+    .divider-mode-button.compare-view .layout-glyph {
+        grid-template-columns: 0.8fr 1.2fr;
+    }
+}
+
+@media (max-width: 850px) {
+    .KibitzDividerHandle {
+        display: none;
+    }
+}

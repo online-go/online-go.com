@@ -50,13 +50,23 @@ export function OgsHelpProvider(props: OgsHelpProviderProps): React.ReactElement
     // Prevent writing back rdhState till remote data is loaded
 
     React.useEffect(() => {
-        data.events.on("remote_data_sync_complete", () => {
+        const updateStorageLoaded = () => {
             if (debugDynamicHelp) {
                 console.log("Telling RDH: Storage loaded");
             }
             setStorageLoaded(true);
-        });
-    }, []);
+        };
+
+        if (data.isRemoteDataSyncComplete()) {
+            updateStorageLoaded();
+        }
+
+        data.events.on("remote_data_sync_complete", updateStorageLoaded);
+
+        return () => {
+            data.events.off("remote_data_sync_complete", updateStorageLoaded);
+        };
+    }, [debugDynamicHelp, user.id]);
 
     // TBD should memo this
     const dynamicHelpStorage: DynamicHelp.DynamicHelpStorageAPI = {

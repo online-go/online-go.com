@@ -1,0 +1,78 @@
+.KibitzDebugPanel {
+    background: var(--card-background-color);
+    border-top: 1px solid transparent;
+    border-top-color: var(--shade3);
+    padding: 0.875rem;
+    font-size: 0.875rem;
+
+    .KibitzDebugPanel-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: baseline;
+        margin-bottom: 0.5rem;
+
+        .title {
+            font-weight: 700;
+        }
+
+        .status {
+            color: var(--text-color-light);
+        }
+    }
+
+    .KibitzDebugPanel-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1rem;
+        margin-bottom: 0.75rem;
+        color: var(--text-color-light);
+    }
+
+    .KibitzDebugPanel-rooms {
+        display: grid;
+        gap: 0.75rem;
+        grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    }
+
+    .room-debug {
+        border-top: 1px solid transparent;
+        border-top-color: var(--shade3);
+        padding: 0.75rem;
+        background: var(--bg);
+    }
+
+    .room-title {
+        font-weight: 700;
+        margin-bottom: 0.375rem;
+    }
+
+    .room-summary,
+    .candidate {
+        line-height: 1.4;
+    }
+
+    .candidate-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        margin-top: 0.5rem;
+        color: var(--text-color-light);
+        word-break: break-word;
+    }
+
+    .error {
+        color: #b03a2e;
+        margin-top: 0.375rem;
+    }
+}
+
+@media (min-width: 1001px) {
+    [data-theme="light"] .KibitzDebugPanel {
+        background: var(--bg);
+    }
+
+    [data-theme="light"] .KibitzDebugPanel .room-debug {
+        background: var(--bg);
+    }
+}

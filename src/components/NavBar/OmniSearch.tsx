@@ -174,6 +174,7 @@ omnisearch_sitemap[_("API")] = [_("Developers & API Access"), "/developer"];
 omnisearch_sitemap[_("Mail")] = [_("Mail"), "/mail"];
 omnisearch_sitemap[_("Chat")] = [_("Chat & Lobby"), "/chat"];
 omnisearch_sitemap[_("Lobby")] = [_("Chat & Lobby"), "/chat"];
+omnisearch_sitemap[_("Kibitz")] = [_("Kibitz"), "/kibitz"];
 omnisearch_sitemap[_("Settings")] = [_("Settings"), "/user/settings"];
 omnisearch_sitemap[_("Configuration")] = [_("Settings"), "/user/settings"];
 omnisearch_sitemap[_("Options")] = [_("Settings"), "/user/settings"];

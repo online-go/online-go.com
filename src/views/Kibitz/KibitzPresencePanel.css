@@ -1,0 +1,31 @@
+.KibitzPresencePanel {
+    background: var(--card-background-color);
+    border: 1px solid var(--shade3);
+    box-shadow: 0 12px 28px color-mix(in srgb, var(--shade1) 20%, transparent);
+    color: var(--fg);
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 0;
+    min-width: 0;
+    padding: 0.75rem 0.8rem;
+
+    .KibitzPresencePanel-title {
+        flex: 0 0 auto;
+        font-size: 0.9rem;
+        font-weight: 700;
+        line-height: 1.2;
+        padding-bottom: 0.1rem;
+    }
+
+    .KibitzPresence {
+        background: transparent;
+        box-shadow: none;
+        display: flex;
+        flex: 1 1 auto;
+        max-height: none;
+        min-height: 12rem;
+        padding: 0;
+    }
+}

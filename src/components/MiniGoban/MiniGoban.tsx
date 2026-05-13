@@ -55,6 +55,7 @@ export interface MiniGobanProps {
     openLinksInNewTab?: boolean;
     noText?: boolean;
     title?: boolean;
+    onSelectGameId?: (gameId: number) => void;
     onGobanCreated?: (goban_controller: GobanController) => void;
     timeControl?: JGOFTimeControl;
     blackExtra?: React.ReactNode;
@@ -452,6 +453,14 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
                 <Link
                     to={`/game/${props.game_id}`}
                     className={"MiniGoban link " + (props.className ?? "")}
+                    onClick={
+                        props.onSelectGameId
+                            ? (event) => {
+                                  event.preventDefault();
+                                  props.onSelectGameId?.(props.game_id as number);
+                              }
+                            : undefined
+                    }
                     {...new_tab_attributes}
                 >
                     {inner}

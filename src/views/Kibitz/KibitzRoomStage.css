@@ -1,0 +1,1433 @@
+.KibitzRoomStage {
+    --board-divider-width: 0;
+    --kibitz-header-block-height: 1.5rem;
+
+    background: var(--bg);
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0;
+    min-height: 0;
+    padding: 0 0.375rem 0;
+    position: relative;
+
+    .room-stage-header {
+        background: var(--card-background-color);
+        display: block;
+        min-width: 0;
+        padding: 0.5rem 0.75rem 0;
+    }
+
+    .room-stage-header .board-title-row {
+        align-items: center;
+        display: grid;
+        gap: 0.75rem;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        min-width: 0;
+        width: 100%;
+    }
+
+    .room-stage-header .board-titleRowMain {
+        align-items: center;
+        display: flex;
+        flex: 1 1 0;
+        gap: 0.25rem;
+        justify-self: start;
+        max-width: 100%;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .room-stage-header .board-title {
+        color: var(--fg);
+        flex: 1 1 auto;
+        font-size: 0.98rem;
+        font-weight: bold;
+        line-height: 1.15;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .room-stage-header .board-settings-button {
+        align-items: center;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.35rem;
+        color: var(--text-color-faded);
+        cursor: pointer;
+        display: inline-flex;
+        flex: 0 0 auto;
+        justify-content: center;
+        padding: 0.1rem 0.25rem;
+    }
+
+    .room-stage-header .board-settings-button:hover,
+    .room-stage-header .board-settings-button:focus-visible {
+        border-color: var(--border-color);
+        color: var(--fg);
+    }
+
+    .room-stage-header .board-settings-button > i {
+        font-size: 0.95rem;
+        line-height: 1;
+    }
+
+    .room-stage-header .players {
+        color: var(--fg);
+        font-size: 0.9rem;
+        font-weight: bold;
+        line-height: 1.2;
+    }
+
+    .room-stage-header .players.player-pair {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        justify-content: center;
+        justify-self: center;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .room-stage-header .board-subtitle {
+        justify-self: end;
+        max-width: min(100%, 18rem);
+        min-width: 0;
+        overflow: hidden;
+        text-align: right;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .room-stage-header .player-badge {
+        align-items: center;
+        display: inline-flex;
+        gap: 0.35rem;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .room-stage-header .player-name {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .room-stage-header .player-vs {
+        color: var(--text-color-faded);
+        font-size: 0.76rem;
+        font-weight: bold;
+        letter-spacing: 0.03em;
+        line-height: 1;
+        text-transform: uppercase;
+    }
+
+    .room-stage-header .stage-avatar {
+        align-items: center;
+        background: var(--shade2);
+        color: var(--fg);
+        display: inline-flex;
+        flex: 0 0 auto;
+        font-size: 0.56rem;
+        font-weight: bold;
+        height: 1.15rem;
+        justify-content: center;
+        line-height: 1;
+        min-width: 1.15rem;
+        overflow: hidden;
+        text-transform: uppercase;
+    }
+
+    .room-stage-header .stage-avatar-image {
+        display: block;
+        height: 100%;
+        object-fit: cover;
+        width: 100%;
+    }
+
+    .KibitzRoomStage-boards {
+        display: grid;
+        flex: 1;
+        gap: 0;
+        min-height: 0;
+
+        .main-board {
+            grid-column: 1;
+        }
+
+        .secondary-board {
+            grid-column: 3;
+        }
+
+        &.secondary-pane-hidden {
+            grid-template-columns: minmax(0, 1fr) var(--board-divider-width) 0;
+        }
+
+        &.secondary-pane-small {
+            grid-template-columns:
+                minmax(0, 1fr)
+                var(--board-divider-width)
+                minmax(15.25rem, 17rem);
+        }
+
+        &.secondary-pane-small {
+            .main-board .KibitzBoard {
+                aspect-ratio: 1 / 1;
+                flex: 0 1 auto;
+                height: auto;
+                max-width: 100%;
+                width: 100%;
+            }
+
+            .main-board .KibitzBoard .goban-container {
+                flex: 1 1 auto !important;
+                flex-basis: auto !important;
+                height: auto !important;
+                max-height: 100%;
+                width: 100%;
+            }
+        }
+
+        &.secondary-pane-hidden {
+            .main-board .KibitzBoard {
+                aspect-ratio: 1 / 1;
+                flex: 0 1 auto;
+                height: 100%;
+                max-height: 100%;
+                max-width: 100%;
+                width: auto;
+            }
+
+            .main-board .KibitzBoard .goban-container {
+                flex: 1 1 auto !important;
+                flex-basis: auto !important;
+                height: 100% !important;
+                max-height: 100%;
+                max-width: 100%;
+                width: auto;
+            }
+        }
+
+        &:not(.secondary-pane-equal) {
+            .secondary-board .KibitzBoard .goban-container {
+                flex: 0 0 auto !important;
+                flex-basis: auto !important;
+                height: auto !important;
+                max-width: 100%;
+                width: 100%;
+            }
+        }
+
+        &.secondary-pane-equal {
+            --kibitz-header-block-height: 1.5rem;
+            --equal-main-track: minmax(12.5rem, 0.58fr);
+            --equal-secondary-track: minmax(20.5rem, 1.42fr);
+            --equal-meta-height: var(--kibitz-header-block-height);
+            --equal-transport-height: 2.35rem;
+            --equal-analyze-height: 1.9rem;
+            --equal-node-text-height: 4.35rem;
+            --equal-compose-height: 2.15rem;
+            --equal-variation-height: 5.6rem;
+            grid-template-columns:
+                var(--equal-main-track)
+                var(--board-divider-width)
+                var(--equal-secondary-track);
+
+            .board-panel {
+                border-left: 0;
+                min-width: 0;
+            }
+
+            .board-panel .panel-body {
+                padding: 0.25rem 0.25rem 0.25rem 0.75rem;
+            }
+
+            .board-panel .board-content {
+                display: grid;
+                align-content: start;
+                grid-template-rows:
+                    auto
+                    minmax(0, 1fr)
+                    auto
+                    auto
+                    auto
+                    auto
+                    minmax(var(--equal-variation-height), 1fr)
+                    auto;
+            }
+
+            .board-panel .board-content-variation {
+                grid-template-rows:
+                    auto
+                    minmax(0, 1fr)
+                    auto
+                    auto
+                    minmax(var(--equal-variation-height), 0.3fr)
+                    auto
+                    auto;
+            }
+
+            .board-panel .board-content-preview {
+                grid-template-rows:
+                    auto
+                    minmax(0, 1fr)
+                    auto
+                    minmax(var(--equal-variation-height), 1fr)
+                    auto;
+            }
+
+            .board-panel .board-content-posted-variation {
+                grid-template-rows:
+                    auto
+                    minmax(0, 1fr)
+                    auto
+                    minmax(var(--equal-variation-height), 0.3fr)
+                    auto;
+            }
+
+            .board-fit-slot {
+                padding-top: 0.25rem;
+                position: relative;
+                z-index: 0;
+            }
+
+            .main-board .board-fit-slot {
+                justify-items: start;
+                padding-top: 0;
+            }
+
+            .secondary-board .board-fit-slot {
+                justify-items: center;
+                padding-top: 0;
+            }
+
+            .board-meta {
+                justify-content: flex-start;
+                min-height: var(--equal-meta-height);
+                overflow: hidden;
+                padding-bottom: 0.25rem;
+                padding-top: 0;
+            }
+
+            .players {
+                min-height: 1.1rem;
+                white-space: normal;
+            }
+
+            .secondary-board .kibitz-move-tree-container {
+                align-self: stretch !important;
+                height: 100% !important;
+                min-height: var(--equal-variation-height);
+                min-width: 0;
+                resize: none !important;
+                max-width: 100%;
+                width: min(100%, 39rem, 78vh);
+            }
+
+            .secondary-board .board-content-variation .kibitz-move-tree-container {
+                grid-row: 5;
+            }
+
+            .secondary-board .board-content-posted-variation .kibitz-move-tree-container {
+                grid-row: 4;
+            }
+
+            .main-board .main-board-analyze-spacer {
+                min-height: var(--equal-analyze-height);
+                visibility: hidden;
+            }
+
+            .main-board .main-board-compose-spacer {
+                min-height: var(--equal-compose-height);
+                visibility: hidden;
+            }
+
+            .main-board .main-board-variation-spacer {
+                height: auto;
+                min-height: 0;
+            }
+
+            .main-board .board-meta {
+                max-width: min(100%, 21rem, 30vh);
+                padding-right: 0.5rem;
+            }
+
+            .main-board .board-meta-compare-inline {
+                display: block;
+                max-width: none;
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+
+            .main-board .board-meta-compare-inline .players.player-pair {
+                flex-wrap: nowrap;
+                min-width: 0;
+            }
+
+            .main-board .board-content-draft,
+            .main-board .board-content-preview {
+                grid-template-rows:
+                    auto
+                    auto
+                    auto
+                    auto
+                    auto
+                    auto
+                    auto
+                    auto;
+            }
+
+            .main-board .board-title {
+                font-size: 0.92rem;
+            }
+
+            .main-board .board-subtitle {
+                font-size: 0.78rem;
+            }
+
+            .main-board .board-title,
+            .main-board .board-subtitle {
+                display: block;
+            }
+
+            .main-board .players {
+                font-size: 0.84rem;
+            }
+
+            .secondary-board .board-meta,
+            .secondary-board-analyze-row,
+            .secondary-board-node-text-row,
+            .secondary-board-compose-row,
+            .secondary-board .kibitz-move-tree-container {
+                max-width: min(100%, 48rem, 78vh);
+                min-width: 0;
+                justify-self: center;
+                width: min(100%, 48rem, 78vh);
+            }
+
+            .secondary-board .board-actions {
+                flex-wrap: wrap;
+            }
+
+            .KibitzBoardControls {
+                justify-content: flex-start;
+            }
+
+            .KibitzBoard.main-board-surface .goban-container,
+            .KibitzBoard.secondary-board-surface .goban-container {
+                flex: 0 0 auto !important;
+                flex-basis: auto !important;
+                min-height: 0 !important;
+            }
+
+            .KibitzBoardControls {
+                align-self: center;
+                box-sizing: border-box;
+                width: 100%;
+            }
+
+            .main-board .KibitzBoard {
+                max-height: min(100%, 20rem, 30vh);
+                max-width: min(100%, 20rem, 30vh);
+                width: auto;
+            }
+
+            .main-board .KibitzBoard.main-board-surface {
+                padding: 0;
+            }
+
+            .main-board .KibitzBoardControls {
+                max-width: min(100%, 20rem, 30vh);
+            }
+
+            .secondary-board .KibitzBoard {
+                max-width: min(100%, 48rem, 78vh);
+                width: auto;
+            }
+
+            .secondary-board .KibitzBoardControls {
+                max-width: min(100%, 48rem, 78vh);
+            }
+
+            .main-board .KibitzBoardControls.minimal-row {
+                align-items: center;
+                background: transparent;
+                border-top: 0;
+                justify-content: center;
+            }
+
+            .secondary-board .secondary-board-transport-row {
+                background: transparent;
+                padding-top: 0;
+                position: relative;
+                z-index: 1;
+            }
+
+            .secondary-board-analyze-row {
+                align-items: center;
+                box-sizing: border-box;
+                display: flex;
+                justify-content: center;
+                min-height: var(--equal-analyze-height);
+                min-width: 0;
+                overflow: hidden;
+                padding: 0 0.75rem;
+                position: relative;
+                z-index: 1;
+
+                .game-analyze-button-bar {
+                    gap: 0;
+                    justify-content: center;
+
+                    .btn-group {
+                        display: inline-flex;
+                        gap: 0;
+                    }
+
+                    button {
+                        font-size: 0.8rem;
+                        min-height: 1.35rem;
+                        min-width: 1.35rem;
+                        padding: 0 0.28rem;
+                    }
+
+                    .pass-button {
+                        min-width: auto;
+                        padding: 0 0.45rem;
+                    }
+
+                    input {
+                        height: 1.35rem;
+                        width: 1.35rem;
+                    }
+                }
+            }
+
+            .secondary-board-node-text-row {
+                align-items: stretch;
+                box-sizing: border-box;
+                display: flex;
+                min-height: var(--equal-node-text-height);
+                min-width: 0;
+                padding: 0.15rem 0.75rem 0;
+                position: relative;
+                z-index: 1;
+            }
+
+            .secondary-board-compose-row {
+                align-items: center;
+                box-sizing: border-box;
+                display: flex;
+                min-height: var(--equal-compose-height);
+                min-width: 0;
+                padding: 0 0.75rem;
+                position: relative;
+                z-index: 1;
+            }
+
+            .board-content-spacer {
+                display: none;
+            }
+        }
+    }
+
+    .board-panel {
+        background: var(--card-background-color);
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        min-width: 0;
+
+        .panel-title {
+            align-items: center;
+            border-bottom: 1px solid transparent;
+            border-bottom-color: var(--shade3);
+            display: flex;
+            gap: 0.5rem;
+            justify-content: space-between;
+            padding: 0.45rem 0.625rem;
+
+            .panel-title-label {
+                font-size: 0.875rem;
+                font-weight: bold;
+            }
+        }
+
+        .panel-title-actions {
+            align-items: center;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            justify-content: flex-end;
+        }
+
+        .panel-body {
+            align-items: stretch;
+            color: var(--text-color-faded);
+            display: flex;
+            flex: 1;
+            justify-content: center;
+            overflow: hidden;
+            padding: 0.125rem;
+            text-align: center;
+        }
+
+        .board-content {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            gap: 0.125rem;
+            min-height: 0;
+            min-width: 0;
+            width: 100%;
+        }
+
+        .board-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+            min-height: var(--kibitz-header-block-height);
+            text-align: left;
+            padding: 0.5rem 0.125rem 0.625rem 0.75rem;
+
+            .board-title-row {
+                align-items: center;
+                display: grid;
+                gap: 0.75rem;
+                grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+                min-width: 0;
+                width: 100%;
+            }
+
+            .board-titleRowMain {
+                align-items: center;
+                display: flex;
+                gap: 0.25rem;
+                flex: 1 1 0;
+                justify-self: start;
+                min-width: 0;
+            }
+
+            .board-title {
+                color: var(--fg);
+                flex: 0 1 auto;
+                min-width: 0;
+                font-size: 0.98rem;
+                font-weight: bold;
+                line-height: 1.15;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .board-settings-button {
+                align-items: center;
+                background: transparent;
+                border: 1px solid transparent;
+                border-radius: 0.35rem;
+                color: var(--text-color-faded);
+                cursor: pointer;
+                display: inline-flex;
+                flex: 0 0 auto;
+                justify-content: center;
+                padding: 0.1rem 0.25rem;
+            }
+
+            .board-settings-button:hover,
+            .board-settings-button:focus-visible {
+                border-color: var(--border-color);
+                color: var(--fg);
+            }
+
+            .board-settings-button > i {
+                font-size: 0.95rem;
+                line-height: 1;
+            }
+
+            .board-meta-actions {
+                align-items: flex-start;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.35rem;
+                margin-left: auto;
+                min-width: 0;
+            }
+
+            .kibitz-create-variation-button,
+            .kibitz-change-board-button {
+                white-space: nowrap;
+            }
+
+            .board-meta-top {
+                align-items: flex-start;
+                display: flex;
+                gap: 0.35rem;
+                justify-content: space-between;
+                min-width: 0;
+            }
+
+            .players {
+                color: var(--fg);
+                font-size: 0.9rem;
+                font-weight: bold;
+                line-height: 1.2;
+            }
+
+            .players.player-pair,
+            .players.player-single {
+                align-items: center;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.35rem;
+                justify-content: center;
+                justify-self: center;
+                min-width: 0;
+                overflow: hidden;
+            }
+
+            .board-subtitle {
+                justify-self: end;
+                max-width: min(100%, 18rem);
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                text-align: right;
+                white-space: nowrap;
+            }
+
+            .player-badge {
+                align-items: center;
+                display: inline-flex;
+                gap: 0.35rem;
+                max-width: 100%;
+                min-width: 0;
+            }
+
+            .player-name {
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .player-vs {
+                color: var(--text-color-faded);
+                font-size: 0.76rem;
+                font-weight: bold;
+                letter-spacing: 0.03em;
+                line-height: 1;
+                text-transform: uppercase;
+            }
+
+            .stage-avatar {
+                align-items: center;
+                background: var(--shade2);
+                color: var(--fg);
+                display: inline-flex;
+                flex: 0 0 auto;
+                font-size: 0.56rem;
+                font-weight: bold;
+                height: 1.15rem;
+                justify-content: center;
+                line-height: 1;
+                min-width: 1.15rem;
+                overflow: hidden;
+                text-transform: uppercase;
+            }
+
+            .stage-avatar-image {
+                display: block;
+                height: 100%;
+                object-fit: cover;
+                width: 100%;
+            }
+        }
+
+        .board-meta-main {
+            display: block;
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+            padding-top: 0.5rem;
+        }
+
+        .board-meta-main .board-title-row {
+            width: 100%;
+        }
+
+        &.secondary-pane-hidden {
+            .board-meta-main {
+                display: block;
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+                padding-top: 0.5rem;
+            }
+
+            .board-meta-main .board-title-row {
+                width: 100%;
+            }
+        }
+
+        .board-fit-slot {
+            align-items: center;
+            display: grid;
+            justify-items: center;
+            min-height: 0;
+            min-width: 0;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .board-content-spacer {
+            flex: 1 1 auto;
+            min-height: 0;
+        }
+
+        .KibitzBoard.main-board-surface {
+            box-sizing: border-box;
+            min-height: 0;
+            padding: 0.125rem;
+
+            .goban-container {
+                aspect-ratio: 1 / 1;
+                height: auto !important;
+                width: 100%;
+            }
+        }
+
+        .KibitzBoard.secondary-board-surface {
+            box-sizing: border-box;
+            min-height: 0;
+            padding: 0.125rem;
+        }
+
+        .KibitzBoard {
+            align-self: start;
+            justify-self: center;
+            max-width: 100%;
+            width: 100%;
+        }
+
+        .secondary-board .KibitzBoard {
+            max-width: min(100%, 14rem, 34vh);
+        }
+
+        .secondary-board .KibitzBoardControls {
+            align-self: center;
+            width: auto;
+        }
+
+        .secondary-board .kibitz-move-tree-container {
+            justify-self: center;
+            width: min(100%, 14rem, 34vh);
+        }
+
+        .board-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            justify-content: flex-end;
+            margin-left: auto;
+            min-width: 0;
+            text-align: left;
+        }
+
+        .secondary-board-transport-row {
+            align-items: center;
+            box-sizing: border-box;
+            display: flex;
+            gap: 0.35rem;
+            height: var(--equal-transport-height, auto);
+            justify-content: center;
+            margin: 0 auto;
+            max-width: 100%;
+            min-width: 0;
+            width: fit-content;
+            padding: 0.3125rem 0;
+        }
+
+        .secondary-board-transport-row > * {
+            align-self: center;
+            flex: 0 0 auto;
+        }
+
+        .secondary-board-return-live-action {
+            align-items: center;
+            display: flex;
+            height: 1.6rem;
+            justify-content: flex-end;
+            margin-left: 0;
+            margin-right: 0.125rem;
+        }
+
+        .secondary-board-return-live-action .kibitz-return-live-button {
+            align-items: center;
+            background: var(--primary);
+            border: 0;
+            box-shadow: none;
+            color: var(--colored-background-fg);
+            cursor: pointer;
+            display: inline-flex;
+            font-size: 0.75rem;
+            height: 1.6rem;
+            justify-content: center;
+            line-height: 1;
+            min-width: auto;
+            padding: 0 0.55rem;
+            white-space: nowrap;
+        }
+
+        .main-board-transport-row {
+            align-items: center;
+            box-sizing: border-box;
+            display: grid;
+            gap: 0.35rem;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            height: var(--equal-transport-height, auto);
+            min-width: 0;
+            width: 100%;
+            padding: 0.3125rem 0;
+        }
+
+        .main-board-transport-row > * {
+            align-self: center;
+        }
+
+        .main-board-variation-spacer {
+            height: 0;
+            min-height: 0;
+            visibility: hidden;
+        }
+
+        .main-board-analyze-spacer {
+            display: none;
+        }
+
+        .main-board-compose-spacer {
+            display: none;
+        }
+
+        .main-board-transport-row .transport-controls {
+            grid-column: 2;
+            justify-self: center;
+            min-width: 9.75rem;
+        }
+
+        .main-board-new-variation-action {
+            grid-column: 3;
+            justify-self: start;
+            margin-top: 3.6px;
+        }
+
+        .secondary-board-transport-row .transport-controls .KibitzBoardControls.full {
+            width: auto;
+            max-width: none;
+        }
+
+        .secondary-board-analyze-row {
+            display: none;
+        }
+
+        .secondary-board-node-text-row {
+            display: none;
+        }
+
+        .secondary-board-compose-row {
+            display: none;
+        }
+
+        .board-actions.board-actions-inline {
+            flex-wrap: nowrap;
+            gap: 0.25rem;
+            margin-left: 0;
+            padding: 0 0.125rem;
+            width: auto;
+        }
+
+        .board-actions.board-actions-inline.board-actions-left {
+            justify-content: flex-start;
+        }
+
+        .board-actions.board-actions-inline.board-actions-right {
+            justify-content: flex-end;
+        }
+
+        .main-board-return-live-action {
+            align-items: center;
+            height: 1.6rem;
+            margin-top: 3.6px;
+            margin-left: 0;
+            justify-self: end;
+        }
+
+        .main-board-return-live-action .kibitz-return-live-button,
+        .secondary-board-return-live-action .kibitz-return-live-button {
+            align-items: center;
+            background: var(--primary);
+            border: 0;
+            box-shadow: none;
+            color: var(--colored-background-fg);
+            cursor: pointer;
+            display: inline-flex;
+            font-size: 0.75rem;
+            height: 1.6rem;
+            justify-content: center;
+            line-height: 1;
+            min-width: auto;
+            padding: 0 0.55rem;
+            white-space: nowrap;
+        }
+
+        .main-board-return-live-action .kibitz-return-live-button.compact {
+            font-size: 0.68rem;
+            padding: 0 0.35rem;
+        }
+
+        .kibitz-return-live-button.is-hidden {
+            pointer-events: none;
+            visibility: hidden;
+        }
+
+        .secondary-board-empty-state {
+            align-items: center;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            justify-content: center;
+            min-height: 100%;
+            padding: 1rem 0.5rem;
+            text-align: center;
+        }
+
+        .secondary-board-empty-message {
+            max-width: 22rem;
+        }
+
+        .create-variation-button {
+            align-items: center;
+            box-shadow: none;
+            background: var(--primary);
+            border: 0;
+            color: var(--colored-background-fg);
+            cursor: pointer;
+            display: inline-flex;
+            font-size: 0.75rem;
+            height: 1.6rem;
+            justify-content: center;
+            line-height: 1;
+            min-width: 1.65rem;
+            padding: 0 0.45rem;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .create-variation-button.compact {
+            font-size: 0.75rem;
+            line-height: 1.1;
+        }
+
+        .preview-action-button.clear-preview {
+            align-self: flex-start;
+        }
+
+        .preview-action-button.symbol-button {
+            font-size: 0.78rem;
+            font-weight: bold;
+            min-width: 2rem;
+            text-align: center;
+        }
+
+        &.collapsed {
+            display: none;
+
+            .panel-body {
+                min-height: 6rem;
+                justify-content: center;
+            }
+        }
+
+        &.secondary-board {
+            .panel-body {
+                padding-left: 0.375rem;
+                padding-right: 0.375rem;
+            }
+
+            .board-content {
+                grid-template-rows: auto minmax(0, 1fr) auto;
+            }
+
+            .board-meta {
+                .players {
+                    font-size: 0.9rem;
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 1850px), (max-height: 1000px) {
+    .KibitzRoomStage {
+        .KibitzRoomStage-boards.secondary-pane-equal {
+            --equal-main-track: minmax(11.75rem, 0.62fr);
+            --equal-secondary-track: minmax(18rem, 1.38fr);
+            --equal-transport-height: 2.25rem;
+            --equal-variation-height: 5rem;
+        }
+    }
+}
+
+@media (max-width: 1000px) {
+    .KibitzRoomStage {
+        padding: 0;
+    }
+
+    .KibitzRoomStage-mobile {
+        background: var(--card-background-color);
+    }
+
+    .Kibitz-mobile-board-host {
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        min-height: 0;
+        padding: 0.125rem;
+    }
+
+    .Kibitz-mobile-board-meta {
+        align-items: center;
+        display: flex;
+        gap: 0.5rem;
+        justify-content: space-between;
+        min-width: 0;
+        padding: 0.25rem 0.4rem 0;
+    }
+
+    .mobile-board-meta-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 0.08rem;
+        min-width: 0;
+    }
+
+    .mobile-board-meta-label {
+        color: var(--primary);
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        line-height: 1.1;
+        text-transform: uppercase;
+    }
+
+    .mobile-board-meta-title {
+        color: var(--fg);
+        font-size: 0.84rem;
+        font-weight: 700;
+        line-height: 1.15;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .mobile-board-clear-button {
+        background: var(--shade2);
+        border: 0;
+        box-shadow: none;
+        color: var(--fg);
+        cursor: pointer;
+        flex: 0 0 auto;
+        font-size: 0.75rem;
+        font-weight: 700;
+        line-height: 1;
+        padding: 0.38rem 0.6rem;
+        white-space: nowrap;
+    }
+
+    .mobile-board-fit-slot {
+        align-items: center;
+        aspect-ratio: 1 / 1;
+        background: #fff;
+        display: grid;
+        justify-items: center;
+        margin: 0 auto;
+        max-width: 100%;
+        min-height: 0;
+        min-width: 0;
+        overflow: hidden;
+        width: min(100%, var(--kibitz-mobile-board-max, 31rem));
+    }
+
+    .mobile-board-fit-slot .KibitzBoard {
+        align-self: center;
+        justify-self: center;
+        max-width: none;
+        width: auto;
+    }
+
+    .mobile-board-fit-slot .KibitzBoard .goban-container {
+        flex: 0 0 auto !important;
+        flex-basis: auto !important;
+        min-height: 0 !important;
+    }
+
+    .mobile-board-fit-slot-openable {
+        cursor: pointer;
+    }
+
+    [data-theme="dark"] {
+        .Kibitz-mobile-board-host,
+        .mobile-board-fit-slot {
+            background: var(--card-background-color);
+        }
+    }
+
+    .mobile-board-controls-row {
+        align-items: center;
+        display: grid;
+        gap: 0.35rem;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        margin: 0;
+        min-height: 2rem;
+        min-width: 0;
+        padding: 0.25rem 0.4rem 0;
+    }
+
+    .mobile-board-controls-transport {
+        align-items: center;
+        align-self: center;
+        display: flex;
+        justify-content: center;
+        justify-self: center;
+        min-width: 0;
+        width: auto;
+    }
+
+    .mobile-board-controls-transport .KibitzBoardControls {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .mobile-board-controls-transport .KibitzBoardControls.minimal-row {
+        margin-block: 0.2rem;
+        padding-inline: 0;
+    }
+
+    .mobile-board-controls-transport
+        .KibitzBoardControls.minimal-row
+        .minimal-row-core
+        .kibitz-move-control,
+    .mobile-board-controls-transport
+        .KibitzBoardControls.minimal-row
+        .minimal-row-core
+        .kibitz-return-live-button,
+    .mobile-board-controls-transport
+        .KibitzBoardControls.minimal-row
+        .minimal-row-core
+        .move-number {
+        margin-block: 0;
+    }
+
+    .mobile-board-controls-panels {
+        align-self: center;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        justify-content: flex-start;
+        justify-self: stretch;
+        align-items: flex-end;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .kibitz-mobile-stage-panel-button {
+        margin-block: 0;
+        padding-inline: 0.45rem;
+    }
+
+    .mobile-board-controls-row > .kibitz-mobile-stage-panel-button,
+    .mobile-board-controls-panels > .kibitz-mobile-stage-panel-button {
+        width: 90%;
+    }
+
+    .mobile-board-controls-new-variation {
+        margin-left: auto;
+    }
+
+    .mobile-board-controls-return-live {
+        margin-left: auto;
+    }
+
+    [data-theme="light"] .Kibitz {
+        .mobile-board-controls-toggle:not(.active):not([aria-pressed="true"]) {
+            background: var(--shade2) !important;
+        }
+    }
+
+    .mobile-board-analyze-row,
+    .mobile-board-node-text-row,
+    .mobile-board-compose-row {
+        align-items: center;
+        display: flex;
+        justify-content: center;
+        min-width: 0;
+        padding: 0 0.35rem 0.2rem;
+    }
+
+    .mobile-board-analyze-row {
+        overflow: hidden;
+    }
+
+    .mobile-board-analyze-row .game-analyze-button-bar {
+        gap: 0;
+        justify-content: center;
+    }
+
+    .mobile-board-analyze-row .game-analyze-button-bar .btn-group {
+        display: inline-flex;
+        gap: 0;
+    }
+
+    .mobile-board-analyze-row .game-analyze-button-bar button {
+        font-size: 0.78rem;
+        min-height: 1.35rem;
+        min-width: 1.35rem;
+        padding: 0 0.28rem;
+    }
+
+    .mobile-board-analyze-row .game-analyze-button-bar .pass-button {
+        min-width: auto;
+        padding: 0 0.45rem;
+    }
+
+    .mobile-board-analyze-row .game-analyze-button-bar input {
+        height: 1.35rem;
+        width: 1.35rem;
+    }
+
+    .mobile-board-compose-row {
+        padding-top: 0;
+    }
+
+    .mobile-board-node-text-row {
+        padding-top: 0;
+    }
+
+    .mobile-board-compose-row .KibitzVariationComposer {
+        width: 100%;
+    }
+
+    .mobile-board-node-text-row .KibitzNodeText {
+        min-height: 3.6rem;
+    }
+
+    .mobile-board-compose-row .KibitzVariationComposer input,
+    .mobile-board-compose-row .KibitzVariationComposer button {
+        box-sizing: border-box;
+        height: 1.6rem;
+    }
+
+    .KibitzRoomStage {
+        .KibitzRoomStage-boards {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 0;
+        }
+
+        .KibitzRoomStage-boards.secondary-pane-equal,
+        .KibitzRoomStage-boards.secondary-pane-small,
+        .KibitzRoomStage-boards.secondary-pane-hidden {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .KibitzRoomStage-boards .KibitzDividerHandle {
+            display: none;
+        }
+
+        .KibitzRoomStage-boards.secondary-pane-hidden .secondary-board {
+            display: none;
+        }
+
+        .KibitzRoomStage-boards:not(.secondary-pane-hidden) .main-board {
+            display: none;
+        }
+
+        .KibitzRoomStage-boards:not(.secondary-pane-hidden) .secondary-board {
+            display: flex;
+        }
+
+        .board-panel .panel-body {
+            padding: 0.125rem;
+        }
+
+        .board-meta {
+            min-height: auto;
+            padding: 0.35rem 0.4rem 0.45rem;
+        }
+
+        .board-title-row {
+            display: none;
+        }
+
+        .main-board .board-meta {
+            display: none;
+        }
+
+        .board-meta-main {
+            display: grid;
+            gap: 0.2rem;
+            grid-template-columns: minmax(0, 1fr);
+            padding-left: 0.4rem;
+            padding-right: 0.4rem;
+            padding-top: 0.4rem;
+        }
+
+        .board-meta-main .board-title-row,
+        .board-meta-main .players.player-pair {
+            grid-column: auto;
+            justify-self: start;
+        }
+
+        .board-title {
+            display: none;
+            font-size: 0.92rem;
+        }
+
+        .board-subtitle {
+            display: none;
+            font-size: 0.72rem;
+        }
+
+        .players {
+            font-size: 0.84rem;
+        }
+
+        .KibitzBoard,
+        .secondary-board .KibitzBoard {
+            max-width: min(100%, 30rem, calc(100vw - 1rem));
+            width: 100%;
+        }
+
+        .secondary-board .KibitzBoardControls,
+        .secondary-board .kibitz-move-tree-container {
+            min-width: 0;
+            width: min(100%, 30rem, calc(100vw - 1rem));
+        }
+    }
+}
+
+@media (min-width: 1001px) {
+    [data-theme="light"] .KibitzRoomStage {
+        background: var(--card-background-color);
+    }
+
+    [data-theme="light"] .KibitzRoomStage .room-stage-header {
+        background: var(--bg);
+    }
+
+    [data-theme="light"] .KibitzRoomStage .board-panel {
+        background: var(--bg);
+    }
+}

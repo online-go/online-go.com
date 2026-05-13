@@ -1,0 +1,34 @@
+.KibitzBoard {
+    align-items: stretch;
+    display: flex;
+    flex: 0 0 auto;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+
+    .goban-container {
+        align-items: stretch;
+        aspect-ratio: auto;
+        display: flex;
+        flex: 1 1 auto;
+        height: 100% !important;
+        justify-content: center;
+        max-height: none;
+        max-width: none;
+        min-height: 0;
+        min-width: 0;
+        position: relative;
+        width: 100% !important;
+
+        .Goban {
+            left: 0;
+            box-shadow: none !important;
+            position: absolute;
+            top: 0;
+        }
+
+        .Goban .Goban {
+            box-shadow: none !important;
+        }
+    }
+}

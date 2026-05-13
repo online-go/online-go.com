@@ -1,0 +1,54 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.GameChatLine {
+    .variation,
+    .position {
+        font-weight: bold;
+        color: var(--variation);
+        border-radius: 2px;
+        margin-left: 0.2em;
+        margin-right: 0.2em;
+        padding-left: 0.2em;
+        padding-right: 0.2em;
+        text-decoration: none;
+    }
+
+    .variation:hover,
+    .position:hover {
+        color: var(--variation-hover);
+        text-decoration: underline;
+    }
+
+    .variation {
+        cursor: pointer;
+    }
+
+    .position {
+        cursor: crosshair;
+
+        &.tight-right {
+            margin-right: 0;
+            padding-right: 0;
+        }
+    }
+
+    .position-trailing {
+        margin-right: 0.2em;
+        padding-right: 0.2em;
+    }
+}
