@@ -502,7 +502,7 @@
             }
 
             .secondary-board .KibitzBoard {
-                max-width: min(100%, 48rem, 78vh);
+                max-width: min(100%, 78vh);
                 width: auto;
             }
 
