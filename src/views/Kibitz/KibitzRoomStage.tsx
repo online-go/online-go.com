@@ -295,9 +295,6 @@ export function KibitzRoomStage({
     const mainGame = room.current_game;
     const secondaryGameId = secondaryPane.preview_game_id;
     const secondaryPaneSize = secondaryPane.collapsed ? "hidden" : (secondaryPane.size ?? "small");
-    const isCreatingVariationFromCurrentBoard = Boolean(
-        secondaryPaneSize === "equal" && secondaryPane.variation_source_game,
-    );
     const selectedVariation = variations.find(
         (variation) => variation.id === secondaryPane.variation_id,
     );
@@ -1299,63 +1296,6 @@ export function KibitzRoomStage({
                             )
                         ) : secondaryGameId ? (
                             <div className="board-content board-content-variation">
-                                <div
-                                    className={
-                                        "board-meta" +
-                                        (isCreatingVariationFromCurrentBoard
-                                            ? " board-meta-variation-inline"
-                                            : "")
-                                    }
-                                >
-                                    {isCreatingVariationFromCurrentBoard ? (
-                                        <>
-                                            {secondaryBoardGame ? (
-                                                <div className="players player-pair">
-                                                    {renderRichPlayerBadge(
-                                                        secondaryBoardGame.black,
-                                                        secondaryBoardGame.black.username,
-                                                    )}
-                                                    <span className="player-vs">
-                                                        {pgettext(
-                                                            "Versus label shown between players in kibitz",
-                                                            "vs",
-                                                        )}
-                                                    </span>
-                                                    {renderRichPlayerBadge(
-                                                        secondaryBoardGame.white,
-                                                        secondaryBoardGame.white.username,
-                                                    )}
-                                                </div>
-                                            ) : null}
-                                            <div className="board-meta-variation-title">
-                                                {pgettext(
-                                                    "Title for a new Kibitz variation draft",
-                                                    "New variation",
-                                                )}
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <div className="players player-pair">
-                                                {renderRichPlayerBadge(
-                                                    previewGame?.black,
-                                                    previewGame?.black.username,
-                                                )}
-                                                <span className="player-vs">
-                                                    {pgettext(
-                                                        "Versus label shown between players in kibitz",
-                                                        "vs",
-                                                    )}
-                                                </span>
-                                                {renderRichPlayerBadge(
-                                                    previewGame?.white,
-                                                    previewGame?.white.username,
-                                                )}
-                                            </div>
-                                            {previewGame?.title ?? ""}
-                                        </>
-                                    )}
-                                </div>
                                 <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
                                     <KibitzBoard
                                         gameId={secondaryGameId}

@@ -426,7 +426,6 @@
                 font-size: 0.84rem;
             }
 
-            .secondary-board .board-meta,
             .secondary-board-analyze-row,
             .secondary-board-node-text-row,
             .secondary-board-compose-row,
@@ -1103,12 +1102,6 @@
 
             .board-content {
                 grid-template-rows: auto minmax(0, 1fr) auto;
-            }
-
-            .board-meta {
-                .players {
-                    font-size: 0.9rem;
-                }
             }
         }
     }
