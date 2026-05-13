@@ -18,7 +18,7 @@
 import * as React from "react";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { KibitzRoomSummary } from "@/models/kibitz";
-import { getKibitzRoomLockedLabel, getKibitzRoomLockedTooltip } from "./kibitzAnalysisPolicyCopy";
+import { getKibitzRoomLockedLabel, getKibitzRoomLockedTooltip } from "./kibitzAnalysisPolicyText";
 import { KIBITZ_HELP_TARGETS } from "./HelpFlows/KibitzHelpTargets";
 import { useKibitzHelpTarget } from "./HelpFlows/useKibitzHelpTarget";
 import "./KibitzRoomList.css";
