@@ -161,112 +161,6 @@ function boardDimensionsOf(game: { board_size?: `${number}x${number}` } | null |
     return {};
 }
 
-function findExistingMovePathEndpoint(
-    engine: GobanController["goban"]["engine"],
-    movePath: string,
-): MoveTree | null {
-    const moves = engine.decodeMoves(movePath);
-    let cursor = engine.move_tree;
-
-    for (const move of moves) {
-        const edited = !!move.edited;
-        const player = engine.playerByColor(move.color || 0);
-        let next: MoveTree | undefined;
-
-        if (
-            cursor.trunk_next &&
-            cursor.trunk_next.x === move.x &&
-            cursor.trunk_next.y === move.y &&
-            cursor.trunk_next.edited === edited &&
-            (!edited || cursor.trunk_next.player === player)
-        ) {
-            next = cursor.trunk_next;
-        } else {
-            next = cursor.branches.find(
-                (branch) =>
-                    branch.x === move.x &&
-                    branch.y === move.y &&
-                    branch.edited === edited &&
-                    (!edited || branch.player === player),
-            );
-        }
-
-        if (!next) {
-            return null;
-        }
-
-        cursor = next;
-    }
-
-    return cursor;
-}
-
-function getMoveTreePositionPath(node: MoveTree | null | undefined): string | null {
-    if (!node) {
-        return null;
-    }
-
-    const segments: string[] = [];
-    let cursor: MoveTree = node;
-
-    while (cursor.parent) {
-        const parent = cursor.parent;
-
-        if (parent.trunk_next === cursor) {
-            segments.push("T");
-        } else {
-            const branchIndex = parent.branches.indexOf(cursor);
-
-            if (branchIndex < 0) {
-                return null;
-            }
-
-            segments.push(`B${branchIndex}`);
-        }
-
-        cursor = parent;
-    }
-
-    return segments.reverse().join("/");
-}
-
-function findExistingMoveTreePositionEndpoint(
-    engine: GobanController["goban"]["engine"],
-    positionPath: string,
-): MoveTree | null {
-    let cursor = engine.move_tree;
-
-    if (!positionPath) {
-        return cursor;
-    }
-
-    for (const segment of positionPath.split("/")) {
-        if (segment === "T") {
-            if (!cursor.trunk_next) {
-                return null;
-            }
-
-            cursor = cursor.trunk_next;
-            continue;
-        }
-
-        if (!segment.startsWith("B")) {
-            return null;
-        }
-
-        const branchIndex = Number.parseInt(segment.slice(1), 10);
-        const branch = cursor.branches[branchIndex];
-
-        if (!Number.isInteger(branchIndex) || !branch) {
-            return null;
-        }
-
-        cursor = branch;
-    }
-
-    return cursor;
-}
-
 function renderInlineAvatar(
     user: KibitzRoomUser | null | undefined,
     className: string,
@@ -528,12 +422,10 @@ export function KibitzRoomStage({
         variationId: string | null;
         requestId: number;
         visibleVariationKey: string;
-        focusedPositionPath: string | null;
     }>({
         variationId: null,
         requestId: -1,
         visibleVariationKey: "",
-        focusedPositionPath: null,
     });
     const appliedDraftBaseRef = React.useRef<{
         controller: GobanController | null;
@@ -650,7 +542,7 @@ export function KibitzRoomStage({
         const goban = secondaryBoardController.goban;
 
         let applyingVariation = false;
-        const apply = (forceFocusSelected: boolean = false): boolean => {
+        const apply = (): boolean => {
             if (applyingVariation) {
                 return false;
             }
@@ -675,13 +567,6 @@ export function KibitzRoomStage({
                 suppressSelectedVariationLoadTimerRef.current = null;
             }
             suppressSelectedVariationLoadRef.current = true;
-            const previousFocusPath = goban.engine.cur_move?.getMoveStringToThisPoint();
-            const previousFocusPositionPath = getMoveTreePositionPath(goban.engine.cur_move);
-            const shouldFocusSelected =
-                lastVariationFocusRequestRef.current.variationId !== selectedVariation.id ||
-                lastVariationFocusRequestRef.current.requestId !== variationFocusRequestId ||
-                lastVariationFocusRequestRef.current.visibleVariationKey !==
-                    visibleVariationApplyKey;
             const selectedColorIndex = selectedVariationColorIndex;
 
             try {
@@ -726,36 +611,13 @@ export function KibitzRoomStage({
                     selectedEndpoint = applied.endpoint;
                 }
 
-                if (selectedEndpoint && (shouldFocusSelected || forceFocusSelected)) {
+                if (selectedEndpoint) {
                     goban.engine.jumpTo(selectedEndpoint);
                     lastVariationFocusRequestRef.current = {
                         variationId: selectedVariation.id,
                         requestId: variationFocusRequestId,
                         visibleVariationKey: visibleVariationApplyKey,
-                        focusedPositionPath: getMoveTreePositionPath(selectedEndpoint),
                     };
-                } else {
-                    const previousPositionEndpoint = previousFocusPositionPath
-                        ? findExistingMoveTreePositionEndpoint(
-                              goban.engine,
-                              previousFocusPositionPath,
-                          )
-                        : null;
-                    const selectedEndpointMatchesPreviousMovePath =
-                        previousFocusPath &&
-                        selectedEndpoint?.getMoveStringToThisPoint() === previousFocusPath;
-
-                    const fallbackEndpoint =
-                        previousPositionEndpoint ??
-                        (selectedEndpointMatchesPreviousMovePath ? selectedEndpoint : null) ??
-                        (previousFocusPath
-                            ? findExistingMovePathEndpoint(goban.engine, previousFocusPath)
-                            : null) ??
-                        selectedEndpoint;
-
-                    if (fallbackEndpoint) {
-                        goban.engine.jumpTo(fallbackEndpoint);
-                    }
                 }
 
                 if (!selectedVariation.analysis_line_tree) {
@@ -782,7 +644,7 @@ export function KibitzRoomStage({
             if (suppressSelectedVariationLoadRef.current) {
                 return;
             }
-            apply(true);
+            apply();
         };
         goban.on("load", onLoad);
 
