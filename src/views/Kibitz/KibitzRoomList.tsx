@@ -116,7 +116,23 @@ export function KibitzRoomList({
                                 </div>
                                 <div className="room-bottom-row">
                                     <span className="room-subtitle" title={roomDescription}>
-                                        {roomDescription}
+                                        {room.kind === "preset" ? (
+                                            <>
+                                                <span className="preset-label">
+                                                    {pgettext(
+                                                        "Label shown before a kibitz room description for preset rooms",
+                                                        "Preset",
+                                                    )}
+                                                </span>
+                                                <span
+                                                    className="room-kind-separator"
+                                                    aria-hidden="true"
+                                                >
+                                                    {" · "}
+                                                </span>
+                                            </>
+                                        ) : null}
+                                        <span className="room-description">{roomDescription}</span>
                                     </span>
                                     <span
                                         className="room-viewer-count"
