@@ -285,7 +285,7 @@ export function KibitzGamePickerOverlay({
                 }
             }
         },
-        [isMobileLayout, mode],
+        [currentUser, isMobileLayout, mode],
     );
 
     const onSelectGameId = React.useCallback(
