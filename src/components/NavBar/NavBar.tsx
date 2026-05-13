@@ -36,6 +36,8 @@ import { TournamentIndicator } from "@/components/Announcements";
 import { FriendIndicator } from "@/components/FriendList";
 import { ChatIndicator } from "@/components/Chat";
 import { GoTVIndicator } from "@/views/GoTV";
+import kibitzIcon from "../../../assets/icons/Kibitz96.png";
+import { get } from "@/lib/requests";
 import { Menu, MenuContext } from "./Menu";
 
 import { logout } from "@/lib/auth";
@@ -77,6 +79,23 @@ export function NavBar(): React.ReactElement {
     const search_input = React.useRef<HTMLInputElement>(null);
     const [force_nav_close, setForceNavClose] = React.useState(false);
     const [banned_user_id] = useData("appeals.banned_user_id");
+    const [kibitzShowInNav, setKibitzShowInNav] = React.useState<boolean>(false);
+
+    React.useEffect(() => {
+        let cancelled = false;
+        get("kibitz/nav-config")
+            .then((res: { show_in_nav?: boolean }) => {
+                if (!cancelled) {
+                    setKibitzShowInNav(Boolean(res?.show_in_nav));
+                }
+            })
+            .catch(() => {
+                // Network blip / endpoint missing — leave the link hidden.
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
 
@@ -234,6 +253,22 @@ export function NavBar(): React.ReactElement {
                                 to="/observe-games"
                                 icon={<i className="fa fa-eye" />}
                             />
+                            {kibitzShowInNav && (
+                                <MenuLink
+                                    title={_("Kibitz")}
+                                    to="/kibitz"
+                                    icon={
+                                        <span
+                                            className="kibitz-nav-icon"
+                                            aria-hidden={true}
+                                            style={{
+                                                WebkitMaskImage: `url(${kibitzIcon})`,
+                                                maskImage: `url(${kibitzIcon})`,
+                                            }}
+                                        />
+                                    }
+                                />
+                            )}
                             <MenuLink title={"GoTV"} to="/gotv" icon={<i className="fa fa-tv" />} />
                         </Menu>
                         <Menu

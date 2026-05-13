@@ -441,10 +441,25 @@ header.NavBar {
             margin-right: 0.5rem;
         }
 
+        .kibitz-nav-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-right: 0.5rem;
+            background-color: currentColor;
+            mask-repeat: no-repeat;
+            mask-position: center;
+            mask-size: contain;
+            -webkit-mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+            -webkit-mask-size: contain;
+        }
+
         .Menu-children {
             img,
             .fa,
-            .ogs-goban {
+            .ogs-goban,
+            .kibitz-nav-icon {
                 width: 16px;
                 max-width: 16px;
                 height: 16px;
