@@ -201,6 +201,72 @@ function findExistingMovePathEndpoint(
     return cursor;
 }
 
+function getMoveTreePositionPath(node: MoveTree | null | undefined): string | null {
+    if (!node) {
+        return null;
+    }
+
+    const segments: string[] = [];
+    let cursor: MoveTree = node;
+
+    while (cursor.parent) {
+        const parent = cursor.parent;
+
+        if (parent.trunk_next === cursor) {
+            segments.push("T");
+        } else {
+            const branchIndex = parent.branches.indexOf(cursor);
+
+            if (branchIndex < 0) {
+                return null;
+            }
+
+            segments.push(`B${branchIndex}`);
+        }
+
+        cursor = parent;
+    }
+
+    return segments.reverse().join("/");
+}
+
+function findExistingMoveTreePositionEndpoint(
+    engine: GobanController["goban"]["engine"],
+    positionPath: string,
+): MoveTree | null {
+    let cursor = engine.move_tree;
+
+    if (!positionPath) {
+        return cursor;
+    }
+
+    for (const segment of positionPath.split("/")) {
+        if (segment === "T") {
+            if (!cursor.trunk_next) {
+                return null;
+            }
+
+            cursor = cursor.trunk_next;
+            continue;
+        }
+
+        if (!segment.startsWith("B")) {
+            return null;
+        }
+
+        const branchIndex = Number.parseInt(segment.slice(1), 10);
+        const branch = cursor.branches[branchIndex];
+
+        if (!Number.isInteger(branchIndex) || !branch) {
+            return null;
+        }
+
+        cursor = branch;
+    }
+
+    return cursor;
+}
+
 function renderInlineAvatar(
     user: KibitzRoomUser | null | undefined,
     className: string,
@@ -462,12 +528,12 @@ export function KibitzRoomStage({
         variationId: string | null;
         requestId: number;
         visibleVariationKey: string;
-        focusedPath: string | null;
+        focusedPositionPath: string | null;
     }>({
         variationId: null,
         requestId: -1,
         visibleVariationKey: "",
-        focusedPath: null,
+        focusedPositionPath: null,
     });
     const appliedDraftBaseRef = React.useRef<{
         controller: GobanController | null;
@@ -610,6 +676,7 @@ export function KibitzRoomStage({
             }
             suppressSelectedVariationLoadRef.current = true;
             const previousFocusPath = goban.engine.cur_move?.getMoveStringToThisPoint();
+            const previousFocusPositionPath = getMoveTreePositionPath(goban.engine.cur_move);
             const shouldFocusSelected =
                 lastVariationFocusRequestRef.current.variationId !== selectedVariation.id ||
                 lastVariationFocusRequestRef.current.requestId !== variationFocusRequestId ||
@@ -665,13 +732,30 @@ export function KibitzRoomStage({
                         variationId: selectedVariation.id,
                         requestId: variationFocusRequestId,
                         visibleVariationKey: visibleVariationApplyKey,
-                        focusedPath: selectedEndpoint.getMoveStringToThisPoint(),
+                        focusedPositionPath: getMoveTreePositionPath(selectedEndpoint),
                     };
-                } else if (previousFocusPath) {
-                    goban.engine.jumpTo(
-                        findExistingMovePathEndpoint(goban.engine, previousFocusPath) ??
-                            selectedEndpoint,
-                    );
+                } else {
+                    const previousPositionEndpoint = previousFocusPositionPath
+                        ? findExistingMoveTreePositionEndpoint(
+                              goban.engine,
+                              previousFocusPositionPath,
+                          )
+                        : null;
+                    const selectedEndpointMatchesPreviousMovePath =
+                        previousFocusPath &&
+                        selectedEndpoint?.getMoveStringToThisPoint() === previousFocusPath;
+
+                    const fallbackEndpoint =
+                        previousPositionEndpoint ??
+                        (selectedEndpointMatchesPreviousMovePath ? selectedEndpoint : null) ??
+                        (previousFocusPath
+                            ? findExistingMovePathEndpoint(goban.engine, previousFocusPath)
+                            : null) ??
+                        selectedEndpoint;
+
+                    if (fallbackEndpoint) {
+                        goban.engine.jumpTo(fallbackEndpoint);
+                    }
                 }
 
                 if (!selectedVariation.analysis_line_tree) {
