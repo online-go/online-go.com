@@ -102,15 +102,23 @@ export function KibitzBoard({
         gobanDiv.current.style.setProperty("background-color", "#DCB35C", "important");
         gobanDiv.current.style.setProperty("background-image", "none", "important");
         gobanDiv.current.style.setProperty("box-shadow", "none", "important");
-        if (movePath) {
-            controllerRef.current.goban.engine.followPath(0, movePath);
-            controllerRef.current.goban.redraw(true);
-        }
+
+        const syncMovePath = () => {
+            if (!movePath) {
+                return;
+            }
+
+            controllerRef.current?.goban.engine.followPath(0, movePath);
+            controllerRef.current?.goban.redraw(true);
+        };
+        controllerRef.current.goban.on("load", syncMovePath);
+        syncMovePath();
         setGoban(controllerRef.current.goban);
         onReady?.(controllerRef.current);
 
         return () => {
             onReady?.(null);
+            controllerRef.current?.goban.off("load", syncMovePath);
             controllerRef.current?.destroy();
             controllerRef.current = null;
             setGoban(null);
