@@ -82,7 +82,7 @@ export function LadderList(): React.ReactElement {
     return (
         <div className="page-width">
             <div className="page-nav">
-                <h2 style={{ marginLeft: "1rem" }}>
+                <h2>
                     <i className="fa fa-list-ol"></i> {_("Ladders")}
                 </h2>
                 <div>

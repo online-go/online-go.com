@@ -150,6 +150,10 @@ a.primary:active, a.primary:hover, .primary.clickable:hover, .primary.fakelink:h
     margin-bottom: 2rem;
     width: 100%;
 
+    & h2 {
+        white-space: nowrap;
+    }
+
     & .fa-search {
         margin-bottom: 2px;
     }
@@ -164,6 +168,26 @@ a.primary:active, a.primary:hover, .primary.clickable:hover, .primary.fakelink:h
 
         & > a {
             margin: 0 1rem;
+        }
+    }
+
+    @media (max-width: 600px) {
+        flex-direction: column;
+
+        & h2 {
+            margin-bottom: 0.5rem;
+        }
+
+        & > div {
+            padding-top: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            & > a {
+                margin-left: 0;
+                white-space: nowrap;
+            }
         }
     }
 }
