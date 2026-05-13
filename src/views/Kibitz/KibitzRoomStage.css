@@ -290,7 +290,6 @@
 
             .board-panel .board-content-variation {
                 grid-template-rows:
-                    auto
                     minmax(0, 1fr)
                     auto
                     auto
@@ -310,7 +309,6 @@
 
             .board-panel .board-content-posted-variation {
                 grid-template-rows:
-                    auto
                     minmax(0, 1fr)
                     auto
                     minmax(var(--equal-variation-height), 0.3fr)
@@ -356,11 +354,43 @@
                 width: min(100%, 39rem, 78vh);
             }
 
+            .secondary-board .board-content-variation .board-fit-slot {
+                grid-row: 1;
+            }
+
+            .secondary-board .board-content-variation .secondary-board-transport-row {
+                grid-row: 2;
+            }
+
+            .secondary-board .board-content-variation .secondary-board-analyze-row {
+                grid-row: 3;
+            }
+
             .secondary-board .board-content-variation .kibitz-move-tree-container {
+                grid-row: 4;
+            }
+
+            .secondary-board .board-content-variation .secondary-board-node-text-row {
                 grid-row: 5;
             }
 
+            .secondary-board .board-content-variation .secondary-board-compose-row {
+                grid-row: 6;
+            }
+
+            .secondary-board .board-content-posted-variation .board-fit-slot {
+                grid-row: 1;
+            }
+
+            .secondary-board .board-content-posted-variation .secondary-board-transport-row {
+                grid-row: 2;
+            }
+
             .secondary-board .board-content-posted-variation .kibitz-move-tree-container {
+                grid-row: 3;
+            }
+
+            .secondary-board .board-content-posted-variation .secondary-board-node-text-row {
                 grid-row: 4;
             }
 
