@@ -32,6 +32,7 @@ import type { User } from "goban";
 import { getCurrentKibitzUser, isKibitzAccessBlockedForUser } from "./kibitzAnalysisPolicy";
 import type {
     KibitzDebugState,
+    KibitzPresetBlock,
     KibitzProposal,
     KibitzRoom,
     KibitzRoomSummary,
@@ -57,13 +58,6 @@ interface KibitzControllerEvents {
 
 type UIPushHandler = ReturnType<typeof push_manager.on>;
 
-interface BackendPresetBlock {
-    preset_key: string;
-    selection_status: "finding_game" | "watching" | "change_pending";
-    pending_game_id: number | null;
-    change_effective_at: string | null;
-}
-
 interface BackendKibitzRoom {
     id: string;
     channel: string;
@@ -76,7 +70,7 @@ interface BackendKibitzRoom {
     last_activity_at: string;
     settings?: Record<string, unknown>;
     viewer_count?: number;
-    preset?: BackendPresetBlock | null;
+    preset?: KibitzPresetBlock | null;
 }
 
 interface BackendRoomDetailResponse {
