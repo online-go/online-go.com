@@ -18,6 +18,7 @@
 import * as React from "react";
 import type { MoveTree } from "goban";
 import { Resizable } from "@/components/Resizable";
+import { KBShortcut } from "@/components/KBShortcut";
 import { Player } from "@/components/Player";
 import { GobanController } from "@/lib/GobanController";
 import { close_all_popovers, popover } from "@/lib/popover";
@@ -465,6 +466,18 @@ export function KibitzRoomStage({
         secondaryPane.variation_draft_base_id,
         secondaryPane.variation_source_game_id,
     ]);
+    const secondaryMoveNavigationShortcuts = secondaryBoardController ? (
+        <>
+            <KBShortcut shortcut="up" action={secondaryBoardController.nextBranchUp} />
+            <KBShortcut shortcut="down" action={secondaryBoardController.nextBranchDown} />
+            <KBShortcut shortcut="left" action={secondaryBoardController.previousMove} />
+            <KBShortcut shortcut="right" action={secondaryBoardController.nextMove} />
+            <KBShortcut shortcut="page-up" action={secondaryBoardController.previous10Moves} />
+            <KBShortcut shortcut="page-down" action={secondaryBoardController.forwardTenMoves} />
+            <KBShortcut shortcut="home" action={secondaryBoardController.gotoFirstMove} />
+            <KBShortcut shortcut="end" action={secondaryBoardController.gotoLastMove} />
+        </>
+    ) : null;
     const handleSecondaryMoveTreeContainerRef = React.useCallback((instance: Resizable | null) => {
         setSecondaryMoveTreeContainer(instance);
     }, []);
@@ -1507,6 +1520,7 @@ export function KibitzRoomStage({
                     </div>
                 </div>
             </div>
+            {secondaryMoveNavigationShortcuts}
             <KibitzDividerHandle secondaryPane={secondaryPane} onSetMode={onSetSecondaryPaneMode} />
         </div>
     );
