@@ -739,9 +739,10 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.applyBackendRoomUpdate(incoming);
         if (this._active_room?.id === incoming.id) {
             const summary = mapBackendRoomToSummary(incoming, this._active_room);
-            // Backend is authoritative; fall back to local preset only if the
-            // incoming payload doesn't carry one (older/partial events).
-            const basePreset = summary.preset ?? this._active_room?.preset;
+            // Backend is authoritative for preset state; the serializer always
+            // emits the field (dict for preset rooms, null/undefined otherwise),
+            // so we never need to fall back to the locally-cached value.
+            const basePreset = summary.preset;
             // Clear pending preset state only when the board change matches the
             // pending game. Belt-and-braces against unrelated room-updated events
             // (which delegate to this handler) accidentally resolving the pending
