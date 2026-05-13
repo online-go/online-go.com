@@ -989,7 +989,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                     variationFocusRequestId={variationFocusRequestId}
                     variationColorIndexes={variationColorIndexes}
                     blockedVariationFlashId={blockedVariationFlashId}
-                    onRecallVariation={onOpenVariation}
+                    onRecallVariation={(variationId) => onOpenVariation(variationId, true)}
                     onToggleVariation={onToggleVariation}
                     helpTargetId={KIBITZ_HELP_TARGETS.desktopVariationList}
                 />

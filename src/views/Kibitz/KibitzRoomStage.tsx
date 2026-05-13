@@ -161,6 +161,46 @@ function boardDimensionsOf(game: { board_size?: `${number}x${number}` } | null |
     return {};
 }
 
+function findExistingMovePathEndpoint(
+    engine: GobanController["goban"]["engine"],
+    movePath: string,
+): MoveTree | null {
+    const moves = engine.decodeMoves(movePath);
+    let cursor = engine.move_tree;
+
+    for (const move of moves) {
+        const edited = !!move.edited;
+        const player = engine.playerByColor(move.color || 0);
+        let next: MoveTree | undefined;
+
+        if (
+            cursor.trunk_next &&
+            cursor.trunk_next.x === move.x &&
+            cursor.trunk_next.y === move.y &&
+            cursor.trunk_next.edited === edited &&
+            (!edited || cursor.trunk_next.player === player)
+        ) {
+            next = cursor.trunk_next;
+        } else {
+            next = cursor.branches.find(
+                (branch) =>
+                    branch.x === move.x &&
+                    branch.y === move.y &&
+                    branch.edited === edited &&
+                    (!edited || branch.player === player),
+            );
+        }
+
+        if (!next) {
+            return null;
+        }
+
+        cursor = next;
+    }
+
+    return cursor;
+}
+
 function renderInlineAvatar(
     user: KibitzRoomUser | null | undefined,
     className: string,
@@ -588,18 +628,18 @@ export function KibitzRoomStage({
                     if (colorIndex == null) {
                         return false;
                     }
-                    applyKibitzVariationToController(
+                    const applied = applyKibitzVariationToController(
                         secondaryBoardController,
                         variation,
                         colorIndex,
-                        false,
+                        variation.id === selectedVariation.id,
                     );
+                    if (variation.id === selectedVariation.id) {
+                        selectedEndpoint = applied.endpoint;
+                    }
                 }
 
-                if (
-                    selectedVariation.game_id === visibleVariations[0]?.game_id ||
-                    visibleVariations.length === 0
-                ) {
+                if (!visibleVariations.some((variation) => variation.id === selectedVariation.id)) {
                     const applied = applyKibitzVariationToController(
                         secondaryBoardController,
                         selectedVariation,
@@ -628,7 +668,10 @@ export function KibitzRoomStage({
                         focusedPath: selectedEndpoint.getMoveStringToThisPoint(),
                     };
                 } else if (previousFocusPath) {
-                    goban.engine.followPath(0, previousFocusPath);
+                    goban.engine.jumpTo(
+                        findExistingMovePathEndpoint(goban.engine, previousFocusPath) ??
+                            selectedEndpoint,
+                    );
                 }
 
                 if (!selectedVariation.analysis_line_tree) {

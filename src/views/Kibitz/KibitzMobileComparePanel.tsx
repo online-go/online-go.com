@@ -279,7 +279,7 @@ export function KibitzMobileComparePanel({
                             variationFocusRequestId={variationFocusRequestId}
                             variationColorIndexes={variationColorIndexes}
                             blockedVariationFlashId={blockedVariationFlashId}
-                            onRecallVariation={onOpenVariation}
+                            onRecallVariation={(variationId) => onOpenVariation(variationId, true)}
                             onToggleVariation={onToggleVariation}
                             title=""
                         />
