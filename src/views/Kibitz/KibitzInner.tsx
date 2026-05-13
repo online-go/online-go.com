@@ -41,6 +41,7 @@ import { KibitzRoomStage } from "./KibitzRoomStage";
 import { KibitzSharedStreamPanel } from "./KibitzSharedStreamPanel";
 import { KibitzPresence } from "./KibitzPresence";
 import { KibitzPresencePanel } from "./KibitzPresencePanel";
+import { KibitzPresetChangePendingBanner } from "./KibitzPresetChangePendingBanner";
 import { KibitzVariationList } from "./KibitzVariationList";
 import { KibitzMobileComparePanel } from "./KibitzMobileComparePanel";
 import type { KibitzController } from "./KibitzController";
@@ -816,6 +817,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     );
 
     const currentGameId = resolvedRoom?.current_game?.game_id ?? null;
+    const isPresetWithNoGame = Boolean(resolvedRoom?.preset && !resolvedRoom.current_game?.game_id);
     const roomProposals = proposals.filter((proposal) => proposal.room_id === resolvedRoom?.id);
     const activeProposal = roomProposals.find((proposal) => proposal.status === "active");
     const queuedRoomProposals = roomProposals.filter((proposal) => proposal.status !== "active");
@@ -1259,6 +1261,12 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                     <KibitzPresence room={resolvedRoom} users={resolvedRoomUsers} />
                 </div>
                 <div className="Kibitz-main">
+                    {resolvedRoom.preset?.selection_status === "change_pending" &&
+                        resolvedRoom.preset.change_effective_at && (
+                            <KibitzPresetChangePendingBanner
+                                changeEffectiveAt={resolvedRoom.preset.change_effective_at}
+                            />
+                        )}
                     {isMobileLayout ? (
                         <div className="Kibitz-mobile-room-shell">
                             <div
@@ -1485,41 +1493,54 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                     className="Kibitz-mobile-top-pane"
                                     style={{ flexBasis: `${mobileSplitRatio * 100}%` }}
                                 >
-                                    <KibitzRoomStage
-                                        room={resolvedRoom}
-                                        rooms={rooms}
-                                        proposals={roomProposals}
-                                        variations={displayedVariations}
-                                        visibleVariationIds={visibleVariationIds}
-                                        variationColorIndexes={variationColorIndexes}
-                                        secondaryPane={secondaryPane}
-                                        onClearPreview={onClearPreview}
-                                        onPostVariation={onPostVariation}
-                                        onSetSecondaryPaneMode={onSetSecondaryPaneMode}
-                                        onChangeBoard={undefined}
-                                        canEditRoom={canManageRoom}
-                                        canDeleteRoom={permissions.can_delete_room}
-                                        onSaveRoomDetails={async (title, description) =>
-                                            controller.updateRoomDetails(
-                                                resolvedRoom.id,
-                                                title,
-                                                description,
-                                            )
-                                        }
-                                        onDeleteRoom={handleDeleteRoom}
-                                        onCreateVariation={onCreateVariation}
-                                        onCreateVariationFromPostedVariation={
-                                            onCreateVariationFromPostedVariation
-                                        }
-                                        variationFocusRequestId={variationFocusRequestId}
-                                        isMobileLayout={true}
-                                        mobileCompanionPanel={mobileCompanionPanel}
-                                        mobileHasActiveVote={Boolean(activeProposal)}
-                                        onSelectMobileCompanionPanel={onSelectMobileCompanionPanel}
-                                        onOpenMobileRooms={onToggleMobileRooms}
-                                        onMobileCompareControllerChange={setMobileCompareController}
-                                        onMainBoardControllerChange={setMainBoardController}
-                                    />
+                                    {isPresetWithNoGame ? (
+                                        <div className="KibitzPresetEmptyState">
+                                            {pgettext(
+                                                "Shown in a kibitz preset room when no eligible live game is currently being watched",
+                                                "Looking for a suitable live game.",
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <KibitzRoomStage
+                                            room={resolvedRoom}
+                                            rooms={rooms}
+                                            proposals={roomProposals}
+                                            variations={displayedVariations}
+                                            visibleVariationIds={visibleVariationIds}
+                                            variationColorIndexes={variationColorIndexes}
+                                            secondaryPane={secondaryPane}
+                                            onClearPreview={onClearPreview}
+                                            onPostVariation={onPostVariation}
+                                            onSetSecondaryPaneMode={onSetSecondaryPaneMode}
+                                            onChangeBoard={undefined}
+                                            canEditRoom={canManageRoom}
+                                            canDeleteRoom={permissions.can_delete_room}
+                                            onSaveRoomDetails={async (title, description) =>
+                                                controller.updateRoomDetails(
+                                                    resolvedRoom.id,
+                                                    title,
+                                                    description,
+                                                )
+                                            }
+                                            onDeleteRoom={handleDeleteRoom}
+                                            onCreateVariation={onCreateVariation}
+                                            onCreateVariationFromPostedVariation={
+                                                onCreateVariationFromPostedVariation
+                                            }
+                                            variationFocusRequestId={variationFocusRequestId}
+                                            isMobileLayout={true}
+                                            mobileCompanionPanel={mobileCompanionPanel}
+                                            mobileHasActiveVote={Boolean(activeProposal)}
+                                            onSelectMobileCompanionPanel={
+                                                onSelectMobileCompanionPanel
+                                            }
+                                            onOpenMobileRooms={onToggleMobileRooms}
+                                            onMobileCompareControllerChange={
+                                                setMobileCompareController
+                                            }
+                                            onMainBoardControllerChange={setMainBoardController}
+                                        />
+                                    )}
                                 </div>
                                 <div
                                     ref={mobileDividerRef}
@@ -1630,41 +1651,50 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                         </div>
                     ) : (
                         <div className="Kibitz-content">
-                            <KibitzRoomStage
-                                room={resolvedRoom}
-                                rooms={rooms}
-                                proposals={roomProposals}
-                                variations={displayedVariations}
-                                visibleVariationIds={visibleVariationIds}
-                                variationColorIndexes={variationColorIndexes}
-                                secondaryPane={secondaryPane}
-                                onClearPreview={onClearPreview}
-                                onPostVariation={onPostVariation}
-                                onSetSecondaryPaneMode={onSetSecondaryPaneMode}
-                                onChangeBoard={handleOpenChangeBoard}
-                                canEditRoom={canManageRoom}
-                                canDeleteRoom={permissions.can_delete_room}
-                                onSaveRoomDetails={async (title, description) =>
-                                    controller.updateRoomDetails(
-                                        resolvedRoom.id,
-                                        title,
-                                        description,
-                                    )
-                                }
-                                onDeleteRoom={handleDeleteRoom}
-                                onCreateVariation={onCreateVariation}
-                                onCreateVariationFromPostedVariation={
-                                    onCreateVariationFromPostedVariation
-                                }
-                                variationFocusRequestId={variationFocusRequestId}
-                                isMobileLayout={false}
-                                mobileCompanionPanel={mobileCompanionPanel}
-                                mobileHasActiveVote={Boolean(activeProposal)}
-                                onSelectMobileCompanionPanel={onSelectMobileCompanionPanel}
-                                onOpenMobileRooms={undefined}
-                                onMobileCompareControllerChange={undefined}
-                                onMainBoardControllerChange={setMainBoardController}
-                            />
+                            {isPresetWithNoGame ? (
+                                <div className="KibitzPresetEmptyState">
+                                    {pgettext(
+                                        "Shown in a kibitz preset room when no eligible live game is currently being watched",
+                                        "Looking for a suitable live game.",
+                                    )}
+                                </div>
+                            ) : (
+                                <KibitzRoomStage
+                                    room={resolvedRoom}
+                                    rooms={rooms}
+                                    proposals={roomProposals}
+                                    variations={displayedVariations}
+                                    visibleVariationIds={visibleVariationIds}
+                                    variationColorIndexes={variationColorIndexes}
+                                    secondaryPane={secondaryPane}
+                                    onClearPreview={onClearPreview}
+                                    onPostVariation={onPostVariation}
+                                    onSetSecondaryPaneMode={onSetSecondaryPaneMode}
+                                    onChangeBoard={handleOpenChangeBoard}
+                                    canEditRoom={canManageRoom}
+                                    canDeleteRoom={permissions.can_delete_room}
+                                    onSaveRoomDetails={async (title, description) =>
+                                        controller.updateRoomDetails(
+                                            resolvedRoom.id,
+                                            title,
+                                            description,
+                                        )
+                                    }
+                                    onDeleteRoom={handleDeleteRoom}
+                                    onCreateVariation={onCreateVariation}
+                                    onCreateVariationFromPostedVariation={
+                                        onCreateVariationFromPostedVariation
+                                    }
+                                    variationFocusRequestId={variationFocusRequestId}
+                                    isMobileLayout={false}
+                                    mobileCompanionPanel={mobileCompanionPanel}
+                                    mobileHasActiveVote={Boolean(activeProposal)}
+                                    onSelectMobileCompanionPanel={onSelectMobileCompanionPanel}
+                                    onOpenMobileRooms={undefined}
+                                    onMobileCompareControllerChange={undefined}
+                                    onMainBoardControllerChange={setMainBoardController}
+                                />
+                            )}
                             <div
                                 className={
                                     "Kibitz-sidebar has-stream-spacer" +

@@ -1,0 +1,11 @@
+.KibitzPresetChangePendingBanner {
+    background: var(--card-background-color);
+    color: var(--text-color-faded);
+    border-left: 3px solid var(--primary);
+    box-sizing: border-box;
+    font-size: 0.85rem;
+    line-height: 1.2;
+    padding: 0.4rem 0.75rem;
+    width: 100%;
+    max-width: 100%;
+}
