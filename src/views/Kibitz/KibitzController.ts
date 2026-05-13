@@ -745,30 +745,28 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.applyBackendRoomUpdate(incoming);
         if (this._active_room?.id === incoming.id) {
             const summary = mapBackendRoomToSummary(incoming, this._active_room);
+            // Backend is authoritative; fall back to local preset only if the
+            // incoming payload doesn't carry one (older/partial events).
+            const basePreset = summary.preset ?? this._active_room?.preset;
             // Clear pending preset state only when the board change matches the
             // pending game. Belt-and-braces against unrelated room-updated events
             // (which delegate to this handler) accidentally resolving the pending
             // state.
-            const preset = this._active_room?.preset;
             const updatedPreset =
-                preset &&
-                preset.selection_status === "change_pending" &&
-                preset.pending_game_id !== null &&
-                incoming.current_game_id === preset.pending_game_id
+                basePreset &&
+                basePreset.selection_status === "change_pending" &&
+                basePreset.pending_game_id !== null &&
+                incoming.current_game_id === basePreset.pending_game_id
                     ? {
-                          ...preset,
+                          ...basePreset,
                           selection_status: "watching" as const,
                           pending_game_id: null,
                           change_effective_at: null,
                       }
-                    : preset;
+                    : basePreset;
             this.setActiveRoom({
                 ...this._active_room,
                 ...summary,
-                // The condition above checks current_game_id matches pending_game_id,
-                // so this override only fires on actual board changes (not unrelated
-                // room-updated events that delegate to this handler). Belt-and-braces
-                // for the change-pending → watching transition.
                 preset: updatedPreset,
                 current_game:
                     incoming.current_game_id == null ? undefined : this._active_room.current_game,
