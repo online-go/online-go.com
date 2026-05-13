@@ -1135,7 +1135,7 @@
     }
 
     .Kibitz-mobile-board-host {
-        background: #fff;
+        background: var(--card-background-color);
         display: flex;
         flex-direction: column;
         gap: 0;
@@ -1196,7 +1196,7 @@
     .mobile-board-fit-slot {
         align-items: center;
         aspect-ratio: 1 / 1;
-        background: #fff;
+        background: var(--card-background-color);
         display: grid;
         justify-items: center;
         margin: 0 auto;
@@ -1222,13 +1222,6 @@
 
     .mobile-board-fit-slot-openable {
         cursor: pointer;
-    }
-
-    [data-theme="dark"] {
-        .Kibitz-mobile-board-host,
-        .mobile-board-fit-slot {
-            background: var(--card-background-color);
-        }
     }
 
     .mobile-board-controls-row {
