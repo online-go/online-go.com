@@ -968,6 +968,8 @@ export function KibitzRoomStage({
                                 interactive={isDraftingVariation}
                                 fitMode="contain"
                                 respectContainerBounds={true}
+                                moveTree={secondaryPane.variation_source_move_tree}
+                                movePath={secondaryPane.variation_source_move_path}
                                 onReady={setSecondaryBoardController}
                             />
                         ) : null}
@@ -980,6 +982,8 @@ export function KibitzRoomStage({
                                 interactive={false}
                                 fitMode="contain"
                                 respectContainerBounds={true}
+                                moveTree={secondaryPane.variation_source_move_tree}
+                                movePath={secondaryPane.variation_source_move_path}
                                 onReady={setSecondaryBoardController}
                             />
                         ) : null}
@@ -1360,6 +1364,8 @@ export function KibitzRoomStage({
                                         size={secondaryBoardSize}
                                         interactive={secondaryPaneSize === "equal"}
                                         respectContainerBounds={true}
+                                        moveTree={secondaryPane.variation_source_move_tree}
+                                        movePath={secondaryPane.variation_source_move_path}
                                         onReady={setSecondaryBoardController}
                                     />
                                 </div>
@@ -1472,6 +1478,8 @@ export function KibitzRoomStage({
                                         size={secondaryBoardSize}
                                         interactive={false}
                                         respectContainerBounds={true}
+                                        moveTree={secondaryPane.variation_source_move_tree}
+                                        movePath={secondaryPane.variation_source_move_path}
                                         onReady={setSecondaryBoardController}
                                     />
                                 </div>

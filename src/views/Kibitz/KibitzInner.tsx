@@ -754,12 +754,15 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         };
     }, []);
     const onCreateVariation = React.useCallback(() => {
-        controller.startVariationFromCurrentBoard();
+        controller.startVariationFromCurrentBoard(
+            mainBoardController?.goban.engine.move_tree.toJson(),
+            mainBoardController?.goban.engine.cur_move.getMoveStringToThisPoint(),
+        );
         if (isMobileLayout) {
             setMobileOverlayMode(null);
             setMobileCompanionPanel("compare");
         }
-    }, [controller, isMobileLayout]);
+    }, [controller, isMobileLayout, mainBoardController]);
     const onCreateVariationFromPostedVariation = React.useCallback(
         (variation: KibitzVariationSummary) => {
             controller.startVariationFromPostedVariation(variation);

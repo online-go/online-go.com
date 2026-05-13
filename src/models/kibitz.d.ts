@@ -145,6 +145,8 @@ export interface KibitzSecondaryPaneState {
     variation_id?: string;
     variation_source_game_id?: number;
     variation_source_game?: KibitzWatchedGame;
+    variation_source_move_tree?: KibitzVariationLineTree;
+    variation_source_move_path?: string;
     variation_draft_base_id?: string;
 }
 
