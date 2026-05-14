@@ -44,6 +44,7 @@ old-*
 i18n/*.tar.gz
 *.old
 .playwright-mcp
+.vite
 
 # Playwright
 /playwright/.cache/
