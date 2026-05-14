@@ -21,7 +21,6 @@ import { alert } from "@/lib/swal_config";
 import { interpolate, pgettext } from "@/lib/translate";
 import type {
     KibitzProposal,
-    KibitzRoomSummary,
     KibitzSecondaryPaneState,
     KibitzVariationSummary,
 } from "@/models/kibitz";
@@ -37,10 +36,8 @@ import "./KibitzMobileComparePanel.css";
 
 interface KibitzMobileComparePanelProps {
     controller: GobanController | null;
-    room: KibitzRoomSummary;
     variations: KibitzVariationSummary[];
     queuedRoomProposals: KibitzProposal[];
-    visibleVariationIds: string[];
     variationColorIndexes: Record<string, number>;
     blockedVariationFlashId: string | null;
     secondaryPane: KibitzSecondaryPaneState;
@@ -48,7 +45,7 @@ interface KibitzMobileComparePanelProps {
     isDraftingVariation: boolean;
     variationFocusRequestId: number;
     onOpenVariation: (variationId: string, focusVariation?: boolean) => void;
-    onToggleVariation: (variationId: string) => void;
+    onHideVariation: (variationId: string) => void;
     onPostVariation: (controller: GobanController, sourceGameId: number | undefined) => void;
     onDiscardDraft?: () => void;
 }
@@ -67,10 +64,8 @@ function splitNodeText(text: string): { summary: string; body: string | null } {
 
 export function KibitzMobileComparePanel({
     controller,
-    room,
     variations,
     queuedRoomProposals,
-    visibleVariationIds,
     variationColorIndexes,
     blockedVariationFlashId,
     secondaryPane,
@@ -78,7 +73,7 @@ export function KibitzMobileComparePanel({
     isDraftingVariation,
     variationFocusRequestId,
     onOpenVariation,
-    onToggleVariation,
+    onHideVariation,
     onPostVariation,
     onDiscardDraft,
 }: KibitzMobileComparePanelProps): React.ReactElement {
@@ -256,14 +251,14 @@ export function KibitzMobileComparePanel({
                     <span>
                         {pgettext(
                             "Heading for the shared variations section in the mobile kibitz compare panel",
-                            "Shared variations",
+                            "Active variations",
                         )}
                     </span>
                     <span className="KibitzMobileComparePanel-sharedHeaderMeta">
                         {interpolate(
                             pgettext(
                                 "Count label for shared variations in the mobile kibitz compare panel",
-                                "{{count}} total",
+                                "{{count}} active",
                             ),
                             { count: variations.length },
                         )}
@@ -273,14 +268,12 @@ export function KibitzMobileComparePanel({
                     {variations.length > 0 ? (
                         <KibitzVariationList
                             variations={variations}
-                            currentGameId={room.current_game?.game_id}
-                            visibleVariationIds={visibleVariationIds}
                             selectedVariationId={secondaryPane.variation_id}
                             variationFocusRequestId={variationFocusRequestId}
                             variationColorIndexes={variationColorIndexes}
                             blockedVariationFlashId={blockedVariationFlashId}
                             onRecallVariation={(variationId) => onOpenVariation(variationId, true)}
-                            onToggleVariation={onToggleVariation}
+                            onHideVariation={onHideVariation}
                             title=""
                         />
                     ) : (

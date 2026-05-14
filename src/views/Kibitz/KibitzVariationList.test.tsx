@@ -55,29 +55,31 @@ function makeVariation(id: string, gameId: number, title: string): KibitzVariati
         viewer_count: 0,
         current_viewers: [],
         title,
+        analysis_from: 87,
+        move_count: 5,
     };
 }
 
 describe("KibitzVariationList", () => {
-    it("only marks the selected game's variations as active", () => {
+    it("renders the active variations quick-list", () => {
+        const onRecallVariation = jest.fn();
+        const onHideVariation = jest.fn();
+
         render(
             <KibitzVariationList
-                variations={[
-                    makeVariation("a1", 10, "A1"),
-                    makeVariation("a2", 10, "A2"),
-                    makeVariation("b1", 20, "B1"),
-                ]}
-                currentGameId={10}
-                visibleVariationIds={["a1", "a2", "b1"]}
-                selectedVariationId="b1"
-                variationColorIndexes={{ a1: 0, a2: 1, b1: 2 }}
-                onRecallVariation={jest.fn()}
-                onToggleVariation={jest.fn()}
+                variations={[makeVariation("a1", 10, "A1"), makeVariation("a2", 10, "A2")]}
+                selectedVariationId="a2"
+                variationColorIndexes={{ a1: 0, a2: 1 }}
+                onRecallVariation={onRecallVariation}
+                onHideVariation={onHideVariation}
             />,
         );
 
-        expect(screen.getByText("B1").closest(".variation-item")).toHaveClass("visible");
-        expect(screen.getByText("A1").closest(".variation-item")).not.toHaveClass("visible");
-        expect(screen.getByText("A2").closest(".variation-item")).not.toHaveClass("visible");
+        expect(screen.getByText("Active variations")).toBeInTheDocument();
+        expect(screen.getByText("A1")).toBeInTheDocument();
+        expect(screen.getByText("A2")).toBeInTheDocument();
+        expect(screen.getAllByText("M87")).toHaveLength(2);
+        expect(screen.getAllByText("+5")).toHaveLength(2);
+        expect(screen.getAllByLabelText("Hide from board")).toHaveLength(2);
     });
 });

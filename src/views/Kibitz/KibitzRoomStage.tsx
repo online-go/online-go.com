@@ -1156,7 +1156,7 @@ export function KibitzRoomStage({
                                 <div className="secondary-board-empty-message mobile-compare-empty-hint">
                                     {pgettext(
                                         "Hint for the mobile kibitz compare board before a variation is selected",
-                                        "Or select a shared variation below",
+                                        "Or select a posted variation below",
                                     )}
                                 </div>
                             </div>

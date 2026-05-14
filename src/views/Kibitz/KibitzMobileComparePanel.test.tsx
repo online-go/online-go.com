@@ -21,7 +21,6 @@ import * as data from "@/lib/data";
 import { GobanController } from "@/lib/GobanController";
 import type {
     KibitzProposal,
-    KibitzRoomSummary,
     KibitzSecondaryPaneState,
     KibitzVariationSummary,
 } from "@/models/kibitz";
@@ -120,17 +119,6 @@ function makeController(): GobanController {
     return controller;
 }
 
-function makeRoom(): KibitzRoomSummary {
-    return {
-        id: "room-1",
-        channel: "room-1",
-        title: "Room 1",
-        kind: "preset",
-        viewer_count: 1,
-        creator_id: 1,
-    };
-}
-
 function makeSecondaryPane(): KibitzSecondaryPaneState {
     return {
         collapsed: false,
@@ -147,7 +135,6 @@ describe("KibitzMobileComparePanel", () => {
 
     it("renders the standalone analyze button bar without the play-only back-to-game control", () => {
         const controller = makeController();
-        const room = makeRoom();
         const secondaryPane = makeSecondaryPane();
         const noop = () => {
             return;
@@ -159,10 +146,8 @@ describe("KibitzMobileComparePanel", () => {
         const { container } = render(
             <KibitzMobileComparePanel
                 controller={controller}
-                room={room}
                 variations={variations}
                 queuedRoomProposals={queuedRoomProposals}
-                visibleVariationIds={[]}
                 variationColorIndexes={{}}
                 blockedVariationFlashId={null}
                 secondaryPane={secondaryPane}
@@ -170,7 +155,7 @@ describe("KibitzMobileComparePanel", () => {
                 isDraftingVariation={true}
                 variationFocusRequestId={0}
                 onOpenVariation={noop}
-                onToggleVariation={noop}
+                onHideVariation={noop}
                 onPostVariation={noop}
             />,
         );
