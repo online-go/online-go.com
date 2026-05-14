@@ -20,6 +20,13 @@ import { render, screen } from "@testing-library/react";
 import type { KibitzRoomUser, KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
 import { KibitzVariationList } from "./KibitzVariationList";
 
+jest.mock("@/components/Player", () => ({
+    __esModule: true,
+    Player: ({ user }: { user?: { username?: string } }) => (
+        <span data-testid="Player">{user?.username ?? ""}</span>
+    ),
+}));
+
 jest.mock("./KibitzUserAvatar", () => ({
     __esModule: true,
     KibitzUserAvatar: () => <span data-testid="KibitzUserAvatar" />,
@@ -107,16 +114,43 @@ describe("KibitzVariationList", () => {
         expect(screen.getByText("A2")).toBeInTheDocument();
         expect(screen.getByText("B1")).toBeInTheDocument();
         expect(screen.getByText("C1")).toBeInTheDocument();
-        expect(screen.getAllByText("Previous game: Older board - Gamma vs. Delta")).toHaveLength(1);
-        expect(
-            screen.getAllByText("Previous game: Newest old board - Epsilon vs. Zeta"),
-        ).toHaveLength(1);
+        expect(screen.getByText("Current Game")).toBeInTheDocument();
+        expect(screen.getAllByRole("link", { name: "Open original game" })).toHaveLength(2);
+        expect(screen.getByText("Previous game: Older board")).toBeInTheDocument();
+        expect(screen.getByText("Previous game: Newest old board")).toBeInTheDocument();
+        expect(screen.getByText("Gamma")).toBeInTheDocument();
+        expect(screen.getByText("Delta")).toBeInTheDocument();
+        expect(screen.getByText("Epsilon")).toBeInTheDocument();
+        expect(screen.getByText("Zeta")).toBeInTheDocument();
         expect(screen.getAllByText("M87")).toHaveLength(4);
         expect(screen.getAllByText("+5")).toHaveLength(4);
         expect(screen.getAllByLabelText("Hide from board")).toHaveLength(4);
-        expect(screen.getAllByText(/Previous game:/).map((node) => node.textContent)).toEqual([
-            "Previous game: Older board - Gamma vs. Delta",
-            "Previous game: Newest old board - Epsilon vs. Zeta",
+        expect(screen.getAllByTestId("Player")).toHaveLength(4);
+    });
+
+    it("shows previous game separators without a current game separator when only older games are visible", () => {
+        const onRecallVariation = jest.fn();
+        const onHideVariation = jest.fn();
+        const gameById = new Map<number, KibitzWatchedGame>([
+            [20, makeGame(20, "Older board", "Gamma", "Delta")],
         ]);
+
+        render(
+            <KibitzVariationList
+                variations={[makeVariation("c1", 20, "C1"), makeVariation("c2", 20, "C2")]}
+                currentGameId={10}
+                gameById={gameById}
+                selectedVariationId={null}
+                variationColorIndexes={{ c1: 0, c2: 1 }}
+                onRecallVariation={onRecallVariation}
+                onHideVariation={onHideVariation}
+            />,
+        );
+
+        expect(screen.queryByText("Current Game")).toBeNull();
+        expect(screen.getByText("Previous game: Older board")).toBeInTheDocument();
+        expect(screen.getByText("Gamma")).toBeInTheDocument();
+        expect(screen.getByText("Delta")).toBeInTheDocument();
+        expect(screen.getAllByLabelText("Hide from board")).toHaveLength(2);
     });
 });

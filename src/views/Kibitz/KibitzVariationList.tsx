@@ -18,15 +18,12 @@
 import * as React from "react";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
+import { Player } from "@/components/Player";
 import { getKibitzVariationColor } from "./kibitzVariationTree";
 import { KibitzUserAvatar } from "./KibitzUserAvatar";
 import { KIBITZ_HELP_TARGETS } from "./HelpFlows/KibitzHelpTargets";
 import { useKibitzHelpTarget } from "./HelpFlows/useKibitzHelpTarget";
-import {
-    formatVariationBranchLabel,
-    formatVariationGameSummary,
-    formatVariationLengthLabel,
-} from "./kibitzVariationQuickList";
+import { formatVariationBranchLabel, formatVariationLengthLabel } from "./kibitzVariationQuickList";
 import "./KibitzVariationList.css";
 
 interface KibitzVariationListProps {
@@ -96,6 +93,8 @@ export function KibitzVariationList({
             showDivider: index > 0,
         }));
     }, [currentGameId, variations]);
+    const hasCurrentGameGroup = groupedVariations.some((group) => group.gameId === currentGameId);
+    const hasPreviousGameGroups = groupedVariations.some((group) => group.gameId !== currentGameId);
 
     React.useEffect(() => {
         if (previousFocusRequestIdRef.current === variationFocusRequestId) {
@@ -125,128 +124,224 @@ export function KibitzVariationList({
             <div className="variation-scroll">
                 {groupedVariations.length > 0 ? (
                     <div className="variation-items">
-                        {groupedVariations.map((group) => (
-                            <React.Fragment key={group.gameId}>
-                                {group.showDivider ? (
-                                    <div className="variation-divider">
-                                        {interpolate(
-                                            pgettext(
-                                                "Divider label for Kibitz variations from a previous game",
-                                                "Previous game: {{game}}",
-                                            ),
-                                            {
-                                                game: formatVariationGameSummary(
-                                                    gameById?.get(group.gameId),
-                                                    group.gameId,
-                                                ),
-                                            },
-                                        )}
-                                    </div>
-                                ) : null}
-                                {group.variations.map((variation) => {
-                                    const isSelected = selectedVariationId === variation.id;
-                                    const isBlockedFlash = blockedVariationFlashId === variation.id;
-                                    const variationColor = getKibitzVariationColor(
-                                        variationColorIndexes[variation.id] ?? 0,
-                                    );
-                                    const lengthLabel = formatVariationLengthLabel(variation);
-                                    const branchLabel = formatVariationBranchLabel(variation);
+                        {currentGameId != null && hasCurrentGameGroup && hasPreviousGameGroups ? (
+                            <div className="variation-divider variation-divider-current">
+                                {pgettext(
+                                    "Divider label for the current game in Kibitz variations",
+                                    "Current Game",
+                                )}
+                            </div>
+                        ) : null}
+                        {groupedVariations.map((group) => {
+                            const dividerGame = gameById?.get(group.gameId) ?? null;
+                            const isCurrentGameGroup = group.gameId === currentGameId;
 
-                                    return (
-                                        <div
-                                            key={variation.id}
-                                            ref={
-                                                isSelected ? selectedVariationElementRef : undefined
-                                            }
-                                            className={
-                                                "variation-item" +
-                                                (isSelected ? " selected" : "") +
-                                                (isBlockedFlash ? " limit-flash" : "")
-                                            }
-                                            style={
-                                                isSelected
-                                                    ? ({
-                                                          "--variation-selected-color":
-                                                              variationColor,
-                                                      } as React.CSSProperties)
-                                                    : undefined
-                                            }
-                                        >
-                                            <button
-                                                type="button"
+                            return (
+                                <React.Fragment key={group.gameId}>
+                                    {!isCurrentGameGroup ? (
+                                        <div className="variation-divider">
+                                            {dividerGame ? (
+                                                <div className="variation-divider-grid">
+                                                    <div className="variation-divider-titleRowMain">
+                                                        <a
+                                                            className="variation-divider-game-link"
+                                                            href={`/game/${group.gameId}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            aria-label={pgettext(
+                                                                "Aria label for opening a Kibitz variation source game",
+                                                                "Open original game",
+                                                            )}
+                                                        >
+                                                            {interpolate(
+                                                                pgettext(
+                                                                    "Divider label for Kibitz variations from a previous game",
+                                                                    "Previous game: {{game}}",
+                                                                ),
+                                                                {
+                                                                    game:
+                                                                        dividerGame.title ||
+                                                                        interpolate(
+                                                                            pgettext(
+                                                                                "Fallback game label for a Kibitz variation divider",
+                                                                                "Game #{{game_id}}",
+                                                                            ),
+                                                                            {
+                                                                                game_id:
+                                                                                    group.gameId,
+                                                                            },
+                                                                        ),
+                                                                },
+                                                            )}
+                                                        </a>
+                                                    </div>
+                                                    <div className="variation-divider-players">
+                                                        <span className="variation-divider-player">
+                                                            <Player
+                                                                user={dividerGame.black}
+                                                                icon
+                                                                iconSize={16}
+                                                                flag
+                                                                rank
+                                                                nodetails
+                                                                noextracontrols
+                                                                tabIndex={-1}
+                                                            />
+                                                        </span>
+                                                        <span
+                                                            className="variation-divider-vs"
+                                                            aria-hidden="true"
+                                                        >
+                                                            {pgettext(
+                                                                "Versus label shown in a Kibitz variation divider",
+                                                                "vs",
+                                                            )}
+                                                        </span>
+                                                        <span className="variation-divider-player">
+                                                            <Player
+                                                                user={dividerGame.white}
+                                                                icon
+                                                                iconSize={16}
+                                                                flag
+                                                                rank
+                                                                nodetails
+                                                                noextracontrols
+                                                                tabIndex={-1}
+                                                            />
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                interpolate(
+                                                    pgettext(
+                                                        "Divider label for Kibitz variations from a previous game",
+                                                        "Previous game: {{game}}",
+                                                    ),
+                                                    {
+                                                        game: interpolate(
+                                                            pgettext(
+                                                                "Fallback game label for a Kibitz variation divider",
+                                                                "Game #{{game_id}}",
+                                                            ),
+                                                            {
+                                                                game_id: group.gameId,
+                                                            },
+                                                        ),
+                                                    },
+                                                )
+                                            )}
+                                        </div>
+                                    ) : null}
+                                    {group.variations.map((variation) => {
+                                        const isSelected = selectedVariationId === variation.id;
+                                        const isBlockedFlash =
+                                            blockedVariationFlashId === variation.id;
+                                        const variationColor = getKibitzVariationColor(
+                                            variationColorIndexes[variation.id] ?? 0,
+                                        );
+                                        const lengthLabel = formatVariationLengthLabel(variation);
+                                        const branchLabel = formatVariationBranchLabel(variation);
+
+                                        return (
+                                            <div
+                                                key={variation.id}
+                                                ref={
+                                                    isSelected
+                                                        ? selectedVariationElementRef
+                                                        : undefined
+                                                }
                                                 className={
-                                                    "variation-recall" +
+                                                    "variation-item" +
+                                                    (isSelected ? " selected" : "") +
                                                     (isBlockedFlash ? " limit-flash" : "")
                                                 }
-                                                onClick={() => onRecallVariation(variation.id)}
+                                                style={
+                                                    isSelected
+                                                        ? ({
+                                                              "--variation-selected-color":
+                                                                  variationColor,
+                                                          } as React.CSSProperties)
+                                                        : undefined
+                                                }
                                             >
-                                                <span
-                                                    className="variation-color-chip"
-                                                    style={{ backgroundColor: variationColor }}
-                                                    aria-hidden="true"
-                                                />
-                                                <span className="variation-main">
-                                                    <span className="variation-name">
-                                                        {variation.title ||
-                                                            pgettext(
-                                                                "Fallback title for an untitled variation in kibitz",
-                                                                "Untitled variation",
-                                                            )}
-                                                    </span>
-                                                    <span className="variation-meta-row">
-                                                        <span className="variation-meta-labels">
-                                                            <span className="variation-branch">
-                                                                {branchLabel}
-                                                            </span>
-                                                            {lengthLabel ? (
-                                                                <span className="variation-length">
-                                                                    {lengthLabel}
-                                                                </span>
-                                                            ) : null}
-                                                        </span>
-                                                        <span className="variation-meta-spacer" />
-                                                        <span className="variation-author-row">
-                                                            <KibitzUserAvatar
-                                                                user={variation.creator}
-                                                                size={16}
-                                                                className="variation-avatar"
-                                                                iconClassName="variation-avatar-image"
-                                                            />
-                                                            <span className="variation-meta">
-                                                                {variation.creator.username}
-                                                            </span>
-                                                        </span>
-                                                    </span>
-                                                </span>
-                                            </button>
-                                            {onHideVariation ? (
                                                 <button
                                                     type="button"
                                                     className={
-                                                        "variation-toggle" +
+                                                        "variation-recall" +
                                                         (isBlockedFlash ? " limit-flash" : "")
                                                     }
-                                                    aria-label={pgettext(
-                                                        "Tooltip for hiding a Kibitz variation in the tree",
-                                                        "Hide from board",
-                                                    )}
-                                                    title={pgettext(
-                                                        "Tooltip for hiding a Kibitz variation in the tree",
-                                                        "Hide from board",
-                                                    )}
-                                                    onClick={() => onHideVariation(variation.id)}
+                                                    onClick={() => onRecallVariation(variation.id)}
                                                 >
-                                                    <i
-                                                        className="fa fa-eye-slash"
+                                                    <span
+                                                        className="variation-color-chip"
+                                                        style={{ backgroundColor: variationColor }}
                                                         aria-hidden="true"
                                                     />
+                                                    <span className="variation-main">
+                                                        <span className="variation-name">
+                                                            {variation.title ||
+                                                                pgettext(
+                                                                    "Fallback title for an untitled variation in kibitz",
+                                                                    "Untitled variation",
+                                                                )}
+                                                        </span>
+                                                        <span className="variation-meta-row">
+                                                            <span className="variation-meta-labels">
+                                                                <span className="variation-branch">
+                                                                    {branchLabel}
+                                                                </span>
+                                                                {lengthLabel ? (
+                                                                    <span className="variation-length">
+                                                                        {lengthLabel}
+                                                                    </span>
+                                                                ) : null}
+                                                            </span>
+                                                            <span className="variation-meta-spacer" />
+                                                            <span className="variation-author-row">
+                                                                <KibitzUserAvatar
+                                                                    user={variation.creator}
+                                                                    size={16}
+                                                                    className="variation-avatar"
+                                                                    iconClassName="variation-avatar-image"
+                                                                />
+                                                                <span className="variation-meta">
+                                                                    {variation.creator.username}
+                                                                </span>
+                                                            </span>
+                                                        </span>
+                                                    </span>
                                                 </button>
-                                            ) : null}
-                                        </div>
-                                    );
-                                })}
-                            </React.Fragment>
-                        ))}
+                                                {onHideVariation ? (
+                                                    <button
+                                                        type="button"
+                                                        className={
+                                                            "variation-toggle" +
+                                                            (isBlockedFlash ? " limit-flash" : "")
+                                                        }
+                                                        aria-label={pgettext(
+                                                            "Tooltip for hiding a Kibitz variation in the tree",
+                                                            "Hide from board",
+                                                        )}
+                                                        title={pgettext(
+                                                            "Tooltip for hiding a Kibitz variation in the tree",
+                                                            "Hide from board",
+                                                        )}
+                                                        onClick={() =>
+                                                            onHideVariation(variation.id)
+                                                        }
+                                                    >
+                                                        <i
+                                                            className="fa fa-eye-slash"
+                                                            aria-hidden="true"
+                                                        />
+                                                    </button>
+                                                ) : null}
+                                            </div>
+                                        );
+                                    })}
+                                </React.Fragment>
+                            );
+                        })}
                     </div>
                 ) : (
                     <div className="variation-empty">

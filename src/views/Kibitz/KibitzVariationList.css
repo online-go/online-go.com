@@ -24,10 +24,90 @@
     .variation-divider {
         border-top: 1px solid var(--shade3);
         color: var(--text-color-faded);
-        font-size: 0.75rem;
+        padding: 0.45rem 0 0.3rem;
+    }
+
+    .variation-divider-current {
+        color: var(--fg);
+        display: inline-block;
+        font-size: 0.78rem;
         font-weight: 700;
-        letter-spacing: 0.02em;
-        padding: 0.4rem 0 0.25rem;
+        line-height: 1.15;
+    }
+
+    .variation-divider-grid {
+        align-items: center;
+        display: grid;
+        gap: 0.2rem 0.5rem;
+        grid-template-columns: minmax(0, 1fr);
+        min-width: 0;
+    }
+
+    .variation-divider-titleRowMain {
+        min-width: 0;
+    }
+
+    .variation-divider-game-link {
+        color: var(--fg);
+        display: inline-block;
+        font-size: 0.78rem;
+        font-weight: 700;
+        line-height: 1.15;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .variation-divider-players {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem 0.35rem;
+        min-width: 0;
+    }
+
+    .variation-divider-player {
+        align-items: center;
+        display: inline-flex;
+        min-width: 0;
+    }
+
+    .variation-divider-player .Player {
+        align-items: center;
+        display: inline-flex !important;
+        font-size: 0.63rem;
+        line-height: 1;
+        min-width: 0;
+    }
+
+    .variation-divider-player .PlayerIcon {
+        display: block;
+        transform: scale(0.75);
+        transform-origin: center left;
+    }
+
+    .variation-divider-player .flag {
+        font-size: 0.72rem;
+        margin-left: 0.04rem;
+        margin-right: 0.12rem;
+    }
+
+    .variation-divider-player .Player-username {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .variation-divider-player .Player-rank {
+        font-size: 0.86em;
+        margin-left: 0.12rem;
+    }
+
+    .variation-divider-vs {
+        color: var(--text-color-faded);
+        font-size: 0.68rem;
+        font-weight: 700;
         text-transform: uppercase;
     }
 
