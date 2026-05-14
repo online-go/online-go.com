@@ -6,7 +6,6 @@
     overflow: hidden;
     padding: 0;
     --kibitz-left-rail-width: clamp(9rem, 19vw, 15rem);
-    --mobile-room-bar-bg: #fff;
 
     .Kibitz-layout {
         display: grid;
@@ -120,10 +119,6 @@
         padding: 2rem 1rem;
         text-align: center;
     }
-}
-
-[data-theme="dark"] .Kibitz {
-    --mobile-room-bar-bg: var(--card-background-color);
 }
 
 @media (max-width: 1000px) {
@@ -736,7 +731,7 @@
         }
 
         .Kibitz-mobile-panel-surface {
-            background: #fff;
+            background: var(--card-background-color);
             display: flex;
             flex: 1 1 auto;
             flex-direction: column;
@@ -752,7 +747,7 @@
         }
 
         .Kibitz-mobile-panel {
-            background: #fff;
+            background: var(--card-background-color);
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
@@ -794,7 +789,7 @@
 
         .Kibitz-mobile-panel-empty,
         .Kibitz-mobile-panel-note {
-            background: #fff;
+            background: var(--card-background-color);
             color: var(--text-color-faded);
             font-size: 0.8rem;
             line-height: 1.25;
@@ -803,15 +798,6 @@
 
         .Kibitz-mobile-panel-note {
             color: var(--fg);
-        }
-
-        [data-theme="dark"] {
-            .Kibitz-mobile-panel-surface,
-            .Kibitz-mobile-panel,
-            .Kibitz-mobile-panel-empty,
-            .Kibitz-mobile-panel-note {
-                background: var(--card-background-color);
-            }
         }
 
         .Kibitz-mobile-compare-empty {
@@ -855,11 +841,6 @@
             overflow: hidden;
         }
     }
-}
-
-[data-theme="dark"] .Kibitz-mobile-room-bar,
-[data-theme="dark"] .Kibitz-mobile-room-settings-button {
-    background: var(--card-background-color) !important;
 }
 
 @media (min-width: 1001px) {

@@ -16,8 +16,9 @@
  */
 
 import * as React from "react";
-import type { MoveTree } from "goban";
+import type { MoveTree, MoveTreeJson } from "goban";
 import { Resizable } from "@/components/Resizable";
+import { KBShortcut } from "@/components/KBShortcut";
 import { Player } from "@/components/Player";
 import { GobanController } from "@/lib/GobanController";
 import { close_all_popovers, popover } from "@/lib/popover";
@@ -161,6 +162,58 @@ function boardDimensionsOf(game: { board_size?: `${number}x${number}` } | null |
     return {};
 }
 
+type KibitzBoardLoadConfig = Record<string, unknown> & { move_tree?: MoveTreeJson };
+
+interface SecondaryVariationBaseSnapshot {
+    controller: GobanController;
+    gameId: number;
+    config: KibitzBoardLoadConfig;
+}
+
+interface PendingSecondaryVariationBaseLoad {
+    controller: GobanController;
+    gameId: number;
+    nonce: number;
+}
+
+function cloneMoveTreeJson(moveTree: MoveTreeJson): MoveTreeJson {
+    return JSON.parse(JSON.stringify(moveTree)) as MoveTreeJson;
+}
+
+function captureSecondaryVariationBaseSnapshot(
+    controller: GobanController,
+    gameId: number,
+): SecondaryVariationBaseSnapshot | null {
+    const engine = controller.goban.engine;
+    if (!engine?.last_official_move) {
+        return null;
+    }
+
+    const config = engine.config as KibitzBoardLoadConfig;
+    const moveTree = config.move_tree ? cloneMoveTreeJson(config.move_tree) : undefined;
+
+    return {
+        controller,
+        gameId,
+        config: {
+            ...config,
+            move_tree: moveTree,
+        },
+    };
+}
+
+function loadSecondaryVariationBaseSnapshot(
+    controller: GobanController,
+    snapshot: SecondaryVariationBaseSnapshot,
+): void {
+    controller.goban.load({
+        ...snapshot.config,
+        move_tree: snapshot.config.move_tree
+            ? cloneMoveTreeJson(snapshot.config.move_tree)
+            : undefined,
+    });
+}
+
 function renderInlineAvatar(
     user: KibitzRoomUser | null | undefined,
     className: string,
@@ -295,9 +348,6 @@ export function KibitzRoomStage({
     const mainGame = room.current_game;
     const secondaryGameId = secondaryPane.preview_game_id;
     const secondaryPaneSize = secondaryPane.collapsed ? "hidden" : (secondaryPane.size ?? "small");
-    const isCreatingVariationFromCurrentBoard = Boolean(
-        secondaryPaneSize === "equal" && secondaryPane.variation_source_game,
-    );
     const selectedVariation = variations.find(
         (variation) => variation.id === secondaryPane.variation_id,
     );
@@ -351,6 +401,20 @@ export function KibitzRoomStage({
         [canDeleteRoom, canEditRoom, onChangeBoard, onDeleteRoom, onSaveRoomDetails, room],
     );
     const selectedVariationGameId = selectedVariation?.game_id ?? null;
+    const selectedVariationSourceGame = React.useMemo(() => {
+        if (!selectedVariation) {
+            return undefined;
+        }
+
+        if (mainGame?.game_id === selectedVariation.game_id) {
+            return mainGame;
+        }
+
+        return (
+            rooms.find((candidate) => candidate.current_game?.game_id === selectedVariation.game_id)
+                ?.current_game ?? secondaryPane.variation_source_game
+        );
+    }, [mainGame, rooms, secondaryPane.variation_source_game, selectedVariation]);
     const visibleVariations = React.useMemo(() => {
         if (selectedVariationGameId == null) {
             return [];
@@ -412,8 +476,13 @@ export function KibitzRoomStage({
     const [secondaryMoveTreeContainer, setSecondaryMoveTreeContainer] =
         React.useState<Resizable | null>(null);
     const previousSecondaryControllerRef = React.useRef<GobanController | null>(null);
+    const secondaryVariationBaseSnapshotRef = React.useRef<SecondaryVariationBaseSnapshot | null>(
+        null,
+    );
+    const pendingSecondaryVariationBaseLoadRef =
+        React.useRef<PendingSecondaryVariationBaseLoad | null>(null);
+    const secondaryVariationBaseLoadNonceRef = React.useRef(0);
     const suppressSelectedVariationLoadRef = React.useRef(false);
-    const suppressSelectedVariationLoadTimerRef = React.useRef<number | null>(null);
     const appliedDraftAnalyzeToolRef = React.useRef<{
         controller: GobanController | null;
         draftKey: string | null;
@@ -425,12 +494,10 @@ export function KibitzRoomStage({
         variationId: string | null;
         requestId: number;
         visibleVariationKey: string;
-        focusedPath: string | null;
     }>({
         variationId: null,
         requestId: -1,
         visibleVariationKey: "",
-        focusedPath: null,
     });
     const appliedDraftBaseRef = React.useRef<{
         controller: GobanController | null;
@@ -470,6 +537,18 @@ export function KibitzRoomStage({
         secondaryPane.variation_draft_base_id,
         secondaryPane.variation_source_game_id,
     ]);
+    const secondaryMoveNavigationShortcuts = secondaryBoardController ? (
+        <>
+            <KBShortcut shortcut="up" action={secondaryBoardController.nextBranchUp} />
+            <KBShortcut shortcut="down" action={secondaryBoardController.nextBranchDown} />
+            <KBShortcut shortcut="left" action={secondaryBoardController.previousMove} />
+            <KBShortcut shortcut="right" action={secondaryBoardController.nextMove} />
+            <KBShortcut shortcut="page-up" action={secondaryBoardController.previous10Moves} />
+            <KBShortcut shortcut="page-down" action={secondaryBoardController.forwardTenMoves} />
+            <KBShortcut shortcut="home" action={secondaryBoardController.gotoFirstMove} />
+            <KBShortcut shortcut="end" action={secondaryBoardController.gotoLastMove} />
+        </>
+    ) : null;
     const handleSecondaryMoveTreeContainerRef = React.useCallback((instance: Resizable | null) => {
         setSecondaryMoveTreeContainer(instance);
     }, []);
@@ -540,18 +619,22 @@ export function KibitzRoomStage({
     ]);
 
     React.useEffect(() => {
+        secondaryVariationBaseSnapshotRef.current = null;
+        pendingSecondaryVariationBaseLoadRef.current = null;
+        suppressSelectedVariationLoadRef.current = false;
+    }, [secondaryBoardController, selectedVariationGameId]);
+
+    React.useEffect(() => {
         if (!selectedVariation || !secondaryBoardController || secondaryPane.preview_game_id) {
             return;
         }
 
         const goban = secondaryBoardController.goban;
 
+        let disposed = false;
         let applyingVariation = false;
-        const apply = (forceFocusSelected: boolean = false): boolean => {
-            if (applyingVariation) {
-                return false;
-            }
 
+        const getVariationColorState = () => {
             const selectedVariationColorIndex = getVariationColorIndex(
                 variationColorIndexes,
                 selectedVariation.id,
@@ -559,50 +642,52 @@ export function KibitzRoomStage({
             const visibleVariationColorIndexes = visibleVariations.map((variation) =>
                 getVariationColorIndex(variationColorIndexes, variation.id),
             );
+
             if (
                 selectedVariationColorIndex == null ||
                 visibleVariationColorIndexes.some((colorIndex) => colorIndex == null)
             ) {
+                return null;
+            }
+
+            return { selectedVariationColorIndex, visibleVariationColorIndexes };
+        };
+
+        const applyVisibleVariationsToLoadedBase = (): boolean => {
+            if (disposed || applyingVariation) {
+                return false;
+            }
+
+            const colorState = getVariationColorState();
+            if (!colorState) {
                 return false;
             }
 
             applyingVariation = true;
-            if (suppressSelectedVariationLoadTimerRef.current) {
-                clearTimeout(suppressSelectedVariationLoadTimerRef.current);
-                suppressSelectedVariationLoadTimerRef.current = null;
-            }
             suppressSelectedVariationLoadRef.current = true;
-            const previousFocusPath = goban.engine.cur_move?.getMoveStringToThisPoint();
-            const shouldFocusSelected =
-                lastVariationFocusRequestRef.current.variationId !== selectedVariation.id ||
-                lastVariationFocusRequestRef.current.requestId !== variationFocusRequestId ||
-                lastVariationFocusRequestRef.current.visibleVariationKey !==
-                    visibleVariationApplyKey;
-            const selectedColorIndex = selectedVariationColorIndex;
 
             try {
-                goban.load(goban.engine.config);
-
+                const selectedColorIndex = colorState.selectedVariationColorIndex;
                 let selectedEndpoint: MoveTree | null = null;
 
                 for (let index = 0; index < visibleVariations.length; ++index) {
                     const variation = visibleVariations[index];
-                    const colorIndex = visibleVariationColorIndexes[index];
+                    const colorIndex = colorState.visibleVariationColorIndexes[index];
                     if (colorIndex == null) {
                         return false;
                     }
-                    applyKibitzVariationToController(
+                    const applied = applyKibitzVariationToController(
                         secondaryBoardController,
                         variation,
                         colorIndex,
-                        false,
+                        variation.id === selectedVariation.id,
                     );
+                    if (variation.id === selectedVariation.id) {
+                        selectedEndpoint = applied.endpoint;
+                    }
                 }
 
-                if (
-                    selectedVariation.game_id === visibleVariations[0]?.game_id ||
-                    visibleVariations.length === 0
-                ) {
+                if (!visibleVariations.some((variation) => variation.id === selectedVariation.id)) {
                     const applied = applyKibitzVariationToController(
                         secondaryBoardController,
                         selectedVariation,
@@ -622,16 +707,13 @@ export function KibitzRoomStage({
                     selectedEndpoint = applied.endpoint;
                 }
 
-                if (selectedEndpoint && (shouldFocusSelected || forceFocusSelected)) {
+                if (selectedEndpoint) {
                     goban.engine.jumpTo(selectedEndpoint);
                     lastVariationFocusRequestRef.current = {
                         variationId: selectedVariation.id,
                         requestId: variationFocusRequestId,
                         visibleVariationKey: visibleVariationApplyKey,
-                        focusedPath: selectedEndpoint.getMoveStringToThisPoint(),
                     };
-                } else if (previousFocusPath) {
-                    goban.engine.followPath(0, previousFocusPath);
                 }
 
                 if (!selectedVariation.analysis_line_tree) {
@@ -647,32 +729,104 @@ export function KibitzRoomStage({
                 return selectedEndpoint != null;
             } finally {
                 applyingVariation = false;
-                suppressSelectedVariationLoadTimerRef.current = window.setTimeout(() => {
-                    suppressSelectedVariationLoadRef.current = false;
-                    suppressSelectedVariationLoadTimerRef.current = null;
-                }, 0);
+                suppressSelectedVariationLoadRef.current = false;
             }
         };
 
+        const reloadBaseThenApplyVisibleVariations = (): boolean => {
+            if (disposed || applyingVariation) {
+                return false;
+            }
+
+            let baseSnapshot = secondaryVariationBaseSnapshotRef.current;
+            if (
+                !baseSnapshot ||
+                baseSnapshot.controller !== secondaryBoardController ||
+                baseSnapshot.gameId !== selectedVariation.game_id
+            ) {
+                baseSnapshot = captureSecondaryVariationBaseSnapshot(
+                    secondaryBoardController,
+                    selectedVariation.game_id,
+                );
+                if (!baseSnapshot) {
+                    return false;
+                }
+                secondaryVariationBaseSnapshotRef.current = baseSnapshot;
+            }
+
+            const nonce = secondaryVariationBaseLoadNonceRef.current + 1;
+            secondaryVariationBaseLoadNonceRef.current = nonce;
+            pendingSecondaryVariationBaseLoadRef.current = {
+                controller: secondaryBoardController,
+                gameId: selectedVariation.game_id,
+                nonce,
+            };
+            suppressSelectedVariationLoadRef.current = true;
+            loadSecondaryVariationBaseSnapshot(secondaryBoardController, baseSnapshot);
+            return true;
+        };
+
         const onLoad = () => {
+            if (disposed) {
+                return;
+            }
+
+            const pendingBaseLoad = pendingSecondaryVariationBaseLoadRef.current;
+            if (
+                pendingBaseLoad &&
+                pendingBaseLoad.controller === secondaryBoardController &&
+                pendingBaseLoad.gameId === selectedVariation.game_id
+            ) {
+                pendingSecondaryVariationBaseLoadRef.current = null;
+                applyVisibleVariationsToLoadedBase();
+                return;
+            }
+
             if (suppressSelectedVariationLoadRef.current) {
                 return;
             }
-            apply(true);
+
+            const baseSnapshot = captureSecondaryVariationBaseSnapshot(
+                secondaryBoardController,
+                selectedVariation.game_id,
+            );
+            if (baseSnapshot) {
+                secondaryVariationBaseSnapshotRef.current = baseSnapshot;
+                applyVisibleVariationsToLoadedBase();
+            }
         };
         goban.on("load", onLoad);
 
         if (goban.engine?.last_official_move) {
-            apply();
+            if (
+                secondaryVariationBaseSnapshotRef.current?.controller ===
+                    secondaryBoardController &&
+                secondaryVariationBaseSnapshotRef.current.gameId === selectedVariation.game_id
+            ) {
+                reloadBaseThenApplyVisibleVariations();
+            } else {
+                const baseSnapshot = captureSecondaryVariationBaseSnapshot(
+                    secondaryBoardController,
+                    selectedVariation.game_id,
+                );
+                if (baseSnapshot) {
+                    secondaryVariationBaseSnapshotRef.current = baseSnapshot;
+                    applyVisibleVariationsToLoadedBase();
+                }
+            }
         }
 
         return () => {
+            disposed = true;
             goban.off("load", onLoad);
             pendingSecondaryMoveTreeRedrawCancelRef.current?.();
             pendingSecondaryMoveTreeRedrawCancelRef.current = null;
-            if (suppressSelectedVariationLoadTimerRef.current) {
-                clearTimeout(suppressSelectedVariationLoadTimerRef.current);
-                suppressSelectedVariationLoadTimerRef.current = null;
+            const pendingBaseLoad = pendingSecondaryVariationBaseLoadRef.current;
+            if (
+                pendingBaseLoad?.controller === secondaryBoardController &&
+                pendingBaseLoad.gameId === selectedVariation.game_id
+            ) {
+                pendingSecondaryVariationBaseLoadRef.current = null;
             }
             suppressSelectedVariationLoadRef.current = false;
         };
@@ -963,18 +1117,22 @@ export function KibitzRoomStage({
                                 interactive={isDraftingVariation}
                                 fitMode="contain"
                                 respectContainerBounds={true}
+                                moveTree={secondaryPane.variation_source_move_tree}
+                                movePath={secondaryPane.variation_source_move_path}
                                 onReady={setSecondaryBoardController}
                             />
                         ) : null}
                         {renderVariationBoard ? (
                             <KibitzBoard
                                 gameId={selectedVariation?.game_id}
-                                {...boardDimensionsOf(mainGame)}
+                                {...boardDimensionsOf(selectedVariationSourceGame)}
                                 className="mobile-secondary-board-surface"
                                 size={mobileBoardSize}
                                 interactive={false}
                                 fitMode="contain"
                                 respectContainerBounds={true}
+                                moveTree={secondaryPane.variation_source_move_tree}
+                                movePath={secondaryPane.variation_source_move_path}
                                 onReady={setSecondaryBoardController}
                             />
                         ) : null}
@@ -1290,63 +1448,6 @@ export function KibitzRoomStage({
                             )
                         ) : secondaryGameId ? (
                             <div className="board-content board-content-variation">
-                                <div
-                                    className={
-                                        "board-meta" +
-                                        (isCreatingVariationFromCurrentBoard
-                                            ? " board-meta-variation-inline"
-                                            : "")
-                                    }
-                                >
-                                    {isCreatingVariationFromCurrentBoard ? (
-                                        <>
-                                            {secondaryBoardGame ? (
-                                                <div className="players player-pair">
-                                                    {renderRichPlayerBadge(
-                                                        secondaryBoardGame.black,
-                                                        secondaryBoardGame.black.username,
-                                                    )}
-                                                    <span className="player-vs">
-                                                        {pgettext(
-                                                            "Versus label shown between players in kibitz",
-                                                            "vs",
-                                                        )}
-                                                    </span>
-                                                    {renderRichPlayerBadge(
-                                                        secondaryBoardGame.white,
-                                                        secondaryBoardGame.white.username,
-                                                    )}
-                                                </div>
-                                            ) : null}
-                                            <div className="board-meta-variation-title">
-                                                {pgettext(
-                                                    "Title for a new Kibitz variation draft",
-                                                    "New variation",
-                                                )}
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <div className="players player-pair">
-                                                {renderRichPlayerBadge(
-                                                    previewGame?.black,
-                                                    previewGame?.black.username,
-                                                )}
-                                                <span className="player-vs">
-                                                    {pgettext(
-                                                        "Versus label shown between players in kibitz",
-                                                        "vs",
-                                                    )}
-                                                </span>
-                                                {renderRichPlayerBadge(
-                                                    previewGame?.white,
-                                                    previewGame?.white.username,
-                                                )}
-                                            </div>
-                                            {previewGame?.title ?? ""}
-                                        </>
-                                    )}
-                                </div>
                                 <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
                                     <KibitzBoard
                                         gameId={secondaryGameId}
@@ -1355,6 +1456,8 @@ export function KibitzRoomStage({
                                         size={secondaryBoardSize}
                                         interactive={secondaryPaneSize === "equal"}
                                         respectContainerBounds={true}
+                                        moveTree={secondaryPane.variation_source_move_tree}
+                                        movePath={secondaryPane.variation_source_move_path}
                                         onReady={setSecondaryBoardController}
                                     />
                                 </div>
@@ -1462,11 +1565,13 @@ export function KibitzRoomStage({
                                 >
                                     <KibitzBoard
                                         gameId={selectedVariation?.game_id}
-                                        {...boardDimensionsOf(mainGame)}
+                                        {...boardDimensionsOf(selectedVariationSourceGame)}
                                         className="secondary-board-surface"
                                         size={secondaryBoardSize}
                                         interactive={false}
                                         respectContainerBounds={true}
+                                        moveTree={secondaryPane.variation_source_move_tree}
+                                        movePath={secondaryPane.variation_source_move_path}
                                         onReady={setSecondaryBoardController}
                                     />
                                 </div>
@@ -1565,6 +1670,7 @@ export function KibitzRoomStage({
                     </div>
                 </div>
             </div>
+            {secondaryMoveNavigationShortcuts}
             <KibitzDividerHandle secondaryPane={secondaryPane} onSetMode={onSetSecondaryPaneMode} />
         </div>
     );

@@ -42,6 +42,7 @@ import type {
     KibitzStreamItemType,
     KibitzVariationSummary,
     KibitzWatchedGame,
+    KibitzVariationLineTree,
 } from "@/models/kibitz";
 
 interface KibitzControllerEvents {
@@ -1082,11 +1083,16 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             variation_id: undefined,
             variation_source_game_id: undefined,
             variation_source_game: undefined,
+            variation_source_move_tree: undefined,
+            variation_source_move_path: undefined,
             variation_draft_base_id: undefined,
         });
     }
 
-    public startVariationFromCurrentBoard(): void {
+    public startVariationFromCurrentBoard(
+        variation_source_move_tree?: KibitzVariationLineTree,
+        variation_source_move_path?: string,
+    ): void {
         const currentGameId = this._active_room?.current_game?.game_id;
         if (!currentGameId) {
             return;
@@ -1102,6 +1108,8 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             variation_source_game: this._active_room?.current_game
                 ? { ...this._active_room.current_game }
                 : undefined,
+            variation_source_move_tree,
+            variation_source_move_path,
             variation_draft_base_id: undefined,
         });
     }
@@ -1120,6 +1128,8 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             variation_id: undefined,
             variation_source_game_id: variation.game_id,
             variation_source_game: sourceGame ? { ...sourceGame } : undefined,
+            variation_source_move_tree: undefined,
+            variation_source_move_path: undefined,
             variation_draft_base_id: variation.id,
         });
     }
@@ -1132,6 +1142,8 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             variation_id: undefined,
             variation_source_game_id: undefined,
             variation_source_game: undefined,
+            variation_source_move_tree: undefined,
+            variation_source_move_path: undefined,
             variation_draft_base_id: undefined,
         });
     }
@@ -1145,6 +1157,8 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             variation_id: variationId,
             variation_source_game_id: undefined,
             variation_source_game: undefined,
+            variation_source_move_tree: undefined,
+            variation_source_move_path: undefined,
             variation_draft_base_id: undefined,
         });
     }

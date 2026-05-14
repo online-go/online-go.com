@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { GobanRendererConfig } from "goban";
+import { GobanRendererConfig, type MoveTreeJson } from "goban";
 import { GobanContainer } from "@/components/GobanContainer/GobanContainer";
 import { GobanController } from "@/lib/GobanController";
 import * as preferences from "@/lib/preferences";
@@ -32,6 +32,8 @@ interface KibitzBoardProps {
     showLabels?: boolean;
     fitMode?: "native" | "contain";
     respectContainerBounds?: boolean;
+    moveTree?: MoveTreeJson;
+    movePath?: string;
     onReady?: (controller: GobanController | null) => void;
 }
 
@@ -45,6 +47,8 @@ export function KibitzBoard({
     showLabels = true,
     fitMode = "native",
     respectContainerBounds = false,
+    moveTree,
+    movePath,
     onReady,
 }: KibitzBoardProps): React.ReactElement {
     const gobanDiv = React.useRef<HTMLDivElement>(
@@ -56,6 +60,13 @@ export function KibitzBoard({
     );
     const controllerRef = React.useRef<GobanController | null>(null);
     const [goban, setGoban] = React.useState<GobanController["goban"] | null>(null);
+    const moveTreeRef = React.useRef(moveTree);
+    const movePathRef = React.useRef(movePath);
+
+    React.useEffect(() => {
+        moveTreeRef.current = moveTree;
+        movePathRef.current = movePath;
+    }, [movePath, moveTree]);
 
     React.useEffect(() => {
         const labelPosition = preferences.get("label-positioning");
@@ -79,6 +90,7 @@ export function KibitzBoard({
             stone_font_scale: preferences.get("stone-font-scale"),
             square_size: "auto",
             game_id: gameId,
+            move_tree: moveTreeRef.current,
             width,
             height,
         };
@@ -97,6 +109,11 @@ export function KibitzBoard({
         gobanDiv.current.style.setProperty("background-color", "#DCB35C", "important");
         gobanDiv.current.style.setProperty("background-image", "none", "important");
         gobanDiv.current.style.setProperty("box-shadow", "none", "important");
+
+        if (movePathRef.current) {
+            controllerRef.current.goban.engine.followPath(0, movePathRef.current);
+            controllerRef.current.goban.redraw(true);
+        }
         setGoban(controllerRef.current.goban);
         onReady?.(controllerRef.current);
 

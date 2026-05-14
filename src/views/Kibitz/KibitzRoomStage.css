@@ -290,7 +290,6 @@
 
             .board-panel .board-content-variation {
                 grid-template-rows:
-                    auto
                     minmax(0, 1fr)
                     auto
                     auto
@@ -310,7 +309,6 @@
 
             .board-panel .board-content-posted-variation {
                 grid-template-rows:
-                    auto
                     minmax(0, 1fr)
                     auto
                     minmax(var(--equal-variation-height), 0.3fr)
@@ -356,11 +354,43 @@
                 width: min(100%, 39rem, 78vh);
             }
 
+            .secondary-board .board-content-variation .board-fit-slot {
+                grid-row: 1;
+            }
+
+            .secondary-board .board-content-variation .secondary-board-transport-row {
+                grid-row: 2;
+            }
+
+            .secondary-board .board-content-variation .secondary-board-analyze-row {
+                grid-row: 3;
+            }
+
             .secondary-board .board-content-variation .kibitz-move-tree-container {
+                grid-row: 4;
+            }
+
+            .secondary-board .board-content-variation .secondary-board-node-text-row {
                 grid-row: 5;
             }
 
+            .secondary-board .board-content-variation .secondary-board-compose-row {
+                grid-row: 6;
+            }
+
+            .secondary-board .board-content-posted-variation .board-fit-slot {
+                grid-row: 1;
+            }
+
+            .secondary-board .board-content-posted-variation .secondary-board-transport-row {
+                grid-row: 2;
+            }
+
             .secondary-board .board-content-posted-variation .kibitz-move-tree-container {
+                grid-row: 3;
+            }
+
+            .secondary-board .board-content-posted-variation .secondary-board-node-text-row {
                 grid-row: 4;
             }
 
@@ -426,7 +456,6 @@
                 font-size: 0.84rem;
             }
 
-            .secondary-board .board-meta,
             .secondary-board-analyze-row,
             .secondary-board-node-text-row,
             .secondary-board-compose-row,
@@ -473,7 +502,7 @@
             }
 
             .secondary-board .KibitzBoard {
-                max-width: min(100%, 48rem, 78vh);
+                max-width: min(100%, 78vh);
                 width: auto;
             }
 
@@ -1104,12 +1133,6 @@
             .board-content {
                 grid-template-rows: auto minmax(0, 1fr) auto;
             }
-
-            .board-meta {
-                .players {
-                    font-size: 0.9rem;
-                }
-            }
         }
     }
 }
@@ -1135,7 +1158,7 @@
     }
 
     .Kibitz-mobile-board-host {
-        background: #fff;
+        background: var(--card-background-color);
         display: flex;
         flex-direction: column;
         gap: 0;
@@ -1196,7 +1219,7 @@
     .mobile-board-fit-slot {
         align-items: center;
         aspect-ratio: 1 / 1;
-        background: #fff;
+        background: var(--card-background-color);
         display: grid;
         justify-items: center;
         margin: 0 auto;
@@ -1222,13 +1245,6 @@
 
     .mobile-board-fit-slot-openable {
         cursor: pointer;
-    }
-
-    [data-theme="dark"] {
-        .Kibitz-mobile-board-host,
-        .mobile-board-fit-slot {
-            background: var(--card-background-color);
-        }
     }
 
     .mobile-board-controls-row {

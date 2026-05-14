@@ -171,7 +171,22 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            width: 100%;
+        }
+
+        .room-description {
+            color: var(--text-color-faded);
+        }
+
+        .preset-label {
+            color: #aaa;
+            font-size: 0.75em;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .room-kind-separator {
+            color: var(--text-color-faded);
         }
 
         .room-subtitle {

@@ -54,6 +54,19 @@ export function KibitzVariationList({
     const variationListTarget = useKibitzHelpTarget(helpTargetId);
     const selectedVariationElementRef = React.useRef<HTMLDivElement | null>(null);
     const previousFocusRequestIdRef = React.useRef<number>(variationFocusRequestId);
+    const activeGameId = React.useMemo(() => {
+        if (selectedVariationId) {
+            const selectedVariation = variations.find(
+                (variation) => variation.id === selectedVariationId,
+            );
+
+            if (selectedVariation) {
+                return selectedVariation.game_id;
+            }
+        }
+
+        return currentGameId ?? null;
+    }, [currentGameId, selectedVariationId, variations]);
     const visibleVariationIdSet = React.useMemo(
         () => new Set(visibleVariationIds),
         [visibleVariationIds],
@@ -126,7 +139,11 @@ export function KibitzVariationList({
                                     </div>
                                 ) : null}
                                 {group.variations.map((variation) => {
-                                    const isVisible = visibleVariationIdSet.has(variation.id);
+                                    const isActiveGameVariation =
+                                        activeGameId != null && variation.game_id === activeGameId;
+                                    const isVisible =
+                                        isActiveGameVariation &&
+                                        visibleVariationIdSet.has(variation.id);
                                     const isSelected = selectedVariationId === variation.id;
                                     const isBlockedFlash = blockedVariationFlashId === variation.id;
                                     const toggleLabel = isVisible
