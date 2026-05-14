@@ -265,4 +265,59 @@ describe("KibitzController room ordering", () => {
         expect(controller.getCachedGame(90210)?.white.username).toBe("White");
         expect(cacheChanged).toHaveBeenCalledTimes(1);
     });
+
+    it("keeps cached current game when a partial room update omits it", async () => {
+        mockedGet.mockResolvedValueOnce([
+            {
+                id: "room-current-game",
+                channel: "channel-current-game",
+                title: "Room Current Game",
+                kind: "preset",
+                description: null,
+                current_game_id: 123,
+                current_game: {
+                    game_id: 123,
+                    board_size: "19x19",
+                    title: "Black vs White",
+                    black: null,
+                    white: null,
+                    tournament_name: null,
+                    move_number: null,
+                    live: true,
+                    analysis_disabled: false,
+                },
+                creator_id: null,
+                created_at: "2026-05-01T10:00:00Z",
+                last_activity_at: "2026-05-01T10:00:00Z",
+                viewer_count: 7,
+            },
+        ]);
+
+        const controller = new KibitzController();
+        await flushPromises();
+        await flushPromises();
+
+        expect(controller.rooms[0].current_game?.game_id).toBe(123);
+
+        (requests.put as jest.MockedFunction<typeof requests.put>).mockResolvedValueOnce({
+            id: "room-current-game",
+            channel: "channel-current-game",
+            title: "Renamed Room",
+            kind: "preset",
+            description: "Updated description",
+            current_game_id: 123,
+            creator_id: null,
+            created_at: "2026-05-01T10:00:00Z",
+            last_activity_at: "2026-05-01T10:00:00Z",
+        });
+
+        await controller.updateRoomDetails(
+            "room-current-game",
+            "Renamed Room",
+            "Updated description",
+        );
+
+        expect(controller.rooms[0].title).toBe("Renamed Room");
+        expect(controller.rooms[0].current_game?.game_id).toBe(123);
+    });
 });
