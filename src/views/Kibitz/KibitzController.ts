@@ -137,6 +137,16 @@ function mapBackendCurrentGameToWatched(backend: BackendCurrentGameBlock): Kibit
     };
 }
 
+function mapBackendRoomCurrentGame(
+    backend: BackendKibitzRoom,
+    existing?: KibitzRoomSummary,
+): KibitzWatchedGame | undefined {
+    if (backend.current_game === undefined) {
+        return existing?.current_game;
+    }
+    return backend.current_game ? mapBackendCurrentGameToWatched(backend.current_game) : undefined;
+}
+
 function mapBackendRoomToSummary(
     backend: BackendKibitzRoom,
     existing?: KibitzRoomSummary,
@@ -153,9 +163,7 @@ function mapBackendRoomToSummary(
         viewer_count: backend.viewer_count ?? existing?.viewer_count ?? 0,
         description: backend.description ?? undefined,
         preset: backend.preset ?? undefined,
-        current_game: backend.current_game
-            ? mapBackendCurrentGameToWatched(backend.current_game)
-            : undefined,
+        current_game: mapBackendRoomCurrentGame(backend, existing),
     };
 }
 

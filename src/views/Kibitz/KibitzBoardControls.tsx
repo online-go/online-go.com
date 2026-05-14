@@ -80,6 +80,15 @@ export function KibitzBoardControls({
     const isOnLiveMove = controller?.goban.engine?.isLastOfficialMove() ?? true;
     const canReturnToLive =
         typeof latestMoveNumber === "number" && latestMoveNumber > 0 && !isOnLiveMove;
+    const moveNumberLabel =
+        typeof moveNumber === "number"
+            ? interpolate(pgettext("Move number label in kibitz board controls", "Move {{n}}"), {
+                  n: moveNumber,
+              })
+            : pgettext(
+                  "Placeholder shown in the kibitz board controls before the move count is known",
+                  "Move …",
+              );
 
     React.useEffect(() => {
         onReturnLiveVisibilityChange?.(canReturnToLive);
@@ -152,20 +161,7 @@ export function KibitzBoardControls({
                     >
                         <i className="fa fa-step-backward" />
                     </button>
-                    <span className="move-number">
-                        {typeof moveNumber === "number"
-                            ? interpolate(
-                                  pgettext(
-                                      "Move number label in kibitz board controls",
-                                      "Move {{n}}",
-                                  ),
-                                  { n: moveNumber },
-                              )
-                            : pgettext(
-                                  "Placeholder shown in the kibitz board controls before the move count is known",
-                                  "Move …",
-                              )}
-                    </span>
+                    <span className="move-number">{moveNumberLabel}</span>
                     <button
                         type="button"
                         className="kibitz-move-control"
@@ -207,12 +203,7 @@ export function KibitzBoardControls({
                 >
                     <i className="fa fa-step-backward" />
                 </button>
-                <span className="move-number">
-                    {interpolate(
-                        pgettext("Move number label in kibitz board controls", "Move {{n}}"),
-                        { n: moveNumber },
-                    )}
-                </span>
+                <span className="move-number">{moveNumberLabel}</span>
                 <button
                     type="button"
                     className="kibitz-move-control"
