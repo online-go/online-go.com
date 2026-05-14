@@ -94,6 +94,24 @@ const MAX_VISIBLE_VARIATIONS = KIBITZ_VARIATION_COLORS.length;
 const VARIATION_LIMIT_TOAST_MS = 1800;
 const VARIATION_LIMIT_FLASH_MS = 900;
 
+export function pruneVisibleVariationIdsForGame(
+    variations: KibitzVariationSummary[],
+    visibleVariationIds: string[],
+    gameId: number | null,
+): string[] {
+    if (gameId == null) {
+        return visibleVariationIds;
+    }
+
+    const variationGameIds = new Map(
+        variations.map((variation) => [variation.id, variation.game_id]),
+    );
+
+    return visibleVariationIds.filter(
+        (variationId) => variationGameIds.get(variationId) === gameId,
+    );
+}
+
 function clampMobileSplitRatio(value: number): number {
     return Math.min(MAX_MOBILE_SPLIT_RATIO, Math.max(MIN_MOBILE_SPLIT_RATIO, value));
 }
@@ -623,9 +641,22 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
     const onOpenVariation = React.useCallback(
         (variationId: string, focusVariation: boolean = false) => {
-            const isNewlyOpened = !visibleVariationIds.includes(variationId);
+            const openedVariation = displayedVariations.find(
+                (variation) => variation.id === variationId,
+            );
+            const openedVariationGameId = openedVariation?.game_id ?? null;
+            const selectedVariationGameId = selectedVariation?.game_id ?? null;
+            const nextVisibleVariationIdsBase =
+                openedVariationGameId != null && openedVariationGameId !== selectedVariationGameId
+                    ? pruneVisibleVariationIdsForGame(
+                          displayedVariations,
+                          visibleVariationIds,
+                          openedVariationGameId,
+                      )
+                    : visibleVariationIds;
+            const isNewlyOpened = !nextVisibleVariationIdsBase.includes(variationId);
 
-            if (isNewlyOpened && visibleVariationIds.length >= MAX_VISIBLE_VARIATIONS) {
+            if (isNewlyOpened && nextVisibleVariationIdsBase.length >= MAX_VISIBLE_VARIATIONS) {
                 if (blockedVariationFlashTimerRef.current) {
                     clearTimeout(blockedVariationFlashTimerRef.current);
                 }
@@ -647,8 +678,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             }
 
             const nextVisibleVariationIds = isNewlyOpened
-                ? [...visibleVariationIds, variationId]
-                : visibleVariationIds;
+                ? [...nextVisibleVariationIdsBase, variationId]
+                : nextVisibleVariationIdsBase;
 
             if (nextVisibleVariationIds !== visibleVariationIds) {
                 setVisibleVariationIds(nextVisibleVariationIds);
@@ -667,12 +698,32 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 setMobileCompanionPanel("compare");
             }
         },
-        [controller, isMobileLayout, kibitzHelpTriggers, visibleVariationIds],
+        [
+            controller,
+            displayedVariations,
+            isMobileLayout,
+            kibitzHelpTriggers,
+            selectedVariation?.game_id,
+            visibleVariationIds,
+        ],
     );
     const onToggleVariation = React.useCallback(
         (variationId: string) => {
-            const isVisible = visibleVariationIds.includes(variationId);
-            if (!isVisible && visibleVariationIds.length >= MAX_VISIBLE_VARIATIONS) {
+            const toggledVariation = displayedVariations.find(
+                (variation) => variation.id === variationId,
+            );
+            const toggledVariationGameId = toggledVariation?.game_id ?? null;
+            const selectedVariationGameId = selectedVariation?.game_id ?? null;
+            const nextVisibleVariationIdsBase =
+                toggledVariationGameId != null && toggledVariationGameId !== selectedVariationGameId
+                    ? pruneVisibleVariationIdsForGame(
+                          displayedVariations,
+                          visibleVariationIds,
+                          toggledVariationGameId,
+                      )
+                    : visibleVariationIds;
+            const isVisible = nextVisibleVariationIdsBase.includes(variationId);
+            if (!isVisible && nextVisibleVariationIdsBase.length >= MAX_VISIBLE_VARIATIONS) {
                 if (blockedVariationFlashTimerRef.current) {
                     clearTimeout(blockedVariationFlashTimerRef.current);
                 }
@@ -694,7 +745,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             }
 
             if (isVisible) {
-                const nextVisibleVariationIds = visibleVariationIds.filter(
+                const nextVisibleVariationIds = nextVisibleVariationIdsBase.filter(
                     (id) => id !== variationId,
                 );
                 setVisibleVariationIds(nextVisibleVariationIds);
@@ -727,7 +778,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 return;
             }
 
-            const nextVisibleVariationIds = [...visibleVariationIds, variationId];
+            const nextVisibleVariationIds = [...nextVisibleVariationIdsBase, variationId];
             setVisibleVariationIds(nextVisibleVariationIds);
             setVariationColorIndexes((previous) =>
                 assignVisibleVariationColorIndexes(previous, nextVisibleVariationIds),
@@ -743,6 +794,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             controller,
             displayedVariations,
             isMobileLayout,
+            selectedVariation?.game_id,
             secondaryPane.variation_id,
             kibitzHelpTriggers,
             visibleVariationIds,
