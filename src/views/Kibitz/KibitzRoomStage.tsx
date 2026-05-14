@@ -829,11 +829,6 @@ export function KibitzRoomStage({
         secondaryPane.variation_source_game_id,
     ]);
 
-    // mainGame is populated by KibitzController.lookupGameForKibitz from
-    // GET /games/<id>; the stage previously re-fetched the same endpoint
-    // for "mainGameDetails", producing up to three concurrent calls per
-    // board change (controller hydrateRoomCardGame + hydrateActiveRoomGame
-    // + this stage's effect). Read the controller's data directly.
     const displayedTitle = mainGame?.title;
     const displayedBlack = mainGame?.black.username;
     const displayedWhite = mainGame?.white.username;

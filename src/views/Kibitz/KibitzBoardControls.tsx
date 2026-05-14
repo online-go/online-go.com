@@ -38,15 +38,17 @@ export function KibitzBoardControls({
     showReturnLiveButton = true,
     onReturnLiveVisibilityChange,
 }: KibitzBoardControlsProps): React.ReactElement | null {
-    const [moveNumber, setMoveNumber] = React.useState(() => totalMoves ?? 0);
-    const [latestMoveNumber, setLatestMoveNumber] = React.useState(() => totalMoves ?? 0);
+    const [moveNumber, setMoveNumber] = React.useState<number | undefined>(() => totalMoves);
+    const [latestMoveNumber, setLatestMoveNumber] = React.useState<number | undefined>(
+        () => totalMoves,
+    );
     const [moveTreeContainer, setMoveTreeContainer] = React.useState<Resizable | null>(null);
     const previousControllerRef = React.useRef<GobanController | null>(null);
 
     React.useEffect(() => {
         if (!controller) {
-            setMoveNumber(totalMoves ?? 0);
-            setLatestMoveNumber(totalMoves ?? 0);
+            setMoveNumber(totalMoves);
+            setLatestMoveNumber(totalMoves);
             onReturnLiveVisibilityChange?.(false);
             return;
         }
@@ -54,8 +56,7 @@ export function KibitzBoardControls({
         const goban = controller.goban;
         const sync = () => {
             const currentMoveNumber = goban.engine?.cur_move?.move_number;
-            const officialMoveNumber =
-                goban.engine?.last_official_move?.move_number ?? totalMoves ?? 0;
+            const officialMoveNumber = goban.engine?.last_official_move?.move_number ?? totalMoves;
 
             setLatestMoveNumber(officialMoveNumber);
             setMoveNumber(
@@ -77,7 +78,8 @@ export function KibitzBoardControls({
     }, [controller, totalMoves]);
 
     const isOnLiveMove = controller?.goban.engine?.isLastOfficialMove() ?? true;
-    const canReturnToLive = latestMoveNumber > 0 && !isOnLiveMove;
+    const canReturnToLive =
+        typeof latestMoveNumber === "number" && latestMoveNumber > 0 && !isOnLiveMove;
 
     React.useEffect(() => {
         onReturnLiveVisibilityChange?.(canReturnToLive);
@@ -151,10 +153,18 @@ export function KibitzBoardControls({
                         <i className="fa fa-step-backward" />
                     </button>
                     <span className="move-number">
-                        {interpolate(
-                            pgettext("Move number label in kibitz board controls", "Move {{n}}"),
-                            { n: moveNumber },
-                        )}
+                        {typeof moveNumber === "number"
+                            ? interpolate(
+                                  pgettext(
+                                      "Move number label in kibitz board controls",
+                                      "Move {{n}}",
+                                  ),
+                                  { n: moveNumber },
+                              )
+                            : pgettext(
+                                  "Placeholder shown in the kibitz board controls before the move count is known",
+                                  "Move …",
+                              )}
                     </span>
                     <button
                         type="button"
