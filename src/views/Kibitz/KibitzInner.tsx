@@ -547,6 +547,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const selectedVariation = displayedVariations.find(
         (variation) => variation.id === secondaryPane.variation_id,
     );
+    const currentGameId = resolvedRoom?.current_game?.game_id ?? null;
     const kibitzHelpTriggers = useKibitzHelpTriggers({
         isMobileLayout,
         room: resolvedRoom,
@@ -645,8 +646,11 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 return;
             }
 
-            if (!visibleVariationIds.includes(variationId)) {
-                const nextVisibleVariationIds = [...visibleVariationIds, variationId];
+            const nextVisibleVariationIds = isNewlyOpened
+                ? [...visibleVariationIds, variationId]
+                : visibleVariationIds;
+
+            if (nextVisibleVariationIds !== visibleVariationIds) {
                 setVisibleVariationIds(nextVisibleVariationIds);
                 setVariationColorIndexes((previous) =>
                     assignVisibleVariationColorIndexes(previous, nextVisibleVariationIds),
@@ -825,7 +829,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         [controller],
     );
 
-    const currentGameId = resolvedRoom?.current_game?.game_id ?? null;
     const isPresetWithNoGame = Boolean(resolvedRoom?.preset && !resolvedRoom.current_game?.game_id);
     const roomProposals = proposals.filter((proposal) => proposal.room_id === resolvedRoom?.id);
     const activeProposal = roomProposals.find((proposal) => proposal.status === "active");

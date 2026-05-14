@@ -185,6 +185,16 @@ function followKibitzVariationPath(
     const decodedMoves = engine.decodeMoves(moves);
     const pathNodes: MoveTree[] = [];
     let cursor = engine.move_tree.index(fromMoveNumber);
+
+    if (decodedMoves.length > 0) {
+        const firstMove = decodedMoves[0];
+        const firstMoveEdited = !!firstMove.edited;
+        const firstMovePlayer = engine.playerByColor(firstMove.color || 0);
+        if (moveMatchesNode(cursor, firstMove.x, firstMove.y, firstMovePlayer, firstMoveEdited)) {
+            cursor = cursor.parent ?? cursor;
+        }
+    }
+
     let trunkPrefixCursor = cursor;
     let trunkPrefixLength = 0;
 
