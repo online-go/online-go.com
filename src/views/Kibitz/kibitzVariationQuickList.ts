@@ -15,22 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { KibitzVariationSummary } from "@/models/kibitz";
+import { interpolate, pgettext } from "@/lib/translate";
+import type { KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
 
-export function getVisiblePostedVariationsForCurrentGame(
+export function getVisiblePostedVariations(
     variations: KibitzVariationSummary[],
     visibleVariationIds: string[],
-    currentGameId: number | null,
 ): KibitzVariationSummary[] {
-    if (currentGameId == null) {
-        return [];
-    }
-
     const visibleVariationIdSet = new Set(visibleVariationIds);
-    return variations.filter(
-        (variation) =>
-            variation.game_id === currentGameId && visibleVariationIdSet.has(variation.id),
-    );
+    return variations.filter((variation) => visibleVariationIdSet.has(variation.id));
 }
 
 export function formatVariationBranchLabel(variation: KibitzVariationSummary): string {
@@ -47,4 +40,35 @@ export function formatVariationLengthLabel(variation: KibitzVariationSummary): s
     }
 
     return "";
+}
+
+export function formatVariationGameSummary(
+    game: KibitzWatchedGame | null | undefined,
+    gameId: number,
+): string {
+    const title = game?.title?.trim();
+    const gameLabel = title?.length
+        ? title
+        : interpolate(
+              pgettext("Fallback game label for a Kibitz variation divider", "Game #{{game_id}}"),
+              {
+                  game_id: gameId,
+              },
+          );
+
+    if (!game) {
+        return gameLabel;
+    }
+
+    return interpolate(
+        pgettext(
+            "Summary label for a Kibitz variation divider with game title and matchup",
+            "{{game}} - {{black}} vs. {{white}}",
+        ),
+        {
+            game: gameLabel,
+            black: game.black.username,
+            white: game.white.username,
+        },
+    );
 }

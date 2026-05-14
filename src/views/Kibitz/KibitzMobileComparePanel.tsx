@@ -23,6 +23,7 @@ import type {
     KibitzProposal,
     KibitzSecondaryPaneState,
     KibitzVariationSummary,
+    KibitzWatchedGame,
 } from "@/models/kibitz";
 import { GobanAnalyzeButtonBar } from "@/components/GobanAnalyzeButtonBar/GobanAnalyzeButtonBar";
 import { KibitzProposalQueue } from "./KibitzProposalQueue";
@@ -37,6 +38,8 @@ import "./KibitzMobileComparePanel.css";
 interface KibitzMobileComparePanelProps {
     controller: GobanController | null;
     variations: KibitzVariationSummary[];
+    currentGameId?: number | null;
+    variationGameById?: ReadonlyMap<number, KibitzWatchedGame>;
     queuedRoomProposals: KibitzProposal[];
     variationColorIndexes: Record<string, number>;
     blockedVariationFlashId: string | null;
@@ -65,6 +68,8 @@ function splitNodeText(text: string): { summary: string; body: string | null } {
 export function KibitzMobileComparePanel({
     controller,
     variations,
+    currentGameId,
+    variationGameById,
     queuedRoomProposals,
     variationColorIndexes,
     blockedVariationFlashId,
@@ -268,6 +273,8 @@ export function KibitzMobileComparePanel({
                     {variations.length > 0 ? (
                         <KibitzVariationList
                             variations={variations}
+                            currentGameId={currentGameId}
+                            gameById={variationGameById}
                             selectedVariationId={secondaryPane.variation_id}
                             variationFocusRequestId={variationFocusRequestId}
                             variationColorIndexes={variationColorIndexes}

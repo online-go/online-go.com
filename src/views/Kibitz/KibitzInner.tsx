@@ -32,6 +32,7 @@ import type {
     KibitzSecondaryPaneState,
     KibitzStreamItem,
     KibitzVariationSummary,
+    KibitzWatchedGame,
 } from "@/models/kibitz";
 import { KibitzProposalBar } from "./KibitzProposalBar";
 import { KibitzProposalQueue } from "./KibitzProposalQueue";
@@ -54,7 +55,7 @@ import { KibitzGamePickerOverlay } from "./KibitzGamePickerOverlay";
 import { KibitzMobileGamePicker } from "./KibitzMobileGamePicker";
 import { KibitzRoomSettingsPopover } from "./KibitzRoomSettingsPopover";
 import { getKibitzAccessPolicyForUser, isKibitzAccessBlockedForUser } from "./kibitzAnalysisPolicy";
-import { getVisiblePostedVariationsForCurrentGame } from "./kibitzVariationQuickList";
+import { getVisiblePostedVariations } from "./kibitzVariationQuickList";
 import { KibitzUserAvatar } from "./KibitzUserAvatar";
 import {
     getKibitzBlockedRoomFollowupMessage,
@@ -296,12 +297,12 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         Record<string, number>
     >({});
     const [variationFocusRequestId, setVariationFocusRequestId] = React.useState(0);
+    const [cachedGamesVersion, setCachedGamesVersion] = React.useState(0);
     const [blockedVariationFlashId, setBlockedVariationFlashId] = React.useState<string | null>(
         null,
     );
     const [pendingPostedVariation, setPendingPostedVariation] =
         React.useState<PendingPostedVariation | null>(null);
-    const previousCurrentGameIdRef = React.useRef<number | null>(null);
     const desktopRoomListTarget = useKibitzHelpTarget(KIBITZ_HELP_TARGETS.desktopRoomList);
     const mobileRoomTitleTarget = useKibitzHelpTarget(KIBITZ_HELP_TARGETS.mobileRoomTitle);
     const mobileRoomMenuTarget = useKibitzHelpTarget(KIBITZ_HELP_TARGETS.mobileRoomMenu);
@@ -340,6 +341,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         const params = new URLSearchParams(location.search);
         return params.get("debug-kibitz") === "1";
     }, [location.search]);
+    const handleCachedGamesChanged = React.useCallback(() => {
+        setCachedGamesVersion((previous) => previous + 1);
+    }, []);
 
     React.useEffect(() => {
         const mediaQuery = window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY);
@@ -438,6 +442,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         controller.on("stream-changed", setStream);
         controller.on("proposals-changed", setProposals);
         controller.on("variations-changed", setVariations);
+        controller.on("cached-games-changed", handleCachedGamesChanged);
         controller.on("secondary-pane-changed", setSecondaryPane);
         controller.on("debug-changed", setDebug);
         controller.on("permissions-changed", setPermissions);
@@ -459,12 +464,13 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             controller.off("stream-changed", setStream);
             controller.off("proposals-changed", setProposals);
             controller.off("variations-changed", setVariations);
+            controller.off("cached-games-changed", handleCachedGamesChanged);
             controller.off("secondary-pane-changed", setSecondaryPane);
             controller.off("debug-changed", setDebug);
             controller.off("permissions-changed", setPermissions);
             controller.off("access-changed", setAccessBlocked);
         };
-    }, [controller]);
+    }, [controller, handleCachedGamesChanged]);
 
     const defaultRoomId = rooms[0]?.id ?? null;
     const blockedRoomIds = React.useMemo(() => {
@@ -569,14 +575,48 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     );
     const currentGameId = resolvedRoom?.current_game?.game_id ?? null;
     const activePostedVariations = React.useMemo(
-        () =>
-            getVisiblePostedVariationsForCurrentGame(
-                displayedVariations,
-                visibleVariationIds,
-                currentGameId,
-            ),
-        [currentGameId, displayedVariations, visibleVariationIds],
+        () => getVisiblePostedVariations(displayedVariations, visibleVariationIds),
+        [displayedVariations, visibleVariationIds],
     );
+    const activeVariationGameIds = React.useMemo(
+        () => [...new Set(activePostedVariations.map((variation) => variation.game_id))],
+        [activePostedVariations],
+    );
+    React.useEffect(() => {
+        void controller.ensureGamesCached(activeVariationGameIds);
+    }, [activeVariationGameIds, controller]);
+    const variationGameById = React.useMemo(() => {
+        const next = new Map<number, KibitzWatchedGame>();
+
+        const addGame = (game: KibitzWatchedGame | undefined | null) => {
+            if (game) {
+                next.set(game.game_id, game);
+            }
+        };
+
+        addGame(resolvedRoom?.current_game);
+
+        for (const room of rooms) {
+            addGame(room.current_game);
+        }
+
+        for (const proposal of proposals) {
+            addGame(proposal.proposed_game);
+        }
+
+        for (const variation of activePostedVariations) {
+            addGame(controller.getCachedGame(variation.game_id));
+        }
+
+        return next;
+    }, [
+        activePostedVariations,
+        cachedGamesVersion,
+        controller,
+        proposals,
+        resolvedRoom?.current_game,
+        rooms,
+    ]);
     const activePostedVariationIds = React.useMemo(
         () => new Set(activePostedVariations.map((variation) => variation.id)),
         [activePostedVariations],
@@ -651,14 +691,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
     const onOpenVariation = React.useCallback(
         (variationId: string, focusVariation: boolean = false) => {
-            const openedVariation = displayedVariations.find(
-                (variation) => variation.id === variationId,
-            );
-            const openedVariationGameId = openedVariation?.game_id ?? null;
             const isAlreadyVisibleInState = visibleVariationIds.includes(variationId);
             const isAlreadyVisibleInQuickList = activePostedVariationIds.has(variationId);
             const shouldLimitOpening =
-                openedVariationGameId === currentGameId &&
                 !isAlreadyVisibleInQuickList &&
                 activePostedVariations.length >= MAX_VISIBLE_VARIATIONS;
 
@@ -709,8 +744,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             activePostedVariations.length,
             activePostedVariationIds,
             controller,
-            displayedVariations,
-            currentGameId,
             isMobileLayout,
             kibitzHelpTriggers,
             visibleVariationIds,
@@ -754,25 +787,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         },
         [controller, displayedVariations, secondaryPane.variation_id, visibleVariationIds],
     );
-
-    React.useEffect(() => {
-        if (previousCurrentGameIdRef.current === currentGameId) {
-            return;
-        }
-
-        previousCurrentGameIdRef.current = currentGameId;
-        setVisibleVariationIds((previous) => {
-            if (currentGameId == null) {
-                return [];
-            }
-
-            return pruneVisibleVariationIdsForGame(displayedVariations, previous, currentGameId);
-        });
-
-        if (selectedVariation && selectedVariation.game_id !== currentGameId) {
-            controller.clearPreviewGame();
-        }
-    }, [controller, currentGameId, displayedVariations, selectedVariation]);
 
     React.useLayoutEffect(() => {
         setVariationColorIndexes((previous) => {
@@ -1009,6 +1023,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         <>
             <KibitzVariationList
                 variations={activePostedVariations}
+                currentGameId={currentGameId}
+                gameById={variationGameById}
                 selectedVariationId={secondaryPane.variation_id}
                 variationFocusRequestId={variationFocusRequestId}
                 variationColorIndexes={variationColorIndexes}
@@ -1641,6 +1657,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                     <KibitzMobileComparePanel
                                                         controller={mobileCompareController}
                                                         variations={activePostedVariations}
+                                                        currentGameId={currentGameId}
+                                                        variationGameById={variationGameById}
                                                         queuedRoomProposals={queuedRoomProposals}
                                                         variationColorIndexes={
                                                             variationColorIndexes

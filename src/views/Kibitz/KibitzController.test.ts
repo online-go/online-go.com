@@ -232,4 +232,37 @@ describe("KibitzController room ordering", () => {
 
         expect(controller.rooms.map((room) => room.id)).toEqual(["room-refresh"]);
     });
+
+    it("hydrates and caches missing game metadata on demand", async () => {
+        mockedGet.mockResolvedValueOnce([]);
+
+        const controller = new KibitzController();
+        const cacheChanged = jest.fn();
+        controller.on("cached-games-changed", cacheChanged);
+
+        await flushPromises();
+
+        mockedGet.mockResolvedValueOnce({
+            id: 90210,
+            width: 19,
+            height: 19,
+            name: "Famous Game",
+            players: {
+                black: { id: 1, username: "Black" },
+                white: { id: 2, username: "White" },
+            },
+            gamedata: {
+                moves: [],
+            },
+            ended: null,
+        });
+
+        await controller.ensureGamesCached([90210, 90210]);
+
+        expect(mockedGet).toHaveBeenCalledWith("games/90210");
+        expect(controller.getCachedGame(90210)?.title).toBe("Famous Game");
+        expect(controller.getCachedGame(90210)?.black.username).toBe("Black");
+        expect(controller.getCachedGame(90210)?.white.username).toBe("White");
+        expect(cacheChanged).toHaveBeenCalledTimes(1);
+    });
 });

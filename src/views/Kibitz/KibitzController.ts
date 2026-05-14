@@ -51,6 +51,7 @@ interface KibitzControllerEvents {
     "stream-changed": (items: KibitzStreamItem[]) => void;
     "proposals-changed": (proposals: KibitzProposal[]) => void;
     "variations-changed": (variations: KibitzVariationSummary[]) => void;
+    "cached-games-changed": () => void;
     "secondary-pane-changed": (state: KibitzSecondaryPaneState) => void;
     "debug-changed": (state: KibitzDebugState) => void;
     "permissions-changed": (permissions: KibitzPermissions) => void;
@@ -418,6 +419,16 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         return this._variations;
     }
 
+    public getCachedGame(gameId: number): KibitzWatchedGame | undefined {
+        return this._game_lookup_cache.get(gameId);
+    }
+
+    public async ensureGamesCached(gameIds: number[]): Promise<void> {
+        const uniqueGameIds = [...new Set(gameIds)].filter((gameId) => Number.isFinite(gameId));
+
+        await Promise.all(uniqueGameIds.map((gameId) => this.lookupGameForKibitzCached(gameId)));
+    }
+
     public get secondary_pane(): KibitzSecondaryPaneState {
         return this._secondary_pane;
     }
@@ -622,7 +633,11 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         const promise = lookupGameForKibitz(gameId)
             .then((game) => {
                 if (game) {
+                    const hadGame = this._game_lookup_cache.has(gameId);
                     this._game_lookup_cache.set(gameId, game);
+                    if (!hadGame) {
+                        this.emit("cached-games-changed");
+                    }
                 }
                 return game;
             })
