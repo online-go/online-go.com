@@ -92,6 +92,13 @@ const MOBILE_SPLIT_STORAGE_KEY = "kibitz-mobile-split-ratio";
 const DEFAULT_MOBILE_SPLIT_RATIO = 0.56;
 const MIN_MOBILE_SPLIT_RATIO = 0.36;
 const MAX_MOBILE_SPLIT_RATIO = 0.78;
+const DESKTOP_SIDEBAR_WIDTH_STORAGE_KEY = "kibitz.desktop.sidebar_width_px";
+const DESKTOP_SIDEBAR_MIN_NARROW_PX = 288;
+const DESKTOP_SIDEBAR_MIN_COMFORTABLE_PX = 336;
+const DESKTOP_STAGE_MIN_PX = 512;
+const DESKTOP_SIDEBAR_MAX_RATIO = 0.48;
+const DESKTOP_SIDEBAR_KEYBOARD_STEP_PX = 24;
+const DESKTOP_SIDEBAR_KEYBOARD_LARGE_STEP_PX = 72;
 const MAX_VISIBLE_VARIATIONS = KIBITZ_VARIATION_COLORS.length;
 const VARIATION_LIMIT_TOAST_MS = 1800;
 const VARIATION_LIMIT_FLASH_MS = 900;
@@ -116,6 +123,29 @@ export function pruneVisibleVariationIdsForGame(
 
 function clampMobileSplitRatio(value: number): number {
     return Math.min(MAX_MOBILE_SPLIT_RATIO, Math.max(MIN_MOBILE_SPLIT_RATIO, value));
+}
+
+export function clampDesktopSidebarWidthPx(width: number, contentWidth: number): number {
+    const minSidebar =
+        contentWidth >= 1100 ? DESKTOP_SIDEBAR_MIN_COMFORTABLE_PX : DESKTOP_SIDEBAR_MIN_NARROW_PX;
+
+    const maxSidebar = Math.min(
+        contentWidth * DESKTOP_SIDEBAR_MAX_RATIO,
+        contentWidth - DESKTOP_STAGE_MIN_PX,
+    );
+
+    if (!Number.isFinite(width) || contentWidth <= 0) {
+        return minSidebar;
+    }
+
+    if (maxSidebar <= minSidebar) {
+        return Math.max(
+            DESKTOP_SIDEBAR_MIN_NARROW_PX,
+            Math.min(width, Math.floor(contentWidth * 0.42)),
+        );
+    }
+
+    return Math.round(Math.min(maxSidebar, Math.max(minSidebar, width)));
 }
 
 function formatMobileMatchup(
@@ -291,6 +321,13 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
         return DEFAULT_MOBILE_SPLIT_RATIO;
     });
+    const [desktopSidebarWidthPx, setDesktopSidebarWidthPx] = React.useState<number | null>(() => {
+        const stored = window.localStorage.getItem(DESKTOP_SIDEBAR_WIDTH_STORAGE_KEY);
+        const parsed = stored ? Number.parseFloat(stored) : NaN;
+
+        return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+    });
+    const [isDesktopSidebarDragging, setIsDesktopSidebarDragging] = React.useState(false);
     const [mobileViewerCountFlash, setMobileViewerCountFlash] = React.useState(false);
     const [visibleVariationIds, setVisibleVariationIds] = React.useState<string[]>([]);
     const [variationColorIndexes, setVariationColorIndexes] = React.useState<
@@ -330,8 +367,16 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const blockedVariationFlashTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
     const mobileShellRef = React.useRef<HTMLDivElement | null>(null);
     const mobileDividerRef = React.useRef<HTMLDivElement | null>(null);
+    const desktopContentRef = React.useRef<HTMLDivElement | null>(null);
+    const desktopSidebarRef = React.useRef<HTMLDivElement | null>(null);
+    const desktopSidebarResizerRef = React.useRef<HTMLDivElement | null>(null);
     const previousMobileViewerCountRef = React.useRef<number | null>(null);
     const previousMobileViewerRoomIdRef = React.useRef<string | null>(null);
+    const desktopSidebarDragStateRef = React.useRef<{
+        pointerId: number;
+        contentRight: number;
+        contentWidth: number;
+    } | null>(null);
     const mobileDragStateRef = React.useRef<{
         pointerId: number;
         startY: number;
@@ -366,6 +411,26 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
         window.localStorage.setItem(MOBILE_SPLIT_STORAGE_KEY, String(mobileSplitRatio));
     }, [isMobileLayout, mobileSplitRatio]);
+
+    const setAndStoreDesktopSidebarWidthPx = React.useCallback((width: number | null) => {
+        setDesktopSidebarWidthPx(width);
+
+        if (width === null) {
+            window.localStorage.removeItem(DESKTOP_SIDEBAR_WIDTH_STORAGE_KEY);
+            return;
+        }
+
+        window.localStorage.setItem(DESKTOP_SIDEBAR_WIDTH_STORAGE_KEY, String(width));
+    }, []);
+
+    const getCurrentDesktopSidebarWidthPx = React.useCallback(() => {
+        if (desktopSidebarWidthPx !== null) {
+            return desktopSidebarWidthPx;
+        }
+
+        const sidebarRect = desktopSidebarRef.current?.getBoundingClientRect();
+        return sidebarRect?.width ?? 0;
+    }, [desktopSidebarWidthPx]);
 
     React.useEffect(() => {
         const stopDrag = () => {
@@ -418,12 +483,93 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     }, []);
 
     React.useEffect(() => {
-        if (!isMobileLayout) {
-            mobileDragStateRef.current = null;
+        const stopDesktopDrag = (pointerId?: number) => {
+            const resizer = desktopSidebarResizerRef.current;
+
+            if (pointerId !== undefined && resizer?.hasPointerCapture?.(pointerId)) {
+                resizer.releasePointerCapture(pointerId);
+            }
+
+            desktopSidebarDragStateRef.current = null;
+            setIsDesktopSidebarDragging(false);
             document.body.style.userSelect = "";
             document.body.style.cursor = "";
+        };
+
+        const onPointerMove = (event: PointerEvent) => {
+            const dragState = desktopSidebarDragStateRef.current;
+
+            if (!dragState || dragState.pointerId !== event.pointerId) {
+                return;
+            }
+
+            const rawWidth = dragState.contentRight - event.clientX;
+            const nextWidth = clampDesktopSidebarWidthPx(rawWidth, dragState.contentWidth);
+
+            setAndStoreDesktopSidebarWidthPx(nextWidth);
+            event.preventDefault();
+        };
+
+        const onPointerUp = (event: PointerEvent) => {
+            const dragState = desktopSidebarDragStateRef.current;
+
+            if (!dragState || dragState.pointerId !== event.pointerId) {
+                return;
+            }
+
+            stopDesktopDrag(event.pointerId);
+        };
+
+        window.addEventListener("pointermove", onPointerMove, { passive: false });
+        window.addEventListener("pointerup", onPointerUp);
+        window.addEventListener("pointercancel", onPointerUp);
+
+        return () => {
+            window.removeEventListener("pointermove", onPointerMove);
+            window.removeEventListener("pointerup", onPointerUp);
+            window.removeEventListener("pointercancel", onPointerUp);
+            stopDesktopDrag();
+        };
+    }, [setAndStoreDesktopSidebarWidthPx]);
+
+    React.useEffect(() => {
+        if (!isMobileLayout) {
+            return;
         }
+
+        desktopSidebarDragStateRef.current = null;
+        setIsDesktopSidebarDragging(false);
+        document.body.style.userSelect = "";
+        document.body.style.cursor = "";
     }, [isMobileLayout]);
+
+    React.useEffect(() => {
+        const content = desktopContentRef.current;
+
+        if (!content || desktopSidebarWidthPx === null || typeof ResizeObserver === "undefined") {
+            return;
+        }
+
+        const resizeObserver = new ResizeObserver(([entry]) => {
+            const contentWidth = entry.contentRect.width;
+
+            if (contentWidth <= 0) {
+                return;
+            }
+
+            const clamped = clampDesktopSidebarWidthPx(desktopSidebarWidthPx, contentWidth);
+
+            if (clamped !== desktopSidebarWidthPx) {
+                setAndStoreDesktopSidebarWidthPx(clamped);
+            }
+        });
+
+        resizeObserver.observe(content);
+
+        return () => {
+            resizeObserver.disconnect();
+        };
+    }, [desktopSidebarWidthPx, setAndStoreDesktopSidebarWidthPx]);
 
     React.useEffect(() => {
         if (mobileOverlayMode === "rooms") {
@@ -826,6 +972,126 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const onSetSecondaryPaneMode = React.useCallback((nextMode: SecondaryPaneMode) => {
         setPendingSecondaryPaneMode(nextMode);
     }, []);
+
+    const onDesktopSidebarResizerPointerDown = React.useCallback(
+        (event: React.PointerEvent<HTMLDivElement>) => {
+            if (isMobileLayout) {
+                return;
+            }
+
+            const content = desktopContentRef.current;
+            if (!content) {
+                return;
+            }
+
+            const contentRect = content.getBoundingClientRect();
+            if (contentRect.width <= 0) {
+                return;
+            }
+
+            event.preventDefault();
+
+            desktopSidebarDragStateRef.current = {
+                pointerId: event.pointerId,
+                contentRight: contentRect.right,
+                contentWidth: contentRect.width,
+            };
+
+            event.currentTarget.setPointerCapture?.(event.pointerId);
+            setIsDesktopSidebarDragging(true);
+            document.body.style.userSelect = "none";
+            document.body.style.cursor = "ew-resize";
+        },
+        [isMobileLayout],
+    );
+
+    const onDesktopSidebarResizerKeyDown = React.useCallback(
+        (event: React.KeyboardEvent<HTMLDivElement>) => {
+            if (isMobileLayout) {
+                return;
+            }
+
+            const content = desktopContentRef.current;
+            if (!content) {
+                return;
+            }
+
+            const contentRect = content.getBoundingClientRect();
+            const contentWidth = contentRect.width;
+
+            if (contentWidth <= 0) {
+                return;
+            }
+
+            const currentWidth = getCurrentDesktopSidebarWidthPx();
+            const step = event.shiftKey
+                ? DESKTOP_SIDEBAR_KEYBOARD_LARGE_STEP_PX
+                : DESKTOP_SIDEBAR_KEYBOARD_STEP_PX;
+
+            if (event.key === "ArrowLeft") {
+                event.preventDefault();
+                setAndStoreDesktopSidebarWidthPx(
+                    clampDesktopSidebarWidthPx(currentWidth + step, contentWidth),
+                );
+                return;
+            }
+
+            if (event.key === "ArrowRight") {
+                event.preventDefault();
+                setAndStoreDesktopSidebarWidthPx(
+                    clampDesktopSidebarWidthPx(currentWidth - step, contentWidth),
+                );
+                return;
+            }
+
+            if (event.key === "Home") {
+                event.preventDefault();
+                setAndStoreDesktopSidebarWidthPx(clampDesktopSidebarWidthPx(0, contentWidth));
+                return;
+            }
+
+            if (event.key === "End") {
+                event.preventDefault();
+                setAndStoreDesktopSidebarWidthPx(
+                    clampDesktopSidebarWidthPx(contentWidth, contentWidth),
+                );
+                return;
+            }
+
+            if (event.key === "Enter" || event.key === "Escape") {
+                event.preventDefault();
+                setAndStoreDesktopSidebarWidthPx(null);
+            }
+        },
+        [getCurrentDesktopSidebarWidthPx, isMobileLayout, setAndStoreDesktopSidebarWidthPx],
+    );
+
+    const desktopContentClassName =
+        "Kibitz-content" + (desktopSidebarWidthPx !== null ? " has-custom-sidebar-width" : "");
+    const desktopContentStyle =
+        desktopSidebarWidthPx !== null
+            ? ({
+                  "--kibitz-sidebar-width": `${desktopSidebarWidthPx}px`,
+              } as React.CSSProperties)
+            : undefined;
+    const desktopSidebarResizer = (
+        <div
+            ref={desktopSidebarResizerRef}
+            className={
+                "Kibitz-page-sidebar-resizer" + (isDesktopSidebarDragging ? " is-dragging" : "")
+            }
+            role="separator"
+            aria-orientation="vertical"
+            aria-label={pgettext(
+                "Aria label for resizing the Kibitz right sidebar",
+                "Resize chat and variations column",
+            )}
+            tabIndex={0}
+            onPointerDown={onDesktopSidebarResizerPointerDown}
+            onKeyDown={onDesktopSidebarResizerKeyDown}
+            onDoubleClick={() => setAndStoreDesktopSidebarWidthPx(null)}
+        />
+    );
 
     const onOpenCreateRoom = React.useCallback(() => {
         if (isMobileLayout) {
@@ -1231,12 +1497,20 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                         />
                     </div>
                     <div className="Kibitz-main">
-                        <div className="Kibitz-content">
+                        <div
+                            className={desktopContentClassName}
+                            ref={desktopContentRef}
+                            style={desktopContentStyle}
+                        >
                             <div className="Kibitz-empty-stage">
                                 <p>{getKibitzBlockedRoomMessage(blockedTitle)}</p>
                                 <p>{getKibitzBlockedRoomFollowupMessage()}</p>
                             </div>
-                            <div className="Kibitz-sidebar no-active-proposal">
+                            <div
+                                className="Kibitz-sidebar no-active-proposal"
+                                ref={desktopSidebarRef}
+                            >
+                                {desktopSidebarResizer}
                                 <div className="Kibitz-sidebar-proposal-slot" />
                                 <div />
                                 <div className="Kibitz-footer-panels" />
@@ -1268,11 +1542,19 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                         />
                     </div>
                     <div className="Kibitz-main">
-                        <div className="Kibitz-content">
+                        <div
+                            className={desktopContentClassName}
+                            ref={desktopContentRef}
+                            style={desktopContentStyle}
+                        >
                             <div className="Kibitz-empty-stage">
                                 <p>{emptyMessage}</p>
                             </div>
-                            <div className="Kibitz-sidebar no-active-proposal">
+                            <div
+                                className="Kibitz-sidebar no-active-proposal"
+                                ref={desktopSidebarRef}
+                            >
+                                {desktopSidebarResizer}
                                 <div className="Kibitz-sidebar-proposal-slot" />
                                 <div />
                                 <div className="Kibitz-footer-panels" />
@@ -1690,7 +1972,11 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                             </div>
                         </div>
                     ) : (
-                        <div className="Kibitz-content">
+                        <div
+                            className={desktopContentClassName}
+                            ref={desktopContentRef}
+                            style={desktopContentStyle}
+                        >
                             {isPresetWithNoGame ? (
                                 <div className="KibitzPresetEmptyState">
                                     {pgettext(
@@ -1742,7 +2028,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                         ? " has-active-proposal"
                                         : " no-active-proposal")
                                 }
+                                ref={desktopSidebarRef}
                             >
+                                {desktopSidebarResizer}
                                 <div className="Kibitz-sidebar-proposal-slot">
                                     <KibitzProposalBar
                                         proposal={activeProposal}

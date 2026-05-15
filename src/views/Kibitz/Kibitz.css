@@ -6,6 +6,9 @@
     overflow: hidden;
     padding: 0;
     --kibitz-left-rail-width: clamp(9rem, 19vw, 15rem);
+    --kibitz-sidebar-min-width: 18rem;
+    --kibitz-sidebar-resizer-hit-width: 12px;
+    --kibitz-sidebar-resizer-highlight-width: 4px;
 
     .Kibitz-layout {
         display: grid;
@@ -43,12 +46,19 @@
         min-height: 0;
     }
 
+    .Kibitz-content.has-custom-sidebar-width {
+        grid-template-columns:
+            minmax(0, 1fr)
+            minmax(var(--kibitz-sidebar-min-width), var(--kibitz-sidebar-width));
+    }
+
     .Kibitz-sidebar {
         background: var(--bg);
         display: grid;
         gap: 0;
         grid-template-rows: auto minmax(0, 1fr) minmax(9rem, 0.3fr);
         min-height: 0;
+        position: relative;
     }
 
     .Kibitz-sidebar.has-stream-spacer {
@@ -57,6 +67,44 @@
 
     .Kibitz-sidebar.no-active-proposal {
         grid-template-rows: 0 minmax(0, 1fr) minmax(10rem, 0.4fr);
+    }
+
+    .Kibitz-page-sidebar-resizer {
+        bottom: 0;
+        cursor: ew-resize;
+        left: calc(-1 * var(--kibitz-sidebar-resizer-hit-width) / 2);
+        position: absolute;
+        top: 0;
+        width: var(--kibitz-sidebar-resizer-hit-width);
+        z-index: 10;
+
+        touch-action: none;
+        user-select: none;
+    }
+
+    .Kibitz-page-sidebar-resizer::before {
+        background: var(--primary);
+        border-radius: 999px;
+        bottom: 0;
+        content: "";
+        left: 50%;
+        opacity: 0;
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        transform: translateX(-50%);
+        transition: opacity 120ms ease;
+        width: var(--kibitz-sidebar-resizer-highlight-width);
+    }
+
+    .Kibitz-page-sidebar-resizer:hover::before,
+    .Kibitz-page-sidebar-resizer:focus-visible::before,
+    .Kibitz-page-sidebar-resizer.is-dragging::before {
+        opacity: 0.7;
+    }
+
+    .Kibitz-page-sidebar-resizer:focus {
+        outline: none;
     }
 
     .Kibitz-sidebar.has-stream-spacer.no-active-proposal {
@@ -144,6 +192,10 @@
             gap: 0.5rem;
         }
 
+        .Kibitz-content.has-custom-sidebar-width {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
         .Kibitz-mobile-shell {
             display: flex;
             flex: 1 1 auto;
@@ -204,6 +256,10 @@
             min-height: 0;
             order: 3;
             overflow: hidden;
+        }
+
+        .Kibitz-page-sidebar-resizer {
+            display: none;
         }
 
         .Kibitz-sidebar.has-stream-spacer {
