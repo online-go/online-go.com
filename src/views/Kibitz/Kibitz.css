@@ -422,6 +422,7 @@
             line-height: 1.05;
             max-width: min(12rem, calc(100vw - 11rem));
             min-width: 0;
+            padding: 0 0.2rem;
             overflow: hidden;
             pointer-events: auto;
             text-align: center;
