@@ -189,7 +189,7 @@ function renderMobileHeaderPlayer(
                 className="mobile-room-header-player-avatar"
                 iconClassName="mobile-room-header-player-avatar-image"
             />
-            <Player user={user} flag rank nolink noextracontrols />
+            <Player user={user} flag rank noextracontrols />
         </span>
     );
 }
@@ -1640,49 +1640,46 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                             >
                                 <button
                                     type="button"
-                                    className="Kibitz-mobile-room-bar"
+                                    className="Kibitz-mobile-room-title-button"
                                     ref={mobileRoomTitleTarget?.ref}
-                                    style={{
-                                        backgroundColor: "var(--card-background-color)",
-                                        backgroundImage: "none",
-                                    }}
                                     onClick={onToggleMobileRooms}
                                     aria-expanded={mobileOverlayMode === "rooms"}
                                 >
-                                    <div className="mobile-room-header-title">
+                                    <span className="mobile-room-header-title">
                                         {resolvedRoom.title}
-                                    </div>
-                                    {mobileMatchup ? (
-                                        <div className="mobile-room-header-matchup">
-                                            <span className="mobile-room-header-matchup-first">
-                                                {renderMobileHeaderPlayer(
-                                                    mobileMatchup.black,
-                                                    "black",
-                                                )}
-                                                <span className="mobile-room-header-matchup-black-dot">
-                                                    ●
-                                                </span>
-                                            </span>
-                                            <span className="mobile-room-header-matchup-second">
-                                                <span className="mobile-room-header-matchup-vs">
-                                                    {pgettext(
-                                                        "Prefix for the second player in the mobile kibitz room header matchup",
-                                                        "vs",
-                                                    )}
-                                                </span>{" "}
-                                                <span className="mobile-room-header-matchup-second-name">
-                                                    {renderMobileHeaderPlayer(
-                                                        mobileMatchup.white,
-                                                        "white",
-                                                    )}
-                                                </span>{" "}
-                                                <span className="mobile-room-header-matchup-white-dot">
-                                                    ○
-                                                </span>
-                                            </span>
-                                        </div>
-                                    ) : null}
+                                    </span>
+                                    <i
+                                        className="fa fa-chevron-down mobile-room-header-title-chevron"
+                                        aria-hidden="true"
+                                    />
                                 </button>
+                                {mobileMatchup ? (
+                                    <div className="mobile-room-header-matchup">
+                                        <span className="mobile-room-header-matchup-first">
+                                            {renderMobileHeaderPlayer(mobileMatchup.black, "black")}
+                                            <span className="mobile-room-header-matchup-black-dot">
+                                                {"\u25CF"}
+                                            </span>
+                                        </span>
+                                        <span className="mobile-room-header-matchup-second">
+                                            <span className="mobile-room-header-matchup-vs">
+                                                {pgettext(
+                                                    "Prefix for the second player in the mobile kibitz room header matchup",
+                                                    "vs",
+                                                )}
+                                            </span>{" "}
+                                            <span className="mobile-room-header-matchup-second-name">
+                                                {renderMobileHeaderPlayer(
+                                                    mobileMatchup.white,
+                                                    "white",
+                                                )}
+                                            </span>{" "}
+                                            <span className="mobile-room-header-matchup-white-dot">
+                                                {"\u25CB"}
+                                            </span>
+                                        </span>
+                                    </div>
+                                ) : null}
                                 <button
                                     type="button"
                                     className={
