@@ -125,8 +125,8 @@ function clampMobileSplitRatio(value: number): number {
     return Math.min(MAX_MOBILE_SPLIT_RATIO, Math.max(MIN_MOBILE_SPLIT_RATIO, value));
 }
 
-export function clampDesktopSidebarWidthPx(width: number, contentWidth: number): number {
-    const minSidebar =
+function getDesktopSidebarWidthBoundsPx(contentWidth: number): { min: number; max: number } {
+    const min =
         contentWidth >= 1100 ? DESKTOP_SIDEBAR_MIN_COMFORTABLE_PX : DESKTOP_SIDEBAR_MIN_NARROW_PX;
 
     const maxSidebar = Math.min(
@@ -134,18 +134,28 @@ export function clampDesktopSidebarWidthPx(width: number, contentWidth: number):
         contentWidth - DESKTOP_STAGE_MIN_PX,
     );
 
+    if (!Number.isFinite(contentWidth) || contentWidth <= 0) {
+        return { min, max: min };
+    }
+
+    if (maxSidebar <= min) {
+        return {
+            min,
+            max: Math.max(DESKTOP_SIDEBAR_MIN_NARROW_PX, Math.floor(contentWidth * 0.42)),
+        };
+    }
+
+    return { min, max: Math.round(maxSidebar) };
+}
+
+export function clampDesktopSidebarWidthPx(width: number, contentWidth: number): number {
+    const { min: minSidebar, max: maxSidebar } = getDesktopSidebarWidthBoundsPx(contentWidth);
+
     if (!Number.isFinite(width) || contentWidth <= 0) {
         return minSidebar;
     }
 
-    if (maxSidebar <= minSidebar) {
-        return Math.max(
-            DESKTOP_SIDEBAR_MIN_NARROW_PX,
-            Math.min(width, Math.floor(contentWidth * 0.42)),
-        );
-    }
-
-    return Math.round(Math.min(maxSidebar, Math.max(minSidebar, width)));
+    return Math.min(maxSidebar, Math.max(minSidebar, Math.round(width)));
 }
 
 function formatMobileMatchup(
@@ -327,6 +337,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
         return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
     });
+    const [desktopContentWidthPx, setDesktopContentWidthPx] = React.useState(0);
     const [isDesktopSidebarDragging, setIsDesktopSidebarDragging] = React.useState(false);
     const [mobileViewerCountFlash, setMobileViewerCountFlash] = React.useState(false);
     const [visibleVariationIds, setVisibleVariationIds] = React.useState<string[]>([]);
@@ -553,15 +564,17 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             return;
         }
 
-        const resizeObserver = new ResizeObserver(([entry]) => {
-            const currentWidth = desktopSidebarWidthPxRef.current;
-            if (currentWidth === null) {
+        const syncContentWidth = (contentWidth: number) => {
+            if (contentWidth <= 0) {
                 return;
             }
 
-            const contentWidth = entry.contentRect.width;
+            setDesktopContentWidthPx((previousWidth) =>
+                previousWidth === contentWidth ? previousWidth : contentWidth,
+            );
 
-            if (contentWidth <= 0) {
+            const currentWidth = desktopSidebarWidthPxRef.current;
+            if (currentWidth === null) {
                 return;
             }
 
@@ -570,6 +583,12 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             if (clamped !== currentWidth) {
                 setAndStoreDesktopSidebarWidthPx(clamped);
             }
+        };
+
+        syncContentWidth(content.getBoundingClientRect().width);
+
+        const resizeObserver = new ResizeObserver(([entry]) => {
+            syncContentWidth(entry.contentRect.width);
         });
 
         resizeObserver.observe(content);
@@ -1082,6 +1101,11 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                   "--kibitz-sidebar-width": `${desktopSidebarWidthPx}px`,
               } as React.CSSProperties)
             : undefined;
+    const desktopSidebarWidthBounds = getDesktopSidebarWidthBoundsPx(desktopContentWidthPx);
+    const desktopSidebarCurrentWidth = clampDesktopSidebarWidthPx(
+        getCurrentDesktopSidebarWidthPx(),
+        desktopContentWidthPx,
+    );
     const desktopSidebarResizer = (
         <div
             ref={desktopSidebarResizerRef}
@@ -1094,6 +1118,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 "Aria label for resizing the Kibitz right sidebar",
                 "Resize chat and variations column",
             )}
+            aria-valuenow={desktopSidebarCurrentWidth}
+            aria-valuemin={desktopSidebarWidthBounds.min}
+            aria-valuemax={desktopSidebarWidthBounds.max}
             tabIndex={0}
             onPointerDown={onDesktopSidebarResizerPointerDown}
             onKeyDown={onDesktopSidebarResizerKeyDown}
