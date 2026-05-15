@@ -69,4 +69,15 @@ describe("KibitzPresetChangePendingBanner", () => {
         expect(screen.getByText(/Switching/)).toBeInTheDocument();
         expect(screen.queryByText(/\d+s/)).toBeNull();
     });
+
+    it("does not create an interval when the deadline is already past", () => {
+        const setIntervalSpy = jest.spyOn(window, "setInterval");
+        const effectiveAt = new Date("2026-05-11T11:59:59Z").toISOString();
+
+        render(<KibitzPresetChangePendingBanner changeEffectiveAt={effectiveAt} />);
+
+        expect(setIntervalSpy).not.toHaveBeenCalled();
+
+        setIntervalSpy.mockRestore();
+    });
 });

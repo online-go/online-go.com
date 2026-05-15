@@ -173,7 +173,6 @@ interface SecondaryVariationBaseSnapshot {
 interface PendingSecondaryVariationBaseLoad {
     controller: GobanController;
     gameId: number;
-    nonce: number;
 }
 
 function cloneMoveTreeJson(moveTree: MoveTreeJson): MoveTreeJson {
@@ -481,7 +480,6 @@ export function KibitzRoomStage({
     );
     const pendingSecondaryVariationBaseLoadRef =
         React.useRef<PendingSecondaryVariationBaseLoad | null>(null);
-    const secondaryVariationBaseLoadNonceRef = React.useRef(0);
     const suppressSelectedVariationLoadRef = React.useRef(false);
     const appliedDraftAnalyzeToolRef = React.useRef<{
         controller: GobanController | null;
@@ -754,12 +752,9 @@ export function KibitzRoomStage({
                 secondaryVariationBaseSnapshotRef.current = baseSnapshot;
             }
 
-            const nonce = secondaryVariationBaseLoadNonceRef.current + 1;
-            secondaryVariationBaseLoadNonceRef.current = nonce;
             pendingSecondaryVariationBaseLoadRef.current = {
                 controller: secondaryBoardController,
                 gameId: selectedVariation.game_id,
-                nonce,
             };
             suppressSelectedVariationLoadRef.current = true;
             loadSecondaryVariationBaseSnapshot(secondaryBoardController, baseSnapshot);

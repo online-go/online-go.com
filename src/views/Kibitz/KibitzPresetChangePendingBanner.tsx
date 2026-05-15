@@ -29,16 +29,28 @@ export function KibitzPresetChangePendingBanner({
     );
 
     React.useEffect(() => {
+        const initialRemaining = computeSecondsRemaining(deadlineMs);
+        setSecondsRemaining(initialRemaining);
+
+        if (initialRemaining <= 0) {
+            return;
+        }
+
+        let interval: number | undefined;
         const tick = () => {
             const remaining = computeSecondsRemaining(deadlineMs);
             setSecondsRemaining(remaining);
-            if (remaining <= 0) {
+            if (remaining <= 0 && interval !== undefined) {
+                window.clearInterval(interval);
+                interval = undefined;
+            }
+        };
+        interval = window.setInterval(tick, 1000);
+        return () => {
+            if (interval !== undefined) {
                 window.clearInterval(interval);
             }
         };
-        const interval = window.setInterval(tick, 1000);
-        tick();
-        return () => window.clearInterval(interval);
     }, [deadlineMs]);
 
     const text =
