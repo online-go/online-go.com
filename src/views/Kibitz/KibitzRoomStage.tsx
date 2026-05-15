@@ -543,7 +543,9 @@ export function KibitzRoomStage({
         if (secondaryPane.variation_source_game_id != null) {
             return `draft-${secondaryPane.variation_source_game_id}-${
                 secondaryPane.variation_draft_base_id ?? ""
-            }-${secondaryPane.variation_source_move_path ?? ""}`;
+            }-${secondaryPane.variation_source_move_tree_id ?? ""}-${
+                secondaryPane.variation_source_move_path ?? ""
+            }`;
         }
 
         if (secondaryPane.preview_game_id != null) {
@@ -556,6 +558,7 @@ export function KibitzRoomStage({
         secondaryPane.variation_id,
         secondaryPane.variation_draft_base_id,
         secondaryPane.variation_source_game_id,
+        secondaryPane.variation_source_move_tree_id,
         secondaryPane.variation_source_move_path,
     ]);
     const secondaryMoveNavigationShortcuts = secondaryBoardController ? (

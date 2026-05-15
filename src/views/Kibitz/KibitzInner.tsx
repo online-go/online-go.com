@@ -979,6 +979,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         controller.startVariationFromCurrentBoard(
             mainBoardController?.goban.engine.move_tree.toJson(),
             mainBoardController?.goban.engine.cur_move.getMoveStringToThisPoint(),
+            mainBoardController?.goban.engine.move_tree.id,
         );
         if (isMobileLayout) {
             setMobileOverlayMode(null);
