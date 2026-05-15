@@ -255,6 +255,7 @@
     --navbar-highlight-background-color: $bg;
     --navbar-background-color: $bg;
     --logo-svg: url("../../assets/ogs_light.svg");
+    --mobile-room-bar-bg: #fff;
 
     /* Input */
     --input-bg: #f7f7f7;
@@ -437,6 +438,7 @@
     --navbar-highlight-background-color: #333;
     --navbar-background-color: #262626;
     --logo-svg: url("../../assets/ogs_dark.svg");
+    --mobile-room-bar-bg: var(--card-background-color);
 
     /* Input */
     $input-color: #5e5e5e;
