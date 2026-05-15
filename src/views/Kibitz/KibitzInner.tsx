@@ -372,6 +372,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const desktopSidebarResizerRef = React.useRef<HTMLDivElement | null>(null);
     const previousMobileViewerCountRef = React.useRef<number | null>(null);
     const previousMobileViewerRoomIdRef = React.useRef<string | null>(null);
+    const desktopSidebarWidthPxRef = React.useRef<number | null>(null);
     const desktopSidebarDragStateRef = React.useRef<{
         pointerId: number;
         contentRight: number;
@@ -411,6 +412,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
         window.localStorage.setItem(MOBILE_SPLIT_STORAGE_KEY, String(mobileSplitRatio));
     }, [isMobileLayout, mobileSplitRatio]);
+
+    desktopSidebarWidthPxRef.current = desktopSidebarWidthPx;
 
     const setAndStoreDesktopSidebarWidthPx = React.useCallback((width: number | null) => {
         setDesktopSidebarWidthPx(width);
@@ -546,20 +549,25 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     React.useEffect(() => {
         const content = desktopContentRef.current;
 
-        if (!content || desktopSidebarWidthPx === null || typeof ResizeObserver === "undefined") {
+        if (!content || typeof ResizeObserver === "undefined") {
             return;
         }
 
         const resizeObserver = new ResizeObserver(([entry]) => {
+            const currentWidth = desktopSidebarWidthPxRef.current;
+            if (currentWidth === null) {
+                return;
+            }
+
             const contentWidth = entry.contentRect.width;
 
             if (contentWidth <= 0) {
                 return;
             }
 
-            const clamped = clampDesktopSidebarWidthPx(desktopSidebarWidthPx, contentWidth);
+            const clamped = clampDesktopSidebarWidthPx(currentWidth, contentWidth);
 
-            if (clamped !== desktopSidebarWidthPx) {
+            if (clamped !== currentWidth) {
                 setAndStoreDesktopSidebarWidthPx(clamped);
             }
         });
@@ -569,7 +577,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         return () => {
             resizeObserver.disconnect();
         };
-    }, [desktopSidebarWidthPx, setAndStoreDesktopSidebarWidthPx]);
+    }, [setAndStoreDesktopSidebarWidthPx]);
 
     React.useEffect(() => {
         if (mobileOverlayMode === "rooms") {
