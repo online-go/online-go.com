@@ -17,8 +17,15 @@
 
 import * as React from "react";
 import { render, screen } from "@testing-library/react";
-import type { KibitzRoomUser, KibitzVariationSummary } from "@/models/kibitz";
+import type { KibitzRoomUser, KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
 import { KibitzVariationList } from "./KibitzVariationList";
+
+jest.mock("@/components/Player", () => ({
+    __esModule: true,
+    Player: ({ user }: { user?: { username?: string } }) => (
+        <span data-testid="Player">{user?.username ?? ""}</span>
+    ),
+}));
 
 jest.mock("./KibitzUserAvatar", () => ({
     __esModule: true,
@@ -33,6 +40,11 @@ jest.mock("./HelpFlows/useKibitzHelpTarget", () => ({
 jest.mock("@/lib/translate", () => ({
     __esModule: true,
     pgettext: (_context: string, text: string) => text,
+    interpolate: (template: string, values: Record<string, string | number>) =>
+        Object.entries(values).reduce(
+            (result, [key, value]) => result.replace(`{{${key}}}`, String(value)),
+            template,
+        ),
 }));
 
 function makeUser(id: number, username: string): KibitzRoomUser {
@@ -55,29 +67,90 @@ function makeVariation(id: string, gameId: number, title: string): KibitzVariati
         viewer_count: 0,
         current_viewers: [],
         title,
+        analysis_from: 87,
+        move_count: 5,
+    };
+}
+
+function makeGame(gameId: number, title: string, black: string, white: string): KibitzWatchedGame {
+    return {
+        game_id: gameId,
+        board_size: "19x19",
+        title,
+        black: makeUser(gameId * 10 + 1, black),
+        white: makeUser(gameId * 10 + 2, white),
     };
 }
 
 describe("KibitzVariationList", () => {
-    it("only marks the selected game's variations as active", () => {
+    it("renders the active variations quick-list", () => {
+        const onRecallVariation = jest.fn();
+        const onHideVariation = jest.fn();
+        const gameById = new Map<number, KibitzWatchedGame>([
+            [10, makeGame(10, "Current board", "Alpha", "Beta")],
+            [20, makeGame(20, "Older board", "Gamma", "Delta")],
+            [30, makeGame(30, "Newest old board", "Epsilon", "Zeta")],
+        ]);
+
         render(
             <KibitzVariationList
                 variations={[
-                    makeVariation("a1", 10, "A1"),
+                    makeVariation("b1", 30, "B1"),
                     makeVariation("a2", 10, "A2"),
-                    makeVariation("b1", 20, "B1"),
+                    makeVariation("a1", 10, "A1"),
+                    makeVariation("c1", 20, "C1"),
                 ]}
                 currentGameId={10}
-                visibleVariationIds={["a1", "a2", "b1"]}
-                selectedVariationId="b1"
-                variationColorIndexes={{ a1: 0, a2: 1, b1: 2 }}
-                onRecallVariation={jest.fn()}
-                onToggleVariation={jest.fn()}
+                gameById={gameById}
+                selectedVariationId="a2"
+                variationColorIndexes={{ a1: 0, a2: 1, b1: 2, c1: 3 }}
+                onRecallVariation={onRecallVariation}
+                onHideVariation={onHideVariation}
             />,
         );
 
-        expect(screen.getByText("B1").closest(".variation-item")).toHaveClass("visible");
-        expect(screen.getByText("A1").closest(".variation-item")).not.toHaveClass("visible");
-        expect(screen.getByText("A2").closest(".variation-item")).not.toHaveClass("visible");
+        expect(screen.getByText("Active variations")).toBeInTheDocument();
+        expect(screen.getByText("A1")).toBeInTheDocument();
+        expect(screen.getByText("A2")).toBeInTheDocument();
+        expect(screen.getByText("B1")).toBeInTheDocument();
+        expect(screen.getByText("C1")).toBeInTheDocument();
+        expect(screen.getByText("Current Game")).toBeInTheDocument();
+        expect(screen.getAllByRole("link", { name: "Open original game" })).toHaveLength(2);
+        expect(screen.getByText("Previous game: Older board")).toBeInTheDocument();
+        expect(screen.getByText("Previous game: Newest old board")).toBeInTheDocument();
+        expect(screen.getByText("Gamma")).toBeInTheDocument();
+        expect(screen.getByText("Delta")).toBeInTheDocument();
+        expect(screen.getByText("Epsilon")).toBeInTheDocument();
+        expect(screen.getByText("Zeta")).toBeInTheDocument();
+        expect(screen.getAllByText("M87")).toHaveLength(4);
+        expect(screen.getAllByText("+5")).toHaveLength(4);
+        expect(screen.getAllByLabelText("Hide from board")).toHaveLength(4);
+        expect(screen.getAllByTestId("Player")).toHaveLength(4);
+    });
+
+    it("shows previous game separators without a current game separator when only older games are visible", () => {
+        const onRecallVariation = jest.fn();
+        const onHideVariation = jest.fn();
+        const gameById = new Map<number, KibitzWatchedGame>([
+            [20, makeGame(20, "Older board", "Gamma", "Delta")],
+        ]);
+
+        render(
+            <KibitzVariationList
+                variations={[makeVariation("c1", 20, "C1"), makeVariation("c2", 20, "C2")]}
+                currentGameId={10}
+                gameById={gameById}
+                selectedVariationId={null}
+                variationColorIndexes={{ c1: 0, c2: 1 }}
+                onRecallVariation={onRecallVariation}
+                onHideVariation={onHideVariation}
+            />,
+        );
+
+        expect(screen.queryByText("Current Game")).toBeNull();
+        expect(screen.getByText("Previous game: Older board")).toBeInTheDocument();
+        expect(screen.getByText("Gamma")).toBeInTheDocument();
+        expect(screen.getByText("Delta")).toBeInTheDocument();
+        expect(screen.getAllByLabelText("Hide from board")).toHaveLength(2);
     });
 });

@@ -38,6 +38,7 @@ import type {
 } from "@/models/kibitz";
 import { KIBITZ_HELP_TARGETS } from "./HelpFlows/KibitzHelpTargets";
 import { useKibitzHelpTarget } from "./HelpFlows/useKibitzHelpTarget";
+import { formatVariationBranchLabel, formatVariationLengthLabel } from "./kibitzVariationQuickList";
 import "./KibitzSharedStreamPanel.css";
 import "@/components/Chat/ChatLog.css";
 
@@ -744,13 +745,34 @@ export function KibitzSharedStreamPanel({
                         const variation = variations.find(
                             (candidate) => candidate.id === entry.item.variation_id,
                         );
-                        const label = `${moment(entry.createdAt).format("HH:mm")} ${entry.item.author?.username ?? pgettext("Fallback username for a variation post in the kibitz stream", "Someone")} shared variation: ${
+                        const title =
                             variation?.title ??
                             pgettext(
                                 "Fallback title for a variation link in the kibitz stream",
                                 "Open variation",
-                            )
-                        }`;
+                            );
+                        const author =
+                            entry.item.author?.username ??
+                            pgettext(
+                                "Fallback username for a variation post in the kibitz stream",
+                                "Someone",
+                            );
+                        const metaParts = [
+                            pgettext(
+                                "Label for a posted variation entry in the kibitz stream",
+                                "Posted variation",
+                            ),
+                        ];
+
+                        if (variation) {
+                            metaParts.push(formatVariationBranchLabel(variation));
+                            const lengthLabel = formatVariationLengthLabel(variation);
+                            if (lengthLabel) {
+                                metaParts.push(lengthLabel);
+                            }
+                        }
+
+                        const label = `${moment(entry.createdAt).format("HH:mm")} ${title} - ${author} - ${metaParts.join(" - ")}`;
 
                         return (
                             <button

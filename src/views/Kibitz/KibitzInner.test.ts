@@ -16,7 +16,7 @@
  */
 
 import type { KibitzVariationSummary } from "@/models/kibitz";
-import { pruneVisibleVariationIdsForGame } from "./KibitzInner";
+import { clampDesktopSidebarWidthPx, pruneVisibleVariationIdsForGame } from "./KibitzInner";
 
 function makeVariation(id: string, gameId: number): KibitzVariationSummary {
     return {
@@ -54,5 +54,23 @@ describe("pruneVisibleVariationIdsForGame", () => {
             "a1",
             "b1",
         ]);
+    });
+});
+
+describe("clampDesktopSidebarWidthPx", () => {
+    it("enforces comfortable min width on wide layouts", () => {
+        expect(clampDesktopSidebarWidthPx(100, 1200)).toBe(336);
+    });
+
+    it("allows narrower minimum on constrained layouts", () => {
+        expect(clampDesktopSidebarWidthPx(100, 900)).toBe(288);
+    });
+
+    it("caps width so the stage remains usable", () => {
+        expect(clampDesktopSidebarWidthPx(900, 1200)).toBeLessThanOrEqual(576);
+    });
+
+    it("handles invalid width safely", () => {
+        expect(clampDesktopSidebarWidthPx(Number.NaN, 1200)).toBe(336);
     });
 });
