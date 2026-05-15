@@ -1054,9 +1054,14 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             const step = event.shiftKey
                 ? DESKTOP_SIDEBAR_KEYBOARD_LARGE_STEP_PX
                 : DESKTOP_SIDEBAR_KEYBOARD_STEP_PX;
+            const stopGlobalShortcutPropagation = () => {
+                event.preventDefault();
+                event.stopPropagation();
+                event.nativeEvent.stopImmediatePropagation();
+            };
 
             if (event.key === "ArrowLeft") {
-                event.preventDefault();
+                stopGlobalShortcutPropagation();
                 setAndStoreDesktopSidebarWidthPx(
                     clampDesktopSidebarWidthPx(currentWidth + step, contentWidth),
                 );
@@ -1064,7 +1069,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             }
 
             if (event.key === "ArrowRight") {
-                event.preventDefault();
+                stopGlobalShortcutPropagation();
                 setAndStoreDesktopSidebarWidthPx(
                     clampDesktopSidebarWidthPx(currentWidth - step, contentWidth),
                 );
@@ -1072,13 +1077,13 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             }
 
             if (event.key === "Home") {
-                event.preventDefault();
+                stopGlobalShortcutPropagation();
                 setAndStoreDesktopSidebarWidthPx(clampDesktopSidebarWidthPx(0, contentWidth));
                 return;
             }
 
             if (event.key === "End") {
-                event.preventDefault();
+                stopGlobalShortcutPropagation();
                 setAndStoreDesktopSidebarWidthPx(
                     clampDesktopSidebarWidthPx(contentWidth, contentWidth),
                 );
@@ -1086,7 +1091,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             }
 
             if (event.key === "Enter" || event.key === "Escape") {
-                event.preventDefault();
+                stopGlobalShortcutPropagation();
                 setAndStoreDesktopSidebarWidthPx(null);
             }
         },
