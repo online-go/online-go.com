@@ -51,6 +51,7 @@ interface KibitzControllerEvents {
     "stream-changed": (items: KibitzStreamItem[]) => void;
     "proposals-changed": (proposals: KibitzProposal[]) => void;
     "variations-changed": (variations: KibitzVariationSummary[]) => void;
+    "cached-games-changed": () => void;
     "secondary-pane-changed": (state: KibitzSecondaryPaneState) => void;
     "debug-changed": (state: KibitzDebugState) => void;
     "permissions-changed": (permissions: KibitzPermissions) => void;
@@ -95,6 +96,34 @@ interface BackendKibitzRoom {
     settings?: Record<string, unknown>;
     viewer_count?: number;
     preset?: KibitzPresetBlock | null;
+}
+
+interface BackendGameDetailsPlayer {
+    id: number;
+    username: string;
+    ranking: number;
+    professional: boolean;
+    ui_class: string;
+    country?: string;
+    icon?: string;
+}
+
+interface BackendGameDetails {
+    id: number;
+    width: number;
+    height: number;
+    name: string;
+    players: {
+        black: BackendGameDetailsPlayer;
+        white: BackendGameDetailsPlayer;
+    };
+    gamedata: {
+        moves: unknown[];
+        disable_analysis?: boolean | null;
+    };
+    ended: boolean | null;
+    disable_analysis?: boolean | null;
+    analysis_disabled?: boolean | null;
 }
 
 interface BackendRoomDetailResponse {
@@ -146,6 +175,40 @@ function mapBackendRoomCurrentGame(
         return existing?.current_game;
     }
     return backend.current_game ? mapBackendCurrentGameToWatched(backend.current_game) : undefined;
+}
+
+function mapBackendGameDetailsPlayer(player: BackendGameDetailsPlayer): KibitzRoomUser {
+    return {
+        id: player.id,
+        username: player.username,
+        ranking: player.ranking,
+        professional: player.professional,
+        ui_class: player.ui_class,
+        country: player.country,
+        icon: player.icon,
+    };
+}
+
+async function lookupGameForKibitz(gameId: number): Promise<KibitzWatchedGame | undefined> {
+    const details = (await get(`games/${gameId}`)) as BackendGameDetails;
+    if (!details) {
+        return undefined;
+    }
+
+    return {
+        game_id: details.id,
+        board_size: `${details.width}x${details.height}` as KibitzWatchedGame["board_size"],
+        title: details.name,
+        black: mapBackendGameDetailsPlayer(details.players.black),
+        white: mapBackendGameDetailsPlayer(details.players.white),
+        move_number: details.gamedata.moves.length,
+        live: !details.ended,
+        analysis_disabled: Boolean(
+            details.analysis_disabled ||
+            details.disable_analysis ||
+            details.gamedata.disable_analysis,
+        ),
+    };
 }
 
 function mapBackendRoomToSummary(
@@ -373,6 +436,9 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
      * it, the result is stale and should be discarded.
      */
     private _select_room_token = 0;
+    private _game_lookup_cache = new Map<number, KibitzWatchedGame>();
+    private _game_lookup_inflight = new Map<number, Promise<KibitzWatchedGame | undefined>>();
+    private _room_card_game_requests = new Map<string, number>();
 
     public get destroyed(): boolean {
         return this._destroyed;
@@ -396,6 +462,16 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
 
     public get variations(): KibitzVariationSummary[] {
         return this._variations;
+    }
+
+    public getCachedGame(gameId: number): KibitzWatchedGame | undefined {
+        return this._game_lookup_cache.get(gameId);
+    }
+
+    public async ensureGamesCached(gameIds: number[]): Promise<void> {
+        const uniqueGameIds = [...new Set(gameIds)].filter((gameId) => Number.isFinite(gameId));
+
+        await Promise.all(uniqueGameIds.map((gameId) => this.lookupGameForKibitzCached(gameId)));
     }
 
     public get secondary_pane(): KibitzSecondaryPaneState {
@@ -549,6 +625,12 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 (payload ?? []).map((r) => mapBackendRoomToSummary(r)),
             );
             this.setRooms(rooms);
+            const roomIds = new Set(rooms.map((room) => room.id));
+            for (const roomId of Array.from(this._room_card_game_requests.keys())) {
+                if (!roomIds.has(roomId)) {
+                    this._room_card_game_requests.delete(roomId);
+                }
+            }
             this.setDebug({
                 ...this._debug,
                 status: "ready",
@@ -561,6 +643,14 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             if (this._destroyed) {
                 return;
             }
+
+            // Resolve each room's current_game in parallel so the room cards
+            // keep showing the watched game metadata.
+            for (const backend of payload ?? []) {
+                if (backend.current_game_id) {
+                    void this.hydrateRoomCardGame(backend.id, backend.current_game_id);
+                }
+            }
         } catch (error) {
             if (this._destroyed) {
                 return;
@@ -571,6 +661,61 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 last_hydration_finished_at: Date.now(),
                 error: error instanceof Error ? error.message : String(error),
             });
+        }
+    }
+
+    private lookupGameForKibitzCached(gameId: number): Promise<KibitzWatchedGame | undefined> {
+        const cached = this._game_lookup_cache.get(gameId);
+        if (cached) {
+            return Promise.resolve(cached);
+        }
+
+        const inflight = this._game_lookup_inflight.get(gameId);
+        if (inflight) {
+            return inflight;
+        }
+
+        const promise = lookupGameForKibitz(gameId)
+            .then((game) => {
+                if (game) {
+                    const hadGame = this._game_lookup_cache.has(gameId);
+                    this._game_lookup_cache.set(gameId, game);
+                    if (!hadGame) {
+                        this.emit("cached-games-changed");
+                    }
+                }
+                return game;
+            })
+            .finally(() => {
+                this._game_lookup_inflight.delete(gameId);
+            });
+
+        this._game_lookup_inflight.set(gameId, promise);
+        return promise;
+    }
+
+    private async hydrateRoomCardGame(roomId: string, gameId: number): Promise<void> {
+        this._room_card_game_requests.set(roomId, gameId);
+
+        const game = await this.lookupGameForKibitzCached(gameId);
+        if (this._destroyed || this._room_card_game_requests.get(roomId) !== gameId || !game) {
+            return;
+        }
+        let changed = false;
+        const updated = this._rooms.map((room) => {
+            if (room.id !== roomId) {
+                return room;
+            }
+
+            if (room.current_game?.game_id === game.game_id) {
+                return room;
+            }
+
+            changed = true;
+            return { ...room, current_game: game };
+        });
+        if (changed) {
+            this.setRooms(updated);
         }
     }
 
