@@ -27,6 +27,7 @@ import { errorAlerter } from "@/lib/misc";
 import { browserHistory } from "@/lib/ogsHistory";
 import { get_ebi } from "@/views/SignIn";
 import cached from "@/lib/cached";
+import { get_browser_timezone } from "@/lib/browser_timezone";
 
 import { Card } from "@/components/material";
 import { LoadingPage } from "@/components/Loading";
@@ -118,6 +119,7 @@ export function ChallengeLinkLanding(): React.ReactElement {
             guest: true,
             email: "",
             ebi: get_ebi(),
+            timezone: get_browser_timezone(),
         })
             .then((config) => {
                 data.set(cached.config, config);

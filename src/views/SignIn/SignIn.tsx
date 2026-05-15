@@ -26,6 +26,7 @@ import { post } from "@/lib/requests";
 import cached from "@/lib/cached";
 import { Md5 } from "ts-md5";
 import { useUser } from "@/lib/hooks";
+import { get_browser_timezone } from "@/lib/browser_timezone";
 
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 
@@ -110,6 +111,7 @@ export function SignIn(): React.ReactElement {
                 username: ref_username.current!.value.trim(),
                 password: ref_password.current!.value,
                 ebi: get_ebi(),
+                timezone: get_browser_timezone(),
             })
                 .then((config) => {
                     data.remove("appeals.banned_user_id");
