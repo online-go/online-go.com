@@ -294,6 +294,17 @@ try {
     );
 }
 
+// Browser-detected IANA timezone (e.g. "America/Los_Angeles"). The
+// server uses this to bucket the player's activity-day boundary and
+// keep streak_state.last_known_timezone fresh across sessions
+let browser_timezone = "UTC";
+
+try {
+    browser_timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+} catch (e) {
+    console.error(e);
+}
+
 /** Connect to the chat service */
 for (const socket of [sockets.socket, sockets.ai_socket]) {
     socket.authenticate({
@@ -303,6 +314,7 @@ for (const socket of [sockets.socket, sockets.ai_socket]) {
         language: ogs_current_language,
         language_version: ogs_language_version,
         client_version: ogs_version,
+        timezone: browser_timezone,
     });
 }
 
@@ -315,6 +327,7 @@ data.watch("config.user_jwt", (jwt?: string) => {
             language: ogs_current_language,
             language_version: ogs_language_version,
             client_version: ogs_version,
+            timezone: browser_timezone,
         });
     }
 });
