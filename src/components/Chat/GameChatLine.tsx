@@ -57,7 +57,10 @@ function getTranslatedMessageText(msg: TranslatedGameChatBody): string {
         return msg.en;
     }
 
-    return "<error: translated chat body is missing>";
+    return pgettext(
+        "error displayed when a translated chat message has no text",
+        "(translated message unavailable)",
+    );
 }
 
 function parsePosition(position: string, goban: Goban | null): { i: number; j: number } {
