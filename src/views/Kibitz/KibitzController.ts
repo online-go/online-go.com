@@ -190,25 +190,30 @@ function mapBackendGameDetailsPlayer(player: BackendGameDetailsPlayer): KibitzRo
 }
 
 async function lookupGameForKibitz(gameId: number): Promise<KibitzWatchedGame | undefined> {
-    const details = (await get(`games/${gameId}`)) as BackendGameDetails;
-    if (!details) {
+    try {
+        const details = (await get(`games/${gameId}`)) as BackendGameDetails;
+        if (!details) {
+            return undefined;
+        }
+
+        return {
+            game_id: details.id,
+            board_size: `${details.width}x${details.height}` as KibitzWatchedGame["board_size"],
+            title: details.name,
+            black: mapBackendGameDetailsPlayer(details.players.black),
+            white: mapBackendGameDetailsPlayer(details.players.white),
+            move_number: details.gamedata.moves.length,
+            live: !details.ended,
+            analysis_disabled: Boolean(
+                details.analysis_disabled ||
+                details.disable_analysis ||
+                details.gamedata.disable_analysis,
+            ),
+        };
+    } catch (error) {
+        console.warn("kibitz: game lookup failed", gameId, error);
         return undefined;
     }
-
-    return {
-        game_id: details.id,
-        board_size: `${details.width}x${details.height}` as KibitzWatchedGame["board_size"],
-        title: details.name,
-        black: mapBackendGameDetailsPlayer(details.players.black),
-        white: mapBackendGameDetailsPlayer(details.players.white),
-        move_number: details.gamedata.moves.length,
-        live: !details.ended,
-        analysis_disabled: Boolean(
-            details.analysis_disabled ||
-            details.disable_analysis ||
-            details.gamedata.disable_analysis,
-        ),
-    };
 }
 
 function mapBackendRoomToSummary(
