@@ -21,7 +21,7 @@ import { LineText } from "@/components/misc-ui";
 import { Player } from "@/components/Player";
 import { useGobanControllerOrNull } from "@/components/GobanView";
 import * as preferences from "@/lib/preferences";
-import { pgettext, interpolate, moment, _ } from "@/lib/translate";
+import { current_language, pgettext, interpolate, moment, _ } from "@/lib/translate";
 import { profanity_filter } from "@/lib/profanity_filter";
 import { chat_markup } from "./chat_markup";
 import { protocol } from "goban";
@@ -31,10 +31,33 @@ import "./GameChatLine.css";
 import "./ChatLog.css";
 
 interface GameChatLineProps {
-    line: protocol.GameChatLine;
-    lastLine?: protocol.GameChatLine;
+    line: GameChatLineWithTranslatedBody;
+    lastLine?: GameChatLineWithTranslatedBody;
     gameId?: number;
     reviewId?: number;
+}
+
+type TranslatedGameChatBody = {
+    type: "translated";
+    en: string;
+    [lang: string]: string;
+};
+
+type GameChatLineBody = protocol.GameChatLine["body"] | TranslatedGameChatBody;
+type GameChatLineWithTranslatedBody = Omit<protocol.GameChatLine, "body"> & {
+    body: GameChatLineBody;
+};
+
+function getTranslatedMessageText(msg: TranslatedGameChatBody): string {
+    if (current_language in msg) {
+        return msg[current_language];
+    }
+
+    if ("en" in msg) {
+        return msg.en;
+    }
+
+    return "<error: translated chat body is missing>";
 }
 
 function parsePosition(position: string, goban: Goban | null): { i: number; j: number } {
@@ -254,7 +277,7 @@ export function GameChatLine(props: GameChatLineProps): React.ReactElement {
 }
 
 interface TypedGameChatBodyProps {
-    body: Exclude<protocol.GameChatLine["body"], string>;
+    body: Exclude<GameChatLineBody, string>;
     goban_controller: ReturnType<typeof useGobanControllerOrNull>;
     goban: Goban | null;
     origMoveRef: React.MutableRefObject<MoveTree | null>;
@@ -269,6 +292,8 @@ function TypedGameChatBody({
     stashedPenMarksRef,
 }: TypedGameChatBodyProps): React.ReactElement {
     switch (body.type) {
+        case "translated":
+            return <span>{getTranslatedMessageText(body)}</span>;
         case "analysis": {
             if (!goban_controller || !preferences.get("variations-in-chat-enabled")) {
                 return (

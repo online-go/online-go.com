@@ -535,6 +535,32 @@ export function KibitzRoomStage({
         secondaryPane.variation_draft_base_id,
         secondaryPane.variation_source_game_id,
     ]);
+    const secondaryBoardKey = React.useMemo(() => {
+        if (secondaryPane.variation_id != null) {
+            return `variation-${secondaryPane.variation_id}`;
+        }
+
+        if (secondaryPane.variation_source_game_id != null) {
+            return `draft-${secondaryPane.variation_source_game_id}-${
+                secondaryPane.variation_draft_base_id ?? ""
+            }-${secondaryPane.variation_source_move_tree_id ?? ""}-${
+                secondaryPane.variation_source_move_path ?? ""
+            }`;
+        }
+
+        if (secondaryPane.preview_game_id != null) {
+            return `preview-${secondaryPane.preview_game_id}`;
+        }
+
+        return "empty";
+    }, [
+        secondaryPane.preview_game_id,
+        secondaryPane.variation_id,
+        secondaryPane.variation_draft_base_id,
+        secondaryPane.variation_source_game_id,
+        secondaryPane.variation_source_move_tree_id,
+        secondaryPane.variation_source_move_path,
+    ]);
     const secondaryMoveNavigationShortcuts = secondaryBoardController ? (
         <>
             <KBShortcut shortcut="up" action={secondaryBoardController.nextBranchUp} />
@@ -1105,6 +1131,7 @@ export function KibitzRoomStage({
                         ) : null}
                         {renderPreviewBoard ? (
                             <KibitzBoard
+                                key={secondaryBoardKey}
                                 gameId={secondaryGameId}
                                 {...boardDimensionsOf(secondaryBoardGame)}
                                 className="mobile-secondary-board-surface"
@@ -1119,6 +1146,7 @@ export function KibitzRoomStage({
                         ) : null}
                         {renderVariationBoard ? (
                             <KibitzBoard
+                                key={secondaryBoardKey}
                                 gameId={selectedVariation?.game_id}
                                 {...boardDimensionsOf(selectedVariationSourceGame)}
                                 className="mobile-secondary-board-surface"
@@ -1445,6 +1473,7 @@ export function KibitzRoomStage({
                             <div className="board-content board-content-variation">
                                 <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
                                     <KibitzBoard
+                                        key={secondaryBoardKey}
                                         gameId={secondaryGameId}
                                         {...boardDimensionsOf(secondaryBoardGame)}
                                         className="secondary-board-surface"
@@ -1559,6 +1588,7 @@ export function KibitzRoomStage({
                                     }}
                                 >
                                     <KibitzBoard
+                                        key={secondaryBoardKey}
                                         gameId={selectedVariation?.game_id}
                                         {...boardDimensionsOf(selectedVariationSourceGame)}
                                         className="secondary-board-surface"
