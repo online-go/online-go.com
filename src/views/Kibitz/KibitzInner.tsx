@@ -18,8 +18,10 @@
 import * as React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Player } from "@/components/Player";
+import { PlayerDetails } from "@/components/Player/PlayerDetails";
 import { GobanController } from "@/lib/GobanController";
 import { GobanControllerContext } from "@/components/GobanView";
+import { popover } from "@/lib/popover";
 import { toast } from "@/lib/toast";
 import { interpolate, pgettext } from "@/lib/translate";
 import { protocol } from "goban";
@@ -173,25 +175,66 @@ function formatMobileMatchup(
     };
 }
 
+function renderMobileHeaderAvatar(user: KibitzRoomUser): React.ReactElement {
+    return (
+        <button
+            type="button"
+            className="mobile-room-header-matchup-avatar-button"
+            onClick={(event) => openMobileHeaderPlayerPopover(event, user)}
+            aria-label={user.username}
+        >
+            <KibitzUserAvatar
+                user={user}
+                size={64}
+                className="mobile-room-header-matchup-avatar"
+                iconClassName="mobile-room-header-matchup-avatar-image"
+            />
+        </button>
+    );
+}
+
 function renderMobileHeaderPlayer(
     user: KibitzRoomUser,
     stoneColor: "black" | "white",
 ): React.ReactElement {
+    const contents = (
+        <>
+            {stoneColor === "black" && (
+                <span
+                    className={`mobile-room-header-player-stone mobile-room-header-player-stone-${stoneColor}`}
+                    aria-hidden="true"
+                />
+            )}
+            <Player user={user} flag rank noextracontrols />
+            {stoneColor === "white" && (
+                <span
+                    className={`mobile-room-header-player-stone mobile-room-header-player-stone-${stoneColor}`}
+                    aria-hidden="true"
+                />
+            )}
+        </>
+    );
+
     return (
-        <span className="mobile-room-header-player">
-            <span
-                className={`mobile-room-header-player-stone mobile-room-header-player-stone-${stoneColor}`}
-                aria-hidden="true"
-            />
-            <KibitzUserAvatar
-                user={user}
-                size={16}
-                className="mobile-room-header-player-avatar"
-                iconClassName="mobile-room-header-player-avatar-image"
-            />
-            <Player user={user} flag rank nolink noextracontrols />
+        <span className={`mobile-room-header-player mobile-room-header-player-${stoneColor}`}>
+            {contents}
         </span>
     );
+}
+
+function openMobileHeaderPlayerPopover(
+    event: React.MouseEvent<HTMLButtonElement>,
+    user: KibitzRoomUser,
+): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    popover({
+        elt: <PlayerDetails playerId={user.id} />,
+        below: event.currentTarget,
+        minWidth: 240,
+        minHeight: 250,
+    });
 }
 
 function mapGameChatLineToVariation(
@@ -979,6 +1022,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         controller.startVariationFromCurrentBoard(
             mainBoardController?.goban.engine.move_tree.toJson(),
             mainBoardController?.goban.engine.cur_move.getMoveStringToThisPoint(),
+            mainBoardController?.goban.engine.move_tree.id,
         );
         if (isMobileLayout) {
             setMobileOverlayMode(null);
@@ -1054,9 +1098,14 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             const step = event.shiftKey
                 ? DESKTOP_SIDEBAR_KEYBOARD_LARGE_STEP_PX
                 : DESKTOP_SIDEBAR_KEYBOARD_STEP_PX;
+            const stopGlobalShortcutPropagation = () => {
+                event.preventDefault();
+                event.stopPropagation();
+                event.nativeEvent.stopImmediatePropagation();
+            };
 
             if (event.key === "ArrowLeft") {
-                event.preventDefault();
+                stopGlobalShortcutPropagation();
                 setAndStoreDesktopSidebarWidthPx(
                     clampDesktopSidebarWidthPx(currentWidth + step, contentWidth),
                 );
@@ -1064,7 +1113,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             }
 
             if (event.key === "ArrowRight") {
-                event.preventDefault();
+                stopGlobalShortcutPropagation();
                 setAndStoreDesktopSidebarWidthPx(
                     clampDesktopSidebarWidthPx(currentWidth - step, contentWidth),
                 );
@@ -1072,13 +1121,13 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             }
 
             if (event.key === "Home") {
-                event.preventDefault();
+                stopGlobalShortcutPropagation();
                 setAndStoreDesktopSidebarWidthPx(clampDesktopSidebarWidthPx(0, contentWidth));
                 return;
             }
 
             if (event.key === "End") {
-                event.preventDefault();
+                stopGlobalShortcutPropagation();
                 setAndStoreDesktopSidebarWidthPx(
                     clampDesktopSidebarWidthPx(contentWidth, contentWidth),
                 );
@@ -1086,7 +1135,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             }
 
             if (event.key === "Enter" || event.key === "Escape") {
-                event.preventDefault();
+                stopGlobalShortcutPropagation();
                 setAndStoreDesktopSidebarWidthPx(null);
             }
         },
@@ -1634,49 +1683,45 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                             >
                                 <button
                                     type="button"
-                                    className="Kibitz-mobile-room-bar"
+                                    className="Kibitz-mobile-room-title-button"
                                     ref={mobileRoomTitleTarget?.ref}
-                                    style={{
-                                        backgroundColor: "var(--card-background-color)",
-                                        backgroundImage: "none",
-                                    }}
                                     onClick={onToggleMobileRooms}
                                     aria-expanded={mobileOverlayMode === "rooms"}
                                 >
-                                    <div className="mobile-room-header-title">
+                                    <span className="mobile-room-header-title">
                                         {resolvedRoom.title}
-                                    </div>
-                                    {mobileMatchup ? (
-                                        <div className="mobile-room-header-matchup">
+                                    </span>
+                                    <i
+                                        className="fa fa-chevron-down mobile-room-header-title-chevron"
+                                        aria-hidden="true"
+                                    />
+                                </button>
+                                {mobileMatchup ? (
+                                    <div className="mobile-room-header-matchup">
+                                        <span className="mobile-room-header-matchup-avatar mobile-room-header-matchup-avatar-black">
+                                            {renderMobileHeaderAvatar(mobileMatchup.black)}
+                                        </span>
+                                        <span className="mobile-room-header-matchup-content">
                                             <span className="mobile-room-header-matchup-first">
                                                 {renderMobileHeaderPlayer(
                                                     mobileMatchup.black,
                                                     "black",
                                                 )}
-                                                <span className="mobile-room-header-matchup-black-dot">
-                                                    ●
-                                                </span>
                                             </span>
                                             <span className="mobile-room-header-matchup-second">
-                                                <span className="mobile-room-header-matchup-vs">
-                                                    {pgettext(
-                                                        "Prefix for the second player in the mobile kibitz room header matchup",
-                                                        "vs",
-                                                    )}
-                                                </span>{" "}
                                                 <span className="mobile-room-header-matchup-second-name">
                                                     {renderMobileHeaderPlayer(
                                                         mobileMatchup.white,
                                                         "white",
                                                     )}
-                                                </span>{" "}
-                                                <span className="mobile-room-header-matchup-white-dot">
-                                                    ○
                                                 </span>
                                             </span>
-                                        </div>
-                                    ) : null}
-                                </button>
+                                        </span>
+                                        <span className="mobile-room-header-matchup-avatar mobile-room-header-matchup-avatar-white">
+                                            {renderMobileHeaderAvatar(mobileMatchup.white)}
+                                        </span>
+                                    </div>
+                                ) : null}
                                 <button
                                     type="button"
                                     className={
