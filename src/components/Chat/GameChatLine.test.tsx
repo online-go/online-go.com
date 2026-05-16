@@ -32,7 +32,7 @@ describe("GameChatLine", () => {
             move_number: 1,
             channel: "main",
             player_id: 0,
-            username: "Oroton",
+            username: "Oroton", // cspell: ignore Oroton
         };
 
         render(<GameChatLine line={line} />);
