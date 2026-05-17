@@ -222,6 +222,16 @@ function getLineTreeEndpoint(lineTree: MoveTreeJson): MoveTreeJson {
     return cursor;
 }
 
+export function getMoveTreeTrunkTail(moveTree: MoveTree | null | undefined): MoveTree | null {
+    let cursor = moveTree ?? null;
+
+    while (cursor?.trunk_next) {
+        cursor = cursor.trunk_next;
+    }
+
+    return cursor;
+}
+
 export interface ReviewListEntry {
     owner: PlayerCacheEntry;
     id: number;
@@ -558,7 +568,9 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
-        if (this.goban.engine.last_official_move.move_number !== 0) {
+        const trunk_tail = getMoveTreeTrunkTail(this.goban.engine.move_tree);
+        if (trunk_tail && trunk_tail.move_number !== 0) {
+            this.goban.engine.last_official_move = trunk_tail;
             this.goban.jumpToLastOfficialMove();
         } else {
             while (this.goban.engine.showNext()) {
