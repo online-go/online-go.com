@@ -60,6 +60,13 @@ export interface KibitzWatchedGame {
     analysis_disabled?: boolean;
 }
 
+export interface KibitzPresetBlock {
+    preset_key: string;
+    selection_status: "finding_game" | "watching" | "change_pending";
+    pending_game_id: number | null;
+    change_effective_at: string | null;
+}
+
 export interface KibitzRoomSummary {
     id: string;
     channel: string;
@@ -71,6 +78,7 @@ export interface KibitzRoomSummary {
     current_game?: KibitzWatchedGame;
     pinned?: boolean;
     proposals_enabled?: boolean;
+    preset?: KibitzPresetBlock;
 }
 
 export interface KibitzRoom extends KibitzRoomSummary {
@@ -137,6 +145,9 @@ export interface KibitzSecondaryPaneState {
     variation_id?: string;
     variation_source_game_id?: number;
     variation_source_game?: KibitzWatchedGame;
+    variation_source_move_tree?: KibitzVariationLineTree;
+    variation_source_move_tree_id?: number;
+    variation_source_move_path?: string;
     variation_draft_base_id?: string;
 }
 

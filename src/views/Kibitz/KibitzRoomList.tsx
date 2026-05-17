@@ -18,7 +18,7 @@
 import * as React from "react";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { KibitzRoomSummary } from "@/models/kibitz";
-import { getKibitzRoomLockedLabel, getKibitzRoomLockedTooltip } from "./kibitzAnalysisPolicyCopy";
+import { getKibitzRoomLockedLabel, getKibitzRoomLockedTooltip } from "./kibitzAnalysisPolicyText";
 import { KIBITZ_HELP_TARGETS } from "./HelpFlows/KibitzHelpTargets";
 import { useKibitzHelpTarget } from "./HelpFlows/useKibitzHelpTarget";
 import "./KibitzRoomList.css";
@@ -116,7 +116,23 @@ export function KibitzRoomList({
                                 </div>
                                 <div className="room-bottom-row">
                                     <span className="room-subtitle" title={roomDescription}>
-                                        {roomDescription}
+                                        {room.kind === "preset" ? (
+                                            <>
+                                                <span className="preset-label">
+                                                    {pgettext(
+                                                        "Label shown before a kibitz room description for preset rooms",
+                                                        "Preset",
+                                                    )}
+                                                </span>
+                                                <span
+                                                    className="room-kind-separator"
+                                                    aria-hidden="true"
+                                                >
+                                                    {" · "}
+                                                </span>
+                                            </>
+                                        ) : null}
+                                        <span className="room-description">{roomDescription}</span>
                                     </span>
                                     <span
                                         className="room-viewer-count"

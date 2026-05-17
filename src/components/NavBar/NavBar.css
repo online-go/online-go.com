@@ -444,7 +444,8 @@ header.NavBar {
         .Menu-children {
             img,
             .fa,
-            .ogs-goban {
+            .ogs-goban,
+            .ogs-kibitz {
                 width: 16px;
                 max-width: 16px;
                 height: 16px;

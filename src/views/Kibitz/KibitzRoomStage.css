@@ -102,6 +102,16 @@
         white-space: nowrap;
     }
 
+    .room-stage-header .board-subtitle-link {
+        color: inherit;
+        display: inline-block;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: bottom;
+        white-space: nowrap;
+    }
+
     .room-stage-header .player-badge {
         align-items: center;
         display: inline-flex;
@@ -112,6 +122,24 @@
 
     .room-stage-header .player-name {
         min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .room-stage-header .player-badge .Player {
+        align-items: center;
+        display: inline-flex;
+        min-width: 0;
+    }
+
+    .room-stage-header .player-badge > span {
+        align-items: center;
+        display: inline-flex;
+        min-width: 0;
+    }
+
+    .room-stage-header .player-badge .Player-username {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -131,22 +159,31 @@
         background: var(--shade2);
         color: var(--fg);
         display: inline-flex;
-        flex: 0 0 auto;
+        flex: 0 0 1.15rem;
         font-size: 0.56rem;
         font-weight: bold;
+        aspect-ratio: 1 / 1;
         height: 1.15rem;
         justify-content: center;
         line-height: 1;
+        max-height: 1.15rem;
+        max-width: 1.15rem;
         min-width: 1.15rem;
         overflow: hidden;
         text-transform: uppercase;
+        width: 1.15rem;
     }
 
     .room-stage-header .stage-avatar-image {
         display: block;
-        height: 100%;
+        flex: 0 0 auto;
+        height: 1.15rem !important;
+        max-height: 1.15rem;
+        max-width: 1.15rem;
+        min-height: 0;
+        min-width: 0;
         object-fit: cover;
-        width: 100%;
+        width: 1.15rem !important;
     }
 
     .KibitzRoomStage-boards {
@@ -262,7 +299,6 @@
 
             .board-panel .board-content-variation {
                 grid-template-rows:
-                    auto
                     minmax(0, 1fr)
                     auto
                     auto
@@ -282,7 +318,6 @@
 
             .board-panel .board-content-posted-variation {
                 grid-template-rows:
-                    auto
                     minmax(0, 1fr)
                     auto
                     minmax(var(--equal-variation-height), 0.3fr)
@@ -328,11 +363,43 @@
                 width: min(100%, 39rem, 78vh);
             }
 
+            .secondary-board .board-content-variation .board-fit-slot {
+                grid-row: 1;
+            }
+
+            .secondary-board .board-content-variation .secondary-board-transport-row {
+                grid-row: 2;
+            }
+
+            .secondary-board .board-content-variation .secondary-board-analyze-row {
+                grid-row: 3;
+            }
+
             .secondary-board .board-content-variation .kibitz-move-tree-container {
+                grid-row: 4;
+            }
+
+            .secondary-board .board-content-variation .secondary-board-node-text-row {
                 grid-row: 5;
             }
 
+            .secondary-board .board-content-variation .secondary-board-compose-row {
+                grid-row: 6;
+            }
+
+            .secondary-board .board-content-posted-variation .board-fit-slot {
+                grid-row: 1;
+            }
+
+            .secondary-board .board-content-posted-variation .secondary-board-transport-row {
+                grid-row: 2;
+            }
+
             .secondary-board .board-content-posted-variation .kibitz-move-tree-container {
+                grid-row: 3;
+            }
+
+            .secondary-board .board-content-posted-variation .secondary-board-node-text-row {
                 grid-row: 4;
             }
 
@@ -398,7 +465,6 @@
                 font-size: 0.84rem;
             }
 
-            .secondary-board .board-meta,
             .secondary-board-analyze-row,
             .secondary-board-node-text-row,
             .secondary-board-compose-row,
@@ -445,7 +511,7 @@
             }
 
             .secondary-board .KibitzBoard {
-                max-width: min(100%, 48rem, 78vh);
+                max-width: min(100%, 78vh);
                 width: auto;
             }
 
@@ -714,6 +780,24 @@
                 white-space: nowrap;
             }
 
+            .player-badge .Player {
+                align-items: center;
+                display: inline-flex;
+                min-width: 0;
+            }
+
+            .player-badge > span {
+                align-items: center;
+                display: inline-flex;
+                min-width: 0;
+            }
+
+            .player-badge .Player-username {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
             .player-vs {
                 color: var(--text-color-faded);
                 font-size: 0.76rem;
@@ -728,22 +812,31 @@
                 background: var(--shade2);
                 color: var(--fg);
                 display: inline-flex;
-                flex: 0 0 auto;
+                flex: 0 0 1.15rem;
                 font-size: 0.56rem;
                 font-weight: bold;
+                aspect-ratio: 1 / 1;
                 height: 1.15rem;
                 justify-content: center;
                 line-height: 1;
+                max-height: 1.15rem;
+                max-width: 1.15rem;
                 min-width: 1.15rem;
                 overflow: hidden;
                 text-transform: uppercase;
+                width: 1.15rem;
             }
 
             .stage-avatar-image {
                 display: block;
-                height: 100%;
+                flex: 0 0 auto;
+                height: 1.15rem !important;
+                max-height: 1.15rem;
+                max-width: 1.15rem;
+                min-height: 0;
+                min-width: 0;
                 object-fit: cover;
-                width: 100%;
+                width: 1.15rem !important;
             }
         }
 
@@ -1058,12 +1151,6 @@
             .board-content {
                 grid-template-rows: auto minmax(0, 1fr) auto;
             }
-
-            .board-meta {
-                .players {
-                    font-size: 0.9rem;
-                }
-            }
         }
     }
 }
@@ -1089,7 +1176,7 @@
     }
 
     .Kibitz-mobile-board-host {
-        background: #fff;
+        background: var(--card-background-color);
         display: flex;
         flex-direction: column;
         gap: 0;
@@ -1150,7 +1237,7 @@
     .mobile-board-fit-slot {
         align-items: center;
         aspect-ratio: 1 / 1;
-        background: #fff;
+        background: var(--card-background-color);
         display: grid;
         justify-items: center;
         margin: 0 auto;
@@ -1176,13 +1263,6 @@
 
     .mobile-board-fit-slot-openable {
         cursor: pointer;
-    }
-
-    [data-theme="dark"] {
-        .Kibitz-mobile-board-host,
-        .mobile-board-fit-slot {
-            background: var(--card-background-color);
-        }
     }
 
     .mobile-board-controls-row {

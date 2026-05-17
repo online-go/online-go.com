@@ -29,7 +29,7 @@ import {
     getKibitzAnalysisDisabledSpectatorMessage,
     getKibitzPickerFailedChangeMessage,
     getKibitzPickerFailedCreateMessage,
-} from "./kibitzAnalysisPolicyCopy";
+} from "./kibitzAnalysisPolicyText";
 import { parseGameId } from "./parseGameId";
 import { useCurrentKibitzUser } from "./useCurrentKibitzUser";
 
@@ -185,7 +185,7 @@ export function KibitzMobileGamePicker({
         ? getKibitzAccessPolicyForUser(currentUser, selectedGame.details)
         : { allowed: true as const };
     const blockedMessage =
-        !accessPolicy.allowed && accessPolicy.reason === "own-active-analysis-disabled-game"
+        !accessPolicy.allowed && accessPolicy.reason === "own-active-game"
             ? getKibitzAccessBlockedMessage()
             : null;
     const selectionErrorMessage = errorMessage ?? blockedMessage;

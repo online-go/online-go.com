@@ -17,8 +17,11 @@
 
 import * as React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Player } from "@/components/Player";
+import { PlayerDetails } from "@/components/Player/PlayerDetails";
 import { GobanController } from "@/lib/GobanController";
 import { GobanControllerContext } from "@/components/GobanView";
+import { popover } from "@/lib/popover";
 import { toast } from "@/lib/toast";
 import { interpolate, pgettext } from "@/lib/translate";
 import { protocol } from "goban";
@@ -27,9 +30,11 @@ import type {
     KibitzProposal,
     KibitzRoom,
     KibitzRoomSummary,
+    KibitzRoomUser,
     KibitzSecondaryPaneState,
     KibitzStreamItem,
     KibitzVariationSummary,
+    KibitzWatchedGame,
 } from "@/models/kibitz";
 import { KibitzProposalBar } from "./KibitzProposalBar";
 import { KibitzProposalQueue } from "./KibitzProposalQueue";
@@ -39,6 +44,7 @@ import { KibitzRoomStage } from "./KibitzRoomStage";
 import { KibitzSharedStreamPanel } from "./KibitzSharedStreamPanel";
 import { KibitzPresence } from "./KibitzPresence";
 import { KibitzPresencePanel } from "./KibitzPresencePanel";
+import { KibitzPresetChangePendingBanner } from "./KibitzPresetChangePendingBanner";
 import { KibitzVariationList } from "./KibitzVariationList";
 import { KibitzMobileComparePanel } from "./KibitzMobileComparePanel";
 import type { KibitzController } from "./KibitzController";
@@ -51,10 +57,12 @@ import { KibitzGamePickerOverlay } from "./KibitzGamePickerOverlay";
 import { KibitzMobileGamePicker } from "./KibitzMobileGamePicker";
 import { KibitzRoomSettingsPopover } from "./KibitzRoomSettingsPopover";
 import { getKibitzAccessPolicyForUser, isKibitzAccessBlockedForUser } from "./kibitzAnalysisPolicy";
+import { getVisiblePostedVariations } from "./kibitzVariationQuickList";
+import { KibitzUserAvatar } from "./KibitzUserAvatar";
 import {
     getKibitzBlockedRoomFollowupMessage,
     getKibitzBlockedRoomMessage,
-} from "./kibitzAnalysisPolicyCopy";
+} from "./kibitzAnalysisPolicyText";
 import { useCurrentKibitzUser } from "./useCurrentKibitzUser";
 import "./Kibitz.css";
 
@@ -86,17 +94,75 @@ const MOBILE_SPLIT_STORAGE_KEY = "kibitz-mobile-split-ratio";
 const DEFAULT_MOBILE_SPLIT_RATIO = 0.56;
 const MIN_MOBILE_SPLIT_RATIO = 0.36;
 const MAX_MOBILE_SPLIT_RATIO = 0.78;
+const DESKTOP_SIDEBAR_WIDTH_STORAGE_KEY = "kibitz.desktop.sidebar_width_px";
+const DESKTOP_SIDEBAR_MIN_NARROW_PX = 288;
+const DESKTOP_SIDEBAR_MIN_COMFORTABLE_PX = 336;
+const DESKTOP_STAGE_MIN_PX = 512;
+const DESKTOP_SIDEBAR_MAX_RATIO = 0.48;
+const DESKTOP_SIDEBAR_KEYBOARD_STEP_PX = 24;
+const DESKTOP_SIDEBAR_KEYBOARD_LARGE_STEP_PX = 72;
 const MAX_VISIBLE_VARIATIONS = KIBITZ_VARIATION_COLORS.length;
 const VARIATION_LIMIT_TOAST_MS = 1800;
 const VARIATION_LIMIT_FLASH_MS = 900;
+
+export function pruneVisibleVariationIdsForGame(
+    variations: KibitzVariationSummary[],
+    visibleVariationIds: string[],
+    gameId: number | null,
+): string[] {
+    if (gameId == null) {
+        return visibleVariationIds;
+    }
+
+    const variationGameIds = new Map(
+        variations.map((variation) => [variation.id, variation.game_id]),
+    );
+
+    return visibleVariationIds.filter(
+        (variationId) => variationGameIds.get(variationId) === gameId,
+    );
+}
 
 function clampMobileSplitRatio(value: number): number {
     return Math.min(MAX_MOBILE_SPLIT_RATIO, Math.max(MIN_MOBILE_SPLIT_RATIO, value));
 }
 
+function getDesktopSidebarWidthBoundsPx(contentWidth: number): { min: number; max: number } {
+    const min =
+        contentWidth >= 1100 ? DESKTOP_SIDEBAR_MIN_COMFORTABLE_PX : DESKTOP_SIDEBAR_MIN_NARROW_PX;
+
+    const maxSidebar = Math.min(
+        contentWidth * DESKTOP_SIDEBAR_MAX_RATIO,
+        contentWidth - DESKTOP_STAGE_MIN_PX,
+    );
+
+    if (!Number.isFinite(contentWidth) || contentWidth <= 0) {
+        return { min, max: min };
+    }
+
+    if (maxSidebar <= min) {
+        return {
+            min,
+            max: Math.max(DESKTOP_SIDEBAR_MIN_NARROW_PX, Math.floor(contentWidth * 0.42)),
+        };
+    }
+
+    return { min, max: Math.round(maxSidebar) };
+}
+
+export function clampDesktopSidebarWidthPx(width: number, contentWidth: number): number {
+    const { min: minSidebar, max: maxSidebar } = getDesktopSidebarWidthBoundsPx(contentWidth);
+
+    if (!Number.isFinite(width) || contentWidth <= 0) {
+        return minSidebar;
+    }
+
+    return Math.min(maxSidebar, Math.max(minSidebar, Math.round(width)));
+}
+
 function formatMobileMatchup(
     room: KibitzRoom | KibitzRoomSummary | null | undefined,
-): { firstPlayer: string; secondPlayer: string } | null {
+): { black: KibitzRoomUser; white: KibitzRoomUser } | null {
     const game = room?.current_game;
 
     if (!game) {
@@ -104,9 +170,71 @@ function formatMobileMatchup(
     }
 
     return {
-        firstPlayer: game.black.username,
-        secondPlayer: game.white.username,
+        black: game.black,
+        white: game.white,
     };
+}
+
+function renderMobileHeaderAvatar(user: KibitzRoomUser): React.ReactElement {
+    return (
+        <button
+            type="button"
+            className="mobile-room-header-matchup-avatar-button"
+            onClick={(event) => openMobileHeaderPlayerPopover(event, user)}
+            aria-label={user.username}
+        >
+            <KibitzUserAvatar
+                user={user}
+                size={64}
+                className="mobile-room-header-matchup-avatar"
+                iconClassName="mobile-room-header-matchup-avatar-image"
+            />
+        </button>
+    );
+}
+
+function renderMobileHeaderPlayer(
+    user: KibitzRoomUser,
+    stoneColor: "black" | "white",
+): React.ReactElement {
+    const contents = (
+        <>
+            {stoneColor === "black" && (
+                <span
+                    className={`mobile-room-header-player-stone mobile-room-header-player-stone-${stoneColor}`}
+                    aria-hidden="true"
+                />
+            )}
+            <Player user={user} flag rank noextracontrols />
+            {stoneColor === "white" && (
+                <span
+                    className={`mobile-room-header-player-stone mobile-room-header-player-stone-${stoneColor}`}
+                    aria-hidden="true"
+                />
+            )}
+        </>
+    );
+
+    return (
+        <span className={`mobile-room-header-player mobile-room-header-player-${stoneColor}`}>
+            {contents}
+        </span>
+    );
+}
+
+function openMobileHeaderPlayerPopover(
+    event: React.MouseEvent<HTMLButtonElement>,
+    user: KibitzRoomUser,
+): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    popover({
+        elt: <PlayerDetails playerId={user.id} />,
+        below: event.currentTarget,
+        minWidth: 240,
+        minHeight: 250,
+    });
 }
 
 function mapGameChatLineToVariation(
@@ -246,12 +374,21 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
         return DEFAULT_MOBILE_SPLIT_RATIO;
     });
+    const [desktopSidebarWidthPx, setDesktopSidebarWidthPx] = React.useState<number | null>(() => {
+        const stored = window.localStorage.getItem(DESKTOP_SIDEBAR_WIDTH_STORAGE_KEY);
+        const parsed = stored ? Number.parseFloat(stored) : NaN;
+
+        return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+    });
+    const [desktopContentWidthPx, setDesktopContentWidthPx] = React.useState(0);
+    const [isDesktopSidebarDragging, setIsDesktopSidebarDragging] = React.useState(false);
     const [mobileViewerCountFlash, setMobileViewerCountFlash] = React.useState(false);
     const [visibleVariationIds, setVisibleVariationIds] = React.useState<string[]>([]);
     const [variationColorIndexes, setVariationColorIndexes] = React.useState<
         Record<string, number>
     >({});
     const [variationFocusRequestId, setVariationFocusRequestId] = React.useState(0);
+    const [cachedGamesVersion, setCachedGamesVersion] = React.useState(0);
     const [blockedVariationFlashId, setBlockedVariationFlashId] = React.useState<string | null>(
         null,
     );
@@ -284,8 +421,22 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const blockedVariationFlashTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
     const mobileShellRef = React.useRef<HTMLDivElement | null>(null);
     const mobileDividerRef = React.useRef<HTMLDivElement | null>(null);
+    const desktopContentRef = React.useRef<HTMLDivElement | null>(null);
+    const [desktopContentEl, setDesktopContentEl] = React.useState<HTMLDivElement | null>(null);
+    const desktopContentCallbackRef = React.useCallback((el: HTMLDivElement | null) => {
+        desktopContentRef.current = el;
+        setDesktopContentEl(el);
+    }, []);
+    const desktopSidebarRef = React.useRef<HTMLDivElement | null>(null);
+    const desktopSidebarResizerRef = React.useRef<HTMLDivElement | null>(null);
     const previousMobileViewerCountRef = React.useRef<number | null>(null);
     const previousMobileViewerRoomIdRef = React.useRef<string | null>(null);
+    const desktopSidebarWidthPxRef = React.useRef<number | null>(null);
+    const desktopSidebarDragStateRef = React.useRef<{
+        pointerId: number;
+        contentRight: number;
+        contentWidth: number;
+    } | null>(null);
     const mobileDragStateRef = React.useRef<{
         pointerId: number;
         startY: number;
@@ -295,6 +446,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         const params = new URLSearchParams(location.search);
         return params.get("debug-kibitz") === "1";
     }, [location.search]);
+    const handleCachedGamesChanged = React.useCallback(() => {
+        setCachedGamesVersion((previous) => previous + 1);
+    }, []);
 
     React.useEffect(() => {
         const mediaQuery = window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY);
@@ -317,6 +471,28 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
         window.localStorage.setItem(MOBILE_SPLIT_STORAGE_KEY, String(mobileSplitRatio));
     }, [isMobileLayout, mobileSplitRatio]);
+
+    desktopSidebarWidthPxRef.current = desktopSidebarWidthPx;
+
+    const setAndStoreDesktopSidebarWidthPx = React.useCallback((width: number | null) => {
+        setDesktopSidebarWidthPx(width);
+
+        if (width === null) {
+            window.localStorage.removeItem(DESKTOP_SIDEBAR_WIDTH_STORAGE_KEY);
+            return;
+        }
+
+        window.localStorage.setItem(DESKTOP_SIDEBAR_WIDTH_STORAGE_KEY, String(width));
+    }, []);
+
+    const getCurrentDesktopSidebarWidthPx = React.useCallback(() => {
+        if (desktopSidebarWidthPx !== null) {
+            return desktopSidebarWidthPx;
+        }
+
+        const sidebarRect = desktopSidebarRef.current?.getBoundingClientRect();
+        return sidebarRect?.width ?? 0;
+    }, [desktopSidebarWidthPx]);
 
     React.useEffect(() => {
         const stopDrag = () => {
@@ -369,12 +545,110 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     }, []);
 
     React.useEffect(() => {
-        if (!isMobileLayout) {
-            mobileDragStateRef.current = null;
+        const stopDesktopDrag = (pointerId?: number) => {
+            const resizer = desktopSidebarResizerRef.current;
+
+            if (pointerId !== undefined && resizer?.hasPointerCapture?.(pointerId)) {
+                resizer.releasePointerCapture(pointerId);
+            }
+
+            desktopSidebarDragStateRef.current = null;
+            setIsDesktopSidebarDragging(false);
             document.body.style.userSelect = "";
             document.body.style.cursor = "";
+        };
+
+        const onPointerMove = (event: PointerEvent) => {
+            const dragState = desktopSidebarDragStateRef.current;
+
+            if (!dragState || dragState.pointerId !== event.pointerId) {
+                return;
+            }
+
+            const rawWidth = dragState.contentRight - event.clientX;
+            const nextWidth = clampDesktopSidebarWidthPx(rawWidth, dragState.contentWidth);
+
+            setAndStoreDesktopSidebarWidthPx(nextWidth);
+            event.preventDefault();
+        };
+
+        const onPointerUp = (event: PointerEvent) => {
+            const dragState = desktopSidebarDragStateRef.current;
+
+            if (!dragState || dragState.pointerId !== event.pointerId) {
+                return;
+            }
+
+            stopDesktopDrag(event.pointerId);
+        };
+
+        window.addEventListener("pointermove", onPointerMove, { passive: false });
+        window.addEventListener("pointerup", onPointerUp);
+        window.addEventListener("pointercancel", onPointerUp);
+
+        return () => {
+            window.removeEventListener("pointermove", onPointerMove);
+            window.removeEventListener("pointerup", onPointerUp);
+            window.removeEventListener("pointercancel", onPointerUp);
+            stopDesktopDrag();
+        };
+    }, [setAndStoreDesktopSidebarWidthPx]);
+
+    React.useEffect(() => {
+        if (!isMobileLayout) {
+            return;
         }
+
+        desktopSidebarDragStateRef.current = null;
+        setIsDesktopSidebarDragging(false);
+        document.body.style.userSelect = "";
+        document.body.style.cursor = "";
     }, [isMobileLayout]);
+
+    React.useEffect(() => {
+        if (!desktopContentEl || typeof ResizeObserver === "undefined") {
+            return;
+        }
+
+        const syncContentWidth = (contentWidth: number) => {
+            if (contentWidth <= 0) {
+                return;
+            }
+
+            setDesktopContentWidthPx((previousWidth) =>
+                previousWidth === contentWidth ? previousWidth : contentWidth,
+            );
+
+            const currentWidth = desktopSidebarWidthPxRef.current;
+            if (currentWidth === null) {
+                return;
+            }
+
+            const clamped = clampDesktopSidebarWidthPx(currentWidth, contentWidth);
+
+            if (clamped !== currentWidth) {
+                setAndStoreDesktopSidebarWidthPx(clamped);
+            }
+        };
+
+        syncContentWidth(desktopContentEl.getBoundingClientRect().width);
+
+        const resizeObserver = new ResizeObserver(([entry]) => {
+            syncContentWidth(entry.contentRect.width);
+        });
+
+        resizeObserver.observe(desktopContentEl);
+
+        return () => {
+            resizeObserver.disconnect();
+        };
+    }, [desktopContentEl, setAndStoreDesktopSidebarWidthPx]);
+
+    React.useEffect(() => {
+        if (mobileOverlayMode === "rooms") {
+            void controller.refreshRoomDirectory();
+        }
+    }, [controller, mobileOverlayMode]);
 
     const currentSecondaryPaneMode: SecondaryPaneMode = secondaryPane.collapsed
         ? "hidden"
@@ -387,6 +661,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         controller.on("stream-changed", setStream);
         controller.on("proposals-changed", setProposals);
         controller.on("variations-changed", setVariations);
+        controller.on("cached-games-changed", handleCachedGamesChanged);
         controller.on("secondary-pane-changed", setSecondaryPane);
         controller.on("debug-changed", setDebug);
         controller.on("permissions-changed", setPermissions);
@@ -408,12 +683,13 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             controller.off("stream-changed", setStream);
             controller.off("proposals-changed", setProposals);
             controller.off("variations-changed", setVariations);
+            controller.off("cached-games-changed", handleCachedGamesChanged);
             controller.off("secondary-pane-changed", setSecondaryPane);
             controller.off("debug-changed", setDebug);
             controller.off("permissions-changed", setPermissions);
             controller.off("access-changed", setAccessBlocked);
         };
-    }, [controller]);
+    }, [controller, handleCachedGamesChanged]);
 
     const defaultRoomId = rooms[0]?.id ?? null;
     const blockedRoomIds = React.useMemo(() => {
@@ -516,6 +792,54 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const selectedVariation = displayedVariations.find(
         (variation) => variation.id === secondaryPane.variation_id,
     );
+    const currentGameId = resolvedRoom?.current_game?.game_id ?? null;
+    const activePostedVariations = React.useMemo(
+        () => getVisiblePostedVariations(displayedVariations, visibleVariationIds),
+        [displayedVariations, visibleVariationIds],
+    );
+    const activeVariationGameIds = React.useMemo(
+        () => [...new Set(activePostedVariations.map((variation) => variation.game_id))],
+        [activePostedVariations],
+    );
+    React.useEffect(() => {
+        void controller.ensureGamesCached(activeVariationGameIds);
+    }, [activeVariationGameIds, controller]);
+    const variationGameById = React.useMemo(() => {
+        const next = new Map<number, KibitzWatchedGame>();
+
+        const addGame = (game: KibitzWatchedGame | undefined | null) => {
+            if (game) {
+                next.set(game.game_id, game);
+            }
+        };
+
+        addGame(resolvedRoom?.current_game);
+
+        for (const room of rooms) {
+            addGame(room.current_game);
+        }
+
+        for (const proposal of proposals) {
+            addGame(proposal.proposed_game);
+        }
+
+        for (const variation of activePostedVariations) {
+            addGame(controller.getCachedGame(variation.game_id));
+        }
+
+        return next;
+    }, [
+        activePostedVariations,
+        cachedGamesVersion,
+        controller,
+        proposals,
+        resolvedRoom?.current_game,
+        rooms,
+    ]);
+    const activePostedVariationIds = React.useMemo(
+        () => new Set(activePostedVariations.map((variation) => variation.id)),
+        [activePostedVariations],
+    );
     const kibitzHelpTriggers = useKibitzHelpTriggers({
         isMobileLayout,
         room: resolvedRoom,
@@ -560,16 +884,11 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         const currentVariation = displayedVariations.find(
             (variation) => variation.id === secondaryPane.variation_id,
         );
-        const visibleVariations = visibleVariationIds
-            .map((variationId) =>
-                displayedVariations.find((variation) => variation.id === variationId),
-            )
-            .filter((variation): variation is KibitzVariationSummary => variation != null);
         const nextVisibleVariation =
-            visibleVariations.find(
+            activePostedVariations.find(
                 (variation) =>
                     currentVariation != null && variation.game_id === currentVariation.game_id,
-            ) ?? visibleVariations[0];
+            ) ?? activePostedVariations[0];
 
         if (nextVisibleVariation) {
             setVariationFocusRequestId((previous) => previous + 1);
@@ -584,16 +903,20 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     }, [
         controller,
         displayedVariations,
+        activePostedVariations,
         isMobileLayout,
         secondaryPane.variation_id,
-        visibleVariationIds,
     ]);
 
     const onOpenVariation = React.useCallback(
         (variationId: string, focusVariation: boolean = false) => {
-            const isNewlyOpened = !visibleVariationIds.includes(variationId);
+            const isAlreadyVisibleInState = visibleVariationIds.includes(variationId);
+            const isAlreadyVisibleInQuickList = activePostedVariationIds.has(variationId);
+            const shouldLimitOpening =
+                !isAlreadyVisibleInQuickList &&
+                activePostedVariations.length >= MAX_VISIBLE_VARIATIONS;
 
-            if (isNewlyOpened && visibleVariationIds.length >= MAX_VISIBLE_VARIATIONS) {
+            if (shouldLimitOpening) {
                 if (blockedVariationFlashTimerRef.current) {
                     clearTimeout(blockedVariationFlashTimerRef.current);
                 }
@@ -614,8 +937,11 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 return;
             }
 
-            if (!visibleVariationIds.includes(variationId)) {
-                const nextVisibleVariationIds = [...visibleVariationIds, variationId];
+            const nextVisibleVariationIds = isAlreadyVisibleInState
+                ? visibleVariationIds
+                : [...visibleVariationIds, variationId];
+
+            if (nextVisibleVariationIds !== visibleVariationIds) {
                 setVisibleVariationIds(nextVisibleVariationIds);
                 setVariationColorIndexes((previous) =>
                     assignVisibleVariationColorIndexes(previous, nextVisibleVariationIds),
@@ -625,94 +951,67 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 setVariationFocusRequestId((previous) => previous + 1);
             }
             controller.openVariation(variationId);
-            if (isNewlyOpened) {
+            if (!isAlreadyVisibleInState) {
+                kibitzHelpTriggers.noteDesktopVariationMadeVisible();
                 kibitzHelpTriggers.notePostedVariationOpened();
             }
             if (isMobileLayout) {
                 setMobileCompanionPanel("compare");
             }
         },
-        [controller, isMobileLayout, kibitzHelpTriggers, visibleVariationIds],
-    );
-    const onToggleVariation = React.useCallback(
-        (variationId: string) => {
-            const isVisible = visibleVariationIds.includes(variationId);
-            if (!isVisible && visibleVariationIds.length >= MAX_VISIBLE_VARIATIONS) {
-                if (blockedVariationFlashTimerRef.current) {
-                    clearTimeout(blockedVariationFlashTimerRef.current);
-                }
-                setBlockedVariationFlashId(variationId);
-                blockedVariationFlashTimerRef.current = setTimeout(() => {
-                    setBlockedVariationFlashId(null);
-                    blockedVariationFlashTimerRef.current = null;
-                }, VARIATION_LIMIT_FLASH_MS);
-                toast(
-                    <div>
-                        {pgettext(
-                            "Warning shown when too many Kibitz variations are already visible",
-                            "Hide one variation before showing another.",
-                        )}
-                    </div>,
-                    VARIATION_LIMIT_TOAST_MS,
-                );
-                return;
-            }
-
-            if (isVisible) {
-                const nextVisibleVariationIds = visibleVariationIds.filter(
-                    (id) => id !== variationId,
-                );
-                setVisibleVariationIds(nextVisibleVariationIds);
-                setVariationColorIndexes((previous) =>
-                    assignVisibleVariationColorIndexes(previous, nextVisibleVariationIds),
-                );
-
-                if (secondaryPane.variation_id === variationId) {
-                    const hiddenVariation = displayedVariations.find(
-                        (variation) => variation.id === variationId,
-                    );
-                    const nextVisibleVariations = nextVisibleVariationIds
-                        .map((id) => displayedVariations.find((variation) => variation.id === id))
-                        .filter(
-                            (variation): variation is KibitzVariationSummary => variation != null,
-                        );
-                    const nextActiveVariation =
-                        nextVisibleVariations.find(
-                            (variation) => variation.game_id === hiddenVariation?.game_id,
-                        ) ?? nextVisibleVariations[0];
-
-                    if (nextActiveVariation) {
-                        setVariationFocusRequestId((previous) => previous + 1);
-                        controller.openVariation(nextActiveVariation.id);
-                    } else {
-                        controller.clearPreviewGame();
-                    }
-                }
-
-                return;
-            }
-
-            const nextVisibleVariationIds = [...visibleVariationIds, variationId];
-            setVisibleVariationIds(nextVisibleVariationIds);
-            setVariationColorIndexes((previous) =>
-                assignVisibleVariationColorIndexes(previous, nextVisibleVariationIds),
-            );
-            setVariationFocusRequestId((previous) => previous + 1);
-            controller.openVariation(variationId);
-            kibitzHelpTriggers.noteDesktopVariationMadeVisible();
-            if (isMobileLayout) {
-                setMobileCompanionPanel("compare");
-            }
-        },
         [
+            activePostedVariations.length,
+            activePostedVariationIds,
             controller,
-            displayedVariations,
             isMobileLayout,
-            secondaryPane.variation_id,
             kibitzHelpTriggers,
             visibleVariationIds,
         ],
     );
+    const onToggleVariation = React.useCallback(
+        (variationId: string) => {
+            const toggledVariation = displayedVariations.find(
+                (variation) => variation.id === variationId,
+            );
+            if (!toggledVariation) {
+                return;
+            }
+
+            const nextVisibleVariationIds = visibleVariationIds.filter((id) => id !== variationId);
+            if (nextVisibleVariationIds.length === visibleVariationIds.length) {
+                return;
+            }
+
+            setVisibleVariationIds(nextVisibleVariationIds);
+            setVariationColorIndexes((previous) =>
+                assignVisibleVariationColorIndexes(previous, nextVisibleVariationIds),
+            );
+
+            if (secondaryPane.variation_id === variationId) {
+                const nextVisibleVariations = nextVisibleVariationIds
+                    .map((id) => displayedVariations.find((variation) => variation.id === id))
+                    .filter((variation): variation is KibitzVariationSummary => variation != null);
+                const nextActiveVariation =
+                    nextVisibleVariations.find(
+                        (variation) => variation.game_id === toggledVariation.game_id,
+                    ) ?? nextVisibleVariations[0];
+
+                if (nextActiveVariation) {
+                    setVariationFocusRequestId((previous) => previous + 1);
+                    controller.openVariation(nextActiveVariation.id);
+                } else {
+                    controller.clearPreviewGame();
+                }
+            }
+        },
+        [controller, displayedVariations, secondaryPane.variation_id, visibleVariationIds],
+    );
+
+    React.useLayoutEffect(() => {
+        setVariationColorIndexes((previous) => {
+            return assignVisibleVariationColorIndexes(previous, visibleVariationIds);
+        });
+    }, [visibleVariationIds]);
 
     React.useEffect(() => {
         return () => {
@@ -723,12 +1022,16 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         };
     }, []);
     const onCreateVariation = React.useCallback(() => {
-        controller.startVariationFromCurrentBoard();
+        controller.startVariationFromCurrentBoard(
+            mainBoardController?.goban.engine.move_tree.toJson(),
+            mainBoardController?.goban.engine.cur_move.getMoveStringToThisPoint(),
+            mainBoardController?.goban.engine.move_tree.id,
+        );
         if (isMobileLayout) {
             setMobileOverlayMode(null);
             setMobileCompanionPanel("compare");
         }
-    }, [controller, isMobileLayout]);
+    }, [controller, isMobileLayout, mainBoardController]);
     const onCreateVariationFromPostedVariation = React.useCallback(
         (variation: KibitzVariationSummary) => {
             controller.startVariationFromPostedVariation(variation);
@@ -743,6 +1046,139 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const onSetSecondaryPaneMode = React.useCallback((nextMode: SecondaryPaneMode) => {
         setPendingSecondaryPaneMode(nextMode);
     }, []);
+
+    const onDesktopSidebarResizerPointerDown = React.useCallback(
+        (event: React.PointerEvent<HTMLDivElement>) => {
+            if (isMobileLayout) {
+                return;
+            }
+
+            const content = desktopContentRef.current;
+            if (!content) {
+                return;
+            }
+
+            const contentRect = content.getBoundingClientRect();
+            if (contentRect.width <= 0) {
+                return;
+            }
+
+            event.preventDefault();
+
+            desktopSidebarDragStateRef.current = {
+                pointerId: event.pointerId,
+                contentRight: contentRect.right,
+                contentWidth: contentRect.width,
+            };
+
+            event.currentTarget.setPointerCapture?.(event.pointerId);
+            setIsDesktopSidebarDragging(true);
+            document.body.style.userSelect = "none";
+            document.body.style.cursor = "ew-resize";
+        },
+        [isMobileLayout],
+    );
+
+    const onDesktopSidebarResizerKeyDown = React.useCallback(
+        (event: React.KeyboardEvent<HTMLDivElement>) => {
+            if (isMobileLayout) {
+                return;
+            }
+
+            const content = desktopContentRef.current;
+            if (!content) {
+                return;
+            }
+
+            const contentRect = content.getBoundingClientRect();
+            const contentWidth = contentRect.width;
+
+            if (contentWidth <= 0) {
+                return;
+            }
+
+            const currentWidth = getCurrentDesktopSidebarWidthPx();
+            const step = event.shiftKey
+                ? DESKTOP_SIDEBAR_KEYBOARD_LARGE_STEP_PX
+                : DESKTOP_SIDEBAR_KEYBOARD_STEP_PX;
+            const stopGlobalShortcutPropagation = () => {
+                event.preventDefault();
+                event.stopPropagation();
+                event.nativeEvent.stopImmediatePropagation();
+            };
+
+            if (event.key === "ArrowLeft") {
+                stopGlobalShortcutPropagation();
+                setAndStoreDesktopSidebarWidthPx(
+                    clampDesktopSidebarWidthPx(currentWidth + step, contentWidth),
+                );
+                return;
+            }
+
+            if (event.key === "ArrowRight") {
+                stopGlobalShortcutPropagation();
+                setAndStoreDesktopSidebarWidthPx(
+                    clampDesktopSidebarWidthPx(currentWidth - step, contentWidth),
+                );
+                return;
+            }
+
+            if (event.key === "Home") {
+                stopGlobalShortcutPropagation();
+                setAndStoreDesktopSidebarWidthPx(clampDesktopSidebarWidthPx(0, contentWidth));
+                return;
+            }
+
+            if (event.key === "End") {
+                stopGlobalShortcutPropagation();
+                setAndStoreDesktopSidebarWidthPx(
+                    clampDesktopSidebarWidthPx(contentWidth, contentWidth),
+                );
+                return;
+            }
+
+            if (event.key === "Enter" || event.key === "Escape") {
+                stopGlobalShortcutPropagation();
+                setAndStoreDesktopSidebarWidthPx(null);
+            }
+        },
+        [getCurrentDesktopSidebarWidthPx, isMobileLayout, setAndStoreDesktopSidebarWidthPx],
+    );
+
+    const desktopContentClassName =
+        "Kibitz-content" + (desktopSidebarWidthPx !== null ? " has-custom-sidebar-width" : "");
+    const desktopContentStyle =
+        desktopSidebarWidthPx !== null
+            ? ({
+                  "--kibitz-sidebar-width": `${desktopSidebarWidthPx}px`,
+              } as React.CSSProperties)
+            : undefined;
+    const desktopSidebarWidthBounds = getDesktopSidebarWidthBoundsPx(desktopContentWidthPx);
+    const desktopSidebarCurrentWidth = clampDesktopSidebarWidthPx(
+        getCurrentDesktopSidebarWidthPx(),
+        desktopContentWidthPx,
+    );
+    const desktopSidebarResizer = (
+        <div
+            ref={desktopSidebarResizerRef}
+            className={
+                "Kibitz-page-sidebar-resizer" + (isDesktopSidebarDragging ? " is-dragging" : "")
+            }
+            role="separator"
+            aria-orientation="vertical"
+            aria-label={pgettext(
+                "Aria label for resizing the Kibitz right sidebar",
+                "Resize chat and variations column",
+            )}
+            aria-valuenow={desktopSidebarCurrentWidth}
+            aria-valuemin={desktopSidebarWidthBounds.min}
+            aria-valuemax={desktopSidebarWidthBounds.max}
+            tabIndex={0}
+            onPointerDown={onDesktopSidebarResizerPointerDown}
+            onKeyDown={onDesktopSidebarResizerKeyDown}
+            onDoubleClick={() => setAndStoreDesktopSidebarWidthPx(null)}
+        />
+    );
 
     const onOpenCreateRoom = React.useCallback(() => {
         if (isMobileLayout) {
@@ -791,7 +1227,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         [controller],
     );
 
-    const currentGameId = resolvedRoom?.current_game?.game_id ?? null;
+    const isPresetWithNoGame = Boolean(resolvedRoom?.preset && !resolvedRoom.current_game?.game_id);
     const roomProposals = proposals.filter((proposal) => proposal.room_id === resolvedRoom?.id);
     const activeProposal = roomProposals.find((proposal) => proposal.status === "active");
     const queuedRoomProposals = roomProposals.filter((proposal) => proposal.status !== "active");
@@ -938,27 +1374,18 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
     const variationPanels = (
         <>
-            {displayedVariations.length === 0 ? (
-                <div className="Kibitz-footer-empty">
-                    {pgettext(
-                        "Compact empty state shown below the kibitz room stream when there are no variations or queued proposals",
-                        "No variations yet. Watch next queue empty.",
-                    )}
-                </div>
-            ) : (
-                <KibitzVariationList
-                    variations={displayedVariations}
-                    currentGameId={currentGameId}
-                    visibleVariationIds={visibleVariationIds}
-                    selectedVariationId={secondaryPane.variation_id}
-                    variationFocusRequestId={variationFocusRequestId}
-                    variationColorIndexes={variationColorIndexes}
-                    blockedVariationFlashId={blockedVariationFlashId}
-                    onRecallVariation={onOpenVariation}
-                    onToggleVariation={onToggleVariation}
-                    helpTargetId={KIBITZ_HELP_TARGETS.desktopVariationList}
-                />
-            )}
+            <KibitzVariationList
+                variations={activePostedVariations}
+                currentGameId={currentGameId}
+                gameById={variationGameById}
+                selectedVariationId={secondaryPane.variation_id}
+                variationFocusRequestId={variationFocusRequestId}
+                variationColorIndexes={variationColorIndexes}
+                blockedVariationFlashId={blockedVariationFlashId}
+                onRecallVariation={(variationId) => onOpenVariation(variationId, true)}
+                onHideVariation={onToggleVariation}
+                helpTargetId={KIBITZ_HELP_TARGETS.desktopVariationList}
+            />
             {queuedRoomProposals.length > 0 ? (
                 <KibitzProposalQueue proposals={queuedRoomProposals} />
             ) : null}
@@ -1157,12 +1584,20 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                         />
                     </div>
                     <div className="Kibitz-main">
-                        <div className="Kibitz-content">
+                        <div
+                            className={desktopContentClassName}
+                            ref={desktopContentCallbackRef}
+                            style={desktopContentStyle}
+                        >
                             <div className="Kibitz-empty-stage">
                                 <p>{getKibitzBlockedRoomMessage(blockedTitle)}</p>
                                 <p>{getKibitzBlockedRoomFollowupMessage()}</p>
                             </div>
-                            <div className="Kibitz-sidebar no-active-proposal">
+                            <div
+                                className="Kibitz-sidebar no-active-proposal"
+                                ref={desktopSidebarRef}
+                            >
+                                {desktopSidebarResizer}
                                 <div className="Kibitz-sidebar-proposal-slot" />
                                 <div />
                                 <div className="Kibitz-footer-panels" />
@@ -1194,11 +1629,19 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                         />
                     </div>
                     <div className="Kibitz-main">
-                        <div className="Kibitz-content">
+                        <div
+                            className={desktopContentClassName}
+                            ref={desktopContentCallbackRef}
+                            style={desktopContentStyle}
+                        >
                             <div className="Kibitz-empty-stage">
                                 <p>{emptyMessage}</p>
                             </div>
-                            <div className="Kibitz-sidebar no-active-proposal">
+                            <div
+                                className="Kibitz-sidebar no-active-proposal"
+                                ref={desktopSidebarRef}
+                            >
+                                {desktopSidebarResizer}
                                 <div className="Kibitz-sidebar-proposal-slot" />
                                 <div />
                                 <div className="Kibitz-footer-panels" />
@@ -1227,6 +1670,12 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                     <KibitzPresence room={resolvedRoom} users={resolvedRoomUsers} />
                 </div>
                 <div className="Kibitz-main">
+                    {resolvedRoom.preset?.selection_status === "change_pending" &&
+                        resolvedRoom.preset.change_effective_at && (
+                            <KibitzPresetChangePendingBanner
+                                changeEffectiveAt={resolvedRoom.preset.change_effective_at}
+                            />
+                        )}
                     {isMobileLayout ? (
                         <div className="Kibitz-mobile-room-shell">
                             <div
@@ -1237,43 +1686,45 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                             >
                                 <button
                                     type="button"
-                                    className="Kibitz-mobile-room-bar"
+                                    className="Kibitz-mobile-room-title-button"
                                     ref={mobileRoomTitleTarget?.ref}
-                                    style={{
-                                        backgroundColor: "var(--card-background-color)",
-                                        backgroundImage: "none",
-                                    }}
                                     onClick={onToggleMobileRooms}
                                     aria-expanded={mobileOverlayMode === "rooms"}
                                 >
-                                    <div className="mobile-room-header-title">
+                                    <span className="mobile-room-header-title">
                                         {resolvedRoom.title}
-                                    </div>
-                                    {mobileMatchup ? (
-                                        <div className="mobile-room-header-matchup">
+                                    </span>
+                                    <i
+                                        className="fa fa-chevron-down mobile-room-header-title-chevron"
+                                        aria-hidden="true"
+                                    />
+                                </button>
+                                {mobileMatchup ? (
+                                    <div className="mobile-room-header-matchup">
+                                        <span className="mobile-room-header-matchup-avatar mobile-room-header-matchup-avatar-black">
+                                            {renderMobileHeaderAvatar(mobileMatchup.black)}
+                                        </span>
+                                        <span className="mobile-room-header-matchup-content">
                                             <span className="mobile-room-header-matchup-first">
-                                                {mobileMatchup.firstPlayer}{" "}
-                                                <span className="mobile-room-header-matchup-black-dot">
-                                                    ●
-                                                </span>
+                                                {renderMobileHeaderPlayer(
+                                                    mobileMatchup.black,
+                                                    "black",
+                                                )}
                                             </span>
                                             <span className="mobile-room-header-matchup-second">
-                                                <span className="mobile-room-header-matchup-vs">
-                                                    {pgettext(
-                                                        "Prefix for the second player in the mobile kibitz room header matchup",
-                                                        "vs",
-                                                    )}
-                                                </span>{" "}
                                                 <span className="mobile-room-header-matchup-second-name">
-                                                    {mobileMatchup.secondPlayer}
-                                                </span>{" "}
-                                                <span className="mobile-room-header-matchup-white-dot">
-                                                    ○
+                                                    {renderMobileHeaderPlayer(
+                                                        mobileMatchup.white,
+                                                        "white",
+                                                    )}
                                                 </span>
                                             </span>
-                                        </div>
-                                    ) : null}
-                                </button>
+                                        </span>
+                                        <span className="mobile-room-header-matchup-avatar mobile-room-header-matchup-avatar-white">
+                                            {renderMobileHeaderAvatar(mobileMatchup.white)}
+                                        </span>
+                                    </div>
+                                ) : null}
                                 <button
                                     type="button"
                                     className={
@@ -1447,41 +1898,54 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                     className="Kibitz-mobile-top-pane"
                                     style={{ flexBasis: `${mobileSplitRatio * 100}%` }}
                                 >
-                                    <KibitzRoomStage
-                                        room={resolvedRoom}
-                                        rooms={rooms}
-                                        proposals={roomProposals}
-                                        variations={displayedVariations}
-                                        visibleVariationIds={visibleVariationIds}
-                                        variationColorIndexes={variationColorIndexes}
-                                        secondaryPane={secondaryPane}
-                                        onClearPreview={onClearPreview}
-                                        onPostVariation={onPostVariation}
-                                        onSetSecondaryPaneMode={onSetSecondaryPaneMode}
-                                        onChangeBoard={undefined}
-                                        canEditRoom={canManageRoom}
-                                        canDeleteRoom={permissions.can_delete_room}
-                                        onSaveRoomDetails={async (title, description) =>
-                                            controller.updateRoomDetails(
-                                                resolvedRoom.id,
-                                                title,
-                                                description,
-                                            )
-                                        }
-                                        onDeleteRoom={handleDeleteRoom}
-                                        onCreateVariation={onCreateVariation}
-                                        onCreateVariationFromPostedVariation={
-                                            onCreateVariationFromPostedVariation
-                                        }
-                                        variationFocusRequestId={variationFocusRequestId}
-                                        isMobileLayout={true}
-                                        mobileCompanionPanel={mobileCompanionPanel}
-                                        mobileHasActiveVote={Boolean(activeProposal)}
-                                        onSelectMobileCompanionPanel={onSelectMobileCompanionPanel}
-                                        onOpenMobileRooms={onToggleMobileRooms}
-                                        onMobileCompareControllerChange={setMobileCompareController}
-                                        onMainBoardControllerChange={setMainBoardController}
-                                    />
+                                    {isPresetWithNoGame ? (
+                                        <div className="KibitzPresetEmptyState">
+                                            {pgettext(
+                                                "Shown in a kibitz preset room when no eligible live game is currently being watched",
+                                                "Looking for a suitable live game.",
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <KibitzRoomStage
+                                            room={resolvedRoom}
+                                            rooms={rooms}
+                                            proposals={roomProposals}
+                                            variations={displayedVariations}
+                                            visibleVariationIds={visibleVariationIds}
+                                            variationColorIndexes={variationColorIndexes}
+                                            secondaryPane={secondaryPane}
+                                            onClearPreview={onClearPreview}
+                                            onPostVariation={onPostVariation}
+                                            onSetSecondaryPaneMode={onSetSecondaryPaneMode}
+                                            onChangeBoard={undefined}
+                                            canEditRoom={canManageRoom}
+                                            canDeleteRoom={permissions.can_delete_room}
+                                            onSaveRoomDetails={async (title, description) =>
+                                                controller.updateRoomDetails(
+                                                    resolvedRoom.id,
+                                                    title,
+                                                    description,
+                                                )
+                                            }
+                                            onDeleteRoom={handleDeleteRoom}
+                                            onCreateVariation={onCreateVariation}
+                                            onCreateVariationFromPostedVariation={
+                                                onCreateVariationFromPostedVariation
+                                            }
+                                            variationFocusRequestId={variationFocusRequestId}
+                                            isMobileLayout={true}
+                                            mobileCompanionPanel={mobileCompanionPanel}
+                                            mobileHasActiveVote={Boolean(activeProposal)}
+                                            onSelectMobileCompanionPanel={
+                                                onSelectMobileCompanionPanel
+                                            }
+                                            onOpenMobileRooms={onToggleMobileRooms}
+                                            onMobileCompareControllerChange={
+                                                setMobileCompareController
+                                            }
+                                            onMainBoardControllerChange={setMainBoardController}
+                                        />
+                                    )}
                                 </div>
                                 <div
                                     ref={mobileDividerRef}
@@ -1557,10 +2021,10 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                 >
                                                     <KibitzMobileComparePanel
                                                         controller={mobileCompareController}
-                                                        room={resolvedRoom}
-                                                        variations={displayedVariations}
+                                                        variations={activePostedVariations}
+                                                        currentGameId={currentGameId}
+                                                        variationGameById={variationGameById}
                                                         queuedRoomProposals={queuedRoomProposals}
-                                                        visibleVariationIds={visibleVariationIds}
                                                         variationColorIndexes={
                                                             variationColorIndexes
                                                         }
@@ -1579,7 +2043,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                             variationFocusRequestId
                                                         }
                                                         onOpenVariation={onOpenVariation}
-                                                        onToggleVariation={onToggleVariation}
+                                                        onHideVariation={onToggleVariation}
                                                         onPostVariation={onPostVariation}
                                                         onDiscardDraft={onClearPreview}
                                                     />
@@ -1591,42 +2055,55 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                             </div>
                         </div>
                     ) : (
-                        <div className="Kibitz-content">
-                            <KibitzRoomStage
-                                room={resolvedRoom}
-                                rooms={rooms}
-                                proposals={roomProposals}
-                                variations={displayedVariations}
-                                visibleVariationIds={visibleVariationIds}
-                                variationColorIndexes={variationColorIndexes}
-                                secondaryPane={secondaryPane}
-                                onClearPreview={onClearPreview}
-                                onPostVariation={onPostVariation}
-                                onSetSecondaryPaneMode={onSetSecondaryPaneMode}
-                                onChangeBoard={handleOpenChangeBoard}
-                                canEditRoom={canManageRoom}
-                                canDeleteRoom={permissions.can_delete_room}
-                                onSaveRoomDetails={async (title, description) =>
-                                    controller.updateRoomDetails(
-                                        resolvedRoom.id,
-                                        title,
-                                        description,
-                                    )
-                                }
-                                onDeleteRoom={handleDeleteRoom}
-                                onCreateVariation={onCreateVariation}
-                                onCreateVariationFromPostedVariation={
-                                    onCreateVariationFromPostedVariation
-                                }
-                                variationFocusRequestId={variationFocusRequestId}
-                                isMobileLayout={false}
-                                mobileCompanionPanel={mobileCompanionPanel}
-                                mobileHasActiveVote={Boolean(activeProposal)}
-                                onSelectMobileCompanionPanel={onSelectMobileCompanionPanel}
-                                onOpenMobileRooms={undefined}
-                                onMobileCompareControllerChange={undefined}
-                                onMainBoardControllerChange={setMainBoardController}
-                            />
+                        <div
+                            className={desktopContentClassName}
+                            ref={desktopContentCallbackRef}
+                            style={desktopContentStyle}
+                        >
+                            {isPresetWithNoGame ? (
+                                <div className="KibitzPresetEmptyState">
+                                    {pgettext(
+                                        "Shown in a kibitz preset room when no eligible live game is currently being watched",
+                                        "Looking for a suitable live game.",
+                                    )}
+                                </div>
+                            ) : (
+                                <KibitzRoomStage
+                                    room={resolvedRoom}
+                                    rooms={rooms}
+                                    proposals={roomProposals}
+                                    variations={displayedVariations}
+                                    visibleVariationIds={visibleVariationIds}
+                                    variationColorIndexes={variationColorIndexes}
+                                    secondaryPane={secondaryPane}
+                                    onClearPreview={onClearPreview}
+                                    onPostVariation={onPostVariation}
+                                    onSetSecondaryPaneMode={onSetSecondaryPaneMode}
+                                    onChangeBoard={handleOpenChangeBoard}
+                                    canEditRoom={canManageRoom}
+                                    canDeleteRoom={permissions.can_delete_room}
+                                    onSaveRoomDetails={async (title, description) =>
+                                        controller.updateRoomDetails(
+                                            resolvedRoom.id,
+                                            title,
+                                            description,
+                                        )
+                                    }
+                                    onDeleteRoom={handleDeleteRoom}
+                                    onCreateVariation={onCreateVariation}
+                                    onCreateVariationFromPostedVariation={
+                                        onCreateVariationFromPostedVariation
+                                    }
+                                    variationFocusRequestId={variationFocusRequestId}
+                                    isMobileLayout={false}
+                                    mobileCompanionPanel={mobileCompanionPanel}
+                                    mobileHasActiveVote={Boolean(activeProposal)}
+                                    onSelectMobileCompanionPanel={onSelectMobileCompanionPanel}
+                                    onOpenMobileRooms={undefined}
+                                    onMobileCompareControllerChange={undefined}
+                                    onMainBoardControllerChange={setMainBoardController}
+                                />
+                            )}
                             <div
                                 className={
                                     "Kibitz-sidebar has-stream-spacer" +
@@ -1634,7 +2111,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                         ? " has-active-proposal"
                                         : " no-active-proposal")
                                 }
+                                ref={desktopSidebarRef}
                             >
+                                {desktopSidebarResizer}
                                 <div className="Kibitz-sidebar-proposal-slot">
                                     <KibitzProposalBar
                                         proposal={activeProposal}

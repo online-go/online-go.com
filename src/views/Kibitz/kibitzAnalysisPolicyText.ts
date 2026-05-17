@@ -19,8 +19,8 @@ import { interpolate, pgettext } from "@/lib/translate";
 
 export function getKibitzAccessBlockedMessage(): string {
     return pgettext(
-        "Error shown when a user tries to use their own active analysis-disabled game for Kibitz",
-        "You can't create or join a Kibitz room for your own active game while analysis is disabled.",
+        "Error shown when a user tries to use a Kibitz room for their own active game",
+        "You can't create or join a Kibitz room for a game you are currently playing in.",
     );
 }
 
@@ -34,8 +34,8 @@ export function getKibitzAnalysisDisabledSpectatorMessage(): string {
 export function getKibitzBlockedRoomMessage(roomTitle: string): string {
     return interpolate(
         pgettext(
-            "Blocked Kibitz room message for analysis-disabled games",
-            'You can\'t stay in "{{room}}" while it is watching your active game with analysis disabled.',
+            "Blocked Kibitz room message when the room is watching the user's own active game",
+            'You can\'t stay in "{{room}}" while it is watching a game you are currently playing in.',
         ),
         {
             room: roomTitle,

@@ -20,6 +20,7 @@ import {
     getCurrentKibitzUser,
     getKibitzAccessPolicyForUser,
     isActiveAnalysisDisabledGame,
+    isActiveGame,
     isCurrentUserGamePlayer,
     isKibitzAccessBlockedForUser,
     type KibitzAnalysisGameLike,
@@ -111,7 +112,7 @@ describe("kibitzAnalysisPolicy", () => {
         expect(getKibitzAccessPolicyForUser(makeUser(1), game)).toEqual({ allowed: true });
     });
 
-    it("blocks the current black player of an active analysis-disabled game", () => {
+    it("blocks the current black player of an active game", () => {
         const game = makeGame({
             analysis_disabled: true,
             players: {
@@ -124,12 +125,12 @@ describe("kibitzAnalysisPolicy", () => {
         expect(isCurrentUserGamePlayer(user, game)).toBe(true);
         expect(getKibitzAccessPolicyForUser(user, game)).toEqual({
             allowed: false,
-            reason: "own-active-analysis-disabled-game",
+            reason: "own-active-game",
         });
         expect(isKibitzAccessBlockedForUser(user, game)).toBe(true);
     });
 
-    it("blocks the current white player of an active analysis-disabled game", () => {
+    it("blocks the current white player of an active game", () => {
         const game = makeGame({
             disable_analysis: true,
             players: {
@@ -140,7 +141,29 @@ describe("kibitzAnalysisPolicy", () => {
 
         expect(getKibitzAccessPolicyForUser(makeUser(8), game)).toEqual({
             allowed: false,
-            reason: "own-active-analysis-disabled-game",
+            reason: "own-active-game",
+        });
+    });
+
+    it("blocks the current black player even when analysis is enabled", () => {
+        const game = makeGame({
+            players: { black: { id: 7 }, white: { id: 8 } },
+        });
+
+        expect(getKibitzAccessPolicyForUser(makeUser(7), game)).toEqual({
+            allowed: false,
+            reason: "own-active-game",
+        });
+    });
+
+    it("blocks the current white player even when analysis is enabled", () => {
+        const game = makeGame({
+            players: { black: { id: 7 }, white: { id: 8 } },
+        });
+
+        expect(getKibitzAccessPolicyForUser(makeUser(8), game)).toEqual({
+            allowed: false,
+            reason: "own-active-game",
         });
     });
 
@@ -157,11 +180,11 @@ describe("kibitzAnalysisPolicy", () => {
 
         expect(getKibitzAccessPolicyForUser(makeUser("9"), game)).toEqual({
             allowed: false,
-            reason: "own-active-analysis-disabled-game",
+            reason: "own-active-game",
         });
         expect(getKibitzAccessPolicyForUser(makeUser(10), game)).toEqual({
             allowed: false,
-            reason: "own-active-analysis-disabled-game",
+            reason: "own-active-game",
         });
     });
 
@@ -195,5 +218,17 @@ describe("kibitzAnalysisPolicy", () => {
             allowed: true,
             reason: "analysis-disabled-spectator",
         });
+    });
+
+    it("isActiveGame: true for in-progress game", () => {
+        expect(isActiveGame(makeGame())).toBe(true);
+    });
+
+    it("isActiveGame: false for ended game", () => {
+        expect(isActiveGame(makeGame({ ended: "2026-04-01T10:00:00Z", live: false }))).toBe(false);
+    });
+
+    it("isActiveGame: false for null", () => {
+        expect(isActiveGame(null)).toBe(false);
     });
 });

@@ -178,4 +178,146 @@ describe("KibitzController room ordering", () => {
 
         expect(controller.rooms.map((room) => room.id)).toEqual(["room-a", "room-c", "room-new"]);
     });
+
+    it("deduplicates overlapping room directory refreshes", async () => {
+        let resolveDirectory: (value: unknown[]) => void = () => undefined;
+        const directoryPromise = new Promise<unknown[]>((resolve) => {
+            resolveDirectory = resolve;
+        });
+
+        mockedGet.mockReturnValueOnce(directoryPromise);
+
+        const controller = new KibitzController();
+        const firstRefresh = controller.refreshRoomDirectory();
+        const secondRefresh = controller.refreshRoomDirectory();
+
+        expect(firstRefresh).toBe(secondRefresh);
+        expect(mockedGet).toHaveBeenCalledTimes(1);
+
+        resolveDirectory([]);
+        await firstRefresh;
+        await flushPromises();
+
+        mockedGet.mockResolvedValueOnce([]);
+        const nextRefresh = controller.refreshRoomDirectory();
+
+        expect(nextRefresh).not.toBe(firstRefresh);
+        await nextRefresh;
+        expect(mockedGet).toHaveBeenCalledTimes(2);
+    });
+
+    it("refreshes the room directory when the directory refresh push arrives", async () => {
+        mockedGet.mockResolvedValueOnce([]);
+
+        const controller = new KibitzController();
+        await flushPromises();
+
+        mockedGet.mockResolvedValueOnce([
+            {
+                id: "room-refresh",
+                channel: "channel-refresh",
+                title: "Room Refresh",
+                kind: "preset",
+                description: null,
+                current_game_id: null,
+                creator_id: null,
+                created_at: "2026-05-01T10:00:00Z",
+                last_activity_at: "2026-05-01T10:00:00Z",
+                viewer_count: 7,
+            },
+        ]);
+
+        pushHandlers["rooms-refresh"]?.({});
+        await flushPromises();
+
+        expect(controller.rooms.map((room) => room.id)).toEqual(["room-refresh"]);
+    });
+
+    it("hydrates and caches missing game metadata on demand", async () => {
+        mockedGet.mockResolvedValueOnce([]);
+
+        const controller = new KibitzController();
+        const cacheChanged = jest.fn();
+        controller.on("cached-games-changed", cacheChanged);
+
+        await flushPromises();
+
+        mockedGet.mockResolvedValueOnce({
+            id: 90210,
+            width: 19,
+            height: 19,
+            name: "Famous Game",
+            players: {
+                black: { id: 1, username: "Black" },
+                white: { id: 2, username: "White" },
+            },
+            gamedata: {
+                moves: [],
+            },
+            ended: null,
+        });
+
+        await controller.ensureGamesCached([90210, 90210]);
+
+        expect(mockedGet).toHaveBeenCalledWith("games/90210");
+        expect(controller.getCachedGame(90210)?.title).toBe("Famous Game");
+        expect(controller.getCachedGame(90210)?.black.username).toBe("Black");
+        expect(controller.getCachedGame(90210)?.white.username).toBe("White");
+        expect(cacheChanged).toHaveBeenCalledTimes(1);
+    });
+
+    it("keeps cached current game when a partial room update omits it", async () => {
+        mockedGet.mockResolvedValueOnce([
+            {
+                id: "room-current-game",
+                channel: "channel-current-game",
+                title: "Room Current Game",
+                kind: "preset",
+                description: null,
+                current_game_id: 123,
+                current_game: {
+                    game_id: 123,
+                    board_size: "19x19",
+                    title: "Black vs White",
+                    black: null,
+                    white: null,
+                    tournament_name: null,
+                    move_number: null,
+                    live: true,
+                    analysis_disabled: false,
+                },
+                creator_id: null,
+                created_at: "2026-05-01T10:00:00Z",
+                last_activity_at: "2026-05-01T10:00:00Z",
+                viewer_count: 7,
+            },
+        ]);
+
+        const controller = new KibitzController();
+        await flushPromises();
+        await flushPromises();
+
+        expect(controller.rooms[0].current_game?.game_id).toBe(123);
+
+        (requests.put as jest.MockedFunction<typeof requests.put>).mockResolvedValueOnce({
+            id: "room-current-game",
+            channel: "channel-current-game",
+            title: "Renamed Room",
+            kind: "preset",
+            description: "Updated description",
+            current_game_id: 123,
+            creator_id: null,
+            created_at: "2026-05-01T10:00:00Z",
+            last_activity_at: "2026-05-01T10:00:00Z",
+        });
+
+        await controller.updateRoomDetails(
+            "room-current-game",
+            "Renamed Room",
+            "Updated description",
+        );
+
+        expect(controller.rooms[0].title).toBe("Renamed Room");
+        expect(controller.rooms[0].current_game?.game_id).toBe(123);
+    });
 });

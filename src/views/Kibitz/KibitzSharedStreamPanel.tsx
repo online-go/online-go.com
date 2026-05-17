@@ -38,6 +38,7 @@ import type {
 } from "@/models/kibitz";
 import { KIBITZ_HELP_TARGETS } from "./HelpFlows/KibitzHelpTargets";
 import { useKibitzHelpTarget } from "./HelpFlows/useKibitzHelpTarget";
+import { formatVariationBranchLabel, formatVariationLengthLabel } from "./kibitzVariationQuickList";
 import "./KibitzSharedStreamPanel.css";
 import "@/components/Chat/ChatLog.css";
 
@@ -173,13 +174,18 @@ function ratioFromPointerPosition(
 // Goban chat lines come off goban.chat_log (fed by game-server / Scylla).
 // Kibitz users are functionally spectators of the watched game, so we
 // surface both player ("main") and spectator chat. Malkovich is a
-// player-only side channel and shadowban is per-user — neither belongs in
-// a kibitz pane.
-function createChatLineFromGobanLine(
+// player-only side channel and is hidden while the game is live; once the
+// game ends, Kibitz may surface it in the transcript. Shadowban is per-user.
+export function createChatLineFromGobanLine(
     roomChannel: string,
     line: protocol.GameChatLine,
+    includeMalkovich: boolean,
 ): PaneEntry | null {
-    if (line.channel !== "main" && line.channel !== "spectator") {
+    if (
+        line.channel !== "main" &&
+        line.channel !== "spectator" &&
+        !(includeMalkovich && line.channel === "malkovich")
+    ) {
         return null;
     }
     const body = line.body;
@@ -217,6 +223,7 @@ function createChatLineFromGobanLine(
 function buildGobanGameEntries(
     roomChannel: string,
     chatLog: protocol.GameChatLine[] | undefined,
+    includeMalkovich: boolean,
 ): PaneEntry[] {
     if (!chatLog) {
         return [];
@@ -225,7 +232,7 @@ function buildGobanGameEntries(
     const entries: PaneEntry[] = [];
 
     for (const line of chatLog) {
-        const entry = createChatLineFromGobanLine(roomChannel, line);
+        const entry = createChatLineFromGobanLine(roomChannel, line, includeMalkovich);
         if (entry) {
             entries.push(entry);
         }
@@ -238,8 +245,9 @@ function appendGobanGameEntry(
     current: PaneEntry[],
     roomChannel: string,
     line: protocol.GameChatLine,
+    includeMalkovich: boolean,
 ): PaneEntry[] {
-    const entry = createChatLineFromGobanLine(roomChannel, line);
+    const entry = createChatLineFromGobanLine(roomChannel, line, includeMalkovich);
     if (!entry) {
         return current;
     }
@@ -341,6 +349,7 @@ export function KibitzSharedStreamPanel({
         dividerHeight: number;
     } | null>(null);
     const roomChannel = room.channel;
+    const includeMalkovich = room.current_game?.live === false;
     const roomPreviousEntryCountRef = React.useRef(0);
     const gamePreviousEntryCountRef = React.useRef(0);
     const desktopGameRatio = desktopDragRatio ?? splitPercentage(desktopSplit).game;
@@ -437,19 +446,19 @@ export function KibitzSharedStreamPanel({
             return;
         }
 
-        const initialEntries = buildGobanGameEntries(roomChannel, goban.chat_log);
+        const initialEntries = buildGobanGameEntries(roomChannel, goban.chat_log, includeMalkovich);
         gobanGameEntryKeysRef.current = new Set(initialEntries.map((entry) => entry.key));
         setGobanGameEntries(initialEntries);
 
         const rebuild = () => {
-            const rebuilt = buildGobanGameEntries(roomChannel, goban.chat_log);
+            const rebuilt = buildGobanGameEntries(roomChannel, goban.chat_log, includeMalkovich);
             gobanGameEntryKeysRef.current = new Set(rebuilt.map((entry) => entry.key));
             setGobanGameEntries(rebuilt);
         };
 
         const onChat = (line?: protocol.GameChatLine) => {
             if (line) {
-                const entry = createChatLineFromGobanLine(roomChannel, line);
+                const entry = createChatLineFromGobanLine(roomChannel, line, includeMalkovich);
                 if (!entry) {
                     return;
                 }
@@ -459,13 +468,15 @@ export function KibitzSharedStreamPanel({
                 }
 
                 gobanGameEntryKeysRef.current.add(entry.key);
-                setGobanGameEntries((current) => appendGobanGameEntry(current, roomChannel, line));
+                setGobanGameEntries((current) =>
+                    appendGobanGameEntry(current, roomChannel, line, includeMalkovich),
+                );
                 return;
             }
 
             const latest = goban.chat_log?.[goban.chat_log.length - 1];
             if (latest) {
-                const entry = createChatLineFromGobanLine(roomChannel, latest);
+                const entry = createChatLineFromGobanLine(roomChannel, latest, includeMalkovich);
                 if (!entry) {
                     rebuild();
                     return;
@@ -477,7 +488,7 @@ export function KibitzSharedStreamPanel({
 
                 gobanGameEntryKeysRef.current.add(entry.key);
                 setGobanGameEntries((current) =>
-                    appendGobanGameEntry(current, roomChannel, latest),
+                    appendGobanGameEntry(current, roomChannel, latest, includeMalkovich),
                 );
                 return;
             }
@@ -503,7 +514,7 @@ export function KibitzSharedStreamPanel({
             goban.off("chat-reset", onChatReset);
             gobanGameEntryKeysRef.current = new Set();
         };
-    }, [roomChannel, watchedController]);
+    }, [roomChannel, watchedController, includeMalkovich]);
 
     React.useEffect(() => {
         const previous = roomPreviousEntryCountRef.current;
@@ -744,13 +755,34 @@ export function KibitzSharedStreamPanel({
                         const variation = variations.find(
                             (candidate) => candidate.id === entry.item.variation_id,
                         );
-                        const label = `${moment(entry.createdAt).format("HH:mm")} ${entry.item.author?.username ?? pgettext("Fallback username for a variation post in the kibitz stream", "Someone")} shared variation: ${
+                        const title =
                             variation?.title ??
                             pgettext(
                                 "Fallback title for a variation link in the kibitz stream",
                                 "Open variation",
-                            )
-                        }`;
+                            );
+                        const author =
+                            entry.item.author?.username ??
+                            pgettext(
+                                "Fallback username for a variation post in the kibitz stream",
+                                "Someone",
+                            );
+                        const metaParts = [
+                            pgettext(
+                                "Label for a posted variation entry in the kibitz stream",
+                                "Posted variation",
+                            ),
+                        ];
+
+                        if (variation) {
+                            metaParts.push(formatVariationBranchLabel(variation));
+                            const lengthLabel = formatVariationLengthLabel(variation);
+                            if (lengthLabel) {
+                                metaParts.push(lengthLabel);
+                            }
+                        }
+
+                        const label = `${moment(entry.createdAt).format("HH:mm")} ${title} - ${author} - ${metaParts.join(" - ")}`;
 
                         return (
                             <button
