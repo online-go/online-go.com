@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { GobanRendererConfig, type MoveTreeJson } from "goban";
+import { GobanRendererConfig, type MoveTree, type MoveTreeJson } from "goban";
 import { GobanContainer } from "@/components/GobanContainer/GobanContainer";
 import { GobanController } from "@/lib/GobanController";
 import * as preferences from "@/lib/preferences";
@@ -35,6 +35,14 @@ interface KibitzBoardProps {
     moveTree?: MoveTreeJson;
     movePath?: string;
     onReady?: (controller: GobanController | null) => void;
+}
+
+function getLiveTrunkTail(moveTree: MoveTree | undefined): MoveTree | undefined {
+    let cursor = moveTree;
+    while (cursor?.trunk_next) {
+        cursor = cursor.trunk_next;
+    }
+    return cursor;
 }
 
 export function KibitzBoard({
@@ -61,12 +69,24 @@ export function KibitzBoard({
     const controllerRef = React.useRef<GobanController | null>(null);
     const [goban, setGoban] = React.useState<GobanController["goban"] | null>(null);
     const moveTreeRef = React.useRef(moveTree);
-    const movePathRef = React.useRef(movePath);
+    const sourceMovePathRef = React.useRef(movePath);
+    const currentMovePathRef = React.useRef(movePath);
+    const currentMoveNodeRef = React.useRef<MoveTree | undefined>(undefined);
+    const pendingLiveMoveRestoreRef = React.useRef<{
+        node: MoveTree;
+        path: string;
+        timeout: ReturnType<typeof setTimeout>;
+    } | null>(null);
+    const restoringBoardRef = React.useRef(false);
 
     React.useEffect(() => {
         moveTreeRef.current = moveTree;
-        movePathRef.current = movePath;
-    }, [movePath, moveTree]);
+    }, [moveTree]);
+
+    React.useEffect(() => {
+        sourceMovePathRef.current = movePath;
+        currentMovePathRef.current = movePath;
+    }, [movePath]);
 
     React.useEffect(() => {
         const labelPosition = preferences.get("label-positioning");
@@ -97,15 +117,131 @@ export function KibitzBoard({
         controllerRef.current?.destroy();
         controllerRef.current = new GobanController(config);
 
-        if (movePathRef.current) {
-            controllerRef.current.goban.engine.followPath(0, movePathRef.current);
+        const hasRestorableBoardState = Boolean(moveTreeRef.current || sourceMovePathRef.current);
+
+        const clearPendingLiveMoveRestore = () => {
+            const pending = pendingLiveMoveRestoreRef.current;
+            if (!pending) {
+                return;
+            }
+
+            clearTimeout(pending.timeout);
+            pendingLiveMoveRestoreRef.current = null;
+        };
+
+        const captureCurrentMovePath = (move?: MoveTree) => {
+            if (restoringBoardRef.current || !controllerRef.current) {
+                return;
+            }
+
+            const { engine } = controllerRef.current.goban;
+            const currentMove = move ?? engine.cur_move;
+            const previousMove = currentMoveNodeRef.current;
+            const officialMove = engine.last_official_move;
+            const isPossibleLiveMoveJumpToParent =
+                previousMove &&
+                !previousMove.trunk &&
+                previousMove.parent?.id === officialMove.id &&
+                currentMove.id === officialMove.id;
+
+            if (isPossibleLiveMoveJumpToParent) {
+                const path = previousMove.getMoveStringToThisPoint();
+                pendingLiveMoveRestoreRef.current = {
+                    node: previousMove,
+                    path,
+                    timeout: setTimeout(() => {
+                        if (pendingLiveMoveRestoreRef.current?.node.id !== previousMove.id) {
+                            return;
+                        }
+
+                        pendingLiveMoveRestoreRef.current = null;
+                        currentMoveNodeRef.current = engine.cur_move;
+                        currentMovePathRef.current = engine.cur_move.getMoveStringToThisPoint();
+                    }, 0),
+                };
+                return;
+            }
+
+            if (pendingLiveMoveRestoreRef.current) {
+                return;
+            }
+
+            currentMoveNodeRef.current = currentMove;
+            currentMovePathRef.current =
+                controllerRef.current.goban.engine.cur_move.getMoveStringToThisPoint();
+        };
+
+        const restorePendingLiveMoveCursor = () => {
+            const pending = pendingLiveMoveRestoreRef.current;
+            if (!pending || !controllerRef.current) {
+                return;
+            }
+
+            clearPendingLiveMoveRestore();
+            restoringBoardRef.current = true;
+            try {
+                controllerRef.current.goban.engine.jumpTo(pending.node);
+                controllerRef.current.goban.redraw(true);
+                currentMoveNodeRef.current = pending.node;
+                currentMovePathRef.current = pending.path;
+            } finally {
+                restoringBoardRef.current = false;
+            }
+        };
+
+        const restoreBoardState = (movePathToRestore?: string) => {
+            if (!controllerRef.current) {
+                return;
+            }
+
+            // Anchor the board's official move to the live trunk before we
+            // apply any variation path. That keeps incoming socket moves
+            // aligned with the current game instead of treating the loaded
+            // board root as move 0.
+            const liveTrunkTail = getLiveTrunkTail(controllerRef.current.goban.engine.move_tree);
+            if (liveTrunkTail) {
+                controllerRef.current.goban.engine.jumpTo(liveTrunkTail);
+                controllerRef.current.goban.engine.setLastOfficialMove();
+            }
+            if (movePathToRestore) {
+                controllerRef.current.goban.engine.followPath(0, movePathToRestore);
+            }
             controllerRef.current.goban.redraw(true);
+            currentMoveNodeRef.current = controllerRef.current.goban.engine.cur_move;
+            currentMovePathRef.current =
+                controllerRef.current.goban.engine.cur_move.getMoveStringToThisPoint();
+        };
+
+        const handleLoad = () => {
+            if (!hasRestorableBoardState) {
+                return;
+            }
+
+            const movePathToRestore =
+                currentMovePathRef.current ?? sourceMovePathRef.current ?? undefined;
+            restoringBoardRef.current = true;
+            try {
+                restoreBoardState(movePathToRestore);
+            } finally {
+                restoringBoardRef.current = false;
+            }
+        };
+
+        if (hasRestorableBoardState) {
+            controllerRef.current.goban.on("cur_move", captureCurrentMovePath);
+            controllerRef.current.goban.on("move-made", restorePendingLiveMoveCursor);
+            controllerRef.current.goban.on("load", handleLoad);
+            handleLoad();
         }
         setGoban(controllerRef.current.goban);
         onReady?.(controllerRef.current);
 
         return () => {
             onReady?.(null);
+            clearPendingLiveMoveRestore();
+            controllerRef.current?.goban.off("cur_move", captureCurrentMovePath);
+            controllerRef.current?.goban.off("move-made", restorePendingLiveMoveCursor);
+            controllerRef.current?.goban.off("load", handleLoad);
             controllerRef.current?.destroy();
             controllerRef.current = null;
             setGoban(null);
