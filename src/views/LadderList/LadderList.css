@@ -16,24 +16,28 @@
  */
 .LadderList {
     /* here */
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
+    padding: 0 0.5rem;
 
-    .Card {
-        width: 20rem;
-        max-width: 100dvw;
-        min-height: 30rem;
-        text-align: center;
-    }
+    .ladder-list-container {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
 
-    button {
-        margin-right: 0.5rem;
-    }
+        .Card {
+            width: 20rem;
+            max-width: 100dvw;
+            min-height: 30rem;
+            text-align: center;
+        }
 
-    td.player-column {
-        text-align: left;
+        button {
+            margin-right: 0.5rem;
+        }
+
+        td.player-column {
+            text-align: left;
+        }
     }
 }
 

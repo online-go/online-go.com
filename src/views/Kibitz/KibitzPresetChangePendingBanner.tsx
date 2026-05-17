@@ -29,13 +29,6 @@ export function KibitzPresetChangePendingBanner({
     );
 
     React.useEffect(() => {
-        const initialRemaining = computeSecondsRemaining(deadlineMs);
-        setSecondsRemaining(initialRemaining);
-
-        if (initialRemaining <= 0) {
-            return;
-        }
-
         let interval: number | undefined;
         const tick = () => {
             const remaining = computeSecondsRemaining(deadlineMs);
@@ -44,13 +37,15 @@ export function KibitzPresetChangePendingBanner({
                 window.clearInterval(interval);
                 interval = undefined;
             }
+            return remaining;
         };
-        interval = window.setInterval(tick, 1000);
-        return () => {
-            if (interval !== undefined) {
-                window.clearInterval(interval);
-            }
-        };
+
+        const remaining = tick();
+        if (remaining > 0) {
+            interval = window.setInterval(tick, 1000);
+        }
+
+        return () => window.clearInterval(interval);
     }, [deadlineMs]);
 
     const text =

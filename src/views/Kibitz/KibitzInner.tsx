@@ -422,6 +422,11 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const mobileShellRef = React.useRef<HTMLDivElement | null>(null);
     const mobileDividerRef = React.useRef<HTMLDivElement | null>(null);
     const desktopContentRef = React.useRef<HTMLDivElement | null>(null);
+    const [desktopContentEl, setDesktopContentEl] = React.useState<HTMLDivElement | null>(null);
+    const desktopContentCallbackRef = React.useCallback((el: HTMLDivElement | null) => {
+        desktopContentRef.current = el;
+        setDesktopContentEl(el);
+    }, []);
     const desktopSidebarRef = React.useRef<HTMLDivElement | null>(null);
     const desktopSidebarResizerRef = React.useRef<HTMLDivElement | null>(null);
     const previousMobileViewerCountRef = React.useRef<number | null>(null);
@@ -601,9 +606,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     }, [isMobileLayout]);
 
     React.useEffect(() => {
-        const content = desktopContentRef.current;
-
-        if (!content || typeof ResizeObserver === "undefined") {
+        if (!desktopContentEl || typeof ResizeObserver === "undefined") {
             return;
         }
 
@@ -628,18 +631,18 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             }
         };
 
-        syncContentWidth(content.getBoundingClientRect().width);
+        syncContentWidth(desktopContentEl.getBoundingClientRect().width);
 
         const resizeObserver = new ResizeObserver(([entry]) => {
             syncContentWidth(entry.contentRect.width);
         });
 
-        resizeObserver.observe(content);
+        resizeObserver.observe(desktopContentEl);
 
         return () => {
             resizeObserver.disconnect();
         };
-    }, [setAndStoreDesktopSidebarWidthPx]);
+    }, [desktopContentEl, setAndStoreDesktopSidebarWidthPx]);
 
     React.useEffect(() => {
         if (mobileOverlayMode === "rooms") {
@@ -1583,7 +1586,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                     <div className="Kibitz-main">
                         <div
                             className={desktopContentClassName}
-                            ref={desktopContentRef}
+                            ref={desktopContentCallbackRef}
                             style={desktopContentStyle}
                         >
                             <div className="Kibitz-empty-stage">
@@ -1628,7 +1631,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                     <div className="Kibitz-main">
                         <div
                             className={desktopContentClassName}
-                            ref={desktopContentRef}
+                            ref={desktopContentCallbackRef}
                             style={desktopContentStyle}
                         >
                             <div className="Kibitz-empty-stage">
@@ -2054,7 +2057,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                     ) : (
                         <div
                             className={desktopContentClassName}
-                            ref={desktopContentRef}
+                            ref={desktopContentCallbackRef}
                             style={desktopContentStyle}
                         >
                             {isPresetWithNoGame ? (

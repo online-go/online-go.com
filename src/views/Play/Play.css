@@ -149,16 +149,6 @@
         border-style: ridge;
     }
 
-    .tab-head {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .tabs-container {
-        text-align: center;
-    }
 
     .tab {
         cursor: pointer;

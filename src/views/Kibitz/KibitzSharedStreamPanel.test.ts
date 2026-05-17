@@ -27,7 +27,7 @@ describe("createChatLineFromGobanLine", () => {
             move_number: 120,
             channel: "malkovich",
             player_id: 42,
-            username: "Oroton",
+            username: "Oroton", // cspell: ignore Oroton
         };
 
         expect(createChatLineFromGobanLine("kibitz-room", line, false)).toBeNull();
