@@ -26,6 +26,7 @@ import { post } from "@/lib/requests";
 import { get_ebi } from "@/views/SignIn";
 import { useUser } from "@/lib/hooks";
 import cached from "@/lib/cached";
+import { get_browser_timezone } from "@/lib/browser_timezone";
 
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 import { LoadingButton } from "@/components/LoadingButton";
@@ -60,6 +61,7 @@ export function Register(): React.ReactElement {
                 password: ref_password.current?.value,
                 email: ref_email.current?.value.trim(),
                 ebi: get_ebi(),
+                timezone: get_browser_timezone(),
             })
                 .then((config) => {
                     data.set(cached.config, config);
