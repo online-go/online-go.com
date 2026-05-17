@@ -70,7 +70,6 @@ export function KibitzBoard({
 
     React.useEffect(() => {
         const labelPosition = preferences.get("label-positioning");
-        const themes = preferences.getSelectedThemes();
         const config: GobanRendererConfig = {
             board_div: gobanDiv.current,
             interactive,
@@ -97,15 +96,6 @@ export function KibitzBoard({
 
         controllerRef.current?.destroy();
         controllerRef.current = new GobanController(config);
-        controllerRef.current.goban.setTheme(
-            {
-                ...themes,
-                // Kibitz keeps a stable Kaya board theme so the compact room
-                // layouts have consistent contrast across the embedded boards.
-                board: "Kaya",
-            },
-            false,
-        );
         gobanDiv.current.style.setProperty("background-color", "#DCB35C", "important");
         gobanDiv.current.style.setProperty("background-image", "none", "important");
         gobanDiv.current.style.setProperty("box-shadow", "none", "important");
