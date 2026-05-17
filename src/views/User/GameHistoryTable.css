@@ -82,6 +82,12 @@
         color: var(--strong-loss);
     }
 
+    .date {
+        a {
+            color: unset;
+        }
+    }
+
     .board_size {
         padding-right: 0.5em;
     }

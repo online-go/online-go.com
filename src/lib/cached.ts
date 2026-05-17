@@ -20,6 +20,7 @@ import * as data from "@/lib/data";
 import { get } from "@/lib/requests";
 import ITC from "@/lib/ITC";
 import * as player_cache from "@/lib/player_cache";
+import { get_browser_timezone } from "@/lib/browser_timezone";
 
 /**
  * This is a set of keys to be used for data.get(..) and data.watch(..) calls.
@@ -50,7 +51,11 @@ export const cached = {
 
     refresh: {
         config: (cb?: () => void) => {
-            get("ui/config")
+            // Pass the browser-detected IANA tz so Django can keep
+            // Player.timezone fresh without requiring the user to update
+            // their settings page. Server-side this is best-effort —
+            // ignored when missing/invalid/unchanged.
+            get("ui/config", { timezone: get_browser_timezone() })
                 .then((config) => {
                     if (config.banned) {
                         data.set("appeals.banned_user_id", config.banned.banned_user_id);
