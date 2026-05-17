@@ -172,11 +172,12 @@ export function GameHistoryTable(props: GameHistoryProps) {
         ev: React.MouseEvent | React.TouchEvent | React.PointerEvent,
         rows: GroomedGame[],
     ) {
-        if (row.annulled) {
-            return;
-        }
-
         if (selectModeActive) {
+            // "Mass annulment" selection - only for non-annulled games.
+            if (row.annulled) {
+                return;
+            }
+
             if (ev.shiftKey) {
                 if (annulQueue.length > 0 && annulQueue[annulQueue.length - 1]) {
                     window.getSelection()?.removeAllRanges();
@@ -497,7 +498,13 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                 className: (X) =>
                                     "date" +
                                     (X && X.annulled && show_annulled_styling ? " annulled" : ""),
-                                render: (X) => moment(X.date).format("YYYY-MM-DD"),
+                                render: (X) => (
+                                    <span>
+                                        <Link to={X.href} onClick={(e) => handleLinkClick(e)}>
+                                            {moment(X.date).format("YYYY-MM-DD")}
+                                        </Link>
+                                    </span>
+                                ),
                             },
                             {
                                 header: _("Opponent"),
