@@ -37,29 +37,19 @@ interface GameChatLineProps {
     reviewId?: number;
 }
 
-type TranslatedGameChatBody = {
-    type: "translated";
-    en: string;
-    [lang: string]: string;
-};
-
-type GameChatLineBody = protocol.GameChatLine["body"] | TranslatedGameChatBody;
+type GameChatLineBody = protocol.GameChatLine["body"] | protocol.GameChatTranslatedMessage;
 type GameChatLineWithTranslatedBody = Omit<protocol.GameChatLine, "body"> & {
     body: GameChatLineBody;
 };
 
-function getTranslatedMessageText(msg: TranslatedGameChatBody): string {
-    if (current_language in msg) {
-        return msg[current_language];
-    }
-
-    if ("en" in msg) {
-        return msg.en;
-    }
-
-    return pgettext(
-        "error displayed when a translated chat message has no text",
-        "(translated message unavailable)",
+function getTranslatedMessageText(msg: protocol.GameChatTranslatedMessage): string {
+    return (
+        msg[current_language] ||
+        msg.en ||
+        pgettext(
+            "error displayed when a translated chat message has no text",
+            "(translated message unavailable)",
+        )
     );
 }
 
