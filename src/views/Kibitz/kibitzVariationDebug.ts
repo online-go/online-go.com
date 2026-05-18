@@ -20,7 +20,19 @@ type KibitzVariationDebugWindow = Window &
         debug?: {
             kibitz_variation?: boolean;
         };
+        kibitzVariationDebugLog?: KibitzVariationDebugEntry[];
+        dumpKibitzVariationDebugLog?: () => void;
     };
+
+interface KibitzVariationDebugEntry {
+    sequence: number;
+    timestamp: number;
+    level: "log" | "warn";
+    message: string;
+    details?: unknown;
+}
+
+let debugSequence = 0;
 
 function kibitzVariationDebugEnabled(): boolean {
     if (typeof window === "undefined") {
@@ -40,14 +52,63 @@ function formatKibitzVariationDebugMessage(message: string): string {
     return `[kibitz_variation] ${message}`;
 }
 
+function cloneDebugDetails(details: unknown): unknown {
+    if (details == null) {
+        return details;
+    }
+
+    try {
+        return structuredClone(details);
+    } catch {
+        try {
+            return JSON.parse(JSON.stringify(details)) as unknown;
+        } catch {
+            return details;
+        }
+    }
+}
+
+function recordKibitzVariationDebugEntry(
+    level: KibitzVariationDebugEntry["level"],
+    message: string,
+    details?: unknown,
+): KibitzVariationDebugEntry {
+    const entry: KibitzVariationDebugEntry = {
+        sequence: ++debugSequence,
+        timestamp: Date.now(),
+        level,
+        message,
+        details: cloneDebugDetails(details),
+    };
+
+    if (typeof window !== "undefined") {
+        const debugWindow = window as KibitzVariationDebugWindow;
+        const log = debugWindow.kibitzVariationDebugLog ?? [];
+        log.push(entry);
+
+        if (log.length > 300) {
+            log.splice(0, log.length - 300);
+        }
+
+        debugWindow.kibitzVariationDebugLog = log;
+        debugWindow.dumpKibitzVariationDebugLog = () => {
+            console.log(JSON.stringify(debugWindow.kibitzVariationDebugLog ?? [], null, 2));
+        };
+    }
+
+    return entry;
+}
+
 export function logKibitzVariationDebug(message: string, details?: unknown): void {
     if (!kibitzVariationDebugEnabled()) {
         return;
     }
 
-    console.log(formatKibitzVariationDebugMessage(message), details);
+    const entry = recordKibitzVariationDebugEntry("log", message, details);
+    console.log(formatKibitzVariationDebugMessage(message), entry.details);
 }
 
 export function warnKibitzVariationDebug(message: string, details?: unknown): void {
-    console.warn(formatKibitzVariationDebugMessage(message), details);
+    const entry = recordKibitzVariationDebugEntry("warn", message, details);
+    console.warn(formatKibitzVariationDebugMessage(message), entry.details);
 }

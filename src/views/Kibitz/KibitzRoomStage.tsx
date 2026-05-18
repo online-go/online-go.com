@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import type { MoveTree, MoveTreeJson } from "goban";
+import type { GobanConfig, GobanModes, MoveTree, MoveTreeJson } from "goban";
 import { Resizable } from "@/components/Resizable";
 import { KBShortcut } from "@/components/KBShortcut";
 import { Player } from "@/components/Player";
@@ -188,7 +188,10 @@ export function resolveSelectedVariationSourceGame(
     );
 }
 
-type KibitzBoardLoadConfig = Record<string, unknown> & { move_tree?: MoveTreeJson };
+type KibitzBoardLoadConfig = Record<string, unknown> & {
+    move_tree?: MoveTreeJson;
+    moves?: GobanConfig["moves"];
+};
 
 interface SecondaryVariationBaseSnapshot {
     controller: GobanController;
@@ -250,6 +253,18 @@ function summarizeSecondaryVariationSnapshot(
         trunkTailMoveNumber: snapshot.trunkTailMoveNumber,
         hasMoveTree: Boolean(snapshot.config.move_tree),
     };
+}
+
+function countMoveTreeBranches(moveTree: MoveTree | null | undefined): number {
+    if (!moveTree) {
+        return 0;
+    }
+
+    return (
+        moveTree.branches.length +
+        moveTree.branches.reduce((count, branch) => count + countMoveTreeBranches(branch), 0) +
+        countMoveTreeBranches(moveTree.trunk_next)
+    );
 }
 
 function cloneOfficialTrunkMoveTreeJson(moveTree: MoveTree): MoveTreeJson {
@@ -378,6 +393,7 @@ export function captureSecondaryVariationBaseSnapshot(
         trunkTailMoveNumber,
         config: {
             ...config,
+            moves: undefined,
             move_tree: moveTree,
         },
     };
@@ -387,11 +403,39 @@ function loadSecondaryVariationBaseSnapshot(
     controller: GobanController,
     snapshot: SecondaryVariationBaseSnapshot,
 ): void {
-    controller.goban.load({
-        ...snapshot.config,
-        move_tree: snapshot.config.move_tree
-            ? cloneMoveTreeJson(snapshot.config.move_tree)
-            : undefined,
+    const goban = controller.goban;
+    const previousMode: GobanModes = goban.mode;
+    const previousEngine = goban.engine;
+    const branchCountBeforeLoad = countMoveTreeBranches(previousEngine?.move_tree);
+
+    /*
+     * Goban.load preserves the old engine for finished analyze boards when the
+     * old tree contains the new tree as a subset. That is useful for ordinary
+     * analysis, but posted variation recomposition needs the saved clean trunk
+     * to replace a dirty composed tree exactly.
+     */
+    if (goban.mode === "analyze") {
+        goban.mode = "play";
+    }
+
+    try {
+        goban.load({
+            ...snapshot.config,
+            move_tree: snapshot.config.move_tree
+                ? cloneMoveTreeJson(snapshot.config.move_tree)
+                : undefined,
+        });
+    } finally {
+        goban.mode = previousMode;
+    }
+
+    logKibitzVariationDebug("snapshot-load:result", {
+        gameId: snapshot.gameId,
+        previousMode,
+        engineReplaced: previousEngine !== goban.engine,
+        branchCountBeforeLoad,
+        branchCountAfterLoad: countMoveTreeBranches(goban.engine?.move_tree),
+        officialTail: summarizeKibitzMoveTreeNode(getOfficialTrunkTail(goban.engine?.move_tree)),
     });
 }
 
@@ -1084,7 +1128,15 @@ export function KibitzRoomStage({
                 suppressSelectedVariationLoadRef.current = true;
                 logVariationStage("reload-or-apply:load-snapshot", { reason });
                 loadSecondaryVariationBaseSnapshot(secondaryBoardController, snapshot);
-                scheduleBaseRetry(`waiting-for-snapshot-load:${reason}`);
+                const pendingBaseLoad = pendingSecondaryVariationBaseLoadRef.current;
+                if (
+                    pendingBaseLoad?.controller === secondaryBoardController &&
+                    pendingBaseLoad.gameId === selectedVariation.game_id
+                ) {
+                    scheduleBaseRetry(`waiting-for-snapshot-load:${reason}`);
+                } else {
+                    logVariationStage("reload-or-apply:snapshot-load-completed", { reason });
+                }
                 return true;
             }
 
@@ -1229,6 +1281,11 @@ export function KibitzRoomStage({
 
             if (suppressSelectedVariationLoadRef.current) {
                 logVariationStage("event:load:suppressed");
+                return;
+            }
+
+            if (secondaryVariationTreeDirtyRef.current) {
+                logVariationStage("event:load:dirty-ignored");
                 return;
             }
 
