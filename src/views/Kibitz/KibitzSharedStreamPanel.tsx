@@ -755,6 +755,7 @@ export function KibitzSharedStreamPanel({
                         const variation = variations.find(
                             (candidate) => candidate.id === entry.item.variation_id,
                         );
+                        const timeLabel = moment(entry.createdAt).format("HH:mm");
                         const title =
                             variation?.title ??
                             pgettext(
@@ -782,21 +783,33 @@ export function KibitzSharedStreamPanel({
                             }
                         }
 
-                        const label = `${moment(entry.createdAt).format("HH:mm")} ${title} - ${author} - ${metaParts.join(" - ")}`;
+                        const label = `${title} - ${author} - ${metaParts.join(" - ")}`;
 
                         return (
-                            <button
+                            <div
                                 key={entry.key}
-                                type="button"
-                                className="variation-post"
+                                className="variation-post-entry"
                                 data-variation-id={entry.item.variation_id}
-                                onClick={() =>
-                                    entry.item.variation_id &&
-                                    onOpenVariation(entry.item.variation_id, true)
-                                }
                             >
-                                {label}
-                            </button>
+                                <time
+                                    className="variation-post-time"
+                                    dateTime={new Date(entry.createdAt).toISOString()}
+                                >
+                                    {timeLabel}
+                                </time>
+
+                                <button
+                                    type="button"
+                                    className="variation-post"
+                                    data-variation-id={entry.item.variation_id}
+                                    onClick={() =>
+                                        entry.item.variation_id &&
+                                        onOpenVariation(entry.item.variation_id, true)
+                                    }
+                                >
+                                    {label}
+                                </button>
+                            </div>
                         );
                     }
 
@@ -814,9 +827,17 @@ export function KibitzSharedStreamPanel({
                             className={
                                 "kibitz-chat-entry " +
                                 entry.source +
-                                (entry.gobanChannel ? " " + entry.gobanChannel : "")
+                                (entry.gobanChannel ? " " + entry.gobanChannel : "") +
+                                (entry.gobanLine?.move_number != null ? " has-move-number" : "")
                             }
                         >
+                            <time
+                                className="kibitz-chat-entry-time"
+                                dateTime={new Date(entry.createdAt).toISOString()}
+                            >
+                                {moment(entry.createdAt).format("HH:mm")}
+                            </time>
+
                             {entry.gobanLine ? (
                                 <GameChatLine
                                     line={entry.gobanLine}
