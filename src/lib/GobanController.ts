@@ -568,9 +568,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
-        const trunk_tail = getMoveTreeTrunkTail(this.goban.engine.move_tree);
-        if (trunk_tail && trunk_tail.move_number !== 0) {
-            this.goban.engine.last_official_move = trunk_tail;
+        if (this.goban.engine.last_official_move.move_number !== 0) {
             this.goban.jumpToLastOfficialMove();
         } else {
             while (this.goban.engine.showNext()) {

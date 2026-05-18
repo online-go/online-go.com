@@ -15,7 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { getMovePathToRestore } from "./KibitzBoard";
+import { GobanController } from "@/lib/GobanController";
+import { getMovePathToRestore, refreshLastOfficialMoveFromTrunk } from "./KibitzBoard";
 
 describe("getMovePathToRestore", () => {
     it("uses the original source path when the current restore path is blank and the source is preferred", () => {
@@ -28,5 +29,50 @@ describe("getMovePathToRestore", () => {
 
     it("falls back to the current path when there is no source path to restore", () => {
         expect(getMovePathToRestore("bb", undefined, true)).toBe("bb");
+    });
+});
+
+describe("refreshLastOfficialMoveFromTrunk", () => {
+    it("updates a stale official move pointer while preserving the current variation node", () => {
+        const controller = new GobanController({
+            width: 9,
+            height: 9,
+            players: {
+                black: { id: 1, username: "black" },
+                white: { id: 2, username: "white" },
+            },
+            move_tree: {
+                x: -1,
+                y: -1,
+                trunk_next: {
+                    x: 3,
+                    y: 3,
+                    trunk_next: {
+                        x: 4,
+                        y: 3,
+                    },
+                    branches: [
+                        {
+                            x: 3,
+                            y: 4,
+                        },
+                    ],
+                },
+            },
+        });
+        const staleOfficialMove = controller.goban.engine.move_tree.trunk_next;
+        const trunkTail = staleOfficialMove?.trunk_next;
+        const variation = staleOfficialMove?.branches[0];
+
+        if (!staleOfficialMove || !trunkTail || !variation) {
+            throw new Error("Expected test move tree to contain trunk and variation nodes");
+        }
+
+        controller.goban.engine.jumpTo(variation);
+        controller.goban.engine.last_official_move = staleOfficialMove;
+
+        expect(refreshLastOfficialMoveFromTrunk(controller)).toBe(trunkTail);
+        expect(controller.goban.engine.last_official_move).toBe(trunkTail);
+        expect(controller.goban.engine.cur_move).toBe(variation);
     });
 });

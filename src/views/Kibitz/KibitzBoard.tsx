@@ -49,6 +49,25 @@ export function getMovePathToRestore(
     return currentMovePath ?? sourceMovePath ?? undefined;
 }
 
+export function refreshLastOfficialMoveFromTrunk(controller: GobanController): MoveTree | null {
+    const { engine } = controller.goban;
+    const liveTrunkTail = getMoveTreeTrunkTail(engine.move_tree);
+
+    if (!liveTrunkTail) {
+        return null;
+    }
+
+    const moveToRestore = engine.cur_move;
+    engine.jumpTo(liveTrunkTail);
+    engine.setLastOfficialMove();
+
+    if (moveToRestore.id !== liveTrunkTail.id) {
+        engine.jumpTo(moveToRestore);
+    }
+
+    return liveTrunkTail;
+}
+
 export function KibitzBoard({
     gameId,
     width = 19,
@@ -203,17 +222,8 @@ export function KibitzBoard({
                 return;
             }
 
-            // Anchor the board's official move to the live trunk before we
-            // apply any variation path. That keeps incoming socket moves
-            // aligned with the current game instead of treating the loaded
-            // board root as move 0.
-            const liveTrunkTail = getMoveTreeTrunkTail(
-                controllerRef.current.goban.engine.move_tree,
-            );
-            if (liveTrunkTail) {
-                controllerRef.current.goban.engine.jumpTo(liveTrunkTail);
-                controllerRef.current.goban.engine.setLastOfficialMove();
-            }
+            // Anchor the official move before applying/restoring a variation path.
+            refreshLastOfficialMoveFromTrunk(controllerRef.current);
             if (movePathToRestore) {
                 controllerRef.current.goban.engine.followPath(0, movePathToRestore);
             }

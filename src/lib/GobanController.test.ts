@@ -16,7 +16,7 @@
  */
 
 import type { MoveTree } from "goban";
-import { getMoveTreeTrunkTail } from "./GobanController";
+import { GobanController, getMoveTreeTrunkTail } from "./GobanController";
 
 function makeMoveNode(move_number: number, trunk_next?: MoveTree): MoveTree {
     return {
@@ -36,5 +36,50 @@ describe("GobanController", () => {
 
         expect(getMoveTreeTrunkTail(root)).toBe(tail);
         expect(getMoveTreeTrunkTail(trunk)).toBe(tail);
+    });
+
+    it("uses the maintained last_official_move pointer when jumping to the last move", () => {
+        const controller = new GobanController({
+            width: 9,
+            height: 9,
+            players: {
+                black: { id: 1, username: "black" },
+                white: { id: 2, username: "white" },
+            },
+            move_tree: {
+                x: -1,
+                y: -1,
+                trunk_next: {
+                    x: 3,
+                    y: 3,
+                    trunk_next: {
+                        x: 4,
+                        y: 3,
+                    },
+                    branches: [
+                        {
+                            x: 3,
+                            y: 4,
+                        },
+                    ],
+                },
+            },
+        });
+
+        const trunkTail = controller.goban.engine.move_tree.trunk_next?.trunk_next;
+        const variation = controller.goban.engine.move_tree.trunk_next?.branches[0];
+
+        if (!trunkTail || !variation) {
+            throw new Error("Expected test move tree to contain both trunk and variation nodes");
+        }
+
+        controller.goban.engine.jumpTo(variation);
+        controller.goban.engine.last_official_move = variation;
+
+        controller.gotoLastMove();
+
+        expect(controller.goban.engine.cur_move).toBe(variation);
+        expect(controller.goban.engine.last_official_move).toBe(variation);
+        expect(trunkTail).not.toBe(variation);
     });
 });
