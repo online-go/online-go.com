@@ -18,7 +18,7 @@
 import * as React from "react";
 import { GobanRendererConfig, type MoveTree, type MoveTreeJson } from "goban";
 import { GobanContainer } from "@/components/GobanContainer/GobanContainer";
-import { GobanController } from "@/lib/GobanController";
+import { GobanController, getMoveTreeTrunkTail } from "@/lib/GobanController";
 import * as preferences from "@/lib/preferences";
 import "./KibitzBoard.css";
 
@@ -35,14 +35,6 @@ interface KibitzBoardProps {
     moveTree?: MoveTreeJson;
     movePath?: string;
     onReady?: (controller: GobanController | null) => void;
-}
-
-function getLiveTrunkTail(moveTree: MoveTree | undefined): MoveTree | undefined {
-    let cursor = moveTree;
-    while (cursor?.trunk_next) {
-        cursor = cursor.trunk_next;
-    }
-    return cursor;
 }
 
 export function getMovePathToRestore(
@@ -215,7 +207,9 @@ export function KibitzBoard({
             // apply any variation path. That keeps incoming socket moves
             // aligned with the current game instead of treating the loaded
             // board root as move 0.
-            const liveTrunkTail = getLiveTrunkTail(controllerRef.current.goban.engine.move_tree);
+            const liveTrunkTail = getMoveTreeTrunkTail(
+                controllerRef.current.goban.engine.move_tree,
+            );
             if (liveTrunkTail) {
                 controllerRef.current.goban.engine.jumpTo(liveTrunkTail);
                 controllerRef.current.goban.engine.setLastOfficialMove();
