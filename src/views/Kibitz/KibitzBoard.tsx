@@ -45,6 +45,18 @@ function getLiveTrunkTail(moveTree: MoveTree | undefined): MoveTree | undefined 
     return cursor;
 }
 
+export function getMovePathToRestore(
+    currentMovePath: string | undefined,
+    sourceMovePath: string | undefined,
+    preferSourceMovePath: boolean,
+): string | undefined {
+    if (preferSourceMovePath) {
+        return sourceMovePath ?? currentMovePath ?? undefined;
+    }
+
+    return currentMovePath ?? sourceMovePath ?? undefined;
+}
+
 export function KibitzBoard({
     gameId,
     width = 19,
@@ -71,6 +83,7 @@ export function KibitzBoard({
     const moveTreeRef = React.useRef(moveTree);
     const sourceMovePathRef = React.useRef(movePath);
     const currentMovePathRef = React.useRef(movePath);
+    const preferSourceMovePathRef = React.useRef(false);
     const currentMoveNodeRef = React.useRef<MoveTree | undefined>(undefined);
     const pendingLiveMoveRestoreRef = React.useRef<{
         node: MoveTree;
@@ -86,6 +99,7 @@ export function KibitzBoard({
     React.useEffect(() => {
         sourceMovePathRef.current = movePath;
         currentMovePathRef.current = movePath;
+        preferSourceMovePathRef.current = false;
     }, [movePath]);
 
     React.useEffect(() => {
@@ -157,6 +171,7 @@ export function KibitzBoard({
                         pendingLiveMoveRestoreRef.current = null;
                         currentMoveNodeRef.current = engine.cur_move;
                         currentMovePathRef.current = engine.cur_move.getMoveStringToThisPoint();
+                        preferSourceMovePathRef.current = false;
                     }, 0),
                 };
                 return;
@@ -169,6 +184,7 @@ export function KibitzBoard({
             currentMoveNodeRef.current = currentMove;
             currentMovePathRef.current =
                 controllerRef.current.goban.engine.cur_move.getMoveStringToThisPoint();
+            preferSourceMovePathRef.current = false;
         };
 
         const restorePendingLiveMoveCursor = () => {
@@ -184,6 +200,7 @@ export function KibitzBoard({
                 controllerRef.current.goban.redraw(true);
                 currentMoveNodeRef.current = pending.node;
                 currentMovePathRef.current = pending.path;
+                preferSourceMovePathRef.current = false;
             } finally {
                 restoringBoardRef.current = false;
             }
@@ -207,9 +224,12 @@ export function KibitzBoard({
                 controllerRef.current.goban.engine.followPath(0, movePathToRestore);
             }
             controllerRef.current.goban.redraw(true);
-            currentMoveNodeRef.current = controllerRef.current.goban.engine.cur_move;
-            currentMovePathRef.current =
+            const restoredMovePath =
                 controllerRef.current.goban.engine.cur_move.getMoveStringToThisPoint();
+            currentMoveNodeRef.current = controllerRef.current.goban.engine.cur_move;
+            currentMovePathRef.current = restoredMovePath;
+            preferSourceMovePathRef.current =
+                movePathToRestore !== undefined && restoredMovePath !== movePathToRestore;
         };
 
         const handleLoad = () => {
@@ -217,8 +237,11 @@ export function KibitzBoard({
                 return;
             }
 
-            const movePathToRestore =
-                currentMovePathRef.current ?? sourceMovePathRef.current ?? undefined;
+            const movePathToRestore = getMovePathToRestore(
+                currentMovePathRef.current,
+                sourceMovePathRef.current,
+                preferSourceMovePathRef.current,
+            );
             restoringBoardRef.current = true;
             try {
                 restoreBoardState(movePathToRestore);
