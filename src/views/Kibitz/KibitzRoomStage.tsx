@@ -464,6 +464,26 @@ function getVariationColorIndex(
     return typeof value === "number" ? value : null;
 }
 
+export function isSelectedVariationVisible(
+    selectedVariation: KibitzVariationSummary,
+    visibleVariations: readonly KibitzVariationSummary[],
+): boolean {
+    return visibleVariations.some((variation) => variation.id === selectedVariation.id);
+}
+
+export function getVariationsToApply(
+    _selectedVariation: KibitzVariationSummary,
+    visibleVariations: readonly KibitzVariationSummary[],
+): KibitzVariationSummary[] {
+    const byId = new Map<string, KibitzVariationSummary>();
+
+    for (const variation of visibleVariations) {
+        byId.set(variation.id, variation);
+    }
+
+    return [...byId.values()];
+}
+
 export function KibitzRoomStage({
     room,
     rooms,
@@ -869,73 +889,45 @@ export function KibitzRoomStage({
             });
         };
 
-        const getVariationColorState = () => {
-            const selectedVariationColorIndex = getVariationColorIndex(
-                variationColorIndexes,
-                selectedVariation.id,
-            );
-            const visibleVariationColorIndexes = visibleVariations.map((variation) =>
-                getVariationColorIndex(variationColorIndexes, variation.id),
-            );
-
-            if (
-                selectedVariationColorIndex == null ||
-                visibleVariationColorIndexes.some((colorIndex) => colorIndex == null)
-            ) {
-                return null;
-            }
-
-            return { selectedVariationColorIndex, visibleVariationColorIndexes };
-        };
-
         const applyVisibleVariationsToLoadedBase = (): boolean => {
             if (disposed || applyingVariation || secondaryVariationTreeDirtyRef.current) {
                 return false;
             }
 
-            const colorState = getVariationColorState();
-            if (!colorState) {
-                return false;
-            }
+            const variationsToApply = getVariationsToApply(selectedVariation, visibleVariations);
 
             applyingVariation = true;
             suppressSelectedVariationLoadRef.current = true;
 
             try {
-                const selectedColorIndex = colorState.selectedVariationColorIndex;
                 let selectedEndpoint: MoveTree | null = null;
-                let selectedWasAttempted = false;
 
-                for (let index = 0; index < visibleVariations.length; ++index) {
-                    const variation = visibleVariations[index];
-                    const colorIndex = colorState.visibleVariationColorIndexes[index];
+                for (const variation of variationsToApply) {
+                    const colorIndex = getVariationColorIndex(variationColorIndexes, variation.id);
                     if (colorIndex == null) {
                         return false;
                     }
 
-                    if (variation.id === selectedVariation.id) {
-                        selectedWasAttempted = true;
-                    }
-
+                    const isSelected = variation.id === selectedVariation.id;
                     const applied = applyKibitzVariationToController(
                         secondaryBoardController,
                         variation,
                         colorIndex,
-                        variation.id === selectedVariation.id,
+                        isSelected,
                     );
-                    if (variation.id === selectedVariation.id) {
+
+                    if (isSelected) {
                         selectedEndpoint = applied.endpoint;
                     }
                 }
 
-                if (!selectedWasAttempted) {
-                    const applied = applyKibitzVariationToController(
-                        secondaryBoardController,
-                        selectedVariation,
-                        selectedColorIndex,
-                        true,
-                    );
-                    selectedEndpoint = applied.endpoint;
+                const selectedVisible = isSelectedVariationVisible(
+                    selectedVariation,
+                    visibleVariations,
+                );
+
+                if (selectedVisible && !selectedEndpoint) {
+                    return false;
                 }
 
                 if (selectedEndpoint) {
@@ -945,21 +937,29 @@ export function KibitzRoomStage({
                         requestId: variationFocusRequestId,
                         visibleVariationKey: visibleVariationApplyKey,
                     };
+                } else {
+                    const officialTail = getOfficialTrunkTail(goban.engine.move_tree);
+                    if (officialTail) {
+                        goban.engine.jumpTo(officialTail);
+                    }
                 }
 
-                if (!selectedVariation.analysis_line_tree) {
+                if (!selectedVariation.analysis_line_tree && selectedVisible) {
                     if (selectedVariation.analysis_marks) {
                         goban.setMarks(selectedVariation.analysis_marks);
                     }
                     goban.pen_marks = selectedVariation.analysis_pen_marks
                         ? [...selectedVariation.analysis_pen_marks]
                         : [];
+                } else if (!selectedVisible) {
+                    goban.setMarks({});
+                    goban.pen_marks = [];
                 }
 
                 goban.redraw(true);
                 scheduleSecondaryMoveTreeRedraw();
-                secondaryVariationTreeDirtyRef.current = true;
-                return selectedEndpoint != null;
+                secondaryVariationTreeDirtyRef.current = variationsToApply.length > 0;
+                return true;
             } finally {
                 applyingVariation = false;
                 suppressSelectedVariationLoadRef.current = false;
@@ -1001,19 +1001,6 @@ export function KibitzRoomStage({
         };
 
         const tryApplyVariationWhenReady = (reason: string): boolean => {
-            if (
-                !isSecondaryVariationSnapshotReady(
-                    secondaryBoardController,
-                    selectedVariation,
-                    visibleVariations,
-                    selectedVariationSourceGame,
-                )
-            ) {
-                return false;
-            }
-
-            const currentOfficialTailMoveNumber =
-                getOfficialTrunkTailMoveNumber(secondaryBoardController);
             const requiredSnapshotMoveNumber = getRequiredVariationSnapshotMoveNumber(
                 selectedVariation,
                 visibleVariations,
@@ -1025,37 +1012,18 @@ export function KibitzRoomStage({
                 baseSnapshot != null &&
                 baseSnapshot.controller === secondaryBoardController &&
                 baseSnapshot.gameId === selectedVariation.game_id &&
-                baseSnapshot.trunkTailMoveNumber >= requiredSnapshotMoveNumber &&
-                baseSnapshot.trunkTailMoveNumber === currentOfficialTailMoveNumber;
+                baseSnapshot.trunkTailMoveNumber >= requiredSnapshotMoveNumber;
 
-            if (!canReuseSnapshot) {
-                if (!secondaryVariationTreeDirtyRef.current) {
-                    baseSnapshot = captureSecondaryVariationBaseSnapshot(
-                        secondaryBoardController,
-                        selectedVariation.game_id,
-                        selectedVariation,
-                        visibleVariations,
-                        selectedVariationSourceGame,
-                        secondaryVariationTreeDirtyRef.current,
-                        secondaryVariationBaseHydrationRef.current,
-                    );
+            if (canReuseSnapshot && secondaryVariationTreeDirtyRef.current) {
+                return reloadBaseThenApplyVisibleVariations(reason);
+            }
 
-                    if (!baseSnapshot) {
-                        return false;
-                    }
-
-                    secondaryVariationBaseSnapshotRef.current = baseSnapshot;
-                } else if (
-                    baseSnapshot != null &&
-                    baseSnapshot.controller === secondaryBoardController &&
-                    baseSnapshot.gameId === selectedVariation.game_id
-                ) {
-                    return reloadBaseThenApplyVisibleVariations(reason);
-                }
+            if (canReuseSnapshot && !secondaryVariationTreeDirtyRef.current) {
+                return applyVisibleVariationsToLoadedBase();
             }
 
             if (secondaryVariationTreeDirtyRef.current) {
-                return reloadBaseThenApplyVisibleVariations(reason);
+                return false;
             }
 
             const pendingBaseLoad = pendingSecondaryVariationBaseLoadRef.current;
@@ -1067,12 +1035,33 @@ export function KibitzRoomStage({
                 return false;
             }
 
-            if (applyVisibleVariationsToLoadedBase()) {
-                secondaryVariationTreeDirtyRef.current = true;
-                return true;
+            if (
+                !isSecondaryVariationSnapshotReady(
+                    secondaryBoardController,
+                    selectedVariation,
+                    visibleVariations,
+                    selectedVariationSourceGame,
+                )
+            ) {
+                return false;
             }
 
-            return false;
+            baseSnapshot = captureSecondaryVariationBaseSnapshot(
+                secondaryBoardController,
+                selectedVariation.game_id,
+                selectedVariation,
+                visibleVariations,
+                selectedVariationSourceGame,
+                secondaryVariationTreeDirtyRef.current,
+                secondaryVariationBaseHydrationRef.current,
+            );
+
+            if (!baseSnapshot) {
+                return false;
+            }
+
+            secondaryVariationBaseSnapshotRef.current = baseSnapshot;
+            return reloadBaseThenApplyVisibleVariations(reason);
         };
 
         const scheduleBaseRetry = (reason: string) => {
@@ -1143,6 +1132,7 @@ export function KibitzRoomStage({
             }
 
             if (
+                !secondaryVariationTreeDirtyRef.current &&
                 isSecondaryVariationSnapshotReady(
                     secondaryBoardController,
                     selectedVariation,
@@ -1154,7 +1144,6 @@ export function KibitzRoomStage({
                     controller: secondaryBoardController,
                     gameId: selectedVariation.game_id,
                 };
-                secondaryVariationTreeDirtyRef.current = false;
             }
 
             if (!tryApplyVariationWhenReady("base-maybe-ready")) {

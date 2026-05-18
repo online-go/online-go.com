@@ -23,6 +23,8 @@ import {
     getRequiredVariationBaseMoveNumber,
     getRequiredVariationSnapshotMoveNumber,
     getRequiredSnapshotMoveForVariation,
+    getVariationsToApply,
+    isSelectedVariationVisible,
     isSecondaryVariationSnapshotReady,
     resolveSelectedVariationSourceGame,
 } from "./KibitzRoomStage";
@@ -168,5 +170,33 @@ describe("variation snapshot readiness", () => {
             isSecondaryVariationSnapshotReady(controller, makeVariation(4321, 2), [], sourceGame),
         ).toBe(true);
         expect(getOfficialTrunkTailMoveNumber(controller)).toBe(4);
+    });
+});
+
+describe("variation recomposition helpers", () => {
+    it("detects whether the selected variation is currently visible", () => {
+        const selectedVariation = makeVariation(4321, 5);
+        expect(isSelectedVariationVisible(selectedVariation, [])).toBe(false);
+        expect(isSelectedVariationVisible(selectedVariation, [selectedVariation])).toBe(true);
+    });
+
+    it("only applies the currently visible variations", () => {
+        const selectedVariation = makeVariation(4321, 5);
+        const visibleVariation = {
+            ...makeVariation(4321, 7),
+            id: "variation-visible",
+        };
+        const hiddenVariation = {
+            ...makeVariation(4321, 9),
+            id: "variation-hidden",
+        };
+
+        expect(
+            getVariationsToApply(selectedVariation, [
+                visibleVariation,
+                hiddenVariation,
+                visibleVariation,
+            ]).map((variation) => variation.id),
+        ).toEqual([visibleVariation.id, hiddenVariation.id]);
     });
 });

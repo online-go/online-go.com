@@ -160,6 +160,20 @@ function duplicateOfficialTrunkAsBranch(controller: GobanController, parent: Mov
     return pathNodes;
 }
 
+export function officialTrunkNodeByMoveNumber(root: MoveTree, moveNumber: number): MoveTree | null {
+    let cursor: MoveTree | undefined = root;
+
+    while (cursor) {
+        if (cursor.move_number === moveNumber) {
+            return cursor;
+        }
+
+        cursor = cursor.trunk_next;
+    }
+
+    return null;
+}
+
 function moveMatchesNode(
     node: MoveTree | undefined,
     x: number,
@@ -184,7 +198,13 @@ function followKibitzVariationPath(
     const engine = controller.goban.engine;
     const decodedMoves = engine.decodeMoves(moves);
     const pathNodes: MoveTree[] = [];
-    let cursor = engine.move_tree.index(fromMoveNumber);
+    const officialTrunkNode = officialTrunkNodeByMoveNumber(engine.move_tree, fromMoveNumber);
+
+    if (!officialTrunkNode) {
+        throw new Error(`Official trunk node ${fromMoveNumber} not found`);
+    }
+
+    let cursor = officialTrunkNode;
 
     if (decodedMoves.length > 0) {
         const firstMove = decodedMoves[0];
@@ -227,7 +247,7 @@ function followKibitzVariationPath(
         const player = engine.playerByColor(move.color || 0);
         const existingBranch = findMatchingBranch(cursor, move.x, move.y, player, edited);
 
-        if (existingBranch && !duplicatesSharedTrunkPrefix && !duplicatesTrunkOnlyLine) {
+        if (existingBranch) {
             cursor = existingBranch;
             engine.jumpTo(cursor);
             pathNodes.push(cursor);
