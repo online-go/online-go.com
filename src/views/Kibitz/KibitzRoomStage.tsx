@@ -204,6 +204,48 @@ function cloneMoveTreeJson(moveTree: MoveTreeJson): MoveTreeJson {
     return JSON.parse(JSON.stringify(moveTree)) as MoveTreeJson;
 }
 
+function getMoveTreeTrunkTail(moveTree: MoveTree | undefined): MoveTree | null {
+    if (!moveTree) {
+        return null;
+    }
+
+    let tail = moveTree;
+    while (tail.trunk_next) {
+        tail = tail.trunk_next;
+    }
+    return tail;
+}
+
+export function getRequiredVariationBaseMoveNumber(
+    selectedVariation: KibitzVariationSummary,
+    visibleVariations: readonly KibitzVariationSummary[],
+    sourceGame: KibitzWatchedGame | null | undefined,
+): number {
+    const variationStartMoveNumber = Math.max(
+        selectedVariation.analysis_from ?? 0,
+        ...visibleVariations.map((variation) => variation.analysis_from ?? 0),
+    );
+
+    return Math.max(variationStartMoveNumber, sourceGame?.move_number ?? 0);
+}
+
+function isSecondaryVariationBaseReady(
+    controller: GobanController,
+    selectedVariation: KibitzVariationSummary,
+    visibleVariations: readonly KibitzVariationSummary[],
+    sourceGame: KibitzWatchedGame | null | undefined,
+): boolean {
+    const requiredBaseMoveNumber = getRequiredVariationBaseMoveNumber(
+        selectedVariation,
+        visibleVariations,
+        sourceGame,
+    );
+    const trunkTailMoveNumber =
+        getMoveTreeTrunkTail(controller.goban.engine?.move_tree)?.move_number ?? 0;
+
+    return trunkTailMoveNumber >= requiredBaseMoveNumber;
+}
+
 function captureSecondaryVariationBaseSnapshot(
     controller: GobanController,
     gameId: number,
@@ -714,6 +756,17 @@ export function KibitzRoomStage({
                 return false;
             }
 
+            if (
+                !isSecondaryVariationBaseReady(
+                    secondaryBoardController,
+                    selectedVariation,
+                    visibleVariations,
+                    selectedVariationSourceGame,
+                )
+            ) {
+                return false;
+            }
+
             applyingVariation = true;
             suppressSelectedVariationLoadRef.current = true;
 
@@ -795,6 +848,16 @@ export function KibitzRoomStage({
                 baseSnapshot.controller !== secondaryBoardController ||
                 baseSnapshot.gameId !== selectedVariation.game_id
             ) {
+                if (
+                    !isSecondaryVariationBaseReady(
+                        secondaryBoardController,
+                        selectedVariation,
+                        visibleVariations,
+                        selectedVariationSourceGame,
+                    )
+                ) {
+                    return false;
+                }
                 baseSnapshot = captureSecondaryVariationBaseSnapshot(
                     secondaryBoardController,
                     selectedVariation.game_id,
@@ -812,6 +875,28 @@ export function KibitzRoomStage({
             suppressSelectedVariationLoadRef.current = true;
             loadSecondaryVariationBaseSnapshot(secondaryBoardController, baseSnapshot);
             return true;
+        };
+
+        const captureBaseSnapshotThenApply = (): void => {
+            if (
+                !isSecondaryVariationBaseReady(
+                    secondaryBoardController,
+                    selectedVariation,
+                    visibleVariations,
+                    selectedVariationSourceGame,
+                )
+            ) {
+                return;
+            }
+
+            const baseSnapshot = captureSecondaryVariationBaseSnapshot(
+                secondaryBoardController,
+                selectedVariation.game_id,
+            );
+            if (baseSnapshot) {
+                secondaryVariationBaseSnapshotRef.current = baseSnapshot;
+                applyVisibleVariationsToLoadedBase();
+            }
         };
 
         const onLoad = () => {
@@ -834,16 +919,16 @@ export function KibitzRoomStage({
                 return;
             }
 
-            const baseSnapshot = captureSecondaryVariationBaseSnapshot(
-                secondaryBoardController,
-                selectedVariation.game_id,
-            );
-            if (baseSnapshot) {
-                secondaryVariationBaseSnapshotRef.current = baseSnapshot;
-                applyVisibleVariationsToLoadedBase();
+            captureBaseSnapshotThenApply();
+        };
+        const onBaseMaybeReady = () => {
+            if (!disposed && !suppressSelectedVariationLoadRef.current) {
+                captureBaseSnapshotThenApply();
             }
         };
         goban.on("load", onLoad);
+        goban.on("gamedata", onBaseMaybeReady);
+        goban.on("last_official_move", onBaseMaybeReady);
 
         if (goban.engine?.last_official_move) {
             if (
@@ -853,20 +938,15 @@ export function KibitzRoomStage({
             ) {
                 reloadBaseThenApplyVisibleVariations();
             } else {
-                const baseSnapshot = captureSecondaryVariationBaseSnapshot(
-                    secondaryBoardController,
-                    selectedVariation.game_id,
-                );
-                if (baseSnapshot) {
-                    secondaryVariationBaseSnapshotRef.current = baseSnapshot;
-                    applyVisibleVariationsToLoadedBase();
-                }
+                captureBaseSnapshotThenApply();
             }
         }
 
         return () => {
             disposed = true;
             goban.off("load", onLoad);
+            goban.off("gamedata", onBaseMaybeReady);
+            goban.off("last_official_move", onBaseMaybeReady);
             pendingSecondaryMoveTreeRedrawCancelRef.current?.();
             pendingSecondaryMoveTreeRedrawCancelRef.current = null;
             const pendingBaseLoad = pendingSecondaryVariationBaseLoadRef.current;
@@ -882,6 +962,7 @@ export function KibitzRoomStage({
         secondaryBoardController,
         secondaryMoveTreeContainer,
         secondaryPane.preview_game_id,
+        selectedVariationSourceGame,
         selectedVariationApplyKey,
         visibleVariationApplyKey,
         variationFocusRequestId,
