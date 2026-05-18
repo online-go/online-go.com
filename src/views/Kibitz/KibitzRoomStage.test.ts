@@ -16,7 +16,10 @@
  */
 
 import type { KibitzRoomSummary, KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
-import { resolveSelectedVariationSourceGame } from "./KibitzRoomStage";
+import {
+    getRequiredVariationBaseMoveNumber,
+    resolveSelectedVariationSourceGame,
+} from "./KibitzRoomStage";
 
 function makeUser(id: number, username: string) {
     return {
@@ -38,7 +41,7 @@ function makeGame(gameId: number, title: string): KibitzWatchedGame {
     };
 }
 
-function makeVariation(gameId: number): KibitzVariationSummary {
+function makeVariation(gameId: number, analysisFrom?: number): KibitzVariationSummary {
     return {
         id: `variation-${gameId}`,
         room_id: "room-1",
@@ -47,6 +50,7 @@ function makeVariation(gameId: number): KibitzVariationSummary {
         created_at: 1,
         viewer_count: 0,
         current_viewers: [],
+        analysis_from: analysisFrom,
     };
 }
 
@@ -83,5 +87,32 @@ describe("resolveSelectedVariationSourceGame", () => {
                 fallbackGame,
             ),
         ).toBe(fallbackGame);
+    });
+});
+
+describe("getRequiredVariationBaseMoveNumber", () => {
+    it("requires the selected variation's source move before applying", () => {
+        expect(getRequiredVariationBaseMoveNumber(makeVariation(4321, 12), [], undefined)).toBe(12);
+    });
+
+    it("requires the latest visible variation source move", () => {
+        expect(
+            getRequiredVariationBaseMoveNumber(
+                makeVariation(4321, 5),
+                [makeVariation(4321, 7), makeVariation(4321, 3)],
+                undefined,
+            ),
+        ).toBe(7);
+    });
+
+    it("requires the source game move number when it is known", () => {
+        const sourceGame = {
+            ...makeGame(4321, "Source game"),
+            move_number: 140,
+        };
+
+        expect(getRequiredVariationBaseMoveNumber(makeVariation(4321, 5), [], sourceGame)).toBe(
+            140,
+        );
     });
 });

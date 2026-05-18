@@ -18,7 +18,6 @@
 import { MoveTree as GobanMoveTree, type MoveTree, type MoveTreeJson } from "goban";
 import type { GobanController } from "@/lib/GobanController";
 import type { KibitzVariationSummary } from "@/models/kibitz";
-import { recordKibitzVariationMeasurement } from "./kibitzVariationMonitoring";
 
 export const KIBITZ_VARIATION_COLORS = GobanMoveTree.line_colors;
 
@@ -274,32 +273,12 @@ export function applyKibitzVariationToController(
 
     let pathNodes: MoveTree[];
     try {
-        recordKibitzVariationMeasurement({
-            event: "tree-apply-start",
-            controller,
-            selectedVariation: variation,
-            variation,
-            detail: {
-                fromMoveNumber: variation.analysis_from,
-                analysisMoveCharacters: variation.analysis_moves.length,
-            },
-        });
         pathNodes = followKibitzVariationPath(
             controller,
             variation.analysis_from,
             variation.analysis_moves,
         );
     } catch (error) {
-        recordKibitzVariationMeasurement({
-            event: "tree-apply-error",
-            controller,
-            selectedVariation: variation,
-            variation,
-            detail: {
-                fromMoveNumber: variation.analysis_from,
-                errorMessage: error instanceof Error ? error.message : String(error),
-            },
-        });
         console.warn("kibitz: failed to apply variation", variation.id, error);
         controller.goban.engine.jumpTo(controller.goban.engine.last_official_move);
         return { variationId: variation.id, endpoint: null };
@@ -307,17 +286,6 @@ export function applyKibitzVariationToController(
 
     applyLineAnnotations(pathNodes, variation.analysis_line_tree, includeMarks);
     applyLineColor(pathNodes, colorIndex);
-    recordKibitzVariationMeasurement({
-        event: "tree-apply-end",
-        controller,
-        selectedVariation: variation,
-        variation,
-        detail: {
-            endpointMoveNumber: pathNodes[pathNodes.length - 1]?.move_number,
-            endpointExists: pathNodes.length > 0,
-            pathNodeCount: pathNodes.length,
-        },
-    });
 
     return {
         variationId: variation.id,
