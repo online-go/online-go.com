@@ -1909,6 +1909,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                         <KibitzRoomStage
                                             room={resolvedRoom}
                                             rooms={rooms}
+                                            variationGameById={variationGameById}
                                             proposals={roomProposals}
                                             variations={displayedVariations}
                                             visibleVariationIds={visibleVariationIds}
@@ -2071,6 +2072,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                 <KibitzRoomStage
                                     room={resolvedRoom}
                                     rooms={rooms}
+                                    variationGameById={variationGameById}
                                     proposals={roomProposals}
                                     variations={displayedVariations}
                                     visibleVariationIds={visibleVariationIds}

@@ -222,6 +222,16 @@ function getLineTreeEndpoint(lineTree: MoveTreeJson): MoveTreeJson {
     return cursor;
 }
 
+export function getMoveTreeTrunkTail(moveTree: MoveTree | null | undefined): MoveTree | null {
+    let cursor = moveTree ?? null;
+
+    while (cursor?.trunk_next) {
+        cursor = cursor.trunk_next;
+    }
+
+    return cursor;
+}
+
 export interface ReviewListEntry {
     owner: PlayerCacheEntry;
     id: number;

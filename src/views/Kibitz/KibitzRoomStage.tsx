@@ -30,6 +30,7 @@ import type {
     KibitzSecondaryPaneState,
     KibitzRoomUser,
     KibitzVariationSummary,
+    KibitzWatchedGame,
 } from "@/models/kibitz";
 import { KibitzBoard } from "./KibitzBoard";
 import { KibitzBoardControls } from "./KibitzBoardControls";
@@ -47,6 +48,7 @@ import "./KibitzRoomStage.css";
 interface KibitzRoomStageProps {
     room: KibitzRoomSummary;
     rooms: KibitzRoomSummary[];
+    variationGameById?: ReadonlyMap<number, KibitzWatchedGame>;
     proposals: KibitzProposal[];
     variations: KibitzVariationSummary[];
     visibleVariationIds: string[];
@@ -160,6 +162,29 @@ function boardDimensionsOf(game: { board_size?: `${number}x${number}` } | null |
         return { width: w, height: h };
     }
     return {};
+}
+
+export function resolveSelectedVariationSourceGame(
+    selectedVariation: KibitzVariationSummary | undefined,
+    mainGame: KibitzWatchedGame | undefined,
+    rooms: KibitzRoomSummary[],
+    variationGameById: ReadonlyMap<number, KibitzWatchedGame> | undefined,
+    fallbackGame: KibitzWatchedGame | undefined,
+): KibitzWatchedGame | undefined {
+    if (!selectedVariation) {
+        return undefined;
+    }
+
+    if (mainGame?.game_id === selectedVariation.game_id) {
+        return mainGame;
+    }
+
+    return (
+        rooms.find((candidate) => candidate.current_game?.game_id === selectedVariation.game_id)
+            ?.current_game ??
+        variationGameById?.get(selectedVariation.game_id) ??
+        fallbackGame
+    );
 }
 
 type KibitzBoardLoadConfig = Record<string, unknown> & { move_tree?: MoveTreeJson };
@@ -320,6 +345,7 @@ function getVariationColorIndex(
 export function KibitzRoomStage({
     room,
     rooms,
+    variationGameById,
     proposals,
     variations,
     visibleVariationIds,
@@ -401,19 +427,20 @@ export function KibitzRoomStage({
     );
     const selectedVariationGameId = selectedVariation?.game_id ?? null;
     const selectedVariationSourceGame = React.useMemo(() => {
-        if (!selectedVariation) {
-            return undefined;
-        }
-
-        if (mainGame?.game_id === selectedVariation.game_id) {
-            return mainGame;
-        }
-
-        return (
-            rooms.find((candidate) => candidate.current_game?.game_id === selectedVariation.game_id)
-                ?.current_game ?? secondaryPane.variation_source_game
+        return resolveSelectedVariationSourceGame(
+            selectedVariation,
+            mainGame,
+            rooms,
+            variationGameById,
+            secondaryPane.variation_source_game,
         );
-    }, [mainGame, rooms, secondaryPane.variation_source_game, selectedVariation]);
+    }, [
+        mainGame,
+        rooms,
+        secondaryPane.variation_source_game,
+        selectedVariation,
+        variationGameById,
+    ]);
     const visibleVariations = React.useMemo(() => {
         if (selectedVariationGameId == null) {
             return [];
