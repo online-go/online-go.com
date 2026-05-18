@@ -16,8 +16,16 @@
  */
 
 import type { KibitzRoomSummary, KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
+import type { MoveTree } from "goban";
 import {
+    getOfficialTrunkTailMoveNumber,
+    getRequiredBranchAttachMoveForVariation,
     getRequiredVariationBaseMoveNumber,
+    getRequiredVariationSnapshotMoveNumber,
+    getRequiredSnapshotMoveForVariation,
+    getVariationsToApply,
+    isSelectedVariationVisible,
+    isSecondaryVariationSnapshotReady,
     resolveSelectedVariationSourceGame,
 } from "./KibitzRoomStage";
 
@@ -52,6 +60,13 @@ function makeVariation(gameId: number, analysisFrom?: number): KibitzVariationSu
         current_viewers: [],
         analysis_from: analysisFrom,
     };
+}
+
+function makeMoveTree(moveNumber: number, trunkNext?: MoveTree | null): MoveTree {
+    return {
+        move_number: moveNumber,
+        trunk_next: trunkNext ?? undefined,
+    } as unknown as MoveTree;
 }
 
 describe("resolveSelectedVariationSourceGame", () => {
@@ -92,7 +107,7 @@ describe("resolveSelectedVariationSourceGame", () => {
 
 describe("getRequiredVariationBaseMoveNumber", () => {
     it("requires the selected variation's source move before applying", () => {
-        expect(getRequiredVariationBaseMoveNumber(makeVariation(4321, 12), [], undefined)).toBe(12);
+        expect(getRequiredVariationBaseMoveNumber(makeVariation(4321, 12), [], undefined)).toBe(13);
     });
 
     it("requires the latest visible variation source move", () => {
@@ -102,10 +117,10 @@ describe("getRequiredVariationBaseMoveNumber", () => {
                 [makeVariation(4321, 7), makeVariation(4321, 3)],
                 undefined,
             ),
-        ).toBe(7);
+        ).toBe(8);
     });
 
-    it("requires the source game move number when it is known", () => {
+    it("requires the full source game move count when it is known", () => {
         const sourceGame = {
             ...makeGame(4321, "Source game"),
             move_number: 140,
@@ -114,5 +129,74 @@ describe("getRequiredVariationBaseMoveNumber", () => {
         expect(getRequiredVariationBaseMoveNumber(makeVariation(4321, 5), [], sourceGame)).toBe(
             140,
         );
+    });
+});
+
+describe("variation snapshot readiness", () => {
+    it("requires the latest selected or visible source move for snapshots", () => {
+        const sourceGame = {
+            ...makeGame(4321, "Source game"),
+            move_number: 140,
+        };
+
+        expect(
+            getRequiredVariationSnapshotMoveNumber(
+                makeVariation(4321, 5),
+                [makeVariation(4321, 7), makeVariation(4321, 3)],
+                sourceGame,
+            ),
+        ).toBe(140);
+    });
+
+    it("does not treat an unknown source game as move zero", () => {
+        expect(getRequiredSnapshotMoveForVariation(makeVariation(4321, 5), undefined)).toBe(6);
+        expect(getRequiredBranchAttachMoveForVariation(makeVariation(4321, 5), undefined)).toBe(6);
+    });
+
+    it("requires the official trunk tail to reach the snapshot move", () => {
+        const sourceGame = {
+            ...makeGame(4321, "Source game"),
+            move_number: 4,
+        };
+        const controller = {
+            goban: {
+                engine: {
+                    move_tree: makeMoveTree(2, makeMoveTree(4)),
+                },
+            },
+        } as unknown as import("@/lib/GobanController").GobanController;
+
+        expect(
+            isSecondaryVariationSnapshotReady(controller, makeVariation(4321, 2), [], sourceGame),
+        ).toBe(true);
+        expect(getOfficialTrunkTailMoveNumber(controller)).toBe(4);
+    });
+});
+
+describe("variation recomposition helpers", () => {
+    it("detects whether the selected variation is currently visible", () => {
+        const selectedVariation = makeVariation(4321, 5);
+        expect(isSelectedVariationVisible(selectedVariation, [])).toBe(false);
+        expect(isSelectedVariationVisible(selectedVariation, [selectedVariation])).toBe(true);
+    });
+
+    it("only applies the currently visible variations", () => {
+        const selectedVariation = makeVariation(4321, 5);
+        const visibleVariation = {
+            ...makeVariation(4321, 7),
+            id: "variation-visible",
+        };
+        const hiddenVariation = {
+            ...makeVariation(4321, 9),
+            id: "variation-hidden",
+        };
+
+        expect(
+            getVariationsToApply(selectedVariation, [
+                visibleVariation,
+                hiddenVariation,
+                visibleVariation,
+            ]).map((variation) => variation.id),
+        ).toEqual([visibleVariation.id, hiddenVariation.id]);
     });
 });

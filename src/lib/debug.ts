@@ -28,6 +28,7 @@ const debug = {
     sockets: false,
     ai_review: false,
     ai_review_chart: false,
+    kibitz_variation: false,
 };
 
 // Create an instance of the Debug class to allow a module to debug itself.

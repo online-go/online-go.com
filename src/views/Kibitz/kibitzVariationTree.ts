@@ -18,6 +18,7 @@
 import { MoveTree as GobanMoveTree, type MoveTree, type MoveTreeJson } from "goban";
 import type { GobanController } from "@/lib/GobanController";
 import type { KibitzVariationSummary } from "@/models/kibitz";
+import { logKibitzVariationDebug, warnKibitzVariationDebug } from "./kibitzVariationDebug";
 
 export const KIBITZ_VARIATION_COLORS = GobanMoveTree.line_colors;
 
@@ -118,6 +119,24 @@ function findMatchingBranch(
     return null;
 }
 
+function summarizeMoveTreeNode(node: MoveTree | null | undefined): Record<string, unknown> | null {
+    if (!node) {
+        return null;
+    }
+
+    return {
+        id: node.id,
+        moveNumber: node.move_number,
+        x: node.x,
+        y: node.y,
+        player: node.player,
+        edited: node.edited,
+        parentId: node.parent?.id,
+        trunkNextId: node.trunk_next?.id,
+        branchIds: node.branches.map((branch) => branch.id),
+    };
+}
+
 function duplicateTrunkMoveAsBranch(
     engine: GobanController["goban"]["engine"],
     parent: MoveTree,
@@ -160,6 +179,20 @@ function duplicateOfficialTrunkAsBranch(controller: GobanController, parent: Mov
     return pathNodes;
 }
 
+export function officialTrunkNodeByMoveNumber(root: MoveTree, moveNumber: number): MoveTree | null {
+    let cursor: MoveTree | undefined = root;
+
+    while (cursor) {
+        if (cursor.move_number === moveNumber) {
+            return cursor;
+        }
+
+        cursor = cursor.trunk_next;
+    }
+
+    return null;
+}
+
 function moveMatchesNode(
     node: MoveTree | undefined,
     x: number,
@@ -178,19 +211,41 @@ function moveMatchesNode(
 
 function followKibitzVariationPath(
     controller: GobanController,
+    variationId: string,
     fromMoveNumber: number,
     moves: string,
 ): MoveTree[] {
     const engine = controller.goban.engine;
     const decodedMoves = engine.decodeMoves(moves);
     const pathNodes: MoveTree[] = [];
-    let cursor = engine.move_tree.index(fromMoveNumber);
+    const officialTrunkNode = officialTrunkNodeByMoveNumber(engine.move_tree, fromMoveNumber);
+
+    if (!officialTrunkNode) {
+        throw new Error(`Official trunk node ${fromMoveNumber} not found`);
+    }
+
+    let cursor = officialTrunkNode;
+
+    logKibitzVariationDebug("follow:start", {
+        variationId,
+        fromMoveNumber,
+        decodedMoveCount: decodedMoves.length,
+        officialTrunkNode: summarizeMoveTreeNode(officialTrunkNode),
+        lastOfficialMove: summarizeMoveTreeNode(engine.last_official_move),
+        currentMove: summarizeMoveTreeNode(engine.cur_move),
+    });
 
     if (decodedMoves.length > 0) {
         const firstMove = decodedMoves[0];
         const firstMoveEdited = !!firstMove.edited;
         const firstMovePlayer = engine.playerByColor(firstMove.color || 0);
         if (moveMatchesNode(cursor, firstMove.x, firstMove.y, firstMovePlayer, firstMoveEdited)) {
+            logKibitzVariationDebug("follow:first-move-matches-anchor-moving-to-parent", {
+                variationId,
+                cursor: summarizeMoveTreeNode(cursor),
+                parent: summarizeMoveTreeNode(cursor.parent),
+                firstMove,
+            });
             cursor = cursor.parent ?? cursor;
         }
     }
@@ -219,6 +274,16 @@ function followKibitzVariationPath(
     const duplicatesTrunkOnlyLine =
         trunkPrefixLength > 0 && trunkPrefixLength === decodedMoves.length;
 
+    logKibitzVariationDebug("follow:prefix", {
+        variationId,
+        fromMoveNumber,
+        trunkPrefixLength,
+        duplicatesSharedTrunkPrefix,
+        duplicatesTrunkOnlyLine,
+        cursor: summarizeMoveTreeNode(cursor),
+        trunkPrefixCursor: summarizeMoveTreeNode(trunkPrefixCursor),
+    });
+
     engine.jumpTo(cursor);
 
     for (let index = 0; index < decodedMoves.length; ++index) {
@@ -226,6 +291,18 @@ function followKibitzVariationPath(
         const edited = !!move.edited;
         const player = engine.playerByColor(move.color || 0);
         const existingBranch = findMatchingBranch(cursor, move.x, move.y, player, edited);
+
+        logKibitzVariationDebug("follow:step", {
+            variationId,
+            index,
+            move: { x: move.x, y: move.y, color: move.color, edited },
+            player,
+            cursor: summarizeMoveTreeNode(cursor),
+            trunkNext: summarizeMoveTreeNode(cursor.trunk_next),
+            existingBranch: summarizeMoveTreeNode(existingBranch),
+            duplicatesSharedTrunkPrefix,
+            duplicatesTrunkOnlyLine,
+        });
 
         if (existingBranch && !duplicatesSharedTrunkPrefix && !duplicatesTrunkOnlyLine) {
             cursor = existingBranch;
@@ -252,8 +329,19 @@ function followKibitzVariationPath(
             engine.place(move.x, move.y, false, false, true, true);
         }
         cursor = engine.cur_move;
+        logKibitzVariationDebug("follow:placed", {
+            variationId,
+            index,
+            cursor: summarizeMoveTreeNode(cursor),
+        });
         pathNodes.push(cursor);
     }
+
+    logKibitzVariationDebug("follow:done", {
+        variationId,
+        endpoint: summarizeMoveTreeNode(pathNodes[pathNodes.length - 1]),
+        pathNodeCount: pathNodes.length,
+    });
 
     return pathNodes;
 }
@@ -275,11 +363,27 @@ export function applyKibitzVariationToController(
     try {
         pathNodes = followKibitzVariationPath(
             controller,
+            variation.id,
             variation.analysis_from,
             variation.analysis_moves,
         );
     } catch (error) {
-        console.warn("kibitz: failed to apply variation", variation.id, error);
+        warnKibitzVariationDebug("failed to apply variation", {
+            variationId: variation.id,
+            error,
+            analysisFrom: variation.analysis_from,
+            analysisMoves: variation.analysis_moves,
+            currentMove: summarizeMoveTreeNode(controller.goban.engine.cur_move),
+            officialAnchor:
+                typeof variation.analysis_from === "number"
+                    ? summarizeMoveTreeNode(
+                          officialTrunkNodeByMoveNumber(
+                              controller.goban.engine.move_tree,
+                              variation.analysis_from,
+                          ),
+                      )
+                    : null,
+        });
         controller.goban.engine.jumpTo(controller.goban.engine.last_official_move);
         return { variationId: variation.id, endpoint: null };
     }
