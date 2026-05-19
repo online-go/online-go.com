@@ -20,7 +20,7 @@ import type { GobanConfig, GobanModes, MoveTree, MoveTreeJson } from "goban";
 import { Resizable } from "@/components/Resizable";
 import { KBShortcut } from "@/components/KBShortcut";
 import { Player } from "@/components/Player";
-import { GobanController } from "@/lib/GobanController";
+import { GobanController, getMoveTreeTrunkTail } from "@/lib/GobanController";
 import { close_all_popovers, popover } from "@/lib/popover";
 import { alert } from "@/lib/swal_config";
 import { pgettext } from "@/lib/translate";
@@ -289,15 +289,7 @@ export function clearDraftBaseAppliedState(): AppliedDraftBaseState {
 }
 
 export function getOfficialTrunkTail(moveTree: MoveTree | null | undefined): MoveTree | null {
-    if (!moveTree) {
-        return null;
-    }
-
-    let tail = moveTree;
-    while (tail.trunk_next) {
-        tail = tail.trunk_next;
-    }
-    return tail;
+    return getMoveTreeTrunkTail(moveTree);
 }
 
 function summarizeSecondaryVariationSnapshot(
