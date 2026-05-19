@@ -45,6 +45,7 @@ import {
     OnlineLeaguesAdmin,
     AnnulmentCriteriaSettings,
     AIReviewStatus,
+    AIReviewRequestStats,
     WhatsNewAdmin,
 } from "@/views/Admin";
 import { WhatsNew } from "@/views/WhatsNew";
@@ -425,6 +426,7 @@ export const routes = (
                 <Route path="/admin/online_leagues" element={<OnlineLeaguesAdmin />} />
                 <Route path="/admin/annulment_criteria" element={<AnnulmentCriteriaSettings />} />
                 <Route path="/admin/ai_review_status" element={<AIReviewStatus />} />
+                <Route path="/admin/ai_review_request_stats" element={<AIReviewRequestStats />} />
                 <Route path="/admin/whats_new" element={<WhatsNewAdmin />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/whats-new" element={<WhatsNew />} />
