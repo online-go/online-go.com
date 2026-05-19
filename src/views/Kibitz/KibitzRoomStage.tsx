@@ -57,6 +57,7 @@ interface KibitzRoomStageProps {
     room: KibitzRoomSummary;
     rooms: KibitzRoomSummary[];
     variationGameById?: ReadonlyMap<number, KibitzWatchedGame>;
+    currentGameBaseSnapshot?: KibitzCurrentGameBaseSnapshot | null;
     proposals: KibitzProposal[];
     variations: KibitzVariationSummary[];
     visibleVariationIds: string[];
@@ -195,10 +196,19 @@ export function resolveSelectedVariationSourceGame(
     );
 }
 
-type KibitzBoardLoadConfig = Record<string, unknown> & {
+export type KibitzBoardLoadConfig = Record<string, unknown> & {
     move_tree?: MoveTreeJson;
     moves?: GobanConfig["moves"];
 };
+
+export interface KibitzCurrentGameBaseSnapshot {
+    gameId: number;
+    trunkTailMoveNumber: number;
+    moveTreeId: number | string | null;
+    movePath: string;
+    source: "main-board" | "game-details";
+    config: KibitzBoardLoadConfig;
+}
 
 interface SecondaryVariationBaseSnapshot {
     controller: GobanController;
@@ -529,6 +539,52 @@ export function captureMainBoardBaseSnapshotForVariation(
     };
 }
 
+export function captureRoomBaseSnapshotForVariation(
+    currentGameBaseSnapshot: KibitzCurrentGameBaseSnapshot | null | undefined,
+    secondaryBoardController: GobanController,
+    selectedVariation: KibitzVariationSummary,
+    visibleVariations: readonly KibitzVariationSummary[],
+    sourceGame: KibitzWatchedGame | null | undefined,
+): SecondaryVariationBaseSnapshot | null {
+    if (!currentGameBaseSnapshot || !sourceGame) {
+        return null;
+    }
+
+    if (currentGameBaseSnapshot.gameId !== selectedVariation.game_id) {
+        return null;
+    }
+
+    if (sourceGame.game_id !== selectedVariation.game_id) {
+        return null;
+    }
+
+    const requiredSnapshotMoveNumber = getRequiredVariationSnapshotMoveNumber(
+        selectedVariation,
+        visibleVariations,
+        sourceGame,
+    );
+
+    if (currentGameBaseSnapshot.trunkTailMoveNumber < requiredSnapshotMoveNumber) {
+        return null;
+    }
+
+    if (!currentGameBaseSnapshot.config.move_tree) {
+        return null;
+    }
+
+    return {
+        controller: secondaryBoardController,
+        gameId: selectedVariation.game_id,
+        trunkTailMoveNumber: currentGameBaseSnapshot.trunkTailMoveNumber,
+        config: {
+            ...currentGameBaseSnapshot.config,
+            game_id: selectedVariation.game_id,
+            moves: undefined,
+            move_tree: cloneMoveTreeJson(currentGameBaseSnapshot.config.move_tree),
+        },
+    };
+}
+
 function loadSecondaryVariationBaseSnapshot(
     controller: GobanController,
     snapshot: SecondaryVariationBaseSnapshot,
@@ -704,6 +760,7 @@ export function KibitzRoomStage({
     room,
     rooms,
     variationGameById,
+    currentGameBaseSnapshot,
     proposals,
     variations,
     visibleVariationIds,
@@ -1152,6 +1209,7 @@ export function KibitzRoomStage({
         currentRoomGameId,
         mainBoardController,
         mainBoardOfficialTailMoveNumber,
+        currentGameBaseSnapshot,
         resetSecondaryVariationBaseState,
         selectedVariation?.game_id,
         selectedVariation?.id,
@@ -1568,7 +1626,36 @@ export function KibitzRoomStage({
                     return reloadBaseThenApplyVisibleVariations("main-board-snapshot");
                 }
 
-                logVariationStage("try:snapshot-not-ready", { reason, requiredSnapshotMoveNumber });
+                const roomBaseSnapshot = captureRoomBaseSnapshotForVariation(
+                    currentGameBaseSnapshot,
+                    secondaryBoardController,
+                    selectedVariation,
+                    visibleVariations,
+                    selectedVariationSourceGame,
+                );
+
+                if (roomBaseSnapshot) {
+                    secondaryVariationBaseSnapshotRef.current = roomBaseSnapshot;
+                    logVariationStage("try:room-base-snapshot", {
+                        reason,
+                        requiredSnapshotMoveNumber,
+                        roomBaseTailMoveNumber: roomBaseSnapshot.trunkTailMoveNumber,
+                        roomBaseSource: currentGameBaseSnapshot?.source ?? null,
+                    });
+                    return reloadBaseThenApplyVisibleVariations("room-base-snapshot");
+                }
+
+                logVariationStage("try:snapshot-not-ready", {
+                    reason,
+                    requiredSnapshotMoveNumber,
+                    currentGameBaseSnapshot: currentGameBaseSnapshot
+                        ? {
+                              gameId: currentGameBaseSnapshot.gameId,
+                              trunkTailMoveNumber: currentGameBaseSnapshot.trunkTailMoveNumber,
+                              source: currentGameBaseSnapshot.source,
+                          }
+                        : null,
+                });
                 return false;
             }
 
@@ -1733,6 +1820,7 @@ export function KibitzRoomStage({
         clearSecondaryVariationRetryTimeout,
         mainBoardController,
         mainBoardOfficialTailMoveNumber,
+        currentGameBaseSnapshot,
         secondaryBoardController,
         secondaryMoveTreeContainer,
         secondaryPane.preview_game_id,

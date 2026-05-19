@@ -1267,7 +1267,12 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         });
     }
 
-    public startVariationFromPostedVariation(variation: KibitzVariationSummary): void {
+    public startVariationFromPostedVariation(
+        variation: KibitzVariationSummary,
+        variation_source_move_tree?: KibitzVariationLineTree,
+        variation_source_move_path?: string,
+        variation_source_move_tree_id?: number,
+    ): void {
         const sourceGame =
             this._active_room?.current_game?.game_id === variation.game_id
                 ? this._active_room.current_game
@@ -1281,9 +1286,9 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             variation_id: undefined,
             variation_source_game_id: variation.game_id,
             variation_source_game: sourceGame ? { ...sourceGame } : undefined,
-            variation_source_move_tree: undefined,
-            variation_source_move_tree_id: undefined,
-            variation_source_move_path: undefined,
+            variation_source_move_tree,
+            variation_source_move_tree_id,
+            variation_source_move_path,
             variation_draft_base_id: variation.id,
         });
     }

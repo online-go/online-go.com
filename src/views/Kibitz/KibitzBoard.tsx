@@ -453,13 +453,12 @@ export function KibitzBoard({
                 return;
             }
 
-            const currentMoveNumber =
-                controllerRef.current.goban.engine.cur_move?.move_number ?? null;
-            const currentMoveNodeId = controllerRef.current.goban.engine.cur_move?.id ?? null;
-            const officialTailMoveNumber =
-                controllerRef.current.goban.engine.last_official_move?.move_number ?? 0;
-            const officialTailNodeId =
-                controllerRef.current.goban.engine.last_official_move?.id ?? null;
+            const currentEngine = controllerRef.current.goban.engine;
+            const currentMoveNumber = currentEngine.cur_move?.move_number ?? null;
+            const currentMoveNodeId = currentEngine.cur_move?.id ?? null;
+            const officialTail = getMoveTreeTrunkTail(currentEngine.move_tree);
+            const officialTailMoveNumber = officialTail?.move_number ?? 0;
+            const officialTailNodeId = officialTail?.id ?? null;
             if (
                 !shouldRestoreMainBoardToOfficialTail({
                     gameId,

@@ -23,8 +23,9 @@ import { GobanController, getMoveTreeTrunkTail } from "@/lib/GobanController";
 import { GobanControllerContext } from "@/components/GobanView";
 import { popover } from "@/lib/popover";
 import { toast } from "@/lib/toast";
+import { get } from "@/lib/requests";
 import { interpolate, pgettext } from "@/lib/translate";
-import { protocol } from "goban";
+import { type GobanConfig, type GobanRendererConfig, type MoveTreeJson, protocol } from "goban";
 import type {
     KibitzDebugState,
     KibitzProposal,
@@ -40,7 +41,7 @@ import { KibitzProposalBar } from "./KibitzProposalBar";
 import { KibitzProposalQueue } from "./KibitzProposalQueue";
 import { KibitzDebugPanel } from "./KibitzDebugPanel";
 import { KibitzRoomList } from "./KibitzRoomList";
-import { KibitzRoomStage } from "./KibitzRoomStage";
+import { KibitzRoomStage, type KibitzCurrentGameBaseSnapshot } from "./KibitzRoomStage";
 import { KibitzSharedStreamPanel } from "./KibitzSharedStreamPanel";
 import { KibitzPresence } from "./KibitzPresence";
 import { KibitzPresencePanel } from "./KibitzPresencePanel";
@@ -106,6 +107,137 @@ const DESKTOP_SIDEBAR_KEYBOARD_LARGE_STEP_PX = 72;
 const MAX_VISIBLE_VARIATIONS = KIBITZ_VARIATION_COLORS.length;
 const VARIATION_LIMIT_TOAST_MS = 1800;
 const VARIATION_LIMIT_FLASH_MS = 900;
+const CURRENT_GAME_BASE_SNAPSHOT_TOAST_MS = 1800;
+
+interface KibitzSnapshotGameDetails {
+    id: number;
+    width: number;
+    height: number;
+    name: string;
+    gamedata: {
+        moves: unknown[];
+    };
+}
+
+function cloneMoveTreeJson(moveTree: MoveTreeJson): MoveTreeJson {
+    return JSON.parse(JSON.stringify(moveTree)) as MoveTreeJson;
+}
+
+function moveTreeIdAsNumber(moveTreeId: number | string | null): number | undefined {
+    return typeof moveTreeId === "number" ? moveTreeId : undefined;
+}
+
+function isCurrentGameBaseSnapshotUsable(
+    snapshot: KibitzCurrentGameBaseSnapshot | null | undefined,
+    game: KibitzWatchedGame | null | undefined,
+): snapshot is KibitzCurrentGameBaseSnapshot {
+    if (!snapshot || !game) {
+        return false;
+    }
+
+    if (snapshot.gameId !== game.game_id) {
+        return false;
+    }
+
+    const expectedMoveNumber = game.move_number ?? 0;
+    return snapshot.trunkTailMoveNumber >= expectedMoveNumber;
+}
+
+function captureCurrentGameBaseSnapshotFromController(
+    controller: GobanController | null,
+    game: KibitzWatchedGame | null | undefined,
+    source: KibitzCurrentGameBaseSnapshot["source"] = "main-board",
+): KibitzCurrentGameBaseSnapshot | null {
+    if (!controller || !game) {
+        return null;
+    }
+
+    const { engine } = controller.goban;
+    const officialTail = getMoveTreeTrunkTail(engine.move_tree);
+    const expectedMoveNumber = game.move_number ?? 0;
+
+    if (!officialTail || officialTail.move_number < expectedMoveNumber) {
+        return null;
+    }
+
+    return {
+        gameId: game.game_id,
+        trunkTailMoveNumber: officialTail.move_number,
+        moveTreeId: engine.move_tree?.id ?? null,
+        movePath: officialTail.getMoveStringToThisPoint(),
+        source,
+        config: {
+            ...(engine.config as Record<string, unknown>),
+            game_id: game.game_id,
+            moves: undefined,
+            move_tree: cloneMoveTreeJson(engine.move_tree.toJson() as MoveTreeJson),
+        },
+    };
+}
+
+async function fetchCurrentGameBaseSnapshot(
+    game: KibitzWatchedGame,
+): Promise<KibitzCurrentGameBaseSnapshot | null> {
+    const details = (await get(`games/${game.game_id}`)) as KibitzSnapshotGameDetails;
+    if (!details?.gamedata?.moves) {
+        return null;
+    }
+
+    const boardDiv = document.createElement("div");
+    const config: GobanRendererConfig & { moves?: GobanConfig["moves"] } = {
+        board_div: boardDiv,
+        interactive: false,
+        connect_to_chat: false,
+        connect_to_game: false,
+        width: details.width,
+        height: details.height,
+        moves: details.gamedata.moves as GobanConfig["moves"],
+    };
+    const snapshotController = new GobanController(config as GobanRendererConfig);
+
+    try {
+        const { engine } = snapshotController.goban;
+        const officialTail = getMoveTreeTrunkTail(engine.move_tree);
+        const expectedMoveNumber = Math.max(game.move_number ?? 0, details.gamedata.moves.length);
+
+        if (!officialTail || officialTail.move_number < expectedMoveNumber) {
+            logKibitzVariationDebug("current-game-base-snapshot:fetch-not-ready", {
+                gameId: game.game_id,
+                expectedMoveNumber,
+                officialTailMoveNumber: officialTail?.move_number ?? null,
+                fetchedMoveCount: details.gamedata.moves.length,
+            });
+            return null;
+        }
+
+        return {
+            gameId: game.game_id,
+            trunkTailMoveNumber: officialTail.move_number,
+            moveTreeId: engine.move_tree?.id ?? null,
+            movePath: officialTail.getMoveStringToThisPoint(),
+            source: "game-details",
+            config: {
+                ...(engine.config as Record<string, unknown>),
+                game_id: game.game_id,
+                moves: undefined,
+                move_tree: cloneMoveTreeJson(engine.move_tree.toJson() as MoveTreeJson),
+            },
+        };
+    } finally {
+        snapshotController.destroy();
+    }
+}
+
+function chooseFresherCurrentGameBaseSnapshot(
+    previous: KibitzCurrentGameBaseSnapshot | null,
+    next: KibitzCurrentGameBaseSnapshot,
+): KibitzCurrentGameBaseSnapshot {
+    if (!previous || previous.gameId !== next.gameId) {
+        return next;
+    }
+
+    return previous.trunkTailMoveNumber >= next.trunkTailMoveNumber ? previous : next;
+}
 
 export function pruneVisibleVariationIdsForGame(
     variations: KibitzVariationSummary[],
@@ -361,6 +493,10 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const [mainBoardController, setMainBoardController] = React.useState<GobanController | null>(
         null,
     );
+    const [currentGameBaseSnapshot, setCurrentGameBaseSnapshot] =
+        React.useState<KibitzCurrentGameBaseSnapshot | null>(null);
+    const [currentGameBaseSnapshotLoadingGameId, setCurrentGameBaseSnapshotLoadingGameId] =
+        React.useState<number | null>(null);
     const [gameVariations, setGameVariations] = React.useState<KibitzVariationSummary[]>([]);
     const [mobileOverlayMode, setMobileOverlayMode] = React.useState<MobileOverlayMode>(null);
     const [isMobileLayout, setIsMobileLayout] = React.useState(
@@ -807,6 +943,180 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         debugSource: "KibitzInner",
         boardController: mainBoardController,
     });
+    React.useEffect(() => {
+        setCurrentGameBaseSnapshot((previous) =>
+            previous?.gameId === currentGameId ? previous : null,
+        );
+    }, [currentGameId]);
+
+    React.useEffect(() => {
+        const game = resolvedRoom?.current_game;
+        if (!game || !mainBoardController) {
+            return;
+        }
+
+        const goban = mainBoardController.goban;
+        let disposed = false;
+
+        const syncSnapshotFromMainBoard = (reason: string) => {
+            if (disposed) {
+                return;
+            }
+
+            const snapshot = captureCurrentGameBaseSnapshotFromController(
+                mainBoardController,
+                game,
+            );
+            if (!snapshot) {
+                const officialTail = getMoveTreeTrunkTail(goban.engine.move_tree);
+                logKibitzVariationDebug("current-game-base-snapshot:main-not-ready", {
+                    reason,
+                    gameId: game.game_id,
+                    expectedMoveNumber: game.move_number ?? 0,
+                    officialTailMoveNumber: officialTail?.move_number ?? null,
+                    currentMoveNumber: goban.engine.cur_move?.move_number ?? null,
+                });
+                return;
+            }
+
+            logKibitzVariationDebug("current-game-base-snapshot:main-ready", {
+                reason,
+                gameId: snapshot.gameId,
+                trunkTailMoveNumber: snapshot.trunkTailMoveNumber,
+                moveTreeId: snapshot.moveTreeId,
+            });
+            setCurrentGameBaseSnapshot((previous) =>
+                chooseFresherCurrentGameBaseSnapshot(previous, snapshot),
+            );
+        };
+
+        const onLoad = () => syncSnapshotFromMainBoard("load");
+        const onGameData = () => syncSnapshotFromMainBoard("gamedata");
+        const onLastOfficialMove = () => syncSnapshotFromMainBoard("last_official_move");
+        const onMoveMade = () => syncSnapshotFromMainBoard("move-made");
+
+        goban.on("load", onLoad);
+        goban.on("gamedata", onGameData);
+        goban.on("last_official_move", onLastOfficialMove);
+        goban.on("move-made", onMoveMade);
+        syncSnapshotFromMainBoard("mount");
+
+        return () => {
+            disposed = true;
+            goban.off("load", onLoad);
+            goban.off("gamedata", onGameData);
+            goban.off("last_official_move", onLastOfficialMove);
+            goban.off("move-made", onMoveMade);
+        };
+    }, [mainBoardController, resolvedRoom?.current_game]);
+
+    React.useEffect(() => {
+        const game = resolvedRoom?.current_game;
+        if (!game) {
+            setCurrentGameBaseSnapshotLoadingGameId(null);
+            return;
+        }
+
+        let cancelled = false;
+        setCurrentGameBaseSnapshotLoadingGameId(game.game_id);
+
+        void fetchCurrentGameBaseSnapshot(game)
+            .then((snapshot) => {
+                if (cancelled) {
+                    return;
+                }
+
+                if (snapshot) {
+                    logKibitzVariationDebug("current-game-base-snapshot:fetch-ready", {
+                        gameId: snapshot.gameId,
+                        trunkTailMoveNumber: snapshot.trunkTailMoveNumber,
+                        moveTreeId: snapshot.moveTreeId,
+                    });
+                    setCurrentGameBaseSnapshot((previous) =>
+                        chooseFresherCurrentGameBaseSnapshot(previous, snapshot),
+                    );
+                }
+            })
+            .catch((error) => {
+                if (!cancelled) {
+                    logKibitzVariationDebug("current-game-base-snapshot:fetch-failed", {
+                        gameId: game.game_id,
+                        error,
+                    });
+                }
+            })
+            .finally(() => {
+                if (!cancelled) {
+                    setCurrentGameBaseSnapshotLoadingGameId((loadingGameId) =>
+                        loadingGameId === game.game_id ? null : loadingGameId,
+                    );
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [resolvedRoom?.current_game?.game_id]);
+
+    const getCurrentGameBaseSnapshotForVariation = React.useCallback(
+        (reason: string): KibitzCurrentGameBaseSnapshot | null => {
+            const game = resolvedRoom?.current_game;
+            if (!game) {
+                return null;
+            }
+
+            const cachedSnapshot = currentGameBaseSnapshot;
+            const cachedSnapshotForLog: KibitzCurrentGameBaseSnapshot | null =
+                currentGameBaseSnapshot;
+            const mainBoardSnapshot = captureCurrentGameBaseSnapshotFromController(
+                mainBoardController,
+                game,
+            );
+            if (mainBoardSnapshot) {
+                setCurrentGameBaseSnapshot((previous) =>
+                    chooseFresherCurrentGameBaseSnapshot(previous, mainBoardSnapshot),
+                );
+                return mainBoardSnapshot;
+            }
+
+            if (isCurrentGameBaseSnapshotUsable(cachedSnapshot, game)) {
+                return cachedSnapshot;
+            }
+
+            logKibitzVariationDebug("current-game-base-snapshot:not-ready-for-variation", {
+                reason,
+                gameId: game.game_id,
+                expectedMoveNumber: game.move_number ?? 0,
+                cachedSnapshot: cachedSnapshotForLog
+                    ? {
+                          gameId: cachedSnapshotForLog.gameId,
+                          trunkTailMoveNumber: cachedSnapshotForLog.trunkTailMoveNumber,
+                          source: cachedSnapshotForLog.source,
+                      }
+                    : null,
+                loadingGameId: currentGameBaseSnapshotLoadingGameId,
+            });
+            return null;
+        },
+        [
+            currentGameBaseSnapshot,
+            currentGameBaseSnapshotLoadingGameId,
+            mainBoardController,
+            resolvedRoom?.current_game,
+        ],
+    );
+
+    const showCurrentGameBaseNotReadyToast = React.useCallback(() => {
+        toast(
+            <div>
+                {pgettext(
+                    "Notice shown when Kibitz is still loading the base game before creating a variation",
+                    "Preparing the board. Try again in a moment.",
+                )}
+            </div>,
+            CURRENT_GAME_BASE_SNAPSHOT_TOAST_MS,
+        );
+    }, []);
     const activePostedVariations = React.useMemo(
         () => getVisiblePostedVariations(displayedVariations, visibleVariationIds),
         [displayedVariations, visibleVariationIds],
@@ -1064,27 +1374,62 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     );
     const onCreateVariation = React.useCallback(() => {
         logMainBoardState("new-variation");
+        const snapshot = getCurrentGameBaseSnapshotForVariation("new-variation");
+        if (!snapshot) {
+            showCurrentGameBaseNotReadyToast();
+            return;
+        }
+
         controller.startVariationFromCurrentBoard(
-            mainBoardController?.goban.engine.move_tree.toJson(),
-            mainBoardController?.goban.engine.cur_move.getMoveStringToThisPoint(),
-            mainBoardController?.goban.engine.move_tree.id,
+            snapshot.config.move_tree,
+            snapshot.movePath,
+            moveTreeIdAsNumber(snapshot.moveTreeId),
         );
         if (isMobileLayout) {
             setMobileOverlayMode(null);
             setMobileCompanionPanel("compare");
         }
-    }, [controller, isMobileLayout, logMainBoardState, mainBoardController]);
+    }, [
+        controller,
+        getCurrentGameBaseSnapshotForVariation,
+        isMobileLayout,
+        logMainBoardState,
+        showCurrentGameBaseNotReadyToast,
+    ]);
     const onCreateVariationFromPostedVariation = React.useCallback(
         (variation: KibitzVariationSummary) => {
             logMainBoardState("new-variation-from-posted-variation");
-            controller.startVariationFromPostedVariation(variation);
+            const snapshot =
+                variation.game_id === currentGameId
+                    ? getCurrentGameBaseSnapshotForVariation("new-variation-from-posted")
+                    : null;
+
+            if (variation.game_id === currentGameId && !snapshot) {
+                showCurrentGameBaseNotReadyToast();
+                return;
+            }
+
+            controller.startVariationFromPostedVariation(
+                variation,
+                snapshot?.config.move_tree,
+                snapshot?.movePath,
+                moveTreeIdAsNumber(snapshot?.moveTreeId ?? null),
+            );
             kibitzHelpTriggers.noteDraftStartedFromPostedVariation();
             if (isMobileLayout) {
                 setMobileOverlayMode(null);
                 setMobileCompanionPanel("compare");
             }
         },
-        [controller, isMobileLayout, kibitzHelpTriggers, logMainBoardState],
+        [
+            controller,
+            currentGameId,
+            getCurrentGameBaseSnapshotForVariation,
+            isMobileLayout,
+            kibitzHelpTriggers,
+            logMainBoardState,
+            showCurrentGameBaseNotReadyToast,
+        ],
     );
     const onSetSecondaryPaneMode = React.useCallback((nextMode: SecondaryPaneMode) => {
         setPendingSecondaryPaneMode(nextMode);
@@ -1953,6 +2298,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                             room={resolvedRoom}
                                             rooms={rooms}
                                             variationGameById={variationGameById}
+                                            currentGameBaseSnapshot={currentGameBaseSnapshot}
                                             proposals={roomProposals}
                                             variations={displayedVariations}
                                             visibleVariationIds={visibleVariationIds}
@@ -2116,6 +2462,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                     room={resolvedRoom}
                                     rooms={rooms}
                                     variationGameById={variationGameById}
+                                    currentGameBaseSnapshot={currentGameBaseSnapshot}
                                     proposals={roomProposals}
                                     variations={displayedVariations}
                                     visibleVariationIds={visibleVariationIds}
