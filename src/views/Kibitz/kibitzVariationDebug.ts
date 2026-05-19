@@ -131,6 +131,10 @@ export function logKibitzVariationDebug(message: string, details?: unknown): voi
 }
 
 export function warnKibitzVariationDebug(message: string, details?: unknown): void {
+    if (!isKibitzVariationDebugEnabled()) {
+        return;
+    }
+
     const entry = recordKibitzVariationDebugEntry("warn", message, details);
     console.warn(formatKibitzVariationDebugMessage(message), entry.details);
 }
