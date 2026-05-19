@@ -18,6 +18,7 @@
 import { MoveTree as GobanMoveTree, type MoveTree, type MoveTreeJson } from "goban";
 import type { GobanController } from "@/lib/GobanController";
 import type { KibitzVariationSummary } from "@/models/kibitz";
+import { logKibitzVariationDebug, warnKibitzVariationDebug } from "./kibitzVariationDebug";
 
 export const KIBITZ_VARIATION_COLORS = GobanMoveTree.line_colors;
 
@@ -97,42 +98,39 @@ function applyLineColor(nodes: MoveTree[], colorIndex: KibitzVariationColorIndex
     }
 }
 
-function findMatchingBranch(
-    parent: MoveTree,
-    x: number,
-    y: number,
-    player: number,
-    edited: boolean,
-): MoveTree | null {
-    for (const branch of parent.branches) {
-        if (
-            branch.x === x &&
-            branch.y === y &&
-            branch.edited === edited &&
-            (!edited || branch.player === player)
-        ) {
-            return branch;
-        }
+function summarizeMoveTreeNode(node: MoveTree | null | undefined): Record<string, unknown> | null {
+    if (!node) {
+        return null;
     }
 
-    return null;
+    return {
+        id: node.id,
+        moveNumber: node.move_number,
+        x: node.x,
+        y: node.y,
+        player: node.player,
+        edited: node.edited,
+        parentId: node.parent?.id,
+        trunkNextId: node.trunk_next?.id,
+        branchIds: node.branches.map((branch) => branch.id),
+    };
 }
 
-function duplicateTrunkMoveAsBranch(
+function duplicateMoveNodeAsBranch(
     engine: GobanController["goban"]["engine"],
     parent: MoveTree,
-    trunkMove: MoveTree,
+    sourceNode: MoveTree,
 ): MoveTree {
     const branch = new GobanMoveTree(
         engine,
         false,
-        trunkMove.x,
-        trunkMove.y,
-        trunkMove.edited,
-        trunkMove.player,
-        trunkMove.move_number,
+        sourceNode.x,
+        sourceNode.y,
+        sourceNode.edited,
+        sourceNode.player,
+        sourceNode.move_number,
         parent,
-        trunkMove.state,
+        sourceNode.state,
     );
 
     parent.branches.push(branch);
@@ -147,7 +145,7 @@ function duplicateOfficialTrunkAsBranch(controller: GobanController, parent: Mov
     let trunkCursor = parent.trunk_next;
 
     while (trunkCursor) {
-        branchCursor = duplicateTrunkMoveAsBranch(engine, branchCursor, trunkCursor);
+        branchCursor = duplicateMoveNodeAsBranch(engine, branchCursor, trunkCursor);
         pathNodes.push(branchCursor);
 
         if (trunkCursor === engine.last_official_move) {
@@ -158,6 +156,47 @@ function duplicateOfficialTrunkAsBranch(controller: GobanController, parent: Mov
     }
 
     return pathNodes;
+}
+
+export function officialTrunkNodeByMoveNumber(root: MoveTree, moveNumber: number): MoveTree | null {
+    let cursor: MoveTree | undefined = root;
+
+    while (cursor) {
+        if (cursor.move_number === moveNumber) {
+            return cursor;
+        }
+
+        cursor = cursor.trunk_next;
+    }
+
+    return null;
+}
+
+export function isVariationOfficialAnchorReady(
+    controller: GobanController,
+    variation: KibitzVariationSummary,
+): boolean {
+    if (!controller.goban.engine?.move_tree) {
+        return false;
+    }
+
+    if (variation.analysis_from == null) {
+        return false;
+    }
+
+    return Boolean(
+        officialTrunkNodeByMoveNumber(controller.goban.engine.move_tree, variation.analysis_from),
+    );
+}
+
+function findMatchingBranch(
+    parent: MoveTree,
+    x: number,
+    y: number,
+    player: number,
+    edited: boolean,
+): MoveTree | null {
+    return parent.branches.find((branch) => moveMatchesNode(branch, x, y, player, edited)) ?? null;
 }
 
 function moveMatchesNode(
@@ -178,19 +217,41 @@ function moveMatchesNode(
 
 function followKibitzVariationPath(
     controller: GobanController,
+    variationId: string,
     fromMoveNumber: number,
     moves: string,
 ): MoveTree[] {
     const engine = controller.goban.engine;
     const decodedMoves = engine.decodeMoves(moves);
     const pathNodes: MoveTree[] = [];
-    let cursor = engine.move_tree.index(fromMoveNumber);
+    const officialTrunkNode = officialTrunkNodeByMoveNumber(engine.move_tree, fromMoveNumber);
+
+    if (!officialTrunkNode) {
+        throw new Error(`Official trunk node ${fromMoveNumber} not found`);
+    }
+
+    let cursor = officialTrunkNode;
+
+    logKibitzVariationDebug("follow:start", {
+        variationId,
+        fromMoveNumber,
+        decodedMoveCount: decodedMoves.length,
+        officialTrunkNode: summarizeMoveTreeNode(officialTrunkNode),
+        lastOfficialMove: summarizeMoveTreeNode(engine.last_official_move),
+        currentMove: summarizeMoveTreeNode(engine.cur_move),
+    });
 
     if (decodedMoves.length > 0) {
         const firstMove = decodedMoves[0];
         const firstMoveEdited = !!firstMove.edited;
         const firstMovePlayer = engine.playerByColor(firstMove.color || 0);
         if (moveMatchesNode(cursor, firstMove.x, firstMove.y, firstMovePlayer, firstMoveEdited)) {
+            logKibitzVariationDebug("follow:first-move-matches-anchor-moving-to-parent", {
+                variationId,
+                cursor: summarizeMoveTreeNode(cursor),
+                parent: summarizeMoveTreeNode(cursor.parent),
+                firstMove,
+            });
             cursor = cursor.parent ?? cursor;
         }
     }
@@ -219,27 +280,52 @@ function followKibitzVariationPath(
     const duplicatesTrunkOnlyLine =
         trunkPrefixLength > 0 && trunkPrefixLength === decodedMoves.length;
 
+    logKibitzVariationDebug("follow:prefix", {
+        variationId,
+        fromMoveNumber,
+        trunkPrefixLength,
+        duplicatesSharedTrunkPrefix,
+        duplicatesTrunkOnlyLine,
+        cursor: summarizeMoveTreeNode(cursor),
+        trunkPrefixCursor: summarizeMoveTreeNode(trunkPrefixCursor),
+    });
+
     engine.jumpTo(cursor);
 
     for (let index = 0; index < decodedMoves.length; ++index) {
         const move = decodedMoves[index];
         const edited = !!move.edited;
         const player = engine.playerByColor(move.color || 0);
-        const existingBranch = findMatchingBranch(cursor, move.x, move.y, player, edited);
 
-        if (existingBranch && !duplicatesSharedTrunkPrefix && !duplicatesTrunkOnlyLine) {
-            cursor = existingBranch;
+        logKibitzVariationDebug("follow:step", {
+            variationId,
+            index,
+            move: { x: move.x, y: move.y, color: move.color, edited },
+            player,
+            cursor: summarizeMoveTreeNode(cursor),
+            trunkNext: summarizeMoveTreeNode(cursor.trunk_next),
+            duplicatesSharedTrunkPrefix,
+            duplicatesTrunkOnlyLine,
+        });
+
+        if (moveMatchesNode(cursor.trunk_next, move.x, move.y, player, edited)) {
+            const matchingTrunkNext = cursor.trunk_next;
+            const shouldDuplicateMatchingTrunkNext =
+                !matchingTrunkNext.trunk ||
+                (duplicatesSharedTrunkPrefix && index < trunkPrefixLength) ||
+                duplicatesTrunkOnlyLine;
+
+            cursor = shouldDuplicateMatchingTrunkNext
+                ? duplicateMoveNodeAsBranch(engine, cursor, matchingTrunkNext)
+                : matchingTrunkNext;
             engine.jumpTo(cursor);
             pathNodes.push(cursor);
             continue;
         }
 
-        if (moveMatchesNode(cursor.trunk_next, move.x, move.y, player, edited)) {
-            cursor =
-                (duplicatesSharedTrunkPrefix && index < trunkPrefixLength) ||
-                duplicatesTrunkOnlyLine
-                    ? duplicateTrunkMoveAsBranch(engine, cursor, cursor.trunk_next)
-                    : cursor.trunk_next;
+        const matchingBranch = findMatchingBranch(cursor, move.x, move.y, player, edited);
+        if (matchingBranch) {
+            cursor = duplicateMoveNodeAsBranch(engine, cursor, matchingBranch);
             engine.jumpTo(cursor);
             pathNodes.push(cursor);
             continue;
@@ -252,8 +338,19 @@ function followKibitzVariationPath(
             engine.place(move.x, move.y, false, false, true, true);
         }
         cursor = engine.cur_move;
+        logKibitzVariationDebug("follow:placed", {
+            variationId,
+            index,
+            cursor: summarizeMoveTreeNode(cursor),
+        });
         pathNodes.push(cursor);
     }
+
+    logKibitzVariationDebug("follow:done", {
+        variationId,
+        endpoint: summarizeMoveTreeNode(pathNodes[pathNodes.length - 1]),
+        pathNodeCount: pathNodes.length,
+    });
 
     return pathNodes;
 }
@@ -271,15 +368,47 @@ export function applyKibitzVariationToController(
         return { variationId: variation.id, endpoint: null };
     }
 
+    if (!isVariationOfficialAnchorReady(controller, variation)) {
+        warnKibitzVariationDebug("variation anchor not ready", {
+            variationId: variation.id,
+            analysisFrom: variation.analysis_from,
+            currentMove: summarizeMoveTreeNode(controller.goban.engine.cur_move),
+            officialAnchor: summarizeMoveTreeNode(
+                officialTrunkNodeByMoveNumber(
+                    controller.goban.engine.move_tree,
+                    variation.analysis_from,
+                ),
+            ),
+            lastOfficialMove: summarizeMoveTreeNode(controller.goban.engine.last_official_move),
+        });
+        return { variationId: variation.id, endpoint: null };
+    }
+
     let pathNodes: MoveTree[];
     try {
         pathNodes = followKibitzVariationPath(
             controller,
+            variation.id,
             variation.analysis_from,
             variation.analysis_moves,
         );
     } catch (error) {
-        console.warn("kibitz: failed to apply variation", variation.id, error);
+        warnKibitzVariationDebug("failed to apply variation", {
+            variationId: variation.id,
+            error,
+            analysisFrom: variation.analysis_from,
+            analysisMoves: variation.analysis_moves,
+            currentMove: summarizeMoveTreeNode(controller.goban.engine.cur_move),
+            officialAnchor:
+                typeof variation.analysis_from === "number"
+                    ? summarizeMoveTreeNode(
+                          officialTrunkNodeByMoveNumber(
+                              controller.goban.engine.move_tree,
+                              variation.analysis_from,
+                          ),
+                      )
+                    : null,
+        });
         controller.goban.engine.jumpTo(controller.goban.engine.last_official_move);
         return { variationId: variation.id, endpoint: null };
     }
