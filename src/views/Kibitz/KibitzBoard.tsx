@@ -20,9 +20,11 @@ import { GobanRendererConfig, type MoveTree, type MoveTreeJson } from "goban";
 import { GobanContainer } from "@/components/GobanContainer/GobanContainer";
 import { GobanController, getMoveTreeTrunkTail } from "@/lib/GobanController";
 import * as preferences from "@/lib/preferences";
+import { logKibitzVariationDebug } from "./kibitzVariationDebug";
 import "./KibitzBoard.css";
 
 interface KibitzBoardProps {
+    role?: "main" | "secondary" | "variation" | "preview";
     gameId?: number;
     width?: number;
     height?: number;
@@ -34,6 +36,7 @@ interface KibitzBoardProps {
     respectContainerBounds?: boolean;
     moveTree?: MoveTreeJson;
     movePath?: string;
+    restoreToOfficialTailOnLoad?: boolean;
     onReady?: (controller: GobanController | null) => void;
 }
 
@@ -68,7 +71,43 @@ export function refreshLastOfficialMoveFromTrunk(controller: GobanController): M
     return liveTrunkTail;
 }
 
+export function restoreToOfficialTail(controller: GobanController): MoveTree | null {
+    const { engine } = controller.goban;
+    const officialTail = getMoveTreeTrunkTail(engine.move_tree);
+
+    if (!officialTail || officialTail.move_number <= 0) {
+        return null;
+    }
+
+    engine.jumpTo(officialTail);
+    engine.setLastOfficialMove();
+    controller.goban.redraw(true);
+
+    return officialTail;
+}
+
+function summarizeKibitzMoveTreeNode(
+    node: MoveTree | null | undefined,
+): Record<string, unknown> | null {
+    if (!node) {
+        return null;
+    }
+
+    return {
+        id: node.id,
+        moveNumber: node.move_number,
+        x: node.x,
+        y: node.y,
+        player: node.player,
+        edited: node.edited,
+        parentId: node.parent?.id,
+        trunkNextId: node.trunk_next?.id,
+        branchIds: node.branches.map((branch) => branch.id),
+    };
+}
+
 export function KibitzBoard({
+    role,
     gameId,
     width = 19,
     height = 19,
@@ -80,6 +119,7 @@ export function KibitzBoard({
     respectContainerBounds = false,
     moveTree,
     movePath,
+    restoreToOfficialTailOnLoad = false,
     onReady,
 }: KibitzBoardProps): React.ReactElement {
     const gobanDiv = React.useRef<HTMLDivElement>(
@@ -141,6 +181,31 @@ export function KibitzBoard({
 
         controllerRef.current?.destroy();
         controllerRef.current = new GobanController(config);
+        const boardRole = role ?? (restoreToOfficialTailOnLoad ? "main" : "secondary");
+
+        const logBoardState = (reason: string, extra: Record<string, unknown> = {}) => {
+            const currentController = controllerRef.current;
+            if (!currentController) {
+                return;
+            }
+
+            const currentEngine = currentController.goban.engine;
+            const officialTail = getMoveTreeTrunkTail(currentEngine.move_tree);
+
+            logKibitzVariationDebug("main-board:state", {
+                reason,
+                role: boardRole,
+                gameId,
+                restoreToOfficialTailOnLoad,
+                currentMove: summarizeKibitzMoveTreeNode(currentEngine.cur_move),
+                currentMoveNumber: currentEngine.cur_move?.move_number ?? null,
+                officialTail: summarizeKibitzMoveTreeNode(officialTail),
+                officialTailMoveNumber: officialTail?.move_number ?? null,
+                lastOfficialMove: summarizeKibitzMoveTreeNode(currentEngine.last_official_move),
+                lastOfficialMoveNumber: currentEngine.last_official_move?.move_number ?? null,
+                ...extra,
+            });
+        };
 
         const hasRestorableBoardState = Boolean(moveTreeRef.current || sourceMovePathRef.current);
 
@@ -260,6 +325,9 @@ export function KibitzBoard({
             controllerRef.current.goban.on("load", handleLoad);
             handleLoad();
         }
+        if (restoreToOfficialTailOnLoad) {
+            logBoardState("controller-create");
+        }
         setGoban(controllerRef.current.goban);
         onReady?.(controllerRef.current);
 
@@ -273,7 +341,90 @@ export function KibitzBoard({
             controllerRef.current = null;
             setGoban(null);
         };
-    }, [gameId, width, height, interactive, onReady, showLabels]);
+    }, [
+        gameId,
+        width,
+        height,
+        interactive,
+        onReady,
+        restoreToOfficialTailOnLoad,
+        role,
+        showLabels,
+    ]);
+
+    React.useEffect(() => {
+        if (!goban || !restoreToOfficialTailOnLoad || !controllerRef.current) {
+            return;
+        }
+
+        const boardRole = role ?? "main";
+        const logBoardState = (reason: string, extra: Record<string, unknown> = {}) => {
+            const currentController = controllerRef.current;
+            if (!currentController) {
+                return;
+            }
+
+            const currentEngine = currentController.goban.engine;
+            const officialTail = getMoveTreeTrunkTail(currentEngine.move_tree);
+
+            logKibitzVariationDebug("main-board:state", {
+                reason,
+                role: boardRole,
+                gameId,
+                restoreToOfficialTailOnLoad,
+                currentMove: summarizeKibitzMoveTreeNode(currentEngine.cur_move),
+                currentMoveNumber: currentEngine.cur_move?.move_number ?? null,
+                officialTail: summarizeKibitzMoveTreeNode(officialTail),
+                officialTailMoveNumber: officialTail?.move_number ?? null,
+                lastOfficialMove: summarizeKibitzMoveTreeNode(currentEngine.last_official_move),
+                lastOfficialMoveNumber: currentEngine.last_official_move?.move_number ?? null,
+                ...extra,
+            });
+        };
+
+        const handleRestoreToOfficialTail = (reason: string) => {
+            if (!controllerRef.current) {
+                return;
+            }
+
+            if (restoringBoardRef.current) {
+                return;
+            }
+
+            logBoardState(`${reason}:restore-attempt`);
+            restoringBoardRef.current = true;
+            try {
+                const restoredTail = restoreToOfficialTail(controllerRef.current);
+                logBoardState(`${reason}:restore-result`, {
+                    restored: Boolean(restoredTail),
+                    restoredTailMoveNumber: restoredTail?.move_number ?? null,
+                });
+            } finally {
+                restoringBoardRef.current = false;
+            }
+        };
+
+        const onLoad = () => {
+            handleRestoreToOfficialTail("load");
+        };
+        const onGameData = () => {
+            handleRestoreToOfficialTail("gamedata");
+        };
+        const onLastOfficialMove = () => {
+            handleRestoreToOfficialTail("last_official_move");
+        };
+
+        goban.on("load", onLoad);
+        goban.on("gamedata", onGameData);
+        goban.on("last_official_move", onLastOfficialMove);
+        handleRestoreToOfficialTail("mount");
+
+        return () => {
+            goban.off("load", onLoad);
+            goban.off("gamedata", onGameData);
+            goban.off("last_official_move", onLastOfficialMove);
+        };
+    }, [gameId, goban, restoreToOfficialTailOnLoad, role]);
 
     return (
         <div

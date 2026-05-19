@@ -24,7 +24,7 @@ import { GobanControllerContext } from "@/components/GobanView";
 import { popover } from "@/lib/popover";
 import { toast } from "@/lib/toast";
 import { interpolate, pgettext } from "@/lib/translate";
-import { protocol } from "goban";
+import { protocol, type MoveTree } from "goban";
 import type {
     KibitzDebugState,
     KibitzProposal,
@@ -63,6 +63,7 @@ import {
     getKibitzBlockedRoomFollowupMessage,
     getKibitzBlockedRoomMessage,
 } from "./kibitzAnalysisPolicyText";
+import { logKibitzVariationDebug } from "./kibitzVariationDebug";
 import { useCurrentKibitzUser } from "./useCurrentKibitzUser";
 import "./Kibitz.css";
 
@@ -83,6 +84,38 @@ interface PendingPostedVariation {
     from?: number;
     moves?: string;
     title?: string;
+}
+
+function summarizeKibitzMoveTreeNode(
+    node: MoveTree | null | undefined,
+): Record<string, unknown> | null {
+    if (!node) {
+        return null;
+    }
+
+    return {
+        id: node.id,
+        moveNumber: node.move_number,
+        x: node.x,
+        y: node.y,
+        player: node.player,
+        edited: node.edited,
+        parentId: node.parent?.id,
+        trunkNextId: node.trunk_next?.id,
+        branchIds: node.branches.map((branch) => branch.id),
+    };
+}
+
+function getMoveTreeTrunkTail(moveTree: MoveTree | null | undefined): MoveTree | null {
+    if (!moveTree) {
+        return null;
+    }
+
+    let tail = moveTree;
+    while (tail.trunk_next) {
+        tail = tail.trunk_next;
+    }
+    return tail;
 }
 
 interface KibitzInnerProps {
@@ -1021,7 +1054,35 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             }
         };
     }, []);
+    const logMainBoardState = React.useCallback(
+        (reason: string) => {
+            const controller = mainBoardController;
+            const room = resolvedRoom;
+            const game = room?.current_game;
+
+            if (!controller || !game) {
+                return;
+            }
+
+            const { engine } = controller.goban;
+            const officialTail = getMoveTreeTrunkTail(engine.move_tree);
+
+            logKibitzVariationDebug("new-variation:main-board-state", {
+                reason,
+                roomId: room.id,
+                gameId: game.game_id,
+                currentMove: summarizeKibitzMoveTreeNode(engine.cur_move),
+                currentMoveNumber: engine.cur_move?.move_number ?? null,
+                officialTail: summarizeKibitzMoveTreeNode(officialTail),
+                officialTailMoveNumber: officialTail?.move_number ?? null,
+                lastOfficialMove: summarizeKibitzMoveTreeNode(engine.last_official_move),
+                lastOfficialMoveNumber: engine.last_official_move?.move_number ?? null,
+            });
+        },
+        [mainBoardController, resolvedRoom],
+    );
     const onCreateVariation = React.useCallback(() => {
+        logMainBoardState("new-variation");
         controller.startVariationFromCurrentBoard(
             mainBoardController?.goban.engine.move_tree.toJson(),
             mainBoardController?.goban.engine.cur_move.getMoveStringToThisPoint(),
@@ -1031,9 +1092,10 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             setMobileOverlayMode(null);
             setMobileCompanionPanel("compare");
         }
-    }, [controller, isMobileLayout, mainBoardController]);
+    }, [controller, isMobileLayout, logMainBoardState, mainBoardController]);
     const onCreateVariationFromPostedVariation = React.useCallback(
         (variation: KibitzVariationSummary) => {
+            logMainBoardState("new-variation-from-posted-variation");
             controller.startVariationFromPostedVariation(variation);
             kibitzHelpTriggers.noteDraftStartedFromPostedVariation();
             if (isMobileLayout) {
@@ -1041,7 +1103,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 setMobileCompanionPanel("compare");
             }
         },
-        [controller, isMobileLayout, kibitzHelpTriggers],
+        [controller, isMobileLayout, kibitzHelpTriggers, logMainBoardState],
     );
     const onSetSecondaryPaneMode = React.useCallback((nextMode: SecondaryPaneMode) => {
         setPendingSecondaryPaneMode(nextMode);

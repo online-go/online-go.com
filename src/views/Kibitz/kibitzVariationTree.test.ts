@@ -18,7 +18,10 @@
 import type { GobanController } from "@/lib/GobanController";
 import type { KibitzVariationSummary } from "@/models/kibitz";
 import type { MoveTree } from "goban";
-import { applyKibitzVariationToController } from "./kibitzVariationTree";
+import {
+    applyKibitzVariationToController,
+    isVariationOfficialAnchorReady,
+} from "./kibitzVariationTree";
 
 type TestMove = {
     x: number;
@@ -79,7 +82,7 @@ function makeVariation(id: string, moves: TestMove[]): KibitzVariationSummary {
         viewer_count: 0,
         current_viewers: [],
         analysis_from: 1,
-        analysis_moves: moves as unknown as string,
+        analysis_moves: JSON.stringify(moves),
     } as KibitzVariationSummary;
 }
 
@@ -97,7 +100,10 @@ function makeController() {
         last_official_move: trunk2 as unknown as MoveTree,
         move_tree_layout_dirty: false,
         prettyCoordinates: (x: number, y: number) => `${x},${y}`,
-        decodeMoves: (moveObj: unknown) => moveObj as TestMove[],
+        decodeMoves: (moveObj: unknown) =>
+            typeof moveObj === "string"
+                ? (JSON.parse(moveObj) as TestMove[])
+                : (moveObj as TestMove[]),
         playerByColor: (color: number) => color,
         jumpTo: (node: MoveTree) => {
             engine.cur_move = node;
@@ -154,5 +160,17 @@ describe("applyKibitzVariationToController", () => {
         expect(anchor.branches[0]).not.toBe(anchor.branches[1]);
         expect(anchor.branches[0].x).toBe(sharedPrefix[0].x);
         expect(anchor.branches[1].x).toBe(sharedPrefix[0].x);
+    });
+
+    it("refuses to report readiness when the official anchor is missing", () => {
+        const controller = makeController();
+        const readyVariation = makeVariation("variation-ready", [{ x: 10, y: 10, color: 1 }]);
+        const missingAnchorVariation = {
+            ...readyVariation,
+            analysis_from: 99,
+        };
+
+        expect(isVariationOfficialAnchorReady(controller, readyVariation)).toBe(true);
+        expect(isVariationOfficialAnchorReady(controller, missingAnchorVariation)).toBe(false);
     });
 });

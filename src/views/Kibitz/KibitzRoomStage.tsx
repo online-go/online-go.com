@@ -42,7 +42,10 @@ import { KibitzNodeText } from "./KibitzNodeText";
 import { KibitzUserAvatar } from "./KibitzUserAvatar";
 import { KIBITZ_HELP_TARGETS } from "./HelpFlows/KibitzHelpTargets";
 import { useKibitzHelpTarget } from "./HelpFlows/useKibitzHelpTarget";
-import { applyKibitzVariationToController } from "./kibitzVariationTree";
+import {
+    applyKibitzVariationToController,
+    isVariationOfficialAnchorReady,
+} from "./kibitzVariationTree";
 import { logKibitzVariationDebug } from "./kibitzVariationDebug";
 import "./KibitzRoomStage.css";
 
@@ -1053,23 +1056,46 @@ export function KibitzRoomStage({
                 })),
             });
 
-            secondaryVariationTreeDirtyRef.current = variationsToApply.length > 0;
+            const preparedVariations: Array<{
+                variation: KibitzVariationSummary;
+                colorIndex: number;
+                isSelected: boolean;
+            }> = [];
+
+            for (const variation of variationsToApply) {
+                const colorIndex = getVariationColorIndex(variationColorIndexes, variation.id);
+                if (colorIndex == null) {
+                    logVariationStage("apply:missing-color", {
+                        variationId: variation.id,
+                    });
+                    return false;
+                }
+
+                if (!isVariationOfficialAnchorReady(secondaryBoardController, variation)) {
+                    logVariationStage("apply:anchor-not-ready", {
+                        variationId: variation.id,
+                        analysisFrom: variation.analysis_from,
+                        officialTailMoveNumber:
+                            getOfficialTrunkTailMoveNumber(secondaryBoardController),
+                    });
+                    return false;
+                }
+
+                preparedVariations.push({
+                    variation,
+                    colorIndex,
+                    isSelected: variation.id === selectedVariation.id,
+                });
+            }
+
+            secondaryVariationTreeDirtyRef.current = preparedVariations.length > 0;
             applyingVariation = true;
             suppressSelectedVariationLoadRef.current = true;
 
             try {
                 let selectedEndpoint: MoveTree | null = null;
 
-                for (const variation of variationsToApply) {
-                    const colorIndex = getVariationColorIndex(variationColorIndexes, variation.id);
-                    if (colorIndex == null) {
-                        logVariationStage("apply:missing-color", {
-                            variationId: variation.id,
-                        });
-                        return false;
-                    }
-
-                    const isSelected = variation.id === selectedVariation.id;
+                for (const { variation, colorIndex, isSelected } of preparedVariations) {
                     logVariationStage("apply:variation", {
                         variationId: variation.id,
                         analysisFrom: variation.analysis_from,
@@ -1461,6 +1487,18 @@ export function KibitzRoomStage({
                 return;
             }
 
+            if (!isVariationOfficialAnchorReady(secondaryBoardController, draftBaseVariation)) {
+                logKibitzVariationDebug("draft-base:anchor-not-ready", {
+                    selectedVariationId: selectedVariation?.id ?? null,
+                    selectedGameId: selectedVariation?.game_id ?? null,
+                    variationId: draftBaseVariation.id,
+                    analysisFrom: draftBaseVariation.analysis_from,
+                    officialTailMoveNumber:
+                        getOfficialTrunkTailMoveNumber(secondaryBoardController),
+                });
+                return;
+            }
+
             applyingDraftBase = true;
             try {
                 const applied = applyKibitzVariationToController(
@@ -1687,12 +1725,15 @@ export function KibitzRoomStage({
                     >
                         {renderMainBoard ? (
                             <KibitzBoard
+                                key={`main-${room.id}-${mainGame?.game_id ?? "none"}-mobile`}
+                                role="main"
                                 gameId={mainGame?.game_id}
                                 {...boardDimensionsOf(mainGame)}
                                 className="mobile-main-board-surface"
                                 size={mobileBoardSize}
                                 fitMode="contain"
                                 respectContainerBounds={true}
+                                restoreToOfficialTailOnLoad={true}
                                 onReady={setMainBoardController}
                             />
                         ) : null}
@@ -1935,11 +1976,14 @@ export function KibitzRoomStage({
                                     }}
                                 >
                                     <KibitzBoard
+                                        key={`main-${room.id}-${mainGame.game_id}`}
+                                        role="main"
                                         gameId={mainGame.game_id}
                                         {...boardDimensionsOf(mainGame)}
                                         className="main-board-surface"
                                         size={mainBoardSize}
                                         respectContainerBounds={true}
+                                        restoreToOfficialTailOnLoad={true}
                                         onReady={setMainBoardController}
                                     />
                                 </div>

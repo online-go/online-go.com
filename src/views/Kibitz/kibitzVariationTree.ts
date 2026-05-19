@@ -172,6 +172,23 @@ export function officialTrunkNodeByMoveNumber(root: MoveTree, moveNumber: number
     return null;
 }
 
+export function isVariationOfficialAnchorReady(
+    controller: GobanController,
+    variation: KibitzVariationSummary,
+): boolean {
+    if (!controller.goban.engine?.move_tree) {
+        return false;
+    }
+
+    if (variation.analysis_from == null) {
+        return false;
+    }
+
+    return Boolean(
+        officialTrunkNodeByMoveNumber(controller.goban.engine.move_tree, variation.analysis_from),
+    );
+}
+
 function moveMatchesNode(
     node: MoveTree | undefined,
     x: number,
@@ -326,6 +343,22 @@ export function applyKibitzVariationToController(
         typeof variation.analysis_from !== "number" ||
         typeof variation.analysis_moves !== "string"
     ) {
+        return { variationId: variation.id, endpoint: null };
+    }
+
+    if (!isVariationOfficialAnchorReady(controller, variation)) {
+        warnKibitzVariationDebug("variation anchor not ready", {
+            variationId: variation.id,
+            analysisFrom: variation.analysis_from,
+            currentMove: summarizeMoveTreeNode(controller.goban.engine.cur_move),
+            officialAnchor: summarizeMoveTreeNode(
+                officialTrunkNodeByMoveNumber(
+                    controller.goban.engine.move_tree,
+                    variation.analysis_from,
+                ),
+            ),
+            lastOfficialMove: summarizeMoveTreeNode(controller.goban.engine.last_official_move),
+        });
         return { variationId: variation.id, endpoint: null };
     }
 

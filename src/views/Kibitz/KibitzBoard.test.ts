@@ -16,7 +16,11 @@
  */
 
 import { GobanController } from "@/lib/GobanController";
-import { getMovePathToRestore, refreshLastOfficialMoveFromTrunk } from "./KibitzBoard";
+import {
+    getMovePathToRestore,
+    refreshLastOfficialMoveFromTrunk,
+    restoreToOfficialTail,
+} from "./KibitzBoard";
 
 describe("getMovePathToRestore", () => {
     it("uses the original source path when the current restore path is blank and the source is preferred", () => {
@@ -74,5 +78,45 @@ describe("refreshLastOfficialMoveFromTrunk", () => {
         expect(refreshLastOfficialMoveFromTrunk(controller)).toBe(trunkTail);
         expect(controller.goban.engine.last_official_move).toBe(trunkTail);
         expect(controller.goban.engine.cur_move).toBe(variation);
+    });
+});
+
+describe("restoreToOfficialTail", () => {
+    it("jumps the board to the trunk tail and keeps the official pointer there", () => {
+        const controller = new GobanController({
+            width: 9,
+            height: 9,
+            players: {
+                black: { id: 1, username: "black" },
+                white: { id: 2, username: "white" },
+            },
+            move_tree: {
+                x: -1,
+                y: -1,
+                trunk_next: {
+                    x: 3,
+                    y: 3,
+                    trunk_next: {
+                        x: 4,
+                        y: 3,
+                    },
+                    branches: [
+                        {
+                            x: 3,
+                            y: 4,
+                        },
+                    ],
+                },
+            },
+        });
+        const trunkTail = controller.goban.engine.move_tree.trunk_next?.trunk_next;
+
+        if (!trunkTail) {
+            throw new Error("Expected test move tree to contain a trunk tail");
+        }
+
+        expect(restoreToOfficialTail(controller)).toBe(trunkTail);
+        expect(controller.goban.engine.last_official_move).toBe(trunkTail);
+        expect(controller.goban.engine.cur_move).toBe(trunkTail);
     });
 });
