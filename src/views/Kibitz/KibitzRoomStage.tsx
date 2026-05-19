@@ -1304,7 +1304,14 @@ export function KibitzRoomStage({
             });
         };
 
-        const logVariationStage = (message: string, extra: Record<string, unknown> = {}) => {
+        const logVariationStage = (
+            message: string,
+            extra: Record<string, unknown> | (() => Record<string, unknown>) = {},
+        ) => {
+            if (!isKibitzVariationDebugEnabled()) {
+                return;
+            }
+
             logKibitzVariationDebug(message, {
                 selectedVariationId: selectedVariation.id,
                 selectedGameId: selectedVariation.game_id,
@@ -1324,7 +1331,7 @@ export function KibitzRoomStage({
                 officialTail: summarizeKibitzMoveTreeNode(
                     getOfficialTrunkTail(goban.engine.move_tree),
                 ),
-                ...extra,
+                ...(typeof extra === "function" ? extra() : extra),
             });
         };
 
@@ -1339,13 +1346,13 @@ export function KibitzRoomStage({
 
             const variationsToApply = getVariationsToApply(selectedVariation, visibleVariations);
 
-            logVariationStage("apply:start", {
+            logVariationStage("apply:start", () => ({
                 variationsToApply: variationsToApply.map((variation) => ({
                     id: variation.id,
                     analysisFrom: variation.analysis_from,
                     moveCount: variation.move_count,
                 })),
-            });
+            }));
 
             const preparedVariations: Array<{
                 variation: KibitzVariationSummary;
@@ -1399,10 +1406,10 @@ export function KibitzRoomStage({
                         colorIndex,
                         isSelected,
                     );
-                    logVariationStage("apply:variation-result", {
+                    logVariationStage("apply:variation-result", () => ({
                         variationId: variation.id,
                         endpoint: summarizeKibitzMoveTreeNode(applied.endpoint),
-                    });
+                    }));
 
                     if (isSelected) {
                         selectedEndpoint = applied.endpoint;
@@ -1449,10 +1456,10 @@ export function KibitzRoomStage({
                 scheduleSecondaryMoveTreeRedraw();
                 clearSecondaryVariationRetryTimeout();
                 secondaryVariationRetryCountRef.current = 0;
-                logVariationStage("apply:done", {
+                logVariationStage("apply:done", () => ({
                     selectedEndpoint: summarizeKibitzMoveTreeNode(selectedEndpoint),
                     nextTreeDirty: secondaryVariationTreeDirtyRef.current,
-                });
+                }));
                 return true;
             } finally {
                 applyingVariation = false;
