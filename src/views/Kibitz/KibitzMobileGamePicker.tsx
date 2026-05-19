@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import { flushSync } from "react-dom";
 import { get } from "@/lib/requests";
 import { interpolate, pgettext } from "@/lib/translate";
 import { Player } from "@/components/Player";
@@ -117,6 +118,26 @@ function findExistingRoom(rooms: KibitzRoomSummary[], gameId: number): KibitzRoo
     return rooms.find((room) => room.current_game?.game_id === gameId) ?? null;
 }
 
+function waitForNextFrame(): Promise<void> {
+    if (typeof process !== "undefined" && process.env.NODE_ENV === "test") {
+        return Promise.resolve();
+    }
+
+    return new Promise((resolve) => {
+        if (typeof window.requestAnimationFrame === "function") {
+            window.requestAnimationFrame(() => resolve());
+            return;
+        }
+
+        window.setTimeout(resolve, 0);
+    });
+}
+
+async function waitForPickerPreviewTeardown(): Promise<void> {
+    await waitForNextFrame();
+    await waitForNextFrame();
+}
+
 export function KibitzMobileGamePicker({
     mode,
     rooms,
@@ -138,6 +159,7 @@ export function KibitzMobileGamePicker({
     const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
     const [sourceMode, setSourceMode] = React.useState<PickerSourceMode>("ongoing");
     const [mobileStep, setMobileStep] = React.useState<MobilePickerStep>("select");
+    const [suppressGamePreviews, setSuppressGamePreviews] = React.useState(false);
     const currentUser = useCurrentKibitzUser();
     const [isMobileLayout, setIsMobileLayout] = React.useState(
         () => window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY).matches,
@@ -193,6 +215,7 @@ export function KibitzMobileGamePicker({
         accessPolicy.allowed && accessPolicy.reason === "analysis-disabled-spectator"
             ? getKibitzAnalysisDisabledSpectatorMessage()
             : null;
+    const hidePickerGamePreviews = suppressGamePreviews || (mode === "change-board" && loading);
     const selectionIsEligible =
         Boolean(selectedGame) && Boolean(selectedGame?.isPublic) && !selectionErrorMessage;
     const canCreateRoom =
@@ -221,6 +244,16 @@ export function KibitzMobileGamePicker({
             setRoomDescription(buildDefaultRoomDescription(selectedGame.game));
         }
     }, [descriptionTouched, mode, nameTouched, selectedGame, currentUser]);
+
+    React.useEffect(() => {
+        if (mode !== "change-board") {
+            setSuppressGamePreviews(false);
+        }
+    }, [mode]);
+
+    React.useEffect(() => {
+        setSuppressGamePreviews(false);
+    }, [selectedGame?.game.game_id, sourceMode]);
 
     const resolveGame = React.useCallback(
         async (gameId: number) => {
@@ -325,14 +358,31 @@ export function KibitzMobileGamePicker({
             return;
         }
 
-        void Promise.resolve(onChangeBoard(selectedGame.game)).then((success) => {
-            if (success) {
-                onClose();
-                return;
-            }
+        const gameToChangeTo = selectedGame.game;
 
-            setErrorMessage(getKibitzPickerFailedChangeMessage());
+        setLoading(true);
+        setErrorMessage(null);
+        flushSync(() => {
+            setSuppressGamePreviews(true);
         });
+
+        void waitForPickerPreviewTeardown()
+            .then(() => Promise.resolve(onChangeBoard(gameToChangeTo)))
+            .then((success) => {
+                if (success) {
+                    onClose();
+                    return;
+                }
+
+                setSuppressGamePreviews(false);
+                setErrorMessage(getKibitzPickerFailedChangeMessage());
+                setLoading(false);
+            })
+            .catch(() => {
+                setSuppressGamePreviews(false);
+                setErrorMessage(getKibitzPickerFailedChangeMessage());
+                setLoading(false);
+            });
     }, [canChangeBoard, onChangeBoard, onClose, selectedGame]);
 
     const onBackMobile = React.useCallback(() => {
@@ -393,17 +443,27 @@ export function KibitzMobileGamePicker({
                         <Player user={selectedGameSummary.white} flag rank noextracontrols />
                     </div>
                 </div>
-                <div
-                    className={
-                        "KibitzGamePickerOverlay-boardWrap" +
-                        (mobile ? " KibitzGamePickerOverlay-boardWrap-mobile" : "")
-                    }
-                >
-                    <KibitzBoard
-                        gameId={selectedGameSummary.game_id}
-                        className="KibitzGamePickerOverlay-board"
-                    />
-                </div>
+                {hidePickerGamePreviews ? (
+                    <div className="KibitzGamePickerOverlay-note">
+                        {pgettext(
+                            "Status message shown while changing the Kibitz room board",
+                            "Switching board...",
+                        )}
+                    </div>
+                ) : (
+                    <div
+                        className={
+                            "KibitzGamePickerOverlay-boardWrap" +
+                            (mobile ? " KibitzGamePickerOverlay-boardWrap-mobile" : "")
+                        }
+                    >
+                        <KibitzBoard
+                            role="preview"
+                            gameId={selectedGameSummary.game_id}
+                            className="KibitzGamePickerOverlay-board"
+                        />
+                    </div>
+                )}
                 {selectionErrorMessage ? (
                     <div className="KibitzGamePickerOverlay-error">{selectionErrorMessage}</div>
                 ) : null}
@@ -499,14 +559,23 @@ export function KibitzMobileGamePicker({
         <>
             {sourceMode === "ongoing" ? (
                 <div className="KibitzGamePickerOverlay-mobileSelectBody KibitzGamePickerOverlay-mobileObservePane">
-                    <ObserveGamesComponent
-                        announcements={false}
-                        updateTitle={false}
-                        channel=""
-                        initialMiniGoban={true}
-                        onSelectGameId={onSelectGameId}
-                        compactControls={true}
-                    />
+                    {hidePickerGamePreviews ? (
+                        <div className="KibitzGamePickerOverlay-note">
+                            {pgettext(
+                                "Status message shown while changing the Kibitz room board",
+                                "Switching board...",
+                            )}
+                        </div>
+                    ) : (
+                        <ObserveGamesComponent
+                            announcements={false}
+                            updateTitle={false}
+                            channel=""
+                            initialMiniGoban={true}
+                            onSelectGameId={onSelectGameId}
+                            compactControls={true}
+                        />
+                    )}
                 </div>
             ) : (
                 <div className="KibitzGamePickerOverlay-mobileSelectBody KibitzGamePickerOverlay-mobileManualPane">
