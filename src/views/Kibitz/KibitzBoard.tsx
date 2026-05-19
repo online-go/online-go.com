@@ -449,6 +449,7 @@ export function KibitzBoard({
                     });
                     socket.send("game/connect", {
                         game_id: gameId,
+                        chat: true,
                     });
                 } else if (restoredTail && gameId != null) {
                     restoredOfficialTailForGameIdRef.current = gameId;
