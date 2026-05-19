@@ -208,6 +208,13 @@ interface PendingSecondaryVariationBaseLoad {
     gameId: number;
 }
 
+export interface InstalledSecondaryVariationBaseState {
+    controller: GobanController | null;
+    gameId: number | null;
+    trunkTailMoveNumber: number;
+    moveTreeId: number | string | null;
+}
+
 interface AppliedDraftBaseState {
     controller: GobanController | null;
     variationId: string | null;
@@ -311,6 +318,51 @@ function summarizeSecondaryVariationSnapshot(
         trunkTailMoveNumber: snapshot.trunkTailMoveNumber,
         hasMoveTree: Boolean(snapshot.config.move_tree),
     };
+}
+
+export function getCurrentSecondaryVariationBaseTreeIdentity(controller: GobanController): {
+    moveTreeId: number | string | null;
+} {
+    return {
+        moveTreeId: controller.goban.engine?.move_tree?.id ?? null,
+    };
+}
+
+export function clearInstalledSecondaryVariationBaseState(): InstalledSecondaryVariationBaseState {
+    return {
+        controller: null,
+        gameId: null,
+        trunkTailMoveNumber: 0,
+        moveTreeId: null,
+    };
+}
+
+export function markInstalledSecondaryVariationBaseState(
+    controller: GobanController,
+    gameId: number,
+): InstalledSecondaryVariationBaseState {
+    return {
+        controller,
+        gameId,
+        trunkTailMoveNumber: getOfficialTrunkTailMoveNumber(controller),
+        ...getCurrentSecondaryVariationBaseTreeIdentity(controller),
+    };
+}
+
+export function isSecondaryVariationBaseSnapshotInstalled(
+    snapshot: SecondaryVariationBaseSnapshot,
+    controller: GobanController,
+    installed: InstalledSecondaryVariationBaseState,
+): boolean {
+    const currentTreeIdentity = getCurrentSecondaryVariationBaseTreeIdentity(controller);
+
+    return (
+        installed.controller === controller &&
+        installed.gameId === snapshot.gameId &&
+        installed.trunkTailMoveNumber >= snapshot.trunkTailMoveNumber &&
+        installed.moveTreeId === currentTreeIdentity.moveTreeId &&
+        getOfficialTrunkTailMoveNumber(controller) >= snapshot.trunkTailMoveNumber
+    );
 }
 
 function countMoveTreeBranches(moveTree: MoveTree | null | undefined): number {
@@ -842,6 +894,9 @@ export function KibitzRoomStage({
         null,
     );
     const secondaryVariationTreeDirtyRef = React.useRef(false);
+    const secondaryVariationBaseInstalledRef = React.useRef<InstalledSecondaryVariationBaseState>(
+        clearInstalledSecondaryVariationBaseState(),
+    );
     const secondaryVariationBaseHydrationRef = React.useRef<{
         controller: GobanController;
         gameId: number;
@@ -1029,6 +1084,7 @@ export function KibitzRoomStage({
     React.useEffect(() => {
         secondaryVariationBaseSnapshotRef.current = null;
         secondaryVariationTreeDirtyRef.current = false;
+        secondaryVariationBaseInstalledRef.current = clearInstalledSecondaryVariationBaseState();
         secondaryVariationBaseHydrationRef.current = null;
         pendingSecondaryVariationBaseLoadRef.current = null;
         suppressSelectedVariationLoadRef.current = false;
@@ -1249,13 +1305,38 @@ export function KibitzRoomStage({
                 return false;
             }
 
-            if (secondaryVariationTreeDirtyRef.current) {
+            const currentSecondaryTailMoveNumber =
+                getOfficialTrunkTailMoveNumber(secondaryBoardController);
+            const snapshotInstalled = isSecondaryVariationBaseSnapshotInstalled(
+                snapshot,
+                secondaryBoardController,
+                secondaryVariationBaseInstalledRef.current,
+            );
+            const needsSnapshotLoad =
+                secondaryVariationTreeDirtyRef.current ||
+                !snapshotInstalled ||
+                currentSecondaryTailMoveNumber < snapshot.trunkTailMoveNumber;
+
+            logVariationStage("reload-or-apply:state", {
+                reason,
+                currentSecondaryTailMoveNumber,
+                snapshotTailMoveNumber: snapshot.trunkTailMoveNumber,
+                snapshotInstalled,
+                needsSnapshotLoad,
+            });
+
+            if (needsSnapshotLoad) {
                 pendingSecondaryVariationBaseLoadRef.current = {
                     controller: secondaryBoardController,
                     gameId: selectedVariation.game_id,
                 };
                 suppressSelectedVariationLoadRef.current = true;
-                logVariationStage("reload-or-apply:load-snapshot", { reason });
+                logVariationStage("reload-or-apply:load-snapshot", {
+                    reason,
+                    currentSecondaryTailMoveNumber,
+                    snapshotTailMoveNumber: snapshot.trunkTailMoveNumber,
+                    snapshotInstalled,
+                });
                 loadSecondaryVariationBaseSnapshot(secondaryBoardController, snapshot);
                 const pendingBaseLoad = pendingSecondaryVariationBaseLoadRef.current;
                 if (
@@ -1291,11 +1372,21 @@ export function KibitzRoomStage({
                 baseSnapshot.controller === secondaryBoardController &&
                 baseSnapshot.gameId === selectedVariation.game_id &&
                 baseSnapshot.trunkTailMoveNumber >= requiredSnapshotMoveNumber;
+            const snapshotInstalled =
+                baseSnapshot != null &&
+                baseSnapshot.controller === secondaryBoardController &&
+                baseSnapshot.gameId === selectedVariation.game_id &&
+                isSecondaryVariationBaseSnapshotInstalled(
+                    baseSnapshot,
+                    secondaryBoardController,
+                    secondaryVariationBaseInstalledRef.current,
+                );
 
             logVariationStage("try:snapshot-state", {
                 reason,
                 requiredSnapshotMoveNumber,
                 canReuseSnapshot,
+                snapshotInstalled,
             });
 
             if (canReuseSnapshot && secondaryVariationTreeDirtyRef.current) {
@@ -1303,6 +1394,10 @@ export function KibitzRoomStage({
             }
 
             if (canReuseSnapshot && !secondaryVariationTreeDirtyRef.current) {
+                if (!snapshotInstalled) {
+                    return reloadBaseThenApplyVisibleVariations(`${reason}:snapshot-not-installed`);
+                }
+
                 return applyVisibleVariationsToLoadedBase();
             }
 
@@ -1416,6 +1511,11 @@ export function KibitzRoomStage({
                 pendingSecondaryVariationBaseLoadRef.current = null;
                 suppressSelectedVariationLoadRef.current = false;
                 secondaryVariationTreeDirtyRef.current = false;
+                secondaryVariationBaseInstalledRef.current =
+                    markInstalledSecondaryVariationBaseState(
+                        secondaryBoardController,
+                        selectedVariation.game_id,
+                    );
 
                 if (!applyVisibleVariationsToLoadedBase()) {
                     scheduleBaseRetry("snapshot-load-apply-failed");
@@ -1442,6 +1542,10 @@ export function KibitzRoomStage({
                 controller: secondaryBoardController,
                 gameId: selectedVariation.game_id,
             };
+            secondaryVariationBaseInstalledRef.current = markInstalledSecondaryVariationBaseState(
+                secondaryBoardController,
+                selectedVariation.game_id,
+            );
 
             if (!tryApplyVariationWhenReady("load")) {
                 scheduleBaseRetry("load-not-ready");
