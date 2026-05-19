@@ -87,6 +87,18 @@ export function restoreToOfficialTail(controller: GobanController): MoveTree | n
     return officialTail;
 }
 
+export function shouldRestoreToOfficialTailForGame(
+    currentMoveNumber: number | null | undefined,
+    restoredOfficialTailForGameId: number | null,
+    gameId: number | undefined,
+): boolean {
+    if (gameId == null) {
+        return false;
+    }
+
+    return restoredOfficialTailForGameId !== gameId || currentMoveNumber === 0;
+}
+
 function summarizeKibitzMoveTreeNode(
     node: MoveTree | null | undefined,
 ): Record<string, unknown> | null {
@@ -144,6 +156,7 @@ export function KibitzBoard({
     } | null>(null);
     const restoringBoardRef = React.useRef(false);
     const requestedHydrationGameIdRef = React.useRef<number | null>(null);
+    const restoredOfficialTailForGameIdRef = React.useRef<number | null>(null);
 
     React.useEffect(() => {
         moveTreeRef.current = moveTree;
@@ -157,6 +170,7 @@ export function KibitzBoard({
 
     React.useEffect(() => {
         requestedHydrationGameIdRef.current = null;
+        restoredOfficialTailForGameIdRef.current = null;
     }, [gameId]);
 
     React.useEffect(() => {
@@ -397,6 +411,22 @@ export function KibitzBoard({
                 return;
             }
 
+            const currentMoveNumber =
+                controllerRef.current.goban.engine.cur_move?.move_number ?? null;
+            if (
+                !shouldRestoreToOfficialTailForGame(
+                    currentMoveNumber,
+                    restoredOfficialTailForGameIdRef.current,
+                    gameId,
+                )
+            ) {
+                logBoardState(`${reason}:restore-skipped`, {
+                    currentMoveNumber,
+                    restoredOfficialTailForGameId: restoredOfficialTailForGameIdRef.current,
+                });
+                return;
+            }
+
             logBoardState(`${reason}:restore-attempt`);
             restoringBoardRef.current = true;
             try {
@@ -420,6 +450,8 @@ export function KibitzBoard({
                     socket.send("game/connect", {
                         game_id: gameId,
                     });
+                } else if (restoredTail && gameId != null) {
+                    restoredOfficialTailForGameIdRef.current = gameId;
                 }
             } finally {
                 restoringBoardRef.current = false;

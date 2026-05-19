@@ -20,6 +20,7 @@ import {
     getMovePathToRestore,
     refreshLastOfficialMoveFromTrunk,
     restoreToOfficialTail,
+    shouldRestoreToOfficialTailForGame,
 } from "./KibitzBoard";
 
 describe("getMovePathToRestore", () => {
@@ -118,5 +119,15 @@ describe("restoreToOfficialTail", () => {
         expect(restoreToOfficialTail(controller)).toBe(trunkTail);
         expect(controller.goban.engine.last_official_move).toBe(trunkTail);
         expect(controller.goban.engine.cur_move).toBe(trunkTail);
+    });
+});
+
+describe("shouldRestoreToOfficialTailForGame", () => {
+    it("restores once per game and again only if the board falls back to root", () => {
+        expect(shouldRestoreToOfficialTailForGame(0, null, 123)).toBe(true);
+        expect(shouldRestoreToOfficialTailForGame(81, null, 123)).toBe(true);
+        expect(shouldRestoreToOfficialTailForGame(81, 123, 123)).toBe(false);
+        expect(shouldRestoreToOfficialTailForGame(0, 123, 123)).toBe(true);
+        expect(shouldRestoreToOfficialTailForGame(81, 123, 456)).toBe(true);
     });
 });
