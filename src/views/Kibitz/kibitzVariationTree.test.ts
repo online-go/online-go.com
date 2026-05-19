@@ -110,6 +110,17 @@ function makeController() {
         },
         place: (x: number, y: number) => {
             const parent = engine.cur_move as unknown as TestNode;
+            const player = (parent.move_number + 1) % 2 === 0 ? 2 : 1;
+            const existing = parent.branches.find(
+                (branch) =>
+                    branch.x === x && branch.y === y && branch.player === player && !branch.edited,
+            );
+
+            if (existing) {
+                engine.cur_move = existing as unknown as MoveTree;
+                return;
+            }
+
             const node = makeNode(nextNodeId, parent.move_number + 1, x, y, parent);
             nextNodeId += 1;
             parent.branches.push(node);
@@ -160,6 +171,41 @@ describe("applyKibitzVariationToController", () => {
         expect(anchor.branches[0]).not.toBe(anchor.branches[1]);
         expect(anchor.branches[0].x).toBe(sharedPrefix[0].x);
         expect(anchor.branches[1].x).toBe(sharedPrefix[0].x);
+        expect(anchor.branches[0].line_color).toBe(0);
+        expect(anchor.branches[1].line_color).toBe(1);
+    });
+
+    it("creates separate branches for variations that share a non-official prefix", () => {
+        const controller = makeController();
+        const root = controller.goban.engine.move_tree as unknown as TestNode;
+        const anchor = root.trunk_next as TestNode;
+
+        const sharedVariationPrefix: TestMove[] = [
+            { x: 10, y: 10, color: 1 },
+            { x: 11, y: 10, color: 2 },
+        ];
+        const variationOne = makeVariation("variation-one", [
+            ...sharedVariationPrefix,
+            { x: 12, y: 10, color: 1 },
+        ]);
+        const variationTwo = makeVariation("variation-two", [
+            ...sharedVariationPrefix,
+            { x: 12, y: 11, color: 1 },
+        ]);
+
+        expect(
+            applyKibitzVariationToController(controller, variationOne, 0, false).endpoint,
+        ).toBeDefined();
+        expect(
+            applyKibitzVariationToController(controller, variationTwo, 1, false).endpoint,
+        ).toBeDefined();
+
+        expect(anchor.branches).toHaveLength(2);
+        expect(anchor.branches[0]).not.toBe(anchor.branches[1]);
+        expect(anchor.branches[0].x).toBe(sharedVariationPrefix[0].x);
+        expect(anchor.branches[1].x).toBe(sharedVariationPrefix[0].x);
+        expect(anchor.branches[0].line_color).toBe(0);
+        expect(anchor.branches[1].line_color).toBe(1);
     });
 
     it("refuses to report readiness when the official anchor is missing", () => {

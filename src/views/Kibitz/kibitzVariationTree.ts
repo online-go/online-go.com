@@ -116,21 +116,21 @@ function summarizeMoveTreeNode(node: MoveTree | null | undefined): Record<string
     };
 }
 
-function duplicateTrunkMoveAsBranch(
+function duplicateMoveNodeAsBranch(
     engine: GobanController["goban"]["engine"],
     parent: MoveTree,
-    trunkMove: MoveTree,
+    sourceNode: MoveTree,
 ): MoveTree {
     const branch = new GobanMoveTree(
         engine,
         false,
-        trunkMove.x,
-        trunkMove.y,
-        trunkMove.edited,
-        trunkMove.player,
-        trunkMove.move_number,
+        sourceNode.x,
+        sourceNode.y,
+        sourceNode.edited,
+        sourceNode.player,
+        sourceNode.move_number,
         parent,
-        trunkMove.state,
+        sourceNode.state,
     );
 
     parent.branches.push(branch);
@@ -145,7 +145,7 @@ function duplicateOfficialTrunkAsBranch(controller: GobanController, parent: Mov
     let trunkCursor = parent.trunk_next;
 
     while (trunkCursor) {
-        branchCursor = duplicateTrunkMoveAsBranch(engine, branchCursor, trunkCursor);
+        branchCursor = duplicateMoveNodeAsBranch(engine, branchCursor, trunkCursor);
         pathNodes.push(branchCursor);
 
         if (trunkCursor === engine.last_official_move) {
@@ -187,6 +187,16 @@ export function isVariationOfficialAnchorReady(
     return Boolean(
         officialTrunkNodeByMoveNumber(controller.goban.engine.move_tree, variation.analysis_from),
     );
+}
+
+function findMatchingBranch(
+    parent: MoveTree,
+    x: number,
+    y: number,
+    player: number,
+    edited: boolean,
+): MoveTree | null {
+    return parent.branches.find((branch) => moveMatchesNode(branch, x, y, player, edited)) ?? null;
 }
 
 function moveMatchesNode(
@@ -299,11 +309,23 @@ function followKibitzVariationPath(
         });
 
         if (moveMatchesNode(cursor.trunk_next, move.x, move.y, player, edited)) {
-            cursor =
+            const matchingTrunkNext = cursor.trunk_next;
+            const shouldDuplicateMatchingTrunkNext =
+                !matchingTrunkNext.trunk ||
                 (duplicatesSharedTrunkPrefix && index < trunkPrefixLength) ||
-                duplicatesTrunkOnlyLine
-                    ? duplicateTrunkMoveAsBranch(engine, cursor, cursor.trunk_next)
-                    : cursor.trunk_next;
+                duplicatesTrunkOnlyLine;
+
+            cursor = shouldDuplicateMatchingTrunkNext
+                ? duplicateMoveNodeAsBranch(engine, cursor, matchingTrunkNext)
+                : matchingTrunkNext;
+            engine.jumpTo(cursor);
+            pathNodes.push(cursor);
+            continue;
+        }
+
+        const matchingBranch = findMatchingBranch(cursor, move.x, move.y, player, edited);
+        if (matchingBranch) {
+            cursor = duplicateMoveNodeAsBranch(engine, cursor, matchingBranch);
             engine.jumpTo(cursor);
             pathNodes.push(cursor);
             continue;
