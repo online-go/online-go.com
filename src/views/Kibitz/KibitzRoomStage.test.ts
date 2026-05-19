@@ -18,6 +18,7 @@
 import type { KibitzRoomSummary, KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
 import type { MoveTree } from "goban";
 import {
+    captureMainBoardBaseSnapshotForVariation,
     getOfficialTrunkTailMoveNumber,
     getRequiredBranchAttachMoveForVariation,
     getRequiredVariationBaseMoveNumber,
@@ -62,10 +63,15 @@ function makeVariation(gameId: number, analysisFrom?: number): KibitzVariationSu
     };
 }
 
-function makeMoveTree(moveNumber: number, trunkNext?: MoveTree | null): MoveTree {
+function makeMoveTree(
+    moveNumber: number,
+    trunkNext?: MoveTree | null,
+    branches: MoveTree[] = [],
+): MoveTree {
     return {
         move_number: moveNumber,
         trunk_next: trunkNext ?? undefined,
+        branches,
     } as unknown as MoveTree;
 }
 
@@ -170,6 +176,48 @@ describe("variation snapshot readiness", () => {
             isSecondaryVariationSnapshotReady(controller, makeVariation(4321, 2), [], sourceGame),
         ).toBe(true);
         expect(getOfficialTrunkTailMoveNumber(controller)).toBe(4);
+    });
+
+    it("can seed a secondary snapshot from the main board official trunk", () => {
+        const selectedVariation = makeVariation(4321, 2);
+        const sourceGame = {
+            ...makeGame(4321, "Source game"),
+            move_number: 4,
+        };
+        const mainController = {
+            goban: {
+                engine: {
+                    config: {
+                        game_id: 4321,
+                        moves: [{ x: 1, y: 1 }],
+                    },
+                    move_tree: makeMoveTree(2, makeMoveTree(4), [makeMoveTree(99)]),
+                },
+            },
+        } as unknown as import("@/lib/GobanController").GobanController;
+        const secondaryController = {
+            goban: {
+                engine: {
+                    move_tree: makeMoveTree(1),
+                },
+            },
+        } as unknown as import("@/lib/GobanController").GobanController;
+
+        const snapshot = captureMainBoardBaseSnapshotForVariation(
+            mainController,
+            secondaryController,
+            selectedVariation,
+            [],
+            sourceGame,
+        );
+
+        expect(snapshot?.controller).toBe(secondaryController);
+        expect(snapshot?.gameId).toBe(4321);
+        expect(snapshot?.trunkTailMoveNumber).toBe(4);
+        expect(snapshot?.config.game_id).toBe(4321);
+        expect(snapshot?.config.moves).toBeUndefined();
+        expect(snapshot?.config.move_tree?.branches).toBeUndefined();
+        expect(snapshot?.config.move_tree?.trunk_next).toBeDefined();
     });
 });
 
