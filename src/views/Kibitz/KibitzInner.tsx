@@ -56,6 +56,7 @@ import { useKibitzHelpTarget } from "./HelpFlows/useKibitzHelpTarget";
 import { KibitzGamePickerOverlay } from "./KibitzGamePickerOverlay";
 import { KibitzMobileGamePicker } from "./KibitzMobileGamePicker";
 import { KibitzRoomSettingsPopover } from "./KibitzRoomSettingsPopover";
+import { useKibitzCurrentGameConnectionKeeper } from "./useKibitzCurrentGameConnectionKeeper";
 import { getKibitzAccessPolicyForUser, isKibitzAccessBlockedForUser } from "./kibitzAnalysisPolicy";
 import { getVisiblePostedVariations } from "./kibitzVariationQuickList";
 import { KibitzUserAvatar } from "./KibitzUserAvatar";
@@ -794,6 +795,18 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         (variation) => variation.id === secondaryPane.variation_id,
     );
     const currentGameId = resolvedRoom?.current_game?.game_id ?? null;
+    const pickerOpen = Boolean(
+        pickerMode || mobileOverlayMode === "create-room" || mobileOverlayMode === "change-board",
+    );
+    useKibitzCurrentGameConnectionKeeper({
+        roomId: resolvedRoom?.id ?? null,
+        currentGameId,
+        isLive: Boolean(resolvedRoom?.current_game?.live),
+        pickerOpen,
+        enabled: Boolean(resolvedRoom),
+        debugSource: "KibitzInner",
+        boardController: mainBoardController,
+    });
     const activePostedVariations = React.useMemo(
         () => getVisiblePostedVariations(displayedVariations, visibleVariationIds),
         [displayedVariations, visibleVariationIds],

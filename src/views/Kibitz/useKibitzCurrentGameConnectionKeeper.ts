@@ -1,0 +1,247 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import * as React from "react";
+import type { GobanController } from "@/lib/GobanController";
+import { socket } from "@/lib/sockets";
+import { logKibitzVariationDebug } from "./kibitzVariationDebug";
+
+const PICKER_CLOSE_RECONNECT_DELAYS_MS = [0, 50, 250, 1000] as const;
+const KEEPALIVE_INTERVAL_MS = 20000;
+
+interface UseKibitzCurrentGameConnectionKeeperOptions {
+    roomId: string | null | undefined;
+    currentGameId: number | null | undefined;
+    isLive: boolean;
+    pickerOpen: boolean;
+    enabled?: boolean;
+    debugSource?: string;
+    boardController?: GobanController | null;
+}
+
+function sendGameConnect(
+    gameId: number,
+    reason: string,
+    debugSource: string,
+    roomId: string | null | undefined,
+): void {
+    logKibitzVariationDebug("kibitz-current-game-keeper:connect", {
+        reason,
+        debugSource,
+        roomId,
+        gameId,
+    });
+
+    socket.send("game/connect", {
+        game_id: gameId,
+        chat: true,
+    });
+}
+
+/**
+ * Keeps the Kibitz room's current live game connected independently of any
+ * visible Goban instance.
+ *
+ * This is intentionally Kibitz-local. It compensates for picker previews and
+ * Observe mini-gobans that may mount/unmount and send raw game/disconnect for
+ * the same game the room is watching.
+ *
+ * Future improvement:
+ * replace this with shared Goban/socket-level ref-counting, where a
+ * game/disconnect is only sent when the last owner releases a game_id.
+ */
+export function useKibitzCurrentGameConnectionKeeper({
+    roomId,
+    currentGameId,
+    isLive,
+    pickerOpen,
+    enabled = true,
+    debugSource = "kibitz-room",
+    boardController,
+}: UseKibitzCurrentGameConnectionKeeperOptions): void {
+    const activeGameId = enabled && isLive && currentGameId != null ? currentGameId : null;
+    const previousPickerOpenRef = React.useRef(pickerOpen);
+    const previousBoardControllerRef = React.useRef<GobanController | null | undefined>(
+        boardController,
+    );
+    const scheduledTimeoutIdsRef = React.useRef<number[]>([]);
+    const scheduledRafIdsRef = React.useRef<number[]>([]);
+
+    const clearScheduledReconnects = React.useCallback(() => {
+        for (const timeoutId of scheduledTimeoutIdsRef.current) {
+            window.clearTimeout(timeoutId);
+        }
+        scheduledTimeoutIdsRef.current = [];
+
+        for (const rafId of scheduledRafIdsRef.current) {
+            if (typeof window.cancelAnimationFrame === "function") {
+                window.cancelAnimationFrame(rafId);
+            } else {
+                window.clearTimeout(rafId);
+            }
+        }
+        scheduledRafIdsRef.current = [];
+    }, []);
+
+    const connect = React.useCallback(
+        (reason: string) => {
+            if (activeGameId == null) {
+                return;
+            }
+
+            sendGameConnect(activeGameId, reason, debugSource, roomId);
+        },
+        [activeGameId, debugSource, roomId],
+    );
+
+    const scheduleAnimationFrame = React.useCallback((callback: FrameRequestCallback): number => {
+        if (typeof window.requestAnimationFrame === "function") {
+            return window.requestAnimationFrame(callback);
+        }
+
+        return window.setTimeout(() => {
+            callback(window.performance.now());
+        }, 16);
+    }, []);
+
+    const scheduleReconnectBurst = React.useCallback(
+        (reason: string) => {
+            if (activeGameId == null) {
+                return;
+            }
+
+            clearScheduledReconnects();
+
+            for (const delay of PICKER_CLOSE_RECONNECT_DELAYS_MS) {
+                const timeoutId = window.setTimeout(() => {
+                    connect(`${reason}:${delay}ms`);
+                }, delay);
+                scheduledTimeoutIdsRef.current.push(timeoutId);
+            }
+
+            const firstRafId = scheduleAnimationFrame(() => {
+                connect(`${reason}:raf1`);
+
+                const secondRafId = scheduleAnimationFrame(() => {
+                    connect(`${reason}:raf2`);
+                });
+                scheduledRafIdsRef.current.push(secondRafId);
+            });
+            scheduledRafIdsRef.current.push(firstRafId);
+        },
+        [activeGameId, clearScheduledReconnects, connect, scheduleAnimationFrame],
+    );
+
+    React.useEffect(() => {
+        if (activeGameId == null) {
+            clearScheduledReconnects();
+            return;
+        }
+
+        connect("mount-or-game-change");
+
+        return () => {
+            clearScheduledReconnects();
+            logKibitzVariationDebug("kibitz-current-game-keeper:release-without-disconnect", {
+                debugSource,
+                roomId,
+                gameId: activeGameId,
+            });
+
+            // Do not send game/disconnect here.
+            // Future improvement: shared Goban/socket-level ref-counting.
+        };
+    }, [activeGameId, clearScheduledReconnects, connect, debugSource, roomId]);
+
+    React.useEffect(() => {
+        if (activeGameId == null) {
+            previousPickerOpenRef.current = pickerOpen;
+            return;
+        }
+
+        const previousPickerOpen = previousPickerOpenRef.current;
+        previousPickerOpenRef.current = pickerOpen;
+
+        if (!previousPickerOpen && pickerOpen) {
+            clearScheduledReconnects();
+            connect("picker-open");
+            return;
+        }
+
+        if (previousPickerOpen && !pickerOpen) {
+            scheduleReconnectBurst("picker-close");
+        }
+    }, [activeGameId, connect, pickerOpen, scheduleReconnectBurst]);
+
+    React.useEffect(() => {
+        if (activeGameId == null) {
+            previousBoardControllerRef.current = boardController;
+            return;
+        }
+
+        const previousBoardController = previousBoardControllerRef.current;
+        previousBoardControllerRef.current = boardController;
+
+        if (previousBoardController !== boardController) {
+            connect("main-board-controller-change");
+        }
+    }, [activeGameId, boardController, connect]);
+
+    React.useEffect(() => {
+        if (activeGameId == null) {
+            return;
+        }
+
+        const onFocus = () => {
+            connect("window-focus");
+        };
+
+        const onVisibilityChange = () => {
+            if (document.visibilityState === "visible") {
+                connect("document-visible");
+            }
+        };
+
+        window.addEventListener("focus", onFocus);
+        document.addEventListener("visibilitychange", onVisibilityChange);
+
+        return () => {
+            window.removeEventListener("focus", onFocus);
+            document.removeEventListener("visibilitychange", onVisibilityChange);
+        };
+    }, [activeGameId, connect]);
+
+    React.useEffect(() => {
+        if (activeGameId == null) {
+            return;
+        }
+
+        const intervalId = window.setInterval(() => {
+            connect("interval-keepalive");
+        }, KEEPALIVE_INTERVAL_MS);
+
+        return () => {
+            window.clearInterval(intervalId);
+        };
+    }, [activeGameId, connect]);
+
+    React.useEffect(() => {
+        return () => {
+            clearScheduledReconnects();
+        };
+    }, [clearScheduledReconnects]);
+}
