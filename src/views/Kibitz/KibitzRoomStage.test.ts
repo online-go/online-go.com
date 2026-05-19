@@ -21,6 +21,8 @@ import type { MoveTree } from "goban";
 import {
     captureMainBoardBaseSnapshotForVariation,
     clearDraftBaseAppliedState,
+    clearInstalledSecondaryVariationBaseState,
+    getCurrentSecondaryVariationBaseTreeIdentity,
     getOfficialTrunkTailMoveNumber,
     getCurrentDraftBaseTreeIdentity,
     getRequiredBranchAttachMoveForVariation,
@@ -29,7 +31,9 @@ import {
     getRequiredSnapshotMoveForVariation,
     getVariationsToApply,
     isDraftBaseAlreadyApplied,
+    isSecondaryVariationBaseSnapshotInstalled,
     markDraftBaseApplied,
+    markInstalledSecondaryVariationBaseState,
     isSelectedVariationVisible,
     isSecondaryVariationSnapshotReady,
     resolveSelectedVariationSourceGame,
@@ -296,5 +300,47 @@ describe("draft base apply guard", () => {
         applied = clearDraftBaseAppliedState();
 
         expect(isDraftBaseAlreadyApplied(applied, controller, variationId)).toBe(false);
+    });
+
+    it("treats a replaced secondary base tree as not installed", () => {
+        const moveTree = makeMoveTree(0, makeMoveTree(2)) as MoveTree & { id: number };
+        moveTree.id = 1;
+        if (moveTree.trunk_next) {
+            (moveTree.trunk_next as MoveTree & { id: number }).id = 2;
+        }
+
+        const controller = {
+            goban: {
+                engine: {
+                    move_tree: moveTree,
+                },
+            },
+        } as unknown as GobanController;
+        const snapshot = {
+            controller,
+            gameId: 20553,
+            trunkTailMoveNumber: 2,
+            config: {},
+        } as unknown as Parameters<typeof isSecondaryVariationBaseSnapshotInstalled>[0];
+        const installed = markInstalledSecondaryVariationBaseState(controller, 20553);
+
+        expect(getCurrentSecondaryVariationBaseTreeIdentity(controller)).toEqual({
+            moveTreeId: 1,
+        });
+        expect(isSecondaryVariationBaseSnapshotInstalled(snapshot, controller, installed)).toBe(
+            true,
+        );
+
+        moveTree.id = 3;
+
+        expect(isSecondaryVariationBaseSnapshotInstalled(snapshot, controller, installed)).toBe(
+            false,
+        );
+        expect(clearInstalledSecondaryVariationBaseState()).toEqual({
+            controller: null,
+            gameId: null,
+            trunkTailMoveNumber: 0,
+            moveTreeId: null,
+        });
     });
 });
