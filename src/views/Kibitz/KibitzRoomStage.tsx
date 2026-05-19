@@ -1053,6 +1053,7 @@ export function KibitzRoomStage({
                 })),
             });
 
+            secondaryVariationTreeDirtyRef.current = variationsToApply.length > 0;
             applyingVariation = true;
             suppressSelectedVariationLoadRef.current = true;
 
@@ -1129,7 +1130,6 @@ export function KibitzRoomStage({
 
                 goban.redraw(true);
                 scheduleSecondaryMoveTreeRedraw();
-                secondaryVariationTreeDirtyRef.current = variationsToApply.length > 0;
                 clearSecondaryVariationRetryTimeout();
                 secondaryVariationRetryCountRef.current = 0;
                 logVariationStage("apply:done", {

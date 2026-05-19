@@ -98,27 +98,6 @@ function applyLineColor(nodes: MoveTree[], colorIndex: KibitzVariationColorIndex
     }
 }
 
-function findMatchingBranch(
-    parent: MoveTree,
-    x: number,
-    y: number,
-    player: number,
-    edited: boolean,
-): MoveTree | null {
-    for (const branch of parent.branches) {
-        if (
-            branch.x === x &&
-            branch.y === y &&
-            branch.edited === edited &&
-            (!edited || branch.player === player)
-        ) {
-            return branch;
-        }
-    }
-
-    return null;
-}
-
 function summarizeMoveTreeNode(node: MoveTree | null | undefined): Record<string, unknown> | null {
     if (!node) {
         return null;
@@ -290,7 +269,6 @@ function followKibitzVariationPath(
         const move = decodedMoves[index];
         const edited = !!move.edited;
         const player = engine.playerByColor(move.color || 0);
-        const existingBranch = findMatchingBranch(cursor, move.x, move.y, player, edited);
 
         logKibitzVariationDebug("follow:step", {
             variationId,
@@ -299,17 +277,9 @@ function followKibitzVariationPath(
             player,
             cursor: summarizeMoveTreeNode(cursor),
             trunkNext: summarizeMoveTreeNode(cursor.trunk_next),
-            existingBranch: summarizeMoveTreeNode(existingBranch),
             duplicatesSharedTrunkPrefix,
             duplicatesTrunkOnlyLine,
         });
-
-        if (existingBranch && !duplicatesSharedTrunkPrefix && !duplicatesTrunkOnlyLine) {
-            cursor = existingBranch;
-            engine.jumpTo(cursor);
-            pathNodes.push(cursor);
-            continue;
-        }
 
         if (moveMatchesNode(cursor.trunk_next, move.x, move.y, player, edited)) {
             cursor =
