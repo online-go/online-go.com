@@ -218,7 +218,7 @@ export function KibitzGamePickerOverlay({
         accessPolicy.allowed && accessPolicy.reason === "analysis-disabled-spectator"
             ? getKibitzAnalysisDisabledSpectatorMessage()
             : null;
-    const hidePickerGamePreviews = suppressGamePreviews || (mode === "change-board" && loading);
+    const hidePickerGamePreviews = suppressGamePreviews;
     const selectionIsEligible =
         Boolean(selectedGame) && Boolean(selectedGame?.isPublic) && !selectionErrorMessage;
     const canCreateRoom =
@@ -380,9 +380,9 @@ export function KibitzGamePickerOverlay({
 
         const gameToChangeTo = selectedGame.game;
 
-        setLoading(true);
-        setErrorMessage(null);
         flushSync(() => {
+            setLoading(true);
+            setErrorMessage(null);
             setSuppressGamePreviews(true);
         });
 

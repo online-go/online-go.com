@@ -360,9 +360,9 @@ export function KibitzMobileGamePicker({
 
         const gameToChangeTo = selectedGame.game;
 
-        setLoading(true);
-        setErrorMessage(null);
         flushSync(() => {
+            setLoading(true);
+            setErrorMessage(null);
             setSuppressGamePreviews(true);
         });
 

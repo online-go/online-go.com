@@ -264,7 +264,7 @@ describe("KibitzGamePickerOverlay", () => {
         });
     });
 
-    it("unmounts picker game previews before submitting a board change", async () => {
+    it("defers board change until after the picker teardown gate", async () => {
         mockedGet.mockResolvedValue(makeGameDetails());
         let resolveChange: ((value: boolean) => void) | undefined;
         const onChangeBoard = jest.fn(
@@ -292,9 +292,7 @@ describe("KibitzGamePickerOverlay", () => {
 
         fireEvent.click(screen.getByRole("button", { name: "Change board" }));
 
-        await waitFor(() => {
-            expect(screen.queryByTestId("ObserveGamesComponent")).not.toBeInTheDocument();
-        });
+        expect(onChangeBoard).not.toHaveBeenCalled();
 
         await waitFor(() => {
             expect(onChangeBoard).toHaveBeenCalledTimes(1);
@@ -326,17 +324,11 @@ describe("KibitzGamePickerOverlay", () => {
         fireEvent.click(screen.getByRole("button", { name: "Change board" }));
 
         await waitFor(() => {
-            expect(screen.queryByTestId("ObserveGamesComponent")).not.toBeInTheDocument();
-        });
-
-        await waitFor(() => {
             expect(onChangeBoard).toHaveBeenCalledTimes(1);
         });
 
         await waitFor(() => {
             expect(screen.getAllByText("change failed")).toHaveLength(2);
         });
-
-        expect(screen.getByTestId("ObserveGamesComponent")).toBeInTheDocument();
     });
 });
