@@ -46,7 +46,11 @@ import {
     applyKibitzVariationToController,
     isVariationOfficialAnchorReady,
 } from "./kibitzVariationTree";
-import { logKibitzVariationDebug } from "./kibitzVariationDebug";
+import {
+    isKibitzVariationDebugEnabled,
+    logKibitzVariationDebug,
+    summarizeKibitzMoveTreeNode,
+} from "./kibitzVariationDebug";
 import "./KibitzRoomStage.css";
 
 interface KibitzRoomStageProps {
@@ -286,26 +290,6 @@ export function getOfficialTrunkTail(moveTree: MoveTree | null | undefined): Mov
     return tail;
 }
 
-function summarizeKibitzMoveTreeNode(
-    node: MoveTree | null | undefined,
-): Record<string, unknown> | null {
-    if (!node) {
-        return null;
-    }
-
-    return {
-        id: node.id,
-        moveNumber: node.move_number,
-        x: node.x,
-        y: node.y,
-        player: node.player,
-        edited: node.edited,
-        parentId: node.parent?.id,
-        trunkNextId: node.trunk_next?.id,
-        branchIds: node.branches.map((branch) => branch.id),
-    };
-}
-
 function summarizeSecondaryVariationSnapshot(
     snapshot: SecondaryVariationBaseSnapshot | null,
 ): Record<string, unknown> | null {
@@ -436,14 +420,6 @@ export function getRequiredVariationSnapshotMoveNumber(
     );
 }
 
-export function getRequiredVariationBaseMoveNumber(
-    selectedVariation: KibitzVariationSummary,
-    visibleVariations: readonly KibitzVariationSummary[],
-    sourceGame: KibitzWatchedGame | null | undefined,
-): number {
-    return getRequiredVariationSnapshotMoveNumber(selectedVariation, visibleVariations, sourceGame);
-}
-
 export function isSecondaryVariationSnapshotReady(
     controller: GobanController,
     selectedVariation: KibitzVariationSummary,
@@ -560,7 +536,10 @@ function loadSecondaryVariationBaseSnapshot(
     const goban = controller.goban;
     const previousMode: GobanModes = goban.mode;
     const previousEngine = goban.engine;
-    const branchCountBeforeLoad = countMoveTreeBranches(previousEngine?.move_tree);
+    const debugEnabled = isKibitzVariationDebugEnabled();
+    const branchCountBeforeLoad = debugEnabled
+        ? countMoveTreeBranches(previousEngine?.move_tree)
+        : undefined;
 
     /*
      * Goban.load preserves the old engine for finished analyze boards when the
@@ -583,14 +562,18 @@ function loadSecondaryVariationBaseSnapshot(
         goban.mode = previousMode;
     }
 
-    logKibitzVariationDebug("snapshot-load:result", {
-        gameId: snapshot.gameId,
-        previousMode,
-        engineReplaced: previousEngine !== goban.engine,
-        branchCountBeforeLoad,
-        branchCountAfterLoad: countMoveTreeBranches(goban.engine?.move_tree),
-        officialTail: summarizeKibitzMoveTreeNode(getOfficialTrunkTail(goban.engine?.move_tree)),
-    });
+    if (debugEnabled) {
+        logKibitzVariationDebug("snapshot-load:result", {
+            gameId: snapshot.gameId,
+            previousMode,
+            engineReplaced: previousEngine !== goban.engine,
+            branchCountBeforeLoad,
+            branchCountAfterLoad: countMoveTreeBranches(goban.engine?.move_tree),
+            officialTail: summarizeKibitzMoveTreeNode(
+                getOfficialTrunkTail(goban.engine?.move_tree),
+            ),
+        });
+    }
 }
 
 function renderInlineAvatar(

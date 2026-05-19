@@ -19,12 +19,12 @@ import * as React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Player } from "@/components/Player";
 import { PlayerDetails } from "@/components/Player/PlayerDetails";
-import { GobanController } from "@/lib/GobanController";
+import { GobanController, getMoveTreeTrunkTail } from "@/lib/GobanController";
 import { GobanControllerContext } from "@/components/GobanView";
 import { popover } from "@/lib/popover";
 import { toast } from "@/lib/toast";
 import { interpolate, pgettext } from "@/lib/translate";
-import { protocol, type MoveTree } from "goban";
+import { protocol } from "goban";
 import type {
     KibitzDebugState,
     KibitzProposal,
@@ -63,7 +63,7 @@ import {
     getKibitzBlockedRoomFollowupMessage,
     getKibitzBlockedRoomMessage,
 } from "./kibitzAnalysisPolicyText";
-import { logKibitzVariationDebug } from "./kibitzVariationDebug";
+import { logKibitzVariationDebug, summarizeKibitzMoveTreeNode } from "./kibitzVariationDebug";
 import { useCurrentKibitzUser } from "./useCurrentKibitzUser";
 import "./Kibitz.css";
 
@@ -84,38 +84,6 @@ interface PendingPostedVariation {
     from?: number;
     moves?: string;
     title?: string;
-}
-
-function summarizeKibitzMoveTreeNode(
-    node: MoveTree | null | undefined,
-): Record<string, unknown> | null {
-    if (!node) {
-        return null;
-    }
-
-    return {
-        id: node.id,
-        moveNumber: node.move_number,
-        x: node.x,
-        y: node.y,
-        player: node.player,
-        edited: node.edited,
-        parentId: node.parent?.id,
-        trunkNextId: node.trunk_next?.id,
-        branchIds: node.branches.map((branch) => branch.id),
-    };
-}
-
-function getMoveTreeTrunkTail(moveTree: MoveTree | null | undefined): MoveTree | null {
-    if (!moveTree) {
-        return null;
-    }
-
-    let tail = moveTree;
-    while (tail.trunk_next) {
-        tail = tail.trunk_next;
-    }
-    return tail;
 }
 
 interface KibitzInnerProps {

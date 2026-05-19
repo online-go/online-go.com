@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import type { MoveTree } from "goban";
+
 type KibitzVariationDebugWindow = Window &
     typeof globalThis & {
         debug?: {
@@ -34,7 +36,7 @@ interface KibitzVariationDebugEntry {
 
 let debugSequence = 0;
 
-function kibitzVariationDebugEnabled(): boolean {
+export function isKibitzVariationDebugEnabled(): boolean {
     if (typeof window === "undefined") {
         return false;
     }
@@ -66,6 +68,26 @@ function cloneDebugDetails(details: unknown): unknown {
             return details;
         }
     }
+}
+
+export function summarizeKibitzMoveTreeNode(
+    node: MoveTree | null | undefined,
+): Record<string, unknown> | null {
+    if (!node) {
+        return null;
+    }
+
+    return {
+        id: node.id,
+        moveNumber: node.move_number,
+        x: node.x,
+        y: node.y,
+        player: node.player,
+        edited: node.edited,
+        parentId: node.parent?.id,
+        trunkNextId: node.trunk_next?.id,
+        branchIds: node.branches.map((branch) => branch.id),
+    };
 }
 
 function recordKibitzVariationDebugEntry(
@@ -100,7 +122,7 @@ function recordKibitzVariationDebugEntry(
 }
 
 export function logKibitzVariationDebug(message: string, details?: unknown): void {
-    if (!kibitzVariationDebugEnabled()) {
+    if (!isKibitzVariationDebugEnabled()) {
         return;
     }
 
@@ -109,6 +131,10 @@ export function logKibitzVariationDebug(message: string, details?: unknown): voi
 }
 
 export function warnKibitzVariationDebug(message: string, details?: unknown): void {
+    if (!isKibitzVariationDebugEnabled()) {
+        return;
+    }
+
     const entry = recordKibitzVariationDebugEntry("warn", message, details);
     console.warn(formatKibitzVariationDebugMessage(message), entry.details);
 }
