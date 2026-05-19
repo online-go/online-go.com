@@ -20,6 +20,7 @@ import { GobanRendererConfig, type MoveTree, type MoveTreeJson } from "goban";
 import { GobanContainer } from "@/components/GobanContainer/GobanContainer";
 import { GobanController, getMoveTreeTrunkTail } from "@/lib/GobanController";
 import * as preferences from "@/lib/preferences";
+import { socket } from "@/lib/sockets";
 import { logKibitzVariationDebug } from "./kibitzVariationDebug";
 import "./KibitzBoard.css";
 
@@ -142,6 +143,7 @@ export function KibitzBoard({
         timeout: ReturnType<typeof setTimeout>;
     } | null>(null);
     const restoringBoardRef = React.useRef(false);
+    const requestedHydrationGameIdRef = React.useRef<number | null>(null);
 
     React.useEffect(() => {
         moveTreeRef.current = moveTree;
@@ -152,6 +154,10 @@ export function KibitzBoard({
         currentMovePathRef.current = movePath;
         preferSourceMovePathRef.current = false;
     }, [movePath]);
+
+    React.useEffect(() => {
+        requestedHydrationGameIdRef.current = null;
+    }, [gameId]);
 
     React.useEffect(() => {
         const labelPosition = preferences.get("label-positioning");
@@ -399,6 +405,22 @@ export function KibitzBoard({
                     restored: Boolean(restoredTail),
                     restoredTailMoveNumber: restoredTail?.move_number ?? null,
                 });
+
+                if (
+                    !restoredTail &&
+                    gameId != null &&
+                    requestedHydrationGameIdRef.current !== gameId
+                ) {
+                    requestedHydrationGameIdRef.current = gameId;
+                    logKibitzVariationDebug("main-board:hydrate-request", {
+                        reason,
+                        role: boardRole,
+                        gameId,
+                    });
+                    socket.send("game/connect", {
+                        game_id: gameId,
+                    });
+                }
             } finally {
                 restoringBoardRef.current = false;
             }

@@ -1477,14 +1477,15 @@ export function KibitzRoomStage({
 
         const goban = secondaryBoardController.goban;
         let applyingDraftBase = false;
-        const apply = () => {
-            if (applyingDraftBase) {
-                return;
+        let disposed = false;
+        const tryApplyDraftBaseVariation = (): boolean => {
+            if (disposed || applyingDraftBase) {
+                return true;
             }
 
             const colorIndex = getVariationColorIndex(variationColorIndexes, draftBaseVariation.id);
             if (colorIndex == null) {
-                return;
+                return false;
             }
 
             if (!isVariationOfficialAnchorReady(secondaryBoardController, draftBaseVariation)) {
@@ -1496,7 +1497,7 @@ export function KibitzRoomStage({
                     officialTailMoveNumber:
                         getOfficialTrunkTailMoveNumber(secondaryBoardController),
                 });
-                return;
+                return false;
             }
 
             applyingDraftBase = true;
@@ -1516,22 +1517,37 @@ export function KibitzRoomStage({
                     controller: secondaryBoardController,
                     variationId: draftBaseVariation.id,
                 };
+                return true;
             } finally {
                 applyingDraftBase = false;
             }
         };
 
+        const onBaseMaybeReady = () => {
+            void tryApplyDraftBaseVariation();
+        };
+
         const onLoad = () => {
-            apply();
+            void tryApplyDraftBaseVariation();
+        };
+
+        const onGameData = () => {
+            void tryApplyDraftBaseVariation();
+        };
+
+        const onLastOfficialMove = () => {
+            void tryApplyDraftBaseVariation();
         };
         goban.on("load", onLoad);
-
-        if (goban.engine?.last_official_move) {
-            apply();
-        }
+        goban.on("gamedata", onGameData);
+        goban.on("last_official_move", onLastOfficialMove);
+        onBaseMaybeReady();
 
         return () => {
+            disposed = true;
             goban.off("load", onLoad);
+            goban.off("gamedata", onGameData);
+            goban.off("last_official_move", onLastOfficialMove);
             pendingSecondaryMoveTreeRedrawCancelRef.current?.();
             pendingSecondaryMoveTreeRedrawCancelRef.current = null;
         };
