@@ -420,14 +420,6 @@ export function getRequiredVariationSnapshotMoveNumber(
     );
 }
 
-export function getRequiredVariationBaseMoveNumber(
-    selectedVariation: KibitzVariationSummary,
-    visibleVariations: readonly KibitzVariationSummary[],
-    sourceGame: KibitzWatchedGame | null | undefined,
-): number {
-    return getRequiredVariationSnapshotMoveNumber(selectedVariation, visibleVariations, sourceGame);
-}
-
 export function isSecondaryVariationSnapshotReady(
     controller: GobanController,
     selectedVariation: KibitzVariationSummary,

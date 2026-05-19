@@ -26,7 +26,6 @@ import {
     getOfficialTrunkTailMoveNumber,
     getCurrentDraftBaseTreeIdentity,
     getRequiredBranchAttachMoveForVariation,
-    getRequiredVariationBaseMoveNumber,
     getRequiredVariationSnapshotMoveNumber,
     getRequiredSnapshotMoveForVariation,
     getVariationsToApply,
@@ -124,33 +123,6 @@ describe("resolveSelectedVariationSourceGame", () => {
                 fallbackGame,
             ),
         ).toBe(fallbackGame);
-    });
-});
-
-describe("getRequiredVariationBaseMoveNumber", () => {
-    it("requires the selected variation's source move before applying", () => {
-        expect(getRequiredVariationBaseMoveNumber(makeVariation(4321, 12), [], undefined)).toBe(13);
-    });
-
-    it("requires the latest visible variation source move", () => {
-        expect(
-            getRequiredVariationBaseMoveNumber(
-                makeVariation(4321, 5),
-                [makeVariation(4321, 7), makeVariation(4321, 3)],
-                undefined,
-            ),
-        ).toBe(8);
-    });
-
-    it("requires the full source game move count when it is known", () => {
-        const sourceGame = {
-            ...makeGame(4321, "Source game"),
-            move_number: 140,
-        };
-
-        expect(getRequiredVariationBaseMoveNumber(makeVariation(4321, 5), [], sourceGame)).toBe(
-            140,
-        );
     });
 });
 
