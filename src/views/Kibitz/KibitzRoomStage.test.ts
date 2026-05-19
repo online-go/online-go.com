@@ -16,15 +16,20 @@
  */
 
 import type { KibitzRoomSummary, KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
+import type { GobanController } from "@/lib/GobanController";
 import type { MoveTree } from "goban";
 import {
     captureMainBoardBaseSnapshotForVariation,
+    clearDraftBaseAppliedState,
     getOfficialTrunkTailMoveNumber,
+    getCurrentDraftBaseTreeIdentity,
     getRequiredBranchAttachMoveForVariation,
     getRequiredVariationBaseMoveNumber,
     getRequiredVariationSnapshotMoveNumber,
     getRequiredSnapshotMoveForVariation,
     getVariationsToApply,
+    isDraftBaseAlreadyApplied,
+    markDraftBaseApplied,
     isSelectedVariationVisible,
     isSecondaryVariationSnapshotReady,
     resolveSelectedVariationSourceGame,
@@ -68,11 +73,18 @@ function makeMoveTree(
     trunkNext?: MoveTree | null,
     branches: MoveTree[] = [],
 ): MoveTree {
-    return {
+    const tree = {
         move_number: moveNumber,
         trunk_next: trunkNext ?? undefined,
         branches,
-    } as unknown as MoveTree;
+        toJson: () => ({
+            move_number: moveNumber,
+            trunk_next: trunkNext ? trunkNext.toJson() : undefined,
+            branches: branches.map((branch) => branch.toJson()),
+        }),
+    };
+
+    return tree as unknown as MoveTree;
 }
 
 describe("resolveSelectedVariationSourceGame", () => {
@@ -246,5 +258,43 @@ describe("variation recomposition helpers", () => {
                 visibleVariation,
             ]).map((variation) => variation.id),
         ).toEqual([visibleVariation.id, hiddenVariation.id]);
+    });
+});
+
+describe("draft base apply guard", () => {
+    it("tracks the loaded tree identity so a replaced tree can be applied again", () => {
+        const controller = {
+            goban: {
+                engine: {
+                    move_tree: {
+                        id: 1,
+                    },
+                },
+            },
+        } as unknown as GobanController;
+        const variationId = "draft-base-1";
+        let applied = clearDraftBaseAppliedState();
+
+        expect(isDraftBaseAlreadyApplied(applied, controller, variationId)).toBe(false);
+        expect(getCurrentDraftBaseTreeIdentity(controller)).toEqual({
+            moveTreeId: 1,
+            engine: controller.goban.engine,
+        });
+
+        applied = markDraftBaseApplied(controller, variationId);
+
+        expect(isDraftBaseAlreadyApplied(applied, controller, variationId)).toBe(true);
+
+        controller.goban.engine = {
+            move_tree: {
+                id: 2,
+            } as unknown as MoveTree,
+        } as typeof controller.goban.engine;
+
+        expect(isDraftBaseAlreadyApplied(applied, controller, variationId)).toBe(false);
+
+        applied = clearDraftBaseAppliedState();
+
+        expect(isDraftBaseAlreadyApplied(applied, controller, variationId)).toBe(false);
     });
 });

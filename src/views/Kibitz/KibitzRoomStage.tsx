@@ -208,8 +208,63 @@ interface PendingSecondaryVariationBaseLoad {
     gameId: number;
 }
 
+interface AppliedDraftBaseState {
+    controller: GobanController | null;
+    variationId: string | null;
+    moveTreeId: number | string | null;
+    engine: unknown | null;
+}
+
 function cloneMoveTreeJson(moveTree: MoveTreeJson): MoveTreeJson {
     return JSON.parse(JSON.stringify(moveTree)) as MoveTreeJson;
+}
+
+export function getCurrentDraftBaseTreeIdentity(controller: GobanController): {
+    moveTreeId: number | string | null;
+    engine: unknown | null;
+} {
+    return {
+        moveTreeId: controller.goban.engine?.move_tree?.id ?? null,
+        engine: controller.goban.engine ?? null,
+    };
+}
+
+export function isDraftBaseAlreadyApplied(
+    appliedDraftBase: AppliedDraftBaseState,
+    controller: GobanController,
+    variationId: string,
+): boolean {
+    const currentTree = getCurrentDraftBaseTreeIdentity(controller);
+
+    return (
+        appliedDraftBase.controller === controller &&
+        appliedDraftBase.variationId === variationId &&
+        appliedDraftBase.moveTreeId === currentTree.moveTreeId &&
+        appliedDraftBase.engine === currentTree.engine
+    );
+}
+
+export function markDraftBaseApplied(
+    controller: GobanController,
+    variationId: string,
+): AppliedDraftBaseState {
+    const currentTree = getCurrentDraftBaseTreeIdentity(controller);
+
+    return {
+        controller,
+        variationId,
+        moveTreeId: currentTree.moveTreeId,
+        engine: currentTree.engine,
+    };
+}
+
+export function clearDraftBaseAppliedState(): AppliedDraftBaseState {
+    return {
+        controller: null,
+        variationId: null,
+        moveTreeId: null,
+        engine: null,
+    };
 }
 
 export function getOfficialTrunkTail(moveTree: MoveTree | null | undefined): MoveTree | null {
@@ -815,9 +870,13 @@ export function KibitzRoomStage({
     const appliedDraftBaseRef = React.useRef<{
         controller: GobanController | null;
         variationId: string | null;
+        moveTreeId: number | string | null;
+        engine: unknown | null;
     }>({
         controller: null,
         variationId: null,
+        moveTreeId: null,
+        engine: null,
     });
     const pendingSecondaryMoveTreeRedrawCancelRef = React.useRef<(() => void) | null>(null);
     const [mainBoardSlotRef, mainBoardSize] = useSquareFitSize<HTMLDivElement>(
@@ -1461,17 +1520,7 @@ export function KibitzRoomStage({
             secondaryPane.preview_game_id == null ||
             secondaryPane.variation_source_game_id == null
         ) {
-            appliedDraftBaseRef.current = {
-                controller: secondaryBoardController,
-                variationId: null,
-            };
-            return;
-        }
-
-        if (
-            appliedDraftBaseRef.current.controller === secondaryBoardController &&
-            appliedDraftBaseRef.current.variationId === draftBaseVariation.id
-        ) {
+            appliedDraftBaseRef.current = clearDraftBaseAppliedState();
             return;
         }
 
@@ -1480,6 +1529,24 @@ export function KibitzRoomStage({
         let disposed = false;
         const tryApplyDraftBaseVariation = (): boolean => {
             if (disposed || applyingDraftBase) {
+                return true;
+            }
+
+            if (
+                isDraftBaseAlreadyApplied(
+                    appliedDraftBaseRef.current,
+                    secondaryBoardController,
+                    draftBaseVariation.id,
+                )
+            ) {
+                logKibitzVariationDebug("draft-base:skip-already-applied", {
+                    variationId: draftBaseVariation.id,
+                    appliedMoveTreeId: appliedDraftBaseRef.current.moveTreeId,
+                    currentMoveTreeId: secondaryBoardController.goban.engine?.move_tree?.id ?? null,
+                    appliedEngineMatches:
+                        appliedDraftBaseRef.current.engine ===
+                        secondaryBoardController.goban.engine,
+                });
                 return true;
             }
 
@@ -1496,11 +1563,20 @@ export function KibitzRoomStage({
                     analysisFrom: draftBaseVariation.analysis_from,
                     officialTailMoveNumber:
                         getOfficialTrunkTailMoveNumber(secondaryBoardController),
+                    currentMoveTreeId: secondaryBoardController.goban.engine?.move_tree?.id ?? null,
                 });
                 return false;
             }
 
             applyingDraftBase = true;
+            appliedDraftBaseRef.current = markDraftBaseApplied(
+                secondaryBoardController,
+                draftBaseVariation.id,
+            );
+            logKibitzVariationDebug("draft-base:reserve-apply", {
+                variationId: draftBaseVariation.id,
+                currentMoveTreeId: appliedDraftBaseRef.current.moveTreeId,
+            });
             try {
                 const applied = applyKibitzVariationToController(
                     secondaryBoardController,
@@ -1508,16 +1584,31 @@ export function KibitzRoomStage({
                     colorIndex,
                     true,
                 );
-                if (applied.endpoint) {
-                    goban.engine.jumpTo(applied.endpoint);
+                if (!applied.endpoint) {
+                    appliedDraftBaseRef.current = clearDraftBaseAppliedState();
+                    logKibitzVariationDebug("draft-base:apply-failed", {
+                        variationId: draftBaseVariation.id,
+                        reason: "no-endpoint",
+                    });
+                    return false;
                 }
+
+                goban.engine.jumpTo(applied.endpoint);
                 goban.redraw(true);
                 scheduleSecondaryMoveTreeRedraw();
-                appliedDraftBaseRef.current = {
-                    controller: secondaryBoardController,
+                logKibitzVariationDebug("draft-base:apply-done", {
                     variationId: draftBaseVariation.id,
-                };
+                    endpointMoveNumber: applied.endpoint.move_number,
+                    currentMoveTreeId: appliedDraftBaseRef.current.moveTreeId,
+                });
                 return true;
+            } catch (error) {
+                appliedDraftBaseRef.current = clearDraftBaseAppliedState();
+                logKibitzVariationDebug("draft-base:apply-failed", {
+                    variationId: draftBaseVariation.id,
+                    error,
+                });
+                return false;
             } finally {
                 applyingDraftBase = false;
             }
@@ -1528,14 +1619,29 @@ export function KibitzRoomStage({
         };
 
         const onLoad = () => {
+            logKibitzVariationDebug("draft-base:event-load", {
+                variationId: draftBaseVariation.id,
+                currentMoveTreeId: secondaryBoardController.goban.engine?.move_tree?.id ?? null,
+                appliedMoveTreeId: appliedDraftBaseRef.current.moveTreeId,
+            });
             void tryApplyDraftBaseVariation();
         };
 
         const onGameData = () => {
+            logKibitzVariationDebug("draft-base:event-gamedata", {
+                variationId: draftBaseVariation.id,
+                currentMoveTreeId: secondaryBoardController.goban.engine?.move_tree?.id ?? null,
+                appliedMoveTreeId: appliedDraftBaseRef.current.moveTreeId,
+            });
             void tryApplyDraftBaseVariation();
         };
 
         const onLastOfficialMove = () => {
+            logKibitzVariationDebug("draft-base:event-last-official-move", {
+                variationId: draftBaseVariation.id,
+                currentMoveTreeId: secondaryBoardController.goban.engine?.move_tree?.id ?? null,
+                appliedMoveTreeId: appliedDraftBaseRef.current.moveTreeId,
+            });
             void tryApplyDraftBaseVariation();
         };
         goban.on("load", onLoad);
