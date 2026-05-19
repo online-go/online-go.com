@@ -34,7 +34,7 @@ interface KibitzVariationDebugEntry {
 
 let debugSequence = 0;
 
-function kibitzVariationDebugEnabled(): boolean {
+export function isKibitzVariationDebugEnabled(): boolean {
     if (typeof window === "undefined") {
         return false;
     }
@@ -100,7 +100,7 @@ function recordKibitzVariationDebugEntry(
 }
 
 export function logKibitzVariationDebug(message: string, details?: unknown): void {
-    if (!kibitzVariationDebugEnabled()) {
+    if (!isKibitzVariationDebugEnabled()) {
         return;
     }
 
