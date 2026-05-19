@@ -63,7 +63,7 @@ import {
     getKibitzBlockedRoomFollowupMessage,
     getKibitzBlockedRoomMessage,
 } from "./kibitzAnalysisPolicyText";
-import { logKibitzVariationDebug } from "./kibitzVariationDebug";
+import { logKibitzVariationDebug, summarizeKibitzMoveTreeNode } from "./kibitzVariationDebug";
 import { useCurrentKibitzUser } from "./useCurrentKibitzUser";
 import "./Kibitz.css";
 
@@ -84,26 +84,6 @@ interface PendingPostedVariation {
     from?: number;
     moves?: string;
     title?: string;
-}
-
-function summarizeKibitzMoveTreeNode(
-    node: MoveTree | null | undefined,
-): Record<string, unknown> | null {
-    if (!node) {
-        return null;
-    }
-
-    return {
-        id: node.id,
-        moveNumber: node.move_number,
-        x: node.x,
-        y: node.y,
-        player: node.player,
-        edited: node.edited,
-        parentId: node.parent?.id,
-        trunkNextId: node.trunk_next?.id,
-        branchIds: node.branches.map((branch) => branch.id),
-    };
 }
 
 function getMoveTreeTrunkTail(moveTree: MoveTree | null | undefined): MoveTree | null {

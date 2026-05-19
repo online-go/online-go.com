@@ -46,7 +46,11 @@ import {
     applyKibitzVariationToController,
     isVariationOfficialAnchorReady,
 } from "./kibitzVariationTree";
-import { isKibitzVariationDebugEnabled, logKibitzVariationDebug } from "./kibitzVariationDebug";
+import {
+    isKibitzVariationDebugEnabled,
+    logKibitzVariationDebug,
+    summarizeKibitzMoveTreeNode,
+} from "./kibitzVariationDebug";
 import "./KibitzRoomStage.css";
 
 interface KibitzRoomStageProps {
@@ -284,26 +288,6 @@ export function getOfficialTrunkTail(moveTree: MoveTree | null | undefined): Mov
         tail = tail.trunk_next;
     }
     return tail;
-}
-
-function summarizeKibitzMoveTreeNode(
-    node: MoveTree | null | undefined,
-): Record<string, unknown> | null {
-    if (!node) {
-        return null;
-    }
-
-    return {
-        id: node.id,
-        moveNumber: node.move_number,
-        x: node.x,
-        y: node.y,
-        player: node.player,
-        edited: node.edited,
-        parentId: node.parent?.id,
-        trunkNextId: node.trunk_next?.id,
-        branchIds: node.branches.map((branch) => branch.id),
-    };
 }
 
 function summarizeSecondaryVariationSnapshot(

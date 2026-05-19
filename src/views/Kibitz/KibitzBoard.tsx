@@ -21,7 +21,7 @@ import { GobanContainer } from "@/components/GobanContainer/GobanContainer";
 import { GobanController, getMoveTreeTrunkTail } from "@/lib/GobanController";
 import * as preferences from "@/lib/preferences";
 import { socket } from "@/lib/sockets";
-import { logKibitzVariationDebug } from "./kibitzVariationDebug";
+import { logKibitzVariationDebug, summarizeKibitzMoveTreeNode } from "./kibitzVariationDebug";
 import "./KibitzBoard.css";
 
 interface KibitzBoardProps {
@@ -97,26 +97,6 @@ export function shouldRestoreToOfficialTailForGame(
     }
 
     return restoredOfficialTailForGameId !== gameId || currentMoveNumber === 0;
-}
-
-function summarizeKibitzMoveTreeNode(
-    node: MoveTree | null | undefined,
-): Record<string, unknown> | null {
-    if (!node) {
-        return null;
-    }
-
-    return {
-        id: node.id,
-        moveNumber: node.move_number,
-        x: node.x,
-        y: node.y,
-        player: node.player,
-        edited: node.edited,
-        parentId: node.parent?.id,
-        trunkNextId: node.trunk_next?.id,
-        branchIds: node.branches.map((branch) => branch.id),
-    };
 }
 
 export function KibitzBoard({
