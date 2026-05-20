@@ -388,8 +388,14 @@ export function getOfficialTrunkTailMoveNumber(controller: GobanController): num
 export function getRequiredBranchAttachMoveForVariation(
     variation: KibitzVariationSummary,
     sourceGame: KibitzWatchedGame | null | undefined,
-): number {
-    const from = variation.analysis_from ?? 0;
+): number | null {
+    const from =
+        typeof variation.analysis_from === "number" && Number.isFinite(variation.analysis_from)
+            ? variation.analysis_from
+            : null;
+    if (from == null) {
+        return null;
+    }
     const sourceGameMoveNumber = sourceGame?.move_number;
 
     if (sourceGameMoveNumber == null) {
@@ -405,29 +411,38 @@ export function getRequiredBranchAttachMoveForVariation(
 
 export function getRequiredSnapshotMoveForVariation(
     variation: KibitzVariationSummary,
-    sourceGame: KibitzWatchedGame | null | undefined,
-): number {
-    const from = variation.analysis_from ?? 0;
-    const sourceGameMoveNumber = sourceGame?.move_number;
-
-    if (sourceGameMoveNumber != null) {
-        return sourceGameMoveNumber;
+    _sourceGame: KibitzWatchedGame | null | undefined,
+): number | null {
+    if (typeof variation.analysis_from !== "number" || !Number.isFinite(variation.analysis_from)) {
+        return null;
     }
 
-    return from + 1;
+    // The snapshot only needs the anchor move where the variation branches off.
+    // The branch continuation itself is supplied by the variation payload.
+    return variation.analysis_from;
 }
 
 export function getRequiredVariationSnapshotMoveNumber(
     selectedVariation: KibitzVariationSummary,
     visibleVariations: readonly KibitzVariationSummary[],
     sourceGame: KibitzWatchedGame | null | undefined,
-): number {
-    return Math.max(
+): number | null {
+    const requiredSnapshotMoves = [
         getRequiredSnapshotMoveForVariation(selectedVariation, sourceGame),
         ...visibleVariations.map((variation) =>
             getRequiredSnapshotMoveForVariation(variation, sourceGame),
         ),
+    ];
+
+    const validRequiredSnapshotMoves = requiredSnapshotMoves.filter(
+        (moveNumber): moveNumber is number => moveNumber != null,
     );
+
+    if (validRequiredSnapshotMoves.length !== requiredSnapshotMoves.length) {
+        return null;
+    }
+
+    return Math.max(...validRequiredSnapshotMoves);
 }
 
 export function isSecondaryVariationSnapshotReady(
@@ -441,6 +456,9 @@ export function isSecondaryVariationSnapshotReady(
         visibleVariations,
         sourceGame,
     );
+    if (requiredSnapshotMoveNumber == null) {
+        return false;
+    }
     const trunkTailMoveNumber = getOfficialTrunkTailMoveNumber(controller);
 
     return trunkTailMoveNumber >= requiredSnapshotMoveNumber;
@@ -515,6 +533,9 @@ export function captureMainBoardBaseSnapshotForVariation(
         visibleVariations,
         sourceGame,
     );
+    if (requiredSnapshotMoveNumber == null) {
+        return null;
+    }
     const mainTailMoveNumber = getOfficialTrunkTailMoveNumber(mainBoardController);
 
     if (mainTailMoveNumber < requiredSnapshotMoveNumber) {
@@ -563,6 +584,9 @@ export function captureRoomBaseSnapshotForVariation(
         visibleVariations,
         sourceGame,
     );
+    if (requiredSnapshotMoveNumber == null) {
+        return null;
+    }
 
     if (currentGameBaseSnapshot.trunkTailMoveNumber < requiredSnapshotMoveNumber) {
         return null;
@@ -1556,13 +1580,29 @@ export function KibitzRoomStage({
                 visibleVariations,
                 selectedVariationSourceGame,
             );
+            if (requiredSnapshotMoveNumber == null) {
+                logVariationStage("try:missing-analysis-from", {
+                    reason,
+                    selectedVariationAnalysisFrom: selectedVariation.analysis_from ?? null,
+                    visibleVariationAnalysisFroms: visibleVariations.map((variation) => ({
+                        id: variation.id,
+                        analysisFrom: variation.analysis_from ?? null,
+                    })),
+                });
+                return false;
+            }
+            const currentLiveTailMoveNumber = Math.max(
+                mainBoardOfficialTailMoveNumber,
+                currentGameBaseSnapshot?.trunkTailMoveNumber ?? 0,
+            );
 
             let baseSnapshot = secondaryVariationBaseSnapshotRef.current;
             const canReuseSnapshot =
                 baseSnapshot != null &&
                 baseSnapshot.controller === secondaryBoardController &&
                 baseSnapshot.gameId === selectedVariation.game_id &&
-                baseSnapshot.trunkTailMoveNumber >= requiredSnapshotMoveNumber;
+                baseSnapshot.trunkTailMoveNumber >= requiredSnapshotMoveNumber &&
+                baseSnapshot.trunkTailMoveNumber >= currentLiveTailMoveNumber;
             const snapshotInstalled =
                 baseSnapshot != null &&
                 baseSnapshot.controller === secondaryBoardController &&
@@ -1576,6 +1616,7 @@ export function KibitzRoomStage({
             logVariationStage("try:snapshot-state", {
                 reason,
                 requiredSnapshotMoveNumber,
+                currentLiveTailMoveNumber,
                 canReuseSnapshot,
                 snapshotInstalled,
             });

@@ -1718,6 +1718,14 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                           : NaN;
 
                 if (posted && Number.isFinite(creatorId) && posted.game_id != null) {
+                    console.debug("kibitz-post-variation:pending-local-state", {
+                        pendingId: posted.kibitz_pending_id ?? "",
+                        gameId: posted.game_id,
+                        creatorId,
+                        from: posted.from ?? null,
+                        moveCount: posted.moves?.length ?? null,
+                        title: posted.name ?? null,
+                    });
                     setPendingPostedVariation({
                         pendingId: posted.kibitz_pending_id ?? "",
                         gameId: posted.game_id,
