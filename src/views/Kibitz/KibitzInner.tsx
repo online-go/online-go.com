@@ -188,7 +188,6 @@ async function fetchCurrentGameBaseSnapshot(
         board_div: boardDiv,
         interactive: false,
         connect_to_chat: false,
-        connect_to_game: false,
         width: details.width,
         height: details.height,
         moves: details.gamedata.moves as GobanConfig["moves"],
