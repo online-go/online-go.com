@@ -551,6 +551,33 @@ export function KibitzBoard({
         role,
     ]);
 
+    React.useEffect(() => {
+        if (!goban || !size || size <= 0) {
+            return;
+        }
+
+        let cancelled = false;
+        let frame1 = 0;
+        let frame2 = 0;
+
+        frame1 = window.requestAnimationFrame(() => {
+            frame2 = window.requestAnimationFrame(() => {
+                if (cancelled) {
+                    return;
+                }
+
+                goban.redraw(true);
+                goban.move_tree_redraw?.(true);
+            });
+        });
+
+        return () => {
+            cancelled = true;
+            window.cancelAnimationFrame(frame1);
+            window.cancelAnimationFrame(frame2);
+        };
+    }, [goban, size]);
+
     return (
         <div
             className={"KibitzBoard" + (className ? ` ${className}` : "")}

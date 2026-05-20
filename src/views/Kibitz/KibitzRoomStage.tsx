@@ -202,6 +202,28 @@ export type KibitzBoardLoadConfig = Record<string, unknown> & {
     moves?: GobanConfig["moves"];
 };
 
+export function buildSecondaryVariationApplyKey({
+    selectedGameId,
+    snapshotTailMoveNumber,
+    visibleVariationKey,
+    selectedVariationId,
+    variationFocusRequestId,
+}: {
+    selectedGameId: number | null | undefined;
+    snapshotTailMoveNumber: number | null | undefined;
+    visibleVariationKey: string;
+    selectedVariationId: string | null | undefined;
+    variationFocusRequestId: number;
+}): string {
+    return [
+        selectedGameId ?? "no-game",
+        snapshotTailMoveNumber ?? "no-snapshot",
+        visibleVariationKey || "no-visible-variations",
+        selectedVariationId ?? "no-selected-variation",
+        variationFocusRequestId,
+    ].join(":");
+}
+
 export interface KibitzCurrentGameBaseSnapshot {
     gameId: number;
     trunkTailMoveNumber: number;
@@ -305,6 +327,45 @@ function summarizeSecondaryVariationSnapshot(
         trunkTailMoveNumber: snapshot.trunkTailMoveNumber,
         hasMoveTree: Boolean(snapshot.config.move_tree),
     };
+}
+
+function summarizeElementForDebug(
+    element: HTMLElement | null | undefined,
+): Record<string, unknown> | null {
+    if (!element) {
+        return null;
+    }
+
+    const rect = element.getBoundingClientRect();
+    const style = window.getComputedStyle(element);
+
+    return {
+        tagName: element.tagName,
+        className: typeof element.className === "string" ? element.className : "",
+        id: element.id || "",
+        clientWidth: element.clientWidth,
+        clientHeight: element.clientHeight,
+        rectWidth: rect.width,
+        rectHeight: rect.height,
+        display: style.display,
+        visibility: style.visibility,
+        position: style.position,
+    };
+}
+
+function summarizeParentChain(
+    element: HTMLElement | null | undefined,
+    depth = 4,
+): Array<Record<string, unknown> | null> {
+    const result: Array<Record<string, unknown> | null> = [];
+    let current = element;
+
+    for (let index = 0; current && index < depth; index += 1) {
+        result.push(summarizeElementForDebug(current));
+        current = current.parentElement;
+    }
+
+    return result;
 }
 
 export function getCurrentSecondaryVariationBaseTreeIdentity(controller: GobanController): {
@@ -741,11 +802,16 @@ function scheduleVisibleBoardRedrawWhenReady(
     controller: GobanController | null | undefined,
     role: "main" | "secondary" | "variation" | "preview",
     reason: string,
+    options?: {
+        expectedSize?: number | null;
+        onDeferred?: () => void;
+    },
     attempts = 5,
 ): () => void {
     let frame1: number | null = null;
     let frame2: number | null = null;
     let cancelled = false;
+    let deferredLogged = false;
 
     const scheduleAttempt = (remainingAttempts: number) => {
         if (cancelled) {
@@ -771,12 +837,19 @@ function scheduleVisibleBoardRedrawWhenReady(
                 const height = container?.clientHeight ?? 0;
 
                 if (width <= 0 || height <= 0) {
-                    logKibitzVariationDebug("visible-goban:redraw-deferred-zero-size", {
-                        role,
-                        reason,
-                        width,
-                        height,
-                    });
+                    if (!deferredLogged) {
+                        deferredLogged = true;
+                        logKibitzVariationDebug("visible-goban:redraw-deferred-zero-size", {
+                            role,
+                            reason,
+                            width,
+                            height,
+                            expectedSize: options?.expectedSize ?? null,
+                            measuredElement: summarizeElementForDebug(container),
+                            parentChain: summarizeParentChain(container),
+                        });
+                        options?.onDeferred?.();
+                    }
                     if (remainingAttempts > 0) {
                         scheduleAttempt(remainingAttempts - 1);
                     }
@@ -1039,6 +1112,8 @@ export function KibitzRoomStage({
     const suppressSelectedVariationLoadRef = React.useRef(false);
     const secondaryVariationRetryTimeoutRef = React.useRef<number | null>(null);
     const secondaryVariationRetryCountRef = React.useRef(0);
+    const lastAppliedSecondaryVariationKeyRef = React.useRef<string | null>(null);
+    const pendingSecondaryRedrawReasonRef = React.useRef<string | null>(null);
     const appliedDraftAnalyzeToolRef = React.useRef<{
         controller: GobanController | null;
         draftKey: string | null;
@@ -1080,6 +1155,7 @@ export function KibitzRoomStage({
         `mobile-${secondaryPane.variation_id ?? ""}-${secondaryPane.preview_game_id ?? ""}-${secondaryPane.variation_source_game_id ?? ""}-${mobileCompanionPanel ?? ""}`,
         true,
     );
+    const visibleSecondaryBoardSize = isMobileLayout ? mobileBoardSize : secondaryBoardSize;
     const secondaryMoveTreeKey = React.useMemo(() => {
         if (secondaryPane.variation_id != null) {
             return `variation-${secondaryPane.variation_id}`;
@@ -1168,18 +1244,53 @@ export function KibitzRoomStage({
                 mainBoardController,
                 "main",
                 reason,
+                { expectedSize: mainBoardSize },
             );
         },
-        [mainBoardController],
+        [mainBoardController, mainBoardSize],
     );
     const scheduleSecondaryBoardVisibleRedraw = React.useCallback(
         (reason: string) => {
             pendingSecondaryBoardVisibleRedrawCancelRef.current?.();
             pendingSecondaryBoardVisibleRedrawCancelRef.current =
-                scheduleVisibleBoardRedrawWhenReady(secondaryBoardController, "secondary", reason);
+                scheduleVisibleBoardRedrawWhenReady(secondaryBoardController, "secondary", reason, {
+                    expectedSize: visibleSecondaryBoardSize,
+                    onDeferred: () => {
+                        pendingSecondaryRedrawReasonRef.current = reason;
+                        logKibitzVariationDebug("visible-goban:redraw-pending-until-size", {
+                            role: "secondary",
+                            reason,
+                            measuredWidth: 0,
+                            measuredHeight: 0,
+                            expectedSize: visibleSecondaryBoardSize,
+                        });
+                    },
+                });
         },
-        [secondaryBoardController],
+        [secondaryBoardController, visibleSecondaryBoardSize],
     );
+
+    React.useEffect(() => {
+        lastAppliedSecondaryVariationKeyRef.current = null;
+    }, [
+        secondaryBoardController,
+        selectedVariation?.game_id,
+        selectedVariation?.id,
+        visibleVariationApplyKey,
+        variationFocusRequestId,
+        currentGameBaseSnapshot?.gameId,
+        currentGameBaseSnapshot?.trunkTailMoveNumber,
+    ]);
+
+    React.useEffect(() => {
+        const pendingReason = pendingSecondaryRedrawReasonRef.current;
+        if (!secondaryBoardController || visibleSecondaryBoardSize <= 0 || !pendingReason) {
+            return;
+        }
+
+        pendingSecondaryRedrawReasonRef.current = null;
+        scheduleSecondaryBoardVisibleRedraw(`pending-size-ready:${pendingReason}`);
+    }, [scheduleSecondaryBoardVisibleRedraw, secondaryBoardController, visibleSecondaryBoardSize]);
 
     const clearSecondaryVariationRetryTimeout = React.useCallback(() => {
         if (secondaryVariationRetryTimeoutRef.current != null) {
@@ -1198,6 +1309,8 @@ export function KibitzRoomStage({
             pendingSecondaryVariationBaseLoadRef.current = null;
             suppressSelectedVariationLoadRef.current = false;
             secondaryVariationRetryCountRef.current = 0;
+            lastAppliedSecondaryVariationKeyRef.current = null;
+            pendingSecondaryRedrawReasonRef.current = null;
             clearSecondaryVariationRetryTimeout();
             logKibitzVariationDebug("main-board:variation-base-reset", {
                 reason,
@@ -1386,6 +1499,8 @@ export function KibitzRoomStage({
         pendingSecondaryVariationBaseLoadRef.current = null;
         suppressSelectedVariationLoadRef.current = false;
         secondaryVariationRetryCountRef.current = 0;
+        lastAppliedSecondaryVariationKeyRef.current = null;
+        pendingSecondaryRedrawReasonRef.current = null;
         clearSecondaryVariationRetryTimeout();
     }, [clearSecondaryVariationRetryTimeout, secondaryBoardController, selectedVariationGameId]);
 
@@ -1458,7 +1573,7 @@ export function KibitzRoomStage({
             });
         };
 
-        const applyVisibleVariationsToLoadedBase = (): boolean => {
+        const applyVisibleVariationsToLoadedBase = (desiredApplyKey: string): boolean => {
             if (disposed || applyingVariation || secondaryVariationTreeDirtyRef.current) {
                 logVariationStage("apply:blocked", {
                     disposed,
@@ -1580,9 +1695,11 @@ export function KibitzRoomStage({
                 scheduleSecondaryMoveTreeRedraw();
                 clearSecondaryVariationRetryTimeout();
                 secondaryVariationRetryCountRef.current = 0;
+                lastAppliedSecondaryVariationKeyRef.current = desiredApplyKey;
                 logVariationStage("apply:done", () => ({
                     selectedEndpoint: summarizeKibitzMoveTreeNode(selectedEndpoint),
                     nextTreeDirty: secondaryVariationTreeDirtyRef.current,
+                    desiredApplyKey,
                 }));
                 return true;
             } finally {
@@ -1614,23 +1731,49 @@ export function KibitzRoomStage({
 
             const currentSecondaryTailMoveNumber =
                 getOfficialTrunkTailMoveNumber(secondaryBoardController);
+            const desiredApplyKey = buildSecondaryVariationApplyKey({
+                selectedGameId: selectedVariation.game_id,
+                snapshotTailMoveNumber: snapshot.trunkTailMoveNumber,
+                visibleVariationKey: visibleVariationApplyKey,
+                selectedVariationId: selectedVariation.id,
+                variationFocusRequestId,
+            });
             const snapshotInstalled = isSecondaryVariationBaseSnapshotInstalled(
                 snapshot,
                 secondaryBoardController,
                 secondaryVariationBaseInstalledRef.current,
             );
+            const alreadyAppliedDesiredState =
+                snapshotInstalled &&
+                currentSecondaryTailMoveNumber === snapshot.trunkTailMoveNumber &&
+                lastAppliedSecondaryVariationKeyRef.current === desiredApplyKey;
             const needsSnapshotLoad =
-                secondaryVariationTreeDirtyRef.current ||
-                !snapshotInstalled ||
-                currentSecondaryTailMoveNumber < snapshot.trunkTailMoveNumber;
+                !alreadyAppliedDesiredState &&
+                (secondaryVariationTreeDirtyRef.current ||
+                    !snapshotInstalled ||
+                    currentSecondaryTailMoveNumber < snapshot.trunkTailMoveNumber);
 
             logVariationStage("reload-or-apply:state", {
                 reason,
                 currentSecondaryTailMoveNumber,
                 snapshotTailMoveNumber: snapshot.trunkTailMoveNumber,
                 snapshotInstalled,
+                desiredApplyKey,
+                alreadyAppliedDesiredState,
                 needsSnapshotLoad,
             });
+
+            if (alreadyAppliedDesiredState) {
+                logVariationStage("reload-or-apply:already-applied-skip", {
+                    reason,
+                    desiredApplyKey,
+                    currentSecondaryTailMoveNumber,
+                    snapshotTailMoveNumber: snapshot.trunkTailMoveNumber,
+                    snapshotInstalled,
+                });
+                scheduleSecondaryBoardVisibleRedraw("already-applied-skip");
+                return true;
+            }
 
             if (needsSnapshotLoad) {
                 pendingSecondaryVariationBaseLoadRef.current = {
@@ -1643,6 +1786,7 @@ export function KibitzRoomStage({
                     currentSecondaryTailMoveNumber,
                     snapshotTailMoveNumber: snapshot.trunkTailMoveNumber,
                     snapshotInstalled,
+                    desiredApplyKey,
                 });
                 loadSecondaryVariationBaseSnapshot(secondaryBoardController, snapshot);
                 const pendingBaseLoad = pendingSecondaryVariationBaseLoadRef.current;
@@ -1657,7 +1801,7 @@ export function KibitzRoomStage({
                 return true;
             }
 
-            const applied = applyVisibleVariationsToLoadedBase();
+            const applied = applyVisibleVariationsToLoadedBase(desiredApplyKey);
             if (applied) {
                 return true;
             }
@@ -1722,7 +1866,20 @@ export function KibitzRoomStage({
                     return reloadBaseThenApplyVisibleVariations(`${reason}:snapshot-not-installed`);
                 }
 
-                return applyVisibleVariationsToLoadedBase();
+                const loadedBaseSnapshot = baseSnapshot;
+                if (!loadedBaseSnapshot) {
+                    return reloadBaseThenApplyVisibleVariations(`${reason}:missing-base-snapshot`);
+                }
+
+                return applyVisibleVariationsToLoadedBase(
+                    buildSecondaryVariationApplyKey({
+                        selectedGameId: selectedVariation.game_id,
+                        snapshotTailMoveNumber: loadedBaseSnapshot.trunkTailMoveNumber,
+                        visibleVariationKey: visibleVariationApplyKey,
+                        selectedVariationId: selectedVariation.id,
+                        variationFocusRequestId,
+                    }),
+                );
             }
 
             if (secondaryVariationTreeDirtyRef.current) {
@@ -1758,6 +1915,7 @@ export function KibitzRoomStage({
 
                 if (mainBoardSnapshot) {
                     secondaryVariationBaseSnapshotRef.current = mainBoardSnapshot;
+                    lastAppliedSecondaryVariationKeyRef.current = null;
                     logVariationStage("try:main-board-snapshot", {
                         reason,
                         requiredSnapshotMoveNumber,
@@ -1776,6 +1934,7 @@ export function KibitzRoomStage({
 
                 if (roomBaseSnapshot) {
                     secondaryVariationBaseSnapshotRef.current = roomBaseSnapshot;
+                    lastAppliedSecondaryVariationKeyRef.current = null;
                     logVariationStage("try:room-base-snapshot", {
                         reason,
                         requiredSnapshotMoveNumber,
@@ -1815,6 +1974,7 @@ export function KibitzRoomStage({
             }
 
             secondaryVariationBaseSnapshotRef.current = baseSnapshot;
+            lastAppliedSecondaryVariationKeyRef.current = null;
             logVariationStage("try:capture-succeeded", {
                 reason,
                 baseSnapshot: summarizeSecondaryVariationSnapshot(baseSnapshot),
@@ -1861,6 +2021,13 @@ export function KibitzRoomStage({
                 pendingBaseLoad.gameId === selectedVariation.game_id
             ) {
                 logVariationStage("event:load:snapshot-complete");
+                const loadedSnapshot = secondaryVariationBaseSnapshotRef.current;
+                if (!loadedSnapshot) {
+                    logVariationStage("event:load:snapshot-missing");
+                    scheduleBaseRetry("snapshot-load-snapshot-missing");
+                    return;
+                }
+
                 pendingSecondaryVariationBaseLoadRef.current = null;
                 suppressSelectedVariationLoadRef.current = false;
                 secondaryVariationTreeDirtyRef.current = false;
@@ -1870,7 +2037,17 @@ export function KibitzRoomStage({
                         selectedVariation.game_id,
                     );
 
-                if (!applyVisibleVariationsToLoadedBase()) {
+                if (
+                    !applyVisibleVariationsToLoadedBase(
+                        buildSecondaryVariationApplyKey({
+                            selectedGameId: selectedVariation.game_id,
+                            snapshotTailMoveNumber: loadedSnapshot.trunkTailMoveNumber,
+                            visibleVariationKey: visibleVariationApplyKey,
+                            selectedVariationId: selectedVariation.id,
+                            variationFocusRequestId,
+                        }),
+                    )
+                ) {
                     scheduleBaseRetry("snapshot-load-apply-failed");
                 } else {
                     clearSecondaryVariationRetryTimeout();
