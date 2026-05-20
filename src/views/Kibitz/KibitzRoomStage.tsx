@@ -835,6 +835,11 @@ function scheduleVisibleBoardRedrawWhenReady(
                 const container = controller?.goban.parent ?? null;
                 const width = container?.clientWidth ?? 0;
                 const height = container?.clientHeight ?? 0;
+                const expectedSize = options?.expectedSize ?? null;
+                const expectedSizeReady =
+                    typeof expectedSize === "number" &&
+                    Number.isFinite(expectedSize) &&
+                    expectedSize > 0;
 
                 if (width <= 0 || height <= 0) {
                     if (!deferredLogged) {
@@ -848,7 +853,9 @@ function scheduleVisibleBoardRedrawWhenReady(
                             measuredElement: summarizeElementForDebug(container),
                             parentChain: summarizeParentChain(container),
                         });
-                        options?.onDeferred?.();
+                        if (!expectedSizeReady) {
+                            options?.onDeferred?.();
+                        }
                     }
                     if (remainingAttempts > 0) {
                         scheduleAttempt(remainingAttempts - 1);
