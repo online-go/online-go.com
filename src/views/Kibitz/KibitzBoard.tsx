@@ -220,7 +220,6 @@ export function KibitzBoard({
             stone_font_scale: preferences.get("stone-font-scale"),
             square_size: "auto",
             game_id: connectToGame ? gameId : undefined,
-            connect_to_game: connectToGame,
             move_tree: moveTreeRef.current,
             width,
             height,
