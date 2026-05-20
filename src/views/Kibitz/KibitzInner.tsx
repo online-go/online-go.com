@@ -146,6 +146,7 @@ function isCurrentGameBaseSnapshotUsable(
 
 async function fetchCurrentGameBaseSnapshot(
     game: KibitzWatchedGame,
+    roomId: string | null,
 ): Promise<KibitzCurrentGameBaseSnapshot | null> {
     const details = (await get(`games/${game.game_id}`)) as KibitzSnapshotGameDetails;
     if (!details?.gamedata?.moves) {
@@ -168,6 +169,7 @@ async function fetchCurrentGameBaseSnapshot(
         const snapshot = captureCurrentGameBaseSnapshotFromController(
             snapshotController,
             game,
+            roomId,
             "game-details",
             expectedMoveNumber,
         );
@@ -958,8 +960,16 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             if (
                 currentRoomId == null ||
                 currentRoomGameId == null ||
+                snapshot.roomId !== currentRoomId ||
                 snapshot.gameId !== currentRoomGameId
             ) {
+                logKibitzVariationDebug("current-game-base-snapshot:stale-rejected", {
+                    snapshotGameId: snapshot.gameId,
+                    snapshotSource: snapshot.source,
+                    snapshotRoomId: snapshot.roomId ?? null,
+                    currentRoomId,
+                    currentRoomGameId,
+                });
                 return;
             }
 
@@ -1012,6 +1022,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             const snapshot = captureCurrentGameBaseSnapshotFromController(
                 mainBoardController,
                 game,
+                resolvedRoom.id,
             );
             if (!snapshot) {
                 const officialTail = getMoveTreeTrunkTail(goban.engine.move_tree);
@@ -1065,7 +1076,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         const roomIdAtStart = resolvedRoom.id;
         setCurrentGameBaseSnapshotLoadingGameId(game.game_id);
 
-        void fetchCurrentGameBaseSnapshot(game)
+        void fetchCurrentGameBaseSnapshot(game, resolvedRoom.id)
             .then((snapshot) => {
                 if (cancelled || currentRoomIdRef.current !== roomIdAtStart) {
                     return;
@@ -1121,6 +1132,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             const mainBoardSnapshot = captureCurrentGameBaseSnapshotFromController(
                 mainBoardController,
                 game,
+                resolvedRoom.id,
             );
             if (mainBoardSnapshot) {
                 const acceptedSnapshot = chooseFresherCurrentGameBaseSnapshot(

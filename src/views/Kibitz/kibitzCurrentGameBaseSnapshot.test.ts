@@ -99,8 +99,11 @@ function makeMoveTree(moveNumber: number, trunkNext?: TestMoveTree): TestMoveTre
 }
 
 function makeController(moveTree: TestMoveTree): GobanController {
+    const parent = document.createElement("div");
+    document.body.appendChild(parent);
     return {
         goban: {
+            parent,
             engine: {
                 config: {},
                 move_tree: moveTree,
@@ -151,16 +154,22 @@ describe("chooseFresherCurrentGameBaseSnapshot", () => {
 });
 
 describe("captureCurrentGameBaseSnapshotFromController", () => {
+    beforeEach(() => {
+        document.body.innerHTML = "";
+    });
+
     it("captures only the official trunk", () => {
         const moveTree = makeMoveTree(0, makeMoveTree(1, makeMoveTree(2)));
         const controller = makeController(moveTree);
         const snapshot = captureCurrentGameBaseSnapshotFromController(
             controller,
             makeGame(4321, 2),
+            "room-1",
             "room-base-broker",
         );
 
         expect(snapshot?.gameId).toBe(4321);
+        expect(snapshot?.roomId).toBe("room-1");
         expect(snapshot?.source).toBe("room-base-broker");
         expect(snapshot?.trunkTailMoveNumber).toBe(2);
         expect(snapshot?.config.move_tree?.branches).toBeUndefined();
@@ -175,8 +184,31 @@ describe("captureCurrentGameBaseSnapshotFromController", () => {
             captureCurrentGameBaseSnapshotFromController(
                 controller,
                 makeGame(4321, 2),
+                "room-1",
                 "room-base-broker",
                 2,
+            ),
+        ).toBeNull();
+    });
+
+    it("rejects detached controllers", () => {
+        const moveTree = makeMoveTree(0, makeMoveTree(1, makeMoveTree(2)));
+        const parent = document.createElement("div");
+        const controller = {
+            goban: {
+                parent,
+                engine: {
+                    config: {},
+                    move_tree: moveTree,
+                },
+            },
+        } as unknown as GobanController;
+
+        expect(
+            captureCurrentGameBaseSnapshotFromController(
+                controller,
+                makeGame(4321, 2),
+                "room-base-broker",
             ),
         ).toBeNull();
     });

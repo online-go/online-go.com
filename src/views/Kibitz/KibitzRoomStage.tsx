@@ -226,6 +226,7 @@ export function buildSecondaryVariationApplyKey({
 
 export interface KibitzCurrentGameBaseSnapshot {
     gameId: number;
+    roomId?: string | null;
     trunkTailMoveNumber: number;
     moveTreeId: number | string | null;
     movePath: string;
@@ -812,7 +813,12 @@ function scheduleVisibleBoardRedrawWhenReady(
     options?: {
         expectedSize?: number | null;
         onDeferred?: () => void;
-        onDetached?: () => void;
+        onDetached?: (details: {
+            width: number;
+            height: number;
+            measuredElement: Record<string, unknown> | null;
+            parentChain: Array<Record<string, unknown> | null>;
+        }) => void;
         isControllerCurrent?: () => boolean;
     },
     attempts = 5,
@@ -842,18 +848,38 @@ function scheduleVisibleBoardRedrawWhenReady(
                 }
 
                 if (options?.isControllerCurrent && !options.isControllerCurrent()) {
+                    logKibitzVariationDebug("visible-goban:redraw-stale-controller", {
+                        role,
+                        reason,
+                        expectedSize: options?.expectedSize ?? null,
+                        measuredElement: summarizeElementForDebug(controller?.goban.parent ?? null),
+                        parentChain: summarizeParentChain(controller?.goban.parent ?? null),
+                    });
                     return;
                 }
 
                 const container = controller?.goban.parent ?? null;
-                if (!container || !container.isConnected) {
+                const measuredElement = summarizeElementForDebug(container);
+                const parentChain = summarizeParentChain(container);
+                const detached = !container || !container.isConnected || parentChain.length <= 1;
+                if (detached) {
+                    const width = container?.clientWidth ?? 0;
+                    const height = container?.clientHeight ?? 0;
                     logKibitzVariationDebug("visible-goban:redraw-detached", {
                         role,
                         reason,
-                        measuredElement: summarizeElementForDebug(container),
-                        parentChain: summarizeParentChain(container),
+                        width,
+                        height,
+                        expectedSize: options?.expectedSize ?? null,
+                        measuredElement,
+                        parentChain,
                     });
-                    options?.onDetached?.();
+                    options?.onDetached?.({
+                        width,
+                        height,
+                        measuredElement,
+                        parentChain,
+                    });
                     return;
                 }
 
@@ -1154,10 +1180,22 @@ export function KibitzRoomStage({
                   gameId: controllerGameId,
               }
             : null;
+        if (controller) {
+            logKibitzVariationDebug("secondary-board:remount-controller-ready", {
+                roomId: currentRoomIdRef.current,
+                currentRoomGameId: currentRoomGameIdRef.current,
+                controllerEpoch: secondaryBoardControllerEpochRef.current,
+                controllerGameId,
+            });
+        }
         setSecondaryBoardControllerState(controller);
     }, []);
     const [secondaryReturnLiveAvailable, setSecondaryReturnLiveAvailable] = React.useState(false);
     const [mobileReturnLiveAvailable, setMobileReturnLiveAvailable] = React.useState(false);
+    const [secondaryBoardRemountNonce, bumpSecondaryBoardRemountNonce] = React.useReducer(
+        (value: number) => value + 1,
+        0,
+    );
     const [secondaryMoveTreeContainer, setSecondaryMoveTreeContainer] =
         React.useState<Resizable | null>(null);
     const previousSecondaryControllerRef = React.useRef<GobanController | null>(null);
@@ -1169,6 +1207,77 @@ export function KibitzRoomStage({
     );
     const currentRoomIdRef = React.useRef(room.id);
     const currentRoomGameIdRef = React.useRef(currentRoomGameId);
+    const logSecondaryBoardStaleCallback = React.useCallback(
+        (reason: string, details: Record<string, unknown> = {}) => {
+            logKibitzVariationDebug("secondary-board:stale-callback-ignored", {
+                reason,
+                roomId: room.id,
+                currentRoomGameId,
+                selectedVariationId: selectedVariation?.id ?? null,
+                selectedGameId: selectedVariationGameId,
+                visibleVariationKey: visibleVariationApplyKey,
+                controllerEpoch: secondaryBoardControllerEpochRef.current,
+                remountNonce: secondaryBoardRemountNonce,
+                ...details,
+            });
+        },
+        [
+            currentRoomGameId,
+            room.id,
+            secondaryBoardRemountNonce,
+            selectedVariation?.id,
+            selectedVariationGameId,
+            visibleVariationApplyKey,
+        ],
+    );
+    const requestSecondaryBoardDetachedRemount = React.useCallback(
+        (reason: string, details: Record<string, unknown> = {}) => {
+            logKibitzVariationDebug("secondary-board:detached-remount-requested", {
+                reason,
+                roomId: room.id,
+                selectedVariationId: selectedVariation?.id ?? null,
+                selectedGameId: selectedVariationGameId,
+                currentRoomGameId,
+                visibleVariationKey: visibleVariationApplyKey,
+                desiredApplyKey: lastAppliedSecondaryVariationKeyRef.current,
+                secondaryBoardRemountNonce,
+                ...details,
+            });
+
+            secondaryBoardControllerEpochRef.current += 1;
+            secondaryBoardControllerContextRef.current = null;
+            secondaryVariationBaseSnapshotRef.current = null;
+            secondaryVariationTreeDirtyRef.current = false;
+            secondaryVariationBaseInstalledRef.current =
+                clearInstalledSecondaryVariationBaseState();
+            secondaryVariationBaseHydrationRef.current = null;
+            pendingSecondaryVariationBaseLoadRef.current = null;
+            suppressSelectedVariationLoadRef.current = false;
+            secondaryVariationRetryCountRef.current = 0;
+            lastAppliedSecondaryVariationKeyRef.current = null;
+            pendingSecondaryRedrawReasonRef.current = null;
+            pendingSecondaryMoveTreeRedrawCancelRef.current?.();
+            pendingSecondaryMoveTreeRedrawCancelRef.current = null;
+            pendingSecondaryBoardVisibleRedrawCancelRef.current?.();
+            pendingSecondaryBoardVisibleRedrawCancelRef.current = null;
+            if (secondaryVariationRetryTimeoutRef.current != null) {
+                window.clearTimeout(secondaryVariationRetryTimeoutRef.current);
+                secondaryVariationRetryTimeoutRef.current = null;
+            }
+            previousSecondaryControllerRef.current = null;
+            setSecondaryReturnLiveAvailable(false);
+            setSecondaryBoardControllerState(null);
+            bumpSecondaryBoardRemountNonce();
+        },
+        [
+            currentRoomGameId,
+            room.id,
+            secondaryBoardRemountNonce,
+            selectedVariation?.id,
+            selectedVariationGameId,
+            visibleVariationApplyKey,
+        ],
+    );
     const isDetachedBoardController = React.useCallback((controller: GobanController | null) => {
         return !controller?.goban.parent || !controller.goban.parent.isConnected;
     }, []);
@@ -1288,8 +1397,8 @@ export function KibitzRoomStage({
     const secondaryBoardKey = React.useMemo(() => {
         if (secondaryPane.variation_id != null) {
             return selectedVariationGameId != null
-                ? `room-${room.id}-variation-game-${selectedVariationGameId}`
-                : `variation-${secondaryPane.variation_id}`;
+                ? `room-${room.id}-variation-game-${selectedVariationGameId}-remount-${secondaryBoardRemountNonce}`
+                : `variation-${secondaryPane.variation_id}-remount-${secondaryBoardRemountNonce}`;
         }
 
         if (secondaryPane.variation_source_game_id != null) {
@@ -1297,14 +1406,14 @@ export function KibitzRoomStage({
                 secondaryPane.variation_draft_base_id ?? ""
             }-${secondaryPane.variation_source_move_tree_id ?? ""}-${
                 secondaryPane.variation_source_move_path ?? ""
-            }`;
+            }-remount-${secondaryBoardRemountNonce}`;
         }
 
         if (secondaryPane.preview_game_id != null) {
-            return `room-${room.id}-preview-${secondaryPane.preview_game_id}`;
+            return `room-${room.id}-preview-${secondaryPane.preview_game_id}-remount-${secondaryBoardRemountNonce}`;
         }
 
-        return `room-${room.id}-empty`;
+        return `room-${room.id}-empty-remount-${secondaryBoardRemountNonce}`;
     }, [
         room.id,
         secondaryPane.preview_game_id,
@@ -1314,6 +1423,7 @@ export function KibitzRoomStage({
         secondaryPane.variation_source_move_tree_id,
         secondaryPane.variation_source_move_path,
         selectedVariationGameId,
+        secondaryBoardRemountNonce,
     ]);
     const secondaryMoveNavigationShortcuts = secondaryBoardController ? (
         <>
@@ -1332,6 +1442,9 @@ export function KibitzRoomStage({
     }, []);
     const handleSecondaryMoveTreeResize = React.useCallback(() => {
         if (!isCurrentSecondaryBoardController(secondaryBoardController)) {
+            logSecondaryBoardStaleCallback("move-tree-resize", {
+                controllerPresent: Boolean(secondaryBoardController),
+            });
             return;
         }
 
@@ -1346,6 +1459,14 @@ export function KibitzRoomStage({
             !container ||
             !isCurrentSecondaryBoardController(secondaryBoardController)
         ) {
+            if (
+                secondaryBoardController &&
+                !isCurrentSecondaryBoardController(secondaryBoardController)
+            ) {
+                logSecondaryBoardStaleCallback("move-tree-redraw", {
+                    controllerPresent: true,
+                });
+            }
             pendingSecondaryMoveTreeRedrawCancelRef.current = null;
             return;
         }
@@ -1358,6 +1479,11 @@ export function KibitzRoomStage({
     const scheduleMainBoardVisibleRedraw = React.useCallback(
         (reason: string) => {
             if (!isCurrentMainBoardController(mainBoardController)) {
+                logKibitzVariationDebug("visible-goban:redraw-stale-controller", {
+                    role: "main",
+                    reason,
+                    controllerPresent: Boolean(mainBoardController),
+                });
                 return;
             }
 
@@ -1393,6 +1519,10 @@ export function KibitzRoomStage({
     const scheduleSecondaryBoardVisibleRedraw = React.useCallback(
         (reason: string) => {
             if (!isCurrentSecondaryBoardController(secondaryBoardController)) {
+                logSecondaryBoardStaleCallback("visible-redraw", {
+                    reason,
+                    controllerPresent: Boolean(secondaryBoardController),
+                });
                 return;
             }
 
@@ -1410,21 +1540,38 @@ export function KibitzRoomStage({
                             expectedSize: visibleSecondaryBoardSize,
                         });
                     },
-                    onDetached: () => {
+                    onDetached: (details) => {
                         if (
                             secondaryBoardControllerContextRef.current?.controller ===
                             secondaryBoardController
                         ) {
-                            secondaryBoardControllerEpochRef.current += 1;
-                            secondaryBoardControllerContextRef.current = null;
-                            setSecondaryBoardControllerState(null);
+                            requestSecondaryBoardDetachedRemount("redraw-detached", {
+                                reason,
+                                selectedVariationId: selectedVariation?.id ?? null,
+                                selectedGameId: selectedVariationGameId,
+                                currentRoomGameId,
+                                visibleVariationKey: visibleVariationApplyKey,
+                                desiredApplyKey: lastAppliedSecondaryVariationKeyRef.current,
+                                ...details,
+                            });
                         }
                     },
                     isControllerCurrent: () =>
                         isCurrentSecondaryBoardController(secondaryBoardController),
                 });
         },
-        [isCurrentSecondaryBoardController, secondaryBoardController, visibleSecondaryBoardSize],
+        [
+            currentRoomGameId,
+            logSecondaryBoardStaleCallback,
+            isCurrentSecondaryBoardController,
+            lastAppliedSecondaryVariationKeyRef,
+            requestSecondaryBoardDetachedRemount,
+            secondaryBoardController,
+            selectedVariation?.id,
+            selectedVariationGameId,
+            visibleSecondaryBoardSize,
+            visibleVariationApplyKey,
+        ],
     );
 
     React.useEffect(() => {
@@ -1759,7 +1906,7 @@ export function KibitzRoomStage({
 
         const applyVisibleVariationsToLoadedBase = (desiredApplyKey: string): boolean => {
             if (!isCurrentSecondaryBoardController(secondaryBoardController)) {
-                logVariationStage("apply:stale-controller", { desiredApplyKey });
+                logSecondaryBoardStaleCallback("apply", { desiredApplyKey });
                 return false;
             }
 
@@ -1899,7 +2046,7 @@ export function KibitzRoomStage({
 
         const reloadBaseThenApplyVisibleVariations = (reason: string): boolean => {
             if (!isCurrentSecondaryBoardController(secondaryBoardController)) {
-                logVariationStage("reload-or-apply:stale-controller", { reason });
+                logSecondaryBoardStaleCallback("reload-or-apply", { reason });
                 return false;
             }
 
@@ -2005,7 +2152,7 @@ export function KibitzRoomStage({
 
         const tryApplyVariationWhenReady = (reason: string): boolean => {
             if (!isCurrentSecondaryBoardController(secondaryBoardController)) {
-                logVariationStage("try:stale-controller", { reason });
+                logSecondaryBoardStaleCallback("try", { reason });
                 return false;
             }
 
@@ -2187,6 +2334,9 @@ export function KibitzRoomStage({
                 secondaryVariationRetryTimeoutRef.current != null ||
                 !isCurrentSecondaryBoardController(secondaryBoardController)
             ) {
+                if (!isCurrentSecondaryBoardController(secondaryBoardController)) {
+                    logSecondaryBoardStaleCallback("retry-schedule", { reason });
+                }
                 return;
             }
 
@@ -2213,6 +2363,9 @@ export function KibitzRoomStage({
 
         const onLoad = () => {
             if (disposed || !isCurrentSecondaryBoardController(secondaryBoardController)) {
+                if (!disposed) {
+                    logSecondaryBoardStaleCallback("event-load");
+                }
                 return;
             }
 
@@ -2291,6 +2444,9 @@ export function KibitzRoomStage({
                 suppressSelectedVariationLoadRef.current ||
                 !isCurrentSecondaryBoardController(secondaryBoardController)
             ) {
+                if (!disposed && !suppressSelectedVariationLoadRef.current) {
+                    logSecondaryBoardStaleCallback("event-base-maybe-ready");
+                }
                 return;
             }
 

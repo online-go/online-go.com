@@ -214,6 +214,13 @@ describe("useKibitzCurrentGameBaseBroker", () => {
 
         expect(onSnapshot).toHaveBeenCalledTimes(2);
 
+        act(() => {
+            controller.goban.parent.remove();
+            emit("gamedata");
+        });
+
+        expect(onSnapshot).toHaveBeenCalledTimes(2);
+
         unmount();
 
         expect(controller.destroy).toHaveBeenCalledTimes(1);

@@ -198,12 +198,21 @@ export function useKibitzCurrentGameBaseBroker({
 
         const sync = (reason: string) => {
             if (cancelled || !isCurrentController()) {
+                logKibitzVariationDebug("room-base-broker:stale-callback-ignored", {
+                    reason,
+                    roomId,
+                    gameId: activeGame.game_id,
+                    controllerEpoch,
+                    currentRoomId: currentRoomIdRef.current,
+                    currentGameId: currentGameIdRef.current,
+                });
                 return;
             }
 
             const snapshot = captureCurrentGameBaseSnapshotFromController(
                 controller,
                 activeGame,
+                roomId,
                 "room-base-broker",
                 currentLiveTailMoveNumberRef.current,
             );

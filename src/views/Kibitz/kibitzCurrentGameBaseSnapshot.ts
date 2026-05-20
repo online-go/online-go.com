@@ -33,10 +33,15 @@ export function cloneOfficialTrunkMoveTreeJson(moveTree: MoveTree): MoveTreeJson
 export function captureCurrentGameBaseSnapshotFromController(
     controller: GobanController | null,
     game: KibitzWatchedGame | null | undefined,
+    roomId: string | null | undefined = null,
     source: KibitzCurrentGameBaseSnapshot["source"] = "main-board",
     expectedMoveNumber?: number,
 ): KibitzCurrentGameBaseSnapshot | null {
     if (!controller || !game) {
+        return null;
+    }
+
+    if (!controller.goban.parent?.isConnected) {
         return null;
     }
 
@@ -54,6 +59,7 @@ export function captureCurrentGameBaseSnapshotFromController(
 
     return {
         gameId: game.game_id,
+        roomId: roomId ?? null,
         trunkTailMoveNumber: officialTail.move_number,
         moveTreeId: engine.move_tree?.id ?? null,
         movePath: officialTail.getMoveStringToThisPoint(),
