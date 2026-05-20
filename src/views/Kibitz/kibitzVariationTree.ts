@@ -18,7 +18,11 @@
 import { MoveTree as GobanMoveTree, type MoveTree, type MoveTreeJson } from "goban";
 import type { GobanController } from "@/lib/GobanController";
 import type { KibitzVariationSummary } from "@/models/kibitz";
-import { logKibitzVariationDebug, warnKibitzVariationDebug } from "./kibitzVariationDebug";
+import {
+    isKibitzVariationDebugEnabled,
+    logKibitzVariationDebug,
+    warnKibitzVariationDebug,
+} from "./kibitzVariationDebug";
 
 export const KIBITZ_VARIATION_COLORS = GobanMoveTree.line_colors;
 
@@ -225,6 +229,7 @@ function followKibitzVariationPath(
     const decodedMoves = engine.decodeMoves(moves);
     const pathNodes: MoveTree[] = [];
     const officialTrunkNode = officialTrunkNodeByMoveNumber(engine.move_tree, fromMoveNumber);
+    const debugEnabled = isKibitzVariationDebugEnabled();
 
     if (!officialTrunkNode) {
         throw new Error(`Official trunk node ${fromMoveNumber} not found`);
@@ -232,26 +237,30 @@ function followKibitzVariationPath(
 
     let cursor = officialTrunkNode;
 
-    logKibitzVariationDebug("follow:start", {
-        variationId,
-        fromMoveNumber,
-        decodedMoveCount: decodedMoves.length,
-        officialTrunkNode: summarizeMoveTreeNode(officialTrunkNode),
-        lastOfficialMove: summarizeMoveTreeNode(engine.last_official_move),
-        currentMove: summarizeMoveTreeNode(engine.cur_move),
-    });
+    if (debugEnabled) {
+        logKibitzVariationDebug("follow:start", {
+            variationId,
+            fromMoveNumber,
+            decodedMoveCount: decodedMoves.length,
+            officialTrunkNode: summarizeMoveTreeNode(officialTrunkNode),
+            lastOfficialMove: summarizeMoveTreeNode(engine.last_official_move),
+            currentMove: summarizeMoveTreeNode(engine.cur_move),
+        });
+    }
 
     if (decodedMoves.length > 0) {
         const firstMove = decodedMoves[0];
         const firstMoveEdited = !!firstMove.edited;
         const firstMovePlayer = engine.playerByColor(firstMove.color || 0);
         if (moveMatchesNode(cursor, firstMove.x, firstMove.y, firstMovePlayer, firstMoveEdited)) {
-            logKibitzVariationDebug("follow:first-move-matches-anchor-moving-to-parent", {
-                variationId,
-                cursor: summarizeMoveTreeNode(cursor),
-                parent: summarizeMoveTreeNode(cursor.parent),
-                firstMove,
-            });
+            if (debugEnabled) {
+                logKibitzVariationDebug("follow:first-move-matches-anchor-moving-to-parent", {
+                    variationId,
+                    cursor: summarizeMoveTreeNode(cursor),
+                    parent: summarizeMoveTreeNode(cursor.parent),
+                    firstMove,
+                });
+            }
             cursor = cursor.parent ?? cursor;
         }
     }
@@ -280,15 +289,17 @@ function followKibitzVariationPath(
     const duplicatesTrunkOnlyLine =
         trunkPrefixLength > 0 && trunkPrefixLength === decodedMoves.length;
 
-    logKibitzVariationDebug("follow:prefix", {
-        variationId,
-        fromMoveNumber,
-        trunkPrefixLength,
-        duplicatesSharedTrunkPrefix,
-        duplicatesTrunkOnlyLine,
-        cursor: summarizeMoveTreeNode(cursor),
-        trunkPrefixCursor: summarizeMoveTreeNode(trunkPrefixCursor),
-    });
+    if (debugEnabled) {
+        logKibitzVariationDebug("follow:prefix", {
+            variationId,
+            fromMoveNumber,
+            trunkPrefixLength,
+            duplicatesSharedTrunkPrefix,
+            duplicatesTrunkOnlyLine,
+            cursor: summarizeMoveTreeNode(cursor),
+            trunkPrefixCursor: summarizeMoveTreeNode(trunkPrefixCursor),
+        });
+    }
 
     engine.jumpTo(cursor);
 
@@ -297,16 +308,18 @@ function followKibitzVariationPath(
         const edited = !!move.edited;
         const player = engine.playerByColor(move.color || 0);
 
-        logKibitzVariationDebug("follow:step", {
-            variationId,
-            index,
-            move: { x: move.x, y: move.y, color: move.color, edited },
-            player,
-            cursor: summarizeMoveTreeNode(cursor),
-            trunkNext: summarizeMoveTreeNode(cursor.trunk_next),
-            duplicatesSharedTrunkPrefix,
-            duplicatesTrunkOnlyLine,
-        });
+        if (debugEnabled) {
+            logKibitzVariationDebug("follow:step", {
+                variationId,
+                index,
+                move: { x: move.x, y: move.y, color: move.color, edited },
+                player,
+                cursor: summarizeMoveTreeNode(cursor),
+                trunkNext: summarizeMoveTreeNode(cursor.trunk_next),
+                duplicatesSharedTrunkPrefix,
+                duplicatesTrunkOnlyLine,
+            });
+        }
 
         if (moveMatchesNode(cursor.trunk_next, move.x, move.y, player, edited)) {
             const matchingTrunkNext = cursor.trunk_next;
@@ -338,19 +351,23 @@ function followKibitzVariationPath(
             engine.place(move.x, move.y, false, false, true, true);
         }
         cursor = engine.cur_move;
-        logKibitzVariationDebug("follow:placed", {
-            variationId,
-            index,
-            cursor: summarizeMoveTreeNode(cursor),
-        });
+        if (debugEnabled) {
+            logKibitzVariationDebug("follow:placed", {
+                variationId,
+                index,
+                cursor: summarizeMoveTreeNode(cursor),
+            });
+        }
         pathNodes.push(cursor);
     }
 
-    logKibitzVariationDebug("follow:done", {
-        variationId,
-        endpoint: summarizeMoveTreeNode(pathNodes[pathNodes.length - 1]),
-        pathNodeCount: pathNodes.length,
-    });
+    if (debugEnabled) {
+        logKibitzVariationDebug("follow:done", {
+            variationId,
+            endpoint: summarizeMoveTreeNode(pathNodes[pathNodes.length - 1]),
+            pathNodeCount: pathNodes.length,
+        });
+    }
 
     return pathNodes;
 }

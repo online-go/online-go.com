@@ -20,7 +20,7 @@ import type { GobanConfig, GobanModes, MoveTree, MoveTreeJson } from "goban";
 import { Resizable } from "@/components/Resizable";
 import { KBShortcut } from "@/components/KBShortcut";
 import { Player } from "@/components/Player";
-import { GobanController } from "@/lib/GobanController";
+import { GobanController, getMoveTreeTrunkTail } from "@/lib/GobanController";
 import { close_all_popovers, popover } from "@/lib/popover";
 import { alert } from "@/lib/swal_config";
 import { pgettext } from "@/lib/translate";
@@ -57,6 +57,7 @@ interface KibitzRoomStageProps {
     room: KibitzRoomSummary;
     rooms: KibitzRoomSummary[];
     variationGameById?: ReadonlyMap<number, KibitzWatchedGame>;
+    currentGameBaseSnapshot?: KibitzCurrentGameBaseSnapshot | null;
     proposals: KibitzProposal[];
     variations: KibitzVariationSummary[];
     visibleVariationIds: string[];
@@ -195,10 +196,19 @@ export function resolveSelectedVariationSourceGame(
     );
 }
 
-type KibitzBoardLoadConfig = Record<string, unknown> & {
+export type KibitzBoardLoadConfig = Record<string, unknown> & {
     move_tree?: MoveTreeJson;
     moves?: GobanConfig["moves"];
 };
+
+export interface KibitzCurrentGameBaseSnapshot {
+    gameId: number;
+    trunkTailMoveNumber: number;
+    moveTreeId: number | string | null;
+    movePath: string;
+    source: "main-board" | "game-details";
+    config: KibitzBoardLoadConfig;
+}
 
 interface SecondaryVariationBaseSnapshot {
     controller: GobanController;
@@ -279,15 +289,7 @@ export function clearDraftBaseAppliedState(): AppliedDraftBaseState {
 }
 
 export function getOfficialTrunkTail(moveTree: MoveTree | null | undefined): MoveTree | null {
-    if (!moveTree) {
-        return null;
-    }
-
-    let tail = moveTree;
-    while (tail.trunk_next) {
-        tail = tail.trunk_next;
-    }
-    return tail;
+    return getMoveTreeTrunkTail(moveTree);
 }
 
 function summarizeSecondaryVariationSnapshot(
@@ -529,6 +531,52 @@ export function captureMainBoardBaseSnapshotForVariation(
     };
 }
 
+export function captureRoomBaseSnapshotForVariation(
+    currentGameBaseSnapshot: KibitzCurrentGameBaseSnapshot | null | undefined,
+    secondaryBoardController: GobanController,
+    selectedVariation: KibitzVariationSummary,
+    visibleVariations: readonly KibitzVariationSummary[],
+    sourceGame: KibitzWatchedGame | null | undefined,
+): SecondaryVariationBaseSnapshot | null {
+    if (!currentGameBaseSnapshot || !sourceGame) {
+        return null;
+    }
+
+    if (currentGameBaseSnapshot.gameId !== selectedVariation.game_id) {
+        return null;
+    }
+
+    if (sourceGame.game_id !== selectedVariation.game_id) {
+        return null;
+    }
+
+    const requiredSnapshotMoveNumber = getRequiredVariationSnapshotMoveNumber(
+        selectedVariation,
+        visibleVariations,
+        sourceGame,
+    );
+
+    if (currentGameBaseSnapshot.trunkTailMoveNumber < requiredSnapshotMoveNumber) {
+        return null;
+    }
+
+    if (!currentGameBaseSnapshot.config.move_tree) {
+        return null;
+    }
+
+    return {
+        controller: secondaryBoardController,
+        gameId: selectedVariation.game_id,
+        trunkTailMoveNumber: currentGameBaseSnapshot.trunkTailMoveNumber,
+        config: {
+            ...currentGameBaseSnapshot.config,
+            game_id: selectedVariation.game_id,
+            moves: undefined,
+            move_tree: cloneMoveTreeJson(currentGameBaseSnapshot.config.move_tree),
+        },
+    };
+}
+
 function loadSecondaryVariationBaseSnapshot(
     controller: GobanController,
     snapshot: SecondaryVariationBaseSnapshot,
@@ -704,6 +752,7 @@ export function KibitzRoomStage({
     room,
     rooms,
     variationGameById,
+    currentGameBaseSnapshot,
     proposals,
     variations,
     visibleVariationIds,
@@ -729,6 +778,7 @@ export function KibitzRoomStage({
     onMainBoardControllerChange,
 }: KibitzRoomStageProps): React.ReactElement {
     const mainGame = room.current_game;
+    const currentRoomGameId = mainGame?.game_id ?? null;
     const secondaryGameId = secondaryPane.preview_game_id;
     const secondaryPaneSize = secondaryPane.collapsed ? "hidden" : (secondaryPane.size ?? "small");
     const selectedVariation = variations.find(
@@ -855,6 +905,9 @@ export function KibitzRoomStage({
     const [mainBoardController, setMainBoardControllerState] =
         React.useState<GobanController | null>(null);
     const [mainReturnLiveAvailable, setMainReturnLiveAvailable] = React.useState(false);
+    const [mainBoardOfficialTailMoveNumber, setMainBoardOfficialTailMoveNumber] = React.useState(
+        mainGame?.move_number ?? 0,
+    );
     // Wrap the setter so the parent (KibitzInner) is notified whenever the
     // main board's controller is (re)created. Lets the parent provide it via
     // GobanControllerContext so descendants like KibitzSharedStreamPanel can
@@ -917,6 +970,7 @@ export function KibitzRoomStage({
         engine: null,
     });
     const pendingSecondaryMoveTreeRedrawCancelRef = React.useRef<(() => void) | null>(null);
+    const lastMainBoardOfficialTailMoveNumberRef = React.useRef(mainGame?.move_number ?? 0);
     const [mainBoardSlotRef, mainBoardSize] = useSquareFitSize<HTMLDivElement>(
         `main-${secondaryPaneSize}`,
     );
@@ -1016,6 +1070,143 @@ export function KibitzRoomStage({
         }
     }, []);
 
+    const resetSecondaryVariationBaseState = React.useCallback(
+        (reason: string) => {
+            secondaryVariationBaseSnapshotRef.current = null;
+            secondaryVariationTreeDirtyRef.current = false;
+            secondaryVariationBaseInstalledRef.current =
+                clearInstalledSecondaryVariationBaseState();
+            secondaryVariationBaseHydrationRef.current = null;
+            pendingSecondaryVariationBaseLoadRef.current = null;
+            suppressSelectedVariationLoadRef.current = false;
+            secondaryVariationRetryCountRef.current = 0;
+            clearSecondaryVariationRetryTimeout();
+            logKibitzVariationDebug("main-board:variation-base-reset", {
+                reason,
+                gameId: currentRoomGameId,
+                selectedVariationId: selectedVariation?.id ?? null,
+                mainBoardOfficialTailMoveNumber,
+            });
+        },
+        [
+            clearSecondaryVariationRetryTimeout,
+            currentRoomGameId,
+            mainBoardOfficialTailMoveNumber,
+            selectedVariation?.id,
+        ],
+    );
+
+    React.useEffect(() => {
+        if (mainBoardController) {
+            return;
+        }
+
+        const nextTailMoveNumber = mainGame?.move_number ?? 0;
+        setMainBoardOfficialTailMoveNumber(nextTailMoveNumber);
+        lastMainBoardOfficialTailMoveNumberRef.current = nextTailMoveNumber;
+    }, [mainBoardController, mainGame?.game_id, mainGame?.move_number]);
+
+    React.useEffect(() => {
+        if (!mainBoardController) {
+            return;
+        }
+
+        const goban = mainBoardController.goban;
+        let disposed = false;
+
+        const syncMainBoardState = (reason: string): void => {
+            if (disposed) {
+                return;
+            }
+
+            const currentEngine = goban.engine;
+            const officialTail = getOfficialTrunkTail(currentEngine.move_tree);
+            const officialTailMoveNumber = officialTail?.move_number ?? 0;
+            const currentMoveNumber = currentEngine.cur_move?.move_number ?? 0;
+            const currentMoveId = currentEngine.cur_move?.id ?? null;
+
+            setMainBoardOfficialTailMoveNumber((previousTailMoveNumber) =>
+                previousTailMoveNumber === officialTailMoveNumber
+                    ? previousTailMoveNumber
+                    : officialTailMoveNumber,
+            );
+            logKibitzVariationDebug("main-board:state", {
+                reason,
+                role: "main",
+                gameId: currentRoomGameId,
+                currentRoomGameId,
+                currentMove: summarizeKibitzMoveTreeNode(currentEngine.cur_move),
+                currentMoveNumber,
+                currentMoveId,
+                officialTail: summarizeKibitzMoveTreeNode(officialTail),
+                officialTailMoveNumber,
+                lastOfficialMove: summarizeKibitzMoveTreeNode(currentEngine.last_official_move),
+                lastOfficialMoveNumber: currentEngine.last_official_move?.move_number ?? null,
+                lastOfficialMoveId: currentEngine.last_official_move?.id ?? null,
+            });
+        };
+
+        const onLoad = () => {
+            syncMainBoardState("load");
+        };
+        const onGameData = () => {
+            syncMainBoardState("gamedata");
+        };
+        const onLastOfficialMove = () => {
+            syncMainBoardState("last_official_move");
+        };
+        const onMoveMade = () => {
+            syncMainBoardState("move-made");
+        };
+
+        goban.on("load", onLoad);
+        goban.on("gamedata", onGameData);
+        goban.on("last_official_move", onLastOfficialMove);
+        goban.on("move-made", onMoveMade);
+        syncMainBoardState("controller-create");
+
+        return () => {
+            disposed = true;
+            goban.off("load", onLoad);
+            goban.off("gamedata", onGameData);
+            goban.off("last_official_move", onLastOfficialMove);
+            goban.off("move-made", onMoveMade);
+        };
+    }, [currentRoomGameId, mainBoardController]);
+
+    React.useEffect(() => {
+        if (!mainBoardController || currentRoomGameId == null) {
+            return;
+        }
+
+        if (selectedVariation?.game_id !== currentRoomGameId) {
+            lastMainBoardOfficialTailMoveNumberRef.current = mainBoardOfficialTailMoveNumber;
+            return;
+        }
+
+        const previousTailMoveNumber = lastMainBoardOfficialTailMoveNumberRef.current;
+        if (mainBoardOfficialTailMoveNumber <= previousTailMoveNumber) {
+            return;
+        }
+
+        lastMainBoardOfficialTailMoveNumberRef.current = mainBoardOfficialTailMoveNumber;
+        logKibitzVariationDebug("main-board:official-tail-advanced", {
+            gameId: currentRoomGameId,
+            selectedVariationId: selectedVariation.id,
+            previousTailMoveNumber,
+            nextTailMoveNumber: mainBoardOfficialTailMoveNumber,
+        });
+        resetSecondaryVariationBaseState("main-official-tail-advanced");
+    }, [
+        currentRoomGameId,
+        mainBoardController,
+        mainBoardOfficialTailMoveNumber,
+        currentGameBaseSnapshot,
+        resetSecondaryVariationBaseState,
+        selectedVariation?.game_id,
+        selectedVariation?.id,
+    ]);
+
     React.useEffect(() => {
         return () => {
             pendingSecondaryMoveTreeRedrawCancelRef.current?.();
@@ -1113,13 +1304,22 @@ export function KibitzRoomStage({
             });
         };
 
-        const logVariationStage = (message: string, extra: Record<string, unknown> = {}) => {
+        const logVariationStage = (
+            message: string,
+            extra: Record<string, unknown> | (() => Record<string, unknown>) = {},
+        ) => {
+            if (!isKibitzVariationDebugEnabled()) {
+                return;
+            }
+
             logKibitzVariationDebug(message, {
                 selectedVariationId: selectedVariation.id,
                 selectedGameId: selectedVariation.game_id,
+                currentRoomGameId,
                 visibleVariationIds: visibleVariations.map((variation) => variation.id),
                 visibleVariationKey: visibleVariationApplyKey,
                 variationFocusRequestId,
+                mainBoardOfficialTailMoveNumber,
                 treeDirty: secondaryVariationTreeDirtyRef.current,
                 suppressLoad: suppressSelectedVariationLoadRef.current,
                 pendingSnapshotLoad: Boolean(pendingSecondaryVariationBaseLoadRef.current),
@@ -1131,7 +1331,7 @@ export function KibitzRoomStage({
                 officialTail: summarizeKibitzMoveTreeNode(
                     getOfficialTrunkTail(goban.engine.move_tree),
                 ),
-                ...extra,
+                ...(typeof extra === "function" ? extra() : extra),
             });
         };
 
@@ -1146,13 +1346,13 @@ export function KibitzRoomStage({
 
             const variationsToApply = getVariationsToApply(selectedVariation, visibleVariations);
 
-            logVariationStage("apply:start", {
+            logVariationStage("apply:start", () => ({
                 variationsToApply: variationsToApply.map((variation) => ({
                     id: variation.id,
                     analysisFrom: variation.analysis_from,
                     moveCount: variation.move_count,
                 })),
-            });
+            }));
 
             const preparedVariations: Array<{
                 variation: KibitzVariationSummary;
@@ -1206,10 +1406,10 @@ export function KibitzRoomStage({
                         colorIndex,
                         isSelected,
                     );
-                    logVariationStage("apply:variation-result", {
+                    logVariationStage("apply:variation-result", () => ({
                         variationId: variation.id,
                         endpoint: summarizeKibitzMoveTreeNode(applied.endpoint),
-                    });
+                    }));
 
                     if (isSelected) {
                         selectedEndpoint = applied.endpoint;
@@ -1256,10 +1456,10 @@ export function KibitzRoomStage({
                 scheduleSecondaryMoveTreeRedraw();
                 clearSecondaryVariationRetryTimeout();
                 secondaryVariationRetryCountRef.current = 0;
-                logVariationStage("apply:done", {
+                logVariationStage("apply:done", () => ({
                     selectedEndpoint: summarizeKibitzMoveTreeNode(selectedEndpoint),
                     nextTreeDirty: secondaryVariationTreeDirtyRef.current,
-                });
+                }));
                 return true;
             } finally {
                 applyingVariation = false;
@@ -1425,7 +1625,36 @@ export function KibitzRoomStage({
                     return reloadBaseThenApplyVisibleVariations("main-board-snapshot");
                 }
 
-                logVariationStage("try:snapshot-not-ready", { reason, requiredSnapshotMoveNumber });
+                const roomBaseSnapshot = captureRoomBaseSnapshotForVariation(
+                    currentGameBaseSnapshot,
+                    secondaryBoardController,
+                    selectedVariation,
+                    visibleVariations,
+                    selectedVariationSourceGame,
+                );
+
+                if (roomBaseSnapshot) {
+                    secondaryVariationBaseSnapshotRef.current = roomBaseSnapshot;
+                    logVariationStage("try:room-base-snapshot", {
+                        reason,
+                        requiredSnapshotMoveNumber,
+                        roomBaseTailMoveNumber: roomBaseSnapshot.trunkTailMoveNumber,
+                        roomBaseSource: currentGameBaseSnapshot?.source ?? null,
+                    });
+                    return reloadBaseThenApplyVisibleVariations("room-base-snapshot");
+                }
+
+                logVariationStage("try:snapshot-not-ready", {
+                    reason,
+                    requiredSnapshotMoveNumber,
+                    currentGameBaseSnapshot: currentGameBaseSnapshot
+                        ? {
+                              gameId: currentGameBaseSnapshot.gameId,
+                              trunkTailMoveNumber: currentGameBaseSnapshot.trunkTailMoveNumber,
+                              source: currentGameBaseSnapshot.source,
+                          }
+                        : null,
+                });
                 return false;
             }
 
@@ -1589,6 +1818,8 @@ export function KibitzRoomStage({
     }, [
         clearSecondaryVariationRetryTimeout,
         mainBoardController,
+        mainBoardOfficialTailMoveNumber,
+        currentGameBaseSnapshot,
         secondaryBoardController,
         secondaryMoveTreeContainer,
         secondaryPane.preview_game_id,
@@ -1859,6 +2090,43 @@ export function KibitzRoomStage({
             });
     }, [onClearPreview]);
 
+    const handleCreateVariation = React.useCallback(() => {
+        logKibitzVariationDebug("main-board:new-variation-click", {
+            gameId: currentRoomGameId,
+            selectedVariationId: selectedVariation?.id ?? null,
+            mainBoardOfficialTailMoveNumber,
+        });
+        onCreateVariation?.();
+    }, [
+        currentRoomGameId,
+        mainBoardOfficialTailMoveNumber,
+        onCreateVariation,
+        selectedVariation?.id,
+    ]);
+
+    const handleCreateVariationFromPostedVariation = React.useCallback(
+        (variation: KibitzVariationSummary) => {
+            logKibitzVariationDebug("main-board:new-variation-click", {
+                gameId: currentRoomGameId,
+                selectedVariationId: variation.id,
+                selectedGameId: variation.game_id,
+                mainBoardOfficialTailMoveNumber,
+            });
+            if (onCreateVariationFromPostedVariation) {
+                onCreateVariationFromPostedVariation(variation);
+                return;
+            }
+
+            onCreateVariation?.();
+        },
+        [
+            currentRoomGameId,
+            mainBoardOfficialTailMoveNumber,
+            onCreateVariation,
+            onCreateVariationFromPostedVariation,
+        ],
+    );
+
     React.useEffect(() => {
         onMobileCompareControllerChange?.(
             mobileCompareActive
@@ -1937,6 +2205,8 @@ export function KibitzRoomStage({
                                 key={`main-${room.id}-${mainGame?.game_id ?? "none"}-mobile`}
                                 role="main"
                                 gameId={mainGame?.game_id}
+                                currentRoomGameId={currentRoomGameId}
+                                isMobile={true}
                                 {...boardDimensionsOf(mainGame)}
                                 className="mobile-main-board-surface"
                                 size={mobileBoardSize}
@@ -1950,6 +2220,8 @@ export function KibitzRoomStage({
                             <KibitzBoard
                                 key={secondaryBoardKey}
                                 gameId={secondaryGameId}
+                                currentRoomGameId={currentRoomGameId}
+                                isMobile={true}
                                 {...boardDimensionsOf(secondaryBoardGame)}
                                 className="mobile-secondary-board-surface"
                                 size={mobileBoardSize}
@@ -1965,6 +2237,8 @@ export function KibitzRoomStage({
                             <KibitzBoard
                                 key={secondaryBoardKey}
                                 gameId={selectedVariation?.game_id}
+                                currentRoomGameId={currentRoomGameId}
+                                isMobile={true}
                                 {...boardDimensionsOf(selectedVariationSourceGame)}
                                 className="mobile-secondary-board-surface"
                                 size={mobileBoardSize}
@@ -1981,7 +2255,7 @@ export function KibitzRoomStage({
                                 <button
                                     type="button"
                                     className="xs primary kibitz-create-variation-button"
-                                    onClick={onCreateVariation}
+                                    onClick={handleCreateVariation}
                                 >
                                     {pgettext(
                                         "Button label for opening Kibitz variation creation",
@@ -2092,11 +2366,13 @@ export function KibitzRoomStage({
                                             selectedVariation &&
                                             onCreateVariationFromPostedVariation
                                         ) {
-                                            onCreateVariationFromPostedVariation(selectedVariation);
+                                            handleCreateVariationFromPostedVariation(
+                                                selectedVariation,
+                                            );
                                             return;
                                         }
 
-                                        onCreateVariation?.();
+                                        handleCreateVariation();
                                     }}
                                 >
                                     <span className="kibitz-mobile-transport-label">
@@ -2188,6 +2464,8 @@ export function KibitzRoomStage({
                                         key={`main-${room.id}-${mainGame.game_id}`}
                                         role="main"
                                         gameId={mainGame.game_id}
+                                        currentRoomGameId={currentRoomGameId}
+                                        isMobile={false}
                                         {...boardDimensionsOf(mainGame)}
                                         className="main-board-surface"
                                         size={mainBoardSize}
@@ -2239,7 +2517,7 @@ export function KibitzRoomStage({
                                             <button
                                                 type="button"
                                                 className="kibitz-move-control create-variation-button"
-                                                onClick={onCreateVariation}
+                                                onClick={handleCreateVariation}
                                             >
                                                 {pgettext(
                                                     "Button label for opening Kibitz variation creation",
@@ -2295,6 +2573,15 @@ export function KibitzRoomStage({
                                     <KibitzBoard
                                         key={secondaryBoardKey}
                                         gameId={secondaryGameId}
+                                        currentRoomGameId={currentRoomGameId}
+                                        isMobile={false}
+                                        connectToGame={
+                                            !(
+                                                !isMobileLayout &&
+                                                mainBoardController != null &&
+                                                secondaryBoardGame?.game_id === currentRoomGameId
+                                            )
+                                        }
                                         {...boardDimensionsOf(secondaryBoardGame)}
                                         className="secondary-board-surface"
                                         size={secondaryBoardSize}
@@ -2410,6 +2697,15 @@ export function KibitzRoomStage({
                                     <KibitzBoard
                                         key={secondaryBoardKey}
                                         gameId={selectedVariation?.game_id}
+                                        currentRoomGameId={currentRoomGameId}
+                                        isMobile={false}
+                                        connectToGame={
+                                            !(
+                                                !isMobileLayout &&
+                                                mainBoardController != null &&
+                                                selectedVariation?.game_id === currentRoomGameId
+                                            )
+                                        }
                                         {...boardDimensionsOf(selectedVariationSourceGame)}
                                         className="secondary-board-surface"
                                         size={secondaryBoardSize}
@@ -2456,7 +2752,7 @@ export function KibitzRoomStage({
                                                 className="kibitz-move-control create-variation-button"
                                                 ref={desktopVariationActionsTarget?.ref}
                                                 onClick={() =>
-                                                    onCreateVariationFromPostedVariation(
+                                                    handleCreateVariationFromPostedVariation(
                                                         selectedVariation,
                                                     )
                                                 }
@@ -2502,7 +2798,7 @@ export function KibitzRoomStage({
                                     <button
                                         type="button"
                                         className="xs primary kibitz-create-variation-button"
-                                        onClick={onCreateVariation}
+                                        onClick={handleCreateVariation}
                                     >
                                         {pgettext(
                                             "Button label for opening Kibitz variation creation",
