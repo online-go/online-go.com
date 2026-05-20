@@ -233,6 +233,13 @@ export interface KibitzCurrentGameBaseSnapshot {
     config: KibitzBoardLoadConfig;
 }
 
+interface TrackedBoardControllerContext {
+    controller: GobanController | null;
+    epoch: number;
+    roomId: string | null;
+    gameId: number | null;
+}
+
 interface SecondaryVariationBaseSnapshot {
     controller: GobanController;
     gameId: number;
@@ -805,6 +812,8 @@ function scheduleVisibleBoardRedrawWhenReady(
     options?: {
         expectedSize?: number | null;
         onDeferred?: () => void;
+        onDetached?: () => void;
+        isControllerCurrent?: () => boolean;
     },
     attempts = 5,
 ): () => void {
@@ -832,7 +841,22 @@ function scheduleVisibleBoardRedrawWhenReady(
                     return;
                 }
 
+                if (options?.isControllerCurrent && !options.isControllerCurrent()) {
+                    return;
+                }
+
                 const container = controller?.goban.parent ?? null;
+                if (!container || !container.isConnected) {
+                    logKibitzVariationDebug("visible-goban:redraw-detached", {
+                        role,
+                        reason,
+                        measuredElement: summarizeElementForDebug(container),
+                        parentChain: summarizeParentChain(container),
+                    });
+                    options?.onDetached?.();
+                    return;
+                }
+
                 const width = container?.clientWidth ?? 0;
                 const height = container?.clientHeight ?? 0;
                 const expectedSize = options?.expectedSize ?? null;
@@ -1089,20 +1113,96 @@ export function KibitzRoomStage({
     // main board's controller is (re)created. Lets the parent provide it via
     // GobanControllerContext so descendants like KibitzSharedStreamPanel can
     // hook into the watched game's chat without prop drilling.
+    React.useEffect(() => {
+        currentRoomIdRef.current = room.id;
+    }, [room.id]);
+
+    React.useEffect(() => {
+        currentRoomGameIdRef.current = currentRoomGameId;
+    }, [currentRoomGameId]);
+
     const setMainBoardController = React.useCallback(
         (controller: GobanController | null) => {
+            mainBoardControllerEpochRef.current += 1;
+            mainBoardControllerContextRef.current = controller
+                ? {
+                      controller,
+                      epoch: mainBoardControllerEpochRef.current,
+                      roomId: currentRoomIdRef.current,
+                      gameId: currentRoomGameIdRef.current,
+                  }
+                : null;
             setMainBoardControllerState(controller);
             onMainBoardControllerChange?.(controller);
         },
         [onMainBoardControllerChange],
     );
-    const [secondaryBoardController, setSecondaryBoardController] =
+    const [secondaryBoardController, setSecondaryBoardControllerState] =
         React.useState<GobanController | null>(null);
+    const setSecondaryBoardController = React.useCallback((controller: GobanController | null) => {
+        secondaryBoardControllerEpochRef.current += 1;
+        const controllerGameId = controller
+            ? typeof controller.goban.config?.game_id === "number"
+                ? controller.goban.config.game_id
+                : null
+            : null;
+        secondaryBoardControllerContextRef.current = controller
+            ? {
+                  controller,
+                  epoch: secondaryBoardControllerEpochRef.current,
+                  roomId: currentRoomIdRef.current,
+                  gameId: controllerGameId,
+              }
+            : null;
+        setSecondaryBoardControllerState(controller);
+    }, []);
     const [secondaryReturnLiveAvailable, setSecondaryReturnLiveAvailable] = React.useState(false);
     const [mobileReturnLiveAvailable, setMobileReturnLiveAvailable] = React.useState(false);
     const [secondaryMoveTreeContainer, setSecondaryMoveTreeContainer] =
         React.useState<Resizable | null>(null);
     const previousSecondaryControllerRef = React.useRef<GobanController | null>(null);
+    const mainBoardControllerEpochRef = React.useRef(0);
+    const secondaryBoardControllerEpochRef = React.useRef(0);
+    const mainBoardControllerContextRef = React.useRef<TrackedBoardControllerContext | null>(null);
+    const secondaryBoardControllerContextRef = React.useRef<TrackedBoardControllerContext | null>(
+        null,
+    );
+    const currentRoomIdRef = React.useRef(room.id);
+    const currentRoomGameIdRef = React.useRef(currentRoomGameId);
+    const isDetachedBoardController = React.useCallback((controller: GobanController | null) => {
+        return !controller?.goban.parent || !controller.goban.parent.isConnected;
+    }, []);
+    const isCurrentMainBoardController = React.useCallback(
+        (controller: GobanController | null | undefined) => {
+            const context = mainBoardControllerContextRef.current;
+            return Boolean(
+                controller &&
+                context &&
+                context.controller === controller &&
+                context.epoch === mainBoardControllerEpochRef.current &&
+                context.roomId === currentRoomIdRef.current &&
+                context.gameId === currentRoomGameIdRef.current &&
+                !isDetachedBoardController(controller),
+            );
+        },
+        [isDetachedBoardController],
+    );
+    const isCurrentSecondaryBoardController = React.useCallback(
+        (controller: GobanController | null | undefined) => {
+            const context = secondaryBoardControllerContextRef.current;
+            const controllerGameId = controller?.goban.config?.game_id ?? null;
+            return Boolean(
+                controller &&
+                context &&
+                context.controller === controller &&
+                context.epoch === secondaryBoardControllerEpochRef.current &&
+                context.roomId === currentRoomIdRef.current &&
+                context.gameId === controllerGameId &&
+                !isDetachedBoardController(controller),
+            );
+        },
+        [isDetachedBoardController],
+    );
     const secondaryVariationBaseSnapshotRef = React.useRef<SecondaryVariationBaseSnapshot | null>(
         null,
     );
@@ -1231,13 +1331,21 @@ export function KibitzRoomStage({
         setSecondaryMoveTreeContainer(instance);
     }, []);
     const handleSecondaryMoveTreeResize = React.useCallback(() => {
+        if (!isCurrentSecondaryBoardController(secondaryBoardController)) {
+            return;
+        }
+
         secondaryBoardController?.goban.move_tree_redraw(true);
-    }, [secondaryBoardController]);
+    }, [isCurrentSecondaryBoardController, secondaryBoardController]);
     const scheduleSecondaryMoveTreeRedraw = React.useCallback(() => {
         pendingSecondaryMoveTreeRedrawCancelRef.current?.();
 
         const container = secondaryMoveTreeContainer?.div ?? null;
-        if (!secondaryBoardController || !container) {
+        if (
+            !secondaryBoardController ||
+            !container ||
+            !isCurrentSecondaryBoardController(secondaryBoardController)
+        ) {
             pendingSecondaryMoveTreeRedrawCancelRef.current = null;
             return;
         }
@@ -1246,21 +1354,48 @@ export function KibitzRoomStage({
             secondaryBoardController.goban,
             container,
         );
-    }, [secondaryBoardController, secondaryMoveTreeContainer]);
+    }, [isCurrentSecondaryBoardController, secondaryBoardController, secondaryMoveTreeContainer]);
     const scheduleMainBoardVisibleRedraw = React.useCallback(
         (reason: string) => {
+            if (!isCurrentMainBoardController(mainBoardController)) {
+                return;
+            }
+
             pendingMainBoardVisibleRedrawCancelRef.current?.();
             pendingMainBoardVisibleRedrawCancelRef.current = scheduleVisibleBoardRedrawWhenReady(
                 mainBoardController,
                 "main",
                 reason,
-                { expectedSize: mainBoardSize },
+                {
+                    expectedSize: mainBoardSize,
+                    isControllerCurrent: () => isCurrentMainBoardController(mainBoardController),
+                    onDetached: () => {
+                        if (
+                            mainBoardControllerContextRef.current?.controller ===
+                            mainBoardController
+                        ) {
+                            mainBoardControllerEpochRef.current += 1;
+                            mainBoardControllerContextRef.current = null;
+                            setMainBoardControllerState(null);
+                            onMainBoardControllerChange?.(null);
+                        }
+                    },
+                },
             );
         },
-        [mainBoardController, mainBoardSize],
+        [
+            isCurrentMainBoardController,
+            mainBoardController,
+            mainBoardSize,
+            onMainBoardControllerChange,
+        ],
     );
     const scheduleSecondaryBoardVisibleRedraw = React.useCallback(
         (reason: string) => {
+            if (!isCurrentSecondaryBoardController(secondaryBoardController)) {
+                return;
+            }
+
             pendingSecondaryBoardVisibleRedrawCancelRef.current?.();
             pendingSecondaryBoardVisibleRedrawCancelRef.current =
                 scheduleVisibleBoardRedrawWhenReady(secondaryBoardController, "secondary", reason, {
@@ -1275,9 +1410,21 @@ export function KibitzRoomStage({
                             expectedSize: visibleSecondaryBoardSize,
                         });
                     },
+                    onDetached: () => {
+                        if (
+                            secondaryBoardControllerContextRef.current?.controller ===
+                            secondaryBoardController
+                        ) {
+                            secondaryBoardControllerEpochRef.current += 1;
+                            secondaryBoardControllerContextRef.current = null;
+                            setSecondaryBoardControllerState(null);
+                        }
+                    },
+                    isControllerCurrent: () =>
+                        isCurrentSecondaryBoardController(secondaryBoardController),
                 });
         },
-        [secondaryBoardController, visibleSecondaryBoardSize],
+        [isCurrentSecondaryBoardController, secondaryBoardController, visibleSecondaryBoardSize],
     );
 
     React.useEffect(() => {
@@ -1311,6 +1458,10 @@ export function KibitzRoomStage({
     }, []);
 
     React.useEffect(() => {
+        mainBoardControllerEpochRef.current += 1;
+        secondaryBoardControllerEpochRef.current += 1;
+        mainBoardControllerContextRef.current = null;
+        secondaryBoardControllerContextRef.current = null;
         pendingSecondaryVariationBaseLoadRef.current = null;
         suppressSelectedVariationLoadRef.current = false;
         secondaryVariationRetryCountRef.current = 0;
@@ -1371,11 +1522,15 @@ export function KibitzRoomStage({
             return;
         }
 
+        if (!isCurrentMainBoardController(mainBoardController)) {
+            return;
+        }
+
         const goban = mainBoardController.goban;
         let disposed = false;
 
         const syncMainBoardState = (reason: string): void => {
-            if (disposed) {
+            if (disposed || !isCurrentMainBoardController(mainBoardController)) {
                 return;
             }
 
@@ -1603,6 +1758,11 @@ export function KibitzRoomStage({
         };
 
         const applyVisibleVariationsToLoadedBase = (desiredApplyKey: string): boolean => {
+            if (!isCurrentSecondaryBoardController(secondaryBoardController)) {
+                logVariationStage("apply:stale-controller", { desiredApplyKey });
+                return false;
+            }
+
             if (disposed || applyingVariation || secondaryVariationTreeDirtyRef.current) {
                 logVariationStage("apply:blocked", {
                     disposed,
@@ -1738,6 +1898,11 @@ export function KibitzRoomStage({
         };
 
         const reloadBaseThenApplyVisibleVariations = (reason: string): boolean => {
+            if (!isCurrentSecondaryBoardController(secondaryBoardController)) {
+                logVariationStage("reload-or-apply:stale-controller", { reason });
+                return false;
+            }
+
             logVariationStage("reload-or-apply:start", { reason });
             if (disposed || applyingVariation) {
                 logVariationStage("reload-or-apply:blocked", {
@@ -1839,6 +2004,11 @@ export function KibitzRoomStage({
         };
 
         const tryApplyVariationWhenReady = (reason: string): boolean => {
+            if (!isCurrentSecondaryBoardController(secondaryBoardController)) {
+                logVariationStage("try:stale-controller", { reason });
+                return false;
+            }
+
             logVariationStage("try:start", { reason });
             const requiredSnapshotMoveNumber = getRequiredVariationSnapshotMoveNumber(
                 selectedVariation,
@@ -2012,7 +2182,11 @@ export function KibitzRoomStage({
         };
 
         const scheduleBaseRetry = (reason: string) => {
-            if (disposed || secondaryVariationRetryTimeoutRef.current != null) {
+            if (
+                disposed ||
+                secondaryVariationRetryTimeoutRef.current != null ||
+                !isCurrentSecondaryBoardController(secondaryBoardController)
+            ) {
                 return;
             }
 
@@ -2038,7 +2212,7 @@ export function KibitzRoomStage({
         };
 
         const onLoad = () => {
-            if (disposed) {
+            if (disposed || !isCurrentSecondaryBoardController(secondaryBoardController)) {
                 return;
             }
 
@@ -2112,7 +2286,11 @@ export function KibitzRoomStage({
         };
 
         const onBaseMaybeReady = () => {
-            if (disposed || suppressSelectedVariationLoadRef.current) {
+            if (
+                disposed ||
+                suppressSelectedVariationLoadRef.current ||
+                !isCurrentSecondaryBoardController(secondaryBoardController)
+            ) {
                 return;
             }
 

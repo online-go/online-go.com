@@ -71,6 +71,10 @@ export function useKibitzCurrentGameBaseBroker({
     const currentLiveTailMoveNumberRef = React.useRef(currentLiveTailMoveNumber);
     const scheduledTimeoutIdsRef = React.useRef<number[]>([]);
     const scheduledRafIdsRef = React.useRef<number[]>([]);
+    const controllerEpochRef = React.useRef(0);
+    const activeControllerRef = React.useRef<GobanController | null>(null);
+    const currentRoomIdRef = React.useRef(roomId ?? null);
+    const currentGameIdRef = React.useRef(game?.game_id ?? null);
 
     React.useEffect(() => {
         onSnapshotRef.current = onSnapshot;
@@ -79,6 +83,14 @@ export function useKibitzCurrentGameBaseBroker({
     React.useEffect(() => {
         currentLiveTailMoveNumberRef.current = currentLiveTailMoveNumber;
     }, [currentLiveTailMoveNumber]);
+
+    React.useEffect(() => {
+        currentRoomIdRef.current = roomId ?? null;
+    }, [roomId]);
+
+    React.useEffect(() => {
+        currentGameIdRef.current = game?.game_id ?? null;
+    }, [game?.game_id]);
 
     const clearScheduledReconnects = React.useCallback(() => {
         for (const timeoutId of scheduledTimeoutIdsRef.current) {
@@ -166,6 +178,16 @@ export function useKibitzCurrentGameBaseBroker({
         };
         const controller = new GobanController(config);
         let cancelled = false;
+        const controllerEpoch = controllerEpochRef.current + 1;
+        controllerEpochRef.current = controllerEpoch;
+        activeControllerRef.current = controller;
+
+        const isCurrentController = () =>
+            controllerEpochRef.current === controllerEpoch &&
+            activeControllerRef.current === controller &&
+            currentRoomIdRef.current === roomId &&
+            currentGameIdRef.current === activeGame.game_id &&
+            controller.goban.parent?.isConnected;
 
         logKibitzVariationDebug("room-base-broker:create", {
             roomId,
@@ -175,7 +197,7 @@ export function useKibitzCurrentGameBaseBroker({
         });
 
         const sync = (reason: string) => {
-            if (cancelled) {
+            if (cancelled || !isCurrentController()) {
                 return;
             }
 
@@ -219,6 +241,10 @@ export function useKibitzCurrentGameBaseBroker({
 
         return () => {
             cancelled = true;
+            controllerEpochRef.current += 1;
+            if (activeControllerRef.current === controller) {
+                activeControllerRef.current = null;
+            }
             controller.goban.off("load", onLoad);
             controller.goban.off("gamedata", onGameData);
             controller.goban.off("last_official_move", onLastOfficialMove);

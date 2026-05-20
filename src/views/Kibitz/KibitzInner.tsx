@@ -440,9 +440,17 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     // around KibitzSharedStreamPanel — that's how the panel's game pane reads
     // the watched game's chat (off goban.chat_log via the existing context hook)
     // instead of incorrectly trying to join a comm-server Redis channel.
-    const [mainBoardController, setMainBoardController] = React.useState<GobanController | null>(
-        null,
-    );
+    const [mainBoardController, setMainBoardControllerState] =
+        React.useState<GobanController | null>(null);
+    const mainBoardControllerEpochRef = React.useRef(0);
+    const mainBoardControllerContextRef = React.useRef<{
+        controller: GobanController;
+        epoch: number;
+        roomId: string | null;
+        gameId: number | null;
+    } | null>(null);
+    const currentRoomIdRef = React.useRef<string | null>(null);
+    const currentRoomGameIdRef = React.useRef<number | null>(null);
     const [currentGameBaseSnapshot, setCurrentGameBaseSnapshot] =
         React.useState<KibitzCurrentGameBaseSnapshot | null>(null);
     const [currentGameBaseSnapshotLoadingGameId, setCurrentGameBaseSnapshotLoadingGameId] =
@@ -881,6 +889,41 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         (variation) => variation.id === secondaryPane.variation_id,
     );
     const currentGameId = resolvedRoom?.current_game?.game_id ?? null;
+    React.useEffect(() => {
+        currentRoomIdRef.current = resolvedRoom?.id ?? null;
+    }, [resolvedRoom?.id]);
+
+    React.useEffect(() => {
+        currentRoomGameIdRef.current = resolvedRoom?.current_game?.game_id ?? null;
+    }, [resolvedRoom?.current_game?.game_id]);
+
+    const setMainBoardController = React.useCallback((controller: GobanController | null) => {
+        mainBoardControllerEpochRef.current += 1;
+        mainBoardControllerContextRef.current = controller
+            ? {
+                  controller,
+                  epoch: mainBoardControllerEpochRef.current,
+                  roomId: currentRoomIdRef.current,
+                  gameId: currentRoomGameIdRef.current,
+              }
+            : null;
+        setMainBoardControllerState(controller);
+    }, []);
+    const isCurrentMainBoardController = React.useCallback(
+        (controller: GobanController | null | undefined) => {
+            const context = mainBoardControllerContextRef.current;
+            return Boolean(
+                controller &&
+                context &&
+                context.controller === controller &&
+                context.epoch === mainBoardControllerEpochRef.current &&
+                context.roomId === currentRoomIdRef.current &&
+                context.gameId === currentRoomGameIdRef.current &&
+                controller.goban.parent?.isConnected,
+            );
+        },
+        [],
+    );
     const visibleMainBoardMounted = Boolean(mainBoardController);
     const currentLiveTailMoveNumber = React.useMemo(() => {
         const liveTailFromRoom = resolvedRoom?.current_game?.move_number ?? 0;
@@ -910,6 +953,16 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     });
     const acceptCurrentGameBaseSnapshot = React.useCallback(
         (snapshot: KibitzCurrentGameBaseSnapshot) => {
+            const currentRoomId = currentRoomIdRef.current;
+            const currentRoomGameId = currentRoomGameIdRef.current;
+            if (
+                currentRoomId == null ||
+                currentRoomGameId == null ||
+                snapshot.gameId !== currentRoomGameId
+            ) {
+                return;
+            }
+
             setCurrentGameBaseSnapshot((previous) =>
                 chooseFresherCurrentGameBaseSnapshot(previous, snapshot),
             );
@@ -929,21 +982,30 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     });
     React.useEffect(() => {
         setCurrentGameBaseSnapshot((previous) =>
-            previous?.gameId === currentGameId ? previous : null,
+            previous?.gameId === currentGameId && currentRoomIdRef.current === resolvedRoom?.id
+                ? previous
+                : null,
         );
-    }, [currentGameId]);
+    }, [currentGameId, resolvedRoom?.id]);
 
     React.useEffect(() => {
         const game = resolvedRoom?.current_game;
-        if (!game || !mainBoardController) {
+        if (!game || !mainBoardController || !isCurrentMainBoardController(mainBoardController)) {
             return;
         }
 
         const goban = mainBoardController.goban;
         let disposed = false;
+        const roomIdAtStart = resolvedRoom.id;
+        const gameIdAtStart = game.game_id;
 
         const syncSnapshotFromMainBoard = (reason: string) => {
-            if (disposed) {
+            if (
+                disposed ||
+                !isCurrentMainBoardController(mainBoardController) ||
+                currentRoomIdRef.current !== roomIdAtStart ||
+                currentRoomGameIdRef.current !== gameIdAtStart
+            ) {
                 return;
             }
 
@@ -990,7 +1052,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             goban.off("last_official_move", onLastOfficialMove);
             goban.off("move-made", onMoveMade);
         };
-    }, [mainBoardController, resolvedRoom?.current_game]);
+    }, [isCurrentMainBoardController, mainBoardController, resolvedRoom]);
 
     React.useEffect(() => {
         const game = resolvedRoom?.current_game;
@@ -1000,11 +1062,12 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         }
 
         let cancelled = false;
+        const roomIdAtStart = resolvedRoom.id;
         setCurrentGameBaseSnapshotLoadingGameId(game.game_id);
 
         void fetchCurrentGameBaseSnapshot(game)
             .then((snapshot) => {
-                if (cancelled) {
+                if (cancelled || currentRoomIdRef.current !== roomIdAtStart) {
                     return;
                 }
 
@@ -1018,7 +1081,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 }
             })
             .catch((error) => {
-                if (!cancelled) {
+                if (!cancelled && currentRoomIdRef.current === roomIdAtStart) {
                     logKibitzVariationDebug("current-game-base-snapshot:fetch-failed", {
                         gameId: game.game_id,
                         error,
@@ -1026,7 +1089,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 }
             })
             .finally(() => {
-                if (!cancelled) {
+                if (!cancelled && currentRoomIdRef.current === roomIdAtStart) {
                     setCurrentGameBaseSnapshotLoadingGameId((loadingGameId) =>
                         loadingGameId === game.game_id ? null : loadingGameId,
                     );
@@ -1036,7 +1099,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         return () => {
             cancelled = true;
         };
-    }, [acceptCurrentGameBaseSnapshot, resolvedRoom?.current_game?.game_id]);
+    }, [acceptCurrentGameBaseSnapshot, resolvedRoom]);
 
     const getCurrentGameBaseSnapshotForVariation = React.useCallback(
         (reason: string): KibitzCurrentGameBaseSnapshot | null => {
@@ -1048,6 +1111,13 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             const cachedSnapshot = currentGameBaseSnapshot;
             const cachedSnapshotForLog: KibitzCurrentGameBaseSnapshot | null =
                 currentGameBaseSnapshot;
+            if (!isCurrentMainBoardController(mainBoardController)) {
+                logKibitzVariationDebug("current-game-base-snapshot:stale-main-controller", {
+                    reason,
+                    gameId: game.game_id,
+                });
+                return null;
+            }
             const mainBoardSnapshot = captureCurrentGameBaseSnapshotFromController(
                 mainBoardController,
                 game,

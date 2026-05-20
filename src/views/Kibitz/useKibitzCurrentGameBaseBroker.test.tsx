@@ -118,7 +118,10 @@ function makeMoveTree(moveNumber: number, trunkNext?: TestMoveTree) {
 
 function makeController() {
     const listeners = new Map<string, Set<() => void>>();
+    const parent = document.createElement("div");
+    document.body.appendChild(parent);
     const goban = {
+        parent,
         engine: {
             config: {},
             move_tree: makeMoveTree(0, makeMoveTree(1, makeMoveTree(2))),
