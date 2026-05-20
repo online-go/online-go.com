@@ -183,6 +183,11 @@ export function KibitzBoard({
     const requestedHydrationGameIdRef = React.useRef<number | null>(null);
     const restoredOfficialTailRef = React.useRef<RestoredOfficialTailRef | null>(null);
     const boardRole = role ?? (restoreToOfficialTailOnLoad ? "main" : "secondary");
+    const hasExplicitSize = typeof size === "number";
+    const explicitSizeReady = !hasExplicitSize || (Number.isFinite(size) && size > 0);
+    const shouldDeferGobanContainer =
+        boardRole === "secondary" && hasExplicitSize && !explicitSizeReady;
+    const displaySize = hasExplicitSize && Number.isFinite(size) && size > 0 ? size : undefined;
 
     React.useEffect(() => {
         moveTreeRef.current = moveTree;
@@ -578,14 +583,40 @@ export function KibitzBoard({
         };
     }, [goban, size]);
 
+    React.useEffect(() => {
+        if (!shouldDeferGobanContainer) {
+            return;
+        }
+
+        logKibitzVariationDebug("kibitz-board:defer-goban-container-invalid-size", {
+            role: boardRole,
+            size,
+        });
+    }, [boardRole, shouldDeferGobanContainer, size]);
+
+    if (shouldDeferGobanContainer) {
+        return (
+            <div
+                className={"KibitzBoard" + (className ? ` ${className}` : "")}
+                data-kibitz-board-pending-size="true"
+                style={{
+                    width: "100%",
+                    height: "100%",
+                    flex: "0 0 auto",
+                }}
+                aria-hidden="true"
+            />
+        );
+    }
+
     return (
         <div
             className={"KibitzBoard" + (className ? ` ${className}` : "")}
             style={
-                size
+                displaySize
                     ? {
-                          width: `${size}px`,
-                          height: `${size}px`,
+                          width: `${displaySize}px`,
+                          height: `${displaySize}px`,
                           flex: "0 0 auto",
                       }
                     : undefined

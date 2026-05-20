@@ -1156,6 +1156,8 @@ export function KibitzRoomStage({
         true,
     );
     const visibleSecondaryBoardSize = isMobileLayout ? mobileBoardSize : secondaryBoardSize;
+    const secondaryBoardSizeReady = Number.isFinite(secondaryBoardSize) && secondaryBoardSize > 0;
+    const mobileBoardSizeReady = Number.isFinite(mobileBoardSize) && mobileBoardSize > 0;
     const secondaryMoveTreeKey = React.useMemo(() => {
         if (secondaryPane.variation_id != null) {
             return `variation-${secondaryPane.variation_id}`;
@@ -2536,38 +2538,54 @@ export function KibitzRoomStage({
                             />
                         ) : null}
                         {renderPreviewBoard ? (
-                            <KibitzBoard
-                                key={secondaryBoardKey}
-                                gameId={secondaryGameId}
-                                currentRoomGameId={currentRoomGameId}
-                                isMobile={true}
-                                {...boardDimensionsOf(secondaryBoardGame)}
-                                className="mobile-secondary-board-surface"
-                                size={mobileBoardSize}
-                                interactive={isDraftingVariation}
-                                fitMode="contain"
-                                respectContainerBounds={true}
-                                moveTree={secondaryPane.variation_source_move_tree}
-                                movePath={secondaryPane.variation_source_move_path}
-                                onReady={setSecondaryBoardController}
-                            />
+                            mobileBoardSizeReady ? (
+                                <KibitzBoard
+                                    key={secondaryBoardKey}
+                                    gameId={secondaryGameId}
+                                    currentRoomGameId={currentRoomGameId}
+                                    isMobile={true}
+                                    {...boardDimensionsOf(secondaryBoardGame)}
+                                    className="mobile-secondary-board-surface"
+                                    size={mobileBoardSize}
+                                    interactive={isDraftingVariation}
+                                    fitMode="contain"
+                                    respectContainerBounds={true}
+                                    moveTree={secondaryPane.variation_source_move_tree}
+                                    movePath={secondaryPane.variation_source_move_path}
+                                    onReady={setSecondaryBoardController}
+                                />
+                            ) : (
+                                <div
+                                    className="secondary-board-empty-state"
+                                    data-kibitz-board-pending-size="true"
+                                    aria-hidden="true"
+                                />
+                            )
                         ) : null}
                         {renderVariationBoard ? (
-                            <KibitzBoard
-                                key={secondaryBoardKey}
-                                gameId={selectedVariation?.game_id}
-                                currentRoomGameId={currentRoomGameId}
-                                isMobile={true}
-                                {...boardDimensionsOf(selectedVariationSourceGame)}
-                                className="mobile-secondary-board-surface"
-                                size={mobileBoardSize}
-                                interactive={false}
-                                fitMode="contain"
-                                respectContainerBounds={true}
-                                moveTree={secondaryPane.variation_source_move_tree}
-                                movePath={secondaryPane.variation_source_move_path}
-                                onReady={setSecondaryBoardController}
-                            />
+                            mobileBoardSizeReady ? (
+                                <KibitzBoard
+                                    key={secondaryBoardKey}
+                                    gameId={selectedVariation?.game_id}
+                                    currentRoomGameId={currentRoomGameId}
+                                    isMobile={true}
+                                    {...boardDimensionsOf(selectedVariationSourceGame)}
+                                    className="mobile-secondary-board-surface"
+                                    size={mobileBoardSize}
+                                    interactive={false}
+                                    fitMode="contain"
+                                    respectContainerBounds={true}
+                                    moveTree={secondaryPane.variation_source_move_tree}
+                                    movePath={secondaryPane.variation_source_move_path}
+                                    onReady={setSecondaryBoardController}
+                                />
+                            ) : (
+                                <div
+                                    className="secondary-board-empty-state"
+                                    data-kibitz-board-pending-size="true"
+                                    aria-hidden="true"
+                                />
+                            )
                         ) : null}
                         {mobileCompareActive && !mobileCompareTargetActive ? (
                             <div className="secondary-board-empty-state mobile-compare-empty-state">
@@ -2889,27 +2907,36 @@ export function KibitzRoomStage({
                         ) : secondaryGameId ? (
                             <div className="board-content board-content-variation">
                                 <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
-                                    <KibitzBoard
-                                        key={secondaryBoardKey}
-                                        gameId={secondaryGameId}
-                                        currentRoomGameId={currentRoomGameId}
-                                        isMobile={false}
-                                        connectToGame={
-                                            !(
-                                                !isMobileLayout &&
-                                                mainBoardController != null &&
-                                                secondaryBoardGame?.game_id === currentRoomGameId
-                                            )
-                                        }
-                                        {...boardDimensionsOf(secondaryBoardGame)}
-                                        className="secondary-board-surface"
-                                        size={secondaryBoardSize}
-                                        interactive={secondaryPaneSize === "equal"}
-                                        respectContainerBounds={true}
-                                        moveTree={secondaryPane.variation_source_move_tree}
-                                        movePath={secondaryPane.variation_source_move_path}
-                                        onReady={setSecondaryBoardController}
-                                    />
+                                    {secondaryBoardSizeReady ? (
+                                        <KibitzBoard
+                                            key={secondaryBoardKey}
+                                            gameId={secondaryGameId}
+                                            currentRoomGameId={currentRoomGameId}
+                                            isMobile={false}
+                                            connectToGame={
+                                                !(
+                                                    !isMobileLayout &&
+                                                    mainBoardController != null &&
+                                                    secondaryBoardGame?.game_id ===
+                                                        currentRoomGameId
+                                                )
+                                            }
+                                            {...boardDimensionsOf(secondaryBoardGame)}
+                                            className="secondary-board-surface"
+                                            size={secondaryBoardSize}
+                                            interactive={secondaryPaneSize === "equal"}
+                                            respectContainerBounds={true}
+                                            moveTree={secondaryPane.variation_source_move_tree}
+                                            movePath={secondaryPane.variation_source_move_path}
+                                            onReady={setSecondaryBoardController}
+                                        />
+                                    ) : (
+                                        <div
+                                            className="secondary-board-empty-state"
+                                            data-kibitz-board-pending-size="true"
+                                            aria-hidden="true"
+                                        />
+                                    )}
                                 </div>
                                 <div className="secondary-board-transport-row">
                                     <div className="secondary-board-return-live-action">
@@ -3013,27 +3040,35 @@ export function KibitzRoomStage({
                                         desktopVariationBoardTarget?.ref(node);
                                     }}
                                 >
-                                    <KibitzBoard
-                                        key={secondaryBoardKey}
-                                        gameId={selectedVariation?.game_id}
-                                        currentRoomGameId={currentRoomGameId}
-                                        isMobile={false}
-                                        connectToGame={
-                                            !(
-                                                !isMobileLayout &&
-                                                mainBoardController != null &&
-                                                selectedVariation?.game_id === currentRoomGameId
-                                            )
-                                        }
-                                        {...boardDimensionsOf(selectedVariationSourceGame)}
-                                        className="secondary-board-surface"
-                                        size={secondaryBoardSize}
-                                        interactive={false}
-                                        respectContainerBounds={true}
-                                        moveTree={secondaryPane.variation_source_move_tree}
-                                        movePath={secondaryPane.variation_source_move_path}
-                                        onReady={setSecondaryBoardController}
-                                    />
+                                    {secondaryBoardSizeReady ? (
+                                        <KibitzBoard
+                                            key={secondaryBoardKey}
+                                            gameId={selectedVariation?.game_id}
+                                            currentRoomGameId={currentRoomGameId}
+                                            isMobile={false}
+                                            connectToGame={
+                                                !(
+                                                    !isMobileLayout &&
+                                                    mainBoardController != null &&
+                                                    selectedVariation?.game_id === currentRoomGameId
+                                                )
+                                            }
+                                            {...boardDimensionsOf(selectedVariationSourceGame)}
+                                            className="secondary-board-surface"
+                                            size={secondaryBoardSize}
+                                            interactive={false}
+                                            respectContainerBounds={true}
+                                            moveTree={secondaryPane.variation_source_move_tree}
+                                            movePath={secondaryPane.variation_source_move_path}
+                                            onReady={setSecondaryBoardController}
+                                        />
+                                    ) : (
+                                        <div
+                                            className="secondary-board-empty-state"
+                                            data-kibitz-board-pending-size="true"
+                                            aria-hidden="true"
+                                        />
+                                    )}
                                 </div>
                                 <div className="secondary-board-transport-row">
                                     <div className="secondary-board-return-live-action">
