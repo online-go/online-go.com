@@ -250,7 +250,10 @@ interface SecondaryVariationBaseSnapshot {
 
 interface PendingSecondaryVariationBaseLoad {
     controller: GobanController;
+    controllerEpoch: number;
+    roomId: string | null;
     gameId: number;
+    operationId: number;
 }
 
 export interface InstalledSecondaryVariationBaseState {
@@ -1167,6 +1170,7 @@ export function KibitzRoomStage({
         React.useState<GobanController | null>(null);
     const setSecondaryBoardController = React.useCallback((controller: GobanController | null) => {
         secondaryBoardControllerEpochRef.current += 1;
+        secondarySnapshotLoadOperationIdRef.current += 1;
         const controllerGameId = controller
             ? typeof controller.goban.config?.game_id === "number"
                 ? controller.goban.config.game_id
@@ -1254,6 +1258,7 @@ export function KibitzRoomStage({
             pendingSecondaryVariationBaseLoadRef.current = null;
             suppressSelectedVariationLoadRef.current = false;
             secondaryVariationRetryCountRef.current = 0;
+            secondarySnapshotLoadOperationIdRef.current += 1;
             lastAppliedSecondaryVariationKeyRef.current = null;
             pendingSecondaryRedrawReasonRef.current = null;
             pendingSecondaryMoveTreeRedrawCancelRef.current?.();
@@ -1325,6 +1330,7 @@ export function KibitzRoomStage({
     } | null>(null);
     const pendingSecondaryVariationBaseLoadRef =
         React.useRef<PendingSecondaryVariationBaseLoad | null>(null);
+    const secondarySnapshotLoadOperationIdRef = React.useRef(0);
     const suppressSelectedVariationLoadRef = React.useRef(false);
     const secondaryVariationRetryTimeoutRef = React.useRef<number | null>(null);
     const secondaryVariationRetryCountRef = React.useRef(0);
@@ -1607,6 +1613,7 @@ export function KibitzRoomStage({
     React.useEffect(() => {
         mainBoardControllerEpochRef.current += 1;
         secondaryBoardControllerEpochRef.current += 1;
+        secondarySnapshotLoadOperationIdRef.current += 1;
         mainBoardControllerContextRef.current = null;
         secondaryBoardControllerContextRef.current = null;
         pendingSecondaryVariationBaseLoadRef.current = null;
@@ -1856,6 +1863,32 @@ export function KibitzRoomStage({
         const baseRetryDelayMs = 100;
         let loggedBaseRetryTimeout = false;
 
+        const isCurrentSecondaryLoadController = (): boolean => {
+            const context = secondaryBoardControllerContextRef.current;
+            const controllerGameId = secondaryBoardController.goban.config?.game_id ?? null;
+            return Boolean(
+                secondaryBoardController &&
+                context &&
+                context.controller === secondaryBoardController &&
+                context.roomId === currentRoomIdRef.current &&
+                context.gameId === controllerGameId &&
+                !isDetachedBoardController(secondaryBoardController),
+            );
+        };
+
+        const isCurrentPendingSecondarySnapshotLoad = (
+            pendingLoad: PendingSecondaryVariationBaseLoad | null,
+        ): pendingLoad is PendingSecondaryVariationBaseLoad => {
+            return Boolean(
+                pendingLoad &&
+                pendingLoad.controller === secondaryBoardController &&
+                pendingLoad.roomId === currentRoomIdRef.current &&
+                pendingLoad.gameId === selectedVariation.game_id &&
+                pendingLoad.operationId === secondarySnapshotLoadOperationIdRef.current &&
+                isCurrentSecondaryLoadController(),
+            );
+        };
+
         const warnVariationApplyTimeout = (reason: string): void => {
             console.warn("Kibitz variation apply timed out", {
                 reason,
@@ -1905,7 +1938,7 @@ export function KibitzRoomStage({
         };
 
         const applyVisibleVariationsToLoadedBase = (desiredApplyKey: string): boolean => {
-            if (!isCurrentSecondaryBoardController(secondaryBoardController)) {
+            if (!isCurrentSecondaryLoadController()) {
                 logSecondaryBoardStaleCallback("apply", { desiredApplyKey });
                 return false;
             }
@@ -2045,7 +2078,7 @@ export function KibitzRoomStage({
         };
 
         const reloadBaseThenApplyVisibleVariations = (reason: string): boolean => {
-            if (!isCurrentSecondaryBoardController(secondaryBoardController)) {
+            if (!isCurrentSecondaryLoadController()) {
                 logSecondaryBoardStaleCallback("reload-or-apply", { reason });
                 return false;
             }
@@ -2117,9 +2150,14 @@ export function KibitzRoomStage({
             }
 
             if (needsSnapshotLoad) {
+                const operationId = secondarySnapshotLoadOperationIdRef.current + 1;
+                secondarySnapshotLoadOperationIdRef.current = operationId;
                 pendingSecondaryVariationBaseLoadRef.current = {
                     controller: secondaryBoardController,
+                    controllerEpoch: secondaryBoardControllerEpochRef.current,
+                    roomId: currentRoomIdRef.current,
                     gameId: selectedVariation.game_id,
+                    operationId,
                 };
                 suppressSelectedVariationLoadRef.current = true;
                 logVariationStage("reload-or-apply:load-snapshot", {
@@ -2128,13 +2166,11 @@ export function KibitzRoomStage({
                     snapshotTailMoveNumber: snapshot.trunkTailMoveNumber,
                     snapshotInstalled,
                     desiredApplyKey,
+                    operationId,
                 });
                 loadSecondaryVariationBaseSnapshot(secondaryBoardController, snapshot);
                 const pendingBaseLoad = pendingSecondaryVariationBaseLoadRef.current;
-                if (
-                    pendingBaseLoad?.controller === secondaryBoardController &&
-                    pendingBaseLoad.gameId === selectedVariation.game_id
-                ) {
+                if (isCurrentPendingSecondarySnapshotLoad(pendingBaseLoad)) {
                     scheduleBaseRetry(`waiting-for-snapshot-load:${reason}`);
                 } else {
                     logVariationStage("reload-or-apply:snapshot-load-completed", { reason });
@@ -2151,7 +2187,7 @@ export function KibitzRoomStage({
         };
 
         const tryApplyVariationWhenReady = (reason: string): boolean => {
-            if (!isCurrentSecondaryBoardController(secondaryBoardController)) {
+            if (!isCurrentSecondaryLoadController()) {
                 logSecondaryBoardStaleCallback("try", { reason });
                 return false;
             }
@@ -2234,11 +2270,7 @@ export function KibitzRoomStage({
             }
 
             const pendingBaseLoad = pendingSecondaryVariationBaseLoadRef.current;
-            if (
-                pendingBaseLoad &&
-                pendingBaseLoad.controller === secondaryBoardController &&
-                pendingBaseLoad.gameId === selectedVariation.game_id
-            ) {
+            if (isCurrentPendingSecondarySnapshotLoad(pendingBaseLoad)) {
                 logVariationStage("try:pending-snapshot-load", { reason });
                 return false;
             }
@@ -2332,9 +2364,9 @@ export function KibitzRoomStage({
             if (
                 disposed ||
                 secondaryVariationRetryTimeoutRef.current != null ||
-                !isCurrentSecondaryBoardController(secondaryBoardController)
+                !isCurrentSecondaryLoadController()
             ) {
-                if (!isCurrentSecondaryBoardController(secondaryBoardController)) {
+                if (!isCurrentSecondaryLoadController()) {
                     logSecondaryBoardStaleCallback("retry-schedule", { reason });
                 }
                 return;
@@ -2362,20 +2394,17 @@ export function KibitzRoomStage({
         };
 
         const onLoad = () => {
-            if (disposed || !isCurrentSecondaryBoardController(secondaryBoardController)) {
-                if (!disposed) {
+            const pendingBaseLoad = pendingSecondaryVariationBaseLoadRef.current;
+            if (disposed || !isCurrentSecondaryLoadController()) {
+                if (isCurrentPendingSecondarySnapshotLoad(pendingBaseLoad)) {
+                    logVariationStage("event:load:continuation-missed");
+                } else if (!disposed) {
                     logSecondaryBoardStaleCallback("event-load");
                 }
                 return;
             }
 
-            logVariationStage("event:load");
-            const pendingBaseLoad = pendingSecondaryVariationBaseLoadRef.current;
-            if (
-                pendingBaseLoad &&
-                pendingBaseLoad.controller === secondaryBoardController &&
-                pendingBaseLoad.gameId === selectedVariation.game_id
-            ) {
+            if (isCurrentPendingSecondarySnapshotLoad(pendingBaseLoad)) {
                 logVariationStage("event:load:snapshot-complete");
                 const loadedSnapshot = secondaryVariationBaseSnapshotRef.current;
                 if (!loadedSnapshot) {
@@ -2419,9 +2448,11 @@ export function KibitzRoomStage({
 
             if (secondaryVariationTreeDirtyRef.current) {
                 logVariationStage("event:load:dirty-ignored");
+                if (!disposed) {
+                    logSecondaryBoardStaleCallback("event-load");
+                }
                 return;
             }
-
             logVariationStage("event:load:source-hydration");
             secondaryVariationTreeDirtyRef.current = false;
             secondaryVariationBaseHydrationRef.current = {
@@ -2442,7 +2473,7 @@ export function KibitzRoomStage({
             if (
                 disposed ||
                 suppressSelectedVariationLoadRef.current ||
-                !isCurrentSecondaryBoardController(secondaryBoardController)
+                !isCurrentSecondaryLoadController()
             ) {
                 if (!disposed && !suppressSelectedVariationLoadRef.current) {
                     logSecondaryBoardStaleCallback("event-base-maybe-ready");
@@ -2742,6 +2773,9 @@ export function KibitzRoomStage({
     const mobileBoardTotalMoves = mobileCompareTargetActive
         ? (selectedVariation?.move_count ?? previewDisplayedMoveNumber)
         : displayedMoveNumber;
+    const liveMainBoardOfficialTailMoveNumber = mainBoardController
+        ? getOfficialTrunkTailMoveNumber(mainBoardController)
+        : mainBoardOfficialTailMoveNumber;
 
     const onConfirmClearSecondaryPane = React.useCallback(() => {
         void alert
@@ -2776,12 +2810,12 @@ export function KibitzRoomStage({
         logKibitzVariationDebug("main-board:new-variation-click", {
             gameId: currentRoomGameId,
             selectedVariationId: selectedVariation?.id ?? null,
-            mainBoardOfficialTailMoveNumber,
+            mainBoardOfficialTailMoveNumber: liveMainBoardOfficialTailMoveNumber,
         });
         onCreateVariation?.();
     }, [
         currentRoomGameId,
-        mainBoardOfficialTailMoveNumber,
+        liveMainBoardOfficialTailMoveNumber,
         onCreateVariation,
         selectedVariation?.id,
     ]);
@@ -2792,7 +2826,7 @@ export function KibitzRoomStage({
                 gameId: currentRoomGameId,
                 selectedVariationId: variation.id,
                 selectedGameId: variation.game_id,
-                mainBoardOfficialTailMoveNumber,
+                mainBoardOfficialTailMoveNumber: liveMainBoardOfficialTailMoveNumber,
             });
             if (onCreateVariationFromPostedVariation) {
                 onCreateVariationFromPostedVariation(variation);
@@ -2803,7 +2837,7 @@ export function KibitzRoomStage({
         },
         [
             currentRoomGameId,
-            mainBoardOfficialTailMoveNumber,
+            liveMainBoardOfficialTailMoveNumber,
             onCreateVariation,
             onCreateVariationFromPostedVariation,
         ],
