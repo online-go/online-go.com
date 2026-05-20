@@ -36,6 +36,7 @@ import {
     isSelectedVariationVisible,
     isSecondaryVariationSnapshotReady,
     resolveSelectedVariationSourceGame,
+    shouldKeepMobileMainBoardMounted,
 } from "./KibitzRoomStage";
 
 function makeUser(id: number, username: string) {
@@ -123,6 +124,21 @@ describe("resolveSelectedVariationSourceGame", () => {
                 fallbackGame,
             ),
         ).toBe(fallbackGame);
+    });
+});
+
+describe("mobile main board mounting", () => {
+    it("keeps the live main board mounted while mobile compare mode is active", () => {
+        expect(shouldKeepMobileMainBoardMounted(true, true, makeGame(4321, "Live game"))).toBe(
+            true,
+        );
+    });
+
+    it("does not keep the main board mounted outside mobile compare mode", () => {
+        const game = makeGame(4321, "Live game");
+        expect(shouldKeepMobileMainBoardMounted(false, true, game)).toBe(false);
+        expect(shouldKeepMobileMainBoardMounted(true, false, game)).toBe(false);
+        expect(shouldKeepMobileMainBoardMounted(true, true, null)).toBe(false);
     });
 });
 
