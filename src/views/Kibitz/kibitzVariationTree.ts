@@ -432,18 +432,20 @@ export function applyKibitzVariationToController(
         return { variationId: variation.id, endpoint: null };
     }
 
-    console.debug("kibitz-variation:apply", {
-        variationId: variation.id,
-        analysisFrom: variation.analysis_from,
-        decodedMoveCount,
-        currentMove: summarizeMoveTreeNode(controller.goban.engine.cur_move),
-        officialAnchor: summarizeMoveTreeNode(
-            officialTrunkNodeByMoveNumber(
-                controller.goban.engine.move_tree,
-                variation.analysis_from,
+    if (isKibitzVariationDebugEnabled()) {
+        logKibitzVariationDebug("kibitz-variation:apply", {
+            variationId: variation.id,
+            analysisFrom: variation.analysis_from,
+            decodedMoveCount,
+            currentMove: summarizeMoveTreeNode(controller.goban.engine.cur_move),
+            officialAnchor: summarizeMoveTreeNode(
+                officialTrunkNodeByMoveNumber(
+                    controller.goban.engine.move_tree,
+                    variation.analysis_from,
+                ),
             ),
-        ),
-    });
+        });
+    }
 
     if (!isVariationOfficialAnchorReady(controller, variation)) {
         warnKibitzVariationDebug("variation anchor not ready", {
