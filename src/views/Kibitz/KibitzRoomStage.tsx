@@ -1188,12 +1188,12 @@ export function KibitzRoomStage({
     const secondaryBoardKey = React.useMemo(() => {
         if (secondaryPane.variation_id != null) {
             return selectedVariationGameId != null
-                ? `variation-game-${selectedVariationGameId}`
+                ? `room-${room.id}-variation-game-${selectedVariationGameId}`
                 : `variation-${secondaryPane.variation_id}`;
         }
 
         if (secondaryPane.variation_source_game_id != null) {
-            return `draft-${secondaryPane.variation_source_game_id}-${
+            return `room-${room.id}-draft-${secondaryPane.variation_source_game_id}-${
                 secondaryPane.variation_draft_base_id ?? ""
             }-${secondaryPane.variation_source_move_tree_id ?? ""}-${
                 secondaryPane.variation_source_move_path ?? ""
@@ -1201,11 +1201,12 @@ export function KibitzRoomStage({
         }
 
         if (secondaryPane.preview_game_id != null) {
-            return `preview-${secondaryPane.preview_game_id}`;
+            return `room-${room.id}-preview-${secondaryPane.preview_game_id}`;
         }
 
-        return "empty";
+        return `room-${room.id}-empty`;
     }, [
+        room.id,
         secondaryPane.preview_game_id,
         secondaryPane.variation_id,
         secondaryPane.variation_draft_base_id,
@@ -1283,6 +1284,7 @@ export function KibitzRoomStage({
         lastAppliedSecondaryVariationKeyRef.current = null;
     }, [
         secondaryBoardController,
+        room.id,
         selectedVariation?.game_id,
         selectedVariation?.id,
         visibleVariationApplyKey,
@@ -1307,6 +1309,24 @@ export function KibitzRoomStage({
             secondaryVariationRetryTimeoutRef.current = null;
         }
     }, []);
+
+    React.useEffect(() => {
+        pendingSecondaryVariationBaseLoadRef.current = null;
+        suppressSelectedVariationLoadRef.current = false;
+        secondaryVariationRetryCountRef.current = 0;
+        secondaryVariationBaseSnapshotRef.current = null;
+        secondaryVariationTreeDirtyRef.current = false;
+        secondaryVariationBaseInstalledRef.current = clearInstalledSecondaryVariationBaseState();
+        secondaryVariationBaseHydrationRef.current = null;
+        lastAppliedSecondaryVariationKeyRef.current = null;
+        pendingSecondaryRedrawReasonRef.current = null;
+        pendingSecondaryMoveTreeRedrawCancelRef.current?.();
+        pendingSecondaryMoveTreeRedrawCancelRef.current = null;
+        pendingSecondaryBoardVisibleRedrawCancelRef.current?.();
+        pendingSecondaryBoardVisibleRedrawCancelRef.current = null;
+        clearSecondaryVariationRetryTimeout();
+        previousSecondaryControllerRef.current = null;
+    }, [clearSecondaryVariationRetryTimeout, currentRoomGameId, room.id]);
 
     const resetSecondaryVariationBaseState = React.useCallback(
         (reason: string) => {
