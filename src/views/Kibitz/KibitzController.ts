@@ -1207,11 +1207,36 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             return null;
         }
         const pendingId = `kibitz-post:${Date.now()}:${Math.random().toString(36).slice(2)}`;
+        const officialTailMoveNumber =
+            boardController.goban.engine.last_official_move?.move_number ?? 0;
         const body = {
             ...prepared.analysis,
             game_id: sourceGameId,
             kibitz_pending_id: pendingId,
         } as AnalysisChatBody;
+        console.debug("kibitz-post-variation", {
+            roomId,
+            sourceGameId,
+            officialTailMoveNumber,
+            draftAnchorMoveNumber: prepared.analysis.from ?? null,
+            draftEndMoveNumber: prepared.move_count,
+            analysisFrom: prepared.analysis.from ?? null,
+            decodedAnalysisMoveCount: prepared.moves.length,
+        });
+        if (
+            this._active_room?.current_game?.game_id === sourceGameId &&
+            typeof prepared.analysis.from === "number" &&
+            prepared.analysis.from > officialTailMoveNumber
+        ) {
+            console.warn("kibitz-post-variation:analysis-from-ahead-of-official-tail", {
+                roomId,
+                sourceGameId,
+                officialTailMoveNumber,
+                analysisFrom: prepared.analysis.from,
+                draftEndMoveNumber: prepared.move_count,
+                decodedAnalysisMoveCount: prepared.moves.length,
+            });
+        }
         this.sendTypedToActiveChannel(body);
         boardController.recordAnalysisSent(prepared.analysis);
         return body;

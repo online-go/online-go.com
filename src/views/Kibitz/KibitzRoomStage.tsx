@@ -405,16 +405,11 @@ export function getRequiredBranchAttachMoveForVariation(
 
 export function getRequiredSnapshotMoveForVariation(
     variation: KibitzVariationSummary,
-    sourceGame: KibitzWatchedGame | null | undefined,
+    _sourceGame: KibitzWatchedGame | null | undefined,
 ): number {
-    const from = variation.analysis_from ?? 0;
-    const sourceGameMoveNumber = sourceGame?.move_number;
-
-    if (sourceGameMoveNumber != null) {
-        return sourceGameMoveNumber;
-    }
-
-    return from + 1;
+    // The snapshot only needs the anchor move where the variation branches off.
+    // The branch continuation itself is supplied by the variation payload.
+    return variation.analysis_from ?? 0;
 }
 
 export function getRequiredVariationSnapshotMoveNumber(

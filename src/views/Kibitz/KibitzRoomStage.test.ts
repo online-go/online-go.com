@@ -143,7 +143,7 @@ describe("mobile main board mounting", () => {
 });
 
 describe("variation snapshot readiness", () => {
-    it("requires the latest selected or visible source move for snapshots", () => {
+    it("requires only the visible variation anchors for snapshots", () => {
         const sourceGame = {
             ...makeGame(4321, "Source game"),
             move_number: 140,
@@ -155,11 +155,11 @@ describe("variation snapshot readiness", () => {
                 [makeVariation(4321, 7), makeVariation(4321, 3)],
                 sourceGame,
             ),
-        ).toBe(140);
+        ).toBe(7);
     });
 
-    it("does not treat an unknown source game as move zero", () => {
-        expect(getRequiredSnapshotMoveForVariation(makeVariation(4321, 5), undefined)).toBe(6);
+    it("does not require the branch endpoint when the source game is unavailable", () => {
+        expect(getRequiredSnapshotMoveForVariation(makeVariation(4321, 5), undefined)).toBe(5);
         expect(getRequiredBranchAttachMoveForVariation(makeVariation(4321, 5), undefined)).toBe(6);
     });
 
