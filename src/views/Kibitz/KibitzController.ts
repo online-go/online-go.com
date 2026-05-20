@@ -319,8 +319,26 @@ function mapAnalysisToVariation(msg: ChatMessage, roomId: string): KibitzVariati
         // produced races where the list silently disappeared on slow backends.
         return null;
     }
+    if (typeof body.from !== "number" || !Number.isFinite(body.from)) {
+        console.warn("kibitz-post-variation:malformed-server-response", {
+            roomId,
+            chatMessageId: msg.message.i ?? null,
+            rawBody: msg.message.m,
+            reason: "missing-analysis-from",
+        });
+        return null;
+    }
+    if (typeof body.moves !== "string" || body.moves.trim().length === 0) {
+        console.warn("kibitz-post-variation:malformed-server-response", {
+            roomId,
+            chatMessageId: msg.message.i ?? null,
+            rawBody: msg.message.m,
+            reason: "missing-analysis-moves",
+        });
+        return null;
+    }
     const id = msg.message.i ?? `var-${msg.message.t}-${msg.id}`;
-    return {
+    const variation: KibitzVariationSummary = {
         id,
         room_id: roomId,
         source: "room",
@@ -344,6 +362,20 @@ function mapAnalysisToVariation(msg: ChatMessage, roomId: string): KibitzVariati
         analysis_pen_marks: body.pen_marks as KibitzVariationSummary["analysis_pen_marks"],
         analysis_line_tree: body.line_tree,
     };
+    console.debug("kibitz-post-variation:server-response", {
+        roomId,
+        chatMessageId: msg.message.i ?? null,
+        rawBody: msg.message.m,
+        normalizedVariation: {
+            id: variation.id,
+            game_id: variation.game_id,
+            analysis_from: variation.analysis_from ?? null,
+            analysis_moves: variation.analysis_moves ?? null,
+            move_count: variation.move_count ?? null,
+            client_pending_id: variation.client_pending_id ?? null,
+        },
+    });
+    return variation;
 }
 
 function mapChatToStreamItem(msg: ChatMessage, roomId: string): KibitzStreamItem {
@@ -1218,11 +1250,32 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             roomId,
             sourceGameId,
             officialTailMoveNumber,
-            draftAnchorMoveNumber: prepared.analysis.from ?? null,
-            draftEndMoveNumber: prepared.move_count,
-            analysisFrom: prepared.analysis.from ?? null,
+            analysis_from: prepared.analysis.from ?? null,
+            draft_end_move_number: prepared.move_count,
             decodedAnalysisMoveCount: prepared.moves.length,
         });
+        console.debug("kibitz-post-variation:payload", {
+            roomId,
+            sourceGameId,
+            analysis_from: body.from ?? null,
+            decodedAnalysisMoveCount: prepared.moves.length,
+            encodedAnalysisMovesLength: typeof body.moves === "string" ? body.moves.length : null,
+            payload: body,
+        });
+        if (
+            typeof body.from !== "number" ||
+            !Number.isFinite(body.from) ||
+            typeof body.moves !== "string" ||
+            body.moves.trim().length === 0
+        ) {
+            console.warn("kibitz-post-variation:refusing-malformed-payload", {
+                roomId,
+                sourceGameId,
+                officialTailMoveNumber,
+                payload: body,
+            });
+            return null;
+        }
         if (
             this._active_room?.current_game?.game_id === sourceGameId &&
             typeof prepared.analysis.from === "number" &&
@@ -1232,8 +1285,8 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 roomId,
                 sourceGameId,
                 officialTailMoveNumber,
-                analysisFrom: prepared.analysis.from,
-                draftEndMoveNumber: prepared.move_count,
+                analysis_from: prepared.analysis.from,
+                draft_end_move_number: prepared.move_count,
                 decodedAnalysisMoveCount: prepared.moves.length,
             });
         }

@@ -163,6 +163,22 @@ describe("variation snapshot readiness", () => {
         expect(getRequiredBranchAttachMoveForVariation(makeVariation(4321, 5), undefined)).toBe(6);
     });
 
+    it("keeps the branch attach move on the official tail when the source game is caught up", () => {
+        expect(
+            getRequiredBranchAttachMoveForVariation(makeVariation(4321, 2), {
+                ...makeGame(4321, "Source game"),
+                move_number: 2,
+            }),
+        ).toBe(2);
+    });
+
+    it("refuses to infer a root anchor when analysis_from is missing", () => {
+        const variation = makeVariation(4321);
+
+        expect(getRequiredSnapshotMoveForVariation(variation, undefined)).toBeNull();
+        expect(getRequiredBranchAttachMoveForVariation(variation, undefined)).toBeNull();
+    });
+
     it("requires the official trunk tail to reach the snapshot move", () => {
         const sourceGame = {
             ...makeGame(4321, "Source game"),
