@@ -1175,6 +1175,16 @@
         background: var(--card-background-color);
     }
 
+    .Kibitz-mobile-hidden-main-board {
+        height: 1px;
+        left: -10000px;
+        overflow: hidden;
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        width: 1px;
+    }
+
     .Kibitz-mobile-board-host {
         background: var(--card-background-color);
         display: flex;

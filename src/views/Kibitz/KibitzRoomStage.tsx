@@ -173,6 +173,14 @@ function boardDimensionsOf(game: { board_size?: `${number}x${number}` } | null |
     return {};
 }
 
+export function shouldKeepMobileMainBoardMounted(
+    isMobileLayout: boolean,
+    mobileCompareActive: boolean,
+    mainGame: KibitzWatchedGame | null | undefined,
+): boolean {
+    return Boolean(isMobileLayout && mobileCompareActive && mainGame);
+}
+
 export function resolveSelectedVariationSourceGame(
     selectedVariation: KibitzVariationSummary | undefined,
     mainGame: KibitzWatchedGame | undefined,
@@ -2149,6 +2157,11 @@ export function KibitzRoomStage({
 
     if (isMobileLayout) {
         const renderMainBoard = Boolean(mainGame && !mobileCompareActive);
+        const renderHiddenMainBoard = shouldKeepMobileMainBoardMounted(
+            isMobileLayout,
+            mobileCompareActive,
+            mainGame,
+        );
         const renderPreviewBoard = Boolean(mobileCompareTargetActive && secondaryBoardGame);
         const renderVariationBoard = Boolean(mobileCompareTargetActive && selectedVariation);
         const mobileBoardController = mobileCompareTargetActive
@@ -2157,6 +2170,28 @@ export function KibitzRoomStage({
 
         return (
             <div className="KibitzRoomStage KibitzRoomStage-mobile">
+                {renderHiddenMainBoard ? (
+                    <div
+                        className="Kibitz-mobile-hidden-main-board"
+                        aria-hidden="true"
+                        tabIndex={-1}
+                    >
+                        <KibitzBoard
+                            key={`main-${room.id}-${mainGame?.game_id ?? "none"}-hidden`}
+                            role="main"
+                            gameId={mainGame?.game_id}
+                            currentRoomGameId={currentRoomGameId}
+                            isMobile={true}
+                            {...boardDimensionsOf(mainGame)}
+                            className="mobile-main-board-surface Kibitz-mobile-hidden-main-board-surface"
+                            size={Math.max(mobileBoardSize, 1)}
+                            fitMode="contain"
+                            respectContainerBounds={true}
+                            restoreToOfficialTailOnLoad={true}
+                            onReady={setMainBoardController}
+                        />
+                    </div>
+                ) : null}
                 <div
                     className={
                         "Kibitz-mobile-board-host" +
