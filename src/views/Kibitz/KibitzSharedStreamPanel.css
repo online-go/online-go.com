@@ -192,25 +192,29 @@
     margin-left: 0;
 }
 
-.KibitzSharedStreamPanel-paneFeed .variation-post {
+.KibitzSharedStreamPanel-paneFeed button[data-variation-post="true"] {
     flex: 1 1 auto;
     width: auto;
+    height: auto;
     min-width: 0;
     margin: 0;
-    align-items: center;
     background: var(--shade4);
     border: 0;
     box-sizing: border-box;
     color: var(--variation);
     cursor: pointer;
-    display: flex;
+    display: block;
     font-size: 0.85rem;
     font-weight: bold;
     line-height: 1.25;
     min-height: 2.7rem;
+    max-height: 12rem;
+    overflow: hidden;
     padding: 0.25rem 0.75rem;
     text-align: left;
     transition: background-color 120ms ease;
+    white-space: normal;
+    word-break: break-word;
 }
 
 .KibitzSharedStreamPanel-paneFeed .variation-post-entry {
