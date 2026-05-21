@@ -158,6 +158,19 @@ async function fetchCurrentGameBaseSnapshot(
     }
 
     const boardDiv = document.createElement("div");
+    boardDiv.setAttribute("aria-hidden", "true");
+    boardDiv.style.position = "absolute";
+    boardDiv.style.width = "1px";
+    boardDiv.style.height = "1px";
+    boardDiv.style.overflow = "hidden";
+    boardDiv.style.pointerEvents = "none";
+    boardDiv.style.opacity = "0";
+    boardDiv.style.left = "-10000px";
+    boardDiv.style.top = "0";
+    // captureCurrentGameBaseSnapshotFromController rejects controllers whose
+    // board element is not in the document, so the div must be attached for
+    // the short lifetime of this controller.
+    document.body.appendChild(boardDiv);
     const config: GobanRendererConfig & { moves?: GobanConfig["moves"] } = {
         board_div: boardDiv,
         interactive: false,
@@ -192,6 +205,7 @@ async function fetchCurrentGameBaseSnapshot(
         return snapshot;
     } finally {
         snapshotController.destroy();
+        boardDiv.remove();
     }
 }
 
@@ -895,13 +909,14 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         (variation) => variation.id === secondaryPane.variation_id,
     );
     const currentGameId = resolvedRoom?.current_game?.game_id ?? null;
-    React.useEffect(() => {
-        currentRoomIdRef.current = resolvedRoom?.id ?? null;
-    }, [resolvedRoom?.id]);
-
-    React.useEffect(() => {
-        currentRoomGameIdRef.current = resolvedRoom?.current_game?.game_id ?? null;
-    }, [resolvedRoom?.current_game?.game_id]);
+    // Synced during render so the refs hold the live room/game before any
+    // child mount effect fires. Child boards register via setMainBoardController
+    // from their own mount effects (which run before this component's effects),
+    // and that registration captures these refs into the controller context.
+    // Updating in useEffect would leave the refs null at registration time,
+    // permanently mismatching every isCurrentMainBoardController check.
+    currentRoomIdRef.current = resolvedRoom?.id ?? null;
+    currentRoomGameIdRef.current = currentGameId;
 
     const setMainBoardController = React.useCallback((controller: GobanController | null) => {
         mainBoardControllerEpochRef.current += 1;
@@ -1127,9 +1142,25 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             const cachedSnapshotForLog: KibitzCurrentGameBaseSnapshot | null =
                 currentGameBaseSnapshot;
             if (!isCurrentMainBoardController(mainBoardController)) {
+                const ctx = mainBoardControllerContextRef.current;
                 logKibitzVariationDebug("current-game-base-snapshot:stale-main-controller", {
                     reason,
                     gameId: game.game_id,
+                    diagnostic: {
+                        controllerProvided: Boolean(mainBoardController),
+                        contextPresent: Boolean(ctx),
+                        controllerMatches: Boolean(ctx && ctx.controller === mainBoardController),
+                        epochMatches: Boolean(
+                            ctx && ctx.epoch === mainBoardControllerEpochRef.current,
+                        ),
+                        roomIdMatches: Boolean(ctx && ctx.roomId === currentRoomIdRef.current),
+                        gameIdMatches: Boolean(ctx && ctx.gameId === currentRoomGameIdRef.current),
+                        parentConnected: Boolean(mainBoardController?.goban.parent?.isConnected),
+                        contextRoomId: ctx?.roomId ?? null,
+                        contextGameId: ctx?.gameId ?? null,
+                        liveRoomId: currentRoomIdRef.current,
+                        liveGameId: currentRoomGameIdRef.current,
+                    },
                 });
                 return null;
             }
