@@ -18,7 +18,11 @@
 import { MoveTree as GobanMoveTree, type MoveTree, type MoveTreeJson } from "goban";
 import type { GobanController } from "@/lib/GobanController";
 import type { KibitzVariationSummary } from "@/models/kibitz";
-import { logKibitzVariationDebug, warnKibitzVariationDebug } from "./kibitzVariationDebug";
+import {
+    isKibitzVariationDebugEnabled,
+    logKibitzVariationDebug,
+    warnKibitzVariationDebug,
+} from "./kibitzVariationDebug";
 
 export const KIBITZ_VARIATION_COLORS = GobanMoveTree.line_colors;
 
@@ -138,26 +142,6 @@ function duplicateMoveNodeAsBranch(
     return branch;
 }
 
-function duplicateOfficialTrunkAsBranch(controller: GobanController, parent: MoveTree): MoveTree[] {
-    const engine = controller.goban.engine;
-    const pathNodes: MoveTree[] = [];
-    let branchCursor = parent;
-    let trunkCursor = parent.trunk_next;
-
-    while (trunkCursor) {
-        branchCursor = duplicateMoveNodeAsBranch(engine, branchCursor, trunkCursor);
-        pathNodes.push(branchCursor);
-
-        if (trunkCursor === engine.last_official_move) {
-            break;
-        }
-
-        trunkCursor = trunkCursor.trunk_next;
-    }
-
-    return pathNodes;
-}
-
 export function officialTrunkNodeByMoveNumber(root: MoveTree, moveNumber: number): MoveTree | null {
     let cursor: MoveTree | undefined = root;
 
@@ -180,7 +164,7 @@ export function isVariationOfficialAnchorReady(
         return false;
     }
 
-    if (variation.analysis_from == null) {
+    if (typeof variation.analysis_from !== "number" || !Number.isFinite(variation.analysis_from)) {
         return false;
     }
 
@@ -225,6 +209,7 @@ function followKibitzVariationPath(
     const decodedMoves = engine.decodeMoves(moves);
     const pathNodes: MoveTree[] = [];
     const officialTrunkNode = officialTrunkNodeByMoveNumber(engine.move_tree, fromMoveNumber);
+    const debugEnabled = isKibitzVariationDebugEnabled();
 
     if (!officialTrunkNode) {
         throw new Error(`Official trunk node ${fromMoveNumber} not found`);
@@ -232,26 +217,30 @@ function followKibitzVariationPath(
 
     let cursor = officialTrunkNode;
 
-    logKibitzVariationDebug("follow:start", {
-        variationId,
-        fromMoveNumber,
-        decodedMoveCount: decodedMoves.length,
-        officialTrunkNode: summarizeMoveTreeNode(officialTrunkNode),
-        lastOfficialMove: summarizeMoveTreeNode(engine.last_official_move),
-        currentMove: summarizeMoveTreeNode(engine.cur_move),
-    });
+    if (debugEnabled) {
+        logKibitzVariationDebug("follow:start", {
+            variationId,
+            fromMoveNumber,
+            decodedMoveCount: decodedMoves.length,
+            officialTrunkNode: summarizeMoveTreeNode(officialTrunkNode),
+            lastOfficialMove: summarizeMoveTreeNode(engine.last_official_move),
+            currentMove: summarizeMoveTreeNode(engine.cur_move),
+        });
+    }
 
     if (decodedMoves.length > 0) {
         const firstMove = decodedMoves[0];
         const firstMoveEdited = !!firstMove.edited;
         const firstMovePlayer = engine.playerByColor(firstMove.color || 0);
         if (moveMatchesNode(cursor, firstMove.x, firstMove.y, firstMovePlayer, firstMoveEdited)) {
-            logKibitzVariationDebug("follow:first-move-matches-anchor-moving-to-parent", {
-                variationId,
-                cursor: summarizeMoveTreeNode(cursor),
-                parent: summarizeMoveTreeNode(cursor.parent),
-                firstMove,
-            });
+            if (debugEnabled) {
+                logKibitzVariationDebug("follow:first-move-matches-anchor-moving-to-parent", {
+                    variationId,
+                    cursor: summarizeMoveTreeNode(cursor),
+                    parent: summarizeMoveTreeNode(cursor.parent),
+                    firstMove,
+                });
+            }
             cursor = cursor.parent ?? cursor;
         }
     }
@@ -259,8 +248,8 @@ function followKibitzVariationPath(
     let trunkPrefixCursor = cursor;
     let trunkPrefixLength = 0;
 
-    if (decodedMoves.length === 0 && fromMoveNumber === 0) {
-        return duplicateOfficialTrunkAsBranch(controller, cursor);
+    if (decodedMoves.length === 0) {
+        throw new Error(`Variation ${variationId} has no decoded moves`);
     }
 
     for (const move of decodedMoves) {
@@ -280,15 +269,17 @@ function followKibitzVariationPath(
     const duplicatesTrunkOnlyLine =
         trunkPrefixLength > 0 && trunkPrefixLength === decodedMoves.length;
 
-    logKibitzVariationDebug("follow:prefix", {
-        variationId,
-        fromMoveNumber,
-        trunkPrefixLength,
-        duplicatesSharedTrunkPrefix,
-        duplicatesTrunkOnlyLine,
-        cursor: summarizeMoveTreeNode(cursor),
-        trunkPrefixCursor: summarizeMoveTreeNode(trunkPrefixCursor),
-    });
+    if (debugEnabled) {
+        logKibitzVariationDebug("follow:prefix", {
+            variationId,
+            fromMoveNumber,
+            trunkPrefixLength,
+            duplicatesSharedTrunkPrefix,
+            duplicatesTrunkOnlyLine,
+            cursor: summarizeMoveTreeNode(cursor),
+            trunkPrefixCursor: summarizeMoveTreeNode(trunkPrefixCursor),
+        });
+    }
 
     engine.jumpTo(cursor);
 
@@ -297,16 +288,18 @@ function followKibitzVariationPath(
         const edited = !!move.edited;
         const player = engine.playerByColor(move.color || 0);
 
-        logKibitzVariationDebug("follow:step", {
-            variationId,
-            index,
-            move: { x: move.x, y: move.y, color: move.color, edited },
-            player,
-            cursor: summarizeMoveTreeNode(cursor),
-            trunkNext: summarizeMoveTreeNode(cursor.trunk_next),
-            duplicatesSharedTrunkPrefix,
-            duplicatesTrunkOnlyLine,
-        });
+        if (debugEnabled) {
+            logKibitzVariationDebug("follow:step", {
+                variationId,
+                index,
+                move: { x: move.x, y: move.y, color: move.color, edited },
+                player,
+                cursor: summarizeMoveTreeNode(cursor),
+                trunkNext: summarizeMoveTreeNode(cursor.trunk_next),
+                duplicatesSharedTrunkPrefix,
+                duplicatesTrunkOnlyLine,
+            });
+        }
 
         if (moveMatchesNode(cursor.trunk_next, move.x, move.y, player, edited)) {
             const matchingTrunkNext = cursor.trunk_next;
@@ -338,19 +331,23 @@ function followKibitzVariationPath(
             engine.place(move.x, move.y, false, false, true, true);
         }
         cursor = engine.cur_move;
-        logKibitzVariationDebug("follow:placed", {
-            variationId,
-            index,
-            cursor: summarizeMoveTreeNode(cursor),
-        });
+        if (debugEnabled) {
+            logKibitzVariationDebug("follow:placed", {
+                variationId,
+                index,
+                cursor: summarizeMoveTreeNode(cursor),
+            });
+        }
         pathNodes.push(cursor);
     }
 
-    logKibitzVariationDebug("follow:done", {
-        variationId,
-        endpoint: summarizeMoveTreeNode(pathNodes[pathNodes.length - 1]),
-        pathNodeCount: pathNodes.length,
-    });
+    if (debugEnabled) {
+        logKibitzVariationDebug("follow:done", {
+            variationId,
+            endpoint: summarizeMoveTreeNode(pathNodes[pathNodes.length - 1]),
+            pathNodeCount: pathNodes.length,
+        });
+    }
 
     return pathNodes;
 }
@@ -361,11 +358,93 @@ export function applyKibitzVariationToController(
     colorIndex: KibitzVariationColorIndex,
     includeMarks: boolean,
 ): AppliedKibitzVariation {
+    let decodedMoveCount: number | null = null;
+    if (
+        typeof variation.analysis_moves === "string" &&
+        variation.analysis_moves.trim().length > 0
+    ) {
+        try {
+            decodedMoveCount = controller.goban.engine.decodeMoves(variation.analysis_moves).length;
+        } catch (error) {
+            console.warn("kibitz-variation:refusing-malformed-variation", {
+                variationId: variation.id,
+                analysisFrom: variation.analysis_from ?? null,
+                analysisMoves: variation.analysis_moves,
+                decodedMoveCount: null,
+                reason: "failed-to-decode-analysis-moves",
+                error,
+                currentMove: summarizeMoveTreeNode(controller.goban.engine.cur_move),
+            });
+            warnKibitzVariationDebug("refusing malformed variation", {
+                variationId: variation.id,
+                analysisFrom: variation.analysis_from ?? null,
+                analysisMoves: variation.analysis_moves,
+                decodedMoveCount: null,
+                reason: "failed-to-decode-analysis-moves",
+                error,
+                currentMove: summarizeMoveTreeNode(controller.goban.engine.cur_move),
+            });
+            return { variationId: variation.id, endpoint: null };
+        }
+    }
+
     if (
         typeof variation.analysis_from !== "number" ||
-        typeof variation.analysis_moves !== "string"
+        !Number.isFinite(variation.analysis_from) ||
+        typeof variation.analysis_moves !== "string" ||
+        variation.analysis_moves.trim().length === 0
     ) {
+        console.warn("kibitz-variation:refusing-malformed-variation", {
+            variationId: variation.id,
+            analysisFrom: variation.analysis_from ?? null,
+            analysisMoves:
+                typeof variation.analysis_moves === "string" ? variation.analysis_moves : null,
+            currentMove: summarizeMoveTreeNode(controller.goban.engine.cur_move),
+            officialAnchor:
+                typeof variation.analysis_from === "number" &&
+                Number.isFinite(variation.analysis_from)
+                    ? summarizeMoveTreeNode(
+                          officialTrunkNodeByMoveNumber(
+                              controller.goban.engine.move_tree,
+                              variation.analysis_from,
+                          ),
+                      )
+                    : null,
+        });
+        warnKibitzVariationDebug("refusing malformed variation", {
+            variationId: variation.id,
+            analysisFrom: variation.analysis_from ?? null,
+            analysisMoves:
+                typeof variation.analysis_moves === "string" ? variation.analysis_moves : null,
+            decodedMoveCount,
+            currentMove: summarizeMoveTreeNode(controller.goban.engine.cur_move),
+            officialAnchor:
+                typeof variation.analysis_from === "number" &&
+                Number.isFinite(variation.analysis_from)
+                    ? summarizeMoveTreeNode(
+                          officialTrunkNodeByMoveNumber(
+                              controller.goban.engine.move_tree,
+                              variation.analysis_from,
+                          ),
+                      )
+                    : null,
+        });
         return { variationId: variation.id, endpoint: null };
+    }
+
+    if (isKibitzVariationDebugEnabled()) {
+        logKibitzVariationDebug("kibitz-variation:apply", {
+            variationId: variation.id,
+            analysisFrom: variation.analysis_from,
+            decodedMoveCount,
+            currentMove: summarizeMoveTreeNode(controller.goban.engine.cur_move),
+            officialAnchor: summarizeMoveTreeNode(
+                officialTrunkNodeByMoveNumber(
+                    controller.goban.engine.move_tree,
+                    variation.analysis_from,
+                ),
+            ),
+        });
     }
 
     if (!isVariationOfficialAnchorReady(controller, variation)) {

@@ -208,6 +208,34 @@ describe("applyKibitzVariationToController", () => {
         expect(anchor.branches[1].line_color).toBe(1);
     });
 
+    it("accepts a variation that branches from official move 2 with one decoded move", () => {
+        const controller = makeController();
+        const variation = {
+            ...makeVariation("variation-from-two", [{ x: 12, y: 10, color: 1 }]),
+            analysis_from: 2,
+        };
+
+        const applied = applyKibitzVariationToController(controller, variation, 0, false);
+
+        expect(applied.endpoint).toBeDefined();
+        expect(applied.endpoint?.move_number).toBe(3);
+        expect(variation.analysis_from).toBe(2);
+        expect(JSON.parse(variation.analysis_moves ?? "[]")).toHaveLength(1);
+    });
+
+    it("refuses malformed variations with missing or empty decoded moves", () => {
+        const controller = makeController();
+        const malformed = {
+            ...makeVariation("variation-empty", []),
+            analysis_from: 2,
+            analysis_moves: JSON.stringify([]),
+        };
+
+        expect(applyKibitzVariationToController(controller, malformed, 0, false).endpoint).toBe(
+            null,
+        );
+    });
+
     it("refuses to report readiness when the official anchor is missing", () => {
         const controller = makeController();
         const readyVariation = makeVariation("variation-ready", [{ x: 10, y: 10, color: 1 }]);

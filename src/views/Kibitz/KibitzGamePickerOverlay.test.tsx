@@ -34,9 +34,11 @@ jest.mock("./KibitzUserAvatar", () => ({
 jest.mock("@/components/ObserveGamesComponent", () => ({
     __esModule: true,
     ObserveGamesComponent: ({ onSelectGameId }: { onSelectGameId: (gameId: number) => void }) => (
-        <button type="button" onClick={() => onSelectGameId(1234)}>
-            Select game
-        </button>
+        <div data-testid="ObserveGamesComponent">
+            <button type="button" onClick={() => onSelectGameId(1234)}>
+                Select game
+            </button>
+        </div>
     ),
 }));
 
@@ -106,6 +108,13 @@ function installMatchMedia(matches = false): void {
             dispatchEvent: jest.fn(),
         })),
     });
+}
+
+function installRequestAnimationFrame(): void {
+    window.requestAnimationFrame = (callback) => {
+        queueMicrotask(() => callback(performance.now()));
+        return 0;
+    };
 }
 
 function makeRoom(currentGameId: number): KibitzRoomSummary {
@@ -179,6 +188,7 @@ describe("KibitzGamePickerOverlay", () => {
     beforeEach(() => {
         mockedGet.mockReset();
         installMatchMedia(false);
+        installRequestAnimationFrame();
     });
 
     it("disables create room while the submit request is in flight", async () => {
@@ -218,6 +228,45 @@ describe("KibitzGamePickerOverlay", () => {
     it("disables change board while the submit request is in flight", async () => {
         mockedGet.mockResolvedValue(makeGameDetails());
         let resolveChange: ((value: boolean) => void) | undefined;
+        const onClose = jest.fn();
+        const onChangeBoard = jest.fn(
+            () =>
+                new Promise<boolean>((resolve) => {
+                    resolveChange = resolve;
+                }),
+        );
+
+        render(
+            <KibitzGamePickerOverlay
+                mode="change-board"
+                rooms={[]}
+                currentRoom={makeRoom(1)}
+                onClose={onClose}
+                onCreateRoom={jest.fn()}
+                onChangeBoard={onChangeBoard}
+                onJoinRoom={jest.fn()}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole("button", { name: "Select game" }));
+        expect(await screen.findByRole("button", { name: "Change board" })).toBeEnabled();
+
+        fireEvent.click(screen.getByRole("button", { name: "Change board" }));
+        expect(screen.getByRole("button", { name: "Change board" })).toBeDisabled();
+
+        await waitFor(() => {
+            expect(onChangeBoard).toHaveBeenCalledTimes(1);
+        });
+
+        resolveChange?.(true);
+        await waitFor(() => {
+            expect(onClose).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    it("defers board change until after the picker teardown gate", async () => {
+        mockedGet.mockResolvedValue(makeGameDetails());
+        let resolveChange: ((value: boolean) => void) | undefined;
         const onChangeBoard = jest.fn(
             () =>
                 new Promise<boolean>((resolve) => {
@@ -239,14 +288,47 @@ describe("KibitzGamePickerOverlay", () => {
 
         fireEvent.click(screen.getByRole("button", { name: "Select game" }));
         expect(await screen.findByRole("button", { name: "Change board" })).toBeEnabled();
+        expect(screen.getByTestId("ObserveGamesComponent")).toBeInTheDocument();
 
         fireEvent.click(screen.getByRole("button", { name: "Change board" }));
-        expect(onChangeBoard).toHaveBeenCalledTimes(1);
-        expect(screen.getByRole("button", { name: "Change board" })).toBeDisabled();
+
+        expect(onChangeBoard).not.toHaveBeenCalled();
+
+        await waitFor(() => {
+            expect(onChangeBoard).toHaveBeenCalledTimes(1);
+        });
 
         resolveChange?.(true);
+    });
+
+    it("restores picker previews if changing board fails", async () => {
+        mockedGet.mockResolvedValue(makeGameDetails());
+        const onChangeBoard = jest.fn(() => Promise.resolve(false));
+
+        render(
+            <KibitzGamePickerOverlay
+                mode="change-board"
+                rooms={[]}
+                currentRoom={makeRoom(1)}
+                onClose={jest.fn()}
+                onCreateRoom={jest.fn()}
+                onChangeBoard={onChangeBoard}
+                onJoinRoom={jest.fn()}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole("button", { name: "Select game" }));
+        expect(await screen.findByRole("button", { name: "Change board" })).toBeEnabled();
+        expect(screen.getByTestId("ObserveGamesComponent")).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole("button", { name: "Change board" }));
+
         await waitFor(() => {
-            expect(screen.getByRole("button", { name: "Change board" })).toBeEnabled();
+            expect(onChangeBoard).toHaveBeenCalledTimes(1);
+        });
+
+        await waitFor(() => {
+            expect(screen.getAllByText("change failed")).toHaveLength(2);
         });
     });
 });

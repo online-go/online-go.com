@@ -27,6 +27,9 @@ import "./KibitzBoard.css";
 interface KibitzBoardProps {
     role?: "main" | "secondary" | "variation" | "preview";
     gameId?: number;
+    currentRoomGameId?: number | null;
+    isMobile?: boolean;
+    connectToGame?: boolean;
     width?: number;
     height?: number;
     className?: string;
@@ -99,9 +102,51 @@ export function shouldRestoreToOfficialTailForGame(
     return restoredOfficialTailForGameId !== gameId || currentMoveNumber === 0;
 }
 
+export interface RestoredOfficialTailRef {
+    gameId: number;
+    moveNumber: number;
+    nodeId?: string | number | null;
+}
+
+export function shouldRestoreMainBoardToOfficialTail({
+    gameId,
+    currentMoveNumber,
+    currentMoveNodeId,
+    officialTailMoveNumber,
+    lastRestored,
+}: {
+    gameId: number | null | undefined;
+    currentMoveNumber: number;
+    currentMoveNodeId?: string | number | null;
+    officialTailMoveNumber: number;
+    lastRestored: RestoredOfficialTailRef | null;
+}): boolean {
+    if (gameId == null || officialTailMoveNumber <= 0) {
+        return false;
+    }
+
+    if (!lastRestored || lastRestored.gameId !== gameId) {
+        return true;
+    }
+
+    if (currentMoveNumber === 0) {
+        return true;
+    }
+
+    const officialTailAdvanced = officialTailMoveNumber > lastRestored.moveNumber;
+    const userWasAtPreviouslyRestoredTail =
+        currentMoveNumber === lastRestored.moveNumber ||
+        (currentMoveNodeId != null && currentMoveNodeId === lastRestored.nodeId);
+
+    return officialTailAdvanced && userWasAtPreviouslyRestoredTail;
+}
+
 export function KibitzBoard({
     role,
     gameId,
+    currentRoomGameId,
+    isMobile = false,
+    connectToGame = true,
     width = 19,
     height = 19,
     className,
@@ -136,7 +181,13 @@ export function KibitzBoard({
     } | null>(null);
     const restoringBoardRef = React.useRef(false);
     const requestedHydrationGameIdRef = React.useRef<number | null>(null);
-    const restoredOfficialTailForGameIdRef = React.useRef<number | null>(null);
+    const restoredOfficialTailRef = React.useRef<RestoredOfficialTailRef | null>(null);
+    const boardRole = role ?? (restoreToOfficialTailOnLoad ? "main" : "secondary");
+    const hasExplicitSize = typeof size === "number";
+    const explicitSizeReady = !hasExplicitSize || (Number.isFinite(size) && size > 0);
+    const shouldDeferGobanContainer =
+        boardRole === "secondary" && hasExplicitSize && !explicitSizeReady;
+    const displaySize = hasExplicitSize && Number.isFinite(size) && size > 0 ? size : undefined;
 
     React.useEffect(() => {
         moveTreeRef.current = moveTree;
@@ -150,7 +201,7 @@ export function KibitzBoard({
 
     React.useEffect(() => {
         requestedHydrationGameIdRef.current = null;
-        restoredOfficialTailForGameIdRef.current = null;
+        restoredOfficialTailRef.current = null;
     }, [gameId]);
 
     React.useEffect(() => {
@@ -161,7 +212,7 @@ export function KibitzBoard({
             // Subscribe to game chat so the kibitz room's game pane can
             // surface what players are saying. Kibitz users count as
             // spectators on the watched game while subscribed.
-            connect_to_chat: true,
+            connect_to_chat: connectToGame,
             draw_top_labels:
                 showLabels && (labelPosition === "all" || labelPosition.indexOf("top") >= 0),
             draw_left_labels:
@@ -173,7 +224,7 @@ export function KibitzBoard({
             variation_stone_opacity: preferences.get("variation-stone-opacity"),
             stone_font_scale: preferences.get("stone-font-scale"),
             square_size: "auto",
-            game_id: gameId,
+            game_id: connectToGame ? gameId : undefined,
             move_tree: moveTreeRef.current,
             width,
             height,
@@ -181,7 +232,14 @@ export function KibitzBoard({
 
         controllerRef.current?.destroy();
         controllerRef.current = new GobanController(config);
-        const boardRole = role ?? (restoreToOfficialTailOnLoad ? "main" : "secondary");
+        if (!connectToGame) {
+            logKibitzVariationDebug("kibitz-board:connect-suppressed", {
+                role: boardRole,
+                gameId,
+                currentRoomGameId,
+                isMobile,
+            });
+        }
 
         const logBoardState = (reason: string, extra: Record<string, unknown> = {}) => {
             const currentController = controllerRef.current;
@@ -196,13 +254,18 @@ export function KibitzBoard({
                 reason,
                 role: boardRole,
                 gameId,
+                currentRoomGameId,
+                isMobile,
                 restoreToOfficialTailOnLoad,
                 currentMove: summarizeKibitzMoveTreeNode(currentEngine.cur_move),
                 currentMoveNumber: currentEngine.cur_move?.move_number ?? null,
+                currentMoveId: currentEngine.cur_move?.id ?? null,
                 officialTail: summarizeKibitzMoveTreeNode(officialTail),
                 officialTailMoveNumber: officialTail?.move_number ?? null,
+                officialTailId: officialTail?.id ?? null,
                 lastOfficialMove: summarizeKibitzMoveTreeNode(currentEngine.last_official_move),
                 lastOfficialMoveNumber: currentEngine.last_official_move?.move_number ?? null,
+                lastOfficialMoveId: currentEngine.last_official_move?.id ?? null,
                 ...extra,
             });
         };
@@ -343,6 +406,9 @@ export function KibitzBoard({
         };
     }, [
         gameId,
+        connectToGame,
+        currentRoomGameId,
+        isMobile,
         width,
         height,
         interactive,
@@ -391,18 +457,27 @@ export function KibitzBoard({
                 return;
             }
 
-            const currentMoveNumber =
-                controllerRef.current.goban.engine.cur_move?.move_number ?? null;
+            const currentEngine = controllerRef.current.goban.engine;
+            const currentMoveNumber = currentEngine.cur_move?.move_number ?? null;
+            const currentMoveNodeId = currentEngine.cur_move?.id ?? null;
+            const officialTail = getMoveTreeTrunkTail(currentEngine.move_tree);
+            const officialTailMoveNumber = officialTail?.move_number ?? 0;
+            const officialTailNodeId = officialTail?.id ?? null;
             if (
-                !shouldRestoreToOfficialTailForGame(
-                    currentMoveNumber,
-                    restoredOfficialTailForGameIdRef.current,
+                !shouldRestoreMainBoardToOfficialTail({
                     gameId,
-                )
+                    currentMoveNumber: currentMoveNumber ?? 0,
+                    currentMoveNodeId,
+                    officialTailMoveNumber,
+                    lastRestored: restoredOfficialTailRef.current,
+                })
             ) {
                 logBoardState(`${reason}:restore-skipped`, {
                     currentMoveNumber,
-                    restoredOfficialTailForGameId: restoredOfficialTailForGameIdRef.current,
+                    currentMoveNodeId,
+                    officialTailMoveNumber,
+                    officialTailNodeId,
+                    lastRestored: restoredOfficialTailRef.current,
                 });
                 return;
             }
@@ -414,10 +489,12 @@ export function KibitzBoard({
                 logBoardState(`${reason}:restore-result`, {
                     restored: Boolean(restoredTail),
                     restoredTailMoveNumber: restoredTail?.move_number ?? null,
+                    restoredTailId: restoredTail?.id ?? null,
                 });
 
                 if (
                     !restoredTail &&
+                    connectToGame &&
                     gameId != null &&
                     requestedHydrationGameIdRef.current !== gameId
                 ) {
@@ -432,7 +509,11 @@ export function KibitzBoard({
                         chat: true,
                     });
                 } else if (restoredTail && gameId != null) {
-                    restoredOfficialTailForGameIdRef.current = gameId;
+                    restoredOfficialTailRef.current = {
+                        gameId,
+                        moveNumber: restoredTail.move_number,
+                        nodeId: restoredTail.id,
+                    };
                 }
             } finally {
                 restoringBoardRef.current = false;
@@ -448,27 +529,94 @@ export function KibitzBoard({
         const onLastOfficialMove = () => {
             handleRestoreToOfficialTail("last_official_move");
         };
+        const onMoveMade = () => {
+            logBoardState("move-made");
+            handleRestoreToOfficialTail("move-made");
+        };
 
         goban.on("load", onLoad);
         goban.on("gamedata", onGameData);
         goban.on("last_official_move", onLastOfficialMove);
+        goban.on("move-made", onMoveMade);
         handleRestoreToOfficialTail("mount");
 
         return () => {
             goban.off("load", onLoad);
             goban.off("gamedata", onGameData);
             goban.off("last_official_move", onLastOfficialMove);
+            goban.off("move-made", onMoveMade);
         };
-    }, [gameId, goban, restoreToOfficialTailOnLoad, role]);
+    }, [
+        gameId,
+        goban,
+        connectToGame,
+        currentRoomGameId,
+        isMobile,
+        restoreToOfficialTailOnLoad,
+        role,
+    ]);
+
+    React.useEffect(() => {
+        if (!goban || !size || size <= 0) {
+            return;
+        }
+
+        let cancelled = false;
+        let frame1 = 0;
+        let frame2 = 0;
+
+        frame1 = window.requestAnimationFrame(() => {
+            frame2 = window.requestAnimationFrame(() => {
+                if (cancelled) {
+                    return;
+                }
+
+                goban.redraw(true);
+                goban.move_tree_redraw?.(true);
+            });
+        });
+
+        return () => {
+            cancelled = true;
+            window.cancelAnimationFrame(frame1);
+            window.cancelAnimationFrame(frame2);
+        };
+    }, [goban, size]);
+
+    React.useEffect(() => {
+        if (!shouldDeferGobanContainer) {
+            return;
+        }
+
+        logKibitzVariationDebug("kibitz-board:defer-goban-container-invalid-size", {
+            role: boardRole,
+            size,
+        });
+    }, [boardRole, shouldDeferGobanContainer, size]);
+
+    if (shouldDeferGobanContainer) {
+        return (
+            <div
+                className={"KibitzBoard" + (className ? ` ${className}` : "")}
+                data-kibitz-board-pending-size="true"
+                style={{
+                    width: "100%",
+                    height: "100%",
+                    flex: "0 0 auto",
+                }}
+                aria-hidden="true"
+            />
+        );
+    }
 
     return (
         <div
             className={"KibitzBoard" + (className ? ` ${className}` : "")}
             style={
-                size
+                displaySize
                     ? {
-                          width: `${size}px`,
-                          height: `${size}px`,
+                          width: `${displaySize}px`,
+                          height: `${displaySize}px`,
                           flex: "0 0 auto",
                       }
                     : undefined

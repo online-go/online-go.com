@@ -1,5 +1,7 @@
 {
-    "ignorePaths": ["src/views/GoTV/twitchLanguageCodes.ts"],
+    "ignorePaths": [
+        "src/views/GoTV/twitchLanguageCodes.ts"
+    ],
     "words": [
         "abcdefghjklmnopqrstuvwxyz",
         "Acked",
@@ -60,6 +62,7 @@
         "etesting",
         "fakelink",
         "fakelinks",
+        "Froms",
         "fuggly",
         "Fuseki",
         "gamedata",

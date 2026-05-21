@@ -18,6 +18,7 @@
 import { GobanController } from "@/lib/GobanController";
 import {
     getMovePathToRestore,
+    shouldRestoreMainBoardToOfficialTail,
     refreshLastOfficialMoveFromTrunk,
     restoreToOfficialTail,
     shouldRestoreToOfficialTailForGame,
@@ -129,5 +130,57 @@ describe("shouldRestoreToOfficialTailForGame", () => {
         expect(shouldRestoreToOfficialTailForGame(81, 123, 123)).toBe(false);
         expect(shouldRestoreToOfficialTailForGame(0, 123, 123)).toBe(true);
         expect(shouldRestoreToOfficialTailForGame(81, 123, 456)).toBe(true);
+    });
+});
+
+describe("shouldRestoreMainBoardToOfficialTail", () => {
+    it("restores on a new game, at root, or when the previously-followed live tail advances", () => {
+        expect(
+            shouldRestoreMainBoardToOfficialTail({
+                gameId: 123,
+                currentMoveNumber: 0,
+                officialTailMoveNumber: 20,
+                lastRestored: null,
+            }),
+        ).toBe(true);
+
+        expect(
+            shouldRestoreMainBoardToOfficialTail({
+                gameId: 123,
+                currentMoveNumber: 20,
+                officialTailMoveNumber: 20,
+                lastRestored: {
+                    gameId: 123,
+                    moveNumber: 20,
+                    nodeId: 20,
+                },
+            }),
+        ).toBe(false);
+
+        expect(
+            shouldRestoreMainBoardToOfficialTail({
+                gameId: 123,
+                currentMoveNumber: 20,
+                officialTailMoveNumber: 21,
+                lastRestored: {
+                    gameId: 123,
+                    moveNumber: 20,
+                    nodeId: 20,
+                },
+            }),
+        ).toBe(true);
+
+        expect(
+            shouldRestoreMainBoardToOfficialTail({
+                gameId: 123,
+                currentMoveNumber: 19,
+                officialTailMoveNumber: 21,
+                lastRestored: {
+                    gameId: 123,
+                    moveNumber: 20,
+                    nodeId: 20,
+                },
+            }),
+        ).toBe(false);
     });
 });

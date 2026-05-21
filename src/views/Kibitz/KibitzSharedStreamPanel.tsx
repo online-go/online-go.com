@@ -801,6 +801,7 @@ export function KibitzSharedStreamPanel({
                                 <button
                                     type="button"
                                     className="variation-post"
+                                    data-variation-post="true"
                                     data-variation-id={entry.item.variation_id}
                                     onClick={() =>
                                         entry.item.variation_id &&
