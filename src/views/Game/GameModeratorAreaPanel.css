@@ -1,0 +1,114 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.GameModeratorAreaPanel {
+    display: flex;
+    flex-direction: row;
+    gap: 0.3rem;
+    margin-bottom: 0.5rem;
+}
+
+.PlayerModSection {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.3rem 0.35rem;
+    border-radius: 0.25rem;
+    background: var(--shade4);
+}
+
+.PlayerModSection-header {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.PlayerModSection-color-dot {
+    display: inline-block;
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    &.black {
+        background: #000;
+        border: 1px solid var(--shade2);
+    }
+    &.white {
+        background: #fff;
+        border: 1px solid var(--shade2);
+    }
+}
+
+.PlayerModSection-controls {
+    display: flex;
+    flex-direction: row;
+    gap: 0.2rem;
+}
+
+.PlayerModSection-button {
+    flex: 1 1 0;
+    padding: 0.15rem;
+    background: var(--shade3);
+    border: 1px solid var(--shade2);
+    border-radius: 0.2rem;
+    color: var(--fg);
+    cursor: pointer;
+    font-size: 0.85rem;
+    line-height: 1;
+
+    &:hover:not(:disabled) {
+        background: var(--shade2);
+    }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+}
+
+.PlayerModSection-button-annul {
+    color: var(--danger);
+}
+
+.PlayerModSection-flags {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.PlayerModSection-flag {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.7rem;
+    color: var(--shade1);
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+
+    .fa-flag {
+        color: var(--warning);
+        flex-shrink: 0;
+    }
+}
