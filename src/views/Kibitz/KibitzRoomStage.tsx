@@ -32,6 +32,7 @@ import type {
     KibitzVariationSummary,
     KibitzWatchedGame,
 } from "@/models/kibitz";
+import { cloneOfficialTrunkMoveTreeJson } from "./kibitzCurrentGameBaseSnapshot";
 import { KibitzBoard } from "./KibitzBoard";
 import { KibitzBoardControls } from "./KibitzBoardControls";
 import { KibitzDividerHandle } from "./KibitzDividerHandle";
@@ -173,14 +174,6 @@ function boardDimensionsOf(game: { board_size?: `${number}x${number}` } | null |
     return {};
 }
 
-export function shouldKeepMobileMainBoardMounted(
-    isMobileLayout: boolean,
-    mobileCompareActive: boolean,
-    mainGame: KibitzWatchedGame | null | undefined,
-): boolean {
-    return Boolean(isMobileLayout && mobileCompareActive && mainGame);
-}
-
 export function resolveSelectedVariationSourceGame(
     selectedVariation: KibitzVariationSummary | undefined,
     mainGame: KibitzWatchedGame | undefined,
@@ -209,13 +202,43 @@ export type KibitzBoardLoadConfig = Record<string, unknown> & {
     moves?: GobanConfig["moves"];
 };
 
+export function buildSecondaryVariationApplyKey({
+    selectedGameId,
+    snapshotTailMoveNumber,
+    visibleVariationKey,
+    selectedVariationId,
+    variationFocusRequestId,
+}: {
+    selectedGameId: number | null | undefined;
+    snapshotTailMoveNumber: number | null | undefined;
+    visibleVariationKey: string;
+    selectedVariationId: string | null | undefined;
+    variationFocusRequestId: number;
+}): string {
+    return [
+        selectedGameId ?? "no-game",
+        snapshotTailMoveNumber ?? "no-snapshot",
+        visibleVariationKey || "no-visible-variations",
+        selectedVariationId ?? "no-selected-variation",
+        variationFocusRequestId,
+    ].join(":");
+}
+
 export interface KibitzCurrentGameBaseSnapshot {
     gameId: number;
+    roomId?: string | null;
     trunkTailMoveNumber: number;
     moveTreeId: number | string | null;
     movePath: string;
-    source: "main-board" | "game-details";
+    source: "main-board" | "room-base-broker" | "game-details";
     config: KibitzBoardLoadConfig;
+}
+
+interface TrackedBoardControllerContext {
+    controller: GobanController | null;
+    epoch: number;
+    roomId: string | null;
+    gameId: number | null;
 }
 
 interface SecondaryVariationBaseSnapshot {
@@ -227,7 +250,10 @@ interface SecondaryVariationBaseSnapshot {
 
 interface PendingSecondaryVariationBaseLoad {
     controller: GobanController;
+    controllerEpoch: number;
+    roomId: string | null;
     gameId: number;
+    operationId: number;
 }
 
 export interface InstalledSecondaryVariationBaseState {
@@ -314,6 +340,45 @@ function summarizeSecondaryVariationSnapshot(
     };
 }
 
+function summarizeElementForDebug(
+    element: HTMLElement | null | undefined,
+): Record<string, unknown> | null {
+    if (!element) {
+        return null;
+    }
+
+    const rect = element.getBoundingClientRect();
+    const style = window.getComputedStyle(element);
+
+    return {
+        tagName: element.tagName,
+        className: typeof element.className === "string" ? element.className : "",
+        id: element.id || "",
+        clientWidth: element.clientWidth,
+        clientHeight: element.clientHeight,
+        rectWidth: rect.width,
+        rectHeight: rect.height,
+        display: style.display,
+        visibility: style.visibility,
+        position: style.position,
+    };
+}
+
+function summarizeParentChain(
+    element: HTMLElement | null | undefined,
+    depth = 4,
+): Array<Record<string, unknown> | null> {
+    const result: Array<Record<string, unknown> | null> = [];
+    let current = element;
+
+    for (let index = 0; current && index < depth; index += 1) {
+        result.push(summarizeElementForDebug(current));
+        current = current.parentElement;
+    }
+
+    return result;
+}
+
 export function getCurrentSecondaryVariationBaseTreeIdentity(controller: GobanController): {
     moveTreeId: number | string | null;
 } {
@@ -369,16 +434,6 @@ function countMoveTreeBranches(moveTree: MoveTree | null | undefined): number {
         moveTree.branches.reduce((count, branch) => count + countMoveTreeBranches(branch), 0) +
         countMoveTreeBranches(moveTree.trunk_next)
     );
-}
-
-function cloneOfficialTrunkMoveTreeJson(moveTree: MoveTree): MoveTreeJson {
-    const { branches: _branches, ...json } = moveTree.toJson();
-
-    if (moveTree.trunk_next) {
-        json.trunk_next = cloneOfficialTrunkMoveTreeJson(moveTree.trunk_next);
-    }
-
-    return json;
 }
 
 export function getOfficialTrunkTailMoveNumber(controller: GobanController): number {
@@ -654,6 +709,8 @@ function loadSecondaryVariationBaseSnapshot(
             ),
         });
     }
+
+    scheduleVisibleBoardRedrawWhenReady(controller, "secondary", "snapshot-load");
 }
 
 function renderInlineAvatar(
@@ -733,6 +790,147 @@ function scheduleNoWarpMoveTreeRedrawWhenReady(
                 }
 
                 goban?.move_tree_redraw?.(true);
+            });
+        });
+    };
+
+    scheduleAttempt(attempts);
+
+    return () => {
+        cancelled = true;
+
+        if (frame1 !== null) {
+            window.cancelAnimationFrame(frame1);
+        }
+
+        if (frame2 !== null) {
+            window.cancelAnimationFrame(frame2);
+        }
+    };
+}
+
+function scheduleVisibleBoardRedrawWhenReady(
+    controller: GobanController | null | undefined,
+    role: "main" | "secondary" | "variation" | "preview",
+    reason: string,
+    options?: {
+        expectedSize?: number | null;
+        onDeferred?: () => void;
+        onDetached?: (details: {
+            width: number;
+            height: number;
+            measuredElement: Record<string, unknown> | null;
+            parentChain: Array<Record<string, unknown> | null>;
+        }) => void;
+        isControllerCurrent?: () => boolean;
+    },
+    attempts = 5,
+): () => void {
+    let frame1: number | null = null;
+    let frame2: number | null = null;
+    let cancelled = false;
+    let deferredLogged = false;
+
+    const scheduleAttempt = (remainingAttempts: number) => {
+        if (cancelled) {
+            return;
+        }
+
+        frame1 = window.requestAnimationFrame(() => {
+            frame1 = null;
+
+            if (cancelled) {
+                return;
+            }
+
+            frame2 = window.requestAnimationFrame(() => {
+                frame2 = null;
+
+                if (cancelled) {
+                    return;
+                }
+
+                if (options?.isControllerCurrent && !options.isControllerCurrent()) {
+                    logKibitzVariationDebug("visible-goban:redraw-stale-controller", {
+                        role,
+                        reason,
+                        expectedSize: options?.expectedSize ?? null,
+                        measuredElement: summarizeElementForDebug(controller?.goban.parent ?? null),
+                        parentChain: summarizeParentChain(controller?.goban.parent ?? null),
+                    });
+                    return;
+                }
+
+                const container = controller?.goban.parent ?? null;
+                const measuredElement = summarizeElementForDebug(container);
+                const parentChain = summarizeParentChain(container);
+                const detached = !container || !container.isConnected || parentChain.length <= 1;
+                if (detached) {
+                    const width = container?.clientWidth ?? 0;
+                    const height = container?.clientHeight ?? 0;
+                    logKibitzVariationDebug("visible-goban:redraw-detached", {
+                        role,
+                        reason,
+                        width,
+                        height,
+                        expectedSize: options?.expectedSize ?? null,
+                        measuredElement,
+                        parentChain,
+                    });
+                    options?.onDetached?.({
+                        width,
+                        height,
+                        measuredElement,
+                        parentChain,
+                    });
+                    return;
+                }
+
+                const width = container?.clientWidth ?? 0;
+                const height = container?.clientHeight ?? 0;
+                const expectedSize = options?.expectedSize ?? null;
+                const expectedSizeReady =
+                    typeof expectedSize === "number" &&
+                    Number.isFinite(expectedSize) &&
+                    expectedSize > 0;
+
+                if (width <= 0 || height <= 0) {
+                    if (!deferredLogged) {
+                        deferredLogged = true;
+                        logKibitzVariationDebug("visible-goban:redraw-deferred-zero-size", {
+                            role,
+                            reason,
+                            width,
+                            height,
+                            expectedSize: options?.expectedSize ?? null,
+                            measuredElement: summarizeElementForDebug(container),
+                            parentChain: summarizeParentChain(container),
+                        });
+                        if (!expectedSizeReady) {
+                            options?.onDeferred?.();
+                        }
+                    }
+                    if (remainingAttempts > 0) {
+                        scheduleAttempt(remainingAttempts - 1);
+                    }
+                    return;
+                }
+
+                const currentMoveNumber = controller?.goban.engine?.cur_move?.move_number ?? null;
+                const officialTailMoveNumber =
+                    getOfficialTrunkTail(controller?.goban.engine?.move_tree)?.move_number ?? null;
+
+                logKibitzVariationDebug("visible-goban:redraw-request", {
+                    role,
+                    reason,
+                    width,
+                    height,
+                    currentMoveNumber,
+                    officialTailMoveNumber,
+                });
+
+                controller?.goban.move_tree_redraw(true);
+                controller?.goban.redraw(true);
             });
         });
     };
@@ -944,20 +1142,181 @@ export function KibitzRoomStage({
     // main board's controller is (re)created. Lets the parent provide it via
     // GobanControllerContext so descendants like KibitzSharedStreamPanel can
     // hook into the watched game's chat without prop drilling.
+    React.useEffect(() => {
+        currentRoomIdRef.current = room.id;
+    }, [room.id]);
+
+    React.useEffect(() => {
+        currentRoomGameIdRef.current = currentRoomGameId;
+    }, [currentRoomGameId]);
+
     const setMainBoardController = React.useCallback(
         (controller: GobanController | null) => {
+            mainBoardControllerEpochRef.current += 1;
+            mainBoardControllerContextRef.current = controller
+                ? {
+                      controller,
+                      epoch: mainBoardControllerEpochRef.current,
+                      roomId: currentRoomIdRef.current,
+                      gameId: currentRoomGameIdRef.current,
+                  }
+                : null;
             setMainBoardControllerState(controller);
             onMainBoardControllerChange?.(controller);
         },
         [onMainBoardControllerChange],
     );
-    const [secondaryBoardController, setSecondaryBoardController] =
+    const [secondaryBoardController, setSecondaryBoardControllerState] =
         React.useState<GobanController | null>(null);
+    const setSecondaryBoardController = React.useCallback((controller: GobanController | null) => {
+        secondaryBoardControllerEpochRef.current += 1;
+        secondarySnapshotLoadOperationIdRef.current += 1;
+        const controllerGameId = controller
+            ? typeof controller.goban.config?.game_id === "number"
+                ? controller.goban.config.game_id
+                : null
+            : null;
+        secondaryBoardControllerContextRef.current = controller
+            ? {
+                  controller,
+                  epoch: secondaryBoardControllerEpochRef.current,
+                  roomId: currentRoomIdRef.current,
+                  gameId: controllerGameId,
+              }
+            : null;
+        if (controller) {
+            logKibitzVariationDebug("secondary-board:remount-controller-ready", {
+                roomId: currentRoomIdRef.current,
+                currentRoomGameId: currentRoomGameIdRef.current,
+                controllerEpoch: secondaryBoardControllerEpochRef.current,
+                controllerGameId,
+            });
+        }
+        setSecondaryBoardControllerState(controller);
+    }, []);
     const [secondaryReturnLiveAvailable, setSecondaryReturnLiveAvailable] = React.useState(false);
     const [mobileReturnLiveAvailable, setMobileReturnLiveAvailable] = React.useState(false);
+    const [secondaryBoardRemountNonce, bumpSecondaryBoardRemountNonce] = React.useReducer(
+        (value: number) => value + 1,
+        0,
+    );
     const [secondaryMoveTreeContainer, setSecondaryMoveTreeContainer] =
         React.useState<Resizable | null>(null);
     const previousSecondaryControllerRef = React.useRef<GobanController | null>(null);
+    const mainBoardControllerEpochRef = React.useRef(0);
+    const secondaryBoardControllerEpochRef = React.useRef(0);
+    const mainBoardControllerContextRef = React.useRef<TrackedBoardControllerContext | null>(null);
+    const secondaryBoardControllerContextRef = React.useRef<TrackedBoardControllerContext | null>(
+        null,
+    );
+    const currentRoomIdRef = React.useRef(room.id);
+    const currentRoomGameIdRef = React.useRef(currentRoomGameId);
+    const logSecondaryBoardStaleCallback = React.useCallback(
+        (reason: string, details: Record<string, unknown> = {}) => {
+            logKibitzVariationDebug("secondary-board:stale-callback-ignored", {
+                reason,
+                roomId: room.id,
+                currentRoomGameId,
+                selectedVariationId: selectedVariation?.id ?? null,
+                selectedGameId: selectedVariationGameId,
+                visibleVariationKey: visibleVariationApplyKey,
+                controllerEpoch: secondaryBoardControllerEpochRef.current,
+                remountNonce: secondaryBoardRemountNonce,
+                ...details,
+            });
+        },
+        [
+            currentRoomGameId,
+            room.id,
+            secondaryBoardRemountNonce,
+            selectedVariation?.id,
+            selectedVariationGameId,
+            visibleVariationApplyKey,
+        ],
+    );
+    const requestSecondaryBoardDetachedRemount = React.useCallback(
+        (reason: string, details: Record<string, unknown> = {}) => {
+            logKibitzVariationDebug("secondary-board:detached-remount-requested", {
+                reason,
+                roomId: room.id,
+                selectedVariationId: selectedVariation?.id ?? null,
+                selectedGameId: selectedVariationGameId,
+                currentRoomGameId,
+                visibleVariationKey: visibleVariationApplyKey,
+                desiredApplyKey: lastAppliedSecondaryVariationKeyRef.current,
+                secondaryBoardRemountNonce,
+                ...details,
+            });
+
+            secondaryBoardControllerEpochRef.current += 1;
+            secondaryBoardControllerContextRef.current = null;
+            secondaryVariationBaseSnapshotRef.current = null;
+            secondaryVariationTreeDirtyRef.current = false;
+            secondaryVariationBaseInstalledRef.current =
+                clearInstalledSecondaryVariationBaseState();
+            secondaryVariationBaseHydrationRef.current = null;
+            pendingSecondaryVariationBaseLoadRef.current = null;
+            suppressSelectedVariationLoadRef.current = false;
+            secondaryVariationRetryCountRef.current = 0;
+            secondarySnapshotLoadOperationIdRef.current += 1;
+            lastAppliedSecondaryVariationKeyRef.current = null;
+            pendingSecondaryRedrawReasonRef.current = null;
+            pendingSecondaryMoveTreeRedrawCancelRef.current?.();
+            pendingSecondaryMoveTreeRedrawCancelRef.current = null;
+            pendingSecondaryBoardVisibleRedrawCancelRef.current?.();
+            pendingSecondaryBoardVisibleRedrawCancelRef.current = null;
+            if (secondaryVariationRetryTimeoutRef.current != null) {
+                window.clearTimeout(secondaryVariationRetryTimeoutRef.current);
+                secondaryVariationRetryTimeoutRef.current = null;
+            }
+            previousSecondaryControllerRef.current = null;
+            setSecondaryReturnLiveAvailable(false);
+            setSecondaryBoardControllerState(null);
+            bumpSecondaryBoardRemountNonce();
+        },
+        [
+            currentRoomGameId,
+            room.id,
+            secondaryBoardRemountNonce,
+            selectedVariation?.id,
+            selectedVariationGameId,
+            visibleVariationApplyKey,
+        ],
+    );
+    const isDetachedBoardController = React.useCallback((controller: GobanController | null) => {
+        return !controller?.goban.parent || !controller.goban.parent.isConnected;
+    }, []);
+    const isCurrentMainBoardController = React.useCallback(
+        (controller: GobanController | null | undefined) => {
+            const context = mainBoardControllerContextRef.current;
+            return Boolean(
+                controller &&
+                context &&
+                context.controller === controller &&
+                context.epoch === mainBoardControllerEpochRef.current &&
+                context.roomId === currentRoomIdRef.current &&
+                context.gameId === currentRoomGameIdRef.current &&
+                !isDetachedBoardController(controller),
+            );
+        },
+        [isDetachedBoardController],
+    );
+    const isCurrentSecondaryBoardController = React.useCallback(
+        (controller: GobanController | null | undefined) => {
+            const context = secondaryBoardControllerContextRef.current;
+            const controllerGameId = controller?.goban.config?.game_id ?? null;
+            return Boolean(
+                controller &&
+                context &&
+                context.controller === controller &&
+                context.epoch === secondaryBoardControllerEpochRef.current &&
+                context.roomId === currentRoomIdRef.current &&
+                context.gameId === controllerGameId &&
+                !isDetachedBoardController(controller),
+            );
+        },
+        [isDetachedBoardController],
+    );
     const secondaryVariationBaseSnapshotRef = React.useRef<SecondaryVariationBaseSnapshot | null>(
         null,
     );
@@ -971,9 +1330,12 @@ export function KibitzRoomStage({
     } | null>(null);
     const pendingSecondaryVariationBaseLoadRef =
         React.useRef<PendingSecondaryVariationBaseLoad | null>(null);
+    const secondarySnapshotLoadOperationIdRef = React.useRef(0);
     const suppressSelectedVariationLoadRef = React.useRef(false);
     const secondaryVariationRetryTimeoutRef = React.useRef<number | null>(null);
     const secondaryVariationRetryCountRef = React.useRef(0);
+    const lastAppliedSecondaryVariationKeyRef = React.useRef<string | null>(null);
+    const pendingSecondaryRedrawReasonRef = React.useRef<string | null>(null);
     const appliedDraftAnalyzeToolRef = React.useRef<{
         controller: GobanController | null;
         draftKey: string | null;
@@ -1002,6 +1364,8 @@ export function KibitzRoomStage({
         engine: null,
     });
     const pendingSecondaryMoveTreeRedrawCancelRef = React.useRef<(() => void) | null>(null);
+    const pendingMainBoardVisibleRedrawCancelRef = React.useRef<(() => void) | null>(null);
+    const pendingSecondaryBoardVisibleRedrawCancelRef = React.useRef<(() => void) | null>(null);
     const lastMainBoardOfficialTailMoveNumberRef = React.useRef(mainGame?.move_number ?? 0);
     const [mainBoardSlotRef, mainBoardSize] = useSquareFitSize<HTMLDivElement>(
         `main-${secondaryPaneSize}`,
@@ -1013,6 +1377,9 @@ export function KibitzRoomStage({
         `mobile-${secondaryPane.variation_id ?? ""}-${secondaryPane.preview_game_id ?? ""}-${secondaryPane.variation_source_game_id ?? ""}-${mobileCompanionPanel ?? ""}`,
         true,
     );
+    const visibleSecondaryBoardSize = isMobileLayout ? mobileBoardSize : secondaryBoardSize;
+    const secondaryBoardSizeReady = Number.isFinite(secondaryBoardSize) && secondaryBoardSize > 0;
+    const mobileBoardSizeReady = Number.isFinite(mobileBoardSize) && mobileBoardSize > 0;
     const secondaryMoveTreeKey = React.useMemo(() => {
         if (secondaryPane.variation_id != null) {
             return `variation-${secondaryPane.variation_id}`;
@@ -1036,24 +1403,25 @@ export function KibitzRoomStage({
     const secondaryBoardKey = React.useMemo(() => {
         if (secondaryPane.variation_id != null) {
             return selectedVariationGameId != null
-                ? `variation-game-${selectedVariationGameId}`
-                : `variation-${secondaryPane.variation_id}`;
+                ? `room-${room.id}-variation-game-${selectedVariationGameId}-remount-${secondaryBoardRemountNonce}`
+                : `variation-${secondaryPane.variation_id}-remount-${secondaryBoardRemountNonce}`;
         }
 
         if (secondaryPane.variation_source_game_id != null) {
-            return `draft-${secondaryPane.variation_source_game_id}-${
+            return `room-${room.id}-draft-${secondaryPane.variation_source_game_id}-${
                 secondaryPane.variation_draft_base_id ?? ""
             }-${secondaryPane.variation_source_move_tree_id ?? ""}-${
                 secondaryPane.variation_source_move_path ?? ""
-            }`;
+            }-remount-${secondaryBoardRemountNonce}`;
         }
 
         if (secondaryPane.preview_game_id != null) {
-            return `preview-${secondaryPane.preview_game_id}`;
+            return `room-${room.id}-preview-${secondaryPane.preview_game_id}-remount-${secondaryBoardRemountNonce}`;
         }
 
-        return "empty";
+        return `room-${room.id}-empty-remount-${secondaryBoardRemountNonce}`;
     }, [
+        room.id,
         secondaryPane.preview_game_id,
         secondaryPane.variation_id,
         secondaryPane.variation_draft_base_id,
@@ -1061,6 +1429,7 @@ export function KibitzRoomStage({
         secondaryPane.variation_source_move_tree_id,
         secondaryPane.variation_source_move_path,
         selectedVariationGameId,
+        secondaryBoardRemountNonce,
     ]);
     const secondaryMoveNavigationShortcuts = secondaryBoardController ? (
         <>
@@ -1078,13 +1447,32 @@ export function KibitzRoomStage({
         setSecondaryMoveTreeContainer(instance);
     }, []);
     const handleSecondaryMoveTreeResize = React.useCallback(() => {
+        if (!isCurrentSecondaryBoardController(secondaryBoardController)) {
+            logSecondaryBoardStaleCallback("move-tree-resize", {
+                controllerPresent: Boolean(secondaryBoardController),
+            });
+            return;
+        }
+
         secondaryBoardController?.goban.move_tree_redraw(true);
-    }, [secondaryBoardController]);
+    }, [isCurrentSecondaryBoardController, secondaryBoardController]);
     const scheduleSecondaryMoveTreeRedraw = React.useCallback(() => {
         pendingSecondaryMoveTreeRedrawCancelRef.current?.();
 
         const container = secondaryMoveTreeContainer?.div ?? null;
-        if (!secondaryBoardController || !container) {
+        if (
+            !secondaryBoardController ||
+            !container ||
+            !isCurrentSecondaryBoardController(secondaryBoardController)
+        ) {
+            if (
+                secondaryBoardController &&
+                !isCurrentSecondaryBoardController(secondaryBoardController)
+            ) {
+                logSecondaryBoardStaleCallback("move-tree-redraw", {
+                    controllerPresent: true,
+                });
+            }
             pendingSecondaryMoveTreeRedrawCancelRef.current = null;
             return;
         }
@@ -1093,7 +1481,127 @@ export function KibitzRoomStage({
             secondaryBoardController.goban,
             container,
         );
-    }, [secondaryBoardController, secondaryMoveTreeContainer]);
+    }, [isCurrentSecondaryBoardController, secondaryBoardController, secondaryMoveTreeContainer]);
+    const scheduleMainBoardVisibleRedraw = React.useCallback(
+        (reason: string) => {
+            if (!isCurrentMainBoardController(mainBoardController)) {
+                logKibitzVariationDebug("visible-goban:redraw-stale-controller", {
+                    role: "main",
+                    reason,
+                    controllerPresent: Boolean(mainBoardController),
+                });
+                return;
+            }
+
+            pendingMainBoardVisibleRedrawCancelRef.current?.();
+            pendingMainBoardVisibleRedrawCancelRef.current = scheduleVisibleBoardRedrawWhenReady(
+                mainBoardController,
+                "main",
+                reason,
+                {
+                    expectedSize: mainBoardSize,
+                    isControllerCurrent: () => isCurrentMainBoardController(mainBoardController),
+                    onDetached: () => {
+                        if (
+                            mainBoardControllerContextRef.current?.controller ===
+                            mainBoardController
+                        ) {
+                            mainBoardControllerEpochRef.current += 1;
+                            mainBoardControllerContextRef.current = null;
+                            setMainBoardControllerState(null);
+                            onMainBoardControllerChange?.(null);
+                        }
+                    },
+                },
+            );
+        },
+        [
+            isCurrentMainBoardController,
+            mainBoardController,
+            mainBoardSize,
+            onMainBoardControllerChange,
+        ],
+    );
+    const scheduleSecondaryBoardVisibleRedraw = React.useCallback(
+        (reason: string) => {
+            if (!isCurrentSecondaryBoardController(secondaryBoardController)) {
+                logSecondaryBoardStaleCallback("visible-redraw", {
+                    reason,
+                    controllerPresent: Boolean(secondaryBoardController),
+                });
+                return;
+            }
+
+            pendingSecondaryBoardVisibleRedrawCancelRef.current?.();
+            pendingSecondaryBoardVisibleRedrawCancelRef.current =
+                scheduleVisibleBoardRedrawWhenReady(secondaryBoardController, "secondary", reason, {
+                    expectedSize: visibleSecondaryBoardSize,
+                    onDeferred: () => {
+                        pendingSecondaryRedrawReasonRef.current = reason;
+                        logKibitzVariationDebug("visible-goban:redraw-pending-until-size", {
+                            role: "secondary",
+                            reason,
+                            measuredWidth: 0,
+                            measuredHeight: 0,
+                            expectedSize: visibleSecondaryBoardSize,
+                        });
+                    },
+                    onDetached: (details) => {
+                        if (
+                            secondaryBoardControllerContextRef.current?.controller ===
+                            secondaryBoardController
+                        ) {
+                            requestSecondaryBoardDetachedRemount("redraw-detached", {
+                                reason,
+                                selectedVariationId: selectedVariation?.id ?? null,
+                                selectedGameId: selectedVariationGameId,
+                                currentRoomGameId,
+                                visibleVariationKey: visibleVariationApplyKey,
+                                desiredApplyKey: lastAppliedSecondaryVariationKeyRef.current,
+                                ...details,
+                            });
+                        }
+                    },
+                    isControllerCurrent: () =>
+                        isCurrentSecondaryBoardController(secondaryBoardController),
+                });
+        },
+        [
+            currentRoomGameId,
+            logSecondaryBoardStaleCallback,
+            isCurrentSecondaryBoardController,
+            lastAppliedSecondaryVariationKeyRef,
+            requestSecondaryBoardDetachedRemount,
+            secondaryBoardController,
+            selectedVariation?.id,
+            selectedVariationGameId,
+            visibleSecondaryBoardSize,
+            visibleVariationApplyKey,
+        ],
+    );
+
+    React.useEffect(() => {
+        lastAppliedSecondaryVariationKeyRef.current = null;
+    }, [
+        secondaryBoardController,
+        room.id,
+        selectedVariation?.game_id,
+        selectedVariation?.id,
+        visibleVariationApplyKey,
+        variationFocusRequestId,
+        currentGameBaseSnapshot?.gameId,
+        currentGameBaseSnapshot?.trunkTailMoveNumber,
+    ]);
+
+    React.useEffect(() => {
+        const pendingReason = pendingSecondaryRedrawReasonRef.current;
+        if (!secondaryBoardController || visibleSecondaryBoardSize <= 0 || !pendingReason) {
+            return;
+        }
+
+        pendingSecondaryRedrawReasonRef.current = null;
+        scheduleSecondaryBoardVisibleRedraw(`pending-size-ready:${pendingReason}`);
+    }, [scheduleSecondaryBoardVisibleRedraw, secondaryBoardController, visibleSecondaryBoardSize]);
 
     const clearSecondaryVariationRetryTimeout = React.useCallback(() => {
         if (secondaryVariationRetryTimeoutRef.current != null) {
@@ -1101,6 +1609,29 @@ export function KibitzRoomStage({
             secondaryVariationRetryTimeoutRef.current = null;
         }
     }, []);
+
+    React.useEffect(() => {
+        mainBoardControllerEpochRef.current += 1;
+        secondaryBoardControllerEpochRef.current += 1;
+        secondarySnapshotLoadOperationIdRef.current += 1;
+        mainBoardControllerContextRef.current = null;
+        secondaryBoardControllerContextRef.current = null;
+        pendingSecondaryVariationBaseLoadRef.current = null;
+        suppressSelectedVariationLoadRef.current = false;
+        secondaryVariationRetryCountRef.current = 0;
+        secondaryVariationBaseSnapshotRef.current = null;
+        secondaryVariationTreeDirtyRef.current = false;
+        secondaryVariationBaseInstalledRef.current = clearInstalledSecondaryVariationBaseState();
+        secondaryVariationBaseHydrationRef.current = null;
+        lastAppliedSecondaryVariationKeyRef.current = null;
+        pendingSecondaryRedrawReasonRef.current = null;
+        pendingSecondaryMoveTreeRedrawCancelRef.current?.();
+        pendingSecondaryMoveTreeRedrawCancelRef.current = null;
+        pendingSecondaryBoardVisibleRedrawCancelRef.current?.();
+        pendingSecondaryBoardVisibleRedrawCancelRef.current = null;
+        clearSecondaryVariationRetryTimeout();
+        previousSecondaryControllerRef.current = null;
+    }, [clearSecondaryVariationRetryTimeout, currentRoomGameId, room.id]);
 
     const resetSecondaryVariationBaseState = React.useCallback(
         (reason: string) => {
@@ -1112,6 +1643,8 @@ export function KibitzRoomStage({
             pendingSecondaryVariationBaseLoadRef.current = null;
             suppressSelectedVariationLoadRef.current = false;
             secondaryVariationRetryCountRef.current = 0;
+            lastAppliedSecondaryVariationKeyRef.current = null;
+            pendingSecondaryRedrawReasonRef.current = null;
             clearSecondaryVariationRetryTimeout();
             logKibitzVariationDebug("main-board:variation-base-reset", {
                 reason,
@@ -1143,11 +1676,15 @@ export function KibitzRoomStage({
             return;
         }
 
+        if (!isCurrentMainBoardController(mainBoardController)) {
+            return;
+        }
+
         const goban = mainBoardController.goban;
         let disposed = false;
 
         const syncMainBoardState = (reason: string): void => {
-            if (disposed) {
+            if (disposed || !isCurrentMainBoardController(mainBoardController)) {
                 return;
             }
 
@@ -1176,6 +1713,7 @@ export function KibitzRoomStage({
                 lastOfficialMoveNumber: currentEngine.last_official_move?.move_number ?? null,
                 lastOfficialMoveId: currentEngine.last_official_move?.id ?? null,
             });
+            scheduleMainBoardVisibleRedraw(reason);
         };
 
         const onLoad = () => {
@@ -1204,7 +1742,7 @@ export function KibitzRoomStage({
             goban.off("last_official_move", onLastOfficialMove);
             goban.off("move-made", onMoveMade);
         };
-    }, [currentRoomGameId, mainBoardController]);
+    }, [currentRoomGameId, mainBoardController, scheduleMainBoardVisibleRedraw]);
 
     React.useEffect(() => {
         if (!mainBoardController || currentRoomGameId == null) {
@@ -1243,6 +1781,10 @@ export function KibitzRoomStage({
         return () => {
             pendingSecondaryMoveTreeRedrawCancelRef.current?.();
             pendingSecondaryMoveTreeRedrawCancelRef.current = null;
+            pendingMainBoardVisibleRedrawCancelRef.current?.();
+            pendingMainBoardVisibleRedrawCancelRef.current = null;
+            pendingSecondaryBoardVisibleRedrawCancelRef.current?.();
+            pendingSecondaryBoardVisibleRedrawCancelRef.current = null;
         };
     }, []);
 
@@ -1295,6 +1837,8 @@ export function KibitzRoomStage({
         pendingSecondaryVariationBaseLoadRef.current = null;
         suppressSelectedVariationLoadRef.current = false;
         secondaryVariationRetryCountRef.current = 0;
+        lastAppliedSecondaryVariationKeyRef.current = null;
+        pendingSecondaryRedrawReasonRef.current = null;
         clearSecondaryVariationRetryTimeout();
     }, [clearSecondaryVariationRetryTimeout, secondaryBoardController, selectedVariationGameId]);
 
@@ -1318,6 +1862,32 @@ export function KibitzRoomStage({
         const maxBaseRetryCount = 30;
         const baseRetryDelayMs = 100;
         let loggedBaseRetryTimeout = false;
+
+        const isCurrentSecondaryLoadController = (): boolean => {
+            const context = secondaryBoardControllerContextRef.current;
+            const controllerGameId = secondaryBoardController.goban.config?.game_id ?? null;
+            return Boolean(
+                secondaryBoardController &&
+                context &&
+                context.controller === secondaryBoardController &&
+                context.roomId === currentRoomIdRef.current &&
+                context.gameId === controllerGameId &&
+                !isDetachedBoardController(secondaryBoardController),
+            );
+        };
+
+        const isCurrentPendingSecondarySnapshotLoad = (
+            pendingLoad: PendingSecondaryVariationBaseLoad | null,
+        ): pendingLoad is PendingSecondaryVariationBaseLoad => {
+            return Boolean(
+                pendingLoad &&
+                pendingLoad.controller === secondaryBoardController &&
+                pendingLoad.roomId === currentRoomIdRef.current &&
+                pendingLoad.gameId === selectedVariation.game_id &&
+                pendingLoad.operationId === secondarySnapshotLoadOperationIdRef.current &&
+                isCurrentSecondaryLoadController(),
+            );
+        };
 
         const warnVariationApplyTimeout = (reason: string): void => {
             console.warn("Kibitz variation apply timed out", {
@@ -1367,7 +1937,12 @@ export function KibitzRoomStage({
             });
         };
 
-        const applyVisibleVariationsToLoadedBase = (): boolean => {
+        const applyVisibleVariationsToLoadedBase = (desiredApplyKey: string): boolean => {
+            if (!isCurrentSecondaryLoadController()) {
+                logSecondaryBoardStaleCallback("apply", { desiredApplyKey });
+                return false;
+            }
+
             if (disposed || applyingVariation || secondaryVariationTreeDirtyRef.current) {
                 logVariationStage("apply:blocked", {
                     disposed,
@@ -1485,12 +2060,15 @@ export function KibitzRoomStage({
                 }
 
                 goban.redraw(true);
+                scheduleSecondaryBoardVisibleRedraw("apply:done");
                 scheduleSecondaryMoveTreeRedraw();
                 clearSecondaryVariationRetryTimeout();
                 secondaryVariationRetryCountRef.current = 0;
+                lastAppliedSecondaryVariationKeyRef.current = desiredApplyKey;
                 logVariationStage("apply:done", () => ({
                     selectedEndpoint: summarizeKibitzMoveTreeNode(selectedEndpoint),
                     nextTreeDirty: secondaryVariationTreeDirtyRef.current,
+                    desiredApplyKey,
                 }));
                 return true;
             } finally {
@@ -1500,6 +2078,11 @@ export function KibitzRoomStage({
         };
 
         const reloadBaseThenApplyVisibleVariations = (reason: string): boolean => {
+            if (!isCurrentSecondaryLoadController()) {
+                logSecondaryBoardStaleCallback("reload-or-apply", { reason });
+                return false;
+            }
+
             logVariationStage("reload-or-apply:start", { reason });
             if (disposed || applyingVariation) {
                 logVariationStage("reload-or-apply:blocked", {
@@ -1522,28 +2105,59 @@ export function KibitzRoomStage({
 
             const currentSecondaryTailMoveNumber =
                 getOfficialTrunkTailMoveNumber(secondaryBoardController);
+            const desiredApplyKey = buildSecondaryVariationApplyKey({
+                selectedGameId: selectedVariation.game_id,
+                snapshotTailMoveNumber: snapshot.trunkTailMoveNumber,
+                visibleVariationKey: visibleVariationApplyKey,
+                selectedVariationId: selectedVariation.id,
+                variationFocusRequestId,
+            });
             const snapshotInstalled = isSecondaryVariationBaseSnapshotInstalled(
                 snapshot,
                 secondaryBoardController,
                 secondaryVariationBaseInstalledRef.current,
             );
+            const alreadyAppliedDesiredState =
+                snapshotInstalled &&
+                currentSecondaryTailMoveNumber === snapshot.trunkTailMoveNumber &&
+                lastAppliedSecondaryVariationKeyRef.current === desiredApplyKey;
             const needsSnapshotLoad =
-                secondaryVariationTreeDirtyRef.current ||
-                !snapshotInstalled ||
-                currentSecondaryTailMoveNumber < snapshot.trunkTailMoveNumber;
+                !alreadyAppliedDesiredState &&
+                (secondaryVariationTreeDirtyRef.current ||
+                    !snapshotInstalled ||
+                    currentSecondaryTailMoveNumber < snapshot.trunkTailMoveNumber);
 
             logVariationStage("reload-or-apply:state", {
                 reason,
                 currentSecondaryTailMoveNumber,
                 snapshotTailMoveNumber: snapshot.trunkTailMoveNumber,
                 snapshotInstalled,
+                desiredApplyKey,
+                alreadyAppliedDesiredState,
                 needsSnapshotLoad,
             });
 
+            if (alreadyAppliedDesiredState) {
+                logVariationStage("reload-or-apply:already-applied-skip", {
+                    reason,
+                    desiredApplyKey,
+                    currentSecondaryTailMoveNumber,
+                    snapshotTailMoveNumber: snapshot.trunkTailMoveNumber,
+                    snapshotInstalled,
+                });
+                scheduleSecondaryBoardVisibleRedraw("already-applied-skip");
+                return true;
+            }
+
             if (needsSnapshotLoad) {
+                const operationId = secondarySnapshotLoadOperationIdRef.current + 1;
+                secondarySnapshotLoadOperationIdRef.current = operationId;
                 pendingSecondaryVariationBaseLoadRef.current = {
                     controller: secondaryBoardController,
+                    controllerEpoch: secondaryBoardControllerEpochRef.current,
+                    roomId: currentRoomIdRef.current,
                     gameId: selectedVariation.game_id,
+                    operationId,
                 };
                 suppressSelectedVariationLoadRef.current = true;
                 logVariationStage("reload-or-apply:load-snapshot", {
@@ -1551,13 +2165,12 @@ export function KibitzRoomStage({
                     currentSecondaryTailMoveNumber,
                     snapshotTailMoveNumber: snapshot.trunkTailMoveNumber,
                     snapshotInstalled,
+                    desiredApplyKey,
+                    operationId,
                 });
                 loadSecondaryVariationBaseSnapshot(secondaryBoardController, snapshot);
                 const pendingBaseLoad = pendingSecondaryVariationBaseLoadRef.current;
-                if (
-                    pendingBaseLoad?.controller === secondaryBoardController &&
-                    pendingBaseLoad.gameId === selectedVariation.game_id
-                ) {
+                if (isCurrentPendingSecondarySnapshotLoad(pendingBaseLoad)) {
                     scheduleBaseRetry(`waiting-for-snapshot-load:${reason}`);
                 } else {
                     logVariationStage("reload-or-apply:snapshot-load-completed", { reason });
@@ -1565,7 +2178,7 @@ export function KibitzRoomStage({
                 return true;
             }
 
-            const applied = applyVisibleVariationsToLoadedBase();
+            const applied = applyVisibleVariationsToLoadedBase(desiredApplyKey);
             if (applied) {
                 return true;
             }
@@ -1574,6 +2187,11 @@ export function KibitzRoomStage({
         };
 
         const tryApplyVariationWhenReady = (reason: string): boolean => {
+            if (!isCurrentSecondaryLoadController()) {
+                logSecondaryBoardStaleCallback("try", { reason });
+                return false;
+            }
+
             logVariationStage("try:start", { reason });
             const requiredSnapshotMoveNumber = getRequiredVariationSnapshotMoveNumber(
                 selectedVariation,
@@ -1630,7 +2248,20 @@ export function KibitzRoomStage({
                     return reloadBaseThenApplyVisibleVariations(`${reason}:snapshot-not-installed`);
                 }
 
-                return applyVisibleVariationsToLoadedBase();
+                const loadedBaseSnapshot = baseSnapshot;
+                if (!loadedBaseSnapshot) {
+                    return reloadBaseThenApplyVisibleVariations(`${reason}:missing-base-snapshot`);
+                }
+
+                return applyVisibleVariationsToLoadedBase(
+                    buildSecondaryVariationApplyKey({
+                        selectedGameId: selectedVariation.game_id,
+                        snapshotTailMoveNumber: loadedBaseSnapshot.trunkTailMoveNumber,
+                        visibleVariationKey: visibleVariationApplyKey,
+                        selectedVariationId: selectedVariation.id,
+                        variationFocusRequestId,
+                    }),
+                );
             }
 
             if (secondaryVariationTreeDirtyRef.current) {
@@ -1639,11 +2270,7 @@ export function KibitzRoomStage({
             }
 
             const pendingBaseLoad = pendingSecondaryVariationBaseLoadRef.current;
-            if (
-                pendingBaseLoad &&
-                pendingBaseLoad.controller === secondaryBoardController &&
-                pendingBaseLoad.gameId === selectedVariation.game_id
-            ) {
+            if (isCurrentPendingSecondarySnapshotLoad(pendingBaseLoad)) {
                 logVariationStage("try:pending-snapshot-load", { reason });
                 return false;
             }
@@ -1666,6 +2293,7 @@ export function KibitzRoomStage({
 
                 if (mainBoardSnapshot) {
                     secondaryVariationBaseSnapshotRef.current = mainBoardSnapshot;
+                    lastAppliedSecondaryVariationKeyRef.current = null;
                     logVariationStage("try:main-board-snapshot", {
                         reason,
                         requiredSnapshotMoveNumber,
@@ -1684,6 +2312,7 @@ export function KibitzRoomStage({
 
                 if (roomBaseSnapshot) {
                     secondaryVariationBaseSnapshotRef.current = roomBaseSnapshot;
+                    lastAppliedSecondaryVariationKeyRef.current = null;
                     logVariationStage("try:room-base-snapshot", {
                         reason,
                         requiredSnapshotMoveNumber,
@@ -1723,6 +2352,7 @@ export function KibitzRoomStage({
             }
 
             secondaryVariationBaseSnapshotRef.current = baseSnapshot;
+            lastAppliedSecondaryVariationKeyRef.current = null;
             logVariationStage("try:capture-succeeded", {
                 reason,
                 baseSnapshot: summarizeSecondaryVariationSnapshot(baseSnapshot),
@@ -1731,7 +2361,14 @@ export function KibitzRoomStage({
         };
 
         const scheduleBaseRetry = (reason: string) => {
-            if (disposed || secondaryVariationRetryTimeoutRef.current != null) {
+            if (
+                disposed ||
+                secondaryVariationRetryTimeoutRef.current != null ||
+                !isCurrentSecondaryLoadController()
+            ) {
+                if (!isCurrentSecondaryLoadController()) {
+                    logSecondaryBoardStaleCallback("retry-schedule", { reason });
+                }
                 return;
             }
 
@@ -1757,18 +2394,25 @@ export function KibitzRoomStage({
         };
 
         const onLoad = () => {
-            if (disposed) {
+            const pendingBaseLoad = pendingSecondaryVariationBaseLoadRef.current;
+            if (disposed || !isCurrentSecondaryLoadController()) {
+                if (isCurrentPendingSecondarySnapshotLoad(pendingBaseLoad)) {
+                    logVariationStage("event:load:continuation-missed");
+                } else if (!disposed) {
+                    logSecondaryBoardStaleCallback("event-load");
+                }
                 return;
             }
 
-            logVariationStage("event:load");
-            const pendingBaseLoad = pendingSecondaryVariationBaseLoadRef.current;
-            if (
-                pendingBaseLoad &&
-                pendingBaseLoad.controller === secondaryBoardController &&
-                pendingBaseLoad.gameId === selectedVariation.game_id
-            ) {
+            if (isCurrentPendingSecondarySnapshotLoad(pendingBaseLoad)) {
                 logVariationStage("event:load:snapshot-complete");
+                const loadedSnapshot = secondaryVariationBaseSnapshotRef.current;
+                if (!loadedSnapshot) {
+                    logVariationStage("event:load:snapshot-missing");
+                    scheduleBaseRetry("snapshot-load-snapshot-missing");
+                    return;
+                }
+
                 pendingSecondaryVariationBaseLoadRef.current = null;
                 suppressSelectedVariationLoadRef.current = false;
                 secondaryVariationTreeDirtyRef.current = false;
@@ -1778,7 +2422,17 @@ export function KibitzRoomStage({
                         selectedVariation.game_id,
                     );
 
-                if (!applyVisibleVariationsToLoadedBase()) {
+                if (
+                    !applyVisibleVariationsToLoadedBase(
+                        buildSecondaryVariationApplyKey({
+                            selectedGameId: selectedVariation.game_id,
+                            snapshotTailMoveNumber: loadedSnapshot.trunkTailMoveNumber,
+                            visibleVariationKey: visibleVariationApplyKey,
+                            selectedVariationId: selectedVariation.id,
+                            variationFocusRequestId,
+                        }),
+                    )
+                ) {
                     scheduleBaseRetry("snapshot-load-apply-failed");
                 } else {
                     clearSecondaryVariationRetryTimeout();
@@ -1794,9 +2448,11 @@ export function KibitzRoomStage({
 
             if (secondaryVariationTreeDirtyRef.current) {
                 logVariationStage("event:load:dirty-ignored");
+                if (!disposed) {
+                    logSecondaryBoardStaleCallback("event-load");
+                }
                 return;
             }
-
             logVariationStage("event:load:source-hydration");
             secondaryVariationTreeDirtyRef.current = false;
             secondaryVariationBaseHydrationRef.current = {
@@ -1814,7 +2470,14 @@ export function KibitzRoomStage({
         };
 
         const onBaseMaybeReady = () => {
-            if (disposed || suppressSelectedVariationLoadRef.current) {
+            if (
+                disposed ||
+                suppressSelectedVariationLoadRef.current ||
+                !isCurrentSecondaryLoadController()
+            ) {
+                if (!disposed && !suppressSelectedVariationLoadRef.current) {
+                    logSecondaryBoardStaleCallback("event-base-maybe-ready");
+                }
                 return;
             }
 
@@ -1877,6 +2540,7 @@ export function KibitzRoomStage({
         visibleVariationApplyKey,
         variationColorApplyKey,
         variationFocusRequestId,
+        scheduleSecondaryBoardVisibleRedraw,
         scheduleSecondaryMoveTreeRedraw,
     ]);
 
@@ -2109,6 +2773,9 @@ export function KibitzRoomStage({
     const mobileBoardTotalMoves = mobileCompareTargetActive
         ? (selectedVariation?.move_count ?? previewDisplayedMoveNumber)
         : displayedMoveNumber;
+    const liveMainBoardOfficialTailMoveNumber = mainBoardController
+        ? getOfficialTrunkTailMoveNumber(mainBoardController)
+        : mainBoardOfficialTailMoveNumber;
 
     const onConfirmClearSecondaryPane = React.useCallback(() => {
         void alert
@@ -2143,12 +2810,12 @@ export function KibitzRoomStage({
         logKibitzVariationDebug("main-board:new-variation-click", {
             gameId: currentRoomGameId,
             selectedVariationId: selectedVariation?.id ?? null,
-            mainBoardOfficialTailMoveNumber,
+            mainBoardOfficialTailMoveNumber: liveMainBoardOfficialTailMoveNumber,
         });
         onCreateVariation?.();
     }, [
         currentRoomGameId,
-        mainBoardOfficialTailMoveNumber,
+        liveMainBoardOfficialTailMoveNumber,
         onCreateVariation,
         selectedVariation?.id,
     ]);
@@ -2159,7 +2826,7 @@ export function KibitzRoomStage({
                 gameId: currentRoomGameId,
                 selectedVariationId: variation.id,
                 selectedGameId: variation.game_id,
-                mainBoardOfficialTailMoveNumber,
+                mainBoardOfficialTailMoveNumber: liveMainBoardOfficialTailMoveNumber,
             });
             if (onCreateVariationFromPostedVariation) {
                 onCreateVariationFromPostedVariation(variation);
@@ -2170,7 +2837,7 @@ export function KibitzRoomStage({
         },
         [
             currentRoomGameId,
-            mainBoardOfficialTailMoveNumber,
+            liveMainBoardOfficialTailMoveNumber,
             onCreateVariation,
             onCreateVariationFromPostedVariation,
         ],
@@ -2198,11 +2865,6 @@ export function KibitzRoomStage({
 
     if (isMobileLayout) {
         const renderMainBoard = Boolean(mainGame && !mobileCompareActive);
-        const renderHiddenMainBoard = shouldKeepMobileMainBoardMounted(
-            isMobileLayout,
-            mobileCompareActive,
-            mainGame,
-        );
         const renderPreviewBoard = Boolean(mobileCompareTargetActive && secondaryBoardGame);
         const renderVariationBoard = Boolean(mobileCompareTargetActive && selectedVariation);
         const mobileBoardController = mobileCompareTargetActive
@@ -2211,28 +2873,6 @@ export function KibitzRoomStage({
 
         return (
             <div className="KibitzRoomStage KibitzRoomStage-mobile">
-                {renderHiddenMainBoard ? (
-                    <div
-                        className="Kibitz-mobile-hidden-main-board"
-                        aria-hidden="true"
-                        tabIndex={-1}
-                    >
-                        <KibitzBoard
-                            key={`main-${room.id}-${mainGame?.game_id ?? "none"}-hidden`}
-                            role="main"
-                            gameId={mainGame?.game_id}
-                            currentRoomGameId={currentRoomGameId}
-                            isMobile={true}
-                            {...boardDimensionsOf(mainGame)}
-                            className="mobile-main-board-surface Kibitz-mobile-hidden-main-board-surface"
-                            size={Math.max(mobileBoardSize, 1)}
-                            fitMode="contain"
-                            respectContainerBounds={true}
-                            restoreToOfficialTailOnLoad={true}
-                            onReady={setMainBoardController}
-                        />
-                    </div>
-                ) : null}
                 <div
                     className={
                         "Kibitz-mobile-board-host" +
@@ -2293,38 +2933,54 @@ export function KibitzRoomStage({
                             />
                         ) : null}
                         {renderPreviewBoard ? (
-                            <KibitzBoard
-                                key={secondaryBoardKey}
-                                gameId={secondaryGameId}
-                                currentRoomGameId={currentRoomGameId}
-                                isMobile={true}
-                                {...boardDimensionsOf(secondaryBoardGame)}
-                                className="mobile-secondary-board-surface"
-                                size={mobileBoardSize}
-                                interactive={isDraftingVariation}
-                                fitMode="contain"
-                                respectContainerBounds={true}
-                                moveTree={secondaryPane.variation_source_move_tree}
-                                movePath={secondaryPane.variation_source_move_path}
-                                onReady={setSecondaryBoardController}
-                            />
+                            mobileBoardSizeReady ? (
+                                <KibitzBoard
+                                    key={secondaryBoardKey}
+                                    gameId={secondaryGameId}
+                                    currentRoomGameId={currentRoomGameId}
+                                    isMobile={true}
+                                    {...boardDimensionsOf(secondaryBoardGame)}
+                                    className="mobile-secondary-board-surface"
+                                    size={mobileBoardSize}
+                                    interactive={isDraftingVariation}
+                                    fitMode="contain"
+                                    respectContainerBounds={true}
+                                    moveTree={secondaryPane.variation_source_move_tree}
+                                    movePath={secondaryPane.variation_source_move_path}
+                                    onReady={setSecondaryBoardController}
+                                />
+                            ) : (
+                                <div
+                                    className="secondary-board-empty-state"
+                                    data-kibitz-board-pending-size="true"
+                                    aria-hidden="true"
+                                />
+                            )
                         ) : null}
                         {renderVariationBoard ? (
-                            <KibitzBoard
-                                key={secondaryBoardKey}
-                                gameId={selectedVariation?.game_id}
-                                currentRoomGameId={currentRoomGameId}
-                                isMobile={true}
-                                {...boardDimensionsOf(selectedVariationSourceGame)}
-                                className="mobile-secondary-board-surface"
-                                size={mobileBoardSize}
-                                interactive={false}
-                                fitMode="contain"
-                                respectContainerBounds={true}
-                                moveTree={secondaryPane.variation_source_move_tree}
-                                movePath={secondaryPane.variation_source_move_path}
-                                onReady={setSecondaryBoardController}
-                            />
+                            mobileBoardSizeReady ? (
+                                <KibitzBoard
+                                    key={secondaryBoardKey}
+                                    gameId={selectedVariation?.game_id}
+                                    currentRoomGameId={currentRoomGameId}
+                                    isMobile={true}
+                                    {...boardDimensionsOf(selectedVariationSourceGame)}
+                                    className="mobile-secondary-board-surface"
+                                    size={mobileBoardSize}
+                                    interactive={false}
+                                    fitMode="contain"
+                                    respectContainerBounds={true}
+                                    moveTree={secondaryPane.variation_source_move_tree}
+                                    movePath={secondaryPane.variation_source_move_path}
+                                    onReady={setSecondaryBoardController}
+                                />
+                            ) : (
+                                <div
+                                    className="secondary-board-empty-state"
+                                    data-kibitz-board-pending-size="true"
+                                    aria-hidden="true"
+                                />
+                            )
                         ) : null}
                         {mobileCompareActive && !mobileCompareTargetActive ? (
                             <div className="secondary-board-empty-state mobile-compare-empty-state">
@@ -2646,27 +3302,36 @@ export function KibitzRoomStage({
                         ) : secondaryGameId ? (
                             <div className="board-content board-content-variation">
                                 <div className="board-fit-slot" ref={secondaryBoardSlotRef}>
-                                    <KibitzBoard
-                                        key={secondaryBoardKey}
-                                        gameId={secondaryGameId}
-                                        currentRoomGameId={currentRoomGameId}
-                                        isMobile={false}
-                                        connectToGame={
-                                            !(
-                                                !isMobileLayout &&
-                                                mainBoardController != null &&
-                                                secondaryBoardGame?.game_id === currentRoomGameId
-                                            )
-                                        }
-                                        {...boardDimensionsOf(secondaryBoardGame)}
-                                        className="secondary-board-surface"
-                                        size={secondaryBoardSize}
-                                        interactive={secondaryPaneSize === "equal"}
-                                        respectContainerBounds={true}
-                                        moveTree={secondaryPane.variation_source_move_tree}
-                                        movePath={secondaryPane.variation_source_move_path}
-                                        onReady={setSecondaryBoardController}
-                                    />
+                                    {secondaryBoardSizeReady ? (
+                                        <KibitzBoard
+                                            key={secondaryBoardKey}
+                                            gameId={secondaryGameId}
+                                            currentRoomGameId={currentRoomGameId}
+                                            isMobile={false}
+                                            connectToGame={
+                                                !(
+                                                    !isMobileLayout &&
+                                                    mainBoardController != null &&
+                                                    secondaryBoardGame?.game_id ===
+                                                        currentRoomGameId
+                                                )
+                                            }
+                                            {...boardDimensionsOf(secondaryBoardGame)}
+                                            className="secondary-board-surface"
+                                            size={secondaryBoardSize}
+                                            interactive={secondaryPaneSize === "equal"}
+                                            respectContainerBounds={true}
+                                            moveTree={secondaryPane.variation_source_move_tree}
+                                            movePath={secondaryPane.variation_source_move_path}
+                                            onReady={setSecondaryBoardController}
+                                        />
+                                    ) : (
+                                        <div
+                                            className="secondary-board-empty-state"
+                                            data-kibitz-board-pending-size="true"
+                                            aria-hidden="true"
+                                        />
+                                    )}
                                 </div>
                                 <div className="secondary-board-transport-row">
                                     <div className="secondary-board-return-live-action">
@@ -2770,27 +3435,35 @@ export function KibitzRoomStage({
                                         desktopVariationBoardTarget?.ref(node);
                                     }}
                                 >
-                                    <KibitzBoard
-                                        key={secondaryBoardKey}
-                                        gameId={selectedVariation?.game_id}
-                                        currentRoomGameId={currentRoomGameId}
-                                        isMobile={false}
-                                        connectToGame={
-                                            !(
-                                                !isMobileLayout &&
-                                                mainBoardController != null &&
-                                                selectedVariation?.game_id === currentRoomGameId
-                                            )
-                                        }
-                                        {...boardDimensionsOf(selectedVariationSourceGame)}
-                                        className="secondary-board-surface"
-                                        size={secondaryBoardSize}
-                                        interactive={false}
-                                        respectContainerBounds={true}
-                                        moveTree={secondaryPane.variation_source_move_tree}
-                                        movePath={secondaryPane.variation_source_move_path}
-                                        onReady={setSecondaryBoardController}
-                                    />
+                                    {secondaryBoardSizeReady ? (
+                                        <KibitzBoard
+                                            key={secondaryBoardKey}
+                                            gameId={selectedVariation?.game_id}
+                                            currentRoomGameId={currentRoomGameId}
+                                            isMobile={false}
+                                            connectToGame={
+                                                !(
+                                                    !isMobileLayout &&
+                                                    mainBoardController != null &&
+                                                    selectedVariation?.game_id === currentRoomGameId
+                                                )
+                                            }
+                                            {...boardDimensionsOf(selectedVariationSourceGame)}
+                                            className="secondary-board-surface"
+                                            size={secondaryBoardSize}
+                                            interactive={false}
+                                            respectContainerBounds={true}
+                                            moveTree={secondaryPane.variation_source_move_tree}
+                                            movePath={secondaryPane.variation_source_move_path}
+                                            onReady={setSecondaryBoardController}
+                                        />
+                                    ) : (
+                                        <div
+                                            className="secondary-board-empty-state"
+                                            data-kibitz-board-pending-size="true"
+                                            aria-hidden="true"
+                                        />
+                                    )}
                                 </div>
                                 <div className="secondary-board-transport-row">
                                     <div className="secondary-board-return-live-action">

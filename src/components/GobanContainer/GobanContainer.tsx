@@ -58,6 +58,11 @@ export function GobanContainer({
     const goban_controller = useGobanControllerOrNull();
     const ref_goban_container = React.useRef<HTMLDivElement>(null);
     const resize_debounce = React.useRef<NodeJS.Timeout | null>(null);
+    const pendingInitialResizeRetryRef = React.useRef<{
+        frame1: number | null;
+        frame2: number | null;
+    } | null>(null);
+    const onResizeRef = React.useRef<(no_debounce?: boolean, do_cb?: boolean) => void>(() => {});
     const [last_move_opacity] = usePreference("last-move-opacity");
 
     if (!goban) {
@@ -65,6 +70,45 @@ export function GobanContainer({
     }
 
     const goban_div = (goban?.config as GobanRendererConfig | undefined)?.board_div;
+
+    const cancelPendingInitialResizeRetry = React.useCallback(() => {
+        const pendingRetry = pendingInitialResizeRetryRef.current;
+        if (!pendingRetry) {
+            return;
+        }
+
+        if (pendingRetry.frame1 !== null) {
+            window.cancelAnimationFrame(pendingRetry.frame1);
+        }
+
+        if (pendingRetry.frame2 !== null) {
+            window.cancelAnimationFrame(pendingRetry.frame2);
+        }
+
+        pendingInitialResizeRetryRef.current = null;
+    }, []);
+
+    const scheduleInitialResizeRetry = React.useCallback(() => {
+        if (pendingInitialResizeRetryRef.current) {
+            return;
+        }
+
+        const pendingRetry = {
+            frame1: null as number | null,
+            frame2: null as number | null,
+        };
+        pendingInitialResizeRetryRef.current = pendingRetry;
+
+        pendingRetry.frame1 = window.requestAnimationFrame(() => {
+            pendingRetry.frame1 = null;
+
+            pendingRetry.frame2 = window.requestAnimationFrame(() => {
+                pendingRetry.frame2 = null;
+                pendingInitialResizeRetryRef.current = null;
+                onResizeRef.current(false);
+            });
+        });
+    }, []);
 
     const recenterGoban = () => {
         if (!ref_goban_container.current || !goban || !goban_div) {
@@ -131,6 +175,20 @@ export function GobanContainer({
 
             const containerWidth = ref_goban_container.current.offsetWidth;
             const containerHeight = ref_goban_container.current.offsetHeight;
+            if (
+                !Number.isFinite(containerWidth) ||
+                !Number.isFinite(containerHeight) ||
+                containerWidth <= 0 ||
+                containerHeight <= 0
+            ) {
+                if (no_debounce) {
+                    scheduleInitialResizeRetry();
+                }
+                return;
+            }
+
+            cancelPendingInitialResizeRetry();
+
             const targetDisplayWidth = respectContainerBounds
                 ? Math.min(containerWidth, containerHeight || containerWidth)
                 : sizingMode === "width"
@@ -147,8 +205,22 @@ export function GobanContainer({
 
             recenterGoban();
         },
-        [fitMode, goban, goban_div, onResizeCb, respectContainerBounds, sizingMode, verticalAlign],
+        [
+            cancelPendingInitialResizeRetry,
+            fitMode,
+            goban,
+            goban_div,
+            onResizeCb,
+            respectContainerBounds,
+            scheduleInitialResizeRetry,
+            sizingMode,
+            verticalAlign,
+        ],
     );
+
+    React.useEffect(() => {
+        onResizeRef.current = onResize;
+    }, [onResize]);
 
     React.useEffect(() => {
         if (!goban || !goban_div || !ref_goban_container.current) {
@@ -156,6 +228,8 @@ export function GobanContainer({
         }
         onResize(/* no_debounce */ true, /* do_cb */ true);
     }, [goban, goban_div, ref_goban_container.current, onResize]);
+
+    React.useEffect(() => cancelPendingInitialResizeRetry, [cancelPendingInitialResizeRetry]);
 
     if (!goban || !goban_div) {
         return <React.Fragment />;
