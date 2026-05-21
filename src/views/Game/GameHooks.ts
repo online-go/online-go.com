@@ -133,6 +133,10 @@ export const useShowTitle = generateGobanHook(
 /** React hook that returns the title text (e.g. "Black to move"). */
 export const useTitle = generateGobanHook((goban: Goban | null) => goban?.title, ["title"]);
 export const useMode = generateGobanHook((goban: Goban | null) => goban?.mode, ["mode"]);
+export const useWinner = generateGobanHook(
+    (goban: Goban | null) => goban?.engine.winner,
+    ["winner"],
+);
 
 export function useVariationName(controller: GobanController | null): string {
     const [variation_name, set_variation_name] = React.useState(controller?.variation_name ?? "");

@@ -81,10 +81,10 @@
 }
 
 .MainGobanView {
-    /* Game page wants the sidebar flush against the bottom edge. */
-    .GobanView-sidebar {
-        margin-bottom: 0;
-    }
+    /* Chat flushes against the sidebar's inner bottom edge — the rounded
+     * sidebar already provides visual termination, so no extra padding.
+     * The sidebar's outer top/bottom margin is now controlled centrally
+     * via --goban-view-edge-margin (GobanView.css). */
     .GobanView-sidebar-content {
         padding-bottom: 0;
     }
@@ -221,20 +221,283 @@
         }
     }
 
+    /* In stacked mode, centre each stacked card via `align-self` rather
+     * than `align-items: center` on the parent. Centring the column would
+     * also affect `.goban-container`, which has no explicit width and
+     * relies on the default `align-items: stretch` to fill the column.
+     * Under center alignment its width collapses to its natural content
+     * size — and the board inside is `position: absolute`, contributing
+     * zero — so the JS sizer would compute `min(0, h)` and the board
+     * would collapse to nothing. The cards' widths are written inline by
+     * a ResizeObserver in Game.tsx so they track the rendered board side. */
+    &.stacked .GameStackedPlayer {
+        align-self: center;
+    }
+
+    /* In stacked mode the sidebar's vertical space is at a premium —
+     * the ranked/unranked label and rules text duplicate information
+     * that's available from More-actions → Game info and waste a row at
+     * the top of the sidebar. Keep them in the standard layout where
+     * the sidebar is the primary surface and the extra context is
+     * useful. */
+    &.stacked .condensed-game-information {
+        display: none;
+    }
+
+    /* Stacked-layout helpers: a player card above the goban and a player
+     * card below. The inner `.player-icons` wrapper is required so
+     * PlayerCard inherits its baseline styling from
+     * `.MainGobanView .player-icons .player-container { … }`. The card is
+     * then re-laid-out as a single row:
+     *
+     *     [ avatar | name | score ]   [ mod controls ]   [ clock ]
+     *
+     * with `margin-right: auto` on the score block and `margin-left: auto`
+     * on the clock — those two autos split the remaining free space evenly,
+     * centering the moderator controls between them (when present) and
+     * pushing the clock flush against the right edge.
+     */
+    .GameStackedPlayer {
+        flex-shrink: 0;
+        /* Vertical padding only — horizontal padding gets dropped (including
+         * the inner `.player-icons` and `.player-container` padding) so the
+         * card content lines up flush with the board's left/right edges
+         * instead of being inset by ~17px of stacked paddings. The card's
+         * outer width is locked to the board's rendered side by the inline
+         * style applied in Game.tsx; with border-box that's the visible
+         * width too. */
+        padding: 0.5rem 0;
+        box-sizing: border-box;
+
+        .player-icons {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            padding: 0;
+        }
+
+        .player-icons .player-container {
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        /* Chess.com-style colouring: no card background or shadow on the
+         * player-container itself; the clock cell on the right gets the
+         * player's colour (solid black or white) with inverted text for
+         * strong focus on whose move it is. Higher-specificity selectors
+         * + !important on shadow are needed to win over the sidebar-
+         * layout rules in Players.css that use .white.player-container /
+         * .black.player-container.their-turn { … !important }. */
+        .player-icons :is(.white, .black).player-container {
+            background: transparent;
+            border-top: none;
+            box-shadow: none !important;
+        }
+        &.top .player-icons :is(.white, .black).player-container,
+        &.bottom .player-icons :is(.white, .black).player-container {
+            color: var(--fg);
+        }
+
+        /* Shared sizing for both player-colour clock cells. */
+        .player-icons :is(.white, .black).player-container .clock-pause-host {
+            flex-grow: 0;
+            border-radius: 0.25rem;
+            padding: 0.3rem 0.6rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+        }
+
+        /* Solid player-colour background with a hard-coded contrast colour.
+         * These rules MUST come after the shared-sizing rule above so the
+         * colour declarations win on equal specificity. */
+        .player-icons .black.player-container .clock-pause-host {
+            background: #000;
+            color: #fff;
+        }
+        .player-icons .white.player-container .clock-pause-host {
+            background: #fff;
+            color: #000;
+        }
+
+        /* Every descendant of the coloured clock cell — clock text spans,
+         * the pause-overlay icon, byo-yomi label, etc. — inherits the
+         * cell's contrast colour rather than the per-player colours that
+         * were tuned for the gradient backgrounds. (Don't include the
+         * host itself: its `color` is set explicitly above.) */
+        .player-icons :is(.white, .black).player-container .clock-pause-host * {
+            color: inherit;
+        }
+
+        /* Whose-turn indicator: the .player-turn-indicator <i> rendered
+         * alongside the clock in PlayerCards. PlayerCards.css hides it
+         * by default in all layouts; the stacked layout opts in here
+         * and pins it to its own grid column (col 3) just to the left
+         * of the clock cell. Space is always reserved
+         * (visibility: hidden when not this player's turn) so the
+         * layout doesn't reflow when the turn alternates. */
+        .player-icons .player-container .player-turn-indicator {
+            display: inline-block;
+            visibility: hidden;
+            grid-column: 3;
+            grid-row: 1 / span 2;
+            align-self: center;
+            font-size: 1.5rem;
+        }
+        .player-icons .player-container.their-turn .player-turn-indicator {
+            visibility: visible;
+        }
+
+        /* 3-column grid:
+         *   col 1 (auto)     — avatar (spans both rows, vertically centred)
+         *   col 2 (1fr)      — name pinned to top, captures/komi pinned to bottom
+         *   col 3 (auto)     — fa-clock turn indicator (spans both rows)
+         *   col 4 (auto)     — clock cell (spans both rows, vertically centred)
+         *
+         * Rows are 1fr 1fr so the available vertical space (set by the
+         * tallest of avatar/clock) splits evenly. The name aligns to the
+         * start of row 1 and the score-container to the end of row 2 —
+         * effectively `justify-content: space-between` on a flex column of
+         * [name, score]: name flush against the container top, score flush
+         * against the container bottom, all remaining space between them.
+         *
+         * Only the icon-clock-row uses `display: contents` (to free the
+         * avatar, turn indicator, and clock as independent grid items).
+         * The score-container stays a real element — flags / mod controls
+         * no longer live there (they moved to the moderator sidebar), so
+         * there's nothing left to un-group from the score group. */
+        .player-icons .player-container {
+            width: 100%;
+            display: grid;
+            grid-template-columns: auto 1fr auto auto;
+            grid-template-rows: 1fr 1fr;
+            align-items: center;
+            column-gap: 0.5rem;
+
+            .player-icon-clock-row {
+                display: contents;
+            }
+
+            .player-icon-container {
+                grid-column: 1;
+                grid-row: 1 / span 2;
+            }
+
+            .player-name-container,
+            .player-name-plain {
+                grid-column: 2;
+                grid-row: 1;
+                align-self: start;
+            }
+
+            .score-container {
+                grid-column: 2;
+                grid-row: 2;
+                align-self: end;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                /* Override the sidebar-layout's `justify-content: space-between`
+                 * (Players.css) — in stacked mode we want captures + komi
+                 * packed together under the player name, not pushed to the
+                 * opposite edges of the row. */
+                justify-content: flex-start;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+            }
+
+            .clock-pause-host,
+            .in-game-clock {
+                grid-column: 4;
+                grid-row: 1 / span 2;
+            }
+        }
+    }
+
+    /* Zen mode: full-screen board on the left, transparent sidebar with the
+     * essential controls vertically centered on the right. The navbar is
+     * hidden globally via body.zen, and `.GobanView.Game.zen { top: 0 }`
+     * (above) lets the goban occupy the full viewport height. */
     &.zen {
         background-color: var(--bg);
 
-        /* Hide the tab bar and chat in zen mode. */
+        /* Hide the tab bar, chat, analyze toolbar, move tree, and full-page
+         * AI review in zen mode — they aren't part of the focused view. */
         .GobanView-tab-bar,
         .chat-container,
         .game-analyze-button-bar,
-        #move-tree-container {
+        #move-tree-container,
+        .AIReview,
+        .condensed-game-information {
             display: none;
+        }
+
+        .GobanView-sidebar {
+            background: transparent;
+            border-radius: 0;
+            box-shadow: none;
+            margin: 0;
+        }
+
+        /* Stack the few items that remain — player cards, controls — so they
+         * read top to bottom centered in the column. */
+        .GobanView-sidebar-content {
+            justify-content: center;
+        }
+
+        .GameStackedPlayer {
+            display: none;
+        }
+
+        .player-icons {
+            flex-direction: column;
+
+            .player-container {
+                width: 100%;
+            }
         }
 
         .PlayControls {
             flex-grow: 0;
         }
+    }
+
+    /* Full-screen / zen toggle pinned just to the left of the sidebar's
+     * top edge. The gap that holds it is created by the sidebar's
+     * margin-left in GobanView.css (so all GobanView consumers share the
+     * same spacing). Opacity 0.5 by default, fades to 1 on hover. */
+    .goban-fullscreen-toggle {
+        position: absolute;
+        /* The sidebar's top edge is now invariant at the top of the
+         * GobanView container (margin-top: 0 in GobanView.css), so the
+         * icon pins to top: 0 in all viewport heights. */
+        top: 0;
+        /* In normal layout the sidebar has margin-right: 1rem, so its
+         * left edge sits at sidebar_width + 1rem from the viewport's
+         * right. The icon sits another 0.2rem to the left of that. */
+        right: calc(var(--goban-view-sidebar-width) + 1.2rem);
+        font-size: 0.95rem;
+        color: var(--fg);
+        opacity: 0.5;
+        cursor: pointer;
+        z-index: var(--z-goban-exit-zenmode);
+        padding: 0.15rem;
+        transition: opacity 0.15s ease;
+    }
+    .goban-fullscreen-toggle:hover {
+        opacity: 1;
+    }
+
+    /* Zen mode drops the sidebar's own margins (the sidebar slides 1rem
+     * to the right), so adjust the icon's `right` offset to match — the
+     * icon should still sit 0.2rem left of the sidebar's (new) left edge,
+     * not the old one. */
+    &.zen .goban-fullscreen-toggle {
+        right: calc(var(--goban-view-sidebar-width) + 0.2rem);
+    }
+
+    /* Portrait mode has the sidebar stacked below the board — no left
+     * margin to anchor to — so just hide the icon there. */
+    &.portrait .goban-fullscreen-toggle {
+        display: none;
     }
 }
 

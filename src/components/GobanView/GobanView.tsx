@@ -73,6 +73,11 @@ interface GobanViewProps {
     /** Forwarded to the GobanContainer — fires when the user scrolls the wheel
      *  over the board. Used by the Game view for scroll-to-navigate. */
     onWheel?: React.WheelEventHandler<HTMLDivElement>;
+    /** Optional content rendered inside the center column above the goban.
+     *  Used by the Game view's "stacked" layout to put a player card on top. */
+    centerTop?: React.ReactNode;
+    /** Optional content rendered inside the center column below the goban. */
+    centerBottom?: React.ReactNode;
     ref?: React.Ref<GobanViewRef>;
 }
 
@@ -115,6 +120,8 @@ function GobanViewComponent({
     customSlider,
     header,
     onWheel,
+    centerTop,
+    centerBottom,
     ref,
 }: GobanViewProps): React.ReactElement {
     const { tabs, others } = React.useMemo(() => partitionChildren(children), [children]);
@@ -311,9 +318,11 @@ function GobanViewComponent({
                             (className ? ` ${className}` : "")
                         }
                     >
-                        {header && <div className="GobanView-header">{header}</div>}
+                        <div className="GobanView-header">{header}</div>
                         <div className="GobanView-center">
+                            {centerTop}
                             <GobanContainer onResize={onResize} onWheel={onWheel} />
+                            {centerBottom}
                         </div>
                         <div className="GobanView-mobile-scroll">
                             {orderedPanels.map((t) => renderPanel(t, isInlineVisible(t)))}
@@ -341,10 +350,12 @@ function GobanViewComponent({
                     }
                 >
                     <div className="GobanView-center">
+                        {centerTop}
                         <GobanContainer onResize={onResize} onWheel={onWheel} />
+                        {centerBottom}
                     </div>
                     <div className="GobanView-sidebar">
-                        {header && <div className="GobanView-header">{header}</div>}
+                        <div className="GobanView-header">{header}</div>
                         <div className="GobanView-sidebar-content">
                             {inlinePanels.map((t) => renderPanel(t, isInlineVisible(t)))}
                             {takeoverPanels.map((t) => renderPanel(t, activeTakeover === t.id))}
