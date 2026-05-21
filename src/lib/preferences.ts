@@ -125,6 +125,8 @@ export const defaults = {
     "hide-ranks": false,
     "label-positioning": "all" as LabelPosition,
     "label-positioning-puzzles": "all" as LabelPosition,
+    "game.layout": "standard" as "standard" | "stacked",
+    "moderator.game-moderator-tab-visible": true,
     language: "auto",
     "move-tree-numbering": "move-number" as "none" | "move-coordinates" | "move-number",
     "new-game-board-size": 19,

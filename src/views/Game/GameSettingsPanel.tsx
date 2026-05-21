@@ -18,11 +18,22 @@
 import * as React from "react";
 import { _, pgettext } from "@/lib/translate";
 import { sfx } from "@/lib/sfx";
+import { usePreference } from "@/lib/preferences";
+import type { LabelPosition } from "goban";
+import { Toggle } from "@/components/Toggle";
+import { GobanThemePicker } from "@/components/GobanThemePicker/GobanThemePicker";
 import { openACLModal } from "@/components/ACLModal";
 import { useGobanController } from "./goban_context";
 import "./GameSidebarPanels.css";
 
-export function GameSettingsPanel(): React.ReactElement {
+interface GameSettingsPanelProps {
+    /** Called by actions that commit to a final state the user wants to see
+     *  applied (layout switch, zen mode). Toggles that the user is likely to
+     *  flip multiple times (coordinates, AI review, volume) don't fire this. */
+    onClose?: () => void;
+}
+
+export function GameSettingsPanel({ onClose }: GameSettingsPanelProps = {}): React.ReactElement {
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
     const engine = goban.engine;
@@ -40,20 +51,20 @@ export function GameSettingsPanel(): React.ReactElement {
     }, [goban_controller]);
 
     const [volume, set_volume] = React.useState(sfx.getVolume("master"));
-    const volume_sound_debounce = React.useRef<any | null>(null);
+
+    // Stone-placement sample for volume feedback. Fires on commit (pointer or
+    // keyboard release) rather than every intermediate slider value, so the
+    // sample plays exactly once per adjustment instead of spamming.
+    const playVolumeSample = () => sfx.playStonePlacementSound(5, 5, 9, 9, "white");
 
     const _setVolume = (new_volume: number) => {
         sfx.setVolume("master", new_volume);
         set_volume(new_volume);
-        if (volume_sound_debounce.current) {
-            clearTimeout(volume_sound_debounce.current);
-        }
-        volume_sound_debounce.current = setTimeout(
-            () => sfx.playStonePlacementSound(5, 5, 9, 9, "white"),
-            250,
-        );
     };
-    const toggleVolume = () => _setVolume(volume > 0 ? 0 : 0.5);
+    const toggleVolume = () => {
+        _setVolume(volume > 0 ? 0 : 0.5);
+        playVolumeSample();
+    };
     const setVolume = (ev: React.ChangeEvent<HTMLInputElement>) =>
         _setVolume(parseFloat(ev.target.value));
 
@@ -68,6 +79,16 @@ export function GameSettingsPanel(): React.ReactElement {
     };
 
     const isPrivate = !!(engine.config as any)["private"];
+
+    const [layout, setLayout] = usePreference("game.layout");
+
+    const [label_position, setLabelPositionPref] = usePreference("label-positioning");
+    // The preference is the source of truth; the goban needs an explicit
+    // sync call since it doesn't subscribe to this specific preference.
+    const setCoordinates = (pos: LabelPosition) => {
+        setLabelPositionPref(pos);
+        goban.setLabelPosition(pos);
+    };
 
     return (
         <div className="GameSidebarPanel GameSettingsPanel">
@@ -91,6 +112,8 @@ export function GameSettingsPanel(): React.ReactElement {
                     type="range"
                     className="volume-slider"
                     onChange={setVolume}
+                    onPointerUp={playVolumeSample}
+                    onKeyUp={playVolumeSample}
                     value={volume}
                     min={0}
                     max={1.0}
@@ -99,32 +122,81 @@ export function GameSettingsPanel(): React.ReactElement {
                 />
             </div>
 
+            <div className="GameSidebarPanel-section-header">{_("Layout")}</div>
+            <button
+                className={"GameSidebarPanel-item" + (layout === "standard" ? " active" : "")}
+                onClick={() => {
+                    setLayout("standard");
+                    onClose?.();
+                }}
+                title={pgettext("Game layout option", "Standard")}
+            >
+                <i className="fa fa-columns" />
+                <span>{pgettext("Game layout option", "Standard")}</span>
+            </button>
+            <button
+                className={"GameSidebarPanel-item" + (layout === "stacked" ? " active" : "")}
+                onClick={() => {
+                    setLayout("stacked");
+                    onClose?.();
+                }}
+                title={pgettext("Game layout option: players above and below the board", "Stacked")}
+            >
+                <i className="fa fa-th-list" />
+                <span>
+                    {pgettext("Game layout option: players above and below the board", "Stacked")}
+                </span>
+            </button>
             <button
                 className="GameSidebarPanel-item"
-                onClick={goban_controller.toggleZenMode}
+                onClick={() => {
+                    goban_controller.toggleZenMode();
+                    onClose?.();
+                }}
                 title={_("Full screen zen mode")}
             >
                 <i className="fa fa-expand" />
                 <span>{_("Full screen zen mode")}</span>
             </button>
 
-            <button
-                className="GameSidebarPanel-item"
-                onClick={goban_controller.toggleCoordinates}
-                title={_("Toggle coordinates")}
-            >
-                <i className="ogs-coordinates" />
-                <span>{_("Toggle coordinates")}</span>
-            </button>
+            <div className="GameSidebarPanel-labeled-row">
+                <label htmlFor="game-settings-coords">
+                    <i className="ogs-coordinates" />
+                    <span>{_("Coordinates")}</span>
+                </label>
+                <select
+                    id="game-settings-coords"
+                    value={label_position}
+                    onChange={(e) => setCoordinates(e.target.value as LabelPosition)}
+                >
+                    <option value="all">{pgettext("Coordinate label position", "All")}</option>
+                    <option value="none">{pgettext("Coordinate label position", "None")}</option>
+                    <option value="top-left">
+                        {pgettext("Coordinate label position", "Top Left")}
+                    </option>
+                    <option value="top-right">
+                        {pgettext("Coordinate label position", "Top Right")}
+                    </option>
+                    <option value="bottom-left">
+                        {pgettext("Coordinate label position", "Bottom Left")}
+                    </option>
+                    <option value="bottom-right">
+                        {pgettext("Coordinate label position", "Bottom Right")}
+                    </option>
+                </select>
+            </div>
 
-            <button
-                className={"GameSidebarPanel-item" + (ai_review_enabled ? " active" : "")}
-                onClick={goban_controller.toggleAIReview}
-                title={ai_review_enabled ? _("Disable AI review") : _("Enable AI review")}
-            >
-                <i className="fa fa-desktop" />
-                <span>{ai_review_enabled ? _("Disable AI review") : _("Enable AI review")}</span>
-            </button>
+            <div className="GameSidebarPanel-labeled-row">
+                <label htmlFor="game-settings-ai-review">
+                    <i className="fa fa-desktop" />
+                    <span>{_("AI Review")}</span>
+                </label>
+                <Toggle
+                    id="game-settings-ai-review"
+                    checked={ai_review_enabled}
+                    onChange={() => goban_controller.toggleAIReview()}
+                />
+            </div>
 
             {isPrivate && (
                 <button
@@ -138,6 +210,13 @@ export function GameSettingsPanel(): React.ReactElement {
                     </span>
                 </button>
             )}
+
+            <div className="GameSidebarPanel-section-header">
+                {pgettext("Goban theme section in the Game settings panel", "Theme")}
+            </div>
+            <div className="GameSettingsPanel-theme-picker">
+                <GobanThemePicker size={32} />
+            </div>
         </div>
     );
 }

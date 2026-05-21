@@ -30,6 +30,7 @@
     --private-chat-width: 20rem;
     --navbar-height: 3rem;
     --below-navbar: 3.3rem;
+    --goban-view-bottom-margin: 0.3rem;
     --goban-view-sidebar-width: 400px;
     --goban-view-tab-bar-height: 3rem;
 
@@ -122,6 +123,17 @@
     :root {
         --navbar-height: 2rem;
         --below-navbar: 2.3rem;
+    }
+}
+
+/* The GobanView sidebar flushes against the navbar's natural ~0.3rem
+ * lower spacer (--below-navbar minus --navbar-height) at the top, and
+ * mirrors that same 0.3rem at the bottom — visually symmetric framing.
+ * On short viewports we drop the bottom margin so the sidebar fills the
+ * available height. */
+@media (max-height: 700px) {
+    :root {
+        --goban-view-bottom-margin: 0;
     }
 }
 
