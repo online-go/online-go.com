@@ -2,6 +2,20 @@
  * Copyright (C)  Online-Go.com
  * Copyright (C)  Benjamin P. Jones
  */
+
+// Importing @/lib/data and @/lib/sockets in this order triggers their
+// full module bodies to evaluate before PlayerCards' transitive
+// ChatPresenceIndicator → UIPush → sockets chain re-enters the cycle.
+// This guards against the sockets/debug/data/ITC circular dependency
+// that otherwise produces "Cannot read properties of undefined (reading
+// 'on')" — previously avoided by chance because PlayerCard pulled in
+// browserHistory / usePreference / etc., which provided the same
+// load-order anchoring. Extracting mod-controls / flags removed those
+// imports and exposed the underlying fragility; the right long-term fix
+// is to break the cycle at the lib level.
+import "@/lib/data";
+import "@/lib/sockets";
+
 import { render } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import * as React from "react";
@@ -47,8 +61,6 @@ const BASE_PROPS = {
     estimating_score: false,
     show_score_breakdown: false,
     zen_mode: false,
-    flags: null,
-    ai_suspected: false,
     onScoreClick: jest.fn(),
 };
 

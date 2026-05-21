@@ -20,6 +20,7 @@ import { useParams, useLocation, useSearchParams } from "react-router-dom";
 
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
+import { usePreference } from "@/lib/preferences";
 import { _, interpolate, pgettext } from "@/lib/translate";
 import { popover, PopOver } from "@/lib/popover";
 import { get, abort_requests_in_flight } from "@/lib/requests";
@@ -31,11 +32,11 @@ import * as player_cache from "@/lib/player_cache";
 import { notification_manager } from "@/components/Notifications";
 import { GameChat } from "./GameChat";
 import { goban_view_mode } from "./util";
-import { PlayerCards } from "./PlayerCards";
+import { PlayerCard, PlayerCards } from "./PlayerCards";
 import { PlayControls, ReviewControls } from "./PlayControls";
 import { alert } from "@/lib/swal_config";
 import { useMode, usePhase, useUserIsParticipant, useZenMode } from "./GameHooks";
-import { GobanControllerContext, GobanView } from "@/components/GobanView";
+import { GobanControllerContext, GobanView, GobanViewRef } from "@/components/GobanView";
 import { ModalContext } from "@/components/ModalProvider";
 import { useUser } from "@/lib/hooks";
 import { MODERATOR_POWERS } from "@/lib/moderation";
@@ -47,6 +48,8 @@ import { FragAIReview, GameInformation, GameKeyboardShortcuts, RengoHeader } fro
 import { GameSettingsPanel } from "./GameSettingsPanel";
 import { GameActionsPanel } from "./GameActionsPanel";
 import { GameModToolsPanel } from "./GameModToolsPanel";
+import { GameModeratorAreaPanel } from "./GameModeratorAreaPanel";
+import { GameStateHeader } from "./GameStateHeader";
 import { toast } from "@/lib/toast";
 import { ignore } from "@/lib/misc";
 import { updateAntiGriefGameState } from "./AntiGrief";
@@ -112,6 +115,114 @@ export function Game(): React.ReactElement | null {
     const mode = useMode(goban);
     const modal_context = React.useContext(ModalContext);
     const more_actions_popover_ref = React.useRef<PopOver | null>(null);
+    const goban_view_ref = React.useRef<GobanViewRef>(null);
+    const [layout_preference] = usePreference("game.layout");
+    const [moderator_tab_visible, set_moderator_tab_visible] = usePreference(
+        "moderator.game-moderator-tab-visible",
+    );
+    // Zen mode always uses the standard sidebar layout regardless of the
+    // user's saved preference, so the small vertically-centered controls fit.
+    const stacked = !zen_mode && layout_preference === "stacked";
+
+    // Entering zen mode while a takeover (e.g. Settings) is open leaves the
+    // user stuck: the tab bar that would normally toggle the takeover off
+    // is hidden by zen styling, so the only way out is Esc — which exits
+    // zen instead of the takeover. Close any active takeover when zen
+    // activates so the in-zen view stays clean.
+    React.useEffect(() => {
+        if (zen_mode) {
+            goban_view_ref.current?.setActiveTakeover(null);
+        }
+    }, [zen_mode]);
+
+    // Stacked mode wants the player cards' width to match the actual
+    // board. The goban renderers write `parent.style.width = metrics.width`
+    // on the `.Goban` element (SVGRenderer.ts:3912 / CanvasRenderer.ts:2740),
+    // where `metrics.width = square_size × (cells + edges)` — which is
+    // typically a few px smaller than the available container space (each
+    // cell rounds down). Read that width directly so the cards line up
+    // exactly with the rendered board edges, not the container edges.
+    //
+    // The goban controller is created in a *later* useEffect, and until it
+    // exists Game.tsx returns null, so the GobanView (and therefore the
+    // .goban-container we want to observe) isn't even in the DOM when
+    // this effect first fires. Depend on `goban` too so the effect re-runs
+    // once the DOM materialises. The .Goban element is then created
+    // synchronously by PersistentElement; we still watch the container
+    // subtree with a MutationObserver in case the controller is rebuilt
+    // (e.g. a game/review id change) so the ResizeObserver re-attaches to
+    // the new .Goban node.
+    React.useEffect(() => {
+        if (!stacked || !goban) {
+            return undefined;
+        }
+        const root = document.querySelector(".GobanView.Game") as HTMLElement | null;
+        const container = root?.querySelector(".goban-container") as HTMLElement | null;
+        if (!root || !container) {
+            return undefined;
+        }
+        const cards = () => root.querySelectorAll<HTMLElement>(".GameStackedPlayer");
+        // The DOM has TWO nested elements with class "Goban":
+        //   <div class="Goban">         (PersistentElement wrapper, no width)
+        //     <div class="Goban">        (goban_div — has style.width=metrics.width)
+        // querySelector returns the outer wrapper (offsetWidth=0). Use the
+        // last match instead (deepest in DOM order) to get the real board.
+        const getInnerGoban = (): HTMLElement | null => {
+            const all = container.querySelectorAll<HTMLElement>(".Goban");
+            return all.length ? all[all.length - 1] : null;
+        };
+        const update = () => {
+            const goban_el = getInnerGoban();
+            // Prefer the inner .Goban's measured width — that's the actual board.
+            let target = goban_el?.offsetWidth ?? 0;
+            // Until the goban has been laid out, fall back to min(w, h) of
+            // the container so cards aren't stuck at zero on first mount.
+            if (target < 100) {
+                const r = container.getBoundingClientRect();
+                target = Math.floor(Math.min(r.width, r.height));
+                if (target < 100) {
+                    return;
+                }
+            }
+            const value = `${target}px`;
+            cards().forEach((card) => {
+                card.style.width = value;
+                card.style.maxWidth = "100%";
+            });
+        };
+        const resize_observer = new ResizeObserver(update);
+        resize_observer.observe(container);
+        // Observe the inner .Goban once it exists. The reference can change
+        // (the controller is destroyed and rebuilt on game/review id
+        // changes), so swap the observed element whenever we see a
+        // different node.
+        let observed_goban: Element | null = null;
+        const syncGobanObservation = () => {
+            const goban_el = getInnerGoban();
+            if (goban_el && goban_el !== observed_goban) {
+                if (observed_goban) {
+                    resize_observer.unobserve(observed_goban);
+                }
+                resize_observer.observe(goban_el);
+                observed_goban = goban_el;
+            }
+        };
+        syncGobanObservation();
+        const mutation_observer = new MutationObserver(() => {
+            syncGobanObservation();
+            update();
+        });
+        mutation_observer.observe(container, { childList: true, subtree: true });
+        update();
+        return () => {
+            resize_observer.disconnect();
+            mutation_observer.disconnect();
+            cards().forEach((card) => {
+                card.style.width = "";
+                card.style.maxWidth = "";
+            });
+        };
+    }, [stacked, goban]);
 
     /* Functions */
     const getLocation = (): string => {
@@ -708,14 +819,6 @@ export function Game(): React.ReactElement | null {
                                 historical_white={historical_white}
                                 onClose={close}
                             />
-                            {show_mod_tab && (
-                                <GameModToolsPanel
-                                    historical_black={historical_black}
-                                    historical_white={historical_white}
-                                    ai_suspected={ai_suspected}
-                                    onClose={close}
-                                />
-                            )}
                         </div>
                     </ModalContext.Provider>
                 </GobanControllerContext.Provider>
@@ -742,11 +845,57 @@ export function Game(): React.ReactElement | null {
 
     (window as any)["goban_controller"] = goban_controller.current;
 
+    // Determine which color sits at the bottom: the user's own color when
+    // they're playing, else black (the side that moves first).
+    const user_color: "black" | "white" | null =
+        user.id === goban.engine.players.black?.id
+            ? "black"
+            : user.id === goban.engine.players.white?.id
+              ? "white"
+              : null;
+    const bottom_color: "black" | "white" = user_color ?? "black";
+    const top_color: "black" | "white" = bottom_color === "black" ? "white" : "black";
+
+    const renderPlayerCard = (color: "black" | "white") => (
+        <PlayerCard
+            color={color}
+            goban={goban!}
+            historical={color === "black" ? historical_black : historical_white}
+            estimating_score={estimating_score}
+            show_score_breakdown={false}
+            onScoreClick={() => undefined}
+            zen_mode={zen_mode}
+        />
+    );
+
     return (
         <GobanView
+            ref={goban_view_ref}
             controller={goban_controller.current}
-            className="Game MainGobanView"
+            className={
+                "Game MainGobanView" + (stacked ? " stacked" : "") + (zen_mode ? " zen" : "")
+            }
             onWheel={onWheel}
+            centerTop={
+                stacked && (
+                    <div className="GameStackedPlayer top">
+                        {/* PlayerCard inherits its styling from
+                         *  `.MainGobanView .player-icons .player-container`; wrap
+                         *  it so those selectors match and override the 49%
+                         *  width that's appropriate for the two-up sidebar
+                         *  layout but not for a solo full-width card. */}
+                        <div className="player-icons">{renderPlayerCard(top_color)}</div>
+                    </div>
+                )
+            }
+            centerBottom={
+                stacked && (
+                    <div className="GameStackedPlayer bottom">
+                        <div className="player-icons">{renderPlayerCard(bottom_color)}</div>
+                    </div>
+                )
+            }
+            header={<GameStateHeader />}
         >
             {game_id > 0 && (
                 <UIPush
@@ -757,20 +906,26 @@ export function Game(): React.ReactElement | null {
             )}
             <GameKeyboardShortcuts />
 
+            {/* Full-screen / zen-mode toggle, pinned just to the left of the
+             *  sidebar's top edge. Always rendered; opacity is 0.5 by
+             *  default and animates to 1 on hover. Esc also toggles zen
+             *  via handleEscapeKey. */}
+            <i
+                className={"goban-fullscreen-toggle fa " + (zen_mode ? "fa-compress" : "fa-expand")}
+                onClick={goban_controller.current.toggleZenMode}
+                role="button"
+                aria-label={zen_mode ? _("Exit full screen") : _("Full screen")}
+                title={zen_mode ? _("Exit full screen") : _("Full screen")}
+            />
+
             <GobanView.Tab id="game-main" type="always">
-                <PlayerCards
-                    historical_black={historical_black}
-                    historical_white={historical_white}
-                    estimating_score={estimating_score}
-                    black_flags={black_flags}
-                    white_flags={white_flags}
-                    black_ai_suspected={bot_detection_results?.ai_suspected.includes(
-                        historical_black?.id,
-                    )}
-                    white_ai_suspected={bot_detection_results?.ai_suspected.includes(
-                        historical_white?.id,
-                    )}
-                />
+                {!stacked && (
+                    <PlayerCards
+                        historical_black={historical_black}
+                        historical_white={historical_white}
+                        estimating_score={estimating_score}
+                    />
+                )}
                 <GameInformation />
                 <RengoHeader />
 
@@ -826,7 +981,9 @@ export function Game(): React.ReactElement | null {
                 icon="gear"
                 title={_("Settings")}
             >
-                <GameSettingsPanel />
+                <GameSettingsPanel
+                    onClose={() => goban_view_ref.current?.setActiveTakeover(null)}
+                />
             </GobanView.Tab>
 
             {game && (
@@ -856,8 +1013,37 @@ export function Game(): React.ReactElement | null {
                 />
             )}
 
-            {/* Right: More actions on the far right. Moderator tools are
-             *  consolidated into the popover when the user has them. */}
+            {/* Right group, in source order (visually left → right):
+             *  1. Moderator toggle (gavel) — per-player controls + decide /
+             *     annul / inspect / AI-review tools. Sticky between
+             *     reloads via the `moderator.game-moderator-tab-visible`
+             *     preference, gated on user role.
+             *  2. More actions (ellipsis) — popover with the
+             *     non-moderator game actions. */}
+            {show_mod_tab && (
+                <GobanView.Tab
+                    id="game-moderator"
+                    type="toggle"
+                    align="right"
+                    icon="gavel"
+                    title={_("Moderator")}
+                    defaultVisible={moderator_tab_visible}
+                    onToggle={set_moderator_tab_visible}
+                >
+                    <GameModeratorAreaPanel
+                        historical_black={historical_black}
+                        historical_white={historical_white}
+                        black_flags={black_flags}
+                        white_flags={white_flags}
+                        bot_detection_results={bot_detection_results}
+                    />
+                    <GameModToolsPanel
+                        historical_black={historical_black}
+                        historical_white={historical_white}
+                        ai_suspected={ai_suspected}
+                    />
+                </GobanView.Tab>
+            )}
             <GobanView.Tab
                 id="game-actions"
                 type="action"

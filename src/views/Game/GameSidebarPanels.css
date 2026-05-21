@@ -128,6 +128,65 @@
         }
     }
 
+    /* Row with a left-side label (icon + text) and a right-aligned
+     * control (toggle, dropdown, etc). Used by the in-game settings panel
+     * for the Coordinates dropdown and the AI Review toggle. */
+    .GameSidebarPanel-labeled-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 0.5rem;
+        font-size: 0.875rem;
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+            min-width: 0;
+            cursor: pointer;
+
+            i {
+                width: 1.1rem;
+                text-align: center;
+                color: var(--shade1);
+            }
+        }
+
+        select {
+            min-width: 8rem;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.2rem;
+            background: var(--shade4);
+            color: var(--fg);
+            border: 1px solid var(--shade2);
+            cursor: pointer;
+        }
+    }
+
+    /* Wrapper for the embedded GobanThemePicker — it has its own internal
+     * grid layout; we just give it a bit of horizontal breathing room
+     * inside the sidebar's padding-free panel. */
+    .GameSettingsPanel-theme-picker {
+        padding: 0 0.25rem;
+
+        .GobanThemePicker {
+            justify-content: flex-start;
+        }
+
+        /* Pin the board-theme grid to 7 columns so the 14 standard
+         * boards form a tidy 7x2 grid instead of wrapping at whatever
+         * the available sidebar width happens to allow. The 3 sub-
+         * pickers (board / white stones / black stones) all use the
+         * same `.GobanThemePicker` class, so target the first one by
+         * structural position. */
+        > .GobanThemePicker > .GobanThemePicker:first-child .theme-set {
+            display: inline-grid;
+            grid-template-columns: repeat(7, auto);
+            width: auto;
+        }
+    }
+
     hr {
         border: none;
         border-top: 1px solid var(--shade4);
