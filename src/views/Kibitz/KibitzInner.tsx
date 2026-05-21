@@ -909,13 +909,14 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         (variation) => variation.id === secondaryPane.variation_id,
     );
     const currentGameId = resolvedRoom?.current_game?.game_id ?? null;
-    React.useEffect(() => {
-        currentRoomIdRef.current = resolvedRoom?.id ?? null;
-    }, [resolvedRoom?.id]);
-
-    React.useEffect(() => {
-        currentRoomGameIdRef.current = resolvedRoom?.current_game?.game_id ?? null;
-    }, [resolvedRoom?.current_game?.game_id]);
+    // Synced during render so the refs hold the live room/game before any
+    // child mount effect fires. Child boards register via setMainBoardController
+    // from their own mount effects (which run before this component's effects),
+    // and that registration captures these refs into the controller context.
+    // Updating in useEffect would leave the refs null at registration time,
+    // permanently mismatching every isCurrentMainBoardController check.
+    currentRoomIdRef.current = resolvedRoom?.id ?? null;
+    currentRoomGameIdRef.current = currentGameId;
 
     const setMainBoardController = React.useCallback((controller: GobanController | null) => {
         mainBoardControllerEpochRef.current += 1;
