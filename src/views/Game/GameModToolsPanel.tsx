@@ -28,23 +28,18 @@ import { toast } from "@/lib/toast";
 import { ModalContext, ModalTypes } from "@/components/ModalProvider";
 import { usePhase } from "./GameHooks";
 import { useGobanController } from "./goban_context";
-import "./GameSidebarPanels.css";
+import "./GameModToolsPanel.css";
 
 interface GameModToolsPanelProps {
     historical_black: rest_api.games.Player | null;
     historical_white: rest_api.games.Player | null;
     ai_suspected: boolean;
-    /** When rendered inside a popover, GobanView's container click handler
-     *  doesn't reach into our content, so each interactive item dismisses
-     *  itself via this callback. */
-    onClose?: () => void;
 }
 
 export function GameModToolsPanel({
     historical_black,
     historical_white,
     ai_suspected,
-    onClose,
 }: GameModToolsPanelProps): React.ReactElement | null {
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
@@ -78,6 +73,8 @@ export function GameModToolsPanel({
 
     const annulable = !annulled && engine.config.ranked;
     const unannulable = annulled && engine.config.ranked;
+    const can_inspect_full = user_can_intervene || user_can_annul;
+    const show_icons = user_can_intervene || user_can_annul || user_detects_ai;
 
     const decide = (winner: string): void => {
         if (!game_id) {
@@ -98,9 +95,6 @@ export function GameModToolsPanel({
             moderation_note,
         }).catch(errorAlerter);
     };
-    const decide_white = () => decide("white");
-    const decide_black = () => decide("black");
-    const decide_tie = () => decide("tie");
 
     const force_autoscore = () => {
         if (!game_id) {
@@ -191,134 +185,167 @@ export function GameModToolsPanel({
         return null;
     }
 
-    // Wrap a handler so the popover dismisses after the action fires.
-    const wrap = <T extends unknown[]>(fn: (...args: T) => void) => {
-        return (...args: T) => {
-            fn(...args);
-            onClose?.();
-        };
-    };
-
     return (
-        <div className="GameSidebarPanel GameModToolsPanel">
-            <h3 className="GameSidebarPanel-title">{_("Moderator tools")}</h3>
-
+        <div className="GameModToolsPanel">
             {user_can_intervene && (
-                <>
-                    <div className="GameSidebarPanel-section-header">{_("Decide outcome")}</div>
-                    <button className="GameSidebarPanel-item" onClick={wrap(decide_black)}>
-                        <i className="fa fa-gavel" />
-                        <span>{_("Black Wins")}</span>
-                    </button>
-                    <button className="GameSidebarPanel-item" onClick={wrap(decide_white)}>
-                        <i className="fa fa-gavel" />
-                        <span>{_("White Wins")}</span>
-                    </button>
-                    <button className="GameSidebarPanel-item" onClick={wrap(decide_tie)}>
-                        <i className="fa fa-gavel" />
-                        <span>{_("Tie")}</span>
-                    </button>
-                    <button className="GameSidebarPanel-item" onClick={wrap(force_autoscore)}>
-                        <i className="fa fa-gavel" />
-                        <span>{_("Auto-score")}</span>
-                    </button>
-                </>
-            )}
-
-            {user_can_annul && (
-                <>
-                    <div className="GameSidebarPanel-section-header">{_("Annulment")}</div>
-                    {annulable && (
-                        <button
-                            className="GameSidebarPanel-item"
-                            onClick={wrap(() => do_annul(true))}
-                        >
-                            <i className="fa fa-gavel" />
-                            <span>{_("Annul")}</span>
-                        </button>
-                    )}
-                    {unannulable && (
-                        <button
-                            className="GameSidebarPanel-item"
-                            onClick={wrap(() => do_annul(false))}
-                        >
-                            <i className="fa fa-gavel unannulable" />
-                            <span>{"Remove annulment"}</span>
-                        </button>
-                    )}
-                    {!annulable && !unannulable && (
-                        <div className="GameSidebarPanel-item disabled">
-                            <i className="fa fa-gavel" />
-                            <span>{_("Annul")}</span>
-                        </div>
-                    )}
-                </>
-            )}
-
-            {(user_can_intervene || user_can_annul || user_detects_ai) && (
-                <>
-                    <div className="GameSidebarPanel-section-header">{_("Inspect")}</div>
+                <div
+                    className="GameModToolsPanel-decide"
+                    role="group"
+                    aria-label={_("Decide outcome")}
+                >
                     <button
-                        className="GameSidebarPanel-item"
-                        onClick={wrap(goban_controller.toggleShowTiming)}
+                        type="button"
+                        className="GameModToolsPanel-decide-btn black"
+                        onClick={() => decide("black")}
+                        title={_("Decide: Black wins")}
+                    >
+                        {_("Black")}
+                    </button>
+                    <button
+                        type="button"
+                        className="GameModToolsPanel-decide-btn tie"
+                        onClick={() => decide("tie")}
+                        title={_("Decide: Tie")}
+                    >
+                        {_("Tie")}
+                    </button>
+                    <button
+                        type="button"
+                        className="GameModToolsPanel-decide-btn auto"
+                        onClick={force_autoscore}
+                        title={_("Force auto-score")}
+                    >
+                        {_("Auto")}
+                    </button>
+                    <button
+                        type="button"
+                        className="GameModToolsPanel-decide-btn white"
+                        onClick={() => decide("white")}
+                        title={_("Decide: White wins")}
+                    >
+                        {_("White")}
+                    </button>
+                </div>
+            )}
+
+            {user_can_annul && annulable && (
+                <button
+                    type="button"
+                    className="GameModToolsPanel-action annul"
+                    onClick={() => do_annul(true)}
+                >
+                    <i className="fa fa-gavel" />
+                    <span>{_("Annul this game")}</span>
+                </button>
+            )}
+            {user_can_annul && unannulable && (
+                <button
+                    type="button"
+                    className="GameModToolsPanel-action restore"
+                    onClick={() => do_annul(false)}
+                >
+                    <i className="fa fa-undo" />
+                    <span>{_("Restore (un-annul)")}</span>
+                </button>
+            )}
+            {user_can_annul && !annulable && !unannulable && (
+                <div
+                    className="GameModToolsPanel-action disabled"
+                    title={_("This game is not ranked")}
+                >
+                    <i className="fa fa-gavel" />
+                    <span>{_("Annul (unranked)")}</span>
+                </div>
+            )}
+
+            {show_icons && (
+                <div className="GameModToolsPanel-icons" role="group" aria-label={_("Inspect")}>
+                    <button
+                        type="button"
+                        className="GameModToolsPanel-icon"
+                        onClick={goban_controller.toggleShowTiming}
+                        title={_("Timing")}
+                        aria-label={_("Timing")}
                     >
                         <i className="fa fa-clock-o" />
-                        <span>{_("Timing")}</span>
                     </button>
+                    {can_inspect_full && (
+                        <>
+                            <button
+                                type="button"
+                                className="GameModToolsPanel-icon"
+                                onClick={showLogModal}
+                                title={_("Game log")}
+                                aria-label={_("Game log")}
+                            >
+                                <i className="fa fa-list-alt" />
+                            </button>
+                            <button
+                                type="button"
+                                className="GameModToolsPanel-icon"
+                                onClick={showMoveMetadataModal}
+                                title={_("Move metadata")}
+                                aria-label={_("Move metadata")}
+                            >
+                                <i className="fa fa-list" />
+                            </button>
+                        </>
+                    )}
                     {ai_suspected && (
                         <button
-                            className="GameSidebarPanel-item"
-                            onClick={wrap(goban_controller.toggleShowBotDetectionResults)}
+                            type="button"
+                            className="GameModToolsPanel-icon"
+                            onClick={goban_controller.toggleShowBotDetectionResults}
+                            title={_("Bot detection results")}
+                            aria-label={_("Bot detection results")}
                         >
-                            <i className="fa fa-exclamation" />
-                            <span>{_("Bot Detection Results")}</span>
+                            <i className="fa fa-exclamation-triangle" />
                         </button>
                     )}
-                </>
-            )}
-
-            {(user_can_intervene || user_can_annul) && (
-                <>
-                    <button className="GameSidebarPanel-item" onClick={wrap(showLogModal)}>
-                        <i className="fa fa-list-alt" />
-                        <span>{"Log"}</span>
-                    </button>
-                    <button className="GameSidebarPanel-item" onClick={wrap(showMoveMetadataModal)}>
-                        <i className="fa fa-list" />
-                        <span>{"Move Metadata"}</span>
-                    </button>
-                    <button
-                        className="GameSidebarPanel-item"
-                        onClick={wrap(toggleAnonymousModerator)}
-                    >
-                        <i className="fa fa-user-secret" />
-                        <span>{"Cloak of Invisibility"}</span>
-                    </button>
-                </>
+                    {can_inspect_full && (
+                        <button
+                            type="button"
+                            className="GameModToolsPanel-icon"
+                            onClick={toggleAnonymousModerator}
+                            title={_("Cloak of invisibility")}
+                            aria-label={_("Cloak of invisibility")}
+                        >
+                            <i className="fa fa-user-secret" />
+                        </button>
+                    )}
+                </div>
             )}
 
             {superuser_ai_review_ready && (
-                <>
-                    <div className="GameSidebarPanel-section-header">{_("AI Review")}</div>
+                <div className="GameModToolsPanel-ai" role="group" aria-label={_("AI Review")}>
                     <button
-                        className="GameSidebarPanel-item"
-                        onClick={wrap(() => force_ai_review("fast"))}
+                        type="button"
+                        className="GameModToolsPanel-ai-btn"
+                        onClick={() => force_ai_review("fast")}
+                        title={_("Fast AI review")}
                     >
-                        <i className="fa fa-line-chart" />
-                        <span>{"Fast AI Review"}</span>
+                        <i className="fa fa-bolt" />
+                        <span>{_("Fast")}</span>
                     </button>
                     <button
-                        className="GameSidebarPanel-item"
-                        onClick={wrap(() => force_ai_review("full"))}
+                        type="button"
+                        className="GameModToolsPanel-ai-btn"
+                        onClick={() => force_ai_review("full")}
+                        title={_("Full AI review")}
                     >
                         <i className="fa fa-area-chart" />
-                        <span>{_("Full AI Review")}</span>
+                        <span>{_("Full")}</span>
                     </button>
-                    <button className="GameSidebarPanel-item" onClick={wrap(delete_ai_reviews)}>
+                    <button
+                        type="button"
+                        className="GameModToolsPanel-ai-btn danger"
+                        onClick={delete_ai_reviews}
+                        title={_("Delete all AI reviews")}
+                        aria-label={_("Delete all AI reviews")}
+                    >
                         <i className="fa fa-trash" />
-                        <span>{"Delete AI reviews"}</span>
                     </button>
-                </>
+                </div>
             )}
         </div>
     );
