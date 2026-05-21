@@ -3548,6 +3548,8 @@ export function KibitzRoomStage({
                                         type="button"
                                         className="xs primary kibitz-create-variation-button"
                                         onClick={handleCreateVariation}
+                                        xtra
+                                        de
                                     >
                                         {pgettext(
                                             "Button label for opening Kibitz variation creation",

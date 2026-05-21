@@ -1141,9 +1141,25 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             const cachedSnapshotForLog: KibitzCurrentGameBaseSnapshot | null =
                 currentGameBaseSnapshot;
             if (!isCurrentMainBoardController(mainBoardController)) {
+                const ctx = mainBoardControllerContextRef.current;
                 logKibitzVariationDebug("current-game-base-snapshot:stale-main-controller", {
                     reason,
                     gameId: game.game_id,
+                    diagnostic: {
+                        controllerProvided: Boolean(mainBoardController),
+                        contextPresent: Boolean(ctx),
+                        controllerMatches: Boolean(ctx && ctx.controller === mainBoardController),
+                        epochMatches: Boolean(
+                            ctx && ctx.epoch === mainBoardControllerEpochRef.current,
+                        ),
+                        roomIdMatches: Boolean(ctx && ctx.roomId === currentRoomIdRef.current),
+                        gameIdMatches: Boolean(ctx && ctx.gameId === currentRoomGameIdRef.current),
+                        parentConnected: Boolean(mainBoardController?.goban.parent?.isConnected),
+                        contextRoomId: ctx?.roomId ?? null,
+                        contextGameId: ctx?.gameId ?? null,
+                        liveRoomId: currentRoomIdRef.current,
+                        liveGameId: currentRoomGameIdRef.current,
+                    },
                 });
                 return null;
             }
