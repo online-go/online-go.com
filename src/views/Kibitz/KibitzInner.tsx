@@ -158,6 +158,19 @@ async function fetchCurrentGameBaseSnapshot(
     }
 
     const boardDiv = document.createElement("div");
+    boardDiv.setAttribute("aria-hidden", "true");
+    boardDiv.style.position = "absolute";
+    boardDiv.style.width = "1px";
+    boardDiv.style.height = "1px";
+    boardDiv.style.overflow = "hidden";
+    boardDiv.style.pointerEvents = "none";
+    boardDiv.style.opacity = "0";
+    boardDiv.style.left = "-10000px";
+    boardDiv.style.top = "0";
+    // captureCurrentGameBaseSnapshotFromController rejects controllers whose
+    // board element is not in the document, so the div must be attached for
+    // the short lifetime of this controller.
+    document.body.appendChild(boardDiv);
     const config: GobanRendererConfig & { moves?: GobanConfig["moves"] } = {
         board_div: boardDiv,
         interactive: false,
@@ -192,6 +205,7 @@ async function fetchCurrentGameBaseSnapshot(
         return snapshot;
     } finally {
         snapshotController.destroy();
+        boardDiv.remove();
     }
 }
 
