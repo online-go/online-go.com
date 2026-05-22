@@ -344,12 +344,16 @@ function ClockWithPauseOverlay({ goban, color }: ClockWithPauseOverlayProps): Re
     const user_is_player =
         !user.anonymous &&
         (user.id === engine.players.black?.id || user.id === engine.players.white?.id);
+    // Moderators bypass the vacation / rengo / participant gating that
+    // applies to players — `disable_vacation` only constrains player-side
+    // pauses, and the server stamps the pause as `moderator_paused`
+    // regardless. This gives moderators a clock-click affordance without a
+    // dedicated mod-tools button.
     const can_pause =
         !goban.review_id &&
-        user_is_player &&
         engine.phase !== "finished" &&
-        !engine.rengo &&
-        !engine.config.disable_vacation;
+        ((user_is_player && !engine.rengo && !engine.config.disable_vacation) ||
+            !!user?.is_moderator);
 
     const [paused, set_paused] = React.useState<boolean>(false);
     React.useEffect(() => {
