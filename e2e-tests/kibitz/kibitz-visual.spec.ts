@@ -852,7 +852,7 @@ async function measureKibitzLeftRailWidths(page: Page) {
     });
 }
 
-ogsTest.describe("@Kibitz layout regressions", () => {
+ogsTest.describe("@Kibitz @Manual layout regressions", () => {
     ogsTest("left compare board wrappers stay tight to the rendered goban", async ({ page }) => {
         await openKibitzEqualCompareMode(page, "/kibitz/user-fea5dced");
 
