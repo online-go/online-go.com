@@ -1751,7 +1751,7 @@ export function KibitzRoomStage({
             return;
         }
 
-        if (selectedVariation?.game_id !== currentRoomGameId) {
+        if (selectedVariationGameId !== currentRoomGameId) {
             lastMainBoardOfficialTailMoveNumberRef.current = mainBoardOfficialTailMoveNumber;
             return;
         }
@@ -1764,7 +1764,7 @@ export function KibitzRoomStage({
         lastMainBoardOfficialTailMoveNumberRef.current = mainBoardOfficialTailMoveNumber;
         logKibitzVariationDebug("main-board:official-tail-advanced", {
             gameId: currentRoomGameId,
-            selectedVariationId: selectedVariation.id,
+            selectedVariationId: selectedVariation?.id ?? null,
             previousTailMoveNumber,
             nextTailMoveNumber: mainBoardOfficialTailMoveNumber,
         });
@@ -1884,7 +1884,7 @@ export function KibitzRoomStage({
                 pendingLoad &&
                 pendingLoad.controller === secondaryBoardController &&
                 pendingLoad.roomId === currentRoomIdRef.current &&
-                pendingLoad.gameId === selectedVariation.game_id &&
+                pendingLoad.gameId === selectedVariationGameId &&
                 pendingLoad.operationId === secondarySnapshotLoadOperationIdRef.current &&
                 isCurrentSecondaryLoadController(),
             );
