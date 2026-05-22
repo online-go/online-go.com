@@ -41,6 +41,7 @@ import {
     usePhase,
     usePlayerToMove,
     useUserIsParticipant,
+    useViewMode,
     useZenMode,
 } from "./GameHooks";
 import { GobanControllerContext, GobanView, GobanViewRef } from "@/components/GobanView";
@@ -130,9 +131,24 @@ export function Game(): React.ReactElement | null {
     const [moderator_tab_visible, set_moderator_tab_visible] = usePreference(
         "moderator.game-moderator-tab-visible",
     );
+    // Mobile (portrait) gets a dedicated, non-configurable layout: both
+    // player cards above the board, chat hidden behind a toggle in the
+    // action bar. The standard / stacked preference doesn't apply.
+    const view_mode = useViewMode(goban_controller.current);
+    const is_mobile = view_mode === "portrait";
+    // Two-level chat gating:
+    //   • `chat_enabled` (preference, Settings toggle, default true) —
+    //     master switch for the chat feature. When false, no chat
+    //     renders anywhere and the mobile action-bar tab is hidden.
+    //   • `mobile_chat_visible` (local state, default false) — session-
+    //     level show/hide for the mobile chat. Toggled via the mobile
+    //     action-bar tab. Has no effect when `chat_enabled` is false or
+    //     on desktop (chat is always visible there if the feature is on).
+    const [chat_enabled] = usePreference("game.chat-enabled");
+    const [mobile_chat_visible, set_mobile_chat_visible] = React.useState(false);
     // Zen mode always uses the standard sidebar layout regardless of the
     // user's saved preference, so the small vertically-centered controls fit.
-    const stacked = !zen_mode && layout_preference === "stacked";
+    const stacked = !is_mobile && !zen_mode && layout_preference === "stacked";
 
     // Entering zen mode while a takeover (e.g. Settings) is open leaves the
     // user stuck: the tab bar that would normally toggle the takeover off
@@ -853,7 +869,7 @@ export function Game(): React.ReactElement | null {
                 <GobanControllerContext.Provider value={controller}>
                     <ModalContext.Provider value={modal_context}>
                         <div className="GamePopover GameSettingsPopover">
-                            <GameSettingsPanel onClose={close} />
+                            <GameSettingsPanel onClose={close} compact={is_mobile} />
                         </div>
                     </ModalContext.Provider>
                 </GobanControllerContext.Provider>
@@ -952,10 +968,14 @@ export function Game(): React.ReactElement | null {
             ref={goban_view_ref}
             controller={goban_controller.current}
             className={
-                "Game MainGobanView" + (stacked ? " stacked" : "") + (zen_mode ? " zen" : "")
+                "Game MainGobanView" +
+                (stacked ? " stacked" : "") +
+                (is_mobile ? " mobile" : "") +
+                (zen_mode ? " zen" : "")
             }
             onWheel={onWheel}
             centerTop={
+                !is_mobile &&
                 stacked && (
                     <div className="GameStackedPlayer top">
                         {/* PlayerCard inherits its styling from
@@ -968,6 +988,7 @@ export function Game(): React.ReactElement | null {
                 )
             }
             centerBottom={
+                !is_mobile &&
                 stacked && (
                     <div className="GameStackedPlayer bottom">
                         <div className="player-icons">{renderPlayerCard(bottom_color)}</div>
@@ -986,26 +1007,43 @@ export function Game(): React.ReactElement | null {
             <GameKeyboardShortcuts />
 
             {/* Full-screen / zen-mode toggle, pinned just to the left of the
-             *  sidebar's top edge. Always rendered; opacity is 0.5 by
-             *  default and animates to 1 on hover. Esc also toggles zen
-             *  via handleEscapeKey. */}
-            <i
-                className={"goban-fullscreen-toggle fa " + (zen_mode ? "fa-compress" : "fa-expand")}
-                onClick={goban_controller.current.toggleZenMode}
-                role="button"
-                aria-label={zen_mode ? _("Exit full screen") : _("Full screen")}
-                title={zen_mode ? _("Exit full screen") : _("Full screen")}
-            />
+             *  sidebar's top edge. Hidden on mobile (no fullscreen there;
+             *  the viewport is already the full screen). Opacity 0.5 by
+             *  default, animates to 1 on hover. Esc also toggles zen via
+             *  handleEscapeKey. */}
+            {!is_mobile && (
+                <i
+                    className={
+                        "goban-fullscreen-toggle fa " + (zen_mode ? "fa-compress" : "fa-expand")
+                    }
+                    onClick={goban_controller.current.toggleZenMode}
+                    role="button"
+                    aria-label={zen_mode ? _("Exit full screen") : _("Full screen")}
+                    title={zen_mode ? _("Exit full screen") : _("Full screen")}
+                />
+            )}
 
             <GobanView.Tab id="game-main" type="always">
-                {!stacked && (
+                {is_mobile && (
+                    // Mobile renders both players inside the always-panel so
+                    // they appear in the scroll area immediately under the
+                    // square goban (centerBottom is clipped because .GobanView-
+                    // center is locked to a goban-sized square in portrait).
+                    <div className="GameMobilePlayers">
+                        <div className="player-icons">
+                            {renderPlayerCard("black")}
+                            {renderPlayerCard("white")}
+                        </div>
+                    </div>
+                )}
+                {!stacked && !is_mobile && (
                     <PlayerCards
                         historical_black={historical_black}
                         historical_white={historical_white}
                         estimating_score={estimating_score}
                     />
                 )}
-                <GameInformation />
+                {!is_mobile && <GameInformation />}
                 <RengoHeader />
 
                 {!zen_mode && (
@@ -1041,7 +1079,7 @@ export function Game(): React.ReactElement | null {
 
                 {CONTROLS}
 
-                {!zen_mode && (
+                {!zen_mode && chat_enabled && (!is_mobile || mobile_chat_visible) && (
                     <GameChat
                         channel={game_id ? `game-${game_id}` : `review-${review_id}`}
                         game_id={game_id}
@@ -1072,6 +1110,22 @@ export function Game(): React.ReactElement | null {
                     disabled={analysis_disabled}
                     active={is_analyzing}
                     onClick={onAnalyzeClick}
+                />
+            )}
+
+            {/* Mobile-only chat toggle. The icon itself is hidden when
+             *  the chat feature is disabled in Settings (chat_enabled
+             *  false) — re-enable from Settings to bring it back.
+             *  Otherwise the icon toggles the chat's session visibility. */}
+            {is_mobile && chat_enabled && (
+                <GobanView.Tab
+                    id="game-chat-toggle"
+                    type="action"
+                    align="left"
+                    icon="comment"
+                    title={_("Chat")}
+                    active={mobile_chat_visible}
+                    onClick={() => set_mobile_chat_visible((v) => !v)}
                 />
             )}
 
