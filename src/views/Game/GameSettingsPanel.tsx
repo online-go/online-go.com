@@ -31,9 +31,16 @@ interface GameSettingsPanelProps {
      *  applied (layout switch, zen mode). Toggles that the user is likely to
      *  flip multiple times (coordinates, AI review, volume) don't fire this. */
     onClose?: () => void;
+    /** Hide the Standard/Stacked layout chooser and the Full screen zen mode
+     *  button. The mobile (portrait) layout doesn't expose those — the
+     *  layout is fixed and the viewport is already the full screen. */
+    compact?: boolean;
 }
 
-export function GameSettingsPanel({ onClose }: GameSettingsPanelProps = {}): React.ReactElement {
+export function GameSettingsPanel({
+    onClose,
+    compact = false,
+}: GameSettingsPanelProps = {}): React.ReactElement {
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
     const engine = goban.engine;
@@ -96,6 +103,7 @@ export function GameSettingsPanel({ onClose }: GameSettingsPanelProps = {}): Rea
     const isPrivate = !!(engine.config as any)["private"];
 
     const [layout, setLayout] = usePreference("game.layout");
+    const [chat_enabled, set_chat_enabled] = usePreference("game.chat-enabled");
 
     const [label_position, setLabelPositionPref] = usePreference("label-positioning");
     // The preference is the source of truth; the goban needs an explicit
@@ -136,42 +144,56 @@ export function GameSettingsPanel({ onClose }: GameSettingsPanelProps = {}): Rea
                 />
             </div>
 
-            <div className="GameSidebarPanel-section-header">{_("Layout")}</div>
-            <button
-                className={"GameSidebarPanel-item" + (layout === "standard" ? " active" : "")}
-                onClick={() => {
-                    setLayout("standard");
-                    onClose?.();
-                }}
-                title={pgettext("Game layout option", "Standard")}
-            >
-                <i className="fa fa-columns" />
-                <span>{pgettext("Game layout option", "Standard")}</span>
-            </button>
-            <button
-                className={"GameSidebarPanel-item" + (layout === "stacked" ? " active" : "")}
-                onClick={() => {
-                    setLayout("stacked");
-                    onClose?.();
-                }}
-                title={pgettext("Game layout option: players above and below the board", "Stacked")}
-            >
-                <i className="fa fa-th-list" />
-                <span>
-                    {pgettext("Game layout option: players above and below the board", "Stacked")}
-                </span>
-            </button>
-            <button
-                className="GameSidebarPanel-item"
-                onClick={() => {
-                    goban_controller.toggleZenMode();
-                    onClose?.();
-                }}
-                title={_("Full screen zen mode")}
-            >
-                <i className="fa fa-expand" />
-                <span>{_("Full screen zen mode")}</span>
-            </button>
+            {!compact && (
+                <>
+                    <div className="GameSidebarPanel-section-header">{_("Layout")}</div>
+                    <button
+                        className={
+                            "GameSidebarPanel-item" + (layout === "standard" ? " active" : "")
+                        }
+                        onClick={() => {
+                            setLayout("standard");
+                            onClose?.();
+                        }}
+                        title={pgettext("Game layout option", "Standard")}
+                    >
+                        <i className="fa fa-columns" />
+                        <span>{pgettext("Game layout option", "Standard")}</span>
+                    </button>
+                    <button
+                        className={
+                            "GameSidebarPanel-item" + (layout === "stacked" ? " active" : "")
+                        }
+                        onClick={() => {
+                            setLayout("stacked");
+                            onClose?.();
+                        }}
+                        title={pgettext(
+                            "Game layout option: players above and below the board",
+                            "Stacked",
+                        )}
+                    >
+                        <i className="fa fa-th-list" />
+                        <span>
+                            {pgettext(
+                                "Game layout option: players above and below the board",
+                                "Stacked",
+                            )}
+                        </span>
+                    </button>
+                    <button
+                        className="GameSidebarPanel-item"
+                        onClick={() => {
+                            goban_controller.toggleZenMode();
+                            onClose?.();
+                        }}
+                        title={_("Full screen zen mode")}
+                    >
+                        <i className="fa fa-expand" />
+                        <span>{_("Full screen zen mode")}</span>
+                    </button>
+                </>
+            )}
 
             <div className="GameSidebarPanel-labeled-row">
                 <label htmlFor="game-settings-coords">
@@ -209,6 +231,18 @@ export function GameSettingsPanel({ onClose }: GameSettingsPanelProps = {}): Rea
                     id="game-settings-ai-review"
                     checked={ai_review_enabled}
                     onChange={() => goban_controller.toggleAIReview()}
+                />
+            </div>
+
+            <div className="GameSidebarPanel-labeled-row">
+                <label htmlFor="game-settings-chat-enabled">
+                    <i className="fa fa-comment" />
+                    <span>{_("Enable chat")}</span>
+                </label>
+                <Toggle
+                    id="game-settings-chat-enabled"
+                    checked={chat_enabled}
+                    onChange={(checked) => set_chat_enabled(checked)}
                 />
             </div>
 

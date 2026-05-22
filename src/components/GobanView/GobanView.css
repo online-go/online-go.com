@@ -209,11 +209,20 @@
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
-            padding: 0.5rem;
+            /* Top breathing room only — consumers run flush to the
+             * viewport's left/right/bottom edges in portrait. */
+            padding: 0.5rem 0 0;
             background: var(--shade5);
 
             .GobanView-tab-panel {
                 padding-bottom: 0.75rem;
+            }
+
+            /* The always panel runs to the viewport bottom on mobile —
+             * the chat area inside it has its own scroll, so the wrapper
+             * doesn't need its own bottom breathing room. */
+            .GobanView-tab-panel.always {
+                padding-bottom: 0;
             }
         }
 
