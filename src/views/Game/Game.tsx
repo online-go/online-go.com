@@ -161,6 +161,16 @@ export function Game(): React.ReactElement | null {
         }
     }, [zen_mode]);
 
+    // popover() appends its container + backdrop to document.body, outside
+    // the React tree, so they survive Game unmounting. Close any open
+    // popovers on unmount to keep them from leaking as orphaned nodes.
+    React.useEffect(() => {
+        return () => {
+            more_actions_popover_ref.current?.close();
+            settings_popover_ref.current?.close();
+        };
+    }, []);
+
     // Stacked mode wants the player cards' width to match the actual
     // board. The goban renderers write `parent.style.width = metrics.width`
     // on the `.Goban` element (SVGRenderer.ts:3912 / CanvasRenderer.ts:2740),
@@ -238,7 +248,17 @@ export function Game(): React.ReactElement | null {
             syncGobanObservation();
             update();
         });
-        mutation_observer.observe(container, { childList: true, subtree: true });
+        // Only the inner .Goban swap matters here (a fresh goban_div is
+        // appended into the PersistentElement wrapper when the controller
+        // is rebuilt on a game/review-id change). Observing the container
+        // subtree would also fire on every SVG mutation inside the board —
+        // i.e. every stone placement during playback or AI review — which
+        // makes update() do a forced layout read for nothing. Watch just
+        // the wrapper's direct children instead.
+        const wrapper_goban = container.querySelector<HTMLElement>(".Goban");
+        if (wrapper_goban) {
+            mutation_observer.observe(wrapper_goban, { childList: true });
+        }
         update();
         return () => {
             resize_observer.disconnect();
