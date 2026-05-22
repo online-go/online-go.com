@@ -194,11 +194,11 @@
     }
 }
 
-/* Popover variant — used by the "More actions" tab. The popover container is
- * just a positioned wrapper, so we style the outer .GameMoreActionsPopover
- * (which holds both the actions panel and, for moderators, the mod-tools
- * panel) to look standalone. Capped at viewport width and shrinkable. */
-.popover-container .GameMoreActionsPopover {
+/* Shared base for popover-mounted sidebar panels (Settings, More-actions).
+ * The popover container is just a positioned wrapper, so the inner wrapper
+ * (.GamePopover) needs to look standalone — card chrome, padding, capped
+ * at viewport width, shrinkable. */
+.popover-container .GamePopover {
     background: var(--shade5);
     border: 1px solid var(--shade3);
     border-radius: 6px;
@@ -215,7 +215,7 @@
  * so a moderator can see everything at once. Each column gets a preferred
  * 14rem width but is allowed to shrink below that (with text truncating to
  * ellipsis) so the popover always fits within the viewport. */
-.popover-container .GameMoreActionsPopover:has(.GameSidebarPanel + .GameSidebarPanel) {
+.popover-container .GamePopover.GameMoreActionsPopover:has(.GameSidebarPanel + .GameSidebarPanel) {
     flex-direction: row;
     align-items: stretch;
     gap: 0.5rem;

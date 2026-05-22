@@ -81,8 +81,8 @@
      * don't leave a stray bordered band at the top. */
     .GobanView-header {
         flex-shrink: 0;
-        padding: 0.6rem 0.875rem;
-        font-size: 1.5rem;
+        padding: 0.4rem 0.75rem;
+        font-size: 1.1rem;
         font-weight: 600;
         text-align: center;
         color: var(--fg);
