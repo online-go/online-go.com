@@ -112,6 +112,7 @@ export const defaults = {
     "label-positioning": "all" as LabelPosition,
     "label-positioning-puzzles": "all" as LabelPosition,
     "game.layout": "standard" as "standard" | "stacked",
+    "game.chat-enabled": true,
     "moderator.game-moderator-tab-visible": true,
     language: "auto",
     "move-tree-numbering": "move-number" as "none" | "move-coordinates" | "move-number",
