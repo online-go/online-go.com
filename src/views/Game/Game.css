@@ -412,6 +412,142 @@
         }
     }
 
+    /* Mobile (portrait) layout: both player cards rendered below the
+     * board in a single .GameMobilePlayers row. Each card is a 3x3 grid
+     * with a deliberately-empty centre cell so opposite-corner items can
+     * grow into the slack space without crowding the centre:
+     *
+     *      col1     col2     col3
+     *    ┌──────┬─────────┬──────┐
+     *  1 │ icon │  name (cols 2–3)│  ← name spans the top
+     *    ├      ┼─────────┼──────┤
+     *  2 │ icon │  (empty)│ clock│  ← icon climbs row 2 from above
+     *    ├──────┼─────────┼      ┤  ← clock climbs row 2 from below
+     *  3 │ score (cols 1–2)│ clock│  ← score spans the bottom
+     *    └──────┴─────────┴──────┘
+     *
+     * Spans:
+     *   icon  — col 1, rows 1–2  (1 wide × 2 high)
+     *   name  — cols 2–3, row 1  (2 wide × 1 high)
+     *   (col 2, row 2 stays empty)
+     *   clock — col 3, rows 2–3  (1 wide × 2 high)
+     *   score — cols 1–2, row 3  (2 wide × 1 high)
+     *
+     * The icon and clock are pinned to opposite corners (top-left,
+     * bottom-right) and grow toward the centre, so long names get the
+     * full top width and the clock gets extra vertical room from the
+     * empty middle cell — exactly the "expand upward" behaviour we want.
+     *
+     * Extra specificity (`.player-icons`) is required throughout to win
+     * against the same-length `.MainGobanView.portrait .player-icons ...`
+     * rules in Players.css. */
+    &.mobile .GameMobilePlayers {
+        flex-shrink: 0;
+        padding: 0.25rem 0;
+
+        .player-icons {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            gap: 0.5rem;
+        }
+
+        .player-icons .player-container {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            grid-template-rows: auto auto auto;
+            column-gap: 0.4rem;
+            row-gap: 0.1rem;
+            padding: 0.15rem 0.25rem;
+            min-width: 0;
+        }
+
+        /* Flatten the icon-clock-row so the icon and clock can land in
+         * their own grid cells (col 1 and col 3 respectively). */
+        .player-icons .player-icon-clock-row {
+            display: contents;
+        }
+
+        .player-icons .player-icon-container {
+            grid-column: 1;
+            grid-row: 1 / span 2;
+            align-self: start;
+            flex-basis: 1.5rem;
+            min-height: 1.5rem;
+            min-width: 1.5rem;
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        .player-icons .player-name-container,
+        .player-icons .player-name-plain {
+            grid-column: 2 / span 2;
+            grid-row: 1;
+            align-self: start;
+            font-size: 0.8rem;
+            line-height: 1.1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+        }
+
+        .player-icons .score-container {
+            grid-column: 1 / span 2;
+            grid-row: 3;
+            align-self: end;
+            margin-top: 0;
+            justify-content: flex-start;
+            font-size: 0.7rem;
+            line-height: 1.1;
+        }
+
+        /* Hide the "captures" unit text on mobile — just show the count
+         * since the row's already labelled by context. */
+        .player-icons .num-captures-units {
+            display: none;
+        }
+
+        /* Clock occupies col 3 across rows 2–3, climbing up into the
+         * empty middle cell. align-self: end pins its bounding box to
+         * the bottom of the span; justify-content: flex-end aligns the
+         * clock's in-flow content (the live time text) to the bottom of
+         * the host so multi-line clocks (main time + byo-yomi) read
+         * bottom-up against the score row. */
+        .player-icons .clock-pause-host,
+        .player-icons .in-game-clock {
+            grid-column: 3;
+            grid-row: 2 / span 2;
+            align-self: end;
+            justify-self: end;
+            justify-content: flex-end;
+            font-size: 0.8rem;
+            line-height: 1.2;
+        }
+
+        /* The pause overlay's default 2rem icon is sized for the
+         * sidebar's tall clock cell — here the clock host is ~30px tall
+         * so the icon overflows and looks oversized. Scale it down so it
+         * sits over the clock at the same visual weight as the other
+         * mobile glyphs (~1rem). The button is `position: absolute`
+         * filling the host, so this affects only the icon's drawn size,
+         * not the host's layout. */
+        .player-icons .clock-pause-host .clock-pause-overlay {
+            font-size: 1rem;
+        }
+
+        /* Move the pause-text / transmitting placeholder row to the
+         * top of the clock. The Clock is a `flex-wrap: wrap` row, and
+         * `.pause-and-transmit` carries `width: 100%` so it always wraps
+         * onto its own line. By default it lands below the time, leaving
+         * a strange-looking empty band underneath. Flipping its order
+         * puts the placeholder above the time so the actual clock
+         * digits stay flush with the score row. */
+        .player-icons .Clock .pause-and-transmit {
+            order: -1;
+        }
+    }
+
     /* Zen mode: full-screen board on the left, transparent sidebar with the
      * essential controls vertically centered on the right. The navbar is
      * hidden globally via body.zen, and `.GobanView.Game.zen { top: 0 }`
