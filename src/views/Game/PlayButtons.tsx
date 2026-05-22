@@ -35,7 +35,7 @@ import { sfx } from "@/lib/sfx";
 import { decodeMoves } from "goban";
 
 const useOfficialMoveNumber = generateGobanHook(
-    (goban) => goban!.engine.last_official_move?.move_number || -1,
+    (goban) => goban!.engine.last_official_move?.move_number ?? -1,
     ["last_official_move"],
 );
 
