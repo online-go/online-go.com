@@ -35,7 +35,14 @@ import { goban_view_mode } from "./util";
 import { PlayerCard, PlayerCards } from "./PlayerCards";
 import { PlayControls, ReviewControls } from "./PlayControls";
 import { alert } from "@/lib/swal_config";
-import { useMode, usePhase, useUserIsParticipant, useZenMode } from "./GameHooks";
+import {
+    useCurrentMoveNumber,
+    useMode,
+    usePhase,
+    usePlayerToMove,
+    useUserIsParticipant,
+    useZenMode,
+} from "./GameHooks";
 import { GobanControllerContext, GobanView, GobanViewRef } from "@/components/GobanView";
 import { ModalContext } from "@/components/ModalProvider";
 import { useUser } from "@/lib/hooks";
@@ -113,8 +120,11 @@ export function Game(): React.ReactElement | null {
     const user = useUser();
     const user_is_player = useUserIsParticipant(goban);
     const mode = useMode(goban);
+    const player_to_move = usePlayerToMove(goban);
+    const current_move_number = useCurrentMoveNumber(goban);
     const modal_context = React.useContext(ModalContext);
     const more_actions_popover_ref = React.useRef<PopOver | null>(null);
+    const settings_popover_ref = React.useRef<PopOver | null>(null);
     const goban_view_ref = React.useRef<GobanViewRef>(null);
     const [layout_preference] = usePreference("game.layout");
     const [moderator_tab_visible, set_moderator_tab_visible] = usePreference(
@@ -787,11 +797,80 @@ export function Game(): React.ReactElement | null {
     const show_review_tab =
         game && !analysis_disabled && !user.anonymous && (phase === "finished" || !user_is_player);
 
+    // "Plan conditional moves" is for an active player on a live game while
+    // it's the opponent's turn — non-rengo, non-review. The tab stays
+    // visible across analyze / score-estimation / conditional modes (same
+    // UX shape as the Analyze tab) so clicking it always switches *into*
+    // the planner; clicking it again while in the planner exits to play.
+    //
+    // When the user has placed a provisional stone but hasn't submitted
+    // yet (submit-move or double-click mode), `engine.getMoveNumber()` is
+    // already ahead of `current_move_number` (the hook only updates on
+    // committed moves), and `engine.playerToMove()` has swung to the
+    // opponent. Treat that case as still-the-user's-turn by inverting to
+    // `playerNotToMove()` so the tab hides until the move is submitted.
+    const is_planning_conditional = mode === "conditional";
+    const live_player_to_move =
+        goban.engine.getMoveNumber() === current_move_number
+            ? player_to_move
+            : goban.engine.playerNotToMove();
+    const show_conditional_tab =
+        !review &&
+        user_is_player &&
+        phase !== "finished" &&
+        !goban.engine.rengo &&
+        (is_planning_conditional || live_player_to_move !== user?.id);
+    const onConditionalClick = () => {
+        const controller = goban_controller.current;
+        if (!controller) {
+            return;
+        }
+        if (is_planning_conditional) {
+            controller.goban.setMode("play");
+        } else {
+            controller.enterConditionalMovePlanner();
+        }
+    };
+
     const CONTROLS = review ? (
         <ReviewControls review_id={review_id} />
     ) : (
         <PlayControls annulment_reason={annulment_reason} />
     );
+
+    const openSettings = (event?: React.MouseEvent<HTMLButtonElement>) => {
+        if (!event || !goban_controller.current) {
+            return;
+        }
+        const controller = goban_controller.current;
+        const close = () => {
+            settings_popover_ref.current?.close();
+            settings_popover_ref.current = null;
+        };
+        const button = event.currentTarget;
+        const instance = popover({
+            elt: (
+                <GobanControllerContext.Provider value={controller}>
+                    <ModalContext.Provider value={modal_context}>
+                        <div className="GamePopover GameSettingsPopover">
+                            <GameSettingsPanel onClose={close} />
+                        </div>
+                    </ModalContext.Provider>
+                </GobanControllerContext.Provider>
+            ),
+            below: button,
+            // Wide enough for the 7-column board theme grid (7 * 38px swatch
+            // + padding) plus the white / black stone rows. The popover
+            // library will flip above the button when there's no room below.
+            minWidth: 320,
+        });
+        instance.on("close", () => {
+            if (settings_popover_ref.current === instance) {
+                settings_popover_ref.current = null;
+            }
+        });
+        settings_popover_ref.current = instance;
+    };
 
     const openMoreActions = (event?: React.MouseEvent<HTMLButtonElement>) => {
         if (!event || !goban_controller.current) {
@@ -810,7 +889,7 @@ export function Game(): React.ReactElement | null {
             elt: (
                 <GobanControllerContext.Provider value={controller}>
                     <ModalContext.Provider value={modal_context}>
-                        <div className="GameMoreActionsPopover">
+                        <div className="GamePopover GameMoreActionsPopover">
                             <GameActionsPanel
                                 tournament_id={tournament_id.current}
                                 tournament_name={tournament?.name}
@@ -976,15 +1055,12 @@ export function Game(): React.ReactElement | null {
              *  GobanView's built-in MoveNumberSlider above the tab bar. */}
             <GobanView.Tab
                 id="game-settings"
-                type="takeover"
+                type="action"
                 align="left"
                 icon="gear"
                 title={_("Settings")}
-            >
-                <GameSettingsPanel
-                    onClose={() => goban_view_ref.current?.setActiveTakeover(null)}
-                />
-            </GobanView.Tab>
+                onClick={openSettings}
+            />
 
             {game && (
                 <GobanView.Tab
@@ -1010,6 +1086,19 @@ export function Game(): React.ReactElement | null {
                     icon="refresh"
                     title={_("Review this game")}
                     onClick={goban_controller.current.startReview}
+                />
+            )}
+
+            {show_conditional_tab && (
+                <GobanView.Tab
+                    id="game-conditional"
+                    type="action"
+                    align="center"
+                    icon="exchange"
+                    title={_("Plan conditional moves")}
+                    disabled={analysis_disabled}
+                    active={is_planning_conditional}
+                    onClick={onConditionalClick}
                 />
             )}
 

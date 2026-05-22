@@ -26,13 +26,7 @@ import { openReport } from "@/components/Report";
 import { openSGFCollectionModal } from "@/components/SGFCollectionModal";
 import { ModalContext, ModalTypes } from "@/components/ModalProvider";
 import { GobanEngine, GobanRenderer } from "goban";
-import {
-    useUserIsParticipant,
-    useCurrentMoveNumber,
-    usePhase,
-    useMode,
-    usePlayerToMove,
-} from "./GameHooks";
+import { usePhase } from "./GameHooks";
 import { useGobanController } from "./goban_context";
 import { openGameInfoModal } from "./GameInfoModal";
 import { openGameLinkModal } from "./GameLinkModal";
@@ -77,7 +71,6 @@ export function GameActionsPanel({
     const goban = goban_controller.goban;
     const engine = goban.engine;
     const phase = usePhase(goban);
-    const mode = useMode(goban);
     const user = useUser();
     const { showModal } = React.useContext(ModalContext);
 
@@ -88,10 +81,6 @@ export function GameActionsPanel({
             goban_controller.off("annulled", set_annulled);
         };
     }, [goban_controller]);
-
-    const user_is_player = useUserIsParticipant(goban);
-    const current_move_number = useCurrentMoveNumber(goban);
-    const player_to_move = usePlayerToMove(goban);
 
     const review_id: number | undefined = goban.config.review_id;
     const game_id: number | undefined = Number(goban.config.game_id);
@@ -184,17 +173,8 @@ export function GameActionsPanel({
         });
     });
 
-    const onConditionalMoves = wrap(goban_controller.enterConditionalMovePlanner);
     const onFork = wrap(() => handleForkGameClick(showModal, user, engine, goban));
     const onEstimateScore = wrap(goban_controller.estimateScore);
-
-    // Not the same as engine.playerToMove(), which changes when you place a
-    // provisional stone on the board (in submit-move or double-click mode).
-    const currentPlayer =
-        engine.getMoveNumber() === current_move_number ? player_to_move : engine.playerNotToMove();
-
-    const can_show_conditional_moves =
-        !review_id && user_is_player && phase !== "finished" && !engine.rengo;
 
     const sgf_disabled =
         !sgf_download_enabled ||
@@ -236,19 +216,6 @@ export function GameActionsPanel({
                 <i className="fa fa-info" />
                 <span>{_("Game information")}</span>
             </button>
-
-            {can_show_conditional_moves && mode === "play" && currentPlayer !== user?.id && (
-                <button
-                    className={
-                        "GameSidebarPanel-item" + (goban.isAnalysisDisabled() ? " disabled" : "")
-                    }
-                    disabled={goban.isAnalysisDisabled()}
-                    onClick={onConditionalMoves}
-                >
-                    <i className="fa fa-exchange" />
-                    <span>{_("Plan conditional moves")}</span>
-                </button>
-            )}
 
             <button
                 className={

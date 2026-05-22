@@ -51,11 +51,26 @@ export function GameSettingsPanel({ onClose }: GameSettingsPanelProps = {}): Rea
     }, [goban_controller]);
 
     const [volume, set_volume] = React.useState(sfx.getVolume("master"));
+    const volume_slider_ref = React.useRef<HTMLInputElement>(null);
 
     // Stone-placement sample for volume feedback. Fires on commit (pointer or
     // keyboard release) rather than every intermediate slider value, so the
     // sample plays exactly once per adjustment instead of spamming.
     const playVolumeSample = () => sfx.playStonePlacementSound(5, 5, 9, 9, "white");
+
+    // Native `change` event on `<input type="range">` fires exactly on
+    // commit (release pointer, blur after keyboard nav) — distinct from
+    // React's `onChange`, which is wired to the `input` event and fires
+    // on every intermediate value. Use a ref + addEventListener so the
+    // sample plays once per adjustment without spamming during the drag.
+    React.useEffect(() => {
+        const slider = volume_slider_ref.current;
+        if (!slider) {
+            return;
+        }
+        slider.addEventListener("change", playVolumeSample);
+        return () => slider.removeEventListener("change", playVolumeSample);
+    }, []);
 
     const _setVolume = (new_volume: number) => {
         sfx.setVolume("master", new_volume);
@@ -109,11 +124,10 @@ export function GameSettingsPanel({ onClose }: GameSettingsPanelProps = {}): Rea
                     title={_("Toggle volume")}
                 />
                 <input
+                    ref={volume_slider_ref}
                     type="range"
                     className="volume-slider"
                     onChange={setVolume}
-                    onPointerUp={playVolumeSample}
-                    onKeyUp={playVolumeSample}
                     value={volume}
                     min={0}
                     max={1.0}
