@@ -39,9 +39,6 @@ const handleForkGameClick = (
     goban: GobanRenderer,
 ) => {
     if (!user.anonymous && !engine.rengo && !goban.isAnalysisDisabled()) {
-        if (!goban) {
-            return;
-        }
         showModal(ModalTypes.Fork, { goban });
     }
 };
