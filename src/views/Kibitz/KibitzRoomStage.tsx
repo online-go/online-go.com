@@ -1121,6 +1121,11 @@ export function KibitzRoomStage({
         proposals.find((proposal) => proposal.proposed_game.game_id === secondaryGameId)
             ?.proposed_game;
     const secondaryBoardGame = previewGame ?? secondaryPane.variation_source_game;
+    const expectedSecondaryBoardGameId =
+        selectedVariationGameId ??
+        secondaryGameId ??
+        secondaryPane.variation_source_game_id ??
+        null;
     const previewDisplayedMoveNumber = secondaryBoardGame?.move_number;
     const mainReturnLiveLabel =
         secondaryPaneSize === "equal"
@@ -1168,32 +1173,30 @@ export function KibitzRoomStage({
     );
     const [secondaryBoardController, setSecondaryBoardControllerState] =
         React.useState<GobanController | null>(null);
-    const setSecondaryBoardController = React.useCallback((controller: GobanController | null) => {
-        secondaryBoardControllerEpochRef.current += 1;
-        secondarySnapshotLoadOperationIdRef.current += 1;
-        const controllerGameId = controller
-            ? typeof controller.goban.config?.game_id === "number"
-                ? controller.goban.config.game_id
-                : null
-            : null;
-        secondaryBoardControllerContextRef.current = controller
-            ? {
-                  controller,
-                  epoch: secondaryBoardControllerEpochRef.current,
-                  roomId: currentRoomIdRef.current,
-                  gameId: controllerGameId,
-              }
-            : null;
-        if (controller) {
-            logKibitzVariationDebug("secondary-board:remount-controller-ready", {
-                roomId: currentRoomIdRef.current,
-                currentRoomGameId: currentRoomGameIdRef.current,
-                controllerEpoch: secondaryBoardControllerEpochRef.current,
-                controllerGameId,
-            });
-        }
-        setSecondaryBoardControllerState(controller);
-    }, []);
+    const setSecondaryBoardController = React.useCallback(
+        (controller: GobanController | null) => {
+            secondaryBoardControllerEpochRef.current += 1;
+            secondarySnapshotLoadOperationIdRef.current += 1;
+            secondaryBoardControllerContextRef.current = controller
+                ? {
+                      controller,
+                      epoch: secondaryBoardControllerEpochRef.current,
+                      roomId: currentRoomIdRef.current,
+                      gameId: expectedSecondaryBoardGameId,
+                  }
+                : null;
+            if (controller) {
+                logKibitzVariationDebug("secondary-board:remount-controller-ready", {
+                    roomId: currentRoomIdRef.current,
+                    currentRoomGameId: currentRoomGameIdRef.current,
+                    controllerEpoch: secondaryBoardControllerEpochRef.current,
+                    controllerGameId: expectedSecondaryBoardGameId,
+                });
+            }
+            setSecondaryBoardControllerState(controller);
+        },
+        [expectedSecondaryBoardGameId],
+    );
     const [secondaryReturnLiveAvailable, setSecondaryReturnLiveAvailable] = React.useState(false);
     const [mobileReturnLiveAvailable, setMobileReturnLiveAvailable] = React.useState(false);
     const [secondaryBoardRemountNonce, bumpSecondaryBoardRemountNonce] = React.useReducer(
@@ -1304,18 +1307,17 @@ export function KibitzRoomStage({
     const isCurrentSecondaryBoardController = React.useCallback(
         (controller: GobanController | null | undefined) => {
             const context = secondaryBoardControllerContextRef.current;
-            const controllerGameId = controller?.goban.config?.game_id ?? null;
             return Boolean(
                 controller &&
                 context &&
                 context.controller === controller &&
                 context.epoch === secondaryBoardControllerEpochRef.current &&
                 context.roomId === currentRoomIdRef.current &&
-                context.gameId === controllerGameId &&
+                context.gameId === expectedSecondaryBoardGameId &&
                 !isDetachedBoardController(controller),
             );
         },
-        [isDetachedBoardController],
+        [expectedSecondaryBoardGameId, isDetachedBoardController],
     );
     const secondaryVariationBaseSnapshotRef = React.useRef<SecondaryVariationBaseSnapshot | null>(
         null,
@@ -1865,13 +1867,12 @@ export function KibitzRoomStage({
 
         const isCurrentSecondaryLoadController = (): boolean => {
             const context = secondaryBoardControllerContextRef.current;
-            const controllerGameId = secondaryBoardController.goban.config?.game_id ?? null;
             return Boolean(
                 secondaryBoardController &&
                 context &&
                 context.controller === secondaryBoardController &&
                 context.roomId === currentRoomIdRef.current &&
-                context.gameId === controllerGameId &&
+                context.gameId === expectedSecondaryBoardGameId &&
                 !isDetachedBoardController(secondaryBoardController),
             );
         };
