@@ -50,6 +50,10 @@ export interface GobanViewRef {
     /** Open or close a takeover programmatically. Pass null to close any
      *  currently-active takeover. */
     setActiveTakeover: (id: string | null) => void;
+    /** The current root DOM element of this GobanView. Returns null between
+     *  unmount and remount. Lets consumers scope DOM queries to this
+     *  instance instead of querying document globally. */
+    getRootElement: () => HTMLDivElement | null;
 }
 
 interface GobanViewProps {
@@ -194,6 +198,7 @@ function GobanViewComponent({
     tabsRef.current = tabs;
     const activeTakeoverRef = React.useRef(activeTakeover);
     activeTakeoverRef.current = activeTakeover;
+    const rootRef = React.useRef<HTMLDivElement>(null);
 
     React.useImperativeHandle(
         ref,
@@ -217,6 +222,7 @@ function GobanViewComponent({
                     opened?.onToggle?.(true);
                 }
             },
+            getRootElement: () => rootRef.current,
         }),
         [],
     );
@@ -310,6 +316,7 @@ function GobanViewComponent({
             <GobanControllerContext.Provider value={controller}>
                 <GobanViewStateContext.Provider value={tabState}>
                     <div
+                        ref={rootRef}
                         className={
                             `GobanView portrait` +
                             (squashed ? " squashed" : "") +
@@ -341,6 +348,7 @@ function GobanViewComponent({
         <GobanControllerContext.Provider value={controller}>
             <GobanViewStateContext.Provider value={tabState}>
                 <div
+                    ref={rootRef}
                     className={
                         `GobanView ${viewMode}` +
                         (squashed ? " squashed" : "") +

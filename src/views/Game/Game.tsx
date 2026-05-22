@@ -192,7 +192,7 @@ export function Game(): React.ReactElement | null {
         if (!stacked || !goban) {
             return undefined;
         }
-        const root = document.querySelector(".GobanView.Game") as HTMLElement | null;
+        const root = goban_view_ref.current?.getRootElement() ?? null;
         const container = root?.querySelector(".goban-container") as HTMLElement | null;
         if (!root || !container) {
             return undefined;
