@@ -1141,44 +1141,71 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             const cachedSnapshot = currentGameBaseSnapshot;
             const cachedSnapshotForLog: KibitzCurrentGameBaseSnapshot | null =
                 currentGameBaseSnapshot;
-            if (!isCurrentMainBoardController(mainBoardController)) {
-                const ctx = mainBoardControllerContextRef.current;
-                logKibitzVariationDebug("current-game-base-snapshot:stale-main-controller", {
+            const controllerContext = mainBoardControllerContextRef.current;
+            const mainBoardControllerFresh = isCurrentMainBoardController(mainBoardController);
+            const cachedSnapshotUsable = isCurrentGameBaseSnapshotUsable(cachedSnapshot, game);
+
+            if (mainBoardControllerFresh) {
+                const mainBoardSnapshot = captureCurrentGameBaseSnapshotFromController(
+                    mainBoardController,
+                    game,
+                    resolvedRoom.id,
+                );
+                if (mainBoardSnapshot) {
+                    const acceptedSnapshot = chooseFresherCurrentGameBaseSnapshot(
+                        cachedSnapshot,
+                        mainBoardSnapshot,
+                    );
+                    acceptCurrentGameBaseSnapshot(mainBoardSnapshot);
+                    return acceptedSnapshot;
+                }
+            } else {
+                const logMessage = controllerContext
+                    ? "current-game-base-snapshot:stale-main-controller"
+                    : "current-game-base-snapshot:missing-main-controller-context";
+                logKibitzVariationDebug(logMessage, {
                     reason,
                     gameId: game.game_id,
                     diagnostic: {
                         controllerProvided: Boolean(mainBoardController),
-                        contextPresent: Boolean(ctx),
-                        controllerMatches: Boolean(ctx && ctx.controller === mainBoardController),
-                        epochMatches: Boolean(
-                            ctx && ctx.epoch === mainBoardControllerEpochRef.current,
+                        contextPresent: Boolean(controllerContext),
+                        controllerMatches: Boolean(
+                            controllerContext &&
+                            controllerContext.controller === mainBoardController,
                         ),
-                        roomIdMatches: Boolean(ctx && ctx.roomId === currentRoomIdRef.current),
-                        gameIdMatches: Boolean(ctx && ctx.gameId === currentRoomGameIdRef.current),
+                        epochMatches: Boolean(
+                            controllerContext &&
+                            controllerContext.epoch === mainBoardControllerEpochRef.current,
+                        ),
+                        roomIdMatches: Boolean(
+                            controllerContext &&
+                            controllerContext.roomId === currentRoomIdRef.current,
+                        ),
+                        gameIdMatches: Boolean(
+                            controllerContext &&
+                            controllerContext.gameId === currentRoomGameIdRef.current,
+                        ),
                         parentConnected: Boolean(mainBoardController?.goban.parent?.isConnected),
-                        contextRoomId: ctx?.roomId ?? null,
-                        contextGameId: ctx?.gameId ?? null,
+                        contextRoomId: controllerContext?.roomId ?? null,
+                        contextGameId: controllerContext?.gameId ?? null,
                         liveRoomId: currentRoomIdRef.current,
                         liveGameId: currentRoomGameIdRef.current,
                     },
+                    fallbackSnapshot: cachedSnapshotUsable
+                        ? {
+                              gameId: cachedSnapshot.gameId,
+                              trunkTailMoveNumber: cachedSnapshot.trunkTailMoveNumber,
+                              source: cachedSnapshot.source,
+                          }
+                        : null,
                 });
-                return null;
-            }
-            const mainBoardSnapshot = captureCurrentGameBaseSnapshotFromController(
-                mainBoardController,
-                game,
-                resolvedRoom.id,
-            );
-            if (mainBoardSnapshot) {
-                const acceptedSnapshot = chooseFresherCurrentGameBaseSnapshot(
-                    cachedSnapshot,
-                    mainBoardSnapshot,
-                );
-                acceptCurrentGameBaseSnapshot(mainBoardSnapshot);
-                return acceptedSnapshot;
+
+                if (cachedSnapshotUsable) {
+                    return cachedSnapshot;
+                }
             }
 
-            if (isCurrentGameBaseSnapshotUsable(cachedSnapshot, game)) {
+            if (cachedSnapshotUsable) {
                 return cachedSnapshot;
             }
 

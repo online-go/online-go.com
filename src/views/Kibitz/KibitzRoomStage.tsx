@@ -830,6 +830,21 @@ function scheduleVisibleBoardRedrawWhenReady(
     let frame2: number | null = null;
     let cancelled = false;
     let deferredLogged = false;
+    const debugEnabled = isKibitzVariationDebugEnabled();
+
+    if (debugEnabled) {
+        const controllerParent = controller?.goban.parent ?? null;
+        logKibitzVariationDebug("visible-goban:redraw-schedule", {
+            role,
+            reason,
+            expectedSize: options?.expectedSize ?? null,
+            controllerGameId: controller?.goban.config?.game_id ?? null,
+            controllerConnected: Boolean(controllerParent?.isConnected),
+            controllerMeasuredElement: summarizeElementForDebug(controllerParent),
+            controllerParentChain: summarizeParentChain(controllerParent),
+            controllerCurrent: options?.isControllerCurrent?.() ?? null,
+        });
+    }
 
     const scheduleAttempt = (remainingAttempts: number) => {
         if (cancelled) {
@@ -851,13 +866,18 @@ function scheduleVisibleBoardRedrawWhenReady(
                 }
 
                 if (options?.isControllerCurrent && !options.isControllerCurrent()) {
-                    logKibitzVariationDebug("visible-goban:redraw-stale-controller", {
-                        role,
-                        reason,
-                        expectedSize: options?.expectedSize ?? null,
-                        measuredElement: summarizeElementForDebug(controller?.goban.parent ?? null),
-                        parentChain: summarizeParentChain(controller?.goban.parent ?? null),
-                    });
+                    if (debugEnabled) {
+                        const controllerParent = controller?.goban.parent ?? null;
+                        logKibitzVariationDebug("visible-goban:redraw-stale-controller", {
+                            role,
+                            reason,
+                            expectedSize: options?.expectedSize ?? null,
+                            controllerGameId: controller?.goban.config?.game_id ?? null,
+                            controllerConnected: Boolean(controllerParent?.isConnected),
+                            controllerMeasuredElement: summarizeElementForDebug(controllerParent),
+                            controllerParentChain: summarizeParentChain(controllerParent),
+                        });
+                    }
                     return;
                 }
 
@@ -868,15 +888,19 @@ function scheduleVisibleBoardRedrawWhenReady(
                 if (detached) {
                     const width = container?.clientWidth ?? 0;
                     const height = container?.clientHeight ?? 0;
-                    logKibitzVariationDebug("visible-goban:redraw-detached", {
-                        role,
-                        reason,
-                        width,
-                        height,
-                        expectedSize: options?.expectedSize ?? null,
-                        measuredElement,
-                        parentChain,
-                    });
+                    if (debugEnabled) {
+                        logKibitzVariationDebug("visible-goban:redraw-detached", {
+                            role,
+                            reason,
+                            width,
+                            height,
+                            expectedSize: options?.expectedSize ?? null,
+                            controllerGameId: controller?.goban.config?.game_id ?? null,
+                            controllerConnected: Boolean(container?.isConnected),
+                            measuredElement,
+                            parentChain,
+                        });
+                    }
                     options?.onDetached?.({
                         width,
                         height,
@@ -897,15 +921,19 @@ function scheduleVisibleBoardRedrawWhenReady(
                 if (width <= 0 || height <= 0) {
                     if (!deferredLogged) {
                         deferredLogged = true;
-                        logKibitzVariationDebug("visible-goban:redraw-deferred-zero-size", {
-                            role,
-                            reason,
-                            width,
-                            height,
-                            expectedSize: options?.expectedSize ?? null,
-                            measuredElement: summarizeElementForDebug(container),
-                            parentChain: summarizeParentChain(container),
-                        });
+                        if (debugEnabled) {
+                            logKibitzVariationDebug("visible-goban:redraw-deferred-zero-size", {
+                                role,
+                                reason,
+                                width,
+                                height,
+                                expectedSize: options?.expectedSize ?? null,
+                                controllerGameId: controller?.goban.config?.game_id ?? null,
+                                controllerConnected: Boolean(container?.isConnected),
+                                measuredElement: summarizeElementForDebug(container),
+                                parentChain: summarizeParentChain(container),
+                            });
+                        }
                         if (!expectedSizeReady) {
                             options?.onDeferred?.();
                         }
@@ -920,14 +948,18 @@ function scheduleVisibleBoardRedrawWhenReady(
                 const officialTailMoveNumber =
                     getOfficialTrunkTail(controller?.goban.engine?.move_tree)?.move_number ?? null;
 
-                logKibitzVariationDebug("visible-goban:redraw-request", {
-                    role,
-                    reason,
-                    width,
-                    height,
-                    currentMoveNumber,
-                    officialTailMoveNumber,
-                });
+                if (debugEnabled) {
+                    logKibitzVariationDebug("visible-goban:redraw-request", {
+                        role,
+                        reason,
+                        width,
+                        height,
+                        controllerGameId: controller?.goban.config?.game_id ?? null,
+                        controllerConnected: Boolean(controller?.goban.parent?.isConnected),
+                        currentMoveNumber,
+                        officialTailMoveNumber,
+                    });
+                }
 
                 controller?.goban.move_tree_redraw(true);
                 controller?.goban.redraw(true);
@@ -1121,6 +1153,11 @@ export function KibitzRoomStage({
         proposals.find((proposal) => proposal.proposed_game.game_id === secondaryGameId)
             ?.proposed_game;
     const secondaryBoardGame = previewGame ?? secondaryPane.variation_source_game;
+    const expectedSecondaryBoardGameId =
+        selectedVariationGameId ??
+        secondaryGameId ??
+        secondaryPane.variation_source_game_id ??
+        null;
     const previewDisplayedMoveNumber = secondaryBoardGame?.move_number;
     const mainReturnLiveLabel =
         secondaryPaneSize === "equal"
@@ -1168,32 +1205,6 @@ export function KibitzRoomStage({
     );
     const [secondaryBoardController, setSecondaryBoardControllerState] =
         React.useState<GobanController | null>(null);
-    const setSecondaryBoardController = React.useCallback((controller: GobanController | null) => {
-        secondaryBoardControllerEpochRef.current += 1;
-        secondarySnapshotLoadOperationIdRef.current += 1;
-        const controllerGameId = controller
-            ? typeof controller.goban.config?.game_id === "number"
-                ? controller.goban.config.game_id
-                : null
-            : null;
-        secondaryBoardControllerContextRef.current = controller
-            ? {
-                  controller,
-                  epoch: secondaryBoardControllerEpochRef.current,
-                  roomId: currentRoomIdRef.current,
-                  gameId: controllerGameId,
-              }
-            : null;
-        if (controller) {
-            logKibitzVariationDebug("secondary-board:remount-controller-ready", {
-                roomId: currentRoomIdRef.current,
-                currentRoomGameId: currentRoomGameIdRef.current,
-                controllerEpoch: secondaryBoardControllerEpochRef.current,
-                controllerGameId,
-            });
-        }
-        setSecondaryBoardControllerState(controller);
-    }, []);
     const [secondaryReturnLiveAvailable, setSecondaryReturnLiveAvailable] = React.useState(false);
     const [mobileReturnLiveAvailable, setMobileReturnLiveAvailable] = React.useState(false);
     const [secondaryBoardRemountNonce, bumpSecondaryBoardRemountNonce] = React.useReducer(
@@ -1202,6 +1213,7 @@ export function KibitzRoomStage({
     );
     const [secondaryMoveTreeContainer, setSecondaryMoveTreeContainer] =
         React.useState<Resizable | null>(null);
+    const secondaryMoveTreeContainerRef = React.useRef<Resizable | null>(null);
     const previousSecondaryControllerRef = React.useRef<GobanController | null>(null);
     const mainBoardControllerEpochRef = React.useRef(0);
     const secondaryBoardControllerEpochRef = React.useRef(0);
@@ -1236,17 +1248,40 @@ export function KibitzRoomStage({
     );
     const requestSecondaryBoardDetachedRemount = React.useCallback(
         (reason: string, details: Record<string, unknown> = {}) => {
-            logKibitzVariationDebug("secondary-board:detached-remount-requested", {
-                reason,
-                roomId: room.id,
-                selectedVariationId: selectedVariation?.id ?? null,
-                selectedGameId: selectedVariationGameId,
-                currentRoomGameId,
-                visibleVariationKey: visibleVariationApplyKey,
-                desiredApplyKey: lastAppliedSecondaryVariationKeyRef.current,
-                secondaryBoardRemountNonce,
-                ...details,
-            });
+            if (isKibitzVariationDebugEnabled()) {
+                const controller = secondaryBoardController;
+                const controllerParent = controller?.goban.parent ?? null;
+                logKibitzVariationDebug("secondary-board:detached-remount-reset", {
+                    reason,
+                    roomId: room.id,
+                    selectedVariationId: selectedVariation?.id ?? null,
+                    selectedGameId: selectedVariationGameId,
+                    currentRoomGameId,
+                    visibleVariationKey: visibleVariationApplyKey,
+                    desiredApplyKey: lastAppliedSecondaryVariationKeyRef.current,
+                    controllerEpoch: secondaryBoardControllerEpochRef.current,
+                    controllerGameId: controller?.goban.config?.game_id ?? null,
+                    controllerConnected: Boolean(controllerParent?.isConnected),
+                    controllerMeasuredElement: summarizeElementForDebug(controllerParent),
+                    controllerParentChain: summarizeParentChain(controllerParent),
+                    secondaryBoardRemountNonce,
+                    ...details,
+                });
+            }
+
+            if (isKibitzVariationDebugEnabled()) {
+                logKibitzVariationDebug("secondary-board:detached-remount-requested", {
+                    reason,
+                    roomId: room.id,
+                    selectedVariationId: selectedVariation?.id ?? null,
+                    selectedGameId: selectedVariationGameId,
+                    currentRoomGameId,
+                    visibleVariationKey: visibleVariationApplyKey,
+                    desiredApplyKey: lastAppliedSecondaryVariationKeyRef.current,
+                    secondaryBoardRemountNonce,
+                    ...details,
+                });
+            }
 
             secondaryBoardControllerEpochRef.current += 1;
             secondaryBoardControllerContextRef.current = null;
@@ -1304,18 +1339,17 @@ export function KibitzRoomStage({
     const isCurrentSecondaryBoardController = React.useCallback(
         (controller: GobanController | null | undefined) => {
             const context = secondaryBoardControllerContextRef.current;
-            const controllerGameId = controller?.goban.config?.game_id ?? null;
             return Boolean(
                 controller &&
                 context &&
                 context.controller === controller &&
                 context.epoch === secondaryBoardControllerEpochRef.current &&
                 context.roomId === currentRoomIdRef.current &&
-                context.gameId === controllerGameId &&
+                context.gameId === expectedSecondaryBoardGameId &&
                 !isDetachedBoardController(controller),
             );
         },
-        [isDetachedBoardController],
+        [expectedSecondaryBoardGameId, isDetachedBoardController],
     );
     const secondaryVariationBaseSnapshotRef = React.useRef<SecondaryVariationBaseSnapshot | null>(
         null,
@@ -1431,6 +1465,105 @@ export function KibitzRoomStage({
         selectedVariationGameId,
         secondaryBoardRemountNonce,
     ]);
+    const mobileCompareActive = Boolean(isMobileLayout && mobileCompanionPanel === "compare");
+    const mobileSecondaryOwner = React.useMemo<"none" | "preview" | "draft" | "variation">(() => {
+        if (!mobileCompareActive) {
+            return "none";
+        }
+
+        if (selectedVariation) {
+            return "variation";
+        }
+
+        if (isDraftingVariation) {
+            return "draft";
+        }
+
+        if (secondaryGameId != null) {
+            return "preview";
+        }
+
+        return "none";
+    }, [isDraftingVariation, mobileCompareActive, secondaryGameId, selectedVariation]);
+    const mobileSecondaryBoardKey = React.useMemo(() => {
+        if (mobileSecondaryOwner === "none") {
+            return secondaryBoardKey;
+        }
+
+        return `${secondaryBoardKey}-${mobileSecondaryOwner}`;
+    }, [mobileSecondaryOwner, secondaryBoardKey]);
+    const mobileCompareTargetActive = mobileSecondaryOwner !== "none";
+    const getSecondaryBoardDebugState = React.useCallback(
+        (controller: GobanController | null): Record<string, unknown> => {
+            const controllerParent = controller?.goban.parent ?? null;
+            const moveTreeContainer = secondaryMoveTreeContainerRef.current?.div ?? null;
+            return {
+                roomId: currentRoomIdRef.current,
+                currentRoomGameId: currentRoomGameIdRef.current,
+                expectedSecondaryBoardGameId,
+                controllerEpoch: secondaryBoardControllerEpochRef.current,
+                controllerGameId: controller?.goban.config?.game_id ?? null,
+                controllerConnected: Boolean(controllerParent?.isConnected),
+                controllerMeasuredElement: summarizeElementForDebug(controllerParent),
+                controllerParentChain: summarizeParentChain(controllerParent),
+                moveTreeContainerWidth: moveTreeContainer?.clientWidth ?? null,
+                moveTreeContainerHeight: moveTreeContainer?.clientHeight ?? null,
+                moveTreeContainerConnected: Boolean(moveTreeContainer?.isConnected),
+                secondaryBoardKey,
+                mobileSecondaryOwner,
+                mobileSecondaryBoardKey,
+                secondaryMoveTreeKey,
+                secondaryBoardRemountNonce,
+            };
+        },
+        [
+            expectedSecondaryBoardGameId,
+            mobileSecondaryBoardKey,
+            mobileSecondaryOwner,
+            secondaryBoardKey,
+            secondaryBoardRemountNonce,
+            secondaryMoveTreeKey,
+        ],
+    );
+    const setSecondaryBoardController = React.useCallback(
+        (controller: GobanController | null) => {
+            secondaryBoardControllerEpochRef.current += 1;
+            secondarySnapshotLoadOperationIdRef.current += 1;
+            if (isKibitzVariationDebugEnabled()) {
+                logKibitzVariationDebug(
+                    controller ? "secondary-board:on-ready" : "secondary-board:on-ready-null",
+                    getSecondaryBoardDebugState(controller),
+                );
+            }
+            secondaryBoardControllerContextRef.current = controller
+                ? {
+                      controller,
+                      epoch: secondaryBoardControllerEpochRef.current,
+                      roomId: currentRoomIdRef.current,
+                      gameId: expectedSecondaryBoardGameId,
+                  }
+                : null;
+            if (controller && isKibitzVariationDebugEnabled()) {
+                logKibitzVariationDebug("secondary-board:remount-controller-ready", {
+                    roomId: currentRoomIdRef.current,
+                    currentRoomGameId: currentRoomGameIdRef.current,
+                    controllerEpoch: secondaryBoardControllerEpochRef.current,
+                    controllerGameId: expectedSecondaryBoardGameId,
+                    secondaryBoardKey,
+                    secondaryMoveTreeKey,
+                    secondaryBoardRemountNonce,
+                });
+            }
+            setSecondaryBoardControllerState(controller);
+        },
+        [
+            expectedSecondaryBoardGameId,
+            getSecondaryBoardDebugState,
+            secondaryBoardKey,
+            secondaryBoardRemountNonce,
+            secondaryMoveTreeKey,
+        ],
+    );
     const secondaryMoveNavigationShortcuts = secondaryBoardController ? (
         <>
             <KBShortcut shortcut="up" action={secondaryBoardController.nextBranchUp} />
@@ -1444,6 +1577,7 @@ export function KibitzRoomStage({
         </>
     ) : null;
     const handleSecondaryMoveTreeContainerRef = React.useCallback((instance: Resizable | null) => {
+        secondaryMoveTreeContainerRef.current = instance;
         setSecondaryMoveTreeContainer(instance);
     }, []);
     const handleSecondaryMoveTreeResize = React.useCallback(() => {
@@ -1532,9 +1666,37 @@ export function KibitzRoomStage({
                 return;
             }
 
+            const currentController = secondaryBoardController;
+            if (!currentController) {
+                return;
+            }
+
+            if (isKibitzVariationDebugEnabled()) {
+                const controllerParent = currentController.goban.parent ?? null;
+                const moveTreeContainer = secondaryMoveTreeContainerRef.current?.div ?? null;
+                logKibitzVariationDebug("secondary-board:visible-redraw-schedule", {
+                    reason,
+                    roomId: currentRoomIdRef.current,
+                    currentRoomGameId,
+                    selectedVariationId: selectedVariation?.id ?? null,
+                    selectedGameId: selectedVariationGameId,
+                    visibleVariationKey: visibleVariationApplyKey,
+                    controllerEpoch: secondaryBoardControllerEpochRef.current,
+                    controllerGameId: currentController.goban.config?.game_id ?? null,
+                    controllerConnected: Boolean(controllerParent?.isConnected),
+                    controllerMeasuredElement: summarizeElementForDebug(controllerParent),
+                    controllerParentChain: summarizeParentChain(controllerParent),
+                    moveTreeContainerWidth: moveTreeContainer?.clientWidth ?? null,
+                    moveTreeContainerHeight: moveTreeContainer?.clientHeight ?? null,
+                    moveTreeContainerConnected: Boolean(moveTreeContainer?.isConnected),
+                    visibleSecondaryBoardSize,
+                    secondaryBoardRemountNonce,
+                });
+            }
+
             pendingSecondaryBoardVisibleRedrawCancelRef.current?.();
             pendingSecondaryBoardVisibleRedrawCancelRef.current =
-                scheduleVisibleBoardRedrawWhenReady(secondaryBoardController, "secondary", reason, {
+                scheduleVisibleBoardRedrawWhenReady(currentController, "secondary", reason, {
                     expectedSize: visibleSecondaryBoardSize,
                     onDeferred: () => {
                         pendingSecondaryRedrawReasonRef.current = reason;
@@ -1611,6 +1773,24 @@ export function KibitzRoomStage({
     }, []);
 
     React.useEffect(() => {
+        if (isKibitzVariationDebugEnabled()) {
+            const controller = secondaryBoardController;
+            const controllerParent = controller?.goban.parent ?? null;
+            logKibitzVariationDebug("secondary-board:room-change-teardown", {
+                roomId: room.id,
+                currentRoomGameId,
+                selectedVariationId: selectedVariation?.id ?? null,
+                selectedGameId: selectedVariationGameId,
+                visibleVariationKey: visibleVariationApplyKey,
+                controllerEpoch: secondaryBoardControllerEpochRef.current,
+                controllerGameId: controller?.goban.config?.game_id ?? null,
+                controllerConnected: Boolean(controllerParent?.isConnected),
+                controllerMeasuredElement: summarizeElementForDebug(controllerParent),
+                controllerParentChain: summarizeParentChain(controllerParent),
+                currentRoomGameIdBeforeReset: currentRoomGameIdRef.current,
+            });
+        }
+
         mainBoardControllerEpochRef.current += 1;
         secondaryBoardControllerEpochRef.current += 1;
         secondarySnapshotLoadOperationIdRef.current += 1;
@@ -1749,7 +1929,7 @@ export function KibitzRoomStage({
             return;
         }
 
-        if (selectedVariation?.game_id !== currentRoomGameId) {
+        if (selectedVariationGameId !== currentRoomGameId) {
             lastMainBoardOfficialTailMoveNumberRef.current = mainBoardOfficialTailMoveNumber;
             return;
         }
@@ -1762,7 +1942,7 @@ export function KibitzRoomStage({
         lastMainBoardOfficialTailMoveNumberRef.current = mainBoardOfficialTailMoveNumber;
         logKibitzVariationDebug("main-board:official-tail-advanced", {
             gameId: currentRoomGameId,
-            selectedVariationId: selectedVariation.id,
+            selectedVariationId: selectedVariation?.id ?? null,
             previousTailMoveNumber,
             nextTailMoveNumber: mainBoardOfficialTailMoveNumber,
         });
@@ -1865,13 +2045,12 @@ export function KibitzRoomStage({
 
         const isCurrentSecondaryLoadController = (): boolean => {
             const context = secondaryBoardControllerContextRef.current;
-            const controllerGameId = secondaryBoardController.goban.config?.game_id ?? null;
             return Boolean(
                 secondaryBoardController &&
                 context &&
                 context.controller === secondaryBoardController &&
                 context.roomId === currentRoomIdRef.current &&
-                context.gameId === controllerGameId &&
+                context.gameId === expectedSecondaryBoardGameId &&
                 !isDetachedBoardController(secondaryBoardController),
             );
         };
@@ -1883,7 +2062,7 @@ export function KibitzRoomStage({
                 pendingLoad &&
                 pendingLoad.controller === secondaryBoardController &&
                 pendingLoad.roomId === currentRoomIdRef.current &&
-                pendingLoad.gameId === selectedVariation.game_id &&
+                pendingLoad.gameId === selectedVariationGameId &&
                 pendingLoad.operationId === secondarySnapshotLoadOperationIdRef.current &&
                 isCurrentSecondaryLoadController(),
             );
@@ -2766,12 +2945,10 @@ export function KibitzRoomStage({
     const displayedBlack = mainGame?.black.username;
     const displayedWhite = mainGame?.white.username;
     const displayedMoveNumber = mainGame?.move_number;
-    const mobileCompareActive = Boolean(isMobileLayout && mobileCompanionPanel === "compare");
-    const mobileCompareTargetActive = Boolean(
-        mobileCompareActive && (selectedVariation || secondaryBoardGame),
-    );
     const mobileBoardTotalMoves = mobileCompareTargetActive
-        ? (selectedVariation?.move_count ?? previewDisplayedMoveNumber)
+        ? mobileSecondaryOwner === "variation"
+            ? (selectedVariation?.move_count ?? previewDisplayedMoveNumber)
+            : previewDisplayedMoveNumber
         : displayedMoveNumber;
     const liveMainBoardOfficialTailMoveNumber = mainBoardController
         ? getOfficialTrunkTailMoveNumber(mainBoardController)
@@ -2865,8 +3042,6 @@ export function KibitzRoomStage({
 
     if (isMobileLayout) {
         const renderMainBoard = Boolean(mainGame && !mobileCompareActive);
-        const renderPreviewBoard = Boolean(mobileCompareTargetActive && secondaryBoardGame);
-        const renderVariationBoard = Boolean(mobileCompareTargetActive && selectedVariation);
         const mobileBoardController = mobileCompareTargetActive
             ? secondaryBoardController
             : mainBoardController;
@@ -2890,7 +3065,7 @@ export function KibitzRoomStage({
                             mobileBoardSlotRef(node);
                             if (renderMainBoard) {
                                 mobileMainBoardTarget?.ref(node);
-                            } else if (renderVariationBoard) {
+                            } else if (mobileCompareTargetActive) {
                                 mobileVariationBoardTarget?.ref(node);
                             }
                         }}
@@ -2932,17 +3107,21 @@ export function KibitzRoomStage({
                                 onReady={setMainBoardController}
                             />
                         ) : null}
-                        {renderPreviewBoard ? (
+                        {mobileSecondaryOwner === "preview" || mobileSecondaryOwner === "draft" ? (
                             mobileBoardSizeReady ? (
                                 <KibitzBoard
-                                    key={secondaryBoardKey}
-                                    gameId={secondaryGameId}
+                                    key={mobileSecondaryBoardKey}
+                                    gameId={
+                                        secondaryBoardGame?.game_id ??
+                                        secondaryGameId ??
+                                        secondaryPane.variation_source_game_id
+                                    }
                                     currentRoomGameId={currentRoomGameId}
                                     isMobile={true}
                                     {...boardDimensionsOf(secondaryBoardGame)}
                                     className="mobile-secondary-board-surface"
                                     size={mobileBoardSize}
-                                    interactive={isDraftingVariation}
+                                    interactive={mobileSecondaryOwner === "draft"}
                                     fitMode="contain"
                                     respectContainerBounds={true}
                                     moveTree={secondaryPane.variation_source_move_tree}
@@ -2957,10 +3136,10 @@ export function KibitzRoomStage({
                                 />
                             )
                         ) : null}
-                        {renderVariationBoard ? (
+                        {mobileSecondaryOwner === "variation" ? (
                             mobileBoardSizeReady ? (
                                 <KibitzBoard
-                                    key={secondaryBoardKey}
+                                    key={mobileSecondaryBoardKey}
                                     gameId={selectedVariation?.game_id}
                                     currentRoomGameId={currentRoomGameId}
                                     isMobile={true}
@@ -3002,10 +3181,7 @@ export function KibitzRoomStage({
                                 </div>
                             </div>
                         ) : null}
-                        {!renderMainBoard &&
-                        !renderPreviewBoard &&
-                        !renderVariationBoard &&
-                        !(mobileCompareActive && !mobileCompareTargetActive) ? (
+                        {!renderMainBoard && !mobileCompareTargetActive ? (
                             <div className="secondary-board-empty-state">
                                 <div className="secondary-board-empty-message">
                                     {pgettext(
