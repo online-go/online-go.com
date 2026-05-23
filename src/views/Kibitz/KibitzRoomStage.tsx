@@ -1173,30 +1173,6 @@ export function KibitzRoomStage({
     );
     const [secondaryBoardController, setSecondaryBoardControllerState] =
         React.useState<GobanController | null>(null);
-    const setSecondaryBoardController = React.useCallback(
-        (controller: GobanController | null) => {
-            secondaryBoardControllerEpochRef.current += 1;
-            secondarySnapshotLoadOperationIdRef.current += 1;
-            secondaryBoardControllerContextRef.current = controller
-                ? {
-                      controller,
-                      epoch: secondaryBoardControllerEpochRef.current,
-                      roomId: currentRoomIdRef.current,
-                      gameId: expectedSecondaryBoardGameId,
-                  }
-                : null;
-            if (controller) {
-                logKibitzVariationDebug("secondary-board:remount-controller-ready", {
-                    roomId: currentRoomIdRef.current,
-                    currentRoomGameId: currentRoomGameIdRef.current,
-                    controllerEpoch: secondaryBoardControllerEpochRef.current,
-                    controllerGameId: expectedSecondaryBoardGameId,
-                });
-            }
-            setSecondaryBoardControllerState(controller);
-        },
-        [expectedSecondaryBoardGameId],
-    );
     const [secondaryReturnLiveAvailable, setSecondaryReturnLiveAvailable] = React.useState(false);
     const [mobileReturnLiveAvailable, setMobileReturnLiveAvailable] = React.useState(false);
     const [secondaryBoardRemountNonce, bumpSecondaryBoardRemountNonce] = React.useReducer(
@@ -1205,6 +1181,7 @@ export function KibitzRoomStage({
     );
     const [secondaryMoveTreeContainer, setSecondaryMoveTreeContainer] =
         React.useState<Resizable | null>(null);
+    const secondaryMoveTreeContainerRef = React.useRef<Resizable | null>(null);
     const previousSecondaryControllerRef = React.useRef<GobanController | null>(null);
     const mainBoardControllerEpochRef = React.useRef(0);
     const secondaryBoardControllerEpochRef = React.useRef(0);
@@ -1433,6 +1410,73 @@ export function KibitzRoomStage({
         selectedVariationGameId,
         secondaryBoardRemountNonce,
     ]);
+    const getSecondaryBoardDebugState = React.useCallback(
+        (controller: GobanController | null): Record<string, unknown> => {
+            const controllerParent = controller?.goban.parent ?? null;
+            const moveTreeContainer = secondaryMoveTreeContainerRef.current?.div ?? null;
+            return {
+                roomId: currentRoomIdRef.current,
+                currentRoomGameId: currentRoomGameIdRef.current,
+                expectedSecondaryBoardGameId,
+                controllerEpoch: secondaryBoardControllerEpochRef.current,
+                controllerGameId: controller?.goban.config?.game_id ?? null,
+                controllerConnected: Boolean(controllerParent?.isConnected),
+                controllerMeasuredElement: summarizeElementForDebug(controllerParent),
+                controllerParentChain: summarizeParentChain(controllerParent),
+                moveTreeContainerWidth: moveTreeContainer?.clientWidth ?? null,
+                moveTreeContainerHeight: moveTreeContainer?.clientHeight ?? null,
+                moveTreeContainerConnected: Boolean(moveTreeContainer?.isConnected),
+                secondaryBoardKey,
+                secondaryMoveTreeKey,
+                secondaryBoardRemountNonce,
+            };
+        },
+        [
+            expectedSecondaryBoardGameId,
+            secondaryBoardKey,
+            secondaryBoardRemountNonce,
+            secondaryMoveTreeKey,
+        ],
+    );
+    const setSecondaryBoardController = React.useCallback(
+        (controller: GobanController | null) => {
+            secondaryBoardControllerEpochRef.current += 1;
+            secondarySnapshotLoadOperationIdRef.current += 1;
+            if (isKibitzVariationDebugEnabled()) {
+                logKibitzVariationDebug(
+                    controller ? "secondary-board:on-ready" : "secondary-board:on-ready-null",
+                    getSecondaryBoardDebugState(controller),
+                );
+            }
+            secondaryBoardControllerContextRef.current = controller
+                ? {
+                      controller,
+                      epoch: secondaryBoardControllerEpochRef.current,
+                      roomId: currentRoomIdRef.current,
+                      gameId: expectedSecondaryBoardGameId,
+                  }
+                : null;
+            if (controller && isKibitzVariationDebugEnabled()) {
+                logKibitzVariationDebug("secondary-board:remount-controller-ready", {
+                    roomId: currentRoomIdRef.current,
+                    currentRoomGameId: currentRoomGameIdRef.current,
+                    controllerEpoch: secondaryBoardControllerEpochRef.current,
+                    controllerGameId: expectedSecondaryBoardGameId,
+                    secondaryBoardKey,
+                    secondaryMoveTreeKey,
+                    secondaryBoardRemountNonce,
+                });
+            }
+            setSecondaryBoardControllerState(controller);
+        },
+        [
+            expectedSecondaryBoardGameId,
+            getSecondaryBoardDebugState,
+            secondaryBoardKey,
+            secondaryBoardRemountNonce,
+            secondaryMoveTreeKey,
+        ],
+    );
     const secondaryMoveNavigationShortcuts = secondaryBoardController ? (
         <>
             <KBShortcut shortcut="up" action={secondaryBoardController.nextBranchUp} />
@@ -1446,6 +1490,7 @@ export function KibitzRoomStage({
         </>
     ) : null;
     const handleSecondaryMoveTreeContainerRef = React.useCallback((instance: Resizable | null) => {
+        secondaryMoveTreeContainerRef.current = instance;
         setSecondaryMoveTreeContainer(instance);
     }, []);
     const handleSecondaryMoveTreeResize = React.useCallback(() => {
@@ -1534,9 +1579,37 @@ export function KibitzRoomStage({
                 return;
             }
 
+            const currentController = secondaryBoardController;
+            if (!currentController) {
+                return;
+            }
+
+            if (isKibitzVariationDebugEnabled()) {
+                const controllerParent = currentController.goban.parent ?? null;
+                const moveTreeContainer = secondaryMoveTreeContainerRef.current?.div ?? null;
+                logKibitzVariationDebug("secondary-board:visible-redraw-schedule", {
+                    reason,
+                    roomId: currentRoomIdRef.current,
+                    currentRoomGameId,
+                    selectedVariationId: selectedVariation?.id ?? null,
+                    selectedGameId: selectedVariationGameId,
+                    visibleVariationKey: visibleVariationApplyKey,
+                    controllerEpoch: secondaryBoardControllerEpochRef.current,
+                    controllerGameId: currentController.goban.config?.game_id ?? null,
+                    controllerConnected: Boolean(controllerParent?.isConnected),
+                    controllerMeasuredElement: summarizeElementForDebug(controllerParent),
+                    controllerParentChain: summarizeParentChain(controllerParent),
+                    moveTreeContainerWidth: moveTreeContainer?.clientWidth ?? null,
+                    moveTreeContainerHeight: moveTreeContainer?.clientHeight ?? null,
+                    moveTreeContainerConnected: Boolean(moveTreeContainer?.isConnected),
+                    visibleSecondaryBoardSize,
+                    secondaryBoardRemountNonce,
+                });
+            }
+
             pendingSecondaryBoardVisibleRedrawCancelRef.current?.();
             pendingSecondaryBoardVisibleRedrawCancelRef.current =
-                scheduleVisibleBoardRedrawWhenReady(secondaryBoardController, "secondary", reason, {
+                scheduleVisibleBoardRedrawWhenReady(currentController, "secondary", reason, {
                     expectedSize: visibleSecondaryBoardSize,
                     onDeferred: () => {
                         pendingSecondaryRedrawReasonRef.current = reason;
