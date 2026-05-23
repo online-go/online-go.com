@@ -21,7 +21,6 @@ import { OgsResizeDetector } from "@/components/OgsResizeDetector";
 import { PersistentElement } from "@/components/PersistentElement";
 import { GobanController, getMoveTreeTrunkTail } from "@/lib/GobanController";
 import * as preferences from "@/lib/preferences";
-import { socket } from "@/lib/sockets";
 import { logKibitzVariationDebug, summarizeKibitzMoveTreeNode } from "./kibitzVariationDebug";
 import "./KibitzBoard.css";
 
@@ -761,10 +760,9 @@ export function KibitzBoard({
                         role: boardRole,
                         gameId,
                     });
-                    socket.send("game/connect", {
-                        game_id: gameId,
-                        chat: true,
-                    });
+                    // The controller is already connected through OGSConnectivity.
+                    // Defer to its normal load/gamedata path instead of sending a
+                    // second raw connect here, which can race a still-hydrating board.
                 } else if (restoredTail && gameId != null) {
                     restoredOfficialTailRef.current = {
                         gameId,
