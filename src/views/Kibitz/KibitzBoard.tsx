@@ -18,6 +18,7 @@
 import * as React from "react";
 import { GobanRendererConfig, type MoveTree, type MoveTreeJson } from "goban";
 import { GobanContainer } from "@/components/GobanContainer/GobanContainer";
+import { PersistentElement } from "@/components/PersistentElement";
 import { GobanController, getMoveTreeTrunkTail } from "@/lib/GobanController";
 import * as preferences from "@/lib/preferences";
 import { socket } from "@/lib/sockets";
@@ -160,6 +161,7 @@ export function KibitzBoard({
     restoreToOfficialTailOnLoad = false,
     onReady,
 }: KibitzBoardProps): React.ReactElement {
+    const boardHostRef = React.useRef<HTMLDivElement>(null);
     const gobanDiv = React.useRef<HTMLDivElement>(
         (() => {
             const element = document.createElement("div");
@@ -168,7 +170,10 @@ export function KibitzBoard({
         })(),
     );
     const controllerRef = React.useRef<GobanController | null>(null);
+    const controllerPublishedRef = React.useRef(false);
+    const readinessFrameRef = React.useRef<number | null>(null);
     const [goban, setGoban] = React.useState<GobanController["goban"] | null>(null);
+    const [boardHostReadyKey, setBoardHostReadyKey] = React.useState<string | null>(null);
     const moveTreeRef = React.useRef(moveTree);
     const sourceMovePathRef = React.useRef(movePath);
     const currentMovePathRef = React.useRef(movePath);
@@ -188,6 +193,39 @@ export function KibitzBoard({
     const shouldDeferGobanContainer =
         boardRole === "secondary" && hasExplicitSize && !explicitSizeReady;
     const displaySize = hasExplicitSize && Number.isFinite(size) && size > 0 ? size : undefined;
+    const boardHostReadinessKey = React.useMemo(
+        () =>
+            [
+                boardRole,
+                gameId ?? "none",
+                currentRoomGameId ?? "none",
+                isMobile ? "mobile" : "desktop",
+                connectToGame ? "connect" : "no-connect",
+                width,
+                height,
+                interactive ? "interactive" : "static",
+                showLabels ? "labels" : "no-labels",
+                size ?? "auto",
+                fitMode,
+                respectContainerBounds ? "respect" : "no-respect",
+                restoreToOfficialTailOnLoad ? "restore" : "no-restore",
+            ].join("|"),
+        [
+            boardRole,
+            connectToGame,
+            currentRoomGameId,
+            fitMode,
+            gameId,
+            height,
+            interactive,
+            isMobile,
+            restoreToOfficialTailOnLoad,
+            respectContainerBounds,
+            showLabels,
+            size,
+            width,
+        ],
+    );
 
     React.useEffect(() => {
         moveTreeRef.current = moveTree;
@@ -204,7 +242,55 @@ export function KibitzBoard({
         restoredOfficialTailRef.current = null;
     }, [gameId]);
 
+    React.useLayoutEffect(() => {
+        if (goban) {
+            return;
+        }
+
+        let cancelled = false;
+
+        const checkBoardHostReady = () => {
+            if (cancelled) {
+                return;
+            }
+
+            const boardHost = boardHostRef.current;
+            const gobanWrapper = gobanDiv.current.parentElement;
+            const gobanContainer = gobanWrapper?.parentElement ?? null;
+            const boardHostReady =
+                Boolean(boardHost?.isConnected) &&
+                (boardHost?.clientWidth ?? 0) > 0 &&
+                (boardHost?.clientHeight ?? 0) > 0 &&
+                Boolean(gobanWrapper?.isConnected) &&
+                Boolean(gobanContainer?.isConnected) &&
+                gobanWrapper?.classList.contains("Goban") &&
+                gobanContainer?.classList.contains("goban-container") &&
+                gobanContainer.parentElement === boardHost;
+
+            if (boardHostReady) {
+                setBoardHostReadyKey(boardHostReadinessKey);
+                return;
+            }
+
+            readinessFrameRef.current = window.requestAnimationFrame(checkBoardHostReady);
+        };
+
+        readinessFrameRef.current = window.requestAnimationFrame(checkBoardHostReady);
+
+        return () => {
+            cancelled = true;
+            if (readinessFrameRef.current !== null) {
+                window.cancelAnimationFrame(readinessFrameRef.current);
+                readinessFrameRef.current = null;
+            }
+        };
+    }, [boardHostReadinessKey, goban]);
+
     React.useEffect(() => {
+        if (boardHostReadyKey !== boardHostReadinessKey) {
+            return;
+        }
+
         const labelPosition = preferences.get("label-positioning");
         const config: GobanRendererConfig = {
             board_div: gobanDiv.current,
@@ -232,6 +318,7 @@ export function KibitzBoard({
 
         controllerRef.current?.destroy();
         controllerRef.current = new GobanController(config);
+        controllerPublishedRef.current = false;
         if (!connectToGame) {
             logKibitzVariationDebug("kibitz-board:connect-suppressed", {
                 role: boardRole,
@@ -393,9 +480,13 @@ export function KibitzBoard({
         }
         setGoban(controllerRef.current.goban);
         onReady?.(controllerRef.current);
+        controllerPublishedRef.current = true;
 
         return () => {
-            onReady?.(null);
+            if (controllerPublishedRef.current) {
+                onReady?.(null);
+            }
+            controllerPublishedRef.current = false;
             clearPendingLiveMoveRestore();
             controllerRef.current?.goban.off("cur_move", captureCurrentMovePath);
             controllerRef.current?.goban.off("move-made", restorePendingLiveMoveCursor);
@@ -416,6 +507,8 @@ export function KibitzBoard({
         restoreToOfficialTailOnLoad,
         role,
         showLabels,
+        boardHostReadyKey,
+        boardHostReadinessKey,
     ]);
 
     React.useEffect(() => {
@@ -611,6 +704,7 @@ export function KibitzBoard({
 
     return (
         <div
+            ref={boardHostRef}
             className={"KibitzBoard" + (className ? ` ${className}` : "")}
             style={
                 displaySize
@@ -630,7 +724,11 @@ export function KibitzBoard({
                     fitMode={fitMode}
                     respectContainerBounds={respectContainerBounds}
                 />
-            ) : null}
+            ) : (
+                <div className="goban-container" aria-hidden="true">
+                    <PersistentElement className="Goban" elt={gobanDiv.current} />
+                </div>
+            )}
         </div>
     );
 }
