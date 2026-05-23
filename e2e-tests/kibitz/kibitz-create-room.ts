@@ -37,10 +37,13 @@ export const kibitzCreateRoomTest = async ({
     // URL ends up at /kibitz/<roomId>.
     expect(watcherPage.url()).toMatch(new RegExp(`/kibitz/${roomId}$`));
 
-    // Positive functional assertions on what the watcher sees.
+    // Positive functional assertions on what the watcher sees. The goban
+    // renders as SVG; the <svg> element under the main-board surface is the
+    // unambiguous "board is painted" signal (the wrapping .Goban div has
+    // multiple matches and the first one is an empty placeholder).
     await expect(watcherPage.locator(".KibitzRoomStage")).toBeVisible();
     await expect(
-        watcherPage.locator(".board-panel.main-board .KibitzBoard.main-board-surface .Goban"),
+        watcherPage.locator(".board-panel.main-board .KibitzBoard.main-board-surface svg").first(),
     ).toBeVisible();
     await expect(watcherPage.locator(".KibitzPresence")).toBeVisible();
 

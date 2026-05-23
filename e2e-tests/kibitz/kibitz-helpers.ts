@@ -36,8 +36,13 @@ export async function waitForKibitzReady(page: Page) {
     await expect(
         page.locator(".board-panel.main-board .KibitzBoard.main-board-surface"),
     ).toBeVisible({ timeout: 15000 });
+    // The inner `.Goban` div selector resolves to multiple elements (the library
+    // creates a nested .Goban .Goban structure) and the first match is not the
+    // painted one, so `toBeVisible` can wrongly report "hidden" even when the
+    // board is fully rendered. The goban renders via SVG -- the <svg> element
+    // is the unambiguous "board is painted" signal.
     await expect(
-        page.locator(".board-panel.main-board .KibitzBoard.main-board-surface .Goban").first(),
+        page.locator(".board-panel.main-board .KibitzBoard.main-board-surface svg").first(),
     ).toBeVisible({ timeout: 15000 });
 }
 
@@ -110,6 +115,7 @@ export interface KibitzPreludeResult {
 export async function createKibitzRoomForLiveGame(
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
 ): Promise<KibitzPreludeResult> {
+    console.log("[kibitz prelude] preparing three users (black, white, watcher)");
     // 1. Three users. Role prefixes <= 20 chars per newTestUsername contract.
     const { userPage: blackPlayerPage } = await prepareNewUser(
         createContext,
@@ -132,6 +138,7 @@ export async function createKibitzRoomForLiveGame(
     //    the test. 9x9 keeps the play loop short. Analysis stays enabled
     //    (default for direct challenges) so the Kibitz create-room rule for
     //    live games is satisfied.
+    console.log("[kibitz prelude] starting live 9x9 game between black and white");
     await createDirectChallenge(blackPlayerPage, whiteUsername, {
         ...defaultChallengeSettings,
         gameName: "E2E Kibitz live source game",
@@ -165,11 +172,17 @@ export async function createKibitzRoomForLiveGame(
         .locator(".Goban[data-pointers-bound]")
         .waitFor({ state: "visible", timeout: 30000 });
 
+    console.log(`[kibitz prelude] game ${gameId} accepted; playing four opening moves`);
     // 3. A few moves so the game has visible content. Do NOT pass or
     //    resign -- the game must stay in-progress.
     await playMoves(blackPlayerPage, whitePlayerPage, ["E5", "G5", "E7", "G7"], "9x9");
 
+    console.log("[kibitz prelude] watcher opening Kibitz and creating room");
     // 5. Watcher opens Kibitz and creates a room from the captured game id.
+    //    Kibitz is a wide multi-pane desktop layout; the default 1280x720
+    //    viewport leaves very little room for the board panel. Set a larger
+    //    viewport so layout-driven flake is one less thing to worry about.
+    await watcherPage.setViewportSize({ width: 1920, height: 1080 });
     await load(watcherPage, "/kibitz");
     await expect(watcherPage.locator(".Kibitz")).toBeVisible({ timeout: 15000 });
 
@@ -218,6 +231,7 @@ export async function createKibitzRoomForLiveGame(
         throw new Error(`Expected /kibitz/user-<id> URL on watcher page, got ${watcherPage.url()}`);
     }
     const roomId = roomMatch[1];
+    console.log(`[kibitz prelude] room ${roomId} created and rendered for watcher`);
 
     return { watcherPage, blackPlayerPage, whitePlayerPage, gameId, roomId };
 }
