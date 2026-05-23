@@ -16,6 +16,17 @@
  */
 
 import { expect, Page } from "@playwright/test";
+import type { BrowserContext } from "@playwright/test";
+import type { CreateContextOptions } from "@helpers";
+import { load } from "@helpers";
+import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
+import {
+    acceptDirectChallenge,
+    createDirectChallenge,
+    defaultChallengeSettings,
+} from "@helpers/challenge-utils";
+import { playMoves } from "@helpers/game-utils";
+import { expectOGSClickableByName } from "@helpers/matchers";
 
 export async function waitForKibitzReady(page: Page) {
     await expect(page.locator(".Kibitz")).toBeVisible({ timeout: 15000 });
@@ -74,4 +85,139 @@ export async function waitForKibitzLayoutStable(page: Page) {
 export async function waitForCompareLayoutStable(page: Page) {
     await waitForKibitzLayoutStable(page);
     await waitForStableRect(page, ".board-panel.secondary-board .board-fit-slot");
+}
+
+export interface KibitzPreludeResult {
+    watcherPage: Page;
+    blackPlayerPage: Page;
+    whitePlayerPage: Page;
+    gameId: number;
+    roomId: string;
+}
+
+/**
+ * Prepare a Kibitz room watching a live, in-progress game.
+ *
+ * Creates three users (two players + one watcher), starts a live 9x9 game
+ * between the players with generous time controls so it does not time out
+ * during the test, plays a few moves so the game has visible content, then
+ * has the watcher open the Kibitz view and create a room pointing at that
+ * game.
+ *
+ * The two player pages are returned so the caller can keep them open; the
+ * game must remain in-progress for the duration of the calling test.
+ */
+export async function createKibitzRoomForLiveGame(
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
+): Promise<KibitzPreludeResult> {
+    // 1. Three users. Role prefixes <= 20 chars per newTestUsername contract.
+    const { userPage: blackPlayerPage } = await prepareNewUser(
+        createContext,
+        newTestUsername("kibBlk"), // cspell:disable-line
+        "test",
+    );
+    const whiteUsername = newTestUsername("kibWht"); // cspell:disable-line
+    const { userPage: whitePlayerPage } = await prepareNewUser(
+        createContext,
+        whiteUsername,
+        "test",
+    );
+    const { userPage: watcherPage } = await prepareNewUser(
+        createContext,
+        newTestUsername("kibWatch"), // cspell:disable-line
+        "test",
+    );
+
+    // 2. Live game with generous time controls so it cannot time out during
+    //    the test. 9x9 keeps the play loop short. Analysis stays enabled
+    //    (default for direct challenges) so the Kibitz create-room rule for
+    //    live games is satisfied.
+    await createDirectChallenge(blackPlayerPage, whiteUsername, {
+        ...defaultChallengeSettings,
+        gameName: "E2E Kibitz live source game",
+        boardSize: "9x9",
+        speed: "live",
+        timeControl: "byoyomi",
+        mainTime: "600",
+        timePerPeriod: "60",
+        periods: "5",
+        ranked: false,
+    });
+    await acceptDirectChallenge(whitePlayerPage);
+
+    // After accepting, the white player page navigates to /game/<id> or /play/<id>.
+    // Capture the game id from the white player URL before continuing.
+    await whitePlayerPage.waitForURL(/\/(game|play)\/\d+/, { timeout: 30000 });
+    const whitePlayUrl = new URL(whitePlayerPage.url());
+    const whitePlayMatch = whitePlayUrl.pathname.match(/\/(game|play)\/(\d+)/);
+    if (!whitePlayMatch) {
+        throw new Error(
+            `Expected /game/<id> or /play/<id> URL on white player page, got ${whitePlayUrl.pathname}`,
+        );
+    }
+    const gameId = Number(whitePlayMatch[2]);
+
+    // Navigate the black player directly to the game. The black player page
+    // may be on the opponent's profile page after "Waiting for opponent" closes
+    // and may not auto-navigate to the game.
+    await load(blackPlayerPage, `/game/${gameId}`);
+    await blackPlayerPage
+        .locator(".Goban[data-pointers-bound]")
+        .waitFor({ state: "visible", timeout: 30000 });
+
+    // 3. A few moves so the game has visible content. Do NOT pass or
+    //    resign -- the game must stay in-progress.
+    await playMoves(blackPlayerPage, whitePlayerPage, ["E5", "G5", "E7", "G7"], "9x9");
+
+    // 5. Watcher opens Kibitz and creates a room from the captured game id.
+    await load(watcherPage, "/kibitz");
+    await expect(watcherPage.locator(".Kibitz")).toBeVisible({ timeout: 15000 });
+
+    // Open the create-room overlay (KibitzRoomList.tsx, button class
+    // "KibitzRoomList-createButton" + text "Create room").
+    const createRoomButton = await expectOGSClickableByName(watcherPage, /^Create room$/);
+    await createRoomButton.click();
+
+    // Game ID input on the desktop layout (KibitzGamePickerOverlay.tsx,
+    // id="kibitz-game-picker-input").
+    const gameIdInput = watcherPage.locator("#kibitz-game-picker-input");
+    await expect(gameIdInput).toBeVisible({ timeout: 15000 });
+    await gameIdInput.fill(String(gameId));
+    await expect(gameIdInput).toHaveValue(String(gameId));
+
+    // "Load" button resolves the game and populates the preview.
+    const loadButton = await expectOGSClickableByName(watcherPage, /^Load$/);
+    await loadButton.click();
+
+    // Wait for the selection card to appear (game resolved) and for the
+    // room-name field to be populated by the auto-name effect in the
+    // overlay (KibitzGamePickerOverlay.tsx lines 237-249).
+    const roomNameInput = watcherPage.locator("#kibitz-room-name");
+    await expect(roomNameInput).toBeVisible({ timeout: 15000 });
+    await expect(roomNameInput).not.toHaveValue("");
+
+    // Confirm create. Scope to the overlay footer so we don't match the
+    // rail "Create room" button (which is also present at this point).
+    const overlayFooter = watcherPage.locator(".KibitzGamePickerOverlay-footer");
+    await expect(overlayFooter).toBeVisible({ timeout: 15000 });
+    const submitCreateButton = overlayFooter
+        .getByRole("button", { name: /^Create room$/ })
+        .or(overlayFooter.getByRole("link", { name: /^Create room$/ }));
+    await expect(submitCreateButton).toBeVisible({ timeout: 15000 });
+    await expect(submitCreateButton).toBeEnabled();
+    await submitCreateButton.click();
+
+    // After create, KibitzInner navigates to /kibitz/<roomId>; the id is
+    // shaped like "user-<pk>" per the Kibitz backend.
+    await watcherPage.waitForURL(/\/kibitz\/user-[a-zA-Z0-9-]+/, { timeout: 15000 });
+    await waitForKibitzReady(watcherPage);
+    await waitForKibitzLayoutStable(watcherPage);
+
+    const roomMatch = watcherPage.url().match(/\/kibitz\/(user-[a-zA-Z0-9-]+)/);
+    if (!roomMatch) {
+        throw new Error(`Expected /kibitz/user-<id> URL on watcher page, got ${watcherPage.url()}`);
+    }
+    const roomId = roomMatch[1];
+
+    return { watcherPage, blackPlayerPage, whitePlayerPage, gameId, roomId };
 }
