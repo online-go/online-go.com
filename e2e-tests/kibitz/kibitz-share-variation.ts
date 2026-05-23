@@ -101,4 +101,40 @@ export const kibitzShareVariationTest = async ({
         timeout: 15000,
     });
     console.log("[kibitz share-variation] variation appeared in list");
+
+    // Wait for the secondary pane to transition from "drafting" into the
+    // "posted-variation" branch (KibitzRoomStage.tsx:3429+). This happens
+    // asynchronously after the chat round-trip surfaces the new variation in
+    // displayedVariations: KibitzInner.tsx:1846-1871 then calls
+    // onOpenVariation, which puts the pane into that branch. Gating on this
+    // class avoids reading the drafting subtree's move-tree SVG -- both
+    // branches mount a container with the same id.
+    await expect(secondaryBoard.locator(".board-content-posted-variation")).toBeVisible({
+        timeout: 15000,
+    });
+
+    // Bug #1 signal A: the secondary board's move-number control should read
+    // "Move 5" -- four prelude moves (E5/G5/E7/G7) plus the C3 variation
+    // stone. If the board resets to the variation's base instead of showing
+    // the variation, this reads "Move 0". KibitzBoardControls.tsx:206
+    // renders the .move-number span; the secondary board's "full" variant
+    // has only one.
+    await expect(secondaryBoard.locator(".move-number")).toHaveText("Move 5", {
+        timeout: 15000,
+    });
+    console.log("[kibitz share-variation] secondary board shows Move 5");
+
+    // Bug #1 signal B: the secondary board's move tree should contain a node
+    // labeled "5". SVGRenderer.move_tree_drawStone
+    // (submodules/goban/src/Goban/SVGRenderer.ts:4577-4590) writes
+    // String(node.move_number) into each node's <text> under the default
+    // "move-number" numbering mode. If the variation move is missing from
+    // the tree, no "5" node exists. The /^5$/ anchor prevents accidental
+    // matches against future higher move numbers (e.g. "15").
+    await expect(
+        secondaryBoard.locator("#kibitz-secondary-move-tree-container svg text", {
+            hasText: /^5$/,
+        }),
+    ).toHaveCount(1, { timeout: 15000 });
+    console.log("[kibitz share-variation] variation move (5) present in move tree");
 };
