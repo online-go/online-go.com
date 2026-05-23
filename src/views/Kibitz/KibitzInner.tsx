@@ -946,7 +946,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         [],
     );
     const visibleMainBoardMounted = Boolean(mainBoardController);
-    const currentLiveTailMoveNumber = React.useMemo(() => {
+    const roomLiveMoveNumber = resolvedRoom?.current_game?.move_number ?? 0;
+    const currentGameBaseSnapshotFreshnessMoveNumber = React.useMemo(() => {
         const liveTailFromRoom = resolvedRoom?.current_game?.move_number ?? 0;
         const cachedSnapshotTail =
             currentGameBaseSnapshot?.gameId === currentGameId
@@ -966,6 +967,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     useKibitzCurrentGameConnectionKeeper({
         roomId: resolvedRoom?.id ?? null,
         currentGameId,
+        currentLiveTailMoveNumber: roomLiveMoveNumber,
         isLive: Boolean(resolvedRoom?.current_game?.live),
         pickerOpen,
         enabled: Boolean(resolvedRoom),
@@ -1005,7 +1007,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             !visibleMainBoardMounted,
         roomId: resolvedRoom?.id ?? null,
         game: resolvedRoom?.current_game ?? null,
-        currentLiveTailMoveNumber,
+        currentSnapshotFreshnessMoveNumber: currentGameBaseSnapshotFreshnessMoveNumber,
         visibleMainBoardMounted,
         onSnapshot: acceptCurrentGameBaseSnapshot,
     });
