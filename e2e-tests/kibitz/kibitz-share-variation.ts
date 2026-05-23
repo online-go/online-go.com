@@ -74,6 +74,23 @@ export const kibitzShareVariationTest = async ({
     await expect(secondaryBoard).toBeVisible();
     await waitForCompareLayoutStable(watcherPage);
 
+    // Pre-flight: the secondary (analysis) board should load with the live
+    // game's current state as the variation base -- the four prelude moves
+    // E5/G5/E7/G7. Without this check, a broken base could still produce a
+    // misleading-but-passing assertion later (e.g. an empty base + C3 click
+    // would land at move 1 not 5, which fails the Move-5 check but masks
+    // "base was wrong" as "variation didn't load"). cur_move should sit at
+    // move 4 and the move tree should contain a node labeled "4".
+    await expect(secondaryBoard.locator(".move-number")).toHaveText("Move 4", {
+        timeout: 15000,
+    });
+    await expect(
+        secondaryBoard.locator("#kibitz-secondary-move-tree-container svg text", {
+            hasText: /^4$/,
+        }),
+    ).toHaveCount(1, { timeout: 15000 });
+    console.log("[kibitz share-variation] variation base loaded at Move 4");
+
     // Place a single move on the secondary (analysis) goban. The source
     // game is 9x9 with stones at E5/G5/E7/G7 from the prelude; C3 is empty.
     // Both boards may carry `.Goban[data-pointers-bound]` in compare mode,
