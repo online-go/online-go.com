@@ -212,7 +212,6 @@ export function KibitzBoard({
                 height,
                 interactive ? "interactive" : "static",
                 showLabels ? "labels" : "no-labels",
-                size ?? "auto",
                 fitMode,
                 respectContainerBounds ? "respect" : "no-respect",
                 restoreToOfficialTailOnLoad ? "restore" : "no-restore",
@@ -229,7 +228,6 @@ export function KibitzBoard({
             restoreToOfficialTailOnLoad,
             respectContainerBounds,
             showLabels,
-            size,
             width,
         ],
     );
