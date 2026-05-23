@@ -830,6 +830,21 @@ function scheduleVisibleBoardRedrawWhenReady(
     let frame2: number | null = null;
     let cancelled = false;
     let deferredLogged = false;
+    const debugEnabled = isKibitzVariationDebugEnabled();
+
+    if (debugEnabled) {
+        const controllerParent = controller?.goban.parent ?? null;
+        logKibitzVariationDebug("visible-goban:redraw-schedule", {
+            role,
+            reason,
+            expectedSize: options?.expectedSize ?? null,
+            controllerGameId: controller?.goban.config?.game_id ?? null,
+            controllerConnected: Boolean(controllerParent?.isConnected),
+            controllerMeasuredElement: summarizeElementForDebug(controllerParent),
+            controllerParentChain: summarizeParentChain(controllerParent),
+            controllerCurrent: options?.isControllerCurrent?.() ?? null,
+        });
+    }
 
     const scheduleAttempt = (remainingAttempts: number) => {
         if (cancelled) {
@@ -851,13 +866,18 @@ function scheduleVisibleBoardRedrawWhenReady(
                 }
 
                 if (options?.isControllerCurrent && !options.isControllerCurrent()) {
-                    logKibitzVariationDebug("visible-goban:redraw-stale-controller", {
-                        role,
-                        reason,
-                        expectedSize: options?.expectedSize ?? null,
-                        measuredElement: summarizeElementForDebug(controller?.goban.parent ?? null),
-                        parentChain: summarizeParentChain(controller?.goban.parent ?? null),
-                    });
+                    if (debugEnabled) {
+                        const controllerParent = controller?.goban.parent ?? null;
+                        logKibitzVariationDebug("visible-goban:redraw-stale-controller", {
+                            role,
+                            reason,
+                            expectedSize: options?.expectedSize ?? null,
+                            controllerGameId: controller?.goban.config?.game_id ?? null,
+                            controllerConnected: Boolean(controllerParent?.isConnected),
+                            controllerMeasuredElement: summarizeElementForDebug(controllerParent),
+                            controllerParentChain: summarizeParentChain(controllerParent),
+                        });
+                    }
                     return;
                 }
 
@@ -868,15 +888,19 @@ function scheduleVisibleBoardRedrawWhenReady(
                 if (detached) {
                     const width = container?.clientWidth ?? 0;
                     const height = container?.clientHeight ?? 0;
-                    logKibitzVariationDebug("visible-goban:redraw-detached", {
-                        role,
-                        reason,
-                        width,
-                        height,
-                        expectedSize: options?.expectedSize ?? null,
-                        measuredElement,
-                        parentChain,
-                    });
+                    if (debugEnabled) {
+                        logKibitzVariationDebug("visible-goban:redraw-detached", {
+                            role,
+                            reason,
+                            width,
+                            height,
+                            expectedSize: options?.expectedSize ?? null,
+                            controllerGameId: controller?.goban.config?.game_id ?? null,
+                            controllerConnected: Boolean(container?.isConnected),
+                            measuredElement,
+                            parentChain,
+                        });
+                    }
                     options?.onDetached?.({
                         width,
                         height,
@@ -897,15 +921,19 @@ function scheduleVisibleBoardRedrawWhenReady(
                 if (width <= 0 || height <= 0) {
                     if (!deferredLogged) {
                         deferredLogged = true;
-                        logKibitzVariationDebug("visible-goban:redraw-deferred-zero-size", {
-                            role,
-                            reason,
-                            width,
-                            height,
-                            expectedSize: options?.expectedSize ?? null,
-                            measuredElement: summarizeElementForDebug(container),
-                            parentChain: summarizeParentChain(container),
-                        });
+                        if (debugEnabled) {
+                            logKibitzVariationDebug("visible-goban:redraw-deferred-zero-size", {
+                                role,
+                                reason,
+                                width,
+                                height,
+                                expectedSize: options?.expectedSize ?? null,
+                                controllerGameId: controller?.goban.config?.game_id ?? null,
+                                controllerConnected: Boolean(container?.isConnected),
+                                measuredElement: summarizeElementForDebug(container),
+                                parentChain: summarizeParentChain(container),
+                            });
+                        }
                         if (!expectedSizeReady) {
                             options?.onDeferred?.();
                         }
@@ -920,14 +948,18 @@ function scheduleVisibleBoardRedrawWhenReady(
                 const officialTailMoveNumber =
                     getOfficialTrunkTail(controller?.goban.engine?.move_tree)?.move_number ?? null;
 
-                logKibitzVariationDebug("visible-goban:redraw-request", {
-                    role,
-                    reason,
-                    width,
-                    height,
-                    currentMoveNumber,
-                    officialTailMoveNumber,
-                });
+                if (debugEnabled) {
+                    logKibitzVariationDebug("visible-goban:redraw-request", {
+                        role,
+                        reason,
+                        width,
+                        height,
+                        controllerGameId: controller?.goban.config?.game_id ?? null,
+                        controllerConnected: Boolean(controller?.goban.parent?.isConnected),
+                        currentMoveNumber,
+                        officialTailMoveNumber,
+                    });
+                }
 
                 controller?.goban.move_tree_redraw(true);
                 controller?.goban.redraw(true);
