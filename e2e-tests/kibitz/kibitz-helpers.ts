@@ -47,6 +47,18 @@ export async function waitForKibitzReady(page: Page) {
 }
 
 export async function waitForStableRect(page: Page, selector: string, timeout = 5000) {
+    // Clear any rect cached on `window` from a prior call against the same
+    // selector. The polled callback compares the current rect against
+    // window.__kibitz_stable_rect_<selector> and returns true on a match;
+    // without this clear, a second call would see the leftover value on its
+    // very first poll and return immediately, skipping the intended two-poll
+    // stability confirmation.
+    await page.evaluate((targetSelector) => {
+        delete (window as unknown as Record<string, unknown>)[
+            `__kibitz_stable_rect_${targetSelector}`
+        ];
+    }, selector);
+
     await page.waitForFunction(
         ({ targetSelector }) => {
             const element = document.querySelector(targetSelector);
