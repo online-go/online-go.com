@@ -16,8 +16,8 @@
  */
 
 import { ogsTest } from "@helpers";
-import { kibitzCreateRoomTest } from "./kibitz-create-room";
+import { kibitzBasicRoomTest } from "./kibitz-basic-room";
 
 ogsTest.describe("@Kibitz basic flows", () => {
-    ogsTest("Create room from a live game and navigate into it", kibitzCreateRoomTest);
+    ogsTest("Create room, navigate in, and post a chat message", kibitzBasicRoomTest);
 });
