@@ -1465,6 +1465,34 @@ export function KibitzRoomStage({
         selectedVariationGameId,
         secondaryBoardRemountNonce,
     ]);
+    const mobileCompareActive = Boolean(isMobileLayout && mobileCompanionPanel === "compare");
+    const mobileSecondaryOwner = React.useMemo<"none" | "preview" | "draft" | "variation">(() => {
+        if (!mobileCompareActive) {
+            return "none";
+        }
+
+        if (selectedVariation) {
+            return "variation";
+        }
+
+        if (isDraftingVariation) {
+            return "draft";
+        }
+
+        if (secondaryGameId != null) {
+            return "preview";
+        }
+
+        return "none";
+    }, [isDraftingVariation, mobileCompareActive, secondaryGameId, selectedVariation]);
+    const mobileSecondaryBoardKey = React.useMemo(() => {
+        if (mobileSecondaryOwner === "none") {
+            return secondaryBoardKey;
+        }
+
+        return `${secondaryBoardKey}-${mobileSecondaryOwner}`;
+    }, [mobileSecondaryOwner, secondaryBoardKey]);
+    const mobileCompareTargetActive = mobileSecondaryOwner !== "none";
     const getSecondaryBoardDebugState = React.useCallback(
         (controller: GobanController | null): Record<string, unknown> => {
             const controllerParent = controller?.goban.parent ?? null;
@@ -1482,12 +1510,16 @@ export function KibitzRoomStage({
                 moveTreeContainerHeight: moveTreeContainer?.clientHeight ?? null,
                 moveTreeContainerConnected: Boolean(moveTreeContainer?.isConnected),
                 secondaryBoardKey,
+                mobileSecondaryOwner,
+                mobileSecondaryBoardKey,
                 secondaryMoveTreeKey,
                 secondaryBoardRemountNonce,
             };
         },
         [
             expectedSecondaryBoardGameId,
+            mobileSecondaryBoardKey,
+            mobileSecondaryOwner,
             secondaryBoardKey,
             secondaryBoardRemountNonce,
             secondaryMoveTreeKey,
@@ -2913,12 +2945,10 @@ export function KibitzRoomStage({
     const displayedBlack = mainGame?.black.username;
     const displayedWhite = mainGame?.white.username;
     const displayedMoveNumber = mainGame?.move_number;
-    const mobileCompareActive = Boolean(isMobileLayout && mobileCompanionPanel === "compare");
-    const mobileCompareTargetActive = Boolean(
-        mobileCompareActive && (selectedVariation || secondaryBoardGame),
-    );
     const mobileBoardTotalMoves = mobileCompareTargetActive
-        ? (selectedVariation?.move_count ?? previewDisplayedMoveNumber)
+        ? mobileSecondaryOwner === "variation"
+            ? (selectedVariation?.move_count ?? previewDisplayedMoveNumber)
+            : previewDisplayedMoveNumber
         : displayedMoveNumber;
     const liveMainBoardOfficialTailMoveNumber = mainBoardController
         ? getOfficialTrunkTailMoveNumber(mainBoardController)
@@ -3012,8 +3042,6 @@ export function KibitzRoomStage({
 
     if (isMobileLayout) {
         const renderMainBoard = Boolean(mainGame && !mobileCompareActive);
-        const renderPreviewBoard = Boolean(mobileCompareTargetActive && secondaryBoardGame);
-        const renderVariationBoard = Boolean(mobileCompareTargetActive && selectedVariation);
         const mobileBoardController = mobileCompareTargetActive
             ? secondaryBoardController
             : mainBoardController;
@@ -3037,7 +3065,7 @@ export function KibitzRoomStage({
                             mobileBoardSlotRef(node);
                             if (renderMainBoard) {
                                 mobileMainBoardTarget?.ref(node);
-                            } else if (renderVariationBoard) {
+                            } else if (mobileCompareTargetActive) {
                                 mobileVariationBoardTarget?.ref(node);
                             }
                         }}
@@ -3079,17 +3107,21 @@ export function KibitzRoomStage({
                                 onReady={setMainBoardController}
                             />
                         ) : null}
-                        {renderPreviewBoard ? (
+                        {mobileSecondaryOwner === "preview" || mobileSecondaryOwner === "draft" ? (
                             mobileBoardSizeReady ? (
                                 <KibitzBoard
-                                    key={secondaryBoardKey}
-                                    gameId={secondaryGameId}
+                                    key={mobileSecondaryBoardKey}
+                                    gameId={
+                                        secondaryBoardGame?.game_id ??
+                                        secondaryGameId ??
+                                        secondaryPane.variation_source_game_id
+                                    }
                                     currentRoomGameId={currentRoomGameId}
                                     isMobile={true}
                                     {...boardDimensionsOf(secondaryBoardGame)}
                                     className="mobile-secondary-board-surface"
                                     size={mobileBoardSize}
-                                    interactive={isDraftingVariation}
+                                    interactive={mobileSecondaryOwner === "draft"}
                                     fitMode="contain"
                                     respectContainerBounds={true}
                                     moveTree={secondaryPane.variation_source_move_tree}
@@ -3104,10 +3136,10 @@ export function KibitzRoomStage({
                                 />
                             )
                         ) : null}
-                        {renderVariationBoard ? (
+                        {mobileSecondaryOwner === "variation" ? (
                             mobileBoardSizeReady ? (
                                 <KibitzBoard
-                                    key={secondaryBoardKey}
+                                    key={mobileSecondaryBoardKey}
                                     gameId={selectedVariation?.game_id}
                                     currentRoomGameId={currentRoomGameId}
                                     isMobile={true}
@@ -3149,10 +3181,7 @@ export function KibitzRoomStage({
                                 </div>
                             </div>
                         ) : null}
-                        {!renderMainBoard &&
-                        !renderPreviewBoard &&
-                        !renderVariationBoard &&
-                        !(mobileCompareActive && !mobileCompareTargetActive) ? (
+                        {!renderMainBoard && !mobileCompareTargetActive ? (
                             <div className="secondary-board-empty-state">
                                 <div className="secondary-board-empty-message">
                                     {pgettext(
