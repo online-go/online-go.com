@@ -1248,17 +1248,40 @@ export function KibitzRoomStage({
     );
     const requestSecondaryBoardDetachedRemount = React.useCallback(
         (reason: string, details: Record<string, unknown> = {}) => {
-            logKibitzVariationDebug("secondary-board:detached-remount-requested", {
-                reason,
-                roomId: room.id,
-                selectedVariationId: selectedVariation?.id ?? null,
-                selectedGameId: selectedVariationGameId,
-                currentRoomGameId,
-                visibleVariationKey: visibleVariationApplyKey,
-                desiredApplyKey: lastAppliedSecondaryVariationKeyRef.current,
-                secondaryBoardRemountNonce,
-                ...details,
-            });
+            if (isKibitzVariationDebugEnabled()) {
+                const controller = secondaryBoardController;
+                const controllerParent = controller?.goban.parent ?? null;
+                logKibitzVariationDebug("secondary-board:detached-remount-reset", {
+                    reason,
+                    roomId: room.id,
+                    selectedVariationId: selectedVariation?.id ?? null,
+                    selectedGameId: selectedVariationGameId,
+                    currentRoomGameId,
+                    visibleVariationKey: visibleVariationApplyKey,
+                    desiredApplyKey: lastAppliedSecondaryVariationKeyRef.current,
+                    controllerEpoch: secondaryBoardControllerEpochRef.current,
+                    controllerGameId: controller?.goban.config?.game_id ?? null,
+                    controllerConnected: Boolean(controllerParent?.isConnected),
+                    controllerMeasuredElement: summarizeElementForDebug(controllerParent),
+                    controllerParentChain: summarizeParentChain(controllerParent),
+                    secondaryBoardRemountNonce,
+                    ...details,
+                });
+            }
+
+            if (isKibitzVariationDebugEnabled()) {
+                logKibitzVariationDebug("secondary-board:detached-remount-requested", {
+                    reason,
+                    roomId: room.id,
+                    selectedVariationId: selectedVariation?.id ?? null,
+                    selectedGameId: selectedVariationGameId,
+                    currentRoomGameId,
+                    visibleVariationKey: visibleVariationApplyKey,
+                    desiredApplyKey: lastAppliedSecondaryVariationKeyRef.current,
+                    secondaryBoardRemountNonce,
+                    ...details,
+                });
+            }
 
             secondaryBoardControllerEpochRef.current += 1;
             secondaryBoardControllerContextRef.current = null;
@@ -1718,6 +1741,24 @@ export function KibitzRoomStage({
     }, []);
 
     React.useEffect(() => {
+        if (isKibitzVariationDebugEnabled()) {
+            const controller = secondaryBoardController;
+            const controllerParent = controller?.goban.parent ?? null;
+            logKibitzVariationDebug("secondary-board:room-change-teardown", {
+                roomId: room.id,
+                currentRoomGameId,
+                selectedVariationId: selectedVariation?.id ?? null,
+                selectedGameId: selectedVariationGameId,
+                visibleVariationKey: visibleVariationApplyKey,
+                controllerEpoch: secondaryBoardControllerEpochRef.current,
+                controllerGameId: controller?.goban.config?.game_id ?? null,
+                controllerConnected: Boolean(controllerParent?.isConnected),
+                controllerMeasuredElement: summarizeElementForDebug(controllerParent),
+                controllerParentChain: summarizeParentChain(controllerParent),
+                currentRoomGameIdBeforeReset: currentRoomGameIdRef.current,
+            });
+        }
+
         mainBoardControllerEpochRef.current += 1;
         secondaryBoardControllerEpochRef.current += 1;
         secondarySnapshotLoadOperationIdRef.current += 1;
