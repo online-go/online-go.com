@@ -22,6 +22,7 @@ import {
     captureMainBoardBaseSnapshotForVariation,
     clearDraftBaseAppliedState,
     clearInstalledSecondaryVariationBaseState,
+    buildSnapshotFromEngine,
     getCurrentSecondaryVariationBaseTreeIdentity,
     getOfficialTrunkTailMoveNumber,
     getCurrentDraftBaseTreeIdentity,
@@ -80,6 +81,7 @@ function makeMoveTree(
         move_number: moveNumber,
         trunk_next: trunkNext ?? undefined,
         branches,
+        getMoveStringToThisPoint: () => `${moveNumber}`,
         toJson: () => ({
             move_number: moveNumber,
             trunk_next: trunkNext ? trunkNext.toJson() : undefined,
@@ -218,6 +220,42 @@ describe("variation snapshot readiness", () => {
         expect(snapshot?.controller).toBe(secondaryController);
         expect(snapshot?.gameId).toBe(4321);
         expect(snapshot?.trunkTailMoveNumber).toBe(4);
+        expect(snapshot?.config.game_id).toBe(4321);
+        expect(snapshot?.config.moves).toBeUndefined();
+        expect(snapshot?.config.move_tree?.branches).toBeUndefined();
+        expect(snapshot?.config.move_tree?.trunk_next).toBeDefined();
+    });
+
+    it("can build a headless selected-game snapshot from an engine trunk", () => {
+        const moveTree = makeMoveTree(2, makeMoveTree(4)) as MoveTree & { id: number };
+        moveTree.id = 99;
+        if (moveTree.trunk_next) {
+            (moveTree.trunk_next as MoveTree & { id: number }).id = 100;
+        }
+
+        const snapshot = buildSnapshotFromEngine({
+            engine: {
+                config: {
+                    game_id: 4321,
+                    moves: [{ x: 3, y: 4 }],
+                },
+                move_tree: moveTree,
+            } as unknown as import("goban").GobanEngine,
+            gameId: 4321,
+            roomId: "room-1",
+            source: "selected-game-details",
+            requiredSnapshotMoveNumber: 4,
+        });
+
+        expect(snapshot).toEqual(
+            expect.objectContaining({
+                gameId: 4321,
+                roomId: "room-1",
+                trunkTailMoveNumber: 4,
+                moveTreeId: 99,
+                source: "selected-game-details",
+            }),
+        );
         expect(snapshot?.config.game_id).toBe(4321);
         expect(snapshot?.config.moves).toBeUndefined();
         expect(snapshot?.config.move_tree?.branches).toBeUndefined();
