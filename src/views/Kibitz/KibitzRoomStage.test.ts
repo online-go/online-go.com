@@ -19,10 +19,12 @@ import type { KibitzRoomSummary, KibitzVariationSummary, KibitzWatchedGame } fro
 import type { GobanController } from "@/lib/GobanController";
 import type { MoveTree } from "goban";
 import {
+    captureRoomBaseSnapshotForVariation,
     captureMainBoardBaseSnapshotForVariation,
     clearDraftBaseAppliedState,
     clearInstalledSecondaryVariationBaseState,
     buildSnapshotFromEngine,
+    type KibitzCurrentGameBaseSnapshot,
     getCurrentSecondaryVariationBaseTreeIdentity,
     getOfficialTrunkTailMoveNumber,
     getCurrentDraftBaseTreeIdentity,
@@ -31,6 +33,7 @@ import {
     getRequiredSnapshotMoveForVariation,
     getVariationsToApply,
     isDraftBaseAlreadyApplied,
+    isSelectedGameBaseSnapshotFreshEnough,
     isSecondaryVariationBaseSnapshotInstalled,
     markDraftBaseApplied,
     markInstalledSecondaryVariationBaseState,
@@ -260,6 +263,87 @@ describe("variation snapshot readiness", () => {
         expect(snapshot?.config.moves).toBeUndefined();
         expect(snapshot?.config.move_tree?.branches).toBeUndefined();
         expect(snapshot?.config.move_tree?.trunk_next).toBeDefined();
+    });
+
+    it("refuses a headless selected-game snapshot that is too shallow for the requirement", () => {
+        const moveTree = makeMoveTree(2, makeMoveTree(4)) as MoveTree & { id: number };
+        moveTree.id = 88;
+        if (moveTree.trunk_next) {
+            (moveTree.trunk_next as MoveTree & { id: number }).id = 89;
+        }
+
+        expect(
+            buildSnapshotFromEngine({
+                engine: {
+                    config: {
+                        game_id: 4321,
+                        moves: [{ x: 3, y: 4 }],
+                    },
+                    move_tree: moveTree,
+                } as unknown as import("goban").GobanEngine,
+                gameId: 4321,
+                roomId: "room-1",
+                source: "selected-game-details",
+                requiredSnapshotMoveNumber: 5,
+            }),
+        ).toBeNull();
+    });
+
+    it("allows a selected-game snapshot to be consumed without a source game object", () => {
+        const moveTree = makeMoveTree(2, makeMoveTree(4)) as MoveTree & { id: number };
+        moveTree.id = 99;
+        if (moveTree.trunk_next) {
+            (moveTree.trunk_next as MoveTree & { id: number }).id = 100;
+        }
+
+        const selectedGameSnapshot = buildSnapshotFromEngine({
+            engine: {
+                config: {
+                    game_id: 4321,
+                    moves: [{ x: 3, y: 4 }],
+                },
+                move_tree: moveTree,
+            } as unknown as import("goban").GobanEngine,
+            gameId: 4321,
+            roomId: "room-1",
+            source: "selected-game-details",
+            requiredSnapshotMoveNumber: 4,
+        });
+        const secondaryController = {
+            goban: {
+                engine: {
+                    move_tree: makeMoveTree(1),
+                },
+            },
+        } as unknown as import("@/lib/GobanController").GobanController;
+        const selectedVariation = makeVariation(4321, 2);
+
+        expect(
+            captureRoomBaseSnapshotForVariation(
+                selectedGameSnapshot,
+                secondaryController,
+                selectedVariation,
+                [],
+                undefined,
+            ),
+        ).toEqual(
+            expect.objectContaining({
+                gameId: 4321,
+                trunkTailMoveNumber: 4,
+                controller: secondaryController,
+            }),
+        );
+    });
+
+    it("treats a selected-game snapshot as fresh only when it reaches the required move", () => {
+        const selectedGameSnapshot = {
+            gameId: 4321,
+            trunkTailMoveNumber: 4,
+        } as KibitzCurrentGameBaseSnapshot;
+
+        expect(isSelectedGameBaseSnapshotFreshEnough(selectedGameSnapshot, 4321, 4)).toBe(true);
+        expect(isSelectedGameBaseSnapshotFreshEnough(selectedGameSnapshot, 4321, 5)).toBe(false);
+        expect(isSelectedGameBaseSnapshotFreshEnough(selectedGameSnapshot, 1234, 4)).toBe(false);
     });
 });
 

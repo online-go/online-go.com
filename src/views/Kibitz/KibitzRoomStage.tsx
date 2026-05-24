@@ -136,16 +136,44 @@ export function buildSnapshotFromEngine({
     };
 }
 
+export function isSelectedGameBaseSnapshotFreshEnough(
+    snapshot: KibitzCurrentGameBaseSnapshot | null | undefined,
+    selectedGameId: number | null | undefined,
+    requiredSnapshotMoveNumber: number,
+): boolean {
+    return Boolean(
+        snapshot &&
+        selectedGameId != null &&
+        snapshot.gameId === selectedGameId &&
+        snapshot.trunkTailMoveNumber >= requiredSnapshotMoveNumber,
+    );
+}
+
+type SelectedGameBaseSnapshotFetchResult =
+    | {
+          kind: "ready";
+          snapshot: KibitzCurrentGameBaseSnapshot;
+      }
+    | {
+          kind: "not-fresh-enough";
+          trunkTailMoveNumber: number;
+      }
+    | {
+          kind: "missing-moves";
+      };
+
 async function fetchSelectedGameBaseSnapshot({
     gameId,
     roomId,
+    requiredSnapshotMoveNumber,
 }: {
     gameId: number;
     roomId: string | null | undefined;
-}): Promise<KibitzCurrentGameBaseSnapshot | null> {
+    requiredSnapshotMoveNumber: number;
+}): Promise<SelectedGameBaseSnapshotFetchResult> {
     const details = (await get(`games/${gameId}`)) as KibitzSelectedGameDetails;
     if (!details?.gamedata?.moves) {
-        return null;
+        return { kind: "missing-moves" };
     }
 
     const engineConfig = {
@@ -157,13 +185,25 @@ async function fetchSelectedGameBaseSnapshot({
     } as unknown as GobanEngineConfig;
     const engine = new GobanEngine(engineConfig);
 
-    return buildSnapshotFromEngine({
+    const snapshot = buildSnapshotFromEngine({
         engine,
         gameId,
         roomId,
         source: "selected-game-details",
-        requiredSnapshotMoveNumber: 0,
+        requiredSnapshotMoveNumber,
     });
+
+    if (!snapshot) {
+        return {
+            kind: "not-fresh-enough",
+            trunkTailMoveNumber: getMoveTreeTrunkTail(engine.move_tree)?.move_number ?? 0,
+        };
+    }
+
+    return {
+        kind: "ready",
+        snapshot,
+    };
 }
 
 function useSquareFitSize<T extends HTMLElement>(
@@ -702,9 +742,9 @@ export function captureRoomBaseSnapshotForVariation(
     secondaryBoardController: GobanController,
     selectedVariation: KibitzVariationSummary,
     visibleVariations: readonly KibitzVariationSummary[],
-    sourceGame: KibitzWatchedGame | null | undefined,
+    sourceGame?: KibitzWatchedGame | null | undefined,
 ): SecondaryVariationBaseSnapshot | null {
-    if (!currentGameBaseSnapshot || !sourceGame) {
+    if (!currentGameBaseSnapshot) {
         return null;
     }
 
@@ -712,7 +752,7 @@ export function captureRoomBaseSnapshotForVariation(
         return null;
     }
 
-    if (sourceGame.game_id !== selectedVariation.game_id) {
+    if (sourceGame && sourceGame.game_id !== selectedVariation.game_id) {
         return null;
     }
 
@@ -1185,6 +1225,7 @@ export function KibitzRoomStage({
     const selectedGameBaseSnapshotCacheRef = React.useRef<
         Map<number, KibitzCurrentGameBaseSnapshot>
     >(new Map());
+    const selectedGameBaseSnapshotBackoffRef = React.useRef<Map<number, number>>(new Map());
     const selectedGameBaseSnapshotRequestIdRef = React.useRef(0);
     const selectedVariationGameIdRef = React.useRef<number | null>(selectedVariationGameId);
     React.useEffect(() => {
@@ -1256,7 +1297,14 @@ export function KibitzRoomStage({
 
             const selectedGameId = selectedVariationGameId;
             const cachedSnapshot = selectedGameBaseSnapshotCacheRef.current.get(selectedGameId);
-            if (cachedSnapshot) {
+            const cachedSnapshotIsFreshEnough =
+                cachedSnapshot != null &&
+                isSelectedGameBaseSnapshotFreshEnough(
+                    cachedSnapshot,
+                    selectedGameId,
+                    requiredSnapshotMoveNumber,
+                );
+            if (cachedSnapshotIsFreshEnough) {
                 logKibitzVariationDebug("selected-game-base-snapshot:cache-hit", {
                     selectedVariationId: selectedVariation?.id ?? null,
                     selectedGameId,
@@ -1267,6 +1315,42 @@ export function KibitzRoomStage({
                     source: cachedSnapshot.source,
                 });
                 setSelectedGameBaseSnapshot(cachedSnapshot);
+                return;
+            }
+
+            if (cachedSnapshot) {
+                selectedGameBaseSnapshotBackoffRef.current.set(
+                    selectedGameId,
+                    requiredSnapshotMoveNumber,
+                );
+                logKibitzVariationDebug("selected-game-base-snapshot:not-fresh-enough", {
+                    selectedVariationId: selectedVariation?.id ?? null,
+                    selectedGameId,
+                    currentRoomGameId,
+                    requiredSnapshotMoveNumber,
+                    snapshotGameId: cachedSnapshot.gameId,
+                    trunkTailMoveNumber: cachedSnapshot.trunkTailMoveNumber,
+                    source: cachedSnapshot.source,
+                    reason: "cache",
+                });
+                setSelectedGameBaseSnapshot(cachedSnapshot);
+                return;
+            }
+
+            const backoffRequiredSnapshotMoveNumber =
+                selectedGameBaseSnapshotBackoffRef.current.get(selectedGameId);
+            if (
+                backoffRequiredSnapshotMoveNumber != null &&
+                backoffRequiredSnapshotMoveNumber >= requiredSnapshotMoveNumber
+            ) {
+                logKibitzVariationDebug("selected-game-base-snapshot:not-fresh-enough", {
+                    selectedVariationId: selectedVariation?.id ?? null,
+                    selectedGameId,
+                    currentRoomGameId,
+                    requiredSnapshotMoveNumber,
+                    reason: "backoff",
+                    backedOffRequiredSnapshotMoveNumber: backoffRequiredSnapshotMoveNumber,
+                });
                 return;
             }
 
@@ -1291,9 +1375,10 @@ export function KibitzRoomStage({
             });
 
             try {
-                const snapshot = await fetchSelectedGameBaseSnapshot({
+                const result = await fetchSelectedGameBaseSnapshot({
                     gameId: selectedGameId,
                     roomId: room.id,
+                    requiredSnapshotMoveNumber,
                 });
 
                 if (
@@ -1301,7 +1386,7 @@ export function KibitzRoomStage({
                     selectedVariationGameIdRef.current !== selectedGameId
                 ) {
                     logKibitzVariationDebug("selected-game-base-snapshot:stale-result-ignored", {
-                        selectedVariationId: selectedVariationGameIdRef.current ?? null,
+                        selectedVariationGameId: selectedVariationGameIdRef.current ?? null,
                         selectedGameId,
                         currentRoomGameId,
                         requiredSnapshotMoveNumber,
@@ -1309,17 +1394,36 @@ export function KibitzRoomStage({
                     return;
                 }
 
-                if (!snapshot) {
+                if (result.kind === "missing-moves") {
                     logKibitzVariationDebug("selected-game-base-snapshot:error", {
                         selectedVariationId: selectedVariation?.id ?? null,
                         selectedGameId,
                         currentRoomGameId,
                         requiredSnapshotMoveNumber,
+                        reason: "missing-moves",
                     });
                     return;
                 }
 
+                if (result.kind === "not-fresh-enough") {
+                    selectedGameBaseSnapshotBackoffRef.current.set(
+                        selectedGameId,
+                        requiredSnapshotMoveNumber,
+                    );
+                    logKibitzVariationDebug("selected-game-base-snapshot:not-fresh-enough", {
+                        selectedVariationId: selectedVariation?.id ?? null,
+                        selectedGameId,
+                        currentRoomGameId,
+                        requiredSnapshotMoveNumber,
+                        trunkTailMoveNumber: result.trunkTailMoveNumber,
+                        reason: "fetch",
+                    });
+                    return;
+                }
+
+                const snapshot = result.snapshot;
                 selectedGameBaseSnapshotCacheRef.current.set(selectedGameId, snapshot);
+                selectedGameBaseSnapshotBackoffRef.current.delete(selectedGameId);
                 setSelectedGameBaseSnapshot(snapshot);
 
                 logKibitzVariationDebug("selected-game-base-snapshot:fetched", {
@@ -1334,7 +1438,7 @@ export function KibitzRoomStage({
             } catch (error) {
                 if (requestId !== selectedGameBaseSnapshotRequestIdRef.current) {
                     logKibitzVariationDebug("selected-game-base-snapshot:stale-result-ignored", {
-                        selectedVariationId: selectedVariationGameIdRef.current ?? null,
+                        selectedVariationGameId: selectedVariationGameIdRef.current ?? null,
                         selectedGameId,
                         currentRoomGameId,
                         requiredSnapshotMoveNumber,
@@ -1342,6 +1446,10 @@ export function KibitzRoomStage({
                     return;
                 }
 
+                selectedGameBaseSnapshotBackoffRef.current.set(
+                    selectedGameId,
+                    requiredSnapshotMoveNumber,
+                );
                 logKibitzVariationDebug("selected-game-base-snapshot:error", {
                     selectedVariationId: selectedVariation?.id ?? null,
                     selectedGameId,
@@ -2612,11 +2720,13 @@ export function KibitzRoomStage({
 
             if (selectedVariation.game_id !== currentRoomGameId) {
                 const selectedGameSnapshot = selectedGameBaseSnapshot;
-                const selectedGameSnapshotUsable =
-                    selectedGameSnapshot?.gameId === selectedVariation.game_id &&
-                    selectedGameSnapshot.trunkTailMoveNumber >= requiredSnapshotMoveNumber;
+                const selectedGameSnapshotUsable = isSelectedGameBaseSnapshotFreshEnough(
+                    selectedGameSnapshot,
+                    selectedVariation.game_id,
+                    requiredSnapshotMoveNumber,
+                );
 
-                if (selectedGameSnapshotUsable) {
+                if (selectedGameSnapshot != null && selectedGameSnapshotUsable) {
                     const selectedGameBase = captureRoomBaseSnapshotForVariation(
                         selectedGameSnapshot,
                         secondaryBoardController,
@@ -2636,7 +2746,9 @@ export function KibitzRoomStage({
                         });
                         return reloadBaseThenApplyVisibleVariations("selected-game-snapshot");
                     }
+                }
 
+                if (selectedGameSnapshot?.gameId === selectedVariation.game_id) {
                     logKibitzVariationDebug("selected-game-base-snapshot:not-fresh-enough", {
                         reason,
                         selectedVariationId: selectedVariation.id,
@@ -2990,6 +3102,7 @@ export function KibitzRoomStage({
         };
     }, [
         clearSecondaryVariationRetryTimeout,
+        currentRoomGameId,
         mainBoardController,
         mainBoardOfficialTailMoveNumber,
         currentGameBaseSnapshot,
