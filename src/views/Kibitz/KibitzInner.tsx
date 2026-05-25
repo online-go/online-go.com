@@ -41,7 +41,8 @@ import { KibitzProposalBar } from "./KibitzProposalBar";
 import { KibitzProposalQueue } from "./KibitzProposalQueue";
 import { KibitzDebugPanel } from "./KibitzDebugPanel";
 import { KibitzRoomList } from "./KibitzRoomList";
-import { KibitzRoomStage, type KibitzCurrentGameBaseSnapshot } from "./KibitzRoomStage";
+import { KibitzRoomStage } from "./KibitzRoomStage";
+import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 import { KibitzSharedStreamPanel } from "./KibitzSharedStreamPanel";
 import { KibitzPresence } from "./KibitzPresence";
 import { KibitzPresencePanel } from "./KibitzPresencePanel";
@@ -945,8 +946,13 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         },
         [],
     );
-    const visibleMainBoardMounted = Boolean(mainBoardController);
     const roomLiveMoveNumber = resolvedRoom?.current_game?.move_number ?? 0;
+    const visibleMainBoardMounted = Boolean(
+        mainBoardController &&
+        (roomLiveMoveNumber <= 0 ||
+            (getMoveTreeTrunkTail(mainBoardController.goban.engine.move_tree)?.move_number ?? 0) >=
+                roomLiveMoveNumber),
+    );
     const currentGameBaseSnapshotFreshnessMoveNumber = React.useMemo(() => {
         const liveTailFromRoom = resolvedRoom?.current_game?.move_number ?? 0;
         const cachedSnapshotTail =

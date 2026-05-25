@@ -76,17 +76,29 @@ export function useKibitzCurrentGameConnectionKeeper({
     boardController,
 }: UseKibitzCurrentGameConnectionKeeperOptions): void {
     const activeGameId = enabled && isLive && currentGameId != null ? currentGameId : null;
+    const activeGameKey = activeGameId != null ? `${roomId ?? "no-room"}:${activeGameId}` : null;
     const currentLiveTailMoveNumberRef = React.useRef(currentLiveTailMoveNumber);
     const previousPickerOpenRef = React.useRef(pickerOpen);
     const previousBoardControllerRef = React.useRef<GobanController | null | undefined>(
         boardController,
     );
+    const bootstrapConnectKeyRef = React.useRef<string | null>(null);
+    const previousActiveGameKeyRef = React.useRef<string | null>(activeGameKey);
     const scheduledTimeoutIdsRef = React.useRef<number[]>([]);
     const scheduledRafIdsRef = React.useRef<number[]>([]);
 
     React.useEffect(() => {
         currentLiveTailMoveNumberRef.current = currentLiveTailMoveNumber;
     }, [currentLiveTailMoveNumber]);
+
+    React.useEffect(() => {
+        if (previousActiveGameKeyRef.current === activeGameKey) {
+            return;
+        }
+
+        previousActiveGameKeyRef.current = activeGameKey;
+        bootstrapConnectKeyRef.current = null;
+    }, [activeGameKey]);
 
     const canReconnectController = React.useCallback(
         (controller: GobanController | null): boolean => {
@@ -128,7 +140,19 @@ export function useKibitzCurrentGameConnectionKeeper({
                 return;
             }
 
-            if (boardController && !canReconnectController(boardController)) {
+            const controllerGameId = boardController?.goban?.config?.game_id ?? null;
+            const controllerMatchesActiveGame =
+                boardController != null && controllerGameId === activeGameId;
+            const shouldBypassReconnectGuard =
+                controllerMatchesActiveGame &&
+                activeGameKey != null &&
+                bootstrapConnectKeyRef.current !== activeGameKey;
+
+            if (
+                controllerMatchesActiveGame &&
+                !shouldBypassReconnectGuard &&
+                !canReconnectController(boardController)
+            ) {
                 logKibitzVariationDebug("kibitz-current-game-keeper:connect-skipped", {
                     reason,
                     debugSource,
@@ -144,8 +168,12 @@ export function useKibitzCurrentGameConnectionKeeper({
             }
 
             sendGameConnect(activeGameId, reason, debugSource, roomId);
+
+            if (shouldBypassReconnectGuard) {
+                bootstrapConnectKeyRef.current = activeGameKey;
+            }
         },
-        [activeGameId, boardController, canReconnectController, debugSource, roomId],
+        [activeGameId, activeGameKey, boardController, canReconnectController, debugSource, roomId],
     );
 
     const scheduleAnimationFrame = React.useCallback((callback: FrameRequestCallback): number => {
@@ -188,6 +216,7 @@ export function useKibitzCurrentGameConnectionKeeper({
 
     React.useEffect(() => {
         if (activeGameId == null) {
+            bootstrapConnectKeyRef.current = null;
             clearScheduledReconnects();
             return;
         }

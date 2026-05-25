@@ -180,9 +180,137 @@ describe("useKibitzCurrentGameConnectionKeeper", () => {
         });
     });
 
+    it("bootstraps an unhydrated controller on mount for the current live game", () => {
+        const controller = {
+            goban: {
+                config: {
+                    game_id: 123,
+                },
+                engine: {
+                    cur_move: { move_number: 0 },
+                    last_official_move: { move_number: 0 },
+                },
+            },
+        } as GobanController;
+
+        renderHook(() =>
+            useKibitzCurrentGameConnectionKeeper({
+                roomId: "room-1",
+                currentGameId: 123,
+                currentLiveTailMoveNumber: 70,
+                isLive: true,
+                pickerOpen: false,
+                enabled: true,
+                boardController: controller,
+            }),
+        );
+
+        expect(mockedSocket.send).toHaveBeenCalledWith("game/connect", {
+            game_id: 123,
+            chat: true,
+        });
+    });
+
+    it("does not spend the bootstrap when the old game controller is still present during a room switch", () => {
+        const oldController = {
+            goban: {
+                config: {
+                    game_id: 123,
+                },
+                engine: {
+                    cur_move: { move_number: 0 },
+                    last_official_move: { move_number: 0 },
+                },
+            },
+        } as GobanController;
+        const newControllerA = {
+            goban: {
+                config: {
+                    game_id: 456,
+                },
+                engine: {
+                    cur_move: { move_number: 0 },
+                    last_official_move: { move_number: 0 },
+                },
+            },
+        } as GobanController;
+        const newControllerB = {
+            goban: {
+                config: {
+                    game_id: 456,
+                },
+                engine: {
+                    cur_move: { move_number: 0 },
+                    last_official_move: { move_number: 0 },
+                },
+            },
+        } as GobanController;
+
+        const { rerender } = renderHook(
+            ({ currentGameId, boardController }) =>
+                useKibitzCurrentGameConnectionKeeper({
+                    roomId: "room-1",
+                    currentGameId,
+                    currentLiveTailMoveNumber: 70,
+                    isLive: true,
+                    pickerOpen: false,
+                    enabled: true,
+                    boardController,
+                }),
+            {
+                initialProps: {
+                    currentGameId: 123,
+                    boardController: oldController as GobanController | null,
+                },
+            },
+        );
+
+        mockedSocket.send.mockClear();
+
+        rerender({ currentGameId: 456, boardController: oldController });
+
+        act(() => {
+            jest.advanceTimersByTime(1000);
+        });
+
+        expect(mockedSocket.send).toHaveBeenCalledWith("game/connect", {
+            game_id: 456,
+            chat: true,
+        });
+
+        mockedSocket.send.mockClear();
+
+        rerender({ currentGameId: 456, boardController: newControllerA });
+
+        act(() => {
+            jest.advanceTimersByTime(1000);
+        });
+
+        expect(mockedSocket.send).toHaveBeenCalledWith("game/connect", {
+            game_id: 456,
+            chat: true,
+        });
+
+        mockedSocket.send.mockClear();
+
+        rerender({ currentGameId: 456, boardController: newControllerB });
+
+        act(() => {
+            jest.advanceTimersByTime(1000);
+        });
+
+        expect(mockedSocket.send).not.toHaveBeenCalledWith("game/connect", {
+            game_id: 456,
+            chat: true,
+        });
+    });
+
     it("does not reconnect a controller that still appears unhydrated against a deep live game", () => {
         const controllerA = {
             goban: {
+                config: {
+                    game_id: 123,
+                },
                 engine: {
                     cur_move: { move_number: 0 },
                     last_official_move: { move_number: 0 },
@@ -191,6 +319,9 @@ describe("useKibitzCurrentGameConnectionKeeper", () => {
         } as GobanController;
         const controllerB = {
             goban: {
+                config: {
+                    game_id: 123,
+                },
                 engine: {
                     cur_move: { move_number: 0 },
                     last_official_move: { move_number: 0 },
