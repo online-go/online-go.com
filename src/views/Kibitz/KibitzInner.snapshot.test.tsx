@@ -1,0 +1,598 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import * as React from "react";
+import { act, render, waitFor } from "@testing-library/react";
+import type { KibitzController } from "./KibitzController";
+import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
+import type { KibitzRoom, KibitzRoomSummary, KibitzWatchedGame } from "@/models/kibitz";
+import { isCurrentGameBaseSnapshotUsable, KibitzInner } from "./KibitzInner";
+import { get } from "@/lib/requests";
+
+jest.mock("@/components/Player", () => ({
+    __esModule: true,
+    Player: () => null,
+}));
+
+jest.mock("@/components/Player/PlayerDetails", () => ({
+    __esModule: true,
+    PlayerDetails: () => null,
+}));
+
+jest.mock("./KibitzProposalBar", () => ({
+    __esModule: true,
+    KibitzProposalBar: () => null,
+}));
+
+jest.mock("./KibitzProposalQueue", () => ({
+    __esModule: true,
+    KibitzProposalQueue: () => null,
+}));
+
+jest.mock("./KibitzDebugPanel", () => ({
+    __esModule: true,
+    KibitzDebugPanel: () => null,
+}));
+
+jest.mock("./KibitzRoomList", () => ({
+    __esModule: true,
+    KibitzRoomList: () => null,
+}));
+
+jest.mock("./KibitzRoomStage", () => ({
+    __esModule: true,
+    KibitzRoomStage: () => null,
+}));
+
+jest.mock("./KibitzSharedStreamPanel", () => ({
+    __esModule: true,
+    KibitzSharedStreamPanel: () => null,
+}));
+
+jest.mock("./KibitzPresence", () => ({
+    __esModule: true,
+    KibitzPresence: () => null,
+}));
+
+jest.mock("./KibitzPresencePanel", () => ({
+    __esModule: true,
+    KibitzPresencePanel: () => null,
+}));
+
+jest.mock("./KibitzPresetChangePendingBanner", () => ({
+    __esModule: true,
+    KibitzPresetChangePendingBanner: () => null,
+}));
+
+jest.mock("./KibitzVariationList", () => ({
+    __esModule: true,
+    KibitzVariationList: () => null,
+}));
+
+jest.mock("./KibitzMobileComparePanel", () => ({
+    __esModule: true,
+    KibitzMobileComparePanel: () => null,
+}));
+
+jest.mock("./KibitzGamePickerOverlay", () => ({
+    __esModule: true,
+    KibitzGamePickerOverlay: () => null,
+}));
+
+jest.mock("./KibitzMobileGamePicker", () => ({
+    __esModule: true,
+    KibitzMobileGamePicker: () => null,
+}));
+
+jest.mock("./KibitzRoomSettingsPopover", () => ({
+    __esModule: true,
+    KibitzRoomSettingsPopover: () => null,
+}));
+
+jest.mock("./KibitzUserAvatar", () => ({
+    __esModule: true,
+    KibitzUserAvatar: () => null,
+}));
+
+jest.mock("./useCurrentKibitzUser", () => ({
+    __esModule: true,
+    useCurrentKibitzUser: () => ({
+        id: 1,
+        username: "tester",
+        ranking: 0,
+        professional: false,
+        ui_class: "",
+    }),
+}));
+
+jest.mock("./useKibitzCurrentGameConnectionKeeper", () => ({
+    __esModule: true,
+    useKibitzCurrentGameConnectionKeeper: () => undefined,
+}));
+
+jest.mock("./useKibitzCurrentGameBaseBroker", () => ({
+    __esModule: true,
+    useKibitzCurrentGameBaseBroker: () => undefined,
+}));
+
+jest.mock("./HelpFlows/useKibitzHelpTriggers", () => ({
+    __esModule: true,
+    useKibitzHelpTriggers: () => undefined,
+}));
+
+jest.mock("./HelpFlows/useKibitzHelpTarget", () => ({
+    __esModule: true,
+    useKibitzHelpTarget: () => null,
+}));
+
+jest.mock("./kibitzAnalysisPolicy", () => ({
+    __esModule: true,
+    getKibitzAccessPolicyForUser: () => ({ allowed: true as const }),
+    isKibitzAccessBlockedForUser: () => false,
+}));
+
+jest.mock("./kibitzAnalysisPolicyText", () => ({
+    __esModule: true,
+    getKibitzBlockedRoomFollowupMessage: () => "followup",
+    getKibitzBlockedRoomMessage: () => "blocked",
+}));
+
+jest.mock("./kibitzVariationQuickList", () => ({
+    __esModule: true,
+    getVisiblePostedVariations: () => [],
+}));
+
+jest.mock("./kibitzVariationDebug", () => ({
+    __esModule: true,
+    isKibitzVariationDebugEnabled: () => false,
+    logKibitzVariationDebug: jest.fn(),
+    summarizeKibitzMoveTreeNode: () => "",
+}));
+
+jest.mock("@/lib/requests", () => ({
+    __esModule: true,
+    get: jest.fn(),
+}));
+
+jest.mock("@/lib/GobanController", () => ({
+    __esModule: true,
+    GobanController: jest.fn((config: { board_div?: HTMLElement }) => ({
+        destroy: jest.fn(),
+        goban: {
+            parent: config.board_div ?? document.createElement("div"),
+            engine: {
+                move_tree: {
+                    move_number: 0,
+                },
+                config: {},
+            },
+        },
+    })),
+    getMoveTreeTrunkTail: () => ({ move_number: 0 }),
+}));
+
+jest.mock("./kibitzCurrentGameBaseSnapshot", () => ({
+    __esModule: true,
+    captureCurrentGameBaseSnapshotFromController: jest.fn(
+        (
+            _controller: unknown,
+            game: KibitzWatchedGame,
+            roomId: string | null | undefined,
+            source: KibitzCurrentGameBaseSnapshot["source"],
+            expectedMoveNumber?: number,
+        ): KibitzCurrentGameBaseSnapshot => {
+            const tailMoveNumber = expectedMoveNumber ?? game.move_number ?? 0;
+
+            return {
+                gameId: game.game_id,
+                roomId: roomId ?? null,
+                trunkTailMoveNumber: tailMoveNumber,
+                moveTreeId: 1,
+                movePath: "aa",
+                source,
+                config: {
+                    game_id: game.game_id,
+                    moves: [],
+                    move_tree: undefined,
+                },
+            };
+        },
+    ),
+    chooseFresherCurrentGameBaseSnapshot: (
+        previous: KibitzCurrentGameBaseSnapshot | null,
+        next: KibitzCurrentGameBaseSnapshot,
+    ) => {
+        if (!previous) {
+            return next;
+        }
+
+        return previous.gameId === next.gameId &&
+            previous.trunkTailMoveNumber >= next.trunkTailMoveNumber
+            ? previous
+            : next;
+    },
+}));
+
+jest.mock("@/lib/translate", () => ({
+    __esModule: true,
+    _: (text: string) => text,
+    interpolate: (template: string, values: Record<string, string | number>) =>
+        Object.entries(values).reduce(
+            (result, [key, value]) => result.replace(`{{${key}}}`, String(value)),
+            template,
+        ),
+    pgettext: (_context: string, text: string) => text,
+    current_language: "en",
+    moment: {
+        duration: (_value: number, _unit: string) => ({
+            humanize: () => "time",
+        }),
+    },
+}));
+
+jest.mock("@/lib/popover", () => ({
+    __esModule: true,
+    popover: jest.fn(),
+}));
+
+jest.mock("@/lib/toast", () => ({
+    __esModule: true,
+    toast: {
+        error: jest.fn(),
+    },
+}));
+
+jest.mock("react-router-dom", () => ({
+    __esModule: true,
+    useLocation: () => ({
+        pathname: "/kibitz/room-1",
+        search: "",
+        hash: "",
+        state: null,
+        key: "test",
+    }),
+    useNavigate: () => jest.fn(),
+    useParams: () => ({ roomId: "room-1" }),
+}));
+
+const mockedGet = get as jest.MockedFunction<typeof get>;
+
+function installMatchMedia(matches = false): void {
+    Object.defineProperty(window, "matchMedia", {
+        writable: true,
+        value: jest.fn().mockImplementation(() => ({
+            matches,
+            media: "",
+            addEventListener: jest.fn(),
+            removeEventListener: jest.fn(),
+            addListener: jest.fn(),
+            removeListener: jest.fn(),
+            dispatchEvent: jest.fn(),
+        })),
+    });
+}
+
+function makeUser(id: number, username: string) {
+    return {
+        id,
+        username,
+        ranking: 0,
+        professional: false,
+        ui_class: "",
+    };
+}
+
+function makeGame(gameId: number, moveNumber: number): KibitzWatchedGame {
+    return {
+        game_id: gameId,
+        board_size: "19x19",
+        title: `Game ${gameId}`,
+        move_number: moveNumber,
+        live: true,
+        analysis_disabled: false,
+        black: makeUser(gameId * 10 + 1, "black"),
+        white: makeUser(gameId * 10 + 2, "white"),
+    };
+}
+
+function makeRoom(
+    overrides: Partial<KibitzRoomSummary> & { current_game: KibitzWatchedGame },
+): KibitzRoom {
+    return {
+        id: "room-1",
+        channel: "channel-1",
+        title: "Room 1",
+        kind: "preset",
+        viewer_count: 1,
+        creator_id: 1,
+        users: [],
+        active_chatters: [],
+        friends_in_room: [],
+        active_variation_ids: [],
+        ...overrides,
+    };
+}
+
+function makeController(initialRoom: KibitzRoomSummary): KibitzController {
+    const listeners = new Map<string, Set<(...args: unknown[]) => void>>();
+    const controller = {
+        rooms: [initialRoom],
+        active_room: initialRoom,
+        stream: [],
+        proposals: [],
+        variations: [],
+        secondary_pane: {
+            collapsed: true,
+            size: "small",
+        },
+        debug: {},
+        permissions: {
+            can_edit_room: false,
+        },
+        access_blocked: null,
+        goban: {
+            parent: document.createElement("div"),
+            engine: {
+                move_tree: null,
+                config: {},
+            },
+        },
+        on: jest.fn((event: string, handler: (...args: unknown[]) => void) => {
+            const current = listeners.get(event) ?? new Set<(...args: unknown[]) => void>();
+            current.add(handler);
+            listeners.set(event, current);
+        }),
+        off: jest.fn((event: string, handler: (...args: unknown[]) => void) => {
+            listeners.get(event)?.delete(handler);
+        }),
+        refreshRoomDirectory: jest.fn(),
+        setAccessBlocked: jest.fn(),
+        selectRoom: jest.fn(),
+        getRoomUsers: jest.fn(() => []),
+        ensureGamesCached: jest.fn(),
+        getCachedGame: jest.fn(),
+        openVariation: jest.fn(),
+        clearPreviewGame: jest.fn(),
+        startVariationFromCurrentBoard: jest.fn(),
+        startVariationFromPostedVariation: jest.fn(),
+        postVariation: jest.fn(),
+        deleteRoom: jest.fn(),
+        changeBoard: jest.fn(),
+        createRoom: jest.fn(),
+        updateRoomDetails: jest.fn(),
+        voteOnProposal: jest.fn(),
+        setSecondaryPaneMode: jest.fn(),
+    } as unknown as KibitzController;
+
+    return Object.assign(controller, {
+        emit(event: string, ...args: unknown[]) {
+            for (const handler of listeners.get(event) ?? []) {
+                handler(...args);
+            }
+        },
+    }) as KibitzController & {
+        emit: (event: string, ...args: unknown[]) => void;
+    };
+}
+
+describe("KibitzInner current-game base snapshot fetch", () => {
+    describe("isCurrentGameBaseSnapshotUsable", () => {
+        it("rejects snapshots from a different room even when the game matches", () => {
+            const snapshot = {
+                gameId: 1,
+                roomId: "room-1",
+                trunkTailMoveNumber: 10,
+                moveTreeId: 1,
+                movePath: "aa",
+                source: "game-details",
+                config: {
+                    game_id: 1,
+                    moves: [],
+                    move_tree: undefined,
+                },
+            } as KibitzCurrentGameBaseSnapshot;
+
+            expect(isCurrentGameBaseSnapshotUsable(snapshot, makeGame(1, 10), "room-1")).toBe(true);
+            expect(isCurrentGameBaseSnapshotUsable(snapshot, makeGame(1, 10), "room-2")).toBe(
+                false,
+            );
+        });
+    });
+
+    beforeEach(() => {
+        mockedGet.mockReset();
+        installMatchMedia(false);
+    });
+
+    it("does not refetch when only viewer count changes", async () => {
+        mockedGet.mockResolvedValue({
+            id: 1,
+            width: 19,
+            height: 19,
+            name: "Game 1",
+            ended: false,
+            players: {
+                black: makeUser(11, "black"),
+                white: makeUser(12, "white"),
+            },
+            gamedata: {
+                moves: Array.from({ length: 10 }, () => ({ x: 0, y: 0 })),
+                private: false,
+                disable_analysis: false,
+            },
+        });
+
+        const controller = makeController(makeRoom({ current_game: makeGame(1, 10) }));
+
+        render(<KibitzInner controller={controller} />);
+
+        await waitFor(() => {
+            expect(mockedGet).toHaveBeenCalledTimes(1);
+            expect(mockedGet).toHaveBeenCalledWith("games/1");
+        });
+
+        act(() => {
+            const mutableController = controller as unknown as {
+                active_room: KibitzRoom;
+            };
+            mutableController.active_room = makeRoom({
+                viewer_count: 2,
+                current_game: makeGame(1, 10),
+            });
+            controller.emit("room-changed", mutableController.active_room);
+        });
+
+        await waitFor(() => {
+            expect(mockedGet).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    it("refetches when the room changes but the watched game stays the same", async () => {
+        mockedGet.mockResolvedValue({
+            id: 1,
+            width: 19,
+            height: 19,
+            name: "Game 1",
+            ended: false,
+            players: {
+                black: makeUser(11, "black"),
+                white: makeUser(12, "white"),
+            },
+            gamedata: {
+                moves: Array.from({ length: 10 }, () => ({ x: 0, y: 0 })),
+                private: false,
+                disable_analysis: false,
+            },
+        });
+
+        const controller = makeController(makeRoom({ current_game: makeGame(1, 10) }));
+
+        render(<KibitzInner controller={controller} />);
+
+        await waitFor(() => {
+            expect(mockedGet).toHaveBeenCalledTimes(1);
+            expect(mockedGet).toHaveBeenCalledWith("games/1");
+        });
+
+        act(() => {
+            const mutableController = controller as unknown as {
+                active_room: KibitzRoom;
+            };
+            mutableController.active_room = makeRoom({
+                id: "room-2",
+                channel: "channel-2",
+                current_game: makeGame(1, 10),
+            });
+            controller.emit("room-changed", mutableController.active_room);
+        });
+
+        await waitFor(() => {
+            expect(mockedGet).toHaveBeenCalledTimes(2);
+            expect(mockedGet).toHaveBeenNthCalledWith(2, "games/1");
+        });
+    });
+
+    it("skips refetch when the existing current-game snapshot is already fresh enough", async () => {
+        mockedGet.mockResolvedValue({
+            id: 1,
+            width: 19,
+            height: 19,
+            name: "Game 1",
+            ended: false,
+            players: {
+                black: makeUser(11, "black"),
+                white: makeUser(12, "white"),
+            },
+            gamedata: {
+                moves: Array.from({ length: 121 }, () => ({ x: 0, y: 0 })),
+                private: false,
+                disable_analysis: false,
+            },
+        });
+
+        const controller = makeController(makeRoom({ current_game: makeGame(1, 120) }));
+
+        render(<KibitzInner controller={controller} />);
+
+        await waitFor(() => {
+            expect(mockedGet).toHaveBeenCalledTimes(1);
+            expect(mockedGet).toHaveBeenCalledWith("games/1");
+        });
+
+        act(() => {
+            const mutableController = controller as unknown as {
+                active_room: KibitzRoom;
+            };
+            mutableController.active_room = makeRoom({
+                current_game: makeGame(1, 121),
+            });
+            controller.emit("room-changed", mutableController.active_room);
+        });
+
+        await waitFor(() => {
+            expect(mockedGet).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    it("refetches when the watched game changes", async () => {
+        mockedGet.mockImplementation(async (path: string) => {
+            const gameId = Number(path.split("/")[1]);
+
+            return {
+                id: gameId,
+                width: 19,
+                height: 19,
+                name: `Game ${gameId}`,
+                ended: false,
+                players: {
+                    black: makeUser(gameId * 10 + 1, "black"),
+                    white: makeUser(gameId * 10 + 2, "white"),
+                },
+                gamedata: {
+                    moves: Array.from({ length: 10 }, () => ({ x: 0, y: 0 })),
+                    private: false,
+                    disable_analysis: false,
+                },
+            };
+        });
+
+        const controller = makeController(makeRoom({ current_game: makeGame(1, 10) }));
+
+        render(<KibitzInner controller={controller} />);
+
+        await waitFor(() => {
+            expect(mockedGet).toHaveBeenCalledTimes(1);
+            expect(mockedGet).toHaveBeenCalledWith("games/1");
+        });
+
+        act(() => {
+            const mutableController = controller as unknown as {
+                active_room: KibitzRoom;
+            };
+            mutableController.active_room = makeRoom({
+                viewer_count: 2,
+                current_game: makeGame(2, 10),
+            });
+            controller.emit("room-changed", mutableController.active_room);
+        });
+
+        await waitFor(() => {
+            expect(mockedGet).toHaveBeenCalledTimes(2);
+            expect(mockedGet).toHaveBeenNthCalledWith(2, "games/2");
+        });
+    });
+});
