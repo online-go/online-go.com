@@ -327,6 +327,53 @@ function boardDimensionsOf(game: { board_size?: `${number}x${number}` } | null |
     return {};
 }
 
+export function hasBoardDimensions(
+    game: { board_size?: `${number}x${number}` } | null | undefined,
+): boolean {
+    const dimensions = boardDimensionsOf(game);
+
+    return (
+        typeof dimensions.width === "number" &&
+        dimensions.width > 0 &&
+        typeof dimensions.height === "number" &&
+        dimensions.height > 0
+    );
+}
+
+type MobileSecondaryOwner = "none" | "preview" | "draft" | "variation";
+
+export function resolveMobileSecondaryOwner({
+    mobileCompareActive,
+    selectedVariation,
+    isDraftingVariation,
+    secondaryGameId,
+    secondaryBoardGame,
+}: {
+    mobileCompareActive: boolean;
+    selectedVariation: KibitzVariationSummary | undefined;
+    isDraftingVariation: boolean;
+    secondaryGameId: number | null | undefined;
+    secondaryBoardGame: KibitzWatchedGame | null | undefined;
+}): MobileSecondaryOwner {
+    if (!mobileCompareActive) {
+        return "none";
+    }
+
+    if (selectedVariation) {
+        return "variation";
+    }
+
+    if (isDraftingVariation) {
+        return hasBoardDimensions(secondaryBoardGame) ? "draft" : "none";
+    }
+
+    if (secondaryGameId != null) {
+        return hasBoardDimensions(secondaryBoardGame) ? "preview" : "none";
+    }
+
+    return "none";
+}
+
 export function resolveSelectedVariationSourceGame(
     selectedVariation: KibitzVariationSummary | undefined,
     mainGame: KibitzWatchedGame | undefined,
@@ -1761,6 +1808,8 @@ export function KibitzRoomStage({
     const visibleSecondaryBoardSize = isMobileLayout ? mobileBoardSize : secondaryBoardSize;
     const secondaryBoardSizeReady = Number.isFinite(secondaryBoardSize) && secondaryBoardSize > 0;
     const mobileBoardSizeReady = Number.isFinite(mobileBoardSize) && mobileBoardSize > 0;
+    const secondaryBoardDimensions = boardDimensionsOf(secondaryBoardGame);
+    const secondaryBoardDimensionsReady = hasBoardDimensions(secondaryBoardGame);
     const secondaryMoveTreeKey = React.useMemo(() => {
         if (secondaryPane.variation_id != null) {
             return `variation-${secondaryPane.variation_id}`;
@@ -1813,7 +1862,26 @@ export function KibitzRoomStage({
         secondaryBoardRemountNonce,
     ]);
     const mobileCompareActive = Boolean(isMobileLayout && mobileCompanionPanel === "compare");
-    const mobileSecondaryOwner = React.useMemo<"none" | "preview" | "draft" | "variation">(() => {
+    const mobileSecondaryOwner = React.useMemo<MobileSecondaryOwner>(
+        () =>
+            resolveMobileSecondaryOwner({
+                mobileCompareActive,
+                selectedVariation,
+                isDraftingVariation,
+                secondaryGameId,
+                secondaryBoardGame,
+            }),
+        [
+            isDraftingVariation,
+            mobileCompareActive,
+            secondaryBoardGame,
+            secondaryGameId,
+            selectedVariation,
+        ],
+    );
+    const mobileSecondaryOwnerRequested = React.useMemo<
+        "draft" | "preview" | "variation" | "none"
+    >(() => {
         if (!mobileCompareActive) {
             return "none";
         }
@@ -1840,6 +1908,66 @@ export function KibitzRoomStage({
         return `${secondaryBoardKey}-${mobileSecondaryOwner}`;
     }, [mobileSecondaryOwner, secondaryBoardKey]);
     const mobileCompareTargetActive = mobileSecondaryOwner !== "none";
+    const mobileSecondaryOwnerBlockedReason = React.useMemo<
+        "missing-source-game-dimensions" | null
+    >(() => {
+        if (!mobileCompareActive) {
+            return null;
+        }
+
+        if (selectedVariation) {
+            return null;
+        }
+
+        if (
+            mobileSecondaryOwnerRequested === "draft" ||
+            mobileSecondaryOwnerRequested === "preview"
+        ) {
+            return secondaryBoardDimensionsReady ? null : "missing-source-game-dimensions";
+        }
+
+        return null;
+    }, [
+        mobileCompareActive,
+        mobileSecondaryOwnerRequested,
+        secondaryBoardDimensionsReady,
+        selectedVariation,
+    ]);
+    const mobileSecondaryOwnerBlocked = mobileSecondaryOwnerBlockedReason != null;
+    const previousMobileSecondaryOwnerBlockedKeyRef = React.useRef<string | null>(null);
+    React.useEffect(() => {
+        if (mobileSecondaryOwnerBlockedReason == null) {
+            previousMobileSecondaryOwnerBlockedKeyRef.current = null;
+            return;
+        }
+
+        const blockedKey = `${mobileSecondaryOwnerRequested}:${secondaryGameId ?? ""}:${
+            secondaryPane.variation_source_game_id ?? ""
+        }:${mobileSecondaryOwnerBlockedReason}`;
+        if (previousMobileSecondaryOwnerBlockedKeyRef.current === blockedKey) {
+            return;
+        }
+
+        previousMobileSecondaryOwnerBlockedKeyRef.current = blockedKey;
+        logKibitzVariationDebug("mobile-secondary-board:owner-blocked", {
+            requestedOwner: mobileSecondaryOwnerRequested,
+            reason: mobileSecondaryOwnerBlockedReason,
+            isDraftingVariation,
+            secondaryGameId,
+            variationSourceGameId: secondaryPane.variation_source_game_id ?? null,
+            hasSecondaryBoardGame: Boolean(secondaryBoardGame),
+            secondaryBoardGameId: secondaryBoardGame?.game_id ?? null,
+            boardSize: secondaryBoardGame?.board_size ?? null,
+        });
+    }, [
+        isDraftingVariation,
+        mobileSecondaryOwnerBlockedReason,
+        mobileSecondaryOwnerRequested,
+        secondaryBoardGame,
+        secondaryGameId,
+        secondaryPane.variation_source_game_id,
+        secondaryPane.preview_game_id,
+    ]);
     const getSecondaryBoardDebugState = React.useCallback(
         (controller: GobanController | null): Record<string, unknown> => {
             const controllerParent = controller?.goban.parent ?? null;
@@ -3782,28 +3910,37 @@ export function KibitzRoomStage({
                                 onReady={setMainBoardController}
                             />
                         ) : null}
-                        {mobileSecondaryOwner === "preview" || mobileSecondaryOwner === "draft" ? (
+                        {mobileSecondaryOwnerRequested === "preview" ||
+                        mobileSecondaryOwnerRequested === "draft" ? (
                             mobileBoardSizeReady ? (
-                                <KibitzBoard
-                                    key={mobileSecondaryBoardKey}
-                                    gameId={
-                                        secondaryBoardGame?.game_id ??
-                                        secondaryGameId ??
-                                        secondaryPane.variation_source_game_id
-                                    }
-                                    currentRoomGameId={currentRoomGameId}
-                                    isMobile={true}
-                                    connectToGame={false}
-                                    {...boardDimensionsOf(secondaryBoardGame)}
-                                    className="mobile-secondary-board-surface"
-                                    size={mobileBoardSize}
-                                    interactive={mobileSecondaryOwner === "draft"}
-                                    fitMode="contain"
-                                    respectContainerBounds={true}
-                                    moveTree={secondaryPane.variation_source_move_tree}
-                                    movePath={secondaryPane.variation_source_move_path}
-                                    onReady={setSecondaryBoardController}
-                                />
+                                secondaryBoardDimensionsReady ? (
+                                    <KibitzBoard
+                                        key={mobileSecondaryBoardKey}
+                                        gameId={
+                                            secondaryBoardGame?.game_id ??
+                                            secondaryGameId ??
+                                            secondaryPane.variation_source_game_id
+                                        }
+                                        currentRoomGameId={currentRoomGameId}
+                                        isMobile={true}
+                                        connectToGame={false}
+                                        {...secondaryBoardDimensions}
+                                        className="mobile-secondary-board-surface"
+                                        size={mobileBoardSize}
+                                        interactive={mobileSecondaryOwner === "draft"}
+                                        fitMode="contain"
+                                        respectContainerBounds={true}
+                                        moveTree={secondaryPane.variation_source_move_tree}
+                                        movePath={secondaryPane.variation_source_move_path}
+                                        onReady={setSecondaryBoardController}
+                                    />
+                                ) : (
+                                    <div
+                                        className="secondary-board-empty-state"
+                                        data-kibitz-board-pending-size="true"
+                                        aria-hidden="true"
+                                    />
+                                )
                             ) : (
                                 <div
                                     className="secondary-board-empty-state"
@@ -3838,7 +3975,19 @@ export function KibitzRoomStage({
                                 />
                             )
                         ) : null}
-                        {mobileCompareActive && !mobileCompareTargetActive ? (
+                        {mobileSecondaryOwnerBlocked ? (
+                            <div className="secondary-board-empty-state">
+                                <div className="secondary-board-empty-message">
+                                    {pgettext(
+                                        "Mobile Kibitz placeholder while a variation board is preparing",
+                                        "Preparing board...",
+                                    )}
+                                </div>
+                            </div>
+                        ) : null}
+                        {mobileCompareActive &&
+                        !mobileCompareTargetActive &&
+                        !mobileSecondaryOwnerBlocked ? (
                             <div className="secondary-board-empty-state mobile-compare-empty-state">
                                 <button
                                     type="button"

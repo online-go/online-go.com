@@ -32,6 +32,8 @@ import {
     getRequiredSnapshotMoveForVariation,
     getVariationsToApply,
     isDraftBaseAlreadyApplied,
+    hasBoardDimensions,
+    resolveMobileSecondaryOwner,
     isSelectedGameBaseSnapshotActiveButStale,
     isSelectedGameBaseSnapshotFreshEnough,
     isSecondaryVariationBaseSnapshotInstalled,
@@ -370,6 +372,67 @@ describe("variation snapshot readiness", () => {
         expect(shouldBackOffSelectedGameBaseSnapshot(242, 242)).toBe(true);
         expect(shouldBackOffSelectedGameBaseSnapshot(242, 300)).toBe(true);
         expect(shouldBackOffSelectedGameBaseSnapshot(242, 80)).toBe(false);
+    });
+});
+
+describe("mobile secondary board ownership", () => {
+    it("requires source-game dimensions before selecting a mobile draft owner", () => {
+        const selectedVariation = makeVariation(123, 5);
+        const sourceGame = makeGame(123, "Source game");
+
+        expect(hasBoardDimensions(null)).toBe(false);
+        expect(hasBoardDimensions(undefined)).toBe(false);
+        expect(hasBoardDimensions(sourceGame)).toBe(true);
+
+        expect(
+            resolveMobileSecondaryOwner({
+                mobileCompareActive: true,
+                selectedVariation: undefined,
+                isDraftingVariation: true,
+                secondaryGameId: null,
+                secondaryBoardGame: null,
+            }),
+        ).toBe("none");
+
+        expect(
+            resolveMobileSecondaryOwner({
+                mobileCompareActive: true,
+                selectedVariation: undefined,
+                isDraftingVariation: true,
+                secondaryGameId: null,
+                secondaryBoardGame: sourceGame,
+            }),
+        ).toBe("draft");
+
+        expect(
+            resolveMobileSecondaryOwner({
+                mobileCompareActive: true,
+                selectedVariation: undefined,
+                isDraftingVariation: false,
+                secondaryGameId: 123,
+                secondaryBoardGame: null,
+            }),
+        ).toBe("none");
+
+        expect(
+            resolveMobileSecondaryOwner({
+                mobileCompareActive: true,
+                selectedVariation: undefined,
+                isDraftingVariation: false,
+                secondaryGameId: 123,
+                secondaryBoardGame: sourceGame,
+            }),
+        ).toBe("preview");
+
+        expect(
+            resolveMobileSecondaryOwner({
+                mobileCompareActive: true,
+                selectedVariation,
+                isDraftingVariation: true,
+                secondaryGameId: null,
+                secondaryBoardGame: null,
+            }),
+        ).toBe("variation");
     });
 });
 
