@@ -54,6 +54,7 @@ function renderKeeper(
     overrides?: Partial<{
         roomId: string | null | undefined;
         currentGameId: number | null | undefined;
+        currentLiveTailMoveNumber: number;
         isLive: boolean;
         pickerOpen: boolean;
         enabled: boolean;
@@ -64,6 +65,7 @@ function renderKeeper(
         useKibitzCurrentGameConnectionKeeper({
             roomId: overrides?.roomId ?? "room-1",
             currentGameId: overrides?.currentGameId ?? 123,
+            currentLiveTailMoveNumber: overrides?.currentLiveTailMoveNumber ?? 10,
             isLive: overrides?.isLive ?? true,
             pickerOpen: overrides?.pickerOpen ?? false,
             enabled: overrides?.enabled ?? true,
@@ -105,6 +107,7 @@ describe("useKibitzCurrentGameConnectionKeeper", () => {
                 useKibitzCurrentGameConnectionKeeper({
                     roomId: "room-1",
                     currentGameId: 123,
+                    currentLiveTailMoveNumber: 10,
                     isLive: true,
                     pickerOpen,
                     enabled: true,
@@ -130,14 +133,29 @@ describe("useKibitzCurrentGameConnectionKeeper", () => {
     });
 
     it("reconnects the current game when the main board controller changes", () => {
-        const controllerA = {} as GobanController;
-        const controllerB = {} as GobanController;
+        const controllerA = {
+            goban: {
+                engine: {
+                    cur_move: { move_number: 10 },
+                    last_official_move: { move_number: 10 },
+                },
+            },
+        } as GobanController;
+        const controllerB = {
+            goban: {
+                engine: {
+                    cur_move: { move_number: 10 },
+                    last_official_move: { move_number: 10 },
+                },
+            },
+        } as GobanController;
 
         const { rerender } = renderHook(
             ({ boardController }) =>
                 useKibitzCurrentGameConnectionKeeper({
                     roomId: "room-1",
                     currentGameId: 123,
+                    currentLiveTailMoveNumber: 10,
                     isLive: true,
                     pickerOpen: false,
                     enabled: true,
@@ -152,7 +170,59 @@ describe("useKibitzCurrentGameConnectionKeeper", () => {
 
         rerender({ boardController: controllerB });
 
+        act(() => {
+            jest.advanceTimersByTime(1000);
+        });
+
         expect(mockedSocket.send).toHaveBeenCalledWith("game/connect", {
+            game_id: 123,
+            chat: true,
+        });
+    });
+
+    it("does not reconnect a controller that still appears unhydrated against a deep live game", () => {
+        const controllerA = {
+            goban: {
+                engine: {
+                    cur_move: { move_number: 0 },
+                    last_official_move: { move_number: 0 },
+                },
+            },
+        } as GobanController;
+        const controllerB = {
+            goban: {
+                engine: {
+                    cur_move: { move_number: 0 },
+                    last_official_move: { move_number: 0 },
+                },
+            },
+        } as GobanController;
+
+        const { rerender } = renderHook(
+            ({ boardController }) =>
+                useKibitzCurrentGameConnectionKeeper({
+                    roomId: "room-1",
+                    currentGameId: 123,
+                    currentLiveTailMoveNumber: 70,
+                    isLive: true,
+                    pickerOpen: false,
+                    enabled: true,
+                    boardController,
+                }),
+            {
+                initialProps: { boardController: controllerA },
+            },
+        );
+
+        mockedSocket.send.mockClear();
+
+        rerender({ boardController: controllerB });
+
+        act(() => {
+            jest.advanceTimersByTime(1000);
+        });
+
+        expect(mockedSocket.send).not.toHaveBeenCalledWith("game/connect", {
             game_id: 123,
             chat: true,
         });

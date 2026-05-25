@@ -21,7 +21,6 @@ import { OgsResizeDetector } from "@/components/OgsResizeDetector";
 import { PersistentElement } from "@/components/PersistentElement";
 import { GobanController, getMoveTreeTrunkTail } from "@/lib/GobanController";
 import * as preferences from "@/lib/preferences";
-import { socket } from "@/lib/sockets";
 import { logKibitzVariationDebug, summarizeKibitzMoveTreeNode } from "./kibitzVariationDebug";
 import "./KibitzBoard.css";
 
@@ -55,6 +54,13 @@ export function getMovePathToRestore(
     }
 
     return currentMovePath ?? sourceMovePath ?? undefined;
+}
+
+export function shouldConnectKibitzBoardToGame(
+    boardRole: "main" | "secondary" | "variation" | "preview",
+    connectToGame: boolean,
+): boolean {
+    return boardRole === "main" && connectToGame;
 }
 
 export function refreshLastOfficialMoveFromTrunk(controller: GobanController): MoveTree | null {
@@ -195,6 +201,7 @@ export function KibitzBoard({
     const requestedHydrationGameIdRef = React.useRef<number | null>(null);
     const restoredOfficialTailRef = React.useRef<RestoredOfficialTailRef | null>(null);
     const boardRole = role ?? (restoreToOfficialTailOnLoad ? "main" : "secondary");
+    const effectiveConnectToGame = shouldConnectKibitzBoardToGame(boardRole, connectToGame);
     const hasExplicitSize = typeof size === "number";
     const explicitSizeReady = !hasExplicitSize || (Number.isFinite(size) && size > 0);
     const shouldDeferGobanContainer =
@@ -207,7 +214,7 @@ export function KibitzBoard({
                 gameId ?? "none",
                 currentRoomGameId ?? "none",
                 isMobile ? "mobile" : "desktop",
-                connectToGame ? "connect" : "no-connect",
+                effectiveConnectToGame ? "connect" : "no-connect",
                 width,
                 height,
                 interactive ? "interactive" : "static",
@@ -218,7 +225,7 @@ export function KibitzBoard({
             ].join("|"),
         [
             boardRole,
-            connectToGame,
+            effectiveConnectToGame,
             currentRoomGameId,
             fitMode,
             gameId,
@@ -462,7 +469,7 @@ export function KibitzBoard({
             // Subscribe to game chat so the kibitz room's game pane can
             // surface what players are saying. Kibitz users count as
             // spectators on the watched game while subscribed.
-            connect_to_chat: connectToGame,
+            connect_to_chat: effectiveConnectToGame,
             draw_top_labels:
                 showLabels && (labelPosition === "all" || labelPosition.indexOf("top") >= 0),
             draw_left_labels:
@@ -474,7 +481,7 @@ export function KibitzBoard({
             variation_stone_opacity: preferences.get("variation-stone-opacity"),
             stone_font_scale: preferences.get("stone-font-scale"),
             square_size: "auto",
-            game_id: connectToGame ? gameId : undefined,
+            game_id: effectiveConnectToGame ? gameId : undefined,
             move_tree: moveTreeRef.current,
             width,
             height,
@@ -483,7 +490,7 @@ export function KibitzBoard({
         controllerRef.current?.destroy();
         controllerRef.current = new GobanController(config);
         controllerPublishedRef.current = false;
-        if (!connectToGame) {
+        if (!effectiveConnectToGame) {
             logKibitzVariationDebug("kibitz-board:connect-suppressed", {
                 role: boardRole,
                 gameId,
@@ -661,7 +668,7 @@ export function KibitzBoard({
         };
     }, [
         gameId,
-        connectToGame,
+        effectiveConnectToGame,
         currentRoomGameId,
         isMobile,
         width,
@@ -751,7 +758,7 @@ export function KibitzBoard({
 
                 if (
                     !restoredTail &&
-                    connectToGame &&
+                    effectiveConnectToGame &&
                     gameId != null &&
                     requestedHydrationGameIdRef.current !== gameId
                 ) {
@@ -761,10 +768,9 @@ export function KibitzBoard({
                         role: boardRole,
                         gameId,
                     });
-                    socket.send("game/connect", {
-                        game_id: gameId,
-                        chat: true,
-                    });
+                    // The controller is already connected through OGSConnectivity.
+                    // Defer to its normal load/gamedata path instead of sending a
+                    // second raw connect here, which can race a still-hydrating board.
                 } else if (restoredTail && gameId != null) {
                     restoredOfficialTailRef.current = {
                         gameId,
@@ -806,7 +812,7 @@ export function KibitzBoard({
     }, [
         gameId,
         goban,
-        connectToGame,
+        effectiveConnectToGame,
         currentRoomGameId,
         isMobile,
         restoreToOfficialTailOnLoad,

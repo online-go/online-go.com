@@ -18,6 +18,7 @@
 import { GobanController } from "@/lib/GobanController";
 import {
     getMovePathToRestore,
+    shouldConnectKibitzBoardToGame,
     shouldRestoreMainBoardToOfficialTail,
     refreshLastOfficialMoveFromTrunk,
     restoreToOfficialTail,
@@ -35,6 +36,15 @@ describe("getMovePathToRestore", () => {
 
     it("falls back to the current path when there is no source path to restore", () => {
         expect(getMovePathToRestore("bb", undefined, true)).toBe("bb");
+    });
+});
+
+describe("shouldConnectKibitzBoardToGame", () => {
+    it("allows only the main board to live-connect", () => {
+        expect(shouldConnectKibitzBoardToGame("main", true)).toBe(true);
+        expect(shouldConnectKibitzBoardToGame("main", false)).toBe(false);
+        expect(shouldConnectKibitzBoardToGame("secondary", true)).toBe(false);
+        expect(shouldConnectKibitzBoardToGame("secondary", false)).toBe(false);
     });
 });
 
