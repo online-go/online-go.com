@@ -27,6 +27,8 @@ import {
     getCurrentSecondaryVariationBaseTreeIdentity,
     getOfficialTrunkTailMoveNumber,
     getCurrentDraftBaseTreeIdentity,
+    isCurrentTrackedSecondaryController,
+    isCurrentDraftSecondaryController,
     getRequiredBranchAttachMoveForVariation,
     getRequiredVariationSnapshotMoveNumber,
     getRequiredSnapshotMoveForVariation,
@@ -630,6 +632,93 @@ describe("draft base apply guard", () => {
         applied = clearDraftBaseAppliedState();
 
         expect(isDraftBaseAlreadyApplied(applied, controller, variationId)).toBe(false);
+    });
+
+    it("accepts a current normal secondary board and a draft secondary board", () => {
+        const controller = {
+            goban: {
+                parent: {
+                    isConnected: true,
+                },
+                engine: {
+                    move_tree: {
+                        id: 1,
+                    },
+                },
+            },
+        } as unknown as GobanController;
+        const variationContext = {
+            controller,
+            epoch: 3,
+            roomId: "room-user-cc22e57e",
+            gameId: 87164848,
+            secondaryBoardKey: "room-user-cc22e57e-variation-game-87164848-remount-0",
+        } as Parameters<typeof isCurrentTrackedSecondaryController>[0]["context"];
+        const draftContext = {
+            controller,
+            roomId: "room-user-cc22e57e",
+            gameId: 87164848,
+            secondaryBoardKey: "room-user-cc22e57e-draft-87164848-xjV.VKCpuip---remount-0",
+        } as Parameters<typeof isCurrentTrackedSecondaryController>[0]["context"];
+
+        expect(
+            isCurrentTrackedSecondaryController({
+                controller,
+                context: variationContext,
+                roomId: "room-user-cc22e57e",
+                expectedGameId: 87164848,
+                expectedSecondaryBoardKey: "room-user-cc22e57e-variation-game-87164848-remount-0",
+                isDetached: false,
+            }),
+        ).toBe(true);
+        expect(
+            isCurrentTrackedSecondaryController({
+                controller,
+                context: draftContext,
+                roomId: "room-user-cc22e57e",
+                expectedGameId: 87164848,
+                expectedSecondaryBoardKey:
+                    "room-user-cc22e57e-draft-87164848-xjV.VKCpuip---remount-0",
+                isDetached: false,
+            }),
+        ).toBe(true);
+    });
+
+    it("rejects a stale outgoing variation controller once the draft board key changes", () => {
+        const controller = {
+            goban: {
+                parent: {
+                    isConnected: true,
+                },
+                engine: {
+                    move_tree: {
+                        id: 1,
+                    },
+                },
+                config: {
+                    game_id: 87164848,
+                },
+            },
+        } as unknown as GobanController;
+        const staleContext = {
+            controller,
+            epoch: 3,
+            roomId: "room-user-cc22e57e",
+            gameId: 87164848,
+            secondaryBoardKey: "room-user-cc22e57e-variation-game-87164848-remount-0",
+        } as Parameters<typeof isCurrentDraftSecondaryController>[0]["context"];
+
+        expect(
+            isCurrentDraftSecondaryController({
+                controller,
+                context: staleContext,
+                roomId: "room-user-cc22e57e",
+                expectedGameId: 87164848,
+                expectedSecondaryBoardKey: "room-user-cc22e57e-draft-87164848-draft-base-remount-0",
+                currentSecondaryBoardKey: "room-user-cc22e57e-draft-87164848-draft-base-remount-0",
+                isDetached: false,
+            }),
+        ).toBe(false);
     });
 
     it("treats a replaced secondary base tree as not installed", () => {

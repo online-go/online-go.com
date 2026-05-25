@@ -684,6 +684,7 @@ interface TrackedBoardControllerContext {
     epoch: number;
     roomId: string | null;
     gameId: number | null;
+    secondaryBoardKey: string | null;
 }
 
 interface SecondaryVariationBaseSnapshot {
@@ -839,6 +840,52 @@ export function clearInstalledSecondaryVariationBaseState(): InstalledSecondaryV
         trunkTailMoveNumber: 0,
         moveTreeId: null,
     };
+}
+
+export function isCurrentTrackedSecondaryController(params: {
+    controller: GobanController | null;
+    context: Pick<
+        TrackedBoardControllerContext,
+        "controller" | "roomId" | "gameId" | "secondaryBoardKey"
+    > | null;
+    roomId: string;
+    expectedGameId: number | null;
+    expectedSecondaryBoardKey: string;
+    isDetached: boolean;
+}): boolean {
+    return Boolean(
+        params.controller &&
+        params.context &&
+        params.context.controller === params.controller &&
+        params.context.roomId === params.roomId &&
+        params.context.gameId === params.expectedGameId &&
+        params.context.secondaryBoardKey === params.expectedSecondaryBoardKey &&
+        !params.isDetached,
+    );
+}
+
+export function isCurrentDraftSecondaryController(params: {
+    controller: GobanController | null;
+    context: Pick<
+        TrackedBoardControllerContext,
+        "controller" | "roomId" | "gameId" | "secondaryBoardKey"
+    > | null;
+    roomId: string;
+    expectedGameId: number | null;
+    expectedSecondaryBoardKey: string;
+    currentSecondaryBoardKey: string;
+    isDetached: boolean;
+}): boolean {
+    return Boolean(
+        params.controller &&
+        params.context &&
+        params.context.controller === params.controller &&
+        params.context.roomId === params.roomId &&
+        params.context.gameId === params.expectedGameId &&
+        params.context.secondaryBoardKey === params.expectedSecondaryBoardKey &&
+        params.currentSecondaryBoardKey.startsWith(`room-${params.roomId}-draft-`) &&
+        !params.isDetached,
+    );
 }
 
 export function markInstalledSecondaryVariationBaseState(
@@ -1692,29 +1739,32 @@ export function KibitzRoomStage({
             ),
         ].join("\n");
     }, [selectedVariation?.id, variationColorIndexes, visibleVariations]);
-    const requestSelectedGameBaseSnapshot = React.useCallback(
-        async (requiredSnapshotMoveNumber: number): Promise<void> => {
-            if (selectedVariationGameId == null) {
-                return;
-            }
-
-            const selectedGameId = selectedVariationGameId;
-            const requestKey = selectedGameSnapshotFailureKey(
-                selectedGameId,
+    const requestSelectedGameBaseSnapshotForGame = React.useCallback(
+        async (params: {
+            gameId: number;
+            variationId: string | null;
+            requiredSnapshotMoveNumber: number;
+            installAsActiveSelectedSnapshot?: boolean;
+        }): Promise<KibitzCurrentGameBaseSnapshot | null> => {
+            const {
+                gameId,
+                variationId,
                 requiredSnapshotMoveNumber,
-            );
-            const cachedSnapshot = selectedGameBaseSnapshotCacheRef.current.get(selectedGameId);
+                installAsActiveSelectedSnapshot = false,
+            } = params;
+            const requestKey = selectedGameSnapshotFailureKey(gameId, requiredSnapshotMoveNumber);
+            const cachedSnapshot = selectedGameBaseSnapshotCacheRef.current.get(gameId);
             const cachedSnapshotIsFreshEnough =
                 cachedSnapshot != null &&
                 isSelectedGameBaseSnapshotFreshEnough(
                     cachedSnapshot,
-                    selectedGameId,
+                    gameId,
                     requiredSnapshotMoveNumber,
                 );
             if (cachedSnapshotIsFreshEnough) {
-                logKibitzVariationDebug("selected-game-base-snapshot:cache-hit", {
-                    selectedVariationId: selectedVariation?.id ?? null,
-                    selectedGameId,
+                logSelectedGameSnapshotDebug("selected-game-base-snapshot:cache-hit", {
+                    selectedVariationId: variationId,
+                    selectedGameId: gameId,
                     currentRoomGameId,
                     requiredSnapshotMoveNumber,
                     snapshotGameId: cachedSnapshot.gameId,
@@ -1722,93 +1772,69 @@ export function KibitzRoomStage({
                     source: cachedSnapshot.source,
                     failureKind: null,
                     retryAfter: null,
+                    installAsActiveSelectedSnapshot,
                 });
-                clearSelectedGameSnapshotFailureForCurrent(
-                    selectedGameId,
-                    requiredSnapshotMoveNumber,
-                );
-                setSelectedGameBaseSnapshot(cachedSnapshot);
-                return;
+                clearSelectedGameSnapshotFailureForCurrent(gameId, requiredSnapshotMoveNumber);
+                return cachedSnapshot;
             }
 
             if (cachedSnapshot) {
                 logSelectedGameSnapshotDebug("selected-game-base-snapshot:cache-stale", {
-                    selectedGameId,
+                    selectedGameId: gameId,
                     requiredSnapshotMoveNumber,
                     cachedTailMoveNumber: cachedSnapshot.trunkTailMoveNumber,
                     source: cachedSnapshot.source,
+                    installAsActiveSelectedSnapshot,
                 });
-                selectedGameBaseSnapshotCacheRef.current.delete(selectedGameId);
-                setSelectedGameBaseSnapshot((current) =>
-                    current?.gameId === selectedGameId ? null : current,
-                );
+                selectedGameBaseSnapshotCacheRef.current.delete(gameId);
             }
 
             const blockingFailure = getBlockingSelectedGameSnapshotFailure(
-                selectedGameId,
+                gameId,
                 requiredSnapshotMoveNumber,
             );
             if (blockingFailure) {
                 logSelectedGameSnapshotDebug("selected-game-base-snapshot:blocked-by-failure", {
-                    selectedGameId,
+                    selectedGameId: gameId,
                     requiredSnapshotMoveNumber,
                     failureKind: blockingFailure.kind,
                     retryAfter: blockingFailure.retryAfter ?? null,
                     failure: blockingFailure,
+                    installAsActiveSelectedSnapshot,
                 });
-                return;
+                return null;
             }
 
             if (selectedGameBaseSnapshotPendingRef.current.has(requestKey)) {
                 logSelectedGameSnapshotDebug("selected-game-base-snapshot:already-pending", {
-                    selectedGameId,
+                    selectedGameId: gameId,
                     requiredSnapshotMoveNumber,
+                    installAsActiveSelectedSnapshot,
                 });
-                return;
+                return null;
             }
 
-            const requestId = selectedGameBaseSnapshotRequestIdRef.current + 1;
-            selectedGameBaseSnapshotRequestIdRef.current = requestId;
             selectedGameBaseSnapshotPendingRef.current.add(requestKey);
-            clearSelectedGameSnapshotFailureForCurrent(selectedGameId, requiredSnapshotMoveNumber);
-            setSelectedGameBaseSnapshotLoadingGameId(selectedGameId);
+            clearSelectedGameSnapshotFailureForCurrent(gameId, requiredSnapshotMoveNumber);
             logSelectedGameSnapshotDebug("selected-game-base-snapshot:request", {
-                selectedGameId,
+                selectedGameId: gameId,
                 requiredSnapshotMoveNumber,
                 failureKind: null,
                 retryAfter: null,
+                installAsActiveSelectedSnapshot,
             });
 
             try {
                 const result = await fetchSelectedGameBaseSnapshot({
-                    gameId: selectedGameId,
+                    gameId,
                     roomId: room.id,
                     requiredSnapshotMoveNumber,
                 });
 
-                if (
-                    requestId !== selectedGameBaseSnapshotRequestIdRef.current ||
-                    selectedVariationGameIdRef.current !== selectedGameId
-                ) {
-                    logSelectedGameSnapshotDebug(
-                        "selected-game-base-snapshot:stale-result-ignored",
-                        {
-                            selectedVariationGameId: selectedVariationGameIdRef.current ?? null,
-                            requestId,
-                            latestRequestId: selectedGameBaseSnapshotRequestIdRef.current,
-                            selectedGameId,
-                            requiredSnapshotMoveNumber,
-                            failureKind: null,
-                            retryAfter: null,
-                        },
-                    );
-                    return;
-                }
-
                 if (result.kind === "failure") {
                     const failure = recordSelectedGameSnapshotFailureForCurrent({
-                        gameId: selectedGameId,
-                        variationId: selectedVariation?.id ?? null,
+                        gameId,
+                        variationId,
                         requiredMoveNumber: requiredSnapshotMoveNumber,
                         kind: result.failure.kind,
                         retryAfter: result.failure.retryAfter,
@@ -1824,7 +1850,7 @@ export function KibitzRoomStage({
                                   : "error"
                         }`,
                         {
-                            selectedGameId,
+                            selectedGameId: gameId,
                             requiredSnapshotMoveNumber,
                             failureKind: failure.kind,
                             retryAfter: failure.retryAfter ?? null,
@@ -1832,53 +1858,36 @@ export function KibitzRoomStage({
                                 (failure.details?.trunkTailMoveNumber as number | undefined) ??
                                 null,
                             failure,
+                            installAsActiveSelectedSnapshot,
                         },
                     );
-                    return;
+                    return null;
                 }
 
                 const snapshot = result.snapshot;
-                selectedGameBaseSnapshotCacheRef.current.set(selectedGameId, snapshot);
-                clearSelectedGameSnapshotFailureForCurrent(
-                    selectedGameId,
-                    requiredSnapshotMoveNumber,
-                );
-                setSelectedGameBaseSnapshot(snapshot);
+                selectedGameBaseSnapshotCacheRef.current.set(gameId, snapshot);
+                clearSelectedGameSnapshotFailureForCurrent(gameId, requiredSnapshotMoveNumber);
 
                 logSelectedGameSnapshotDebug("selected-game-base-snapshot:fetched", {
-                    selectedGameId,
+                    selectedGameId: gameId,
                     requiredSnapshotMoveNumber,
                     snapshotGameId: snapshot.gameId,
                     trunkTailMoveNumber: snapshot.trunkTailMoveNumber,
                     source: snapshot.source,
                     failureKind: null,
                     retryAfter: null,
+                    installAsActiveSelectedSnapshot,
                 });
+                return snapshot;
             } catch (error) {
-                if (requestId !== selectedGameBaseSnapshotRequestIdRef.current) {
-                    logSelectedGameSnapshotDebug(
-                        "selected-game-base-snapshot:stale-result-ignored",
-                        {
-                            selectedVariationGameId: selectedVariationGameIdRef.current ?? null,
-                            requestId,
-                            latestRequestId: selectedGameBaseSnapshotRequestIdRef.current,
-                            selectedGameId,
-                            requiredSnapshotMoveNumber,
-                            failureKind: null,
-                            retryAfter: null,
-                        },
-                    );
-                    return;
-                }
-
                 if (error instanceof Error && error.name === "AbortError") {
-                    return;
+                    return null;
                 }
 
                 const failure = buildSelectedGameSnapshotFailureFromError({
                     error,
-                    gameId: selectedGameId,
-                    variationId: selectedVariation?.id ?? null,
+                    gameId,
+                    variationId,
                     requiredMoveNumber: requiredSnapshotMoveNumber,
                 });
                 const recordedFailure = recordSelectedGameSnapshotFailureForCurrent({
@@ -1891,34 +1900,78 @@ export function KibitzRoomStage({
                     details: failure.details,
                 });
                 logSelectedGameSnapshotDebug("selected-game-base-snapshot:error", {
-                    selectedGameId,
+                    selectedGameId: gameId,
                     requiredSnapshotMoveNumber,
                     failureKind: recordedFailure.kind,
                     retryAfter: recordedFailure.retryAfter ?? null,
                     error: recordedFailure.message ?? getSelectedGameSnapshotErrorMessage(error),
                     failure: recordedFailure,
+                    installAsActiveSelectedSnapshot,
                 });
+                return null;
             } finally {
                 selectedGameBaseSnapshotPendingRef.current.delete(requestKey);
-                if (
-                    requestId === selectedGameBaseSnapshotRequestIdRef.current &&
-                    selectedVariationGameIdRef.current === selectedGameId
-                ) {
-                    setSelectedGameBaseSnapshotLoadingGameId((current) =>
-                        current === selectedGameId ? null : current,
-                    );
-                }
             }
         },
         [
+            clearSelectedGameSnapshotFailureForCurrent,
             currentRoomGameId,
             getBlockingSelectedGameSnapshotFailure,
-            room.id,
-            selectedVariation?.id,
-            selectedVariationGameId,
             logSelectedGameSnapshotDebug,
             recordSelectedGameSnapshotFailureForCurrent,
-            clearSelectedGameSnapshotFailureForCurrent,
+            room.id,
+        ],
+    );
+    const requestSelectedGameBaseSnapshot = React.useCallback(
+        async (requiredSnapshotMoveNumber: number): Promise<void> => {
+            if (selectedVariationGameId == null) {
+                return;
+            }
+
+            const selectedGameId = selectedVariationGameId;
+            const requestId = selectedGameBaseSnapshotRequestIdRef.current + 1;
+            selectedGameBaseSnapshotRequestIdRef.current = requestId;
+            setSelectedGameBaseSnapshotLoadingGameId(selectedGameId);
+
+            const snapshot = await requestSelectedGameBaseSnapshotForGame({
+                gameId: selectedGameId,
+                variationId: selectedVariation?.id ?? null,
+                requiredSnapshotMoveNumber,
+                installAsActiveSelectedSnapshot: true,
+            });
+
+            if (
+                requestId !== selectedGameBaseSnapshotRequestIdRef.current ||
+                selectedVariationGameIdRef.current !== selectedGameId
+            ) {
+                logSelectedGameSnapshotDebug("selected-game-base-snapshot:stale-result-ignored", {
+                    selectedVariationGameId: selectedVariationGameIdRef.current ?? null,
+                    requestId,
+                    latestRequestId: selectedGameBaseSnapshotRequestIdRef.current,
+                    selectedGameId,
+                    requiredSnapshotMoveNumber,
+                    failureKind: null,
+                    retryAfter: null,
+                });
+                setSelectedGameBaseSnapshotLoadingGameId((current) =>
+                    current === selectedGameId ? null : current,
+                );
+                return;
+            }
+
+            if (snapshot) {
+                setSelectedGameBaseSnapshot(snapshot);
+            }
+
+            setSelectedGameBaseSnapshotLoadingGameId((current) =>
+                current === selectedGameId ? null : current,
+            );
+        },
+        [
+            logSelectedGameSnapshotDebug,
+            requestSelectedGameBaseSnapshotForGame,
+            selectedVariation?.id,
+            selectedVariationGameId,
         ],
     );
     const previewGame =
@@ -1970,6 +2023,7 @@ export function KibitzRoomStage({
                       epoch: mainBoardControllerEpochRef.current,
                       roomId: currentRoomIdRef.current,
                       gameId: currentRoomGameIdRef.current,
+                      secondaryBoardKey: null,
                   }
                 : null;
             setMainBoardControllerState(controller);
@@ -2112,18 +2166,43 @@ export function KibitzRoomStage({
     );
     const isCurrentSecondaryBoardController = React.useCallback(
         (controller: GobanController | null | undefined) => {
-            const context = secondaryBoardControllerContextRef.current;
-            return Boolean(
-                controller &&
-                context &&
-                context.controller === controller &&
-                context.epoch === secondaryBoardControllerEpochRef.current &&
-                context.roomId === currentRoomIdRef.current &&
-                context.gameId === expectedSecondaryBoardGameId &&
-                !isDetachedBoardController(controller),
-            );
+            const currentSecondaryBoardKey =
+                secondaryPane.variation_id != null
+                    ? selectedVariationGameId != null
+                        ? `room-${room.id}-variation-game-${selectedVariationGameId}-remount-${secondaryBoardRemountNonce}`
+                        : `variation-${secondaryPane.variation_id}-remount-${secondaryBoardRemountNonce}`
+                    : secondaryPane.variation_source_game_id != null
+                      ? `room-${room.id}-draft-${secondaryPane.variation_source_game_id}-${
+                            secondaryPane.variation_draft_base_id ?? ""
+                        }-${secondaryPane.variation_source_move_tree_id ?? ""}-${
+                            secondaryPane.variation_source_move_path ?? ""
+                        }-remount-${secondaryBoardRemountNonce}`
+                      : secondaryPane.preview_game_id != null
+                        ? `room-${room.id}-preview-${secondaryPane.preview_game_id}-remount-${secondaryBoardRemountNonce}`
+                        : `room-${room.id}-empty-remount-${secondaryBoardRemountNonce}`;
+
+            return isCurrentTrackedSecondaryController({
+                controller: controller ?? null,
+                context: secondaryBoardControllerContextRef.current,
+                roomId: currentRoomIdRef.current,
+                expectedGameId: expectedSecondaryBoardGameId,
+                expectedSecondaryBoardKey: currentSecondaryBoardKey,
+                isDetached: isDetachedBoardController(controller ?? null),
+            });
         },
-        [expectedSecondaryBoardGameId, isDetachedBoardController],
+        [
+            expectedSecondaryBoardGameId,
+            isDetachedBoardController,
+            room.id,
+            secondaryBoardRemountNonce,
+            secondaryPane.preview_game_id,
+            secondaryPane.variation_draft_base_id,
+            secondaryPane.variation_id,
+            secondaryPane.variation_source_game_id,
+            secondaryPane.variation_source_move_path,
+            secondaryPane.variation_source_move_tree_id,
+            selectedVariationGameId,
+        ],
     );
     const secondaryVariationBaseSnapshotRef = React.useRef<SecondaryVariationBaseSnapshot | null>(
         null,
@@ -2171,6 +2250,27 @@ export function KibitzRoomStage({
         moveTreeId: null,
         engine: null,
     });
+    const draftBaseSnapshotRef = React.useRef<{
+        controller: GobanController | null;
+        draftBaseVariationId: string | null;
+        gameId: number | null;
+        requiredMoveNumber: number;
+        snapshot: SecondaryVariationBaseSnapshot | null;
+        loadOperationId: number;
+    }>({
+        controller: null,
+        draftBaseVariationId: null,
+        gameId: null,
+        requiredMoveNumber: 0,
+        snapshot: null,
+        loadOperationId: 0,
+    });
+    const pendingDraftBaseSnapshotLoadRef = React.useRef<{
+        controller: GobanController;
+        draftBaseVariationId: string;
+        gameId: number;
+        requiredMoveNumber: number;
+    } | null>(null);
     const pendingSecondaryMoveTreeRedrawCancelRef = React.useRef<(() => void) | null>(null);
     const pendingMainBoardVisibleRedrawCancelRef = React.useRef<(() => void) | null>(null);
     const pendingSecondaryBoardVisibleRedrawCancelRef = React.useRef<(() => void) | null>(null);
@@ -2358,6 +2458,8 @@ export function KibitzRoomStage({
                 expectedSecondaryBoardGameId,
                 controllerEpoch: secondaryBoardControllerEpochRef.current,
                 controllerGameId: controller?.goban.config?.game_id ?? null,
+                controllerBoardKey:
+                    secondaryBoardControllerContextRef.current?.secondaryBoardKey ?? null,
                 controllerConnected: Boolean(controllerParent?.isConnected),
                 controllerMeasuredElement: summarizeElementForDebug(controllerParent),
                 controllerParentChain: summarizeParentChain(controllerParent),
@@ -2396,6 +2498,7 @@ export function KibitzRoomStage({
                       epoch: secondaryBoardControllerEpochRef.current,
                       roomId: currentRoomIdRef.current,
                       gameId: expectedSecondaryBoardGameId,
+                      secondaryBoardKey,
                   }
                 : null;
             if (controller && isKibitzVariationDebugEnabled()) {
@@ -3127,6 +3230,23 @@ export function KibitzRoomStage({
         pendingSecondaryRedrawReasonRef.current = null;
         clearSecondaryVariationRetryTimeout();
     }, [clearSecondaryVariationRetryTimeout, secondaryBoardController, selectedVariationGameId]);
+
+    React.useEffect(() => {
+        appliedDraftBaseRef.current = clearDraftBaseAppliedState();
+        draftBaseSnapshotRef.current = {
+            controller: null,
+            draftBaseVariationId: null,
+            gameId: null,
+            requiredMoveNumber: 0,
+            snapshot: null,
+            loadOperationId: draftBaseSnapshotRef.current.loadOperationId + 1,
+        };
+        pendingDraftBaseSnapshotLoadRef.current = null;
+    }, [
+        secondaryBoardKey,
+        secondaryPane.variation_draft_base_id,
+        secondaryPane.variation_source_game_id,
+    ]);
 
     React.useEffect(() => {
         secondaryVariationRetryCountRef.current = 0;
@@ -3972,15 +4092,253 @@ export function KibitzRoomStage({
             secondaryPane.variation_source_game_id == null
         ) {
             appliedDraftBaseRef.current = clearDraftBaseAppliedState();
+            pendingDraftBaseSnapshotLoadRef.current = null;
             return;
         }
 
         const goban = secondaryBoardController.goban;
         let applyingDraftBase = false;
         let disposed = false;
+        const requiredSnapshotMoveNumber =
+            typeof draftBaseVariation.analysis_from === "number" &&
+            Number.isFinite(draftBaseVariation.analysis_from)
+                ? draftBaseVariation.analysis_from
+                : null;
+
+        const getDraftBaseDebugDetails = (): Record<string, unknown> => ({
+            variationId: draftBaseVariation.id,
+            gameId: draftBaseVariation.game_id,
+            currentRoomGameId,
+            analysisFrom: draftBaseVariation.analysis_from ?? null,
+            officialTailMoveNumber: getOfficialTrunkTailMoveNumber(secondaryBoardController),
+            controllerEpoch: secondaryBoardControllerEpochRef.current,
+            secondaryBoardKey,
+            currentMoveTreeId: secondaryBoardController.goban.engine?.move_tree?.id ?? null,
+        });
+
+        const isCurrentDraftController = (): boolean =>
+            isCurrentDraftSecondaryController({
+                controller: secondaryBoardController,
+                context: secondaryBoardControllerContextRef.current,
+                roomId: currentRoomIdRef.current,
+                expectedGameId: secondaryPane.variation_source_game_id ?? null,
+                expectedSecondaryBoardKey: secondaryBoardKey,
+                currentSecondaryBoardKey: secondaryBoardKey,
+                isDetached: isDetachedBoardController(secondaryBoardController),
+            });
+
+        const ensureDraftBaseSnapshotLoaded = async (reason: string): Promise<boolean> => {
+            if (disposed || !isCurrentDraftController()) {
+                logKibitzVariationDebug("draft-base:stale-controller", {
+                    reason,
+                    ...getDraftBaseDebugDetails(),
+                });
+                return false;
+            }
+
+            if (requiredSnapshotMoveNumber == null) {
+                logKibitzVariationDebug("draft-base:snapshot-needed", {
+                    reason,
+                    ...getDraftBaseDebugDetails(),
+                    failureKind: "missing-analysis-from",
+                });
+                return false;
+            }
+
+            const currentTailMoveNumber = getOfficialTrunkTailMoveNumber(secondaryBoardController);
+            if (currentTailMoveNumber >= requiredSnapshotMoveNumber) {
+                logKibitzVariationDebug("draft-base:anchor-ready", {
+                    reason,
+                    ...getDraftBaseDebugDetails(),
+                });
+                return true;
+            }
+
+            const pendingLoad = pendingDraftBaseSnapshotLoadRef.current;
+            if (
+                pendingLoad &&
+                pendingLoad.controller === secondaryBoardController &&
+                pendingLoad.draftBaseVariationId === draftBaseVariation.id &&
+                pendingLoad.gameId === draftBaseVariation.game_id &&
+                pendingLoad.requiredMoveNumber === requiredSnapshotMoveNumber
+            ) {
+                return false;
+            }
+
+            logKibitzVariationDebug("draft-base:snapshot-needed", {
+                reason,
+                ...getDraftBaseDebugDetails(),
+            });
+
+            const loadOperationId = draftBaseSnapshotRef.current.loadOperationId + 1;
+            draftBaseSnapshotRef.current = {
+                controller: secondaryBoardController,
+                draftBaseVariationId: draftBaseVariation.id,
+                gameId: draftBaseVariation.game_id,
+                requiredMoveNumber: requiredSnapshotMoveNumber,
+                snapshot: null,
+                loadOperationId,
+            };
+            pendingDraftBaseSnapshotLoadRef.current = {
+                controller: secondaryBoardController,
+                draftBaseVariationId: draftBaseVariation.id,
+                gameId: draftBaseVariation.game_id,
+                requiredMoveNumber: requiredSnapshotMoveNumber,
+            };
+
+            const roomBaseSnapshot =
+                draftBaseVariation.game_id === currentRoomGameId
+                    ? captureRoomBaseSnapshotForVariation(
+                          currentGameBaseSnapshot,
+                          secondaryBoardController,
+                          draftBaseVariation,
+                          [],
+                          secondaryPane.variation_source_game,
+                      )
+                    : null;
+
+            if (roomBaseSnapshot) {
+                logKibitzVariationDebug("draft-base:load-snapshot", {
+                    reason,
+                    source: "room-base",
+                    ...getDraftBaseDebugDetails(),
+                    snapshotGameId: roomBaseSnapshot.gameId,
+                    trunkTailMoveNumber: roomBaseSnapshot.trunkTailMoveNumber,
+                });
+                loadSecondaryVariationBaseSnapshot(secondaryBoardController, roomBaseSnapshot);
+                draftBaseSnapshotRef.current = {
+                    controller: secondaryBoardController,
+                    draftBaseVariationId: draftBaseVariation.id,
+                    gameId: draftBaseVariation.game_id,
+                    requiredMoveNumber: requiredSnapshotMoveNumber,
+                    snapshot: roomBaseSnapshot,
+                    loadOperationId,
+                };
+                pendingDraftBaseSnapshotLoadRef.current = null;
+                logKibitzVariationDebug("draft-base:snapshot-load-complete", {
+                    reason,
+                    source: "room-base",
+                    ...getDraftBaseDebugDetails(),
+                    snapshotGameId: roomBaseSnapshot.gameId,
+                    trunkTailMoveNumber: roomBaseSnapshot.trunkTailMoveNumber,
+                });
+                return true;
+            }
+
+            const cachedSnapshot = selectedGameBaseSnapshotCacheRef.current.get(
+                draftBaseVariation.game_id,
+            );
+            if (
+                cachedSnapshot &&
+                isSelectedGameBaseSnapshotFreshEnough(
+                    cachedSnapshot,
+                    draftBaseVariation.game_id,
+                    requiredSnapshotMoveNumber,
+                )
+            ) {
+                logKibitzVariationDebug("draft-base:selected-game-snapshot-cache-hit", {
+                    reason,
+                    ...getDraftBaseDebugDetails(),
+                    snapshotGameId: cachedSnapshot.gameId,
+                    trunkTailMoveNumber: cachedSnapshot.trunkTailMoveNumber,
+                });
+            } else {
+                logKibitzVariationDebug("draft-base:selected-game-snapshot-request", {
+                    reason,
+                    ...getDraftBaseDebugDetails(),
+                });
+            }
+
+            const selectedGameSnapshot = await requestSelectedGameBaseSnapshotForGame({
+                gameId: draftBaseVariation.game_id,
+                variationId: draftBaseVariation.id,
+                requiredSnapshotMoveNumber,
+                installAsActiveSelectedSnapshot: false,
+            });
+
+            if (disposed || draftBaseSnapshotRef.current.loadOperationId !== loadOperationId) {
+                logKibitzVariationDebug("draft-base:stale-controller", {
+                    reason,
+                    ...getDraftBaseDebugDetails(),
+                    loadOperationId,
+                });
+                return false;
+            }
+
+            pendingDraftBaseSnapshotLoadRef.current = null;
+
+            if (!selectedGameSnapshot) {
+                const failure = getBlockingSelectedGameSnapshotFailure(
+                    draftBaseVariation.game_id,
+                    requiredSnapshotMoveNumber,
+                );
+                logKibitzVariationDebug("draft-base:selected-game-snapshot-failed", {
+                    reason,
+                    ...getDraftBaseDebugDetails(),
+                    failureKind: failure?.kind ?? null,
+                    retryAfter: failure?.retryAfter ?? null,
+                    failure,
+                });
+                return false;
+            }
+
+            const draftBaseSnapshot: SecondaryVariationBaseSnapshot = {
+                controller: secondaryBoardController,
+                gameId: draftBaseVariation.game_id,
+                trunkTailMoveNumber: selectedGameSnapshot.trunkTailMoveNumber,
+                config: {
+                    ...selectedGameSnapshot.config,
+                    game_id: draftBaseVariation.game_id,
+                    move_tree: cloneMoveTreeJson(selectedGameSnapshot.config.move_tree!),
+                },
+            };
+
+            logKibitzVariationDebug("draft-base:load-snapshot", {
+                reason,
+                source: "selected-game-snapshot",
+                ...getDraftBaseDebugDetails(),
+                snapshotGameId: draftBaseSnapshot.gameId,
+                trunkTailMoveNumber: draftBaseSnapshot.trunkTailMoveNumber,
+            });
+            loadSecondaryVariationBaseSnapshot(secondaryBoardController, draftBaseSnapshot);
+            draftBaseSnapshotRef.current = {
+                controller: secondaryBoardController,
+                draftBaseVariationId: draftBaseVariation.id,
+                gameId: draftBaseVariation.game_id,
+                requiredMoveNumber: requiredSnapshotMoveNumber,
+                snapshot: draftBaseSnapshot,
+                loadOperationId,
+            };
+            logKibitzVariationDebug("draft-base:snapshot-load-complete", {
+                reason,
+                source: "selected-game-snapshot",
+                ...getDraftBaseDebugDetails(),
+                snapshotGameId: draftBaseSnapshot.gameId,
+                trunkTailMoveNumber: draftBaseSnapshot.trunkTailMoveNumber,
+            });
+            return true;
+        };
+
         const tryApplyDraftBaseVariation = (): boolean => {
             if (disposed || applyingDraftBase) {
                 return true;
+            }
+
+            if (!isCurrentDraftController()) {
+                logKibitzVariationDebug("draft-base:stale-controller", {
+                    reason: "apply",
+                    ...getDraftBaseDebugDetails(),
+                });
+                return false;
+            }
+
+            if (requiredSnapshotMoveNumber == null) {
+                logKibitzVariationDebug("draft-base:snapshot-needed", {
+                    reason: "apply",
+                    ...getDraftBaseDebugDetails(),
+                    failureKind: "missing-analysis-from",
+                });
+                return false;
             }
 
             if (
@@ -4007,26 +4365,33 @@ export function KibitzRoomStage({
             }
 
             if (!isVariationOfficialAnchorReady(secondaryBoardController, draftBaseVariation)) {
-                logKibitzVariationDebug("draft-base:anchor-not-ready", {
-                    selectedVariationId: selectedVariation?.id ?? null,
-                    selectedGameId: selectedVariation?.game_id ?? null,
-                    variationId: draftBaseVariation.id,
-                    analysisFrom: draftBaseVariation.analysis_from,
-                    officialTailMoveNumber:
-                        getOfficialTrunkTailMoveNumber(secondaryBoardController),
-                    currentMoveTreeId: secondaryBoardController.goban.engine?.move_tree?.id ?? null,
+                logKibitzVariationDebug("draft-base:snapshot-needed", {
+                    reason: "anchor-not-ready",
+                    ...getDraftBaseDebugDetails(),
+                });
+                void ensureDraftBaseSnapshotLoaded("anchor-not-ready").then((loaded) => {
+                    if (!loaded || disposed) {
+                        return;
+                    }
+
+                    void tryApplyDraftBaseVariation();
                 });
                 return false;
             }
 
+            logKibitzVariationDebug("draft-base:anchor-ready", {
+                reason: "apply",
+                ...getDraftBaseDebugDetails(),
+            });
             applyingDraftBase = true;
             appliedDraftBaseRef.current = markDraftBaseApplied(
                 secondaryBoardController,
                 draftBaseVariation.id,
             );
-            logKibitzVariationDebug("draft-base:reserve-apply", {
+            logKibitzVariationDebug("draft-base:apply-start", {
                 variationId: draftBaseVariation.id,
                 currentMoveTreeId: appliedDraftBaseRef.current.moveTreeId,
+                ...getDraftBaseDebugDetails(),
             });
             try {
                 const applied = applyKibitzVariationToController(
@@ -4051,6 +4416,7 @@ export function KibitzRoomStage({
                     variationId: draftBaseVariation.id,
                     endpointMoveNumber: applied.endpoint.move_number,
                     currentMoveTreeId: appliedDraftBaseRef.current.moveTreeId,
+                    ...getDraftBaseDebugDetails(),
                 });
                 return true;
             } catch (error) {
@@ -4058,6 +4424,7 @@ export function KibitzRoomStage({
                 logKibitzVariationDebug("draft-base:apply-failed", {
                     variationId: draftBaseVariation.id,
                     error,
+                    ...getDraftBaseDebugDetails(),
                 });
                 return false;
             } finally {
@@ -4074,6 +4441,7 @@ export function KibitzRoomStage({
                 variationId: draftBaseVariation.id,
                 currentMoveTreeId: secondaryBoardController.goban.engine?.move_tree?.id ?? null,
                 appliedMoveTreeId: appliedDraftBaseRef.current.moveTreeId,
+                ...getDraftBaseDebugDetails(),
             });
             void tryApplyDraftBaseVariation();
         };
@@ -4083,6 +4451,7 @@ export function KibitzRoomStage({
                 variationId: draftBaseVariation.id,
                 currentMoveTreeId: secondaryBoardController.goban.engine?.move_tree?.id ?? null,
                 appliedMoveTreeId: appliedDraftBaseRef.current.moveTreeId,
+                ...getDraftBaseDebugDetails(),
             });
             void tryApplyDraftBaseVariation();
         };
@@ -4092,6 +4461,7 @@ export function KibitzRoomStage({
                 variationId: draftBaseVariation.id,
                 currentMoveTreeId: secondaryBoardController.goban.engine?.move_tree?.id ?? null,
                 appliedMoveTreeId: appliedDraftBaseRef.current.moveTreeId,
+                ...getDraftBaseDebugDetails(),
             });
             void tryApplyDraftBaseVariation();
         };
@@ -4105,15 +4475,22 @@ export function KibitzRoomStage({
             goban.off("load", onLoad);
             goban.off("gamedata", onGameData);
             goban.off("last_official_move", onLastOfficialMove);
+            pendingDraftBaseSnapshotLoadRef.current = null;
             pendingSecondaryMoveTreeRedrawCancelRef.current?.();
             pendingSecondaryMoveTreeRedrawCancelRef.current = null;
         };
     }, [
         draftBaseVariation,
+        currentGameBaseSnapshot,
+        currentRoomGameId,
         secondaryBoardController,
+        secondaryBoardKey,
         secondaryPane.preview_game_id,
         secondaryPane.variation_source_game_id,
+        secondaryPane.variation_source_game,
+        getBlockingSelectedGameSnapshotFailure,
         variationColorIndexes,
+        requestSelectedGameBaseSnapshotForGame,
         scheduleSecondaryMoveTreeRedraw,
     ]);
 
