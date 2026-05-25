@@ -40,7 +40,15 @@ import type {
     KibitzVariationSummary,
     KibitzWatchedGame,
 } from "@/models/kibitz";
-import { cloneOfficialTrunkMoveTreeJson } from "./kibitzCurrentGameBaseSnapshot";
+import {
+    canHydrateMainBoardFromRoomBaseSnapshot,
+    cloneOfficialTrunkMoveTreeJson,
+    hydrateMainBoardFromRoomBaseSnapshot,
+} from "./kibitzCurrentGameBaseSnapshot";
+import type {
+    KibitzBoardLoadConfig,
+    KibitzCurrentGameBaseSnapshot,
+} from "./kibitzCurrentGameBaseSnapshotTypes";
 import { KibitzBoard } from "./KibitzBoard";
 import { KibitzBoardControls } from "./KibitzBoardControls";
 import { KibitzDividerHandle } from "./KibitzDividerHandle";
@@ -319,11 +327,6 @@ export function resolveSelectedVariationSourceGame(
     );
 }
 
-export type KibitzBoardLoadConfig = Record<string, unknown> & {
-    move_tree?: MoveTreeJson;
-    moves?: GobanConfig["moves"];
-};
-
 export function buildSecondaryVariationApplyKey({
     selectedGameId,
     snapshotTailMoveNumber,
@@ -344,16 +347,6 @@ export function buildSecondaryVariationApplyKey({
         selectedVariationId ?? "no-selected-variation",
         variationFocusRequestId,
     ].join(":");
-}
-
-export interface KibitzCurrentGameBaseSnapshot {
-    gameId: number;
-    roomId?: string | null;
-    trunkTailMoveNumber: number;
-    moveTreeId: number | string | null;
-    movePath: string;
-    source: "main-board" | "room-base-broker" | "game-details" | "selected-game-details";
-    config: KibitzBoardLoadConfig;
 }
 
 interface TrackedBoardControllerContext {
@@ -2267,6 +2260,242 @@ export function KibitzRoomStage({
             goban.off("move-made", onMoveMade);
         };
     }, [currentRoomGameId, mainBoardController, scheduleMainBoardVisibleRedraw]);
+
+    React.useEffect(() => {
+        if (!isMobileLayout || mobileCompareActive) {
+            return;
+        }
+
+        const requiredMoveNumber = mainGame?.move_number ?? 0;
+        const currentController = mainBoardController;
+        const controllerGameId = currentController?.goban.config?.game_id ?? null;
+        const controllerTailMoveNumber = currentController
+            ? getOfficialTrunkTailMoveNumber(currentController)
+            : null;
+        const snapshotGameId = currentGameBaseSnapshot?.gameId ?? null;
+        const snapshotTailMoveNumber = currentGameBaseSnapshot?.trunkTailMoveNumber ?? null;
+        const hasMoveTree = Boolean(currentGameBaseSnapshot?.config.move_tree);
+        const snapshotTailMoveNumberSafe = snapshotTailMoveNumber ?? 0;
+
+        if (isKibitzVariationDebugEnabled()) {
+            logKibitzVariationDebug("main-board:broker-hydrate:consider", {
+                reason: "mobile-main-return",
+                gameId: currentRoomGameId,
+                currentRoomGameId,
+                requiredMoveNumber,
+                controllerGameId,
+                controllerTailMoveNumber,
+                snapshotGameId,
+                snapshotTailMoveNumber,
+                hasMoveTree,
+            });
+        }
+
+        if (!currentController) {
+            if (isKibitzVariationDebugEnabled()) {
+                logKibitzVariationDebug("main-board:broker-hydrate:skip", {
+                    reason: "mobile-main-return",
+                    skipReason: "missing-controller",
+                    gameId: currentRoomGameId,
+                    currentRoomGameId,
+                    requiredMoveNumber,
+                    controllerGameId,
+                    controllerTailMoveNumber,
+                    snapshotGameId,
+                    snapshotTailMoveNumber,
+                    hasMoveTree,
+                });
+            }
+            return;
+        }
+
+        if (currentRoomGameId == null) {
+            if (isKibitzVariationDebugEnabled()) {
+                logKibitzVariationDebug("main-board:broker-hydrate:skip", {
+                    reason: "mobile-main-return",
+                    skipReason: "missing-room-game",
+                    gameId: currentRoomGameId,
+                    currentRoomGameId,
+                    requiredMoveNumber,
+                    controllerGameId,
+                    controllerTailMoveNumber,
+                    snapshotGameId,
+                    snapshotTailMoveNumber,
+                    hasMoveTree,
+                });
+            }
+            return;
+        }
+
+        if (controllerGameId !== currentRoomGameId) {
+            if (isKibitzVariationDebugEnabled()) {
+                logKibitzVariationDebug("main-board:broker-hydrate:skip", {
+                    reason: "mobile-main-return",
+                    skipReason: "controller-game-mismatch",
+                    gameId: currentRoomGameId,
+                    currentRoomGameId,
+                    requiredMoveNumber,
+                    controllerGameId,
+                    controllerTailMoveNumber,
+                    snapshotGameId,
+                    snapshotTailMoveNumber,
+                    hasMoveTree,
+                });
+            }
+            return;
+        }
+
+        if (!currentGameBaseSnapshot) {
+            if (isKibitzVariationDebugEnabled()) {
+                logKibitzVariationDebug("main-board:broker-hydrate:skip", {
+                    reason: "mobile-main-return",
+                    skipReason: "snapshot-missing",
+                    gameId: currentRoomGameId,
+                    currentRoomGameId,
+                    requiredMoveNumber,
+                    controllerGameId,
+                    controllerTailMoveNumber,
+                    snapshotGameId,
+                    snapshotTailMoveNumber,
+                    hasMoveTree,
+                });
+            }
+            return;
+        }
+
+        if (snapshotGameId !== currentRoomGameId) {
+            if (isKibitzVariationDebugEnabled()) {
+                logKibitzVariationDebug("main-board:broker-hydrate:skip", {
+                    reason: "mobile-main-return",
+                    skipReason: "snapshot-game-mismatch",
+                    gameId: currentRoomGameId,
+                    currentRoomGameId,
+                    requiredMoveNumber,
+                    controllerGameId,
+                    controllerTailMoveNumber,
+                    snapshotGameId,
+                    snapshotTailMoveNumber,
+                    hasMoveTree,
+                });
+            }
+            return;
+        }
+
+        if (!hasMoveTree) {
+            if (isKibitzVariationDebugEnabled()) {
+                logKibitzVariationDebug("main-board:broker-hydrate:skip", {
+                    reason: "mobile-main-return",
+                    skipReason: "snapshot-missing-move-tree",
+                    gameId: currentRoomGameId,
+                    currentRoomGameId,
+                    requiredMoveNumber,
+                    controllerGameId,
+                    controllerTailMoveNumber,
+                    snapshotGameId,
+                    snapshotTailMoveNumber,
+                    hasMoveTree,
+                });
+            }
+            return;
+        }
+
+        if (
+            !canHydrateMainBoardFromRoomBaseSnapshot({
+                mainBoardController: currentController,
+                currentRoomGameId,
+                requiredMoveNumber,
+                roomBaseSnapshot: currentGameBaseSnapshot,
+            })
+        ) {
+            const skipReason =
+                typeof controllerTailMoveNumber === "number" &&
+                controllerTailMoveNumber >= requiredMoveNumber
+                    ? "controller-already-ready"
+                    : snapshotTailMoveNumberSafe < requiredMoveNumber
+                      ? "snapshot-not-fresh"
+                      : "controller-already-ready";
+            if (isKibitzVariationDebugEnabled()) {
+                logKibitzVariationDebug("main-board:broker-hydrate:skip", {
+                    reason: "mobile-main-return",
+                    skipReason,
+                    gameId: currentRoomGameId,
+                    currentRoomGameId,
+                    requiredMoveNumber,
+                    controllerGameId,
+                    controllerTailMoveNumber,
+                    snapshotGameId,
+                    snapshotTailMoveNumber,
+                    hasMoveTree,
+                });
+            }
+            return;
+        }
+
+        if (isKibitzVariationDebugEnabled()) {
+            logKibitzVariationDebug("main-board:broker-hydrate:load", {
+                gameId: currentRoomGameId,
+                requiredMoveNumber,
+                snapshotTailMoveNumber,
+            });
+        }
+
+        try {
+            const restoredTail = hydrateMainBoardFromRoomBaseSnapshot({
+                mainBoardController: currentController,
+                currentRoomGameId,
+                requiredMoveNumber,
+                roomBaseSnapshot: currentGameBaseSnapshot,
+            });
+
+            if (!restoredTail) {
+                logKibitzVariationDebug("main-board:broker-hydrate:error", {
+                    gameId: currentRoomGameId,
+                    currentRoomGameId,
+                    requiredMoveNumber,
+                    controllerGameId,
+                    controllerTailMoveNumber,
+                    snapshotGameId,
+                    snapshotTailMoveNumber,
+                    hasMoveTree,
+                    error: "hydrate-returned-null",
+                });
+                return;
+            }
+
+            scheduleMainBoardVisibleRedraw("broker-hydrate");
+
+            if (isKibitzVariationDebugEnabled()) {
+                logKibitzVariationDebug("main-board:broker-hydrate:done", {
+                    gameId: currentRoomGameId,
+                    restored: true,
+                    currentMoveNumber: currentController.goban.engine.cur_move?.move_number ?? null,
+                    officialTailMoveNumber: getOfficialTrunkTailMoveNumber(currentController),
+                    lastOfficialMoveNumber:
+                        currentController.goban.engine.last_official_move?.move_number ?? null,
+                });
+            }
+        } catch (error) {
+            logKibitzVariationDebug("main-board:broker-hydrate:error", {
+                gameId: currentRoomGameId,
+                currentRoomGameId,
+                requiredMoveNumber,
+                controllerGameId,
+                controllerTailMoveNumber,
+                snapshotGameId,
+                snapshotTailMoveNumber,
+                hasMoveTree,
+                error,
+            });
+        }
+    }, [
+        currentGameBaseSnapshot,
+        currentRoomGameId,
+        isMobileLayout,
+        mainBoardController,
+        mainGame?.move_number,
+        mobileCompareActive,
+        scheduleMainBoardVisibleRedraw,
+    ]);
 
     React.useEffect(() => {
         if (!mainBoardController || currentRoomGameId == null) {

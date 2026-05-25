@@ -24,7 +24,6 @@ import {
     clearDraftBaseAppliedState,
     clearInstalledSecondaryVariationBaseState,
     buildSnapshotFromEngine,
-    type KibitzCurrentGameBaseSnapshot,
     getCurrentSecondaryVariationBaseTreeIdentity,
     getOfficialTrunkTailMoveNumber,
     getCurrentDraftBaseTreeIdentity,
@@ -41,6 +40,7 @@ import {
     isSecondaryVariationSnapshotReady,
     resolveSelectedVariationSourceGame,
 } from "./KibitzRoomStage";
+import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 
 function makeUser(id: number, username: string) {
     return {

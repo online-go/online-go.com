@@ -20,8 +20,8 @@ import { type GobanRendererConfig } from "goban";
 import { GobanController } from "@/lib/GobanController";
 import { socket } from "@/lib/sockets";
 import type { KibitzWatchedGame } from "@/models/kibitz";
-import type { KibitzCurrentGameBaseSnapshot } from "./KibitzRoomStage";
 import { captureCurrentGameBaseSnapshotFromController } from "./kibitzCurrentGameBaseSnapshot";
+import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 import { logKibitzVariationDebug } from "./kibitzVariationDebug";
 
 const BROKER_RECONNECT_DELAYS_MS = [0, 50, 250, 1000] as const;
