@@ -401,11 +401,10 @@ export function KibitzBoard({
             gobanController.setLastMoveOpacity(preferences.get("last-move-opacity"));
             if (no_debounce) {
                 gobanController.setSquareSizeBasedOnDisplayWidth(targetDisplayWidth);
+                recenterGoban();
             } else {
                 resizeDebounceRef.current = setTimeout(() => onResizeRef.current(true), 10);
             }
-
-            recenterGoban();
         },
         [
             cancelPendingInitialResizeRetry,
