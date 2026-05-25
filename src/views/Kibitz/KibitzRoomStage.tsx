@@ -157,6 +157,29 @@ export function isSelectedGameBaseSnapshotFreshEnough(
     );
 }
 
+export function isSelectedGameBaseSnapshotActiveButStale(
+    snapshot: KibitzCurrentGameBaseSnapshot | null | undefined,
+    selectedGameId: number | null | undefined,
+    requiredSnapshotMoveNumber: number,
+): boolean {
+    return Boolean(
+        snapshot &&
+        selectedGameId != null &&
+        snapshot.gameId === selectedGameId &&
+        snapshot.trunkTailMoveNumber < requiredSnapshotMoveNumber,
+    );
+}
+
+export function shouldBackOffSelectedGameBaseSnapshot(
+    backoffRequiredSnapshotMoveNumber: number | null | undefined,
+    requiredSnapshotMoveNumber: number,
+): boolean {
+    return (
+        backoffRequiredSnapshotMoveNumber != null &&
+        requiredSnapshotMoveNumber >= backoffRequiredSnapshotMoveNumber
+    );
+}
+
 type SelectedGameBaseSnapshotFetchResult =
     | {
           kind: "ready";
@@ -1290,6 +1313,7 @@ export function KibitzRoomStage({
 
             const selectedGameId = selectedVariationGameId;
             const cachedSnapshot = selectedGameBaseSnapshotCacheRef.current.get(selectedGameId);
+            let bypassBackoffForStaleCache = false;
             const cachedSnapshotIsFreshEnough =
                 cachedSnapshot != null &&
                 isSelectedGameBaseSnapshotFreshEnough(
@@ -1312,39 +1336,40 @@ export function KibitzRoomStage({
             }
 
             if (cachedSnapshot) {
-                selectedGameBaseSnapshotBackoffRef.current.set(
-                    selectedGameId,
-                    requiredSnapshotMoveNumber,
-                );
-                logKibitzVariationDebug("selected-game-base-snapshot:not-fresh-enough", {
+                logKibitzVariationDebug("selected-game-base-snapshot:cache-stale", {
                     selectedVariationId: selectedVariation?.id ?? null,
                     selectedGameId,
                     currentRoomGameId,
                     requiredSnapshotMoveNumber,
-                    snapshotGameId: cachedSnapshot.gameId,
-                    trunkTailMoveNumber: cachedSnapshot.trunkTailMoveNumber,
+                    cachedTailMoveNumber: cachedSnapshot.trunkTailMoveNumber,
                     source: cachedSnapshot.source,
-                    reason: "cache",
                 });
-                setSelectedGameBaseSnapshot(cachedSnapshot);
-                return;
+                selectedGameBaseSnapshotCacheRef.current.delete(selectedGameId);
+                setSelectedGameBaseSnapshot((current) =>
+                    current?.gameId === selectedGameId ? null : current,
+                );
+                bypassBackoffForStaleCache = true;
             }
 
-            const backoffRequiredSnapshotMoveNumber =
-                selectedGameBaseSnapshotBackoffRef.current.get(selectedGameId);
-            if (
-                backoffRequiredSnapshotMoveNumber != null &&
-                backoffRequiredSnapshotMoveNumber >= requiredSnapshotMoveNumber
-            ) {
-                logKibitzVariationDebug("selected-game-base-snapshot:not-fresh-enough", {
-                    selectedVariationId: selectedVariation?.id ?? null,
-                    selectedGameId,
-                    currentRoomGameId,
-                    requiredSnapshotMoveNumber,
-                    reason: "backoff",
-                    backedOffRequiredSnapshotMoveNumber: backoffRequiredSnapshotMoveNumber,
-                });
-                return;
+            if (!bypassBackoffForStaleCache) {
+                const backoffRequiredSnapshotMoveNumber =
+                    selectedGameBaseSnapshotBackoffRef.current.get(selectedGameId);
+                if (
+                    shouldBackOffSelectedGameBaseSnapshot(
+                        backoffRequiredSnapshotMoveNumber,
+                        requiredSnapshotMoveNumber,
+                    )
+                ) {
+                    logKibitzVariationDebug("selected-game-base-snapshot:not-fresh-enough", {
+                        selectedVariationId: selectedVariation?.id ?? null,
+                        selectedGameId,
+                        currentRoomGameId,
+                        requiredSnapshotMoveNumber,
+                        reason: "backoff",
+                        backedOffRequiredSnapshotMoveNumber: backoffRequiredSnapshotMoveNumber,
+                    });
+                    return;
+                }
             }
 
             if (selectedGameBaseSnapshotLoadingGameId === selectedGameId) {
@@ -2992,8 +3017,15 @@ export function KibitzRoomStage({
                     }
                 }
 
-                if (selectedGameSnapshot?.gameId === selectedVariation.game_id) {
-                    logKibitzVariationDebug("selected-game-base-snapshot:not-fresh-enough", {
+                if (
+                    selectedGameSnapshot != null &&
+                    isSelectedGameBaseSnapshotActiveButStale(
+                        selectedGameSnapshot,
+                        selectedVariation.game_id,
+                        requiredSnapshotMoveNumber,
+                    )
+                ) {
+                    logKibitzVariationDebug("selected-game-base-snapshot:active-stale", {
                         reason,
                         selectedVariationId: selectedVariation.id,
                         selectedGameId: selectedVariation.game_id,
@@ -3003,7 +3035,9 @@ export function KibitzRoomStage({
                         trunkTailMoveNumber: selectedGameSnapshot.trunkTailMoveNumber,
                         source: selectedGameSnapshot.source,
                     });
-                    return true;
+                    setSelectedGameBaseSnapshot((current) =>
+                        current?.gameId === selectedVariation.game_id ? null : current,
+                    );
                 }
 
                 if (selectedGameBaseSnapshotLoadingGameId === selectedVariation.game_id) {

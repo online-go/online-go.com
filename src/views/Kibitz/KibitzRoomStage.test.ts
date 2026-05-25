@@ -32,6 +32,7 @@ import {
     getRequiredSnapshotMoveForVariation,
     getVariationsToApply,
     isDraftBaseAlreadyApplied,
+    isSelectedGameBaseSnapshotActiveButStale,
     isSelectedGameBaseSnapshotFreshEnough,
     isSecondaryVariationBaseSnapshotInstalled,
     markDraftBaseApplied,
@@ -39,6 +40,7 @@ import {
     isSelectedVariationVisible,
     isSecondaryVariationSnapshotReady,
     resolveSelectedVariationSourceGame,
+    shouldBackOffSelectedGameBaseSnapshot,
 } from "./KibitzRoomStage";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 
@@ -344,6 +346,30 @@ describe("variation snapshot readiness", () => {
         expect(isSelectedGameBaseSnapshotFreshEnough(selectedGameSnapshot, 4321, 4)).toBe(true);
         expect(isSelectedGameBaseSnapshotFreshEnough(selectedGameSnapshot, 4321, 5)).toBe(false);
         expect(isSelectedGameBaseSnapshotFreshEnough(selectedGameSnapshot, 1234, 4)).toBe(false);
+    });
+
+    it("detects when the active selected-game snapshot is stale for the required move", () => {
+        const selectedGameSnapshot = {
+            gameId: 4321,
+            trunkTailMoveNumber: 126,
+        } as KibitzCurrentGameBaseSnapshot;
+
+        expect(isSelectedGameBaseSnapshotActiveButStale(selectedGameSnapshot, 4321, 242)).toBe(
+            true,
+        );
+        expect(isSelectedGameBaseSnapshotActiveButStale(selectedGameSnapshot, 4321, 80)).toBe(
+            false,
+        );
+        expect(isSelectedGameBaseSnapshotActiveButStale(selectedGameSnapshot, 1234, 242)).toBe(
+            false,
+        );
+    });
+
+    it("backs off only for the same or higher required move, not lower moves", () => {
+        expect(shouldBackOffSelectedGameBaseSnapshot(undefined, 80)).toBe(false);
+        expect(shouldBackOffSelectedGameBaseSnapshot(242, 242)).toBe(true);
+        expect(shouldBackOffSelectedGameBaseSnapshot(242, 300)).toBe(true);
+        expect(shouldBackOffSelectedGameBaseSnapshot(242, 80)).toBe(false);
     });
 });
 
