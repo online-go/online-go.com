@@ -1191,7 +1191,9 @@
         flex-direction: column;
         gap: 0;
         min-height: 0;
+        min-width: 0;
         padding: 0.125rem;
+        width: 100%;
     }
 
     .Kibitz-mobile-board-meta {
@@ -1255,7 +1257,7 @@
         min-height: 0;
         min-width: 0;
         overflow: hidden;
-        width: min(100%, var(--kibitz-mobile-board-max, 31rem));
+        width: min(100%, calc(100dvw - 0.5rem), var(--kibitz-mobile-board-max, 31rem));
     }
 
     .mobile-board-fit-slot .KibitzBoard {
