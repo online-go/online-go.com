@@ -36,13 +36,19 @@ import {
     resolveMobileSecondaryOwner,
     isSelectedGameBaseSnapshotActiveButStale,
     isSelectedGameBaseSnapshotFreshEnough,
+    canRetrySelectedGameSnapshotFailure,
+    clearSelectedGameSnapshotFailure,
+    buildSelectedGameSnapshotFailureFromError,
+    getSelectedGameSnapshotBlockingFailure,
     isSecondaryVariationBaseSnapshotInstalled,
     markDraftBaseApplied,
     markInstalledSecondaryVariationBaseState,
     isSelectedVariationVisible,
     isSecondaryVariationSnapshotReady,
+    recordSelectedGameSnapshotFailure,
     resolveSelectedVariationSourceGame,
-    shouldBackOffSelectedGameBaseSnapshot,
+    selectedGameSnapshotFailureKey,
+    type SelectedGameBaseSnapshotFailure,
 } from "./KibitzRoomStage";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 
@@ -367,11 +373,136 @@ describe("variation snapshot readiness", () => {
         );
     });
 
-    it("backs off only for the same or higher required move, not lower moves", () => {
-        expect(shouldBackOffSelectedGameBaseSnapshot(undefined, 80)).toBe(false);
-        expect(shouldBackOffSelectedGameBaseSnapshot(242, 242)).toBe(true);
-        expect(shouldBackOffSelectedGameBaseSnapshot(242, 300)).toBe(true);
-        expect(shouldBackOffSelectedGameBaseSnapshot(242, 80)).toBe(false);
+    it("tracks selected-game failure retries by game and required move", () => {
+        const nowSpy = jest.spyOn(Date, "now").mockReturnValue(1000);
+        try {
+            const failures = new Map<string, SelectedGameBaseSnapshotFailure>();
+
+            expect(selectedGameSnapshotFailureKey(111, 50)).toBe("111:50");
+            expect(canRetrySelectedGameSnapshotFailure(undefined)).toBe(true);
+            expect(
+                canRetrySelectedGameSnapshotFailure({
+                    gameId: 111,
+                    variationId: null,
+                    requiredMoveNumber: 50,
+                    kind: "missing-moves",
+                    createdAt: 1,
+                }),
+            ).toBe(false);
+            expect(
+                canRetrySelectedGameSnapshotFailure({
+                    gameId: 111,
+                    variationId: null,
+                    requiredMoveNumber: 50,
+                    kind: "private-or-unavailable",
+                    createdAt: 1,
+                }),
+            ).toBe(false);
+            expect(
+                canRetrySelectedGameSnapshotFailure({
+                    gameId: 111,
+                    variationId: null,
+                    requiredMoveNumber: 50,
+                    kind: "invalid-game-data",
+                    createdAt: 1,
+                }),
+            ).toBe(false);
+            expect(
+                canRetrySelectedGameSnapshotFailure({
+                    gameId: 111,
+                    variationId: null,
+                    requiredMoveNumber: 50,
+                    kind: "not-fresh-enough",
+                    createdAt: 1,
+                    retryAfter: 900,
+                }),
+            ).toBe(true);
+            expect(
+                canRetrySelectedGameSnapshotFailure({
+                    gameId: 111,
+                    variationId: null,
+                    requiredMoveNumber: 50,
+                    kind: "not-fresh-enough",
+                    createdAt: 1,
+                    retryAfter: 1500,
+                }),
+            ).toBe(false);
+            expect(
+                canRetrySelectedGameSnapshotFailure({
+                    gameId: 111,
+                    variationId: null,
+                    requiredMoveNumber: 50,
+                    kind: "network-error",
+                    createdAt: 1,
+                    retryAfter: 1500,
+                }),
+            ).toBe(false);
+
+            const failure = recordSelectedGameSnapshotFailure(failures, {
+                gameId: 111,
+                variationId: "variation-111",
+                requiredMoveNumber: 50,
+                kind: "missing-moves",
+                message: "Game details did not include gamedata.moves",
+            });
+
+            expect(failure).toEqual(
+                expect.objectContaining({
+                    gameId: 111,
+                    variationId: "variation-111",
+                    requiredMoveNumber: 50,
+                    kind: "missing-moves",
+                    createdAt: 1000,
+                }),
+            );
+            expect(
+                getSelectedGameSnapshotBlockingFailure(failures, {
+                    gameId: 111,
+                    requiredMoveNumber: 50,
+                }),
+            ).toEqual(failure);
+
+            clearSelectedGameSnapshotFailure(failures, 111, 50);
+
+            expect(
+                getSelectedGameSnapshotBlockingFailure(failures, {
+                    gameId: 111,
+                    requiredMoveNumber: 50,
+                }),
+            ).toBeNull();
+        } finally {
+            nowSpy.mockRestore();
+        }
+    });
+
+    it("maps transient selected-game fetch errors to retryable failures", () => {
+        const nowSpy = jest.spyOn(Date, "now").mockReturnValue(2000);
+        try {
+            const failure = buildSelectedGameSnapshotFailureFromError({
+                error: new Error("timeout"),
+                gameId: 111,
+                variationId: "variation-111",
+                requiredMoveNumber: 50,
+            });
+
+            expect(failure).toEqual(
+                expect.objectContaining({
+                    gameId: 111,
+                    variationId: "variation-111",
+                    requiredMoveNumber: 50,
+                    kind: "network-error",
+                    createdAt: 2000,
+                    retryAfter: 7000,
+                    message: "timeout",
+                }),
+            );
+            expect(canRetrySelectedGameSnapshotFailure(failure)).toBe(false);
+
+            nowSpy.mockReturnValue(7000);
+            expect(canRetrySelectedGameSnapshotFailure(failure)).toBe(true);
+        } finally {
+            nowSpy.mockRestore();
+        }
     });
 });
 
