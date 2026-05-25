@@ -49,6 +49,7 @@ import {
     isSecondaryVariationSnapshotReady,
     recordSelectedGameSnapshotFailure,
     resolveSelectedVariationSourceGame,
+    resolveDraftSourceBoardDimensions,
     selectedGameSnapshotFailureKey,
     type SelectedGameBaseSnapshotFailure,
 } from "./KibitzRoomStage";
@@ -566,6 +567,73 @@ describe("mobile secondary board ownership", () => {
                 secondaryBoardGame: null,
             }),
         ).toBe("variation");
+    });
+});
+
+describe("mobile draft source dimensions", () => {
+    it("accepts dimensions from the selected-game cache when the source game is old", () => {
+        const sourceGameId = 87164848;
+        const snapshot = {
+            gameId: sourceGameId,
+            trunkTailMoveNumber: 242,
+            moveTreeId: 242,
+            movePath: "242",
+            source: "selected-game-details",
+            config: {
+                width: 19,
+                height: 19,
+            },
+        } as KibitzCurrentGameBaseSnapshot;
+        const cache = new Map<number, KibitzCurrentGameBaseSnapshot>([[sourceGameId, snapshot]]);
+
+        expect(
+            resolveDraftSourceBoardDimensions({
+                draftBaseVariation: makeVariation(sourceGameId, 242),
+                variationSourceGameId: sourceGameId,
+                secondaryBoardGame: null,
+                selectedGameBaseSnapshot: null,
+                selectedGameBaseSnapshotCache: cache,
+                variationSourceMoveTree: null,
+            }),
+        ).toEqual({
+            width: 19,
+            height: 19,
+            source: "selected-game-cache",
+            gameId: sourceGameId,
+        });
+    });
+
+    it("uses the watched game dimensions when they are already known", () => {
+        const sourceGame = makeGame(123, "Source game");
+
+        expect(
+            resolveDraftSourceBoardDimensions({
+                draftBaseVariation: makeVariation(123, 5),
+                variationSourceGameId: 123,
+                secondaryBoardGame: sourceGame,
+                selectedGameBaseSnapshot: null,
+                selectedGameBaseSnapshotCache: new Map(),
+                variationSourceMoveTree: null,
+            }),
+        ).toEqual({
+            width: 19,
+            height: 19,
+            source: "secondary-board-game",
+            gameId: 123,
+        });
+    });
+
+    it("does not infer logical dimensions from pixel board size", () => {
+        expect(
+            resolveDraftSourceBoardDimensions({
+                draftBaseVariation: makeVariation(87164848, 242),
+                variationSourceGameId: 87164848,
+                secondaryBoardGame: null,
+                selectedGameBaseSnapshot: null,
+                selectedGameBaseSnapshotCache: new Map(),
+                variationSourceMoveTree: null,
+            }),
+        ).toBeNull();
     });
 });
 

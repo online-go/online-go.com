@@ -587,6 +587,166 @@ function boardDimensionsOf(game: { board_size?: `${number}x${number}` } | null |
     return {};
 }
 
+export type KibitzLogicalBoardDimensions = {
+    width: number;
+    height: number;
+};
+
+type KibitzLogicalBoardDimensionsSource =
+    | "secondary-board-game"
+    | "selected-game-snapshot"
+    | "selected-game-cache"
+    | "variation"
+    | "move-tree";
+
+export interface KibitzResolvedLogicalBoardDimensions extends KibitzLogicalBoardDimensions {
+    source: KibitzLogicalBoardDimensionsSource;
+    gameId: number | null;
+}
+
+function getLogicalBoardDimensionsFromConfig(
+    config: Partial<KibitzBoardLoadConfig> | null | undefined,
+): KibitzLogicalBoardDimensions | null {
+    const width = Number(config?.width);
+    const height = Number(config?.height);
+
+    if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+        return null;
+    }
+
+    return {
+        width,
+        height,
+    };
+}
+
+function getLogicalBoardDimensionsFromWatchedGame(
+    game: KibitzWatchedGame | null | undefined,
+): KibitzLogicalBoardDimensions | null {
+    const dimensions = boardDimensionsOf(game);
+
+    if (
+        typeof dimensions.width !== "number" ||
+        typeof dimensions.height !== "number" ||
+        dimensions.width <= 0 ||
+        dimensions.height <= 0
+    ) {
+        return null;
+    }
+
+    return {
+        width: dimensions.width,
+        height: dimensions.height,
+    };
+}
+
+function getLogicalBoardDimensionsFromSnapshot(
+    snapshot: KibitzCurrentGameBaseSnapshot | null | undefined,
+): KibitzLogicalBoardDimensions | null {
+    return getLogicalBoardDimensionsFromConfig(snapshot?.config);
+}
+
+function getLogicalBoardDimensionsFromMoveTree(
+    moveTree: unknown | null | undefined,
+): KibitzLogicalBoardDimensions | null {
+    if (!moveTree || typeof moveTree !== "object") {
+        return null;
+    }
+
+    const record = moveTree as Record<string, unknown>;
+    const directWidth = Number(record.width);
+    const directHeight = Number(record.height);
+    if (
+        Number.isFinite(directWidth) &&
+        Number.isFinite(directHeight) &&
+        directWidth > 0 &&
+        directHeight > 0
+    ) {
+        return {
+            width: directWidth,
+            height: directHeight,
+        };
+    }
+
+    const config = record.config;
+    if (config && typeof config === "object") {
+        const configRecord = config as Record<string, unknown>;
+        const configWidth = Number(configRecord.width);
+        const configHeight = Number(configRecord.height);
+        if (
+            Number.isFinite(configWidth) &&
+            Number.isFinite(configHeight) &&
+            configWidth > 0 &&
+            configHeight > 0
+        ) {
+            return {
+                width: configWidth,
+                height: configHeight,
+            };
+        }
+    }
+
+    return null;
+}
+
+export function resolveDraftSourceBoardDimensions(params: {
+    draftBaseVariation: KibitzVariationSummary | null | undefined;
+    variationSourceGameId: number | null | undefined;
+    secondaryBoardGame: KibitzWatchedGame | null | undefined;
+    selectedGameBaseSnapshot: KibitzCurrentGameBaseSnapshot | null | undefined;
+    selectedGameBaseSnapshotCache: ReadonlyMap<number, KibitzCurrentGameBaseSnapshot>;
+    variationSourceMoveTree?: unknown;
+}): KibitzResolvedLogicalBoardDimensions | null {
+    const fromSecondaryBoardGame = getLogicalBoardDimensionsFromWatchedGame(
+        params.secondaryBoardGame,
+    );
+    if (fromSecondaryBoardGame) {
+        return {
+            ...fromSecondaryBoardGame,
+            source: "secondary-board-game",
+            gameId: params.secondaryBoardGame?.game_id ?? null,
+        };
+    }
+
+    const sourceGameId = params.variationSourceGameId ?? params.draftBaseVariation?.game_id ?? null;
+
+    if (sourceGameId != null && params.selectedGameBaseSnapshot?.gameId === sourceGameId) {
+        const fromSelectedSnapshot = getLogicalBoardDimensionsFromSnapshot(
+            params.selectedGameBaseSnapshot,
+        );
+        if (fromSelectedSnapshot) {
+            return {
+                ...fromSelectedSnapshot,
+                source: "selected-game-snapshot",
+                gameId: sourceGameId,
+            };
+        }
+    }
+
+    if (sourceGameId != null) {
+        const cachedSnapshot = params.selectedGameBaseSnapshotCache.get(sourceGameId);
+        const fromCachedSnapshot = getLogicalBoardDimensionsFromSnapshot(cachedSnapshot);
+        if (fromCachedSnapshot) {
+            return {
+                ...fromCachedSnapshot,
+                source: "selected-game-cache",
+                gameId: sourceGameId,
+            };
+        }
+    }
+
+    const fromMoveTree = getLogicalBoardDimensionsFromMoveTree(params.variationSourceMoveTree);
+    if (fromMoveTree) {
+        return {
+            ...fromMoveTree,
+            source: "move-tree",
+            gameId: sourceGameId,
+        };
+    }
+
+    return null;
+}
+
 export function hasBoardDimensions(
     game: { board_size?: `${number}x${number}` } | null | undefined,
 ): boolean {
@@ -2342,23 +2502,6 @@ export function KibitzRoomStage({
         secondaryBoardRemountNonce,
     ]);
     const mobileCompareActive = Boolean(isMobileLayout && mobileCompanionPanel === "compare");
-    const mobileSecondaryOwner = React.useMemo<MobileSecondaryOwner>(
-        () =>
-            resolveMobileSecondaryOwner({
-                mobileCompareActive,
-                selectedVariation,
-                isDraftingVariation,
-                secondaryGameId,
-                secondaryBoardGame,
-            }),
-        [
-            isDraftingVariation,
-            mobileCompareActive,
-            secondaryBoardGame,
-            secondaryGameId,
-            selectedVariation,
-        ],
-    );
     const mobileSecondaryOwnerRequested = React.useMemo<
         "draft" | "preview" | "variation" | "none"
     >(() => {
@@ -2380,6 +2523,78 @@ export function KibitzRoomStage({
 
         return "none";
     }, [isDraftingVariation, mobileCompareActive, secondaryGameId, selectedVariation]);
+    const [mobileDraftSourceSnapshotRefreshNonce, bumpMobileDraftSourceSnapshotRefreshNonce] =
+        React.useReducer((value: number) => value + 1, 0);
+    const mobileDraftSourceBoardDimensions = React.useMemo(() => {
+        if (mobileSecondaryOwnerRequested !== "draft") {
+            return null;
+        }
+
+        return resolveDraftSourceBoardDimensions({
+            draftBaseVariation,
+            variationSourceGameId: secondaryPane.variation_source_game_id,
+            secondaryBoardGame,
+            selectedGameBaseSnapshot,
+            selectedGameBaseSnapshotCache: selectedGameBaseSnapshotCacheRef.current,
+            variationSourceMoveTree: secondaryPane.variation_source_move_tree,
+        });
+    }, [
+        draftBaseVariation,
+        mobileSecondaryOwnerRequested,
+        mobileDraftSourceSnapshotRefreshNonce,
+        secondaryBoardGame,
+        secondaryPane.variation_source_game_id,
+        secondaryPane.variation_source_move_tree,
+        selectedGameBaseSnapshot,
+    ]);
+    const mobileSecondaryBoardDimensions = React.useMemo(() => {
+        if (mobileSecondaryOwnerRequested === "draft") {
+            return mobileDraftSourceBoardDimensions;
+        }
+
+        if (mobileSecondaryOwnerRequested === "preview" && secondaryBoardDimensionsReady) {
+            return {
+                width: secondaryBoardDimensions.width ?? 0,
+                height: secondaryBoardDimensions.height ?? 0,
+                source: "secondary-board-game" as const,
+                gameId: secondaryBoardGame?.game_id ?? secondaryGameId ?? null,
+            };
+        }
+
+        return null;
+    }, [
+        mobileDraftSourceBoardDimensions,
+        mobileSecondaryOwnerRequested,
+        secondaryBoardDimensions.height,
+        secondaryBoardDimensions.width,
+        secondaryBoardDimensionsReady,
+        secondaryBoardGame?.game_id,
+        secondaryGameId,
+    ]);
+    const mobileSecondaryOwner = React.useMemo<MobileSecondaryOwner>(() => {
+        if (!mobileCompareActive) {
+            return "none";
+        }
+
+        if (selectedVariation) {
+            return "variation";
+        }
+
+        if (
+            (mobileSecondaryOwnerRequested === "draft" ||
+                mobileSecondaryOwnerRequested === "preview") &&
+            mobileSecondaryBoardDimensions
+        ) {
+            return mobileSecondaryOwnerRequested;
+        }
+
+        return "none";
+    }, [
+        mobileCompareActive,
+        mobileSecondaryBoardDimensions,
+        mobileSecondaryOwnerRequested,
+        selectedVariation,
+    ]);
     const mobileSecondaryBoardKey = React.useMemo(() => {
         if (mobileSecondaryOwner === "none") {
             return secondaryBoardKey;
@@ -2403,18 +2618,96 @@ export function KibitzRoomStage({
             mobileSecondaryOwnerRequested === "draft" ||
             mobileSecondaryOwnerRequested === "preview"
         ) {
-            return secondaryBoardDimensionsReady ? null : "missing-source-game-dimensions";
+            return mobileSecondaryBoardDimensions ? null : "missing-source-game-dimensions";
         }
 
         return null;
     }, [
         mobileCompareActive,
+        mobileSecondaryBoardDimensions,
         mobileSecondaryOwnerRequested,
-        secondaryBoardDimensionsReady,
         selectedVariation,
     ]);
     const mobileSecondaryOwnerBlocked = mobileSecondaryOwnerBlockedReason != null;
+    const previousMobileSecondarySourceDimensionsKeyRef = React.useRef<string | null>(null);
     const previousMobileSecondaryOwnerBlockedKeyRef = React.useRef<string | null>(null);
+    React.useEffect(() => {
+        if (!mobileSecondaryBoardDimensions) {
+            previousMobileSecondarySourceDimensionsKeyRef.current = null;
+            return;
+        }
+
+        const sourceGameId =
+            mobileSecondaryBoardDimensions.gameId ??
+            secondaryPane.variation_source_game_id ??
+            draftBaseVariation?.game_id ??
+            null;
+        const sourceKey = `${mobileSecondaryOwnerRequested}:${sourceGameId ?? ""}:${
+            mobileSecondaryBoardDimensions.source
+        }:${mobileSecondaryBoardDimensions.width}x${mobileSecondaryBoardDimensions.height}`;
+        if (previousMobileSecondarySourceDimensionsKeyRef.current === sourceKey) {
+            return;
+        }
+
+        previousMobileSecondarySourceDimensionsKeyRef.current = sourceKey;
+        logKibitzVariationDebug("mobile-secondary-board:source-dimensions", {
+            requestedOwner: mobileSecondaryOwnerRequested,
+            isDraftingVariation,
+            sourceGameId,
+            width: mobileSecondaryBoardDimensions.width,
+            height: mobileSecondaryBoardDimensions.height,
+            source: mobileSecondaryBoardDimensions.source,
+        });
+    }, [
+        draftBaseVariation?.game_id,
+        isDraftingVariation,
+        mobileSecondaryBoardDimensions,
+        mobileSecondaryOwnerRequested,
+        secondaryPane.variation_source_game_id,
+    ]);
+    React.useEffect(() => {
+        if (
+            !isMobileLayout ||
+            !mobileCompareActive ||
+            mobileSecondaryOwnerRequested !== "draft" ||
+            mobileSecondaryBoardDimensions ||
+            !draftBaseVariation ||
+            secondaryPane.variation_source_game_id == null
+        ) {
+            return;
+        }
+
+        let disposed = false;
+        void requestSelectedGameBaseSnapshotForGame({
+            gameId: draftBaseVariation.game_id,
+            variationId: draftBaseVariation.id,
+            requiredSnapshotMoveNumber:
+                typeof draftBaseVariation.analysis_from === "number" &&
+                Number.isFinite(draftBaseVariation.analysis_from)
+                    ? draftBaseVariation.analysis_from
+                    : 0,
+            installAsActiveSelectedSnapshot: false,
+        }).then((snapshot) => {
+            if (disposed || !snapshot) {
+                return;
+            }
+
+            bumpMobileDraftSourceSnapshotRefreshNonce();
+        });
+
+        return () => {
+            disposed = true;
+        };
+    }, [
+        draftBaseVariation,
+        mobileCompareActive,
+        mobileSecondaryBoardDimensions,
+        mobileSecondaryOwnerRequested,
+        requestSelectedGameBaseSnapshotForGame,
+        secondaryPane.variation_source_game_id,
+        isMobileLayout,
+        mobileDraftSourceSnapshotRefreshNonce,
+    ]);
     React.useEffect(() => {
         if (mobileSecondaryOwnerBlockedReason == null) {
             previousMobileSecondaryOwnerBlockedKeyRef.current = null;
@@ -2429,17 +2722,27 @@ export function KibitzRoomStage({
         }
 
         previousMobileSecondaryOwnerBlockedKeyRef.current = blockedKey;
+        const sourceGameId =
+            secondaryPane.variation_source_game_id ?? draftBaseVariation?.game_id ?? null;
         logKibitzVariationDebug("mobile-secondary-board:owner-blocked", {
             requestedOwner: mobileSecondaryOwnerRequested,
             reason: mobileSecondaryOwnerBlockedReason,
             isDraftingVariation,
+            sourceGameId,
             secondaryGameId,
             variationSourceGameId: secondaryPane.variation_source_game_id ?? null,
             hasSecondaryBoardGame: Boolean(secondaryBoardGame),
             secondaryBoardGameId: secondaryBoardGame?.game_id ?? null,
-            boardSize: secondaryBoardGame?.board_size ?? null,
+            hasSelectedGameSnapshot: selectedGameBaseSnapshot?.gameId === sourceGameId,
+            hasSelectedGameSnapshotCache:
+                sourceGameId != null && selectedGameBaseSnapshotCacheRef.current.has(sourceGameId),
+            hasDraftBaseVariation: Boolean(draftBaseVariation),
+            boardSize: mobileSecondaryBoardDimensions
+                ? `${mobileSecondaryBoardDimensions.width}x${mobileSecondaryBoardDimensions.height}`
+                : null,
         });
     }, [
+        draftBaseVariation,
         isDraftingVariation,
         mobileSecondaryOwnerBlockedReason,
         mobileSecondaryOwnerRequested,
@@ -2447,6 +2750,8 @@ export function KibitzRoomStage({
         secondaryGameId,
         secondaryPane.variation_source_game_id,
         secondaryPane.preview_game_id,
+        mobileSecondaryBoardDimensions,
+        selectedGameBaseSnapshot,
     ]);
     const getSecondaryBoardDebugState = React.useCallback(
         (controller: GobanController | null): Record<string, unknown> => {
@@ -4728,10 +5033,11 @@ export function KibitzRoomStage({
                         {mobileSecondaryOwnerRequested === "preview" ||
                         mobileSecondaryOwnerRequested === "draft" ? (
                             mobileBoardSizeReady ? (
-                                secondaryBoardDimensionsReady ? (
+                                mobileSecondaryBoardDimensions ? (
                                     <KibitzBoard
                                         key={mobileSecondaryBoardKey}
                                         gameId={
+                                            mobileSecondaryBoardDimensions.gameId ??
                                             secondaryBoardGame?.game_id ??
                                             secondaryGameId ??
                                             secondaryPane.variation_source_game_id
@@ -4739,7 +5045,8 @@ export function KibitzRoomStage({
                                         currentRoomGameId={currentRoomGameId}
                                         isMobile={true}
                                         connectToGame={false}
-                                        {...secondaryBoardDimensions}
+                                        width={mobileSecondaryBoardDimensions.width}
+                                        height={mobileSecondaryBoardDimensions.height}
                                         className="mobile-secondary-board-surface"
                                         size={mobileBoardSize}
                                         interactive={mobileSecondaryOwner === "draft"}
