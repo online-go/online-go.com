@@ -1947,27 +1947,41 @@ export function KibitzRoomStage({
     }, [isCurrentSecondaryBoardController, secondaryBoardController, secondaryMoveTreeContainer]);
     const scheduleMainBoardVisibleRedraw = React.useCallback(
         (reason: string) => {
-            if (!isCurrentMainBoardController(mainBoardController)) {
+            const currentController = mainBoardController;
+            if (!currentController || !isCurrentMainBoardController(currentController)) {
                 logKibitzVariationDebug("visible-goban:redraw-stale-controller", {
                     role: "main",
                     reason,
-                    controllerPresent: Boolean(mainBoardController),
+                    controllerPresent: Boolean(currentController),
+                });
+                return;
+            }
+
+            const requiredMoveNumber = mainGame?.move_number ?? 0;
+            const officialTailMoveNumber = getOfficialTrunkTailMoveNumber(currentController) ?? 0;
+
+            if (requiredMoveNumber > 0 && officialTailMoveNumber < requiredMoveNumber) {
+                logKibitzVariationDebug("visible-goban:redraw-deferred-unhydrated", {
+                    role: "main",
+                    reason,
+                    requiredMoveNumber,
+                    officialTailMoveNumber,
+                    controllerGameId: currentController.goban.config?.game_id ?? null,
                 });
                 return;
             }
 
             pendingMainBoardVisibleRedrawCancelRef.current?.();
             pendingMainBoardVisibleRedrawCancelRef.current = scheduleVisibleBoardRedrawWhenReady(
-                mainBoardController,
+                currentController,
                 "main",
                 reason,
                 {
                     expectedSize: mainBoardSize,
-                    isControllerCurrent: () => isCurrentMainBoardController(mainBoardController),
+                    isControllerCurrent: () => isCurrentMainBoardController(currentController),
                     onDetached: () => {
                         if (
-                            mainBoardControllerContextRef.current?.controller ===
-                            mainBoardController
+                            mainBoardControllerContextRef.current?.controller === currentController
                         ) {
                             mainBoardControllerEpochRef.current += 1;
                             mainBoardControllerContextRef.current = null;
@@ -1982,6 +1996,7 @@ export function KibitzRoomStage({
             isCurrentMainBoardController,
             mainBoardController,
             mainBoardSize,
+            mainGame?.move_number,
             onMainBoardControllerChange,
         ],
     );
