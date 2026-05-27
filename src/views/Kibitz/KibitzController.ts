@@ -1170,9 +1170,14 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         description: string,
     ): Promise<boolean> {
         try {
+            // Always send `description` as a string -- even empty -- so the
+            // server can distinguish "user cleared the description" (empty
+            // string) from "this is a partial update, leave description
+            // alone" (key absent). The server's PUT handler preserves the
+            // existing description when the key is missing.
             const payload = (await put(`kibitz/rooms/${roomId}`, {
                 title: title.trim(),
-                description: description.trim() || undefined,
+                description: description.trim(),
             })) as BackendKibitzRoom;
 
             this.applyBackendRoomUpdate(payload);
