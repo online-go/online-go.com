@@ -550,6 +550,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this._directory_handlers.push(
             push_manager.on("room-created", this.onRoomCreated),
             push_manager.on("room-removed", this.onRoomRemoved),
+            push_manager.on("room-updated", this.onRoomUpdated),
             push_manager.on("rooms-refresh", this.onRoomsRefresh),
             push_manager.on("viewer-count-changed", this.onViewerCountChanged),
         );
@@ -911,7 +912,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
 
         this._active_room_handlers.push(
             push_manager.on("board-changed", this.onBoardChanged),
-            push_manager.on("room-updated", this.onRoomUpdated),
             push_manager.on("room-game-change-pending", this.onGameChangePending),
             push_manager.on("room-game-change-cancelled", this.onGameChangeCancelled),
         );
