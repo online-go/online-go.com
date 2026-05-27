@@ -133,11 +133,16 @@ function moveTreeIdAsNumber(moveTreeId: number | string | null): number | undefi
     return typeof moveTreeId === "number" ? moveTreeId : undefined;
 }
 
-function isCurrentGameBaseSnapshotUsable(
+export function isCurrentGameBaseSnapshotUsable(
     snapshot: KibitzCurrentGameBaseSnapshot | null | undefined,
     game: KibitzWatchedGame | null | undefined,
+    roomId: string | null | undefined,
 ): snapshot is KibitzCurrentGameBaseSnapshot {
     if (!snapshot || !game) {
+        return false;
+    }
+
+    if (!roomId || snapshot.roomId !== roomId) {
         return false;
     }
 
@@ -147,6 +152,22 @@ function isCurrentGameBaseSnapshotUsable(
 
     const expectedMoveNumber = game.move_number ?? 0;
     return snapshot.trunkTailMoveNumber >= expectedMoveNumber;
+}
+
+function currentGameBoardDimensionsOf(game: KibitzWatchedGame | null | undefined): {
+    width: number | null;
+    height: number | null;
+} {
+    if (!game?.board_size) {
+        return { width: null, height: null };
+    }
+
+    const [width, height] = game.board_size.split("x").map(Number);
+    if (Number.isFinite(width) && Number.isFinite(height)) {
+        return { width, height };
+    }
+
+    return { width: null, height: null };
 }
 
 async function fetchCurrentGameBaseSnapshot(
@@ -476,6 +497,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         React.useState<KibitzCurrentGameBaseSnapshot | null>(null);
     const [currentGameBaseSnapshotLoadingGameId, setCurrentGameBaseSnapshotLoadingGameId] =
         React.useState<number | null>(null);
+    const currentGameBaseSnapshotRef = React.useRef<KibitzCurrentGameBaseSnapshot | null>(null);
     const [gameVariations, setGameVariations] = React.useState<KibitzVariationSummary[]>([]);
     const [mobileOverlayMode, setMobileOverlayMode] = React.useState<MobileOverlayMode>(null);
     const [isMobileLayout, setIsMobileLayout] = React.useState(
@@ -910,6 +932,38 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         (variation) => variation.id === secondaryPane.variation_id,
     );
     const currentGameId = resolvedRoom?.current_game?.game_id ?? null;
+    const currentGameMoveNumber = resolvedRoom?.current_game?.move_number ?? 0;
+    const currentGameBoardDimensions = React.useMemo(
+        () => currentGameBoardDimensionsOf(resolvedRoom?.current_game),
+        [resolvedRoom?.current_game?.board_size],
+    );
+    const currentGameWidth = currentGameBoardDimensions.width;
+    const currentGameHeight = currentGameBoardDimensions.height;
+    const currentGameSnapshotTarget = React.useMemo(() => {
+        const game = resolvedRoom?.current_game;
+
+        if (!resolvedRoom?.id || !game || currentGameId == null) {
+            return null;
+        }
+
+        return {
+            roomId: resolvedRoom.id,
+            game,
+            gameId: currentGameId,
+            moveNumber: currentGameMoveNumber,
+            width: currentGameWidth,
+            height: currentGameHeight,
+        };
+    }, [
+        currentGameHeight,
+        currentGameId,
+        currentGameMoveNumber,
+        currentGameWidth,
+        resolvedRoom?.id,
+        resolvedRoom?.current_game?.board_size,
+        resolvedRoom?.current_game?.game_id,
+        resolvedRoom?.current_game?.move_number,
+    ]);
     // Synced during render so the refs hold the live room/game before any
     // child mount effect fires. Child boards register via setMainBoardController
     // from their own mount effects (which run before this component's effects),
@@ -956,7 +1010,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const currentGameBaseSnapshotFreshnessMoveNumber = React.useMemo(() => {
         const liveTailFromRoom = resolvedRoom?.current_game?.move_number ?? 0;
         const cachedSnapshotTail =
-            currentGameBaseSnapshot?.gameId === currentGameId
+            currentGameBaseSnapshot?.gameId === currentGameId &&
+            currentGameBaseSnapshot?.roomId === resolvedRoom?.id
                 ? currentGameBaseSnapshot.trunkTailMoveNumber
                 : 0;
 
@@ -964,7 +1019,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     }, [
         currentGameBaseSnapshot?.gameId,
         currentGameBaseSnapshot?.trunkTailMoveNumber,
+        currentGameBaseSnapshot?.roomId,
         currentGameId,
+        resolvedRoom?.id,
         resolvedRoom?.current_game?.move_number,
     ]);
     const pickerOpen = Boolean(
@@ -1019,7 +1076,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     });
     React.useEffect(() => {
         setCurrentGameBaseSnapshot((previous) =>
-            previous?.gameId === currentGameId && currentRoomIdRef.current === resolvedRoom?.id
+            previous?.gameId === currentGameId && previous?.roomId === resolvedRoom?.id
                 ? previous
                 : null,
         );
@@ -1093,17 +1150,41 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     }, [isCurrentMainBoardController, mainBoardController, resolvedRoom]);
 
     React.useEffect(() => {
-        const game = resolvedRoom?.current_game;
+        currentGameBaseSnapshotRef.current = currentGameBaseSnapshot;
+    }, [currentGameBaseSnapshot]);
+
+    React.useEffect(() => {
+        const target = currentGameSnapshotTarget;
+        const existingSnapshot = currentGameBaseSnapshotRef.current;
+
+        if (!target) {
+            setCurrentGameBaseSnapshotLoadingGameId(null);
+            return;
+        }
+
+        if (isCurrentGameBaseSnapshotUsable(existingSnapshot, target.game, target.roomId)) {
+            logKibitzVariationDebug("current-game-base-snapshot:fetch-skip-already-fresh", {
+                roomId: target.roomId,
+                gameId: target.gameId,
+                expectedMoveNumber: target.moveNumber,
+                snapshotTailMoveNumber: existingSnapshot.trunkTailMoveNumber,
+                moveTreeId: existingSnapshot.moveTreeId,
+            });
+            setCurrentGameBaseSnapshotLoadingGameId(null);
+            return;
+        }
+
+        const game = target.game;
         if (!game) {
             setCurrentGameBaseSnapshotLoadingGameId(null);
             return;
         }
 
         let cancelled = false;
-        const roomIdAtStart = resolvedRoom.id;
-        setCurrentGameBaseSnapshotLoadingGameId(game.game_id);
+        const roomIdAtStart = target.roomId;
+        setCurrentGameBaseSnapshotLoadingGameId(target.gameId);
 
-        void fetchCurrentGameBaseSnapshot(game, resolvedRoom.id)
+        void fetchCurrentGameBaseSnapshot(game, target.roomId)
             .then((snapshot) => {
                 if (cancelled || currentRoomIdRef.current !== roomIdAtStart) {
                     return;
@@ -1121,7 +1202,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             .catch((error) => {
                 if (!cancelled && currentRoomIdRef.current === roomIdAtStart) {
                     logKibitzVariationDebug("current-game-base-snapshot:fetch-failed", {
-                        gameId: game.game_id,
+                        gameId: target.gameId,
                         error,
                     });
                 }
@@ -1129,7 +1210,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             .finally(() => {
                 if (!cancelled && currentRoomIdRef.current === roomIdAtStart) {
                     setCurrentGameBaseSnapshotLoadingGameId((loadingGameId) =>
-                        loadingGameId === game.game_id ? null : loadingGameId,
+                        loadingGameId === target.gameId ? null : loadingGameId,
                     );
                 }
             });
@@ -1137,7 +1218,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         return () => {
             cancelled = true;
         };
-    }, [acceptCurrentGameBaseSnapshot, resolvedRoom]);
+    }, [acceptCurrentGameBaseSnapshot, currentGameSnapshotTarget]);
 
     const getCurrentGameBaseSnapshotForVariation = React.useCallback(
         (reason: string): KibitzCurrentGameBaseSnapshot | null => {
@@ -1151,7 +1232,11 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 currentGameBaseSnapshot;
             const controllerContext = mainBoardControllerContextRef.current;
             const mainBoardControllerFresh = isCurrentMainBoardController(mainBoardController);
-            const cachedSnapshotUsable = isCurrentGameBaseSnapshotUsable(cachedSnapshot, game);
+            const cachedSnapshotUsable = isCurrentGameBaseSnapshotUsable(
+                cachedSnapshot,
+                game,
+                resolvedRoom.id,
+            );
 
             if (mainBoardControllerFresh) {
                 const mainBoardSnapshot = captureCurrentGameBaseSnapshotFromController(

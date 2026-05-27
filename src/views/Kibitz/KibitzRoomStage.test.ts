@@ -27,6 +27,8 @@ import {
     getCurrentSecondaryVariationBaseTreeIdentity,
     getOfficialTrunkTailMoveNumber,
     getCurrentDraftBaseTreeIdentity,
+    isCurrentTrackedSecondaryController,
+    isCurrentDraftSecondaryController,
     getRequiredBranchAttachMoveForVariation,
     getRequiredVariationSnapshotMoveNumber,
     getRequiredSnapshotMoveForVariation,
@@ -36,13 +38,20 @@ import {
     resolveMobileSecondaryOwner,
     isSelectedGameBaseSnapshotActiveButStale,
     isSelectedGameBaseSnapshotFreshEnough,
+    canRetrySelectedGameSnapshotFailure,
+    clearSelectedGameSnapshotFailure,
+    buildSelectedGameSnapshotFailureFromError,
+    getSelectedGameSnapshotBlockingFailure,
     isSecondaryVariationBaseSnapshotInstalled,
     markDraftBaseApplied,
     markInstalledSecondaryVariationBaseState,
     isSelectedVariationVisible,
     isSecondaryVariationSnapshotReady,
+    recordSelectedGameSnapshotFailure,
     resolveSelectedVariationSourceGame,
-    shouldBackOffSelectedGameBaseSnapshot,
+    resolveDraftSourceBoardDimensions,
+    selectedGameSnapshotFailureKey,
+    type SelectedGameBaseSnapshotFailure,
 } from "./KibitzRoomStage";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 
@@ -367,11 +376,136 @@ describe("variation snapshot readiness", () => {
         );
     });
 
-    it("backs off only for the same or higher required move, not lower moves", () => {
-        expect(shouldBackOffSelectedGameBaseSnapshot(undefined, 80)).toBe(false);
-        expect(shouldBackOffSelectedGameBaseSnapshot(242, 242)).toBe(true);
-        expect(shouldBackOffSelectedGameBaseSnapshot(242, 300)).toBe(true);
-        expect(shouldBackOffSelectedGameBaseSnapshot(242, 80)).toBe(false);
+    it("tracks selected-game failure retries by game and required move", () => {
+        const nowSpy = jest.spyOn(Date, "now").mockReturnValue(1000);
+        try {
+            const failures = new Map<string, SelectedGameBaseSnapshotFailure>();
+
+            expect(selectedGameSnapshotFailureKey(111, 50)).toBe("111:50");
+            expect(canRetrySelectedGameSnapshotFailure(undefined)).toBe(true);
+            expect(
+                canRetrySelectedGameSnapshotFailure({
+                    gameId: 111,
+                    variationId: null,
+                    requiredMoveNumber: 50,
+                    kind: "missing-moves",
+                    createdAt: 1,
+                }),
+            ).toBe(false);
+            expect(
+                canRetrySelectedGameSnapshotFailure({
+                    gameId: 111,
+                    variationId: null,
+                    requiredMoveNumber: 50,
+                    kind: "private-or-unavailable",
+                    createdAt: 1,
+                }),
+            ).toBe(false);
+            expect(
+                canRetrySelectedGameSnapshotFailure({
+                    gameId: 111,
+                    variationId: null,
+                    requiredMoveNumber: 50,
+                    kind: "invalid-game-data",
+                    createdAt: 1,
+                }),
+            ).toBe(false);
+            expect(
+                canRetrySelectedGameSnapshotFailure({
+                    gameId: 111,
+                    variationId: null,
+                    requiredMoveNumber: 50,
+                    kind: "not-fresh-enough",
+                    createdAt: 1,
+                    retryAfter: 900,
+                }),
+            ).toBe(true);
+            expect(
+                canRetrySelectedGameSnapshotFailure({
+                    gameId: 111,
+                    variationId: null,
+                    requiredMoveNumber: 50,
+                    kind: "not-fresh-enough",
+                    createdAt: 1,
+                    retryAfter: 1500,
+                }),
+            ).toBe(false);
+            expect(
+                canRetrySelectedGameSnapshotFailure({
+                    gameId: 111,
+                    variationId: null,
+                    requiredMoveNumber: 50,
+                    kind: "network-error",
+                    createdAt: 1,
+                    retryAfter: 1500,
+                }),
+            ).toBe(false);
+
+            const failure = recordSelectedGameSnapshotFailure(failures, {
+                gameId: 111,
+                variationId: "variation-111",
+                requiredMoveNumber: 50,
+                kind: "missing-moves",
+                message: "Game details did not include gamedata.moves",
+            });
+
+            expect(failure).toEqual(
+                expect.objectContaining({
+                    gameId: 111,
+                    variationId: "variation-111",
+                    requiredMoveNumber: 50,
+                    kind: "missing-moves",
+                    createdAt: 1000,
+                }),
+            );
+            expect(
+                getSelectedGameSnapshotBlockingFailure(failures, {
+                    gameId: 111,
+                    requiredMoveNumber: 50,
+                }),
+            ).toEqual(failure);
+
+            clearSelectedGameSnapshotFailure(failures, 111, 50);
+
+            expect(
+                getSelectedGameSnapshotBlockingFailure(failures, {
+                    gameId: 111,
+                    requiredMoveNumber: 50,
+                }),
+            ).toBeNull();
+        } finally {
+            nowSpy.mockRestore();
+        }
+    });
+
+    it("maps transient selected-game fetch errors to retryable failures", () => {
+        const nowSpy = jest.spyOn(Date, "now").mockReturnValue(2000);
+        try {
+            const failure = buildSelectedGameSnapshotFailureFromError({
+                error: new Error("timeout"),
+                gameId: 111,
+                variationId: "variation-111",
+                requiredMoveNumber: 50,
+            });
+
+            expect(failure).toEqual(
+                expect.objectContaining({
+                    gameId: 111,
+                    variationId: "variation-111",
+                    requiredMoveNumber: 50,
+                    kind: "network-error",
+                    createdAt: 2000,
+                    retryAfter: 7000,
+                    message: "timeout",
+                }),
+            );
+            expect(canRetrySelectedGameSnapshotFailure(failure)).toBe(false);
+
+            nowSpy.mockReturnValue(7000);
+            expect(canRetrySelectedGameSnapshotFailure(failure)).toBe(true);
+        } finally {
+            nowSpy.mockRestore();
+        }
     });
 });
 
@@ -433,6 +567,73 @@ describe("mobile secondary board ownership", () => {
                 secondaryBoardGame: null,
             }),
         ).toBe("variation");
+    });
+});
+
+describe("mobile draft source dimensions", () => {
+    it("accepts dimensions from the selected-game cache when the source game is old", () => {
+        const sourceGameId = 87164848;
+        const snapshot = {
+            gameId: sourceGameId,
+            trunkTailMoveNumber: 242,
+            moveTreeId: 242,
+            movePath: "242",
+            source: "selected-game-details",
+            config: {
+                width: 19,
+                height: 19,
+            },
+        } as KibitzCurrentGameBaseSnapshot;
+        const cache = new Map<number, KibitzCurrentGameBaseSnapshot>([[sourceGameId, snapshot]]);
+
+        expect(
+            resolveDraftSourceBoardDimensions({
+                draftBaseVariation: makeVariation(sourceGameId, 242),
+                variationSourceGameId: sourceGameId,
+                secondaryBoardGame: null,
+                selectedGameBaseSnapshot: null,
+                selectedGameBaseSnapshotCache: cache,
+                variationSourceMoveTree: null,
+            }),
+        ).toEqual({
+            width: 19,
+            height: 19,
+            source: "selected-game-cache",
+            gameId: sourceGameId,
+        });
+    });
+
+    it("uses the watched game dimensions when they are already known", () => {
+        const sourceGame = makeGame(123, "Source game");
+
+        expect(
+            resolveDraftSourceBoardDimensions({
+                draftBaseVariation: makeVariation(123, 5),
+                variationSourceGameId: 123,
+                secondaryBoardGame: sourceGame,
+                selectedGameBaseSnapshot: null,
+                selectedGameBaseSnapshotCache: new Map(),
+                variationSourceMoveTree: null,
+            }),
+        ).toEqual({
+            width: 19,
+            height: 19,
+            source: "secondary-board-game",
+            gameId: 123,
+        });
+    });
+
+    it("does not infer logical dimensions from pixel board size", () => {
+        expect(
+            resolveDraftSourceBoardDimensions({
+                draftBaseVariation: makeVariation(87164848, 242),
+                variationSourceGameId: 87164848,
+                secondaryBoardGame: null,
+                selectedGameBaseSnapshot: null,
+                selectedGameBaseSnapshotCache: new Map(),
+                variationSourceMoveTree: null,
+            }),
+        ).toBeNull();
     });
 });
 
@@ -499,6 +700,93 @@ describe("draft base apply guard", () => {
         applied = clearDraftBaseAppliedState();
 
         expect(isDraftBaseAlreadyApplied(applied, controller, variationId)).toBe(false);
+    });
+
+    it("accepts a current normal secondary board and a draft secondary board", () => {
+        const controller = {
+            goban: {
+                parent: {
+                    isConnected: true,
+                },
+                engine: {
+                    move_tree: {
+                        id: 1,
+                    },
+                },
+            },
+        } as unknown as GobanController;
+        const variationContext = {
+            controller,
+            epoch: 3,
+            roomId: "room-user-cc22e57e",
+            gameId: 87164848,
+            secondaryBoardKey: "room-user-cc22e57e-variation-game-87164848-remount-0",
+        } as Parameters<typeof isCurrentTrackedSecondaryController>[0]["context"];
+        const draftContext = {
+            controller,
+            roomId: "room-user-cc22e57e",
+            gameId: 87164848,
+            secondaryBoardKey: "room-user-cc22e57e-draft-87164848-xjV.VKCpuip---remount-0",
+        } as Parameters<typeof isCurrentTrackedSecondaryController>[0]["context"];
+
+        expect(
+            isCurrentTrackedSecondaryController({
+                controller,
+                context: variationContext,
+                roomId: "room-user-cc22e57e",
+                expectedGameId: 87164848,
+                expectedSecondaryBoardKey: "room-user-cc22e57e-variation-game-87164848-remount-0",
+                isDetached: false,
+            }),
+        ).toBe(true);
+        expect(
+            isCurrentTrackedSecondaryController({
+                controller,
+                context: draftContext,
+                roomId: "room-user-cc22e57e",
+                expectedGameId: 87164848,
+                expectedSecondaryBoardKey:
+                    "room-user-cc22e57e-draft-87164848-xjV.VKCpuip---remount-0",
+                isDetached: false,
+            }),
+        ).toBe(true);
+    });
+
+    it("rejects a stale outgoing variation controller once the draft board key changes", () => {
+        const controller = {
+            goban: {
+                parent: {
+                    isConnected: true,
+                },
+                engine: {
+                    move_tree: {
+                        id: 1,
+                    },
+                },
+                config: {
+                    game_id: 87164848,
+                },
+            },
+        } as unknown as GobanController;
+        const staleContext = {
+            controller,
+            epoch: 3,
+            roomId: "room-user-cc22e57e",
+            gameId: 87164848,
+            secondaryBoardKey: "room-user-cc22e57e-variation-game-87164848-remount-0",
+        } as Parameters<typeof isCurrentDraftSecondaryController>[0]["context"];
+
+        expect(
+            isCurrentDraftSecondaryController({
+                controller,
+                context: staleContext,
+                roomId: "room-user-cc22e57e",
+                expectedGameId: 87164848,
+                expectedSecondaryBoardKey: "room-user-cc22e57e-draft-87164848-draft-base-remount-0",
+                currentSecondaryBoardKey: "room-user-cc22e57e-draft-87164848-draft-base-remount-0",
+                isDetached: false,
+            }),
+        ).toBe(false);
     });
 
     it("treats a replaced secondary base tree as not installed", () => {

@@ -409,6 +409,13 @@ export class NotificationManager {
         });
 
         socket.on("notification", (notification) => {
+            // Streak notifications are emitted by the activity service
+            // but the client UI for them hasn't shipped yet. Discard
+            // them server-side so they don't accumulate.
+            if (typeof notification.type === "string" && notification.type.startsWith("streak_")) {
+                socket.send("notification/delete", { notification_id: notification.id });
+                return;
+            }
             if (notification.type === "delete") {
                 if (!(notification.id in this.notifications)) {
                     return;
