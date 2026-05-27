@@ -44,6 +44,8 @@ interface KibitzBoardProps {
     onReady?: (controller: GobanController | null) => void;
 }
 
+const MAX_INITIAL_RESIZE_RETRIES = 60;
+
 export function getMovePathToRestore(
     currentMovePath: string | undefined,
     sourceMovePath: string | undefined,
@@ -180,6 +182,8 @@ export function KibitzBoard({
     const controllerPublishedRef = React.useRef(false);
     const readinessFrameRef = React.useRef<number | null>(null);
     const resizeDebounceRef = React.useRef<NodeJS.Timeout | null>(null);
+    const initialResizeRetryCountRef = React.useRef(0);
+    const initialResizeRetryTimedOutRef = React.useRef(false);
     const pendingInitialResizeRetryRef = React.useRef<{
         frame1: number | null;
         frame2: number | null;
@@ -322,6 +326,22 @@ export function KibitzBoard({
             return;
         }
 
+        if (initialResizeRetryCountRef.current >= MAX_INITIAL_RESIZE_RETRIES) {
+            if (initialResizeRetryTimedOutRef.current) {
+                return;
+            }
+
+            initialResizeRetryTimedOutRef.current = true;
+            logKibitzVariationDebug("kibitz-board:initial-resize-retry-timeout", {
+                role: boardRole,
+                gameId,
+                isMobile,
+            });
+            return;
+        }
+
+        initialResizeRetryCountRef.current += 1;
+
         const pendingRetry = {
             frame1: null as number | null,
             frame2: null as number | null,
@@ -334,10 +354,10 @@ export function KibitzBoard({
             pendingRetry.frame2 = window.requestAnimationFrame(() => {
                 pendingRetry.frame2 = null;
                 pendingInitialResizeRetryRef.current = null;
-                onResizeRef.current(false);
+                onResizeRef.current(true);
             });
         });
-    }, []);
+    }, [boardRole, gameId, isMobile]);
 
     const recenterGoban = React.useCallback(() => {
         const gobanController = goban;
@@ -392,6 +412,7 @@ export function KibitzBoard({
                 return;
             }
 
+            initialResizeRetryCountRef.current = 0;
             cancelPendingInitialResizeRetry();
 
             const targetDisplayWidth = respectContainerBounds
@@ -423,6 +444,9 @@ export function KibitzBoard({
         if (!goban) {
             return;
         }
+
+        initialResizeRetryCountRef.current = 0;
+        initialResizeRetryTimedOutRef.current = false;
 
         let cancelled = false;
         let frame1 = 0;
