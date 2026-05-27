@@ -726,6 +726,7 @@ describe("draft base apply guard", () => {
             controller,
             roomId: "room-user-cc22e57e",
             gameId: 87164848,
+            // cspell:ignore xjV.VKCpuip
             secondaryBoardKey: "room-user-cc22e57e-draft-87164848-xjV.VKCpuip---remount-0",
         } as Parameters<typeof isCurrentTrackedSecondaryController>[0]["context"];
 
@@ -746,6 +747,7 @@ describe("draft base apply guard", () => {
                 roomId: "room-user-cc22e57e",
                 expectedGameId: 87164848,
                 expectedSecondaryBoardKey:
+                    // cspell:ignore xjV.VKCpuip
                     "room-user-cc22e57e-draft-87164848-xjV.VKCpuip---remount-0",
                 isDetached: false,
             }),
