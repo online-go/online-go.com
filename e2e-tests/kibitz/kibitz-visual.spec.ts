@@ -18,6 +18,12 @@
 import { writeFileSync } from "fs";
 import { expect, Page, TestInfo } from "@playwright/test";
 import { ogsTest, load } from "@helpers";
+import {
+    waitForKibitzReady,
+    waitForStableRect,
+    waitForKibitzLayoutStable,
+    waitForCompareLayoutStable,
+} from "./kibitz-helpers";
 
 function describeMeasurements(measurements: unknown) {
     return JSON.stringify(measurements, null, 2);
@@ -25,65 +31,6 @@ function describeMeasurements(measurements: unknown) {
 
 function describeDebugData(debugData: unknown) {
     return JSON.stringify(debugData, null, 2);
-}
-
-async function waitForKibitzReady(page: Page) {
-    await expect(page.locator(".Kibitz")).toBeVisible({ timeout: 15000 });
-    await expect(page.locator(".KibitzRoomStage")).toBeVisible({ timeout: 15000 });
-    await expect(page.locator(".KibitzRoomStage-boards")).toBeVisible({ timeout: 15000 });
-    await expect(page.locator(".board-panel.main-board")).toBeVisible({ timeout: 15000 });
-    await expect(
-        page.locator(".board-panel.main-board .KibitzBoard.main-board-surface"),
-    ).toBeVisible({ timeout: 15000 });
-    await expect(
-        page.locator(".board-panel.main-board .KibitzBoard.main-board-surface .Goban").first(),
-    ).toBeVisible({ timeout: 15000 });
-}
-
-async function waitForStableRect(page: Page, selector: string, timeout = 5000) {
-    await page.waitForFunction(
-        ({ targetSelector }) => {
-            const element = document.querySelector(targetSelector);
-            if (!element) {
-                return false;
-            }
-
-            const rect = element.getBoundingClientRect();
-            const current = {
-                top: Math.round(rect.top),
-                left: Math.round(rect.left),
-                width: Math.round(rect.width),
-                height: Math.round(rect.height),
-            };
-
-            const key = `__kibitz_stable_rect_${targetSelector}`;
-            const store = window as unknown as Record<string, unknown>;
-            const previous = store[key] as typeof current | undefined;
-            store[key] = current;
-
-            return (
-                previous != null &&
-                previous.top === current.top &&
-                previous.left === current.left &&
-                previous.width === current.width &&
-                previous.height === current.height &&
-                current.width > 0 &&
-                current.height > 0
-            );
-        },
-        { targetSelector: selector },
-        { timeout },
-    );
-}
-
-async function waitForKibitzLayoutStable(page: Page) {
-    await waitForStableRect(page, ".KibitzRoomStage-boards");
-    await waitForStableRect(page, ".board-panel.main-board .board-fit-slot");
-}
-
-async function waitForCompareLayoutStable(page: Page) {
-    await waitForKibitzLayoutStable(page);
-    await waitForStableRect(page, ".board-panel.secondary-board .board-fit-slot");
 }
 
 async function openKibitzMobileCreateRoomPreview(page: Page) {
@@ -852,7 +799,7 @@ async function measureKibitzLeftRailWidths(page: Page) {
     });
 }
 
-ogsTest.describe("@Kibitz layout regressions", () => {
+ogsTest.describe("@Kibitz @Manual layout regressions", () => {
     ogsTest("left compare board wrappers stay tight to the rendered goban", async ({ page }) => {
         await openKibitzEqualCompareMode(page, "/kibitz/user-fea5dced");
 

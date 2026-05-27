@@ -164,6 +164,10 @@ export const basicScoringTest = async (
 
         await expect(cmPage.getByText("E2E test reporting a score cheat")).toBeVisible();
 
+        // Make sure that game log has loaded
+        await expect(cmPage.getByText("No game log entries")).not.toBeVisible();
+
+        // Check that the game ended the way we expected
         const events = await cmPage.locator("tr.entry td.event").allTextContents();
         expect(events[0].trim()).toBe("game ended");
         expect(events[1].trim()).toBe("stone removal stones accepted");
