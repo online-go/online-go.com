@@ -29,14 +29,21 @@ import {
 } from "./kibitz-helpers";
 
 /*
- * Verify that the owner of a Kibitz room can rename it and edit its
- * description (PUT /api/v1/kibitz/rooms/:id), and that a different
- * authenticated, non-owner user cannot -- the settings popover does not
- * expose the "Edit room details" affordance for them.
+ * Verify three properties of the Kibitz room rename flow:
  *
- * Exercises the rename round-trip end-to-end and the server-driven
- * permission gating (compute_permissions -> can_edit_room) reflected in the
- * popover UI (KibitzRoomSettingsPopover.tsx).
+ *   1. The owner can rename and edit the description (PUT /api/v1/kibitz/rooms/:id),
+ *      and the change is reflected in their own header.
+ *   2. A different authenticated user, watching the directory rail, sees the
+ *      rename propagate live via the room-updated UIPush broadcast on the
+ *      DIRECTORY_BROADCAST_CHANNEL (no page reload).
+ *   3. That same non-owner, after navigating into the room, cannot access the
+ *      "Edit room details" affordance -- the settings popover gates it on
+ *      compute_permissions(can_edit_room).
+ *
+ * The non-owner is created BEFORE the rename so they are already subscribed
+ * to the directory channel when the broadcast goes out -- otherwise the
+ * "saw it update live" assertion would be testing a fresh GET rather than
+ * the push.
  */
 export const kibitzEditRoomDetailsTest = async ({
     createContext,
@@ -45,9 +52,47 @@ export const kibitzEditRoomDetailsTest = async ({
 }) => {
     const { watcherPage, roomId } = await createKibitzRoomForLiveGame(createContext);
 
-    // The desktop room header renders a gear button to the left of the room
-    // title (KibitzRoomStage.tsx:5254 .board-settings-button). Click it to
-    // open the room settings popover.
+    // Capture the auto-generated original title (derived from the watcher's
+    // username by KibitzGamePickerOverlay) so we can verify the non-owner's
+    // directory entry both before (matches original) and after (no longer
+    // matches) the rename.
+    const originalTitle = (await watcherPage.locator(".board-title").textContent())?.trim();
+    if (!originalTitle) {
+        throw new Error("Expected the original room title to be populated by the prelude");
+    }
+    console.log(`[kibitz edit-room-details] original room title: "${originalTitle}"`);
+
+    // Set up the non-owner BEFORE the rename, navigated to /kibitz (the
+    // directory landing -- not into the room). The watcher is sitting in the
+    // room so viewer_count >= 1, which qualifies the room for inclusion in
+    // every non-owner's directory rail (KibitzRoomDirectory filters: presets
+    // + broadcasts + non-empty rooms + caller-owned rooms).
+    console.log("[kibitz edit-room-details] creating non-owner viewer of directory");
+    const { userPage: nonOwnerPage } = await prepareNewUser(
+        createContext,
+        newTestUsername("kibVisit"), // cspell:disable-line
+        "test",
+    );
+    // Mirror the watcher viewport so the same desktop branch of
+    // KibitzRoomStage / KibitzRoomList renders.
+    await nonOwnerPage.setViewportSize({ width: 1920, height: 1080 });
+    await load(nonOwnerPage, "/kibitz");
+    await expect(nonOwnerPage.locator(".Kibitz")).toBeVisible({ timeout: 15000 });
+
+    // The rail entry's title text lives in .KibitzRoomList-item .room-title
+    // (KibitzRoomList.tsx:107,115). The auto-generated title includes the
+    // watcher's username plus a uniquifying suffix from newTestUsername, so
+    // it is effectively unique across rail entries.
+    const railEntries = nonOwnerPage.locator(".KibitzRoomList-item");
+    const railEntryWithOriginalTitle = railEntries.filter({
+        has: nonOwnerPage.locator(".room-title", { hasText: originalTitle }),
+    });
+    await expect(railEntryWithOriginalTitle).toHaveCount(1, { timeout: 15000 });
+    console.log("[kibitz edit-room-details] non-owner sees original title in directory rail");
+
+    // Owner opens the settings popover. The desktop room header renders a
+    // gear button to the left of the room title (KibitzRoomStage.tsx:5254
+    // .board-settings-button).
     const gearButton = watcherPage.locator(".board-settings-button");
     await expect(gearButton).toBeVisible({ timeout: 15000 });
     await expect(gearButton).toBeOGSClickable();
@@ -69,8 +114,8 @@ export const kibitzEditRoomDetailsTest = async ({
     await expect(editDetailsButton).toBeOGSClickable();
     await editDetailsButton.click();
 
-    // The edit form populates with the current title/description. Fill in new
-    // values and confirm the inputs accepted them before submitting.
+    // Fill in new title/description and confirm the inputs accepted them
+    // before submitting.
     const titleInput = popover.locator("#kibitz-room-title");
     const descriptionInput = popover.locator("#kibitz-room-description");
     await expect(titleInput).toBeVisible({ timeout: 15000 });
@@ -97,9 +142,22 @@ export const kibitzEditRoomDetailsTest = async ({
     await expect(watcherPage.locator(".board-title")).toHaveText(newTitle, { timeout: 15000 });
     console.log("[kibitz edit-room-details] owner save reflected in header");
 
-    // Reopen the popover to verify the description was also persisted -- the
-    // .board-title only shows the title, but the popover form rebinds to
-    // room.description on open (KibitzRoomSettingsPopover.tsx:53), so the
+    // The non-owner is subscribed to DIRECTORY_BROADCAST_CHANNEL and has the
+    // rail visible; their KibitzRoomList entry for this room should update
+    // live via the room-updated UIPush (no page reload). Wait for the new
+    // title to appear and the original title to disappear; both checks
+    // anchor the "moving" assertion and rule out a stale cached entry
+    // hanging around alongside the new one.
+    const railEntryWithNewTitle = railEntries.filter({
+        has: nonOwnerPage.locator(".room-title", { hasText: newTitle }),
+    });
+    await expect(railEntryWithNewTitle).toHaveCount(1, { timeout: 15000 });
+    await expect(railEntryWithOriginalTitle).toHaveCount(0, { timeout: 15000 });
+    console.log("[kibitz edit-room-details] non-owner rail entry updated via broadcast");
+
+    // Reopen the owner popover to verify the description was also persisted
+    // -- the .board-title only shows the title, but the popover form rebinds
+    // to room.description on open (KibitzRoomSettingsPopover.tsx:53), so the
     // description field will show the saved value if the round-trip worked.
     await gearButton.click();
     await expect(popover).toBeVisible({ timeout: 15000 });
@@ -109,29 +167,20 @@ export const kibitzEditRoomDetailsTest = async ({
     });
     console.log("[kibitz edit-room-details] description persisted");
 
-    // No popover dismiss needed: the next phase runs in a separate browser
-    // context (nonOwnerPage), so the watcher's open popover does not shadow
-    // the non-owner's page. The popover module (lib/popover.tsx) dismisses
-    // only on backdrop click, container-edge click, or close_all_popovers --
-    // there is no Escape handler -- so an explicit dismiss here would have
-    // to go through the Cancel-then-Close two-click path, which is not worth
-    // the complexity given the context separation.
+    // No popover dismiss needed: the next phase runs on nonOwnerPage (a
+    // separate browser context), so the watcher's open popover does not
+    // shadow it. The popover module (lib/popover.tsx) dismisses only on
+    // backdrop click, container-edge click, or close_all_popovers -- there
+    // is no Escape handler -- so an explicit dismiss here would have to go
+    // through the Cancel-then-Close two-click path, which is not worth the
+    // complexity given the context separation.
 
-    // Phase 2: a separate authenticated user (not the room owner, not in the
-    // game) visits the same room. The desktop layout still renders the gear
-    // button unconditionally (KibitzRoomStage.tsx:5254), but the popover gates
-    // "Edit room details" on canEditRoom || canDeleteRoom -- both compute to
-    // false for a non-owner non-moderator (kibitz/permissions.py:42-50), so
-    // the affordance must be absent.
-    console.log("[kibitz edit-room-details] creating non-owner user");
-    const { userPage: nonOwnerPage } = await prepareNewUser(
-        createContext,
-        newTestUsername("kibVisit"), // cspell:disable-line
-        "test",
-    );
-    // Mirror the watcher viewport so the same desktop branch of
-    // KibitzRoomStage renders.
-    await nonOwnerPage.setViewportSize({ width: 1920, height: 1080 });
+    // Non-owner navigates into the room. The desktop layout renders the gear
+    // button unconditionally (KibitzRoomStage.tsx:5254), but the popover
+    // gates "Edit room details" on canEditRoom || canDeleteRoom -- both
+    // compute to false for a non-owner non-moderator
+    // (kibitz/permissions.py:42-50), so the affordance must be absent.
+    console.log("[kibitz edit-room-details] non-owner navigating into room");
     await load(nonOwnerPage, `/kibitz/${roomId}`);
     await waitForKibitzReady(nonOwnerPage);
     await waitForKibitzLayoutStable(nonOwnerPage);
