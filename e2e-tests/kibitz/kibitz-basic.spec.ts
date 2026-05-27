@@ -17,9 +17,11 @@
 
 import { ogsTest } from "@helpers";
 import { kibitzBasicRoomTest } from "./kibitz-basic-room";
+import { kibitzEditRoomDetailsTest } from "./kibitz-edit-room-details";
 import { kibitzShareVariationTest } from "./kibitz-share-variation";
 
 ogsTest.describe("@Kibitz basic flows", () => {
     ogsTest("Create room, navigate in, and post a chat message", kibitzBasicRoomTest);
     ogsTest("Share an analysis variation", kibitzShareVariationTest);
+    ogsTest("Owner edits room details; non-owner cannot", kibitzEditRoomDetailsTest);
 });
