@@ -17,10 +17,11 @@
 
 import type { KibitzRoomSummary, KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
 import type { GobanController } from "@/lib/GobanController";
-import type { GobanConfig, MoveTree } from "goban";
+import type { GobanConfig, MoveTree, MoveTreeJson } from "goban";
 import {
     captureRoomBaseSnapshotForVariation,
     captureMainBoardBaseSnapshotForVariation,
+    buildDraftBaseSnapshotFromSelectedGameSnapshot,
     buildSelectedGameBaseSnapshotFromDetails,
     clearDraftBaseAppliedState,
     clearInstalledSecondaryVariationBaseState,
@@ -120,6 +121,25 @@ function makeSelectedGameDetails(
         gamedata: {
             moves,
         } as Parameters<typeof buildSelectedGameBaseSnapshotFromDetails>[0]["details"]["gamedata"],
+    };
+}
+
+function makeSelectedGameSnapshot(moveTree?: MoveTreeJson | null): KibitzCurrentGameBaseSnapshot {
+    return {
+        gameId: 4321,
+        roomId: "room-1",
+        trunkTailMoveNumber: 4,
+        moveTreeId: 99,
+        movePath: "4",
+        source: "selected-game-details",
+        config: moveTree
+            ? {
+                  game_id: 4321,
+                  move_tree: moveTree,
+              }
+            : {
+                  game_id: 4321,
+              },
     };
 }
 
@@ -386,6 +406,73 @@ describe("variation snapshot readiness", () => {
         expect(result.snapshot.source).toBe("selected-game-details");
         expect(result.snapshot.config.moves).toBeUndefined();
         expect(result.snapshot.config.move_tree).toBeDefined();
+    });
+
+    it("builds a draft-base snapshot from a selected-game snapshot that has a move tree", () => {
+        const moveTree = makeMoveTree(0, makeMoveTree(2)).toJson() as MoveTreeJson;
+        const cloneMoveTree = jest.fn(
+            (tree: MoveTreeJson) => JSON.parse(JSON.stringify(tree)) as MoveTreeJson,
+        );
+        const result = buildDraftBaseSnapshotFromSelectedGameSnapshot({
+            selectedGameSnapshot: makeSelectedGameSnapshot(moveTree),
+            gameId: 4321,
+            controller: {
+                goban: {
+                    engine: {
+                        move_tree: makeMoveTree(0),
+                    },
+                },
+            } as unknown as GobanController,
+            cloneMoveTree,
+        });
+
+        expect(result).not.toBeNull();
+        expect(cloneMoveTree).toHaveBeenCalledTimes(1);
+        expect(cloneMoveTree).toHaveBeenCalledWith(moveTree);
+        expect(result?.config.move_tree).toEqual(moveTree);
+        expect(result?.config.move_tree).not.toBe(moveTree);
+    });
+
+    it("returns null instead of cloning when the selected-game snapshot is missing a move tree", () => {
+        const cloneMoveTree = jest.fn(
+            (tree: MoveTreeJson) => JSON.parse(JSON.stringify(tree)) as MoveTreeJson,
+        );
+        const result = buildDraftBaseSnapshotFromSelectedGameSnapshot({
+            selectedGameSnapshot: makeSelectedGameSnapshot(undefined),
+            gameId: 4321,
+            controller: {
+                goban: {
+                    engine: {
+                        move_tree: makeMoveTree(0),
+                    },
+                },
+            } as unknown as GobanController,
+            cloneMoveTree,
+        });
+
+        expect(result).toBeNull();
+        expect(cloneMoveTree).not.toHaveBeenCalled();
+    });
+
+    it("treats a null selected-game snapshot as unavailable rather than malformed", () => {
+        const cloneMoveTree = jest.fn(
+            (tree: MoveTreeJson) => JSON.parse(JSON.stringify(tree)) as MoveTreeJson,
+        );
+        const result = buildDraftBaseSnapshotFromSelectedGameSnapshot({
+            selectedGameSnapshot: null,
+            gameId: 4321,
+            controller: {
+                goban: {
+                    engine: {
+                        move_tree: makeMoveTree(0),
+                    },
+                },
+            } as unknown as GobanController,
+            cloneMoveTree,
+        });
+
+        expect(result).toBeNull();
+        expect(cloneMoveTree).not.toHaveBeenCalled();
     });
 
     it("refuses a headless selected-game snapshot that is too shallow for the requirement", () => {

@@ -919,8 +919,48 @@ interface AppliedDraftBaseState {
     engine: unknown | null;
 }
 
+type KibitzSnapshotWithMoveTree = KibitzCurrentGameBaseSnapshot & {
+    config: KibitzCurrentGameBaseSnapshot["config"] & {
+        move_tree: NonNullable<KibitzCurrentGameBaseSnapshot["config"]["move_tree"]>;
+    };
+};
+
+function hasSnapshotMoveTree(
+    snapshot: KibitzCurrentGameBaseSnapshot | null | undefined,
+): snapshot is KibitzSnapshotWithMoveTree {
+    return Boolean(snapshot?.config?.move_tree);
+}
+
 function cloneMoveTreeJson(moveTree: MoveTreeJson): MoveTreeJson {
     return JSON.parse(JSON.stringify(moveTree)) as MoveTreeJson;
+}
+
+export function buildDraftBaseSnapshotFromSelectedGameSnapshot({
+    selectedGameSnapshot,
+    gameId,
+    controller,
+    cloneMoveTree = cloneMoveTreeJson,
+}: {
+    selectedGameSnapshot: KibitzCurrentGameBaseSnapshot | null | undefined;
+    gameId: number;
+    controller: GobanController;
+    cloneMoveTree?: (moveTree: MoveTreeJson) => MoveTreeJson;
+}): SecondaryVariationBaseSnapshot | null {
+    if (!hasSnapshotMoveTree(selectedGameSnapshot)) {
+        return null;
+    }
+
+    return {
+        controller,
+        gameId,
+        trunkTailMoveNumber: selectedGameSnapshot.trunkTailMoveNumber,
+        config: {
+            ...selectedGameSnapshot.config,
+            game_id: gameId,
+            moves: undefined,
+            move_tree: cloneMoveTree(selectedGameSnapshot.config.move_tree),
+        },
+    };
 }
 
 export function getCurrentDraftBaseTreeIdentity(controller: GobanController): {
@@ -4631,16 +4671,38 @@ export function KibitzRoomStage({
                 return false;
             }
 
-            const draftBaseSnapshot: SecondaryVariationBaseSnapshot = {
-                controller: secondaryBoardController,
+            const draftBaseSnapshot = buildDraftBaseSnapshotFromSelectedGameSnapshot({
+                selectedGameSnapshot,
                 gameId: draftBaseVariation.game_id,
-                trunkTailMoveNumber: selectedGameSnapshot.trunkTailMoveNumber,
-                config: {
-                    ...selectedGameSnapshot.config,
-                    game_id: draftBaseVariation.game_id,
-                    move_tree: cloneMoveTreeJson(selectedGameSnapshot.config.move_tree!),
-                },
-            };
+                controller: secondaryBoardController,
+            });
+
+            if (!draftBaseSnapshot) {
+                logKibitzVariationDebug("draft-base:selected-game-snapshot-missing-move-tree", {
+                    reason,
+                    ...getDraftBaseDebugDetails(),
+                    selectedGameId: draftBaseVariation.game_id,
+                    snapshotGameId: selectedGameSnapshot.gameId,
+                    trunkTailMoveNumber: selectedGameSnapshot.trunkTailMoveNumber,
+                    hasConfig: Boolean(selectedGameSnapshot?.config),
+                    hasMoveTree: Boolean(selectedGameSnapshot?.config?.move_tree),
+                });
+                recordSelectedGameSnapshotFailureForCurrent({
+                    gameId: draftBaseVariation.game_id,
+                    variationId: draftBaseVariation.id,
+                    requiredMoveNumber: requiredSnapshotMoveNumber,
+                    kind: "invalid-game-data",
+                    message: "Selected-game snapshot did not include a move tree",
+                    details: {
+                        hasDetails: Boolean(selectedGameSnapshot),
+                        hasConfig: Boolean(selectedGameSnapshot?.config),
+                        hasMoveTree: Boolean(selectedGameSnapshot?.config?.move_tree),
+                        snapshotGameId: selectedGameSnapshot?.gameId ?? null,
+                        trunkTailMoveNumber: selectedGameSnapshot?.trunkTailMoveNumber ?? null,
+                    },
+                });
+                return false;
+            }
 
             logKibitzVariationDebug("draft-base:load-snapshot", {
                 reason,
