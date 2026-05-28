@@ -330,6 +330,7 @@ export function buildSnapshotFromEngine({
         moveTreeId: engine.move_tree?.id ?? null,
         movePath: officialTail.getMoveStringToThisPoint(),
         source,
+        fetchedMoveCount: null,
         config: {
             ...(engine.config as Record<string, unknown>),
             game_id: gameId,
@@ -514,6 +515,7 @@ export function buildSelectedGameBaseSnapshotFromDetails({
         };
     }
 
+    snapshot.fetchedMoveCount = details.gamedata.moves.length;
     return {
         kind: "ready",
         snapshot,
@@ -3471,11 +3473,14 @@ export function KibitzRoomStage({
             const expectedMoveNumber = mainBoardExpectedMoveNumberRef.current;
             const expectedGameId = mainBoardExpectedGameIdRef.current;
             const hasMoveTree = Boolean(currentEngine.move_tree);
+            const liveGame = Boolean(mainGame?.live);
+            const rootLiveHydrationBlocked =
+                liveGame && expectedMoveNumber === 0 && officialTailMoveNumber === 0;
             const hydrated =
                 expectedGameId != null &&
-                (expectedMoveNumber === 0
-                    ? hasMoveTree && officialTailMoveNumber === 0
-                    : officialTailMoveNumber >= expectedMoveNumber);
+                (expectedMoveNumber > 0
+                    ? officialTailMoveNumber >= expectedMoveNumber
+                    : !liveGame && hasMoveTree && officialTailMoveNumber === 0);
 
             setMainBoardOfficialTailMoveNumber((previousTailMoveNumber) =>
                 previousTailMoveNumber === officialTailMoveNumber
@@ -3495,6 +3500,8 @@ export function KibitzRoomStage({
                 lastOfficialMove: summarizeKibitzMoveTreeNode(currentEngine.last_official_move),
                 lastOfficialMoveNumber: currentEngine.last_official_move?.move_number ?? null,
                 lastOfficialMoveId: currentEngine.last_official_move?.id ?? null,
+                liveGame,
+                rootLiveHydrationBlocked,
             });
             onMainBoardHydrationChange?.({
                 roomId: room.id,
@@ -3512,6 +3519,8 @@ export function KibitzRoomStage({
                 expectedMoveNumber,
                 hasMoveTree,
                 hydrated,
+                liveGame,
+                rootLiveHydrationBlocked,
             });
             scheduleMainBoardVisibleRedraw(reason);
         },
@@ -3744,6 +3753,7 @@ export function KibitzRoomStage({
         if (
             !canHydrateMainBoardFromRoomBaseSnapshot({
                 mainBoardController: currentController,
+                currentGame: mainGame,
                 currentRoomGameId,
                 requiredMoveNumber,
                 roomBaseSnapshot: currentGameBaseSnapshot,
@@ -3784,6 +3794,7 @@ export function KibitzRoomStage({
         try {
             const restoredTail = hydrateMainBoardFromRoomBaseSnapshot({
                 mainBoardController: currentController,
+                currentGame: mainGame,
                 currentRoomGameId,
                 requiredMoveNumber,
                 roomBaseSnapshot: currentGameBaseSnapshot,

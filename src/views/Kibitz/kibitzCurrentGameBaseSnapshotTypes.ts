@@ -29,5 +29,6 @@ export interface KibitzCurrentGameBaseSnapshot {
     moveTreeId: number | string | null;
     movePath: string;
     source: "main-board" | "room-base-broker" | "game-details" | "selected-game-details";
+    fetchedMoveCount?: number | null;
     config: KibitzBoardLoadConfig;
 }

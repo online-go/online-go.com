@@ -188,6 +188,7 @@ describe("main board broker hydration", () => {
         expect(
             canHydrateMainBoardFromRoomBaseSnapshot({
                 mainBoardController: controller,
+                currentGame: makeGame(87165523, 126),
                 currentRoomGameId: 87165523,
                 requiredMoveNumber: 126,
                 roomBaseSnapshot,
@@ -212,6 +213,7 @@ describe("main board broker hydration", () => {
         expect(
             hydrateMainBoardFromRoomBaseSnapshot({
                 mainBoardController: controller,
+                currentGame: makeGame(87165523, 126),
                 currentRoomGameId: 87165523,
                 requiredMoveNumber: 126,
                 roomBaseSnapshot,
@@ -249,6 +251,7 @@ describe("main board broker hydration", () => {
         expect(
             canHydrateMainBoardFromRoomBaseSnapshot({
                 mainBoardController: controller,
+                currentGame: makeGame(87165523, 126),
                 currentRoomGameId: 87165523,
                 requiredMoveNumber: 126,
                 roomBaseSnapshot,
@@ -258,6 +261,7 @@ describe("main board broker hydration", () => {
         expect(
             hydrateMainBoardFromRoomBaseSnapshot({
                 mainBoardController: controller,
+                currentGame: makeGame(87165523, 126),
                 currentRoomGameId: 87165523,
                 requiredMoveNumber: 126,
                 roomBaseSnapshot,
@@ -283,6 +287,7 @@ describe("main board broker hydration", () => {
         expect(
             canHydrateMainBoardFromRoomBaseSnapshot({
                 mainBoardController: controller,
+                currentGame: makeGame(87165523, 126),
                 currentRoomGameId: 87165523,
                 requiredMoveNumber: 126,
                 roomBaseSnapshot,
@@ -292,6 +297,7 @@ describe("main board broker hydration", () => {
         expect(
             hydrateMainBoardFromRoomBaseSnapshot({
                 mainBoardController: controller,
+                currentGame: makeGame(87165523, 126),
                 currentRoomGameId: 87165523,
                 requiredMoveNumber: 126,
                 roomBaseSnapshot,
@@ -317,6 +323,7 @@ describe("main board broker hydration", () => {
         expect(
             canHydrateMainBoardFromRoomBaseSnapshot({
                 mainBoardController: controller,
+                currentGame: makeGame(87165523, 126),
                 currentRoomGameId: 87165523,
                 requiredMoveNumber: 126,
                 roomBaseSnapshot,
@@ -326,6 +333,7 @@ describe("main board broker hydration", () => {
         expect(
             hydrateMainBoardFromRoomBaseSnapshot({
                 mainBoardController: controller,
+                currentGame: makeGame(87165523, 126),
                 currentRoomGameId: 87165523,
                 requiredMoveNumber: 126,
                 roomBaseSnapshot,

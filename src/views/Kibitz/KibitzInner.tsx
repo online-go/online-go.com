@@ -170,8 +170,17 @@ export function isVisibleMainBoardMounted(params: {
     roomId: string | null;
     gameId: number | null;
     currentExpectedMoveNumber: number;
+    isCurrentGameLive: boolean;
 }): boolean {
     const hydration = params.visibleMainBoardHydration;
+
+    if (
+        params.isCurrentGameLive &&
+        params.currentExpectedMoveNumber === 0 &&
+        hydration.officialTailMoveNumber === 0
+    ) {
+        return false;
+    }
 
     return Boolean(
         !params.mobileCompareActive &&
@@ -184,6 +193,19 @@ export function isVisibleMainBoardMounted(params: {
         (params.currentExpectedMoveNumber === 0
             ? hydration.hasMoveTree
             : hydration.officialTailMoveNumber >= params.currentExpectedMoveNumber),
+    );
+}
+
+export function isMainBoardSafeForReconnect(params: {
+    mainBoardController: GobanController | null;
+    currentGame: KibitzWatchedGame | null | undefined;
+    mainBoardOfficialTailMoveNumber: number;
+}): boolean {
+    return Boolean(
+        !params.mainBoardController ||
+        !params.currentGame?.live ||
+        params.mainBoardOfficialTailMoveNumber > 0 ||
+        isLiveGameMoveNumberKnown(params.currentGame),
     );
 }
 
@@ -222,6 +244,33 @@ function moveTreeIdAsNumber(moveTreeId: number | string | null): number | undefi
     return typeof moveTreeId === "number" ? moveTreeId : undefined;
 }
 
+export function isLiveGameMoveNumberKnown(game: KibitzWatchedGame | null | undefined): boolean {
+    return typeof game?.move_number === "number" && game.move_number > 0;
+}
+
+export function isLiveRootSnapshotAllowed(params: {
+    game: KibitzWatchedGame | null | undefined;
+    snapshotTailMoveNumber: number;
+    source: "visible-main-board" | "game-details";
+    fetchedMoveCount?: number | null;
+}): boolean {
+    const { game, snapshotTailMoveNumber, source, fetchedMoveCount } = params;
+
+    if (!game?.live) {
+        return true;
+    }
+
+    if (snapshotTailMoveNumber > 0) {
+        return true;
+    }
+
+    if (source === "game-details" && fetchedMoveCount === 0) {
+        return true;
+    }
+
+    return false;
+}
+
 export function isCurrentGameBaseSnapshotUsable(
     snapshot: KibitzCurrentGameBaseSnapshot | null | undefined,
     game: KibitzWatchedGame | null | undefined,
@@ -240,6 +289,20 @@ export function isCurrentGameBaseSnapshotUsable(
     }
 
     const expectedMoveNumber = game.move_number ?? 0;
+
+    if (
+        game.live &&
+        expectedMoveNumber === 0 &&
+        !isLiveRootSnapshotAllowed({
+            game,
+            snapshotTailMoveNumber: snapshot.trunkTailMoveNumber,
+            source: snapshot.source === "main-board" ? "visible-main-board" : "game-details",
+            fetchedMoveCount: snapshot.fetchedMoveCount ?? null,
+        })
+    ) {
+        return false;
+    }
+
     return snapshot.trunkTailMoveNumber >= expectedMoveNumber;
 }
 
@@ -293,6 +356,7 @@ async function fetchCurrentGameBaseSnapshot(
     const snapshotController = new GobanController(config as GobanRendererConfig);
 
     try {
+        const fetchedMoveCount = details.gamedata.moves.length;
         const expectedMoveNumber = Math.max(game.move_number ?? 0, details.gamedata.moves.length);
         const snapshot = captureCurrentGameBaseSnapshotFromController(
             snapshotController,
@@ -307,11 +371,21 @@ async function fetchCurrentGameBaseSnapshot(
             logKibitzVariationDebug("current-game-base-snapshot:fetch-not-ready", {
                 gameId: game.game_id,
                 expectedMoveNumber,
+                fetchedMoveCount,
+                roomMoveNumber: game.move_number ?? 0,
                 officialTailMoveNumber: officialTail?.move_number ?? null,
-                fetchedMoveCount: details.gamedata.moves.length,
             });
             return null;
         }
+
+        snapshot.fetchedMoveCount = fetchedMoveCount;
+        logKibitzVariationDebug("current-game-base-snapshot:fetch-ready", {
+            gameId: snapshot.gameId,
+            trunkTailMoveNumber: snapshot.trunkTailMoveNumber,
+            moveTreeId: snapshot.moveTreeId,
+            fetchedMoveCount,
+            roomMoveNumber: game.move_number ?? 0,
+        });
 
         return snapshot;
     } finally {
@@ -1149,6 +1223,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         mainBoardController && isCurrentMainBoardController(mainBoardController),
     );
     const currentExpectedMoveNumber = resolvedRoom?.current_game?.move_number ?? 0;
+    const currentGameIsLive = Boolean(resolvedRoom?.current_game?.live);
     const visibleMainBoardMounted = isVisibleMainBoardMounted({
         mobileCompareActive,
         mainBoardController,
@@ -1157,6 +1232,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         roomId: resolvedRoom?.id ?? null,
         gameId: currentGameId,
         currentExpectedMoveNumber,
+        isCurrentGameLive: currentGameIsLive,
     });
     const currentGameBaseSnapshotFreshnessMoveNumber = React.useMemo(() => {
         const liveTailFromRoom = resolvedRoom?.current_game?.move_number ?? 0;
@@ -1178,15 +1254,25 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const pickerOpen = Boolean(
         pickerMode || mobileOverlayMode === "create-room" || mobileOverlayMode === "change-board",
     );
+    const mainBoardOfficialTailMoveNumber = mainBoardController
+        ? (getMoveTreeTrunkTail(mainBoardController.goban.engine.move_tree)?.move_number ?? 0)
+        : 0;
+    const mainBoardSafeForReconnect = isMainBoardSafeForReconnect({
+        mainBoardController,
+        currentGame: resolvedRoom?.current_game,
+        mainBoardOfficialTailMoveNumber,
+    });
+
     useKibitzCurrentGameConnectionKeeper({
         roomId: resolvedRoom?.id ?? null,
         currentGameId,
         currentLiveTailMoveNumber: roomLiveMoveNumber,
-        isLive: Boolean(resolvedRoom?.current_game?.live),
+        isLive: currentGameIsLive,
         pickerOpen,
         enabled: Boolean(resolvedRoom),
         debugSource: "KibitzInner",
         boardController: mainBoardController,
+        allowReconnect: mainBoardSafeForReconnect,
     });
     const acceptCurrentGameBaseSnapshot = React.useCallback(
         (snapshot: KibitzCurrentGameBaseSnapshot) => {
@@ -1271,6 +1357,17 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 return;
             }
 
+            if (game.live && (game.move_number ?? 0) === 0 && snapshot.trunkTailMoveNumber === 0) {
+                logKibitzVariationDebug("current-game-base-snapshot:main-root-live-rejected", {
+                    reason,
+                    gameId: game.game_id,
+                    roomMoveNumber: game.move_number ?? 0,
+                    snapshotTailMoveNumber: snapshot.trunkTailMoveNumber,
+                    moveTreeId: snapshot.moveTreeId,
+                });
+                return;
+            }
+
             logKibitzVariationDebug("current-game-base-snapshot:main-ready", {
                 reason,
                 gameId: snapshot.gameId,
@@ -1306,20 +1403,47 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
     React.useEffect(() => {
         const target = currentGameSnapshotTarget;
-        const existingSnapshot = currentGameBaseSnapshotRef.current;
+        const existingSnapshotForLog: KibitzCurrentGameBaseSnapshot | null =
+            currentGameBaseSnapshotRef.current;
 
         if (!target) {
             setCurrentGameBaseSnapshotLoadingGameId(null);
             return;
         }
 
-        if (isCurrentGameBaseSnapshotUsable(existingSnapshot, target.game, target.roomId)) {
+        const existingSnapshotTailMoveNumber = existingSnapshotForLog?.trunkTailMoveNumber ?? 0;
+        const rootLiveSnapshotRejected =
+            existingSnapshotForLog?.gameId === target.gameId &&
+            target.game.live &&
+            target.moveNumber === 0 &&
+            existingSnapshotTailMoveNumber === 0;
+
+        if (rootLiveSnapshotRejected) {
+            logKibitzVariationDebug(
+                "current-game-base-snapshot:fetch-root-live-main-snapshot-rejected",
+                {
+                    roomId: target.roomId,
+                    gameId: target.gameId,
+                    roomMoveNumber: target.moveNumber,
+                    snapshotTailMoveNumber: existingSnapshotTailMoveNumber,
+                    moveTreeId: existingSnapshotForLog?.moveTreeId ?? null,
+                },
+            );
+        }
+
+        const existingSnapshotUsable = isCurrentGameBaseSnapshotUsable(
+            existingSnapshotForLog,
+            target.game,
+            target.roomId,
+        );
+
+        if (existingSnapshotUsable && existingSnapshotForLog) {
             logKibitzVariationDebug("current-game-base-snapshot:fetch-skip-already-fresh", {
                 roomId: target.roomId,
                 gameId: target.gameId,
                 expectedMoveNumber: target.moveNumber,
-                snapshotTailMoveNumber: existingSnapshot.trunkTailMoveNumber,
-                moveTreeId: existingSnapshot.moveTreeId,
+                snapshotTailMoveNumber: existingSnapshotForLog.trunkTailMoveNumber,
+                moveTreeId: existingSnapshotForLog.moveTreeId,
             });
             setCurrentGameBaseSnapshotLoadingGameId(null);
             return;
@@ -1342,11 +1466,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 }
 
                 if (snapshot) {
-                    logKibitzVariationDebug("current-game-base-snapshot:fetch-ready", {
-                        gameId: snapshot.gameId,
-                        trunkTailMoveNumber: snapshot.trunkTailMoveNumber,
-                        moveTreeId: snapshot.moveTreeId,
-                    });
                     acceptCurrentGameBaseSnapshot(snapshot);
                 }
             })
@@ -1396,6 +1515,23 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                     resolvedRoom.id,
                 );
                 if (mainBoardSnapshot) {
+                    if (
+                        game.live &&
+                        (game.move_number ?? 0) === 0 &&
+                        mainBoardSnapshot.trunkTailMoveNumber === 0
+                    ) {
+                        logKibitzVariationDebug(
+                            "current-game-base-snapshot:main-root-live-rejected",
+                            {
+                                reason,
+                                gameId: game.game_id,
+                                roomMoveNumber: game.move_number ?? 0,
+                                snapshotTailMoveNumber: mainBoardSnapshot.trunkTailMoveNumber,
+                                moveTreeId: mainBoardSnapshot.moveTreeId,
+                            },
+                        );
+                        return cachedSnapshot;
+                    }
                     const acceptedSnapshot = chooseFresherCurrentGameBaseSnapshot(
                         cachedSnapshot,
                         mainBoardSnapshot,

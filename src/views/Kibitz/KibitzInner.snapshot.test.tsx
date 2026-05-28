@@ -645,6 +645,7 @@ describe("visible main board hydration", () => {
                 roomId: "room-1",
                 gameId: 1,
                 currentExpectedMoveNumber: 126,
+                isCurrentGameLive: false,
             }),
         ).toBe(true);
         expect(getMoveTreeTrunkTailMock).not.toHaveBeenCalled();
@@ -666,6 +667,7 @@ describe("visible main board hydration", () => {
                 roomId: "room-1",
                 gameId: 1,
                 currentExpectedMoveNumber: 126,
+                isCurrentGameLive: false,
             }),
         ).toBe(false);
     });
@@ -700,6 +702,7 @@ describe("visible main board hydration", () => {
                 roomId: "room-1",
                 gameId: 1,
                 currentExpectedMoveNumber: 126,
+                isCurrentGameLive: false,
             }),
         ).toBe(true);
     });
@@ -734,6 +737,7 @@ describe("visible main board hydration", () => {
                 roomId: "room-2",
                 gameId: 2,
                 currentExpectedMoveNumber: 126,
+                isCurrentGameLive: false,
             }),
         ).toBe(false);
     });
@@ -768,6 +772,7 @@ describe("visible main board hydration", () => {
                 roomId: "room-1",
                 gameId: 1,
                 currentExpectedMoveNumber: 0,
+                isCurrentGameLive: false,
             }),
         ).toBe(true);
     });
@@ -793,6 +798,7 @@ describe("visible main board hydration", () => {
                 roomId: "room-1",
                 gameId: 1,
                 currentExpectedMoveNumber: 121,
+                isCurrentGameLive: false,
             }),
         ).toBe(false);
     });
@@ -825,6 +831,7 @@ describe("visible main board hydration", () => {
                 roomId: "room-1",
                 gameId: 1,
                 currentExpectedMoveNumber: 126,
+                isCurrentGameLive: false,
             }),
         ).toBe(false);
     });

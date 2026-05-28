@@ -51,11 +51,13 @@ function restoreMainBoardToOfficialTail(controller: GobanController): MoveTree |
 
 export function canHydrateMainBoardFromRoomBaseSnapshot({
     mainBoardController,
+    currentGame,
     currentRoomGameId,
     requiredMoveNumber,
     roomBaseSnapshot,
 }: {
     mainBoardController: GobanController | null | undefined;
+    currentGame: KibitzWatchedGame | null | undefined;
     currentRoomGameId: number | null | undefined;
     requiredMoveNumber: number;
     roomBaseSnapshot: KibitzCurrentGameBaseSnapshot | null | undefined;
@@ -80,6 +82,18 @@ export function canHydrateMainBoardFromRoomBaseSnapshot({
         return false;
     }
 
+    if (
+        currentGame?.live &&
+        requiredMoveNumber === 0 &&
+        roomBaseSnapshot.trunkTailMoveNumber === 0 &&
+        !(
+            roomBaseSnapshot.source === "game-details" ||
+            roomBaseSnapshot.source === "selected-game-details"
+        )
+    ) {
+        return false;
+    }
+
     if (roomBaseSnapshot.trunkTailMoveNumber < requiredMoveNumber) {
         return false;
     }
@@ -95,11 +109,13 @@ export function canHydrateMainBoardFromRoomBaseSnapshot({
 
 export function hydrateMainBoardFromRoomBaseSnapshot({
     mainBoardController,
+    currentGame,
     currentRoomGameId,
     requiredMoveNumber,
     roomBaseSnapshot,
 }: {
     mainBoardController: GobanController;
+    currentGame: KibitzWatchedGame | null | undefined;
     currentRoomGameId: number;
     requiredMoveNumber: number;
     roomBaseSnapshot: KibitzCurrentGameBaseSnapshot;
@@ -107,6 +123,7 @@ export function hydrateMainBoardFromRoomBaseSnapshot({
     if (
         !canHydrateMainBoardFromRoomBaseSnapshot({
             mainBoardController,
+            currentGame,
             currentRoomGameId,
             requiredMoveNumber,
             roomBaseSnapshot,
@@ -172,6 +189,7 @@ export function captureCurrentGameBaseSnapshotFromController(
         moveTreeId: engine.move_tree?.id ?? null,
         movePath: officialTail.getMoveStringToThisPoint(),
         source,
+        fetchedMoveCount: null,
         config: {
             ...(engine.config as Record<string, unknown>),
             game_id: game.game_id,
