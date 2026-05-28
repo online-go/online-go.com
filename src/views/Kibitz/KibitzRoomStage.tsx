@@ -364,31 +364,19 @@ type SelectedGameBaseSnapshotFetchResult =
           };
       };
 
-async function fetchSelectedGameBaseSnapshot({
+export function buildSelectedGameBaseSnapshotFromDetails({
+    details,
     gameId,
     roomId,
     requiredSnapshotMoveNumber,
+    logDebug,
 }: {
+    details: KibitzSelectedGameDetails;
     gameId: number;
     roomId: string | null | undefined;
     requiredSnapshotMoveNumber: number;
-}): Promise<SelectedGameBaseSnapshotFetchResult> {
-    let details: KibitzSelectedGameDetails;
-
-    try {
-        details = (await get(`games/${gameId}`)) as KibitzSelectedGameDetails;
-    } catch (error) {
-        return {
-            kind: "failure",
-            failure: buildSelectedGameSnapshotFailureFromError({
-                error,
-                gameId,
-                variationId: null,
-                requiredMoveNumber: requiredSnapshotMoveNumber,
-            }),
-        };
-    }
-
+    logDebug?: (message: string, details?: Record<string, unknown>) => void;
+}): SelectedGameBaseSnapshotFetchResult {
     if (!details?.gamedata) {
         return {
             kind: "failure",
@@ -402,26 +390,45 @@ async function fetchSelectedGameBaseSnapshot({
         };
     }
 
-    if (!Array.isArray(details.gamedata.moves) || details.gamedata.moves.length === 0) {
+    if (!Array.isArray(details.gamedata.moves)) {
         return {
             kind: "failure",
             failure: {
-                kind: !Array.isArray(details.gamedata.moves)
-                    ? "invalid-game-data"
-                    : "missing-moves",
+                kind: "invalid-game-data",
                 message: "Game details did not include gamedata.moves",
                 details: {
                     hasDetails: Boolean(details),
                     hasGamedata: Boolean(details.gamedata),
-                    movesType: Array.isArray(details.gamedata.moves)
-                        ? "array"
-                        : typeof details.gamedata.moves,
-                    moveCount: Array.isArray(details.gamedata.moves)
-                        ? details.gamedata.moves.length
-                        : null,
+                    movesType: typeof details.gamedata.moves,
+                    moveCount: null,
                 },
             },
         };
+    }
+
+    if (details.gamedata.moves.length === 0 && requiredSnapshotMoveNumber > 0) {
+        return {
+            kind: "failure",
+            failure: {
+                kind: "missing-moves",
+                message: "Game details did not include enough moves",
+                details: {
+                    hasDetails: Boolean(details),
+                    hasGamedata: Boolean(details.gamedata),
+                    movesType: "array",
+                    moveCount: 0,
+                    requiredMoveNumber: requiredSnapshotMoveNumber,
+                },
+            },
+        };
+    }
+
+    if (details.gamedata.moves.length === 0 && requiredSnapshotMoveNumber === 0) {
+        logDebug?.("selected-game-base-snapshot:empty-moves-root", {
+            selectedGameId: gameId,
+            requiredSnapshotMoveNumber,
+            moveCount: 0,
+        });
     }
 
     if (
@@ -495,6 +502,42 @@ async function fetchSelectedGameBaseSnapshot({
         kind: "ready",
         snapshot,
     };
+}
+
+async function fetchSelectedGameBaseSnapshot({
+    gameId,
+    roomId,
+    requiredSnapshotMoveNumber,
+    logDebug,
+}: {
+    gameId: number;
+    roomId: string | null | undefined;
+    requiredSnapshotMoveNumber: number;
+    logDebug?: (message: string, details?: Record<string, unknown>) => void;
+}): Promise<SelectedGameBaseSnapshotFetchResult> {
+    let details: KibitzSelectedGameDetails;
+
+    try {
+        details = (await get(`games/${gameId}`)) as KibitzSelectedGameDetails;
+    } catch (error) {
+        return {
+            kind: "failure",
+            failure: buildSelectedGameSnapshotFailureFromError({
+                error,
+                gameId,
+                variationId: null,
+                requiredMoveNumber: requiredSnapshotMoveNumber,
+            }),
+        };
+    }
+
+    return buildSelectedGameBaseSnapshotFromDetails({
+        details,
+        gameId,
+        roomId,
+        requiredSnapshotMoveNumber,
+        logDebug,
+    });
 }
 
 function useSquareFitSize<T extends HTMLElement>(
@@ -1989,6 +2032,7 @@ export function KibitzRoomStage({
                     gameId,
                     roomId: room.id,
                     requiredSnapshotMoveNumber,
+                    logDebug: logSelectedGameSnapshotDebug,
                 });
 
                 if (result.kind === "failure") {

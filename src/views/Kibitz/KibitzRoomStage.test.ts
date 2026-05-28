@@ -17,10 +17,11 @@
 
 import type { KibitzRoomSummary, KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
 import type { GobanController } from "@/lib/GobanController";
-import type { MoveTree } from "goban";
+import type { GobanConfig, MoveTree } from "goban";
 import {
     captureRoomBaseSnapshotForVariation,
     captureMainBoardBaseSnapshotForVariation,
+    buildSelectedGameBaseSnapshotFromDetails,
     clearDraftBaseAppliedState,
     clearInstalledSecondaryVariationBaseState,
     buildSnapshotFromEngine,
@@ -108,6 +109,20 @@ function makeMoveTree(
     return tree as unknown as MoveTree;
 }
 
+function makeSelectedGameDetails(
+    moves: GobanConfig["moves"],
+): Parameters<typeof buildSelectedGameBaseSnapshotFromDetails>[0]["details"] {
+    return {
+        id: 4321,
+        width: 19,
+        height: 19,
+        name: "Source game",
+        gamedata: {
+            moves,
+        } as Parameters<typeof buildSelectedGameBaseSnapshotFromDetails>[0]["details"]["gamedata"],
+    };
+}
+
 describe("resolveSelectedVariationSourceGame", () => {
     it("prefers the cached game lookup when the room list does not have the source game yet", () => {
         const selectedVariation = makeVariation(4321);
@@ -145,6 +160,81 @@ describe("resolveSelectedVariationSourceGame", () => {
 });
 
 describe("variation snapshot readiness", () => {
+    it("allows an empty move list when the required snapshot move is root", () => {
+        const debugLog = jest.fn();
+        const result = buildSelectedGameBaseSnapshotFromDetails({
+            details: makeSelectedGameDetails([]),
+            gameId: 4321,
+            roomId: "room-1",
+            requiredSnapshotMoveNumber: 0,
+            logDebug: debugLog,
+        });
+
+        expect(result.kind).toBe("ready");
+        if (result.kind !== "ready") {
+            return;
+        }
+
+        expect(result.snapshot.gameId).toBe(4321);
+        expect(result.snapshot.trunkTailMoveNumber).toBe(0);
+        expect(result.snapshot.source).toBe("selected-game-details");
+        expect(result.snapshot.config.moves).toBeUndefined();
+        expect(result.snapshot.config.move_tree).toBeDefined();
+        expect(debugLog).toHaveBeenCalledWith(
+            "selected-game-base-snapshot:empty-moves-root",
+            expect.objectContaining({
+                selectedGameId: 4321,
+                requiredSnapshotMoveNumber: 0,
+                moveCount: 0,
+            }),
+        );
+    });
+
+    it("keeps an empty move list blocked when the required snapshot move is not root", () => {
+        const result = buildSelectedGameBaseSnapshotFromDetails({
+            details: makeSelectedGameDetails([]),
+            gameId: 4321,
+            roomId: "room-1",
+            requiredSnapshotMoveNumber: 1,
+        });
+
+        expect(result).toEqual(
+            expect.objectContaining({
+                kind: "failure",
+                failure: expect.objectContaining({
+                    kind: "missing-moves",
+                    details: expect.objectContaining({
+                        moveCount: 0,
+                        requiredMoveNumber: 1,
+                    }),
+                }),
+            }),
+        );
+    });
+
+    it("rejects non-array move data as invalid game data", () => {
+        const result = buildSelectedGameBaseSnapshotFromDetails({
+            details: {
+                ...makeSelectedGameDetails([]),
+                gamedata: {
+                    moves: undefined,
+                },
+            },
+            gameId: 4321,
+            roomId: "room-1",
+            requiredSnapshotMoveNumber: 0,
+        });
+
+        expect(result).toEqual(
+            expect.objectContaining({
+                kind: "failure",
+                failure: expect.objectContaining({
+                    kind: "invalid-game-data",
+                }),
+            }),
+        );
+    });
+
     it("requires only the visible variation anchors for snapshots", () => {
         const sourceGame = {
             ...makeGame(4321, "Source game"),
@@ -276,6 +366,26 @@ describe("variation snapshot readiness", () => {
         expect(snapshot?.config.moves).toBeUndefined();
         expect(snapshot?.config.move_tree?.branches).toBeUndefined();
         expect(snapshot?.config.move_tree?.trunk_next).toBeDefined();
+    });
+
+    it("still loads a non-empty selected-game snapshot through the validation path", () => {
+        const result = buildSelectedGameBaseSnapshotFromDetails({
+            details: makeSelectedGameDetails([{ x: 3, y: 4 }]),
+            gameId: 4321,
+            roomId: "room-1",
+            requiredSnapshotMoveNumber: 1,
+        });
+
+        expect(result.kind).toBe("ready");
+        if (result.kind !== "ready") {
+            return;
+        }
+
+        expect(result.snapshot.gameId).toBe(4321);
+        expect(result.snapshot.trunkTailMoveNumber).toBeGreaterThanOrEqual(1);
+        expect(result.snapshot.source).toBe("selected-game-details");
+        expect(result.snapshot.config.moves).toBeUndefined();
+        expect(result.snapshot.config.move_tree).toBeDefined();
     });
 
     it("refuses a headless selected-game snapshot that is too shallow for the requirement", () => {
