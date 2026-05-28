@@ -20,7 +20,17 @@ import { act, render, waitFor } from "@testing-library/react";
 import type { KibitzController } from "./KibitzController";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 import type { KibitzRoom, KibitzRoomSummary, KibitzWatchedGame } from "@/models/kibitz";
-import { isCurrentGameBaseSnapshotUsable, KibitzInner } from "./KibitzInner";
+import {
+    getMoveTreeTrunkTail,
+    type GobanController as GobanBoardController,
+} from "@/lib/GobanController";
+import {
+    applyVisibleMainBoardHydrationReport,
+    createVisibleMainBoardHydrationState,
+    isCurrentGameBaseSnapshotUsable,
+    isVisibleMainBoardMounted,
+    KibitzInner,
+} from "./KibitzInner";
 import { get } from "@/lib/requests";
 
 jest.mock("@/components/Player", () => ({
@@ -182,7 +192,7 @@ jest.mock("@/lib/GobanController", () => ({
             },
         },
     })),
-    getMoveTreeTrunkTail: () => ({ move_number: 0 }),
+    getMoveTreeTrunkTail: jest.fn(() => ({ move_number: 0 })),
 }));
 
 jest.mock("./kibitzCurrentGameBaseSnapshot", () => ({
@@ -594,5 +604,226 @@ describe("KibitzInner current-game base snapshot fetch", () => {
             expect(mockedGet).toHaveBeenCalledTimes(2);
             expect(mockedGet).toHaveBeenNthCalledWith(2, "games/2");
         });
+    });
+});
+
+describe("visible main board hydration", () => {
+    beforeEach(() => {
+        (getMoveTreeTrunkTail as jest.MockedFunction<typeof getMoveTreeTrunkTail>).mockClear();
+    });
+
+    it("uses cached hydration without walking the move tree", () => {
+        const getMoveTreeTrunkTailMock = getMoveTreeTrunkTail as jest.MockedFunction<
+            typeof getMoveTreeTrunkTail
+        >;
+        const visibleMainBoardHydration = applyVisibleMainBoardHydrationReport(
+            createVisibleMainBoardHydrationState({
+                roomId: "room-1",
+                gameId: 1,
+                expectedMoveNumber: 126,
+            }),
+            {
+                roomId: "room-1",
+                gameId: 1,
+                officialTailMoveNumber: 126,
+                expectedMoveNumber: 126,
+                hasMoveTree: true,
+                hydrated: true,
+            },
+            "room-1",
+            1,
+        );
+
+        expect(
+            isVisibleMainBoardMounted({
+                mobileCompareActive: false,
+                mainBoardController: {} as unknown as GobanBoardController,
+                isCurrentMainBoardController: true,
+                visibleMainBoardHydration,
+                roomId: "room-1",
+                gameId: 1,
+                expectedMoveNumber: 126,
+            }),
+        ).toBe(true);
+        expect(getMoveTreeTrunkTailMock).not.toHaveBeenCalled();
+    });
+
+    it("keeps the broker active until the main board hydrates", () => {
+        const visibleMainBoardHydration = createVisibleMainBoardHydrationState({
+            roomId: "room-1",
+            gameId: 1,
+            expectedMoveNumber: 126,
+        });
+
+        expect(
+            isVisibleMainBoardMounted({
+                mobileCompareActive: false,
+                mainBoardController: {} as unknown as GobanBoardController,
+                isCurrentMainBoardController: true,
+                visibleMainBoardHydration,
+                roomId: "room-1",
+                gameId: 1,
+                expectedMoveNumber: 126,
+            }),
+        ).toBe(false);
+    });
+
+    it("marks the board hydrated when the official tail reaches the expected move", () => {
+        const initial = createVisibleMainBoardHydrationState({
+            roomId: "room-1",
+            gameId: 1,
+            expectedMoveNumber: 126,
+        });
+        const hydrated = applyVisibleMainBoardHydrationReport(
+            initial,
+            {
+                roomId: "room-1",
+                gameId: 1,
+                officialTailMoveNumber: 126,
+                expectedMoveNumber: 126,
+                hasMoveTree: true,
+                hydrated: true,
+            },
+            "room-1",
+            1,
+        );
+
+        expect(hydrated.hydrated).toBe(true);
+        expect(
+            isVisibleMainBoardMounted({
+                mobileCompareActive: false,
+                mainBoardController: {} as unknown as GobanBoardController,
+                isCurrentMainBoardController: true,
+                visibleMainBoardHydration: hydrated,
+                roomId: "room-1",
+                gameId: 1,
+                expectedMoveNumber: 126,
+            }),
+        ).toBe(true);
+    });
+
+    it("ignores stale hydration reports for another room or game", () => {
+        const previous = createVisibleMainBoardHydrationState({
+            roomId: "room-2",
+            gameId: 2,
+            expectedMoveNumber: 126,
+        });
+        const next = applyVisibleMainBoardHydrationReport(
+            previous,
+            {
+                roomId: "room-1",
+                gameId: 1,
+                officialTailMoveNumber: 126,
+                expectedMoveNumber: 126,
+                hasMoveTree: true,
+                hydrated: true,
+            },
+            "room-2",
+            2,
+        );
+
+        expect(next).toBe(previous);
+        expect(
+            isVisibleMainBoardMounted({
+                mobileCompareActive: false,
+                mainBoardController: {} as unknown as GobanBoardController,
+                isCurrentMainBoardController: true,
+                visibleMainBoardHydration: next,
+                roomId: "room-2",
+                gameId: 2,
+                expectedMoveNumber: 126,
+            }),
+        ).toBe(false);
+    });
+
+    it("hydrates move-0 games when a move tree exists", () => {
+        const initial = createVisibleMainBoardHydrationState({
+            roomId: "room-1",
+            gameId: 1,
+            expectedMoveNumber: 0,
+        });
+        const hydrated = applyVisibleMainBoardHydrationReport(
+            initial,
+            {
+                roomId: "room-1",
+                gameId: 1,
+                officialTailMoveNumber: 0,
+                expectedMoveNumber: 0,
+                hasMoveTree: true,
+                hydrated: true,
+            },
+            "room-1",
+            1,
+        );
+
+        expect(hydrated.hydrated).toBe(true);
+        expect(
+            isVisibleMainBoardMounted({
+                mobileCompareActive: false,
+                mainBoardController: {} as unknown as GobanBoardController,
+                isCurrentMainBoardController: true,
+                visibleMainBoardHydration: hydrated,
+                roomId: "room-1",
+                gameId: 1,
+                expectedMoveNumber: 0,
+            }),
+        ).toBe(true);
+    });
+
+    it("does not treat stale same-game hydration as mounted after the room move advances", () => {
+        const hydration = {
+            ...createVisibleMainBoardHydrationState({
+                roomId: "room-1",
+                gameId: 1,
+                expectedMoveNumber: 120,
+            }),
+            officialTailMoveNumber: 120,
+            hasMoveTree: true,
+            hydrated: true,
+        };
+
+        expect(
+            isVisibleMainBoardMounted({
+                mobileCompareActive: false,
+                mainBoardController: {} as unknown as GobanBoardController,
+                isCurrentMainBoardController: true,
+                visibleMainBoardHydration: hydration,
+                roomId: "room-1",
+                gameId: 1,
+                expectedMoveNumber: 121,
+            }),
+        ).toBe(false);
+    });
+
+    it("resets hydration state when the controller is cleared", () => {
+        const hydrated = {
+            ...createVisibleMainBoardHydrationState({
+                roomId: "room-1",
+                gameId: 1,
+                expectedMoveNumber: 126,
+            }),
+            officialTailMoveNumber: 126,
+            hasMoveTree: true,
+            hydrated: true,
+        };
+        const reset = createVisibleMainBoardHydrationState({
+            roomId: "room-1",
+            gameId: 1,
+            expectedMoveNumber: 126,
+        });
+
+        expect(hydrated.hydrated).toBe(true);
+        expect(reset.hydrated).toBe(false);
+        expect(
+            isVisibleMainBoardMounted({
+                mobileCompareActive: false,
+                mainBoardController: null,
+                isCurrentMainBoardController: false,
+                visibleMainBoardHydration: reset,
+                roomId: "room-1",
+                gameId: 1,
+                expectedMoveNumber: 126,
+            }),
+        ).toBe(false);
     });
 });

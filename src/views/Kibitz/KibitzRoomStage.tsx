@@ -98,6 +98,14 @@ interface KibitzRoomStageProps {
     onOpenMobileRooms?: () => void;
     onMobileCompareControllerChange?: (controller: GobanController | null) => void;
     onMainBoardControllerChange?: (controller: GobanController | null) => void;
+    onMainBoardHydrationChange?: (state: {
+        roomId: string;
+        gameId: number | null;
+        officialTailMoveNumber: number;
+        expectedMoveNumber: number;
+        hasMoveTree: boolean;
+        hydrated: boolean;
+    }) => void;
 }
 
 interface KibitzSelectedGameDetails {
@@ -1773,6 +1781,7 @@ export function KibitzRoomStage({
     onOpenMobileRooms,
     onMobileCompareControllerChange,
     onMainBoardControllerChange,
+    onMainBoardHydrationChange,
 }: KibitzRoomStageProps): React.ReactElement {
     const mainGame = room.current_game;
     const currentRoomGameId = mainGame?.game_id ?? null;
@@ -3222,6 +3231,11 @@ export function KibitzRoomStage({
             return;
         }
 
+        const game = mainGame;
+        if (!game) {
+            return;
+        }
+
         const goban = mainBoardController.goban;
         let disposed = false;
 
@@ -3235,6 +3249,13 @@ export function KibitzRoomStage({
             const officialTailMoveNumber = officialTail?.move_number ?? 0;
             const currentMoveNumber = currentEngine.cur_move?.move_number ?? 0;
             const currentMoveId = currentEngine.cur_move?.id ?? null;
+            const expectedMoveNumber = game.move_number ?? 0;
+            const hasMoveTree = Boolean(currentEngine.move_tree);
+            const hydrated =
+                game.game_id != null &&
+                (expectedMoveNumber === 0
+                    ? hasMoveTree
+                    : officialTailMoveNumber >= expectedMoveNumber);
 
             setMainBoardOfficialTailMoveNumber((previousTailMoveNumber) =>
                 previousTailMoveNumber === officialTailMoveNumber
@@ -3254,6 +3275,23 @@ export function KibitzRoomStage({
                 lastOfficialMove: summarizeKibitzMoveTreeNode(currentEngine.last_official_move),
                 lastOfficialMoveNumber: currentEngine.last_official_move?.move_number ?? null,
                 lastOfficialMoveId: currentEngine.last_official_move?.id ?? null,
+            });
+            onMainBoardHydrationChange?.({
+                roomId: room.id,
+                gameId: game.game_id,
+                officialTailMoveNumber,
+                expectedMoveNumber,
+                hasMoveTree,
+                hydrated,
+            });
+            logKibitzVariationDebug("main-board:hydration-state", {
+                reason,
+                roomId: room.id,
+                gameId: game.game_id,
+                officialTailMoveNumber,
+                expectedMoveNumber,
+                hasMoveTree,
+                hydrated,
             });
             scheduleMainBoardVisibleRedraw(reason);
         };
@@ -3284,7 +3322,13 @@ export function KibitzRoomStage({
             goban.off("last_official_move", onLastOfficialMove);
             goban.off("move-made", onMoveMade);
         };
-    }, [currentRoomGameId, mainBoardController, scheduleMainBoardVisibleRedraw]);
+    }, [
+        currentRoomGameId,
+        mainBoardController,
+        onMainBoardHydrationChange,
+        room.id,
+        scheduleMainBoardVisibleRedraw,
+    ]);
 
     React.useEffect(() => {
         if (!isMobileLayout || mobileCompareActive) {

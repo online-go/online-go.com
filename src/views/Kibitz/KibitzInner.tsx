@@ -98,6 +98,95 @@ interface PendingPostedVariation {
     title?: string;
 }
 
+export interface VisibleMainBoardHydrationState {
+    roomId: string | null;
+    gameId: number | null;
+    officialTailMoveNumber: number;
+    expectedMoveNumber: number;
+    hasMoveTree: boolean;
+    hydrated: boolean;
+}
+
+export function createVisibleMainBoardHydrationState(params: {
+    roomId: string | null;
+    gameId: number | null;
+    expectedMoveNumber: number;
+}): VisibleMainBoardHydrationState {
+    return {
+        roomId: params.roomId,
+        gameId: params.gameId,
+        officialTailMoveNumber: 0,
+        expectedMoveNumber: params.expectedMoveNumber,
+        hasMoveTree: false,
+        hydrated: false,
+    };
+}
+
+export function applyVisibleMainBoardHydrationReport(
+    previous: VisibleMainBoardHydrationState,
+    report: {
+        roomId: string;
+        gameId: number | null;
+        officialTailMoveNumber: number;
+        expectedMoveNumber: number;
+        hasMoveTree: boolean;
+        hydrated: boolean;
+    },
+    currentRoomId: string | null,
+    currentGameId: number | null,
+): VisibleMainBoardHydrationState {
+    if (report.roomId !== currentRoomId || report.gameId !== currentGameId) {
+        return previous;
+    }
+
+    const next: VisibleMainBoardHydrationState = {
+        roomId: report.roomId,
+        gameId: report.gameId,
+        officialTailMoveNumber: report.officialTailMoveNumber,
+        expectedMoveNumber: report.expectedMoveNumber,
+        hasMoveTree: report.hasMoveTree,
+        hydrated: report.hydrated,
+    };
+
+    if (
+        previous.roomId === next.roomId &&
+        previous.gameId === next.gameId &&
+        previous.officialTailMoveNumber === next.officialTailMoveNumber &&
+        previous.expectedMoveNumber === next.expectedMoveNumber &&
+        previous.hasMoveTree === next.hasMoveTree &&
+        previous.hydrated === next.hydrated
+    ) {
+        return previous;
+    }
+
+    return next;
+}
+
+export function isVisibleMainBoardMounted(params: {
+    mobileCompareActive: boolean;
+    mainBoardController: GobanController | null;
+    isCurrentMainBoardController: boolean;
+    visibleMainBoardHydration: VisibleMainBoardHydrationState;
+    roomId: string | null;
+    gameId: number | null;
+    expectedMoveNumber: number;
+}): boolean {
+    const hydration = params.visibleMainBoardHydration;
+
+    return Boolean(
+        !params.mobileCompareActive &&
+        params.mainBoardController &&
+        params.isCurrentMainBoardController &&
+        hydration.roomId === params.roomId &&
+        hydration.gameId === params.gameId &&
+        hydration.hydrated &&
+        hydration.expectedMoveNumber >= params.expectedMoveNumber &&
+        (params.expectedMoveNumber === 0
+            ? hydration.hasMoveTree
+            : hydration.officialTailMoveNumber >= params.expectedMoveNumber),
+    );
+}
+
 interface KibitzInnerProps {
     controller: KibitzController;
 }
@@ -484,6 +573,14 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     // instead of incorrectly trying to join a comm-server Redis channel.
     const [mainBoardController, setMainBoardControllerState] =
         React.useState<GobanController | null>(null);
+    const [visibleMainBoardHydration, setVisibleMainBoardHydration] =
+        React.useState<VisibleMainBoardHydrationState>(() =>
+            createVisibleMainBoardHydrationState({
+                roomId: null,
+                gameId: null,
+                expectedMoveNumber: 0,
+            }),
+        );
     const mainBoardControllerEpochRef = React.useRef(0);
     const mainBoardControllerContextRef = React.useRef<{
         controller: GobanController;
@@ -493,6 +590,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     } | null>(null);
     const currentRoomIdRef = React.useRef<string | null>(null);
     const currentRoomGameIdRef = React.useRef<number | null>(null);
+    const currentGameMoveNumberRef = React.useRef(0);
+    const visibleMainBoardHydrationRef = React.useRef(visibleMainBoardHydration);
     const [currentGameBaseSnapshot, setCurrentGameBaseSnapshot] =
         React.useState<KibitzCurrentGameBaseSnapshot | null>(null);
     const [currentGameBaseSnapshotLoadingGameId, setCurrentGameBaseSnapshotLoadingGameId] =
@@ -972,6 +1071,21 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     // permanently mismatching every isCurrentMainBoardController check.
     currentRoomIdRef.current = resolvedRoom?.id ?? null;
     currentRoomGameIdRef.current = currentGameId;
+    currentGameMoveNumberRef.current = currentGameMoveNumber;
+
+    React.useEffect(() => {
+        visibleMainBoardHydrationRef.current = visibleMainBoardHydration;
+    }, [visibleMainBoardHydration]);
+
+    React.useEffect(() => {
+        setVisibleMainBoardHydration(
+            createVisibleMainBoardHydrationState({
+                roomId: resolvedRoom?.id ?? null,
+                gameId: currentGameId,
+                expectedMoveNumber: currentGameMoveNumberRef.current,
+            }),
+        );
+    }, [currentGameId, resolvedRoom?.id]);
 
     const setMainBoardController = React.useCallback((controller: GobanController | null) => {
         mainBoardControllerEpochRef.current += 1;
@@ -984,6 +1098,15 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
               }
             : null;
         setMainBoardControllerState(controller);
+        if (!controller) {
+            setVisibleMainBoardHydration(
+                createVisibleMainBoardHydrationState({
+                    roomId: currentRoomIdRef.current,
+                    gameId: currentRoomGameIdRef.current,
+                    expectedMoveNumber: currentGameMoveNumberRef.current,
+                }),
+            );
+        }
     }, []);
     const isCurrentMainBoardController = React.useCallback(
         (controller: GobanController | null | undefined) => {
@@ -1000,13 +1123,40 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         },
         [],
     );
-    const roomLiveMoveNumber = resolvedRoom?.current_game?.move_number ?? 0;
-    const visibleMainBoardMounted = Boolean(
-        mainBoardController &&
-        (roomLiveMoveNumber <= 0 ||
-            (getMoveTreeTrunkTail(mainBoardController.goban.engine.move_tree)?.move_number ?? 0) >=
-                roomLiveMoveNumber),
+    const handleMainBoardHydrationChange = React.useCallback(
+        (state: {
+            roomId: string;
+            gameId: number | null;
+            officialTailMoveNumber: number;
+            expectedMoveNumber: number;
+            hasMoveTree: boolean;
+            hydrated: boolean;
+        }) => {
+            setVisibleMainBoardHydration((previous) =>
+                applyVisibleMainBoardHydrationReport(
+                    previous,
+                    state,
+                    currentRoomIdRef.current,
+                    currentRoomGameIdRef.current,
+                ),
+            );
+        },
+        [],
     );
+    const roomLiveMoveNumber = resolvedRoom?.current_game?.move_number ?? 0;
+    const mobileCompareActive = Boolean(isMobileLayout && mobileCompanionPanel === "compare");
+    const mainBoardControllerFresh = Boolean(
+        mainBoardController && isCurrentMainBoardController(mainBoardController),
+    );
+    const visibleMainBoardMounted = isVisibleMainBoardMounted({
+        mobileCompareActive,
+        mainBoardController,
+        isCurrentMainBoardController: mainBoardControllerFresh,
+        visibleMainBoardHydration,
+        roomId: resolvedRoom?.id ?? null,
+        gameId: currentGameId,
+        expectedMoveNumber: currentGameMoveNumber,
+    });
     const currentGameBaseSnapshotFreshnessMoveNumber = React.useMemo(() => {
         const liveTailFromRoom = resolvedRoom?.current_game?.move_number ?? 0;
         const cachedSnapshotTail =
@@ -2564,6 +2714,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                 setMobileCompareController
                                             }
                                             onMainBoardControllerChange={setMainBoardController}
+                                            onMainBoardHydrationChange={
+                                                handleMainBoardHydrationChange
+                                            }
                                         />
                                     )}
                                 </div>
@@ -2724,6 +2877,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                     onOpenMobileRooms={undefined}
                                     onMobileCompareControllerChange={undefined}
                                     onMainBoardControllerChange={setMainBoardController}
+                                    onMainBoardHydrationChange={handleMainBoardHydrationChange}
                                 />
                             )}
                             <div
