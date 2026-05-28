@@ -45,6 +45,67 @@ interface KibitzBoardProps {
 }
 
 const MAX_INITIAL_RESIZE_RETRIES = 60;
+const MAX_BOARD_HOST_READY_RAF_ATTEMPTS = 120;
+const BOARD_HOST_READY_SLOW_RETRY_MS = 250;
+const MAX_BOARD_HOST_READY_SLOW_RETRIES = 20;
+
+export type BoardHostReadinessReason = "missing-host" | "detached" | "zero-size" | "ready";
+
+export interface BoardHostReadiness {
+    ready: boolean;
+    reason: BoardHostReadinessReason;
+    width: number;
+    height: number;
+    connected: boolean;
+}
+
+type FullBoardHostReadiness = BoardHostReadiness & {
+    gobanContainerReady: boolean;
+};
+
+export function getBoardHostReadiness(host: HTMLElement | null): BoardHostReadiness {
+    if (!host) {
+        return {
+            ready: false,
+            reason: "missing-host",
+            width: 0,
+            height: 0,
+            connected: false,
+        };
+    }
+
+    const connected = host.isConnected;
+    const width = host.clientWidth;
+    const height = host.clientHeight;
+
+    if (!connected) {
+        return {
+            ready: false,
+            reason: "detached",
+            width,
+            height,
+            connected,
+        };
+    }
+
+    if (width <= 0 || height <= 0) {
+        return {
+            ready: false,
+            reason: "zero-size",
+            width,
+            height,
+            connected,
+        };
+    }
+
+    return {
+        ready: true,
+        reason: "ready",
+        width,
+        height,
+        connected,
+    };
+}
 
 export function getMovePathToRestore(
     currentMovePath: string | undefined,
@@ -180,7 +241,6 @@ export function KibitzBoard({
     );
     const controllerRef = React.useRef<GobanController | null>(null);
     const controllerPublishedRef = React.useRef(false);
-    const readinessFrameRef = React.useRef<number | null>(null);
     const resizeDebounceRef = React.useRef<NodeJS.Timeout | null>(null);
     const initialResizeRetryCountRef = React.useRef(0);
     const initialResizeRetryTimedOutRef = React.useRef(false);
@@ -263,46 +323,207 @@ export function KibitzBoard({
             return;
         }
 
-        let cancelled = false;
+        let disposed = false;
+        let readinessFrame: number | null = null;
+        let slowRetryTimer: number | null = null;
+        let resizeObserver: ResizeObserver | null = null;
+        let rafAttemptCount = 0;
+        let slowRetryCount = 0;
+        let timeoutLogged = false;
+        let abandonedLogged = false;
+        let slowRecoveryActive = false;
+        let readySignaled = false;
+        let lastReadiness = getFullBoardHostReadiness();
 
-        const checkBoardHostReady = () => {
-            if (cancelled) {
-                return;
-            }
-
-            const boardHost = boardHostRef.current;
+        function getFullBoardHostReadiness(): FullBoardHostReadiness {
+            const readiness = getBoardHostReadiness(boardHostRef.current);
             const gobanContainer = gobanContainerRef.current;
             const gobanWrapper = gobanDiv.current.parentElement;
-            const boardHostReady =
-                Boolean(boardHost?.isConnected) &&
-                (boardHost?.clientWidth ?? 0) > 0 &&
-                (boardHost?.clientHeight ?? 0) > 0 &&
+            const gobanContainerReady =
                 Boolean(gobanContainer?.isConnected) &&
                 Boolean(gobanWrapper?.isConnected) &&
-                gobanWrapper?.classList.contains("Goban") &&
-                gobanContainer?.classList.contains("goban-container") &&
-                gobanContainer.parentElement === boardHost &&
-                gobanWrapper.parentElement === gobanContainer &&
+                Boolean(gobanWrapper?.classList.contains("Goban")) &&
+                Boolean(gobanContainer?.classList.contains("goban-container")) &&
+                Boolean(gobanContainer && gobanContainer.parentElement === boardHostRef.current) &&
+                Boolean(gobanWrapper && gobanWrapper.parentElement === gobanContainer) &&
                 gobanDiv.current.parentElement === gobanWrapper;
 
-            if (boardHostReady) {
-                setBoardHostReadyKey(boardHostReadinessKey);
+            return {
+                ...readiness,
+                ready: readiness.ready && gobanContainerReady,
+                gobanContainerReady,
+            };
+        }
+
+        const clearReadinessWatchers = () => {
+            if (readinessFrame !== null) {
+                window.cancelAnimationFrame(readinessFrame);
+                readinessFrame = null;
+            }
+
+            if (slowRetryTimer !== null) {
+                window.clearTimeout(slowRetryTimer);
+                slowRetryTimer = null;
+            }
+
+            resizeObserver?.disconnect();
+            resizeObserver = null;
+        };
+
+        const logHostReadyTimeout = (readiness: FullBoardHostReadiness) => {
+            if (timeoutLogged) {
                 return;
             }
 
-            readinessFrameRef.current = window.requestAnimationFrame(checkBoardHostReady);
+            timeoutLogged = true;
+            logKibitzVariationDebug("kibitz-board:host-ready-raf-timeout", {
+                role,
+                gameId,
+                currentRoomGameId,
+                className: typeof className === "string" ? className : null,
+                size: size ?? null,
+                width: readiness.width,
+                height: readiness.height,
+                connected: readiness.connected,
+                reason: readiness.reason,
+                attempts: rafAttemptCount,
+            });
         };
 
-        readinessFrameRef.current = window.requestAnimationFrame(checkBoardHostReady);
+        const logHostReadyAbandoned = () => {
+            if (abandonedLogged) {
+                return;
+            }
+
+            abandonedLogged = true;
+            logKibitzVariationDebug("kibitz-board:host-ready-abandoned", {
+                role,
+                gameId,
+                currentRoomGameId,
+                className: typeof className === "string" ? className : null,
+                size: size ?? null,
+                lastReason: lastReadiness.reason,
+                lastWidth: lastReadiness.width,
+                lastHeight: lastReadiness.height,
+                connected: lastReadiness.connected,
+                rafAttempts: MAX_BOARD_HOST_READY_RAF_ATTEMPTS,
+                slowRetries: slowRetryCount,
+            });
+        };
+
+        const maybeMarkBoardHostReady = (
+            source: "raf" | "resize-observer" | "slow-retry",
+        ): boolean => {
+            if (disposed || readySignaled || controllerRef.current) {
+                return true;
+            }
+
+            const readiness = getFullBoardHostReadiness();
+            lastReadiness = readiness;
+
+            if (!readiness.ready) {
+                return false;
+            }
+
+            readySignaled = true;
+            clearReadinessWatchers();
+
+            if (source !== "raf" || slowRecoveryActive) {
+                logKibitzVariationDebug("kibitz-board:host-ready-slow-recovered", {
+                    role,
+                    gameId,
+                    currentRoomGameId,
+                    className: typeof className === "string" ? className : null,
+                    size: size ?? null,
+                    reason: source,
+                    slowRetryCount,
+                    width: readiness.width,
+                    height: readiness.height,
+                    gobanContainerReady: readiness.gobanContainerReady,
+                });
+            }
+
+            setBoardHostReadyKey(boardHostReadinessKey);
+            return true;
+        };
+
+        const scheduleSlowRetry = () => {
+            if (disposed || readySignaled) {
+                return;
+            }
+
+            if (slowRetryCount >= MAX_BOARD_HOST_READY_SLOW_RETRIES) {
+                clearReadinessWatchers();
+                logHostReadyAbandoned();
+                return;
+            }
+
+            slowRetryTimer = window.setTimeout(() => {
+                slowRetryTimer = null;
+
+                if (disposed || readySignaled) {
+                    return;
+                }
+
+                slowRetryCount += 1;
+                if (maybeMarkBoardHostReady("slow-retry")) {
+                    return;
+                }
+
+                scheduleSlowRetry();
+            }, BOARD_HOST_READY_SLOW_RETRY_MS);
+        };
+
+        const startSlowRecovery = (readiness: FullBoardHostReadiness) => {
+            if (disposed || readySignaled) {
+                return;
+            }
+
+            slowRecoveryActive = true;
+            lastReadiness = readiness;
+
+            if (typeof window.ResizeObserver === "function" && boardHostRef.current) {
+                resizeObserver = new ResizeObserver(() => {
+                    maybeMarkBoardHostReady("resize-observer");
+                });
+                resizeObserver.observe(boardHostRef.current);
+            }
+
+            scheduleSlowRetry();
+        };
+
+        const checkBoardHostReady = () => {
+            if (disposed || readySignaled || controllerRef.current) {
+                return;
+            }
+
+            const readiness = getFullBoardHostReadiness();
+            lastReadiness = readiness;
+
+            if (readiness.ready) {
+                maybeMarkBoardHostReady("raf");
+                return;
+            }
+
+            rafAttemptCount += 1;
+
+            if (rafAttemptCount >= MAX_BOARD_HOST_READY_RAF_ATTEMPTS) {
+                logHostReadyTimeout(readiness);
+                clearReadinessWatchers();
+                startSlowRecovery(readiness);
+                return;
+            }
+
+            readinessFrame = window.requestAnimationFrame(checkBoardHostReady);
+        };
+
+        readinessFrame = window.requestAnimationFrame(checkBoardHostReady);
 
         return () => {
-            cancelled = true;
-            if (readinessFrameRef.current !== null) {
-                window.cancelAnimationFrame(readinessFrameRef.current);
-                readinessFrameRef.current = null;
-            }
+            disposed = true;
+            clearReadinessWatchers();
         };
-    }, [boardHostReadinessKey, goban]);
+    }, [boardHostReadinessKey, goban, role, gameId, currentRoomGameId, className, size]);
 
     const cancelPendingInitialResizeRetry = React.useCallback(() => {
         const pendingRetry = pendingInitialResizeRetryRef.current;
