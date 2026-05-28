@@ -16,7 +16,12 @@
  */
 
 import type { KibitzVariationSummary } from "@/models/kibitz";
-import { clampDesktopSidebarWidthPx, pruneVisibleVariationIdsForGame } from "./KibitzInner";
+import type { GobanController } from "@/lib/GobanController";
+import {
+    clampDesktopSidebarWidthPx,
+    isVisibleMainBoardMounted,
+    pruneVisibleVariationIdsForGame,
+} from "./KibitzInner";
 
 function makeVariation(id: string, gameId: number): KibitzVariationSummary {
     return {
@@ -72,5 +77,78 @@ describe("clampDesktopSidebarWidthPx", () => {
 
     it("handles invalid width safely", () => {
         expect(clampDesktopSidebarWidthPx(Number.NaN, 1200)).toBe(336);
+    });
+});
+
+describe("isVisibleMainBoardMounted", () => {
+    const mainBoardController = {} as GobanController;
+
+    it("rejects stale move-0 hydration for a nonzero room", () => {
+        const hydration = {
+            roomId: "preset-fast-live",
+            gameId: 87402085,
+            officialTailMoveNumber: 0,
+            expectedMoveNumber: 0,
+            hasMoveTree: true,
+            hydrated: true,
+        };
+
+        expect(
+            isVisibleMainBoardMounted({
+                mobileCompareActive: false,
+                mainBoardController,
+                isCurrentMainBoardController: true,
+                visibleMainBoardHydration: hydration,
+                roomId: "preset-fast-live",
+                gameId: 87402085,
+                currentExpectedMoveNumber: 121,
+            }),
+        ).toBe(false);
+    });
+
+    it("rejects stale lower expected hydration for an advanced room", () => {
+        const hydration = {
+            roomId: "preset-fast-live",
+            gameId: 87402085,
+            officialTailMoveNumber: 120,
+            expectedMoveNumber: 120,
+            hasMoveTree: true,
+            hydrated: true,
+        };
+
+        expect(
+            isVisibleMainBoardMounted({
+                mobileCompareActive: false,
+                mainBoardController,
+                isCurrentMainBoardController: true,
+                visibleMainBoardHydration: hydration,
+                roomId: "preset-fast-live",
+                gameId: 87402085,
+                currentExpectedMoveNumber: 121,
+            }),
+        ).toBe(false);
+    });
+
+    it("accepts hydration when the expected move is current", () => {
+        const hydration = {
+            roomId: "preset-fast-live",
+            gameId: 87402085,
+            officialTailMoveNumber: 121,
+            expectedMoveNumber: 121,
+            hasMoveTree: true,
+            hydrated: true,
+        };
+
+        expect(
+            isVisibleMainBoardMounted({
+                mobileCompareActive: false,
+                mainBoardController,
+                isCurrentMainBoardController: true,
+                visibleMainBoardHydration: hydration,
+                roomId: "preset-fast-live",
+                gameId: 87402085,
+                currentExpectedMoveNumber: 121,
+            }),
+        ).toBe(true);
     });
 });

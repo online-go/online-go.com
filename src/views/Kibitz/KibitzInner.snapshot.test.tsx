@@ -644,7 +644,7 @@ describe("visible main board hydration", () => {
                 visibleMainBoardHydration,
                 roomId: "room-1",
                 gameId: 1,
-                expectedMoveNumber: 126,
+                currentExpectedMoveNumber: 126,
             }),
         ).toBe(true);
         expect(getMoveTreeTrunkTailMock).not.toHaveBeenCalled();
@@ -665,7 +665,7 @@ describe("visible main board hydration", () => {
                 visibleMainBoardHydration,
                 roomId: "room-1",
                 gameId: 1,
-                expectedMoveNumber: 126,
+                currentExpectedMoveNumber: 126,
             }),
         ).toBe(false);
     });
@@ -699,7 +699,7 @@ describe("visible main board hydration", () => {
                 visibleMainBoardHydration: hydrated,
                 roomId: "room-1",
                 gameId: 1,
-                expectedMoveNumber: 126,
+                currentExpectedMoveNumber: 126,
             }),
         ).toBe(true);
     });
@@ -733,7 +733,7 @@ describe("visible main board hydration", () => {
                 visibleMainBoardHydration: next,
                 roomId: "room-2",
                 gameId: 2,
-                expectedMoveNumber: 126,
+                currentExpectedMoveNumber: 126,
             }),
         ).toBe(false);
     });
@@ -767,7 +767,7 @@ describe("visible main board hydration", () => {
                 visibleMainBoardHydration: hydrated,
                 roomId: "room-1",
                 gameId: 1,
-                expectedMoveNumber: 0,
+                currentExpectedMoveNumber: 0,
             }),
         ).toBe(true);
     });
@@ -792,7 +792,7 @@ describe("visible main board hydration", () => {
                 visibleMainBoardHydration: hydration,
                 roomId: "room-1",
                 gameId: 1,
-                expectedMoveNumber: 121,
+                currentExpectedMoveNumber: 121,
             }),
         ).toBe(false);
     });
@@ -824,7 +824,7 @@ describe("visible main board hydration", () => {
                 visibleMainBoardHydration: reset,
                 roomId: "room-1",
                 gameId: 1,
-                expectedMoveNumber: 126,
+                currentExpectedMoveNumber: 126,
             }),
         ).toBe(false);
     });

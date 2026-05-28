@@ -169,7 +169,7 @@ export function isVisibleMainBoardMounted(params: {
     visibleMainBoardHydration: VisibleMainBoardHydrationState;
     roomId: string | null;
     gameId: number | null;
-    expectedMoveNumber: number;
+    currentExpectedMoveNumber: number;
 }): boolean {
     const hydration = params.visibleMainBoardHydration;
 
@@ -180,10 +180,10 @@ export function isVisibleMainBoardMounted(params: {
         hydration.roomId === params.roomId &&
         hydration.gameId === params.gameId &&
         hydration.hydrated &&
-        hydration.expectedMoveNumber >= params.expectedMoveNumber &&
-        (params.expectedMoveNumber === 0
+        hydration.expectedMoveNumber >= params.currentExpectedMoveNumber &&
+        (params.currentExpectedMoveNumber === 0
             ? hydration.hasMoveTree
-            : hydration.officialTailMoveNumber >= params.expectedMoveNumber),
+            : hydration.officialTailMoveNumber >= params.currentExpectedMoveNumber),
     );
 }
 
@@ -1148,6 +1148,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const mainBoardControllerFresh = Boolean(
         mainBoardController && isCurrentMainBoardController(mainBoardController),
     );
+    const currentExpectedMoveNumber = resolvedRoom?.current_game?.move_number ?? 0;
     const visibleMainBoardMounted = isVisibleMainBoardMounted({
         mobileCompareActive,
         mainBoardController,
@@ -1155,7 +1156,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         visibleMainBoardHydration,
         roomId: resolvedRoom?.id ?? null,
         gameId: currentGameId,
-        expectedMoveNumber: currentGameMoveNumber,
+        currentExpectedMoveNumber,
     });
     const currentGameBaseSnapshotFreshnessMoveNumber = React.useMemo(() => {
         const liveTailFromRoom = resolvedRoom?.current_game?.move_number ?? 0;
