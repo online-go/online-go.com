@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* cspell:ignore retryable Cpuip */
+
 import type { KibitzRoomSummary, KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
 import type { GobanController } from "@/lib/GobanController";
 import type { GobanConfig, MoveTree, MoveTreeJson } from "goban";

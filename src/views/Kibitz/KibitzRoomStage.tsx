@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* cspell:ignore unhydrated */
+
 import * as React from "react";
 import {
     GobanEngine,
