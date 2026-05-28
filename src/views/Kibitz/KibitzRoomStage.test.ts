@@ -28,9 +28,11 @@ import {
     clearDraftBaseAppliedState,
     clearInstalledSecondaryVariationBaseState,
     buildSnapshotFromEngine,
+    decideSecondaryVariationReloadAction,
     getCurrentSecondaryVariationBaseTreeIdentity,
     getOfficialTrunkTailMoveNumber,
     getCurrentDraftBaseTreeIdentity,
+    getSelectedVariationBaseSnapshotIdentity,
     isCurrentTrackedSecondaryController,
     isCurrentDraftSecondaryController,
     getRequiredBranchAttachMoveForVariation,
@@ -142,6 +144,24 @@ function makeSelectedGameSnapshot(moveTree?: MoveTreeJson | null): KibitzCurrent
             : {
                   game_id: 4321,
               },
+    };
+}
+
+function makeCurrentGameBaseSnapshot(
+    gameId: number,
+    trunkTailMoveNumber: number,
+    moveTreeId: number | string | null,
+): KibitzCurrentGameBaseSnapshot {
+    return {
+        gameId,
+        roomId: "room-1",
+        trunkTailMoveNumber,
+        moveTreeId,
+        movePath: `${trunkTailMoveNumber}`,
+        source: "room-base-broker",
+        config: {
+            game_id: gameId,
+        },
     };
 }
 
@@ -1027,6 +1047,136 @@ describe("draft base apply guard", () => {
             gameId: null,
             trunkTailMoveNumber: 0,
             moveTreeId: null,
+        });
+    });
+
+    describe("secondary variation reload decisions", () => {
+        it("skips reload when the desired dirty state is already displayed", () => {
+            expect(
+                decideSecondaryVariationReloadAction({
+                    snapshotInstalled: true,
+                    currentSecondaryTailMoveNumber: 147,
+                    snapshotTailMoveNumber: 147,
+                    treeDirty: true,
+                    desiredApplyKey: "game:147:visible:selected:1",
+                    lastAppliedDesiredApplyKey: "game:147:visible:selected:1",
+                }),
+            ).toMatchObject({
+                action: "skip-already-displayed",
+                desiredDirtyStateAlreadyDisplayed: true,
+                needsSnapshotLoad: false,
+                staleDirtyState: false,
+            });
+        });
+
+        it("reloads when the dirty tree is stale for a different desired state", () => {
+            expect(
+                decideSecondaryVariationReloadAction({
+                    snapshotInstalled: true,
+                    currentSecondaryTailMoveNumber: 147,
+                    snapshotTailMoveNumber: 147,
+                    treeDirty: true,
+                    desiredApplyKey: "new",
+                    lastAppliedDesiredApplyKey: "old",
+                }),
+            ).toMatchObject({
+                action: "load-snapshot",
+                staleDirtyState: true,
+                needsSnapshotLoad: true,
+            });
+        });
+
+        it("applies visible variations when the base is installed and clean", () => {
+            expect(
+                decideSecondaryVariationReloadAction({
+                    snapshotInstalled: true,
+                    currentSecondaryTailMoveNumber: 147,
+                    snapshotTailMoveNumber: 147,
+                    treeDirty: false,
+                    desiredApplyKey: "new",
+                    lastAppliedDesiredApplyKey: null,
+                }),
+            ).toMatchObject({
+                action: "apply",
+                baseSnapshotInstalled: true,
+                needsSnapshotLoad: false,
+            });
+        });
+
+        it("reloads when the installed snapshot is missing", () => {
+            expect(
+                decideSecondaryVariationReloadAction({
+                    snapshotInstalled: false,
+                    currentSecondaryTailMoveNumber: 0,
+                    snapshotTailMoveNumber: 147,
+                    treeDirty: false,
+                    desiredApplyKey: "key",
+                    lastAppliedDesiredApplyKey: null,
+                }),
+            ).toMatchObject({
+                action: "load-snapshot",
+                baseSnapshotInstalled: false,
+                needsSnapshotLoad: true,
+            });
+        });
+
+        it("reloads when the official trunk is behind the snapshot tail", () => {
+            expect(
+                decideSecondaryVariationReloadAction({
+                    snapshotInstalled: true,
+                    currentSecondaryTailMoveNumber: 100,
+                    snapshotTailMoveNumber: 147,
+                    treeDirty: false,
+                    desiredApplyKey: "key",
+                    lastAppliedDesiredApplyKey: null,
+                }),
+            ).toMatchObject({
+                action: "load-snapshot",
+                baseSnapshotInstalled: false,
+                needsSnapshotLoad: true,
+            });
+        });
+    });
+
+    describe("selected variation base snapshot identity", () => {
+        it("stays unchanged when an unrelated room snapshot advances", () => {
+            const initial = makeCurrentGameBaseSnapshot(87402085, 135, 1);
+            const next = makeCurrentGameBaseSnapshot(87402085, 136, 2);
+
+            expect(
+                getSelectedVariationBaseSnapshotIdentity({
+                    selectedVariationGameId: 87252117,
+                    selectedGameBaseSnapshot: null,
+                    currentGameBaseSnapshot: initial,
+                }),
+            ).toBeNull();
+            expect(
+                getSelectedVariationBaseSnapshotIdentity({
+                    selectedVariationGameId: 87252117,
+                    selectedGameBaseSnapshot: null,
+                    currentGameBaseSnapshot: next,
+                }),
+            ).toBeNull();
+        });
+
+        it("changes when the selected variation source snapshot advances", () => {
+            const initialSelected = makeCurrentGameBaseSnapshot(87252117, 147, 1);
+            const advancedSelected = makeCurrentGameBaseSnapshot(87252117, 150, 2);
+
+            expect(
+                getSelectedVariationBaseSnapshotIdentity({
+                    selectedVariationGameId: 87252117,
+                    selectedGameBaseSnapshot: initialSelected,
+                    currentGameBaseSnapshot: makeCurrentGameBaseSnapshot(87402085, 135, 9),
+                }),
+            ).toBe("87252117:147:1");
+            expect(
+                getSelectedVariationBaseSnapshotIdentity({
+                    selectedVariationGameId: 87252117,
+                    selectedGameBaseSnapshot: advancedSelected,
+                    currentGameBaseSnapshot: makeCurrentGameBaseSnapshot(87402085, 135, 9),
+                }),
+            ).toBe("87252117:150:2");
         });
     });
 });

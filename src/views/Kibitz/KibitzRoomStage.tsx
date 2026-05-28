@@ -892,6 +892,106 @@ export function buildSecondaryVariationApplyKey({
     ].join(":");
 }
 
+export type SecondaryVariationReloadAction = "skip-already-displayed" | "load-snapshot" | "apply";
+
+export interface SecondaryVariationReloadDecision {
+    action: SecondaryVariationReloadAction;
+    desiredApplyKeyAlreadyApplied: boolean;
+    baseSnapshotInstalled: boolean;
+    desiredDirtyStateAlreadyDisplayed: boolean;
+    staleDirtyState: boolean;
+    needsSnapshotLoad: boolean;
+}
+
+export function decideSecondaryVariationReloadAction({
+    snapshotInstalled,
+    currentSecondaryTailMoveNumber,
+    snapshotTailMoveNumber,
+    treeDirty,
+    desiredApplyKey,
+    lastAppliedDesiredApplyKey,
+}: {
+    snapshotInstalled: boolean;
+    currentSecondaryTailMoveNumber: number;
+    snapshotTailMoveNumber: number;
+    treeDirty: boolean;
+    desiredApplyKey: string;
+    lastAppliedDesiredApplyKey: string | null;
+}): SecondaryVariationReloadDecision {
+    const desiredApplyKeyAlreadyApplied = lastAppliedDesiredApplyKey === desiredApplyKey;
+    const baseSnapshotInstalled =
+        snapshotInstalled && currentSecondaryTailMoveNumber >= snapshotTailMoveNumber;
+    const desiredDirtyStateAlreadyDisplayed =
+        baseSnapshotInstalled && desiredApplyKeyAlreadyApplied;
+    const staleDirtyState = treeDirty && !desiredApplyKeyAlreadyApplied;
+    const needsSnapshotLoad =
+        !baseSnapshotInstalled ||
+        currentSecondaryTailMoveNumber < snapshotTailMoveNumber ||
+        staleDirtyState;
+
+    if (desiredDirtyStateAlreadyDisplayed) {
+        return {
+            action: "skip-already-displayed",
+            desiredApplyKeyAlreadyApplied,
+            baseSnapshotInstalled,
+            desiredDirtyStateAlreadyDisplayed,
+            staleDirtyState,
+            needsSnapshotLoad: false,
+        };
+    }
+
+    if (needsSnapshotLoad) {
+        return {
+            action: "load-snapshot",
+            desiredApplyKeyAlreadyApplied,
+            baseSnapshotInstalled,
+            desiredDirtyStateAlreadyDisplayed,
+            staleDirtyState,
+            needsSnapshotLoad: true,
+        };
+    }
+
+    return {
+        action: "apply",
+        desiredApplyKeyAlreadyApplied,
+        baseSnapshotInstalled,
+        desiredDirtyStateAlreadyDisplayed,
+        staleDirtyState,
+        needsSnapshotLoad: false,
+    };
+}
+
+export function getSelectedVariationBaseSnapshotIdentity({
+    selectedVariationGameId,
+    selectedGameBaseSnapshot,
+    currentGameBaseSnapshot,
+}: {
+    selectedVariationGameId: number | null | undefined;
+    selectedGameBaseSnapshot: KibitzCurrentGameBaseSnapshot | null | undefined;
+    currentGameBaseSnapshot: KibitzCurrentGameBaseSnapshot | null | undefined;
+}): string | null {
+    if (selectedVariationGameId == null) {
+        return null;
+    }
+
+    const selectedGameSnapshot =
+        selectedGameBaseSnapshot?.gameId === selectedVariationGameId
+            ? selectedGameBaseSnapshot
+            : currentGameBaseSnapshot?.gameId === selectedVariationGameId
+              ? currentGameBaseSnapshot
+              : null;
+
+    if (!selectedGameSnapshot) {
+        return null;
+    }
+
+    return [
+        selectedGameSnapshot.gameId,
+        selectedGameSnapshot.trunkTailMoveNumber,
+        selectedGameSnapshot.moveTreeId ?? "",
+    ].join(":");
+}
+
 interface TrackedBoardControllerContext {
     controller: GobanController | null;
     epoch: number;
@@ -1904,6 +2004,15 @@ export function KibitzRoomStage({
     const visibleVariationApplyKey = React.useMemo(
         () => visibleVariations.map((variation) => variation.id).join("\n"),
         [visibleVariations],
+    );
+    const selectedVariationBaseSnapshotIdentity = React.useMemo(
+        () =>
+            getSelectedVariationBaseSnapshotIdentity({
+                selectedVariationGameId,
+                selectedGameBaseSnapshot,
+                currentGameBaseSnapshot,
+            }),
+        [currentGameBaseSnapshot, selectedGameBaseSnapshot, selectedVariationGameId],
     );
     const logSelectedGameSnapshotDebug = React.useCallback(
         (message: string, extra: Record<string, unknown> = {}): void => {
@@ -3119,13 +3228,13 @@ export function KibitzRoomStage({
         lastAppliedSecondaryVariationKeyRef.current = null;
     }, [
         secondaryBoardController,
+        secondaryBoardRemountNonce,
         room.id,
         selectedVariation?.game_id,
         selectedVariation?.id,
         visibleVariationApplyKey,
         variationFocusRequestId,
-        currentGameBaseSnapshot?.gameId,
-        currentGameBaseSnapshot?.trunkTailMoveNumber,
+        selectedVariationBaseSnapshotIdentity,
     ]);
 
     React.useEffect(() => {
@@ -3957,15 +4066,14 @@ export function KibitzRoomStage({
                 secondaryBoardController,
                 secondaryVariationBaseInstalledRef.current,
             );
-            const alreadyAppliedDesiredState =
-                snapshotInstalled &&
-                currentSecondaryTailMoveNumber === snapshot.trunkTailMoveNumber &&
-                lastAppliedSecondaryVariationKeyRef.current === desiredApplyKey;
-            const needsSnapshotLoad =
-                !alreadyAppliedDesiredState &&
-                (secondaryVariationTreeDirtyRef.current ||
-                    !snapshotInstalled ||
-                    currentSecondaryTailMoveNumber < snapshot.trunkTailMoveNumber);
+            const reloadDecision = decideSecondaryVariationReloadAction({
+                snapshotInstalled,
+                currentSecondaryTailMoveNumber,
+                snapshotTailMoveNumber: snapshot.trunkTailMoveNumber,
+                treeDirty: secondaryVariationTreeDirtyRef.current,
+                desiredApplyKey,
+                lastAppliedDesiredApplyKey: lastAppliedSecondaryVariationKeyRef.current,
+            });
 
             logVariationStage("reload-or-apply:state", {
                 reason,
@@ -3973,23 +4081,32 @@ export function KibitzRoomStage({
                 snapshotTailMoveNumber: snapshot.trunkTailMoveNumber,
                 snapshotInstalled,
                 desiredApplyKey,
-                alreadyAppliedDesiredState,
-                needsSnapshotLoad,
+                lastAppliedDesiredApplyKey: lastAppliedSecondaryVariationKeyRef.current,
+                treeDirty: secondaryVariationTreeDirtyRef.current,
+                desiredApplyKeyAlreadyApplied: reloadDecision.desiredApplyKeyAlreadyApplied,
+                baseSnapshotInstalled: reloadDecision.baseSnapshotInstalled,
+                desiredDirtyStateAlreadyDisplayed: reloadDecision.desiredDirtyStateAlreadyDisplayed,
+                staleDirtyState: reloadDecision.staleDirtyState,
+                needsSnapshotLoad: reloadDecision.needsSnapshotLoad,
+                action: reloadDecision.action,
             });
 
-            if (alreadyAppliedDesiredState) {
-                logVariationStage("reload-or-apply:already-applied-skip", {
+            if (reloadDecision.action === "skip-already-displayed") {
+                logVariationStage("reload-or-apply:desired-dirty-state-skip", {
                     reason,
                     desiredApplyKey,
                     currentSecondaryTailMoveNumber,
                     snapshotTailMoveNumber: snapshot.trunkTailMoveNumber,
                     snapshotInstalled,
+                    lastAppliedDesiredApplyKey: lastAppliedSecondaryVariationKeyRef.current,
+                    treeDirty: secondaryVariationTreeDirtyRef.current,
                 });
-                scheduleSecondaryBoardVisibleRedraw("already-applied-skip");
+                scheduleSecondaryBoardVisibleRedraw("desired-dirty-state-skip");
+                scheduleSecondaryMoveTreeRedraw();
                 return true;
             }
 
-            if (needsSnapshotLoad) {
+            if (reloadDecision.action === "load-snapshot") {
                 const operationId = secondarySnapshotLoadOperationIdRef.current + 1;
                 secondarySnapshotLoadOperationIdRef.current = operationId;
                 pendingSecondaryVariationBaseLoadRef.current = {
