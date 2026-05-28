@@ -3458,7 +3458,7 @@ export function KibitzRoomStage({
     }, [mainGame?.game_id, mainGame?.move_number]);
 
     const reportMainBoardHydration = React.useCallback(
-        (reason: string) => {
+        (reason: string, expectedMoveNumberOverride?: number) => {
             const currentController = mainBoardController;
             if (!currentController || !isCurrentMainBoardController(currentController)) {
                 return;
@@ -3470,7 +3470,8 @@ export function KibitzRoomStage({
             const officialTailMoveNumber = officialTail?.move_number ?? 0;
             const currentMoveNumber = currentEngine.cur_move?.move_number ?? 0;
             const currentMoveId = currentEngine.cur_move?.id ?? null;
-            const expectedMoveNumber = mainBoardExpectedMoveNumberRef.current;
+            const expectedMoveNumber =
+                expectedMoveNumberOverride ?? mainBoardExpectedMoveNumberRef.current;
             const expectedGameId = mainBoardExpectedGameIdRef.current;
             const hasMoveTree = Boolean(currentEngine.move_tree);
             const liveGame = Boolean(mainGame?.live);
@@ -3847,6 +3848,99 @@ export function KibitzRoomStage({
         mainBoardController,
         mainGame?.move_number,
         mobileCompareActive,
+        scheduleMainBoardVisibleRedraw,
+    ]);
+
+    React.useEffect(() => {
+        const currentController = mainBoardController;
+        const snapshot = currentGameBaseSnapshot;
+
+        if (!currentController || currentRoomGameId == null || !snapshot) {
+            return;
+        }
+
+        if (!isCurrentMainBoardController(currentController)) {
+            return;
+        }
+
+        const controllerGameId = Number(currentController.goban.config?.game_id ?? 0) || null;
+        const controllerTailMoveNumber = getOfficialTrunkTailMoveNumber(currentController);
+        const snapshotGameId = snapshot.gameId ?? null;
+        const snapshotTailMoveNumber = snapshot.trunkTailMoveNumber ?? 0;
+        const hasMoveTree = Boolean(snapshot.config.move_tree);
+        const requiredMoveNumber = Math.max(mainGame?.move_number ?? 0, snapshotTailMoveNumber);
+
+        logKibitzVariationDebug("main-board:snapshot-hydrate:consider", {
+            reason: "current-game-snapshot-ready",
+            isMobileLayout,
+            mobileCompareActive,
+            currentRoomGameId,
+            controllerGameId,
+            controllerTailMoveNumber,
+            snapshotGameId,
+            snapshotTailMoveNumber,
+            roomMoveNumber: mainGame?.move_number ?? 0,
+            requiredMoveNumber,
+            hasMoveTree,
+        });
+
+        if (controllerGameId !== currentRoomGameId) {
+            return;
+        }
+
+        if (snapshotGameId !== currentRoomGameId || !hasMoveTree) {
+            return;
+        }
+
+        if (snapshotTailMoveNumber <= controllerTailMoveNumber) {
+            return;
+        }
+
+        if (snapshotTailMoveNumber < requiredMoveNumber) {
+            return;
+        }
+
+        const restoredTail = hydrateMainBoardFromRoomBaseSnapshot({
+            mainBoardController: currentController,
+            currentGame: mainGame,
+            currentRoomGameId,
+            requiredMoveNumber,
+            roomBaseSnapshot: snapshot,
+        });
+
+        if (!restoredTail) {
+            logKibitzVariationDebug("main-board:snapshot-hydrate:error", {
+                currentRoomGameId,
+                controllerTailMoveNumber,
+                snapshotTailMoveNumber,
+                requiredMoveNumber,
+                error: "hydrate-returned-null",
+            });
+            return;
+        }
+
+        reportMainBoardHydration("current-game-snapshot-hydrate", requiredMoveNumber);
+        scheduleMainBoardVisibleRedraw("current-game-snapshot-hydrate");
+
+        logKibitzVariationDebug("main-board:snapshot-hydrate:done", {
+            currentRoomGameId,
+            restored: true,
+            currentMoveNumber: currentController.goban.engine.cur_move?.move_number ?? null,
+            officialTailMoveNumber: getOfficialTrunkTailMoveNumber(currentController),
+            snapshotTailMoveNumber,
+        });
+    }, [
+        currentGameBaseSnapshot,
+        currentGameBaseSnapshot?.gameId,
+        currentGameBaseSnapshot?.trunkTailMoveNumber,
+        currentRoomGameId,
+        isCurrentMainBoardController,
+        isMobileLayout,
+        mainBoardController,
+        mainGame,
+        mainGame?.move_number,
+        mobileCompareActive,
+        reportMainBoardHydration,
         scheduleMainBoardVisibleRedraw,
     ]);
 
