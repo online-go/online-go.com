@@ -43,9 +43,9 @@ import type {
     KibitzWatchedGame,
 } from "@/models/kibitz";
 import {
-    canHydrateMainBoardFromRoomBaseSnapshot,
     cloneOfficialTrunkMoveTreeJson,
     hydrateMainBoardFromRoomBaseSnapshot,
+    restoreMainBoardToOfficialTail,
 } from "./kibitzCurrentGameBaseSnapshot";
 import type {
     KibitzBoardLoadConfig,
@@ -3618,7 +3618,6 @@ export function KibitzRoomStage({
             return;
         }
 
-        const requiredMoveNumber = mainGame?.move_number ?? 0;
         const currentController = mainBoardController;
         const controllerGameId = currentController?.goban.config?.game_id ?? null;
         const controllerTailMoveNumber = currentController
@@ -3628,6 +3627,16 @@ export function KibitzRoomStage({
         const snapshotTailMoveNumber = currentGameBaseSnapshot?.trunkTailMoveNumber ?? null;
         const hasMoveTree = Boolean(currentGameBaseSnapshot?.config.move_tree);
         const snapshotTailMoveNumberSafe = snapshotTailMoveNumber ?? 0;
+        const requiredMoveNumber = Math.max(mainGame?.move_number ?? 0, snapshotTailMoveNumberSafe);
+        const currentMoveNumber = currentController?.goban.engine.cur_move?.move_number ?? 0;
+        const lastOfficialMoveNumber =
+            currentController?.goban.engine.last_official_move?.move_number ?? 0;
+        const trunkFreshEnough =
+            currentController != null && controllerTailMoveNumber != null
+                ? controllerTailMoveNumber >= requiredMoveNumber
+                : false;
+        const currentMoveRestored =
+            currentMoveNumber >= requiredMoveNumber && lastOfficialMoveNumber >= requiredMoveNumber;
 
         if (isKibitzVariationDebugEnabled()) {
             logKibitzVariationDebug("main-board:broker-hydrate:consider", {
@@ -3637,9 +3646,13 @@ export function KibitzRoomStage({
                 requiredMoveNumber,
                 controllerGameId,
                 controllerTailMoveNumber,
+                currentMoveNumber,
+                lastOfficialMoveNumber,
                 snapshotGameId,
                 snapshotTailMoveNumber,
                 hasMoveTree,
+                trunkFreshEnough,
+                currentMoveRestored,
             });
         }
 
@@ -3751,31 +3764,78 @@ export function KibitzRoomStage({
             return;
         }
 
-        if (
-            !canHydrateMainBoardFromRoomBaseSnapshot({
-                mainBoardController: currentController,
-                currentGame: mainGame,
-                currentRoomGameId,
-                requiredMoveNumber,
-                roomBaseSnapshot: currentGameBaseSnapshot,
-            })
-        ) {
-            const skipReason =
-                typeof controllerTailMoveNumber === "number" &&
-                controllerTailMoveNumber >= requiredMoveNumber
-                    ? "controller-already-ready"
-                    : snapshotTailMoveNumberSafe < requiredMoveNumber
-                      ? "snapshot-not-fresh"
-                      : "controller-already-ready";
+        if (trunkFreshEnough && !currentMoveRestored) {
             if (isKibitzVariationDebugEnabled()) {
-                logKibitzVariationDebug("main-board:broker-hydrate:skip", {
+                logKibitzVariationDebug("main-board:restore-tail:attempt", {
                     reason: "mobile-main-return",
-                    skipReason,
                     gameId: currentRoomGameId,
                     currentRoomGameId,
                     requiredMoveNumber,
                     controllerGameId,
                     controllerTailMoveNumber,
+                    currentMoveNumber,
+                    lastOfficialMoveNumber,
+                    snapshotGameId,
+                    snapshotTailMoveNumber,
+                });
+            }
+
+            const restoredTail = restoreMainBoardToOfficialTail(currentController);
+            if (!restoredTail) {
+                if (isKibitzVariationDebugEnabled()) {
+                    logKibitzVariationDebug("main-board:broker-hydrate:error", {
+                        reason: "mobile-main-return",
+                        error: "restore-returned-null",
+                        gameId: currentRoomGameId,
+                        currentRoomGameId,
+                        requiredMoveNumber,
+                        controllerGameId,
+                        controllerTailMoveNumber,
+                        currentMoveNumber,
+                        lastOfficialMoveNumber,
+                        snapshotGameId,
+                        snapshotTailMoveNumber,
+                        hasMoveTree,
+                    });
+                }
+                return;
+            }
+
+            reportMainBoardHydration("mobile-main-return-restore-tail", requiredMoveNumber);
+            scheduleMainBoardVisibleRedraw("mobile-main-return-restore-tail");
+
+            if (isKibitzVariationDebugEnabled()) {
+                logKibitzVariationDebug("main-board:restore-tail:done", {
+                    reason: "mobile-main-return",
+                    gameId: currentRoomGameId,
+                    currentRoomGameId,
+                    requiredMoveNumber,
+                    controllerGameId,
+                    controllerTailMoveNumber,
+                    currentMoveNumber: currentController.goban.engine.cur_move?.move_number ?? null,
+                    officialTailMoveNumber: getOfficialTrunkTailMoveNumber(currentController),
+                    lastOfficialMoveNumber:
+                        currentController.goban.engine.last_official_move?.move_number ?? null,
+                    snapshotGameId,
+                    snapshotTailMoveNumber,
+                    hasMoveTree,
+                });
+            }
+            return;
+        }
+
+        if (trunkFreshEnough && currentMoveRestored) {
+            if (isKibitzVariationDebugEnabled()) {
+                logKibitzVariationDebug("main-board:broker-hydrate:skip", {
+                    reason: "mobile-main-return",
+                    skipReason: "controller-already-ready",
+                    gameId: currentRoomGameId,
+                    currentRoomGameId,
+                    requiredMoveNumber,
+                    controllerGameId,
+                    controllerTailMoveNumber,
+                    currentMoveNumber,
+                    lastOfficialMoveNumber,
                     snapshotGameId,
                     snapshotTailMoveNumber,
                     hasMoveTree,
@@ -3865,10 +3925,16 @@ export function KibitzRoomStage({
 
         const controllerGameId = Number(currentController.goban.config?.game_id ?? 0) || null;
         const controllerTailMoveNumber = getOfficialTrunkTailMoveNumber(currentController);
+        const currentMoveNumber = currentController.goban.engine.cur_move?.move_number ?? 0;
+        const lastOfficialMoveNumber =
+            currentController.goban.engine.last_official_move?.move_number ?? 0;
         const snapshotGameId = snapshot.gameId ?? null;
         const snapshotTailMoveNumber = snapshot.trunkTailMoveNumber ?? 0;
         const hasMoveTree = Boolean(snapshot.config.move_tree);
         const requiredMoveNumber = Math.max(mainGame?.move_number ?? 0, snapshotTailMoveNumber);
+        const trunkFreshEnough = controllerTailMoveNumber >= requiredMoveNumber;
+        const currentMoveRestored =
+            currentMoveNumber >= requiredMoveNumber && lastOfficialMoveNumber >= requiredMoveNumber;
 
         logKibitzVariationDebug("main-board:snapshot-hydrate:consider", {
             reason: "current-game-snapshot-ready",
@@ -3877,10 +3943,14 @@ export function KibitzRoomStage({
             currentRoomGameId,
             controllerGameId,
             controllerTailMoveNumber,
+            currentMoveNumber,
+            lastOfficialMoveNumber,
             snapshotGameId,
             snapshotTailMoveNumber,
             roomMoveNumber: mainGame?.move_number ?? 0,
             requiredMoveNumber,
+            trunkFreshEnough,
+            currentMoveRestored,
             hasMoveTree,
         });
 
@@ -3892,11 +3962,45 @@ export function KibitzRoomStage({
             return;
         }
 
-        if (snapshotTailMoveNumber <= controllerTailMoveNumber) {
+        if (trunkFreshEnough && !currentMoveRestored) {
+            logKibitzVariationDebug("main-board:restore-tail:attempt", {
+                currentRoomGameId,
+                controllerTailMoveNumber,
+                currentMoveNumber,
+                lastOfficialMoveNumber,
+                snapshotTailMoveNumber,
+                requiredMoveNumber,
+            });
+
+            const restoredTail = restoreMainBoardToOfficialTail(currentController);
+            if (!restoredTail) {
+                logKibitzVariationDebug("main-board:snapshot-hydrate:error", {
+                    currentRoomGameId,
+                    controllerTailMoveNumber,
+                    currentMoveNumber,
+                    lastOfficialMoveNumber,
+                    snapshotTailMoveNumber,
+                    requiredMoveNumber,
+                    error: "restore-returned-null",
+                });
+                return;
+            }
+
+            reportMainBoardHydration("current-game-snapshot-restore-tail", requiredMoveNumber);
+            scheduleMainBoardVisibleRedraw("current-game-snapshot-restore-tail");
+
+            logKibitzVariationDebug("main-board:restore-tail:done", {
+                currentRoomGameId,
+                restored: true,
+                currentMoveNumber: currentController.goban.engine.cur_move?.move_number ?? null,
+                officialTailMoveNumber: getOfficialTrunkTailMoveNumber(currentController),
+                lastOfficialMoveNumber:
+                    currentController.goban.engine.last_official_move?.move_number ?? null,
+            });
             return;
         }
 
-        if (snapshotTailMoveNumber < requiredMoveNumber) {
+        if (snapshotTailMoveNumber <= controllerTailMoveNumber) {
             return;
         }
 

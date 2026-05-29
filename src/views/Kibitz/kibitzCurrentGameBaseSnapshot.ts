@@ -34,7 +34,7 @@ function cloneMoveTreeJson(moveTree: MoveTreeJson): MoveTreeJson {
     return JSON.parse(JSON.stringify(moveTree)) as MoveTreeJson;
 }
 
-function restoreMainBoardToOfficialTail(controller: GobanController): MoveTree | null {
+export function restoreMainBoardToOfficialTail(controller: GobanController): MoveTree | null {
     const { engine } = controller.goban;
     const officialTail = getMoveTreeTrunkTail(engine.move_tree);
 

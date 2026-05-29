@@ -252,7 +252,10 @@ describe("isMainBoardSafeForReconnect", () => {
             isMainBoardSafeForReconnect({
                 mainBoardController: {} as GobanController,
                 currentGame: liveGame,
+                currentGameBaseSnapshotTailMoveNumber: 0,
                 mainBoardOfficialTailMoveNumber: 0,
+                mainBoardCurrentMoveNumber: 0,
+                mainBoardLastOfficialMoveNumber: 0,
             }),
         ).toBe(false);
     });
@@ -262,8 +265,24 @@ describe("isMainBoardSafeForReconnect", () => {
             isMainBoardSafeForReconnect({
                 mainBoardController: {} as GobanController,
                 currentGame: liveGame,
+                currentGameBaseSnapshotTailMoveNumber: 33,
                 mainBoardOfficialTailMoveNumber: 33,
+                mainBoardCurrentMoveNumber: 33,
+                mainBoardLastOfficialMoveNumber: 33,
             }),
         ).toBe(true);
+    });
+
+    it("blocks reconnects when the tail is fresh but the live position is still stale", () => {
+        expect(
+            isMainBoardSafeForReconnect({
+                mainBoardController: {} as GobanController,
+                currentGame: liveGame,
+                currentGameBaseSnapshotTailMoveNumber: 67,
+                mainBoardOfficialTailMoveNumber: 67,
+                mainBoardCurrentMoveNumber: 0,
+                mainBoardLastOfficialMoveNumber: 0,
+            }),
+        ).toBe(false);
     });
 });

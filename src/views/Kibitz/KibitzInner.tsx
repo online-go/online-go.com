@@ -199,13 +199,26 @@ export function isVisibleMainBoardMounted(params: {
 export function isMainBoardSafeForReconnect(params: {
     mainBoardController: GobanController | null;
     currentGame: KibitzWatchedGame | null | undefined;
+    currentGameBaseSnapshotTailMoveNumber: number;
     mainBoardOfficialTailMoveNumber: number;
+    mainBoardCurrentMoveNumber: number;
+    mainBoardLastOfficialMoveNumber: number;
 }): boolean {
+    const requiredMoveNumber = Math.max(
+        params.currentGame?.move_number ?? 0,
+        params.currentGameBaseSnapshotTailMoveNumber,
+    );
+
+    if (params.currentGame?.live && requiredMoveNumber === 0) {
+        return false;
+    }
+
     return Boolean(
         !params.mainBoardController ||
         !params.currentGame?.live ||
-        params.mainBoardOfficialTailMoveNumber > 0 ||
-        isLiveGameMoveNumberKnown(params.currentGame),
+        (params.mainBoardOfficialTailMoveNumber >= requiredMoveNumber &&
+            params.mainBoardCurrentMoveNumber >= requiredMoveNumber &&
+            params.mainBoardLastOfficialMoveNumber >= requiredMoveNumber),
     );
 }
 
@@ -1257,10 +1270,19 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const mainBoardOfficialTailMoveNumber = mainBoardController
         ? (getMoveTreeTrunkTail(mainBoardController.goban.engine.move_tree)?.move_number ?? 0)
         : 0;
+    const mainBoardCurrentMoveNumber = mainBoardController
+        ? (mainBoardController.goban.engine.cur_move?.move_number ?? 0)
+        : 0;
+    const mainBoardLastOfficialMoveNumber = mainBoardController
+        ? (mainBoardController.goban.engine.last_official_move?.move_number ?? 0)
+        : 0;
     const mainBoardSafeForReconnect = isMainBoardSafeForReconnect({
         mainBoardController,
         currentGame: resolvedRoom?.current_game,
+        currentGameBaseSnapshotTailMoveNumber: currentGameBaseSnapshot?.trunkTailMoveNumber ?? 0,
         mainBoardOfficialTailMoveNumber,
+        mainBoardCurrentMoveNumber,
+        mainBoardLastOfficialMoveNumber,
     });
 
     useKibitzCurrentGameConnectionKeeper({
