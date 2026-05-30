@@ -954,7 +954,7 @@ export function KibitzSharedStreamPanel({
                                 aria-hidden="true"
                             />
                             <span className="KibitzSharedStreamPanel-mobileSwitchLabel">
-                                {pgettext("Label for the kibitz mobile room tab", "Room")}
+                                {pgettext("Label for the kibitz mobile room tab", "Kibitz chat")}
                             </span>
                             <span
                                 className={
@@ -984,7 +984,7 @@ export function KibitzSharedStreamPanel({
                                 aria-hidden="true"
                             />
                             <span className="KibitzSharedStreamPanel-mobileSwitchLabel">
-                                {pgettext("Label for the kibitz mobile game tab", "Game")}
+                                {pgettext("Label for the kibitz mobile game tab", "Game chat")}
                             </span>
                             <span
                                 className={
@@ -1025,7 +1025,7 @@ export function KibitzSharedStreamPanel({
                             <span className="KibitzSharedStreamPanel-dividerLabel">
                                 {pgettext(
                                     "Label for the Kibitz game stream in the split divider",
-                                    "Game",
+                                    "Game chat",
                                 )}
                             </span>
                         </span>
@@ -1041,7 +1041,7 @@ export function KibitzSharedStreamPanel({
                             <span className="KibitzSharedStreamPanel-dividerLabel">
                                 {pgettext(
                                     "Label for the Kibitz room stream in the split divider",
-                                    "Room",
+                                    "Kibitz chat",
                                 )}
                             </span>
                             <span className="KibitzSharedStreamPanel-dividerArrow">v</span>
