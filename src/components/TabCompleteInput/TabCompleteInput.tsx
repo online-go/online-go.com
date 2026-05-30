@@ -140,6 +140,14 @@ export const TabCompleteInput = React.forwardRef<HTMLTextAreaElement, TabComplet
         }, []);
 
         const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+            // Don't act on Enter while an IME composition is in progress
+            // (e.g. confirming Japanese / Chinese / Korean candidates).
+            // keyCode === 229 is the legacy "IME process" code, kept as a
+            // fallback for browsers that don't reliably set isComposing on
+            // keydown.
+            if (e.nativeEvent.isComposing || e.keyCode === 229) {
+                return;
+            }
             if (!e.shiftKey && e.key === "Enter") {
                 e.preventDefault();
                 props.onKeyPress?.(e);
