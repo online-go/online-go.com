@@ -205,6 +205,8 @@ describe("KibitzGamePickerOverlay", () => {
             <KibitzGamePickerOverlay
                 mode="create-room"
                 rooms={[]}
+                canOpenCreateRoomFlow={true}
+                signInHref="/sign-in#/kibitz"
                 onClose={jest.fn()}
                 onCreateRoom={onCreateRoom}
                 onChangeBoard={jest.fn()}
@@ -241,6 +243,8 @@ describe("KibitzGamePickerOverlay", () => {
                 mode="change-board"
                 rooms={[]}
                 currentRoom={makeRoom(1)}
+                canOpenCreateRoomFlow={true}
+                signInHref="/sign-in#/kibitz"
                 onClose={onClose}
                 onCreateRoom={jest.fn()}
                 onChangeBoard={onChangeBoard}
@@ -279,6 +283,8 @@ describe("KibitzGamePickerOverlay", () => {
                 mode="change-board"
                 rooms={[]}
                 currentRoom={makeRoom(1)}
+                canOpenCreateRoomFlow={true}
+                signInHref="/sign-in#/kibitz"
                 onClose={jest.fn()}
                 onCreateRoom={jest.fn()}
                 onChangeBoard={onChangeBoard}
@@ -310,6 +316,8 @@ describe("KibitzGamePickerOverlay", () => {
                 mode="change-board"
                 rooms={[]}
                 currentRoom={makeRoom(1)}
+                canOpenCreateRoomFlow={true}
+                signInHref="/sign-in#/kibitz"
                 onClose={jest.fn()}
                 onCreateRoom={jest.fn()}
                 onChangeBoard={onChangeBoard}
@@ -330,5 +338,27 @@ describe("KibitzGamePickerOverlay", () => {
         await waitFor(() => {
             expect(screen.getAllByText("change failed")).toHaveLength(2);
         });
+    });
+
+    it("shows a login-required state for anonymous create-room direct entry", () => {
+        render(
+            <KibitzGamePickerOverlay
+                mode="create-room"
+                rooms={[]}
+                canOpenCreateRoomFlow={false}
+                signInHref="/sign-in#/kibitz"
+                onClose={jest.fn()}
+                onCreateRoom={jest.fn()}
+                onChangeBoard={jest.fn()}
+                onJoinRoom={jest.fn()}
+            />,
+        );
+
+        expect(screen.getByText("Sign in to create a room")).toBeInTheDocument();
+        expect(screen.getByRole("link", { name: "Sign in" })).toHaveAttribute(
+            "href",
+            "/sign-in#/kibitz",
+        );
+        expect(screen.queryByRole("button", { name: "Create room" })).toBeNull();
     });
 });
