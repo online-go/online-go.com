@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* cspell:ignore unhydrated */
+
 import { act, renderHook } from "@testing-library/react";
 import type { GobanController } from "@/lib/GobanController";
 import { socket } from "@/lib/sockets";

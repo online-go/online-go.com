@@ -15,18 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* cspell:ignore retryable Cpuip */
+
 import type { KibitzRoomSummary, KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
 import type { GobanController } from "@/lib/GobanController";
-import type { MoveTree } from "goban";
+import type { GobanConfig, MoveTree, MoveTreeJson } from "goban";
 import {
     captureRoomBaseSnapshotForVariation,
     captureMainBoardBaseSnapshotForVariation,
+    buildDraftBaseSnapshotFromSelectedGameSnapshot,
+    buildSelectedGameBaseSnapshotFromDetails,
     clearDraftBaseAppliedState,
     clearInstalledSecondaryVariationBaseState,
     buildSnapshotFromEngine,
+    decideSecondaryVariationReloadAction,
     getCurrentSecondaryVariationBaseTreeIdentity,
     getOfficialTrunkTailMoveNumber,
     getCurrentDraftBaseTreeIdentity,
+    getSelectedVariationBaseSnapshotIdentity,
     isCurrentTrackedSecondaryController,
     isCurrentDraftSecondaryController,
     getRequiredBranchAttachMoveForVariation,
@@ -108,6 +114,57 @@ function makeMoveTree(
     return tree as unknown as MoveTree;
 }
 
+function makeSelectedGameDetails(
+    moves: GobanConfig["moves"],
+): Parameters<typeof buildSelectedGameBaseSnapshotFromDetails>[0]["details"] {
+    return {
+        id: 4321,
+        width: 19,
+        height: 19,
+        name: "Source game",
+        gamedata: {
+            moves,
+        } as Parameters<typeof buildSelectedGameBaseSnapshotFromDetails>[0]["details"]["gamedata"],
+    };
+}
+
+function makeSelectedGameSnapshot(moveTree?: MoveTreeJson | null): KibitzCurrentGameBaseSnapshot {
+    return {
+        gameId: 4321,
+        roomId: "room-1",
+        trunkTailMoveNumber: 4,
+        moveTreeId: 99,
+        movePath: "4",
+        source: "selected-game-details",
+        config: moveTree
+            ? {
+                  game_id: 4321,
+                  move_tree: moveTree,
+              }
+            : {
+                  game_id: 4321,
+              },
+    };
+}
+
+function makeCurrentGameBaseSnapshot(
+    gameId: number,
+    trunkTailMoveNumber: number,
+    moveTreeId: number | string | null,
+): KibitzCurrentGameBaseSnapshot {
+    return {
+        gameId,
+        roomId: "room-1",
+        trunkTailMoveNumber,
+        moveTreeId,
+        movePath: `${trunkTailMoveNumber}`,
+        source: "room-base-broker",
+        config: {
+            game_id: gameId,
+        },
+    };
+}
+
 describe("resolveSelectedVariationSourceGame", () => {
     it("prefers the cached game lookup when the room list does not have the source game yet", () => {
         const selectedVariation = makeVariation(4321);
@@ -145,6 +202,81 @@ describe("resolveSelectedVariationSourceGame", () => {
 });
 
 describe("variation snapshot readiness", () => {
+    it("allows an empty move list when the required snapshot move is root", () => {
+        const debugLog = jest.fn();
+        const result = buildSelectedGameBaseSnapshotFromDetails({
+            details: makeSelectedGameDetails([]),
+            gameId: 4321,
+            roomId: "room-1",
+            requiredSnapshotMoveNumber: 0,
+            logDebug: debugLog,
+        });
+
+        expect(result.kind).toBe("ready");
+        if (result.kind !== "ready") {
+            return;
+        }
+
+        expect(result.snapshot.gameId).toBe(4321);
+        expect(result.snapshot.trunkTailMoveNumber).toBe(0);
+        expect(result.snapshot.source).toBe("selected-game-details");
+        expect(result.snapshot.config.moves).toBeUndefined();
+        expect(result.snapshot.config.move_tree).toBeDefined();
+        expect(debugLog).toHaveBeenCalledWith(
+            "selected-game-base-snapshot:empty-moves-root",
+            expect.objectContaining({
+                selectedGameId: 4321,
+                requiredSnapshotMoveNumber: 0,
+                moveCount: 0,
+            }),
+        );
+    });
+
+    it("keeps an empty move list blocked when the required snapshot move is not root", () => {
+        const result = buildSelectedGameBaseSnapshotFromDetails({
+            details: makeSelectedGameDetails([]),
+            gameId: 4321,
+            roomId: "room-1",
+            requiredSnapshotMoveNumber: 1,
+        });
+
+        expect(result).toEqual(
+            expect.objectContaining({
+                kind: "failure",
+                failure: expect.objectContaining({
+                    kind: "missing-moves",
+                    details: expect.objectContaining({
+                        moveCount: 0,
+                        requiredMoveNumber: 1,
+                    }),
+                }),
+            }),
+        );
+    });
+
+    it("rejects non-array move data as invalid game data", () => {
+        const result = buildSelectedGameBaseSnapshotFromDetails({
+            details: {
+                ...makeSelectedGameDetails([]),
+                gamedata: {
+                    moves: undefined,
+                },
+            },
+            gameId: 4321,
+            roomId: "room-1",
+            requiredSnapshotMoveNumber: 0,
+        });
+
+        expect(result).toEqual(
+            expect.objectContaining({
+                kind: "failure",
+                failure: expect.objectContaining({
+                    kind: "invalid-game-data",
+                }),
+            }),
+        );
+    });
+
     it("requires only the visible variation anchors for snapshots", () => {
         const sourceGame = {
             ...makeGame(4321, "Source game"),
@@ -276,6 +408,93 @@ describe("variation snapshot readiness", () => {
         expect(snapshot?.config.moves).toBeUndefined();
         expect(snapshot?.config.move_tree?.branches).toBeUndefined();
         expect(snapshot?.config.move_tree?.trunk_next).toBeDefined();
+    });
+
+    it("still loads a non-empty selected-game snapshot through the validation path", () => {
+        const result = buildSelectedGameBaseSnapshotFromDetails({
+            details: makeSelectedGameDetails([{ x: 3, y: 4 }]),
+            gameId: 4321,
+            roomId: "room-1",
+            requiredSnapshotMoveNumber: 1,
+        });
+
+        expect(result.kind).toBe("ready");
+        if (result.kind !== "ready") {
+            return;
+        }
+
+        expect(result.snapshot.gameId).toBe(4321);
+        expect(result.snapshot.trunkTailMoveNumber).toBeGreaterThanOrEqual(1);
+        expect(result.snapshot.source).toBe("selected-game-details");
+        expect(result.snapshot.config.moves).toBeUndefined();
+        expect(result.snapshot.config.move_tree).toBeDefined();
+    });
+
+    it("builds a draft-base snapshot from a selected-game snapshot that has a move tree", () => {
+        const moveTree = makeMoveTree(0, makeMoveTree(2)).toJson() as MoveTreeJson;
+        const cloneMoveTree = jest.fn(
+            (tree: MoveTreeJson) => JSON.parse(JSON.stringify(tree)) as MoveTreeJson,
+        );
+        const result = buildDraftBaseSnapshotFromSelectedGameSnapshot({
+            selectedGameSnapshot: makeSelectedGameSnapshot(moveTree),
+            gameId: 4321,
+            controller: {
+                goban: {
+                    engine: {
+                        move_tree: makeMoveTree(0),
+                    },
+                },
+            } as unknown as GobanController,
+            cloneMoveTree,
+        });
+
+        expect(result).not.toBeNull();
+        expect(cloneMoveTree).toHaveBeenCalledTimes(1);
+        expect(cloneMoveTree).toHaveBeenCalledWith(moveTree);
+        expect(result?.config.move_tree).toEqual(moveTree);
+        expect(result?.config.move_tree).not.toBe(moveTree);
+    });
+
+    it("returns null instead of cloning when the selected-game snapshot is missing a move tree", () => {
+        const cloneMoveTree = jest.fn(
+            (tree: MoveTreeJson) => JSON.parse(JSON.stringify(tree)) as MoveTreeJson,
+        );
+        const result = buildDraftBaseSnapshotFromSelectedGameSnapshot({
+            selectedGameSnapshot: makeSelectedGameSnapshot(undefined),
+            gameId: 4321,
+            controller: {
+                goban: {
+                    engine: {
+                        move_tree: makeMoveTree(0),
+                    },
+                },
+            } as unknown as GobanController,
+            cloneMoveTree,
+        });
+
+        expect(result).toBeNull();
+        expect(cloneMoveTree).not.toHaveBeenCalled();
+    });
+
+    it("treats a null selected-game snapshot as unavailable rather than malformed", () => {
+        const cloneMoveTree = jest.fn(
+            (tree: MoveTreeJson) => JSON.parse(JSON.stringify(tree)) as MoveTreeJson,
+        );
+        const result = buildDraftBaseSnapshotFromSelectedGameSnapshot({
+            selectedGameSnapshot: null,
+            gameId: 4321,
+            controller: {
+                goban: {
+                    engine: {
+                        move_tree: makeMoveTree(0),
+                    },
+                },
+            } as unknown as GobanController,
+            cloneMoveTree,
+        });
+
+        expect(result).toBeNull();
+        expect(cloneMoveTree).not.toHaveBeenCalled();
     });
 
     it("refuses a headless selected-game snapshot that is too shallow for the requirement", () => {
@@ -830,6 +1049,136 @@ describe("draft base apply guard", () => {
             gameId: null,
             trunkTailMoveNumber: 0,
             moveTreeId: null,
+        });
+    });
+
+    describe("secondary variation reload decisions", () => {
+        it("skips reload when the desired dirty state is already displayed", () => {
+            expect(
+                decideSecondaryVariationReloadAction({
+                    snapshotInstalled: true,
+                    currentSecondaryTailMoveNumber: 147,
+                    snapshotTailMoveNumber: 147,
+                    treeDirty: true,
+                    desiredApplyKey: "game:147:visible:selected:1",
+                    lastAppliedDesiredApplyKey: "game:147:visible:selected:1",
+                }),
+            ).toMatchObject({
+                action: "skip-already-displayed",
+                desiredDirtyStateAlreadyDisplayed: true,
+                needsSnapshotLoad: false,
+                staleDirtyState: false,
+            });
+        });
+
+        it("reloads when the dirty tree is stale for a different desired state", () => {
+            expect(
+                decideSecondaryVariationReloadAction({
+                    snapshotInstalled: true,
+                    currentSecondaryTailMoveNumber: 147,
+                    snapshotTailMoveNumber: 147,
+                    treeDirty: true,
+                    desiredApplyKey: "new",
+                    lastAppliedDesiredApplyKey: "old",
+                }),
+            ).toMatchObject({
+                action: "load-snapshot",
+                staleDirtyState: true,
+                needsSnapshotLoad: true,
+            });
+        });
+
+        it("applies visible variations when the base is installed and clean", () => {
+            expect(
+                decideSecondaryVariationReloadAction({
+                    snapshotInstalled: true,
+                    currentSecondaryTailMoveNumber: 147,
+                    snapshotTailMoveNumber: 147,
+                    treeDirty: false,
+                    desiredApplyKey: "new",
+                    lastAppliedDesiredApplyKey: null,
+                }),
+            ).toMatchObject({
+                action: "apply",
+                baseSnapshotInstalled: true,
+                needsSnapshotLoad: false,
+            });
+        });
+
+        it("reloads when the installed snapshot is missing", () => {
+            expect(
+                decideSecondaryVariationReloadAction({
+                    snapshotInstalled: false,
+                    currentSecondaryTailMoveNumber: 0,
+                    snapshotTailMoveNumber: 147,
+                    treeDirty: false,
+                    desiredApplyKey: "key",
+                    lastAppliedDesiredApplyKey: null,
+                }),
+            ).toMatchObject({
+                action: "load-snapshot",
+                baseSnapshotInstalled: false,
+                needsSnapshotLoad: true,
+            });
+        });
+
+        it("reloads when the official trunk is behind the snapshot tail", () => {
+            expect(
+                decideSecondaryVariationReloadAction({
+                    snapshotInstalled: true,
+                    currentSecondaryTailMoveNumber: 100,
+                    snapshotTailMoveNumber: 147,
+                    treeDirty: false,
+                    desiredApplyKey: "key",
+                    lastAppliedDesiredApplyKey: null,
+                }),
+            ).toMatchObject({
+                action: "load-snapshot",
+                baseSnapshotInstalled: false,
+                needsSnapshotLoad: true,
+            });
+        });
+    });
+
+    describe("selected variation base snapshot identity", () => {
+        it("stays unchanged when an unrelated room snapshot advances", () => {
+            const initial = makeCurrentGameBaseSnapshot(87402085, 135, 1);
+            const next = makeCurrentGameBaseSnapshot(87402085, 136, 2);
+
+            expect(
+                getSelectedVariationBaseSnapshotIdentity({
+                    selectedVariationGameId: 87252117,
+                    selectedGameBaseSnapshot: null,
+                    currentGameBaseSnapshot: initial,
+                }),
+            ).toBeNull();
+            expect(
+                getSelectedVariationBaseSnapshotIdentity({
+                    selectedVariationGameId: 87252117,
+                    selectedGameBaseSnapshot: null,
+                    currentGameBaseSnapshot: next,
+                }),
+            ).toBeNull();
+        });
+
+        it("changes when the selected variation source snapshot advances", () => {
+            const initialSelected = makeCurrentGameBaseSnapshot(87252117, 147, 1);
+            const advancedSelected = makeCurrentGameBaseSnapshot(87252117, 150, 2);
+
+            expect(
+                getSelectedVariationBaseSnapshotIdentity({
+                    selectedVariationGameId: 87252117,
+                    selectedGameBaseSnapshot: initialSelected,
+                    currentGameBaseSnapshot: makeCurrentGameBaseSnapshot(87402085, 135, 9),
+                }),
+            ).toBe("87252117:147:1");
+            expect(
+                getSelectedVariationBaseSnapshotIdentity({
+                    selectedVariationGameId: 87252117,
+                    selectedGameBaseSnapshot: advancedSelected,
+                    currentGameBaseSnapshot: makeCurrentGameBaseSnapshot(87402085, 135, 9),
+                }),
+            ).toBe("87252117:150:2");
         });
     });
 });
