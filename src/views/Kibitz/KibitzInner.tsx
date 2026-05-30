@@ -60,7 +60,11 @@ import { KibitzMobileGamePicker } from "./KibitzMobileGamePicker";
 import { KibitzRoomSettingsPopover } from "./KibitzRoomSettingsPopover";
 import { useKibitzCurrentGameConnectionKeeper } from "./useKibitzCurrentGameConnectionKeeper";
 import { useKibitzCurrentGameBaseBroker } from "./useKibitzCurrentGameBaseBroker";
-import { getKibitzAccessPolicyForUser, isKibitzAccessBlockedForUser } from "./kibitzAnalysisPolicy";
+import {
+    getKibitzAccessPolicyForUser,
+    isKibitzAccessBlockedForUser,
+    isLoggedInKibitzUser,
+} from "./kibitzAnalysisPolicy";
 import { getVisiblePostedVariations } from "./kibitzVariationQuickList";
 import { KibitzUserAvatar } from "./KibitzUserAvatar";
 import {
@@ -650,6 +654,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const [accessBlocked, setAccessBlocked] = React.useState(controller.access_blocked);
     const currentUser = useCurrentKibitzUser();
     const canManageRoom = permissions.can_edit_room || Boolean(currentUser?.is_moderator);
+    const isLoggedInUser = isLoggedInKibitzUser(currentUser);
+    const canOpenCreateRoomFlow = isLoggedInUser;
+    const createRoomSignInHref = `/sign-in#${location.pathname}${location.search}`;
     const [mobileCompanionPanel, setMobileCompanionPanel] =
         React.useState<MobileCompanionPanel>("chat");
     const [mobileCompareController, setMobileCompareController] =
@@ -2465,6 +2472,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             mode={pickerMode}
             rooms={rooms}
             currentRoom={resolvedRoom}
+            canOpenCreateRoomFlow={canOpenCreateRoomFlow}
+            signInHref={createRoomSignInHref}
             onClose={onClosePicker}
             onCreateRoom={async (game, roomName, description) => {
                 const nextRoomId = await controller.createRoom(game, roomName, description);
@@ -2506,6 +2515,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                             activeRoomId=""
                             onSelectRoom={onSelectRoom}
                             onCreateRoom={onOpenCreateRoom}
+                            canOpenCreateRoomFlow={canOpenCreateRoomFlow}
+                            signInHref={createRoomSignInHref}
                             onCreateVariation={onCreateVariation}
                             blockedRoomIds={blockedRoomIds}
                         />
@@ -2552,6 +2563,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                             activeRoomId=""
                             onSelectRoom={onSelectRoom}
                             onCreateRoom={onOpenCreateRoom}
+                            canOpenCreateRoomFlow={canOpenCreateRoomFlow}
+                            signInHref={createRoomSignInHref}
                             blockedRoomIds={blockedRoomIds}
                         />
                     </div>
@@ -2591,6 +2604,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                         activeRoomId={resolvedRoom.id}
                         onSelectRoom={onSelectRoom}
                         onCreateRoom={onOpenCreateRoom}
+                        canOpenCreateRoomFlow={canOpenCreateRoomFlow}
+                        signInHref={createRoomSignInHref}
                         blockedRoomIds={blockedRoomIds}
                         helpTargetId={KIBITZ_HELP_TARGETS.desktopRoomList}
                     />
@@ -2733,6 +2748,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                     activeRoomId={resolvedRoom.id}
                                                     onSelectRoom={onSelectRoom}
                                                     onCreateRoom={onOpenCreateRoom}
+                                                    canOpenCreateRoomFlow={canOpenCreateRoomFlow}
+                                                    signInHref={createRoomSignInHref}
                                                     onCreateVariation={onCreateVariation}
                                                     blockedRoomIds={blockedRoomIds}
                                                 />
@@ -2772,6 +2789,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                 mode={mobileOverlayMode}
                                                 rooms={rooms}
                                                 currentRoom={resolvedRoom}
+                                                canOpenCreateRoomFlow={canOpenCreateRoomFlow}
+                                                signInHref={createRoomSignInHref}
                                                 onClose={onCloseMobileOverlay}
                                                 onBackToMenu={() => {
                                                     setMobileOverlayMode(
