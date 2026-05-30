@@ -23,12 +23,15 @@ import type { GobanConfig, MoveTree, MoveTreeJson } from "goban";
 import {
     captureRoomBaseSnapshotForVariation,
     captureMainBoardBaseSnapshotForVariation,
+    buildSecondaryVariationBaseSnapshotFromCurrentGameSnapshot,
+    buildSecondaryVariationApplyKey,
     buildDraftBaseSnapshotFromSelectedGameSnapshot,
     buildSelectedGameBaseSnapshotFromDetails,
     clearDraftBaseAppliedState,
     clearInstalledSecondaryVariationBaseState,
     buildSnapshotFromEngine,
     decideSecondaryVariationReloadAction,
+    getSameGameVariationBaseSnapshotState,
     getCurrentSecondaryVariationBaseTreeIdentity,
     getOfficialTrunkTailMoveNumber,
     getCurrentDraftBaseTreeIdentity,
@@ -372,6 +375,63 @@ describe("variation snapshot readiness", () => {
         expect(snapshot?.config.moves).toBeUndefined();
         expect(snapshot?.config.move_tree?.branches).toBeUndefined();
         expect(snapshot?.config.move_tree?.trunk_next).toBeDefined();
+    });
+
+    it("prefers the current game snapshot for same-game variation base refresh", () => {
+        const selectedVariation = makeVariation(4321, 4);
+        const sourceGame = {
+            ...makeGame(4321, "Source game"),
+            move_number: 17,
+        };
+        const currentGameBaseSnapshot = {
+            ...makeCurrentGameBaseSnapshot(4321, 17, 99),
+            config: {
+                game_id: 4321,
+                move_tree: makeMoveTree(13, makeMoveTree(17)).toJson() as MoveTreeJson,
+            },
+        };
+        const secondaryController = {
+            goban: {
+                engine: {
+                    move_tree: makeMoveTree(13),
+                },
+            },
+        } as unknown as GobanController;
+
+        const snapshot = buildSecondaryVariationBaseSnapshotFromCurrentGameSnapshot(
+            currentGameBaseSnapshot,
+            secondaryController,
+            selectedVariation,
+            [],
+            sourceGame,
+        );
+
+        expect(snapshot?.trunkTailMoveNumber).toBe(17);
+        expect(
+            buildSecondaryVariationApplyKey({
+                selectedGameId: selectedVariation.game_id,
+                snapshotTailMoveNumber: snapshot?.trunkTailMoveNumber,
+                visibleVariationKey: "variation-1",
+                selectedVariationId: selectedVariation.id,
+                variationFocusRequestId: 10,
+            }),
+        ).toBe("4321:17:variation-1:variation-4321:10");
+    });
+
+    it("waits when the current-game snapshot is stale for a same-game variation", () => {
+        const selectedVariation = makeVariation(4321, 4);
+        const state = getSameGameVariationBaseSnapshotState({
+            currentGameBaseSnapshot: makeCurrentGameBaseSnapshot(4321, 13, 99),
+            currentRoomGameId: 4321,
+            selectedVariation,
+            requiredSnapshotMoveNumber: 4,
+            mainBoardOfficialTailMoveNumber: 17,
+        });
+
+        expect(state.requiredSameGameBaseTailMoveNumber).toBe(17);
+        expect(state.currentLiveTailMoveNumber).toBe(17);
+        expect(state.currentGameSnapshotTailMoveNumber).toBe(13);
+        expect(state.snapshotUsable).toBe(false);
     });
 
     it("can build a headless selected-game snapshot from an engine trunk", () => {

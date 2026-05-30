@@ -1488,13 +1488,19 @@ export function captureMainBoardBaseSnapshotForVariation(
     };
 }
 
-export function captureRoomBaseSnapshotForVariation(
+export function buildSecondaryVariationBaseSnapshotFromCurrentGameSnapshot(
     currentGameBaseSnapshot: KibitzCurrentGameBaseSnapshot | null | undefined,
     secondaryBoardController: GobanController,
     selectedVariation: KibitzVariationSummary,
     visibleVariations: readonly KibitzVariationSummary[],
     sourceGame?: KibitzWatchedGame | null | undefined,
 ): SecondaryVariationBaseSnapshot | null {
+    // This is a cloning/building helper, not the same-game freshness authority.
+    // It only checks that the snapshot reaches the variation anchor.
+    //
+    // Same-game posted variations must first pass
+    // getSameGameVariationBaseSnapshotState(...), which enforces that
+    // currentGameBaseSnapshot has reached the current live main-board tail.
     if (!currentGameBaseSnapshot) {
         return null;
     }
@@ -1534,6 +1540,69 @@ export function captureRoomBaseSnapshotForVariation(
             moves: undefined,
             move_tree: cloneMoveTreeJson(currentGameBaseSnapshot.config.move_tree),
         },
+    };
+}
+
+export function captureRoomBaseSnapshotForVariation(
+    currentGameBaseSnapshot: KibitzCurrentGameBaseSnapshot | null | undefined,
+    secondaryBoardController: GobanController,
+    selectedVariation: KibitzVariationSummary,
+    visibleVariations: readonly KibitzVariationSummary[],
+    sourceGame?: KibitzWatchedGame | null | undefined,
+): SecondaryVariationBaseSnapshot | null {
+    return buildSecondaryVariationBaseSnapshotFromCurrentGameSnapshot(
+        currentGameBaseSnapshot,
+        secondaryBoardController,
+        selectedVariation,
+        visibleVariations,
+        sourceGame,
+    );
+}
+
+export function getSameGameVariationBaseSnapshotState({
+    currentGameBaseSnapshot,
+    currentRoomGameId,
+    selectedVariation,
+    requiredSnapshotMoveNumber,
+    mainBoardOfficialTailMoveNumber,
+}: {
+    currentGameBaseSnapshot: KibitzCurrentGameBaseSnapshot | null | undefined;
+    currentRoomGameId: number | null | undefined;
+    selectedVariation: KibitzVariationSummary;
+    requiredSnapshotMoveNumber: number;
+    mainBoardOfficialTailMoveNumber: number;
+}): {
+    currentLiveTailMoveNumber: number;
+    requiredSameGameBaseTailMoveNumber: number;
+    currentGameSnapshotGameId: number | null;
+    currentGameSnapshotTailMoveNumber: number | null;
+    hasCurrentGameSnapshotMoveTree: boolean;
+    snapshotUsable: boolean;
+} {
+    const currentLiveTailMoveNumber = Math.max(
+        mainBoardOfficialTailMoveNumber,
+        currentGameBaseSnapshot?.trunkTailMoveNumber ?? 0,
+    );
+    const requiredSameGameBaseTailMoveNumber = Math.max(
+        requiredSnapshotMoveNumber,
+        currentLiveTailMoveNumber,
+    );
+    const currentGameSnapshotGameId = currentGameBaseSnapshot?.gameId ?? null;
+    const currentGameSnapshotTailMoveNumber = currentGameBaseSnapshot?.trunkTailMoveNumber ?? null;
+    const hasCurrentGameSnapshotMoveTree = Boolean(currentGameBaseSnapshot?.config.move_tree);
+    const snapshotUsable =
+        selectedVariation.game_id === currentRoomGameId &&
+        currentGameSnapshotGameId === currentRoomGameId &&
+        hasCurrentGameSnapshotMoveTree &&
+        (currentGameSnapshotTailMoveNumber ?? 0) >= requiredSameGameBaseTailMoveNumber;
+
+    return {
+        currentLiveTailMoveNumber,
+        requiredSameGameBaseTailMoveNumber,
+        currentGameSnapshotGameId,
+        currentGameSnapshotTailMoveNumber,
+        hasCurrentGameSnapshotMoveTree,
+        snapshotUsable,
     };
 }
 
@@ -4632,155 +4701,102 @@ export function KibitzRoomStage({
                 return true;
             }
 
-            const currentLiveTailMoveNumber = Math.max(
-                mainBoardOfficialTailMoveNumber,
-                currentGameBaseSnapshot?.trunkTailMoveNumber ?? 0,
-            );
-
-            let baseSnapshot = secondaryVariationBaseSnapshotRef.current;
-            const canReuseSnapshot =
-                baseSnapshot != null &&
-                baseSnapshot.controller === secondaryBoardController &&
-                baseSnapshot.gameId === selectedVariation.game_id &&
-                baseSnapshot.trunkTailMoveNumber >= requiredSnapshotMoveNumber &&
-                baseSnapshot.trunkTailMoveNumber >= currentLiveTailMoveNumber;
-            const snapshotInstalled =
-                baseSnapshot != null &&
-                baseSnapshot.controller === secondaryBoardController &&
-                baseSnapshot.gameId === selectedVariation.game_id &&
-                isSecondaryVariationBaseSnapshotInstalled(
-                    baseSnapshot,
-                    secondaryBoardController,
-                    secondaryVariationBaseInstalledRef.current,
-                );
-
-            logVariationStage("try:snapshot-state", {
-                reason,
+            const sameGameBaseState = getSameGameVariationBaseSnapshotState({
+                currentGameBaseSnapshot,
+                currentRoomGameId,
+                selectedVariation,
                 requiredSnapshotMoveNumber,
-                currentLiveTailMoveNumber,
-                canReuseSnapshot,
-                snapshotInstalled,
+                mainBoardOfficialTailMoveNumber,
             });
 
-            if (canReuseSnapshot && secondaryVariationTreeDirtyRef.current) {
-                return reloadBaseThenApplyVisibleVariations(reason);
-            }
+            if (selectedVariation.game_id === currentRoomGameId) {
+                const snapshot = currentGameBaseSnapshot;
 
-            if (canReuseSnapshot && !secondaryVariationTreeDirtyRef.current) {
-                if (!snapshotInstalled) {
-                    return reloadBaseThenApplyVisibleVariations(`${reason}:snapshot-not-installed`);
-                }
-
-                const loadedBaseSnapshot = baseSnapshot;
-                if (!loadedBaseSnapshot) {
-                    return reloadBaseThenApplyVisibleVariations(`${reason}:missing-base-snapshot`);
-                }
-
-                return applyVisibleVariationsToLoadedBase(
-                    buildSecondaryVariationApplyKey({
-                        selectedGameId: selectedVariation.game_id,
-                        snapshotTailMoveNumber: loadedBaseSnapshot.trunkTailMoveNumber,
-                        visibleVariationKey: visibleVariationApplyKey,
-                        selectedVariationId: selectedVariation.id,
-                        variationFocusRequestId,
-                    }),
-                );
-            }
-
-            if (secondaryVariationTreeDirtyRef.current) {
-                logVariationStage("try:dirty-without-snapshot", { reason });
-                return false;
-            }
-
-            const pendingBaseLoad = pendingSecondaryVariationBaseLoadRef.current;
-            if (isCurrentPendingSecondarySnapshotLoad(pendingBaseLoad)) {
-                logVariationStage("try:pending-snapshot-load", { reason });
-                return false;
-            }
-
-            if (
-                !isSecondaryVariationSnapshotReady(
-                    secondaryBoardController,
-                    selectedVariation,
-                    visibleVariations,
-                    selectedVariationSourceGame,
-                )
-            ) {
-                const mainBoardSnapshot = captureMainBoardBaseSnapshotForVariation(
-                    mainBoardController,
-                    secondaryBoardController,
-                    selectedVariation,
-                    visibleVariations,
-                    selectedVariationSourceGame,
-                );
-
-                if (mainBoardSnapshot) {
-                    secondaryVariationBaseSnapshotRef.current = mainBoardSnapshot;
-                    lastAppliedSecondaryVariationKeyRef.current = null;
-                    logVariationStage("try:main-board-snapshot", {
-                        reason,
-                        requiredSnapshotMoveNumber,
-                        mainTailMoveNumber: mainBoardSnapshot.trunkTailMoveNumber,
-                    });
-                    return reloadBaseThenApplyVisibleVariations("main-board-snapshot");
-                }
-
-                const roomBaseSnapshot = captureRoomBaseSnapshotForVariation(
-                    currentGameBaseSnapshot,
-                    secondaryBoardController,
-                    selectedVariation,
-                    visibleVariations,
-                    selectedVariationSourceGame,
-                );
-
-                if (roomBaseSnapshot) {
-                    secondaryVariationBaseSnapshotRef.current = roomBaseSnapshot;
-                    lastAppliedSecondaryVariationKeyRef.current = null;
-                    logVariationStage("try:room-base-snapshot", {
-                        reason,
-                        requiredSnapshotMoveNumber,
-                        roomBaseTailMoveNumber: roomBaseSnapshot.trunkTailMoveNumber,
-                        roomBaseSource: currentGameBaseSnapshot?.source ?? null,
-                    });
-                    return reloadBaseThenApplyVisibleVariations("room-base-snapshot");
-                }
-
-                logVariationStage("try:snapshot-not-ready", {
+                logVariationStage("try:current-game-snapshot-state", {
                     reason,
                     requiredSnapshotMoveNumber,
-                    currentGameBaseSnapshot: currentGameBaseSnapshot
-                        ? {
-                              gameId: currentGameBaseSnapshot.gameId,
-                              trunkTailMoveNumber: currentGameBaseSnapshot.trunkTailMoveNumber,
-                              source: currentGameBaseSnapshot.source,
-                          }
-                        : null,
+                    requiredSameGameBaseTailMoveNumber:
+                        sameGameBaseState.requiredSameGameBaseTailMoveNumber,
+                    currentLiveTailMoveNumber: sameGameBaseState.currentLiveTailMoveNumber,
+                    mainBoardOfficialTailMoveNumber,
+                    currentGameSnapshotGameId: sameGameBaseState.currentGameSnapshotGameId,
+                    currentGameSnapshotTailMoveNumber:
+                        sameGameBaseState.currentGameSnapshotTailMoveNumber,
+                    hasCurrentGameSnapshotMoveTree:
+                        sameGameBaseState.hasCurrentGameSnapshotMoveTree,
+                    snapshotUsable: sameGameBaseState.snapshotUsable,
                 });
-                return false;
+
+                if (!sameGameBaseState.snapshotUsable) {
+                    logVariationStage("try:current-game-snapshot-wait", {
+                        reason,
+                        requiredSnapshotMoveNumber,
+                        requiredSameGameBaseTailMoveNumber:
+                            sameGameBaseState.requiredSameGameBaseTailMoveNumber,
+                        currentLiveTailMoveNumber: sameGameBaseState.currentLiveTailMoveNumber,
+                        mainBoardOfficialTailMoveNumber,
+                        currentGameSnapshotGameId: sameGameBaseState.currentGameSnapshotGameId,
+                        currentGameSnapshotTailMoveNumber:
+                            sameGameBaseState.currentGameSnapshotTailMoveNumber,
+                        hasCurrentGameSnapshotMoveTree:
+                            sameGameBaseState.hasCurrentGameSnapshotMoveTree,
+                    });
+                    return false;
+                }
+
+                if (!snapshot) {
+                    return false;
+                }
+
+                const currentGameBase = buildSecondaryVariationBaseSnapshotFromCurrentGameSnapshot(
+                    snapshot,
+                    secondaryBoardController,
+                    selectedVariation,
+                    visibleVariations,
+                    selectedVariationSourceGame,
+                );
+
+                if (!currentGameBase) {
+                    logVariationStage("try:current-game-snapshot-build-failed", {
+                        reason,
+                        requiredSnapshotMoveNumber,
+                        requiredSameGameBaseTailMoveNumber:
+                            sameGameBaseState.requiredSameGameBaseTailMoveNumber,
+                        currentGameSnapshotTailMoveNumber: snapshot.trunkTailMoveNumber,
+                    });
+                    return false;
+                }
+
+                const previousSecondaryBaseSnapshot = secondaryVariationBaseSnapshotRef.current;
+                const baseChanged =
+                    previousSecondaryBaseSnapshot?.controller !== secondaryBoardController ||
+                    previousSecondaryBaseSnapshot?.gameId !== currentGameBase.gameId ||
+                    previousSecondaryBaseSnapshot?.trunkTailMoveNumber !==
+                        currentGameBase.trunkTailMoveNumber;
+
+                secondaryVariationBaseSnapshotRef.current = currentGameBase;
+
+                if (baseChanged) {
+                    lastAppliedSecondaryVariationKeyRef.current = null;
+                }
+
+                logVariationStage("try:current-game-snapshot", {
+                    reason,
+                    requiredSnapshotMoveNumber,
+                    requiredSameGameBaseTailMoveNumber:
+                        sameGameBaseState.requiredSameGameBaseTailMoveNumber,
+                    currentLiveTailMoveNumber: sameGameBaseState.currentLiveTailMoveNumber,
+                    selectedGameId: selectedVariation.game_id,
+                    currentRoomGameId,
+                    currentGameSnapshotTailMoveNumber: snapshot.trunkTailMoveNumber,
+                    previousSecondaryBaseTailMoveNumber:
+                        previousSecondaryBaseSnapshot?.trunkTailMoveNumber ?? null,
+                    baseChanged,
+                });
+                return reloadBaseThenApplyVisibleVariations("current-game-snapshot");
             }
 
-            baseSnapshot = captureSecondaryVariationBaseSnapshot(
-                secondaryBoardController,
-                selectedVariation.game_id,
-                selectedVariation,
-                visibleVariations,
-                selectedVariationSourceGame,
-                secondaryVariationTreeDirtyRef.current,
-                secondaryVariationBaseHydrationRef.current,
-            );
-
-            if (!baseSnapshot) {
-                logVariationStage("try:capture-failed", { reason });
-                return false;
-            }
-
-            secondaryVariationBaseSnapshotRef.current = baseSnapshot;
-            lastAppliedSecondaryVariationKeyRef.current = null;
-            logVariationStage("try:capture-succeeded", {
-                reason,
-                baseSnapshot: summarizeSecondaryVariationSnapshot(baseSnapshot),
-            });
-            return reloadBaseThenApplyVisibleVariations(reason);
+            return false;
         };
 
         const scheduleBaseRetry = (reason: string) => {
