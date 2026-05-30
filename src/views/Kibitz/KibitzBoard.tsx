@@ -24,6 +24,12 @@ import * as preferences from "@/lib/preferences";
 import { logKibitzVariationDebug, summarizeKibitzMoveTreeNode } from "./kibitzVariationDebug";
 import "./KibitzBoard.css";
 
+declare global {
+    interface Window {
+        __kibitzLifecycleRing?: Array<Record<string, unknown>>;
+    }
+}
+
 interface KibitzBoardProps {
     role?: "main" | "secondary" | "variation" | "preview";
     gameId?: number;
@@ -42,6 +48,26 @@ interface KibitzBoardProps {
     movePath?: string;
     restoreToOfficialTailOnLoad?: boolean;
     onReady?: (controller: GobanController | null) => void;
+}
+
+function recordKibitzLifecycleEvent(message: string, details: Record<string, unknown> = {}): void {
+    if (typeof window === "undefined") {
+        return;
+    }
+
+    const ring = window.__kibitzLifecycleRing ?? [];
+    ring.push({
+        sequence: ring.length > 0 ? Number(ring[ring.length - 1]?.sequence ?? 0) + 1 : 1,
+        timestamp: Date.now(),
+        message,
+        ...details,
+    });
+
+    while (ring.length > 300) {
+        ring.shift();
+    }
+
+    window.__kibitzLifecycleRing = ring;
 }
 
 const MAX_INITIAL_RESIZE_RETRIES = 60;
@@ -124,6 +150,26 @@ export function shouldConnectKibitzBoardToGame(
     connectToGame: boolean,
 ): boolean {
     return boardRole === "main" && connectToGame;
+}
+
+function isGobanStillUsable(
+    goban: GobanController["goban"] | null | undefined,
+): goban is GobanController["goban"] {
+    if (!goban) {
+        return false;
+    }
+
+    const gobanElement = goban as unknown as {
+        parent?: HTMLElement | null;
+        destroyed?: boolean;
+        renderer?: { destroyed?: boolean };
+    };
+
+    return Boolean(
+        gobanElement.parent?.isConnected &&
+        !gobanElement.destroyed &&
+        !gobanElement.renderer?.destroyed,
+    );
 }
 
 export function refreshLastOfficialMoveFromTrunk(controller: GobanController): MoveTree | null {
@@ -240,6 +286,7 @@ export function KibitzBoard({
         })(),
     );
     const controllerRef = React.useRef<GobanController | null>(null);
+    const controllerEpochRef = React.useRef(0);
     const controllerPublishedRef = React.useRef(false);
     const resizeDebounceRef = React.useRef<NodeJS.Timeout | null>(null);
     const initialResizeRetryCountRef = React.useRef(0);
@@ -562,6 +609,8 @@ export function KibitzBoard({
         }
 
         initialResizeRetryCountRef.current += 1;
+        const scheduledControllerEpoch = controllerEpochRef.current;
+        const scheduledController = controllerRef.current;
 
         const pendingRetry = {
             frame1: null as number | null,
@@ -575,34 +624,76 @@ export function KibitzBoard({
             pendingRetry.frame2 = window.requestAnimationFrame(() => {
                 pendingRetry.frame2 = null;
                 pendingInitialResizeRetryRef.current = null;
+
+                if (
+                    scheduledController &&
+                    controllerEpochRef.current !== scheduledControllerEpoch
+                ) {
+                    recordKibitzLifecycleEvent("kibitz-board:delayed-callback-skip-destroyed", {
+                        role: boardRole,
+                        gameId,
+                        currentRoomGameId,
+                        reason: "initial-resize-retry",
+                        scheduledControllerEpoch,
+                        currentControllerEpoch: controllerEpochRef.current,
+                        scheduledControllerGameId:
+                            scheduledController?.goban.config?.game_id ?? null,
+                        currentControllerGameId:
+                            controllerRef.current?.goban.config?.game_id ?? null,
+                    });
+                    return;
+                }
+
+                if (
+                    scheduledController &&
+                    (!isGobanStillUsable(scheduledController.goban) ||
+                        controllerRef.current !== scheduledController)
+                ) {
+                    recordKibitzLifecycleEvent("kibitz-board:delayed-callback-skip-destroyed", {
+                        role: boardRole,
+                        gameId,
+                        currentRoomGameId,
+                        reason: "initial-resize-retry",
+                        scheduledControllerEpoch,
+                        currentControllerEpoch: controllerEpochRef.current,
+                        scheduledControllerGameId:
+                            scheduledController?.goban.config?.game_id ?? null,
+                        currentControllerGameId:
+                            controllerRef.current?.goban.config?.game_id ?? null,
+                    });
+                    return;
+                }
+
                 onResizeRef.current(true);
             });
         });
-    }, [boardRole, gameId, isMobile]);
+    }, [boardRole, currentRoomGameId, gameId, isMobile]);
 
-    const recenterGoban = React.useCallback(() => {
-        const gobanController = goban;
-        const container = gobanContainerRef.current;
-        const gobanElement = gobanDiv.current;
+    const recenterGoban = React.useCallback(
+        (gobanController: GobanController["goban"]) => {
+            const container = gobanContainerRef.current;
+            const gobanElement = gobanDiv.current;
 
-        if (!container || !gobanController || !gobanElement) {
-            return;
-        }
+            if (!container || !gobanController || !gobanElement) {
+                return;
+            }
 
-        const metrics = gobanController.computeMetrics();
-        const containerWidth = container.offsetWidth;
-        const containerHeight = container.offsetHeight;
-        const scale =
-            fitMode === "contain" && metrics.width > 0 && metrics.height > 0
-                ? Math.min(containerWidth / metrics.width, containerHeight / metrics.height)
-                : 1;
-        const scaledWidth = metrics.width * scale;
+            const metrics = gobanController.computeMetrics();
+            const containerWidth = container.offsetWidth;
+            const containerHeight = container.offsetHeight;
+            const scale =
+                fitMode === "contain" && metrics.width > 0 && metrics.height > 0
+                    ? Math.min(containerWidth / metrics.width, containerHeight / metrics.height)
+                    : 1;
+            const scaledWidth = metrics.width * scale;
 
-        gobanElement.style.transformOrigin = "top left";
-        gobanElement.style.transform = scale === 1 ? "" : `scale(${scale})`;
-        gobanElement.style.top = "0px";
-        gobanElement.style.left = `${Math.ceil((containerWidth - scaledWidth) / 2)}px`;
-    }, [fitMode, goban]);
+            gobanElement.style.transformOrigin = "top left";
+            gobanElement.style.transform = scale === 1 ? "" : `scale(${scale})`;
+            gobanElement.style.top = "0px";
+            gobanElement.style.left = `${Math.ceil((containerWidth - scaledWidth) / 2)}px`;
+        },
+        [fitMode],
+    );
 
     const onResize = React.useCallback(
         (no_debounce: boolean = false) => {
@@ -610,7 +701,7 @@ export function KibitzBoard({
             const gobanElement = gobanDiv.current;
             const container = gobanContainerRef.current;
 
-            if (!gobanController || !gobanElement || !container) {
+            if (!isGobanStillUsable(gobanController) || !gobanElement || !container) {
                 return;
             }
 
@@ -643,17 +734,44 @@ export function KibitzBoard({
             gobanController.setLastMoveOpacity(preferences.get("last-move-opacity"));
             if (no_debounce) {
                 gobanController.setSquareSizeBasedOnDisplayWidth(targetDisplayWidth);
-                recenterGoban();
+                recenterGoban(gobanController);
             } else {
-                resizeDebounceRef.current = setTimeout(() => onResizeRef.current(true), 10);
+                const scheduledControllerEpoch = controllerEpochRef.current;
+                const scheduledController = gobanController;
+                resizeDebounceRef.current = setTimeout(() => {
+                    if (
+                        controllerEpochRef.current !== scheduledControllerEpoch ||
+                        !isGobanStillUsable(scheduledController) ||
+                        controllerRef.current?.goban !== scheduledController
+                    ) {
+                        recordKibitzLifecycleEvent("kibitz-board:delayed-callback-skip-destroyed", {
+                            role: boardRole,
+                            gameId,
+                            currentRoomGameId,
+                            reason: "resize-debounce",
+                            scheduledControllerEpoch,
+                            currentControllerEpoch: controllerEpochRef.current,
+                            scheduledControllerGameId: scheduledController?.config?.game_id ?? null,
+                            currentControllerGameId:
+                                controllerRef.current?.goban.config?.game_id ?? null,
+                        });
+                        return;
+                    }
+
+                    onResizeRef.current(true);
+                }, 10);
             }
         },
         [
             cancelPendingInitialResizeRetry,
+            boardRole,
+            currentRoomGameId,
+            gameId,
             goban,
             recenterGoban,
             respectContainerBounds,
             scheduleInitialResizeRetry,
+            isGobanStillUsable,
         ],
     );
 
@@ -731,8 +849,10 @@ export function KibitzBoard({
             height,
         };
 
+        controllerEpochRef.current += 1;
         controllerRef.current?.destroy();
         controllerRef.current = new GobanController(config);
+        controllerEpochRef.current += 1;
         controllerPublishedRef.current = false;
         if (!effectiveConnectToGame) {
             logKibitzVariationDebug("kibitz-board:connect-suppressed", {
@@ -902,10 +1022,23 @@ export function KibitzBoard({
                 onReady?.(null);
             }
             controllerPublishedRef.current = false;
+            recordKibitzLifecycleEvent("kibitz-board:destroy", {
+                role: boardRole,
+                gameId,
+                currentRoomGameId,
+                controllerGameId: controllerRef.current?.goban.config?.game_id ?? null,
+                controllerEpoch: controllerEpochRef.current,
+            });
+            if (resizeDebounceRef.current) {
+                clearTimeout(resizeDebounceRef.current);
+                resizeDebounceRef.current = null;
+            }
+            cancelPendingInitialResizeRetry();
             clearPendingLiveMoveRestore();
             controllerRef.current?.goban.off("cur_move", captureCurrentMovePath);
             controllerRef.current?.goban.off("move-made", restorePendingLiveMoveCursor);
             controllerRef.current?.goban.off("load", handleLoad);
+            controllerEpochRef.current += 1;
             controllerRef.current?.destroy();
             controllerRef.current = null;
             setGoban(null);
@@ -1071,15 +1204,35 @@ export function KibitzBoard({
         let cancelled = false;
         let frame1 = 0;
         let frame2 = 0;
+        const scheduledController = goban;
+        const scheduledControllerEpoch = controllerEpochRef.current;
 
         frame1 = window.requestAnimationFrame(() => {
             frame2 = window.requestAnimationFrame(() => {
-                if (cancelled) {
+                if (
+                    cancelled ||
+                    controllerEpochRef.current !== scheduledControllerEpoch ||
+                    !isGobanStillUsable(scheduledController) ||
+                    controllerRef.current?.goban !== scheduledController
+                ) {
+                    if (!cancelled) {
+                        recordKibitzLifecycleEvent("kibitz-board:delayed-callback-skip-destroyed", {
+                            role: boardRole,
+                            gameId,
+                            currentRoomGameId,
+                            reason: "post-mount-redraw",
+                            scheduledControllerEpoch,
+                            currentControllerEpoch: controllerEpochRef.current,
+                            scheduledControllerGameId: scheduledController?.config?.game_id ?? null,
+                            currentControllerGameId:
+                                controllerRef.current?.goban.config?.game_id ?? null,
+                        });
+                    }
                     return;
                 }
 
-                goban.redraw(true);
-                goban.move_tree_redraw?.(true);
+                scheduledController.redraw(true);
+                scheduledController.move_tree_redraw?.(true);
             });
         });
 
@@ -1088,7 +1241,7 @@ export function KibitzBoard({
             window.cancelAnimationFrame(frame1);
             window.cancelAnimationFrame(frame2);
         };
-    }, [goban, size]);
+    }, [boardRole, currentRoomGameId, gameId, goban, size]);
 
     React.useEffect(() => {
         if (!shouldDeferGobanContainer) {
