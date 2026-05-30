@@ -3597,6 +3597,7 @@ export function KibitzRoomStage({
         [
             isCurrentMainBoardController,
             mainBoardController,
+            mainGame?.live,
             onMainBoardHydrationChange,
             room.id,
             scheduleMainBoardVisibleRedraw,
