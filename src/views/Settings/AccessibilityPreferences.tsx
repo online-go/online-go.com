@@ -62,41 +62,44 @@ export function AccessibilityPreferences(): React.ReactElement {
             </PreferenceLine>
 
             {crosshair && (
-                <>
-                    <PreferenceLine title={llm_pgettext("Crosshair line color", "Crosshair color")}>
-                        <input
-                            type="color"
-                            value={color}
-                            onChange={(ev) => setColor(ev.target.value)}
-                        />
-                    </PreferenceLine>
-                    <PreferenceLine
-                        title={llm_pgettext("Crosshair line thickness", "Crosshair thickness")}
-                    >
-                        <input
-                            type="range"
-                            value={thickness}
-                            min={0.02}
-                            max={0.4}
-                            step={0.01}
-                            onChange={(ev) => setThickness(parseFloat(ev.target.value))}
-                        />
-                    </PreferenceLine>
-                    <PreferenceLine title={llm_pgettext("Crosshair live preview", "Preview")}>
-                        <MiniGoban
-                            className="crosshair-preview"
-                            // Re-mount when the colour/thickness change so the
-                            // freshly created board reads the new preference.
-                            key={`${color}-${thickness}`}
-                            json={crosshair_sample_board}
-                            noLink={true}
-                            width={5}
-                            height={5}
-                            displayWidth={150}
-                            labels_positioning={"none"}
-                        />
-                    </PreferenceLine>
-                </>
+                <div className="crosshair-options">
+                    <div className="crosshair-controls">
+                        <PreferenceLine
+                            title={llm_pgettext("Crosshair line color", "Crosshair color")}
+                        >
+                            <input
+                                type="color"
+                                value={color}
+                                onChange={(ev) => setColor(ev.target.value)}
+                            />
+                        </PreferenceLine>
+                        <PreferenceLine
+                            title={llm_pgettext("Crosshair line thickness", "Crosshair thickness")}
+                        >
+                            <input
+                                type="range"
+                                value={thickness}
+                                min={0.02}
+                                max={0.4}
+                                step={0.01}
+                                onChange={(ev) => setThickness(parseFloat(ev.target.value))}
+                            />
+                        </PreferenceLine>
+                    </div>
+
+                    <MiniGoban
+                        className="crosshair-preview"
+                        // Re-mount when the colour/thickness change so the
+                        // freshly created board reads the new preference.
+                        key={`${color}-${thickness}`}
+                        json={crosshair_sample_board}
+                        noLink={true}
+                        width={5}
+                        height={5}
+                        displayWidth={150}
+                        labels_positioning={"none"}
+                    />
+                </div>
             )}
         </div>
     );
