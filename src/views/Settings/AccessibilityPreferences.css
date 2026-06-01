@@ -1,0 +1,6 @@
+.AccessibilityPreferences {
+    input[type="color"] {
+        height: 2rem;
+        width: 3rem;
+    }
+}
