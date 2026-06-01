@@ -26,12 +26,16 @@ Behavior, as specified by the requester:
 
 ## Scope decisions (resolved during brainstorming)
 
-- **All gobans.** This is the simplest option, not a wider one: the crosshair is
-  read from a global preference via the goban configuration callbacks, so every
-  goban instance picks it up with no per-goban plumbing. Restricting to
-  "interactive boards only" would require an extra per-goban flag and is more
-  work. Relative thickness (fraction of square size) keeps small thumbnails from
-  being overwhelmed.
+- **All real boards, but not thumbnails/preview boards.** The crosshair is read
+  from a global preference via the goban configuration callbacks, so every goban
+  instance picks it up with no per-goban plumbing. It is shown on the regular
+  game/analysis/demo boards. It is **suppressed on `MiniGoban`** instances — the
+  small game thumbnails in lists and the sample boards used inside the settings
+  pages — where a full-board crosshair is just noise (e.g. it would otherwise
+  appear on the "stone font scale" sample board). This uses a per-board opt-out
+  flag (see `dont_draw_last_move_crosshair` below); the crosshair setting's own
+  preview opts back in. Relative thickness (fraction of square size) keeps the
+  remaining small boards from being overwhelmed.
 - **Both renderers.** OGS ships a Canvas renderer (default) and an SVG renderer
   (fallback/option). Both are covered so the feature is consistent regardless of
   the user's renderer.
@@ -149,6 +153,13 @@ The crosshair follows the same conditions as the existing last-move marker: a
 last move is present with a stone, phase is `play` or `finished`, and
 `!dont_draw_last_move`. No last move → no crosshair (empty board, etc.).
 
+It is additionally gated on a new **per-board config flag
+`dont_draw_last_move_crosshair`** (added to the goban config in `GobanBase`, read
+into `InteractiveBase` like `dont_draw_last_move`). When set, the board never
+draws the crosshair even if the global setting is on — but, unlike
+`dont_draw_last_move`, it leaves the regular last-move marker intact. This is how
+thumbnails and preview boards opt out (see 3D).
+
 ## Section 3 — Preferences and UI
 
 ### 3A. Preference keys — `src/lib/preferences.ts`
@@ -192,10 +203,21 @@ getLastMoveCrosshair: () => ({
   and the import.
 - Content, built with `PreferenceLine` + `usePreference`:
   - `Toggle` to enable the crosshair.
-  - **Shown only when enabled:** `<input type="color">` (color) and
-    `<input type="range">` (thickness, min `0.02`, max `0.4`, step `0.01`).
-    Native color/range inputs are the established idiom in `GamePreferences`,
-    `ThemePreferences`, and `SoundPreferences`.
+  - **Shown only when enabled,** laid out as a row with the controls on the left
+    and a live preview on the right: `<input type="color">` (color) and
+    `<input type="range">` (thickness, min `0.02`, max `0.4`, step `0.01`), plus a
+    small `MiniGoban` preview (5×5 board, last move at the centre with stones on
+    its row/column). Native color/range inputs are the established idiom in
+    `GamePreferences`, `ThemePreferences`, and `SoundPreferences`; the live preview
+    mirrors the board-label-positioning setting.
+  - The preview re-mounts via a `key` built from color+thickness so it reflects
+    changes immediately, and passes `lastMoveCrosshair` to opt back into the
+    crosshair (see next point).
+- **`MiniGoban` suppresses the crosshair by default.** `MiniGoban` (game
+  thumbnails in lists, and the sample boards inside settings pages) sets
+  `dont_draw_last_move_crosshair: true` on its goban config, so the crosshair only
+  appears on the regular large boards. A new `lastMoveCrosshair?: boolean` prop
+  opts back in — used only by the crosshair setting's own preview.
 - All user-visible strings translated via `pgettext` / `llm_pgettext`.
 - Out of scope: the existing `accessibility.keyboard-coordinate-input` setting
   stays in `GamePreferences` for now; this section contains only the crosshair.
@@ -206,9 +228,9 @@ getLastMoveCrosshair: () => ({
 - **goban unit tests** (Jest, jsdom): assert the Canvas `crosshair_layer` canvas
   is attached (before the `board` canvas, so under the stones) when the setting is
   enabled and there is a last move, and is not attached when disabled or when
-  `dont_draw_last_move` is set. Likewise assert the SVG `crosshair_layer` contains
-  two `<line>`s when enabled and none when disabled / `dont_draw_last_move` / no
-  last move.
+  `dont_draw_last_move` / `dont_draw_last_move_crosshair` is set. Likewise assert
+  the SVG `crosshair_layer` contains two `<line>`s when enabled and none when
+  disabled / `dont_draw_last_move` / `dont_draw_last_move_crosshair` / no last move.
 - **Main repo**: `AccessibilityPreferences` renders the toggle, and color/thickness
   controls appear only when enabled.
 - **Manual** (required by CONTRIBUTING): verify on desktop and mobile, on Canvas
@@ -220,5 +242,7 @@ getLastMoveCrosshair: () => ({
 ## Non-goals
 
 - No live refresh of boards already on screen at the moment the setting changes.
-- No per-board override; the setting is global.
+- The enable/color/thickness setting itself is global (one value per user); the
+  only per-board control is the `dont_draw_last_move_crosshair` opt-out used by
+  thumbnails/previews — there is no per-board color/thickness.
 - No change to the existing last-move marker.

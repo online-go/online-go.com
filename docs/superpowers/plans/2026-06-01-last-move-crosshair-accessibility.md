@@ -763,9 +763,70 @@ Open the PR using `.github/pull_request_template.md`. Note the dependency on the
 
 ---
 
+## Refinements (added after the initial implementation)
+
+These were added in response to review feedback; do them before Task 7's final verification.
+
+### Task 8: Live preview in the settings
+
+**Files:** `src/views/Settings/AccessibilityPreferences.tsx` (+ `.css`, `.test.tsx`)
+
+Mirror the board-label-positioning setting's live preview. When the crosshair is
+enabled, render a row with the color/thickness controls on the left and a small
+`MiniGoban` on the right (no "Preview" label — placing it below the color input
+let the native color popup cover it):
+
+```tsx
+const crosshair_sample_board: GobanEngineConfig = {
+    width: 5, height: 5,
+    moves: [ { x: 0, y: 2 }, { x: 4, y: 2 }, { x: 2, y: 4 }, { x: 2, y: 2 } ], // last move centred
+};
+// …inside the enabled block:
+<div className="crosshair-options">
+    <div className="crosshair-controls">{/* color + thickness PreferenceLines */}</div>
+    <MiniGoban
+        className="crosshair-preview"
+        key={`${color}-${thickness}`}   // re-mount so the board reads the new pref
+        json={crosshair_sample_board}
+        noLink={true} width={5} height={5} displayWidth={150}
+        labels_positioning={"none"}
+        lastMoveCrosshair={true}         // opt in (see Task 9)
+    />
+</div>
+```
+
+CSS: `.crosshair-options { display:flex; align-items:flex-start; gap:1.5rem; flex-wrap:wrap; }`,
+`.crosshair-controls { flex:1 1 20rem; }`, `.MiniGoban.crosshair-preview { width:150px; height:150px; }`.
+In the unit test, `jest.mock("@/components/MiniGoban", …)` so the controls assertions don't spin up a real board.
+
+### Task 9: Suppress the crosshair on thumbnails/preview boards
+
+The crosshair is read from a global preference, so it also appears on small
+`MiniGoban` boards — game thumbnails in lists and the sample boards inside the
+settings pages (e.g. the stone-font-scale sample). Suppress it there.
+
+**goban submodule** (`feature/last-move-crosshair`):
+- Add config field `dont_draw_last_move_crosshair?: boolean` to `GobanBase` config,
+  read it into `InteractiveBase` (`this.dont_draw_last_move_crosshair = !!config.dont_draw_last_move_crosshair;`).
+- Gate the crosshair on `!this.dont_draw_last_move_crosshair` in **both** renderers
+  (Canvas `drawLastMoveCrosshair`, SVG `updateLastMoveCrosshair`). Unlike
+  `dont_draw_last_move`, this leaves the regular last-move marker intact.
+- Tests: with the flag set, the Canvas `crosshair_layer` is not attached and the
+  SVG `crosshair_layer` has no lines (even with the feature enabled).
+
+**Main repo** (`feature/last-move-crosshair-accessibility`):
+- `MiniGoban.tsx`: add `dont_draw_last_move_crosshair: !props.lastMoveCrosshair` to
+  the `GobanController` config (suppress by default) and a `lastMoveCrosshair?: boolean`
+  prop. The crosshair setting's preview (Task 8) passes `lastMoveCrosshair={true}`.
+
+Net effect: crosshair on regular game/analysis/demo boards only; off on thumbnails
+and setting previews; on in the crosshair setting's own preview.
+
+---
+
 ## Self-review notes
 
-- **Spec coverage:** settings section (Task 6), disabled-by-default (Task 4), color `#1e6bff` (Tasks 1/3/4), under-stone (Task 2 dedicated canvas behind the transparent stone layer; Task 3 layer order), follows last move (Task 2 calls from the last-move blocks; Task 3 step 6), all gobans (global callback, Task 5), persistent + next-draw-no-reload (getter design, Tasks 1/5), color picker + thickness slider (Task 6), both renderers (Tasks 2 & 3), relative thickness (Tasks 2/3/4/6).
+- **Spec coverage:** settings section (Task 6), disabled-by-default (Task 4), color `#1e6bff` (Tasks 1/3/4), under-stone (Task 2 dedicated canvas behind the transparent stone layer; Task 3 layer order), follows last move (Task 2 calls from the last-move blocks; Task 3 step 6), scope = real boards but not thumbnails/previews (global callback in Task 5 + per-board `dont_draw_last_move_crosshair` opt-out in Task 9), persistent + next-draw-no-reload (getter design, Tasks 1/5), color picker + thickness slider + live preview (Tasks 6, 8), both renderers (Tasks 2 & 3), relative thickness (Tasks 2/3/4/6).
 - **Both renderers use a dedicated layer.** Canvas draws on its own under-stone canvas (Task 2); SVG on a dedicated `<g>` (Task 3). Each is cleared and redrawn wholesale on a last-move change, so the line is continuous and the previous cross is fully erased (no per-cell seams, no residual perpendicular segments on navigation). An earlier per-cell/`drawingHash` Canvas draft exhibited both defects and was replaced.
 - **Type consistency:** the shape `{ enabled: boolean; color: string; thickness: number }` and the callback/method name `getLastMoveCrosshair` are used identically across all tasks.
 - **Z-index variable:** `--z-goban-crosshair-layer: 15` is added to `src/global_styl/01_variables.css` (main repo); the submodule CSS uses a literal `15` fallback so it works standalone.
