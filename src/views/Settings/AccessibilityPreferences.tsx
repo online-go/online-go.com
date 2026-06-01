@@ -98,6 +98,7 @@ export function AccessibilityPreferences(): React.ReactElement {
                         height={5}
                         displayWidth={150}
                         labels_positioning={"none"}
+                        lastMoveCrosshair={true}
                     />
                 </div>
             )}
