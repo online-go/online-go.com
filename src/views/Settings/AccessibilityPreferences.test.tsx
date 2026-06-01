@@ -18,6 +18,13 @@
 import * as React from "react";
 import { render } from "@testing-library/react";
 import * as preferences from "@/lib/preferences";
+
+// The live board preview is irrelevant to these tests (it needs a full goban
+// renderer); stub it so we only exercise the settings controls.
+jest.mock("@/components/MiniGoban", () => ({
+    MiniGoban: () => null,
+}));
+
 import { AccessibilityPreferences } from "./AccessibilityPreferences";
 
 describe("AccessibilityPreferences", () => {

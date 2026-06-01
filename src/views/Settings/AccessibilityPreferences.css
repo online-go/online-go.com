@@ -3,4 +3,9 @@
         height: 2rem;
         width: 3rem;
     }
+
+    .MiniGoban.crosshair-preview {
+        width: 150px;
+        height: 150px;
+    }
 }
