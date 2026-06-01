@@ -89,46 +89,45 @@ separate getters) keeps the submodule API tidy.
 Each renderer has its own drawing code; the design follows the idiom already
 present in each, rather than imposing a uniform approach.
 
-### Canvas (`submodules/goban/src/Goban/CanvasRenderer.ts`)
+### Canvas (`submodules/goban/src/Goban/CanvasRenderer.ts`) — dedicated under-stone canvas
 
-The Canvas renderer uses a single canvas drawn square-by-square; there is no
-global layer seam (a square's background, grid, and stone are painted together).
-The crosshair is therefore drawn **inside `__drawSquare`**, after the grid/star
-points and **before the stone** (~line 1470), so the stone painted afterward
-covers the center → "under the stone". Stones on the same row/column are likewise
-drawn after their square's crosshair segment, so the full lines pass under them
-and read as continuous highlighted lines.
+The Canvas renderer draws the grid, stones, and marks all onto a single `board`
+canvas (square-by-square), with no layer seam between grid and stones. An early
+draft drew the crosshair as per-square segments inside `__drawSquare` (before
+each stone) and invalidated the affected row/column via the `drawingHash` dirty
+cache. That approach was abandoned: it produced a **visibly discontinuous line**
+(anti-alias seams between per-square segments) and **left perpendicular residual
+segments when navigating to the previous move** (invalidating the old cross
+square-by-square was incomplete). Both are inherent to splitting one line across
+many independently-drawn cells.
 
-For each square: if the feature is enabled and a last move exists, draw the
-horizontal segment across the square at `cy` when `j === cur_move.y`, and the
-vertical segment at `cx` when `i === cur_move.x`. Adjacent segments join into
-full lines.
+The board background (wood) is applied as **CSS on the parent element**
+(`setTheme` copies `getBackgroundCSS()` onto `this.parent`), so the `board`
+canvas is transparent everywhere except the grid/stones/marks. This makes a
+dedicated canvas viable:
 
-**Invalidation follows the coded convention** — the hash-guarded dirty cache, not
-a full redraw:
+- Add a **dedicated `crosshair_layer` canvas**, inserted **before `board`** in the
+  DOM (mirroring `shadow_layer`), at a z-index between the shadow layer (10) and
+  the stone layer (20) — new variable `--z-goban-crosshair-layer: 15`. Because the
+  stone canvas above it is transparent, the crosshair shows over the wood and
+  **under the grid lines and stones** → "under the stone".
+- Draw the horizontal and vertical lines as **two single strokes** spanning the
+  board, clamped to the first/last intersection centres. One stroke each → no
+  seams, perfectly continuous.
+- `drawLastMoveCrosshair()` **clears the whole crosshair canvas and redraws** on
+  every last-move change, so the previous cross is always fully erased (no
+  residual segments) regardless of how moves/navigation are dispatched.
+- Call it from `redraw()` (full redraws/resize), from the existing "clear last
+  move" detection (live moves and navigation are targeted draws), and from the
+  "draw last move" set block (covers the first move, which has no prior
+  `last_move` to trigger the clear path).
+- The canvas is **attached lazily** — only created the first time the crosshair
+  is actually shown — so boards that never enable the setting pay nothing. It is
+  resized alongside the other layers in `redraw`'s force-clear branch and removed
+  in `destroy`.
 
-- `drawSquare(i,j)` repaints only when `__draw_state[j][i] !== drawingHash(i,j)`
-  (line 1240); the hash is written back at line 2273.
-- `drawingHash(i,j)` encodes everything affecting a square's appearance; the last
-  move already contributes `"last_move,"` (line 2688).
-- The crosshair must contribute to `drawingHash(i,j)`: when enabled and
-  (`i === cur_move.x` || `j === cur_move.y`), append `"crosshair," + color +
-  thickness`. This makes every square on the last-move row/column hash
-  differently, and re-hash when the last move moves or the color/thickness/enable
-  state changes — so the dirty cache invalidates exactly the right squares.
-- On a last-move change, invalidate the affected region by calling `drawSquare`
-  over the **old row+column** (erase) and **new row+column** (draw), extending
-  the existing single-square erase at lines 2178-2182. The hash guard skips
-  unchanged squares, so this stays targeted and efficient — matching how the
-  codebase already invalidates (targeted `drawSquare`, never a full `redraw()` on
-  a move).
-
-**Implementation concern for the plan:** the last-move-change detection at line
-2178 runs inside `__drawSquare`; the existing code already calls
-`this.drawSquare(m.x, m.y)` from there. Extending this to a row/column loop must
-avoid re-entering the square currently being drawn (whose hash has not yet been
-written at line 2273) to prevent recursion. Resolve the exact, non-reentrant hook
-during implementation.
+This matches the SVG renderer's dedicated-layer approach below; the crosshair is
+no longer part of `drawingHash`/`__drawSquare` at all.
 
 ### SVG (`submodules/goban/src/Goban/SVGRenderer.ts`)
 
@@ -204,10 +203,12 @@ getLastMoveCrosshair: () => ({
 
 ## Testing
 
-- **goban unit tests** (Jest, jsdom): a `drawingHash` test asserting the
-  crosshair token appears for squares on the last-move row/column when enabled and
-  is absent when disabled or off-row/column. Sanity test that the SVG crosshair
-  layer contains two lines when enabled and is empty when disabled / no last move.
+- **goban unit tests** (Jest, jsdom): assert the Canvas `crosshair_layer` canvas
+  is attached (before the `board` canvas, so under the stones) when the setting is
+  enabled and there is a last move, and is not attached when disabled or when
+  `dont_draw_last_move` is set. Likewise assert the SVG `crosshair_layer` contains
+  two `<line>`s when enabled and none when disabled / `dont_draw_last_move` / no
+  last move.
 - **Main repo**: `AccessibilityPreferences` renders the toggle, and color/thickness
   controls appear only when enabled.
 - **Manual** (required by CONTRIBUTING): verify on desktop and mobile, on Canvas

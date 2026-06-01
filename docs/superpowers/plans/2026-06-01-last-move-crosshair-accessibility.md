@@ -131,178 +131,164 @@ git commit -m "feat: add getLastMoveCrosshair callback and getter"
 
 ---
 
-### Task 2: Canvas rendering — drawingHash + draw segments + invalidation
+### Task 2: Canvas rendering — dedicated under-stone canvas
 
 **Files:**
-- Modify: `submodules/goban/src/Goban/CanvasRenderer.ts` — `drawingHash` (~2275, last-move block ~2680-2693), `__drawSquare` (insert after star points ~1470, before stone ~1500), last-move-change block (~2178-2182)
+- Modify: `submodules/goban/src/Goban/CanvasRenderer.ts` — new `crosshair_layer` canvas + `attachCrosshairLayer`/`detachCrosshairLayer`/`drawLastMoveCrosshair`, resize in `redraw`'s force-clear branch, calls from `redraw`/the "clear last move" block/the "draw last move" set block, detach in `destroy`
+- Modify: `submodules/goban/src/Goban.css` — `.CrosshairLayer` rule
 - Test: `submodules/goban/test/unit_tests/GobanCanvas.test.ts`
 
-The crosshair must appear in `drawingHash` so the dirty cache (`__draw_state`) invalidates the right squares, then be painted in `__drawSquare` before the stone, and finally have its old/new row+column invalidated on a last-move change.
+> **Why not per-cell.** The grid + stones + marks all render onto a single `board`
+> canvas, with no seam between grid and stones. Drawing the crosshair as per-cell
+> segments inside `__drawSquare` (the obvious "under the stone" hook) was tried and
+> rejected: the line came out **discontinuous** (anti-alias seams between segments)
+> and navigating to the previous move **left perpendicular residual segments**
+> (square-by-square invalidation of the old cross was incomplete). Both are
+> inherent to splitting one line across independently-drawn cells.
+>
+> Instead: the board background (wood) is CSS on `this.parent`, so the `board`
+> canvas is transparent except for grid/stones/marks. A **dedicated crosshair
+> canvas inserted behind `board`** (z-index between shadow=10 and stone=20) shows
+> over the wood and under the grid/stones, and draws each line as a **single
+> stroke**, cleared and redrawn wholesale on every last-move change. This matches
+> the SVG dedicated-layer approach (Task 3) and removes all per-cell/`drawingHash`
+> machinery.
 
-- [ ] **Step 1: Write the failing test (drawingHash contribution)**
+- [ ] **Step 1: Write the failing tests (dedicated layer)**
 
-Add to `GobanCanvas.test.ts`. `basicScorableBoardConfig()` plays moves ending at `[2,1]`, so the current last move is column 2, row 1.
+Add to `GobanCanvas.test.ts` (`basicScorableBoardConfig()` ends with a last move, so the crosshair shows). The describe needs its own `board_div` setup.
 
 ```ts
-describe("last-move crosshair drawingHash", () => {
+describe("last-move crosshair (canvas layer)", () => {
+    beforeEach(() => {
+        board_div = document.createElement("div");
+        document.body.appendChild(board_div);
+    });
     afterEach(() => {
         delete (callbacks as any).getLastMoveCrosshair;
+        board_div.remove();
     });
 
-    function crosshairBoard() {
-        (callbacks as any).getLastMoveCrosshair = () => ({
-            enabled: true,
-            color: "#1e6bff",
-            thickness: 0.1,
-        });
-        // last move is at column 2, row 1 (see basicScorableBoardConfig moves)
-        return new GobanCanvas(basicScorableBoardConfig());
-    }
-
-    test("squares on the last-move row or column include the crosshair token", () => {
-        const goban = crosshairBoard();
-        // same row (j === 1): column 0
-        expect((goban as any).drawingHash(0, 1)).toContain("crosshair");
-        // same column (i === 2): row 0
-        expect((goban as any).drawingHash(2, 0)).toContain("crosshair");
-        goban.destroy();
-    });
-
-    test("squares off the row and column do not include the crosshair token", () => {
-        const goban = crosshairBoard();
-        // i !== 2 and j !== 1
-        expect((goban as any).drawingHash(0, 0)).not.toContain("crosshair");
-        goban.destroy();
-    });
-
-    test("no crosshair token when the feature is disabled", () => {
-        (callbacks as any).getLastMoveCrosshair = () => ({
-            enabled: false,
-            color: "#1e6bff",
-            thickness: 0.1,
-        });
+    test("attaches a dedicated crosshair canvas under the stones when enabled", () => {
+        (callbacks as any).getLastMoveCrosshair = () => ({ enabled: true, color: "#1e6bff", thickness: 0.1 });
         const goban = new GobanCanvas(basicScorableBoardConfig());
-        expect((goban as any).drawingHash(0, 1)).not.toContain("crosshair");
+        goban.redraw(true);
+        const layer = (goban as any).crosshair_layer as HTMLCanvasElement | undefined;
+        expect(layer).toBeDefined();
+        expect(layer?.className).toBe("CrosshairLayer");
+        const board = (goban as any).board as HTMLCanvasElement;
+        const children = Array.from(board.parentNode!.childNodes);
+        expect(children.indexOf(layer as any)).toBeLessThan(children.indexOf(board));
+        goban.destroy();
+    });
+
+    test("does not attach the crosshair canvas when disabled", () => {
+        (callbacks as any).getLastMoveCrosshair = () => ({ enabled: false, color: "#1e6bff", thickness: 0.1 });
+        const goban = new GobanCanvas(basicScorableBoardConfig());
+        goban.redraw(true);
+        expect((goban as any).crosshair_layer).toBeUndefined();
+        goban.destroy();
+    });
+
+    test("does not attach the crosshair canvas when dont_draw_last_move is set", () => {
+        (callbacks as any).getLastMoveCrosshair = () => ({ enabled: true, color: "#1e6bff", thickness: 0.1 });
+        const goban = new GobanCanvas(basicScorableBoardConfig({ dont_draw_last_move: true }));
+        goban.redraw(true);
+        expect((goban as any).crosshair_layer).toBeUndefined();
         goban.destroy();
     });
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [ ] **Step 2: Run to verify it fails**
 
-Run: `cd submodules/goban && yarn jest test/unit_tests/GobanCanvas.test.ts -t "last-move crosshair drawingHash"`
-Expected: FAIL — hashes do not contain `"crosshair"`.
+Run: `cd submodules/goban && yarn jest test/unit_tests/GobanCanvas.test.ts -t "canvas layer"`
+Expected: FAIL — `crosshair_layer` is undefined when enabled.
 
-- [ ] **Step 3: Add crosshair contribution to `drawingHash`**
+- [ ] **Step 3: Add fields, attach/detach, and the draw method**
 
-In `CanvasRenderer.ts`, inside `drawingHash(i, j)`, immediately after the existing "Draw last move" block (after line 2693, before the next section):
+Add fields near `last_move_opacity`:
 
 ```ts
-        /* Last-move crosshair */
-        if (this.engine && this.engine.cur_move) {
-            const cm = this.engine.cur_move;
-            const on_cross = (cm.x === i || cm.y === j) && cm.x >= 0 && cm.y >= 0;
-            if (on_cross && (this.engine.phase === "play" || this.engine.phase === "finished")) {
-                const ch = this.getLastMoveCrosshair();
-                if (ch.enabled) {
-                    ret += "crosshair " + ch.color + " " + ch.thickness + ",";
-                }
-            }
-        }
+    private crosshair_layer?: HTMLCanvasElement;
+    private crosshair_ctx?: CanvasRenderingContext2D;
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+Add `attachCrosshairLayer()` (mirror `attachShadowLayer`, but `id="crosshair-canvas"`, `className="CrosshairLayer"`, and `this.parent.insertBefore(this.crosshair_layer, this.board)` so it sits **behind** the stone canvas) and `detachCrosshairLayer()` (mirror `detachShadowLayer`). Then add the draw method:
 
-Run: `cd submodules/goban && yarn jest test/unit_tests/GobanCanvas.test.ts -t "last-move crosshair drawingHash"`
-Expected: PASS (all three).
+```ts
+    private drawLastMoveCrosshair(): void {
+        const ch = this.getLastMoveCrosshair();
+        const cur = this.engine?.cur_move;
+        const shows =
+            ch.enabled && !this.dont_draw_last_move && !!cur &&
+            cur.x >= 0 && cur.y >= 0 &&
+            (this.engine.phase === "play" || this.engine.phase === "finished");
+        if (!shows) {
+            if (this.crosshair_ctx && this.crosshair_layer) {
+                this.crosshair_ctx.clearRect(0, 0, this.crosshair_layer.width, this.crosshair_layer.height);
+            }
+            return;
+        }
+        this.attachCrosshairLayer();
+        if (!this.crosshair_ctx || !this.crosshair_layer) { return; }
+        const ctx = this.crosshair_ctx;
+        ctx.clearRect(0, 0, this.crosshair_layer.width, this.crosshair_layer.height);
+        const s = this.square_size;
+        let ox = this.draw_left_labels ? s : 0;
+        let oy = this.draw_top_labels ? s : 0;
+        if (this.bounds.left > 0) { ox = -s * this.bounds.left; }
+        if (this.bounds.top > 0) { oy = -s * this.bounds.top; }
+        const mid = this.metrics.mid;
+        const cx = ox + cur.x * s + mid;
+        const cy = oy + cur.y * s + mid;
+        const x0 = ox + mid, x1 = ox + (this.width - 1) * s + mid;
+        const y0 = oy + mid, y1 = oy + (this.height - 1) * s + mid;
+        ctx.save();
+        ctx.strokeStyle = ch.color;
+        ctx.lineWidth = Math.max(1, s * ch.thickness);
+        ctx.beginPath();
+        ctx.moveTo(x0, cy); ctx.lineTo(x1, cy);
+        ctx.moveTo(cx, y0); ctx.lineTo(cx, y1);
+        ctx.stroke();
+        ctx.restore();
+    }
+```
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 4: Wire up the calls**
+
+- In `redraw`'s force-clear branch, next to the `shadow_layer` resize, resize `crosshair_layer` the same way (re-fetch `crosshair_ctx`).
+- At the end of `redraw()` (after `drawPenMarks`, before `move_tree_redraw`): `this.drawLastMoveCrosshair();`
+- In the "clear last move" block (`if (this.last_move && … !is(cur_move))`), after `this.drawSquare(m.x, m.y);`, add `this.drawLastMoveCrosshair();` (live moves / navigation).
+- In the "draw last move" set block, after `this.last_move = this.engine.cur_move;`, add `this.drawLastMoveCrosshair();` (covers the first move).
+- In `destroy`, after `this.detachShadowLayer();`, add `this.detachCrosshairLayer();`.
+
+- [ ] **Step 5: Add the CSS layer**
+
+In `submodules/goban/src/Goban.css`, after `.ShadowLayer`:
+
+```css
+    .CrosshairLayer {
+        position: absolute;
+        z-index: var(--z-goban-crosshair-layer, 15);
+        left: 0;
+        right: 0;
+    }
+```
+
+(The `--z-goban-crosshair-layer: 15` variable is added in the main repo in Task 4-adjacent CSS; the literal `15` fallback keeps the submodule self-contained.)
+
+- [ ] **Step 6: Run tests + lint + format**
+
+Run: `cd submodules/goban && yarn jest test/unit_tests/GobanCanvas.test.ts && yarn eslint src/Goban/CanvasRenderer.ts && yarn prettier --check src/Goban/CanvasRenderer.ts src/Goban.css`
+Expected: PASS / clean. (Canvas pixels aren't asserted; the layer attach/position assertions plus manual testing cover the drawing.)
+
+- [ ] **Step 7: Commit**
 
 ```bash
 cd submodules/goban
-git add src/Goban/CanvasRenderer.ts test/unit_tests/GobanCanvas.test.ts
-git commit -m "feat(canvas): include last-move crosshair in drawingHash"
-```
-
-- [ ] **Step 6: Paint the crosshair segments in `__drawSquare`**
-
-In `__drawSquare`, after the star-point drawing block (~line 1469) and **before** the stone-drawing block (~line 1500), add. `cx`/`cy` are already computed at lines 1364-1365 (`cx = l + this.metrics.mid`, `cy = t + this.metrics.mid`); `s = this.square_size` is set at line 1255.
-
-```ts
-            /* Last-move crosshair — drawn before the stone so the stone covers the center */
-            if (this.engine && this.engine.cur_move) {
-                const cm = this.engine.cur_move;
-                const playing = this.engine.phase === "play" || this.engine.phase === "finished";
-                if (playing && cm.x >= 0 && cm.y >= 0 && (cm.x === i || cm.y === j)) {
-                    const ch = this.getLastMoveCrosshair();
-                    if (ch.enabled) {
-                        const lw = Math.max(1, s * ch.thickness);
-                        ctx.save();
-                        ctx.strokeStyle = ch.color;
-                        ctx.lineWidth = lw;
-                        ctx.beginPath();
-                        if (cm.y === j) {
-                            // horizontal segment spanning this square at cy
-                            ctx.moveTo(cx - this.metrics.mid, cy);
-                            ctx.lineTo(cx + this.metrics.mid, cy);
-                        }
-                        if (cm.x === i) {
-                            // vertical segment spanning this square at cx
-                            ctx.moveTo(cx, cy - this.metrics.mid);
-                            ctx.lineTo(cx, cy + this.metrics.mid);
-                        }
-                        ctx.stroke();
-                        ctx.restore();
-                    }
-                }
-            }
-```
-
-- [ ] **Step 7: Invalidate old + new row/column on last-move change**
-
-Replace the existing single-square erase at lines 2178-2182:
-
-```ts
-        if (this.last_move && this.engine && !this.last_move.is(this.engine.cur_move)) {
-            const m = this.last_move;
-            delete this.last_move;
-            this.drawSquare(m.x, m.y);
-        }
-```
-
-with a version that, when the crosshair is on, also redraws the old move's row and column (the new move's row/column are picked up by the surrounding redraw of the new square plus the hash change; the explicit invalidation here erases the old crosshair). Skip `(i, j)` — the square currently being drawn — to avoid re-entering this `__drawSquare` call before its hash is written (line 2273):
-
-```ts
-        if (this.last_move && this.engine && !this.last_move.is(this.engine.cur_move)) {
-            const m = this.last_move;
-            delete this.last_move;
-            this.drawSquare(m.x, m.y);
-            if (this.getLastMoveCrosshair().enabled && m.x >= 0 && m.y >= 0) {
-                for (let k = 0; k < this.width; ++k) {
-                    if (!(k === i && m.y === j)) {
-                        this.drawSquare(k, m.y); // old row
-                    }
-                    if (!(m.x === i && k === j)) {
-                        this.drawSquare(m.x, k); // old column
-                    }
-                }
-            }
-        }
-```
-
-> Note: `drawSquare` is hash-guarded (line 1240), so squares whose appearance did not change are skipped — this stays targeted, matching how the renderer already invalidates. A full `redraw()` is intentionally NOT used.
-
-- [ ] **Step 8: Verify no regressions in the canvas suite**
-
-Run: `cd submodules/goban && yarn jest test/unit_tests/GobanCanvas.test.ts`
-Expected: PASS (whole file). The drawing steps have no direct unit assertion (canvas pixels are not asserted in this suite); they are covered by the drawingHash tests plus manual testing.
-
-- [ ] **Step 9: Commit**
-
-```bash
-cd submodules/goban
-git add src/Goban/CanvasRenderer.ts
-git commit -m "feat(canvas): draw last-move crosshair under the stone with targeted invalidation"
+git add src/Goban/CanvasRenderer.ts src/Goban.css test/unit_tests/GobanCanvas.test.ts
+git commit -m "feat(canvas): draw last-move crosshair on a dedicated under-stone canvas"
 ```
 
 ---
@@ -727,7 +713,15 @@ git add submodules/goban
 git commit -m "chore: bump goban submodule for last-move crosshair"
 ```
 
-- [ ] **Step 2: Type-check, lint, format, build**
+- [ ] **Step 2: Add the z-index variable**
+
+In `src/global_styl/01_variables.css`, in the `/* Z-indices */` group, add between the shadow and stone layers:
+
+```css
+    --z-goban-crosshair-layer: 15;
+```
+
+- [ ] **Step 3: Type-check, lint, format, build**
 
 Run, in the main repo:
 
@@ -735,12 +729,13 @@ Run, in the main repo:
 yarn type-check
 yarn lint
 yarn prettier:file src/lib/preferences.ts src/lib/configure-goban.tsx src/views/Settings/AccessibilityPreferences.tsx src/views/Settings/Settings.tsx src/lib/preferences.test.ts src/views/Settings/AccessibilityPreferences.test.tsx
+yarn prettier:check src/global_styl/01_variables.css
 yarn build
 ```
 
 Expected: all clean / build succeeds.
 
-- [ ] **Step 3: Run the full unit suites**
+- [ ] **Step 4: Run the full unit suites**
 
 ```bash
 yarn test
@@ -749,7 +744,7 @@ cd submodules/goban && yarn jest && cd ../..
 
 Expected: PASS.
 
-- [ ] **Step 4: Manual testing (required by CONTRIBUTING.md)**
+- [ ] **Step 5: Manual testing (required by CONTRIBUTING.md)**
 
 Verify in desktop and mobile browsers, on both Canvas and SVG renderers (Settings → Themes & Visuals to switch, or the `experiments.canvas` data flag):
 - Enable the crosshair in Settings → Accessibility; open a game — lines pass through the last stone, under it, across the whole board.
@@ -758,7 +753,7 @@ Verify in desktop and mobile browsers, on both Canvas and SVG renderers (Setting
 - Lines scale with board size; thumbnails/lists are not overwhelmed.
 - Disabled by default for a fresh account.
 
-- [ ] **Step 5: Push and open the main-repo PR**
+- [ ] **Step 6: Push and open the main-repo PR**
 
 ```bash
 git push -u origin feature/last-move-crosshair-accessibility
@@ -770,8 +765,7 @@ Open the PR using `.github/pull_request_template.md`. Note the dependency on the
 
 ## Self-review notes
 
-- **Spec coverage:** settings section (Task 6), disabled-by-default (Task 4), color `#1e6bff` (Tasks 1/3/4), under-stone (Task 2 step 6 draw order; Task 3 layer order), follows last move (Task 2 step 7; Task 3 step 6), all gobans (global callback, Task 5), persistent + next-draw-no-reload (getter design, Tasks 1/5), color picker + thickness slider (Task 6), both renderers (Tasks 2 & 3), relative thickness (Tasks 2/3/4/6).
-- **Reentrancy:** addressed in Task 2 step 7 (skip the current `(i, j)`).
-- **Type consistency:** the shape `{ enabled: boolean; color: string; thickness: number }` and method name `getLastMoveCrosshair` / hash token `"crosshair"` / callback key `getLastMoveCrosshair` are used identically across all tasks.
-- **Known verification points flagged for implementation:** exact SVG layer-insertion idiom and offset math (Task 3 steps 1, 5, 6); the SVG board-config test helper name (Task 3 step 1).
-```
+- **Spec coverage:** settings section (Task 6), disabled-by-default (Task 4), color `#1e6bff` (Tasks 1/3/4), under-stone (Task 2 dedicated canvas behind the transparent stone layer; Task 3 layer order), follows last move (Task 2 calls from the last-move blocks; Task 3 step 6), all gobans (global callback, Task 5), persistent + next-draw-no-reload (getter design, Tasks 1/5), color picker + thickness slider (Task 6), both renderers (Tasks 2 & 3), relative thickness (Tasks 2/3/4/6).
+- **Both renderers use a dedicated layer.** Canvas draws on its own under-stone canvas (Task 2); SVG on a dedicated `<g>` (Task 3). Each is cleared and redrawn wholesale on a last-move change, so the line is continuous and the previous cross is fully erased (no per-cell seams, no residual perpendicular segments on navigation). An earlier per-cell/`drawingHash` Canvas draft exhibited both defects and was replaced.
+- **Type consistency:** the shape `{ enabled: boolean; color: string; thickness: number }` and the callback/method name `getLastMoveCrosshair` are used identically across all tasks.
+- **Z-index variable:** `--z-goban-crosshair-layer: 15` is added to `src/global_styl/01_variables.css` (main repo); the submodule CSS uses a literal `15` fallback so it works standalone.
