@@ -140,10 +140,11 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
             variation_stone_opacity: preferences.get("variation-stone-opacity"),
             stone_font_scale: preferences.get("stone-font-scale"),
             enable_sounds: false, // Disable sounds for mini boards
-            // Thumbnails / previews are too small for the accessibility crosshair;
-            // suppress it unless a caller explicitly opts in.
-            dont_draw_last_move_crosshair: !props.lastMoveCrosshair,
             ...props.json,
+            // Thumbnails / previews are too small for the accessibility crosshair;
+            // suppress it unless a caller explicitly opts in. After the json spread
+            // so a server-supplied config can't accidentally override the prop.
+            dont_draw_last_move_crosshair: !props.lastMoveCrosshair,
         });
         goban.current = controller.goban;
 

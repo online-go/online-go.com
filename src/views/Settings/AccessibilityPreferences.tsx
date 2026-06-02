@@ -19,7 +19,7 @@ import * as React from "react";
 
 import { GobanEngineConfig } from "goban";
 
-import { llm_pgettext } from "@/lib/translate";
+import { pgettext } from "@/lib/translate";
 import { usePreference } from "@/lib/preferences";
 import { Toggle } from "@/components/Toggle";
 import { MiniGoban } from "@/components/MiniGoban";
@@ -33,9 +33,12 @@ import "./AccessibilityPreferences.css";
 const crosshair_sample_board: GobanEngineConfig = {
     width: 5,
     height: 5,
+    // Five moves (B W B W B) so the last move is a black stone at the centre —
+    // the more common case for contrast against the default blue crosshair.
     moves: [
         { x: 0, y: 2 },
         { x: 4, y: 2 },
+        { x: 2, y: 0 },
         { x: 2, y: 4 },
         { x: 2, y: 2 },
     ],
@@ -49,11 +52,11 @@ export function AccessibilityPreferences(): React.ReactElement {
     return (
         <div className="AccessibilityPreferences">
             <PreferenceLine
-                title={llm_pgettext(
+                title={pgettext(
                     "Accessibility setting that highlights the last move with crossed lines",
                     "Highlight the last move with a crosshair",
                 )}
-                description={llm_pgettext(
+                description={pgettext(
                     "Description of the last-move crosshair accessibility setting",
                     "Draws a high-contrast horizontal and vertical line through the last played stone on every board, to make it easy to find.",
                 )}
@@ -64,9 +67,7 @@ export function AccessibilityPreferences(): React.ReactElement {
             {crosshair && (
                 <div className="crosshair-options">
                     <div className="crosshair-controls">
-                        <PreferenceLine
-                            title={llm_pgettext("Crosshair line color", "Crosshair color")}
-                        >
+                        <PreferenceLine title={pgettext("Crosshair line color", "Crosshair color")}>
                             <input
                                 type="color"
                                 value={color}
@@ -74,7 +75,7 @@ export function AccessibilityPreferences(): React.ReactElement {
                             />
                         </PreferenceLine>
                         <PreferenceLine
-                            title={llm_pgettext("Crosshair line thickness", "Crosshair thickness")}
+                            title={pgettext("Crosshair line thickness", "Crosshair thickness")}
                         >
                             <input
                                 type="range"
