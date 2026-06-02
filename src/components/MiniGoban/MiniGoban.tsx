@@ -144,6 +144,9 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
             // Thumbnails / previews are too small for the accessibility crosshair;
             // suppress it unless a caller explicitly opts in. After the json spread
             // so a server-supplied config can't accidentally override the prop.
+            // Construction-time flag, like connect_to_chat / enable_sounds above, so
+            // deliberately not in this effect's dependency array (scoped to board
+            // identity): the sole opt-in caller passes a constant and remounts via key.
             dont_draw_last_move_crosshair: !props.lastMoveCrosshair,
         });
         goban.current = controller.goban;
