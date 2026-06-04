@@ -207,6 +207,11 @@
             width: 100%;
         }
 
+        .Kibitz-mobile-shell.mobile-divider-dragging {
+            --kibitz-mobile-drag-ratio: 0.5;
+            --kibitz-mobile-drag-board-size: 0px;
+        }
+
         .Kibitz-mobile-top-pane {
             display: flex;
             flex: 0 0 auto;
@@ -216,12 +221,21 @@
             width: 100%;
         }
 
+        .Kibitz-mobile-shell.mobile-divider-dragging .Kibitz-mobile-top-pane {
+            flex-basis: calc(var(--kibitz-mobile-drag-ratio) * 100%);
+        }
+
         .Kibitz-mobile-top-pane .KibitzRoomStage {
             flex: 1 1 auto;
             min-height: 0;
             min-width: 0;
             max-width: 100%;
             width: 100%;
+        }
+
+        .Kibitz-mobile-shell.mobile-divider-dragging .mobile-board-fit-slot {
+            width: var(--kibitz-mobile-drag-board-size);
+            height: var(--kibitz-mobile-drag-board-size);
         }
 
         .Kibitz-mobile-divider {

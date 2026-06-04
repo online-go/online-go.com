@@ -26,6 +26,11 @@ import {
 } from "./KibitzInner";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 import type { KibitzWatchedGame } from "@/models/kibitz";
+import {
+    isMobileDividerPointerUpNoop,
+    MOBILE_DIVIDER_DRAG_START_THRESHOLD_PX,
+    shouldActivateMobileDividerDrag,
+} from "./KibitzInner";
 
 function makeVariation(id: string, gameId: number): KibitzVariationSummary {
     return {
@@ -237,6 +242,22 @@ describe("isVisibleMainBoardMounted", () => {
                 isCurrentGameLive: true,
             }),
         ).toBe(false);
+    });
+});
+
+describe("mobile divider gesture lifecycle", () => {
+    it("uses a small movement threshold before activating a resize drag", () => {
+        expect(MOBILE_DIVIDER_DRAG_START_THRESHOLD_PX).toBe(3);
+        expect(shouldActivateMobileDividerDrag(1)).toBe(false);
+        expect(shouldActivateMobileDividerDrag(2)).toBe(false);
+        expect(shouldActivateMobileDividerDrag(3)).toBe(true);
+        expect(shouldActivateMobileDividerDrag(-3)).toBe(true);
+    });
+
+    it("treats pointerup as a no-op until the drag is active", () => {
+        expect(isMobileDividerPointerUpNoop("armed")).toBe(true);
+        expect(isMobileDividerPointerUpNoop(null)).toBe(true);
+        expect(isMobileDividerPointerUpNoop("active")).toBe(false);
     });
 });
 
