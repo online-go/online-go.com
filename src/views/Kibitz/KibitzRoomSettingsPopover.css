@@ -29,6 +29,45 @@
         line-height: 1.35;
     }
 
+    .KibitzRoomSettingsPopover-section {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        min-width: 0;
+    }
+
+    .KibitzRoomSettingsPopover-toggleRow {
+        align-items: flex-start;
+        display: flex;
+        gap: 0.65rem;
+        justify-content: space-between;
+        min-width: 0;
+    }
+
+    .KibitzRoomSettingsPopover-toggleCopy {
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+        min-width: 0;
+    }
+
+    .KibitzRoomSettingsPopover-toggleTitle {
+        font-size: 0.88rem;
+        font-weight: 700;
+        line-height: 1.25;
+    }
+
+    .KibitzRoomSettingsPopover-toggleDescription {
+        color: var(--text-color-faded);
+        font-size: 0.8rem;
+        line-height: 1.3;
+    }
+
+    .KibitzRoomSettingsPopover-toggleRow input[type="checkbox"] {
+        flex: 0 0 auto;
+        margin-top: 0.15rem;
+    }
+
     .KibitzRoomSettingsPopover-owner {
         display: flex;
         flex-direction: column;

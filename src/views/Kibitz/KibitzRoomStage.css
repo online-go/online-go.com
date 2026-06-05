@@ -263,6 +263,7 @@
             --kibitz-header-block-height: 1.5rem;
             --equal-main-track: minmax(12.5rem, 0.58fr);
             --equal-secondary-track: minmax(20.5rem, 1.42fr);
+            --equal-main-board-max-size: min(100%, 20rem, 30vh);
             --equal-meta-height: var(--kibitz-header-block-height);
             --equal-transport-height: 2.35rem;
             --equal-analyze-height: 1.9rem;
@@ -497,8 +498,8 @@
             }
 
             .main-board .KibitzBoard {
-                max-height: min(100%, 20rem, 30vh);
-                max-width: min(100%, 20rem, 30vh);
+                max-height: var(--equal-main-board-max-size);
+                max-width: var(--equal-main-board-max-size);
                 width: auto;
             }
 
@@ -507,7 +508,7 @@
             }
 
             .main-board .KibitzBoardControls {
-                max-width: min(100%, 20rem, 30vh);
+                max-width: var(--equal-main-board-max-size);
             }
 
             .secondary-board .KibitzBoard {
@@ -1162,6 +1163,16 @@
             --equal-secondary-track: minmax(18rem, 1.38fr);
             --equal-transport-height: 2.25rem;
             --equal-variation-height: 5rem;
+        }
+    }
+}
+
+@media (min-width: 1001px) {
+    .Kibitz.is-streamer-mode {
+        .KibitzRoomStage-boards.secondary-pane-equal {
+            --equal-main-track: minmax(0, 1fr);
+            --equal-secondary-track: minmax(0, 1fr);
+            --equal-main-board-max-size: min(100%, 44rem, 72vh);
         }
     }
 }
