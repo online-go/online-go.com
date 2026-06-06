@@ -169,6 +169,29 @@
     }
 }
 
+@media (min-width: 1001px) {
+    .Kibitz.is-streamer-mode {
+        height: 100dvh;
+    }
+
+    .Kibitz.is-streamer-mode .Kibitz-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .Kibitz.is-streamer-mode .Kibitz-left-rail {
+        display: none;
+    }
+
+    .Kibitz.is-streamer-mode .Kibitz-content,
+    .Kibitz.is-streamer-mode .Kibitz-content.has-custom-sidebar-width {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .Kibitz.is-streamer-mode .Kibitz-sidebar {
+        display: none;
+    }
+}
+
 @media (max-width: 1000px) {
     .Kibitz {
         padding: 0;

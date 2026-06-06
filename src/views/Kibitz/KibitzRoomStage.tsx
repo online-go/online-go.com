@@ -98,6 +98,8 @@ interface KibitzRoomStageProps {
     canDeleteRoom?: boolean;
     onSaveRoomDetails?: (title: string, description: string) => Promise<boolean>;
     onDeleteRoom?: () => Promise<boolean>;
+    streamerMode?: boolean;
+    onStreamerModeChange?: (enabled: boolean) => void;
     onCreateVariation?: () => void;
     onCreateVariationFromPostedVariation?: (variation: KibitzVariationSummary) => void;
     variationFocusRequestId: number;
@@ -2058,6 +2060,8 @@ export function KibitzRoomStage({
     canDeleteRoom = false,
     onSaveRoomDetails,
     onDeleteRoom,
+    streamerMode,
+    onStreamerModeChange,
     onCreateVariation,
     onCreateVariationFromPostedVariation,
     variationFocusRequestId,
@@ -2113,6 +2117,8 @@ export function KibitzRoomStage({
                         canDeleteRoom={canDeleteRoom}
                         canChangeBoard={Boolean(onChangeBoard)}
                         isMobileLayout={false}
+                        streamerMode={streamerMode}
+                        onStreamerModeChange={onStreamerModeChange}
                         onClose={close_all_popovers}
                         onRequestChangeBoard={() => {
                             close_all_popovers();
@@ -2127,7 +2133,16 @@ export function KibitzRoomStage({
                 container_class: "KibitzRoomStage-settingsPopoverContainer",
             });
         },
-        [canDeleteRoom, canEditRoom, onChangeBoard, onDeleteRoom, onSaveRoomDetails, room],
+        [
+            canDeleteRoom,
+            canEditRoom,
+            onChangeBoard,
+            onDeleteRoom,
+            onSaveRoomDetails,
+            onStreamerModeChange,
+            room,
+            streamerMode,
+        ],
     );
     const selectedVariationGameId = selectedVariation?.game_id ?? null;
     const [selectedGameBaseSnapshot, setSelectedGameBaseSnapshot] =

@@ -331,6 +331,7 @@ const DEFAULT_MOBILE_SPLIT_RATIO = 0.56;
 const MIN_MOBILE_SPLIT_RATIO = 0.36;
 const MAX_MOBILE_SPLIT_RATIO = 0.78;
 const DESKTOP_SIDEBAR_WIDTH_STORAGE_KEY = "kibitz.desktop.sidebar_width_px";
+const STREAMER_MODE_STORAGE_KEY = "kibitz.desktop.streamer_mode";
 const DESKTOP_SIDEBAR_MIN_NARROW_PX = 288;
 const DESKTOP_SIDEBAR_MIN_COMFORTABLE_PX = 336;
 const DESKTOP_STAGE_MIN_PX = 512;
@@ -826,6 +827,13 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         const parsed = stored ? Number.parseFloat(stored) : NaN;
 
         return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+    });
+    const [streamerMode, setStreamerMode] = React.useState(() => {
+        if (window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY).matches) {
+            return false;
+        }
+
+        return window.sessionStorage.getItem(STREAMER_MODE_STORAGE_KEY) === "true";
     });
     const [desktopContentWidthPx, setDesktopContentWidthPx] = React.useState(0);
     const [isDesktopSidebarDragging, setIsDesktopSidebarDragging] = React.useState(false);
@@ -3147,6 +3155,15 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         getCurrentDesktopSidebarWidthPx(),
         desktopContentWidthPx,
     );
+    React.useEffect(() => {
+        window.sessionStorage.setItem(STREAMER_MODE_STORAGE_KEY, streamerMode ? "true" : "false");
+    }, [streamerMode]);
+
+    React.useEffect(() => {
+        if (isMobileLayout && streamerMode) {
+            setStreamerMode(false);
+        }
+    }, [isMobileLayout, streamerMode]);
     const desktopSidebarResizer = (
         <div
             ref={desktopSidebarResizerRef}
@@ -3632,7 +3649,17 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
     const resolvedRoomUsers = resolvedRoom ? controller.getRoomUsers(resolvedRoom.id) : [];
     const canOpenRoomSettings = canManageRoom || Boolean(handleOpenChangeBoard);
+    const effectiveStreamerMode =
+        streamerMode && !isMobileLayout && Boolean(resolvedRoom) && !isBlockedRoom;
+    const kibitzClassName = `Kibitz${effectiveStreamerMode ? " is-streamer-mode" : ""}`;
     const mobileMatchup = formatMobileMatchup(resolvedRoom);
+    React.useEffect(() => {
+        document.body.classList.toggle("kibitz-streamer-mode", effectiveStreamerMode);
+
+        return () => {
+            document.body.classList.remove("kibitz-streamer-mode");
+        };
+    }, [effectiveStreamerMode]);
     React.useEffect(() => {
         if (!resolvedRoom) {
             setMobileViewerCountFlash(false);
@@ -3721,7 +3748,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     if (isBlockedRoom) {
         const blockedTitle = accessBlocked?.room_title ?? selectedRoom?.title ?? roomId ?? "";
         return (
-            <div className="Kibitz">
+            <div className={kibitzClassName}>
                 {showDebug ? <KibitzDebugPanel debug={debug} /> : null}
                 <div className="Kibitz-layout">
                     <div className="Kibitz-left-rail">
@@ -3769,7 +3796,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             "Create a Kibitz room to start watching a game with friends.",
         );
         return (
-            <div className="Kibitz">
+            <div className={kibitzClassName}>
                 {showDebug ? <KibitzDebugPanel debug={debug} /> : null}
                 <div className="Kibitz-layout">
                     <div className="Kibitz-left-rail">
@@ -3810,7 +3837,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     }
 
     return (
-        <div className="Kibitz">
+        <div className={kibitzClassName}>
             {showDebug ? <KibitzDebugPanel debug={debug} /> : null}
             <div className="Kibitz-layout">
                 <div className="Kibitz-left-rail">
@@ -4283,6 +4310,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                     }
                                     variationFocusRequestId={variationFocusRequestId}
                                     isMobileLayout={false}
+                                    streamerMode={streamerMode}
+                                    onStreamerModeChange={setStreamerMode}
                                     mobileCompanionPanel={mobileCompanionPanel}
                                     mobileHasActiveVote={Boolean(activeProposal)}
                                     onSelectMobileCompanionPanel={onSelectMobileCompanionPanel}

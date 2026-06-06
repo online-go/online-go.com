@@ -35,6 +35,9 @@ import {
 } from "./KibitzInner";
 import { get } from "@/lib/requests";
 
+const mockedUseNavigate = jest.fn();
+const mockedUseParams = jest.fn(() => ({ roomId: "room-1" }));
+
 jest.mock("@/components/Player", () => ({
     __esModule: true,
     Player: () => null,
@@ -155,6 +158,7 @@ jest.mock("./kibitzAnalysisPolicy", () => ({
     __esModule: true,
     getKibitzAccessPolicyForUser: () => ({ allowed: true as const }),
     isKibitzAccessBlockedForUser: () => false,
+    isLoggedInKibitzUser: () => true,
 }));
 
 jest.mock("./kibitzAnalysisPolicyText", () => ({
@@ -277,8 +281,8 @@ jest.mock("react-router-dom", () => ({
         state: null,
         key: "test",
     }),
-    useNavigate: () => jest.fn(),
-    useParams: () => ({ roomId: "room-1" }),
+    useNavigate: () => mockedUseNavigate,
+    useParams: () => mockedUseParams(),
 }));
 
 const mockedGet = get as jest.MockedFunction<typeof get>;
@@ -606,6 +610,163 @@ describe("KibitzInner current-game base snapshot fetch", () => {
             expect(mockedGet).toHaveBeenCalledTimes(2);
             expect(mockedGet).toHaveBeenNthCalledWith(2, "games/2");
         });
+    });
+});
+
+describe("KibitzInner streamer mode", () => {
+    const STREAMER_MODE_STORAGE_KEY = "kibitz.desktop.streamer_mode";
+    const DESKTOP_SIDEBAR_WIDTH_STORAGE_KEY = "kibitz.desktop.sidebar_width_px";
+
+    beforeEach(() => {
+        mockedGet.mockReset();
+        mockedUseNavigate.mockReset();
+        mockedUseParams.mockReturnValue({ roomId: "room-1" });
+        installMatchMedia(false);
+        window.sessionStorage.clear();
+        window.localStorage.removeItem(DESKTOP_SIDEBAR_WIDTH_STORAGE_KEY);
+        document.body.classList.remove("kibitz-streamer-mode");
+    });
+
+    afterEach(() => {
+        document.body.classList.remove("kibitz-streamer-mode");
+        window.sessionStorage.clear();
+        window.localStorage.removeItem(DESKTOP_SIDEBAR_WIDTH_STORAGE_KEY);
+        mockedUseParams.mockReturnValue({ roomId: "room-1" });
+    });
+
+    it("applies the streamer class on desktop when a room is resolved", async () => {
+        window.sessionStorage.setItem(STREAMER_MODE_STORAGE_KEY, "true");
+        mockedGet.mockResolvedValue({
+            id: 1,
+            width: 19,
+            height: 19,
+            name: "Game 1",
+            ended: false,
+            players: {
+                black: makeUser(11, "black"),
+                white: makeUser(12, "white"),
+            },
+            gamedata: {
+                moves: [],
+                private: false,
+                disable_analysis: false,
+            },
+        });
+
+        const controller = makeController(makeRoom({ current_game: makeGame(1, 10) }));
+        const { container, unmount } = render(<KibitzInner controller={controller} />);
+
+        await waitFor(() => {
+            expect(mockedGet).toHaveBeenCalledWith("games/1");
+        });
+
+        expect(container.querySelector(".Kibitz")).toHaveClass("is-streamer-mode");
+        expect(document.body).toHaveClass("kibitz-streamer-mode");
+
+        unmount();
+
+        expect(document.body).not.toHaveClass("kibitz-streamer-mode");
+    });
+
+    it("turns streamer mode off on mobile", async () => {
+        installMatchMedia(true);
+        window.sessionStorage.setItem(STREAMER_MODE_STORAGE_KEY, "true");
+        mockedGet.mockResolvedValue({
+            id: 1,
+            width: 19,
+            height: 19,
+            name: "Game 1",
+            ended: false,
+            players: {
+                black: makeUser(11, "black"),
+                white: makeUser(12, "white"),
+            },
+            gamedata: {
+                moves: [],
+                private: false,
+                disable_analysis: false,
+            },
+        });
+
+        const controller = makeController(makeRoom({ current_game: makeGame(1, 10) }));
+        const { container } = render(<KibitzInner controller={controller} />);
+
+        await waitFor(() => {
+            expect(window.sessionStorage.getItem(STREAMER_MODE_STORAGE_KEY)).toBe("false");
+        });
+
+        expect(container.querySelector(".Kibitz")).not.toHaveClass("is-streamer-mode");
+        expect(document.body).not.toHaveClass("kibitz-streamer-mode");
+    });
+
+    it("does not apply streamer mode when no room is resolved", () => {
+        mockedUseParams.mockReturnValue({} as never);
+        window.sessionStorage.setItem(STREAMER_MODE_STORAGE_KEY, "true");
+
+        const controller = makeController(makeRoom({ current_game: makeGame(1, 10) }));
+        const mutableController = controller as unknown as {
+            rooms: KibitzRoom[];
+            active_room: KibitzRoom | null;
+        };
+        mutableController.rooms = [];
+        mutableController.active_room = null;
+
+        const { container } = render(<KibitzInner controller={controller} />);
+
+        expect(container.querySelector(".Kibitz")).not.toHaveClass("is-streamer-mode");
+        expect(document.body).not.toHaveClass("kibitz-streamer-mode");
+    });
+
+    it("does not apply streamer mode on blocked rooms", () => {
+        window.sessionStorage.setItem(STREAMER_MODE_STORAGE_KEY, "true");
+
+        const controller = makeController(makeRoom({ current_game: makeGame(1, 10) }));
+        const mutableController = controller as unknown as {
+            access_blocked: { room_id: string; room_title: string } | null;
+        };
+        mutableController.access_blocked = {
+            room_id: "room-1",
+            room_title: "Room 1",
+        };
+
+        const { container } = render(<KibitzInner controller={controller} />);
+
+        expect(container.querySelector(".Kibitz")).not.toHaveClass("is-streamer-mode");
+        expect(document.body).not.toHaveClass("kibitz-streamer-mode");
+    });
+
+    it("preserves the saved desktop sidebar width while streamer mode is enabled", async () => {
+        window.sessionStorage.setItem(STREAMER_MODE_STORAGE_KEY, "true");
+        window.localStorage.setItem(DESKTOP_SIDEBAR_WIDTH_STORAGE_KEY, "420");
+        mockedGet.mockResolvedValue({
+            id: 1,
+            width: 19,
+            height: 19,
+            name: "Game 1",
+            ended: false,
+            players: {
+                black: makeUser(11, "black"),
+                white: makeUser(12, "white"),
+            },
+            gamedata: {
+                moves: [],
+                private: false,
+                disable_analysis: false,
+            },
+        });
+
+        const controller = makeController(makeRoom({ current_game: makeGame(1, 10) }));
+        const { unmount } = render(<KibitzInner controller={controller} />);
+
+        await waitFor(() => {
+            expect(mockedGet).toHaveBeenCalledWith("games/1");
+        });
+
+        expect(window.localStorage.getItem(DESKTOP_SIDEBAR_WIDTH_STORAGE_KEY)).toBe("420");
+
+        unmount();
+
+        expect(window.localStorage.getItem(DESKTOP_SIDEBAR_WIDTH_STORAGE_KEY)).toBe("420");
     });
 });
 
