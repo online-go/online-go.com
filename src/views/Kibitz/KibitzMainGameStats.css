@@ -1,0 +1,207 @@
+.KibitzMainGameStats {
+    min-width: 0;
+}
+
+.KibitzMainGameStats-chip {
+    align-items: center;
+    background: color-mix(in srgb, var(--shade2) 84%, var(--bg) 16%);
+    border: 1px solid color-mix(in srgb, var(--text-color) 12%, transparent);
+    border-radius: 0.38rem;
+    box-sizing: border-box;
+    color: var(--text-color);
+    display: inline-flex;
+    flex: 0 0 auto;
+    gap: 0.22rem;
+    line-height: 1;
+    min-width: 0;
+    min-height: 1.34rem;
+    padding: 0.09rem 0.38rem;
+    white-space: nowrap;
+}
+
+.KibitzMainGameStats-chip-center {
+    color: var(--text-color-faded);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+}
+
+.KibitzMainGameStats-chip-state {
+    color: var(--text-color-faded);
+    font-size: 0.74rem;
+    font-weight: 600;
+}
+
+.KibitzMainGameStats-chip-captures {
+    color: var(--text-color-faded);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+.KibitzMainGameStats-chip-clock {
+    align-self: center;
+    color: var(--text-color);
+    line-height: 1;
+}
+
+.KibitzMainGameStats-chip-clock .Clock {
+    align-items: center;
+    display: inline-flex;
+    line-height: 1;
+}
+
+.KibitzMainGameStats-chip-clock .main-time {
+    align-items: center;
+    display: inline-flex;
+    line-height: 1;
+}
+
+.room-stage-header .players.player-pair.KibitzMainGameStats-desktop {
+    align-items: center;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.34rem;
+    justify-content: center;
+    width: 100%;
+}
+
+.room-stage-header .players.player-pair.KibitzMainGameStats-desktop .KibitzMainGameStats-side {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.room-stage-header
+    .players.player-pair.KibitzMainGameStats-desktop
+    .KibitzMainGameStats-side-black {
+    justify-content: flex-start;
+}
+
+.room-stage-header
+    .players.player-pair.KibitzMainGameStats-desktop
+    .KibitzMainGameStats-side-white {
+    justify-content: flex-end;
+}
+
+.room-stage-header .players.player-pair.KibitzMainGameStats-desktop .KibitzMainGameStats-center {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.24rem;
+    flex: 0 0 auto;
+}
+
+.room-stage-header
+    .players.player-pair.KibitzMainGameStats-desktop
+    .KibitzMainGameStats-playerBadge {
+    min-width: 0;
+}
+
+.room-stage-header
+    .players.player-pair.KibitzMainGameStats-desktop
+    .KibitzMainGameStats-playerBadge
+    .Player {
+    align-items: center;
+    display: inline-flex;
+    min-width: 0;
+}
+
+.room-stage-header
+    .players.player-pair.KibitzMainGameStats-desktop
+    .KibitzMainGameStats-playerBadge
+    .Player-username {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.room-stage-header .players.player-pair.KibitzMainGameStats-desktop .stage-avatar {
+    align-items: center;
+    background: var(--shade2);
+    color: var(--fg);
+    display: inline-flex;
+    flex: 0 0 1.15rem;
+    font-size: 0.56rem;
+    font-weight: bold;
+    aspect-ratio: 1 / 1;
+    height: 1.15rem;
+    justify-content: center;
+    line-height: 1;
+    max-height: 1.15rem;
+    max-width: 1.15rem;
+    min-width: 1.15rem;
+    overflow: hidden;
+    text-transform: uppercase;
+    width: 1.15rem;
+}
+
+.room-stage-header .players.player-pair.KibitzMainGameStats-desktop .stage-avatar-image {
+    display: block;
+    flex: 0 0 auto;
+    height: 1.15rem !important;
+    max-height: 1.15rem;
+    max-width: 1.15rem;
+    min-height: 0;
+    min-width: 0;
+    object-fit: cover;
+    width: 1.15rem !important;
+}
+
+.KibitzMainGameStats-mobile .mobile-room-header-matchup-avatar-button {
+    all: unset;
+    align-items: center;
+    display: inline-flex;
+    cursor: pointer;
+    justify-content: center;
+}
+
+.KibitzMainGameStats-mobile .mobile-room-header-player {
+    gap: 0.22rem;
+}
+
+.KibitzMainGameStats-mobile .mobile-room-header-player .Player {
+    align-items: center;
+    display: inline-flex !important;
+    font-size: 0.66rem;
+    line-height: 1;
+    min-width: 0;
+}
+
+.KibitzMainGameStats-mobile .mobile-room-header-player .flag {
+    font-size: 0.76rem;
+    margin-left: 0.04rem;
+    margin-right: 0.12rem;
+}
+
+.KibitzMainGameStats-mobile .mobile-room-header-player .Player-username {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.KibitzMainGameStats-mobile .mobile-room-header-player .Player-rank {
+    font-size: 0.86em;
+    margin-left: 0.12rem;
+}
+
+.KibitzMainGameStats-mobile .mobile-room-header-player-black {
+    justify-content: flex-start;
+}
+
+.KibitzMainGameStats-mobile .mobile-room-header-player-white {
+    justify-content: flex-end;
+}
+
+.KibitzMainGameStats-mobile .KibitzMainGameStats-captures,
+.KibitzMainGameStats-mobile .KibitzMainGameStats-clock {
+    font-size: 0.94em;
+}
+
+.KibitzMainGameStats-mobile .KibitzMainGameStats-playerBadge-mobile {
+    min-width: 0;
+}
+
+.KibitzMainGameStats-mobile .KibitzMainGameStats-playerBadge-mobile .Player {
+    min-width: 0;
+}

@@ -335,14 +335,14 @@
         .Kibitz-mobile-room-header {
             background: var(--mobile-room-bar-bg);
             display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, auto) auto;
+            grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr) auto;
             min-height: var(--mobile-room-bar-height);
             position: relative;
             z-index: 40;
         }
 
         .Kibitz-mobile-room-header.has-settings {
-            grid-template-columns: minmax(0, 1fr) minmax(0, auto) auto 2.35rem;
+            grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr) auto 2.35rem;
         }
 
         .Kibitz-mobile-room-title-button {
@@ -461,15 +461,16 @@
             grid-template-rows: auto auto;
             grid-column: 2;
             grid-row: 1;
-            justify-self: center;
+            justify-self: stretch;
             color: var(--text-color) !important;
             font-size: 0.66rem;
             line-height: 1.05;
-            max-width: min(12rem, calc(100vw - 12rem));
+            max-width: none;
             min-width: 0;
             padding: 0 0.2rem;
             overflow: hidden;
             pointer-events: auto;
+            width: 100%;
             text-align: center;
             white-space: normal;
             z-index: 42;
@@ -617,6 +618,10 @@
         .mobile-room-header-player .Player-rank {
             font-size: 0.86em;
             margin-left: 0.12rem;
+        }
+
+        .Kibitz-mobile-room-header.hide-main-game-timing .KibitzMainGameStats-clock {
+            display: none;
         }
 
         .mobile-room-header-meta {

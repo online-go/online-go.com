@@ -1,0 +1,68 @@
+.KibitzScoreboardPlayerDisplay {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.42rem;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.KibitzScoreboardPlayerDisplay-link {
+    all: unset;
+    align-items: center;
+    color: inherit;
+    display: inline-flex;
+    gap: 0.42rem;
+    max-width: 100%;
+    min-width: 0;
+    cursor: pointer;
+}
+
+.KibitzScoreboardPlayerDisplay-avatar {
+    flex: 0 0 auto;
+}
+
+.KibitzScoreboardPlayerDisplay-avatarImage {
+    display: block;
+    object-fit: cover;
+}
+
+.KibitzScoreboardPlayerDisplay-flag {
+    align-items: center;
+    display: inline-flex;
+    flex: 0 0 auto;
+    line-height: 0;
+}
+
+.KibitzScoreboardPlayerDisplay-identity {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.35rem;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.KibitzDesktopMainGameScoreboard-playerName {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1.02rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.KibitzDesktopMainGameScoreboard-playerRank {
+    flex: 0 0 auto;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.KibitzScoreboardPlayerDisplay--black .KibitzDesktopMainGameScoreboard-playerName {
+    color: var(--supporter);
+}
+
+.KibitzScoreboardPlayerDisplay--white .KibitzDesktopMainGameScoreboard-playerName {
+    color: var(--user);
+}

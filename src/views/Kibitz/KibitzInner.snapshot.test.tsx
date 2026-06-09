@@ -18,7 +18,7 @@
 /* cspell:ignore refetches */
 
 import * as React from "react";
-import { act, render, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import type { KibitzController } from "./KibitzController";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 import type { KibitzRoom, KibitzRoomSummary, KibitzWatchedGame } from "@/models/kibitz";
@@ -37,6 +37,32 @@ import { get } from "@/lib/requests";
 
 const mockedUseNavigate = jest.fn();
 const mockedUseParams = jest.fn(() => ({ roomId: "room-1" }));
+let kibitzRoomStageMode: "none" | "main" | "compare" = "none";
+
+const mobileMainBoardController = {
+    goban: {
+        parent: document.body,
+        chat_log: [],
+        game_id: 1,
+        engine: {
+            move_tree: {
+                move_number: 12,
+            },
+            config: {},
+            playerToMove: () => 1,
+            computeScore: () => ({
+                black: { prisoners: 24 },
+                white: { prisoners: 26 },
+            }),
+            phase: "play",
+            outcome: "",
+            winner: "black",
+        },
+        on: jest.fn(),
+        off: jest.fn(),
+        emit: jest.fn(),
+    },
+} as unknown as GobanBoardController;
 
 jest.mock("@/components/Player", () => ({
     __esModule: true,
@@ -70,7 +96,61 @@ jest.mock("./KibitzRoomList", () => ({
 
 jest.mock("./KibitzRoomStage", () => ({
     __esModule: true,
-    KibitzRoomStage: () => null,
+    KibitzRoomStage: (props: {
+        room: KibitzRoomSummary;
+        onMainBoardControllerChange?: (controller: GobanBoardController | null) => void;
+        onMainBoardHydrationChange?: (state: {
+            roomId: string;
+            gameId: number | null;
+            officialTailMoveNumber: number;
+            expectedMoveNumber: number;
+            hasMoveTree: boolean;
+            hydrated: boolean;
+        }) => void;
+        onSelectMobileCompanionPanel?: (panel: "chat" | "vote" | "compare") => void;
+    }) => {
+        React.useEffect(() => {
+            const currentGame = props.room.current_game;
+            if (!currentGame) {
+                return;
+            }
+            const moveNumber = currentGame.move_number ?? 0;
+
+            if (kibitzRoomStageMode === "main") {
+                props.onMainBoardControllerChange?.(mobileMainBoardController);
+                props.onMainBoardHydrationChange?.({
+                    roomId: props.room.id,
+                    gameId: currentGame.game_id,
+                    officialTailMoveNumber: moveNumber,
+                    expectedMoveNumber: moveNumber,
+                    hasMoveTree: true,
+                    hydrated: true,
+                });
+                return;
+            }
+
+            if (kibitzRoomStageMode === "compare") {
+                props.onMainBoardControllerChange?.(mobileMainBoardController);
+                props.onMainBoardHydrationChange?.({
+                    roomId: props.room.id,
+                    gameId: currentGame.game_id,
+                    officialTailMoveNumber: moveNumber,
+                    expectedMoveNumber: moveNumber,
+                    hasMoveTree: true,
+                    hydrated: true,
+                });
+                props.onSelectMobileCompanionPanel?.("compare");
+            }
+        }, [props]);
+
+        return null;
+    },
+}));
+
+jest.mock("./KibitzMobileMainGameScoreboard", () => ({
+    __esModule: true,
+    KibitzMobileMainGameScoreboard: ({ isMainBoardVisible }: { isMainBoardVisible: boolean }) =>
+        isMainBoardVisible ? <div data-testid="mobile-scoreboard" /> : null,
 }));
 
 jest.mock("./KibitzSharedStreamPanel", () => ({
@@ -146,7 +226,12 @@ jest.mock("./useKibitzCurrentGameBaseBroker", () => ({
 
 jest.mock("./HelpFlows/useKibitzHelpTriggers", () => ({
     __esModule: true,
-    useKibitzHelpTriggers: () => undefined,
+    useKibitzHelpTriggers: () => ({
+        noteDesktopVariationMadeVisible: jest.fn(),
+        noteDraftStartedFromPostedVariation: jest.fn(),
+        noteMobileVariationsPanelOpened: jest.fn(),
+        notePostedVariationOpened: jest.fn(),
+    }),
 }));
 
 jest.mock("./HelpFlows/useKibitzHelpTarget", () => ({
@@ -609,6 +694,72 @@ describe("KibitzInner current-game base snapshot fetch", () => {
         await waitFor(() => {
             expect(mockedGet).toHaveBeenCalledTimes(2);
             expect(mockedGet).toHaveBeenNthCalledWith(2, "games/2");
+        });
+    });
+});
+
+describe("KibitzInner mobile scoreboard integration", () => {
+    beforeEach(() => {
+        mockedGet.mockReset();
+        mockedUseNavigate.mockReset();
+        mockedUseParams.mockReturnValue({ roomId: "room-1" });
+        installMatchMedia(true);
+        kibitzRoomStageMode = "none";
+    });
+
+    function mockResolvedGame(): void {
+        mockedGet.mockResolvedValue({
+            id: 1,
+            width: 19,
+            height: 19,
+            name: "Game 1",
+            ended: false,
+            players: {
+                black: makeUser(11, "black"),
+                white: makeUser(12, "white"),
+            },
+            gamedata: {
+                moves: Array.from({ length: 10 }, () => ({ x: 0, y: 0 })),
+                private: false,
+                disable_analysis: false,
+            },
+        });
+    }
+
+    it("renders the mobile scoreboard when the main board is visible", async () => {
+        kibitzRoomStageMode = "main";
+        mockResolvedGame();
+
+        const controller = makeController(makeRoom({ current_game: makeGame(1, 10) }));
+        render(<KibitzInner controller={controller} />);
+
+        await waitFor(() => {
+            expect(screen.getByTestId("mobile-scoreboard")).toBeInTheDocument();
+        });
+    });
+
+    it("does not render the mobile scoreboard for variation, preview, or draft states", async () => {
+        kibitzRoomStageMode = "compare";
+        mockResolvedGame();
+
+        const controller = makeController(makeRoom({ current_game: makeGame(1, 10) }));
+        render(<KibitzInner controller={controller} />);
+
+        await waitFor(() => {
+            expect(screen.queryByTestId("mobile-scoreboard")).toBeNull();
+        });
+    });
+
+    it("does not render the mobile scoreboard on desktop", async () => {
+        installMatchMedia(false);
+        kibitzRoomStageMode = "main";
+        mockResolvedGame();
+
+        const controller = makeController(makeRoom({ current_game: makeGame(1, 10) }));
+        render(<KibitzInner controller={controller} />);
+
+        await waitFor(() => {
+            expect(screen.queryByTestId("mobile-scoreboard")).toBeNull();
         });
     });
 });

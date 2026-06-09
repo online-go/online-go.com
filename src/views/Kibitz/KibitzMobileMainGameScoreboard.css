@@ -1,0 +1,310 @@
+.KibitzMobileMainGameScoreboard {
+    justify-self: stretch;
+    align-self: center;
+    display: inline-grid;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    padding: 0;
+    box-sizing: border-box;
+
+    --kibitz-mobile-scoreboard-text: var(--text-color);
+    --kibitz-mobile-scoreboard-muted-text: color-mix(in srgb, var(--text-color) 68%, transparent);
+    --kibitz-mobile-scoreboard-strong-text: var(--text-color);
+}
+
+.KibitzMobileMainGameScoreboard-inner {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.06rem;
+    position: relative;
+
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.KibitzMobileMainGameScoreboard-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 0.24rem;
+
+    min-width: 0;
+    min-height: 1.48rem;
+    padding: 0.02rem 0.1rem 0.02rem 0.44rem;
+    border-radius: 7px;
+    overflow: hidden;
+}
+
+.KibitzMobileMainGameScoreboard-row > * {
+    position: relative;
+    z-index: 1;
+}
+
+.KibitzMobileMainGameScoreboard-row.is-active::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.055);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.KibitzMobileMainGameScoreboard-row.is-active .KibitzMobileMainGameScoreboard-clock {
+    font-weight: 750;
+}
+
+.KibitzMobileMainGameScoreboard-faceStage {
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+    width: 100%;
+}
+
+.KibitzMobileMainGameScoreboard-face {
+    display: grid;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 250ms ease;
+}
+
+.KibitzMobileMainGameScoreboard-face.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.KibitzMobileMainGameScoreboard-face--player {
+    position: relative;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.06rem;
+}
+
+.KibitzMobileMainGameScoreboard-face--metadata {
+    position: absolute;
+    inset: 0;
+    align-content: center;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: 0.24rem;
+    row-gap: 0.28rem;
+    padding: 0.02rem 0.1rem 0.02rem 0.44rem;
+}
+
+.KibitzMobileMainGameScoreboard-metadataLabel {
+    min-width: 0;
+    font-size: 0.63rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0;
+    color: var(--kibitz-mobile-scoreboard-muted-text);
+    white-space: nowrap;
+}
+
+.KibitzMobileMainGameScoreboard-metadataValue {
+    min-width: 0;
+    font-size: 0.76rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--kibitz-mobile-scoreboard-strong-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.KibitzMobileMainGameScoreboard-row--black::before,
+.KibitzMobileMainGameScoreboard-row--white::before {
+    content: "";
+    position: absolute;
+    left: 0.16rem;
+    top: 0.19rem;
+    bottom: 0.19rem;
+    width: 2px;
+    border-radius: 999px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.KibitzMobileMainGameScoreboard-row--black::before {
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.95), rgba(35, 35, 35, 0.95));
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.08),
+        0 0 6px rgba(255, 255, 255, 0.08);
+}
+
+.KibitzMobileMainGameScoreboard-row--white::before {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(215, 215, 215, 0.95));
+    box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.22),
+        0 0 6px rgba(255, 255, 255, 0.14);
+}
+
+.KibitzMobileMainGameScoreboard-avatarSlot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 1.14rem;
+    min-width: 1.14rem;
+    line-height: 0;
+}
+
+.KibitzMobileMainGameScoreboard-avatarButton {
+    all: unset;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 1.14rem;
+    height: 1.14rem;
+    line-height: 0;
+}
+
+.KibitzMobileMainGameScoreboard-avatar {
+    display: inline-flex;
+    width: 1.14rem;
+    height: 1.14rem;
+    border-radius: 5px;
+    overflow: hidden;
+    flex: 0 0 auto;
+}
+
+.KibitzMobileMainGameScoreboard-avatarImage {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover;
+}
+
+.KibitzMobileMainGameScoreboard-flag {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    line-height: 0;
+}
+
+.KibitzMobileMainGameScoreboard-flag .f32 {
+    display: inline-flex;
+}
+
+.KibitzMobileMainGameScoreboard-flag .flag {
+    display: block;
+}
+
+.KibitzMobileMainGameScoreboard-player {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.24rem;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.KibitzMobileMainGameScoreboard-playerName {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--kibitz-mobile-scoreboard-strong-text);
+}
+
+.KibitzMobileMainGameScoreboard-playerRank {
+    flex: 0 0 auto;
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--kibitz-mobile-scoreboard-muted-text);
+}
+
+.KibitzMobileMainGameScoreboard-player.is-active-player .KibitzMobileMainGameScoreboard-playerName {
+    color: var(--kibitz-mobile-scoreboard-strong-text);
+}
+
+.KibitzMobileMainGameScoreboard-clock {
+    flex: 0 0 auto;
+    font-size: 0.74rem;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    white-space: nowrap;
+    color: var(--kibitz-mobile-scoreboard-strong-text);
+}
+
+.KibitzMobileMainGameScoreboard-clock .Clock {
+    color: inherit;
+    display: inline-flex;
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    line-height: 1;
+}
+
+.KibitzMobileMainGameScoreboard-clock .Clock.paused {
+    animation: none !important;
+}
+
+.KibitzMobileMainGameScoreboard-captures {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.18rem;
+    flex: 0 0 auto;
+
+    font-size: 0.72rem;
+    font-weight: 550;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    white-space: nowrap;
+    color: var(--kibitz-mobile-scoreboard-muted-text);
+}
+
+.KibitzMobileMainGameScoreboard-captureDot {
+    font-size: 0.72rem;
+    line-height: 1;
+}
+
+body.light .KibitzMobileMainGameScoreboard-inner,
+.light .KibitzMobileMainGameScoreboard-inner {
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.045) 0%, rgba(0, 0, 0, 0.025) 100%);
+    box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.075),
+        inset 0 1px 9px rgba(255, 255, 255, 0.34),
+        0 4px 16px rgba(0, 0, 0, 0.09);
+}
+
+body.light .KibitzMobileMainGameScoreboard-row.is-active::after,
+.light .KibitzMobileMainGameScoreboard-row.is-active::after {
+    background: rgba(0, 0, 0, 0.045);
+}
+
+body.light .KibitzMobileMainGameScoreboard-row--black::before,
+.light .KibitzMobileMainGameScoreboard-row--black::before {
+    background: linear-gradient(180deg, rgba(10, 10, 10, 0.92), rgba(55, 55, 55, 0.92));
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.55),
+        0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+body.light .KibitzMobileMainGameScoreboard-row--white::before,
+.light .KibitzMobileMainGameScoreboard-row--white::before {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(230, 230, 230, 0.98));
+    box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.24),
+        0 0 5px rgba(0, 0, 0, 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .KibitzMobileMainGameScoreboard-face {
+        transition: none;
+    }
+}

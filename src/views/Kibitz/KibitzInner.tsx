@@ -17,11 +17,8 @@
 
 import * as React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { Player } from "@/components/Player";
-import { PlayerDetails } from "@/components/Player/PlayerDetails";
 import { GobanController, getMoveTreeTrunkTail } from "@/lib/GobanController";
 import { GobanControllerContext } from "@/components/GobanView";
-import { popover } from "@/lib/popover";
 import { toast } from "@/lib/toast";
 import { get } from "@/lib/requests";
 import { interpolate, pgettext } from "@/lib/translate";
@@ -31,7 +28,6 @@ import type {
     KibitzProposal,
     KibitzRoom,
     KibitzRoomSummary,
-    KibitzRoomUser,
     KibitzSecondaryPaneState,
     KibitzStreamItem,
     KibitzVariationSummary,
@@ -43,6 +39,7 @@ import { KibitzDebugPanel } from "./KibitzDebugPanel";
 import { KibitzRoomList } from "./KibitzRoomList";
 import { KibitzRoomStage } from "./KibitzRoomStage";
 import type { MobileBoardResizeOwner } from "./KibitzRoomStage";
+import { KibitzMobileMainGameScoreboard } from "./KibitzMobileMainGameScoreboard";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 import { KibitzSharedStreamPanel } from "./KibitzSharedStreamPanel";
 import { KibitzPresence } from "./KibitzPresence";
@@ -67,7 +64,6 @@ import {
     isLoggedInKibitzUser,
 } from "./kibitzAnalysisPolicy";
 import { getVisiblePostedVariations } from "./kibitzVariationQuickList";
-import { KibitzUserAvatar } from "./KibitzUserAvatar";
 import { type KibitzBoardTransientDragController } from "./KibitzBoard";
 import {
     getKibitzBlockedRoomFollowupMessage,
@@ -574,83 +570,6 @@ export function clampDesktopSidebarWidthPx(width: number, contentWidth: number):
     }
 
     return Math.min(maxSidebar, Math.max(minSidebar, Math.round(width)));
-}
-
-function formatMobileMatchup(
-    room: KibitzRoom | KibitzRoomSummary | null | undefined,
-): { black: KibitzRoomUser; white: KibitzRoomUser } | null {
-    const game = room?.current_game;
-
-    if (!game) {
-        return null;
-    }
-
-    return {
-        black: game.black,
-        white: game.white,
-    };
-}
-
-function renderMobileHeaderAvatar(user: KibitzRoomUser): React.ReactElement {
-    return (
-        <button
-            type="button"
-            className="mobile-room-header-matchup-avatar-button"
-            onClick={(event) => openMobileHeaderPlayerPopover(event, user)}
-            aria-label={user.username}
-        >
-            <KibitzUserAvatar
-                user={user}
-                size={64}
-                className="mobile-room-header-matchup-avatar"
-                iconClassName="mobile-room-header-matchup-avatar-image"
-            />
-        </button>
-    );
-}
-
-function renderMobileHeaderPlayer(
-    user: KibitzRoomUser,
-    stoneColor: "black" | "white",
-): React.ReactElement {
-    const contents = (
-        <>
-            {stoneColor === "black" && (
-                <span
-                    className={`mobile-room-header-player-stone mobile-room-header-player-stone-${stoneColor}`}
-                    aria-hidden="true"
-                />
-            )}
-            <Player user={user} flag rank noextracontrols />
-            {stoneColor === "white" && (
-                <span
-                    className={`mobile-room-header-player-stone mobile-room-header-player-stone-${stoneColor}`}
-                    aria-hidden="true"
-                />
-            )}
-        </>
-    );
-
-    return (
-        <span className={`mobile-room-header-player mobile-room-header-player-${stoneColor}`}>
-            {contents}
-        </span>
-    );
-}
-
-function openMobileHeaderPlayerPopover(
-    event: React.MouseEvent<HTMLButtonElement>,
-    user: KibitzRoomUser,
-): void {
-    event.preventDefault();
-    event.stopPropagation();
-
-    popover({
-        elt: <PlayerDetails playerId={user.id} />,
-        below: event.currentTarget,
-        minWidth: 240,
-        minHeight: 250,
-    });
 }
 
 function mapGameChatLineToVariation(
@@ -3652,7 +3571,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const effectiveStreamerMode =
         streamerMode && !isMobileLayout && Boolean(resolvedRoom) && !isBlockedRoom;
     const kibitzClassName = `Kibitz${effectiveStreamerMode ? " is-streamer-mode" : ""}`;
-    const mobileMatchup = formatMobileMatchup(resolvedRoom);
+    const mobileMatchup = resolvedRoom?.current_game ?? null;
     React.useEffect(() => {
         document.body.classList.toggle("kibitz-streamer-mode", effectiveStreamerMode);
 
@@ -3884,30 +3803,12 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                     />
                                 </button>
                                 {mobileMatchup ? (
-                                    <div className="mobile-room-header-matchup">
-                                        <span className="mobile-room-header-matchup-avatar mobile-room-header-matchup-avatar-black">
-                                            {renderMobileHeaderAvatar(mobileMatchup.black)}
-                                        </span>
-                                        <span className="mobile-room-header-matchup-content">
-                                            <span className="mobile-room-header-matchup-first">
-                                                {renderMobileHeaderPlayer(
-                                                    mobileMatchup.black,
-                                                    "black",
-                                                )}
-                                            </span>
-                                            <span className="mobile-room-header-matchup-second">
-                                                <span className="mobile-room-header-matchup-second-name">
-                                                    {renderMobileHeaderPlayer(
-                                                        mobileMatchup.white,
-                                                        "white",
-                                                    )}
-                                                </span>
-                                            </span>
-                                        </span>
-                                        <span className="mobile-room-header-matchup-avatar mobile-room-header-matchup-avatar-white">
-                                            {renderMobileHeaderAvatar(mobileMatchup.white)}
-                                        </span>
-                                    </div>
+                                    <KibitzMobileMainGameScoreboard
+                                        controller={mainBoardController}
+                                        game={mobileMatchup}
+                                        isMainBoardVisible={!mobileCompareActive}
+                                        isInteractionPaused={mobileDividerDragging}
+                                    />
                                 ) : null}
                                 <button
                                     type="button"
