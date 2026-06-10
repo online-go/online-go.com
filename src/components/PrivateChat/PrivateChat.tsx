@@ -384,6 +384,15 @@ class PrivateChat {
                 return true;
             }
 
+            // Don't act on Enter while an IME composition is in progress
+            // (e.g. confirming Japanese / Chinese / Korean candidates).
+            // keyCode === 229 is the legacy "IME process" code, kept as a
+            // fallback for browsers that don't reliably set isComposing on
+            // keydown.
+            if (ev.isComposing || ev.keyCode === 229) {
+                return;
+            }
+
             if (ev.key === "Enter" && !ev.shiftKey) {
                 ev.preventDefault();
                 if (this.input && this.input.value.trim() === "") {
