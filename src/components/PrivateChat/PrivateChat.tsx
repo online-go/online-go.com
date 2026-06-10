@@ -56,7 +56,8 @@ class PrivateChat {
     superchat_enabled = false;
     banner?: HTMLElement;
     body?: HTMLElement | null;
-    input?: HTMLInputElement;
+    inner?: HTMLElement | null;
+    input?: HTMLTextAreaElement;
     superchat_modal?: HTMLElement | null;
     player_is_ignored = false;
     pc?: PrivateChat;
@@ -299,7 +300,7 @@ class PrivateChat {
                             this.dom.style.top = roy + "px";
                         }
                         if (this.body) {
-                            this.body.scrollTop = this.body.scrollHeight;
+                            this.body.scrollTop = 0;
                         }
                     }
                 }
@@ -333,7 +334,7 @@ class PrivateChat {
             if (body.lastChild !== this.dom) {
                 body.appendChild(this.dom); /* brings the chat to the front of other chats */
                 if (this.body) {
-                    this.body.scrollTop = this.body.scrollHeight;
+                    this.body.scrollTop = 0;
                 }
             }
         };
@@ -345,16 +346,35 @@ class PrivateChat {
 
         this.body = document.createElement("div");
         this.body.classList.add("body");
+
+        const spacer = document.createElement("div");
+        spacer.classList.add("chat-spacer");
+        this.body.appendChild(spacer);
+
+        this.inner = document.createElement("div");
+        this.inner.classList.add("chat-inner");
+        this.body.appendChild(this.inner);
+
         this.dom.appendChild(this.body);
         this.body.addEventListener("mousedown", raise_to_top);
         this.body.addEventListener("touchstart", raise_to_top);
 
         for (let i = 0; i < this.lines.length; ++i) {
-            this.body.appendChild(this.lines[i]);
+            this.inner.prepend(this.lines[i]);
         }
 
-        this.input = document.createElement("input");
-        this.input.type = "text";
+        const adjustHeight = () => {
+            if (this.input) {
+                this.input.style.height = "auto";
+                this.input.style.height = this.input.scrollHeight + "px";
+            }
+        };
+
+        this.input = document.createElement("textarea");
+        this.input.classList.add("chat-input");
+        this.input.rows = 1;
+        // this.input.type = "text";
+        this.input.addEventListener("input", adjustHeight);
         this.input.addEventListener("keypress", (ev: KeyboardEvent) => {
             if (
                 !data.get("user").email_validated &&
@@ -364,12 +384,15 @@ class PrivateChat {
                 return true;
             }
 
-            if (ev.keyCode === 13) {
+            if (ev.key === "Enter" && !ev.shiftKey) {
+                ev.preventDefault();
                 if (this.input && this.input.value.trim() === "") {
                     return false;
                 }
                 if (this.input) {
                     this.sendChat(this.input.value);
+                    this.input.value = "";
+                    this.input.style.height = "auto";
                 }
                 return false;
             }
@@ -387,7 +410,7 @@ class PrivateChat {
         document.body.appendChild(this.dom);
 
         if (this.body) {
-            this.body.scrollTop = this.body.scrollHeight;
+            this.body.scrollTop = 0;
         }
         this.input.focus();
 
@@ -602,11 +625,16 @@ class PrivateChat {
         this.lines.push(line);
 
         if (this.body) {
-            const atBottom =
-                this.body.scrollHeight - this.body.scrollTop <= this.body.clientHeight + 1;
-            this.body.appendChild(line);
+            const atBottom = this.body.scrollTop > -10;
+            if (this.inner) {
+                this.inner.prepend(line);
+            }
             if (atBottom) {
-                this.body.scrollTop = this.body.scrollHeight;
+                requestAnimationFrame(() => {
+                    if (this.body) {
+                        this.body.scrollTop = 0;
+                    }
+                });
             }
         }
     }
@@ -620,15 +648,17 @@ class PrivateChat {
 
         if (this.body) {
             const cur = this.body.scrollTop;
-            this.body.scrollTop = this.body.scrollHeight;
+            this.body.scrollTop = 0;
             if (this.body.scrollTop === cur) {
                 // we didn't scroll, meaning the user has scrolled up to read something
                 // so let's highlight the title to let them know there are new messages
                 this.dom?.classList.add("highlighted");
             }
-            this.body.appendChild(line);
+            if (this.inner) {
+                this.inner.prepend(line);
+            }
             if (this.body.scrollTop !== cur) {
-                this.body.scrollTop = this.body.scrollHeight;
+                this.body.scrollTop = 0;
             }
         }
     }
