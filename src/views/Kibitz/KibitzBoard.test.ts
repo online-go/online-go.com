@@ -207,7 +207,7 @@ describe("firstPositiveFinite", () => {
     });
 });
 
-describe("final clear postcheck helpers", () => {
+describe("final clear post-commit helpers", () => {
     it("accepts matching 374 content-box rectangles", () => {
         expect(
             canClearTransientMobileSizing({

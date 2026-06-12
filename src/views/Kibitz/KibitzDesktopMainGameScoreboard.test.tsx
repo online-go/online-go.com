@@ -387,8 +387,8 @@ describe("KibitzDesktopMainGameScoreboard", () => {
 
     it("labels the black and white lanes for screen readers without visible labels", () => {
         const game = makeGame();
-        game.black.username = "logyf";
-        game.white.username = "illluck";
+        game.black.username = "alice";
+        game.white.username = "bob";
 
         render(<KibitzDesktopMainGameScoreboard controller={null} game={game} />);
 

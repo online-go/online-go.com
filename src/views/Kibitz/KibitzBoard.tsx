@@ -583,7 +583,7 @@ export function KibitzBoard({
     const allowTransientDragScalingRef = React.useRef(allowTransientDragScaling);
     const committedMobileScaledPresentationRef =
         React.useRef<CommittedMobileScaledPresentation | null>(null);
-    const committedScaledPostcheckFramesRef = React.useRef<number[]>([]);
+    const committedScaledPostCommitFramesRef = React.useRef<number[]>([]);
     const pendingTransientDragFinalSizeRef = React.useRef<number | null>(null);
     const pendingTransientDragClearFrameRef = React.useRef<number | null>(null);
     const lastAppliedTransientContentSizeRef = React.useRef<number | null>(null);
@@ -1123,26 +1123,26 @@ export function KibitzBoard({
         [getKibitzBoardMetricsSnapshot],
     );
 
-    const scheduleCommittedScaledPresentationPostchecks = React.useCallback(
+    const scheduleCommittedScaledPresentationPostCommitChecks = React.useCallback(
         (reason: string) => {
-            for (const frame of committedScaledPostcheckFramesRef.current) {
+            for (const frame of committedScaledPostCommitFramesRef.current) {
                 window.cancelAnimationFrame(frame);
             }
 
-            committedScaledPostcheckFramesRef.current = [];
+            committedScaledPostCommitFramesRef.current = [];
 
             const frame1 = window.requestAnimationFrame(() => {
                 recordCommittedScaledPresentationCheck(`${reason}:raf1`);
 
                 const frame2 = window.requestAnimationFrame(() => {
                     recordCommittedScaledPresentationCheck(`${reason}:raf2`);
-                    committedScaledPostcheckFramesRef.current = [];
+                    committedScaledPostCommitFramesRef.current = [];
                 });
 
-                committedScaledPostcheckFramesRef.current = [frame2];
+                committedScaledPostCommitFramesRef.current = [frame2];
             });
 
-            committedScaledPostcheckFramesRef.current = [frame1];
+            committedScaledPostCommitFramesRef.current = [frame1];
         },
         [recordCommittedScaledPresentationCheck],
     );
@@ -1224,12 +1224,12 @@ export function KibitzBoard({
                 committedPresentation,
             });
             recordCommittedScaledPresentationCheck("after-commit-immediate");
-            scheduleCommittedScaledPresentationPostchecks("after-commit");
+            scheduleCommittedScaledPresentationPostCommitChecks("after-commit");
         },
         [
             getKibitzBoardMetricsSnapshot,
             recordCommittedScaledPresentationCheck,
-            scheduleCommittedScaledPresentationPostchecks,
+            scheduleCommittedScaledPresentationPostCommitChecks,
         ],
     );
 
@@ -2190,10 +2190,10 @@ export function KibitzBoard({
 
     React.useEffect(() => {
         return () => {
-            for (const frame of committedScaledPostcheckFramesRef.current) {
+            for (const frame of committedScaledPostCommitFramesRef.current) {
                 window.cancelAnimationFrame(frame);
             }
-            committedScaledPostcheckFramesRef.current = [];
+            committedScaledPostCommitFramesRef.current = [];
 
             if (resizeDebounceRef.current) {
                 clearTimeout(resizeDebounceRef.current);
