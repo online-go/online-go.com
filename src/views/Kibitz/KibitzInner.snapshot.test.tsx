@@ -23,16 +23,20 @@ import type { KibitzController } from "./KibitzController";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 import type { KibitzRoom, KibitzRoomSummary, KibitzWatchedGame } from "@/models/kibitz";
 import {
+    GobanController as GobanControllerClass,
     getMoveTreeTrunkTail,
     type GobanController as GobanBoardController,
 } from "@/lib/GobanController";
 import {
     applyVisibleMainBoardHydrationReport,
     createVisibleMainBoardHydrationState,
+    fetchCurrentGameBaseSnapshot,
     isCurrentGameBaseSnapshotUsable,
     isVisibleMainBoardMounted,
     KibitzInner,
 } from "./KibitzInner";
+import { captureCurrentGameBaseSnapshotFromController } from "./kibitzCurrentGameBaseSnapshot";
+import { logKibitzVariationDebug } from "./kibitzVariationDebug";
 import { get } from "@/lib/requests";
 
 const mockedUseNavigate = jest.fn();
@@ -371,6 +375,14 @@ jest.mock("react-router-dom", () => ({
 }));
 
 const mockedGet = get as jest.MockedFunction<typeof get>;
+const mockedGobanController = GobanControllerClass as jest.MockedClass<typeof GobanControllerClass>;
+const mockedCaptureCurrentGameBaseSnapshotFromController =
+    captureCurrentGameBaseSnapshotFromController as jest.MockedFunction<
+        typeof captureCurrentGameBaseSnapshotFromController
+    >;
+const mockedLogKibitzVariationDebug = logKibitzVariationDebug as jest.MockedFunction<
+    typeof logKibitzVariationDebug
+>;
 
 function installMatchMedia(matches = false): void {
     Object.defineProperty(window, "matchMedia", {
@@ -385,6 +397,10 @@ function installMatchMedia(matches = false): void {
             dispatchEvent: jest.fn(),
         })),
     });
+}
+
+function getTemporaryBoardCount(): number {
+    return document.body.querySelectorAll('div[aria-hidden="true"]').length;
 }
 
 function makeUser(id: number, username: string) {
@@ -490,6 +506,21 @@ function makeController(initialRoom: KibitzRoomSummary): KibitzController {
     };
 }
 
+function makeSnapshotController(destroy: () => void = jest.fn()): GobanBoardController {
+    return {
+        destroy,
+        goban: {
+            parent: document.createElement("div"),
+            engine: {
+                move_tree: {
+                    move_number: 0,
+                },
+                config: {},
+            },
+        },
+    } as unknown as GobanBoardController;
+}
+
 describe("KibitzInner current-game base snapshot fetch", () => {
     describe("isCurrentGameBaseSnapshotUsable", () => {
         it("rejects snapshots from a different room even when the game matches", () => {
@@ -516,7 +547,157 @@ describe("KibitzInner current-game base snapshot fetch", () => {
 
     beforeEach(() => {
         mockedGet.mockReset();
+        mockedGobanController.mockClear();
+        mockedCaptureCurrentGameBaseSnapshotFromController.mockClear();
+        mockedLogKibitzVariationDebug.mockClear();
         installMatchMedia(false);
+    });
+
+    it("removes the temporary board div if the controller constructor throws", async () => {
+        mockedGet.mockResolvedValue({
+            id: 1,
+            width: 19,
+            height: 19,
+            name: "Game 1",
+            ended: false,
+            players: {
+                black: makeUser(11, "black"),
+                white: makeUser(12, "white"),
+            },
+            gamedata: {
+                moves: Array.from({ length: 10 }, () => ({ x: 0, y: 0 })),
+                private: false,
+                disable_analysis: false,
+            },
+        });
+
+        const constructorError = new Error("constructor failed");
+        mockedGobanController.mockImplementationOnce(() => {
+            throw constructorError;
+        });
+
+        await expect(fetchCurrentGameBaseSnapshot(makeGame(1, 10), "room-1")).rejects.toBe(
+            constructorError,
+        );
+
+        expect(getTemporaryBoardCount()).toBe(0);
+    });
+
+    it("destroys the temporary controller and removes the board div on success", async () => {
+        mockedGet.mockResolvedValue({
+            id: 1,
+            width: 19,
+            height: 19,
+            name: "Game 1",
+            ended: false,
+            players: {
+                black: makeUser(11, "black"),
+                white: makeUser(12, "white"),
+            },
+            gamedata: {
+                moves: Array.from({ length: 10 }, () => ({ x: 0, y: 0 })),
+                private: false,
+                disable_analysis: false,
+            },
+        });
+
+        const destroy = jest.fn();
+        mockedGobanController.mockImplementationOnce(() => makeSnapshotController(destroy));
+
+        const snapshot = await fetchCurrentGameBaseSnapshot(makeGame(1, 10), "room-1");
+
+        expect(snapshot).toEqual(
+            expect.objectContaining({
+                gameId: 1,
+                roomId: "room-1",
+                trunkTailMoveNumber: 10,
+                source: "game-details",
+                fetchedMoveCount: 10,
+            }),
+        );
+        expect(destroy).toHaveBeenCalledTimes(1);
+        expect(getTemporaryBoardCount()).toBe(0);
+    });
+
+    it("removes the temporary board div if snapshot extraction throws", async () => {
+        mockedGet.mockResolvedValue({
+            id: 1,
+            width: 19,
+            height: 19,
+            name: "Game 1",
+            ended: false,
+            players: {
+                black: makeUser(11, "black"),
+                white: makeUser(12, "white"),
+            },
+            gamedata: {
+                moves: Array.from({ length: 10 }, () => ({ x: 0, y: 0 })),
+                private: false,
+                disable_analysis: false,
+            },
+        });
+
+        const extractionError = new Error("snapshot extraction failed");
+        mockedCaptureCurrentGameBaseSnapshotFromController.mockImplementationOnce(() => {
+            throw extractionError;
+        });
+
+        const destroy = jest.fn();
+        mockedGobanController.mockImplementationOnce(() => makeSnapshotController(destroy));
+
+        await expect(fetchCurrentGameBaseSnapshot(makeGame(1, 10), "room-1")).rejects.toBe(
+            extractionError,
+        );
+
+        expect(destroy).toHaveBeenCalledTimes(1);
+        expect(getTemporaryBoardCount()).toBe(0);
+    });
+
+    it("logs cleanup failures without masking a successful snapshot fetch", async () => {
+        mockedGet.mockResolvedValue({
+            id: 1,
+            width: 19,
+            height: 19,
+            name: "Game 1",
+            ended: false,
+            players: {
+                black: makeUser(11, "black"),
+                white: makeUser(12, "white"),
+            },
+            gamedata: {
+                moves: Array.from({ length: 10 }, () => ({ x: 0, y: 0 })),
+                private: false,
+                disable_analysis: false,
+            },
+        });
+
+        const cleanupError = new Error("destroy failed");
+        mockedGobanController.mockImplementationOnce(() =>
+            makeSnapshotController(() => {
+                throw cleanupError;
+            }),
+        );
+
+        const snapshot = await fetchCurrentGameBaseSnapshot(makeGame(1, 10), "room-1");
+
+        expect(snapshot).toEqual(
+            expect.objectContaining({
+                gameId: 1,
+                roomId: "room-1",
+                trunkTailMoveNumber: 10,
+                source: "game-details",
+                fetchedMoveCount: 10,
+            }),
+        );
+        expect(mockedLogKibitzVariationDebug).toHaveBeenCalledWith(
+            "current-game-base-snapshot:cleanup-error",
+            expect.objectContaining({
+                gameId: 1,
+                roomId: "room-1",
+                error: cleanupError,
+            }),
+        );
+        expect(getTemporaryBoardCount()).toBe(0);
     });
 
     it("does not refetch when only viewer count changes", async () => {

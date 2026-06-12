@@ -431,7 +431,7 @@ function currentGameBoardDimensionsOf(game: KibitzWatchedGame | null | undefined
     return { width: null, height: null };
 }
 
-async function fetchCurrentGameBaseSnapshot(
+export async function fetchCurrentGameBaseSnapshot(
     game: KibitzWatchedGame,
     roomId: string | null,
 ): Promise<KibitzCurrentGameBaseSnapshot | null> {
@@ -450,10 +450,7 @@ async function fetchCurrentGameBaseSnapshot(
     boardDiv.style.opacity = "0";
     boardDiv.style.left = "-10000px";
     boardDiv.style.top = "0";
-    // captureCurrentGameBaseSnapshotFromController rejects controllers whose
-    // board element is not in the document, so the div must be attached for
-    // the short lifetime of this controller.
-    document.body.appendChild(boardDiv);
+    let snapshotController: GobanController | null = null;
     const config: GobanRendererConfig & { moves?: GobanConfig["moves"] } = {
         board_div: boardDiv,
         interactive: false,
@@ -462,9 +459,13 @@ async function fetchCurrentGameBaseSnapshot(
         height: details.height,
         moves: details.gamedata.moves as GobanConfig["moves"],
     };
-    const snapshotController = new GobanController(config as GobanRendererConfig);
 
     try {
+        // captureCurrentGameBaseSnapshotFromController rejects controllers whose
+        // board element is not in the document, so the div must be attached for
+        // the short lifetime of this controller.
+        document.body.appendChild(boardDiv);
+        snapshotController = new GobanController(config as GobanRendererConfig);
         const fetchedMoveCount = details.gamedata.moves.length;
         const expectedMoveNumber = Math.max(game.move_number ?? 0, details.gamedata.moves.length);
         const snapshot = captureCurrentGameBaseSnapshotFromController(
@@ -498,7 +499,15 @@ async function fetchCurrentGameBaseSnapshot(
 
         return snapshot;
     } finally {
-        snapshotController.destroy();
+        try {
+            snapshotController?.destroy();
+        } catch (error) {
+            logKibitzVariationDebug("current-game-base-snapshot:cleanup-error", {
+                gameId: game.game_id,
+                roomId,
+                error,
+            });
+        }
         boardDiv.remove();
     }
 }
