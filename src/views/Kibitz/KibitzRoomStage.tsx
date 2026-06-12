@@ -1363,17 +1363,115 @@ export function getRequiredBranchAttachMoveForVariation(
     return from;
 }
 
+export type KibitzVariationApplySkipReason =
+    | "missing-analysis-from"
+    | "invalid-analysis-from"
+    | "wrong-game"
+    | "missing-analysis-moves";
+
+interface KibitzApplicableVisibleVariations {
+    selectedVariationValid: boolean;
+    selectedVariationSkipReason: KibitzVariationApplySkipReason | null;
+    applicableVariations: KibitzVariationSummary[];
+    skippedVariations: Array<{
+        variation: KibitzVariationSummary;
+        reason: KibitzVariationApplySkipReason;
+    }>;
+}
+
+function getVariationAnalysisFromMoveNumber(variation: KibitzVariationSummary): number | null {
+    const moveNumber = variation.analysis_from;
+
+    if (typeof moveNumber !== "number") {
+        return null;
+    }
+
+    if (!Number.isFinite(moveNumber) || moveNumber < 0) {
+        return null;
+    }
+
+    return moveNumber;
+}
+
+function getVariationApplySkipReason(
+    variation: KibitzVariationSummary,
+    expectedGameId: number | null | undefined,
+): KibitzVariationApplySkipReason | null {
+    if (expectedGameId != null && variation.game_id !== expectedGameId) {
+        return "wrong-game";
+    }
+
+    if (typeof variation.analysis_from !== "number") {
+        return "missing-analysis-from";
+    }
+
+    if (!Number.isFinite(variation.analysis_from) || variation.analysis_from < 0) {
+        return "invalid-analysis-from";
+    }
+
+    if (
+        typeof variation.analysis_moves !== "string" ||
+        variation.analysis_moves.trim().length === 0
+    ) {
+        return "missing-analysis-moves";
+    }
+
+    return null;
+}
+
+export function getApplicableVisibleVariations(params: {
+    selectedVariation: KibitzVariationSummary;
+    visibleVariations: readonly KibitzVariationSummary[];
+    sourceGame: KibitzWatchedGame | null | undefined;
+}): KibitzApplicableVisibleVariations {
+    const selectedVariationSkipReason = getVariationApplySkipReason(
+        params.selectedVariation,
+        params.selectedVariation.game_id,
+    );
+    const selectedVariationValid = selectedVariationSkipReason == null;
+    const applicableVariations: KibitzVariationSummary[] = [];
+    const skippedVariations: KibitzApplicableVisibleVariations["skippedVariations"] = [];
+    const expectedVisibleGameId = params.sourceGame?.game_id ?? params.selectedVariation.game_id;
+
+    for (const variation of params.visibleVariations) {
+        const reason = getVariationApplySkipReason(variation, expectedVisibleGameId);
+        if (reason) {
+            skippedVariations.push({ variation, reason });
+            continue;
+        }
+
+        applicableVariations.push(variation);
+    }
+
+    if (!selectedVariationValid) {
+        return {
+            selectedVariationValid,
+            selectedVariationSkipReason,
+            applicableVariations,
+            skippedVariations,
+        };
+    }
+
+    return {
+        selectedVariationValid,
+        selectedVariationSkipReason,
+        applicableVariations,
+        skippedVariations,
+    };
+}
+
 export function getRequiredSnapshotMoveForVariation(
     variation: KibitzVariationSummary,
     _sourceGame: KibitzWatchedGame | null | undefined,
 ): number | null {
-    if (typeof variation.analysis_from !== "number" || !Number.isFinite(variation.analysis_from)) {
+    const moveNumber = getVariationAnalysisFromMoveNumber(variation);
+    if (moveNumber == null) {
         return null;
     }
 
     // The snapshot only needs the anchor move where the variation branches off.
     // The branch continuation itself is supplied by the variation payload.
-    return variation.analysis_from;
+    return moveNumber;
 }
 
 export function getRequiredVariationSnapshotMoveNumber(
@@ -1381,22 +1479,32 @@ export function getRequiredVariationSnapshotMoveNumber(
     visibleVariations: readonly KibitzVariationSummary[],
     sourceGame: KibitzWatchedGame | null | undefined,
 ): number | null {
-    const requiredSnapshotMoves = [
-        getRequiredSnapshotMoveForVariation(selectedVariation, sourceGame),
-        ...visibleVariations.map((variation) =>
-            getRequiredSnapshotMoveForVariation(variation, sourceGame),
-        ),
-    ];
-
-    const validRequiredSnapshotMoves = requiredSnapshotMoves.filter(
-        (moveNumber): moveNumber is number => moveNumber != null,
+    const selectedVariationValidation = getVariationApplySkipReason(
+        selectedVariation,
+        selectedVariation.game_id,
     );
-
-    if (validRequiredSnapshotMoves.length !== requiredSnapshotMoves.length) {
+    if (selectedVariationValidation) {
         return null;
     }
 
-    return Math.max(...validRequiredSnapshotMoves);
+    const applicableVisibleVariations = getApplicableVisibleVariations({
+        selectedVariation,
+        visibleVariations,
+        sourceGame,
+    });
+
+    const requiredSnapshotMoves = [
+        getRequiredSnapshotMoveForVariation(selectedVariation, sourceGame),
+        ...applicableVisibleVariations.applicableVariations.map((variation) =>
+            getRequiredSnapshotMoveForVariation(variation, sourceGame),
+        ),
+    ].filter((moveNumber): moveNumber is number => moveNumber != null);
+
+    if (requiredSnapshotMoves.length === 0) {
+        return null;
+    }
+
+    return Math.max(...requiredSnapshotMoves);
 }
 
 export function isSecondaryVariationSnapshotReady(
@@ -4387,7 +4495,40 @@ export function KibitzRoomStage({
                 return false;
             }
 
-            const variationsToApply = getVariationsToApply(selectedVariation, visibleVariations);
+            const variationApplication = getApplicableVisibleVariations({
+                selectedVariation,
+                visibleVariations,
+                sourceGame: selectedVariationSourceGame,
+            });
+
+            for (const skippedVariation of variationApplication.skippedVariations) {
+                logVariationStage("apply:skip-malformed-visible-variation", {
+                    selectedVariationId: selectedVariation.id,
+                    skippedVariationId: skippedVariation.variation.id,
+                    gameId: skippedVariation.variation.game_id,
+                    analysisFrom: skippedVariation.variation.analysis_from ?? null,
+                    reason: skippedVariation.reason,
+                });
+            }
+
+            if (!variationApplication.selectedVariationValid) {
+                logVariationStage("try:selected-variation-invalid", {
+                    selectedVariationId: selectedVariation.id,
+                    gameId: selectedVariation.game_id,
+                    analysisFrom: selectedVariation.analysis_from ?? null,
+                    analysisMoves:
+                        typeof selectedVariation.analysis_moves === "string"
+                            ? selectedVariation.analysis_moves
+                            : null,
+                    reason: variationApplication.selectedVariationSkipReason,
+                });
+                return true;
+            }
+
+            const variationsToApply = getVariationsToApply(
+                selectedVariation,
+                variationApplication.applicableVariations,
+            );
 
             logVariationStage("apply:start", () => ({
                 variationsToApply: variationsToApply.map((variation) => ({
@@ -4637,21 +4778,39 @@ export function KibitzRoomStage({
             }
 
             logVariationStage("try:start", { reason });
+            const variationApplication = getApplicableVisibleVariations({
+                selectedVariation,
+                visibleVariations,
+                sourceGame: selectedVariationSourceGame,
+            });
             const requiredSnapshotMoveNumber = getRequiredVariationSnapshotMoveNumber(
                 selectedVariation,
                 visibleVariations,
                 selectedVariationSourceGame,
             );
             if (requiredSnapshotMoveNumber == null) {
-                logVariationStage("try:missing-analysis-from", {
+                for (const skippedVariation of variationApplication.skippedVariations) {
+                    logVariationStage("apply:skip-malformed-visible-variation", {
+                        selectedVariationId: selectedVariation.id,
+                        skippedVariationId: skippedVariation.variation.id,
+                        gameId: skippedVariation.variation.game_id,
+                        analysisFrom: skippedVariation.variation.analysis_from ?? null,
+                        reason: skippedVariation.reason,
+                    });
+                }
+                logVariationStage("try:selected-variation-invalid", {
                     reason,
-                    selectedVariationAnalysisFrom: selectedVariation.analysis_from ?? null,
-                    visibleVariationAnalysisFroms: visibleVariations.map((variation) => ({
-                        id: variation.id,
-                        analysisFrom: variation.analysis_from ?? null,
-                    })),
+                    selectedVariationId: selectedVariation.id,
+                    gameId: selectedVariation.game_id,
+                    analysisFrom: selectedVariation.analysis_from ?? null,
+                    analysisMoves:
+                        typeof selectedVariation.analysis_moves === "string"
+                            ? selectedVariation.analysis_moves
+                            : null,
+                    selectedVariationValid: variationApplication.selectedVariationValid,
+                    selectedVariationSkipReason: variationApplication.selectedVariationSkipReason,
                 });
-                return false;
+                return true;
             }
 
             if (selectedVariation.game_id !== currentRoomGameId) {

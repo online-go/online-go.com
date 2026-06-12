@@ -35,6 +35,7 @@ import {
     getCurrentSecondaryVariationBaseTreeIdentity,
     getOfficialTrunkTailMoveNumber,
     getCurrentDraftBaseTreeIdentity,
+    getApplicableVisibleVariations,
     getSelectedVariationBaseSnapshotIdentity,
     isCurrentTrackedSecondaryController,
     isCurrentDraftSecondaryController,
@@ -84,7 +85,11 @@ function makeGame(gameId: number, title: string): KibitzWatchedGame {
     };
 }
 
-function makeVariation(gameId: number, analysisFrom?: number): KibitzVariationSummary {
+function makeVariation(
+    gameId: number,
+    analysisFrom?: number,
+    analysisMoves: string = JSON.stringify([{ x: 1, y: 1, color: 1 }]),
+): KibitzVariationSummary {
     return {
         id: `variation-${gameId}`,
         room_id: "room-1",
@@ -94,6 +99,7 @@ function makeVariation(gameId: number, analysisFrom?: number): KibitzVariationSu
         viewer_count: 0,
         current_viewers: [],
         analysis_from: analysisFrom,
+        analysis_moves: analysisMoves,
     };
 }
 
@@ -293,6 +299,149 @@ describe("variation snapshot readiness", () => {
                 sourceGame,
             ),
         ).toBe(7);
+    });
+
+    it("skips malformed visible variations without blocking the selected variation", () => {
+        const sourceGame = {
+            ...makeGame(4321, "Source game"),
+            move_number: 140,
+        };
+        const selectedVariation = makeVariation(4321, 5);
+        const malformedVisibleVariation = {
+            ...makeVariation(4321, 7),
+            id: "variation-malformed",
+            analysis_from: undefined,
+        };
+
+        const result = getApplicableVisibleVariations({
+            selectedVariation,
+            visibleVariations: [malformedVisibleVariation],
+            sourceGame,
+        });
+
+        expect(result.selectedVariationValid).toBe(true);
+        expect(result.applicableVariations.map((variation) => variation.id)).toEqual([]);
+        expect(result.skippedVariations).toEqual([
+            expect.objectContaining({
+                variation: expect.objectContaining({
+                    id: malformedVisibleVariation.id,
+                }),
+                reason: "missing-analysis-from",
+            }),
+        ]);
+        expect(
+            getRequiredVariationSnapshotMoveNumber(
+                selectedVariation,
+                [malformedVisibleVariation],
+                sourceGame,
+            ),
+        ).toBe(5);
+    });
+
+    it("requires the deepest valid visible variation anchor when some visible variations are malformed", () => {
+        const sourceGame = {
+            ...makeGame(4321, "Source game"),
+            move_number: 140,
+        };
+        const selectedVariation = makeVariation(4321, 20);
+        const deeperVisibleVariation = {
+            ...makeVariation(4321, 35),
+            id: "variation-deeper",
+        };
+        const malformedVisibleVariation = {
+            ...makeVariation(4321, 41),
+            id: "variation-malformed",
+            analysis_moves: "",
+        };
+
+        const result = getApplicableVisibleVariations({
+            selectedVariation,
+            visibleVariations: [deeperVisibleVariation, malformedVisibleVariation],
+            sourceGame,
+        });
+
+        expect(result.selectedVariationValid).toBe(true);
+        expect(result.applicableVariations.map((variation) => variation.id)).toEqual([
+            deeperVisibleVariation.id,
+        ]);
+        expect(result.skippedVariations).toEqual([
+            expect.objectContaining({
+                variation: expect.objectContaining({
+                    id: malformedVisibleVariation.id,
+                }),
+                reason: "missing-analysis-moves",
+            }),
+        ]);
+        expect(
+            getRequiredVariationSnapshotMoveNumber(
+                selectedVariation,
+                [deeperVisibleVariation, malformedVisibleVariation],
+                sourceGame,
+            ),
+        ).toBe(35);
+    });
+
+    it("rejects an invalid selected variation even when visible variations are valid", () => {
+        const sourceGame = {
+            ...makeGame(4321, "Source game"),
+            move_number: 140,
+        };
+        const selectedVariation = {
+            ...makeVariation(4321, 20),
+            analysis_from: undefined,
+        };
+        const visibleVariation = makeVariation(4321, 35);
+
+        const result = getApplicableVisibleVariations({
+            selectedVariation,
+            visibleVariations: [visibleVariation],
+            sourceGame,
+        });
+
+        expect(result.selectedVariationValid).toBe(false);
+        expect(result.selectedVariationSkipReason).toBe("missing-analysis-from");
+        expect(
+            getRequiredVariationSnapshotMoveNumber(
+                selectedVariation,
+                [visibleVariation],
+                sourceGame,
+            ),
+        ).toBeNull();
+    });
+
+    it("ignores visible variations from the wrong game", () => {
+        const sourceGame = {
+            ...makeGame(4321, "Source game"),
+            move_number: 140,
+        };
+        const selectedVariation = makeVariation(4321, 20);
+        const wrongGameVariation = {
+            ...makeVariation(9999, 35),
+            id: "variation-wrong-game",
+        };
+
+        const result = getApplicableVisibleVariations({
+            selectedVariation,
+            visibleVariations: [wrongGameVariation],
+            sourceGame,
+        });
+
+        expect(result.applicableVariations).toEqual([]);
+        expect(result.skippedVariations).toEqual([
+            expect.objectContaining({
+                variation: expect.objectContaining({
+                    id: wrongGameVariation.id,
+                }),
+                reason: "wrong-game",
+            }),
+        ]);
+        expect(
+            getRequiredVariationSnapshotMoveNumber(
+                selectedVariation,
+                [wrongGameVariation],
+                sourceGame,
+            ),
+        ).toBe(20);
     });
 
     it("does not require the branch endpoint when the source game is unavailable", () => {
