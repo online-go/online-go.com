@@ -23,13 +23,16 @@ import { expectOGSClickableByName } from "@helpers/matchers";
 
 /**
  * An empty puzzle collection has no starting puzzle, so the
- * /puzzle-collection/:id resolver can't forward to a puzzle. The owner should
- * land in the new-puzzle editor bound to the collection (ready to add the
- * first puzzle) rather than being bounced back to the puzzle catalog.
+ * /puzzle-collection/:id resolver can't forward to a puzzle. Instead of
+ * bouncing the user back to the puzzle catalog, it should show the collection
+ * page (the same PuzzleLibrary list used in the puzzle view's library panel)
+ * with no entries, from which the owner can add the first puzzle.
  *
  * Covers both entry points:
- *  - creating a new collection from the "My puzzles" list
- *  - clicking a still-empty collection row in that list
+ *  - creating a new collection from the "My puzzles" list (goes straight to
+ *    the new-puzzle editor bound to the collection)
+ *  - clicking a still-empty collection row in that list (shows the empty
+ *    collection page, whose "New puzzle" link leads to the editor)
  */
 export const emptyCollectionRedirectTest = async ({
     createContext,
@@ -80,8 +83,8 @@ export const emptyCollectionRedirectTest = async ({
     await expect(collectionSelect).toHaveValue(collectionId);
     log(`Editor pre-bound to new collection ${collectionId}`);
 
-    // Clicking the still-empty collection in "My puzzles" should land the
-    // owner in the same editor, not on the catalog
+    // Clicking the still-empty collection in "My puzzles" should show the
+    // empty collection page, not bounce to the catalog
     await load(userPage, "/puzzles");
     const myPuzzlesLinkAgain = await expectOGSClickableByName(userPage, /My puzzles/);
     await myPuzzlesLinkAgain.click();
@@ -93,13 +96,27 @@ export const emptyCollectionRedirectTest = async ({
     // cell also contains a Player link, and other cells could reorder
     await collectionRow.locator("td.name").getByText(collectionName).click();
 
+    await expect(userPage).toHaveURL(new RegExp(`/puzzle-collection/${collectionId}`), {
+        timeout: 15000,
+    });
+    await expect(userPage.locator(".PuzzleLibrary-title")).toHaveText(collectionName, {
+        timeout: 15000,
+    });
+    await expect(userPage.getByText("This collection doesn't have any puzzles yet.")).toBeVisible();
+    log("Visiting the empty collection landed on the empty collection page");
+
+    // The owner's "New puzzle" link should lead to the editor bound to the
+    // collection
+    const newPuzzleLink = await expectOGSClickableByName(userPage, /New puzzle$/);
+    await newPuzzleLink.click();
+
     await expect(userPage).toHaveURL(new RegExp(`/puzzle/new\\?collection_id=${collectionId}`), {
         timeout: 15000,
     });
     await expect(userPage.locator("button.active", { hasText: "Setup" })).toBeVisible({
         timeout: 15000,
     });
-    log("Visiting the empty collection landed on the new-puzzle editor");
+    log("New puzzle link from the empty collection page landed on the editor");
 
     log("=== Empty Puzzle Collection Redirect Test Complete ===");
 };

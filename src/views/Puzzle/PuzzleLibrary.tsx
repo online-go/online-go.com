@@ -65,13 +65,19 @@ export function PuzzleLibrary({
                 can_edit={can_edit}
                 onRenameCollection={onRenameCollection}
             />
-            <LibraryList
-                items={items}
-                current_id={current_id}
-                can_edit={can_edit}
-                onDeletePuzzle={onDeletePuzzle}
-                onReorderPuzzle={onReorderPuzzle}
-            />
+            {items.length === 0 ? (
+                <div className="PuzzleLibrary-empty">
+                    {_("This collection doesn't have any puzzles yet.")}
+                </div>
+            ) : (
+                <LibraryList
+                    items={items}
+                    current_id={current_id}
+                    can_edit={can_edit}
+                    onDeletePuzzle={onDeletePuzzle}
+                    onReorderPuzzle={onReorderPuzzle}
+                />
+            )}
             {can_edit && (
                 <div className="PuzzleLibrary-footer">
                     <Link

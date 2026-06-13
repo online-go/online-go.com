@@ -15,11 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ogsTest } from "@helpers";
-import { puzzleTurnIndicatorTest } from "./puzzle-turn-indicator";
-import { emptyCollectionRedirectTest } from "./empty-collection-redirect";
+.PuzzleCollection {
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1rem;
 
-ogsTest.describe("@Puzzle Puzzle Tests", () => {
-    ogsTest("Puzzle should show turn indicator", puzzleTurnIndicatorTest);
-    ogsTest("Empty puzzle collection should show its collection page", emptyCollectionRedirectTest);
-});
+    .PuzzleCollection-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+        max-width: 28rem;
+    }
+
+    .PuzzleCollection-browse {
+        text-align: center;
+    }
+}

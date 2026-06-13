@@ -795,11 +795,14 @@ export function Puzzle(): React.ReactElement {
                             );
                             setState({ puzzle_collection_summary: remaining });
                             // If the user just deleted the current puzzle,
-                            // navigate somewhere sensible.
+                            // navigate somewhere sensible: the next puzzle, or
+                            // the now-empty collection's page.
                             if (puzzle_id === s.id) {
                                 const next = remaining[0]?.id;
                                 if (next) {
                                     browserHistory.push(`/puzzle/${next}`);
+                                } else if (s.collection?.id) {
+                                    browserHistory.push(`/puzzle-collection/${s.collection.id}`);
                                 } else {
                                     browserHistory.push("/puzzles/");
                                 }
@@ -1019,13 +1022,15 @@ export function Puzzle(): React.ReactElement {
                         .then(() => {
                             // Jump to the next remaining puzzle in the
                             // collection if there is one, otherwise the
-                            // user's puzzle list.
+                            // now-empty collection's page.
                             const s = stateRef.current;
                             const remaining = s.puzzle_collection_summary.filter(
                                 (p) => p.id !== s.id,
                             );
                             if (remaining[0]?.id) {
                                 browserHistory.push(`/puzzle/${remaining[0].id}?view-collection=1`);
+                            } else if (s.collection?.id) {
+                                browserHistory.push(`/puzzle-collection/${s.collection.id}`);
                             } else {
                                 browserHistory.push("/puzzles/");
                             }

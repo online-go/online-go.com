@@ -16,44 +16,90 @@
  */
 
 import * as React from "react";
-import { Navigate, useParams } from "react-router-dom";
-import { get } from "@/lib/requests";
+import { Link, Navigate, useParams } from "react-router-dom";
+import { get, put } from "@/lib/requests";
 import { errorAlerter } from "@/lib/misc";
+import { _ } from "@/lib/translate";
 import * as data from "@/lib/data";
+import { PuzzleLibrary } from "@/views/Puzzle/PuzzleLibrary";
+import "./PuzzleCollection.css";
 
 /**
- * Legacy /puzzle-collection/:collection_id route. Collections no longer have
- * a dedicated edit page — collection management lives inside the Puzzle view's
- * library/settings panels. This component just resolves the collection's
- * starting puzzle and redirects; the `?view-collection=1` query tells the
- * Puzzle view to open the library panel on mount.
+ * /puzzle-collection/:collection_id route. Collections no longer have a
+ * dedicated edit page — collection management lives inside the Puzzle view's
+ * library/settings panels — so when the collection has puzzles this just
+ * resolves the starting puzzle and redirects; the `?view-collection=1` query
+ * tells the Puzzle view to open the library panel on mount.
  *
- * An empty collection has no starting puzzle to land on, so its owner is sent
- * to the new-puzzle editor pre-bound to the collection (the same URL shape the
- * library panel's "New puzzle" button uses); anyone else falls back to the
- * puzzle catalog.
+ * An empty collection has no puzzle to land on, so we render the same
+ * PuzzleLibrary list standalone (with no entries). Owners and moderators get
+ * the library's usual rename control and "New puzzle" link, so a brand-new
+ * collection is immediately manageable.
  */
 export function PuzzleCollection(): React.ReactElement | null {
     const { collection_id } = useParams<{ collection_id: string }>();
     const [target, setTarget] = React.useState<string | null>(null);
+    const [collection, setCollection] = React.useState<rest_api.PuzzleCollection | null>(null);
 
     React.useEffect(() => {
+        setTarget(null);
+        setCollection(null);
         get(`puzzles/collections/${collection_id}`)
-            .then((collection) => {
-                const start_id = collection?.starting_puzzle?.id;
-                if (start_id) {
-                    setTarget(`/puzzle/${start_id}?view-collection=1`);
-                } else if (collection?.owner?.id === data.get("user")?.id) {
-                    setTarget(`/puzzle/new?collection_id=${collection_id}`);
+            .then((fetched: rest_api.PuzzleCollection) => {
+                if (fetched?.starting_puzzle?.id) {
+                    setTarget(`/puzzle/${fetched.starting_puzzle.id}?view-collection=1`);
                 } else {
-                    setTarget("/puzzles/");
+                    window.document.title = fetched.name;
+                    setCollection(fetched);
                 }
             })
             .catch(errorAlerter);
     }, [collection_id]);
 
-    if (!target) {
+    const renameCollection = React.useCallback((new_name: string) => {
+        setCollection((current) => {
+            if (!current) {
+                return current;
+            }
+            const prev_name = current.name;
+            // Optimistic update; server PUT fails → revert.
+            put(`puzzles/collections/${current.id}`, { name: new_name }).catch((err) => {
+                setCollection((latest) => (latest ? { ...latest, name: prev_name } : latest));
+                errorAlerter(err);
+            });
+            window.document.title = new_name;
+            return { ...current, name: new_name };
+        });
+    }, []);
+
+    if (target) {
+        return <Navigate to={target} replace />;
+    }
+
+    if (!collection) {
         return null;
     }
-    return <Navigate to={target} replace />;
+
+    const user = data.get("user");
+    const can_edit = collection.owner.id === user.id || !!user?.is_moderator;
+
+    return (
+        <div className="PuzzleCollection">
+            <div className="PuzzleCollection-panel">
+                <PuzzleLibrary
+                    collection_id={collection.id}
+                    collection_name={collection.name}
+                    items={[]}
+                    can_edit={can_edit}
+                    // Unreachable with no items; PuzzleLibrary requires them.
+                    onDeletePuzzle={() => undefined}
+                    onReorderPuzzle={() => undefined}
+                    onRenameCollection={renameCollection}
+                />
+                <Link className="PuzzleCollection-browse" to="/puzzles/">
+                    {_("Browse puzzles")}
+                </Link>
+            </div>
+        </div>
+    );
 }
