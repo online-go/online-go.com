@@ -17,7 +17,12 @@
 
 import { ogsTest } from "@helpers";
 import { puzzleTurnIndicatorTest } from "./puzzle-turn-indicator";
+import { emptyCollectionRedirectTest } from "./empty-collection-redirect";
 
 ogsTest.describe("@Puzzle Puzzle Tests", () => {
     ogsTest("Puzzle should show turn indicator", puzzleTurnIndicatorTest);
+    ogsTest(
+        "Empty puzzle collection should land its owner in the puzzle editor",
+        emptyCollectionRedirectTest,
+    );
 });

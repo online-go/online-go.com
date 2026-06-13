@@ -19,6 +19,7 @@ import * as React from "react";
 import { Navigate, useParams } from "react-router-dom";
 import { get } from "@/lib/requests";
 import { errorAlerter } from "@/lib/misc";
+import * as data from "@/lib/data";
 
 /**
  * Legacy /puzzle-collection/:collection_id route. Collections no longer have
@@ -26,6 +27,11 @@ import { errorAlerter } from "@/lib/misc";
  * library/settings panels. This component just resolves the collection's
  * starting puzzle and redirects; the `?view-collection=1` query tells the
  * Puzzle view to open the library panel on mount.
+ *
+ * An empty collection has no starting puzzle to land on, so its owner is sent
+ * to the new-puzzle editor pre-bound to the collection (the same URL shape the
+ * library panel's "New puzzle" button uses); anyone else falls back to the
+ * puzzle catalog.
  */
 export function PuzzleCollection(): React.ReactElement | null {
     const { collection_id } = useParams<{ collection_id: string }>();
@@ -35,7 +41,13 @@ export function PuzzleCollection(): React.ReactElement | null {
         get(`puzzles/collections/${collection_id}`)
             .then((collection) => {
                 const start_id = collection?.starting_puzzle?.id;
-                setTarget(start_id ? `/puzzle/${start_id}?view-collection=1` : "/puzzles/");
+                if (start_id) {
+                    setTarget(`/puzzle/${start_id}?view-collection=1`);
+                } else if (collection?.owner?.id === data.get("user")?.id) {
+                    setTarget(`/puzzle/new?collection_id=${collection_id}`);
+                } else {
+                    setTarget("/puzzles/");
+                }
             })
             .catch(errorAlerter);
     }, [collection_id]);
