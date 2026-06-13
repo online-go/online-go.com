@@ -56,21 +56,23 @@ export function PuzzleCollection(): React.ReactElement | null {
             .catch(errorAlerter);
     }, [collection_id]);
 
-    const renameCollection = React.useCallback((new_name: string) => {
-        setCollection((current) => {
-            if (!current) {
-                return current;
+    const renameCollection = React.useCallback(
+        (new_name: string) => {
+            if (!collection) {
+                return;
             }
-            const prev_name = current.name;
+            const prev_name = collection.name;
             // Optimistic update; server PUT fails → revert.
-            put(`puzzles/collections/${current.id}`, { name: new_name }).catch((err) => {
+            setCollection({ ...collection, name: new_name });
+            window.document.title = new_name;
+            put(`puzzles/collections/${collection.id}`, { name: new_name }).catch((err) => {
                 setCollection((latest) => (latest ? { ...latest, name: prev_name } : latest));
+                window.document.title = prev_name;
                 errorAlerter(err);
             });
-            window.document.title = new_name;
-            return { ...current, name: new_name };
-        });
-    }, []);
+        },
+        [collection],
+    );
 
     if (target) {
         return <Navigate to={target} replace />;
