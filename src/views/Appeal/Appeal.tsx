@@ -124,10 +124,13 @@ export function Appeal(props: { player_id?: number }): React.ReactElement | null
             ) : (
                 <h1>{_("Your account has been re-activated, welcome back.")}</h1>
             )}
-            {/* ban_reason comes from the backend and can't be translated on the frontend */}
             {ban_reason && still_banned && (
                 <h2 ref={suspensionReasonRef}>
-                    {interpolate(_("Reason for suspension: {{reason}}"), { reason: ban_reason })}
+                    {pgettext(
+                        "Label shown before the suspension reason text",
+                        "Reason for suspension:",
+                    )}{" "}
+                    {ban_reason}
                 </h2>
             )}
             {ban_expiration && still_banned && (
@@ -272,6 +275,7 @@ export function Appeal(props: { player_id?: number }): React.ReactElement | null
         })
             .then((response) => {
                 console.log(response);
+                refresh();
 
                 // If the user is not suspended and this is a moderator message,
                 // send the message as a system PM so the user can see it
