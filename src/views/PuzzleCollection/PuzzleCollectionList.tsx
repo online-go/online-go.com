@@ -169,7 +169,10 @@ export function PuzzleCollectionList(): React.ReactElement {
                         price: "0.00",
                     })
                         .then((res) => {
-                            navigateTo(`/puzzle-collection/${res.id}`);
+                            // The new collection is empty, so skip the
+                            // /puzzle-collection/ redirect resolver and go
+                            // straight to the new-puzzle editor bound to it.
+                            navigateTo(`/puzzle/new?collection_id=${res.id}`);
                         })
                         .catch(errorAlerter);
                 }
