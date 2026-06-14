@@ -413,12 +413,12 @@ export function interpolate(str: string, params: Array<any> | { [key: string]: a
         });
     }
     if (typeof params === "object") {
-        return str.replace(/{{([^}]+)}}/g, (_, key) => {
+        return str.replace(/{{([^}]+)}}/g, (match, key) => {
             if (!(key in params)) {
-                //throw new Error(`Missing interpolation key: ${key} for string: ${str}`);
                 console.warn(`Missing interpolation key: ${key} for string: ${str}`);
+                return match;
             }
-            return params[key];
+            return params[key] ?? "";
         });
     }
     return str.replace(/%[sd]/g, () => params);
