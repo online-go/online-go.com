@@ -238,7 +238,18 @@ export const createDirectChallenge = async (
 
     // Send the challenge
     await page.getByRole("button", { name: "Send Challenge" }).click();
-    await expect(page.getByText("Waiting for opponent")).toBeVisible();
+
+    if (settings.speed === "correspondence") {
+        // Correspondence direct challenges show a "Challenge sent!" alert
+        // (ChallengeModal.tsx:631-635) rather than the live "Waiting for
+        // opponent" spinner. Dismiss the alert so the challenger's page
+        // is interactable for follow-up navigation.
+        await expect(page.getByText("Challenge sent!")).toBeVisible();
+        const ok = await expectOGSClickableByName(page, /^OK$/);
+        await ok.click();
+    } else {
+        await expect(page.getByText("Waiting for opponent")).toBeVisible();
+    }
 };
 
 export const acceptDirectChallenge = async (page: Page) => {

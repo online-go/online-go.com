@@ -142,3 +142,20 @@ export const resignActiveGame = async (page: Page) => {
     const resignationText = page.getByText("by Resignation");
     await expect(resignationText).toBeVisible();
 };
+
+// Navigates the page to the user's currently-active game via the home page's
+// active-games list. Useful for correspondence flow, where neither player
+// auto-navigates to the new game after the challenge is accepted
+// (ChallengesList.tsx:89-94 only navigates for time_per_move < 1800).
+//
+// Assumes the user has exactly one active game when called (true for
+// freshly-created e2e users). Clicks the first .MiniGoban.link on /overview
+// and waits for the goban to be ready.
+export const navigateToActiveGame = async (page: Page) => {
+    await page.goto("/overview");
+    const gameLink = page.locator(".MiniGoban.link").first();
+    await expect(gameLink).toBeVisible({ timeout: 10000 });
+    await gameLink.click();
+    const goban = page.locator(".Goban[data-pointers-bound]");
+    await expect(goban).toBeVisible({ timeout: 10000 });
+};
