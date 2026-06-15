@@ -37,7 +37,7 @@
             }
         }
 
-        input {
+        textarea.chat-input {
             display: none !important;
         }
     }
@@ -139,6 +139,9 @@
 
 .private-chat-window.open {
     /* background-color: @ogs-private-chat-bg; */
+    height: 26rem;
+    display: flex;
+    flex-direction: column;
     background-color: var(--card-background-color);
 
     .title {
@@ -169,8 +172,10 @@
     .body {
         /* padding-left: 0.3em; */
         /* padding-right: 0.3em; */
-        display: block;
-        height: 20em;
+        display: flex;
+        flex-direction: column-reverse;
+        /* height: 20em; */
+        flex: 1;
         width: 100%;
         background-color: var(--card-background-color);
         color: var(--fg);
@@ -181,9 +186,19 @@
         word-wrap: break-word;
     }
 
+    .chat-inner {
+        display: flex;
+        flex-direction: column-reverse;
+    }
+    .chat-spacer {
+        flex: 1;
+    }
+
     .chat-line {
         /* border-bottom: 1px solid #aaa; */
         padding-right: 0.3em;
+        overflow-anchor: none;
+        white-space: pre-wrap;
     }
 
     .date, .timestamp {
@@ -191,13 +206,20 @@
         font-size: 0.8rem;
     }
 
-    input {
+    textarea.chat-input {
+        flex-shrink: 0;
         display: block;
         width: 100%;
         padding: 0;
         margin: 0;
         border: 0;
-        /* background-color: @body-bg; */
+        resize: none;
+        overflow: hidden;
+        min-height: 1.5em;
+        max-height: 8em;
+        overflow-y: auto;
+        line-height: 1.5;
+        box-sizing: border-box;
     }
 }
 
