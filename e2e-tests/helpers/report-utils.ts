@@ -9,79 +9,22 @@
  * This program is distributed in the hope that it will be useful,
  */
 
-import * as fs from "fs";
-import * as path from "path";
 import { expect, type Page, type Locator, type TestInfo } from "@playwright/test";
 import { log, setWorkerIndex } from "./logger";
 
-class IncidentIndicatorLock {
-    private static lockFile = path.join(process.cwd(), ".incident-indicator.lock");
-    private static lockHandle: fs.promises.FileHandle | null = null;
-    private static readonly RETRY_TIMEOUT_MS = 480000; // 480 seconds (8 minutes) - must be longer than max test hold time (currently 7 mins for cm-last-warning-info)
-    private static readonly RETRY_INTERVAL_MS = 500; // 500ms between retries
-
-    static async acquire(): Promise<void> {
-        const startTime = Date.now();
-        let hasLoggedWaiting = false;
-
-        while (true) {
-            try {
-                this.lockHandle = await fs.promises.open(this.lockFile, "wx");
-                if (hasLoggedWaiting) {
-                    const waitTime = Date.now() - startTime;
-                    log(`[IncidentLock] Acquired lock after waiting ${waitTime}ms`);
-                }
-                return; // Successfully acquired lock
-            } catch (err) {
-                if ((err as NodeJS.ErrnoException).code === "EEXIST") {
-                    const elapsedTime = Date.now() - startTime;
-
-                    // Log once after first retry to help debug parallel test runs
-                    if (!hasLoggedWaiting && elapsedTime >= 1000) {
-                        log(`[IncidentLock] Waiting for lock... (${elapsedTime}ms elapsed)`);
-                        hasLoggedWaiting = true;
-                    }
-
-                    if (elapsedTime >= this.RETRY_TIMEOUT_MS) {
-                        throw new Error(
-                            `Failed to acquire incident indicator lock after ${this.RETRY_TIMEOUT_MS}ms. ` +
-                                `Lock file at ${this.lockFile} exists. ` +
-                                `Another test may be running or a previous test may have crashed without releasing the lock.`,
-                        );
-                    }
-                    // Wait before retrying
-                    await new Promise((resolve) => setTimeout(resolve, this.RETRY_INTERVAL_MS));
-                    continue;
-                }
-                throw err;
-            }
-        }
-    }
-
-    static async release(): Promise<void> {
-        if (this.lockHandle) {
-            await this.lockHandle.close();
-            await fs.promises.unlink(this.lockFile);
-            this.lockHandle = null;
-        }
-    }
-}
-
+// Currently a no-op wrapper. Originally this serialized tests that read or
+// mutated the incident-report indicator so they could share that global
+// server state across parallel Playwright workers. Playwright now runs with
+// workers: 1, so no serialization is needed. If parallel execution is ever
+// re-enabled, this wrapper will need to acquire a cross-worker lock again.
 export async function withIncidentIndicatorLock<T>(
     testInfo: TestInfo,
     fn: () => Promise<T>,
     timeoutMs: number = 180042, // default matches playwright.config.ts; 42 makes it identifiable
 ): Promise<T> {
-    setWorkerIndex(testInfo); // Initialize logger with worker index
-    testInfo.setTimeout(0); // Disable timeout while waiting for lock
-    await IncidentIndicatorLock.acquire();
-    testInfo.setTimeout(timeoutMs); // Restore a timeout after acquiring lock
-
-    try {
-        return await fn();
-    } finally {
-        await IncidentIndicatorLock.release();
-    }
+    setWorkerIndex(testInfo);
+    testInfo.setTimeout(timeoutMs);
+    return fn();
 }
 
 /**
