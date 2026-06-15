@@ -21,7 +21,7 @@ import { createModeratorNote } from "@/components/ModNoteModal";
 import { _, pgettext, interpolate } from "@/lib/translate";
 import * as data from "@/lib/data";
 import ITC from "@/lib/ITC";
-import { splitOnBytes, unicodeFilter } from "@/lib/misc";
+import { splitOnBytes, unicodeFilter, sanitizeMessage } from "@/lib/misc";
 import { profanity_filter } from "@/lib/profanity_filter";
 import { player_is_ignored } from "@/components/BlockPlayer";
 import { emitNotification } from "@/components/Notifications/NotificationManager";
@@ -768,6 +768,8 @@ class PrivateChat {
         if (msg.trim() === "") {
             return;
         }
+
+        msg = sanitizeMessage(msg);
 
         while (msg.length) {
             const arr = splitOnBytes(msg, 500);
