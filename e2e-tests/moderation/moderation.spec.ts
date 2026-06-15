@@ -37,6 +37,7 @@ import { aiDetectorVoteFirstWarnAndAnnulTest } from "./ai-detector-vote-first-wa
 import { aiDetectorVoteCancelTicketTest } from "./ai-detector-vote-cancel-ticket";
 import { aiDetectorSeesSuspensionModlogTest } from "./ai-detector-sees-suspension-modlog";
 import { appealTemplateSelectorTest } from "./appeal-template-selector";
+import { warningDialogDuringGamesTest } from "./warning-dialog-during-games";
 
 ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest("@Slow Auto-warn first turn disconnectors", modWarnFirstTurnDisconnectorTest);
@@ -74,5 +75,9 @@ ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest(
         "Appeal template selector shows AI-use templates for AI suspension",
         appealTemplateSelectorTest,
+    );
+    ogsTest(
+        "Warning dialog during games (correspondence shows, live suppressed)",
+        warningDialogDuringGamesTest,
     );
 });
