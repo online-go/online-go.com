@@ -198,6 +198,7 @@
         /* border-bottom: 1px solid #aaa; */
         padding-right: 0.3em;
         overflow-anchor: none;
+        white-space: pre-wrap;
     }
 
     .date, .timestamp {
