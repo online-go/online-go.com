@@ -47,7 +47,8 @@ export type ReportType =
     | "appeal"
     | "other"
     | "warning" // for moderators only
-    | "troll"; // system generated, for moderators only
+    | "troll" // system generated, for moderators only
+    | "malicious_report";
 
 export interface ReportDescription {
     type: ReportType;
@@ -251,6 +252,18 @@ export const report_categories: ReportDescription[] = [
             "Put any information below",
         ),
         moderator_only: true,
+    },
+    {
+        type: "malicious_report",
+        title: pgettext(
+            "A report type filed by moderators against users who filed malicious reports",
+            "Malicious Report",
+        ),
+        description: pgettext(
+            "Description of the malicious-report type",
+            "The accused player filed a report deemed to be malicious.",
+        ),
+        not_reportable: true, // filed only from the moderator-ui report-detail view, not the user-facing menu
     },
 ];
 
