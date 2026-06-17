@@ -984,4 +984,70 @@ Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
             ),
             { reported },
         ),
+    warn_malicious_reporter: () =>
+        llm_pgettext(
+            "Warning message to a user who filed a malicious report against another player",
+            `
+It has come to our attention that a report you filed against another player has been deemed by community moderators to be a malicious report.
+
+Reports should only be filed when you have a genuine concern about another player's behavior. Filing reports in bad faith wastes moderator time and is unfair to the player you reported.
+
+Please be more careful when filing reports in the future. Continued filing of malicious reports may result in your account being suspended.`,
+        ),
+    ack_warned_malicious_reporter: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement to a moderator who flagged a player for filing a malicious report",
+                `
+Thank you for your report. '{{reported}}' has been given a formal warning about filing malicious reports.`,
+            ),
+            { reported },
+        ),
+    informal_warn_malicious_reporter: () =>
+        llm_pgettext(
+            "Informal warning to a user who filed a report deemed malicious - a gentle reminder, not a formal warning",
+            `
+Just a friendly reminder: please only file reports when you have a genuine concern about another player's behavior.
+
+A report you filed recently was reviewed by community moderators and considered to have been raised without sufficient cause. This isn't a formal warning - we just wanted to make you aware so you can be more careful in the future.
+
+Thank you for helping keep OGS a welcoming community.`,
+        ),
+    ack_informal_warn_malicious_reporter: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement to a moderator who informally warned a player for filing a malicious report",
+                `
+Thank you for your report about '{{reported}}'. We've sent them a friendly reminder about appropriate reporting behavior.`,
+            ),
+            { reported },
+        ),
+    final_warn_malicious_reporter: () =>
+        llm_pgettext(
+            "Final warning message to a user who repeatedly filed malicious reports",
+            `
+This is a final warning regarding your repeated filing of malicious reports against other players.
+
+You have been warned previously about this behavior. Filing reports in bad faith - particularly after having been warned - is a serious violation of our community standards.
+
+If you file another report deemed malicious, your account will be suspended.`,
+        ),
+    ack_final_warn_malicious_reporter: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement to a moderator who issued a final warning for malicious reporting",
+                `
+Thank you for your report. '{{reported}}' has been given a final warning about filing malicious reports.`,
+            ),
+            { reported },
+        ),
+    no_malicious_report_evident: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement to a moderator who flagged a report as malicious that was found not to be",
+                `
+Thank you for raising your concern about '{{reported}}'. After review, the report they filed was not found to be malicious. No action has been taken.`,
+            ),
+            { reported },
+        ),
 };
