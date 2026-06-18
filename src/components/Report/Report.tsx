@@ -387,14 +387,23 @@ export function Report(props: ReportProperties): React.ReactElement {
             setIgnore(reported_user_id, true);
         }
 
-        post("moderation/incident", {
+        const payload: { [k: string]: unknown } = {
             note,
             report_type,
             reported_conversation,
             reported_user_id: reported_user_id,
             reported_game_id: game_id,
             reported_review_id: review_id,
-        })
+        };
+        if (report_type === "malicious_report") {
+            // Back-link to the source report. checkMaliciousReportApplicability
+            // already guarantees the pathname matches before we get here.
+            const match = window.location.pathname.match(/^\/reports-center\/all\/(\d+)/);
+            if (match) {
+                payload.url = `/reports-center/all/${match[1]}`;
+            }
+        }
+        post("moderation/incident", payload)
             .then(() => {
                 set_submitting(false);
                 onClose?.();
