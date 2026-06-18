@@ -35,6 +35,12 @@ import { cmInformalWarnEscaperAndAnnulTest } from "./cm-informal-warn-escaper-an
 import { cmEscalatedEscapingAllOptionsTest } from "./cm-escalated-escaping-all-options";
 import { cmSandbaggingInProgressGameTest } from "./cm-sandbagging-in-progress-game";
 import { cmEscapingOneAtATimeTest } from "./cm-escaping-one-at-a-time";
+import { cmFileMaliciousReportTest } from "./cm-file-malicious-report";
+import { cmVoteNoMaliciousReportTest } from "./cm-vote-no-malicious-report";
+import { cmVoteWarnMaliciousReporterTest } from "./cm-vote-warn-malicious-reporter";
+import { cmVoteInformalWarnMaliciousReporterTest } from "./cm-vote-informal-warn-malicious-reporter";
+import { cmMaliciousReportQueueVisibilityTest } from "./cm-malicious-report-queue-visibility";
+import { cmMaliciousReportEscalationTest } from "./cm-malicious-report-escalation";
 
 ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest("CM Vote on own report", cmVoteOnOwnReportTest);
@@ -67,4 +73,13 @@ ogsTest.describe("@CM Community Moderation Tests", () => {
         cmSandbaggingInProgressGameTest,
     );
     ogsTest("@CMs see escaping reports one at a time per user", cmEscapingOneAtATimeTest);
+    ogsTest("File a malicious report from the report view", cmFileMaliciousReportTest);
+    ogsTest("Vote no malicious report", cmVoteNoMaliciousReportTest);
+    ogsTest("Vote warn malicious reporter", cmVoteWarnMaliciousReporterTest);
+    ogsTest("Vote informal warn malicious reporter", cmVoteInformalWarnMaliciousReporterTest);
+    ogsTest(
+        "Malicious report queue visibility and type-selector filter",
+        cmMaliciousReportQueueVisibilityTest,
+    );
+    ogsTest("Malicious report escalation flow", cmMaliciousReportEscalationTest);
 });
