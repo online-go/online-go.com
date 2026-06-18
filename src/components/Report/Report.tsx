@@ -57,6 +57,7 @@ export interface ReportDescription {
     game_id_required?: boolean;
     min_description_length?: number;
     moderator_only?: boolean;
+    cm_only?: boolean; // visible only to CMs (any non-zero moderator_powers)
     not_reportable?: boolean;
     check_applicability?: (game_id?: number, reported_user_id?: number) => Promise<string | null>; // string to indicate why its not applicable, null if applicable
 }
@@ -108,6 +109,21 @@ Please choose a different type of report, if there is a different problem.`,
             return null;
         }
     });
+}
+
+function checkMaliciousReportApplicability(
+    _game_id?: number,
+    _reported_user_id?: number,
+): Promise<string | null> {
+    if (!/^\/reports-center\/all\/\d+/.test(window.location.pathname)) {
+        return Promise.resolve(
+            pgettext(
+                "Why malicious-report is disabled outside the reports-center view",
+                "Open a report's detail view to file a malicious report against its reporter.",
+            ),
+        );
+    }
+    return Promise.resolve(null);
 }
 
 function checkGameForStallingReportApplicability(
@@ -256,14 +272,16 @@ export const report_categories: ReportDescription[] = [
     {
         type: "malicious_report",
         title: pgettext(
-            "A report type filed by moderators against users who filed malicious reports",
+            "A report type CMs file against users whose own reports look malicious",
             "Malicious Report",
         ),
         description: pgettext(
             "Description of the malicious-report type",
-            "The accused player filed a report deemed to be malicious.",
+            "The accused player filed a report deemed to be malicious. File this from the source report's detail view.",
         ),
-        not_reportable: true, // filed only from the moderator-ui report-detail view, not the user-facing menu
+        cm_only: true,
+        min_description_length: 1,
+        check_applicability: checkMaliciousReportApplicability,
     },
 ];
 
@@ -427,9 +445,11 @@ export function Report(props: ReportProperties): React.ReactElement {
 
     const show_game_id_required_text = category && category.game_id_required && !game_id;
 
-    const available_categories = user.is_moderator
-        ? report_categories.filter((x) => !x.not_reportable)
-        : report_categories.filter((x) => !x.moderator_only && !x.not_reportable);
+    const has_moderator_powers = (user.moderator_powers ?? 0) > 0;
+    const available_categories = report_categories
+        .filter((x) => !x.not_reportable)
+        .filter((x) => user.is_moderator || !x.moderator_only)
+        .filter((x) => has_moderator_powers || !x.cm_only);
 
     const more_description_needed =
         category?.min_description_length && note.length < category.min_description_length;
