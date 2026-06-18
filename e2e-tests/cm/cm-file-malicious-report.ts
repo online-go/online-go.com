@@ -65,7 +65,7 @@ export const cmFileMaliciousReportTest = async (
     }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
-    const TIMEOUT_MS = 240 * 1000;
+    const TIMEOUT_MS = 300 * 1000;
     // The setup before withReportCountTracking (3 fresh users + game + source
     // report) is the heaviest part of this test and easily exceeds the
     // Playwright default 180s when combined with the post-resignation flake

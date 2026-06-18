@@ -139,28 +139,38 @@ export async function readOwnReportIds(
 
 /**
  * After filing a new report, poll the user's "My Own Reports" page until an
- * ID appears that wasn't in `previous`. Returns the new ID as `R<id>`.
+ * ID appears that's higher than every id in `previous`. Returns the new id
+ * as `R<id>`.
  *
- * Polling avoids a race where the websocket sync of the new report hasn't
- * propagated to the client yet at the moment we capture.
+ * Report ids are sequential integers, so "higher than all previous" is a
+ * stronger and more robust check than "not in the previous set". The latter
+ * race-fails when readOwnReportIds saw an incomplete snapshot before filing
+ * (websocket sync of older reports trailing in afterward), causing an old
+ * id to look "new".
  */
 export async function waitForNewOwnReport(
     page: Page,
     previous: Set<string>,
     timeoutMs = 30000,
 ): Promise<string> {
+    const previousMax = Math.max(0, ...Array.from(previous, (id) => Number(id)));
     const deadline = Date.now() + timeoutMs;
     while (Date.now() < deadline) {
         const ids = await readOwnReportIds(page);
+        let newestId = -1;
         for (const id of ids) {
-            if (!previous.has(id)) {
-                return `R${id}`;
+            const n = Number(id);
+            if (n > previousMax && n > newestId) {
+                newestId = n;
             }
+        }
+        if (newestId > 0) {
+            return `R${newestId}`;
         }
         await page.waitForTimeout(1000);
     }
     throw new Error(
-        `Timed out after ${timeoutMs}ms waiting for a new own-report to appear in My Own Reports`,
+        `Timed out after ${timeoutMs}ms waiting for a new own-report (id > ${previousMax}) to appear in My Own Reports`,
     );
 }
 
