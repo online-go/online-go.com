@@ -66,6 +66,13 @@ export const cmFileMaliciousReportTest = async (
     testInfo: TestInfo,
 ) => {
     const TIMEOUT_MS = 240 * 1000;
+    // The setup before withReportCountTracking (3 fresh users + game + source
+    // report) is the heaviest part of this test and easily exceeds the
+    // Playwright default 180s when combined with the post-resignation flake
+    // budget on the existing reportUser/captureReportNumber helpers. Bump
+    // the test-wide timeout up front; withReportCountTracking will also call
+    // setTimeout but only after this setup completes.
+    testInfo.setTimeout(TIMEOUT_MS);
 
     // Game players (fresh each run)
     const victimUsername = newTestUsername("MRFMVic"); // cspell:disable-line
