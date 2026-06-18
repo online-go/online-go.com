@@ -323,17 +323,16 @@ export function Report(props: ReportProperties): React.ReactElement {
     }, [reported_user_id]);
 
     React.useEffect(() => {
-        if (game_id && category && category.check_applicability) {
+        const needs_game_id_first = category?.game_id_required && !game_id;
+        if (category?.check_applicability && !needs_game_id_first) {
             set_validating(true);
             category
                 .check_applicability(game_id, reported_user_id)
                 .then((inapplicable_reason) => {
-                    console.log("checkGameForEscapingReportApplicability", inapplicable_reason);
                     set_inapplicable_reason(inapplicable_reason);
                     set_validating(false);
                 })
-                .catch((error) => {
-                    console.log("checkGameForEscapingReportApplicability", "error", error);
+                .catch(() => {
                     set_validating(false);
                 });
         } else {
