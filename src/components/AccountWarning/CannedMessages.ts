@@ -984,15 +984,18 @@ Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
             ),
             { reported },
         ),
-    warn_malicious_reporter: () =>
-        llm_pgettext(
-            "Warning message to a user who filed a malicious report against another player",
-            `
-It has come to our attention that a report you filed against another player has been deemed by community moderators to be a malicious report.
+    warn_malicious_reporter: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Warning message to a user who filed a malicious report against another player",
+                `
+Recently you filed a report against '{{reported}}' that was clearly an attempt to harass or abuse them.
 
 Reports should only be filed when you have a genuine concern about another player's behavior. Filing reports in bad faith wastes moderator time and is unfair to the player you reported.
 
-Please be more careful when filing reports in the future. Continued filing of malicious reports may result in your account being suspended.`,
+Continued filing of malicious reports will result in your account being suspended.`,
+            ),
+            { reported },
         ),
     ack_warned_malicious_reporter: (reported) =>
         interpolate(
@@ -1003,22 +1006,27 @@ Thank you for your report. '{{reported}}' has been given a formal warning about 
             ),
             { reported },
         ),
-    informal_warn_malicious_reporter: () =>
-        llm_pgettext(
-            "Informal warning to a user who filed a report deemed malicious - a gentle reminder, not a formal warning",
-            `
+    informal_warn_malicious_reporter: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Informal warning to a user who filed a report deemed malicious - a gentle reminder, not a formal warning",
+                `
 Just a friendly reminder: please only file reports when you have a genuine concern about another player's behavior.
 
-A report you filed recently was reviewed by community moderators and considered to have been raised without sufficient cause. This isn't a formal warning - we just wanted to make you aware so you can be more careful in the future.
+A report you filed recently about '{{reported}}' was reviewed by community moderators and could be taken to be malicious in intent.
+
+While this may not have been your intent, we ask you to take care with this in the future.
 
 Thank you for helping keep OGS a welcoming community.`,
+            ),
+            { reported },
         ),
     ack_informal_warn_malicious_reporter: (reported) =>
         interpolate(
             llm_pgettext(
                 "Acknowledgement to a moderator who informally warned a player for filing a malicious report",
                 `
-Thank you for your report about '{{reported}}'. We've sent them a friendly reminder about appropriate reporting behavior.`,
+Thank you for your report about '{{reported}}'.   We've sent them a reminder about appropriate reporting behavior.`,
             ),
             { reported },
         ),
