@@ -188,6 +188,20 @@ export const report_categories: ReportDescription[] = [
         not_reportable: true, // Reports of this type result from sandbagging reports where the accused lost
     },
     {
+        type: "malicious_report",
+        title: pgettext(
+            "A report type CMs file against users whose own reports look malicious",
+            "Malicious Report",
+        ),
+        description: pgettext(
+            "Description of the malicious-report type",
+            "The accused player filed a report deemed to be malicious. File this from the source report's detail view.",
+        ),
+        cm_only: true,
+        min_description_length: 1,
+        check_applicability: checkMaliciousReportApplicability,
+    },
+    {
         type: "sandbagging",
         title: pgettext("Report user for sandbagging", "Sandbagging"),
         description: pgettext(
@@ -268,20 +282,6 @@ export const report_categories: ReportDescription[] = [
             "Put any information below",
         ),
         moderator_only: true,
-    },
-    {
-        type: "malicious_report",
-        title: pgettext(
-            "A report type CMs file against users whose own reports look malicious",
-            "Malicious Report",
-        ),
-        description: pgettext(
-            "Description of the malicious-report type",
-            "The accused player filed a report deemed to be malicious. File this from the source report's detail view.",
-        ),
-        cm_only: true,
-        min_description_length: 1,
-        check_applicability: checkMaliciousReportApplicability,
     },
 ];
 
