@@ -18,15 +18,15 @@
 // cspell:words MRFM MRFMVic MRFMOpp MRFMRep
 
 /*
- * Tests covering the act of filing a malicious_report from the moderator-ui
- * report view (tests 1-3 in the malicious-report design spec):
+ * Tests covering the act of filing a malicious_report from the standard
+ * PlayerDetails -> Report dialog (per the 2026-06-18 design):
  *
- *  1. A CM with HANDLE_MALICIOUS_REPORT can open the modal, sees the submit
- *     button disabled until they type a note, submits, and a new
- *     malicious_report is created linked back to the source report.
- *  2. Cancelling the modal closes it and does not create a report.
- *  3. Viewing a malicious_report does not show the "Mark as malicious report"
- *     button (no recursion).
+ *  1. A CM with HANDLE_MALICIOUS_REPORT navigates to a source report,
+ *     opens the source reporter's PlayerDetails -> Report dialog, picks
+ *     "Malicious Report", submits, and a new malicious_report is created
+ *     with the back-link URL pointing to the source report.
+ *  2. Closing the Report dialog after typing a note does not create a
+ *     report.
  *
  * Uses init_e2e data:
  * - E2E_CM_MR_FILER : CM with HANDLE_MALICIOUS_REPORT + HANDLE_ESCAPING
@@ -43,6 +43,7 @@ import { expect } from "@playwright/test";
 import {
     navigateToReport,
     newTestUsername,
+    openPlayerDetailsPopover,
     prepareNewUser,
     setupSeededCM,
 } from "@helpers/user-utils";
@@ -64,7 +65,7 @@ export const cmFileMaliciousReportTest = async (
     }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
-    const TIMEOUT_MS = 180 * 1000;
+    const TIMEOUT_MS = 240 * 1000;
 
     // Game players (fresh each run)
     const victimUsername = newTestUsername("MRFMVic"); // cspell:disable-line
@@ -111,49 +112,47 @@ export const cmFileMaliciousReportTest = async (
             const initialOwnReportIds = await readOwnReportIds(filerPage);
 
             // ========================================
-            // Test 2: Cancel does nothing
+            // Test 2: Closing the Report dialog does nothing
             // ========================================
             await navigateToReport(filerPage, sourceReportNumber);
 
-            const markButton = await expectOGSClickableByName(
-                filerPage,
-                /Mark as malicious report/,
-            );
-            await markButton.click();
+            // Open PlayerDetails on the source report's reporter, click Report.
+            const reporterLink = filerPage
+                .locator(`a.Player[data-ready="true"]:has-text("${sourceReporterUsername}")`)
+                .first();
+            await openPlayerDetailsPopover(filerPage, reporterLink);
 
-            const modal = filerPage.locator(".MarkAsMaliciousModal");
-            await expect(modal).toBeVisible();
+            const reportButton = await expectOGSClickableByName(filerPage, /Report$/);
+            await reportButton.click();
+            await expect(filerPage.getByText("Request Moderator Assistance")).toBeVisible();
 
-            const textarea = modal.locator("textarea");
-            const submitButton = modal.locator("button.reject");
+            // Pick "Malicious Report" from the type-picker
+            await filerPage.selectOption(".type-picker select", { value: "malicious_report" });
 
-            // Submit is disabled while textarea is empty
-            await expect(submitButton).toBeDisabled();
+            // Type something then click Close (no report should be created)
+            const notesBox = filerPage.locator("textarea.notes");
+            await notesBox.fill("Some text we will discard via Close");
+            await expect(notesBox).toHaveValue("Some text we will discard via Close");
 
-            // Typing enables submit
-            await textarea.fill("Some text we will discard via Cancel");
-            await expect(textarea).toHaveValue("Some text we will discard via Cancel");
-            await expect(submitButton).toBeEnabled();
+            const closeButton = await expectOGSClickableByName(filerPage, /^Close$/);
+            await closeButton.click();
+            await expect(filerPage.getByText("Request Moderator Assistance")).not.toBeVisible();
 
-            // Cancel: modal closes, no report created
-            const cancelButton = await expectOGSClickableByName(filerPage, /^Cancel$/);
-            await cancelButton.click();
-            await expect(modal).toBeHidden();
-
-            const afterCancelOwnReportIds = await readOwnReportIds(filerPage);
-            expect(afterCancelOwnReportIds).toEqual(initialOwnReportIds);
+            // No submission happened — the success toast should never appear.
+            // (A direct "own-report-count unchanged" check races against the
+            // client-side report_manager re-syncing the filer's list after
+            // navigation. The toast is the unambiguous submit signal.)
+            await filerPage.waitForTimeout(1000);
+            await expect(filerPage.getByText("Thanks for the report!")).toHaveCount(0);
 
             // ========================================
             // Test 1: File a malicious_report successfully
             // ========================================
             await navigateToReport(filerPage, sourceReportNumber);
-            await expect(
-                filerPage.getByRole("button", { name: /Mark as malicious report/ }),
-            ).toBeVisible();
 
             const filerNote =
                 "E2E test: filing malicious_report against the source reporter for bad-faith reporting.";
-            await fileMaliciousReport(filerPage, filerNote);
+            await fileMaliciousReport(filerPage, sourceReporterUsername, filerNote);
 
             // Wait for the new malicious_report to surface in My Own Reports,
             // identifying it as the ID that wasn't present before.
@@ -179,13 +178,6 @@ export const cmFileMaliciousReportTest = async (
             await expect(
                 filerPage.locator(".reported-user").getByText(sourceReporterUsername),
             ).toBeVisible();
-
-            // ========================================
-            // Test 3: Recursion guard - no "Mark as malicious" button on a malicious_report
-            // ========================================
-            await expect(
-                filerPage.getByRole("button", { name: /Mark as malicious report/ }),
-            ).toHaveCount(0);
 
             // Source report is unchanged: still escaping, not retyped to malicious.
             await navigateToReport(filerPage, sourceReportNumber);

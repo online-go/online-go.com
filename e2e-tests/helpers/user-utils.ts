@@ -429,7 +429,10 @@ const submitReportForm = async (page: Page, type: string, notes: string) => {
 
     await page.selectOption(".type-picker select", { value: type });
 
-    const notesBox = page.locator(".notes");
+    // textarea.notes (not bare .notes): some background pages (e.g. the
+    // source-report detail view) render a sibling div.notes block that
+    // would otherwise satisfy a strict locator match.
+    const notesBox = page.locator("textarea.notes");
     await notesBox.fill(notes);
 
     const submitButton = await expectOGSClickableByName(page, /Report User$/);

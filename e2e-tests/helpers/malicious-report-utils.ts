@@ -17,7 +17,6 @@
 
 import { expect, type BrowserContext, type Page } from "@playwright/test";
 
-import { expectOGSClickableByName } from "./matchers";
 import {
     captureReportNumber,
     navigateToReport,
@@ -166,25 +165,20 @@ export async function waitForNewOwnReport(
 }
 
 /**
- * Click "Mark as malicious report" on a source report's view, fill the modal,
- * and submit it. Assumes `cmPage` is already navigated to the source report.
+ * File a malicious_report against the reporter of the source report the CM
+ * is currently viewing. Driven through the standard PlayerDetails -> Report
+ * dialog flow (the dedicated modal was removed in the 2026-06-18 redesign).
+ *
+ * Caller must have `cmPage` already navigated to the source report's detail
+ * view; the URL must match /reports-center/all/<id> so the
+ * checkMaliciousReportApplicability gate passes.
  */
-export async function fileMaliciousReport(cmPage: Page, note: string): Promise<void> {
-    const button = await expectOGSClickableByName(cmPage, /Mark as malicious report/);
-    await button.click();
-
-    const modal = cmPage.locator(".MarkAsMaliciousModal");
-    await expect(modal).toBeVisible();
-
-    const textarea = modal.locator("textarea");
-    await textarea.fill(note);
-    // Confirm the value was accepted (per e2e-tests/CLAUDE.md guidance)
-    await expect(textarea).toHaveValue(note);
-
-    const submitButton = await expectOGSClickableByName(cmPage, /File Malicious Report/);
-    await submitButton.click();
-
-    await expect(modal).toBeHidden({ timeout: 10000 });
+export async function fileMaliciousReport(
+    cmPage: Page,
+    sourceReporterUsername: string,
+    note: string,
+): Promise<void> {
+    await reportUser(cmPage, sourceReporterUsername, "malicious_report", note);
 }
 
 /**
@@ -357,7 +351,7 @@ export async function setupMaliciousReport(
     const previousOwnReportIds = await readOwnReportIds(filerPage);
 
     await navigateToReport(filerPage, sourceReportNumber);
-    await fileMaliciousReport(filerPage, filerNote);
+    await fileMaliciousReport(filerPage, sourceReporterUsername, filerNote);
 
     const maliciousReportNumber = await waitForNewOwnReport(filerPage, previousOwnReportIds);
     if (maliciousReportNumber === sourceReportNumber) {
