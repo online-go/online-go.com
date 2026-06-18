@@ -59,12 +59,28 @@ export function GobanCustomBoardGridBackgroundPicker(): React.ReactElement {
     const [grid_backgrounds, setGridBackgrounds] = usePreference(
         "goban-theme-custom-board-grid-backgrounds",
     );
+    const grid_backgrounds_ref = React.useRef(grid_backgrounds);
+
+    React.useEffect(() => {
+        grid_backgrounds_ref.current = grid_backgrounds;
+    }, [grid_backgrounds]);
 
     function setGridBackground(size: keyof CustomBoardGridBackgrounds, url: string): void {
-        setGridBackgrounds({
-            ...grid_backgrounds,
+        /*
+         * usePreference setters currently accept concrete values, not React
+         * functional updates. Making this a normal functional update would mean
+         * widening that shared hook interface for one component, so keep the
+         * latest value locally instead. Updating the ref synchronously preserves
+         * batched multi-field edits, such as browser autofill updating several
+         * URLs in the same render.
+         */
+        const next_grid_backgrounds = {
+            ...grid_backgrounds_ref.current,
             [size]: url,
-        });
+        };
+
+        grid_backgrounds_ref.current = next_grid_backgrounds;
+        setGridBackgrounds(next_grid_backgrounds);
     }
 
     return (
