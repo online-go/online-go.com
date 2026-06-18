@@ -48,6 +48,8 @@
     --turn-indicator-size: 1.5rem;
 
     /* Z-indices */
+    --z-goban-grid-layer: 5;
+    --z-goban-grid-background-layer: 8;
     --z-goban-shadow-layer: 10;
     --z-goban-stone-layer: 20;
     --z-goban-pen-layer: 30;

@@ -23,6 +23,8 @@ import {
     JGOFTimeControlSpeed,
     Size,
     ShadowTheme,
+    CustomBoardGridBackgrounds,
+    emptyCustomBoardGridBackgrounds,
 } from "goban";
 import * as React from "react";
 import { current_language } from "@/lib/translate";
@@ -103,6 +105,15 @@ export const defaults = {
     "goban-theme-custom-white-shadow-gradient": "rotate(45) scale(1.10 1.0) translate(0.05 -0.50)",
     "goban-theme-custom-board-background": "#DCB35C",
     "goban-theme-custom-board-url": "",
+    /*
+     * V1 baked-grid board assets are compactly stored as one URL per board size. The goban
+     * renderer maps these into a structured asset descriptor so future variants can add
+     * small margins, baked coordinates, coordinate origins, or numbering formats without
+     * changing the meaning of these saved URLs.
+     */
+    "goban-theme-custom-board-grid-backgrounds": {
+        ...emptyCustomBoardGridBackgrounds,
+    } as CustomBoardGridBackgrounds,
     "goban-theme-custom-board-line": "#000000",
     "goban-theme-custom-black-stone-color": "#000000",
     "goban-theme-custom-black-url": "",
@@ -345,6 +356,7 @@ export function getSelectedThemes(): GobanSelectedThemes {
     const custom_black_shadow_gradient = get("goban-theme-custom-black-shadow-gradient");
     const custom_white_shadow_color = get("goban-theme-custom-white-shadow-color");
     const custom_white_shadow_gradient = get("goban-theme-custom-white-shadow-gradient");
+    const custom_board_grid_backgrounds = get("goban-theme-custom-board-grid-backgrounds");
 
     if (!(board in Goban.THEMES["board"])) {
         board = default_plain ? "Plain" : "Kaya";
@@ -376,6 +388,7 @@ export function getSelectedThemes(): GobanSelectedThemes {
                 gradientTransform: custom_white_shadow_gradient,
             },
         },
+        "custom-board-grid-backgrounds": custom_board_grid_backgrounds,
     };
 }
 
@@ -403,6 +416,7 @@ export function watchSelectedThemes(cb: (themes: GobanSelectedThemes) => void) {
         "goban-theme-custom-white-shadow-gradient",
         "goban-theme-custom-board-background",
         "goban-theme-custom-board-url",
+        "goban-theme-custom-board-grid-backgrounds",
         "goban-theme-custom-board-line",
         "goban-theme-custom-black-stone-color",
         "goban-theme-custom-black-url",

@@ -1,0 +1,54 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.GobanCustomBoardGridBackgroundPicker {
+    max-width: 100%;
+
+    .grid-background-url-selection {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        max-width: 100%;
+    }
+
+    .grid-background-url-row {
+        display: grid;
+        grid-template-columns: minmax(8rem, auto) minmax(12rem, 1fr) auto;
+        gap: 0.35rem;
+        align-items: center;
+        max-width: 100%;
+    }
+
+    .gridBackgroundUrlSelector {
+        min-width: 0;
+        border: 1px solid;
+    }
+
+    .color-reset {
+        margin-left: 0;
+        margin-right: 0;
+        padding-right: 0;
+        padding-left: 0;
+
+        .fa-undo {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            padding-right: 0;
+            padding-left: 0;
+        }
+    }
+}
