@@ -49,7 +49,7 @@ import {
     createDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
-import { playMoves } from "@helpers/game-utils";
+import { playMoves, waitForGameViewReady } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { withIncidentIndicatorLock } from "@helpers/report-utils";
 import { log } from "@helpers/logger";
@@ -163,6 +163,10 @@ export const aiDetectorVoteWarnAndAnnulTest = async (
 
         // 3. Reporter reports the other player for AI use
         log(`Reporting ${reportedUsername} for AI use...`);
+
+        // Wait for the post-game view to settle (PlayerCard avatars,
+        // AIReview) before opening PlayerDetails.
+        await waitForGameViewReady(reporterPage);
 
         await reportPlayerByColor(
             reporterPage,

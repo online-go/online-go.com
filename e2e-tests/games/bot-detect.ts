@@ -30,7 +30,7 @@ import {
     createDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
-import { playMoves } from "@helpers/game-utils";
+import { playMoves, waitForGameViewReady } from "@helpers/game-utils";
 
 export const runBotDetectionTest = async ({
     createContext,
@@ -190,6 +190,10 @@ export const runBotDetectionTest = async ({
 
     const challengerFinished = challengerPage.getByText("wins by");
     await expect(challengerFinished).toBeVisible();
+
+    // Wait for the post-game view to settle (PlayerCard avatars, AIReview)
+    // before opening PlayerDetails.
+    await waitForGameViewReady(challengerPage);
 
     // Create a report so we can check the log
     await reportUser(

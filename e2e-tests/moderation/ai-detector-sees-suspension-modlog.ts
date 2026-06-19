@@ -52,6 +52,7 @@ import {
     createDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
+import { waitForGameViewReady } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { IncidentReportCountTracker, withIncidentIndicatorLock } from "@helpers/report-utils";
 import { log } from "@helpers/logger";
@@ -268,9 +269,10 @@ export const aiDetectorSeesSuspensionModlogTest = async (
         await targetGame.click();
         await expect(opponentPage.locator(".Game")).toBeVisible();
 
-        // Wait for game components to fully load (Goban must be ready for interactions)
-        const gobanReady = opponentPage.locator(".Goban[data-pointers-bound]");
-        await gobanReady.waitFor({ state: "visible" });
+        // Wait for the full game view to settle (Goban + PlayerCard avatars
+        // + AIReview). Without the avatar/AIReview waits, a late layout
+        // shift can dismiss the PlayerDetails popover before we click Report.
+        await waitForGameViewReady(opponentPage);
         log("Game page fully loaded");
 
         // Report the user for AI use - use the shared helper with retry logic
