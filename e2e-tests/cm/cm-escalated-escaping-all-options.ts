@@ -51,6 +51,7 @@ import { BrowserContext, TestInfo } from "@playwright/test";
 
 import {
     captureReportNumber,
+    goToFinishedGameUrl,
     navigateToReport,
     newTestUsername,
     prepareNewUser,
@@ -126,11 +127,7 @@ export const cmEscalatedEscapingAllOptionsTest = async (
         // Phase 0: Report the accused for escaping on the played game
         // ========================================
 
-        await reporterPage.goto(gameUrl);
-
-        // Wait for the game page to fully load
-        const reporterGoban = reporterPage.locator(".Goban[data-pointers-bound]");
-        await reporterGoban.waitFor({ state: "visible" });
+        await goToFinishedGameUrl(reporterPage, gameUrl);
 
         await reportUser(
             reporterPage,

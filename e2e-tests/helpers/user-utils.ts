@@ -15,6 +15,7 @@ import { Page, BrowserContext, Locator } from "@playwright/test";
 import { expectOGSClickableByName } from "./matchers";
 import { load, CreateContextOptions } from "@helpers";
 import { log } from "./logger";
+import { waitForGameViewReady } from "./game-utils";
 
 /**
  * User Management Utilities for E2E Tests
@@ -362,9 +363,35 @@ export const goToUsersFinishedGame = async (page: Page, username: string, gameNa
     // Go to that page ...
     await target_game.click();
     await expect(page.locator(".Game")).toBeVisible();
-    // Wait for Goban to be fully ready for interactions (replaces flaky waitForTimeout)
-    const gobanReady = page.locator(".Goban[data-pointers-bound]");
-    await gobanReady.waitFor({ state: "visible" });
+    // Wait for the full game view to settle — the bare Goban-ready check is
+    // insufficient because PlayerCard avatars and the AIReview panel mount
+    // later. Without this, a subsequent reportUser/reportPlayerByColor
+    // call can race against those late renders and lose its popover.
+    await waitForGameViewReady(page);
+};
+
+/**
+ * Navigate `page` to a game URL and wait for the view to be fully painted
+ * and stable. Use this in place of the inline pattern
+ *
+ *   await page.goto(gameUrl);
+ *   await page.locator(".Goban[data-pointers-bound]").waitFor(...);
+ *
+ * before any reportUser / reportPlayerByColor / PlayerDetails interaction —
+ * the bare goban wait misses late-arriving renders (PlayerCard avatar,
+ * AIReview) that can dismiss popovers mid-open.
+ *
+ * `aiReviewExpected` defaults to true (matches finished 9x9 / 13x13 / 19x19
+ * games); set false for in-progress games or non-standard board sizes.
+ */
+export const goToFinishedGameUrl = async (
+    page: Page,
+    gameUrl: string,
+    options: { aiReviewExpected?: boolean } = {},
+): Promise<void> => {
+    await page.goto(gameUrl);
+    await expect(page.locator(".Game")).toBeVisible();
+    await waitForGameViewReady(page, options);
 };
 
 /**

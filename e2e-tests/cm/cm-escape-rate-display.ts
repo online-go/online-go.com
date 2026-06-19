@@ -64,7 +64,7 @@ import {
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
 
-import { playMoves } from "@helpers/game-utils";
+import { playMoves, waitForGameViewReady } from "@helpers/game-utils";
 
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
@@ -123,6 +123,10 @@ async function reportAndVote(
     cmPages: Page[],
     voteAction: string,
 ): Promise<void> {
+    // Wait for the post-game view to settle (PlayerCard avatars, AIReview)
+    // before opening PlayerDetails.
+    await waitForGameViewReady(reporterPage);
+
     // Report the accused (white) for escaping
     await reportPlayerByColor(
         reporterPage,
@@ -199,7 +203,11 @@ export const cmEscapeRateDisplayTest = async (
     const { userPage: accusedPage } = await prepareNewUser(createContext, accusedUsername, "test");
 
     const reporterUsername = newTestUsername("ERHRep"); // cspell:disable-line
-    const { userPage: reporterPage } = await prepareNewUser(createContext, reporterUsername, "test");
+    const { userPage: reporterPage } = await prepareNewUser(
+        createContext,
+        reporterUsername,
+        "test",
+    );
 
     await withReportCountTracking(
         reporterPage,
@@ -248,6 +256,7 @@ export const cmEscapeRateDisplayTest = async (
             // ========================================
 
             await playAndFinishGame(reporterPage, accusedPage, accusedUsername, 5);
+            await waitForGameViewReady(reporterPage);
 
             await reportPlayerByColor(
                 reporterPage,
