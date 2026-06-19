@@ -44,6 +44,7 @@ import { expect } from "@playwright/test";
 
 import { navigateToReport, setupSeededCM } from "@helpers/user-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
+import { log } from "@helpers/logger";
 import { withReportCountTracking } from "@helpers/report-utils";
 import { setupMaliciousReport } from "@helpers/malicious-report-utils";
 
@@ -55,7 +56,9 @@ export const cmMaliciousReportEscalationTest = async (
     }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
-    const TIMEOUT_MS = 240 * 1000;
+    const TIMEOUT_MS = 300 * 1000;
+    // setupMaliciousReport runs before withReportCountTracking; set early.
+    testInfo.setTimeout(TIMEOUT_MS);
 
     const setup = await setupMaliciousReport(createContext, {
         sourceReporterRolePrefix: "MRESRep", // cspell:disable-line
@@ -69,6 +72,9 @@ export const cmMaliciousReportEscalationTest = async (
             // ========================================
             // Phase 1: CM A (no SUSPEND) sees the 4 unescalated options and escalates.
             // ========================================
+            log(
+                `[MR/escalate] Phase 1: CM A (no SUSPEND) verifies pre-escalation options and escalates ${setup.maliciousReportNumber}`,
+            );
             const { seededCMPage: cmAPage, seededCMContext: cmAContext } = await setupSeededCM(
                 createContext,
                 "E2E_CM_MR_CM_V1",
@@ -105,12 +111,16 @@ export const cmMaliciousReportEscalationTest = async (
 
             const cmAVoteButton = await expectOGSClickableByName(cmAPage, /Vote$/);
             await cmAVoteButton.click();
+            log(`[MR/escalate] CM A voted escalate; report should be escalated`);
 
             await cmAContext.close();
 
             // ========================================
             // Phase 2: First SUSPEND CM verifies the escalated option set.
             // ========================================
+            log(
+                `[MR/escalate] Phase 2: ${SUSPEND_VOTERS[0]} verifies escalated options and votes final_warning`,
+            );
             const { seededCMPage: firstSuspendPage, seededCMContext: firstSuspendContext } =
                 await setupSeededCM(createContext, SUSPEND_VOTERS[0]);
 
@@ -156,6 +166,7 @@ export const cmMaliciousReportEscalationTest = async (
             // ========================================
             // Phase 3: Two more SUSPEND CMs vote to reach consensus (3 total)
             // ========================================
+            log(`[MR/escalate] Phase 3: 2 more SUSPEND CMs vote to reach consensus`);
             for (const cmUser of SUSPEND_VOTERS.slice(1)) {
                 const { seededCMPage: cmPage, seededCMContext: cmContext } = await setupSeededCM(
                     createContext,
@@ -171,6 +182,7 @@ export const cmMaliciousReportEscalationTest = async (
 
                 const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
                 await voteButton.click();
+                log(`[MR/escalate] ${cmUser} voted final_warning_malicious_reporter`);
 
                 await cmContext.close();
             }
@@ -179,6 +191,7 @@ export const cmMaliciousReportEscalationTest = async (
             // Phase 4: Verify accused sees the final-warning AccountWarning,
             // filer sees the ack_final_warn_malicious_reporter ack.
             // ========================================
+            log(`[MR/escalate] Phase 4: verify final warning + ack delivered`);
             await setup.sourceReporterPage.goto("/");
             const warning = setup.sourceReporterPage.locator("div.AccountWarning");
             await expect(warning).toBeVisible({ timeout: 15000 });
@@ -194,6 +207,16 @@ export const cmMaliciousReportEscalationTest = async (
                 ack.locator("div.canned-message.ack_final_warn_malicious_reporter"),
             ).toBeVisible();
             await expect(ack.locator("div.canned-message")).not.toBeEmpty();
+
+            // Dismiss the filer's ack so it doesn't accumulate.
+            const ackOk = ack.locator("button.primary");
+            await expect(ackOk).toBeEnabled();
+            await ackOk.click();
+            await expect(ack).not.toBeVisible();
+
+            // The malicious_report resolved via voting → no pending state
+            // for the seeded filer. Source escaping report is owned by an
+            // ephemeral user, doesn't affect future runs.
 
             await setup.filerContext.close();
         },

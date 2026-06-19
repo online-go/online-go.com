@@ -40,8 +40,9 @@ import { BrowserContext, TestInfo } from "@playwright/test";
 import { expect } from "@playwright/test";
 
 import { navigateToReport, setupSeededCM } from "@helpers/user-utils";
+import { log } from "@helpers/logger";
 import { withReportCountTracking } from "@helpers/report-utils";
-import { setupMaliciousReport } from "@helpers/malicious-report-utils";
+import { cancelOwnReport, setupMaliciousReport } from "@helpers/malicious-report-utils";
 
 export const cmMaliciousReportQueueVisibilityTest = async (
     {
@@ -49,7 +50,9 @@ export const cmMaliciousReportQueueVisibilityTest = async (
     }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
-    const TIMEOUT_MS = 180 * 1000;
+    const TIMEOUT_MS = 300 * 1000;
+    // setupMaliciousReport runs before withReportCountTracking; set early.
+    testInfo.setTimeout(TIMEOUT_MS);
 
     const setup = await setupMaliciousReport(createContext, {
         sourceReporterRolePrefix: "MRQVRep", // cspell:disable-line
@@ -65,6 +68,7 @@ export const cmMaliciousReportQueueVisibilityTest = async (
             // views the source escaping report and the type-selector dropdown
             // includes "Malicious Report" as an option.
             // ========================================
+            log(`[MR/queue] Test 9 positive: filer sees "Malicious Report" in type-selector`);
             await navigateToReport(setup.filerPage, setup.sourceReportNumber);
 
             const typeSelector = setup.filerPage.locator(".report-type-selector");
@@ -81,6 +85,7 @@ export const cmMaliciousReportQueueVisibilityTest = async (
             // ========================================
             // Test 8: NO_POWER CM (HANDLE_STALLING only) cannot see the MR
             // ========================================
+            log(`[MR/queue] Test 8: NO_POWER CM cannot see MR in queue or via direct URL`);
             const { seededCMPage: noPowerPage, seededCMContext: noPowerContext } =
                 await setupSeededCM(createContext, "E2E_CM_MR_NO_POWER");
 
@@ -111,6 +116,13 @@ export const cmMaliciousReportQueueVisibilityTest = async (
             );
 
             await noPowerContext.close();
+
+            // Cleanup: the malicious_report doesn't get resolved in this
+            // test, so cancel it so the seeded CM filer doesn't accumulate
+            // pending reports. Source escaping report is owned by an
+            // ephemeral fresh user.
+            await cancelOwnReport(setup.filerPage, setup.maliciousReportNumber);
+
             await setup.filerContext.close();
         },
         TIMEOUT_MS,

@@ -49,10 +49,11 @@ import {
 } from "@helpers/user-utils";
 
 import { expectOGSClickableByName } from "@helpers/matchers";
+import { log } from "@helpers/logger";
 import { withReportCountTracking } from "@helpers/report-utils";
 import {
+    cancelOwnReport,
     createSourceEscapingReport,
-    dismissPendingAcks,
     fileMaliciousReport,
     readOwnReportIds,
     setupEscapingSourceGame,
@@ -74,7 +75,7 @@ export const cmFileMaliciousReportTest = async (
     // setTimeout but only after this setup completes.
     testInfo.setTimeout(TIMEOUT_MS);
 
-    // Game players (fresh each run)
+    log(`[MR/file] Phase 0: creating game players (victim + opponent)`);
     const victimUsername = newTestUsername("MRFMVic"); // cspell:disable-line
     const { userPage: victimPage } = await prepareNewUser(createContext, victimUsername, "test");
 
@@ -110,9 +111,6 @@ export const cmFileMaliciousReportTest = async (
                 "E2E_CM_MR_FILER",
             );
 
-            // Clear any leftover acks from previous runs.
-            await dismissPendingAcks(filerPage);
-
             // Baseline: every own-report-id the filer currently sees. Used
             // below to (a) verify Cancel doesn't create a report and (b)
             // identify the new malicious_report after we file it.
@@ -121,6 +119,7 @@ export const cmFileMaliciousReportTest = async (
             // ========================================
             // Test 2: Closing the Report dialog does nothing
             // ========================================
+            log(`[MR/file] Test 2: Close-without-submit creates no report`);
             await navigateToReport(filerPage, sourceReportNumber);
 
             // Open PlayerDetails on the source report's reporter, click Report.
@@ -155,6 +154,7 @@ export const cmFileMaliciousReportTest = async (
             // ========================================
             // Test 1: File a malicious_report successfully
             // ========================================
+            log(`[MR/file] Test 1: file malicious_report successfully`);
             await navigateToReport(filerPage, sourceReportNumber);
 
             const filerNote =
@@ -191,6 +191,14 @@ export const cmFileMaliciousReportTest = async (
             await expect(filerPage.locator(".report-type-selector")).toContainText(
                 "Stopped Playing",
             );
+
+            log(`[MR/file] Cleanup`);
+            // Cleanup: the malicious_report we filed never gets resolved
+            // in this test, so cancel it so the seeded CM filer doesn't
+            // accumulate pending reports across runs. The source escaping
+            // report is owned by an ephemeral fresh user; we don't bother
+            // cancelling it.
+            await cancelOwnReport(filerPage, maliciousReportNumber);
 
             await filerContext.close();
         },

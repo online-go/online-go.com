@@ -30,7 +30,8 @@ import {
     acceptDirectChallenge,
     defaultChallengeSettings,
 } from "./challenge-utils";
-import { playMoves, resignActiveGame } from "./game-utils";
+import { playMoves, resignActiveGame, waitForGameViewReady } from "./game-utils";
+import { log } from "./logger";
 import type { CreateContextOptions } from "../helpers";
 
 /**
@@ -41,51 +42,6 @@ import type { CreateContextOptions } from "../helpers";
  * source report and marking it malicious, so individual tests can focus on the
  * specific vote/visibility behavior they're exercising.
  */
-
-/**
- * Dismiss any leftover AccountWarning / AccountWarningAck / AccountWarningInfo
- * messages on the given page. Seeded users (the CM filer in particular)
- * accumulate acks across test runs; a stale ack's backdrop intercepts clicks
- * on the underlying page. Call this after logging a seeded user in and before
- * driving UI that needs the foreground.
- *
- * Defensive: handles formal warnings too (require checkbox + timer) even
- * though the filer in practice only ever receives acks.
- */
-export async function dismissPendingAcks(page: Page): Promise<void> {
-    await page.goto("/");
-    // Warnings are rendered based on user-data fetched from the API; that can
-    // take a few seconds after navigation. Wait for the page to settle before
-    // deciding there's nothing to dismiss.
-    await page.waitForLoadState("networkidle").catch(() => undefined);
-
-    for (let i = 0; i < 20; i++) {
-        const dialog = page
-            .locator(".AccountWarningAck, .AccountWarningInfo, .AccountWarning")
-            .first();
-        // First iteration: wait up to 5s for an ack to materialize. Subsequent
-        // iterations: only 1s, since if there is another queued ack it should
-        // render almost immediately after we dismissed the previous one.
-        const waitMs = i === 0 ? 5000 : 1000;
-        try {
-            await dialog.waitFor({ state: "visible", timeout: waitMs });
-        } catch {
-            return;
-        }
-
-        // Formal AccountWarning needs the checkbox ticked and waits for a timer
-        // before its OK enables. Ack and Info OK buttons are enabled immediately.
-        const checkbox = dialog.locator("input[type='checkbox']");
-        if ((await checkbox.count()) > 0) {
-            await checkbox.click();
-        }
-
-        const okButton = dialog.locator("button.primary");
-        await expect(okButton).toBeEnabled({ timeout: 20000 });
-        await okButton.click();
-        await dialog.waitFor({ state: "hidden", timeout: 5000 });
-    }
-}
 
 /**
  * Read the set of report IDs visible on the current user's "My Own Reports"
@@ -101,52 +57,61 @@ export async function dismissPendingAcks(page: Page): Promise<void> {
  */
 export async function readOwnReportIds(
     page: Page,
-    options: { stableForMs?: number; timeoutMs?: number } = {},
+    options: { stableForMs?: number; timeoutMs?: number; intervalMs?: number } = {},
 ): Promise<Set<string>> {
-    const stableForMs = options.stableForMs ?? 2500;
+    const stableForMs = options.stableForMs ?? 1500;
     const timeoutMs = options.timeoutMs ?? 20000;
+    const intervalMs = options.intervalMs ?? 300;
+    const requiredStableSamples = Math.max(2, Math.ceil(stableForMs / intervalMs));
 
     await page.goto("/reports-center");
     await expect(page.getByText("My Own Reports")).toBeVisible();
     await page.getByText("My Own Reports").click();
 
-    const deadline = Date.now() + timeoutMs;
-    let previousSnapshot = "";
-    let stableSince = Date.now();
+    let lastSnapshot = "";
+    let stableSamples = 0;
     let lastIds: string[] = [];
 
-    while (Date.now() < deadline) {
-        lastIds = await page
-            .locator("button[data-report-id]")
-            .evaluateAll((nodes) =>
-                nodes
-                    .map((n) => (n as HTMLElement).getAttribute("data-report-id"))
-                    .filter((id): id is string => !!id),
-            );
-        const snapshot = lastIds.slice().sort().join(",");
-        if (snapshot !== previousSnapshot) {
-            previousSnapshot = snapshot;
-            stableSince = Date.now();
-        } else if (Date.now() - stableSince >= stableForMs) {
-            return new Set(lastIds);
-        }
-        await page.waitForTimeout(500);
-    }
-    // Timed out; return what we have. The caller (e.g. waitForNewOwnReport)
-    // will re-check and may still succeed.
+    // Poll until the visible set has been the same for `requiredStableSamples`
+    // consecutive reads (i.e. has not mutated for ~`stableForMs`). expect.poll
+    // gives us proper Playwright timeout diagnostics; the polling cadence is
+    // controlled by `intervals`.
+    await expect
+        .poll(
+            async () => {
+                lastIds = await page
+                    .locator("button[data-report-id]")
+                    .evaluateAll((nodes) =>
+                        nodes
+                            .map((n) => (n as HTMLElement).getAttribute("data-report-id"))
+                            .filter((id): id is string => !!id),
+                    );
+                const snapshot = lastIds.slice().sort().join(",");
+                if (snapshot === lastSnapshot) {
+                    stableSamples++;
+                } else {
+                    lastSnapshot = snapshot;
+                    stableSamples = 1;
+                }
+                return stableSamples;
+            },
+            { timeout: timeoutMs, intervals: [intervalMs] },
+        )
+        .toBeGreaterThanOrEqual(requiredStableSamples);
+
     return new Set(lastIds);
 }
 
 /**
- * After filing a new report, poll the user's "My Own Reports" page until an
- * ID appears that's higher than every id in `previous`. Returns the new id
- * as `R<id>`.
+ * After filing a new report, read the user's "My Own Reports" list (waiting
+ * for it to settle) and return the highest id greater than every id in
+ * `previous` as `R<id>`.
  *
- * Report ids are sequential integers, so "higher than all previous" is a
- * stronger and more robust check than "not in the previous set". The latter
- * race-fails when readOwnReportIds saw an incomplete snapshot before filing
- * (websocket sync of older reports trailing in afterward), causing an old
- * id to look "new".
+ * Report ids are sequential integers, so "highest id greater than max(previous)"
+ * pins the just-filed report regardless of the order older reports trickle in
+ * via websocket sync afterward. The settle wait is delegated to
+ * readOwnReportIds — once it returns, no further changes are pending, so a
+ * single read here is sufficient (no outer polling loop needed).
  */
 export async function waitForNewOwnReport(
     page: Page,
@@ -154,23 +119,138 @@ export async function waitForNewOwnReport(
     timeoutMs = 30000,
 ): Promise<string> {
     const previousMax = Math.max(0, ...Array.from(previous, (id) => Number(id)));
-    const deadline = Date.now() + timeoutMs;
-    while (Date.now() < deadline) {
-        const ids = await readOwnReportIds(page);
-        let newestId = -1;
-        for (const id of ids) {
-            const n = Number(id);
-            if (n > previousMax && n > newestId) {
-                newestId = n;
-            }
-        }
-        if (newestId > 0) {
-            return `R${newestId}`;
-        }
-        await page.waitForTimeout(1000);
+    const ids = await readOwnReportIds(page, { timeoutMs });
+    const newestId = Math.max(
+        -1,
+        ...Array.from(ids, (id) => Number(id)).filter((n) => n > previousMax),
+    );
+    if (newestId < 0) {
+        throw new Error(
+            `No own-report with id > ${previousMax} appeared in My Own Reports after settling`,
+        );
     }
+    return `R${newestId}`;
+}
+
+/**
+ * Cancel an own report from the user's "My Own Reports" page. Uses the FULL
+ * report id via the `data-report-id` attribute — the displayed report number
+ * is truncated to its three least-significant digits, so matching by text
+ * would mis-target older reports that share those digits.
+ *
+ * Idempotent: returns silently if no row with that report id is present
+ * (e.g. the report was already resolved by voting).
+ */
+export async function cancelOwnReport(page: Page, reportNumber: string): Promise<void> {
+    const reportId = reportNumber.replace(/^R/, "");
+
+    await page.goto("/reports-center");
+    await expect(page.getByText("My Own Reports")).toBeVisible();
+    await page.getByText("My Own Reports").click();
+
+    // Wait for the specific row we want to cancel to appear. If it never
+    // does within a short bound, the report has already been resolved (or
+    // was never present) — nothing to cancel.
+    const reportButton = page.locator(`button[data-report-id="${reportId}"]`);
+    const present = await reportButton
+        .waitFor({ state: "visible", timeout: 3000 })
+        .then(() => true)
+        .catch(() => false);
+    if (!present) {
+        log(`[MR] cancelOwnReport(${reportNumber}): already gone (resolved or never present)`);
+        return;
+    }
+
+    const reportContainer = page.locator("div.incident").filter({ has: reportButton });
+    const cancelButton = reportContainer.locator("button.reject.xs", { hasText: "Cancel" });
+    if ((await cancelButton.count()) === 0) {
+        log(`[MR] cancelOwnReport(${reportNumber}): no Cancel button (already resolved)`);
+        return;
+    }
+    await cancelButton.click();
+    // Wait for the row to disappear so the next nav sees a stable list.
+    await expect(reportButton).toHaveCount(0, { timeout: 10000 });
+    log(`[MR] Cancelled own report ${reportNumber}`);
+}
+
+/**
+ * Cancel every pending own-report visible to `page`'s logged-in user. Used
+ * at the start of MR tests on the seeded CM filer to defend against
+ * dangling reports left behind by crashes or flakes — without cleanup
+ * they accumulate, scroll off-screen, eventually get paged, and slow every
+ * subsequent test's baseline.
+ *
+ * Optimised for the clean case: reads the "My Own Reports (N)" tab title
+ * — which encodes the count and updates reactively as the report_manager
+ * syncs — and returns once that title has been stable for ~600ms with
+ * no count. In the steady state this is ~800ms total. The dirty path
+ * (count > 0) clicks in, enumerates row ids via readOwnReportIds, and
+ * cancels each row inline.
+ */
+export async function cancelAllOwnReports(
+    page: Page,
+    options: { maxIterations?: number } = {},
+): Promise<number> {
+    const maxIterations = options.maxIterations ?? 10;
+
+    await page.goto("/reports-center");
+
+    // Wait for the My-Own-Reports tab title to settle. The title encodes
+    // the count: "My Own Reports" (zero) or "My Own Reports (N)". Polling
+    // a single text node is far cheaper than waiting for the report-list
+    // DOM to stabilize.
+    const titleEl = page
+        .locator("#ReportsCenterCategoryList .Category .title")
+        .filter({ hasText: /^My Own Reports/ });
+    let lastText = "";
+    let stableSamples = 0;
+    await expect
+        .poll(
+            async () => {
+                const t = (await titleEl.textContent()) ?? "";
+                if (t === lastText) {
+                    stableSamples++;
+                } else {
+                    lastText = t;
+                    stableSamples = 1;
+                }
+                return stableSamples;
+            },
+            { timeout: 5000, intervals: [150] },
+        )
+        .toBeGreaterThanOrEqual(4); // 4 × 150ms = ~600ms stable
+
+    const match = lastText.match(/My Own Reports \((\d+)\)/);
+    if (!match) {
+        log(`[MR] cancelAllOwnReports: clean state (title="${lastText}")`);
+        return 0;
+    }
+
+    // Dirty path: click into My Own Reports and cancel every row.
+    await titleEl.click();
+    let totalCancelled = 0;
+    for (let i = 0; i < maxIterations; i++) {
+        const ids = await readOwnReportIds(page);
+        if (ids.size === 0) {
+            log(`[MR] cancelAllOwnReports: cancelled ${totalCancelled} report(s) total`);
+            return totalCancelled;
+        }
+        log(`[MR] cancelAllOwnReports: pass ${i + 1}, cancelling ${ids.size} report(s)`);
+        for (const id of ids) {
+            const button = page.locator(`button[data-report-id="${id}"]`);
+            const container = page.locator("div.incident").filter({ has: button });
+            const cancelBtn = container.locator("button.reject.xs", { hasText: "Cancel" });
+            if ((await cancelBtn.count()) === 0) {
+                continue;
+            }
+            await cancelBtn.click();
+            await expect(button).toHaveCount(0, { timeout: 10000 });
+            totalCancelled++;
+        }
+    }
+
     throw new Error(
-        `Timed out after ${timeoutMs}ms waiting for a new own-report (id > ${previousMax}) to appear in My Own Reports`,
+        `cancelAllOwnReports exceeded ${maxIterations} passes; pending reports won't drain`,
     );
 }
 
@@ -188,7 +268,9 @@ export async function fileMaliciousReport(
     sourceReporterUsername: string,
     note: string,
 ): Promise<void> {
+    log(`[MR] Filing malicious_report against ${sourceReporterUsername}`);
     await reportUser(cmPage, sourceReporterUsername, "malicious_report", note);
+    log(`[MR] Malicious_report submit completed`);
 }
 
 /**
@@ -211,6 +293,7 @@ export async function setupEscapingSourceGame(
     opponentPage: Page,
     opponentUsername: string,
 ): Promise<string> {
+    log(`[MR] Source game: victim challenges ${opponentUsername}`);
     await createDirectChallenge(victimPage, opponentUsername, {
         ...defaultChallengeSettings,
         gameName: "E2E MR Source Game",
@@ -233,6 +316,7 @@ export async function setupEscapingSourceGame(
     // then applicable (it would be rejected if the victim had resigned).
     await resignActiveGame(opponentPage);
 
+    log(`[MR] Source game ended; victim won, opponent resigned`);
     return victimPage.url();
 }
 
@@ -261,15 +345,22 @@ export async function createSourceEscapingReport(
     reporterNote: string,
 ): Promise<SourceEscapingReportSetup> {
     const sourceReporterUsername = newTestUsername(rolePrefix);
+    log(`[MR] Creating third-party source reporter ${sourceReporterUsername}`);
     const { userPage: sourceReporterPage, userContext: sourceReporterContext } =
         await prepareNewUser(createContext, sourceReporterUsername, "test");
 
     await sourceReporterPage.goto(gameUrl);
-    await sourceReporterPage.locator(".Goban[data-pointers-bound]").waitFor({ state: "visible" });
+    // Wait for the full game-view to be painted and settled. Without this,
+    // late-arriving renders (.player-icon-container content, .AIReview)
+    // can shift the layout while the PlayerDetails popover is opening,
+    // dismissing it before reportUser can click the Report button.
+    await waitForGameViewReady(sourceReporterPage);
 
+    log(`[MR] Source reporter filing escaping report against ${victimUsername}`);
     await reportUser(sourceReporterPage, victimUsername, "escaping", reporterNote);
 
     const sourceReportNumber = await captureReportNumber(sourceReporterPage);
+    log(`[MR] Source escaping report filed: ${sourceReportNumber}`);
 
     return {
         sourceReporterUsername,
@@ -344,26 +435,28 @@ export async function setupMaliciousReport(
     );
 
     // CM filer marks the source report as malicious
+    log(`[MR] Logging in seeded CM filer E2E_CM_MR_FILER`);
     const { seededCMPage: filerPage, seededCMContext: filerContext } = await setupSeededCM(
         createContext,
         "E2E_CM_MR_FILER",
     );
 
-    // Clear any leftover acks from previous runs — their backdrop would
-    // intercept clicks on the "Mark as malicious report" button below.
-    await dismissPendingAcks(filerPage);
+    // Drain any pending own-reports from earlier crashed/flaked runs. Cheap
+    // (~800ms) when the filer is already clean. Without this, accumulated
+    // reports slow the baseline read and risk pagination artifacts.
+    await cancelAllOwnReports(filerPage);
 
-    // Snapshot the filer's existing own-report IDs. The filer is a seeded user
-    // and may have accumulated MRs filed across earlier test runs. We will
-    // identify our just-filed MR as whichever ID appears after the modal
-    // submit that wasn't there before — relying on captureReportNumber alone
-    // would race against the websocket sync that populates My Own Reports.
+    // Snapshot the filer's baseline own-report IDs. After the cancel-all
+    // above this is normally empty in steady state, which makes
+    // waitForNewOwnReport's "id > max(previous)" trivially correct.
     const previousOwnReportIds = await readOwnReportIds(filerPage);
+    log(`[MR] Filer baseline: ${previousOwnReportIds.size} pre-existing own report(s)`);
 
     await navigateToReport(filerPage, sourceReportNumber);
     await fileMaliciousReport(filerPage, sourceReporterUsername, filerNote);
 
     const maliciousReportNumber = await waitForNewOwnReport(filerPage, previousOwnReportIds);
+    log(`[MR] Malicious report captured: ${maliciousReportNumber}`);
     if (maliciousReportNumber === sourceReportNumber) {
         throw new Error(
             "Captured malicious-report number equals the source report number; the malicious_report was not created",

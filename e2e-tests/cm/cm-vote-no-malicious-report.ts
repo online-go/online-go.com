@@ -34,6 +34,7 @@ import { expect } from "@playwright/test";
 
 import { navigateToReport, setupSeededCM } from "@helpers/user-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
+import { log } from "@helpers/logger";
 import { withReportCountTracking } from "@helpers/report-utils";
 import { setupMaliciousReport } from "@helpers/malicious-report-utils";
 
@@ -45,7 +46,11 @@ export const cmVoteNoMaliciousReportTest = async (
     }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
-    const TIMEOUT_MS = 180 * 1000;
+    const TIMEOUT_MS = 300 * 1000;
+    // setupMaliciousReport (3 fresh users + game + source report + filer
+    // login + file MR) runs before withReportCountTracking, so the latter's
+    // setTimeout fires too late. Set early.
+    testInfo.setTimeout(TIMEOUT_MS);
 
     const setup = await setupMaliciousReport(createContext, {
         sourceReporterRolePrefix: "MRNMRep", // cspell:disable-line
@@ -56,6 +61,9 @@ export const cmVoteNoMaliciousReportTest = async (
         setup.sourceReporterPage,
         testInfo,
         async () => {
+            log(
+                `[MR/vote-no] Phase 1: 3 CMs vote no_malicious_report on ${setup.maliciousReportNumber}`,
+            );
             // 3 CMs vote no_malicious_report — consensus → ack to filer, nothing to accused
             const cmContexts: BrowserContext[] = [];
             for (const cmUser of CM_VOTERS) {
@@ -74,8 +82,10 @@ export const cmVoteNoMaliciousReportTest = async (
 
                 const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
                 await voteButton.click();
+                log(`[MR/vote-no] ${cmUser} voted no_malicious_report`);
             }
 
+            log(`[MR/vote-no] Phase 2: verify filer receives no_malicious_report_evident ack`);
             // Filing CM should see an AccountWarningAck with the matching canned message.
             await setup.filerPage.goto("/");
 
@@ -86,6 +96,7 @@ export const cmVoteNoMaliciousReportTest = async (
             ).toBeVisible();
             await expect(ack.locator("div.canned-message")).not.toBeEmpty();
 
+            log(`[MR/vote-no] Phase 3: verify source reporter sees NO warning`);
             // Source reporter (the accused) should NOT see any warning, since
             // the vote was "no malicious report".
             await setup.sourceReporterPage.goto("/");
@@ -101,6 +112,12 @@ export const cmVoteNoMaliciousReportTest = async (
             await expect(okButton).toBeEnabled();
             await okButton.click();
             await expect(ack).not.toBeVisible();
+
+            // Cleanup: the malicious_report resolved via voting → no
+            // pending state remains on the seeded CM filer. The source
+            // escaping report is still pending but is owned by an
+            // ephemeral fresh user that never logs back in, so it
+            // doesn't surface in any future test run's state.
 
             for (const ctx of cmContexts) {
                 await ctx.close();
