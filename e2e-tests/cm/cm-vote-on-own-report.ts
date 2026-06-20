@@ -79,11 +79,10 @@ export const cmVoteOnOwnReportTest = async (
         await expectOGSClickableByName(reporterPage, /Vote$/);
 
         // .. but instead, let's cancel this report, to tidy up.
-        // Navigate to My Own Reports
-        await reporterPage.goto("/reports-center");
-        const myReports = reporterPage.getByText("My Own Reports");
-        await expect(myReports).toBeVisible();
-        await myReports.click();
+        // Navigate directly to the my_reports route — going via
+        // /reports-center and clicking the sidebar tab is unreliable when
+        // the page was previously on /reports-center/all/<id>.
+        await reporterPage.goto("/reports-center/my_reports");
 
         // Find the specific report's container and click its Cancel button
         // Each report is in a div.incident container

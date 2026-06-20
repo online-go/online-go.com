@@ -72,7 +72,7 @@ ogsTest.describe("@CM Community Moderation Tests", () => {
         "Sandbagging report on in-progress game becomes assessment not thrown",
         cmSandbaggingInProgressGameTest,
     );
-    ogsTest("@CMs see escaping reports one at a time per user", cmEscapingOneAtATimeTest);
+    ogsTest("CMs see escaping reports one at a time per user", cmEscapingOneAtATimeTest);
     ogsTest("File a malicious report from the report view", cmFileMaliciousReportTest);
     ogsTest("Vote no malicious report", cmVoteNoMaliciousReportTest);
     ogsTest("Vote warn malicious reporter", cmVoteWarnMaliciousReporterTest);

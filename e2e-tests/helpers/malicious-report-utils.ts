@@ -64,9 +64,11 @@ export async function readOwnReportIds(
     const intervalMs = options.intervalMs ?? 300;
     const requiredStableSamples = Math.max(2, Math.ceil(stableForMs / intervalMs));
 
-    await page.goto("/reports-center");
-    await expect(page.getByText("My Own Reports")).toBeVisible();
-    await page.getByText("My Own Reports").click();
+    // Navigate directly to the my_reports route — clicking the sidebar
+    // "My Own Reports" tab is unreliable when the page is mid-transition
+    // out of a report-detail view (the click can match the wrong element
+    // or fail to update the active category).
+    await page.goto("/reports-center/my_reports");
 
     let lastSnapshot = "";
     let stableSamples = 0;
@@ -103,15 +105,16 @@ export async function readOwnReportIds(
 }
 
 /**
- * After filing a new report, read the user's "My Own Reports" list (waiting
- * for it to settle) and return the highest id greater than every id in
- * `previous` as `R<id>`.
+ * After filing a new report, poll the user's "My Own Reports" list until an
+ * id appears that's greater than every id in `previous`, then return it as
+ * `R<id>`. Report ids are sequential integers, so "highest id greater than
+ * max(previous)" pins the just-filed report regardless of the order older
+ * reports trickle in via websocket sync.
  *
- * Report ids are sequential integers, so "highest id greater than max(previous)"
- * pins the just-filed report regardless of the order older reports trickle in
- * via websocket sync afterward. The settle wait is delegated to
- * readOwnReportIds — once it returns, no further changes are pending, so a
- * single read here is sufficient (no outer polling loop needed).
+ * Don't delegate the wait to readOwnReportIds: its stability check returns
+ * "empty for stableForMs" as a positive result, but for the post-filing
+ * read an empty list might just mean the new report hasn't synced yet. We
+ * poll until we positively see a matching id, or time out.
  */
 export async function waitForNewOwnReport(
     page: Page,
@@ -119,16 +122,38 @@ export async function waitForNewOwnReport(
     timeoutMs = 30000,
 ): Promise<string> {
     const previousMax = Math.max(0, ...Array.from(previous, (id) => Number(id)));
-    const ids = await readOwnReportIds(page, { timeoutMs });
-    const newestId = Math.max(
-        -1,
-        ...Array.from(ids, (id) => Number(id)).filter((n) => n > previousMax),
-    );
-    if (newestId < 0) {
-        throw new Error(
-            `No own-report with id > ${previousMax} appeared in My Own Reports after settling`,
-        );
-    }
+
+    // Navigate straight to /reports-center/my_reports rather than clicking the
+    // sidebar tab. The tab click can fail to switch the active view when the
+    // URL was previously /reports-center/all/<id> (a report-detail view) —
+    // depending on which element matches "My Own Reports", the click may not
+    // fire the category-route change. The /my_reports URL is unambiguous.
+    await page.goto("/reports-center/my_reports");
+
+    let newestId = -1;
+    await expect
+        .poll(
+            async () => {
+                // evaluateAll callback runs in the browser context, so we
+                // can't reference previousMax there. Pull all ids and
+                // filter in Node.
+                const allIds = await page
+                    .locator("button[data-report-id]")
+                    .evaluateAll((nodes) =>
+                        nodes.map((n) =>
+                            Number((n as HTMLElement).getAttribute("data-report-id") ?? -1),
+                        ),
+                    );
+                const newer = allIds.filter((n) => n > previousMax);
+                if (newer.length > 0) {
+                    newestId = Math.max(...newer);
+                }
+                return newestId;
+            },
+            { timeout: timeoutMs, intervals: [300] },
+        )
+        .toBeGreaterThan(0);
+
     return `R${newestId}`;
 }
 
@@ -144,9 +169,7 @@ export async function waitForNewOwnReport(
 export async function cancelOwnReport(page: Page, reportNumber: string): Promise<void> {
     const reportId = reportNumber.replace(/^R/, "");
 
-    await page.goto("/reports-center");
-    await expect(page.getByText("My Own Reports")).toBeVisible();
-    await page.getByText("My Own Reports").click();
+    await page.goto("/reports-center/my_reports");
 
     // Wait for the specific row we want to cancel to appear. If it never
     // does within a short bound, the report has already been resolved (or
@@ -226,8 +249,8 @@ export async function cancelAllOwnReports(
         return 0;
     }
 
-    // Dirty path: click into My Own Reports and cancel every row.
-    await titleEl.click();
+    // Dirty path: enumerate and cancel. readOwnReportIds navigates to the
+    // /reports-center/my_reports route itself; no tab click needed here.
     let totalCancelled = 0;
     for (let i = 0; i < maxIterations; i++) {
         const ids = await readOwnReportIds(page);

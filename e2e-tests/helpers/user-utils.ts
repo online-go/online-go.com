@@ -530,9 +530,12 @@ export const reportUser = async (page: Page, username: string, type: string, not
  * Returns the full report number (e.g., "R1123").
  */
 export const captureReportNumber = async (reporterPage: Page): Promise<string> => {
-    await reporterPage.goto("/reports-center");
-    await expect(reporterPage.getByText("My Own Reports")).toBeVisible();
-    await reporterPage.getByText("My Own Reports").click();
+    // Navigate directly to the my_reports route. Going via /reports-center
+    // and then clicking the sidebar tab is unreliable when the page was
+    // previously on /reports-center/all/<id> — the click may not switch
+    // the active category, leaving the report-detail view in place and
+    // no button[data-report-id] elements to find.
+    await reporterPage.goto("/reports-center/my_reports");
 
     // Wait for the reports to load - look for the incident container or report list
     // This ensures the click was processed and content loaded before looking for specific report
