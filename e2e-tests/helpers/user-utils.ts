@@ -267,6 +267,31 @@ export const setupSeededUser = async (
     };
 };
 
+// A failed prior test can leave acknowledgement/info AccountWarning
+// messages queued on a seeded account; on next login they auto-display
+// as a modal that blocks every subsequent click. Ack-and-info modals
+// are safe to drain (a single primary-button click each); the genuine
+// "warning" variant is deliberately left alone — it carries a forced
+// read-delay and an "I understand" checkbox, and bypassing those in
+// tests would defeat the point of the warning.
+//
+// Cost: ~500ms per setupSeededCM call when the queue is empty (the
+// time it takes one poll to time out). Cheap enough to run on every
+// seeded-CM setup as defense against leaks from earlier tests.
+const dismissPendingAccountAcks = async (page: Page): Promise<void> => {
+    const ackSelector = ".AccountWarningInfo, .AccountWarningAck";
+    for (let i = 0; i < 5; i++) {
+        const ackModal = page.locator(ackSelector).first();
+        try {
+            await ackModal.waitFor({ state: "visible", timeout: 500 });
+        } catch {
+            return;
+        }
+        await ackModal.locator(".buttons button.primary").first().click();
+        await expect(ackModal).toBeHidden({ timeout: 5000 });
+    }
+};
+
 export const setupSeededCM = async (
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     username: string,
@@ -279,6 +304,7 @@ export const setupSeededCM = async (
     });
     const seededCMPage = await seededCMContext.newPage();
     await loginAsUser(seededCMPage, username, "test");
+    await dismissPendingAccountAcks(seededCMPage);
     await turnOffDynamicHelp(seededCMPage); // the popups can get in the way.
 
     await turnOffModerationQuota(seededCMPage); // need them to be able to keep voting!
