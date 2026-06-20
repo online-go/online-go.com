@@ -47,7 +47,7 @@ export interface ReportAlignmentCount {
 // TBD: it might be nice if this "max" number was dynamically provided by the server, but
 // we are already possibly hitting it hard for these rollups
 
-const EXPECTED_MAX_WEEKLY_CM_REPORTS = 300;
+const EXPECTED_MAX_WEEKLY_CM_REPORTS = 450;
 const Y_STEP_SIZE = 50; // must divide nicely into EXPECTED_MAX_WEEKLY_CM_REPORTS
 
 interface CMVoteCountGraphProps {
@@ -440,7 +440,7 @@ export const CMVotingGroupGraph = ({
                     theme={chart_theme}
                 />
             </div>
-            <div className="totals-graph">
+            <div className="percent-graph">
                 <ResponsiveLine
                     data={percent_data}
                     colors={({ id }) => line_colors[id as keyof typeof line_colors]}
