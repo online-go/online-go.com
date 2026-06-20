@@ -111,11 +111,18 @@ Please choose a different type of report, if there is a different problem.`,
     });
 }
 
+// The source-report detail page is the only valid context for filing a
+// malicious_report; its URL becomes the back-link on the new report.
+function getMaliciousReportSourceUrl(): string | null {
+    const match = window.location.pathname.match(/^\/reports-center\/all\/(\d+)/);
+    return match ? `/reports-center/all/${match[1]}` : null;
+}
+
 function checkMaliciousReportApplicability(
     _game_id?: number,
     _reported_user_id?: number,
 ): Promise<string | null> {
-    if (!/^\/reports-center\/all\/\d+/.test(window.location.pathname)) {
+    if (getMaliciousReportSourceUrl() === null) {
         return Promise.resolve(
             pgettext(
                 "Why malicious-report is disabled outside the reports-center view",
@@ -304,6 +311,10 @@ export function Report(props: ReportProperties): React.ReactElement {
     const [submitting, set_submitting] = React.useState(false);
     const [validating, set_validating] = React.useState(false);
     const [inapplicable_reason, set_inapplicable_reason] = React.useState<string | null>(null);
+    // Source-report URL snapshot for malicious_report's back-link. Captured at
+    // applicability-check time so SPA navigation between selection and submit
+    // can't change which report the malicious_report is filed against.
+    const source_report_url_ref = React.useRef<string | null>(null);
 
     const user = useUser();
 
@@ -325,6 +336,8 @@ export function Report(props: ReportProperties): React.ReactElement {
     React.useEffect(() => {
         const needs_game_id_first = category?.game_id_required && !game_id;
         if (category?.check_applicability && !needs_game_id_first) {
+            source_report_url_ref.current =
+                category.type === "malicious_report" ? getMaliciousReportSourceUrl() : null;
             set_validating(true);
             category
                 .check_applicability(game_id, reported_user_id)
@@ -337,6 +350,7 @@ export function Report(props: ReportProperties): React.ReactElement {
                 });
         } else {
             set_inapplicable_reason(null);
+            source_report_url_ref.current = null;
         }
     }, [category, game_id]);
 
@@ -395,13 +409,8 @@ export function Report(props: ReportProperties): React.ReactElement {
             reported_game_id: game_id,
             reported_review_id: review_id,
         };
-        if (report_type === "malicious_report") {
-            // Back-link to the source report. checkMaliciousReportApplicability
-            // already guarantees the pathname matches before we get here.
-            const match = window.location.pathname.match(/^\/reports-center\/all\/(\d+)/);
-            if (match) {
-                payload.url = `/reports-center/all/${match[1]}`;
-            }
+        if (report_type === "malicious_report" && source_report_url_ref.current) {
+            payload.url = source_report_url_ref.current;
         }
         post("moderation/incident", payload)
             .then(() => {
