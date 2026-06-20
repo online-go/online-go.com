@@ -280,7 +280,7 @@ export const setupSeededUser = async (
 // seeded-CM setup as defense against leaks from earlier tests.
 const dismissPendingAccountAcks = async (page: Page): Promise<void> => {
     const ackSelector = ".AccountWarningInfo, .AccountWarningAck";
-    for (let i = 0; i < 5; i++) {
+    while (true) {
         const ackModal = page.locator(ackSelector).first();
         try {
             await ackModal.waitFor({ state: "visible", timeout: 500 });
