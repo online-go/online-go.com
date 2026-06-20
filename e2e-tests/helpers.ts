@@ -77,3 +77,14 @@ export const ogsTest = base.extend<MultiContextFixtures>({
         }
     },
 });
+
+// Per-test settle delay (ms). Runs after each test so a single local run
+// reports its result immediately and the wait is buried in the time spent
+// looking at the result. Override or disable (set 0) via the env var.
+const PER_TEST_DELAY_MS = Number(process.env.E2E_PER_TEST_DELAY_MS ?? 5000);
+if (PER_TEST_DELAY_MS > 0) {
+    ogsTest.afterEach(async () => {
+        console.log(`Per-test settle: waiting ${PER_TEST_DELAY_MS / 1000}s...`);
+        await new Promise((resolve) => setTimeout(resolve, PER_TEST_DELAY_MS));
+    });
+}
