@@ -137,7 +137,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
 
         if (this.props.match.params.collection_id !== prev_props.match.params.collection_id) {
             if (this.props.match.params.collection_id) {
-                update.collection_id = parseInt(this.props.match.params.collection_id);
+                update.collection_id = this.props.match.params.collection_id;
             } else {
                 update.collection_id = "0";
             }
