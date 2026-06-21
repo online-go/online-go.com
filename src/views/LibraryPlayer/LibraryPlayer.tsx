@@ -373,6 +373,9 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
         });
     };
     deleteCollection = () => {
+        if (this.state.collection_id === "0") {
+            return;
+        }
         const parent = this.state.collections![this.state.collection_id].parent;
 
         post(`library/${this.state.player_id}`, {
