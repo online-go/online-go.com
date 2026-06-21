@@ -947,7 +947,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                                     )}
                                                 </h4>
                                             )}
-                                            {owner && (
+                                            {owner && this.state.collection_id !== "0" && (
                                                 <button
                                                     className="reject"
                                                     onClick={this.deleteCollection}
