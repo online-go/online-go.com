@@ -33,8 +33,9 @@
  * - 1 open escaping report on game 5 (the one we test the display on)
  *
  * Expected display on report 5:
- * - "Escaping too much" badge (red) — 4 escapes in 100-game window > 3% threshold
- * - "4 escapes in 5 games"
+ * - "IF this is escaping:" predictive header
+ * - "5 escapes in 5 games" (4 prior confirmed + 1 current report under judgement)
+ * - "Escaping too much" badge (red) — predicted rate crosses the 3% threshold
  * - "Previously formally warned"
  *
  * Flow:
@@ -199,7 +200,11 @@ export const cmEscapeRateDisplayTest = async (
     const { userPage: accusedPage } = await prepareNewUser(createContext, accusedUsername, "test");
 
     const reporterUsername = newTestUsername("ERHRep"); // cspell:disable-line
-    const { userPage: reporterPage } = await prepareNewUser(createContext, reporterUsername, "test");
+    const { userPage: reporterPage } = await prepareNewUser(
+        createContext,
+        reporterUsername,
+        "test",
+    );
 
     await withReportCountTracking(
         reporterPage,
@@ -271,15 +276,20 @@ export const cmEscapeRateDisplayTest = async (
             const escapeRateInfo = cmPage.locator(".escape-rate-info");
             await expect(escapeRateInfo).toBeVisible({ timeout: 15000 });
 
+            // Verify the predictive header is present
+            const conditionalHeader = cmPage.locator(".escape-rate-conditional-header");
+            await expect(conditionalHeader).toBeVisible();
+            await expect(conditionalHeader).toContainText("IF this is escaping:");
+
             // Verify the badge shows "Escaping too much" (red)
             const badge = cmPage.locator(".escape-rate-badge.escaping-too-much");
             await expect(badge).toBeVisible();
             await expect(badge).toContainText("Escaping too much");
 
-            // Verify rate detail shows correct numbers
+            // Verify rate detail shows the predicted count (4 prior + 1 current = 5)
             const detail = cmPage.locator(".escape-rate-detail");
             await expect(detail).toBeVisible();
-            await expect(detail).toContainText("4 escapes in 5 games");
+            await expect(detail).toContainText("5 escapes in 5 games");
 
             // Verify formal warning status
             const warningStatus = cmPage.locator(".formal-warning-status");
