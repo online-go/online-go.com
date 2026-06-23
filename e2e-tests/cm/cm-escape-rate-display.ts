@@ -29,19 +29,26 @@
  * - reporter user - created fresh each run
  * - 5 games between reporter and accused
  * - 4 escaping reports on games 1-4, each resolved by 3 CM votes
- *   (3 informal warnings + 1 formal warning)
+ *   (2 informal warnings then 2 formal warnings)
  * - 1 open escaping report on game 5 (the one we test the display on)
+ *
+ * The 2-then-2 split is dictated by the predictive filter: the badge counts
+ * the report under judgement, so as soon as a player has 2 prior confirmed
+ * escapes, the predicted count for the next report is 3 — over the threshold —
+ * and the informal-warn options are hidden. The test scenario therefore
+ * walks the same staircase a real CM workflow does (2 informals, then formals
+ * once the predictive threshold is reached).
  *
  * Expected display on report 5:
  * - "IF this is escaping:" predictive header
  * - "5 escapes in 5 games" (4 prior confirmed + 1 current report under judgement)
  * - "Escaping too much" badge (red) — predicted rate crosses the 3% threshold
- * - "Previously formally warned"
+ * - "Previously formally warned" (two formal warnings on record by this point)
  *
  * Flow:
  * 1. Play 5 games between reporter and accused (pass+accept to finish each)
- * 2. For games 1-3: file escaping report, 3 CMs vote informal_warn_escaper
- * 3. For game 4: file escaping report, 3 CMs vote warn_escaper (formal)
+ * 2. For games 1-2: file escaping report, 3 CMs vote informal_warn_escaper
+ * 3. For games 3-4: file escaping report, 3 CMs vote warn_escaper (formal)
  * 4. For game 5: file escaping report (left open)
  * 5. CM views report 5 and verifies escape rate display
  */
@@ -58,6 +65,8 @@ import {
     reportPlayerByColor,
     setupSeededCM,
 } from "@helpers/user-utils";
+
+import { log } from "@helpers/logger";
 
 import {
     acceptDirectChallenge,
@@ -113,6 +122,15 @@ async function playAndFinishGame(
     await reporterAccept.click();
 
     await expect(reporterPage.getByText("wins by")).toBeVisible();
+
+    // Five sequential games + reports overload the dev stack: the server's
+    // Game.ended write trails behind the WS phase-finished event the goban
+    // already rendered, so the next escaping report on this game gets
+    // rejected by moderate.py:714-725 (HTTP 400). A deliberate 30 s pause
+    // lets the post-game pipeline (WS → DB write, queue drain) quiesce
+    // before we move on. Heavy but reliable; see e2e-tests/AGENTS.md.
+    log(`[cm-escape-rate-display] Game ${gameIndex} ended — pausing 30 s to quiesce`);
+    await reporterPage.waitForTimeout(30000);
 }
 
 /**
@@ -193,7 +211,14 @@ export const cmEscapeRateDisplayTest = async (
     }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
-    const TIMEOUT_MS = 300 * 1000;
+    // Tagged @Slow in cm.spec.ts: this test plays five sequential games and
+    // resolves four reports with three CM votes each to build up the escape
+    // history the display assertion checks. Each game also includes a 30 s
+    // post-game pause so the dev stack can commit Game.ended before the
+    // next escaping report (otherwise moderate.py:714-725 rejects it as
+    // HTTP 400). The cumulative time is genuine setup, not flakiness —
+    // see AGENTS.md for the rule.
+    const TIMEOUT_MS = 720 * 1000;
 
     // Create fresh users
     const accusedUsername = newTestUsername("ERHAcc"); // cspell:disable-line
@@ -223,30 +248,28 @@ export const cmEscapeRateDisplayTest = async (
             }
 
             // ========================================
-            // Games 1-3: Play, report, 3 CMs vote informal_warn_escaper
+            // Games 1-2: Play, report, 3 CMs vote informal_warn_escaper
+            // Games 3-4: Play, report, 3 CMs vote warn_escaper (formal)
+            //
+            // The vote action switches at game 3 because the predictive filter
+            // hides informal-warn options once predicted count >= 3. Games 1-2
+            // each have 0 then 1 prior confirmed escape, so predicted (1, then
+            // 2) stays under threshold and informal is offered. From game 3
+            // onward there are >= 2 prior confirmed escapes, so the predicted
+            // count reaches the 3% threshold and the filter switches the
+            // available options to formal-warn only.
             // ========================================
 
-            for (let i = 1; i <= 3; i++) {
+            for (let i = 1; i <= 4; i++) {
+                const voteAction = i <= 2 ? "informal_warn_escaper" : "warn_escaper";
                 await playAndFinishGame(reporterPage, accusedPage, accusedUsername, i);
-                await reportAndVote(reporterPage, cmPages, "informal_warn_escaper");
+                await reportAndVote(reporterPage, cmPages, voteAction);
 
                 // Navigate home to trigger warning dialogs, then dismiss them
                 await accusedPage.goto("/");
                 await dismissWarningDialogs(accusedPage);
                 await dismissWarningDialogs(reporterPage);
             }
-
-            // ========================================
-            // Game 4: Play, report, 3 CMs vote warn_escaper (formal warning)
-            // ========================================
-
-            await playAndFinishGame(reporterPage, accusedPage, accusedUsername, 4);
-            await reportAndVote(reporterPage, cmPages, "warn_escaper");
-
-            // Dismiss the formal warning on the accused
-            await accusedPage.goto("/");
-            await dismissWarningDialogs(accusedPage);
-            await dismissWarningDialogs(reporterPage);
 
             // ========================================
             // Game 5: Play and file the report we'll test the display on
