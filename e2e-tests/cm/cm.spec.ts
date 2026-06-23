@@ -55,7 +55,7 @@ ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest("@Slow Last warning info shown on repeat offender reports", cmLastWarningInfoTest);
     ogsTest("@Slow Escape rate display on escaping reports", cmEscapeRateDisplayTest);
     ogsTest(
-        "@Slow CM sees formal options at the predictive escape-rate boundary",
+        "CM sees formal options at the predictive escape-rate boundary",
         cmEscapeRatePredictiveBorderlineTest,
     );
     ogsTest("Informal warning vote on escaping reports", cmInformalWarnEscaperTest);
