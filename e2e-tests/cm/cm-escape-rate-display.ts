@@ -143,13 +143,14 @@ async function playAndFinishGame(
 
 /**
  * File an escaping report on the current game page, then have 3 CMs
- * vote the specified action to resolve it.
+ * vote the specified action to resolve it. Returns the report number so
+ * the caller can navigate back to verify resolved-report behaviour.
  */
 async function reportAndVote(
     reporterPage: Page,
     cmPages: Page[],
     voteAction: string,
-): Promise<void> {
+): Promise<string> {
     // Report the accused (white) for escaping
     await reportPlayerByColor(
         reporterPage,
@@ -167,6 +168,8 @@ async function reportAndVote(
         const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
         await voteButton.click();
     }
+
+    return reportNumber;
 }
 
 /**
@@ -268,10 +271,11 @@ export const cmEscapeRateDisplayTest = async (
             // available options to formal-warn only.
             // ========================================
 
+            let lastResolvedReportNumber: string | null = null;
             for (let i = 1; i <= 4; i++) {
                 const voteAction = i <= 2 ? "informal_warn_escaper" : "warn_escaper";
                 await playAndFinishGame(reporterPage, accusedPage, accusedUsername, i);
-                await reportAndVote(reporterPage, cmPages, voteAction);
+                lastResolvedReportNumber = await reportAndVote(reporterPage, cmPages, voteAction);
 
                 // Navigate home to trigger warning dialogs, then dismiss them
                 await accusedPage.goto("/");
@@ -326,6 +330,29 @@ export const cmEscapeRateDisplayTest = async (
             const warningStatus = cmPage.locator(".formal-warning-status");
             await expect(warningStatus).toBeVisible();
             await expect(warningStatus).toContainText("Previously formally warned");
+
+            // ========================================
+            // Resolved-report check: predicted count is not off-by-one
+            // ========================================
+            //
+            // When CMs navigate back to a report that has already been voted
+            // as escaping, the current game's escape warning is in the count.
+            // The serializer must skip predict_escape_rate's +1 so the badge
+            // reflects the actual count, not actual + 1. Without the fix the
+            // predicted count would exceed games-in-window — impossible.
+            //
+            // Report 4 was voted warn_escaper; by its created-time the window
+            // contained games 1-4 (4 games, all ended before the report was
+            // filed) and all four had escape warnings issued (2 informal +
+            // 2 formal). Expected display: "4 escapes in 4 games".
+
+            if (lastResolvedReportNumber === null) {
+                throw new Error("Expected at least one resolved report number");
+            }
+            await navigateToReport(cmPage, lastResolvedReportNumber);
+            const resolvedDetail = cmPage.locator(".escape-rate-detail");
+            await expect(resolvedDetail).toBeVisible({ timeout: 15000 });
+            await expect(resolvedDetail).toContainText("4 escapes in 4 games");
 
             // Close all CM contexts
             for (const ctx of cmContexts) {
