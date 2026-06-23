@@ -74,11 +74,19 @@ async function playAndFinishGame(
     gameIndex: number,
 ): Promise<void> {
     const gameName = `E2E ERPB Game ${gameIndex}`;
+    // Override defaultChallengeSettings' 2s/2s blitz timing — under a loaded
+    // dev stack the 4-move play sequence can exhaust either player's time
+    // and end the game by timeout rather than pass+accept, leaving the test
+    // waiting forever on the "Pass"/"Accept" buttons. 60s main + 1×10s
+    // byoyomi gives ample headroom while still being "live" speed.
     await createDirectChallenge(reporterPage, accusedUsername, {
         ...defaultChallengeSettings,
         gameName,
         boardSize: "9x9",
-        speed: "blitz",
+        speed: "live",
+        mainTime: "60",
+        timePerPeriod: "10",
+        periods: "1",
         color: "black",
     });
 
@@ -176,7 +184,7 @@ export const cmEscapeRatePredictiveBorderlineTest = async (
     }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
-    const TIMEOUT_MS = 240 * 1000;
+    const TIMEOUT_MS = 360 * 1000;
 
     const accusedUsername = newTestUsername("ERPBAcc"); // cspell:disable-line
     const { userPage: accusedPage } = await prepareNewUser(createContext, accusedUsername, "test");

@@ -93,11 +93,19 @@ async function playAndFinishGame(
     accusedUsername: string,
     gameIndex: number,
 ): Promise<void> {
+    // Override defaultChallengeSettings' 2s/2s blitz timing — under a loaded
+    // dev stack the 4-move play sequence can exhaust either player's time
+    // and end the game by timeout rather than pass+accept, leaving the test
+    // waiting forever on the "Pass"/"Accept" buttons. 60s main + 1×10s
+    // byoyomi gives ample headroom while still being "live" speed.
     await createDirectChallenge(reporterPage, accusedUsername, {
         ...defaultChallengeSettings,
         gameName: `E2E ERH Game ${gameIndex}`,
         boardSize: "9x9",
-        speed: "blitz",
+        speed: "live",
+        mainTime: "60",
+        timePerPeriod: "10",
+        periods: "1",
         color: "black",
     });
 
