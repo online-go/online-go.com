@@ -436,7 +436,14 @@ const submitReportForm = async (page: Page, type: string, notes: string) => {
     await submitButton.click();
 
     await expect(page.getByText("Thanks for the report!")).toBeVisible();
-    const OK = await expectOGSClickableByName(page, "OK");
+    // /^OK$/ rather than "OK": Playwright's getByRole({name}) does
+    // case-insensitive *substring* matching, which collides with
+    // dynamically-generated usernames containing "ok" (e.g. a player link
+    // labelled "e2eFoo_qsok90" matches `name: 'OK'`). The exact-match regex
+    // pins this to the dialog's actual OK button. (A systematic sweep of
+    // expectOGSClickableByName callers for the same problem is worth
+    // doing — separate patch.)
+    const OK = await expectOGSClickableByName(page, /^OK$/);
     // tidy up
     await OK.click();
     await expect(OK).toBeHidden();
