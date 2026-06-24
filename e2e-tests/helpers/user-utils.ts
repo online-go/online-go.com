@@ -59,6 +59,18 @@ import { log } from "./logger";
  * - selectNavMenuItem(): Clicks a specified Nav Menu item & subitem
  */
 
+// Alphabet for the random suffix that uniquifies each test username.
+// Excludes vowels (a, e, i, o, u) so randomly-generated usernames cannot
+// accidentally contain English-word substrings (e.g. "ok") that would
+// collide with Playwright's case-insensitive substring matching in
+// getByRole({ name }) — the bug that caused submitReportForm's OK-button
+// locator to match a player link whose suffix happened to spell "qsok90".
+// 31-char alphabet × 6 positions = 887M combinations, so collision
+// probability against ~1k accumulated test users on a dev stack is
+// ~0.001% per draw — comfortable headroom for realistic stack lifetimes.
+const USERNAME_SUFFIX_ALPHABET = "0123456789bcdfghjklmnpqrstvwxyz";
+const USERNAME_SUFFIX_LEN = 6;
+
 // This is tweaked to provide us with lots of unique usernames but also
 // a decent number of readable user-role characters, within the OGS username 30 character limit
 // on registration.
@@ -66,13 +78,16 @@ export const newTestUsername = (user_role: string) => {
     if (user_role.length > 20) {
         throw new Error("user_role must be 20 characters or less");
     }
-    const timestamp = Date.now().toString(36);
-    // Using 5 chars provides uniqueness roughly every 1.3 seconds
-    // This allows re-running tests with <10 second intervals
-    const midChars = timestamp.slice(-7, -2);
-    // Include worker index to prevent username collisions in parallel execution
+    let suffix = "";
+    for (let i = 0; i < USERNAME_SUFFIX_LEN; i++) {
+        suffix +=
+            USERNAME_SUFFIX_ALPHABET[Math.floor(Math.random() * USERNAME_SUFFIX_ALPHABET.length)];
+    }
+    // Include worker index to keep collisions impossible across parallel workers
+    // (Math.random would already make them vanishingly unlikely, but this is
+    // free and removes the need for a parallel-execution caveat in the math.)
     const workerIndex = process.env.TEST_WORKER_INDEX || "0";
-    return `e2e${user_role}_${midChars}${workerIndex}`;
+    return `e2e${user_role}_${suffix}${workerIndex}`;
 };
 
 // Counter for same-millisecond IPv6 generation
