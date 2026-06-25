@@ -63,7 +63,7 @@ import { playMoves } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
 
-import { withReportCountTracking } from "@helpers/report-utils";
+import { dismissWarningDialogs, withReportCountTracking } from "@helpers/report-utils";
 
 const CM_VOTERS = ["E2E_CM_ERH_V1", "E2E_CM_ERH_V2", "E2E_CM_ERH_V3"];
 
@@ -138,43 +138,6 @@ async function reportAndVote(
         await cmPage.locator(`input[value="${voteAction}"]`).click();
         const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
         await voteButton.click();
-    }
-}
-
-async function dismissWarningDialogs(page: Page): Promise<void> {
-    const formalWarning = page.locator("div.AccountWarning");
-    for (let i = 0; i < 10; i++) {
-        try {
-            await formalWarning.waitFor({ state: "visible", timeout: 3000 });
-            const checkbox = formalWarning.locator('input[type="checkbox"]');
-            await checkbox.check();
-            await formalWarning.locator("button.primary").click();
-            await expect(formalWarning).not.toBeVisible();
-        } catch {
-            break;
-        }
-    }
-
-    const infoOk = page.locator(".AccountWarningInfo button.primary");
-    for (let i = 0; i < 10; i++) {
-        try {
-            await infoOk.waitFor({ state: "visible", timeout: 3000 });
-            await infoOk.click();
-            await expect(infoOk).not.toBeVisible();
-        } catch {
-            break;
-        }
-    }
-
-    const ackOk = page.locator("div.AccountWarningAck button.primary");
-    for (let i = 0; i < 10; i++) {
-        try {
-            await ackOk.waitFor({ state: "visible", timeout: 3000 });
-            await ackOk.click();
-            await expect(ackOk).not.toBeVisible();
-        } catch {
-            break;
-        }
     }
 }
 
