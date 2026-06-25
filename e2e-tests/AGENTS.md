@@ -21,7 +21,7 @@ When creating e2e tests, note that:
 
 - `prepareNewUser` creates a new user with suitable settings and guaranteed unique name.
 
-- The string argument of `newTestUsername` must be less than 21 characters. This is because OGS username limit is 20 chars and 8 are used for uniquification. It's helpful to have characters identifying which test and which role
+- The string argument of `newTestUsername` is length-checked at call time against a limit derived from the server's 30-char username cap (currently 18 chars, after subtracting the `e2e` prefix, the underscore, the suffix, and worker-index space). The exact value is computed in `helpers/user-utils.ts`; keep the role short and descriptive (e.g. `ERPBAcc`, `LWARNOth`) so the generated username is readable in logs
 
 - Avoid direct API calls - the intent of e2e testing is to test by driving the system as a user does.
 
