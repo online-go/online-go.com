@@ -59,20 +59,53 @@ import { log } from "./logger";
  * - selectNavMenuItem(): Clicks a specified Nav Menu item & subitem
  */
 
+// Alphabet for the random suffix that uniquifies each test username.
+// Excludes vowels (a, e, i, o, u) so randomly-generated usernames cannot
+// accidentally contain English-word substrings (e.g. "ok") that would
+// collide with Playwright's case-insensitive substring matching in
+// getByRole({ name }) — the bug that caused submitReportForm's OK-button
+// locator to match a player link whose suffix happened to spell "qsok90".
+// 31-char alphabet × 6 positions = 887M combinations, so collision
+// probability against ~1k accumulated test users on a dev stack is
+// ~0.001% per draw — comfortable headroom for realistic stack lifetimes.
+const USERNAME_SUFFIX_ALPHABET = "0123456789bcdfghjklmnpqrstvwxyz";
+const USERNAME_SUFFIX_LEN = 6;
+
+// OGS rejects registration when len(username) > 30 (see Django backend
+// api/views/login.py). Derive the role-length limit from that so the
+// validation can't drift out of sync with the actual server constraint.
+// Worker index is up to 2 digits (TEST_WORKER_INDEX values up to 99);
+// allow for that even though parallel runs are typically 1-2 workers.
+const OGS_USERNAME_MAX_LEN = 30;
+const USERNAME_PREFIX = "e2e";
+const MAX_WORKER_INDEX_DIGITS = 2;
+const MAX_USER_ROLE_LEN =
+    OGS_USERNAME_MAX_LEN -
+    USERNAME_PREFIX.length -
+    1 /* underscore separator */ -
+    USERNAME_SUFFIX_LEN -
+    MAX_WORKER_INDEX_DIGITS;
+
 // This is tweaked to provide us with lots of unique usernames but also
 // a decent number of readable user-role characters, within the OGS username 30 character limit
 // on registration.
 export const newTestUsername = (user_role: string) => {
-    if (user_role.length > 20) {
-        throw new Error("user_role must be 20 characters or less");
+    if (user_role.length > MAX_USER_ROLE_LEN) {
+        throw new Error(
+            `user_role must be ${MAX_USER_ROLE_LEN} characters or less ` +
+                `to keep the generated username within the OGS ${OGS_USERNAME_MAX_LEN}-char limit`,
+        );
     }
-    const timestamp = Date.now().toString(36);
-    // Using 5 chars provides uniqueness roughly every 1.3 seconds
-    // This allows re-running tests with <10 second intervals
-    const midChars = timestamp.slice(-7, -2);
-    // Include worker index to prevent username collisions in parallel execution
+    let suffix = "";
+    for (let i = 0; i < USERNAME_SUFFIX_LEN; i++) {
+        suffix +=
+            USERNAME_SUFFIX_ALPHABET[Math.floor(Math.random() * USERNAME_SUFFIX_ALPHABET.length)];
+    }
+    // Include worker index to keep collisions impossible across parallel workers
+    // (Math.random would already make them vanishingly unlikely, but this is
+    // free and removes the need for a parallel-execution caveat in the math.)
     const workerIndex = process.env.TEST_WORKER_INDEX || "0";
-    return `e2e${user_role}_${midChars}${workerIndex}`;
+    return `${USERNAME_PREFIX}${user_role}_${suffix}${workerIndex}`;
 };
 
 // Counter for same-millisecond IPv6 generation
@@ -436,7 +469,14 @@ const submitReportForm = async (page: Page, type: string, notes: string) => {
     await submitButton.click();
 
     await expect(page.getByText("Thanks for the report!")).toBeVisible();
-    const OK = await expectOGSClickableByName(page, "OK");
+    // /^OK$/ rather than "OK": Playwright's getByRole({name}) does
+    // case-insensitive *substring* matching, which collides with
+    // dynamically-generated usernames containing "ok" (e.g. a player link
+    // labelled "e2eFoo_qsok90" matches `name: 'OK'`). The exact-match regex
+    // pins this to the dialog's actual OK button. (A systematic sweep of
+    // expectOGSClickableByName callers for the same problem is worth
+    // doing — separate patch.)
+    const OK = await expectOGSClickableByName(page, /^OK$/);
     // tidy up
     await OK.click();
     await expect(OK).toBeHidden();
