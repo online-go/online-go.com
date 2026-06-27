@@ -130,13 +130,6 @@ export class SGFCollectionModal extends Modal<
         this.setState({ uploading: true });
 
         const user = data.get("user");
-        console.log("DEBUG: Adding game to library", {
-            user_id: user.id,
-            game_id: this.props.gameId,
-            collection_id: parseInt(this.state.selectedCollectionId),
-            name: this.state.fileName,
-            url: `library/${user.id}`,
-        });
 
         post(`library/${user.id}`, {
             game_id: this.props.gameId,

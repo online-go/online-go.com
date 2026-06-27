@@ -33,7 +33,7 @@ interface ChatUserCountProperties extends ChatUserListProperties {
 
 export function ChatUserList(props: ChatUserListProperties): React.ReactElement {
     const [user_sort_order, set_user_sort_order] = React.useState<"alpha" | "rank">(
-        preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank",
+        preferences.get("chat.user-sort-order") === "rank" ? "rank" : "alpha",
     );
     const [, refresh] = React.useState<number>(0);
     const proxy = React.useRef<ChatChannelProxy | undefined>(undefined);
@@ -42,9 +42,6 @@ export function ChatUserList(props: ChatUserListProperties): React.ReactElement 
         proxy.current = chat_manager.join(props.channel);
         proxy.current.on("join", () => refresh(proxy?.current?.channel.users_by_name.length || 0));
         proxy.current.on("part", () => refresh(proxy?.current?.channel.users_by_name.length || 0));
-        proxy.current.on("join", () => console.log("JOin!"));
-        proxy.current.on("part", () => console.log("Part!"));
-        window.proxy = proxy.current;
         refresh(proxy.current.channel.users_by_name.length);
 
         return () => {
