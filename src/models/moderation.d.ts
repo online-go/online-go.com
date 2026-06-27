@@ -177,6 +177,9 @@ declare namespace rest_api {
             escapes_in_window: number | null;
             games_in_window: number | null;
             is_escaping_too_much: boolean | null;
+            predicted_escape_rate: number | null;
+            predicted_escapes_if_confirmed: number | null;
+            predicted_is_escaping_too_much: boolean | null;
             has_prior_formal_warning: boolean | null;
             has_prior_final_warning: boolean | null;
         }
