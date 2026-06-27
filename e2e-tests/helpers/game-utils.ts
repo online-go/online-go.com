@@ -14,6 +14,56 @@ import { expect } from "@playwright/test";
 
 type BoardSize = "19x19" | "13x13" | "9x9";
 
+/**
+ * Wait for the Game view to be fully painted and stable.
+ *
+ * The Game view renders progressively: the Goban becomes interactive
+ * (`.Goban[data-pointers-bound]`) and `a.Player` links flip
+ * `data-ready=true` early, but `.player-icon-container` content (avatar,
+ * flag, chat presence) and the `.AIReview` div mount later as their data
+ * arrives. Either of those late mounts can shift the layout while a
+ * PlayerDetails popover is in the middle of opening, dismissing it and
+ * causing the Report button never to be found.
+ *
+ * Call this before any interaction that opens a popover or dialog from the
+ * Game side-panel, so the layout is stable by the time the click lands.
+ *
+ * Defaults to expecting two seated players (which is what every CM e2e
+ * test produces). `aiReviewExpected` defaults to true — on finished 9x9 /
+ * 13x13 / 19x19 games the FragAIReview component mounts; if you're calling
+ * this in a context where AI Review won't render (e.g. an in-progress game
+ * or an exotic board size), pass `aiReviewExpected: false`.
+ */
+export const waitForGameViewReady = async (
+    page: Page,
+    options: { expectedPlayerCount?: number; aiReviewExpected?: boolean } = {},
+): Promise<void> => {
+    const expectedPlayers = options.expectedPlayerCount ?? 2;
+    const aiReviewExpected = options.aiReviewExpected ?? true;
+
+    // Goban is interactive
+    await page.locator(".Goban[data-pointers-bound]").waitFor({ state: "visible" });
+
+    // Both Player links have data-ready=true (existing marker we already use)
+    await expect(page.locator('a.Player[data-ready="true"]')).toHaveCount(expectedPlayers, {
+        timeout: 15000,
+    });
+
+    // Each .player-icon-container has finished rendering its data-bound
+    // children (PlayerFlag is the most distinctive of those — it's only
+    // emitted inside the loaded branch, not the empty SGF-placeholder branch).
+    await expect(page.locator(".player-icon-container .player-flag")).toHaveCount(expectedPlayers, {
+        timeout: 15000,
+    });
+
+    if (aiReviewExpected) {
+        // AIReview mounts on finished 9x9/13x13/19x19 games. Once the
+        // wrapper div is present its internal state changes (Processing →
+        // populated graph) don't shift the surrounding layout.
+        await page.locator(".AIReview").waitFor({ state: "visible", timeout: 30000 });
+    }
+};
+
 export const clickInTheMiddle = async (page: Page) => {
     // Wait for the Goban to be visible
     const goban = page.locator(".Goban[data-pointers-bound]");

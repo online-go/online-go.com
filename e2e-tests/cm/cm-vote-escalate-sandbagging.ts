@@ -38,6 +38,7 @@ import { BrowserContext, TestInfo } from "@playwright/test";
 
 import {
     captureReportNumber,
+    goToFinishedGameUrl,
     navigateToReport,
     newTestUsername,
     prepareNewUser,
@@ -113,17 +114,7 @@ export const cmVoteEscalateSandbaggingTest = async (
 
     await withReportCountTracking(reporterPage, testInfo, async (tracker) => {
         // Reporter navigates to the game
-        await reporterPage.goto(gameUrl);
-
-        // Wait for the game page to fully load
-        const reporterGoban = reporterPage.locator(".Goban[data-pointers-bound]");
-        await reporterGoban.waitFor({ state: "visible" });
-
-        // Wait for the Player link to be fully ready before attempting to report
-        const playerLink = reporterPage.locator(
-            `a.Player[data-ready="true"]:has-text("${accusedUsername}")`,
-        );
-        await expect(playerLink.first()).toBeVisible({ timeout: 15000 });
+        await goToFinishedGameUrl(reporterPage, gameUrl);
 
         // Reporter submits a "sandbagging" report - but since the accused lost,
         // the backend will convert this to a "thrown_game" report

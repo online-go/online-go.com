@@ -45,6 +45,8 @@ export function community_mod_has_power(
     const has_handle_sandbagging = (moderator_powers & MODERATOR_POWERS.HANDLE_SANDBAGGING) > 0;
     const has_assess_ai_play = (moderator_powers & MODERATOR_POWERS.ASSESS_AI_PLAY) > 0;
     const has_ai_detector = (moderator_powers & MODERATOR_POWERS.AI_DETECTOR) > 0;
+    const has_handle_malicious_report =
+        (moderator_powers & MODERATOR_POWERS.HANDLE_MALICIOUS_REPORT) > 0;
 
     return (
         (report_type === "score_cheating" && has_handle_score_cheat) ||
@@ -52,7 +54,8 @@ export function community_mod_has_power(
         (report_type === "stalling" && has_handle_stalling) ||
         (report_type === "thrown_game" && has_handle_sandbagging) ||
         (report_type === "assess_ai_play" && has_assess_ai_play) ||
-        (report_type === "ai_use" && has_ai_detector)
+        (report_type === "ai_use" && has_ai_detector) ||
+        (report_type === "malicious_report" && has_handle_malicious_report)
     );
 }
 

@@ -26,7 +26,7 @@ import { BrowserContext, expect } from "@playwright/test";
 import { newTestUsername, prepareNewUser, openPlayerDetailsPopover } from "@helpers/user-utils";
 
 import { createDirectChallenge, acceptDirectChallenge } from "@helpers/challenge-utils";
-import { clickInTheMiddle } from "@helpers/game-utils";
+import { clickInTheMiddle, waitForGameViewReady } from "@helpers/game-utils";
 
 export const modBlockEarlyStallingReportTest = async ({
     createContext,
@@ -51,6 +51,10 @@ export const modBlockEarlyStallingReportTest = async ({
     await acceptDirectChallenge(reportedPage);
 
     await clickInTheMiddle(reporterPage);
+
+    // Wait for the live-game view to settle (PlayerCard avatars). AI Review
+    // doesn't render mid-game, so opt out of that wait.
+    await waitForGameViewReady(reporterPage, { aiReviewExpected: false });
 
     // Open player details popover with retry logic
     const playerLink = reporterPage.locator(
