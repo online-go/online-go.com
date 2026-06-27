@@ -51,6 +51,7 @@ import { BrowserContext, TestInfo } from "@playwright/test";
 
 import {
     captureReportNumber,
+    goToFinishedGameUrl,
     navigateToReport,
     newTestUsername,
     prepareNewUser,
@@ -126,11 +127,7 @@ export const cmEscalatedEscapingAllOptionsTest = async (
         // Phase 0: Report the accused for escaping on the played game
         // ========================================
 
-        await reporterPage.goto(gameUrl);
-
-        // Wait for the game page to fully load
-        const reporterGoban = reporterPage.locator(".Goban[data-pointers-bound]");
-        await reporterGoban.waitFor({ state: "visible" });
+        await goToFinishedGameUrl(reporterPage, gameUrl);
 
         await reportUser(
             reporterPage,
@@ -234,10 +231,10 @@ export const cmEscalatedEscapingAllOptionsTest = async (
         // Phase 4: Reporter cancels the report to clean up
         // ========================================
 
-        await reporterPage.goto("/reports-center");
-        const myReports = reporterPage.getByText("My Own Reports");
-        await expect(myReports).toBeVisible();
-        await myReports.click();
+        // Navigate directly to the my_reports route — going via
+        // /reports-center and clicking the sidebar tab is unreliable when
+        // the page was previously on /reports-center/all/<id>.
+        await reporterPage.goto("/reports-center/my_reports");
 
         const cancelButton = await expectOGSClickableByName(reporterPage, /Cancel$/);
         await cancelButton.click();

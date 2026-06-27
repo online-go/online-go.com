@@ -36,6 +36,7 @@ export enum MODERATOR_POWERS {
     SEE_REPORTED_USER_BANNED_STATUS = 0b100000,
     AI_DETECTOR = 0b1000000,
     HANDLE_SANDBAGGING = 0b10000000,
+    HANDLE_MALICIOUS_REPORT = 0b100000000,
 }
 
 export const MOD_POWER_NAMES: { [key in MODERATOR_POWERS]: string } = {
@@ -65,6 +66,10 @@ export const MOD_POWER_NAMES: { [key in MODERATOR_POWERS]: string } = {
     [MODERATOR_POWERS.HANDLE_SANDBAGGING]: pgettext(
         "A label for a moderator power",
         "Handle Sandbagging Reports",
+    ),
+    [MODERATOR_POWERS.HANDLE_MALICIOUS_REPORT]: pgettext(
+        "A label for a moderator power",
+        "Handle Malicious Reports",
     ),
 };
 

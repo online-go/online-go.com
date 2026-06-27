@@ -74,7 +74,7 @@ import {
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
 
-import { playMoves } from "@helpers/game-utils";
+import { playMoves, waitForGameViewReady } from "@helpers/game-utils";
 
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
@@ -151,6 +151,10 @@ async function reportAndVote(
     cmPages: Page[],
     voteAction: string,
 ): Promise<string> {
+    // Wait for the post-game view to settle (PlayerCard avatars, AIReview)
+    // before opening PlayerDetails.
+    await waitForGameViewReady(reporterPage);
+
     // Report the accused (white) for escaping
     await reportPlayerByColor(
         reporterPage,
@@ -244,6 +248,7 @@ export const cmEscapeRateDisplayTest = async (
             // ========================================
 
             await playAndFinishGame(reporterPage, accusedPage, accusedUsername, 5);
+            await waitForGameViewReady(reporterPage);
 
             await reportPlayerByColor(
                 reporterPage,
@@ -319,10 +324,10 @@ export const cmEscapeRateDisplayTest = async (
             // Clean up: cancel the open report
             // ========================================
 
-            await reporterPage.goto("/reports-center");
-            const myReports = reporterPage.getByText("My Own Reports");
-            await expect(myReports).toBeVisible();
-            await myReports.click();
+            // Navigate directly to the my_reports route — going via
+            // /reports-center and clicking the sidebar tab is unreliable
+            // when the page was previously on /reports-center/all/<id>.
+            await reporterPage.goto("/reports-center/my_reports");
 
             const cancelButton = await expectOGSClickableByName(reporterPage, /Cancel$/);
             await cancelButton.click();

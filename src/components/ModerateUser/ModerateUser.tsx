@@ -479,6 +479,19 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                                 onRetractOffer={this.retractOffer}
                                 onRemovePower={this.removePower}
                             />
+                            <ModerationOfferControl
+                                ability={pgettext(
+                                    "Label for a button granting power to handle malicious-report reports",
+                                    "Handle Malicious Reports",
+                                )}
+                                ability_mask={MODERATOR_POWERS.HANDLE_MALICIOUS_REPORT}
+                                currently_offered={this.state.offered_moderator_powers}
+                                moderator_powers={this.state.moderator_powers}
+                                previously_rejected={this.state.mod_powers_rejected}
+                                onMakeOffer={this.makeOffer}
+                                onRetractOffer={this.retractOffer}
+                                onRemovePower={this.removePower}
+                            />
                         </div>
                     </div>
                 )}

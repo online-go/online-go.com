@@ -92,7 +92,14 @@ declare namespace rest_api {
             | "ack_warned_thrown_game_and_annul"
             | "no_thrown_game_evident"
             | "informal_warn_escaper"
-            | "ack_informal_warn_escaper";
+            | "ack_informal_warn_escaper"
+            | "warn_malicious_reporter"
+            | "ack_warned_malicious_reporter"
+            | "informal_warn_malicious_reporter"
+            | "ack_informal_warn_malicious_reporter"
+            | "final_warn_malicious_reporter"
+            | "ack_final_warn_malicious_reporter"
+            | "no_malicious_report_evident";
 
         type Severity = "warning" | "acknowledgement" | "info";
 

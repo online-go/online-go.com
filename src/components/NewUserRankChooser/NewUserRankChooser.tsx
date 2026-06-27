@@ -17,6 +17,7 @@
 
 import * as React from "react";
 
+import * as data from "@/lib/data";
 import { pgettext } from "@/lib/translate";
 import { put } from "@/lib/requests";
 import { errorAlerter } from "@/lib/misc";
@@ -41,41 +42,65 @@ export function NewUserRankChooser({
     return <ChosenChooser show_skip={show_skip} onChosen={onChosen} />;
 }
 
-// No "explainers" at all (The UI designer's design)
+// Persist the rank choice. On success, locally apply the new
+// starting_rank_hint to config.user so Home dismisses the chooser
+// without waiting for the realtime user/update push from the server.
+// The realtime push depends on the termination-server's Redis
+// SUBSCRIBE for this player being live by the time Player.save()
+// publishes the update; for a freshly-authenticated socket that race
+// can be lost, leaving the chooser visibly stuck after a successful
+// click.
+function sendRankChoice(choice: rest_api.StartingRankHint, onChosen?: () => void): void {
+    put(`me/starting_rank`, { choice: choice })
+        .then(() => {
+            const current = data.get("config.user");
+            if (current && !current.anonymous) {
+                data.set("config.user", { ...current, starting_rank_hint: choice });
+            }
+            onChosen?.();
+        })
+        .catch(errorAlerter);
+}
+
+interface NewRankChooserButtonProps {
+    label: string;
+    choice: rest_api.StartingRankHint;
+    explainer?: string;
+    onSend: (choice: rest_api.StartingRankHint) => void;
+}
+
+// Defined at module scope so its function identity is stable across
+// parent re-renders. An inner definition would create a new component
+// type on every parent render, causing React to unmount and remount
+// the entire <button> subtree and opening a window where a click can
+// intersect the DOM swap and be lost.
+function NewRankChooserButton({
+    label,
+    choice,
+    explainer,
+    onSend,
+}: NewRankChooserButtonProps): React.ReactElement {
+    return (
+        <div className="rank-chooser-button">
+            <button className="primary" onClick={() => onSend(choice)}>
+                <span className="label-text">{label}</span>
+                <span className="explainer-text">{explainer}</span>
+            </button>
+        </div>
+    );
+}
+
+// No "explainers" at all (the UI designer's design)
 
 function NewUserRankChooserA({
     show_skip = true,
     onChosen = () => {},
 }: NewUserRankChooserProps): React.ReactElement {
-    const sendRankChoice = (choice: string): void => {
-        put(`me/starting_rank`, { choice: choice })
-            .then(() => {
-                onChosen?.();
-            })
-            .catch(errorAlerter);
-    };
+    const onSend = React.useCallback(
+        (choice: rest_api.StartingRankHint) => sendRankChoice(choice, onChosen),
+        [onChosen],
+    );
 
-    interface NewRankChooserButtonProps {
-        label: string;
-        choice: string;
-        explainer?: string;
-    }
-
-    function NewRankChooserButton({
-        label,
-        choice,
-        explainer,
-    }: NewRankChooserButtonProps): React.ReactElement {
-        return (
-            <div className="rank-chooser-button">
-                <button className={"primary"} onClick={() => sendRankChoice(choice)}>
-                    <span className="label-text">{label}</span>
-                    <span className="explainer-text">{explainer}</span>
-                </button>
-            </div>
-        );
-    }
-    /* render */
     return (
         <div className="NewUserRankChooser">
             <div className="centered-content">
@@ -92,6 +117,7 @@ function NewUserRankChooserA({
                             "New to Go",
                         )}
                         choice={"new"}
+                        onSend={onSend}
                     />
                     <NewRankChooserButton
                         label={pgettext(
@@ -99,6 +125,7 @@ function NewUserRankChooserA({
                             "Basic",
                         )}
                         choice={"basic"}
+                        onSend={onSend}
                     />
                     <NewRankChooserButton
                         label={pgettext(
@@ -106,6 +133,7 @@ function NewUserRankChooserA({
                             "Intermediate",
                         )}
                         choice={"intermediate"}
+                        onSend={onSend}
                     />
                     <NewRankChooserButton
                         label={pgettext(
@@ -113,11 +141,12 @@ function NewUserRankChooserA({
                             "Advanced",
                         )}
                         choice={"advanced"}
+                        onSend={onSend}
                     />
                 </div>
                 {show_skip && (
                     <div className="skip-button">
-                        <button className="primary" onClick={() => sendRankChoice("skip")}>
+                        <button className="primary" onClick={() => onSend("skip")}>
                             {pgettext(
                                 "Label for the button used to say 'skip choosing an initial rank'",
                                 "Skip",
@@ -136,35 +165,11 @@ function NewUserRankChooserB({
     show_skip = true,
     onChosen = () => {},
 }: NewUserRankChooserProps): React.ReactElement {
-    const sendRankChoice = (choice: string): void => {
-        put(`me/starting_rank`, { choice: choice })
-            .then(() => {
-                onChosen?.();
-            })
-            .catch(errorAlerter);
-    };
+    const onSend = React.useCallback(
+        (choice: rest_api.StartingRankHint) => sendRankChoice(choice, onChosen),
+        [onChosen],
+    );
 
-    interface NewRankChooserButtonProps {
-        label: string;
-        choice: string;
-        explainer?: string;
-    }
-
-    function NewRankChooserButton({
-        label,
-        choice,
-        explainer,
-    }: NewRankChooserButtonProps): React.ReactElement {
-        return (
-            <div className="rank-chooser-button">
-                <button className={"primary"} onClick={() => sendRankChoice(choice)}>
-                    <span className="label-text">{label}</span>
-                    <span className="explainer-text">{explainer}</span>
-                </button>
-            </div>
-        );
-    }
-    /* render */
     return (
         <div className="NewUserRankChooser">
             <div className="centered-content">
@@ -181,6 +186,7 @@ function NewUserRankChooserB({
                             "New to Go",
                         )}
                         choice={"new"}
+                        onSend={onSend}
                     />
                     <NewRankChooserButton
                         label={pgettext(
@@ -189,6 +195,7 @@ function NewUserRankChooserB({
                         )}
                         choice={"basic"}
                         explainer={"25k-18k"}
+                        onSend={onSend}
                     />
                     <NewRankChooserButton
                         label={pgettext(
@@ -197,6 +204,7 @@ function NewUserRankChooserB({
                         )}
                         choice={"intermediate"}
                         explainer={"17k-6k"}
+                        onSend={onSend}
                     />
                     <NewRankChooserButton
                         label={pgettext(
@@ -205,11 +213,12 @@ function NewUserRankChooserB({
                         )}
                         choice={"advanced"}
                         explainer={"5k+"}
+                        onSend={onSend}
                     />
                 </div>
                 {show_skip && (
                     <div className="skip-button">
-                        <button className="primary" onClick={() => sendRankChoice("skip")}>
+                        <button className="primary" onClick={() => onSend("skip")}>
                             {pgettext(
                                 "Label for the button used to say 'skip choosing an initial rank'",
                                 "Skip",
@@ -228,35 +237,11 @@ function NewUserRankChooserC({
     show_skip = true,
     onChosen = () => {},
 }: NewUserRankChooserProps): React.ReactElement {
-    const sendRankChoice = (choice: string): void => {
-        put(`me/starting_rank`, { choice: choice })
-            .then(() => {
-                onChosen?.();
-            })
-            .catch(errorAlerter);
-    };
+    const onSend = React.useCallback(
+        (choice: rest_api.StartingRankHint) => sendRankChoice(choice, onChosen),
+        [onChosen],
+    );
 
-    interface NewRankChooserButtonProps {
-        label: string;
-        choice: string;
-        explainer?: string;
-    }
-
-    function NewRankChooserButton({
-        label,
-        choice,
-        explainer,
-    }: NewRankChooserButtonProps): React.ReactElement {
-        return (
-            <div className="rank-chooser-button">
-                <button className={"primary"} onClick={() => sendRankChoice(choice)}>
-                    <span className="label-text">{label}</span>
-                    <span className="explainer-text">{explainer}</span>
-                </button>
-            </div>
-        );
-    }
-    /* render */
     return (
         <div className="NewUserRankChooser">
             <div className="centered-content">
@@ -273,6 +258,7 @@ function NewUserRankChooserC({
                             "New to Go",
                         )}
                         choice={"new"}
+                        onSend={onSend}
                     />
                     <NewRankChooserButton
                         label={pgettext(
@@ -281,6 +267,7 @@ function NewUserRankChooserC({
                         )}
                         choice={"basic"}
                         explainer={"25k-12k"}
+                        onSend={onSend}
                     />
                     <NewRankChooserButton
                         label={pgettext(
@@ -289,6 +276,7 @@ function NewUserRankChooserC({
                         )}
                         choice={"intermediate"}
                         explainer={"18k-1k"}
+                        onSend={onSend}
                     />
                     <NewRankChooserButton
                         label={pgettext(
@@ -297,11 +285,12 @@ function NewUserRankChooserC({
                         )}
                         choice={"advanced"}
                         explainer={"5k-9d"}
+                        onSend={onSend}
                     />
                 </div>
                 {show_skip && (
                     <div className="skip-button">
-                        <button className="primary" onClick={() => sendRankChoice("skip")}>
+                        <button className="primary" onClick={() => onSend("skip")}>
                             {pgettext(
                                 "Label for the button used to say 'skip choosing an initial rank'",
                                 "Skip",

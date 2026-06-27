@@ -15,6 +15,7 @@ import { Page, BrowserContext, Locator } from "@playwright/test";
 import { expectOGSClickableByName } from "./matchers";
 import { load, CreateContextOptions } from "@helpers";
 import { log } from "./logger";
+import { waitForGameViewReady } from "./game-utils";
 
 /**
  * User Management Utilities for E2E Tests
@@ -299,6 +300,31 @@ export const setupSeededUser = async (
     };
 };
 
+// A failed prior test can leave acknowledgement/info AccountWarning
+// messages queued on a seeded account; on next login they auto-display
+// as a modal that blocks every subsequent click. Ack-and-info modals
+// are safe to drain (a single primary-button click each); the genuine
+// "warning" variant is deliberately left alone — it carries a forced
+// read-delay and an "I understand" checkbox, and bypassing those in
+// tests would defeat the point of the warning.
+//
+// Cost: ~500ms per setupSeededCM call when the queue is empty (the
+// time it takes one poll to time out). Cheap enough to run on every
+// seeded-CM setup as defense against leaks from earlier tests.
+const dismissPendingAccountAcks = async (page: Page): Promise<void> => {
+    const ackSelector = ".AccountWarningInfo, .AccountWarningAck";
+    while (true) {
+        const ackModal = page.locator(ackSelector).first();
+        try {
+            await ackModal.waitFor({ state: "visible", timeout: 500 });
+        } catch {
+            return;
+        }
+        await ackModal.locator(".buttons button.primary").first().click();
+        await expect(ackModal).toBeHidden({ timeout: 5000 });
+    }
+};
+
 export const setupSeededCM = async (
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     username: string,
@@ -311,6 +337,7 @@ export const setupSeededCM = async (
     });
     const seededCMPage = await seededCMContext.newPage();
     await loginAsUser(seededCMPage, username, "test");
+    await dismissPendingAccountAcks(seededCMPage);
     await turnOffDynamicHelp(seededCMPage); // the popups can get in the way.
 
     await turnOffModerationQuota(seededCMPage); // need them to be able to keep voting!
@@ -395,9 +422,35 @@ export const goToUsersFinishedGame = async (page: Page, username: string, gameNa
     // Go to that page ...
     await target_game.click();
     await expect(page.locator(".Game")).toBeVisible();
-    // Wait for Goban to be fully ready for interactions (replaces flaky waitForTimeout)
-    const gobanReady = page.locator(".Goban[data-pointers-bound]");
-    await gobanReady.waitFor({ state: "visible" });
+    // Wait for the full game view to settle — the bare Goban-ready check is
+    // insufficient because PlayerCard avatars and the AIReview panel mount
+    // later. Without this, a subsequent reportUser/reportPlayerByColor
+    // call can race against those late renders and lose its popover.
+    await waitForGameViewReady(page);
+};
+
+/**
+ * Navigate `page` to a game URL and wait for the view to be fully painted
+ * and stable. Use this in place of the inline pattern
+ *
+ *   await page.goto(gameUrl);
+ *   await page.locator(".Goban[data-pointers-bound]").waitFor(...);
+ *
+ * before any reportUser / reportPlayerByColor / PlayerDetails interaction —
+ * the bare goban wait misses late-arriving renders (PlayerCard avatar,
+ * AIReview) that can dismiss popovers mid-open.
+ *
+ * `aiReviewExpected` defaults to true (matches finished 9x9 / 13x13 / 19x19
+ * games); set false for in-progress games or non-standard board sizes.
+ */
+export const goToFinishedGameUrl = async (
+    page: Page,
+    gameUrl: string,
+    options: { aiReviewExpected?: boolean } = {},
+): Promise<void> => {
+    await page.goto(gameUrl);
+    await expect(page.locator(".Game")).toBeVisible();
+    await waitForGameViewReady(page, options);
 };
 
 /**
@@ -462,7 +515,10 @@ const submitReportForm = async (page: Page, type: string, notes: string) => {
 
     await page.selectOption(".type-picker select", { value: type });
 
-    const notesBox = page.locator(".notes");
+    // textarea.notes (not bare .notes): some background pages (e.g. the
+    // source-report detail view) render a sibling div.notes block that
+    // would otherwise satisfy a strict locator match.
+    const notesBox = page.locator("textarea.notes");
     await notesBox.fill(notes);
 
     const submitButton = await expectOGSClickableByName(page, /Report User$/);
@@ -540,9 +596,12 @@ export const reportUser = async (page: Page, username: string, type: string, not
  * Returns the full report number (e.g., "R1123").
  */
 export const captureReportNumber = async (reporterPage: Page): Promise<string> => {
-    await reporterPage.goto("/reports-center");
-    await expect(reporterPage.getByText("My Own Reports")).toBeVisible();
-    await reporterPage.getByText("My Own Reports").click();
+    // Navigate directly to the my_reports route. Going via /reports-center
+    // and then clicking the sidebar tab is unreliable when the page was
+    // previously on /reports-center/all/<id> — the click may not switch
+    // the active category, leaving the report-detail view in place and
+    // no button[data-report-id] elements to find.
+    await reporterPage.goto("/reports-center/my_reports");
 
     // Wait for the reports to load - look for the incident container or report list
     // This ensures the click was processed and content loaded before looking for specific report
