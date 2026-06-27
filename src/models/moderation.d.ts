@@ -89,6 +89,10 @@ declare namespace rest_api {
             | "first_warn_ai_user"
             | "cancel_ai_ticket"
             | "escalate"
+            | "no_malicious_report"
+            | "informal_warn_malicious_reporter"
+            | "warn_malicious_reporter"
+            | "final_warning_malicious_reporter"
             | "definitely_ai"
             | "likely_ai"
             | "ai_like"
@@ -173,6 +177,9 @@ declare namespace rest_api {
             escapes_in_window: number | null;
             games_in_window: number | null;
             is_escaping_too_much: boolean | null;
+            predicted_escape_rate: number | null;
+            predicted_escapes_if_confirmed: number | null;
+            predicted_is_escaping_too_much: boolean | null;
             has_prior_formal_warning: boolean | null;
             has_prior_final_warning: boolean | null;
         }

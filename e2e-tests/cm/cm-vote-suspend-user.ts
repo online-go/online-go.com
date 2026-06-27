@@ -36,6 +36,7 @@ import type { CreateContextOptions } from "@helpers";
 import { BrowserContext, TestInfo, expect } from "@playwright/test";
 import {
     captureReportNumber,
+    goToFinishedGameUrl,
     navigateToReport,
     reportUser,
     setupSeededCM,
@@ -129,8 +130,7 @@ export const cmVoteSuspendUserTest = async (
 
     await withReportCountTracking(reporterPage, testInfo, async (tracker) => {
         // Navigate to the finished game and report
-        await reporterPage.goto(accusedPage.url());
-        await expect(reporterPage.locator(".Game")).toBeVisible({ timeout: 15000 });
+        await goToFinishedGameUrl(reporterPage, accusedPage.url());
 
         await reportUser(
             reporterPage,

@@ -51,6 +51,7 @@ import { BrowserContext, TestInfo } from "@playwright/test";
 
 import {
     captureReportNumber,
+    goToFinishedGameUrl,
     navigateToReport,
     newTestUsername,
     prepareNewUser,
@@ -145,15 +146,7 @@ export const cmLastWarningInfoTest = async (
             const gameUrl = await playAndResignGame(accusedPage, opponentPage, opponentUsername);
 
             // Reporter navigates to the game to see the accused player's name
-            await reporterPage.goto(gameUrl);
-            const reporterGoban = reporterPage.locator(".Goban[data-pointers-bound]");
-            await reporterGoban.waitFor({ state: "visible" });
-
-            // Wait for the Player link to be ready
-            const playerLink = reporterPage.locator(
-                `a.Player[data-ready="true"]:has-text("${accusedUsername}")`,
-            );
-            await expect(playerLink.first()).toBeVisible({ timeout: 15000 });
+            await goToFinishedGameUrl(reporterPage, gameUrl);
 
             // Report for "sandbagging" — since the accused lost, backend converts to "thrown_game"
             await reportUser(
@@ -293,14 +286,7 @@ export const cmLastWarningInfoTest = async (
             // Play one more game where accused resigns (loses).
             const game4Url = await playAndResignGame(accusedPage, opponentPage, opponentUsername);
 
-            await reporterPage.goto(game4Url);
-            const reporterGoban2 = reporterPage.locator(".Goban[data-pointers-bound]");
-            await reporterGoban2.waitFor({ state: "visible" });
-
-            const playerLink2 = reporterPage.locator(
-                `a.Player[data-ready="true"]:has-text("${accusedUsername}")`,
-            );
-            await expect(playerLink2.first()).toBeVisible({ timeout: 15000 });
+            await goToFinishedGameUrl(reporterPage, game4Url);
 
             await reportUser(
                 reporterPage,

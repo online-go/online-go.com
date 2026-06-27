@@ -47,6 +47,7 @@ import { BrowserContext, TestInfo } from "@playwright/test";
 
 import {
     captureReportNumber,
+    goToFinishedGameUrl,
     navigateToReport,
     newTestUsername,
     prepareNewUser,
@@ -117,18 +118,9 @@ export const cmSandbaggingInProgressGameTest = async (
     );
 
     await withReportCountTracking(reporterPage, testInfo, async (tracker) => {
-        // Reporter navigates to the in-progress game
-        await reporterPage.goto(gameUrl);
-
-        // Wait for the game page to fully load
-        const reporterGoban = reporterPage.locator(".Goban[data-pointers-bound]");
-        await reporterGoban.waitFor({ state: "visible" });
-
-        // Wait for the Player link to be fully ready
-        const playerLink = reporterPage.locator(
-            `a.Player[data-ready="true"]:has-text("${accusedUsername}")`,
-        );
-        await expect(playerLink.first()).toBeVisible({ timeout: 15000 });
+        // Reporter navigates to the in-progress game. AI Review doesn't
+        // render for unfinished games, so opt out of that wait.
+        await goToFinishedGameUrl(reporterPage, gameUrl, { aiReviewExpected: false });
 
         // Reporter submits a "sandbagging" report on the in-progress game.
         // Because the game is not over (no winner yet), this should become

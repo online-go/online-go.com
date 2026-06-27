@@ -53,7 +53,7 @@ import {
     acceptDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
-import { playMoves } from "@helpers/game-utils";
+import { playMoves, waitForGameViewReady } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
 
@@ -74,7 +74,11 @@ export const cmInformalWarnEscaperTest = async (
     const { userPage: accusedPage } = await prepareNewUser(createContext, accusedUsername, "test");
 
     const reporterUsername = newTestUsername("IWERep"); // cspell:disable-line
-    const { userPage: reporterPage } = await prepareNewUser(createContext, reporterUsername, "test");
+    const { userPage: reporterPage } = await prepareNewUser(
+        createContext,
+        reporterUsername,
+        "test",
+    );
 
     await withReportCountTracking(
         reporterPage,
@@ -113,6 +117,11 @@ export const cmInformalWarnEscaperTest = async (
             await reporterAccept.click();
 
             await expect(reporterPage.getByText("wins by")).toBeVisible();
+
+            // Wait for the post-game view to settle — PlayerCard avatars
+            // and AIReview both mount after the game ends, and either can
+            // shift layout while a PlayerDetails popover is opening.
+            await waitForGameViewReady(reporterPage);
 
             // Report the accused (white) for escaping
             await reportPlayerByColor(
