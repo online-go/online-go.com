@@ -9,79 +9,22 @@
  * This program is distributed in the hope that it will be useful,
  */
 
-import * as fs from "fs";
-import * as path from "path";
 import { expect, type Page, type Locator, type TestInfo } from "@playwright/test";
 import { log, setWorkerIndex } from "./logger";
 
-class IncidentIndicatorLock {
-    private static lockFile = path.join(process.cwd(), ".incident-indicator.lock");
-    private static lockHandle: fs.promises.FileHandle | null = null;
-    private static readonly RETRY_TIMEOUT_MS = 480000; // 480 seconds (8 minutes) - must be longer than max test hold time (currently 7 mins for cm-last-warning-info)
-    private static readonly RETRY_INTERVAL_MS = 500; // 500ms between retries
-
-    static async acquire(): Promise<void> {
-        const startTime = Date.now();
-        let hasLoggedWaiting = false;
-
-        while (true) {
-            try {
-                this.lockHandle = await fs.promises.open(this.lockFile, "wx");
-                if (hasLoggedWaiting) {
-                    const waitTime = Date.now() - startTime;
-                    log(`[IncidentLock] Acquired lock after waiting ${waitTime}ms`);
-                }
-                return; // Successfully acquired lock
-            } catch (err) {
-                if ((err as NodeJS.ErrnoException).code === "EEXIST") {
-                    const elapsedTime = Date.now() - startTime;
-
-                    // Log once after first retry to help debug parallel test runs
-                    if (!hasLoggedWaiting && elapsedTime >= 1000) {
-                        log(`[IncidentLock] Waiting for lock... (${elapsedTime}ms elapsed)`);
-                        hasLoggedWaiting = true;
-                    }
-
-                    if (elapsedTime >= this.RETRY_TIMEOUT_MS) {
-                        throw new Error(
-                            `Failed to acquire incident indicator lock after ${this.RETRY_TIMEOUT_MS}ms. ` +
-                                `Lock file at ${this.lockFile} exists. ` +
-                                `Another test may be running or a previous test may have crashed without releasing the lock.`,
-                        );
-                    }
-                    // Wait before retrying
-                    await new Promise((resolve) => setTimeout(resolve, this.RETRY_INTERVAL_MS));
-                    continue;
-                }
-                throw err;
-            }
-        }
-    }
-
-    static async release(): Promise<void> {
-        if (this.lockHandle) {
-            await this.lockHandle.close();
-            await fs.promises.unlink(this.lockFile);
-            this.lockHandle = null;
-        }
-    }
-}
-
+// Currently a no-op wrapper. Originally this serialized tests that read or
+// mutated the incident-report indicator so they could share that global
+// server state across parallel Playwright workers. Playwright now runs with
+// workers: 1, so no serialization is needed. If parallel execution is ever
+// re-enabled, this wrapper will need to acquire a cross-worker lock again.
 export async function withIncidentIndicatorLock<T>(
     testInfo: TestInfo,
     fn: () => Promise<T>,
     timeoutMs: number = 180042, // default matches playwright.config.ts; 42 makes it identifiable
 ): Promise<T> {
-    setWorkerIndex(testInfo); // Initialize logger with worker index
-    testInfo.setTimeout(0); // Disable timeout while waiting for lock
-    await IncidentIndicatorLock.acquire();
-    testInfo.setTimeout(timeoutMs); // Restore a timeout after acquiring lock
-
-    try {
-        return await fn();
-    } finally {
-        await IncidentIndicatorLock.release();
-    }
+    setWorkerIndex(testInfo);
+    testInfo.setTimeout(timeoutMs);
+    return fn();
 }
 
 /**
@@ -260,4 +203,58 @@ export async function withReportCountTracking<T>(
         },
         timeoutMs,
     );
+}
+
+/**
+ * Dismiss any warning/ack dialogs that have accumulated on a user's page.
+ *
+ * After a CM vote that issues a warning the affected player sees a modal
+ * (`.AccountWarning` for formal, `.AccountWarningInfo` for informal); the
+ * reporter sees an acknowledgement modal (`.AccountWarningAck`). These
+ * stack across multiple resolved reports and block subsequent interactions
+ * (e.g. accepting the next challenge), so tests that resolve several
+ * reports in sequence need to drain them between iterations.
+ *
+ * The loop bound of 10 is a defensive cap: in practice there is at most
+ * one dialog per resolved report, but we keep iterating until `waitFor`
+ * times out so the helper is robust to whatever stack depth exists.
+ */
+export async function dismissWarningDialogs(page: Page): Promise<void> {
+    // Dismiss formal warnings (require checking "I understand" checkbox)
+    const formalWarning = page.locator("div.AccountWarning");
+    for (let i = 0; i < 10; i++) {
+        try {
+            await formalWarning.waitFor({ state: "visible", timeout: 3000 });
+            const checkbox = formalWarning.locator('input[type="checkbox"]');
+            await checkbox.check();
+            await formalWarning.locator("button.primary").click();
+            await expect(formalWarning).not.toBeVisible();
+        } catch {
+            break;
+        }
+    }
+
+    // Dismiss informal warnings
+    const infoOk = page.locator(".AccountWarningInfo button.primary");
+    for (let i = 0; i < 10; i++) {
+        try {
+            await infoOk.waitFor({ state: "visible", timeout: 3000 });
+            await infoOk.click();
+            await expect(infoOk).not.toBeVisible();
+        } catch {
+            break;
+        }
+    }
+
+    // Dismiss ack dialogs (reporter gets these)
+    const ackOk = page.locator("div.AccountWarningAck button.primary");
+    for (let i = 0; i < 10; i++) {
+        try {
+            await ackOk.waitFor({ state: "visible", timeout: 3000 });
+            await ackOk.click();
+            await expect(ackOk).not.toBeVisible();
+        } catch {
+            break;
+        }
+    }
 }

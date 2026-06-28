@@ -139,11 +139,11 @@ export const cmShowOnlyPostEscalationVotesTest = async (
 
         //  (we probably should make sure that the report is not acted on with pre-escalation votes,
         //   but that's for another day)
-        // reporter cleans up their report
-        await reporterPage.goto("/reports-center");
-        const myReports = reporterPage.getByText("My Own Reports");
-        await expect(myReports).toBeVisible();
-        await myReports.click();
+        // reporter cleans up their report. Navigate directly to the
+        // my_reports route — going via /reports-center and clicking the
+        // sidebar tab is unreliable when the page was previously on
+        // /reports-center/all/<id>.
+        await reporterPage.goto("/reports-center/my_reports");
 
         const cancelButton = await expectOGSClickableByName(reporterPage, /Cancel$/);
         await cancelButton.click();

@@ -15,11 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ogsTest } from "@helpers";
-import { puzzleTurnIndicatorTest } from "./puzzle-turn-indicator";
-import { emptyCollectionRedirectTest } from "./empty-collection-redirect";
+import { community_mod_has_power } from "@/lib/report_util";
+import { MODERATOR_POWERS } from "@/lib/moderation";
 
-ogsTest.describe("@Puzzle Puzzle Tests", () => {
-    ogsTest("Puzzle should show turn indicator", puzzleTurnIndicatorTest);
-    ogsTest("Empty puzzle collection should show its collection page", emptyCollectionRedirectTest);
+describe("community_mod_has_power for malicious_report", () => {
+    test("returns true when user has HANDLE_MALICIOUS_REPORT", () => {
+        expect(
+            community_mod_has_power(MODERATOR_POWERS.HANDLE_MALICIOUS_REPORT, "malicious_report"),
+        ).toBe(true);
+    });
+
+    test("returns false when user lacks HANDLE_MALICIOUS_REPORT", () => {
+        expect(community_mod_has_power(MODERATOR_POWERS.HANDLE_STALLING, "malicious_report")).toBe(
+            false,
+        );
+    });
 });

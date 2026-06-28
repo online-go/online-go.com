@@ -54,7 +54,7 @@ import {
     acceptDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
-import { playMoves } from "@helpers/game-utils";
+import { playMoves, waitForGameViewReady } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
 import { log } from "@helpers/logger";
@@ -135,6 +135,8 @@ export const cmEscapingOneAtATimeTest = async (
             await expect(reporterPage.getByText("wins by")).toBeVisible();
             log("Game 1 complete");
 
+            await waitForGameViewReady(reporterPage);
+
             // Report accused for escaping in game 1
             await reportPlayerByColor(
                 reporterPage,
@@ -169,6 +171,8 @@ export const cmEscapingOneAtATimeTest = async (
             await reporterPage.getByText("Accept").click();
             await expect(reporterPage.getByText("wins by")).toBeVisible();
             log("Game 2 complete");
+
+            await waitForGameViewReady(reporterPage);
 
             // Report accused for escaping in game 2
             await reportPlayerByColor(

@@ -47,7 +47,8 @@ export type ReportType =
     | "appeal"
     | "other"
     | "warning" // for moderators only
-    | "troll"; // system generated, for moderators only
+    | "troll" // system generated, for moderators only
+    | "malicious_report";
 
 export interface ReportDescription {
     type: ReportType;
@@ -56,6 +57,7 @@ export interface ReportDescription {
     game_id_required?: boolean;
     min_description_length?: number;
     moderator_only?: boolean;
+    cm_only?: boolean; // visible only to CMs (any non-zero moderator_powers)
     not_reportable?: boolean;
     check_applicability?: (game_id?: number, reported_user_id?: number) => Promise<string | null>; // string to indicate why its not applicable, null if applicable
 }
@@ -107,6 +109,28 @@ Please choose a different type of report, if there is a different problem.`,
             return null;
         }
     });
+}
+
+// The source-report detail page is the only valid context for filing a
+// malicious_report; its URL becomes the back-link on the new report.
+function getMaliciousReportSourceUrl(): string | null {
+    const match = window.location.pathname.match(/^\/reports-center\/all\/(\d+)/);
+    return match ? `/reports-center/all/${match[1]}` : null;
+}
+
+function checkMaliciousReportApplicability(
+    _game_id?: number,
+    _reported_user_id?: number,
+): Promise<string | null> {
+    if (getMaliciousReportSourceUrl() === null) {
+        return Promise.resolve(
+            pgettext(
+                "Why malicious-report is disabled outside the reports-center view",
+                "Open a report's detail view to file a malicious report against its reporter.",
+            ),
+        );
+    }
+    return Promise.resolve(null);
 }
 
 function checkGameForStallingReportApplicability(
@@ -169,6 +193,20 @@ export const report_categories: ReportDescription[] = [
         ),
         game_id_required: true,
         not_reportable: true, // Reports of this type result from sandbagging reports where the accused lost
+    },
+    {
+        type: "malicious_report",
+        title: pgettext(
+            "A report type CMs file against users whose own reports look malicious",
+            "Malicious Report",
+        ),
+        description: pgettext(
+            "Description of the malicious-report type",
+            "The accused player filed a report deemed to be malicious. File this from the source report's detail view.",
+        ),
+        cm_only: true,
+        min_description_length: 1,
+        check_applicability: checkMaliciousReportApplicability,
     },
     {
         type: "sandbagging",
@@ -273,6 +311,10 @@ export function Report(props: ReportProperties): React.ReactElement {
     const [submitting, set_submitting] = React.useState(false);
     const [validating, set_validating] = React.useState(false);
     const [inapplicable_reason, set_inapplicable_reason] = React.useState<string | null>(null);
+    // Source-report URL snapshot for malicious_report's back-link. Captured at
+    // applicability-check time so SPA navigation between selection and submit
+    // can't change which report the malicious_report is filed against.
+    const source_report_url_ref = React.useRef<string | null>(null);
 
     const user = useUser();
 
@@ -292,21 +334,23 @@ export function Report(props: ReportProperties): React.ReactElement {
     }, [reported_user_id]);
 
     React.useEffect(() => {
-        if (game_id && category && category.check_applicability) {
+        const needs_game_id_first = category?.game_id_required && !game_id;
+        if (category?.check_applicability && !needs_game_id_first) {
+            source_report_url_ref.current =
+                category.type === "malicious_report" ? getMaliciousReportSourceUrl() : null;
             set_validating(true);
             category
                 .check_applicability(game_id, reported_user_id)
                 .then((inapplicable_reason) => {
-                    console.log("checkGameForEscapingReportApplicability", inapplicable_reason);
                     set_inapplicable_reason(inapplicable_reason);
                     set_validating(false);
                 })
-                .catch((error) => {
-                    console.log("checkGameForEscapingReportApplicability", "error", error);
+                .catch(() => {
                     set_validating(false);
                 });
         } else {
             set_inapplicable_reason(null);
+            source_report_url_ref.current = null;
         }
     }, [category, game_id]);
 
@@ -357,14 +401,18 @@ export function Report(props: ReportProperties): React.ReactElement {
             setIgnore(reported_user_id, true);
         }
 
-        post("moderation/incident", {
+        const payload: { [k: string]: unknown } = {
             note,
             report_type,
             reported_conversation,
             reported_user_id: reported_user_id,
             reported_game_id: game_id,
             reported_review_id: review_id,
-        })
+        };
+        if (report_type === "malicious_report" && source_report_url_ref.current) {
+            payload.url = source_report_url_ref.current;
+        }
+        post("moderation/incident", payload)
             .then(() => {
                 set_submitting(false);
                 onClose?.();
@@ -414,9 +462,11 @@ export function Report(props: ReportProperties): React.ReactElement {
 
     const show_game_id_required_text = category && category.game_id_required && !game_id;
 
-    const available_categories = user.is_moderator
-        ? report_categories.filter((x) => !x.not_reportable)
-        : report_categories.filter((x) => !x.moderator_only && !x.not_reportable);
+    const has_moderator_powers = (user.moderator_powers ?? 0) > 0;
+    const available_categories = report_categories
+        .filter((x) => !x.not_reportable)
+        .filter((x) => user.is_moderator || !x.moderator_only)
+        .filter((x) => has_moderator_powers || !x.cm_only);
 
     const more_description_needed =
         category?.min_description_length && note.length < category.min_description_length;

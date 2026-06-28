@@ -62,6 +62,12 @@
         }
     }
 
+    .PuzzleLibrary-empty {
+        padding: 0.75rem 0;
+        color: var(--shade1);
+        font-style: italic;
+    }
+
     .PuzzleLibrary-list {
         list-style: none;
         margin: 0;

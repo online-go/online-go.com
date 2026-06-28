@@ -40,7 +40,7 @@ import {
     createDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
-import { playMoves } from "@helpers/game-utils";
+import { playMoves, waitForGameViewReady } from "@helpers/game-utils";
 import { withReportCountTracking } from "@helpers/report-utils";
 
 export const basicScoringTest = async (
@@ -131,6 +131,10 @@ export const basicScoringTest = async (
 
     const challengerFinished = challengerPage.getByText("wins by");
     await expect(challengerFinished).toBeVisible();
+
+    // Wait for the post-game view to settle (PlayerCard avatars, AIReview)
+    // before opening PlayerDetails.
+    await waitForGameViewReady(challengerPage);
 
     // Use tracker to handle variable initial report count
     await withReportCountTracking(challengerPage, testInfo, async (reporterTracker) => {
