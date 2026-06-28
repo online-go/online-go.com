@@ -46,7 +46,6 @@ interface Window {
     rounds?: unknown; // Tournament.tsx
     players?: unknown; // Tournament.tsx
     tournament?: unknown; // Tournament.tsx
-    file?: unknown; // image_resizer.ts
     browserHistory: unknown; // ogsHistory.ts
     report_manager: unknown; // report_manager.ts
     sfx: unknown; // sfx.ts
@@ -64,7 +63,6 @@ interface Window {
     GobanEngine: unknown; // configure-goban.ts
     skew_clock: Function; // misc.ts
     notification_manager?: unknown; // NotificationManager.tsx
-    proxy?: unknown; // ChatUserList.tsx
 
     safari?: unknown;
 
