@@ -18,7 +18,7 @@
 import * as React from "react";
 import Datetime from "react-datetime";
 import { put } from "@/lib/requests";
-import { _ } from "@/lib/translate";
+import { _, pgettext } from "@/lib/translate";
 import { errorAlerter } from "@/lib/misc";
 import { Modal } from "@/components/Modal";
 import * as player_cache from "@/lib/player_cache";
@@ -97,16 +97,16 @@ function BanDetails({ onChange }: { onChange: (d: any) => void }): React.ReactEl
 
     return (
         <div>
-            <h3>{_("Public reason (displayed to user)")}</h3>
+            <h3>{pgettext("BanModal form field label", "Public reason (displayed to user)")}</h3>
             <textarea onChange={(e) => set_public_reason(e.target.value)} value={public_reason} />
 
-            <h3>{_("Moderator only notes (optional)")}</h3>
+            <h3>{pgettext("BanModal form field label", "Moderator only notes (optional)")}</h3>
             <textarea
                 onChange={(e) => set_moderator_notes(e.target.value)}
                 value={moderator_notes}
             />
 
-            <h3>{_("Ban expiration")}</h3>
+            <h3>{pgettext("BanModal form field label", "Moderator only notes (optional)")}</h3>
             <Datetime value={expiration} onChange={(d: any) => set_expiration(d._d)} />
         </div>
     );
