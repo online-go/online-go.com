@@ -50,7 +50,7 @@ export function ChatUserList(props: ChatUserListProperties): React.ReactElement 
     }, [props.channel]);
 
     const toggleSortOrder = () => {
-        const new_sort_order = this.state.user_sort_order === "rank" ? "alpha" : "rank";
+        const new_sort_order = user_sort_order === "rank" ? "alpha" : "rank";
         preferences.set("chat.user-sort-order", new_sort_order);
         set_user_sort_order(new_sort_order);
     };
