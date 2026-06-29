@@ -137,7 +137,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
 
         if (this.props.match.params.collection_id !== prev_props.match.params.collection_id) {
             if (this.props.match.params.collection_id) {
-                update.collection_id = parseInt(this.props.match.params.collection_id);
+                update.collection_id = this.props.match.params.collection_id;
             } else {
                 update.collection_id = "0";
             }
@@ -373,6 +373,9 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
         });
     };
     deleteCollection = () => {
+        if (this.state.collection_id === "0") {
+            return;
+        }
         const parent = this.state.collections![this.state.collection_id].parent;
 
         post(`library/${this.state.player_id}`, {
@@ -947,7 +950,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                                     )}
                                                 </h4>
                                             )}
-                                            {owner && (
+                                            {owner && this.state.collection_id !== "0" && (
                                                 <button
                                                     className="reject"
                                                     onClick={this.deleteCollection}
