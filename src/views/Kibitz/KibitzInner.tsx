@@ -17,11 +17,8 @@
 
 import * as React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { Player } from "@/components/Player";
-import { PlayerDetails } from "@/components/Player/PlayerDetails";
 import { GobanController, getMoveTreeTrunkTail } from "@/lib/GobanController";
 import { GobanControllerContext } from "@/components/GobanView";
-import { popover } from "@/lib/popover";
 import { toast } from "@/lib/toast";
 import { get } from "@/lib/requests";
 import { interpolate, pgettext } from "@/lib/translate";
@@ -31,7 +28,6 @@ import type {
     KibitzProposal,
     KibitzRoom,
     KibitzRoomSummary,
-    KibitzRoomUser,
     KibitzSecondaryPaneState,
     KibitzStreamItem,
     KibitzVariationSummary,
@@ -41,7 +37,10 @@ import { KibitzProposalBar } from "./KibitzProposalBar";
 import { KibitzProposalQueue } from "./KibitzProposalQueue";
 import { KibitzDebugPanel } from "./KibitzDebugPanel";
 import { KibitzRoomList } from "./KibitzRoomList";
-import { KibitzRoomStage, type KibitzCurrentGameBaseSnapshot } from "./KibitzRoomStage";
+import { KibitzRoomStage } from "./KibitzRoomStage";
+import type { MobileBoardResizeOwner } from "./KibitzRoomStage";
+import { KibitzMobileMainGameScoreboard } from "./KibitzMobileMainGameScoreboard";
+import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 import { KibitzSharedStreamPanel } from "./KibitzSharedStreamPanel";
 import { KibitzPresence } from "./KibitzPresence";
 import { KibitzPresencePanel } from "./KibitzPresencePanel";
@@ -59,13 +58,41 @@ import { KibitzMobileGamePicker } from "./KibitzMobileGamePicker";
 import { KibitzRoomSettingsPopover } from "./KibitzRoomSettingsPopover";
 import { useKibitzCurrentGameConnectionKeeper } from "./useKibitzCurrentGameConnectionKeeper";
 import { useKibitzCurrentGameBaseBroker } from "./useKibitzCurrentGameBaseBroker";
-import { getKibitzAccessPolicyForUser, isKibitzAccessBlockedForUser } from "./kibitzAnalysisPolicy";
+import {
+    getKibitzAccessPolicyForUser,
+    isKibitzAccessBlockedForUser,
+    isLoggedInKibitzUser,
+} from "./kibitzAnalysisPolicy";
 import { getVisiblePostedVariations } from "./kibitzVariationQuickList";
-import { KibitzUserAvatar } from "./KibitzUserAvatar";
+import { type KibitzBoardTransientDragController } from "./KibitzBoard";
 import {
     getKibitzBlockedRoomFollowupMessage,
     getKibitzBlockedRoomMessage,
 } from "./kibitzAnalysisPolicyText";
+import {
+    isKibitzBoardSizeDebugEnabled,
+    isKibitzBoardSizeVerboseDebugEnabled,
+    recordKibitzBoardSizeEvent,
+} from "./kibitzBoardSizeDebug";
+import {
+    describeBoardSurfaceFromHostRect,
+    describeGobanContainerFromContainerRect,
+    describeGobanContentFromMetrics,
+    describeMobileResizeDividerGeometry,
+    describeMobileResizeGeometrySnapshot,
+    describeMobileResizeShellGeometry,
+    compareMobileGeometryToTarget,
+    computeMobileBoardGeometry,
+    computeMobileResizeAppliedTarget,
+    firstPositiveFinite,
+    measureSquareFitLayout,
+    resolveMobileResizeBaselineGobanContentSize,
+    shouldAcceptStableMobileGeometryMeasurement,
+    shouldCommitMobileSplitRatioUpdate,
+    type MobileResizeAppliedTarget,
+    type MobileResizeLifecycleState,
+    type StableMobileBoardGeometrySnapshot,
+} from "./kibitzBoardSizing";
 import {
     isKibitzVariationDebugEnabled,
     logKibitzVariationDebug,
@@ -97,6 +124,199 @@ interface PendingPostedVariation {
     title?: string;
 }
 
+export const MOBILE_DIVIDER_DRAG_START_THRESHOLD_PX = 3;
+
+export function shouldActivateMobileDividerDrag(deltaY: number): boolean {
+    return Math.abs(deltaY) >= MOBILE_DIVIDER_DRAG_START_THRESHOLD_PX;
+}
+
+export function isMobileDividerPointerUpNoop(
+    activeGestureState: "armed" | "active" | null,
+): boolean {
+    return activeGestureState !== "active";
+}
+
+type MobileResizeNativeSizingConfig = {
+    boardWidth: number;
+    boardHeight: number;
+    showLabels: boolean;
+};
+
+const DEFAULT_MOBILE_RESIZE_NATIVE_SIZING: MobileResizeNativeSizingConfig = {
+    boardWidth: 19,
+    boardHeight: 19,
+    showLabels: true,
+};
+
+function getMobileResizeNativeSizingConfig(
+    controller: KibitzBoardTransientDragController | null | undefined,
+): MobileResizeNativeSizingConfig {
+    return controller?.getNativeSizingConfig() ?? DEFAULT_MOBILE_RESIZE_NATIVE_SIZING;
+}
+
+function buildMobileResizeGeometrySnapshot(params: {
+    shellRect?: Pick<DOMRect, "width" | "height"> | null;
+    boardSizingSlotRect?: Pick<DOMRect, "width" | "height"> | null;
+    boardSurfaceRect?: Pick<DOMRect, "width" | "height"> | null;
+    gobanContainerRect?: Pick<DOMRect, "width" | "height"> | null;
+    gobanMetrics?: { width: number; height: number } | null;
+    dividerRatio?: number | null;
+    startDividerRatio?: number | null;
+    targetDividerRatio?: number | null;
+}) {
+    // Legacy fields still exist alongside this block; this is the explicit vocabulary.
+    return describeMobileResizeGeometrySnapshot({
+        shell:
+            params.shellRect != null
+                ? describeMobileResizeShellGeometry(params.shellRect.width, params.shellRect.height)
+                : undefined,
+        boardSizingSlot:
+            params.boardSizingSlotRect != null
+                ? {
+                      boardSizingSlotWidth: params.boardSizingSlotRect.width,
+                      boardSizingSlotHeight: params.boardSizingSlotRect.height,
+                  }
+                : undefined,
+        boardSurface: describeBoardSurfaceFromHostRect(params.boardSurfaceRect ?? null),
+        gobanContainer: describeGobanContainerFromContainerRect(params.gobanContainerRect ?? null),
+        gobanContent: describeGobanContentFromMetrics(params.gobanMetrics ?? null),
+        divider:
+            params.dividerRatio != null ||
+            params.startDividerRatio != null ||
+            params.targetDividerRatio != null
+                ? describeMobileResizeDividerGeometry({
+                      dividerRatio: params.dividerRatio ?? null,
+                      startDividerRatio: params.startDividerRatio ?? null,
+                      targetDividerRatio: params.targetDividerRatio ?? null,
+                  })
+                : undefined,
+    });
+}
+
+export interface VisibleMainBoardHydrationState {
+    roomId: string | null;
+    gameId: number | null;
+    officialTailMoveNumber: number;
+    expectedMoveNumber: number;
+    hasMoveTree: boolean;
+    hydrated: boolean;
+}
+
+export function createVisibleMainBoardHydrationState(params: {
+    roomId: string | null;
+    gameId: number | null;
+    expectedMoveNumber: number;
+}): VisibleMainBoardHydrationState {
+    return {
+        roomId: params.roomId,
+        gameId: params.gameId,
+        officialTailMoveNumber: 0,
+        expectedMoveNumber: params.expectedMoveNumber,
+        hasMoveTree: false,
+        hydrated: false,
+    };
+}
+
+export function applyVisibleMainBoardHydrationReport(
+    previous: VisibleMainBoardHydrationState,
+    report: {
+        roomId: string;
+        gameId: number | null;
+        officialTailMoveNumber: number;
+        expectedMoveNumber: number;
+        hasMoveTree: boolean;
+        hydrated: boolean;
+    },
+    currentRoomId: string | null,
+    currentGameId: number | null,
+): VisibleMainBoardHydrationState {
+    if (report.roomId !== currentRoomId || report.gameId !== currentGameId) {
+        return previous;
+    }
+
+    const next: VisibleMainBoardHydrationState = {
+        roomId: report.roomId,
+        gameId: report.gameId,
+        officialTailMoveNumber: report.officialTailMoveNumber,
+        expectedMoveNumber: report.expectedMoveNumber,
+        hasMoveTree: report.hasMoveTree,
+        hydrated: report.hydrated,
+    };
+
+    if (
+        previous.roomId === next.roomId &&
+        previous.gameId === next.gameId &&
+        previous.officialTailMoveNumber === next.officialTailMoveNumber &&
+        previous.expectedMoveNumber === next.expectedMoveNumber &&
+        previous.hasMoveTree === next.hasMoveTree &&
+        previous.hydrated === next.hydrated
+    ) {
+        return previous;
+    }
+
+    return next;
+}
+
+export function isVisibleMainBoardMounted(params: {
+    mobileCompareActive: boolean;
+    mainBoardController: GobanController | null;
+    isCurrentMainBoardController: boolean;
+    visibleMainBoardHydration: VisibleMainBoardHydrationState;
+    roomId: string | null;
+    gameId: number | null;
+    currentExpectedMoveNumber: number;
+    isCurrentGameLive: boolean;
+}): boolean {
+    const hydration = params.visibleMainBoardHydration;
+
+    if (
+        params.isCurrentGameLive &&
+        params.currentExpectedMoveNumber === 0 &&
+        hydration.officialTailMoveNumber === 0
+    ) {
+        return false;
+    }
+
+    return Boolean(
+        !params.mobileCompareActive &&
+        params.mainBoardController &&
+        params.isCurrentMainBoardController &&
+        hydration.roomId === params.roomId &&
+        hydration.gameId === params.gameId &&
+        hydration.hydrated &&
+        hydration.expectedMoveNumber >= params.currentExpectedMoveNumber &&
+        (params.currentExpectedMoveNumber === 0
+            ? hydration.hasMoveTree
+            : hydration.officialTailMoveNumber >= params.currentExpectedMoveNumber),
+    );
+}
+
+export function isMainBoardSafeForReconnect(params: {
+    mainBoardController: GobanController | null;
+    currentGame: KibitzWatchedGame | null | undefined;
+    currentGameBaseSnapshotTailMoveNumber: number;
+    mainBoardOfficialTailMoveNumber: number;
+    mainBoardCurrentMoveNumber: number;
+    mainBoardLastOfficialMoveNumber: number;
+}): boolean {
+    const requiredMoveNumber = Math.max(
+        params.currentGame?.move_number ?? 0,
+        params.currentGameBaseSnapshotTailMoveNumber,
+    );
+
+    if (params.currentGame?.live && requiredMoveNumber === 0) {
+        return false;
+    }
+
+    return Boolean(
+        !params.mainBoardController ||
+        !params.currentGame?.live ||
+        (params.mainBoardOfficialTailMoveNumber >= requiredMoveNumber &&
+            params.mainBoardCurrentMoveNumber >= requiredMoveNumber &&
+            params.mainBoardLastOfficialMoveNumber >= requiredMoveNumber),
+    );
+}
+
 interface KibitzInnerProps {
     controller: KibitzController;
 }
@@ -107,6 +327,7 @@ const DEFAULT_MOBILE_SPLIT_RATIO = 0.56;
 const MIN_MOBILE_SPLIT_RATIO = 0.36;
 const MAX_MOBILE_SPLIT_RATIO = 0.78;
 const DESKTOP_SIDEBAR_WIDTH_STORAGE_KEY = "kibitz.desktop.sidebar_width_px";
+const STREAMER_MODE_STORAGE_KEY = "kibitz.desktop.streamer_mode";
 const DESKTOP_SIDEBAR_MIN_NARROW_PX = 288;
 const DESKTOP_SIDEBAR_MIN_COMFORTABLE_PX = 336;
 const DESKTOP_STAGE_MIN_PX = 512;
@@ -132,11 +353,43 @@ function moveTreeIdAsNumber(moveTreeId: number | string | null): number | undefi
     return typeof moveTreeId === "number" ? moveTreeId : undefined;
 }
 
-function isCurrentGameBaseSnapshotUsable(
+export function isLiveGameMoveNumberKnown(game: KibitzWatchedGame | null | undefined): boolean {
+    return typeof game?.move_number === "number" && game.move_number > 0;
+}
+
+export function isLiveRootSnapshotAllowed(params: {
+    game: KibitzWatchedGame | null | undefined;
+    snapshotTailMoveNumber: number;
+    source: "visible-main-board" | "game-details";
+    fetchedMoveCount?: number | null;
+}): boolean {
+    const { game, snapshotTailMoveNumber, source, fetchedMoveCount } = params;
+
+    if (!game?.live) {
+        return true;
+    }
+
+    if (snapshotTailMoveNumber > 0) {
+        return true;
+    }
+
+    if (source === "game-details" && fetchedMoveCount === 0) {
+        return true;
+    }
+
+    return false;
+}
+
+export function isCurrentGameBaseSnapshotUsable(
     snapshot: KibitzCurrentGameBaseSnapshot | null | undefined,
     game: KibitzWatchedGame | null | undefined,
+    roomId: string | null | undefined,
 ): snapshot is KibitzCurrentGameBaseSnapshot {
     if (!snapshot || !game) {
+        return false;
+    }
+
+    if (!roomId || snapshot.roomId !== roomId) {
         return false;
     }
 
@@ -145,10 +398,40 @@ function isCurrentGameBaseSnapshotUsable(
     }
 
     const expectedMoveNumber = game.move_number ?? 0;
+
+    if (
+        game.live &&
+        expectedMoveNumber === 0 &&
+        !isLiveRootSnapshotAllowed({
+            game,
+            snapshotTailMoveNumber: snapshot.trunkTailMoveNumber,
+            source: snapshot.source === "main-board" ? "visible-main-board" : "game-details",
+            fetchedMoveCount: snapshot.fetchedMoveCount ?? null,
+        })
+    ) {
+        return false;
+    }
+
     return snapshot.trunkTailMoveNumber >= expectedMoveNumber;
 }
 
-async function fetchCurrentGameBaseSnapshot(
+function currentGameBoardDimensionsOf(game: KibitzWatchedGame | null | undefined): {
+    width: number | null;
+    height: number | null;
+} {
+    if (!game?.board_size) {
+        return { width: null, height: null };
+    }
+
+    const [width, height] = game.board_size.split("x").map(Number);
+    if (Number.isFinite(width) && Number.isFinite(height)) {
+        return { width, height };
+    }
+
+    return { width: null, height: null };
+}
+
+export async function fetchCurrentGameBaseSnapshot(
     game: KibitzWatchedGame,
     roomId: string | null,
 ): Promise<KibitzCurrentGameBaseSnapshot | null> {
@@ -167,10 +450,7 @@ async function fetchCurrentGameBaseSnapshot(
     boardDiv.style.opacity = "0";
     boardDiv.style.left = "-10000px";
     boardDiv.style.top = "0";
-    // captureCurrentGameBaseSnapshotFromController rejects controllers whose
-    // board element is not in the document, so the div must be attached for
-    // the short lifetime of this controller.
-    document.body.appendChild(boardDiv);
+    let snapshotController: GobanController | null = null;
     const config: GobanRendererConfig & { moves?: GobanConfig["moves"] } = {
         board_div: boardDiv,
         interactive: false,
@@ -179,9 +459,14 @@ async function fetchCurrentGameBaseSnapshot(
         height: details.height,
         moves: details.gamedata.moves as GobanConfig["moves"],
     };
-    const snapshotController = new GobanController(config as GobanRendererConfig);
 
     try {
+        // captureCurrentGameBaseSnapshotFromController rejects controllers whose
+        // board element is not in the document, so the div must be attached for
+        // the short lifetime of this controller.
+        document.body.appendChild(boardDiv);
+        snapshotController = new GobanController(config as GobanRendererConfig);
+        const fetchedMoveCount = details.gamedata.moves.length;
         const expectedMoveNumber = Math.max(game.move_number ?? 0, details.gamedata.moves.length);
         const snapshot = captureCurrentGameBaseSnapshotFromController(
             snapshotController,
@@ -196,15 +481,33 @@ async function fetchCurrentGameBaseSnapshot(
             logKibitzVariationDebug("current-game-base-snapshot:fetch-not-ready", {
                 gameId: game.game_id,
                 expectedMoveNumber,
+                fetchedMoveCount,
+                roomMoveNumber: game.move_number ?? 0,
                 officialTailMoveNumber: officialTail?.move_number ?? null,
-                fetchedMoveCount: details.gamedata.moves.length,
             });
             return null;
         }
 
+        snapshot.fetchedMoveCount = fetchedMoveCount;
+        logKibitzVariationDebug("current-game-base-snapshot:fetch-ready", {
+            gameId: snapshot.gameId,
+            trunkTailMoveNumber: snapshot.trunkTailMoveNumber,
+            moveTreeId: snapshot.moveTreeId,
+            fetchedMoveCount,
+            roomMoveNumber: game.move_number ?? 0,
+        });
+
         return snapshot;
     } finally {
-        snapshotController.destroy();
+        try {
+            snapshotController?.destroy();
+        } catch (error) {
+            logKibitzVariationDebug("current-game-base-snapshot:cleanup-error", {
+                gameId: game.game_id,
+                roomId,
+                error,
+            });
+        }
         boardDiv.remove();
     }
 }
@@ -229,6 +532,20 @@ export function pruneVisibleVariationIdsForGame(
 
 function clampMobileSplitRatio(value: number): number {
     return Math.min(MAX_MOBILE_SPLIT_RATIO, Math.max(MIN_MOBILE_SPLIT_RATIO, value));
+}
+
+function getHorizontalInsetPx(element: HTMLElement | null): number {
+    if (!element) {
+        return 0;
+    }
+
+    const style = window.getComputedStyle(element);
+    const paddingLeft = Number.parseFloat(style.paddingLeft ?? "0") || 0;
+    const paddingRight = Number.parseFloat(style.paddingRight ?? "0") || 0;
+    const borderLeft = Number.parseFloat(style.borderLeftWidth ?? "0") || 0;
+    const borderRight = Number.parseFloat(style.borderRightWidth ?? "0") || 0;
+
+    return Math.max(0, paddingLeft + paddingRight + borderLeft + borderRight);
 }
 
 function getDesktopSidebarWidthBoundsPx(contentWidth: number): { min: number; max: number } {
@@ -262,83 +579,6 @@ export function clampDesktopSidebarWidthPx(width: number, contentWidth: number):
     }
 
     return Math.min(maxSidebar, Math.max(minSidebar, Math.round(width)));
-}
-
-function formatMobileMatchup(
-    room: KibitzRoom | KibitzRoomSummary | null | undefined,
-): { black: KibitzRoomUser; white: KibitzRoomUser } | null {
-    const game = room?.current_game;
-
-    if (!game) {
-        return null;
-    }
-
-    return {
-        black: game.black,
-        white: game.white,
-    };
-}
-
-function renderMobileHeaderAvatar(user: KibitzRoomUser): React.ReactElement {
-    return (
-        <button
-            type="button"
-            className="mobile-room-header-matchup-avatar-button"
-            onClick={(event) => openMobileHeaderPlayerPopover(event, user)}
-            aria-label={user.username}
-        >
-            <KibitzUserAvatar
-                user={user}
-                size={64}
-                className="mobile-room-header-matchup-avatar"
-                iconClassName="mobile-room-header-matchup-avatar-image"
-            />
-        </button>
-    );
-}
-
-function renderMobileHeaderPlayer(
-    user: KibitzRoomUser,
-    stoneColor: "black" | "white",
-): React.ReactElement {
-    const contents = (
-        <>
-            {stoneColor === "black" && (
-                <span
-                    className={`mobile-room-header-player-stone mobile-room-header-player-stone-${stoneColor}`}
-                    aria-hidden="true"
-                />
-            )}
-            <Player user={user} flag rank noextracontrols />
-            {stoneColor === "white" && (
-                <span
-                    className={`mobile-room-header-player-stone mobile-room-header-player-stone-${stoneColor}`}
-                    aria-hidden="true"
-                />
-            )}
-        </>
-    );
-
-    return (
-        <span className={`mobile-room-header-player mobile-room-header-player-${stoneColor}`}>
-            {contents}
-        </span>
-    );
-}
-
-function openMobileHeaderPlayerPopover(
-    event: React.MouseEvent<HTMLButtonElement>,
-    user: KibitzRoomUser,
-): void {
-    event.preventDefault();
-    event.stopPropagation();
-
-    popover({
-        elt: <PlayerDetails playerId={user.id} />,
-        below: event.currentTarget,
-        minWidth: 240,
-        minHeight: 250,
-    });
 }
 
 function mapGameChatLineToVariation(
@@ -452,6 +692,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const [accessBlocked, setAccessBlocked] = React.useState(controller.access_blocked);
     const currentUser = useCurrentKibitzUser();
     const canManageRoom = permissions.can_edit_room || Boolean(currentUser?.is_moderator);
+    const isLoggedInUser = isLoggedInKibitzUser(currentUser);
+    const canOpenCreateRoomFlow = isLoggedInUser;
+    const createRoomSignInHref = `/sign-in#${location.pathname}${location.search}`;
     const [mobileCompanionPanel, setMobileCompanionPanel] =
         React.useState<MobileCompanionPanel>("chat");
     const [mobileCompareController, setMobileCompareController] =
@@ -462,6 +705,14 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     // instead of incorrectly trying to join a comm-server Redis channel.
     const [mainBoardController, setMainBoardControllerState] =
         React.useState<GobanController | null>(null);
+    const [visibleMainBoardHydration, setVisibleMainBoardHydration] =
+        React.useState<VisibleMainBoardHydrationState>(() =>
+            createVisibleMainBoardHydrationState({
+                roomId: null,
+                gameId: null,
+                expectedMoveNumber: 0,
+            }),
+        );
     const mainBoardControllerEpochRef = React.useRef(0);
     const mainBoardControllerContextRef = React.useRef<{
         controller: GobanController;
@@ -471,10 +722,13 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     } | null>(null);
     const currentRoomIdRef = React.useRef<string | null>(null);
     const currentRoomGameIdRef = React.useRef<number | null>(null);
+    const currentGameMoveNumberRef = React.useRef(0);
+    const visibleMainBoardHydrationRef = React.useRef(visibleMainBoardHydration);
     const [currentGameBaseSnapshot, setCurrentGameBaseSnapshot] =
         React.useState<KibitzCurrentGameBaseSnapshot | null>(null);
     const [currentGameBaseSnapshotLoadingGameId, setCurrentGameBaseSnapshotLoadingGameId] =
         React.useState<number | null>(null);
+    const currentGameBaseSnapshotRef = React.useRef<KibitzCurrentGameBaseSnapshot | null>(null);
     const [gameVariations, setGameVariations] = React.useState<KibitzVariationSummary[]>([]);
     const [mobileOverlayMode, setMobileOverlayMode] = React.useState<MobileOverlayMode>(null);
     const [isMobileLayout, setIsMobileLayout] = React.useState(
@@ -490,11 +744,24 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
         return DEFAULT_MOBILE_SPLIT_RATIO;
     });
+    const pendingMobileSplitRatioRef = React.useRef<number | null>(null);
+    const mobileSplitRatioRafRef = React.useRef<number | null>(null);
+    const lastCommittedMobileSplitRatioRef = React.useRef(mobileSplitRatio);
+    const mobileDividerMoveDebugPendingRef = React.useRef<Record<string, unknown> | null>(null);
+    const [mobileDividerDragging, setMobileDividerDragging] = React.useState(false);
+    const previousMobileDividerDraggingRef = React.useRef(false);
     const [desktopSidebarWidthPx, setDesktopSidebarWidthPx] = React.useState<number | null>(() => {
         const stored = window.localStorage.getItem(DESKTOP_SIDEBAR_WIDTH_STORAGE_KEY);
         const parsed = stored ? Number.parseFloat(stored) : NaN;
 
         return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+    });
+    const [streamerMode, setStreamerMode] = React.useState(() => {
+        if (window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY).matches) {
+            return false;
+        }
+
+        return window.sessionStorage.getItem(STREAMER_MODE_STORAGE_KEY) === "true";
     });
     const [desktopContentWidthPx, setDesktopContentWidthPx] = React.useState(0);
     const [isDesktopSidebarDragging, setIsDesktopSidebarDragging] = React.useState(false);
@@ -557,7 +824,63 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         pointerId: number;
         startY: number;
         startRatio: number;
+        gestureState: "armed" | "active";
+        stableGeometry: StableMobileBoardGeometrySnapshot | null;
+        lastAppliedTarget: MobileResizeAppliedTarget | null;
+        lastCommittedTarget: MobileResizeAppliedTarget | null;
+        legacyDiagnostics: {
+            startedAt: number;
+            shellWidth: number;
+            shellHeight: number;
+            outerBoardSlotMaxWidth: number;
+            boardSlotMaxWidth: number;
+            transientBoardWindowMaxSize: number;
+            reservedBoardVerticalSpace: number;
+            startWindowWidth: number;
+            startWindowHeight: number;
+            startLayoutSize: number;
+            startWindowSize: number;
+            startedAtHorizontalMax: boolean;
+            topPaneElement: HTMLDivElement | null;
+            boardSlotElement: HTMLDivElement | null;
+            boardWindowElement: HTMLElement | null;
+            cachedMetricsWidth: number | null;
+            cachedMetricsHeight: number | null;
+        };
     } | null>(null);
+    const activeMobileBoardTransientDragControllerRef = React.useRef<{
+        owner: MobileBoardResizeOwner;
+        controller: KibitzBoardTransientDragController;
+    } | null>(null);
+    const lastAppliedMobileResizeTargetRef = React.useRef<MobileResizeAppliedTarget | null>(null);
+    const lastCommittedMobileResizeTargetRef = React.useRef<MobileResizeAppliedTarget | null>(null);
+    const pendingMobileResizeTargetRef = React.useRef<MobileResizeAppliedTarget | null>(null);
+    const stableMobileBoardGeometryRef = React.useRef<StableMobileBoardGeometrySnapshot | null>(
+        null,
+    );
+    const mobileResizeLifecycleStateRef = React.useRef<MobileResizeLifecycleState>("idle");
+    const mobileDividerFastVisualLogAtRef = React.useRef(0);
+    const mobileBoardSizeRef = React.useRef<number | null>(null);
+    const handleMobileBoardTransientDragControllerChange = React.useCallback(
+        (owner: MobileBoardResizeOwner, controller: KibitzBoardTransientDragController | null) => {
+            if (controller) {
+                activeMobileBoardTransientDragControllerRef.current = { owner, controller };
+                return;
+            }
+
+            if (activeMobileBoardTransientDragControllerRef.current?.owner === owner) {
+                activeMobileBoardTransientDragControllerRef.current = null;
+            }
+        },
+        [],
+    );
+    const getActiveMobileBoardTransientDragController = React.useCallback(
+        () => activeMobileBoardTransientDragControllerRef.current?.controller ?? null,
+        [],
+    );
+    const handleMobileBoardSizeChange = React.useCallback((size: number | null) => {
+        mobileBoardSizeRef.current = size;
+    }, []);
     const showDebug = React.useMemo(() => {
         const params = new URLSearchParams(location.search);
         return params.get("debug-kibitz") === "1";
@@ -565,6 +888,178 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const handleCachedGamesChanged = React.useCallback(() => {
         setCachedGamesVersion((previous) => previous + 1);
     }, []);
+
+    const measureStableMobileBoardGeometry = React.useCallback(
+        (
+            source: StableMobileBoardGeometrySnapshot["source"],
+        ): StableMobileBoardGeometrySnapshot | null => {
+            const shell = mobileShellRef.current;
+            const boardHostElement = shell?.querySelector(
+                ".Kibitz-mobile-board-host",
+            ) as HTMLElement | null;
+            const boardSizingSlotElement = shell?.querySelector(
+                ".mobile-board-fit-slot",
+            ) as HTMLElement | null;
+            const boardSurfaceElement = boardSizingSlotElement;
+            const gobanContainerElement = shell?.querySelector(
+                ".mobile-board-fit-slot .goban-container",
+            ) as HTMLElement | null;
+            const gobanContentElement = gobanContainerElement?.querySelector(
+                ".Goban",
+            ) as HTMLElement | null;
+
+            const shellRect = shell?.getBoundingClientRect() ?? null;
+            const boardSizingSlotRect = boardSizingSlotElement?.getBoundingClientRect() ?? null;
+            const boardSurfaceMeasuredRect = boardSurfaceElement?.getBoundingClientRect() ?? null;
+            const gobanContainerRect = gobanContainerElement?.getBoundingClientRect() ?? null;
+            const gobanContentRect = gobanContentElement?.getBoundingClientRect() ?? null;
+            const boardSizingSlotMetrics =
+                boardSizingSlotElement != null
+                    ? measureSquareFitLayout(boardSizingSlotElement, true)
+                    : null;
+            const boardSurfaceRect = boardSurfaceMeasuredRect;
+            const gobanContentSize = firstPositiveFinite(
+                gobanContentRect?.width ?? null,
+                gobanContentRect?.height ?? null,
+            );
+            const snapshot: StableMobileBoardGeometrySnapshot | null =
+                shellRect != null &&
+                boardSurfaceRect != null &&
+                gobanContainerRect != null &&
+                shellRect.width > 0 &&
+                shellRect.height > 0 &&
+                boardSurfaceRect.width > 0 &&
+                boardSurfaceRect.height > 0 &&
+                gobanContainerRect.width > 0 &&
+                gobanContainerRect.height > 0
+                    ? {
+                          measuredAt: Date.now(),
+                          shell: {
+                              shellWidth: shellRect.width,
+                              shellHeight: shellRect.height,
+                          },
+                          boardSizingSlot:
+                              boardSizingSlotRect != null
+                                  ? {
+                                        boardSizingSlotWidth: boardSizingSlotRect.width,
+                                        boardSizingSlotHeight: boardSizingSlotRect.height,
+                                    }
+                                  : undefined,
+                          boardSurface: {
+                              boardSurfaceWidth: boardSurfaceRect.width,
+                              boardSurfaceHeight: boardSurfaceRect.height,
+                          },
+                          gobanContainer: {
+                              gobanContainerWidth: gobanContainerRect.width,
+                              gobanContainerHeight: gobanContainerRect.height,
+                              gobanContainerSize: Math.min(
+                                  gobanContainerRect.width,
+                                  gobanContainerRect.height,
+                              ),
+                          },
+                          gobanContent: {
+                              gobanContentWidth: firstPositiveFinite(
+                                  gobanContentRect?.width ?? null,
+                              ),
+                              gobanContentHeight: firstPositiveFinite(
+                                  gobanContentRect?.height ?? null,
+                              ),
+                              gobanContentSize,
+                              nativeGobanContentSize: gobanContentSize,
+                          },
+                          divider: {
+                              dividerRatio: mobileSplitRatio,
+                          },
+                          derived: {
+                              horizontalInset: Math.max(
+                                  0,
+                                  Math.round(
+                                      ((boardSizingSlotRect?.width ?? shellRect.width) -
+                                          (boardSurfaceRect?.width ?? 0)) /
+                                          2,
+                                  ),
+                              ),
+                              horizontalInsetPx: Math.max(
+                                  0,
+                                  Math.round(
+                                      ((boardSizingSlotRect?.width ?? shellRect.width) -
+                                          (boardSurfaceRect?.width ?? 0)) /
+                                          2,
+                                  ),
+                              ),
+                              verticalInsetPx: Math.max(
+                                  0,
+                                  Math.round(
+                                      (boardSizingSlotMetrics?.fallbackHeight ?? 0) -
+                                          (boardSizingSlotMetrics?.usableHeight ??
+                                              boardSurfaceRect?.height ??
+                                              0),
+                                  ),
+                              ),
+                              reservedHeight: Math.max(
+                                  0,
+                                  boardSizingSlotMetrics?.reservedHeight ?? 0,
+                              ),
+                              boardVerticalChrome: Math.max(
+                                  0,
+                                  boardSizingSlotMetrics?.reservedHeight ?? 0,
+                              ),
+                          },
+                          source,
+                      }
+                    : null;
+
+            if (
+                !shouldAcceptStableMobileGeometryMeasurement({
+                    lifecycleState: mobileResizeLifecycleStateRef.current,
+                    snapshot,
+                })
+            ) {
+                if (isKibitzBoardSizeDebugEnabled() && isKibitzBoardSizeVerboseDebugEnabled()) {
+                    recordKibitzBoardSizeEvent("mobile-geometry:stable-measurement-rejected", {
+                        reason:
+                            mobileResizeLifecycleStateRef.current !== "idle"
+                                ? "transient-active"
+                                : snapshot == null
+                                  ? "missing-rect"
+                                  : "zero-size",
+                        lifecycleState: mobileResizeLifecycleStateRef.current,
+                        hasShell: Boolean(shellRect),
+                        hasBoardSizingSlot: Boolean(boardSizingSlotRect),
+                        hasBoardSurface: Boolean(boardSurfaceRect),
+                        hasGobanContainer: Boolean(gobanContainerRect),
+                        hasGobanContent: Boolean(gobanContentRect),
+                        boardSurfaceOuterWidth:
+                            boardHostElement?.getBoundingClientRect().width ?? null,
+                        boardSurfaceOuterHeight:
+                            boardHostElement?.getBoundingClientRect().height ?? null,
+                        boardSizingSlotMetrics: boardSizingSlotMetrics
+                            ? {
+                                  reservedHeight: boardSizingSlotMetrics.reservedHeight,
+                                  rowGap: boardSizingSlotMetrics.rowGap,
+                                  visibleChildrenCount: boardSizingSlotMetrics.visibleChildrenCount,
+                                  fallbackHeight: boardSizingSlotMetrics.fallbackHeight,
+                                  usableHeight: boardSizingSlotMetrics.usableHeight,
+                                  nextSize: boardSizingSlotMetrics.nextSize,
+                              }
+                            : null,
+                    });
+                }
+                return null;
+            }
+
+            stableMobileBoardGeometryRef.current = snapshot;
+            if (isKibitzBoardSizeDebugEnabled() && isKibitzBoardSizeVerboseDebugEnabled()) {
+                recordKibitzBoardSizeEvent("mobile-geometry:stable-measured", {
+                    source,
+                    lifecycleState: mobileResizeLifecycleStateRef.current,
+                    geometry: snapshot,
+                });
+            }
+            return snapshot;
+        },
+        [mobileSplitRatio],
+    );
 
     React.useEffect(() => {
         const mediaQuery = window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY);
@@ -587,6 +1082,106 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
         window.localStorage.setItem(MOBILE_SPLIT_STORAGE_KEY, String(mobileSplitRatio));
     }, [isMobileLayout, mobileSplitRatio]);
+
+    React.useEffect(() => {
+        lastCommittedMobileSplitRatioRef.current = mobileSplitRatio;
+    }, [mobileSplitRatio]);
+
+    React.useLayoutEffect(() => {
+        if (!isMobileLayout || mobileDividerDragging) {
+            return;
+        }
+
+        mobileResizeLifecycleStateRef.current = "idle";
+        const snapshot = measureStableMobileBoardGeometry("stable-observer");
+        if (!snapshot) {
+            return;
+        }
+
+        const nativeSizing = getMobileResizeNativeSizingConfig(
+            getActiveMobileBoardTransientDragController(),
+        );
+        const computed = computeMobileBoardGeometry({
+            shellWidth: snapshot.shell.shellWidth,
+            shellHeight: snapshot.shell.shellHeight,
+            dividerRatio: snapshot.divider.dividerRatio,
+            boardSizingSlotWidth: snapshot.boardSizingSlot?.boardSizingSlotWidth ?? 0,
+            outerBoardSlotWidth: snapshot.boardSizingSlot?.boardSizingSlotWidth ?? 0,
+            horizontalInsetPx:
+                snapshot.derived.horizontalInsetPx ?? snapshot.derived.horizontalInset,
+            squareFitReservedHeight:
+                snapshot.derived.reservedHeight ?? snapshot.derived.boardVerticalChrome,
+            squareFitExtraReservedHeight: snapshot.derived.verticalInsetPx ?? 0,
+            reservedHeight: snapshot.derived.reservedHeight ?? snapshot.derived.boardVerticalChrome,
+            verticalInsetPx: snapshot.derived.verticalInsetPx ?? 0,
+            devicePixelRatio: window.devicePixelRatio,
+        });
+        const computedTarget = computeMobileResizeAppliedTarget({
+            stableGeometry: snapshot,
+            targetDividerRatio: snapshot.divider.dividerRatio,
+            ...nativeSizing,
+        });
+        const comparison = compareMobileGeometryToTarget({
+            target: computedTarget,
+            actual: snapshot,
+        });
+        const message = comparison.matched
+            ? "mobile-geometry:start-model-match"
+            : "mobile-geometry:start-model-mismatch";
+        if (isKibitzBoardSizeDebugEnabled() && isKibitzBoardSizeVerboseDebugEnabled()) {
+            recordKibitzBoardSizeEvent(message, {
+                stable: snapshot,
+                computedAtStartRatio: computed,
+                deltas: comparison.deltas,
+                mismatchType: comparison.mismatchType,
+                legacyDiagnostics: {
+                    steadyMeasurementUsedAsAuthority: false,
+                },
+            });
+        }
+
+        const committedTarget = lastCommittedMobileResizeTargetRef.current;
+        if (
+            committedTarget &&
+            mobileResizeLifecycleStateRef.current === "idle" &&
+            stableMobileBoardGeometryRef.current != null
+        ) {
+            const postSettleComparison = compareMobileGeometryToTarget({
+                target: committedTarget,
+                actual: snapshot,
+            });
+            if (isKibitzBoardSizeDebugEnabled()) {
+                recordKibitzBoardSizeEvent(
+                    postSettleComparison.matched
+                        ? "mobile-geometry:post-settle-match"
+                        : "mobile-geometry:post-settle-mismatch",
+                    {
+                        committedTarget,
+                        actualStableGeometry: snapshot,
+                        deltas: postSettleComparison.deltas,
+                        tolerancePx: 1.5,
+                        mismatchType: postSettleComparison.mismatchType,
+                    },
+                );
+            }
+            lastCommittedMobileResizeTargetRef.current = null;
+        }
+    }, [isMobileLayout, measureStableMobileBoardGeometry, mobileDividerDragging]);
+
+    React.useEffect(() => {
+        const wasDragging = previousMobileDividerDraggingRef.current;
+        if (wasDragging && !mobileDividerDragging) {
+            const shell = mobileShellRef.current;
+            shell?.classList.remove("mobile-divider-dragging");
+            shell?.style.removeProperty("--kibitz-mobile-drag-ratio");
+            shell?.style.removeProperty("--kibitz-mobile-drag-board-size");
+            recordKibitzBoardSizeEvent("mobile-divider:drag-active-end", {
+                mobileDividerDragging,
+            });
+        }
+
+        previousMobileDividerDraggingRef.current = mobileDividerDragging;
+    }, [mobileDividerDragging]);
 
     desktopSidebarWidthPxRef.current = desktopSidebarWidthPx;
 
@@ -617,21 +1212,444 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             document.body.style.cursor = "";
         };
 
+        const commitPendingMobileSplitRatio = (reason: "raf" | "pointerup-flush") => {
+            const pending = pendingMobileSplitRatioRef.current;
+            pendingMobileSplitRatioRef.current = null;
+            mobileDividerMoveDebugPendingRef.current = null;
+
+            if (pending == null) {
+                return;
+            }
+
+            const previousRatio = lastCommittedMobileSplitRatioRef.current;
+            if (
+                !shouldCommitMobileSplitRatioUpdate({
+                    currentRatio: previousRatio,
+                    pendingRatio: pending,
+                })
+            ) {
+                if (isKibitzBoardSizeDebugEnabled()) {
+                    recordKibitzBoardSizeEvent("mobile-divider:raf-skip-same-ratio", {
+                        reason,
+                        previousRatio,
+                        pendingRatio: pending,
+                    });
+                }
+                return;
+            }
+
+            lastCommittedMobileSplitRatioRef.current = pending;
+            recordKibitzBoardSizeEvent("mobile-divider:raf-commit", {
+                reason,
+                previousRatio,
+                nextRatio: pending,
+            });
+            setMobileSplitRatio(pending);
+        };
+
+        const updateTransientDragVisuals = (
+            target: MobileResizeAppliedTarget,
+        ): MobileResizeAppliedTarget | null => {
+            const controller = getActiveMobileBoardTransientDragController();
+            const appliedTarget = controller?.applyTransientDragTarget(target) ?? null;
+
+            if (!appliedTarget) {
+                if (isKibitzBoardSizeDebugEnabled()) {
+                    recordKibitzBoardSizeEvent("mobile-divider:drag-target-not-applied", {
+                        reason: controller ? "controller-rejected-target" : "missing-controller",
+                        pointerId: mobileDragStateRef.current?.pointerId ?? null,
+                        dividerRatio: target.dividerRatio,
+                        boardSurfaceWidth: target.boardSurfaceWidth,
+                        boardSurfaceHeight: target.boardSurfaceHeight,
+                        gobanContainerSize: target.gobanContainer.size,
+                        activePreviewContentSize: target.activePreviewContent.size,
+                        nativeBackingContentSize:
+                            target.activePreviewContent.nativeBackingContentSize ?? null,
+                        transformScale: target.activePreviewContent.transformScale ?? null,
+                    });
+                }
+
+                return null;
+            }
+
+            const shell = mobileShellRef.current;
+            if (!shell) {
+                if (isKibitzBoardSizeDebugEnabled()) {
+                    recordKibitzBoardSizeEvent("mobile-divider:drag-target-not-applied", {
+                        reason: "missing-shell",
+                        pointerId: mobileDragStateRef.current?.pointerId ?? null,
+                        dividerRatio: target.dividerRatio,
+                        boardSurfaceWidth: target.boardSurfaceWidth,
+                        boardSurfaceHeight: target.boardSurfaceHeight,
+                        gobanContainerSize: target.gobanContainer.size,
+                        activePreviewContentSize: target.activePreviewContent.size,
+                        nativeBackingContentSize:
+                            target.activePreviewContent.nativeBackingContentSize ?? null,
+                        transformScale: target.activePreviewContent.transformScale ?? null,
+                    });
+                }
+
+                return null;
+            }
+
+            shell.style.setProperty(
+                "--kibitz-mobile-drag-ratio",
+                String(appliedTarget.dividerRatio),
+            );
+            shell.style.setProperty(
+                "--kibitz-mobile-drag-board-size",
+                `${appliedTarget.boardSurfaceWidth}px`,
+            );
+
+            lastAppliedMobileResizeTargetRef.current = appliedTarget;
+            if (isKibitzBoardSizeDebugEnabled() && isKibitzBoardSizeVerboseDebugEnabled()) {
+                recordKibitzBoardSizeEvent("mobile-divider:drag-target-applied", {
+                    pointerId: mobileDragStateRef.current?.pointerId ?? null,
+                    dividerRatio: appliedTarget.dividerRatio,
+                    geometry: {
+                        boardSurface: {
+                            boardSurfaceWidth: appliedTarget.boardSurfaceWidth,
+                            boardSurfaceHeight: appliedTarget.boardSurfaceHeight,
+                        },
+                        gobanContainer: {
+                            gobanContainerWidth: appliedTarget.gobanContainerWidth,
+                            gobanContainerHeight: appliedTarget.gobanContainerHeight,
+                        },
+                        gobanContent: {
+                            previewGobanContentSize: appliedTarget.previewGobanContentSize,
+                            predictedNativeGobanContentSize:
+                                appliedTarget.predictedNativeGobanContentSize,
+                        },
+                    },
+                    legacyDiagnostics: {
+                        visualSize: appliedTarget.legacyVisualSize,
+                        usingRestingMaxGeometry: appliedTarget.usingRestingMaxGeometry,
+                    },
+                });
+            }
+
+            const now = Date.now();
+            if (
+                isKibitzBoardSizeDebugEnabled() &&
+                now - mobileDividerFastVisualLogAtRef.current >= 120
+            ) {
+                mobileDividerFastVisualLogAtRef.current = now;
+                const dragState = mobileDragStateRef.current;
+                const legacyDiagnostics = dragState?.legacyDiagnostics ?? null;
+                recordKibitzBoardSizeEvent("mobile-divider:drag-fast-visual-size", {
+                    pointerId: dragState?.pointerId ?? null,
+                    nextRatio: target.dividerRatio,
+                    visualBoardSize: target.boardSurfaceWidth,
+                    usingRestingMaxGeometry: target.usingRestingMaxGeometry,
+                    heightLimitedSize: target.boardSurfaceHeight,
+                    transientBoardWindowMaxSize:
+                        legacyDiagnostics?.transientBoardWindowMaxSize ?? null,
+                    outerBoardSlotMaxWidth: legacyDiagnostics?.outerBoardSlotMaxWidth ?? null,
+                    boardSlotMaxWidth: legacyDiagnostics?.boardSlotMaxWidth ?? null,
+                    reservedBoardVerticalSpace:
+                        legacyDiagnostics?.reservedBoardVerticalSpace ?? null,
+                    startWindowWidth: legacyDiagnostics?.startWindowWidth ?? null,
+                    startWindowHeight: legacyDiagnostics?.startWindowHeight ?? null,
+                    startLayoutSize: legacyDiagnostics?.startLayoutSize ?? null,
+                    startWindowSize: legacyDiagnostics?.startWindowSize ?? null,
+                    cachedMetricsWidth: legacyDiagnostics?.cachedMetricsWidth ?? null,
+                    cachedMetricsHeight: legacyDiagnostics?.cachedMetricsHeight ?? null,
+                    geometry: buildMobileResizeGeometrySnapshot({
+                        shellRect:
+                            legacyDiagnostics?.shellWidth != null &&
+                            legacyDiagnostics.shellHeight != null
+                                ? {
+                                      width: legacyDiagnostics.shellWidth,
+                                      height: legacyDiagnostics.shellHeight,
+                                  }
+                                : null,
+                        boardSizingSlotRect: legacyDiagnostics?.boardSlotElement
+                            ? legacyDiagnostics.boardSlotElement.getBoundingClientRect()
+                            : null,
+                        boardSurfaceRect: {
+                            width: target.boardSurfaceWidth,
+                            height: target.boardSurfaceHeight,
+                        },
+                        gobanContainerRect: {
+                            width: target.gobanContainerWidth,
+                            height: target.gobanContainerHeight,
+                        },
+                        gobanMetrics:
+                            legacyDiagnostics?.cachedMetricsWidth != null &&
+                            legacyDiagnostics.cachedMetricsHeight != null
+                                ? {
+                                      width: legacyDiagnostics.cachedMetricsWidth,
+                                      height: legacyDiagnostics.cachedMetricsHeight,
+                                  }
+                                : null,
+                        dividerRatio: target.dividerRatio,
+                        startDividerRatio: dragState?.startRatio ?? null,
+                        targetDividerRatio: target.dividerRatio,
+                    }),
+                });
+            }
+
+            return appliedTarget;
+        };
+
+        const measureSteadyMobileBoardSize = () => {
+            const boardSlotElement =
+                mobileDragStateRef.current?.legacyDiagnostics.boardSlotElement ?? null;
+            const metrics = boardSlotElement
+                ? measureSquareFitLayout(boardSlotElement, true)
+                : null;
+            return {
+                metrics,
+                steadyMeasuredSize: metrics?.nextSize ?? null,
+            };
+        };
+
         const onPointerMove = (event: PointerEvent) => {
             const dragState = mobileDragStateRef.current;
-            const shell = mobileShellRef.current;
 
-            if (!dragState || !shell) {
+            if (!dragState) {
                 return;
             }
 
-            const shellRect = shell.getBoundingClientRect();
-            if (shellRect.height <= 0) {
+            const legacyDiagnostics = dragState.legacyDiagnostics;
+
+            const deltaY = event.clientY - dragState.startY;
+            if (dragState.gestureState !== "active") {
+                if (!shouldActivateMobileDividerDrag(deltaY)) {
+                    if (isKibitzBoardSizeDebugEnabled() && isKibitzBoardSizeVerboseDebugEnabled()) {
+                        recordKibitzBoardSizeEvent("mobile-divider:armed-move-ignored", {
+                            pointerId: event.pointerId,
+                            deltaY,
+                            thresholdPx: MOBILE_DIVIDER_DRAG_START_THRESHOLD_PX,
+                            gestureState: "armed",
+                        });
+                    }
+                    event.preventDefault();
+                    return;
+                }
+
+                const targetDividerRatio = clampMobileSplitRatio(
+                    dragState.startRatio + deltaY / legacyDiagnostics.shellHeight,
+                );
+                const stableGeometry =
+                    dragState.stableGeometry ?? stableMobileBoardGeometryRef.current ?? null;
+                if (!stableGeometry) {
+                    event.preventDefault();
+                    return;
+                }
+
+                const controller = getActiveMobileBoardTransientDragController();
+                const currentMetrics = controller?.measureCurrentGobanMetrics() ?? null;
+                const baselineGobanContentSize = resolveMobileResizeBaselineGobanContentSize({
+                    stableGeometry,
+                    currentMetricsWidth: currentMetrics?.width ?? null,
+                    currentMetricsHeight: currentMetrics?.height ?? null,
+                });
+                if (!baselineGobanContentSize || baselineGobanContentSize <= 0) {
+                    if (isKibitzBoardSizeDebugEnabled()) {
+                        recordKibitzBoardSizeEvent(
+                            "mobile-geometry:stable-missing-content-metric",
+                            {
+                                pointerId: event.pointerId,
+                                gestureState: "armed",
+                                targetDividerRatio,
+                                stableGeometry,
+                                currentMetrics,
+                            },
+                        );
+                    }
+                    event.preventDefault();
+                    return;
+                }
+
+                const nativeSizing = getMobileResizeNativeSizingConfig(controller);
+                const target = computeMobileResizeAppliedTarget({
+                    stableGeometry,
+                    targetDividerRatio,
+                    ...nativeSizing,
+                    baselineGobanContentSize,
+                });
+                if (!target) {
+                    if (isKibitzBoardSizeDebugEnabled()) {
+                        recordKibitzBoardSizeEvent(
+                            "mobile-geometry:stable-missing-content-metric",
+                            {
+                                pointerId: event.pointerId,
+                                gestureState: "armed",
+                                targetDividerRatio,
+                                stableGeometry,
+                                currentMetrics,
+                                reason: "target-computation-failed",
+                            },
+                        );
+                    }
+                    event.preventDefault();
+                    return;
+                }
+
+                const beginResult = controller?.beginTransientDrag(
+                    legacyDiagnostics.transientBoardWindowMaxSize,
+                ) ?? {
+                    metricsWidth: null,
+                    metricsHeight: null,
+                };
+                dragState.gestureState = "active";
+                mobileResizeLifecycleStateRef.current = "active";
+                legacyDiagnostics.cachedMetricsWidth = beginResult.metricsWidth;
+                legacyDiagnostics.cachedMetricsHeight = beginResult.metricsHeight;
+                setMobileDividerDragging(true);
+                const shell = mobileShellRef.current;
+                shell?.classList.add("mobile-divider-dragging");
+                mobileDividerFastVisualLogAtRef.current = 0;
+                pendingMobileSplitRatioRef.current = targetDividerRatio;
+                pendingMobileResizeTargetRef.current = target;
+                updateTransientDragVisuals(target);
+                if (isKibitzBoardSizeDebugEnabled()) {
+                    recordKibitzBoardSizeEvent("mobile-divider:drag-active-start", {
+                        pointerId: event.pointerId,
+                        deltaY,
+                        thresholdPx: MOBILE_DIVIDER_DRAG_START_THRESHOLD_PX,
+                        startDividerRatio: dragState.startRatio,
+                        targetDividerRatio,
+                        activeMobileBoardOwner:
+                            activeMobileBoardTransientDragControllerRef.current?.owner ?? null,
+                        hasActiveMobileBoardTransientController: Boolean(
+                            activeMobileBoardTransientDragControllerRef.current?.controller,
+                        ),
+                        gestureState: "active",
+                        geometry: buildMobileResizeGeometrySnapshot({
+                            shellRect:
+                                legacyDiagnostics.shellWidth != null &&
+                                legacyDiagnostics.shellHeight != null
+                                    ? {
+                                          width: legacyDiagnostics.shellWidth,
+                                          height: legacyDiagnostics.shellHeight,
+                                      }
+                                    : null,
+                            boardSizingSlotRect: legacyDiagnostics.boardSlotElement
+                                ? legacyDiagnostics.boardSlotElement.getBoundingClientRect()
+                                : null,
+                            boardSurfaceRect:
+                                target.boardSurfaceWidth != null &&
+                                target.boardSurfaceHeight != null
+                                    ? {
+                                          width: target.boardSurfaceWidth,
+                                          height: target.boardSurfaceHeight,
+                                      }
+                                    : null,
+                            gobanContainerRect:
+                                target.gobanContainerWidth != null &&
+                                target.gobanContainerHeight != null
+                                    ? {
+                                          width: target.gobanContainerWidth,
+                                          height: target.gobanContainerHeight,
+                                      }
+                                    : null,
+                            gobanMetrics:
+                                beginResult.metricsWidth != null &&
+                                beginResult.metricsHeight != null
+                                    ? {
+                                          width: beginResult.metricsWidth,
+                                          height: beginResult.metricsHeight,
+                                      }
+                                    : null,
+                            dividerRatio: dragState.startRatio,
+                            startDividerRatio: dragState.startRatio,
+                            targetDividerRatio,
+                        }),
+                    });
+                }
+            }
+
+            const ratioDelta = deltaY / legacyDiagnostics.shellHeight;
+            const nextRatio = clampMobileSplitRatio(dragState.startRatio + ratioDelta);
+            const previousPending =
+                pendingMobileSplitRatioRef.current ?? lastCommittedMobileSplitRatioRef.current;
+            const stableGeometry =
+                dragState.stableGeometry ?? stableMobileBoardGeometryRef.current ?? null;
+            if (!stableGeometry) {
+                event.preventDefault();
+                return;
+            }
+            const controller = getActiveMobileBoardTransientDragController();
+            const currentMetrics = controller?.measureCurrentGobanMetrics() ?? null;
+            const nativeSizing = getMobileResizeNativeSizingConfig(controller);
+            const target = computeMobileResizeAppliedTarget({
+                stableGeometry,
+                targetDividerRatio: nextRatio,
+                ...nativeSizing,
+                baselineGobanContentSize: resolveMobileResizeBaselineGobanContentSize({
+                    stableGeometry,
+                    currentMetricsWidth: currentMetrics?.width ?? null,
+                    currentMetricsHeight: currentMetrics?.height ?? null,
+                }),
+            });
+            if (!target) {
+                event.preventDefault();
+                return;
+            }
+            if (
+                !shouldCommitMobileSplitRatioUpdate({
+                    currentRatio: previousPending,
+                    pendingRatio: nextRatio,
+                })
+            ) {
+                pendingMobileSplitRatioRef.current = nextRatio;
+                pendingMobileResizeTargetRef.current = target;
+                const reappliedTarget = updateTransientDragVisuals(target);
+                if (isKibitzBoardSizeDebugEnabled()) {
+                    recordKibitzBoardSizeEvent("mobile-divider:raf-reapply-same-ratio", {
+                        reason: "same-ratio-active-correction",
+                        pointerId: event.pointerId,
+                        previousRatio: previousPending,
+                        pendingRatio: nextRatio,
+                        applied: reappliedTarget != null,
+                        boardSurfaceWidth: target.boardSurfaceWidth,
+                        boardSurfaceHeight: target.boardSurfaceHeight,
+                        gobanContainerSize: target.gobanContainer.size,
+                        activePreviewContentSize: target.activePreviewContent.size,
+                        nativeBackingContentSize:
+                            target.activePreviewContent.nativeBackingContentSize ?? null,
+                        transformScale: target.activePreviewContent.transformScale ?? null,
+                    });
+                }
+                event.preventDefault();
                 return;
             }
 
-            const ratioDelta = (event.clientY - dragState.startY) / shellRect.height;
-            setMobileSplitRatio(clampMobileSplitRatio(dragState.startRatio + ratioDelta));
+            if (isKibitzBoardSizeDebugEnabled()) {
+                mobileDividerMoveDebugPendingRef.current = {
+                    pointerId: event.pointerId,
+                    clientY: event.clientY,
+                    startY: dragState.startY,
+                    shellRectHeight: legacyDiagnostics.shellHeight,
+                    rawRatioDelta: ratioDelta,
+                    nextRatio,
+                    previousRatio: previousPending,
+                    visualBoardSize: target.boardSurfaceWidth,
+                };
+            }
+
+            pendingMobileSplitRatioRef.current = nextRatio;
+            pendingMobileResizeTargetRef.current = target;
+            updateTransientDragVisuals(target);
+
+            if (mobileSplitRatioRafRef.current === null) {
+                mobileSplitRatioRafRef.current = window.requestAnimationFrame(() => {
+                    mobileSplitRatioRafRef.current = null;
+                    const pendingTarget = pendingMobileResizeTargetRef.current;
+                    if (!pendingTarget) {
+                        return;
+                    }
+                    updateTransientDragVisuals(pendingTarget);
+                    const details = mobileDividerMoveDebugPendingRef.current;
+                    mobileDividerMoveDebugPendingRef.current = null;
+                    if (details) {
+                        recordKibitzBoardSizeEvent("mobile-divider:move", details);
+                    }
+                    commitPendingMobileSplitRatio("raf");
+                });
+            }
             event.preventDefault();
         };
 
@@ -641,11 +1659,200 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 return;
             }
 
+            const legacyDiagnostics = dragState.legacyDiagnostics;
+
             if (mobileDividerRef.current?.hasPointerCapture?.(event.pointerId)) {
                 mobileDividerRef.current.releasePointerCapture(event.pointerId);
             }
 
+            if (mobileSplitRatioRafRef.current !== null) {
+                window.cancelAnimationFrame(mobileSplitRatioRafRef.current);
+                mobileSplitRatioRafRef.current = null;
+            }
+
+            if (isMobileDividerPointerUpNoop(dragState.gestureState)) {
+                mobileDragStateRef.current = null;
+                lastAppliedMobileResizeTargetRef.current = null;
+                pendingMobileResizeTargetRef.current = null;
+                mobileResizeLifecycleStateRef.current = "idle";
+                pendingMobileSplitRatioRef.current = null;
+                mobileDividerMoveDebugPendingRef.current = null;
+                mobileDividerFastVisualLogAtRef.current = 0;
+                document.body.style.userSelect = "";
+                document.body.style.cursor = "";
+                if (isKibitzBoardSizeDebugEnabled()) {
+                    recordKibitzBoardSizeEvent("mobile-divider:pointer-up-noop", {
+                        pointerId: event.pointerId,
+                        startDividerRatio: dragState.startRatio,
+                        finalDividerRatio: dragState.startRatio,
+                        gestureState: "armed",
+                        reason: "no-active-drag",
+                        geometry: buildMobileResizeGeometrySnapshot({
+                            shellRect:
+                                legacyDiagnostics.shellWidth != null &&
+                                legacyDiagnostics.shellHeight != null
+                                    ? {
+                                          width: legacyDiagnostics.shellWidth,
+                                          height: legacyDiagnostics.shellHeight,
+                                      }
+                                    : null,
+                            boardSizingSlotRect: legacyDiagnostics.boardSlotElement
+                                ? legacyDiagnostics.boardSlotElement.getBoundingClientRect()
+                                : null,
+                            boardSurfaceRect:
+                                legacyDiagnostics.startWindowWidth != null &&
+                                legacyDiagnostics.startWindowHeight != null
+                                    ? {
+                                          width: legacyDiagnostics.startWindowWidth,
+                                          height: legacyDiagnostics.startWindowHeight,
+                                      }
+                                    : null,
+                            gobanContainerRect:
+                                legacyDiagnostics.startWindowSize != null
+                                    ? {
+                                          width: legacyDiagnostics.startWindowSize,
+                                          height: legacyDiagnostics.startWindowSize,
+                                      }
+                                    : null,
+                            gobanMetrics:
+                                legacyDiagnostics.cachedMetricsWidth != null &&
+                                legacyDiagnostics.cachedMetricsHeight != null
+                                    ? {
+                                          width: legacyDiagnostics.cachedMetricsWidth,
+                                          height: legacyDiagnostics.cachedMetricsHeight,
+                                      }
+                                    : null,
+                            dividerRatio: dragState.startRatio,
+                            startDividerRatio: dragState.startRatio,
+                        }),
+                    });
+                    recordKibitzBoardSizeEvent("mobile-resize:noop-summary", {
+                        pointerId: event.pointerId,
+                        reason: "no-active-drag",
+                        startDividerRatio: dragState.startRatio,
+                    });
+                }
+                return;
+            }
+
+            const appliedTarget = lastAppliedMobileResizeTargetRef.current;
+            if (!appliedTarget) {
+                mobileDragStateRef.current = null;
+                lastAppliedMobileResizeTargetRef.current = null;
+                pendingMobileResizeTargetRef.current = null;
+                pendingMobileSplitRatioRef.current = null;
+                mobileDividerMoveDebugPendingRef.current = null;
+                mobileDividerFastVisualLogAtRef.current = 0;
+                document.body.style.userSelect = "";
+                document.body.style.cursor = "";
+                if (isKibitzBoardSizeDebugEnabled()) {
+                    recordKibitzBoardSizeEvent("mobile-divider:pointer-up-missing-target", {
+                        pointerId: event.pointerId,
+                        hadActiveDrag: true,
+                        activeMobileBoardOwner:
+                            activeMobileBoardTransientDragControllerRef.current?.owner ?? null,
+                        hasActiveMobileBoardTransientController: Boolean(
+                            activeMobileBoardTransientDragControllerRef.current?.controller,
+                        ),
+                        reason: "missing-last-applied-target",
+                    });
+                }
+                stopDrag();
+                return;
+            }
+
+            const steadyMeasurement = measureSteadyMobileBoardSize();
+            if (
+                isKibitzBoardSizeDebugEnabled() &&
+                isKibitzBoardSizeVerboseDebugEnabled() &&
+                steadyMeasurement
+            ) {
+                recordKibitzBoardSizeEvent("mobile-divider:release-measurement-diagnostic", {
+                    pointerId: event.pointerId,
+                    usedAsAuthority: false,
+                    legacyDiagnostics: {
+                        steadyMeasuredSize: steadyMeasurement.steadyMeasuredSize,
+                        targetBoardSurfaceWidth: appliedTarget.boardSurfaceWidth,
+                        targetBoardSurfaceHeight: appliedTarget.boardSurfaceHeight,
+                        deltaWidth:
+                            (steadyMeasurement.steadyMeasuredSize ?? 0) -
+                            appliedTarget.boardSurfaceWidth,
+                    },
+                });
+            }
+
+            if (isKibitzBoardSizeDebugEnabled()) {
+                recordKibitzBoardSizeEvent("mobile-divider:pointer-up-commit-target", {
+                    pointerId: event.pointerId,
+                    dividerRatio: appliedTarget.dividerRatio,
+                    source: "last-applied-target",
+                    activeMobileBoardOwner:
+                        activeMobileBoardTransientDragControllerRef.current?.owner ?? null,
+                    hasActiveMobileBoardTransientController: Boolean(
+                        activeMobileBoardTransientDragControllerRef.current?.controller,
+                    ),
+                    geometry: {
+                        boardSurface: {
+                            boardSurfaceWidth: appliedTarget.boardSurfaceWidth,
+                            boardSurfaceHeight: appliedTarget.boardSurfaceHeight,
+                        },
+                        gobanContainer: {
+                            gobanContainerWidth: appliedTarget.gobanContainerWidth,
+                            gobanContainerHeight: appliedTarget.gobanContainerHeight,
+                        },
+                        gobanContent: {
+                            previewGobanContentSize: appliedTarget.previewGobanContentSize,
+                            predictedNativeGobanContentSize:
+                                appliedTarget.predictedNativeGobanContentSize ?? null,
+                        },
+                    },
+                });
+            }
+            commitPendingMobileSplitRatio("pointerup-flush");
+            getActiveMobileBoardTransientDragController()?.finishTransientDragFromAppliedTarget(
+                appliedTarget,
+            );
+            lastCommittedMobileResizeTargetRef.current = appliedTarget;
+            lastAppliedMobileResizeTargetRef.current = null;
+            pendingMobileResizeTargetRef.current = null;
+            mobileResizeLifecycleStateRef.current = "idle";
+            setMobileDividerDragging(false);
             stopDrag();
+            if (isKibitzBoardSizeDebugEnabled()) {
+                recordKibitzBoardSizeEvent("mobile-divider:pointer-up", {
+                    pointerId: event.pointerId,
+                    finalRatio: appliedTarget.dividerRatio,
+                    gestureState: "active",
+                    hadActiveDrag: true,
+                });
+                recordKibitzBoardSizeEvent("mobile-resize:summary", {
+                    pointerId: event.pointerId,
+                    startedAt: legacyDiagnostics.startedAt,
+                    endedAt: Date.now(),
+                    durationMs: Date.now() - legacyDiagnostics.startedAt,
+                    startDividerRatio: dragState.startRatio,
+                    committedDividerRatio: appliedTarget.dividerRatio,
+                    startGeometry: {
+                        boardSurfaceWidth: legacyDiagnostics.startWindowWidth,
+                        boardSurfaceHeight: legacyDiagnostics.startWindowHeight,
+                        gobanContainerSize: legacyDiagnostics.startWindowSize,
+                        gobanContentSize: legacyDiagnostics.cachedMetricsWidth,
+                    },
+                    finalTarget: {
+                        boardSurfaceWidth: appliedTarget.boardSurfaceWidth,
+                        boardSurfaceHeight: appliedTarget.boardSurfaceHeight,
+                        gobanContainerSize: appliedTarget.gobanContainerWidth,
+                        predictedNativeGobanContentSize:
+                            appliedTarget.predictedNativeGobanContentSize,
+                    },
+                    postSettle: {
+                        matched: null,
+                        maxDeltaPx: null,
+                        verified: false,
+                    },
+                    invariantViolations: [],
+                });
+            }
         };
 
         window.addEventListener("pointermove", onPointerMove, { passive: false });
@@ -653,6 +1860,16 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         window.addEventListener("pointercancel", onPointerUp);
 
         return () => {
+            if (mobileSplitRatioRafRef.current !== null) {
+                window.cancelAnimationFrame(mobileSplitRatioRafRef.current);
+                mobileSplitRatioRafRef.current = null;
+            }
+            pendingMobileSplitRatioRef.current = null;
+            pendingMobileResizeTargetRef.current = null;
+            mobileDividerMoveDebugPendingRef.current = null;
+            mobileDividerFastVisualLogAtRef.current = 0;
+            lastAppliedMobileResizeTargetRef.current = null;
+            setMobileDividerDragging(false);
             window.removeEventListener("pointermove", onPointerMove);
             window.removeEventListener("pointerup", onPointerUp);
             window.removeEventListener("pointercancel", onPointerUp);
@@ -909,6 +2126,38 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         (variation) => variation.id === secondaryPane.variation_id,
     );
     const currentGameId = resolvedRoom?.current_game?.game_id ?? null;
+    const currentGameMoveNumber = resolvedRoom?.current_game?.move_number ?? 0;
+    const currentGameBoardDimensions = React.useMemo(
+        () => currentGameBoardDimensionsOf(resolvedRoom?.current_game),
+        [resolvedRoom?.current_game?.board_size],
+    );
+    const currentGameWidth = currentGameBoardDimensions.width;
+    const currentGameHeight = currentGameBoardDimensions.height;
+    const currentGameSnapshotTarget = React.useMemo(() => {
+        const game = resolvedRoom?.current_game;
+
+        if (!resolvedRoom?.id || !game || currentGameId == null) {
+            return null;
+        }
+
+        return {
+            roomId: resolvedRoom.id,
+            game,
+            gameId: currentGameId,
+            moveNumber: currentGameMoveNumber,
+            width: currentGameWidth,
+            height: currentGameHeight,
+        };
+    }, [
+        currentGameHeight,
+        currentGameId,
+        currentGameMoveNumber,
+        currentGameWidth,
+        resolvedRoom?.id,
+        resolvedRoom?.current_game?.board_size,
+        resolvedRoom?.current_game?.game_id,
+        resolvedRoom?.current_game?.move_number,
+    ]);
     // Synced during render so the refs hold the live room/game before any
     // child mount effect fires. Child boards register via setMainBoardController
     // from their own mount effects (which run before this component's effects),
@@ -917,6 +2166,21 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     // permanently mismatching every isCurrentMainBoardController check.
     currentRoomIdRef.current = resolvedRoom?.id ?? null;
     currentRoomGameIdRef.current = currentGameId;
+    currentGameMoveNumberRef.current = currentGameMoveNumber;
+
+    React.useEffect(() => {
+        visibleMainBoardHydrationRef.current = visibleMainBoardHydration;
+    }, [visibleMainBoardHydration]);
+
+    React.useEffect(() => {
+        setVisibleMainBoardHydration(
+            createVisibleMainBoardHydrationState({
+                roomId: resolvedRoom?.id ?? null,
+                gameId: currentGameId,
+                expectedMoveNumber: currentGameMoveNumberRef.current,
+            }),
+        );
+    }, [currentGameId, resolvedRoom?.id]);
 
     const setMainBoardController = React.useCallback((controller: GobanController | null) => {
         mainBoardControllerEpochRef.current += 1;
@@ -929,6 +2193,15 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
               }
             : null;
         setMainBoardControllerState(controller);
+        if (!controller) {
+            setVisibleMainBoardHydration(
+                createVisibleMainBoardHydrationState({
+                    roomId: currentRoomIdRef.current,
+                    gameId: currentRoomGameIdRef.current,
+                    expectedMoveNumber: currentGameMoveNumberRef.current,
+                }),
+            );
+        }
     }, []);
     const isCurrentMainBoardController = React.useCallback(
         (controller: GobanController | null | undefined) => {
@@ -945,11 +2218,48 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         },
         [],
     );
-    const visibleMainBoardMounted = Boolean(mainBoardController);
-    const currentLiveTailMoveNumber = React.useMemo(() => {
+    const handleMainBoardHydrationChange = React.useCallback(
+        (state: {
+            roomId: string;
+            gameId: number | null;
+            officialTailMoveNumber: number;
+            expectedMoveNumber: number;
+            hasMoveTree: boolean;
+            hydrated: boolean;
+        }) => {
+            setVisibleMainBoardHydration((previous) =>
+                applyVisibleMainBoardHydrationReport(
+                    previous,
+                    state,
+                    currentRoomIdRef.current,
+                    currentRoomGameIdRef.current,
+                ),
+            );
+        },
+        [],
+    );
+    const roomLiveMoveNumber = resolvedRoom?.current_game?.move_number ?? 0;
+    const mobileCompareActive = Boolean(isMobileLayout && mobileCompanionPanel === "compare");
+    const mainBoardControllerFresh = Boolean(
+        mainBoardController && isCurrentMainBoardController(mainBoardController),
+    );
+    const currentExpectedMoveNumber = resolvedRoom?.current_game?.move_number ?? 0;
+    const currentGameIsLive = Boolean(resolvedRoom?.current_game?.live);
+    const visibleMainBoardMounted = isVisibleMainBoardMounted({
+        mobileCompareActive,
+        mainBoardController,
+        isCurrentMainBoardController: mainBoardControllerFresh,
+        visibleMainBoardHydration,
+        roomId: resolvedRoom?.id ?? null,
+        gameId: currentGameId,
+        currentExpectedMoveNumber,
+        isCurrentGameLive: currentGameIsLive,
+    });
+    const currentGameBaseSnapshotFreshnessMoveNumber = React.useMemo(() => {
         const liveTailFromRoom = resolvedRoom?.current_game?.move_number ?? 0;
         const cachedSnapshotTail =
-            currentGameBaseSnapshot?.gameId === currentGameId
+            currentGameBaseSnapshot?.gameId === currentGameId &&
+            currentGameBaseSnapshot?.roomId === resolvedRoom?.id
                 ? currentGameBaseSnapshot.trunkTailMoveNumber
                 : 0;
 
@@ -957,20 +2267,42 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     }, [
         currentGameBaseSnapshot?.gameId,
         currentGameBaseSnapshot?.trunkTailMoveNumber,
+        currentGameBaseSnapshot?.roomId,
         currentGameId,
+        resolvedRoom?.id,
         resolvedRoom?.current_game?.move_number,
     ]);
     const pickerOpen = Boolean(
         pickerMode || mobileOverlayMode === "create-room" || mobileOverlayMode === "change-board",
     );
+    const mainBoardOfficialTailMoveNumber = mainBoardController
+        ? (getMoveTreeTrunkTail(mainBoardController.goban.engine.move_tree)?.move_number ?? 0)
+        : 0;
+    const mainBoardCurrentMoveNumber = mainBoardController
+        ? (mainBoardController.goban.engine.cur_move?.move_number ?? 0)
+        : 0;
+    const mainBoardLastOfficialMoveNumber = mainBoardController
+        ? (mainBoardController.goban.engine.last_official_move?.move_number ?? 0)
+        : 0;
+    const mainBoardSafeForReconnect = isMainBoardSafeForReconnect({
+        mainBoardController,
+        currentGame: resolvedRoom?.current_game,
+        currentGameBaseSnapshotTailMoveNumber: currentGameBaseSnapshot?.trunkTailMoveNumber ?? 0,
+        mainBoardOfficialTailMoveNumber,
+        mainBoardCurrentMoveNumber,
+        mainBoardLastOfficialMoveNumber,
+    });
+
     useKibitzCurrentGameConnectionKeeper({
         roomId: resolvedRoom?.id ?? null,
         currentGameId,
-        isLive: Boolean(resolvedRoom?.current_game?.live),
+        currentLiveTailMoveNumber: roomLiveMoveNumber,
+        isLive: currentGameIsLive,
         pickerOpen,
         enabled: Boolean(resolvedRoom),
         debugSource: "KibitzInner",
         boardController: mainBoardController,
+        allowReconnect: mainBoardSafeForReconnect,
     });
     const acceptCurrentGameBaseSnapshot = React.useCallback(
         (snapshot: KibitzCurrentGameBaseSnapshot) => {
@@ -1005,13 +2337,13 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             !visibleMainBoardMounted,
         roomId: resolvedRoom?.id ?? null,
         game: resolvedRoom?.current_game ?? null,
-        currentLiveTailMoveNumber,
+        currentSnapshotFreshnessMoveNumber: currentGameBaseSnapshotFreshnessMoveNumber,
         visibleMainBoardMounted,
         onSnapshot: acceptCurrentGameBaseSnapshot,
     });
     React.useEffect(() => {
         setCurrentGameBaseSnapshot((previous) =>
-            previous?.gameId === currentGameId && currentRoomIdRef.current === resolvedRoom?.id
+            previous?.gameId === currentGameId && previous?.roomId === resolvedRoom?.id
                 ? previous
                 : null,
         );
@@ -1055,6 +2387,17 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 return;
             }
 
+            if (game.live && (game.move_number ?? 0) === 0 && snapshot.trunkTailMoveNumber === 0) {
+                logKibitzVariationDebug("current-game-base-snapshot:main-root-live-rejected", {
+                    reason,
+                    gameId: game.game_id,
+                    roomMoveNumber: game.move_number ?? 0,
+                    snapshotTailMoveNumber: snapshot.trunkTailMoveNumber,
+                    moveTreeId: snapshot.moveTreeId,
+                });
+                return;
+            }
+
             logKibitzVariationDebug("current-game-base-snapshot:main-ready", {
                 reason,
                 gameId: snapshot.gameId,
@@ -1085,35 +2428,81 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     }, [isCurrentMainBoardController, mainBoardController, resolvedRoom]);
 
     React.useEffect(() => {
-        const game = resolvedRoom?.current_game;
+        currentGameBaseSnapshotRef.current = currentGameBaseSnapshot;
+    }, [currentGameBaseSnapshot]);
+
+    React.useEffect(() => {
+        const target = currentGameSnapshotTarget;
+        const existingSnapshotForLog: KibitzCurrentGameBaseSnapshot | null =
+            currentGameBaseSnapshotRef.current;
+
+        if (!target) {
+            setCurrentGameBaseSnapshotLoadingGameId(null);
+            return;
+        }
+
+        const existingSnapshotTailMoveNumber = existingSnapshotForLog?.trunkTailMoveNumber ?? 0;
+        const rootLiveSnapshotRejected =
+            existingSnapshotForLog?.gameId === target.gameId &&
+            target.game.live &&
+            target.moveNumber === 0 &&
+            existingSnapshotTailMoveNumber === 0;
+
+        if (rootLiveSnapshotRejected) {
+            logKibitzVariationDebug(
+                "current-game-base-snapshot:fetch-root-live-main-snapshot-rejected",
+                {
+                    roomId: target.roomId,
+                    gameId: target.gameId,
+                    roomMoveNumber: target.moveNumber,
+                    snapshotTailMoveNumber: existingSnapshotTailMoveNumber,
+                    moveTreeId: existingSnapshotForLog?.moveTreeId ?? null,
+                },
+            );
+        }
+
+        const existingSnapshotUsable = isCurrentGameBaseSnapshotUsable(
+            existingSnapshotForLog,
+            target.game,
+            target.roomId,
+        );
+
+        if (existingSnapshotUsable && existingSnapshotForLog) {
+            logKibitzVariationDebug("current-game-base-snapshot:fetch-skip-already-fresh", {
+                roomId: target.roomId,
+                gameId: target.gameId,
+                expectedMoveNumber: target.moveNumber,
+                snapshotTailMoveNumber: existingSnapshotForLog.trunkTailMoveNumber,
+                moveTreeId: existingSnapshotForLog.moveTreeId,
+            });
+            setCurrentGameBaseSnapshotLoadingGameId(null);
+            return;
+        }
+
+        const game = target.game;
         if (!game) {
             setCurrentGameBaseSnapshotLoadingGameId(null);
             return;
         }
 
         let cancelled = false;
-        const roomIdAtStart = resolvedRoom.id;
-        setCurrentGameBaseSnapshotLoadingGameId(game.game_id);
+        const roomIdAtStart = target.roomId;
+        setCurrentGameBaseSnapshotLoadingGameId(target.gameId);
 
-        void fetchCurrentGameBaseSnapshot(game, resolvedRoom.id)
+        void fetchCurrentGameBaseSnapshot(game, target.roomId)
             .then((snapshot) => {
                 if (cancelled || currentRoomIdRef.current !== roomIdAtStart) {
                     return;
                 }
 
                 if (snapshot) {
-                    logKibitzVariationDebug("current-game-base-snapshot:fetch-ready", {
-                        gameId: snapshot.gameId,
-                        trunkTailMoveNumber: snapshot.trunkTailMoveNumber,
-                        moveTreeId: snapshot.moveTreeId,
-                    });
                     acceptCurrentGameBaseSnapshot(snapshot);
                 }
             })
             .catch((error) => {
                 if (!cancelled && currentRoomIdRef.current === roomIdAtStart) {
                     logKibitzVariationDebug("current-game-base-snapshot:fetch-failed", {
-                        gameId: game.game_id,
+                        gameId: target.gameId,
                         error,
                     });
                 }
@@ -1121,7 +2510,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             .finally(() => {
                 if (!cancelled && currentRoomIdRef.current === roomIdAtStart) {
                     setCurrentGameBaseSnapshotLoadingGameId((loadingGameId) =>
-                        loadingGameId === game.game_id ? null : loadingGameId,
+                        loadingGameId === target.gameId ? null : loadingGameId,
                     );
                 }
             });
@@ -1129,7 +2518,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         return () => {
             cancelled = true;
         };
-    }, [acceptCurrentGameBaseSnapshot, resolvedRoom]);
+    }, [acceptCurrentGameBaseSnapshot, currentGameSnapshotTarget]);
 
     const getCurrentGameBaseSnapshotForVariation = React.useCallback(
         (reason: string): KibitzCurrentGameBaseSnapshot | null => {
@@ -1141,44 +2530,92 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             const cachedSnapshot = currentGameBaseSnapshot;
             const cachedSnapshotForLog: KibitzCurrentGameBaseSnapshot | null =
                 currentGameBaseSnapshot;
-            if (!isCurrentMainBoardController(mainBoardController)) {
-                const ctx = mainBoardControllerContextRef.current;
-                logKibitzVariationDebug("current-game-base-snapshot:stale-main-controller", {
+            const controllerContext = mainBoardControllerContextRef.current;
+            const mainBoardControllerFresh = isCurrentMainBoardController(mainBoardController);
+            const cachedSnapshotUsable = isCurrentGameBaseSnapshotUsable(
+                cachedSnapshot,
+                game,
+                resolvedRoom.id,
+            );
+
+            if (mainBoardControllerFresh) {
+                const mainBoardSnapshot = captureCurrentGameBaseSnapshotFromController(
+                    mainBoardController,
+                    game,
+                    resolvedRoom.id,
+                );
+                if (mainBoardSnapshot) {
+                    if (
+                        game.live &&
+                        (game.move_number ?? 0) === 0 &&
+                        mainBoardSnapshot.trunkTailMoveNumber === 0
+                    ) {
+                        logKibitzVariationDebug(
+                            "current-game-base-snapshot:main-root-live-rejected",
+                            {
+                                reason,
+                                gameId: game.game_id,
+                                roomMoveNumber: game.move_number ?? 0,
+                                snapshotTailMoveNumber: mainBoardSnapshot.trunkTailMoveNumber,
+                                moveTreeId: mainBoardSnapshot.moveTreeId,
+                            },
+                        );
+                        return cachedSnapshot;
+                    }
+                    const acceptedSnapshot = chooseFresherCurrentGameBaseSnapshot(
+                        cachedSnapshot,
+                        mainBoardSnapshot,
+                    );
+                    acceptCurrentGameBaseSnapshot(mainBoardSnapshot);
+                    return acceptedSnapshot;
+                }
+            } else {
+                const logMessage = controllerContext
+                    ? "current-game-base-snapshot:stale-main-controller"
+                    : "current-game-base-snapshot:missing-main-controller-context";
+                logKibitzVariationDebug(logMessage, {
                     reason,
                     gameId: game.game_id,
                     diagnostic: {
                         controllerProvided: Boolean(mainBoardController),
-                        contextPresent: Boolean(ctx),
-                        controllerMatches: Boolean(ctx && ctx.controller === mainBoardController),
-                        epochMatches: Boolean(
-                            ctx && ctx.epoch === mainBoardControllerEpochRef.current,
+                        contextPresent: Boolean(controllerContext),
+                        controllerMatches: Boolean(
+                            controllerContext &&
+                            controllerContext.controller === mainBoardController,
                         ),
-                        roomIdMatches: Boolean(ctx && ctx.roomId === currentRoomIdRef.current),
-                        gameIdMatches: Boolean(ctx && ctx.gameId === currentRoomGameIdRef.current),
+                        epochMatches: Boolean(
+                            controllerContext &&
+                            controllerContext.epoch === mainBoardControllerEpochRef.current,
+                        ),
+                        roomIdMatches: Boolean(
+                            controllerContext &&
+                            controllerContext.roomId === currentRoomIdRef.current,
+                        ),
+                        gameIdMatches: Boolean(
+                            controllerContext &&
+                            controllerContext.gameId === currentRoomGameIdRef.current,
+                        ),
                         parentConnected: Boolean(mainBoardController?.goban.parent?.isConnected),
-                        contextRoomId: ctx?.roomId ?? null,
-                        contextGameId: ctx?.gameId ?? null,
+                        contextRoomId: controllerContext?.roomId ?? null,
+                        contextGameId: controllerContext?.gameId ?? null,
                         liveRoomId: currentRoomIdRef.current,
                         liveGameId: currentRoomGameIdRef.current,
                     },
+                    fallbackSnapshot: cachedSnapshotUsable
+                        ? {
+                              gameId: cachedSnapshot.gameId,
+                              trunkTailMoveNumber: cachedSnapshot.trunkTailMoveNumber,
+                              source: cachedSnapshot.source,
+                          }
+                        : null,
                 });
-                return null;
-            }
-            const mainBoardSnapshot = captureCurrentGameBaseSnapshotFromController(
-                mainBoardController,
-                game,
-                resolvedRoom.id,
-            );
-            if (mainBoardSnapshot) {
-                const acceptedSnapshot = chooseFresherCurrentGameBaseSnapshot(
-                    cachedSnapshot,
-                    mainBoardSnapshot,
-                );
-                acceptCurrentGameBaseSnapshot(mainBoardSnapshot);
-                return acceptedSnapshot;
+
+                if (cachedSnapshotUsable) {
+                    return cachedSnapshot;
+                }
             }
 
-            if (isCurrentGameBaseSnapshotUsable(cachedSnapshot, game)) {
+            if (cachedSnapshotUsable) {
                 return cachedSnapshot;
             }
 
@@ -1646,6 +3083,15 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         getCurrentDesktopSidebarWidthPx(),
         desktopContentWidthPx,
     );
+    React.useEffect(() => {
+        window.sessionStorage.setItem(STREAMER_MODE_STORAGE_KEY, streamerMode ? "true" : "false");
+    }, [streamerMode]);
+
+    React.useEffect(() => {
+        if (isMobileLayout && streamerMode) {
+            setStreamerMode(false);
+        }
+    }, [isMobileLayout, streamerMode]);
     const desktopSidebarResizer = (
         <div
             ref={desktopSidebarResizerRef}
@@ -1966,11 +3412,161 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 return;
             }
 
+            const topPaneElement = shell.querySelector(
+                ".Kibitz-mobile-top-pane",
+            ) as HTMLDivElement | null;
+            const boardSlotElement = shell.querySelector(
+                ".mobile-board-fit-slot",
+            ) as HTMLDivElement | null;
+            const boardWindowElement = shell.querySelector(
+                ".mobile-secondary-board-surface",
+            ) as HTMLElement | null;
+            const boardHostElement = shell.querySelector(
+                ".Kibitz-mobile-board-host",
+            ) as HTMLElement | null;
+            const shellRect = shell.getBoundingClientRect();
+            const boardSlotMetrics = boardSlotElement
+                ? measureSquareFitLayout(boardSlotElement, true)
+                : null;
+            const outerBoardSlotMaxWidth = Math.floor(
+                boardSlotMetrics?.slotWidth ??
+                    boardSlotElement?.parentElement?.clientWidth ??
+                    shellRect.width ??
+                    0,
+            );
+            const boardWindowRect = boardWindowElement?.getBoundingClientRect();
+            const boardHostRect = boardHostElement?.getBoundingClientRect();
+            const availableSlotWidthCap = Math.max(
+                0,
+                Math.floor(boardSlotElement?.clientWidth ?? outerBoardSlotMaxWidth),
+            );
+            const boardSlotMaxWidth = availableSlotWidthCap || outerBoardSlotMaxWidth;
+            const reservedBoardVerticalSpace = Math.max(0, boardSlotMetrics?.reservedHeight ?? 0);
+            const horizontalInset = Math.max(
+                0,
+                Math.floor(
+                    getHorizontalInsetPx(boardHostElement) +
+                        getHorizontalInsetPx(boardWindowElement),
+                ),
+            );
+            const transientBoardWindowMaxSize = Math.max(
+                0,
+                outerBoardSlotMaxWidth - horizontalInset,
+            );
+            const startLayoutSize = Math.max(
+                0,
+                boardSlotMaxWidth || boardSlotMetrics?.nextSize || 0,
+            );
+            const startWindowSize = Math.max(
+                0,
+                Math.floor(
+                    boardWindowRect?.width ?? boardHostRect?.width ?? transientBoardWindowMaxSize,
+                ),
+            );
+            const startWindowWidth = Math.max(
+                0,
+                Math.floor(boardWindowRect?.width ?? startWindowSize),
+            );
+            const startWindowHeight = Math.max(
+                0,
+                Math.floor(boardWindowRect?.height ?? startWindowSize),
+            );
+            const metricsWidth = Math.max(
+                0,
+                Math.floor(boardWindowRect?.width ?? startWindowWidth),
+            );
+            const metricsHeight = Math.max(
+                0,
+                Math.floor(boardWindowRect?.height ?? startWindowHeight),
+            );
+            const startedAtHorizontalMax =
+                transientBoardWindowMaxSize != null &&
+                Math.abs(startWindowWidth - transientBoardWindowMaxSize) <= 1 &&
+                startWindowHeight > startWindowWidth;
+            if (isKibitzBoardSizeDebugEnabled()) {
+                recordKibitzBoardSizeEvent("mobile-divider:pointer-down", {
+                    pointerId: event.pointerId,
+                    startClientY: event.clientY,
+                    startDividerRatio: mobileSplitRatio,
+                    activeMobileBoardOwner:
+                        activeMobileBoardTransientDragControllerRef.current?.owner ?? null,
+                    hasActiveMobileBoardTransientController: Boolean(
+                        activeMobileBoardTransientDragControllerRef.current?.controller,
+                    ),
+                    gestureState: "armed",
+                    geometry: buildMobileResizeGeometrySnapshot({
+                        shellRect,
+                        boardSizingSlotRect:
+                            boardSlotMetrics != null
+                                ? {
+                                      width: boardSlotMetrics.slotWidth,
+                                      height: boardSlotMetrics.slotHeight,
+                                  }
+                                : null,
+                        boardSurfaceRect: boardWindowRect ?? boardHostRect ?? null,
+                        gobanContainerRect: boardWindowRect ?? null,
+                        gobanMetrics:
+                            metricsWidth != null && metricsHeight != null
+                                ? {
+                                      width: metricsWidth,
+                                      height: metricsHeight,
+                                  }
+                                : null,
+                        dividerRatio: mobileSplitRatio,
+                        startDividerRatio: mobileSplitRatio,
+                    }),
+                    legacyDiagnostics: {
+                        shellRectHeight: shellRect.height,
+                        shellRectWidth: shellRect.width,
+                        boardSlotMaxWidth,
+                        outerBoardSlotMaxWidth,
+                        availableSlotWidthCap,
+                        transientBoardWindowMaxSize,
+                        horizontalInset,
+                        boardWindowRectWidth: boardWindowRect?.width ?? null,
+                        boardWindowRectHeight: boardWindowRect?.height ?? null,
+                        startWindowWidth,
+                        startWindowHeight,
+                        startLayoutSize,
+                        startWindowSize,
+                        startedAtHorizontalMax,
+                        reservedBoardVerticalSpace,
+                        currentGobanMetricsWidth: metricsWidth,
+                        currentGobanMetricsHeight: metricsHeight,
+                    },
+                });
+            }
             event.preventDefault();
+            lastAppliedMobileResizeTargetRef.current = null;
+            const initialStableGeometry = measureStableMobileBoardGeometry("initial-capture");
+            mobileResizeLifecycleStateRef.current = "armed";
             mobileDragStateRef.current = {
                 pointerId: event.pointerId,
                 startY: event.clientY,
                 startRatio: mobileSplitRatio,
+                gestureState: "armed",
+                stableGeometry: initialStableGeometry ?? stableMobileBoardGeometryRef.current,
+                lastAppliedTarget: null,
+                lastCommittedTarget: null,
+                legacyDiagnostics: {
+                    startedAt: Date.now(),
+                    shellWidth: shellRect.width,
+                    shellHeight: shellRect.height,
+                    outerBoardSlotMaxWidth,
+                    boardSlotMaxWidth,
+                    transientBoardWindowMaxSize,
+                    reservedBoardVerticalSpace,
+                    startWindowWidth,
+                    startWindowHeight,
+                    startLayoutSize,
+                    startWindowSize,
+                    startedAtHorizontalMax,
+                    topPaneElement,
+                    boardSlotElement,
+                    boardWindowElement,
+                    cachedMetricsWidth: metricsWidth,
+                    cachedMetricsHeight: metricsHeight,
+                },
             };
             event.currentTarget.setPointerCapture?.(event.pointerId);
             document.body.style.userSelect = "none";
@@ -1981,7 +3577,17 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
     const resolvedRoomUsers = resolvedRoom ? controller.getRoomUsers(resolvedRoom.id) : [];
     const canOpenRoomSettings = canManageRoom || Boolean(handleOpenChangeBoard);
-    const mobileMatchup = formatMobileMatchup(resolvedRoom);
+    const effectiveStreamerMode =
+        streamerMode && !isMobileLayout && Boolean(resolvedRoom) && !isBlockedRoom;
+    const kibitzClassName = `Kibitz${effectiveStreamerMode ? " is-streamer-mode" : ""}`;
+    const mobileMatchup = resolvedRoom?.current_game ?? null;
+    React.useEffect(() => {
+        document.body.classList.toggle("kibitz-streamer-mode", effectiveStreamerMode);
+
+        return () => {
+            document.body.classList.remove("kibitz-streamer-mode");
+        };
+    }, [effectiveStreamerMode]);
     React.useEffect(() => {
         if (!resolvedRoom) {
             setMobileViewerCountFlash(false);
@@ -2036,6 +3642,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             mode={pickerMode}
             rooms={rooms}
             currentRoom={resolvedRoom}
+            canOpenCreateRoomFlow={canOpenCreateRoomFlow}
+            signInHref={createRoomSignInHref}
             onClose={onClosePicker}
             onCreateRoom={async (game, roomName, description) => {
                 const nextRoomId = await controller.createRoom(game, roomName, description);
@@ -2068,7 +3676,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     if (isBlockedRoom) {
         const blockedTitle = accessBlocked?.room_title ?? selectedRoom?.title ?? roomId ?? "";
         return (
-            <div className="Kibitz">
+            <div className={kibitzClassName}>
                 {showDebug ? <KibitzDebugPanel debug={debug} /> : null}
                 <div className="Kibitz-layout">
                     <div className="Kibitz-left-rail">
@@ -2077,6 +3685,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                             activeRoomId=""
                             onSelectRoom={onSelectRoom}
                             onCreateRoom={onOpenCreateRoom}
+                            canOpenCreateRoomFlow={canOpenCreateRoomFlow}
+                            signInHref={createRoomSignInHref}
                             onCreateVariation={onCreateVariation}
                             blockedRoomIds={blockedRoomIds}
                         />
@@ -2114,7 +3724,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             "Create a Kibitz room to start watching a game with friends.",
         );
         return (
-            <div className="Kibitz">
+            <div className={kibitzClassName}>
                 {showDebug ? <KibitzDebugPanel debug={debug} /> : null}
                 <div className="Kibitz-layout">
                     <div className="Kibitz-left-rail">
@@ -2123,6 +3733,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                             activeRoomId=""
                             onSelectRoom={onSelectRoom}
                             onCreateRoom={onOpenCreateRoom}
+                            canOpenCreateRoomFlow={canOpenCreateRoomFlow}
+                            signInHref={createRoomSignInHref}
                             blockedRoomIds={blockedRoomIds}
                         />
                     </div>
@@ -2153,7 +3765,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     }
 
     return (
-        <div className="Kibitz">
+        <div className={kibitzClassName}>
             {showDebug ? <KibitzDebugPanel debug={debug} /> : null}
             <div className="Kibitz-layout">
                 <div className="Kibitz-left-rail">
@@ -2162,6 +3774,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                         activeRoomId={resolvedRoom.id}
                         onSelectRoom={onSelectRoom}
                         onCreateRoom={onOpenCreateRoom}
+                        canOpenCreateRoomFlow={canOpenCreateRoomFlow}
+                        signInHref={createRoomSignInHref}
                         blockedRoomIds={blockedRoomIds}
                         helpTargetId={KIBITZ_HELP_TARGETS.desktopRoomList}
                     />
@@ -2198,30 +3812,12 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                     />
                                 </button>
                                 {mobileMatchup ? (
-                                    <div className="mobile-room-header-matchup">
-                                        <span className="mobile-room-header-matchup-avatar mobile-room-header-matchup-avatar-black">
-                                            {renderMobileHeaderAvatar(mobileMatchup.black)}
-                                        </span>
-                                        <span className="mobile-room-header-matchup-content">
-                                            <span className="mobile-room-header-matchup-first">
-                                                {renderMobileHeaderPlayer(
-                                                    mobileMatchup.black,
-                                                    "black",
-                                                )}
-                                            </span>
-                                            <span className="mobile-room-header-matchup-second">
-                                                <span className="mobile-room-header-matchup-second-name">
-                                                    {renderMobileHeaderPlayer(
-                                                        mobileMatchup.white,
-                                                        "white",
-                                                    )}
-                                                </span>
-                                            </span>
-                                        </span>
-                                        <span className="mobile-room-header-matchup-avatar mobile-room-header-matchup-avatar-white">
-                                            {renderMobileHeaderAvatar(mobileMatchup.white)}
-                                        </span>
-                                    </div>
+                                    <KibitzMobileMainGameScoreboard
+                                        controller={mainBoardController}
+                                        game={mobileMatchup}
+                                        isMainBoardVisible={!mobileCompareActive}
+                                        isInteractionPaused={mobileDividerDragging}
+                                    />
                                 ) : null}
                                 <button
                                     type="button"
@@ -2304,6 +3900,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                     activeRoomId={resolvedRoom.id}
                                                     onSelectRoom={onSelectRoom}
                                                     onCreateRoom={onOpenCreateRoom}
+                                                    canOpenCreateRoomFlow={canOpenCreateRoomFlow}
+                                                    signInHref={createRoomSignInHref}
                                                     onCreateVariation={onCreateVariation}
                                                     blockedRoomIds={blockedRoomIds}
                                                 />
@@ -2343,6 +3941,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                 mode={mobileOverlayMode}
                                                 rooms={rooms}
                                                 currentRoom={resolvedRoom}
+                                                canOpenCreateRoomFlow={canOpenCreateRoomFlow}
+                                                signInHref={createRoomSignInHref}
                                                 onClose={onCloseMobileOverlay}
                                                 onBackToMenu={() => {
                                                     setMobileOverlayMode(
@@ -2391,10 +3991,20 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                     </div>
                                 </>
                             ) : null}
-                            <div className="Kibitz-mobile-shell" ref={mobileShellRef}>
+                            <div
+                                className={
+                                    "Kibitz-mobile-shell" +
+                                    (mobileDividerDragging ? " mobile-divider-dragging" : "")
+                                }
+                                ref={mobileShellRef}
+                            >
                                 <div
                                     className="Kibitz-mobile-top-pane"
-                                    style={{ flexBasis: `${mobileSplitRatio * 100}%` }}
+                                    style={
+                                        mobileDividerDragging
+                                            ? undefined
+                                            : { flexBasis: `${mobileSplitRatio * 100}%` }
+                                    }
                                 >
                                     {isPresetWithNoGame ? (
                                         <div className="KibitzPresetEmptyState">
@@ -2414,6 +4024,10 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                             visibleVariationIds={visibleVariationIds}
                                             variationColorIndexes={variationColorIndexes}
                                             secondaryPane={secondaryPane}
+                                            mobileDividerDragging={mobileDividerDragging}
+                                            onMobileBoardTransientDragControllerChange={
+                                                handleMobileBoardTransientDragControllerChange
+                                            }
                                             onClearPreview={onClearPreview}
                                             onPostVariation={onPostVariation}
                                             onSetSecondaryPaneMode={onSetSecondaryPaneMode}
@@ -2444,6 +4058,10 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                 setMobileCompareController
                                             }
                                             onMainBoardControllerChange={setMainBoardController}
+                                            onMainBoardHydrationChange={
+                                                handleMainBoardHydrationChange
+                                            }
+                                            onMobileBoardSizeChange={handleMobileBoardSizeChange}
                                         />
                                     )}
                                 </div>
@@ -2578,6 +4196,10 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                     visibleVariationIds={visibleVariationIds}
                                     variationColorIndexes={variationColorIndexes}
                                     secondaryPane={secondaryPane}
+                                    mobileDividerDragging={mobileDividerDragging}
+                                    onMobileBoardTransientDragControllerChange={
+                                        handleMobileBoardTransientDragControllerChange
+                                    }
                                     onClearPreview={onClearPreview}
                                     onPostVariation={onPostVariation}
                                     onSetSecondaryPaneMode={onSetSecondaryPaneMode}
@@ -2598,12 +4220,16 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                     }
                                     variationFocusRequestId={variationFocusRequestId}
                                     isMobileLayout={false}
+                                    streamerMode={streamerMode}
+                                    onStreamerModeChange={setStreamerMode}
                                     mobileCompanionPanel={mobileCompanionPanel}
                                     mobileHasActiveVote={Boolean(activeProposal)}
                                     onSelectMobileCompanionPanel={onSelectMobileCompanionPanel}
                                     onOpenMobileRooms={undefined}
                                     onMobileCompareControllerChange={undefined}
                                     onMainBoardControllerChange={setMainBoardController}
+                                    onMainBoardHydrationChange={handleMainBoardHydrationChange}
+                                    onMobileBoardSizeChange={handleMobileBoardSizeChange}
                                 />
                             )}
                             <div

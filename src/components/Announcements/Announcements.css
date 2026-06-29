@@ -17,34 +17,36 @@
 .Announcements {
     position: absolute;
     top: var(--navbar-height);
-    right: 0.5rem;  /* Add some spacing from the edge */
+    right: 0.5rem; /* Add some spacing from the edge */
     z-index: var(--z-announcements);
     display: inline-flex;
     flex-direction: column;
-    width: 18rem;  /* Reduced to prevent overflow */
-    max-width: calc(100dvw - 1rem);  /* Ensure it doesn't exceed viewport width */
+    width: 18rem; /* Reduced to prevent overflow */
+    max-width: calc(100dvw - 1rem); /* Ensure it doesn't exceed viewport width */
     box-sizing: border-box;
 
     * {
-        box-sizing: border-box;  /* Apply to all child elements */
+        box-sizing: border-box; /* Apply to all child elements */
     }
 
     /* Subtle entrance animation */
     animation: slideInFromTop 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
     .announcement {
-        width: 100%;  /* Use full container width */
+        width: 100%; /* Use full container width */
         display: inline-flex;
         padding: 0.5rem 1rem;
         background-color: var(--bg);
         align-items: center;
         box-sizing: border-box;
         /* Enhanced shadow for depth without being heavy */
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.12);
+        box-shadow:
+            0 2px 8px rgba(0, 0, 0, 0.08),
+            0 1px 2px rgba(0, 0, 0, 0.12);
         overflow: hidden;
         border-left: 3px solid transparent;
-        border-left-color: var(--shade3);  /* Default color for non-system announcements */
-        margin-bottom: 0;  /* No gap between announcements */
+        border-left-color: var(--shade3); /* Default color for non-system announcements */
+        margin-bottom: 0; /* No gap between announcements */
         transition: all 0.2s ease;
 
         /* Add top border for separation (except first announcement) */
@@ -107,7 +109,8 @@
                         .announcement-title {
                             font-weight: 600;
 
-                            a, span {
+                            a,
+                            span {
                                 display: inline-flex;
                                 align-items: center;
                                 padding: 0.15rem 0.35rem;
@@ -123,7 +126,8 @@
                         }
 
                         .announcement-link-entry {
-                            a, span {
+                            a,
+                            span {
                                 display: inline-flex;
                                 align-items: center;
                                 padding: 0.15rem 0.35rem;
@@ -191,7 +195,9 @@
 
         /* Hover state for the entire announcement */
         &:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
+            box-shadow:
+                0 4px 12px rgba(0, 0, 0, 0.15),
+                0 2px 4px rgba(0, 0, 0, 0.12);
         }
     }
 }
@@ -209,19 +215,20 @@
 /* Mobile responsiveness */
 @media (max-width: 768px) {
     .Announcements {
-        width: 100dvw;  /* Full width on mobile */
-        max-width: 100dvw;  /* Override the max-width restriction */
-        right: 0;  /* No right spacing */
-        left: 0;  /* Ensure it starts from left edge */
+        width: 100dvw; /* Full width on mobile */
+        max-width: 100dvw; /* Override the max-width restriction */
+        right: 0; /* No right spacing */
+        left: 0; /* Ensure it starts from left edge */
 
         .announcement {
             padding: 0.625rem 0.875rem;
-            border-radius: 0;  /* Remove border radius for edge-to-edge look */
+            border-radius: 0; /* Remove border radius for edge-to-edge look */
 
             &.multi-link {
                 .announcement-content {
                     .announcement-entry {
-                        a, span {
+                        a,
+                        span {
                             font-size: 0.9rem;
                             padding: 0.2rem 0.4rem;
                         }
@@ -235,15 +242,15 @@
 /* Small mobile devices */
 @media (max-width: 480px) {
     .Announcements {
-        width: 100dvw;  /* Full width */
-        max-width: 100dvw;  /* Override the max-width restriction */
-        right: 0;  /* No spacing */
-        left: 0;  /* Start from left edge */
+        width: 100dvw; /* Full width */
+        max-width: 100dvw; /* Override the max-width restriction */
+        right: 0; /* No spacing */
+        left: 0; /* Start from left edge */
         border-radius: 0;
 
         .announcement {
             border-radius: 0;
-            border-left-width: 4px;  /* Slightly thicker for visibility */
+            border-left-width: 4px; /* Slightly thicker for visibility */
         }
     }
 }
@@ -251,10 +258,14 @@
 /* Dark theme enhancements */
 [data-theme="dark"] .Announcements {
     .announcement {
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.4);
+        box-shadow:
+            0 2px 8px rgba(0, 0, 0, 0.3),
+            0 1px 2px rgba(0, 0, 0, 0.4);
 
         &:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.5);
+            box-shadow:
+                0 4px 12px rgba(0, 0, 0, 0.4),
+                0 2px 4px rgba(0, 0, 0, 0.5);
         }
     }
 }
@@ -272,5 +283,9 @@
 }
 
 body.zen .Announcements {
+    display: none;
+}
+
+body.kibitz-streamer-mode .Announcements {
     display: none;
 }

@@ -20,7 +20,7 @@
         "prettier:check": "pprettier --check \"src/**/*.{ts,tsx}\"",
         "lint": "eslint src/",
         "lint:fix": "eslint --fix src/",
-        "spellcheck": "cspell \"src/**/*.{ts,tsx}\"",
+        "spellcheck": "cspell --no-progress \"src/**/*.{ts,tsx}\"",
         "minify-index": "node minify-index.js",
         "dependency-cruiser": "dependency-cruiser src",
         "bundle-visualizer": "vite-bundle-visualizer -c vite.config.ts",

@@ -16,7 +16,21 @@
  */
 
 import type { KibitzVariationSummary } from "@/models/kibitz";
-import { clampDesktopSidebarWidthPx, pruneVisibleVariationIdsForGame } from "./KibitzInner";
+import type { GobanController } from "@/lib/GobanController";
+import {
+    isCurrentGameBaseSnapshotUsable,
+    isMainBoardSafeForReconnect,
+    clampDesktopSidebarWidthPx,
+    isVisibleMainBoardMounted,
+    pruneVisibleVariationIdsForGame,
+} from "./KibitzInner";
+import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
+import type { KibitzWatchedGame } from "@/models/kibitz";
+import {
+    isMobileDividerPointerUpNoop,
+    MOBILE_DIVIDER_DRAG_START_THRESHOLD_PX,
+    shouldActivateMobileDividerDrag,
+} from "./KibitzInner";
 
 function makeVariation(id: string, gameId: number): KibitzVariationSummary {
     return {
@@ -72,5 +86,224 @@ describe("clampDesktopSidebarWidthPx", () => {
 
     it("handles invalid width safely", () => {
         expect(clampDesktopSidebarWidthPx(Number.NaN, 1200)).toBe(336);
+    });
+});
+
+describe("isCurrentGameBaseSnapshotUsable", () => {
+    const liveGame = {
+        game_id: 1,
+        move_number: 0,
+        live: true,
+    } as KibitzWatchedGame;
+    const nonLiveGame = {
+        game_id: 1,
+        move_number: 0,
+        live: false,
+    } as KibitzWatchedGame;
+
+    it("rejects a live root snapshot from the visible board", () => {
+        const snapshot = {
+            gameId: 1,
+            roomId: "r",
+            trunkTailMoveNumber: 0,
+            moveTreeId: 1,
+            movePath: "",
+            source: "main-board",
+            config: {},
+        } as KibitzCurrentGameBaseSnapshot;
+
+        expect(isCurrentGameBaseSnapshotUsable(snapshot, liveGame, "r")).toBe(false);
+    });
+
+    it("accepts a non-live root snapshot", () => {
+        const snapshot = {
+            gameId: 1,
+            roomId: "r",
+            trunkTailMoveNumber: 0,
+            moveTreeId: 1,
+            movePath: "",
+            source: "main-board",
+            config: {},
+        } as KibitzCurrentGameBaseSnapshot;
+
+        expect(isCurrentGameBaseSnapshotUsable(snapshot, nonLiveGame, "r")).toBe(true);
+    });
+
+    it("accepts a live root snapshot only when fetched game-details prove zero moves", () => {
+        const snapshot = {
+            gameId: 1,
+            roomId: "r",
+            trunkTailMoveNumber: 0,
+            moveTreeId: 1,
+            movePath: "",
+            source: "game-details",
+            fetchedMoveCount: 0,
+            config: {},
+        } as KibitzCurrentGameBaseSnapshot;
+
+        expect(isCurrentGameBaseSnapshotUsable(snapshot, liveGame, "r")).toBe(true);
+    });
+});
+
+describe("isVisibleMainBoardMounted", () => {
+    const mainBoardController = {} as GobanController;
+
+    it("rejects stale move-0 hydration for a nonzero room", () => {
+        const hydration = {
+            roomId: "preset-fast-live",
+            gameId: 87402085,
+            officialTailMoveNumber: 0,
+            expectedMoveNumber: 0,
+            hasMoveTree: true,
+            hydrated: true,
+        };
+
+        expect(
+            isVisibleMainBoardMounted({
+                mobileCompareActive: false,
+                mainBoardController,
+                isCurrentMainBoardController: true,
+                visibleMainBoardHydration: hydration,
+                roomId: "preset-fast-live",
+                gameId: 87402085,
+                currentExpectedMoveNumber: 121,
+                isCurrentGameLive: false,
+            }),
+        ).toBe(false);
+    });
+
+    it("rejects stale lower expected hydration for an advanced room", () => {
+        const hydration = {
+            roomId: "preset-fast-live",
+            gameId: 87402085,
+            officialTailMoveNumber: 120,
+            expectedMoveNumber: 120,
+            hasMoveTree: true,
+            hydrated: true,
+        };
+
+        expect(
+            isVisibleMainBoardMounted({
+                mobileCompareActive: false,
+                mainBoardController,
+                isCurrentMainBoardController: true,
+                visibleMainBoardHydration: hydration,
+                roomId: "preset-fast-live",
+                gameId: 87402085,
+                currentExpectedMoveNumber: 121,
+                isCurrentGameLive: false,
+            }),
+        ).toBe(false);
+    });
+
+    it("accepts hydration when the expected move is current", () => {
+        const hydration = {
+            roomId: "preset-fast-live",
+            gameId: 87402085,
+            officialTailMoveNumber: 121,
+            expectedMoveNumber: 121,
+            hasMoveTree: true,
+            hydrated: true,
+        };
+
+        expect(
+            isVisibleMainBoardMounted({
+                mobileCompareActive: false,
+                mainBoardController,
+                isCurrentMainBoardController: true,
+                visibleMainBoardHydration: hydration,
+                roomId: "preset-fast-live",
+                gameId: 87402085,
+                currentExpectedMoveNumber: 121,
+                isCurrentGameLive: false,
+            }),
+        ).toBe(true);
+    });
+
+    it("rejects live root hydration even if the board reports hydrated", () => {
+        const hydration = {
+            roomId: "preset-fast-live",
+            gameId: 87402085,
+            officialTailMoveNumber: 0,
+            expectedMoveNumber: 0,
+            hasMoveTree: true,
+            hydrated: true,
+        };
+
+        expect(
+            isVisibleMainBoardMounted({
+                mobileCompareActive: false,
+                mainBoardController,
+                isCurrentMainBoardController: true,
+                visibleMainBoardHydration: hydration,
+                roomId: "preset-fast-live",
+                gameId: 87402085,
+                currentExpectedMoveNumber: 0,
+                isCurrentGameLive: true,
+            }),
+        ).toBe(false);
+    });
+});
+
+describe("mobile divider gesture lifecycle", () => {
+    it("uses a small movement threshold before activating a resize drag", () => {
+        expect(MOBILE_DIVIDER_DRAG_START_THRESHOLD_PX).toBe(3);
+        expect(shouldActivateMobileDividerDrag(1)).toBe(false);
+        expect(shouldActivateMobileDividerDrag(2)).toBe(false);
+        expect(shouldActivateMobileDividerDrag(3)).toBe(true);
+        expect(shouldActivateMobileDividerDrag(-3)).toBe(true);
+    });
+
+    it("treats pointerup as a no-op until the drag is active", () => {
+        expect(isMobileDividerPointerUpNoop("armed")).toBe(true);
+        expect(isMobileDividerPointerUpNoop(null)).toBe(true);
+        expect(isMobileDividerPointerUpNoop("active")).toBe(false);
+    });
+});
+
+describe("isMainBoardSafeForReconnect", () => {
+    const liveGame = {
+        game_id: 1,
+        move_number: 0,
+        live: true,
+    } as KibitzWatchedGame;
+
+    it("blocks reconnects for a live root-only controller", () => {
+        expect(
+            isMainBoardSafeForReconnect({
+                mainBoardController: {} as GobanController,
+                currentGame: liveGame,
+                currentGameBaseSnapshotTailMoveNumber: 0,
+                mainBoardOfficialTailMoveNumber: 0,
+                mainBoardCurrentMoveNumber: 0,
+                mainBoardLastOfficialMoveNumber: 0,
+            }),
+        ).toBe(false);
+    });
+
+    it("allows reconnects once the official tail advances", () => {
+        expect(
+            isMainBoardSafeForReconnect({
+                mainBoardController: {} as GobanController,
+                currentGame: liveGame,
+                currentGameBaseSnapshotTailMoveNumber: 33,
+                mainBoardOfficialTailMoveNumber: 33,
+                mainBoardCurrentMoveNumber: 33,
+                mainBoardLastOfficialMoveNumber: 33,
+            }),
+        ).toBe(true);
+    });
+
+    it("blocks reconnects when the tail is fresh but the live position is still stale", () => {
+        expect(
+            isMainBoardSafeForReconnect({
+                mainBoardController: {} as GobanController,
+                currentGame: liveGame,
+                currentGameBaseSnapshotTailMoveNumber: 67,
+                mainBoardOfficialTailMoveNumber: 67,
+                mainBoardCurrentMoveNumber: 0,
+                mainBoardLastOfficialMoveNumber: 0,
+            }),
+        ).toBe(false);
     });
 });

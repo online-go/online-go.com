@@ -21,6 +21,10 @@ header.NavBar {
         display: none;
     }
 
+    body.kibitz-streamer-mode & {
+        display: none;
+    }
+
     display: flex;
     margin-bottom: 0.2rem;
     height: var(--navbar-height);

@@ -9,7 +9,7 @@
  * This program is distributed in the hope that it will be useful,
  */
 
-import { Page } from "@playwright/test";
+import { Locator, Page } from "@playwright/test";
 import { expect } from "@playwright/test";
 
 type BoardSize = "19x19" | "13x13" | "9x9";
@@ -87,6 +87,11 @@ export const clickOnGobanIntersection = async (
     page: Page,
     coord: string,
     boardSize: BoardSize = "19x19",
+    // Optional locator to scope which Goban to click. Defaults to the first
+    // pointer-bound goban on the page. Pass a scoped locator when more than
+    // one such goban can be present (e.g. Kibitz compare mode where the
+    // main board and the secondary analysis board are both interactive).
+    gobanLocator?: Locator,
 ) => {
     const boardLetters: { [size: string]: string } = {
         // cspell:disable
@@ -125,7 +130,7 @@ export const clickOnGobanIntersection = async (
     // Row: N (top) -> 0, 1 (bottom) -> N-1
     const row = sizeNumber - rowNumber;
 
-    const goban = page.locator(".Goban[data-pointers-bound]");
+    const goban = gobanLocator ?? page.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });
     const box = await goban.boundingBox();
     if (!box) {

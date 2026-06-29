@@ -83,6 +83,12 @@ export function getCurrentKibitzUser(): KibitzAnalysisUser | null {
     return (data.get("config.user") ?? data.get("user") ?? null) as KibitzAnalysisUser | null;
 }
 
+export function isLoggedInKibitzUser(
+    user: ReturnType<typeof getCurrentKibitzUser> | null | undefined,
+): boolean {
+    return Boolean(user && !user.anonymous);
+}
+
 export function isActiveGame(game: KibitzAnalysisGameLike | null | undefined): boolean {
     if (!game) {
         return false;

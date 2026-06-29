@@ -36,6 +36,9 @@ pretty prettier lint-fix format:
 	npm run prettier
 	npm run lint:fix
 	
+spellcheck:
+	npm run spellcheck
+
 
 analyze visualizer bundle-visualizer:
 	npm run bundle-visualizer
@@ -47,6 +50,6 @@ GOBAN_SOCKET_WORKER_VERSION=0.2
 update-worker: build
 	cp dist/modules/GobanSocketWorkerScript.js ../ogs-node/src/GobanSocketWorker/GobanSocketWorkerScript-$(GOBAN_SOCKET_WORKER_VERSION).js
 
-.PHONY: dev build test analyze pretty prettier lint-fix .husky visualizer bundle-visualizer update-worker
+.PHONY: dev build test analyze pretty prettier lint-fix spellcheck .husky visualizer bundle-visualizer update-worker
 
 -include Makefile.production

@@ -213,6 +213,9 @@ describe("KibitzSharedStreamPanel variation posts", () => {
         expect(time).not.toBeNull();
         expect(time?.tagName).toBe("TIME");
 
+        expect(screen.getByText("Game chat")).toBeInTheDocument();
+        expect(screen.getByText("Kibitz chat")).toBeInTheDocument();
+
         const row = time?.closest(".variation-post-entry");
         expect(row).not.toBeNull();
         expect(row).toHaveAttribute("data-variation-id", "variation-1");
@@ -225,5 +228,22 @@ describe("KibitzSharedStreamPanel variation posts", () => {
 
         fireEvent.click(button);
         expect(onOpenVariation).toHaveBeenCalledWith("variation-1", true);
+    });
+
+    it("renders the mobile switch labels with the updated wording", () => {
+        render(
+            <KibitzSharedStreamPanel
+                mode="live"
+                room={makeRoom()}
+                items={[]}
+                variations={[]}
+                onOpenVariation={jest.fn()}
+                onSendMessage={jest.fn()}
+                isMobileLayout={true}
+            />,
+        );
+
+        expect(screen.getByText("Kibitz chat")).toBeInTheDocument();
+        expect(screen.getByText("Game chat")).toBeInTheDocument();
     });
 });

@@ -22,7 +22,7 @@
     display: inline-block;
     bottom: 0;
     right: 0;
-    border: 1px solid #4E697A;
+    border: 1px solid #4e697a;
     border-radius: 4px;
     z-index: var(--z-private-chat);
     background-color: #eeeeee;
@@ -72,7 +72,8 @@
         /* These are vertically aligned with each other by flex's align-centre, so top/bottom margin/padding should not be required. */
         /* (Also, I think that ideally these icons would be in their own div, pushed to the right and flex-spaced within that.  But right now they are */
         /* horizontally spaced manually ... a job for another day maybe.) */
-        .fa, .ogs-goban {
+        .fa,
+        .ogs-goban {
             flex: 0;
             color: #666;
             border: 1px solid transparent;
@@ -80,7 +81,8 @@
             color: var(--shade1);
         }
 
-        .fa:hover, .ogs-goban:hover {
+        .fa:hover,
+        .ogs-goban:hover {
             /* color: #000; */
             color: var(--shade0);
         }
@@ -135,6 +137,10 @@
 
 &.zen .private-chat-window.superchat {
     display: inline-block;
+}
+
+&.kibitz-streamer-mode .private-chat-window {
+    display: none;
 }
 
 .private-chat-window.open {
@@ -201,7 +207,8 @@
         white-space: pre-wrap;
     }
 
-    .date, .timestamp {
+    .date,
+    .timestamp {
         @mixin monospace;
         font-size: 0.8rem;
     }
@@ -275,7 +282,7 @@
 }
 
 .chat-line.name-mentioned .body {
-    color: #E41B1B !important;
+    color: #e41b1b !important;
 }
 
 .private-chat-window.superchat {

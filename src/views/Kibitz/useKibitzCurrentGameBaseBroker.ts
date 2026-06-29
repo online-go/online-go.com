@@ -20,8 +20,8 @@ import { type GobanRendererConfig } from "goban";
 import { GobanController } from "@/lib/GobanController";
 import { socket } from "@/lib/sockets";
 import type { KibitzWatchedGame } from "@/models/kibitz";
-import type { KibitzCurrentGameBaseSnapshot } from "./KibitzRoomStage";
 import { captureCurrentGameBaseSnapshotFromController } from "./kibitzCurrentGameBaseSnapshot";
+import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 import { logKibitzVariationDebug } from "./kibitzVariationDebug";
 
 const BROKER_RECONNECT_DELAYS_MS = [0, 50, 250, 1000] as const;
@@ -30,7 +30,7 @@ interface UseKibitzCurrentGameBaseBrokerOptions {
     enabled: boolean;
     roomId: string | null | undefined;
     game: KibitzWatchedGame | null | undefined;
-    currentLiveTailMoveNumber: number;
+    currentSnapshotFreshnessMoveNumber: number;
     visibleMainBoardMounted: boolean;
     onSnapshot: (snapshot: KibitzCurrentGameBaseSnapshot) => void;
 }
@@ -63,12 +63,12 @@ export function useKibitzCurrentGameBaseBroker({
     enabled,
     roomId,
     game,
-    currentLiveTailMoveNumber,
+    currentSnapshotFreshnessMoveNumber,
     visibleMainBoardMounted,
     onSnapshot,
 }: UseKibitzCurrentGameBaseBrokerOptions): void {
     const onSnapshotRef = React.useRef(onSnapshot);
-    const currentLiveTailMoveNumberRef = React.useRef(currentLiveTailMoveNumber);
+    const currentSnapshotFreshnessMoveNumberRef = React.useRef(currentSnapshotFreshnessMoveNumber);
     const scheduledTimeoutIdsRef = React.useRef<number[]>([]);
     const scheduledRafIdsRef = React.useRef<number[]>([]);
     const controllerEpochRef = React.useRef(0);
@@ -81,8 +81,8 @@ export function useKibitzCurrentGameBaseBroker({
     }, [onSnapshot]);
 
     React.useEffect(() => {
-        currentLiveTailMoveNumberRef.current = currentLiveTailMoveNumber;
-    }, [currentLiveTailMoveNumber]);
+        currentSnapshotFreshnessMoveNumberRef.current = currentSnapshotFreshnessMoveNumber;
+    }, [currentSnapshotFreshnessMoveNumber]);
 
     React.useEffect(() => {
         currentRoomIdRef.current = roomId ?? null;
@@ -214,7 +214,7 @@ export function useKibitzCurrentGameBaseBroker({
                 activeGame,
                 roomId,
                 "room-base-broker",
-                currentLiveTailMoveNumberRef.current,
+                currentSnapshotFreshnessMoveNumberRef.current,
             );
 
             if (!snapshot) {
@@ -222,7 +222,8 @@ export function useKibitzCurrentGameBaseBroker({
                     reason,
                     roomId,
                     gameId: activeGame.game_id,
-                    currentLiveTailMoveNumber: currentLiveTailMoveNumberRef.current,
+                    currentSnapshotFreshnessMoveNumber:
+                        currentSnapshotFreshnessMoveNumberRef.current,
                 });
                 return;
             }
@@ -233,7 +234,7 @@ export function useKibitzCurrentGameBaseBroker({
                 roomId,
                 gameId: snapshot.gameId,
                 trunkTailMoveNumber: snapshot.trunkTailMoveNumber,
-                currentLiveTailMoveNumber: currentLiveTailMoveNumberRef.current,
+                currentSnapshotFreshnessMoveNumber: currentSnapshotFreshnessMoveNumberRef.current,
             });
         };
 

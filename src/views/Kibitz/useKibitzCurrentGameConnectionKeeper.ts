@@ -26,9 +26,11 @@ const KEEPALIVE_INTERVAL_MS = 20000;
 interface UseKibitzCurrentGameConnectionKeeperOptions {
     roomId: string | null | undefined;
     currentGameId: number | null | undefined;
+    currentLiveTailMoveNumber?: number;
     isLive: boolean;
     pickerOpen: boolean;
     enabled?: boolean;
+    allowReconnect?: boolean;
     debugSource?: string;
     boardController?: GobanController | null;
 }
@@ -67,19 +69,56 @@ function sendGameConnect(
 export function useKibitzCurrentGameConnectionKeeper({
     roomId,
     currentGameId,
+    currentLiveTailMoveNumber = 0,
     isLive,
     pickerOpen,
     enabled = true,
+    allowReconnect = true,
     debugSource = "kibitz-room",
     boardController,
 }: UseKibitzCurrentGameConnectionKeeperOptions): void {
     const activeGameId = enabled && isLive && currentGameId != null ? currentGameId : null;
+    const activeGameKey = activeGameId != null ? `${roomId ?? "no-room"}:${activeGameId}` : null;
+    const currentLiveTailMoveNumberRef = React.useRef(currentLiveTailMoveNumber);
     const previousPickerOpenRef = React.useRef(pickerOpen);
     const previousBoardControllerRef = React.useRef<GobanController | null | undefined>(
         boardController,
     );
+    const bootstrapConnectKeyRef = React.useRef<string | null>(null);
+    const previousActiveGameKeyRef = React.useRef<string | null>(activeGameKey);
     const scheduledTimeoutIdsRef = React.useRef<number[]>([]);
     const scheduledRafIdsRef = React.useRef<number[]>([]);
+
+    React.useEffect(() => {
+        currentLiveTailMoveNumberRef.current = currentLiveTailMoveNumber;
+    }, [currentLiveTailMoveNumber]);
+
+    React.useEffect(() => {
+        if (previousActiveGameKeyRef.current === activeGameKey) {
+            return;
+        }
+
+        previousActiveGameKeyRef.current = activeGameKey;
+        bootstrapConnectKeyRef.current = null;
+    }, [activeGameKey]);
+
+    const canReconnectController = React.useCallback(
+        (controller: GobanController | null): boolean => {
+            if (!controller) {
+                return true;
+            }
+
+            const liveTailMoveNumber = currentLiveTailMoveNumberRef.current;
+            if (liveTailMoveNumber <= 0) {
+                return true;
+            }
+
+            const controllerTailMoveNumber =
+                controller.goban?.engine?.last_official_move?.move_number ?? 0;
+            return controllerTailMoveNumber >= liveTailMoveNumber;
+        },
+        [],
+    );
 
     const clearScheduledReconnects = React.useCallback(() => {
         for (const timeoutId of scheduledTimeoutIdsRef.current) {
@@ -99,13 +138,56 @@ export function useKibitzCurrentGameConnectionKeeper({
 
     const connect = React.useCallback(
         (reason: string) => {
+            if (!allowReconnect) {
+                return;
+            }
+
             if (activeGameId == null) {
                 return;
             }
 
+            const controllerGameId = boardController?.goban?.config?.game_id ?? null;
+            const controllerMatchesActiveGame =
+                boardController != null && controllerGameId === activeGameId;
+            const shouldBypassReconnectGuard =
+                controllerMatchesActiveGame &&
+                activeGameKey != null &&
+                bootstrapConnectKeyRef.current !== activeGameKey;
+
+            if (
+                controllerMatchesActiveGame &&
+                !shouldBypassReconnectGuard &&
+                !canReconnectController(boardController)
+            ) {
+                logKibitzVariationDebug("kibitz-current-game-keeper:connect-skipped", {
+                    reason,
+                    debugSource,
+                    roomId,
+                    gameId: activeGameId,
+                    currentLiveTailMoveNumber: currentLiveTailMoveNumberRef.current,
+                    controllerCurrentMoveNumber:
+                        boardController.goban?.engine?.cur_move?.move_number ?? null,
+                    controllerOfficialTailMoveNumber:
+                        boardController.goban?.engine?.last_official_move?.move_number ?? null,
+                });
+                return;
+            }
+
             sendGameConnect(activeGameId, reason, debugSource, roomId);
+
+            if (shouldBypassReconnectGuard) {
+                bootstrapConnectKeyRef.current = activeGameKey;
+            }
         },
-        [activeGameId, debugSource, roomId],
+        [
+            activeGameId,
+            activeGameKey,
+            allowReconnect,
+            boardController,
+            canReconnectController,
+            debugSource,
+            roomId,
+        ],
     );
 
     const scheduleAnimationFrame = React.useCallback((callback: FrameRequestCallback): number => {
@@ -120,6 +202,10 @@ export function useKibitzCurrentGameConnectionKeeper({
 
     const scheduleReconnectBurst = React.useCallback(
         (reason: string) => {
+            if (!allowReconnect) {
+                return;
+            }
+
             if (activeGameId == null) {
                 return;
             }
@@ -143,11 +229,25 @@ export function useKibitzCurrentGameConnectionKeeper({
             });
             scheduledRafIdsRef.current.push(firstRafId);
         },
-        [activeGameId, clearScheduledReconnects, connect, scheduleAnimationFrame],
+        [activeGameId, allowReconnect, clearScheduledReconnects, connect, scheduleAnimationFrame],
     );
 
     React.useEffect(() => {
         if (activeGameId == null) {
+            bootstrapConnectKeyRef.current = null;
+            clearScheduledReconnects();
+            return;
+        }
+
+        if (!allowReconnect) {
+            logKibitzVariationDebug("kibitz-current-game-keeper:skip-root-live-board", {
+                debugSource,
+                roomId,
+                gameId: activeGameId,
+                currentLiveTailMoveNumber: currentLiveTailMoveNumberRef.current,
+                boardOfficialTailMoveNumber:
+                    boardController?.goban?.engine?.last_official_move?.move_number ?? 0,
+            });
             clearScheduledReconnects();
             return;
         }
@@ -165,10 +265,23 @@ export function useKibitzCurrentGameConnectionKeeper({
             // Do not send game/disconnect here.
             // Future improvement: shared Goban/socket-level ref-counting.
         };
-    }, [activeGameId, clearScheduledReconnects, connect, debugSource, roomId]);
+    }, [
+        activeGameId,
+        allowReconnect,
+        boardController,
+        clearScheduledReconnects,
+        connect,
+        debugSource,
+        roomId,
+    ]);
 
     React.useEffect(() => {
         if (activeGameId == null) {
+            previousPickerOpenRef.current = pickerOpen;
+            return;
+        }
+
+        if (!allowReconnect) {
             previousPickerOpenRef.current = pickerOpen;
             return;
         }
@@ -185,10 +298,15 @@ export function useKibitzCurrentGameConnectionKeeper({
         if (previousPickerOpen && !pickerOpen) {
             scheduleReconnectBurst("picker-close");
         }
-    }, [activeGameId, connect, pickerOpen, scheduleReconnectBurst]);
+    }, [activeGameId, allowReconnect, connect, pickerOpen, scheduleReconnectBurst]);
 
     React.useEffect(() => {
         if (activeGameId == null) {
+            previousBoardControllerRef.current = boardController;
+            return;
+        }
+
+        if (!allowReconnect) {
             previousBoardControllerRef.current = boardController;
             return;
         }
@@ -197,12 +315,16 @@ export function useKibitzCurrentGameConnectionKeeper({
         previousBoardControllerRef.current = boardController;
 
         if (previousBoardController !== boardController) {
-            connect("main-board-controller-change");
+            scheduleReconnectBurst("main-board-controller-change");
         }
-    }, [activeGameId, boardController, connect]);
+    }, [activeGameId, allowReconnect, boardController, scheduleReconnectBurst]);
 
     React.useEffect(() => {
         if (activeGameId == null) {
+            return;
+        }
+
+        if (!allowReconnect) {
             return;
         }
 
@@ -223,10 +345,14 @@ export function useKibitzCurrentGameConnectionKeeper({
             window.removeEventListener("focus", onFocus);
             document.removeEventListener("visibilitychange", onVisibilityChange);
         };
-    }, [activeGameId, connect]);
+    }, [activeGameId, allowReconnect, connect]);
 
     React.useEffect(() => {
         if (activeGameId == null) {
+            return;
+        }
+
+        if (!allowReconnect) {
             return;
         }
 
@@ -237,7 +363,7 @@ export function useKibitzCurrentGameConnectionKeeper({
         return () => {
             window.clearInterval(intervalId);
         };
-    }, [activeGameId, connect]);
+    }, [activeGameId, allowReconnect, connect]);
 
     React.useEffect(() => {
         return () => {

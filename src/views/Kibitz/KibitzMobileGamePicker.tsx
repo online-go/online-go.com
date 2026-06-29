@@ -43,6 +43,8 @@ interface KibitzMobileGamePickerProps {
     mode: KibitzGamePickerMode;
     rooms: KibitzRoomSummary[];
     currentRoom?: KibitzRoomSummary | null;
+    canOpenCreateRoomFlow: boolean;
+    signInHref: string;
     onClose: () => void;
     onCreateRoom: (
         game: KibitzWatchedGame,
@@ -142,6 +144,8 @@ export function KibitzMobileGamePicker({
     mode,
     rooms,
     currentRoom,
+    canOpenCreateRoomFlow,
+    signInHref,
     onClose,
     onCreateRoom,
     onChangeBoard,
@@ -230,6 +234,7 @@ export function KibitzMobileGamePicker({
         selectionIsEligible &&
         !selectionIsSameAsCurrent &&
         !loading;
+    const createRoomLoginRequired = mode === "create-room" && !canOpenCreateRoomFlow;
 
     React.useEffect(() => {
         if (!selectedGame || mode !== "create-room") {
@@ -343,14 +348,18 @@ export function KibitzMobileGamePicker({
 
         void Promise.resolve(
             onCreateRoom(selectedGame.game, roomName.trim(), roomDescription.trim()),
-        ).then((nextRoomId) => {
-            if (nextRoomId) {
-                onClose();
-                return;
-            }
+        )
+            .then((nextRoomId) => {
+                if (nextRoomId) {
+                    onClose();
+                    return;
+                }
 
-            setErrorMessage(getKibitzPickerFailedCreateMessage());
-        });
+                setErrorMessage(getKibitzPickerFailedCreateMessage());
+            })
+            .catch(() => {
+                setErrorMessage(getKibitzPickerFailedCreateMessage());
+            });
     }, [canCreateRoom, onClose, onCreateRoom, roomDescription, roomName, selectedGame]);
 
     const onSubmitChangeBoard = React.useCallback(() => {
@@ -393,6 +402,85 @@ export function KibitzMobileGamePicker({
 
         onBackToMenu?.();
     }, [mobileStep, onBackToMenu]);
+
+    if (createRoomLoginRequired) {
+        return (
+            <div className="KibitzGamePickerOverlay KibitzMobileGamePicker KibitzGamePickerOverlay-embedded">
+                <div className="KibitzGamePickerOverlay-shell KibitzGamePickerOverlay-shell-mobile">
+                    <div className="KibitzGamePickerOverlay-mobileHeader">
+                        <div className="KibitzGamePickerOverlay-mobileTitleBar">
+                            {onBackToMenu ? (
+                                <button
+                                    type="button"
+                                    className="xs KibitzGamePickerOverlay-mobileBackButton KibitzGamePickerOverlay-mobileTitleBackButton"
+                                    onClick={onBackToMenu ?? onClose}
+                                    aria-label={pgettext(
+                                        "Aria label for going back from the Kibitz create room login-required state",
+                                        "Go back",
+                                    )}
+                                >
+                                    <i className="fa fa-arrow-left" aria-hidden="true" />
+                                </button>
+                            ) : null}
+                            <div className="KibitzGamePickerOverlay-mobileTitleText">
+                                <div className="KibitzGamePickerOverlay-mobileHeaderTitle">
+                                    {pgettext(
+                                        "Title for Kibitz create room login-required state",
+                                        "Sign in to create a room",
+                                    )}
+                                </div>
+                                <div className="KibitzGamePickerOverlay-mobileHeaderSubtitle">
+                                    {pgettext(
+                                        "Subtitle for the Kibitz create room login-required state",
+                                        "You need to be signed in before you can create a Kibitz room.",
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="KibitzGamePickerOverlay-mobileHeaderActions KibitzGamePickerOverlay-mobileHeaderActions-source">
+                            <button
+                                type="button"
+                                className="xs primary KibitzGamePickerOverlay-mobileSourceButton"
+                                onClick={onClose}
+                            >
+                                {pgettext(
+                                    "Button label for closing the Kibitz create room login-required state",
+                                    "Close",
+                                )}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="KibitzGamePickerOverlay-mobileBody">
+                        <div className="KibitzGamePickerOverlay-mobileStepBody KibitzGamePickerOverlay-mobilePreviewStep">
+                            <div className="KibitzGamePickerOverlay-mobilePreviewContent">
+                                <div className="KibitzGamePickerOverlay-selectionCard KibitzGamePickerOverlay-selectionCard-mobile">
+                                    <div className="KibitzGamePickerOverlay-emptyState">
+                                        {pgettext(
+                                            "Empty state for anonymous users trying to create a Kibitz room",
+                                            "Sign in to create room.",
+                                        )}
+                                    </div>
+                                    <div className="KibitzGamePickerOverlay-note">
+                                        {pgettext(
+                                            "Login required notice for Kibitz create room",
+                                            "Create room is available to signed-in users only.",
+                                        )}
+                                    </div>
+                                    <a
+                                        className="xs primary KibitzGamePickerOverlay-actionButton KibitzGamePickerOverlay-mobileCreateButton"
+                                        href={signInHref}
+                                    >
+                                        {pgettext("Login action for Kibitz create room", "Sign in")}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     const selectedGameSummary = selectedGame?.game;
     const selectedGameStateLabel = selectedGame

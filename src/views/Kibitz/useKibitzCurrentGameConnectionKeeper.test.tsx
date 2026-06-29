@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* cspell:ignore unhydrated */
+
 import { act, renderHook } from "@testing-library/react";
 import type { GobanController } from "@/lib/GobanController";
 import { socket } from "@/lib/sockets";
@@ -54,6 +56,7 @@ function renderKeeper(
     overrides?: Partial<{
         roomId: string | null | undefined;
         currentGameId: number | null | undefined;
+        currentLiveTailMoveNumber: number;
         isLive: boolean;
         pickerOpen: boolean;
         enabled: boolean;
@@ -64,6 +67,7 @@ function renderKeeper(
         useKibitzCurrentGameConnectionKeeper({
             roomId: overrides?.roomId ?? "room-1",
             currentGameId: overrides?.currentGameId ?? 123,
+            currentLiveTailMoveNumber: overrides?.currentLiveTailMoveNumber ?? 10,
             isLive: overrides?.isLive ?? true,
             pickerOpen: overrides?.pickerOpen ?? false,
             enabled: overrides?.enabled ?? true,
@@ -105,6 +109,7 @@ describe("useKibitzCurrentGameConnectionKeeper", () => {
                 useKibitzCurrentGameConnectionKeeper({
                     roomId: "room-1",
                     currentGameId: 123,
+                    currentLiveTailMoveNumber: 10,
                     isLive: true,
                     pickerOpen,
                     enabled: true,
@@ -130,14 +135,29 @@ describe("useKibitzCurrentGameConnectionKeeper", () => {
     });
 
     it("reconnects the current game when the main board controller changes", () => {
-        const controllerA = {} as GobanController;
-        const controllerB = {} as GobanController;
+        const controllerA = {
+            goban: {
+                engine: {
+                    cur_move: { move_number: 10 },
+                    last_official_move: { move_number: 10 },
+                },
+            },
+        } as GobanController;
+        const controllerB = {
+            goban: {
+                engine: {
+                    cur_move: { move_number: 10 },
+                    last_official_move: { move_number: 10 },
+                },
+            },
+        } as GobanController;
 
         const { rerender } = renderHook(
             ({ boardController }) =>
                 useKibitzCurrentGameConnectionKeeper({
                     roomId: "room-1",
                     currentGameId: 123,
+                    currentLiveTailMoveNumber: 10,
                     isLive: true,
                     pickerOpen: false,
                     enabled: true,
@@ -152,7 +172,190 @@ describe("useKibitzCurrentGameConnectionKeeper", () => {
 
         rerender({ boardController: controllerB });
 
+        act(() => {
+            jest.advanceTimersByTime(1000);
+        });
+
         expect(mockedSocket.send).toHaveBeenCalledWith("game/connect", {
+            game_id: 123,
+            chat: true,
+        });
+    });
+
+    it("bootstraps an unhydrated controller on mount for the current live game", () => {
+        const controller = {
+            goban: {
+                config: {
+                    game_id: 123,
+                },
+                engine: {
+                    cur_move: { move_number: 0 },
+                    last_official_move: { move_number: 0 },
+                },
+            },
+        } as GobanController;
+
+        renderHook(() =>
+            useKibitzCurrentGameConnectionKeeper({
+                roomId: "room-1",
+                currentGameId: 123,
+                currentLiveTailMoveNumber: 70,
+                isLive: true,
+                pickerOpen: false,
+                enabled: true,
+                boardController: controller,
+            }),
+        );
+
+        expect(mockedSocket.send).toHaveBeenCalledWith("game/connect", {
+            game_id: 123,
+            chat: true,
+        });
+    });
+
+    it("does not spend the bootstrap when the old game controller is still present during a room switch", () => {
+        const oldController = {
+            goban: {
+                config: {
+                    game_id: 123,
+                },
+                engine: {
+                    cur_move: { move_number: 0 },
+                    last_official_move: { move_number: 0 },
+                },
+            },
+        } as GobanController;
+        const newControllerA = {
+            goban: {
+                config: {
+                    game_id: 456,
+                },
+                engine: {
+                    cur_move: { move_number: 0 },
+                    last_official_move: { move_number: 0 },
+                },
+            },
+        } as GobanController;
+        const newControllerB = {
+            goban: {
+                config: {
+                    game_id: 456,
+                },
+                engine: {
+                    cur_move: { move_number: 0 },
+                    last_official_move: { move_number: 0 },
+                },
+            },
+        } as GobanController;
+
+        const { rerender } = renderHook(
+            ({ currentGameId, boardController }) =>
+                useKibitzCurrentGameConnectionKeeper({
+                    roomId: "room-1",
+                    currentGameId,
+                    currentLiveTailMoveNumber: 70,
+                    isLive: true,
+                    pickerOpen: false,
+                    enabled: true,
+                    boardController,
+                }),
+            {
+                initialProps: {
+                    currentGameId: 123,
+                    boardController: oldController as GobanController | null,
+                },
+            },
+        );
+
+        mockedSocket.send.mockClear();
+
+        rerender({ currentGameId: 456, boardController: oldController });
+
+        act(() => {
+            jest.advanceTimersByTime(1000);
+        });
+
+        expect(mockedSocket.send).toHaveBeenCalledWith("game/connect", {
+            game_id: 456,
+            chat: true,
+        });
+
+        mockedSocket.send.mockClear();
+
+        rerender({ currentGameId: 456, boardController: newControllerA });
+
+        act(() => {
+            jest.advanceTimersByTime(1000);
+        });
+
+        expect(mockedSocket.send).toHaveBeenCalledWith("game/connect", {
+            game_id: 456,
+            chat: true,
+        });
+
+        mockedSocket.send.mockClear();
+
+        rerender({ currentGameId: 456, boardController: newControllerB });
+
+        act(() => {
+            jest.advanceTimersByTime(1000);
+        });
+
+        expect(mockedSocket.send).not.toHaveBeenCalledWith("game/connect", {
+            game_id: 456,
+            chat: true,
+        });
+    });
+
+    it("does not reconnect a controller that still appears unhydrated against a deep live game", () => {
+        const controllerA = {
+            goban: {
+                config: {
+                    game_id: 123,
+                },
+                engine: {
+                    cur_move: { move_number: 0 },
+                    last_official_move: { move_number: 0 },
+                },
+            },
+        } as GobanController;
+        const controllerB = {
+            goban: {
+                config: {
+                    game_id: 123,
+                },
+                engine: {
+                    cur_move: { move_number: 0 },
+                    last_official_move: { move_number: 0 },
+                },
+            },
+        } as GobanController;
+
+        const { rerender } = renderHook(
+            ({ boardController }) =>
+                useKibitzCurrentGameConnectionKeeper({
+                    roomId: "room-1",
+                    currentGameId: 123,
+                    currentLiveTailMoveNumber: 70,
+                    isLive: true,
+                    pickerOpen: false,
+                    enabled: true,
+                    boardController,
+                }),
+            {
+                initialProps: { boardController: controllerA },
+            },
+        );
+
+        mockedSocket.send.mockClear();
+
+        rerender({ boardController: controllerB });
+
+        act(() => {
+            jest.advanceTimersByTime(1000);
+        });
+
+        expect(mockedSocket.send).not.toHaveBeenCalledWith("game/connect", {
             game_id: 123,
             chat: true,
         });

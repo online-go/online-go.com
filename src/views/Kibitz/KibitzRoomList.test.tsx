@@ -50,6 +50,8 @@ describe("KibitzRoomList", () => {
                 rooms={[makeRoom({ kind: "preset" }), makeRoom({ id: "room-2", title: "Room 2" })]}
                 activeRoomId="room-1"
                 onSelectRoom={jest.fn()}
+                canOpenCreateRoomFlow={true}
+                signInHref="/sign-in#/kibitz"
             />,
         );
 
@@ -65,9 +67,46 @@ describe("KibitzRoomList", () => {
                 rooms={[makeRoom({ kind: "user" }), makeRoom({ id: "room-2", title: "Room 2" })]}
                 activeRoomId="room-1"
                 onSelectRoom={jest.fn()}
+                canOpenCreateRoomFlow={true}
+                signInHref="/sign-in#/kibitz"
             />,
         );
 
         expect(screen.queryByText("Preset")).toBeNull();
+    });
+
+    it("shows login copy instead of create copy for anonymous users", () => {
+        render(
+            <KibitzRoomList
+                rooms={[makeRoom()]}
+                activeRoomId="room-1"
+                onSelectRoom={jest.fn()}
+                onCreateRoom={jest.fn()}
+                canOpenCreateRoomFlow={false}
+                signInHref="/sign-in#/kibitz"
+            />,
+        );
+
+        expect(screen.getByRole("link", { name: "Sign in to create room" })).toHaveAttribute(
+            "href",
+            "/sign-in#/kibitz",
+        );
+        expect(screen.queryByRole("button", { name: "Create room" })).toBeNull();
+    });
+
+    it("shows create copy for logged-in users", () => {
+        render(
+            <KibitzRoomList
+                rooms={[makeRoom()]}
+                activeRoomId="room-1"
+                onSelectRoom={jest.fn()}
+                onCreateRoom={jest.fn()}
+                canOpenCreateRoomFlow={true}
+                signInHref="/sign-in#/kibitz"
+            />,
+        );
+
+        expect(screen.getByRole("button", { name: "Create room" })).toBeInTheDocument();
+        expect(screen.queryByRole("link", { name: "Sign in to create room" })).toBeNull();
     });
 });

@@ -108,6 +108,8 @@ export interface KibitzPreludeResult {
     watcherPage: Page;
     blackPlayerPage: Page;
     whitePlayerPage: Page;
+    blackUsername: string;
+    whiteUsername: string;
     gameId: number;
     roomId: string;
 }
@@ -129,9 +131,10 @@ export async function createKibitzRoomForLiveGame(
 ): Promise<KibitzPreludeResult> {
     console.log("[kibitz prelude] preparing three users (black, white, watcher)");
     // 1. Three users. Role prefixes <= 20 chars per newTestUsername contract.
+    const blackUsername = newTestUsername("kibBlk"); // cspell:disable-line
     const { userPage: blackPlayerPage } = await prepareNewUser(
         createContext,
-        newTestUsername("kibBlk"), // cspell:disable-line
+        blackUsername,
         "test",
     );
     const whiteUsername = newTestUsername("kibWht"); // cspell:disable-line
@@ -245,5 +248,13 @@ export async function createKibitzRoomForLiveGame(
     const roomId = roomMatch[1];
     console.log(`[kibitz prelude] room ${roomId} created and rendered for watcher`);
 
-    return { watcherPage, blackPlayerPage, whitePlayerPage, gameId, roomId };
+    return {
+        watcherPage,
+        blackPlayerPage,
+        whitePlayerPage,
+        blackUsername,
+        whiteUsername,
+        gameId,
+        roomId,
+    };
 }

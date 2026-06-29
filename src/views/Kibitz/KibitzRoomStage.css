@@ -22,9 +22,16 @@
         align-items: center;
         display: grid;
         gap: 0.75rem;
-        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        grid-template-columns: minmax(10rem, 1fr) minmax(0, 2.5fr) minmax(10rem, 1fr);
         min-width: 0;
         width: 100%;
+    }
+
+    @media (max-width: 1700px) {
+        .room-stage-header .board-title-row {
+            gap: 0.5rem;
+            grid-template-columns: minmax(0, 0.85fr) minmax(0, 3fr) minmax(0, 0.85fr);
+        }
     }
 
     .room-stage-header .board-titleRowMain {
@@ -93,13 +100,15 @@
     }
 
     .room-stage-header .board-subtitle {
+        align-items: flex-end;
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
         justify-self: end;
         max-width: min(100%, 18rem);
         min-width: 0;
         overflow: hidden;
         text-align: right;
-        text-overflow: ellipsis;
-        white-space: nowrap;
     }
 
     .room-stage-header .board-subtitle-link {
@@ -109,6 +118,25 @@
         overflow: hidden;
         text-overflow: ellipsis;
         vertical-align: bottom;
+        white-space: nowrap;
+    }
+
+    .room-stage-header .board-subtitle-meta {
+        align-items: flex-end;
+        color: var(--text-color-faded);
+        display: flex;
+        flex-direction: column;
+        font-size: 0.8rem;
+        font-weight: 600;
+        line-height: 1.1;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .room-stage-header .board-subtitle-meta-line {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
         white-space: nowrap;
     }
 
@@ -263,6 +291,7 @@
             --kibitz-header-block-height: 1.5rem;
             --equal-main-track: minmax(12.5rem, 0.58fr);
             --equal-secondary-track: minmax(20.5rem, 1.42fr);
+            --equal-main-board-max-size: min(100%, 20rem, 30vh);
             --equal-meta-height: var(--kibitz-header-block-height);
             --equal-transport-height: 2.35rem;
             --equal-analyze-height: 1.9rem;
@@ -497,8 +526,8 @@
             }
 
             .main-board .KibitzBoard {
-                max-height: min(100%, 20rem, 30vh);
-                max-width: min(100%, 20rem, 30vh);
+                max-height: var(--equal-main-board-max-size);
+                max-width: var(--equal-main-board-max-size);
                 width: auto;
             }
 
@@ -507,7 +536,7 @@
             }
 
             .main-board .KibitzBoardControls {
-                max-width: min(100%, 20rem, 30vh);
+                max-width: var(--equal-main-board-max-size);
             }
 
             .secondary-board .KibitzBoard {
@@ -1166,6 +1195,16 @@
     }
 }
 
+@media (min-width: 1001px) {
+    .Kibitz.is-streamer-mode {
+        .KibitzRoomStage-boards.secondary-pane-equal {
+            --equal-main-track: minmax(0, 1fr);
+            --equal-secondary-track: minmax(0, 1fr);
+            --equal-main-board-max-size: min(100%, 44rem, 72vh);
+        }
+    }
+}
+
 @media (max-width: 1000px) {
     .KibitzRoomStage {
         padding: 0;
@@ -1191,7 +1230,9 @@
         flex-direction: column;
         gap: 0;
         min-height: 0;
+        min-width: 0;
         padding: 0.125rem;
+        width: 100%;
     }
 
     .Kibitz-mobile-board-meta {
@@ -1255,7 +1296,7 @@
         min-height: 0;
         min-width: 0;
         overflow: hidden;
-        width: min(100%, var(--kibitz-mobile-board-max, 31rem));
+        width: min(100%, calc(100dvw - 0.5rem), var(--kibitz-mobile-board-max, 31rem));
     }
 
     .mobile-board-fit-slot .KibitzBoard {

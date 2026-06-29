@@ -15,13 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ogsTest } from "@helpers";
-import { kibitzBasicRoomTest } from "./kibitz-basic-room";
-import { kibitzEditRoomDetailsTest } from "./kibitz-edit-room-details";
-import { kibitzShareVariationTest } from "./kibitz-share-variation";
+import { type GobanConfig, type MoveTreeJson } from "goban";
 
-ogsTest.describe("@Kibitz basic flows", () => {
-    ogsTest("Create room, navigate in, and post a chat message", kibitzBasicRoomTest);
-    ogsTest("Share an analysis variation", kibitzShareVariationTest);
-    ogsTest("Owner edits room details; non-owner cannot", kibitzEditRoomDetailsTest);
-});
+export type KibitzBoardLoadConfig = Record<string, unknown> & {
+    move_tree?: MoveTreeJson;
+    moves?: GobanConfig["moves"];
+};
+
+export interface KibitzCurrentGameBaseSnapshot {
+    gameId: number;
+    roomId?: string | null;
+    trunkTailMoveNumber: number;
+    moveTreeId: number | string | null;
+    movePath: string;
+    source: "main-board" | "room-base-broker" | "game-details" | "selected-game-details";
+    fetchedMoveCount?: number | null;
+    config: KibitzBoardLoadConfig;
+}
