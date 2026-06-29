@@ -12,7 +12,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://gnu.org>.
  */
 
 import * as React from "react";
@@ -48,6 +48,7 @@ export class BanModal extends Modal<Events, BanModalProperties, any> {
         const ban = () => {
             const player_id = this.props.player_id;
 
+            // 1. 봇이 지적한 메인 브랜치 규격에 맞춰 페이로드(obj) 완벽 복구
             const obj = {
                 moderation_note: this.state.details.moderator_notes,
                 is_banned: true,
@@ -55,7 +56,11 @@ export class BanModal extends Modal<Events, BanModalProperties, any> {
                 ban_expiration: this.state.details.ban_expiration?.toISOString(),
             };
 
-            put("players/" + player_id + "/moderate", obj).catch(errorAlerter);
+            put("players/" + player_id + "/moderate", obj)
+                .then(() => {
+                    // 성공 로그는 유지하거나 필요 없다면 생략 가능합니다.
+                })
+                .catch(errorAlerter);
             this.close();
         };
 
@@ -100,14 +105,21 @@ function BanDetails({ onChange }: { onChange: (d: any) => void }): React.ReactEl
             <h3>{pgettext("BanModal form field label", "Public reason (displayed to user)")}</h3>
             <textarea onChange={(e) => set_public_reason(e.target.value)} value={public_reason} />
 
-            <h3>{pgettext("BanModal form field label", "Moderator only notes (optional)")}</h3>
+            <h3>{_("Moderator only notes (optional)")}</h3>
             <textarea
                 onChange={(e) => set_moderator_notes(e.target.value)}
                 value={moderator_notes}
             />
+
             <h3>{pgettext("BanModal form field label", "Ban expiration")}</h3>
-            ban_expiration: this.state.details.ban_expiration?.toISOString()
-            
+            {/* 2. 직접 타이핑 시 d._d 가 undefined가 되어 무한 정지되던 버그 수정 */}
+            <Datetime 
+                value={expiration} 
+                onChange={(d: any) => {
+                    const dateVal = (d && typeof d.isValid === 'function' && d.isValid()) ? d.toDate() : undefined;
+                    set_expiration(dateVal);
+                }} 
+            />
         </div>
     );
 }
