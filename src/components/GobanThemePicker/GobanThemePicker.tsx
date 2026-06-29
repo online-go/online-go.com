@@ -22,6 +22,7 @@ import { getSelectedThemes, usePreference } from "@/lib/preferences";
 import { PersistentElement } from "@/components/PersistentElement";
 import { Experiment, Variant, Default } from "../Experiment";
 import { LineText } from "../misc-ui";
+import { GobanCustomBoardGridBackgroundPicker } from "./GobanCustomBoardGridBackgroundPicker";
 import "./GobanThemePicker.css";
 
 interface GobanThemePickerProperties {
@@ -217,6 +218,8 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React
                     <i className="fa fa-undo" />
                 </button>
             </div>
+
+            <GobanCustomBoardGridBackgroundPicker />
         </div>
     );
 }

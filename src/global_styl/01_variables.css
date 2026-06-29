@@ -48,6 +48,15 @@
     --turn-indicator-size: 1.5rem;
 
     /* Z-indices */
+    /*
+     * Canvas goban uses both a vector grid layer and an optional themed image
+     * layer containing a baked-in grid. The image layer intentionally sits above
+     * the vector grid so a loaded themed asset hides it, while shadows, stones,
+     * pen marks, and messages remain above both. If the image URL fails, the
+     * vector grid below it is still visible.
+     */
+    --z-goban-grid-layer: 5;
+    --z-goban-grid-background-layer: 8;
     --z-goban-shadow-layer: 10;
     --z-goban-crosshair-layer: 15;
     --z-goban-stone-layer: 20;
