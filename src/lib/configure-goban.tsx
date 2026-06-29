@@ -108,6 +108,11 @@ export function configure_goban() {
         getMoveTreeNumbering: (): "none" | "move-number" | "move-coordinates" =>
             preferences.get("move-tree-numbering"),
         getStoneFontScale: (): number => preferences.get("stone-font-scale"),
+        getLastMoveCrosshair: (): { enabled: boolean; color: string; thickness: number } => ({
+            enabled: preferences.get("accessibility.last-move-crosshair"),
+            color: preferences.get("accessibility.last-move-crosshair-color"),
+            thickness: preferences.get("accessibility.last-move-crosshair-thickness"),
+        }),
         getFuzzyPlacementEnabled: (): boolean => preferences.get("fuzzy-stone-placement"),
         getCDNReleaseBase: (): string => data.get("config.cdn_release", ""),
         getSoundEnabled: (): boolean => sfx.getVolume("master") > 0,

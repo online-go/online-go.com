@@ -53,6 +53,7 @@ import { Supporter } from "@/views/Supporter";
 import { GoTVPreferences } from "./GoTVPreferences";
 import { ThemePreferences } from "./ThemePreferences";
 import { HomeScreenPreferences } from "./HomeScreenPreferences";
+import { AccessibilityPreferences } from "./AccessibilityPreferences";
 import "./Settings.css";
 
 export function Settings(): React.ReactElement {
@@ -115,6 +116,7 @@ export function Settings(): React.ReactElement {
         { key: "general", label: _("General Preferences") },
         { key: "sound", label: _("Sound Preferences") },
         { key: "game", label: _("Game Preferences") },
+        { key: "accessibility", label: _("Accessibility") },
         { key: "theme", label: _("Themes & Visuals") },
         { key: "chat", label: _("Chat Preferences") },
         { key: "home", label: _("Home Preferences") },
@@ -165,6 +167,9 @@ export function Settings(): React.ReactElement {
             break;
         case "game":
             SelectedPage = GamePreferences;
+            break;
+        case "accessibility":
+            SelectedPage = AccessibilityPreferences;
             break;
         case "theme":
             SelectedPage = ThemePreferences;

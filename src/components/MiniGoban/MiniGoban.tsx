@@ -64,6 +64,10 @@ export interface MiniGobanProps {
     rightLabel?: string;
     chat?: boolean;
     labels_positioning?: "none" | "all" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
+    /** Mini boards (thumbnails / setting previews) suppress the last-move
+     *  accessibility crosshair by default; set this to opt back in (e.g. the
+     *  crosshair setting's own preview). */
+    lastMoveCrosshair?: boolean;
     sampleOptions?: {
         undo?: boolean;
         variation?: JGOFMove[];
@@ -137,6 +141,13 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
             stone_font_scale: preferences.get("stone-font-scale"),
             enable_sounds: false, // Disable sounds for mini boards
             ...props.json,
+            // Thumbnails / previews are too small for the accessibility crosshair;
+            // suppress it unless a caller explicitly opts in. After the json spread
+            // so a server-supplied config can't accidentally override the prop.
+            // Construction-time flag, like connect_to_chat / enable_sounds above, so
+            // deliberately not in this effect's dependency array (scoped to board
+            // identity): the sole opt-in caller passes a constant and remounts via key.
+            dont_draw_last_move_crosshair: !props.lastMoveCrosshair,
         });
         goban.current = controller.goban;
 

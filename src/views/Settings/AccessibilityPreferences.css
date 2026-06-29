@@ -1,0 +1,24 @@
+.AccessibilityPreferences {
+    input[type="color"] {
+        height: 2rem;
+        width: 3rem;
+    }
+
+    .crosshair-options {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .crosshair-controls {
+        flex: 1 1 20rem;
+        min-width: 18rem;
+    }
+
+    .MiniGoban.crosshair-preview {
+        flex: 0 0 auto;
+        width: 150px;
+        height: 150px;
+    }
+}
