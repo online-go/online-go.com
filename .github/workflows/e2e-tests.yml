@@ -25,6 +25,14 @@ jobs:
         if: github.repository == 'online-go/online-go.com'
 
         steps:
+            # A previous cancel-in-progress kill may have left git locks or
+            # orphan playwright processes behind; clean them up before starting.
+            - name: Clear stale git locks and orphan playwright processes
+              run: |
+                  rm -f /home/greenasjade/src/OGS/ogs/.git/index.lock \
+                        /home/greenasjade/src/OGS/ogs-ui/.git/index.lock
+                  pkill -f 'chrome-headless-shell.*playwright_chromiumdev_profile' || true
+
             - name: Update ogs repo to get latest script
               run: cd /home/greenasjade/src/OGS/ogs && git pull origin main
 
