@@ -1,0 +1,232 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.GameSidebarPanel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    overflow-y: auto;
+
+    .GameSidebarPanel-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0 0 0.5rem 0;
+        padding-bottom: 0.4rem;
+        border-bottom: 1px solid var(--shade4);
+        letter-spacing: 0.02em;
+    }
+
+    .GameSidebarPanel-section-header {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: var(--shade2);
+        margin-top: 0.75rem;
+        margin-bottom: 0.25rem;
+        letter-spacing: 0.05em;
+    }
+
+    .GameSidebarPanel-item {
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.45rem 0.5rem;
+        margin: 0;
+        height: auto;
+        box-shadow: none;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        background: transparent;
+        color: var(--fg);
+        text-align: left;
+        font-family: inherit;
+        font-size: 0.9rem;
+        line-height: 1.2;
+        cursor: pointer;
+        text-decoration: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        /* The global `button { … }` rule injects a content:'' ::before for
+         * vertical alignment in inline-block mode. Inside our flex container
+         * it becomes an extra flex item with its own gap, shifting buttons
+         * 0.6rem to the right of <a> rows. Suppress it so buttons and links
+         * lay out identically. */
+        &::before {
+            content: none;
+            display: none;
+        }
+
+        i {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 1.1rem;
+            width: 1.1rem;
+            text-align: center;
+            color: var(--shade1);
+        }
+
+        span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        &:hover:not(.disabled):not(:disabled) {
+            background: var(--shade4);
+        }
+
+        &.active {
+            background: var(--shade4);
+            border-color: var(--primary);
+        }
+
+        &.disabled,
+        &:disabled {
+            color: var(--shade2);
+            cursor: not-allowed;
+
+            i {
+                color: var(--shade3);
+            }
+        }
+    }
+
+    .GameSidebarPanel-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 0.5rem;
+
+        .volume-icon {
+            cursor: pointer;
+            width: 1.1rem;
+            text-align: center;
+            color: var(--shade1);
+        }
+
+        .volume-slider {
+            flex-grow: 1;
+            min-width: 0;
+        }
+    }
+
+    /* Row with a left-side label (icon + text) and a right-aligned
+     * control (toggle, dropdown, etc). Used by the in-game settings panel
+     * for the Coordinates dropdown and the AI Review toggle. */
+    .GameSidebarPanel-labeled-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 0.5rem;
+        font-size: 0.875rem;
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+            min-width: 0;
+            cursor: pointer;
+
+            i {
+                width: 1.1rem;
+                text-align: center;
+                color: var(--shade1);
+            }
+        }
+
+        select {
+            min-width: 8rem;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.2rem;
+            background: var(--shade4);
+            color: var(--fg);
+            border: 1px solid var(--shade2);
+            cursor: pointer;
+        }
+    }
+
+    /* Wrapper for the embedded GobanThemePicker — it has its own internal
+     * grid layout; we just give it a bit of horizontal breathing room
+     * inside the sidebar's padding-free panel. */
+    .GameSettingsPanel-theme-picker {
+        padding: 0 0.25rem;
+
+        .GobanThemePicker {
+            justify-content: flex-start;
+        }
+
+        /* Pin the board-theme grid to 7 columns so the 14 standard
+         * boards form a tidy 7x2 grid instead of wrapping at whatever
+         * the available sidebar width happens to allow. The 3 sub-
+         * pickers (board / white stones / black stones) all use the
+         * same `.GobanThemePicker` class, so target the first one by
+         * structural position. */
+        > .GobanThemePicker > .GobanThemePicker:first-child .theme-set {
+            display: inline-grid;
+            grid-template-columns: repeat(7, auto);
+            width: auto;
+        }
+    }
+
+    hr {
+        border: none;
+        border-top: 1px solid var(--shade4);
+        margin: 0.5rem 0;
+    }
+}
+
+/* Shared base for popover-mounted sidebar panels (Settings, More-actions).
+ * The popover container is just a positioned wrapper, so the inner wrapper
+ * (.GamePopover) needs to look standalone — card chrome, padding, capped
+ * at viewport width, shrinkable. */
+.popover-container .GamePopover {
+    background: var(--shade5);
+    border: 1px solid var(--shade3);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    padding: 0.4rem;
+    min-width: 14rem;
+    max-width: 100dvw;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Moderator case: actions and mod-tools render as two columns side-by-side
+ * so a moderator can see everything at once. Each column gets a preferred
+ * 14rem width but is allowed to shrink below that (with text truncating to
+ * ellipsis) so the popover always fits within the viewport. */
+.popover-container .GamePopover.GameMoreActionsPopover:has(.GameSidebarPanel + .GameSidebarPanel) {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0.5rem;
+
+    .GameSidebarPanel {
+        flex: 1 1 14rem;
+        min-width: 0;
+    }
+
+    .GameSidebarPanel + .GameSidebarPanel {
+        border-left: 1px solid var(--shade4);
+        padding-left: 0.5rem;
+    }
+}
