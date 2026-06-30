@@ -31,8 +31,8 @@ jobs:
             # orphan playwright processes behind; clean them up before starting.
             - name: Clear stale git locks and orphan playwright processes
               run: |
-                  rm -f /home/greenasjade/src/OGS/ogs/.git/index.lock \
-                        /home/greenasjade/src/OGS/ogs-ui/.git/index.lock
+                  find /home/greenasjade/src/OGS/ogs/.git /home/greenasjade/src/OGS/ogs-ui/.git \
+                       -name '*.lock' -delete
                   pkill -f 'chrome-headless-shell.*playwright_chromiumdev_profile' || true
                   pkill -f 'node.*node_modules/playwright' || true
 
