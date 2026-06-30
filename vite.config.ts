@@ -134,6 +134,9 @@ proxy["^/$"] = {
 
 export default defineConfig({
     root: "src",
+    // Use a .vite in the main source tree if requested, otherwise use
+    // the default in node_modules.
+    cacheDir: path.resolve(__dirname, process.env.OGS_LOCAL_VITE_CACHE ? ".vite" : "node_modules/.vite"),
     // Use relative paths so assets resolve correctly when loaded from CDN
     // Without this, Vite generates absolute paths (/) that resolve to document origin
     // instead of the CDN where the scripts are actually loaded from

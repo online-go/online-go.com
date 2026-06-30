@@ -35,6 +35,8 @@ yarn run dev
 
 If you're on Linux, you can simply type `make` and it will do all this for you as well.
 
+[Nix](https://nixos.org/) users can run `nix-shell` to open a temporary shell with a dev environment, or `nix-build -o devshell` to build a persistent script that does it. This method might be especially useful for casual/infrequent contributors who don't want to install all the NodeJS dependencies permanently on their system (but are willing to at least install Nix).
+
 If you're on Windows and need specific help getting tools installed and the repo cloned, see [Detailed Setup Steps](#detailed-setup-steps-windows-but-applicable-mostly-to-others) below.
 
 (And ... those detailed steps may even be a useful pointer about how to get started under Linux/macOS: they're broadly applicable, even if details differ slightly.)
