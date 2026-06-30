@@ -32,6 +32,7 @@ jobs:
                   rm -f /home/greenasjade/src/OGS/ogs/.git/index.lock \
                         /home/greenasjade/src/OGS/ogs-ui/.git/index.lock
                   pkill -f 'chrome-headless-shell.*playwright_chromiumdev_profile' || true
+                  pkill -f 'node.*node_modules/playwright' || true
 
             - name: Update ogs repo to get latest script
               run: cd /home/greenasjade/src/OGS/ogs && git pull origin main
