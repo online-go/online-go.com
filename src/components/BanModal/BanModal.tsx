@@ -57,10 +57,10 @@ export class BanModal extends Modal<Events, BanModalProperties, any> {
 
             put("players/" + player_id + "/moderate", obj)
                 .then(() => {
+                    this.close();
                 })
-            target
                 .catch(errorAlerter);
-
+        };
 
         return (
             <div className="Modal BanModal">
@@ -103,8 +103,7 @@ function BanDetails({ onChange }: { onChange: (d: any) => void }): React.ReactEl
             <h3>{pgettext("BanModal form field label", "Public reason (displayed to user)")}</h3>
             <textarea onChange={(e) => set_public_reason(e.target.value)} value={public_reason} />
 
-            <<h3>{pgettext("BanModal form field label", "Moderator only notes (optional)")}</h3>
-
+            <h3>{pgettext("BanModal form field label", "Moderator only notes (optional)")}</h3>
             <textarea
                 onChange={(e) => set_moderator_notes(e.target.value)}
                 value={moderator_notes}
