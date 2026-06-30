@@ -11,11 +11,13 @@ on:
                 required: false
                 default: ""
 
-# Only the latest run matters: cancel any in-progress or queued run of this
-# workflow when a new push lands. Manual (workflow_dispatch) runs get their
-# own unique group so an unrelated push can't kill a debug session.
+# Only the latest run matters: cancel any in-progress or queued run when a new
+# push or manual dispatch lands. All events share one group on purpose —
+# splitting workflow_dispatch into its own group can't actually protect manual
+# runs, because run-tests.sh's preempt logic and the host-scoped cleanup step
+# below would kill any concurrent run anyway.
 concurrency:
-    group: ${{ github.event_name == 'workflow_dispatch' && format('e2e-manual-{0}', github.run_id) || 'e2e-tests' }}
+    group: e2e-tests
     cancel-in-progress: true
 
 jobs:
