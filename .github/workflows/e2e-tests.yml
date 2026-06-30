@@ -11,6 +11,12 @@ on:
                 required: false
                 default: ""
 
+# Only the latest run matters: cancel any in-progress or queued run of this
+# workflow when a new push lands.
+concurrency:
+    group: e2e-tests
+    cancel-in-progress: true
+
 jobs:
     e2e-tests:
         runs-on: self-hosted
