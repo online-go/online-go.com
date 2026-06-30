@@ -71,16 +71,14 @@
         .color-reset {
             vertical-align: top;
             margin-top: 0.4rem;
-            margin-left: 0;
+            margin-left: 0.25rem;
             margin-right: 0;
-            padding-right: 0;
-            padding-left: 0;
+            min-width: 2rem;
+            padding: 0.25rem 0.6rem;
 
             .fa-undo {
                 margin-left: 0 !important;
                 margin-right: 0 !important;
-                padding-right: 0;
-                padding-left: 0;
             }
         }
 
@@ -106,6 +104,70 @@
 
         .show-customize-toggle {
             margin-left: 0.3rem;
+        }
+    }
+}
+
+.GobanCustomBoardPicker {
+    .custom-board-advanced {
+        display: flex;
+        flex-direction: column;
+        margin-top: 0.5rem;
+        max-width: 100%;
+    }
+
+    .advanced-toggle {
+        display: inline-flex;
+        align-self: flex-start;
+        align-items: center;
+        gap: 0.4rem;
+        margin: 0;
+        padding: 0.25rem 0.25rem 0.25rem 0;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: var(--text-color);
+        font-weight: bold;
+
+        .fa {
+            width: 0.7rem;
+            text-align: center;
+        }
+    }
+
+    .advanced-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        padding-left: 0.5rem;
+        max-width: 100%;
+    }
+
+    .custom-url-selection {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.5rem;
+        max-width: 100%;
+
+        .customUrlSelector {
+            flex: 1 1 auto;
+            min-width: 0;
+            width: 16rem;
+            border: 1px solid;
+        }
+
+        .color-reset {
+            flex: 0 0 auto;
+            min-width: 2rem;
+            margin: 0;
+            padding: 0.25rem 0.6rem;
+
+            .fa-undo {
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+            }
         }
     }
 }

@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { pgettext } from "@/lib/translate";
+import { pgettext, interpolate } from "@/lib/translate";
 import { usePreference } from "@/lib/preferences";
 import type { CustomBoardGridBackgrounds } from "goban";
 import { LineText } from "../misc-ui";
@@ -24,35 +24,30 @@ import "./GobanCustomBoardGridBackgroundPicker.css";
 
 const grid_background_sizes: (keyof CustomBoardGridBackgrounds)[] = ["9", "13", "19"];
 
+// Compact label shown next to each input, e.g. "9×9".
+function getGridSizeLabel(size: keyof CustomBoardGridBackgrounds): string {
+    return `${size}×${size}`;
+}
+
+// Full descriptive label used for the input placeholder and accessibility.
 function getGridBackgroundLabel(size: keyof CustomBoardGridBackgrounds): string {
-    switch (size) {
-        case "9":
-            return pgettext("Custom board baked-grid background URL", "9x9 grid background URL");
-        case "13":
-            return pgettext("Custom board baked-grid background URL", "13x13 grid background URL");
-        case "19":
-            return pgettext("Custom board baked-grid background URL", "19x19 grid background URL");
-    }
+    return interpolate(
+        pgettext(
+            "Custom board baked-grid background URL, {{size}} is a board dimension like 9x9",
+            "{{size}} grid background URL",
+        ),
+        { size: getGridSizeLabel(size) },
+    );
 }
 
 function getResetGridBackgroundLabel(size: keyof CustomBoardGridBackgrounds): string {
-    switch (size) {
-        case "9":
-            return pgettext(
-                "Reset custom board baked-grid background URL",
-                "Reset 9x9 grid background",
-            );
-        case "13":
-            return pgettext(
-                "Reset custom board baked-grid background URL",
-                "Reset 13x13 grid background",
-            );
-        case "19":
-            return pgettext(
-                "Reset custom board baked-grid background URL",
-                "Reset 19x19 grid background",
-            );
-    }
+    return interpolate(
+        pgettext(
+            "Reset custom board baked-grid background URL, {{size}} is a board dimension like 9x9",
+            "Reset {{size}} grid background",
+        ),
+        { size: getGridSizeLabel(size) },
+    );
 }
 
 export function GobanCustomBoardGridBackgroundPicker(): React.ReactElement {
@@ -92,24 +87,28 @@ export function GobanCustomBoardGridBackgroundPicker(): React.ReactElement {
             <div className="grid-background-url-selection">
                 {grid_background_sizes.map((size) => {
                     const label = getGridBackgroundLabel(size);
+                    const reset_label = getResetGridBackgroundLabel(size);
                     const input_id = `custom-board-grid-background-${size}`;
                     return (
                         <div className="grid-background-url-row" key={size}>
-                            <label htmlFor={input_id}>{label}</label>
+                            <label className="grid-size-label" htmlFor={input_id}>
+                                {getGridSizeLabel(size)}
+                            </label>
                             <input
                                 id={input_id}
                                 className="gridBackgroundUrlSelector"
                                 type="text"
                                 value={grid_backgrounds[size]}
                                 placeholder={label}
+                                aria-label={label}
                                 onFocus={(e) => e.target.select()}
                                 onChange={(e) => setGridBackground(size, e.target.value)}
                             />
                             <button
                                 type="button"
                                 className="color-reset"
-                                title={getResetGridBackgroundLabel(size)}
-                                aria-label={getResetGridBackgroundLabel(size)}
+                                title={reset_label}
+                                aria-label={reset_label}
                                 onClick={() => setGridBackground(size, "")}
                             >
                                 <i className="fa fa-undo" />
