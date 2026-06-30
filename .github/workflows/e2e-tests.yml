@@ -11,6 +11,15 @@ on:
                 required: false
                 default: ""
 
+# Only the latest run matters: cancel any in-progress or queued run when a new
+# push or manual dispatch lands. All events share one group on purpose —
+# splitting workflow_dispatch into its own group can't actually protect manual
+# runs, because run-tests.sh's preempt logic and the host-scoped cleanup step
+# below would kill any concurrent run anyway.
+concurrency:
+    group: e2e-tests
+    cancel-in-progress: true
+
 jobs:
     e2e-tests:
         runs-on: self-hosted
@@ -18,6 +27,15 @@ jobs:
         if: github.repository == 'online-go/online-go.com'
 
         steps:
+            # A previous cancel-in-progress kill may have left git locks or
+            # orphan playwright processes behind; clean them up before starting.
+            - name: Clear stale git locks and orphan playwright processes
+              run: |
+                  find /home/greenasjade/src/OGS/ogs/.git /home/greenasjade/src/OGS/ogs-ui/.git \
+                       -name '*.lock' -delete
+                  pkill -f 'chrome-headless-shell.*playwright_chromiumdev_profile' || true
+                  pkill -f 'node.*node_modules/playwright' || true
+
             - name: Update ogs repo to get latest script
               run: cd /home/greenasjade/src/OGS/ogs && git pull origin main
 
