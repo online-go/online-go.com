@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { _, pgettext } from "@/lib/translate";
-import { Goban, GobanTheme /*, GobanThemeBackgroundCSS */ } from "goban";
+import { blendWithInverseColor, Goban, GobanTheme /*, GobanThemeBackgroundCSS */ } from "goban";
 import { getSelectedThemes, usePreference } from "@/lib/preferences";
 import { PersistentElement } from "@/components/PersistentElement";
 import { Experiment, Variant, Default } from "../Experiment";
@@ -121,6 +121,7 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React
     const size = props.size || 44;
 
     const [line_color, _setLineColor] = usePreference("goban-theme-custom-board-line");
+    const [label_color, _setLabelColor] = usePreference("goban-theme-custom-board-label");
     const [background_color, _setBackgroundColor] = usePreference(
         "goban-theme-custom-board-background",
     );
@@ -135,7 +136,13 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React
         () => !!background_image || Object.values(grid_backgrounds).some((url) => !!url),
     );
 
-    const inputStyle = { height: `${size}px`, width: `${size * 1.5}px` };
+    const inputStyle: React.CSSProperties & { "--custom-board-color-input-width": string } = {
+        "--custom-board-color-input-width": `${size * 1.5}px`,
+        height: `${size}px`,
+    };
+    const background_color_title = pgettext("Custom board theme color input title", "Board color");
+    const line_color_title = pgettext("Custom board theme color input title", "Grid color");
+    const label_color_title = pgettext("Custom board theme color input title", "Label color");
 
     if (!theme) {
         requestAnimationFrame(() => refresh((x) => x + 1));
@@ -145,7 +152,7 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React
         sample_canvas.current = document.createElement("canvas");
         renderSampleBoard(sample_canvas.current, theme, size);
         refresh((x) => x + 1);
-    }, [theme, size, background_color, line_color, background_image]);
+    }, [theme, size, background_color, line_color, label_color, background_image]);
 
     function setBackgroundColor(ev: React.ChangeEvent<HTMLInputElement>) {
         _setBackgroundColor(ev.target.value);
@@ -153,6 +160,10 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React
 
     function setLineColor(ev: React.ChangeEvent<HTMLInputElement>) {
         _setLineColor(ev.target.value);
+    }
+
+    function setLabelColor(ev: React.ChangeEvent<HTMLInputElement>) {
+        _setLabelColor(ev.target.value);
     }
 
     function setBackgroundImage(ev: React.ChangeEvent<HTMLInputElement>) {
@@ -170,7 +181,7 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React
             </LineText>
 
             <div className="GobanThemePicker">
-                <div className="theme-set">
+                <div className="theme-set custom-board-theme-set">
                     <div className="select-custom">
                         <div
                             key={theme.theme_name}
@@ -183,25 +194,60 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React
                         </div>
                     </div>
 
-                    <input
-                        type="color"
-                        style={inputStyle}
-                        value={background_color}
-                        onChange={setBackgroundColor}
-                    />
-                    <button className="color-reset" onClick={() => _setBackgroundColor("#DCB35C")}>
-                        <i className="fa fa-undo" />
-                    </button>
+                    <div className="custom-board-color-controls">
+                        <div className="custom-board-color-control">
+                            <input
+                                type="color"
+                                style={inputStyle}
+                                value={background_color}
+                                title={background_color_title}
+                                aria-label={background_color_title}
+                                onChange={setBackgroundColor}
+                            />
+                            <button
+                                className="color-reset"
+                                onClick={() => _setBackgroundColor("#DCB35C")}
+                            >
+                                <i className="fa fa-undo" />
+                            </button>
+                        </div>
 
-                    <input
-                        type="color"
-                        style={inputStyle}
-                        value={line_color}
-                        onChange={setLineColor}
-                    />
-                    <button className="color-reset" onClick={() => _setLineColor("#000000")}>
-                        <i className="fa fa-undo" />
-                    </button>
+                        <div className="custom-board-color-control">
+                            <input
+                                type="color"
+                                style={inputStyle}
+                                value={line_color}
+                                title={line_color_title}
+                                aria-label={line_color_title}
+                                onChange={setLineColor}
+                            />
+                            <button
+                                className="color-reset"
+                                onClick={() => _setLineColor("#000000")}
+                            >
+                                <i className="fa fa-undo" />
+                            </button>
+                        </div>
+
+                        <div className="custom-board-color-control">
+                            <input
+                                type="color"
+                                style={inputStyle}
+                                value={label_color}
+                                title={label_color_title}
+                                aria-label={label_color_title}
+                                onChange={setLabelColor}
+                            />
+                            <button
+                                className="color-reset"
+                                onClick={() =>
+                                    _setLabelColor(blendWithInverseColor(line_color, 0.75))
+                                }
+                            >
+                                <i className="fa fa-undo" />
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -418,6 +464,8 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): React
         _setUrl(ev.target.value);
     }
 
+    const color_title = pgettext("Custom goban stone color input title", "Black stone color");
+
     const custom_board = Goban.THEMES_SORTED.board.filter((x) => x.theme_name === "Custom")[0];
 
     const active_standard_board_theme = Goban.THEMES_SORTED.board.filter(
@@ -454,7 +502,14 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): React
                         </div>
                     </div>
 
-                    <input type="color" style={inputStyle} value={color} onChange={setColor} />
+                    <input
+                        type="color"
+                        style={inputStyle}
+                        value={color}
+                        title={color_title}
+                        aria-label={color_title}
+                        onChange={setColor}
+                    />
                     <button className="color-reset" onClick={() => _setColor("")}>
                         <i className="fa fa-undo" />
                     </button>
@@ -612,6 +667,8 @@ export function GobanCustomWhitePicker(props: GobanThemePickerProperties): React
         _setUrl(ev.target.value);
     }
 
+    const color_title = pgettext("Custom goban stone color input title", "White stone color");
+
     return (
         <div className="GobanCustomStonePicker">
             <LineText className="customize">
@@ -632,7 +689,14 @@ export function GobanCustomWhitePicker(props: GobanThemePickerProperties): React
                         </div>
                     </div>
 
-                    <input type="color" style={inputStyle} value={color} onChange={setColor} />
+                    <input
+                        type="color"
+                        style={inputStyle}
+                        value={color}
+                        title={color_title}
+                        aria-label={color_title}
+                        onChange={setColor}
+                    />
                     <button className="color-reset" onClick={() => _setColor("")}>
                         <i className="fa fa-undo" />
                     </button>

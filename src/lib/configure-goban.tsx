@@ -132,6 +132,7 @@ export function configure_goban() {
         customWhiteTextColor: (): string => preferences.get("goban-theme-custom-black-stone-color"),
         customBoardColor: (): string => preferences.get("goban-theme-custom-board-background"),
         customBoardLineColor: (): string => preferences.get("goban-theme-custom-board-line"),
+        customBoardLabelColor: (): string => preferences.get("goban-theme-custom-board-label"),
         customBoardUrl: (): string => preferences.get("goban-theme-custom-board-url"),
         customBlackStoneUrl: (): string => preferences.get("goban-theme-custom-black-url"),
         customWhiteStoneUrl: (): string => preferences.get("goban-theme-custom-white-url"),

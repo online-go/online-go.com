@@ -109,6 +109,51 @@
 }
 
 .GobanCustomBoardPicker {
+    .custom-board-theme-set {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        column-gap: clamp(0.75rem, 2vw, 1rem);
+        width: 365px;
+        max-width: 100%;
+
+        .select-custom {
+            min-width: 0;
+        }
+
+        .custom-board-color-controls {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            align-items: center;
+            min-width: 0;
+        }
+
+        .custom-board-color-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            min-width: 0;
+        }
+
+        input[type="color"] {
+            flex: 1 1 auto;
+            margin-left: 0;
+            min-width: 1.5rem;
+            max-width: var(--custom-board-color-input-width);
+            width: 100%;
+        }
+
+        .color-reset {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 0;
+            margin-left: 0;
+        }
+    }
+
     .custom-board-advanced {
         display: flex;
         flex-direction: column;

@@ -25,6 +25,7 @@ import {
     ShadowTheme,
     CustomBoardGridBackgrounds,
     emptyCustomBoardGridBackgrounds,
+    blendWithInverseColor,
 } from "goban";
 import * as React from "react";
 import { current_language } from "@/lib/translate";
@@ -118,6 +119,7 @@ export const defaults = {
         ...emptyCustomBoardGridBackgrounds,
     } as CustomBoardGridBackgrounds,
     "goban-theme-custom-board-line": "#000000",
+    "goban-theme-custom-board-label": blendWithInverseColor("#000000", 0.75),
     "goban-theme-custom-black-stone-color": "#000000",
     "goban-theme-custom-black-url": "",
     "goban-theme-custom-white-stone-color": "#ffffff",
@@ -421,6 +423,7 @@ export function watchSelectedThemes(cb: (themes: GobanSelectedThemes) => void) {
         "goban-theme-custom-board-url",
         "goban-theme-custom-board-grid-backgrounds",
         "goban-theme-custom-board-line",
+        "goban-theme-custom-board-label",
         "goban-theme-custom-black-stone-color",
         "goban-theme-custom-black-url",
         "goban-theme-custom-white-stone-color",
