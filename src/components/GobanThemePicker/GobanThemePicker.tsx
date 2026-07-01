@@ -136,7 +136,10 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React
         () => !!background_image || Object.values(grid_backgrounds).some((url) => !!url),
     );
 
-    const inputStyle = { height: `${size}px`, width: `${size * 1.5}px` };
+    const inputStyle: React.CSSProperties & { "--custom-board-color-input-width": string } = {
+        "--custom-board-color-input-width": `${size * 1.5}px`,
+        height: `${size}px`,
+    };
     const background_color_title = pgettext("Custom board theme color input title", "Board color");
     const line_color_title = pgettext("Custom board theme color input title", "Grid color");
     const label_color_title = pgettext("Custom board theme color input title", "Label color");
@@ -179,64 +182,71 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React
 
             <div className="GobanThemePicker">
                 <div className="theme-set custom-board-theme-set">
-                    <div className="custom-board-color-row">
-                        <div className="select-custom">
-                            <div
-                                key={theme.theme_name}
-                                title={_(theme.theme_name)}
-                                className={
-                                    "selector" + (selected.board === "Custom" ? " active" : "")
-                                }
-                                style={theme.styles}
-                                onClick={() => setBoard("Custom")}
-                            >
-                                {sample_canvas && <PersistentElement elt={sample_canvas.current} />}
-                            </div>
-                        </div>
-
-                        <input
-                            type="color"
-                            style={inputStyle}
-                            value={background_color}
-                            title={background_color_title}
-                            aria-label={background_color_title}
-                            onChange={setBackgroundColor}
-                        />
-                        <button
-                            className="color-reset"
-                            onClick={() => _setBackgroundColor("#DCB35C")}
+                    <div className="select-custom">
+                        <div
+                            key={theme.theme_name}
+                            title={_(theme.theme_name)}
+                            className={"selector" + (selected.board === "Custom" ? " active" : "")}
+                            style={theme.styles}
+                            onClick={() => setBoard("Custom")}
                         >
-                            <i className="fa fa-undo" />
-                        </button>
+                            {sample_canvas && <PersistentElement elt={sample_canvas.current} />}
+                        </div>
                     </div>
 
-                    <div className="custom-board-color-row custom-board-grid-label-row">
-                        <input
-                            type="color"
-                            style={inputStyle}
-                            value={line_color}
-                            title={line_color_title}
-                            aria-label={line_color_title}
-                            onChange={setLineColor}
-                        />
-                        <button className="color-reset" onClick={() => _setLineColor("#000000")}>
-                            <i className="fa fa-undo" />
-                        </button>
+                    <div className="custom-board-color-controls">
+                        <div className="custom-board-color-control">
+                            <input
+                                type="color"
+                                style={inputStyle}
+                                value={background_color}
+                                title={background_color_title}
+                                aria-label={background_color_title}
+                                onChange={setBackgroundColor}
+                            />
+                            <button
+                                className="color-reset"
+                                onClick={() => _setBackgroundColor("#DCB35C")}
+                            >
+                                <i className="fa fa-undo" />
+                            </button>
+                        </div>
 
-                        <input
-                            type="color"
-                            style={inputStyle}
-                            value={label_color}
-                            title={label_color_title}
-                            aria-label={label_color_title}
-                            onChange={setLabelColor}
-                        />
-                        <button
-                            className="color-reset"
-                            onClick={() => _setLabelColor(blendWithInverseColor(line_color, 0.75))}
-                        >
-                            <i className="fa fa-undo" />
-                        </button>
+                        <div className="custom-board-color-control">
+                            <input
+                                type="color"
+                                style={inputStyle}
+                                value={line_color}
+                                title={line_color_title}
+                                aria-label={line_color_title}
+                                onChange={setLineColor}
+                            />
+                            <button
+                                className="color-reset"
+                                onClick={() => _setLineColor("#000000")}
+                            >
+                                <i className="fa fa-undo" />
+                            </button>
+                        </div>
+
+                        <div className="custom-board-color-control">
+                            <input
+                                type="color"
+                                style={inputStyle}
+                                value={label_color}
+                                title={label_color_title}
+                                aria-label={label_color_title}
+                                onChange={setLabelColor}
+                            />
+                            <button
+                                className="color-reset"
+                                onClick={() =>
+                                    _setLabelColor(blendWithInverseColor(line_color, 0.75))
+                                }
+                            >
+                                <i className="fa fa-undo" />
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
