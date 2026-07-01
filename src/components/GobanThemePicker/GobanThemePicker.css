@@ -109,6 +109,30 @@
 }
 
 .GobanCustomBoardPicker {
+    .custom-board-theme-set {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .custom-board-color-row {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+
+        .color-reset {
+            margin-top: 0;
+        }
+    }
+
+    .custom-board-grid-label-row {
+        input[type="color"]:first-child {
+            margin-left: 0;
+        }
+    }
+
     .custom-board-advanced {
         display: flex;
         flex-direction: column;
