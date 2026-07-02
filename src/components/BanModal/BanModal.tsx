@@ -109,13 +109,12 @@ function BanDetails({ onChange }: { onChange: (d: any) => void }): React.ReactEl
                 value={moderator_notes}
             />
 
-            <h3>{pgettext("BanModal form field label", "Ban expiration")}</h3>
-            <Datetime 
-                value={expiration} 
-                onChange={(d: any) => {
-                    const dateVal = (d && typeof d.isValid === 'function' && d.isValid()) ? d.toDate() : undefined;
-                    set_expiration(dateVal);
-                }} 
+           <h3>{pgettext("BanModal form field label", "Ban expiration")}</h3>
+           <Datetime
+               value={expiration}
+               onChange={(d: any) => set_expiration(typeof d === "string" ? undefined : d?.toDate())}
+           />
+
             />
         </div>
     );
