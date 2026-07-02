@@ -1,5 +1,4 @@
-/*
- * Copyright (C)  Online-Go.com
+/* Copyright (C)  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -12,7 +11,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://gnu.org/license>.
+ * along with this program.  If not, see <http://gnu.org>.
  */
 
 import * as React from "react";
@@ -109,12 +108,12 @@ function BanDetails({ onChange }: { onChange: (d: any) => void }): React.ReactEl
                 value={moderator_notes}
             />
 
-           <h3>{pgettext("BanModal form field label", "Ban expiration")}</h3>
-           <Datetime
-               value={expiration}
-               onChange={(d: any) => set_expiration(typeof d === "string" ? undefined : d?.toDate())}
-           />
-
+            <h3>{pgettext("BanModal form field label", "Ban expiration")}</h3>
+            <Datetime
+                value={expiration}
+                onChange={(d: any) =>
+                    set_expiration(typeof d === "string" ? undefined : d?.toDate())
+                }
             />
         </div>
     );
