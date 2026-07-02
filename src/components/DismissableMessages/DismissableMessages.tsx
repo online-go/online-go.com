@@ -49,12 +49,9 @@ export function DismissableMessages({
             return;
         }
 
-        console.log("Should dismiss", key);
         delete messages[key];
         data.set("config.dismissable_messages", messages);
-        del(`/api/v1/me/messages/${key}`)
-            .then(() => console.log(`Message ${key} dismissed`))
-            .catch(console.error);
+        del(`/api/v1/me/messages/${key}`).catch(console.error);
     }
 
     return (

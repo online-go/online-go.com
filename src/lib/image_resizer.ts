@@ -27,9 +27,6 @@ export function image_resizer(
         max_height = max_width;
     }
 
-    console.log(file);
-    window.file = file;
-
     const reader = new FileReader();
     const image = new Image();
     const canvas = allocateCanvasOrError();
@@ -77,15 +74,8 @@ export function image_resizer(
                         lastModified: file.lastModified,
                     });
 
-                    console.log(`File size was ${ret.size}.`, ret);
-
                     if (max_file_size && ret.size > max_file_size) {
                         const scale = Math.sqrt(max_file_size / ret.size) * 0.9;
-                        console.log(
-                            `Target size was ${ret.size}. Resizing to ${width * scale}x${
-                                height * scale
-                            } scale = ${scale}`,
-                        );
                         resolve(
                             image_resizer(
                                 ret,
