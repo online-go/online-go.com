@@ -397,11 +397,10 @@ export function ThemePreferences(): React.ReactElement | null {
                         json={{
                             width: 3,
                             height: 1,
-                            moves: [
-                                { x: 0, y: 0 },
-                                { x: 1, y: 0 },
-                                { x: 2, y: 0 },
-                            ],
+                            initial_state: {
+                                black: "aaca", // cspell: disable-line
+                                white: "ba", // cspell: disable-line
+                            },
                         }}
                         noLink={true}
                         width={2}
