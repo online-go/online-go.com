@@ -690,6 +690,7 @@ function ThemeSample({
     const [black_url] = usePreference("goban-theme-custom-black-url");
     const [white_color] = usePreference("goban-theme-custom-white-stone-color");
     const [white_url] = usePreference("goban-theme-custom-white-url");
+    const [stone_scale] = usePreference("goban-theme-stone-scale");
 
     React.useEffect(() => {
         if (!div.current) {
@@ -698,7 +699,7 @@ function ThemeSample({
 
         const cx = size / 2;
         const cy = size / 2;
-        const radius = (size / 2) * 0.95;
+        const radius = (size / 2) * 0.95 * stone_scale;
 
         const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         svg.setAttribute("width", size.toFixed(0));
@@ -735,6 +736,7 @@ function ThemeSample({
         black_url,
         white_color,
         white_url,
+        stone_scale,
     ]);
 
     return <div ref={div} />;

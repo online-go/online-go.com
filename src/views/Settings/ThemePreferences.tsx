@@ -97,6 +97,7 @@ export function ThemePreferences(): React.ReactElement | null {
     const [fuzzy_stone_placement, setFuzzyStonePlacement] = usePreference("fuzzy-stone-placement");
     const [last_move_opacity, _setLastMoveOpacity] = usePreference("last-move-opacity");
     const [stone_font_scale, _setStoneFontScale] = usePreference("stone-font-scale");
+    const [stone_scale, _setStoneScale] = usePreference("goban-theme-stone-scale");
 
     const [variation_stone_opacity, _setVariationStoneOpacity] =
         usePreference("variation-stone-opacity");
@@ -141,6 +142,14 @@ export function ThemePreferences(): React.ReactElement | null {
         }
     }
 
+    function setStoneScale(ev: React.ChangeEvent<HTMLInputElement>) {
+        const value = parseFloat(ev.target.value);
+
+        if (value >= 0.5 && value <= 1.5) {
+            _setStoneScale(value);
+        }
+    }
+
     function setLastMoveOpacity(ev: React.ChangeEvent<HTMLInputElement>) {
         const value = parseFloat(ev.target.value);
 
@@ -165,6 +174,7 @@ export function ThemePreferences(): React.ReactElement | null {
         (enable_svg ? "svg" : "canvas") +
         board_labeling +
         label_positioning +
+        stone_scale +
         stone_font_scale +
         //stone_removal_graphic +
         //removal_scale +
@@ -364,6 +374,44 @@ export function ThemePreferences(): React.ReactElement | null {
                     </PreferenceLine>
                 </>
             )}
+            <PreferenceLine
+                title={_("Stone scale")}
+                description={_("Adjust the size of stones on the board.")}
+            >
+                <div className="with-sample-goban">
+                    <div className="left">
+                        <input
+                            type="range"
+                            step="0.05"
+                            min="0.5"
+                            max="1.5"
+                            onChange={setStoneScale}
+                            value={stone_scale}
+                        />
+                        <span>{stone_scale}</span>
+                    </div>
+
+                    <MiniGoban
+                        className="inline"
+                        key={stone_scale + "" + _refresh}
+                        json={{
+                            width: 3,
+                            height: 1,
+                            moves: [
+                                { x: 0, y: 0 },
+                                { x: 1, y: 0 },
+                                { x: 2, y: 0 },
+                            ],
+                        }}
+                        noLink={true}
+                        width={2}
+                        height={1}
+                        displayWidth={80}
+                        labels_positioning={"none"}
+                        sampleOptions={{}}
+                    />
+                </div>
+            </PreferenceLine>
             <PreferenceLine
                 title={_("Stone font scale")}
                 description={_("Adjust the size of the font used to display symbols on stones.")}
