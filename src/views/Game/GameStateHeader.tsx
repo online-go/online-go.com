@@ -16,19 +16,23 @@
  */
 
 import * as React from "react";
-import { _, interpolate, pgettext } from "@/lib/translate";
+import * as DynamicHelp from "react-dynamic-help";
+import { _, interpolate, moment, pgettext } from "@/lib/translate";
 import { getOutcomeTranslation } from "@/lib/misc";
+import { useUser } from "@/lib/hooks";
 import { useGobanController } from "./goban_context";
 import {
     useAnnulled,
     useMode,
     usePhase,
+    usePlayerToMove,
     useShowTitle,
     useShowUndoRequested,
     useTitle,
     useWinner,
 } from "./GameHooks";
 import { EstimateScore } from "./fragments";
+import "./GameStateHeader.css";
 
 /**
  * The game's current high-level status — rendered into GobanView's
@@ -42,6 +46,7 @@ export function GameStateHeader(): React.ReactElement | null {
     const goban = goban_controller.goban;
     const engine = goban.engine;
 
+    const user = useUser();
     const mode = useMode(goban);
     const phase = usePhase(goban);
     const show_title = useShowTitle(goban);
@@ -49,16 +54,43 @@ export function GameStateHeader(): React.ReactElement | null {
     const show_undo_requested = useShowUndoRequested(goban);
     const winner = useWinner(goban);
     const annulled = useAnnulled(goban_controller);
+    const this_users_turn = usePlayerToMove(goban) === user.id;
+
+    const { registerTargetItem, triggerFlow, signalUsed } = React.useContext(DynamicHelp.Api);
+    const { ref: undo_message_ref, active: undoMessageActive } =
+        registerTargetItem("undo-requested-message");
+
+    // First-undo tutorial flow. Lives here (rather than PlayControls) because
+    // this is where the "{{player_name}} has requested an undo" message the
+    // flow points at is rendered.
+    React.useEffect(() => {
+        if (show_undo_requested && moment(user.registration_date).isBefore(moment("2023-06-14"))) {
+            // This condition protects against established users seeing this message introduced 2023-6-14
+            // Could be removed once all the "regulars" have done this
+            signalUsed("undo-requested-message"); // stops the following "triggerFlow" from doing anything.
+            signalUsed("accept-undo-button");
+        }
+
+        if (show_undo_requested && undoMessageActive()) {
+            if (this_users_turn) {
+                triggerFlow("undo-request-received-intro");
+            } else {
+                triggerFlow("undo-requested-intro");
+            }
+        }
+    }, [show_undo_requested, undo_message_ref, this_users_turn]);
 
     const undo_requester_name = React.useMemo(() => {
-        if (!show_undo_requested || !engine.undo_requested_by) {
+        if (!show_undo_requested) {
             return "";
         }
-        const player =
-            engine.undo_requested_by === engine.players.black?.id
-                ? engine.players.black
-                : engine.players.white;
-        return player?.username ?? "";
+        if (engine.undo_requested_by === engine.players.black?.id) {
+            return engine.players.black.username;
+        }
+        if (engine.undo_requested_by === engine.players.white?.id) {
+            return engine.players.white.username;
+        }
+        return _("A player");
     }, [show_undo_requested, engine.undo_requested_by, engine.players]);
 
     const sse = engine.stalling_score_estimate;
@@ -89,7 +121,7 @@ export function GameStateHeader(): React.ReactElement | null {
                 <span>
                     {show_title && !engine.rengo && <span>{title}</span>}
                     {show_undo_requested && (
-                        <span className="undo-requested-message">
+                        <span className="undo-requested-message" ref={undo_message_ref}>
                             {interpolate(
                                 pgettext(
                                     "Notification that a player has requested to undo their last move",
@@ -107,7 +139,7 @@ export function GameStateHeader(): React.ReactElement | null {
             {isAnalyze && (
                 <span>
                     {show_undo_requested ? (
-                        <span>
+                        <span className="undo-requested-message" ref={undo_message_ref}>
                             {interpolate(
                                 pgettext(
                                     "Notification that a player has requested to undo their last move",

@@ -26,7 +26,7 @@ import { errorAlerter } from "@/lib/misc";
 import { doAnnul, MODERATOR_POWERS } from "@/lib/moderation";
 import { toast } from "@/lib/toast";
 import { ModalContext, ModalTypes } from "@/components/ModalProvider";
-import { usePhase } from "./GameHooks";
+import { useAnnulled, usePhase } from "./GameHooks";
 import { useGobanController } from "./goban_context";
 import "./GameModToolsPanel.css";
 
@@ -48,13 +48,7 @@ export function GameModToolsPanel({
     const user = useUser();
     const { showModal } = React.useContext(ModalContext);
 
-    const [annulled, set_annulled] = React.useState(goban_controller.annulled);
-    React.useEffect(() => {
-        goban_controller.on("annulled", set_annulled);
-        return () => {
-            goban_controller.off("annulled", set_annulled);
-        };
-    }, [goban_controller]);
+    const annulled = useAnnulled(goban_controller);
 
     const review_id: number | undefined = goban.config.review_id;
     const game_id: number | undefined = Number(goban.config.game_id);

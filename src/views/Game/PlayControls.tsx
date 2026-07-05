@@ -16,8 +16,7 @@
  */
 import * as React from "react";
 import { useSearchParams } from "react-router-dom";
-import { _, interpolate, pgettext, moment } from "@/lib/translate";
-import * as DynamicHelp from "react-dynamic-help";
+import { _, interpolate, pgettext } from "@/lib/translate";
 import * as data from "@/lib/data";
 import {
     Goban,
@@ -39,9 +38,7 @@ import {
     generateGobanHook,
     subscribeAllEvents,
     useCurrentMoveNumber,
-    useShowUndoRequested,
     useUserIsParticipant,
-    usePlayerToMove,
     useVariationName,
     useSelectedChatLog,
     useAnnulled,
@@ -77,9 +74,6 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
     const engine = goban.engine;
-    const { registerTargetItem, triggerFlow, signalUsed } = React.useContext(DynamicHelp.Api);
-    const { ref: game_state_pane, active: gameStatePaneActive } =
-        registerTargetItem("undo-requested-message");
     const [searchParams] = useSearchParams();
     const return_param = searchParams.get("return");
     const return_url = return_param && is_valid_url(return_param) ? return_param : null;
@@ -200,30 +194,11 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
     }, [black_accepted, white_accepted]);
 
     const paused = usePaused(goban);
-    const show_undo_requested = useShowUndoRequested(goban);
     const official_move_number = useOfficialMoveNumber(goban);
     const conditional_moves = useConditionalMoveTree(goban);
     const user_is_player = useUserIsParticipant(goban);
     const cur_move_number = useCurrentMoveNumber(goban);
-    const this_users_turn = usePlayerToMove(goban) === user.id;
     const mode = useMode(goban);
-
-    React.useEffect(() => {
-        if (show_undo_requested && moment(user.registration_date).isBefore(moment("2023-06-14"))) {
-            // This condition protects against established users seeing this message introduced 2023-6-14
-            // Could be removed once all the "regulars" have done this
-            signalUsed("undo-requested-message"); // stops the following "triggerFlow" from doing anything.
-            signalUsed("accept-undo-button");
-        }
-
-        if (show_undo_requested && gameStatePaneActive()) {
-            if (this_users_turn) {
-                triggerFlow("undo-request-received-intro");
-            } else {
-                triggerFlow("undo-requested-intro");
-            }
-        }
-    }, [show_undo_requested, game_state_pane, user_is_player]);
 
     const goban_setMode_play = () => {
         goban.setMode("play");
@@ -286,15 +261,6 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
                     <PlayButtons show_cancel={show_cancel} />
                 )}
             </div>
-            {/* The visible game-state status banner has moved to
-             *  GobanView's sidebarHeader slot (rendered by
-             *  <GameStateHeader />). This ref-only stub remains so the
-             *  DynamicHelp tutorial target for "undo-requested-message"
-             *  has a valid DOM node to anchor against — the
-             *  show_undo_requested message itself is rendered up in the
-             *  header. */}
-            <div ref={game_state_pane} />
-
             <div className="annulled-indicator">
                 {annulled &&
                     pgettext("Displayed to the user when the game is annulled", "Game Annulled")}
