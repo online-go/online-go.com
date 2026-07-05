@@ -693,7 +693,8 @@ function ThemeSample({
     const [stone_scale] = usePreference("goban-theme-stone-scale");
 
     React.useEffect(() => {
-        if (!div.current) {
+        const host = div.current;
+        if (!host) {
             return;
         }
 
@@ -719,14 +720,17 @@ function ThemeSample({
             theme.placeWhiteStoneSVG(g, undefined, white_stones[0], cx, cy, radius);
         }
 
-        div.current.appendChild(svg);
+        host.replaceChildren(svg);
 
         return () => {
-            div.current?.removeChild(svg);
+            if (host.contains(svg)) {
+                host.removeChild(svg);
+            }
         };
     }, [
-        div,
-        div.current,
+        theme,
+        color,
+        size,
         black,
         white,
         board,
