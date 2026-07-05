@@ -26,14 +26,14 @@ import { openReport } from "@/components/Report";
 import { openSGFCollectionModal } from "@/components/SGFCollectionModal";
 import { ModalContext, ModalTypes } from "@/components/ModalProvider";
 import { GobanEngine, GobanRenderer } from "goban";
-import { usePhase } from "./GameHooks";
+import { useAnnulled, usePhase } from "./GameHooks";
 import { useGobanController } from "./goban_context";
 import { openGameInfoModal } from "./GameInfoModal";
 import { openGameLinkModal } from "./GameLinkModal";
 import "./GameSidebarPanels.css";
 
 const handleForkGameClick = (
-    showModal: (type: ModalTypes, props?: any) => void,
+    showModal: React.ContextType<typeof ModalContext>["showModal"],
     user: rest_api.UserConfig,
     engine: GobanEngine,
     goban: GobanRenderer,
@@ -71,13 +71,7 @@ export function GameActionsPanel({
     const user = useUser();
     const { showModal } = React.useContext(ModalContext);
 
-    const [annulled, set_annulled] = React.useState(goban_controller.annulled);
-    React.useEffect(() => {
-        goban_controller.on("annulled", set_annulled);
-        return () => {
-            goban_controller.off("annulled", set_annulled);
-        };
-    }, [goban_controller]);
+    const annulled = useAnnulled(goban_controller);
 
     const review_id: number | undefined = goban.config.review_id;
     const game_id: number | undefined = Number(goban.config.game_id);
@@ -131,9 +125,11 @@ export function GameActionsPanel({
         if (!user || user.anonymous) {
             return;
         }
-        const obj: any = game_id
-            ? { reported_game_id: game_id }
-            : { reported_review_id: review_id };
+        const obj: {
+            reported_game_id?: number;
+            reported_review_id?: number;
+            reported_user_id?: number;
+        } = game_id ? { reported_game_id: game_id } : { reported_review_id: review_id };
 
         if (user.id === engine.config?.white_player_id) {
             obj.reported_user_id = engine.config.black_player_id;

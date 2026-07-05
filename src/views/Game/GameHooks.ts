@@ -32,6 +32,57 @@ import {
 } from "@/components/GobanView/hooks";
 export { generateGobanHook, subscribeAllEvents, useViewMode, useZenMode };
 
+/**
+ * Score-details popup state shared by the PlayerCards wrapper and the Game
+ * view's stacked/mobile player cards. Opening the popup temporarily paints
+ * the current score onto the board (stashing the move's marks); closing it
+ * restores the previous marks and score visibility.
+ */
+export function useScorePopup(goban: Goban | null): {
+    show_score_breakdown: boolean;
+    toggleScorePopup: () => void;
+} {
+    const orig_marks = React.useRef<string | null>(null);
+    const showing_scores = React.useRef<boolean>(false);
+    const [show_score_breakdown, set_show_score_breakdown] = React.useState(false);
+
+    const popupScores = () => {
+        if (!goban) {
+            return;
+        }
+        if (goban.engine.cur_move) {
+            orig_marks.current = JSON.stringify(goban.engine.cur_move.getAllMarks());
+            goban.engine.cur_move.clearMarks();
+        } else {
+            orig_marks.current = null;
+        }
+
+        const scores = goban.engine.computeScore(false);
+        showing_scores.current = goban.showing_scores;
+        goban.showScores(scores);
+
+        set_show_score_breakdown(true);
+    };
+    const hideScores = () => {
+        if (!goban) {
+            return;
+        }
+        if (!showing_scores.current) {
+            goban.hideScores();
+        }
+        if (goban.engine.cur_move && orig_marks.current) {
+            goban.engine.cur_move.setAllMarks(JSON.parse(orig_marks.current));
+        }
+        goban.redraw();
+
+        set_show_score_breakdown(false);
+    };
+
+    const toggleScorePopup = () => (show_score_breakdown ? hideScores() : popupScores());
+
+    return { show_score_breakdown, toggleScorePopup };
+}
+
 /** React hook that returns true if an undo was requested on the current move */
 export function useShowUndoRequested(goban: Goban): boolean {
     const [show_undo_requested, setShowUndoRequested] = React.useState(

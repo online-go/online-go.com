@@ -525,15 +525,12 @@
             line-height: 1.2;
         }
 
-        /* The pause overlay's default 2rem icon is sized for the
-         * sidebar's tall clock cell — here the clock host is ~30px tall
-         * so the icon overflows and looks oversized. Scale it down so it
-         * sits over the clock at the same visual weight as the other
-         * mobile glyphs (~1rem). The button is `position: absolute`
-         * filling the host, so this affects only the icon's drawn size,
-         * not the host's layout. */
-        .player-icons .clock-pause-host .clock-pause-overlay {
-            font-size: 1rem;
+        /* Scale the pause/resume button down to the same visual weight
+         * as the other mobile glyphs (~0.8rem) so it doesn't dominate
+         * the compact clock cell. */
+        .player-icons .clock-pause-host .clock-pause-button {
+            font-size: 0.8rem;
+            padding: 0.15rem 0.25rem;
         }
 
         /* Move the pause-text / transmitting placeholder row to the

@@ -1,40 +1,37 @@
-/* Clock pause overlay — hover reveals a 70% transparent pause icon over the
- * in-game clock for users allowed to pause. */
+/* Clock pause button — a small, always-visible pause/resume control beside
+ * the in-game clock for users allowed to pause. Sits next to the clock (not
+ * over it) so taps on the clock itself never pause the game. */
 .clock-pause-host {
     position: relative;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     flex-grow: 1;
-    align-items: stretch;
+    align-items: center;
     justify-content: center;
 
     .in-game-clock {
         flex-grow: 1;
     }
 
-    .clock-pause-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
+    .clock-pause-button {
+        flex-shrink: 0;
         display: flex;
         align-items: center;
         justify-content: center;
         background: transparent;
         border: 0;
-        padding: 0;
+        padding: 0.25rem 0.4rem;
         margin: 0;
-        font-size: 2rem;
+        font-size: 1rem;
         color: var(--fg);
         cursor: pointer;
-        opacity: 0;
+        opacity: 0.6;
         transition: opacity 0.15s ease;
     }
 
-    &:hover .clock-pause-overlay,
-    .clock-pause-overlay:focus-visible {
-        opacity: 0.7;
+    .clock-pause-button:hover,
+    .clock-pause-button:focus-visible {
+        opacity: 1;
     }
 }
 

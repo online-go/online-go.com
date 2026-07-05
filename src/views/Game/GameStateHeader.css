@@ -15,9 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.GameModeratorAreaPanel {
-    display: flex;
-    flex-direction: row;
-    gap: 0.3rem;
-    margin-bottom: 0.5rem;
+/* GameStateHeader renders into GobanView's header slot, so its rules are
+ * scoped to the header wrapper rather than a component root class. These
+ * styles used to live under .PlayControls (PlayControls.css) when the
+ * game-state banner was rendered there. */
+.GobanView-header {
+    .undo-requested-message {
+        display: block;
+    }
+
+    .stalling-score-estimate {
+        margin: 0.5rem;
+        font-size: 1rem;
+        font-style: italic;
+        font-weight: normal;
+        text-wrap: balance;
+        text-wrap-mode: balance;
+    }
 }

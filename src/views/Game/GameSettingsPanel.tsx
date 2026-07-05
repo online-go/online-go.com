@@ -100,7 +100,7 @@ export function GameSettingsPanel({
         }
     };
 
-    const isPrivate = !!(engine.config as any)["private"];
+    const isPrivate = !!engine.config.private;
 
     const [layout, setLayout] = usePreference("game.layout");
     const [chat_enabled, set_chat_enabled] = usePreference("game.chat-enabled");
