@@ -34,7 +34,7 @@ import { Player } from "@/components/Player";
 import { lookup, fetch } from "@/lib/player_cache";
 import { _, interpolate, ngettext } from "@/lib/translate";
 import * as data from "@/lib/data";
-import { generateGobanHook, usePlayerToMove, useZenMode } from "./GameHooks";
+import { generateGobanHook, usePlayerToMove, useScorePopup, useZenMode } from "./GameHooks";
 import { get_network_latency, get_clock_drift } from "@/lib/sockets";
 import { useGobanController } from "./goban_context";
 import { player_is_ignored } from "@/components/BlockPlayer";
@@ -56,39 +56,8 @@ export function PlayerCards({
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
 
-    const orig_marks = React.useRef<string | null>(null);
-    const showing_scores = React.useRef<boolean>(false);
     const zen_mode = useZenMode(goban_controller);
-
-    const [show_score_breakdown, set_show_score_breakdown] = React.useState(false);
-
-    const popupScores = () => {
-        if (goban.engine.cur_move) {
-            orig_marks.current = JSON.stringify(goban.engine.cur_move.getAllMarks());
-            goban.engine.cur_move.clearMarks();
-        } else {
-            orig_marks.current = null;
-        }
-
-        const scores = goban.engine.computeScore(false);
-        showing_scores.current = goban.showing_scores;
-        goban.showScores(scores);
-
-        set_show_score_breakdown(true);
-    };
-    const hideScores = () => {
-        if (!showing_scores.current) {
-            goban.hideScores();
-        }
-        if (goban.engine.cur_move && orig_marks.current) {
-            goban.engine.cur_move.setAllMarks(JSON.parse(orig_marks.current));
-        }
-        goban.redraw();
-
-        set_show_score_breakdown(false);
-    };
-
-    const toggleScorePopup = () => (show_score_breakdown ? hideScores() : popupScores());
+    const { show_score_breakdown, toggleScorePopup } = useScorePopup(goban);
 
     return (
         <div className="players">
@@ -332,11 +301,11 @@ interface ClockWithPauseOverlayProps {
 }
 
 /**
- * Wraps the live in-game Clock with a hover-revealed pause/resume overlay.
- * The overlay only renders for users allowed to control the pause state (a
- * participant in a non-rengo, vacation-eligible game still in progress).
- * When the game is currently paused the icon and click handler flip to
- * "resume"; otherwise they "pause".
+ * Wraps the live in-game Clock with an explicit pause/resume button beside
+ * it. The button only renders for users allowed to control the pause state
+ * (a participant in a vacation-eligible game still in progress). When the
+ * game is currently paused the icon and click handler flip to "resume";
+ * otherwise they "pause".
  */
 function ClockWithPauseOverlay({ goban, color }: ClockWithPauseOverlayProps): React.ReactElement {
     const user = useUser();
@@ -344,16 +313,15 @@ function ClockWithPauseOverlay({ goban, color }: ClockWithPauseOverlayProps): Re
     const user_is_player =
         !user.anonymous &&
         (user.id === engine.players.black?.id || user.id === engine.players.white?.id);
-    // Moderators bypass the vacation / rengo / participant gating that
-    // applies to players — `disable_vacation` only constrains player-side
-    // pauses, and the server stamps the pause as `moderator_paused`
-    // regardless. This gives moderators a clock-click affordance without a
-    // dedicated mod-tools button.
+    // Moderators bypass the vacation / participant gating that applies to
+    // players — `disable_vacation` only constrains player-side pauses, and
+    // the server stamps the pause as `moderator_paused` regardless. This
+    // gives moderators a pause affordance without a dedicated mod-tools
+    // button.
     const can_pause =
         !goban.review_id &&
         engine.phase !== "finished" &&
-        ((user_is_player && !engine.rengo && !engine.config.disable_vacation) ||
-            !!user?.is_moderator);
+        ((user_is_player && !engine.config.disable_vacation) || !!user?.is_moderator);
 
     const [paused, set_paused] = React.useState<boolean>(false);
     React.useEffect(() => {
@@ -381,7 +349,7 @@ function ClockWithPauseOverlay({ goban, color }: ClockWithPauseOverlayProps): Re
             {can_pause && (
                 <button
                     type="button"
-                    className="clock-pause-overlay"
+                    className="clock-pause-button"
                     onClick={onClick}
                     title={label}
                     aria-label={label}
