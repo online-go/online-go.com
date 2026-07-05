@@ -40,6 +40,7 @@ import {
     useMode,
     usePhase,
     usePlayerToMove,
+    useScorePopup,
     useUserIsParticipant,
     useViewMode,
     useZenMode,
@@ -118,6 +119,9 @@ export function Game(): React.ReactElement | null {
     const [simul_black, set_simul_black] = React.useState<boolean | null>(null);
     const [simul_white, set_simul_white] = React.useState<boolean | null>(null);
     const zen_mode = useZenMode(goban_controller.current);
+    // Score-details popup for the stacked/mobile player cards (the standard
+    // desktop layout's PlayerCards wrapper manages its own instance).
+    const { show_score_breakdown, toggleScorePopup } = useScorePopup(goban);
     const user = useUser();
     const user_is_player = useUserIsParticipant(goban);
     const mode = useMode(goban);
@@ -805,8 +809,12 @@ export function Game(): React.ReactElement | null {
 
     const ai_suspected = (bot_detection_results?.ai_suspected?.length ?? 0) > 0;
     const user_detects_ai = ((user?.moderator_powers ?? 0) & MODERATOR_POWERS.AI_DETECTOR) !== 0;
+    // Superusers only get content in the gavel tab once the game is finished
+    // (GameModToolsPanel's AI-review tools); gate the tab the same way so a
+    // non-moderator superuser doesn't see an empty panel on live games.
     const show_mod_tab =
-        !review && (!!user?.is_moderator || !!user?.is_superuser || user_detects_ai);
+        !review &&
+        (!!user?.is_moderator || user_detects_ai || (!!user?.is_superuser && phase === "finished"));
 
     const analysis_disabled = goban.isAnalysisDisabled();
     const is_analyzing = mode === "analyze";
@@ -977,8 +985,8 @@ export function Game(): React.ReactElement | null {
             goban={goban!}
             historical={color === "black" ? historical_black : historical_white}
             estimating_score={estimating_score}
-            show_score_breakdown={false}
-            onScoreClick={() => undefined}
+            show_score_breakdown={show_score_breakdown}
+            onScoreClick={toggleScorePopup}
             zen_mode={zen_mode}
         />
     );
@@ -1063,7 +1071,7 @@ export function Game(): React.ReactElement | null {
                         estimating_score={estimating_score}
                     />
                 )}
-                {!is_mobile && <GameInformation />}
+                <GameInformation />
                 <RengoHeader />
 
                 {!zen_mode && (
