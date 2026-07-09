@@ -39,8 +39,42 @@ export class IncidentReportCountTracker {
      * Call this before the test performs actions that should change the count.
      */
     async captureInitialCount(page: Page): Promise<void> {
+        await this.waitForReportsLoaded(page);
         this.initialCount = await this.getCurrentCount(page);
         log(`[ReportCountTracker] Captured initial count: ${this.initialCount}`);
+    }
+
+    /**
+     * Wait until the client has received the full initial batch of open reports
+     * from the server (report_manager.loaded) AND the indicator DOM reflects the
+     * resulting count. On a fresh page the indicator reads a stale 0 for the ~3s
+     * it takes the backlog to sync in; without this wait, a relative count
+     * assertion captures that stale baseline and then fails once the real count
+     * arrives. Robust to any pre-existing backlog — including a genuine 0.
+     */
+    async waitForReportsLoaded(page: Page): Promise<void> {
+        await page.waitForFunction(
+            () => {
+                const rm = (
+                    window as unknown as {
+                        report_manager?: {
+                            loaded: boolean;
+                            getNotificationReports(): unknown[];
+                        };
+                    }
+                ).report_manager;
+                if (!rm || !rm.loaded) {
+                    return false;
+                }
+                const expected = rm.getNotificationReports().length;
+                const indicator = document.querySelector(".IncidentReportIndicator");
+                const countEl = indicator?.querySelector(".count.active");
+                const shown = countEl ? parseInt(countEl.textContent?.trim() || "0", 10) : 0;
+                return shown === expected;
+            },
+            undefined,
+            { timeout: 30000 },
+        );
     }
 
     /**
