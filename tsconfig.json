@@ -12,19 +12,15 @@
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "lib": ["es2020", "dom"],
-        "baseUrl": ".",
         "paths": {
-            "@/*": ["src/*"],
-            "goban": ["submodules/goban/src"],
-            "goscorer": ["submodules/goban/src/third_party/goscorer/goscorer"],
-            "react-dynamic-help": ["submodules/react-dynamic-help/src"],
-            "@helpers/*": ["e2e-tests/helpers/*"],
-            "@helpers": ["e2e-tests/helpers"],
-            "@stubs/*": ["src/stubs/*"],
-            "@moderator-ui/*": [
-                "submodules/moderator-ui/*",
-                "src/stubs/moderator-ui/*"
-            ]
+            "@/*": ["./src/*"],
+            "goban": ["./submodules/goban/src"],
+            "goscorer": ["./submodules/goban/src/third_party/goscorer/goscorer"],
+            "react-dynamic-help": ["./submodules/react-dynamic-help/src"],
+            "@helpers/*": ["./e2e-tests/helpers/*"],
+            "@helpers": ["./e2e-tests/helpers"],
+            "@stubs/*": ["./src/stubs/*"],
+            "@moderator-ui/*": ["./submodules/moderator-ui/*", "./src/stubs/moderator-ui/*"]
         },
 
         "forceConsistentCasingInFileNames": true,
