@@ -59,11 +59,18 @@ class ReportManager extends EventEmitter<Events> {
     sorted_active_incident_reports: ReportNotification[] = [];
     this_user_reported_games: number[] = [];
 
+    /** True once the server has confirmed the initial batch of open reports
+     *  has been fully sent after (re)connect, so the report list is in sync. */
+    loaded = false;
+
     constructor() {
         super();
 
         const connect_fn = () => {
             this.active_incident_reports = {};
+            // The server re-sends the full open-report batch on every (re)connect,
+            // so the list is out of sync until sync-complete arrives again.
+            this.loaded = false;
 
             post_connect_notification_squelch = true;
             setTimeout(() => {
@@ -79,6 +86,11 @@ class ReportManager extends EventEmitter<Events> {
         socket.on("incident-report", (report) =>
             this.updateIncidentReport(report as any as ReportNotification),
         );
+
+        socket.on("incident-report-sync-complete", () => {
+            this.loaded = true;
+            this.update();
+        });
 
         preferences.watch("moderator.report-settings", () => {
             this.update();
