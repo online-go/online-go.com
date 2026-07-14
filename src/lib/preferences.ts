@@ -102,6 +102,7 @@ export const defaults = {
     //"goban-theme-white_stone_url": null as null | string,
     "goban-theme-removal-graphic": "square" as "square" | "x",
     "goban-theme-removal-scale": 0.9,
+    "goban-theme-stone-scale": 1.0,
     "goban-theme-stone-shadows": "default" as ShadowTheme,
     "goban-theme-custom-black-shadow-color": "#000000",
     "goban-theme-custom-black-shadow-gradient": "rotate(45) scale(1.10 1.0) translate(0.05 -0.50)",
@@ -356,6 +357,7 @@ export function getSelectedThemes(): GobanSelectedThemes {
     let black = get("goban-theme-black") || (default_plain ? "Plain" : "Slate");
     const removal_graphic = get("goban-theme-removal-graphic");
     const removal_scale = get("goban-theme-removal-scale");
+    const stone_scale = get("goban-theme-stone-scale");
     const stone_shadows = get("goban-theme-stone-shadows");
     const custom_black_shadow_color = get("goban-theme-custom-black-shadow-color");
     const custom_black_shadow_gradient = get("goban-theme-custom-black-shadow-gradient");
@@ -382,6 +384,7 @@ export function getSelectedThemes(): GobanSelectedThemes {
         black: black,
         "removal-graphic": removal_graphic as any,
         "removal-scale": removal_scale,
+        "stone-scale": Number.isFinite(stone_scale) && stone_scale > 0 ? stone_scale : 1.0,
         "stone-shadows": stone_shadows,
         "custom-shadow-config": {
             black: {
@@ -414,6 +417,7 @@ export function watchSelectedThemes(cb: (themes: GobanSelectedThemes) => void) {
         "goban-theme-white",
         "goban-theme-removal-graphic",
         "goban-theme-removal-scale",
+        "goban-theme-stone-scale",
         "goban-theme-stone-shadows",
         "goban-theme-custom-black-shadow-color",
         "goban-theme-custom-black-shadow-gradient",
