@@ -33,7 +33,7 @@ interface ChatUserCountProperties extends ChatUserListProperties {
 
 export function ChatUserList(props: ChatUserListProperties): React.ReactElement {
     const [user_sort_order, set_user_sort_order] = React.useState<"alpha" | "rank">(
-        preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank",
+        preferences.get("chat.user-sort-order") === "rank" ? "rank" : "alpha",
     );
     const [, refresh] = React.useState<number>(0);
     const proxy = React.useRef<ChatChannelProxy | undefined>(undefined);
@@ -53,8 +53,7 @@ export function ChatUserList(props: ChatUserListProperties): React.ReactElement 
     }, [props.channel]);
 
     const toggleSortOrder = () => {
-        const new_sort_order =
-            preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
+        const new_sort_order = user_sort_order === "rank" ? "alpha" : "rank";
         preferences.set("chat.user-sort-order", new_sort_order);
         set_user_sort_order(new_sort_order);
     };
