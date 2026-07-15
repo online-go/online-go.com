@@ -122,9 +122,9 @@ export const defaults = {
     "goban-theme-custom-board-line": "#000000",
     "goban-theme-custom-board-label": blendWithInverseColor("#000000", 0.75),
     "goban-theme-custom-black-stone-color": "#000000",
-    "goban-theme-custom-black-url": "",
+    "goban-theme-custom-black-urls": [] as string[],
     "goban-theme-custom-white-stone-color": "#ffffff",
-    "goban-theme-custom-white-url": "",
+    "goban-theme-custom-white-urls": [] as string[],
     "hide-ranks": false,
     "label-positioning": "all" as LabelPosition,
     "label-positioning-puzzles": "all" as LabelPosition,
@@ -429,9 +429,9 @@ export function watchSelectedThemes(cb: (themes: GobanSelectedThemes) => void) {
         "goban-theme-custom-board-line",
         "goban-theme-custom-board-label",
         "goban-theme-custom-black-stone-color",
-        "goban-theme-custom-black-url",
+        "goban-theme-custom-black-urls",
         "goban-theme-custom-white-stone-color",
-        "goban-theme-custom-white-url",
+        "goban-theme-custom-white-urls",
     ];
 
     for (const key of keys) {
@@ -495,10 +495,42 @@ function migrate() {
     migrate_key("custom.board", "goban-theme-custom-board-background");
     migrate_key("custom.line", "goban-theme-custom-board-line");
     migrate_key("custom.url", "goban-theme-custom-board-url");
-    migrate_key("custom.black_stone_url", "goban-theme-custom-black-url");
-    migrate_key("custom.white_stone_url", "goban-theme-custom-white-url");
-    migrate_key("preferences.goban-theme-black_stone_url", "goban-theme-custom-black-url");
-    migrate_key("preferences.goban-theme-white_stone_url", "goban-theme-custom-white-url");
+
+    function migrateStoneUrls(
+        legacy_keys: string[],
+        target: "goban-theme-custom-black-urls" | "goban-theme-custom-white-urls",
+    ): void {
+        if (get(target).length === 0) {
+            for (const legacy_key of legacy_keys) {
+                const legacy_value = data.get(legacy_key as keyof DataSchema, null);
+                if (typeof legacy_value === "string" && legacy_value.trim()) {
+                    set(target, [legacy_value.trim()]);
+                    break;
+                }
+            }
+        }
+
+        for (const legacy_key of legacy_keys) {
+            data.remove(legacy_key as keyof DataSchema);
+        }
+    }
+
+    migrateStoneUrls(
+        [
+            "preferences.goban-theme-custom-black-url",
+            "custom.black_stone_url",
+            "preferences.goban-theme-black_stone_url",
+        ],
+        "goban-theme-custom-black-urls",
+    );
+    migrateStoneUrls(
+        [
+            "preferences.goban-theme-custom-white-url",
+            "custom.white_stone_url",
+            "preferences.goban-theme-white_stone_url",
+        ],
+        "goban-theme-custom-white-urls",
+    );
 }
 
 try {
