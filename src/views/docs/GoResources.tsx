@@ -373,6 +373,11 @@ export function GoResources(): React.ReactElement {
                                 href="https://internetgoschool.com/index.vhtml.com"
                             />,
                             <BasicResource
+                                countries={[un]}
+                                title="Baduk Teacher"
+                                href="https://badukteacher.com/"
+                            />,
+                            <BasicResource
                                 countries={[en, "pl"]}
                                 title="Polgote"
                                 href="https://polgote.com/"

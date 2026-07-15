@@ -33,7 +33,17 @@
 
     dd {
         margin-inline-start: 1rem;
+
+        span {
+            vertical-align: middle;
+
+            .flag {
+                padding-top: 0.2rem;
+                padding-bottom: 0.1rem;
+            }
+        }
     }
+
 
     em {
         display: block;
