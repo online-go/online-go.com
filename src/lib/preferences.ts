@@ -500,18 +500,22 @@ function migrate() {
         legacy_keys: string[],
         target: "goban-theme-custom-black-urls" | "goban-theme-custom-white-urls",
     ): void {
-        if (get(target).length === 0) {
-            for (const legacy_key of legacy_keys) {
-                const legacy_value = data.get(legacy_key as keyof DataSchema, null);
-                if (typeof legacy_value === "string" && legacy_value.trim()) {
-                    set(target, [legacy_value.trim()]);
-                    break;
+        try {
+            if (get(target).length === 0) {
+                for (const legacy_key of legacy_keys) {
+                    const legacy_value = data.get(legacy_key as keyof DataSchema, null);
+                    if (typeof legacy_value === "string" && legacy_value.trim()) {
+                        set(target, [legacy_value.trim()]);
+                        break;
+                    }
                 }
             }
-        }
 
-        for (const legacy_key of legacy_keys) {
-            data.remove(legacy_key as keyof DataSchema);
+            for (const legacy_key of legacy_keys) {
+                data.remove(legacy_key as keyof DataSchema);
+            }
+        } catch (e) {
+            console.log(e);
         }
     }
 
