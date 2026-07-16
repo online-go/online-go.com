@@ -47,7 +47,7 @@ export function GobanCustomStoneUrlInput({
     const serialized_urls = urls.join("\n");
     const [draft, setDraft] = React.useState(serialized_urls);
     const last_emitted_urls = React.useRef(serialized_urls);
-    const [variations_open, setVariationsOpen] = React.useState(urls.length > 1);
+    const [variants_open, setVariantsOpen] = React.useState(urls.length > 1);
     const [canvas_enabled] = useData("experiments.canvas");
 
     React.useEffect(() => {
@@ -59,7 +59,7 @@ export function GobanCustomStoneUrlInput({
 
     React.useEffect(() => {
         if (urls.length > 1) {
-            setVariationsOpen(true);
+            setVariantsOpen(true);
         }
     }, [urls.length]);
 
@@ -93,13 +93,13 @@ export function GobanCustomStoneUrlInput({
         last_emitted_urls.current = "";
         setDraft("");
         setUrls([]);
-        setVariationsOpen(false);
+        setVariantsOpen(false);
     }
 
     return (
         <div className="GobanCustomStoneUrlInput">
             <div className="custom-stone-url-selection">
-                {variations_open ? (
+                {variants_open ? (
                     <textarea
                         className="customStoneUrlSelector"
                         value={draft}
@@ -129,17 +129,17 @@ export function GobanCustomStoneUrlInput({
                     <i className="fa fa-undo" />
                 </button>
             </div>
-            {!variations_open && (
+            {!variants_open && (
                 <button
                     type="button"
-                    className="add-variations"
-                    onClick={() => setVariationsOpen(true)}
+                    className="add-variants"
+                    onClick={() => setVariantsOpen(true)}
                 >
-                    {pgettext("Expand custom stone URL editor", "Add variations")}
+                    {pgettext("Expand custom stone variant URL editor", "Add variants")}
                 </button>
             )}
-            {variations_open && (
-                <small className="variation-help">
+            {variants_open && (
+                <small className="variant-help">
                     {pgettext("Custom stone URL list instructions", "One image URL per line.")}
                 </small>
             )}

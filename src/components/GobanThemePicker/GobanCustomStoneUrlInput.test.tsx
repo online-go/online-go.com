@@ -26,14 +26,14 @@ describe("GobanCustomStoneUrlInput", () => {
         render(<GobanCustomStoneUrlInput color="black" urls={["first.png"]} setUrls={jest.fn()} />);
 
         expect(screen.getByRole("textbox").tagName).toBe("INPUT");
-        expect(screen.getByRole("button", { name: "Add variations" })).toBeVisible();
+        expect(screen.getByRole("button", { name: "Add variants" })).toBeVisible();
         expect(screen.queryByText("One image URL per line.")).toBeNull();
     });
 
     test("preserves draft newlines while emitting normalized URLs", () => {
         const setUrls = jest.fn();
         render(<GobanCustomStoneUrlInput color="black" urls={[]} setUrls={setUrls} />);
-        fireEvent.click(screen.getByRole("button", { name: "Add variations" }));
+        fireEvent.click(screen.getByRole("button", { name: "Add variants" }));
         const textarea = screen.getByRole("textbox");
         const draft = "first.png\n\n second.png \n";
 
