@@ -302,9 +302,9 @@ export const cmEscapeRateDisplayTest = async (
             // reflects the actual count, not actual + 1. Without the fix the
             // predicted count would exceed games-in-window — impossible.
             //
-            // Report 4 was voted warn_escaper; by its created-time the window
-            // contained games 1-4 (4 games, all ended before the report was
-            // filed) and all four had escape warnings issued (2 informal +
+            // Report 4 was voted warn_escaper; anchored to game 4's completion
+            // time the window contains games 1-4 (game 5 ended later, so it is
+            // excluded) and all four had escape warnings issued (2 informal +
             // 2 formal). Expected display: "4 escapes in 4 games".
 
             if (lastResolvedReportNumber === null) {
