@@ -24,9 +24,11 @@
  * own report is resolved first.
  *
  * Scenario:
- *  - Play game G, report it, leave it pending (the game under inspection).
+ *  - Play game G (the game under inspection), but do not report it yet.
  *  - Play game H (ends after G), report it, 3 CMs vote informal_warn_escaper
- *    so H carries an escape warning.
+ *    so H carries an escape warning and is fully resolved.
+ *  - Only now report game G and leave it pending — so H ends after G but
+ *    before G's report is filed.
  *  - View report G as a CM.
  *
  * Game-anchored (correct): G's window is games ended <= G.ended = {G}. H is
@@ -96,9 +98,31 @@ export const cmEscapeRateGameAnchorTest = async (
                 cmContexts.push(seededCMContext);
             }
 
-            // Game G — ends first; reported and left pending. This is the game
-            // whose escape-rate display we inspect.
+            // Game G — the game whose escape-rate display we inspect. It ends
+            // first, but its report is filed LAST (after game H resolves) so
+            // that H ends after G yet before G's report — the one interval
+            // where the report-anchored and game-anchored windows diverge.
             await playAndFinishGame(reporterPage, accusedPage, accusedUsername, 1);
+            const gGameUrl = reporterPage.url();
+
+            await accusedPage.goto("/");
+            await dismissWarningDialogs(accusedPage);
+            await dismissWarningDialogs(reporterPage);
+
+            // Game H — ends AFTER G; reported and resolved as escaping so it
+            // carries an escape warning. The game-anchored window (<= G.ended)
+            // excludes H, but the old report-anchored window (< report.created)
+            // would include it because H ends before G's report is filed. That
+            // difference is what this test discriminates.
+            await playAndFinishGame(reporterPage, accusedPage, accusedUsername, 2);
+            await reportAndVote(reporterPage, cmPages, "informal_warn_escaper");
+
+            await accusedPage.goto("/");
+            await dismissWarningDialogs(accusedPage);
+            await dismissWarningDialogs(reporterPage);
+
+            // Now file the report on game G and leave it pending.
+            await reporterPage.goto(gGameUrl);
             await waitForGameViewReady(reporterPage);
             await reportPlayerByColor(
                 reporterPage,
@@ -109,19 +133,6 @@ export const cmEscapeRateGameAnchorTest = async (
             await tracker.assertCountIncreasedBy(reporterPage, 1);
             const reportG = await captureReportNumber(reporterPage);
 
-            await accusedPage.goto("/");
-            await dismissWarningDialogs(accusedPage);
-            await dismissWarningDialogs(reporterPage);
-
-            // Game H — ends AFTER G; reported and resolved as escaping so it
-            // carries an escape warning at inspection time.
-            await playAndFinishGame(reporterPage, accusedPage, accusedUsername, 2);
-            await reportAndVote(reporterPage, cmPages, "informal_warn_escaper");
-
-            await accusedPage.goto("/");
-            await dismissWarningDialogs(accusedPage);
-            await dismissWarningDialogs(reporterPage);
-
             // Inspect report G.
             const cmPage = cmPages[0];
             await navigateToReport(cmPage, reportG);
@@ -130,8 +141,9 @@ export const cmEscapeRateGameAnchorTest = async (
             await expect(escapeRateInfo).toBeVisible({ timeout: 15000 });
 
             // Game-anchored: H (ended after G) is excluded, so G's window is
-            // {G} alone. Old report-anchored behaviour would show
-            // "2 escapes in 2 games".
+            // {G} alone -> "1 escapes in 1 games". The old report-anchored
+            // window would include H (it ended before G's report was filed) and
+            // show "2 escapes in 2 games".
             const detail = cmPage.locator(".escape-rate-detail");
             await expect(detail).toBeVisible();
             await expect(detail).toContainText(/1 escapes? in 1 games?/);
