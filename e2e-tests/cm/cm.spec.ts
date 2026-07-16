@@ -43,6 +43,7 @@ import { cmVoteWarnMaliciousReporterTest } from "./cm-vote-warn-malicious-report
 import { cmVoteInformalWarnMaliciousReporterTest } from "./cm-vote-informal-warn-malicious-reporter";
 import { cmMaliciousReportQueueVisibilityTest } from "./cm-malicious-report-queue-visibility";
 import { cmMaliciousReportEscalationTest } from "./cm-malicious-report-escalation";
+import { cmCallStalledGameWarnsStallerTest } from "./cm-call-stalled-game-warns-staller";
 
 ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest("CM Vote on own report", cmVoteOnOwnReportTest);
@@ -92,4 +93,8 @@ ogsTest.describe("@CM Community Moderation Tests", () => {
         cmMaliciousReportQueueVisibilityTest,
     );
     ogsTest("Malicious report escalation flow", cmMaliciousReportEscalationTest);
+    ogsTest(
+        "CM call-stalled-game warns the staller, not the escaper",
+        cmCallStalledGameWarnsStallerTest,
+    );
 });
