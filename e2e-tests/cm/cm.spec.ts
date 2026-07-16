@@ -30,6 +30,7 @@ import { cmVoteEscalateSandbaggingTest } from "./cm-vote-escalate-sandbagging";
 import { cmSandbaggingAssessmentConversionTest } from "./cm-sandbagging-assessment-conversion";
 import { cmLastWarningInfoTest } from "./cm-last-warning-info";
 import { cmEscapeRateDisplayTest } from "./cm-escape-rate-display";
+import { cmEscapeRateGameAnchorTest } from "./cm-escape-rate-game-anchor";
 import { cmEscapeRatePredictiveBorderlineTest } from "./cm-escape-rate-predictive-borderline";
 import { cmInformalWarnEscaperTest } from "./cm-informal-warn-escaper";
 import { cmInformalWarnEscaperAndAnnulTest } from "./cm-informal-warn-escaper-and-annul";
@@ -60,6 +61,10 @@ ogsTest.describe("@CM Community Moderation Tests", () => {
     );
     ogsTest("@Slow Last warning info shown on repeat offender reports", cmLastWarningInfoTest);
     ogsTest("@Slow Escape rate display on escaping reports", cmEscapeRateDisplayTest);
+    ogsTest(
+        "@Slow Escape rate window is anchored to the reported game",
+        cmEscapeRateGameAnchorTest,
+    );
     ogsTest(
         "CM sees formal options at the predictive escape-rate boundary",
         cmEscapeRatePredictiveBorderlineTest,
