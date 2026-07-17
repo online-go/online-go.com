@@ -245,9 +245,10 @@ export const cmFileMaliciousReportTest = async (
             log(`[MR/file] Cleanup`);
             // Cleanup: the malicious_report we filed never gets resolved
             // in this test, so cancel it so the seeded CM filer doesn't
-            // accumulate pending reports across runs. The source escaping
-            // report is owned by an ephemeral fresh user; we don't bother
-            // cancelling it.
+            // accumulate pending reports across runs. The source
+            // score-cheating report and the negative-guard escaping report
+            // are owned by ephemeral fresh users; we don't bother cancelling
+            // them.
             await cancelOwnReport(filerPage, maliciousReportNumber);
 
             await filerContext.close();
