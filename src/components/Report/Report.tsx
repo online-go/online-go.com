@@ -289,9 +289,10 @@ export function Report(props: ReportProperties): React.ReactElement {
     const [validating, set_validating] = React.useState(false);
     const [inapplicable_reason, set_inapplicable_reason] = React.useState<string | null>(null);
     const [source_report_type, set_source_report_type] = React.useState<string | null>(null);
-    // Source-report URL snapshot for malicious_report's back-link. Captured at
-    // applicability-check time so SPA navigation between selection and submit
-    // can't change which report the malicious_report is filed against.
+    // Source-report URL snapshot for malicious_report's back-link, set in the
+    // mount effect below from the report-detail path at dialog-open time so SPA
+    // navigation between opening the dialog and submitting can't change which
+    // report the malicious_report is filed against.
     const source_report_url_ref = React.useRef<string | null>(null);
 
     const user = useUser();
