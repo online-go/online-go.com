@@ -112,8 +112,8 @@ export const cmVoteWarnMaliciousReporterTest = async (
             await expect(ack).not.toBeVisible();
 
             // The malicious_report resolved via voting → no pending state
-            // remains for the seeded filer. The source escaping report is
-            // owned by an ephemeral fresh user and never affects future
+            // remains for the seeded filer. The source score-cheating report
+            // is owned by an ephemeral fresh user and never affects future
             // runs, so we don't cancel it.
 
             for (const ctx of cmContexts) {

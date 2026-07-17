@@ -115,7 +115,7 @@ export const cmVoteNoMaliciousReportTest = async (
 
             // Cleanup: the malicious_report resolved via voting → no
             // pending state remains on the seeded CM filer. The source
-            // escaping report is still pending but is owned by an
+            // score-cheating report is still pending but is owned by an
             // ephemeral fresh user that never logs back in, so it
             // doesn't surface in any future test run's state.
 

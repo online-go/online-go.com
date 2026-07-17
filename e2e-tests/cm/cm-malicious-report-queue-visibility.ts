@@ -24,14 +24,16 @@
  *     in /reports-center (validates termination-server dispatch), and
  *     navigating directly to the report URL does not show vote options
  *     (validates the user_can_moderate gate).
- *  9. The ReportTypeSelector dropdown exposes "Malicious Report" for a CM with
- *     HANDLE_MALICIOUS_REPORT and not for one without it. The same
- *     community_mod_has_power gate also drives the category sidebar in
- *     /reports-center, so the negative case is covered by the sidebar
- *     visibility check in Test 8.
+ *  9. The ReportTypeSelector dropdown never offers "Malicious Report" as a
+ *     retype target — a malicious_report is filed through the PlayerDetails
+ *     -> Report dialog, not by retyping an existing report. The category
+ *     sidebar in /reports-center is still power-gated (a CM without
+ *     HANDLE_MALICIOUS_REPORT does not see the "Malicious report" category),
+ *     which Test 8 covers.
  *
  * Uses init_e2e data:
- * - E2E_CM_MR_FILER (set up by setupMaliciousReport, has HANDLE_ESCAPING too)
+ * - E2E_CM_MR_FILER (set up by setupMaliciousReport; also has
+ *   HANDLE_SCORE_CHEAT to view the score-cheating source, and HANDLE_ESCAPING)
  * - E2E_CM_MR_NO_POWER : CM with HANDLE_STALLING (negative case for Test 8)
  */
 
@@ -64,23 +66,25 @@ export const cmMaliciousReportQueueVisibilityTest = async (
         testInfo,
         async () => {
             // ========================================
-            // Test 9 (positive): filer (HANDLE_MALICIOUS_REPORT + HANDLE_ESCAPING)
-            // views the source escaping report and the type-selector dropdown
-            // includes "Malicious Report" as an option.
+            // Test 9 (type-selector filter): "Malicious Report" is NOT offered
+            // as a retype target, even for the filer who holds
+            // HANDLE_MALICIOUS_REPORT. A malicious_report is filed through the
+            // PlayerDetails -> Report dialog (see cmFileMaliciousReportTest),
+            // never by retyping an existing report.
             // ========================================
-            log(`[MR/queue] Test 9 positive: filer sees "Malicious Report" in type-selector`);
+            log(`[MR/queue] Test 9: "Malicious Report" is not a retype option`);
             await navigateToReport(setup.filerPage, setup.sourceReportNumber);
 
             const typeSelector = setup.filerPage.locator(".report-type-selector");
             await expect(typeSelector).toBeVisible();
-            // Source report's current type is "Stopped Playing", so "Malicious
-            // Report" only appears once the dropdown is opened.
+            // Open the retype dropdown: it lists other report types (e.g.
+            // "Stopped Playing") but must not offer "Malicious Report".
             await typeSelector.click();
-            await expect(
-                setup.filerPage
-                    .locator(".ogs-react-select__menu")
-                    .getByText("Malicious Report", { exact: true }),
-            ).toBeVisible({ timeout: 5000 });
+            const typeMenu = setup.filerPage.locator(".ogs-react-select__menu");
+            await expect(typeMenu.getByText("Stopped Playing", { exact: true })).toBeVisible({
+                timeout: 5000,
+            });
+            await expect(typeMenu.getByText("Malicious Report", { exact: true })).toHaveCount(0);
 
             // ========================================
             // Test 8: NO_POWER CM (HANDLE_STALLING only) cannot see the MR
