@@ -34,6 +34,9 @@
  * Source-report victim, opponent and source reporter are created dynamically
  * each run. Source reporter is a third-party user (not a game player) — see
  * `setupEscapingSourceGame` for why.
+ *
+ * Also covers a negative guard: the "Malicious Report" option is not offered
+ * against the reporter of a non-score-cheating (escaping) source report.
  */
 
 import type { CreateContextOptions } from "@helpers";
@@ -41,19 +44,22 @@ import { BrowserContext, TestInfo } from "@playwright/test";
 import { expect } from "@playwright/test";
 
 import {
+    captureReportNumber,
     navigateToReport,
     newTestUsername,
     openPlayerDetailsPopover,
     prepareNewUser,
+    reportUser,
     setupSeededCM,
 } from "@helpers/user-utils";
+import { waitForGameViewReady } from "@helpers/game-utils";
 
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { log } from "@helpers/logger";
 import { withReportCountTracking } from "@helpers/report-utils";
 import {
     cancelOwnReport,
-    createSourceEscapingReport,
+    createSourceScoreCheatingReport,
     fileMaliciousReport,
     readOwnReportIds,
     setupEscapingSourceGame,
@@ -66,9 +72,10 @@ export const cmFileMaliciousReportTest = async (
     }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
-    const TIMEOUT_MS = 300 * 1000;
+    const TIMEOUT_MS = 420 * 1000;
     // The setup before withReportCountTracking (3 fresh users + game + source
-    // report) is the heaviest part of this test and easily exceeds the
+    // report), plus the negative-guard step (a fourth user + an escaping
+    // report), is the heaviest part of this test and far exceeds the
     // Playwright default 180s when combined with the post-resignation flake
     // budget on the existing reportUser/captureReportNumber helpers. Bump
     // the test-wide timeout up front; withReportCountTracking will also call
@@ -86,17 +93,19 @@ export const cmFileMaliciousReportTest = async (
         "test",
     );
 
-    // Opponent resigns so victim wins; escaping report against the victim is
-    // applicable. The source reporter is created later as a fresh third party.
+    // Opponent resigns so victim wins. The victim not having resigned is also
+    // what makes an escaping report against them applicable — used below for
+    // the negative-guard check. The source reporter is created later as a
+    // fresh third party.
     const gameUrl = await setupEscapingSourceGame(victimPage, opponentPage, opponentUsername);
 
     const { sourceReporterPage, sourceReporterUsername, sourceReportNumber } =
-        await createSourceEscapingReport(
+        await createSourceScoreCheatingReport(
             createContext,
             gameUrl,
             victimUsername,
             "MRFMRep", // cspell:disable-line
-            "E2E test: source escaping report - this is going to be flagged malicious",
+            "E2E test: source score-cheating report - this is going to be flagged malicious",
         );
 
     await withReportCountTracking(
@@ -152,6 +161,47 @@ export const cmFileMaliciousReportTest = async (
             await expect(filerPage.getByText("Thanks for the report!")).toHaveCount(0);
 
             // ========================================
+            // Negative guard: malicious_report is not offered on a
+            // non-score-cheating source
+            // ========================================
+            log(`[MR/file] Negative guard: escaping source does not offer malicious_report`);
+            // The victim did not resign, so an escaping report against them is
+            // applicable.
+            const escReporterUsername = newTestUsername("MRFMEsc"); // cspell:disable-line
+            const { userPage: escReporterPage } = await prepareNewUser(
+                createContext,
+                escReporterUsername,
+                "test",
+            );
+            await escReporterPage.goto(gameUrl);
+            await waitForGameViewReady(escReporterPage);
+            await reportUser(
+                escReporterPage,
+                victimUsername,
+                "escaping",
+                "E2E test: escaping source for the malicious-gate negative check",
+            );
+            const escReportNumber = await captureReportNumber(escReporterPage);
+
+            await navigateToReport(filerPage, escReportNumber);
+            const escReporterLink = filerPage
+                .locator(`a.Player[data-ready="true"]:has-text("${escReporterUsername}")`)
+                .first();
+            await openPlayerDetailsPopover(filerPage, escReporterLink);
+            await (await expectOGSClickableByName(filerPage, /Report$/)).click();
+            await expect(filerPage.getByText("Request Moderator Assistance")).toBeVisible();
+            // The type-picker is populated (escaping is offered) but malicious_report is
+            // NOT offered at all on a non-score-cheating source.
+            await expect(
+                filerPage.locator('.type-picker select option[value="escaping"]'),
+            ).toHaveCount(1);
+            await expect(
+                filerPage.locator('.type-picker select option[value="malicious_report"]'),
+            ).toHaveCount(0);
+            await (await expectOGSClickableByName(filerPage, /^Close$/)).click();
+            await expect(filerPage.getByText("Request Moderator Assistance")).not.toBeVisible();
+
+            // ========================================
             // Test 1: File a malicious_report successfully
             // ========================================
             log(`[MR/file] Test 1: file malicious_report successfully`);
@@ -186,10 +236,10 @@ export const cmFileMaliciousReportTest = async (
                 filerPage.locator(".reported-user").getByText(sourceReporterUsername),
             ).toBeVisible();
 
-            // Source report is unchanged: still escaping, not retyped to malicious.
+            // Source report is unchanged: still score_cheating, not retyped to malicious.
             await navigateToReport(filerPage, sourceReportNumber);
             await expect(filerPage.locator(".report-type-selector")).toContainText(
-                "Stopped Playing",
+                "Score Cheating",
             );
 
             log(`[MR/file] Cleanup`);
