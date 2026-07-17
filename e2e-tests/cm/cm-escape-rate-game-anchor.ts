@@ -45,16 +45,12 @@ import { BrowserContext, Page, TestInfo } from "@playwright/test";
 import { expect } from "@playwright/test";
 
 import {
-    captureReportNumber,
     navigateToReport,
     newTestUsername,
     prepareNewUser,
-    reportPlayerByColor,
     setupSeededCM,
 } from "@helpers/user-utils";
 
-import { waitForGameViewReady } from "@helpers/game-utils";
-import { expectOGSClickableByName } from "@helpers/matchers";
 import { dismissWarningDialogs, withReportCountTracking } from "@helpers/report-utils";
 
 import { playAndFinishGame, reportAndVote } from "./escape-rate-helpers";
@@ -69,7 +65,7 @@ export const cmEscapeRateGameAnchorTest = async (
 ) => {
     // @Slow: plays two sequential games with a 30 s post-game quiesce each
     // (so Game.ended commits before the next escaping report — otherwise
-    // moderate.py rejects it HTTP 400) plus one CM-voted resolution. The time
+    // moderate.py rejects it HTTP 400) plus two CM-voted resolutions. The time
     // is cumulative setup, not flakiness; see e2e-tests/CLAUDE.md.
     const TIMEOUT_MS = 360 * 1000;
 
@@ -121,19 +117,21 @@ export const cmEscapeRateGameAnchorTest = async (
             await dismissWarningDialogs(accusedPage);
             await dismissWarningDialogs(reporterPage);
 
-            // Now file the report on game G and leave it pending.
+            // Report game G and resolve it by CM vote (rather than leaving it
+            // pending and cancelling it): the window is anchored to G's
+            // completion time whether the report is pending or resolved, so
+            // this still discriminates, and the test never leaves an open
+            // report on its normal path. Resolving as escaping puts a warning
+            // on G, so under the game anchor G's window is {G} with 1 escape;
+            // the old report anchor would include H too and show 2.
             await reporterPage.goto(gGameUrl);
-            await waitForGameViewReady(reporterPage);
-            await reportPlayerByColor(
-                reporterPage,
-                ".white",
-                "escaping",
-                "E2E ERGA: game G (left pending)",
-            );
-            await tracker.assertCountIncreasedBy(reporterPage, 1);
-            const reportG = await captureReportNumber(reporterPage);
+            const reportG = await reportAndVote(reporterPage, cmPages, "informal_warn_escaper");
 
-            // Inspect report G.
+            await accusedPage.goto("/");
+            await dismissWarningDialogs(accusedPage);
+            await dismissWarningDialogs(reporterPage);
+
+            // Inspect the resolved report G.
             const cmPage = cmPages[0];
             await navigateToReport(cmPage, reportG);
 
@@ -153,10 +151,6 @@ export const cmEscapeRateGameAnchorTest = async (
                 await ctx.close();
             }
 
-            // Clean up: cancel the pending report on G.
-            await reporterPage.goto("/reports-center/my_reports");
-            const cancelButton = await expectOGSClickableByName(reporterPage, /Cancel$/);
-            await cancelButton.click();
             await tracker.assertCountReturnedToInitial(reporterPage);
         },
         TIMEOUT_MS,
