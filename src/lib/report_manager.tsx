@@ -195,21 +195,22 @@ class ReportManager extends EventEmitter<Events> {
             return [];
         }
 
-        // Reports this user is allowed to act on. Kept separate from the
-        // already-voted filter (applied last) so the escaping serialization
-        // below sees reports the CM has voted on but that have not yet
-        // resolved.
-        let moderatable = this.getVisibleReports().filter((r) => this.userCanModerate(user, r));
+        const queue = this.getVisibleReports().filter(
+            (r) => this.userCanModerate(user, r) && !this.userAlreadyVoted(user, r),
+        );
 
         // For community moderators, only show one escaping report per reported
         // user at a time: they must resolve the oldest before seeing the next.
-        // Computed over the full moderatable set — before the already-voted
-        // filter — so a report this CM has already voted on still suppresses
-        // newer reports on the same player until consensus resolves it.
+        // The anchor (oldest active escaping report per player) is computed from
+        // ALL active reports, not just the ones visible to this CM. Once a CM
+        // votes on a report, community_mod_can_handle() hides it from their view
+        // (getVisibleReports), but it is still the pending report that must
+        // resolve first — so anchoring on the visible set would let the next
+        // report leak in the moment they vote.
         if (user.moderator_powers && !user.is_moderator) {
             const oldest_escaping_by_user = new Map<number, number>();
-            for (const report of moderatable) {
-                if (report.report_type === "escaping" && report.reported_user?.id) {
+            for (const report of this.sorted_active_incident_reports) {
+                if (report?.report_type === "escaping" && report.reported_user?.id) {
                     const user_id = report.reported_user.id;
                     const existing = oldest_escaping_by_user.get(user_id);
                     if (existing === undefined || report.id < existing) {
@@ -217,7 +218,7 @@ class ReportManager extends EventEmitter<Events> {
                     }
                 }
             }
-            moderatable = moderatable.filter((report) => {
+            return queue.filter((report) => {
                 if (report.report_type === "escaping" && report.reported_user?.id) {
                     return oldest_escaping_by_user.get(report.reported_user.id) === report.id;
                 }
@@ -225,8 +226,7 @@ class ReportManager extends EventEmitter<Events> {
             });
         }
 
-        // Finally, drop reports this user has already voted on.
-        return moderatable.filter((r) => !this.userAlreadyVoted(user, r));
+        return queue;
     }
 
     public getMyReports(): ReportNotification[] {

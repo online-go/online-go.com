@@ -35,9 +35,10 @@ jest.mock("@/lib/preferences", () => ({
     get: jest.fn(() => undefined),
     watch: jest.fn(),
 }));
-jest.mock("@/lib/report_util", () => ({
-    community_mod_can_handle: () => true,
-}));
+// @/lib/report_util is deliberately NOT mocked: getVisibleReports() relies on
+// the real community_mod_can_handle(), which hides a report from a CM once they
+// have voted on it (for non-escalated reports). That is the exact interaction
+// the serialization must survive, so mocking it away would hide the bug.
 jest.mock("@/lib/translate", () => ({
     pgettext: (_ctx: string, s: string) => s,
 }));
@@ -53,8 +54,9 @@ const CM_ID = 1000;
 jest.mock("@/lib/data", () => ({
     get: (key: string) => {
         if (key === "user") {
-            // any non-zero moderator_powers; community_mod_can_handle is mocked true
-            return { id: 1000, is_moderator: false, moderator_powers: 1 };
+            // HANDLE_ESCAPING power (0b010) so the real community_mod_can_handle
+            // grants this CM escaping reports they have not voted on
+            return { id: 1000, is_moderator: false, moderator_powers: 0b010 };
         }
         if (key === "ignored-reports") {
             return {};
