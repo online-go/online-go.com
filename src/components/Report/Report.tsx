@@ -111,28 +111,6 @@ Please choose a different type of report, if there is a different problem.`,
     });
 }
 
-// The source-report detail page is the only valid context for filing a
-// malicious_report; its URL becomes the back-link on the new report.
-function getMaliciousReportSourceUrl(): string | null {
-    const match = window.location.pathname.match(/^\/reports-center\/all\/(\d+)/);
-    return match ? `/reports-center/all/${match[1]}` : null;
-}
-
-function checkMaliciousReportApplicability(
-    _game_id?: number,
-    _reported_user_id?: number,
-): Promise<string | null> {
-    if (getMaliciousReportSourceUrl() === null) {
-        return Promise.resolve(
-            pgettext(
-                "Why malicious-report is disabled outside the reports-center view",
-                "Open a report's detail view to file a malicious report against its reporter.",
-            ),
-        );
-    }
-    return Promise.resolve(null);
-}
-
 function checkGameForStallingReportApplicability(
     game_id?: number,
     _reported_user_id?: number,
@@ -206,7 +184,6 @@ export const report_categories: ReportDescription[] = [
         ),
         cm_only: true,
         min_description_length: 1,
-        check_applicability: checkMaliciousReportApplicability,
     },
     {
         type: "sandbagging",
@@ -311,9 +288,11 @@ export function Report(props: ReportProperties): React.ReactElement {
     const [submitting, set_submitting] = React.useState(false);
     const [validating, set_validating] = React.useState(false);
     const [inapplicable_reason, set_inapplicable_reason] = React.useState<string | null>(null);
-    // Source-report URL snapshot for malicious_report's back-link. Captured at
-    // applicability-check time so SPA navigation between selection and submit
-    // can't change which report the malicious_report is filed against.
+    const [source_report_type, set_source_report_type] = React.useState<string | null>(null);
+    // Source-report URL snapshot for malicious_report's back-link, set in the
+    // mount effect below from the report-detail path at dialog-open time so SPA
+    // navigation between opening the dialog and submitting can't change which
+    // report the malicious_report is filed against.
     const source_report_url_ref = React.useRef<string | null>(null);
 
     const user = useUser();
@@ -333,11 +312,29 @@ export function Report(props: ReportProperties): React.ReactElement {
             .catch(() => 0);
     }, [reported_user_id]);
 
+    // When the Report dialog is opened on a report-detail page, fetch that
+    // source report's type once. It gates whether the malicious_report option
+    // is offered (score-cheating only) and provides the malicious_report
+    // back-link URL.
+    React.useEffect(() => {
+        const match = window.location.pathname.match(/^\/reports-center\/all\/(\d+)/);
+        if (!match) {
+            set_source_report_type(null);
+            source_report_url_ref.current = null;
+            return;
+        }
+        const source_id = match[1];
+        source_report_url_ref.current = `/reports-center/all/${source_id}`;
+        get(`moderation/incident/${source_id}`)
+            .then((report: { report_type?: string }) =>
+                set_source_report_type(report?.report_type ?? null),
+            )
+            .catch(() => set_source_report_type(null));
+    }, []);
+
     React.useEffect(() => {
         const needs_game_id_first = category?.game_id_required && !game_id;
         if (category?.check_applicability && !needs_game_id_first) {
-            source_report_url_ref.current =
-                category.type === "malicious_report" ? getMaliciousReportSourceUrl() : null;
             set_validating(true);
             category
                 .check_applicability(game_id, reported_user_id)
@@ -350,7 +347,6 @@ export function Report(props: ReportProperties): React.ReactElement {
                 });
         } else {
             set_inapplicable_reason(null);
-            source_report_url_ref.current = null;
         }
     }, [category, game_id]);
 
@@ -466,7 +462,9 @@ export function Report(props: ReportProperties): React.ReactElement {
     const available_categories = report_categories
         .filter((x) => !x.not_reportable)
         .filter((x) => user.is_moderator || !x.moderator_only)
-        .filter((x) => has_moderator_powers || !x.cm_only);
+        .filter((x) => has_moderator_powers || !x.cm_only)
+        // malicious_report is offered only while viewing a score-cheating report
+        .filter((x) => x.type !== "malicious_report" || source_report_type === "score_cheating");
 
     const more_description_needed =
         category?.min_description_length && note.length < category.min_description_length;

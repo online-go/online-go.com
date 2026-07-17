@@ -298,17 +298,15 @@ export async function fileMaliciousReport(
 
 /**
  * Play a short 9x9 game between `victimPage` and `opponentPage`. Opponent
- * resigns, so the victim wins. The victim did NOT resign, which is what the
- * escaping report applicability check requires (it rejects reports against
- * players who resigned).
+ * resigns, so the victim wins.
  *
  * Returns the game URL (read from victimPage after the game ends).
  *
  * Note: this helper deliberately does not have either player file the
- * subsequent escaping report. Doing so from a player's page after resignation
+ * subsequent source report. Doing so from a player's page after resignation
  * is flaky — post-game state (AI processing, dialogs) re-renders the side
  * panel and closes the PlayerDetails popover before the Report button is
- * clicked. The escaping report should be filed by a third-party user from a
+ * clicked. The source report should be filed by a third-party user from a
  * fresh navigation to this URL.
  */
 export async function setupEscapingSourceGame(
@@ -345,7 +343,8 @@ export async function setupEscapingSourceGame(
 
 /**
  * Create a fresh "source reporter" — a third-party user who is not a player in
- * the game — and have them file an escaping report against the victim.
+ * the game — and have them file a score_cheating report against the victim.
+ * The malicious-report gate requires the source report to be score_cheating.
  *
  * Using a fresh user (rather than one of the game players) sidesteps post-game
  * render churn that closes the PlayerDetails popover. See note on
@@ -353,20 +352,20 @@ export async function setupEscapingSourceGame(
  *
  * The caller is expected to have set up the game already and have its URL.
  */
-export interface SourceEscapingReportSetup {
+export interface SourceScoreCheatingReportSetup {
     sourceReporterUsername: string;
     sourceReporterPage: Page;
     sourceReporterContext: BrowserContext;
     sourceReportNumber: string;
 }
 
-export async function createSourceEscapingReport(
+export async function createSourceScoreCheatingReport(
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     gameUrl: string,
     victimUsername: string,
     rolePrefix: string,
     reporterNote: string,
-): Promise<SourceEscapingReportSetup> {
+): Promise<SourceScoreCheatingReportSetup> {
     const sourceReporterUsername = newTestUsername(rolePrefix);
     log(`[MR] Creating third-party source reporter ${sourceReporterUsername}`);
     const { userPage: sourceReporterPage, userContext: sourceReporterContext } =
@@ -379,11 +378,11 @@ export async function createSourceEscapingReport(
     // dismissing it before reportUser can click the Report button.
     await waitForGameViewReady(sourceReporterPage);
 
-    log(`[MR] Source reporter filing escaping report against ${victimUsername}`);
-    await reportUser(sourceReporterPage, victimUsername, "escaping", reporterNote);
+    log(`[MR] Source reporter filing score-cheating report against ${victimUsername}`);
+    await reportUser(sourceReporterPage, victimUsername, "score_cheating", reporterNote);
 
     const sourceReportNumber = await captureReportNumber(sourceReporterPage);
-    log(`[MR] Source escaping report filed: ${sourceReportNumber}`);
+    log(`[MR] Source score-cheating report filed: ${sourceReportNumber}`);
 
     return {
         sourceReporterUsername,
@@ -397,7 +396,7 @@ export async function createSourceEscapingReport(
  * Full setup of a malicious_report:
  *  1. Create fresh victim, opponent, and source reporter users.
  *  2. Victim and opponent play a short game; opponent resigns (victim wins).
- *  3. Source reporter (third party) files an escaping report against the victim.
+ *  3. Source reporter (third party) files a score_cheating report against the victim.
  *  4. CM filer marks that source report as malicious.
  *
  * Returns both report numbers and the source-reporter / filer pages and
@@ -443,18 +442,18 @@ export async function setupMaliciousReport(
 
     const gameUrl = await setupEscapingSourceGame(victimPage, opponentPage, opponentUsername);
 
-    // Third-party source reporter files an escaping report against the victim
+    // Third-party source reporter files a score_cheating report against the victim
     const {
         sourceReporterUsername,
         sourceReporterPage,
         sourceReporterContext,
         sourceReportNumber,
-    } = await createSourceEscapingReport(
+    } = await createSourceScoreCheatingReport(
         createContext,
         gameUrl,
         victimUsername,
         sourceReporterRolePrefix,
-        "E2E test: filing a bogus escaping report so a CM can mark it malicious.",
+        "E2E test: filing a bogus score-cheating report so a CM can mark it malicious.",
     );
 
     // CM filer marks the source report as malicious
