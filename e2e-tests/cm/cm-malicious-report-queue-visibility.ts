@@ -123,7 +123,7 @@ export const cmMaliciousReportQueueVisibilityTest = async (
 
             // Cleanup: the malicious_report doesn't get resolved in this
             // test, so cancel it so the seeded CM filer doesn't accumulate
-            // pending reports. Source escaping report is owned by an
+            // pending reports. Source score-cheating report is owned by an
             // ephemeral fresh user.
             await cancelOwnReport(setup.filerPage, setup.maliciousReportNumber);
 
