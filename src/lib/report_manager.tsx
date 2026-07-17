@@ -200,14 +200,17 @@ class ReportManager extends EventEmitter<Events> {
         );
 
         // For community moderators, only show one escaping report per reported
-        // user at a time. This prevents CMs from being overwhelmed by multiple
-        // reports against the same player — they should resolve the oldest one
-        // before seeing the next.
+        // user at a time: they must resolve the oldest before seeing the next.
+        // The anchor (oldest active escaping report per player) is computed from
+        // ALL active reports, not just the ones visible to this CM. Once a CM
+        // votes on a report, community_mod_can_handle() hides it from their view
+        // (getVisibleReports), but it is still the pending report that must
+        // resolve first — so anchoring on the visible set would let the next
+        // report leak in the moment they vote.
         if (user.moderator_powers && !user.is_moderator) {
-            // Find the oldest (lowest id) escaping report per reported user
             const oldest_escaping_by_user = new Map<number, number>();
-            for (const report of queue) {
-                if (report.report_type === "escaping" && report.reported_user?.id) {
+            for (const report of this.sorted_active_incident_reports) {
+                if (report?.report_type === "escaping" && report.reported_user?.id) {
                     const user_id = report.reported_user.id;
                     const existing = oldest_escaping_by_user.get(user_id);
                     if (existing === undefined || report.id < existing) {

@@ -32,8 +32,10 @@
  * 1. Reporter plays two games with accused, both end
  * 2. Reporter files escaping reports on both games
  * 3. CM1 navigates to reports center — only sees one escaping report
- * 4. All 3 CMs vote to resolve the first report
- * 5. CM1 now sees the second report
+ * 4. CM1 votes on the first report; the second must NOT leak into their queue
+ *    while the first is still pending (only CM1 has voted — no consensus yet)
+ * 5. CM2 and CM3 vote to resolve the first report
+ * 6. CM1 now sees the second report
  */
 
 import type { CreateContextOptions } from "@helpers";
@@ -197,16 +199,43 @@ export const cmEscapingOneAtATimeTest = async (
                 `CM1 queue count is ${expectedAfterFiling} (baseline ${baselineCount} + 1, not +2)`,
             );
 
+            const voteAction = "no_escaping";
+
+            // ========================================
+            // Phase 1.5: CM1 votes on report 1, but consensus is NOT reached.
+            // Report 2 must not leak into CM1's queue. Once a CM votes,
+            // community_mod_can_handle() hides the voted report from
+            // getVisibleReports(), so the one-at-a-time serialization has to
+            // anchor on the still-pending report from the full active set, not
+            // the CM-visible set. Anchoring on the visible set lets report 2
+            // leak in the moment CM1 votes.
+            // ========================================
+
+            log("CM1 votes on report 1 (partial consensus)...");
+            await navigateToReport(cm1Page, reportNumber1);
+            await cm1Page.locator(`input[value="${voteAction}"]`).click();
+            const cm1VoteButton = await expectOGSClickableByName(cm1Page, /Vote$/);
+            await cm1VoteButton.click();
+
+            // Report 1 is now hidden from CM1 (they voted) but still pending, so
+            // report 2 stays suppressed: CM1's queue count returns to baseline,
+            // not baseline + 1.
+            await expect
+                .poll(async () => parseInt((await cmCountEl.textContent()) || "0", 10), {
+                    timeout: 15000,
+                })
+                .toBe(baselineCount);
+            log("Report 2 did not leak into CM1's queue after the partial vote");
+
             await cm1Context.close();
 
             // ========================================
             // Phase 2: Resolve the first report with 3 CM votes
             // ========================================
 
-            log("Resolving report 1 with 3 CM votes...");
-            const voteAction = "no_escaping";
+            log("CM2 and CM3 vote to reach consensus on report 1 (CM1 already voted)...");
 
-            for (let i = 0; i < CM_VOTERS.length; i++) {
+            for (let i = 1; i < CM_VOTERS.length; i++) {
                 const { seededCMPage: cmPage, seededCMContext: cmContext } = await setupSeededCM(
                     createContext,
                     CM_VOTERS[i],
