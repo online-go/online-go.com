@@ -215,8 +215,8 @@ export const cmMaliciousReportEscalationTest = async (
             await expect(ack).not.toBeVisible();
 
             // The malicious_report resolved via voting → no pending state
-            // for the seeded filer. Source escaping report is owned by an
-            // ephemeral user, doesn't affect future runs.
+            // for the seeded filer. Source score-cheating report is owned by
+            // an ephemeral user, doesn't affect future runs.
 
             await setup.filerContext.close();
         },
