@@ -1,17 +1,49 @@
-.player-container {
-    .player-flags {
-        color: #FF8B00;
+/* Clock pause button — a small, always-visible pause/resume control beside
+ * the in-game clock for users allowed to pause. Sits next to the clock (not
+ * over it) so taps on the clock itself never pause the game. */
+.clock-pause-host {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+
+    .in-game-clock {
+        flex-grow: 1;
+    }
+
+    .clock-pause-button {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: 0;
+        padding: 0.25rem 0.4rem;
+        margin: 0;
+        font-size: 1rem;
+        color: var(--fg);
+        cursor: pointer;
+        opacity: 0.6;
+        transition: opacity 0.15s ease;
+    }
+
+    .clock-pause-button:hover,
+    .clock-pause-button:focus-visible {
+        opacity: 1;
     }
 }
 
-.player-card-mod-controls {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    margin: 0 0.5rem 0 0.5rem;
-    align-items: center;
-
-    .fa {
-        cursor: pointer;
-    }
+/* Hidden by default — only the Game view's stacked layout opts in to
+ * showing this indicator (see .stacked rules in Game.css). The element
+ * is still rendered in the DOM in every layout so the stacked CSS can
+ * toggle visibility without React having to know about the layout.
+ *
+ * Selector pairs `.fa` with `.player-turn-indicator` so the specificity
+ * (0,2,0) beats Font Awesome's `.fa { display: inline-block }` rule
+ * (0,1,0); otherwise FA's later-in-cascade rule would force the icon
+ * visible in all layouts. */
+.fa.player-turn-indicator {
+    display: none;
 }

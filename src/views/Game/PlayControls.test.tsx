@@ -4,6 +4,7 @@
  */
 
 import { PlayControls } from "./PlayControls";
+import { GameStateHeader } from "./GameStateHeader";
 import { render, screen } from "@testing-library/react";
 import * as React from "react";
 import * as data from "@/lib/data";
@@ -208,6 +209,7 @@ test("Renders accept undo if undo requested", () => {
 
     render(
         <WrapTest controller={controller}>
+            <GameStateHeader />
             <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
         </WrapTest>,
     );
@@ -278,6 +280,7 @@ test("Renders conditional moves", () => {
 
     render(
         <WrapTest controller={controller}>
+            <GameStateHeader />
             <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
         </WrapTest>,
     );

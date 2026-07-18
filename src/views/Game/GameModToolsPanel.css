@@ -1,0 +1,158 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.GameModToolsPanel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+/* Decide-outcome row — 4 stone-themed buttons across the panel width. */
+.GameModToolsPanel-decide {
+    display: flex;
+    gap: 0.3rem;
+}
+
+.GameModToolsPanel-decide-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0.45rem 0.25rem;
+    border-radius: 0.25rem;
+    border: 1px solid var(--shade2);
+    background: var(--shade4);
+    color: var(--fg);
+    font-size: 0.8rem;
+    font-weight: 500;
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover {
+        background: var(--shade3);
+    }
+
+    &.black {
+        background: #0d0d0d;
+        color: #fff;
+        border-color: #000;
+
+        &:hover {
+            background: #222;
+        }
+    }
+
+    &.white {
+        background: #fafafa;
+        color: #000;
+        border-color: #999;
+
+        &:hover {
+            background: #e4e4e4;
+        }
+    }
+}
+
+/* Annul / restore — single full-width action button. */
+.GameModToolsPanel-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    border: 1px solid var(--shade2);
+    background: var(--shade4);
+    color: var(--fg);
+    font-size: 0.85rem;
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover {
+        background: var(--shade3);
+    }
+
+    &.annul i {
+        color: var(--danger);
+    }
+
+    &.restore i {
+        color: var(--success);
+    }
+
+    &.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+/* Inspect / cloak — uniform icon-only buttons. Tooltips reveal full labels. */
+.GameModToolsPanel-icons {
+    display: flex;
+    gap: 0.3rem;
+}
+
+.GameModToolsPanel-icon {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0.45rem;
+    border-radius: 0.25rem;
+    border: 1px solid var(--shade2);
+    background: var(--shade4);
+    color: var(--fg);
+    font-size: 0.95rem;
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover {
+        background: var(--shade3);
+    }
+}
+
+/* AI Review — superuser-only row; trash compresses to icon-only. */
+.GameModToolsPanel-ai {
+    display: flex;
+    gap: 0.3rem;
+}
+
+.GameModToolsPanel-ai-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.3rem;
+    border-radius: 0.25rem;
+    border: 1px solid var(--shade2);
+    background: var(--shade4);
+    color: var(--fg);
+    font-size: 0.8rem;
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover {
+        background: var(--shade3);
+    }
+
+    &.danger {
+        flex: 0 0 auto;
+        padding: 0.4rem 0.6rem;
+
+        i {
+            color: var(--danger);
+        }
+    }
+}

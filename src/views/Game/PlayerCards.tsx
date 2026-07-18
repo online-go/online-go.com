@@ -16,9 +16,14 @@
  */
 
 import * as React from "react";
-import { get } from "@/lib/requests";
 
-import { GobanRenderer, Goban, PlayerScore, JGOFPlayerSummary } from "goban";
+import {
+    GobanRenderer,
+    Goban,
+    JGOFClockWithTransmitting,
+    PlayerScore,
+    JGOFPlayerSummary,
+} from "goban";
 import { user_uploads_url } from "@/lib/cdn";
 import { CountDown } from "./CountDown";
 import { Flag } from "@/components/Flag";
@@ -27,15 +32,12 @@ import { Clock, SGFClock } from "@/components/Clock";
 import { useUser } from "@/lib/hooks";
 import { Player } from "@/components/Player";
 import { lookup, fetch } from "@/lib/player_cache";
-import { _, interpolate, ngettext, moment } from "@/lib/translate";
+import { _, interpolate, ngettext } from "@/lib/translate";
 import * as data from "@/lib/data";
-import { generateGobanHook, usePlayerToMove, useZenMode } from "./GameHooks";
+import { generateGobanHook, usePlayerToMove, useScorePopup, useZenMode } from "./GameHooks";
 import { get_network_latency, get_clock_drift } from "@/lib/sockets";
 import { useGobanController } from "./goban_context";
-import { usePreference } from "@/lib/preferences";
-import { browserHistory } from "@/lib/ogsHistory";
 import { player_is_ignored } from "@/components/BlockPlayer";
-import { doAnnul } from "@/lib/moderation";
 import "./PlayerCards.css";
 
 type PlayerType = rest_api.games.Player;
@@ -44,57 +46,18 @@ interface PlayerCardsProps {
     historical_black: PlayerType | null;
     historical_white: PlayerType | null;
     estimating_score: boolean;
-    black_flags: null | rest_api.GamePlayerFlags;
-    white_flags: null | rest_api.GamePlayerFlags;
-    black_ai_suspected: boolean;
-    white_ai_suspected: boolean;
 }
 
 export function PlayerCards({
     historical_black,
     historical_white,
     estimating_score,
-    black_flags,
-    white_flags,
-    black_ai_suspected,
-    white_ai_suspected,
 }: PlayerCardsProps): React.ReactElement {
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
 
-    const orig_marks = React.useRef<string | null>(null);
-    const showing_scores = React.useRef<boolean>(false);
     const zen_mode = useZenMode(goban_controller);
-
-    const [show_score_breakdown, set_show_score_breakdown] = React.useState(false);
-
-    const popupScores = () => {
-        if (goban.engine.cur_move) {
-            orig_marks.current = JSON.stringify(goban.engine.cur_move.getAllMarks());
-            goban.engine.cur_move.clearMarks();
-        } else {
-            orig_marks.current = null;
-        }
-
-        const scores = goban.engine.computeScore(false);
-        showing_scores.current = goban.showing_scores;
-        goban.showScores(scores);
-
-        set_show_score_breakdown(true);
-    };
-    const hideScores = () => {
-        if (!showing_scores.current) {
-            goban.hideScores();
-        }
-        if (goban.engine.cur_move && orig_marks.current) {
-            goban.engine.cur_move.setAllMarks(JSON.parse(orig_marks.current));
-        }
-        goban.redraw();
-
-        set_show_score_breakdown(false);
-    };
-
-    const toggleScorePopup = () => (show_score_breakdown ? hideScores() : popupScores());
+    const { show_score_breakdown, toggleScorePopup } = useScorePopup(goban);
 
     return (
         <div className="players">
@@ -107,8 +70,6 @@ export function PlayerCards({
                     show_score_breakdown={show_score_breakdown}
                     onScoreClick={toggleScorePopup}
                     zen_mode={zen_mode}
-                    flags={black_flags}
-                    ai_suspected={black_ai_suspected}
                 />
                 <PlayerCard
                     historical={historical_white}
@@ -118,8 +79,6 @@ export function PlayerCards({
                     show_score_breakdown={show_score_breakdown}
                     onScoreClick={toggleScorePopup}
                     zen_mode={zen_mode}
-                    flags={white_flags}
-                    ai_suspected={white_ai_suspected}
                 />
             </div>
         </div>
@@ -188,8 +147,6 @@ interface PlayerCardProps {
     show_score_breakdown: boolean;
     onScoreClick: () => void;
     zen_mode: boolean;
-    flags: null | rest_api.GamePlayerFlags;
-    ai_suspected: boolean;
 }
 
 export function PlayerCard({
@@ -200,57 +157,20 @@ export function PlayerCard({
     show_score_breakdown,
     onScoreClick,
     zen_mode,
-    flags,
-    ai_suspected,
 }: PlayerCardProps) {
     const engine = goban.engine;
     const player = { ...engine.players[color] };
     const player_to_move = usePlayerToMove(goban);
-    const [hide_flags] = usePreference("moderator.hide-flags");
 
     const auto_resign_expiration = useAutoResignExpiration(goban, color);
     const score = useScore(goban)[color];
     const { game_id, review_id } = goban;
     const chat_channel = game_id ? `game-${game_id}` : `review-${review_id}`;
-    const [hide_player_card_mod_controls] = usePreference(
-        "moderator.hide-player-card-mod-controls",
-    );
-
-    const user = useUser();
 
     if (goban.is_game_record) {
         player.id = 0;
         historical = null;
     }
-
-    const show_player_card_mod_controls =
-        user.is_moderator && game_id && !hide_player_card_mod_controls && !!player.id;
-
-    const jumpToPrevGame = () => {
-        get(`games/${game_id}/prev/${player.id}`)
-            .then((body) => {
-                const prev_game = body.id;
-                browserHistory.push(`/game/${prev_game}`);
-            })
-            .catch((e) => {
-                console.debug("No previous game", e);
-            });
-    };
-
-    const jumpToNextGame = () => {
-        get(`games/${game_id}/next/${player.id}`)
-            .then((body) => {
-                const next_game = body.id;
-                browserHistory.push(`/game/${next_game}`);
-            })
-            .catch((e) => {
-                console.debug("No next game", e);
-            });
-    };
-
-    const annulWithBlame = () => {
-        doAnnul(engine.config, true, null, ` ${color} `); // spaces make it easy for the user to put the cursor before or after, they are trimmed later
-    };
 
     // In rengo we always will have a player icon to show (after initialization).
     // In other cases, we only have one if `historical` is set
@@ -300,8 +220,15 @@ export function PlayerCard({
                     !!goban.engine.sgf_time_settings && <div className="player-icon-container" />
                 )}
 
+                {/* "Their turn" indicator. Hidden via display:none in the
+                 *  sidebar layout (PlayerCards.css); the stacked layout
+                 *  flips it to visibility-controlled so the space is
+                 *  reserved whether or not it's currently this player's
+                 *  turn — no reflow when the turn alternates. */}
+                <i className="fa fa-clock-o player-turn-indicator" aria-hidden="true" />
+
                 {engine.phase !== "finished" && !goban.review_id ? (
-                    <Clock goban={goban} color={color} className="in-game-clock" />
+                    <ClockWithPauseOverlay goban={goban} color={color} />
                 ) : (
                     goban.engine.sgf_time_settings && (
                         <SGFClock goban={goban} color={color} className="in-game-clock" />
@@ -323,18 +250,6 @@ export function PlayerCard({
                 <span className="player-name-plain">
                     {color === "black" ? _("Black") : _("White")}
                 </span>
-            )}
-
-            {show_player_card_mod_controls && (
-                <div className="player-card-mod-controls">
-                    <i className="fa fa-2x fa-angle-left" onClick={jumpToPrevGame} />
-                    <div className="middle-mod-controls">
-                        {engine.phase === "finished" && (
-                            <i className="fa fa-gavel" onClick={annulWithBlame} />
-                        )}
-                    </div>
-                    <i className="fa fa-2x fa-angle-right" onClick={jumpToNextGame} />
-                </div>
             )}
 
             <div
@@ -366,26 +281,6 @@ export function PlayerCard({
                 <div id={`${color}-score-details`} className="score-details">
                     <ScorePopup goban={goban} color={color} show={show_score_breakdown} />
                 </div>
-                {!hide_flags && ai_suspected && (
-                    <div className="player-flags">
-                        <i className="fa fa-flag" />
-                        {" AI Suspected"}
-                    </div>
-                )}
-                {!hide_flags && flags && (
-                    <div className="player-flags">
-                        {Object.keys(flags).map((flag) => (
-                            <div key={flag}>
-                                <i className="fa fa-flag" /> {flag}:{" "}
-                                {flag === "blur_rate"
-                                    ? `${Math.round((flags[flag] as number) * 100.0)}%`
-                                    : flag === "slow_moving"
-                                      ? moment.duration(flags[flag] as number).humanize()
-                                      : flags[flag]}
-                            </div>
-                        ))}
-                    </div>
-                )}
             </div>
             {!!(engine.rengo && engine.rengo_teams) && (
                 <div className={"rengo-team-members player-name-container " + color}>
@@ -395,6 +290,72 @@ export function PlayerCard({
                         </div>
                     ))}
                 </div>
+            )}
+        </div>
+    );
+}
+
+interface ClockWithPauseOverlayProps {
+    goban: GobanRenderer;
+    color: "black" | "white";
+}
+
+/**
+ * Wraps the live in-game Clock with an explicit pause/resume button beside
+ * it. The button only renders for users allowed to control the pause state
+ * (a participant in a vacation-eligible game still in progress). When the
+ * game is currently paused the icon and click handler flip to "resume";
+ * otherwise they "pause".
+ */
+function ClockWithPauseOverlay({ goban, color }: ClockWithPauseOverlayProps): React.ReactElement {
+    const user = useUser();
+    const engine = goban.engine;
+    const user_is_player =
+        !user.anonymous &&
+        (user.id === engine.players.black?.id || user.id === engine.players.white?.id);
+    // Moderators bypass the vacation / participant gating that applies to
+    // players — `disable_vacation` only constrains player-side pauses, and
+    // the server stamps the pause as `moderator_paused` regardless. This
+    // gives moderators a pause affordance without a dedicated mod-tools
+    // button.
+    const can_pause =
+        !goban.review_id &&
+        engine.phase !== "finished" &&
+        ((user_is_player && !engine.config.disable_vacation) || !!user?.is_moderator);
+
+    const [paused, set_paused] = React.useState<boolean>(false);
+    React.useEffect(() => {
+        const onClock = (clock: JGOFClockWithTransmitting | null) => {
+            set_paused(!!clock?.pause_state);
+        };
+        goban.on("clock", onClock);
+        return () => {
+            goban.off("clock", onClock);
+        };
+    }, [goban]);
+
+    const onClick = () => {
+        if (paused) {
+            goban.resumeGame();
+        } else {
+            goban.pauseGame();
+        }
+    };
+    const label = paused ? _("Resume game") : _("Pause game");
+
+    return (
+        <div className="clock-pause-host">
+            <Clock goban={goban} color={color} className="in-game-clock" />
+            {can_pause && (
+                <button
+                    type="button"
+                    className="clock-pause-button"
+                    onClick={onClick}
+                    title={label}
+                    aria-label={label}
+                >
+                    <i className={"fa " + (paused ? "fa-play" : "fa-pause")} />
+                </button>
             )}
         </div>
     );
