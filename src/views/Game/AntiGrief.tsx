@@ -286,12 +286,12 @@ function AntiStalling(): React.ReactElement | null {
     const user = useUser();
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
-    const [estimate, setEstimate] = React.useState<any>(null);
+    const [estimate, setEstimate] = React.useState<StallingScoreEstimate | null>(null);
     const [phase, setPhase] = React.useState(goban?.engine?.phase);
 
     React.useEffect(() => {
         const onScoreEstimate = (estimate?: StallingScoreEstimate) => {
-            setEstimate(estimate);
+            setEstimate(estimate ?? null);
         };
 
         onScoreEstimate(goban.config?.stalling_score_estimate);
@@ -314,11 +314,18 @@ function AntiStalling(): React.ReactElement | null {
         return null;
     }
 
-    if (
-        user.id !== goban?.engine?.config?.black_player_id &&
-        user.id !== goban?.engine?.config?.white_player_id &&
-        !user.is_moderator
-    ) {
+    const is_black = user.id === goban?.engine?.config?.black_player_id;
+    const is_white = user.id === goban?.engine?.config?.white_player_id;
+    const is_player = is_black || is_white;
+
+    if (!is_player && !user.is_moderator) {
+        return null;
+    }
+
+    // Only the player who is predicted to win is offered this. The player who
+    // is behind shouldn't be nudged into ending the game -- that's what the
+    // resign button is for.
+    if (is_player && (is_black ? "black" : "white") !== estimate.predicted_winner) {
         return null;
     }
 
