@@ -453,6 +453,7 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): React
     const [background_image, _setBackgroundImage] = usePreference("goban-theme-custom-board-url");
 
     const inputStyle = { height: `${size}px`, width: `${size * 1.5}px` };
+    const effective_marker_color = marker_color || opponent_color || "#ffffff";
 
     if (!theme) {
         requestAnimationFrame(() => refresh((x) => x + 1));
@@ -504,7 +505,12 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): React
                             style={{ ...theme.styles, ...board_styles }}
                             onClick={() => setBlack("Custom")}
                         >
-                            <ThemeSample theme={theme} size={size} color={"black"} />
+                            <ThemeSample
+                                theme={theme}
+                                size={size}
+                                color={"black"}
+                                markerColor={effective_marker_color}
+                            />
                         </div>
                     </div>
 
@@ -531,7 +537,7 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): React
                                 <input
                                     type="color"
                                     style={inputStyle}
-                                    value={marker_color || opponent_color}
+                                    value={effective_marker_color}
                                     title={marker_color_title}
                                     aria-label={marker_color_title}
                                     onChange={(ev) => setMarkerColor(ev.target.value)}
@@ -685,6 +691,7 @@ export function GobanCustomWhitePicker(props: GobanThemePickerProperties): React
     const selected = getSelectedThemes();
 
     const inputStyle = { height: `${size}px`, width: `${size * 1.5}px` };
+    const effective_marker_color = marker_color || opponent_color || "#000000";
 
     if (!theme) {
         requestAnimationFrame(() => refresh((x) => x + 1));
@@ -720,7 +727,12 @@ export function GobanCustomWhitePicker(props: GobanThemePickerProperties): React
                             style={theme.styles}
                             onClick={() => setWhite("Custom")}
                         >
-                            <ThemeSample theme={theme} size={size} color={"white"} />
+                            <ThemeSample
+                                theme={theme}
+                                size={size}
+                                color={"white"}
+                                markerColor={effective_marker_color}
+                            />
                         </div>
                     </div>
 
@@ -747,7 +759,7 @@ export function GobanCustomWhitePicker(props: GobanThemePickerProperties): React
                                 <input
                                     type="color"
                                     style={inputStyle}
-                                    value={marker_color || opponent_color}
+                                    value={effective_marker_color}
                                     title={marker_color_title}
                                     aria-label={marker_color_title}
                                     onChange={(ev) => setMarkerColor(ev.target.value)}
@@ -796,10 +808,12 @@ function ThemeSample({
     theme,
     color,
     size,
+    markerColor,
 }: {
     theme: GobanTheme;
     color: "black" | "white";
     size: number;
+    markerColor?: string;
 }) {
     const div = React.useRef<HTMLDivElement>(null);
 
@@ -842,6 +856,19 @@ function ThemeSample({
             theme.placeWhiteStoneSVG(g, undefined, white_stones[0], cx, cy, radius);
         }
 
+        if (markerColor) {
+            const marker = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            marker.setAttribute("x", cx.toString());
+            marker.setAttribute("y", cy.toString());
+            marker.setAttribute("fill", markerColor);
+            marker.setAttribute("font-size", `${radius}px`);
+            marker.setAttribute("font-weight", "bold");
+            marker.setAttribute("text-anchor", "middle");
+            marker.setAttribute("dominant-baseline", "central");
+            marker.textContent = "A";
+            g.appendChild(marker);
+        }
+
         host.replaceChildren(svg);
 
         return () => {
@@ -863,6 +890,7 @@ function ThemeSample({
         white_color,
         white_url,
         stone_scale,
+        markerColor,
     ]);
 
     return <div ref={div} />;
