@@ -440,6 +440,8 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): React
 
     const [url, _setUrl] = usePreference("goban-theme-custom-black-url");
     const [color, _setColor] = usePreference("goban-theme-custom-black-stone-color");
+    const [marker_color, setMarkerColor] = usePreference("goban-theme-custom-black-text-color");
+    const [opponent_color] = usePreference("goban-theme-custom-white-stone-color");
     const [, refresh] = React.useState(0);
     const theme = Goban.THEMES_SORTED.black.filter((x) => x.theme_name === "Custom")[0];
     const [, setBlack] = usePreference("goban-theme-black");
@@ -465,6 +467,10 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): React
     }
 
     const color_title = pgettext("Custom goban stone color input title", "Black stone color");
+    const marker_color_title = pgettext(
+        "Custom goban stone marker color input title",
+        "Black stone marker color",
+    );
 
     const custom_board = Goban.THEMES_SORTED.board.filter((x) => x.theme_name === "Custom")[0];
 
@@ -502,17 +508,40 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): React
                         </div>
                     </div>
 
-                    <input
-                        type="color"
-                        style={inputStyle}
-                        value={color}
-                        title={color_title}
-                        aria-label={color_title}
-                        onChange={setColor}
-                    />
-                    <button className="color-reset" onClick={() => _setColor("")}>
-                        <i className="fa fa-undo" />
-                    </button>
+                    <div className="custom-stone-color-controls">
+                        <label>
+                            <span>{pgettext("Custom stone color control", "Stone color")}</span>
+                            <span className="color-input">
+                                <input
+                                    type="color"
+                                    style={inputStyle}
+                                    value={color}
+                                    title={color_title}
+                                    aria-label={color_title}
+                                    onChange={setColor}
+                                />
+                                <button className="color-reset" onClick={() => _setColor("")}>
+                                    <i className="fa fa-undo" />
+                                </button>
+                            </span>
+                        </label>
+                        <label>
+                            <span>{pgettext("Custom stone color control", "Marker color")}</span>
+                            <span className="color-input">
+                                <input
+                                    type="color"
+                                    style={inputStyle}
+                                    value={marker_color || opponent_color}
+                                    title={marker_color_title}
+                                    aria-label={marker_color_title}
+                                    onChange={(ev) => setMarkerColor(ev.target.value)}
+                                />
+                                <button className="color-reset" onClick={() => setMarkerColor("")}>
+                                    <i className="fa fa-undo" />
+                                </button>
+                            </span>
+                        </label>
+                    </div>
                 </div>
             </div>
 
@@ -648,6 +677,8 @@ export function GobanCustomWhitePicker(props: GobanThemePickerProperties): React
 
     const [url, _setUrl] = usePreference("goban-theme-custom-white-url");
     const [color, _setColor] = usePreference("goban-theme-custom-white-stone-color");
+    const [marker_color, setMarkerColor] = usePreference("goban-theme-custom-white-text-color");
+    const [opponent_color] = usePreference("goban-theme-custom-black-stone-color");
     const [, refresh] = React.useState(0);
     const theme = Goban.THEMES_SORTED.white.filter((x) => x.theme_name === "Custom")[0];
     const [, setWhite] = usePreference("goban-theme-white");
@@ -668,6 +699,10 @@ export function GobanCustomWhitePicker(props: GobanThemePickerProperties): React
     }
 
     const color_title = pgettext("Custom goban stone color input title", "White stone color");
+    const marker_color_title = pgettext(
+        "Custom goban stone marker color input title",
+        "White stone marker color",
+    );
 
     return (
         <div className="GobanCustomStonePicker">
@@ -689,17 +724,40 @@ export function GobanCustomWhitePicker(props: GobanThemePickerProperties): React
                         </div>
                     </div>
 
-                    <input
-                        type="color"
-                        style={inputStyle}
-                        value={color}
-                        title={color_title}
-                        aria-label={color_title}
-                        onChange={setColor}
-                    />
-                    <button className="color-reset" onClick={() => _setColor("")}>
-                        <i className="fa fa-undo" />
-                    </button>
+                    <div className="custom-stone-color-controls">
+                        <label>
+                            <span>{pgettext("Custom stone color control", "Stone color")}</span>
+                            <span className="color-input">
+                                <input
+                                    type="color"
+                                    style={inputStyle}
+                                    value={color}
+                                    title={color_title}
+                                    aria-label={color_title}
+                                    onChange={setColor}
+                                />
+                                <button className="color-reset" onClick={() => _setColor("")}>
+                                    <i className="fa fa-undo" />
+                                </button>
+                            </span>
+                        </label>
+                        <label>
+                            <span>{pgettext("Custom stone color control", "Marker color")}</span>
+                            <span className="color-input">
+                                <input
+                                    type="color"
+                                    style={inputStyle}
+                                    value={marker_color || opponent_color}
+                                    title={marker_color_title}
+                                    aria-label={marker_color_title}
+                                    onChange={(ev) => setMarkerColor(ev.target.value)}
+                                />
+                                <button className="color-reset" onClick={() => setMarkerColor("")}>
+                                    <i className="fa fa-undo" />
+                                </button>
+                            </span>
+                        </label>
+                    </div>
                 </div>
             </div>
 

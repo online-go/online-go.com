@@ -126,10 +126,14 @@ export function configure_goban() {
 
         customBlackStoneColor: (): string =>
             preferences.get("goban-theme-custom-black-stone-color"),
-        customBlackTextColor: (): string => preferences.get("goban-theme-custom-white-stone-color"),
+        customBlackTextColor: (): string =>
+            preferences.get("goban-theme-custom-black-text-color") ||
+            preferences.get("goban-theme-custom-white-stone-color"),
         customWhiteStoneColor: (): string =>
             preferences.get("goban-theme-custom-white-stone-color"),
-        customWhiteTextColor: (): string => preferences.get("goban-theme-custom-black-stone-color"),
+        customWhiteTextColor: (): string =>
+            preferences.get("goban-theme-custom-white-text-color") ||
+            preferences.get("goban-theme-custom-black-stone-color"),
         customBoardColor: (): string => preferences.get("goban-theme-custom-board-background"),
         customBoardLineColor: (): string => preferences.get("goban-theme-custom-board-line"),
         customBoardLabelColor: (): string => preferences.get("goban-theme-custom-board-label"),
