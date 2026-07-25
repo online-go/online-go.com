@@ -515,38 +515,32 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): React
                     </div>
 
                     <div className="custom-stone-color-controls">
-                        <label>
-                            <span>{pgettext("Custom stone color control", "Stone color")}</span>
-                            <span className="color-input">
-                                <input
-                                    type="color"
-                                    style={inputStyle}
-                                    value={color}
-                                    title={color_title}
-                                    aria-label={color_title}
-                                    onChange={setColor}
-                                />
-                                <button className="color-reset" onClick={() => _setColor("")}>
-                                    <i className="fa fa-undo" />
-                                </button>
-                            </span>
-                        </label>
-                        <label>
-                            <span>{pgettext("Custom stone color control", "Marker color")}</span>
-                            <span className="color-input">
-                                <input
-                                    type="color"
-                                    style={inputStyle}
-                                    value={effective_marker_color}
-                                    title={marker_color_title}
-                                    aria-label={marker_color_title}
-                                    onChange={(ev) => setMarkerColor(ev.target.value)}
-                                />
-                                <button className="color-reset" onClick={() => setMarkerColor("")}>
-                                    <i className="fa fa-undo" />
-                                </button>
-                            </span>
-                        </label>
+                        <span className="color-input">
+                            <input
+                                type="color"
+                                style={inputStyle}
+                                value={color}
+                                title={color_title}
+                                aria-label={color_title}
+                                onChange={setColor}
+                            />
+                            <button className="color-reset" onClick={() => _setColor("")}>
+                                <i className="fa fa-undo" />
+                            </button>
+                        </span>
+                        <span className="color-input">
+                            <input
+                                type="color"
+                                style={inputStyle}
+                                value={effective_marker_color}
+                                title={marker_color_title}
+                                aria-label={marker_color_title}
+                                onChange={(ev) => setMarkerColor(ev.target.value)}
+                            />
+                            <button className="color-reset" onClick={() => setMarkerColor("")}>
+                                <i className="fa fa-undo" />
+                            </button>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -737,38 +731,32 @@ export function GobanCustomWhitePicker(props: GobanThemePickerProperties): React
                     </div>
 
                     <div className="custom-stone-color-controls">
-                        <label>
-                            <span>{pgettext("Custom stone color control", "Stone color")}</span>
-                            <span className="color-input">
-                                <input
-                                    type="color"
-                                    style={inputStyle}
-                                    value={color}
-                                    title={color_title}
-                                    aria-label={color_title}
-                                    onChange={setColor}
-                                />
-                                <button className="color-reset" onClick={() => _setColor("")}>
-                                    <i className="fa fa-undo" />
-                                </button>
-                            </span>
-                        </label>
-                        <label>
-                            <span>{pgettext("Custom stone color control", "Marker color")}</span>
-                            <span className="color-input">
-                                <input
-                                    type="color"
-                                    style={inputStyle}
-                                    value={effective_marker_color}
-                                    title={marker_color_title}
-                                    aria-label={marker_color_title}
-                                    onChange={(ev) => setMarkerColor(ev.target.value)}
-                                />
-                                <button className="color-reset" onClick={() => setMarkerColor("")}>
-                                    <i className="fa fa-undo" />
-                                </button>
-                            </span>
-                        </label>
+                        <span className="color-input">
+                            <input
+                                type="color"
+                                style={inputStyle}
+                                value={color}
+                                title={color_title}
+                                aria-label={color_title}
+                                onChange={setColor}
+                            />
+                            <button className="color-reset" onClick={() => _setColor("")}>
+                                <i className="fa fa-undo" />
+                            </button>
+                        </span>
+                        <span className="color-input">
+                            <input
+                                type="color"
+                                style={inputStyle}
+                                value={effective_marker_color}
+                                title={marker_color_title}
+                                aria-label={marker_color_title}
+                                onChange={(ev) => setMarkerColor(ev.target.value)}
+                            />
+                            <button className="color-reset" onClick={() => setMarkerColor("")}>
+                                <i className="fa fa-undo" />
+                            </button>
+                        </span>
                     </div>
                 </div>
             </div>
