@@ -16,22 +16,13 @@
  */
 
 import * as data from "@/lib/data";
-import {
-    GobanSelectedThemes,
-    Goban,
-    LabelPosition,
-    JGOFTimeControlSpeed,
-    Size,
-    ShadowTheme,
-    CustomBoardGridBackgrounds,
-    emptyCustomBoardGridBackgrounds,
-    blendWithInverseColor,
-} from "goban";
+import { GobanSelectedThemes, Goban, LabelPosition, JGOFTimeControlSpeed, Size } from "goban";
 import * as React from "react";
 import { current_language } from "@/lib/translate";
 import { DataSchema } from "./data_schema";
 import { FollowedChannel } from "@/views/GoTV";
 import { getWindowWidth } from "./device";
+import { createGobanThemePreferenceDefaults } from "./goban_theme_defaults";
 
 export const defaults = {
     "ai-review-enabled": true,
@@ -89,44 +80,16 @@ export const defaults = {
     "dock-delay": 0, // seconds.
     "double-click-submit-correspondence": false,
     "double-click-submit-live": false,
-    "fuzzy-stone-placement": false,
     "last-move-opacity": 1.0,
     "variation-stone-opacity": 0.6,
     "variation-move-count": 10,
     "visual-undo-request-indicator": true,
     "stone-font-scale": 1.0,
-    "goban-theme-black": null as null | string,
-    "goban-theme-board": null as null | string,
-    "goban-theme-white": null as null | string,
+    ...createGobanThemePreferenceDefaults(),
     //"goban-theme-black_stone_url": null as null | string,
     //"goban-theme-white_stone_url": null as null | string,
     "goban-theme-removal-graphic": "square" as "square" | "x",
     "goban-theme-removal-scale": 0.9,
-    "goban-theme-stone-scale": 1.0,
-    "goban-theme-stone-shadows": "default" as ShadowTheme,
-    "goban-theme-custom-black-shadow-color": "#000000",
-    "goban-theme-custom-black-shadow-gradient": "rotate(45) scale(1.10 1.0) translate(0.05 -0.50)",
-    "goban-theme-custom-white-shadow-color": "#000000",
-    "goban-theme-custom-white-shadow-gradient": "rotate(45) scale(1.10 1.0) translate(0.05 -0.50)",
-    "goban-theme-custom-board-background": "#DCB35C",
-    "goban-theme-custom-board-url": "",
-    /*
-     * V1 baked-grid board assets are compactly stored as one URL per board size. The goban
-     * renderer maps these into a structured asset descriptor so future variants can add
-     * small margins, baked coordinates, coordinate origins, or numbering formats without
-     * changing the meaning of these saved URLs.
-     */
-    "goban-theme-custom-board-grid-backgrounds": {
-        ...emptyCustomBoardGridBackgrounds,
-    } as CustomBoardGridBackgrounds,
-    "goban-theme-custom-board-line": "#000000",
-    "goban-theme-custom-board-label": blendWithInverseColor("#000000", 0.75),
-    "goban-theme-custom-black-stone-color": "#000000",
-    "goban-theme-custom-black-text-color": "",
-    "goban-theme-custom-black-urls": [] as string[],
-    "goban-theme-custom-white-stone-color": "#ffffff",
-    "goban-theme-custom-white-text-color": "",
-    "goban-theme-custom-white-urls": [] as string[],
     "hide-ranks": false,
     "label-positioning": "all" as LabelPosition,
     "label-positioning-puzzles": "all" as LabelPosition,
