@@ -30,6 +30,13 @@ export interface GobanViewTabProps {
     /** Suppress the tab's button in the bottom tab bar. The panel still
      *  renders when activated via the imperative setActiveTakeover ref. */
     hideFromBar?: boolean;
+    /** For takeover tabs: keep the goban on screen while this panel is open.
+     *  Portrait takeovers normally cover the whole view, which is fine for
+     *  panels you read (collection lists, settings) but not for panels you
+     *  use *with* the board, like the puzzle editor. Such a panel takes over
+     *  the area below the goban instead of the entire view. No effect in
+     *  landscape, where the goban is always visible beside the sidebar. */
+    keepGobanVisible?: boolean;
     onClick?: (event?: React.MouseEvent<HTMLButtonElement>) => void;
     /** For takeover tabs: fires whenever this tab transitions between active
      *  and inactive. Called with `true` when the user clicks the tab to open

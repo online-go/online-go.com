@@ -18,8 +18,10 @@
 import { ogsTest } from "@helpers";
 import { puzzleTurnIndicatorTest } from "./puzzle-turn-indicator";
 import { emptyCollectionRedirectTest } from "./empty-collection-redirect";
+import { puzzleEditMobileTest } from "./puzzle-edit-mobile";
 
 ogsTest.describe("@Puzzle Puzzle Tests", () => {
     ogsTest("Puzzle should show turn indicator", puzzleTurnIndicatorTest);
     ogsTest("Empty puzzle collection should show its collection page", emptyCollectionRedirectTest);
+    ogsTest("Editing a puzzle on mobile should keep the board visible", puzzleEditMobileTest);
 });

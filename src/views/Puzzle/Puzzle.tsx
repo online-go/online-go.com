@@ -1210,6 +1210,7 @@ export function Puzzle(): React.ReactElement {
                         type="takeover"
                         title={_("Edit puzzle")}
                         onToggle={handleEditToggle}
+                        keepGobanVisible
                     >
                         {renderEditPanel()}
                     </GobanView.Tab>
