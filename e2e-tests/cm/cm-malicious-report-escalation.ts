@@ -84,9 +84,6 @@ export const cmMaliciousReportEscalationTest = async (
 
             // Verify available radio options pre-escalation
             await expect(cmAPage.locator('input[value="no_malicious_report"]')).toBeVisible();
-            await expect(
-                cmAPage.locator('input[value="informal_warn_malicious_reporter"]'),
-            ).toBeVisible();
             await expect(cmAPage.locator('input[value="warn_malicious_reporter"]')).toBeVisible();
             await expect(cmAPage.locator('input[value="escalate"]')).toBeVisible();
 
@@ -131,13 +128,10 @@ export const cmMaliciousReportEscalationTest = async (
                 firstSuspendPage.getByText(/Escalated due to VotingOutcome.VOTED_ESCALATION/),
             ).toBeVisible({ timeout: 15000 });
 
-            // Post-escalation options: no/informal/warn remain, final_warning
+            // Post-escalation options: no/warn remain, final_warning
             // and suspend_user are now exposed, escalate is gone.
             await expect(
                 firstSuspendPage.locator('input[value="no_malicious_report"]'),
-            ).toBeVisible();
-            await expect(
-                firstSuspendPage.locator('input[value="informal_warn_malicious_reporter"]'),
             ).toBeVisible();
             await expect(
                 firstSuspendPage.locator('input[value="warn_malicious_reporter"]'),

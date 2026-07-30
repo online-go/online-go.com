@@ -23,6 +23,7 @@ import { PersistentElement } from "@/components/PersistentElement";
 import { Experiment, Variant, Default } from "../Experiment";
 import { LineText } from "../misc-ui";
 import { GobanCustomBoardGridBackgroundPicker } from "./GobanCustomBoardGridBackgroundPicker";
+import { GobanCustomStoneUrlInput } from "./GobanCustomStoneUrlInput";
 import "./GobanThemePicker.css";
 
 interface GobanThemePickerProperties {
@@ -438,7 +439,7 @@ export function GobanWhiteThemePicker(props: GobanThemePickerProperties): React.
 export function GobanCustomBlackPicker(props: GobanThemePickerProperties): React.ReactElement {
     const size = props.size || 44;
 
-    const [url, _setUrl] = usePreference("goban-theme-custom-black-url");
+    const [urls, setUrls] = usePreference("goban-theme-custom-black-urls");
     const [color, _setColor] = usePreference("goban-theme-custom-black-stone-color");
     const [marker_color, setMarkerColor] = usePreference("goban-theme-custom-black-text-color");
     const [opponent_color] = usePreference("goban-theme-custom-white-stone-color");
@@ -461,10 +462,6 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): React
 
     function setColor(ev: React.ChangeEvent<HTMLInputElement>) {
         _setColor(ev.target.value);
-    }
-
-    function setUrl(ev: React.ChangeEvent<HTMLInputElement>) {
-        _setUrl(ev.target.value);
     }
 
     const color_title = pgettext("Custom goban stone color input title", "Black stone color");
@@ -545,23 +542,7 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): React
                 </div>
             </div>
 
-            <div className="custom-url-selection">
-                <input
-                    className="customUrlSelector"
-                    type="text"
-                    value={url}
-                    placeholder={pgettext(
-                        "A URL pointing to a custom black stone image",
-                        "Custom black stone URL",
-                    )}
-                    onFocus={(e) => e.target.select()}
-                    onChange={setUrl}
-                />
-
-                <button className="color-reset" onClick={() => _setUrl("")}>
-                    <i className="fa fa-undo" />
-                </button>
-            </div>
+            <GobanCustomStoneUrlInput color="black" urls={urls} setUrls={setUrls} />
         </div>
     );
 }
@@ -675,7 +656,7 @@ export function GobanBlackThemePicker(props: GobanThemePickerProperties): React.
 export function GobanCustomWhitePicker(props: GobanThemePickerProperties): React.ReactElement {
     const size = props.size || 44;
 
-    const [url, _setUrl] = usePreference("goban-theme-custom-white-url");
+    const [urls, setUrls] = usePreference("goban-theme-custom-white-urls");
     const [color, _setColor] = usePreference("goban-theme-custom-white-stone-color");
     const [marker_color, setMarkerColor] = usePreference("goban-theme-custom-white-text-color");
     const [opponent_color] = usePreference("goban-theme-custom-black-stone-color");
@@ -693,10 +674,6 @@ export function GobanCustomWhitePicker(props: GobanThemePickerProperties): React
 
     function setColor(ev: React.ChangeEvent<HTMLInputElement>) {
         _setColor(ev.target.value);
-    }
-
-    function setUrl(ev: React.ChangeEvent<HTMLInputElement>) {
-        _setUrl(ev.target.value);
     }
 
     const color_title = pgettext("Custom goban stone color input title", "White stone color");
@@ -761,23 +738,7 @@ export function GobanCustomWhitePicker(props: GobanThemePickerProperties): React
                 </div>
             </div>
 
-            <div className="custom-url-selection">
-                <input
-                    className="customUrlSelector"
-                    type="text"
-                    value={url}
-                    placeholder={pgettext(
-                        "A URL pointing to a custom white stone image",
-                        "Custom white stone URL",
-                    )}
-                    onFocus={(e) => e.target.select()}
-                    onChange={setUrl}
-                />
-
-                <button className="color-reset" onClick={() => _setUrl("")}>
-                    <i className="fa fa-undo" />
-                </button>
-            </div>
+            <GobanCustomStoneUrlInput color="white" urls={urls} setUrls={setUrls} />
         </div>
     );
 }
@@ -811,9 +772,9 @@ function ThemeSample({
     const [board_bg] = usePreference("goban-theme-custom-board-background");
     const [board_url] = usePreference("goban-theme-custom-board-url");
     const [black_color] = usePreference("goban-theme-custom-black-stone-color");
-    const [black_url] = usePreference("goban-theme-custom-black-url");
+    const [black_urls] = usePreference("goban-theme-custom-black-urls");
     const [white_color] = usePreference("goban-theme-custom-white-stone-color");
-    const [white_url] = usePreference("goban-theme-custom-white-url");
+    const [white_urls] = usePreference("goban-theme-custom-white-urls");
     const [stone_scale] = usePreference("goban-theme-stone-scale");
 
     React.useEffect(() => {
@@ -874,9 +835,9 @@ function ThemeSample({
         board_bg,
         board_url,
         black_color,
-        black_url,
+        black_urls,
         white_color,
-        white_url,
+        white_urls,
         stone_scale,
         markerColor,
     ]);
