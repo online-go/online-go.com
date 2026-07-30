@@ -134,8 +134,8 @@ export function configure_goban() {
         customBoardLineColor: (): string => preferences.get("goban-theme-custom-board-line"),
         customBoardLabelColor: (): string => preferences.get("goban-theme-custom-board-label"),
         customBoardUrl: (): string => preferences.get("goban-theme-custom-board-url"),
-        customBlackStoneUrl: (): string => preferences.get("goban-theme-custom-black-url"),
-        customWhiteStoneUrl: (): string => preferences.get("goban-theme-custom-white-url"),
+        customBlackStoneUrls: (): string[] => preferences.get("goban-theme-custom-black-urls"),
+        customWhiteStoneUrls: (): string[] => preferences.get("goban-theme-custom-white-urls"),
         addCoordinatesToChatInput: (coordinates: string): void => {
             const chat_input = document.querySelector(".chat-input") as HTMLInputElement;
 
