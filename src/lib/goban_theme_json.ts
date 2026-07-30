@@ -47,7 +47,12 @@ interface CustomStoneTheme {
 
 interface StoneThemeSelection {
     theme: string;
-    custom: CustomStoneTheme;
+    custom?: CustomStoneTheme;
+}
+
+interface BoardThemeSelection {
+    theme: string;
+    custom?: CustomBoardTheme;
 }
 
 interface ShadowThemeConfig {
@@ -58,10 +63,7 @@ interface ShadowThemeConfig {
 export interface GobanThemeConfigV1 {
     format: typeof GOBAN_THEME_FORMAT;
     version: typeof GOBAN_THEME_VERSION;
-    board: {
-        theme: string;
-        custom: CustomBoardTheme;
-    };
+    board: BoardThemeSelection;
     stones: {
         scale: number;
         black: StoneThemeSelection;
@@ -69,8 +71,8 @@ export interface GobanThemeConfigV1 {
     };
     shadows: {
         style: ShadowTheme;
-        black: ShadowThemeConfig;
-        white: ShadowThemeConfig;
+        black?: ShadowThemeConfig;
+        white?: ShadowThemeConfig;
     };
     fuzzyPlacement: boolean;
 }
@@ -98,63 +100,86 @@ function customStoneColor(value: string, fallback: string): string {
 export function getGobanThemeConfig(): GobanThemeConfigV1 {
     const selected = preferences.getSelectedThemes();
     const grid_backgrounds = preferences.get("goban-theme-custom-board-grid-backgrounds");
+    const shadow_style = preferences.get("goban-theme-stone-shadows");
 
     return {
         format: GOBAN_THEME_FORMAT,
         version: GOBAN_THEME_VERSION,
         board: {
             theme: selected.board,
-            custom: {
-                backgroundColor: preferences.get("goban-theme-custom-board-background"),
-                gridColor: preferences.get("goban-theme-custom-board-line"),
-                labelColor: preferences.get("goban-theme-custom-board-label"),
-                backgroundImageUrl: nullableString(preferences.get("goban-theme-custom-board-url")),
-                gridBackgroundImageUrls: {
-                    "9x9": nullableString(grid_backgrounds["9"]),
-                    "13x13": nullableString(grid_backgrounds["13"]),
-                    "19x19": nullableString(grid_backgrounds["19"]),
-                },
-            },
+            ...(selected.board === "Custom"
+                ? {
+                      custom: {
+                          backgroundColor: preferences.get("goban-theme-custom-board-background"),
+                          gridColor: preferences.get("goban-theme-custom-board-line"),
+                          labelColor: preferences.get("goban-theme-custom-board-label"),
+                          backgroundImageUrl: nullableString(
+                              preferences.get("goban-theme-custom-board-url"),
+                          ),
+                          gridBackgroundImageUrls: {
+                              "9x9": nullableString(grid_backgrounds["9"]),
+                              "13x13": nullableString(grid_backgrounds["13"]),
+                              "19x19": nullableString(grid_backgrounds["19"]),
+                          },
+                      },
+                  }
+                : {}),
         },
         stones: {
             scale: preferences.get("goban-theme-stone-scale"),
             black: {
                 theme: selected.black,
-                custom: {
-                    color: customStoneColor(
-                        preferences.get("goban-theme-custom-black-stone-color"),
-                        DEFAULT_BLACK_STONE_COLOR,
-                    ),
-                    markerColor: nullableString(
-                        preferences.get("goban-theme-custom-black-text-color"),
-                    ),
-                    imageUrls: [...preferences.get("goban-theme-custom-black-urls")],
-                },
+                ...(selected.black === "Custom"
+                    ? {
+                          custom: {
+                              color: customStoneColor(
+                                  preferences.get("goban-theme-custom-black-stone-color"),
+                                  DEFAULT_BLACK_STONE_COLOR,
+                              ),
+                              markerColor: nullableString(
+                                  preferences.get("goban-theme-custom-black-text-color"),
+                              ),
+                              imageUrls: [...preferences.get("goban-theme-custom-black-urls")],
+                          },
+                      }
+                    : {}),
             },
             white: {
                 theme: selected.white,
-                custom: {
-                    color: customStoneColor(
-                        preferences.get("goban-theme-custom-white-stone-color"),
-                        DEFAULT_WHITE_STONE_COLOR,
-                    ),
-                    markerColor: nullableString(
-                        preferences.get("goban-theme-custom-white-text-color"),
-                    ),
-                    imageUrls: [...preferences.get("goban-theme-custom-white-urls")],
-                },
+                ...(selected.white === "Custom"
+                    ? {
+                          custom: {
+                              color: customStoneColor(
+                                  preferences.get("goban-theme-custom-white-stone-color"),
+                                  DEFAULT_WHITE_STONE_COLOR,
+                              ),
+                              markerColor: nullableString(
+                                  preferences.get("goban-theme-custom-white-text-color"),
+                              ),
+                              imageUrls: [...preferences.get("goban-theme-custom-white-urls")],
+                          },
+                      }
+                    : {}),
             },
         },
         shadows: {
-            style: preferences.get("goban-theme-stone-shadows"),
-            black: {
-                color: preferences.get("goban-theme-custom-black-shadow-color"),
-                gradientTransform: preferences.get("goban-theme-custom-black-shadow-gradient"),
-            },
-            white: {
-                color: preferences.get("goban-theme-custom-white-shadow-color"),
-                gradientTransform: preferences.get("goban-theme-custom-white-shadow-gradient"),
-            },
+            style: shadow_style,
+            ...(shadow_style === "custom"
+                ? {
+                      black: {
+                          color: preferences.get("goban-theme-custom-black-shadow-color"),
+                          gradientTransform: preferences.get(
+                              "goban-theme-custom-black-shadow-gradient",
+                          ),
+                      },
+                      white: {
+                          color: preferences.get("goban-theme-custom-white-shadow-color"),
+                          gradientTransform: preferences.get(
+                              "goban-theme-custom-white-shadow-gradient",
+                          ),
+                      },
+                  }
+                : {}),
         },
         fuzzyPlacement: preferences.get("fuzzy-stone-placement"),
     };
@@ -276,10 +301,11 @@ function customStoneAt(value: unknown, path: string): CustomStoneTheme {
 
 function stoneAt(value: unknown, color: "black" | "white", path: string): StoneThemeSelection {
     const object = objectAt(value, path);
-    exactKeys(object, ["theme", "custom"], path);
+    const theme = themeAt(object.theme, color, `${path}.theme`);
+    exactKeys(object, theme === "Custom" ? ["theme", "custom"] : ["theme"], path);
     return {
-        theme: themeAt(object.theme, color, `${path}.theme`),
-        custom: customStoneAt(object.custom, `${path}.custom`),
+        theme,
+        ...(theme === "Custom" ? { custom: customStoneAt(object.custom, `${path}.custom`) } : {}),
     };
 }
 
@@ -342,28 +368,33 @@ export function parseGobanTheme(json: string): GobanThemeConfigV1 {
     exactKeys(migrated, ["format", "version", "board", "stones", "shadows", "fuzzyPlacement"], "$");
 
     const board = objectAt(migrated.board, "$.board");
-    exactKeys(board, ["theme", "custom"], "$.board");
-    const custom_board = objectAt(board.custom, "$.board.custom");
-    exactKeys(
-        custom_board,
-        [
-            "backgroundColor",
-            "gridColor",
-            "labelColor",
-            "backgroundImageUrl",
-            "gridBackgroundImageUrls",
-        ],
-        "$.board.custom",
-    );
-    const grid_backgrounds = objectAt(
-        custom_board.gridBackgroundImageUrls,
-        "$.board.custom.gridBackgroundImageUrls",
-    );
-    exactKeys(
-        grid_backgrounds,
-        ["9x9", "13x13", "19x19"],
-        "$.board.custom.gridBackgroundImageUrls",
-    );
+    const board_theme = themeAt(board.theme, "board", "$.board.theme");
+    exactKeys(board, board_theme === "Custom" ? ["theme", "custom"] : ["theme"], "$.board");
+    let custom_board: JsonObject | undefined;
+    let grid_backgrounds: JsonObject | undefined;
+    if (board_theme === "Custom") {
+        custom_board = objectAt(board.custom, "$.board.custom");
+        exactKeys(
+            custom_board,
+            [
+                "backgroundColor",
+                "gridColor",
+                "labelColor",
+                "backgroundImageUrl",
+                "gridBackgroundImageUrls",
+            ],
+            "$.board.custom",
+        );
+        grid_backgrounds = objectAt(
+            custom_board.gridBackgroundImageUrls,
+            "$.board.custom.gridBackgroundImageUrls",
+        );
+        exactKeys(
+            grid_backgrounds,
+            ["9x9", "13x13", "19x19"],
+            "$.board.custom.gridBackgroundImageUrls",
+        );
+    }
 
     const stones = objectAt(migrated.stones, "$.stones");
     exactKeys(stones, ["scale", "black", "white"], "$.stones");
@@ -380,7 +411,6 @@ export function parseGobanTheme(json: string): GobanThemeConfigV1 {
     }
 
     const shadows = objectAt(migrated.shadows, "$.shadows");
-    exactKeys(shadows, ["style", "black", "white"], "$.shadows");
     const shadow_styles: readonly ShadowTheme[] = [
         "none",
         "low",
@@ -399,6 +429,12 @@ export function parseGobanTheme(json: string): GobanThemeConfigV1 {
             pgettext("Goban theme JSON validation error", "is not a supported shadow style"),
         );
     }
+    const shadow_style = shadows.style as ShadowTheme;
+    exactKeys(
+        shadows,
+        shadow_style === "custom" ? ["style", "black", "white"] : ["style"],
+        "$.shadows",
+    );
     if (typeof migrated.fuzzyPlacement !== "boolean") {
         throw new GobanThemeValidationError(
             "$.fuzzyPlacement",
@@ -410,33 +446,37 @@ export function parseGobanTheme(json: string): GobanThemeConfigV1 {
         format: GOBAN_THEME_FORMAT,
         version: GOBAN_THEME_VERSION,
         board: {
-            theme: themeAt(board.theme, "board", "$.board.theme"),
-            custom: {
-                backgroundColor: colorAt(
-                    custom_board.backgroundColor,
-                    "$.board.custom.backgroundColor",
-                ),
-                gridColor: colorAt(custom_board.gridColor, "$.board.custom.gridColor"),
-                labelColor: colorAt(custom_board.labelColor, "$.board.custom.labelColor"),
-                backgroundImageUrl: nullableStringAt(
-                    custom_board.backgroundImageUrl,
-                    "$.board.custom.backgroundImageUrl",
-                ),
-                gridBackgroundImageUrls: {
-                    "9x9": nullableStringAt(
-                        grid_backgrounds["9x9"],
-                        "$.board.custom.gridBackgroundImageUrls.9x9",
-                    ),
-                    "13x13": nullableStringAt(
-                        grid_backgrounds["13x13"],
-                        "$.board.custom.gridBackgroundImageUrls.13x13",
-                    ),
-                    "19x19": nullableStringAt(
-                        grid_backgrounds["19x19"],
-                        "$.board.custom.gridBackgroundImageUrls.19x19",
-                    ),
-                },
-            },
+            theme: board_theme,
+            ...(custom_board && grid_backgrounds
+                ? {
+                      custom: {
+                          backgroundColor: colorAt(
+                              custom_board.backgroundColor,
+                              "$.board.custom.backgroundColor",
+                          ),
+                          gridColor: colorAt(custom_board.gridColor, "$.board.custom.gridColor"),
+                          labelColor: colorAt(custom_board.labelColor, "$.board.custom.labelColor"),
+                          backgroundImageUrl: nullableStringAt(
+                              custom_board.backgroundImageUrl,
+                              "$.board.custom.backgroundImageUrl",
+                          ),
+                          gridBackgroundImageUrls: {
+                              "9x9": nullableStringAt(
+                                  grid_backgrounds["9x9"],
+                                  "$.board.custom.gridBackgroundImageUrls.9x9",
+                              ),
+                              "13x13": nullableStringAt(
+                                  grid_backgrounds["13x13"],
+                                  "$.board.custom.gridBackgroundImageUrls.13x13",
+                              ),
+                              "19x19": nullableStringAt(
+                                  grid_backgrounds["19x19"],
+                                  "$.board.custom.gridBackgroundImageUrls.19x19",
+                              ),
+                          },
+                      },
+                  }
+                : {}),
         },
         stones: {
             scale: stones.scale,
@@ -444,50 +484,99 @@ export function parseGobanTheme(json: string): GobanThemeConfigV1 {
             white: stoneAt(stones.white, "white", "$.stones.white"),
         },
         shadows: {
-            style: shadows.style as ShadowTheme,
-            black: shadowAt(shadows.black, "$.shadows.black"),
-            white: shadowAt(shadows.white, "$.shadows.white"),
+            style: shadow_style,
+            ...(shadow_style === "custom"
+                ? {
+                      black: shadowAt(shadows.black, "$.shadows.black"),
+                      white: shadowAt(shadows.white, "$.shadows.white"),
+                  }
+                : {}),
         },
         fuzzyPlacement: migrated.fuzzyPlacement,
     };
 }
 
 export function applyGobanTheme(theme: GobanThemeConfigV1): void {
+    const defaults = createGobanThemePreferenceDefaults();
+    const custom_board = theme.board.custom;
+    const custom_black = theme.stones.black.custom;
+    const custom_white = theme.stones.white.custom;
+    const custom_black_shadow = theme.shadows.black;
+    const custom_white_shadow = theme.shadows.white;
+
     preferences.set("goban-theme-board", theme.board.theme);
-    preferences.set("goban-theme-custom-board-background", theme.board.custom.backgroundColor);
-    preferences.set("goban-theme-custom-board-line", theme.board.custom.gridColor);
-    preferences.set("goban-theme-custom-board-label", theme.board.custom.labelColor);
-    preferences.set("goban-theme-custom-board-url", theme.board.custom.backgroundImageUrl ?? "");
+    preferences.set(
+        "goban-theme-custom-board-background",
+        custom_board?.backgroundColor ?? defaults["goban-theme-custom-board-background"],
+    );
+    preferences.set(
+        "goban-theme-custom-board-line",
+        custom_board?.gridColor ?? defaults["goban-theme-custom-board-line"],
+    );
+    preferences.set(
+        "goban-theme-custom-board-label",
+        custom_board?.labelColor ?? defaults["goban-theme-custom-board-label"],
+    );
+    preferences.set(
+        "goban-theme-custom-board-url",
+        custom_board?.backgroundImageUrl ?? defaults["goban-theme-custom-board-url"],
+    );
     preferences.set("goban-theme-custom-board-grid-backgrounds", {
-        "9": theme.board.custom.gridBackgroundImageUrls["9x9"] ?? "",
-        "13": theme.board.custom.gridBackgroundImageUrls["13x13"] ?? "",
-        "19": theme.board.custom.gridBackgroundImageUrls["19x19"] ?? "",
+        "9":
+            custom_board?.gridBackgroundImageUrls["9x9"] ??
+            defaults["goban-theme-custom-board-grid-backgrounds"]["9"],
+        "13":
+            custom_board?.gridBackgroundImageUrls["13x13"] ??
+            defaults["goban-theme-custom-board-grid-backgrounds"]["13"],
+        "19":
+            custom_board?.gridBackgroundImageUrls["19x19"] ??
+            defaults["goban-theme-custom-board-grid-backgrounds"]["19"],
     });
     preferences.set("goban-theme-black", theme.stones.black.theme);
-    preferences.set("goban-theme-custom-black-stone-color", theme.stones.black.custom.color);
+    preferences.set(
+        "goban-theme-custom-black-stone-color",
+        custom_black?.color ?? defaults["goban-theme-custom-black-stone-color"],
+    );
     preferences.set(
         "goban-theme-custom-black-text-color",
-        theme.stones.black.custom.markerColor ?? "",
+        custom_black?.markerColor ?? defaults["goban-theme-custom-black-text-color"],
     );
-    preferences.set("goban-theme-custom-black-urls", [...theme.stones.black.custom.imageUrls]);
+    preferences.set(
+        "goban-theme-custom-black-urls",
+        custom_black ? [...custom_black.imageUrls] : [...defaults["goban-theme-custom-black-urls"]],
+    );
     preferences.set("goban-theme-white", theme.stones.white.theme);
-    preferences.set("goban-theme-custom-white-stone-color", theme.stones.white.custom.color);
+    preferences.set(
+        "goban-theme-custom-white-stone-color",
+        custom_white?.color ?? defaults["goban-theme-custom-white-stone-color"],
+    );
     preferences.set(
         "goban-theme-custom-white-text-color",
-        theme.stones.white.custom.markerColor ?? "",
+        custom_white?.markerColor ?? defaults["goban-theme-custom-white-text-color"],
     );
-    preferences.set("goban-theme-custom-white-urls", [...theme.stones.white.custom.imageUrls]);
+    preferences.set(
+        "goban-theme-custom-white-urls",
+        custom_white ? [...custom_white.imageUrls] : [...defaults["goban-theme-custom-white-urls"]],
+    );
     preferences.set("goban-theme-stone-scale", theme.stones.scale);
     preferences.set("goban-theme-stone-shadows", theme.shadows.style);
-    preferences.set("goban-theme-custom-black-shadow-color", theme.shadows.black.color);
+    preferences.set(
+        "goban-theme-custom-black-shadow-color",
+        custom_black_shadow?.color ?? defaults["goban-theme-custom-black-shadow-color"],
+    );
     preferences.set(
         "goban-theme-custom-black-shadow-gradient",
-        theme.shadows.black.gradientTransform,
+        custom_black_shadow?.gradientTransform ??
+            defaults["goban-theme-custom-black-shadow-gradient"],
     );
-    preferences.set("goban-theme-custom-white-shadow-color", theme.shadows.white.color);
+    preferences.set(
+        "goban-theme-custom-white-shadow-color",
+        custom_white_shadow?.color ?? defaults["goban-theme-custom-white-shadow-color"],
+    );
     preferences.set(
         "goban-theme-custom-white-shadow-gradient",
-        theme.shadows.white.gradientTransform,
+        custom_white_shadow?.gradientTransform ??
+            defaults["goban-theme-custom-white-shadow-gradient"],
     );
     preferences.set("fuzzy-stone-placement", theme.fuzzyPlacement);
 }

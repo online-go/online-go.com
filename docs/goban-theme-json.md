@@ -8,26 +8,26 @@ The current format discriminator is `online-go.com/goban-theme`, and its current
 is `1`. Exported documents contain:
 
 - the effective selected board, black-stone, and white-stone theme names;
-- the complete Custom board and Custom stone configuration, even when it is dormant;
+- Custom board and stone configuration only for selections currently using `Custom`;
 - global stone scale and shadow settings; and
 - fuzzy stone placement.
 
 Personal presentation choices such as coordinates, removal markers, font scale, marker
 opacity, variation display, undo indicators, and accessibility settings are excluded.
 
-## Selected themes and Custom details
+## Effective theme settings
 
-The selected `theme` is authoritative. A board theme such as `Kaya` supplies its own
-background, grid, and label colors. The adjacent `custom` values are stored but remain
-dormant until the selected board theme is changed to `Custom`.
+The selected `theme` is authoritative. A built-in board theme such as `Kaya` supplies its
+own background, grid, and label colors, so its exported `board` object contains only the
+selected theme name. The `custom` object is required when the selected theme is `Custom`
+and is rejected when a built-in theme is selected.
 
-Black and white stones follow the same rule independently. Built-in stone themes supply
-their own artwork and marker colors. A stone's `custom` colors and image URLs become
-active only when that stone's selected theme is `Custom`. Import never infers `Custom`
-from the presence of custom details.
+Black and white stones follow the same rule independently. Custom shadow colors and
+gradients are included only when the selected shadow style is `custom`.
 
-Keeping dormant details in the document lets a shared theme preserve the author's whole
-Custom setup without creating unsupported hybrids such as Kaya with an overridden grid.
+This makes the document a portable description of the effective goban appearance rather
+than a backup of dormant theme-editor settings. Importing a built-in selection resets its
+inactive Custom settings to the documented defaults.
 
 ## Replacement and defaults
 

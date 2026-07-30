@@ -18,18 +18,14 @@
 .GobanThemeImportExport {
     width: 365px;
     max-width: 100%;
-
-    .theme-import-export-toggle {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 
     .theme-import-export-content {
         display: flex;
         flex-direction: column;
         gap: 0.75rem;
-        margin-top: 0.75rem;
 
         textarea {
             box-sizing: border-box;
@@ -43,6 +39,16 @@
         }
     }
 
+    .manual-copy-json {
+        box-sizing: border-box;
+        width: 100%;
+        min-height: 8rem;
+        resize: vertical;
+        overflow: auto;
+        font-family: monospace;
+        white-space: pre;
+    }
+
     .theme-import-export-actions {
         display: flex;
         justify-content: flex-end;
@@ -50,7 +56,7 @@
     }
 
     .theme-import-export-status {
-        &.error {
+        &.is-error {
             color: var(--reject);
         }
     }

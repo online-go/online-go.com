@@ -18,114 +18,139 @@
 import * as React from "react";
 import { pgettext } from "@/lib/translate";
 import { importGobanTheme, serializeGobanTheme } from "@/lib/goban_theme_json";
+import { toast } from "@/lib/toast";
 import "./GobanThemeImportExport.css";
 
-type Status = { kind: "success" | "error"; message: string } | null;
+const SUCCESS_TOAST_DURATION_MS = 3000;
 
 export function GobanThemeImportExport(): React.ReactElement {
-    const [open, setOpen] = React.useState(false);
-    const [json, setJson] = React.useState("");
-    const [status, setStatus] = React.useState<Status>(null);
-    const textarea = React.useRef<HTMLTextAreaElement>(null);
+    const [import_open, setImportOpen] = React.useState(false);
+    const [import_json, setImportJson] = React.useState("");
+    const [manual_copy_json, setManualCopyJson] = React.useState<string | null>(null);
+    const [error_message, setErrorMessage] = React.useState<string | null>(null);
+    const manual_copy_textarea = React.useRef<HTMLTextAreaElement>(null);
 
-    function toggleOpen(): void {
-        setOpen((was_open) => {
-            if (!was_open) {
-                setJson(serializeGobanTheme());
-                setStatus(null);
-            }
-            return !was_open;
-        });
-    }
+    React.useEffect(() => {
+        if (manual_copy_json !== null) {
+            manual_copy_textarea.current?.focus();
+            manual_copy_textarea.current?.select();
+        }
+    }, [manual_copy_json]);
 
-    async function copyJson(): Promise<void> {
+    async function copyTheme(): Promise<void> {
+        const json = serializeGobanTheme();
         try {
             if (!navigator.clipboard?.writeText) {
                 throw new Error("Clipboard API unavailable");
             }
             await navigator.clipboard.writeText(json);
-            setStatus({
-                kind: "success",
-                message: pgettext("Goban theme JSON clipboard success", "Theme JSON copied."),
-            });
+            setManualCopyJson(null);
+            setErrorMessage(null);
+            toast(
+                <div>{pgettext("Goban theme JSON clipboard success", "Theme JSON copied.")}</div>,
+                SUCCESS_TOAST_DURATION_MS,
+            );
         } catch {
-            textarea.current?.focus();
-            textarea.current?.select();
-            setStatus({
-                kind: "error",
-                message: pgettext(
+            setManualCopyJson(json);
+            setErrorMessage(
+                pgettext(
                     "Goban theme JSON clipboard fallback",
                     "Copy was blocked by the browser. The JSON has been selected for manual copying.",
                 ),
-            });
+            );
         }
     }
 
-    function importJson(): void {
+    function openImport(): void {
+        setImportOpen(true);
+        setImportJson("");
+        setManualCopyJson(null);
+        setErrorMessage(null);
+    }
+
+    function cancelImport(): void {
+        setImportOpen(false);
+        setImportJson("");
+        setErrorMessage(null);
+    }
+
+    function importTheme(): void {
         try {
-            importGobanTheme(json);
-            setJson(serializeGobanTheme());
-            setStatus({
-                kind: "success",
-                message: pgettext("Goban theme JSON import success", "Theme imported."),
-            });
+            importGobanTheme(import_json);
+            setImportOpen(false);
+            setImportJson("");
+            setErrorMessage(null);
+            toast(
+                <div>{pgettext("Goban theme JSON import success", "Theme imported.")}</div>,
+                SUCCESS_TOAST_DURATION_MS,
+            );
         } catch (error) {
-            setStatus({
-                kind: "error",
-                message:
-                    error instanceof Error
-                        ? error.message
-                        : pgettext(
-                              "Goban theme JSON unknown import error",
-                              "The theme JSON could not be imported.",
-                          ),
-            });
+            setErrorMessage(
+                error instanceof Error
+                    ? error.message
+                    : pgettext(
+                          "Goban theme JSON unknown import error",
+                          "The theme JSON could not be imported.",
+                      ),
+            );
         }
     }
 
     return (
         <div className="GobanThemeImportExport">
-            <button
-                type="button"
-                className="theme-import-export-toggle"
-                aria-expanded={open}
-                onClick={toggleOpen}
-            >
-                <i className={`fa fa-caret-${open ? "down" : "right"}`} />
-                <span>
-                    {pgettext("Toggle goban theme JSON import/export controls", "Import / export")}
-                </span>
-            </button>
+            <div className="theme-import-export-actions">
+                <button type="button" onClick={copyTheme}>
+                    {pgettext("Copy current goban theme JSON", "Copy theme")}
+                </button>
+                <button type="button" aria-expanded={import_open} onClick={openImport}>
+                    {pgettext("Open goban theme JSON import controls", "Import theme")}
+                </button>
+            </div>
 
-            {open && (
+            {manual_copy_json !== null && (
+                <textarea
+                    ref={manual_copy_textarea}
+                    className="manual-copy-json"
+                    value={manual_copy_json}
+                    aria-label={pgettext(
+                        "Goban theme JSON selected for manual copying",
+                        "Theme JSON to copy",
+                    )}
+                    readOnly
+                    spellCheck={false}
+                />
+            )}
+
+            {import_open && (
                 <div className="theme-import-export-content">
                     <textarea
-                        ref={textarea}
-                        value={json}
-                        aria-label={pgettext("Goban theme JSON editor", "Goban theme JSON")}
+                        value={import_json}
+                        aria-label={pgettext(
+                            "Goban theme JSON import editor",
+                            "Theme JSON to import",
+                        )}
+                        autoFocus
                         spellCheck={false}
                         onChange={(event) => {
-                            setJson(event.target.value);
-                            setStatus(null);
+                            setImportJson(event.target.value);
+                            setErrorMessage(null);
                         }}
                     />
                     <div className="theme-import-export-actions">
-                        <button type="button" onClick={copyJson}>
-                            {pgettext("Copy goban theme JSON", "Copy")}
+                        <button type="button" onClick={cancelImport}>
+                            {pgettext("Cancel goban theme JSON import", "Cancel")}
                         </button>
-                        <button type="button" className="primary" onClick={importJson}>
-                            {pgettext("Import goban theme JSON", "Import")}
+                        <button type="button" className="primary" onClick={importTheme}>
+                            {pgettext("Apply imported goban theme JSON", "Apply theme")}
                         </button>
                     </div>
-                    {status && (
-                        <small
-                            className={`theme-import-export-status ${status.kind}`}
-                            role={status.kind === "error" ? "alert" : "status"}
-                        >
-                            {status.message}
-                        </small>
-                    )}
                 </div>
+            )}
+
+            {error_message && (
+                <small className="theme-import-export-status is-error" role="alert">
+                    {error_message}
+                </small>
             )}
         </div>
     );

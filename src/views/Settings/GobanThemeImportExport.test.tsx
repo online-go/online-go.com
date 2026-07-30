@@ -5,6 +5,7 @@
 import * as React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { importGobanTheme, serializeGobanTheme } from "@/lib/goban_theme_json";
+import { toast } from "@/lib/toast";
 import { GobanThemeImportExport } from "./GobanThemeImportExport";
 
 jest.mock("@/lib/translate", () => ({
@@ -16,55 +17,58 @@ jest.mock("@/lib/goban_theme_json", () => ({
     serializeGobanTheme: jest.fn(() => '{\n  "version": 1\n}'),
 }));
 
+jest.mock("@/lib/toast", () => ({
+    toast: jest.fn(),
+}));
+
 const mockedImport = jest.mocked(importGobanTheme);
 const mockedSerialize = jest.mocked(serializeGobanTheme);
+const mockedToast = jest.mocked(toast);
 
 describe("GobanThemeImportExport", () => {
     beforeEach(() => {
         mockedImport.mockReset();
         mockedSerialize.mockReset();
         mockedSerialize.mockReturnValue('{\n  "version": 1\n}');
+        mockedToast.mockReset();
     });
 
-    test("reveals a fixed JSON editor populated from current settings", () => {
+    test("renders separate copy and import controls", () => {
         render(<GobanThemeImportExport />);
 
         expect(screen.queryByRole("textbox")).toBeNull();
-        fireEvent.click(screen.getByRole("button", { name: "Import / export" }));
-
-        expect(screen.getByRole("textbox")).toHaveValue('{\n  "version": 1\n}');
-        expect(mockedSerialize).toHaveBeenCalledTimes(1);
+        expect(screen.getByRole("button", { name: "Copy theme" })).toBeVisible();
+        expect(screen.getByRole("button", { name: "Import theme" })).toBeVisible();
     });
 
-    test("copies the current textarea", async () => {
+    test("serializes and copies the current theme when clicked", async () => {
         const writeText = jest.fn().mockResolvedValue(undefined);
         Object.defineProperty(navigator, "clipboard", {
             configurable: true,
             value: { writeText },
         });
         render(<GobanThemeImportExport />);
-        fireEvent.click(screen.getByRole("button", { name: "Import / export" }));
-        fireEvent.change(screen.getByRole("textbox"), { target: { value: "shared JSON" } });
-        fireEvent.click(screen.getByRole("button", { name: "Copy" }));
+        fireEvent.click(screen.getByRole("button", { name: "Copy theme" }));
 
-        await waitFor(() => expect(writeText).toHaveBeenCalledWith("shared JSON"));
-        expect(await screen.findByRole("status")).toHaveTextContent("Theme JSON copied.");
+        await waitFor(() => expect(writeText).toHaveBeenCalledWith('{\n  "version": 1\n}'));
+        expect(mockedSerialize).toHaveBeenCalledTimes(1);
+        expect(mockedToast).toHaveBeenCalledWith(<div>Theme JSON copied.</div>, 3000);
+        expect(screen.queryByRole("alert")).toBeNull();
     });
 
-    test("imports pasted JSON and refreshes the canonical text", () => {
-        mockedSerialize
-            .mockReturnValueOnce('{\n  "version": 1\n}')
-            .mockReturnValueOnce('{\n  "version": 1,\n  "normalized": true\n}');
+    test("opens an empty import editor and applies pasted JSON", () => {
         render(<GobanThemeImportExport />);
-        fireEvent.click(screen.getByRole("button", { name: "Import / export" }));
+        fireEvent.click(screen.getByRole("button", { name: "Import theme" }));
+
+        expect(screen.getByRole("textbox", { name: "Theme JSON to import" })).toHaveValue("");
         fireEvent.change(screen.getByRole("textbox"), { target: { value: "pasted JSON" } });
-        fireEvent.click(screen.getByRole("button", { name: "Import" }));
+        fireEvent.click(screen.getByRole("button", { name: "Apply theme" }));
 
         expect(mockedImport).toHaveBeenCalledWith("pasted JSON");
-        expect(screen.getByRole("textbox")).toHaveValue(
-            '{\n  "version": 1,\n  "normalized": true\n}',
-        );
-        expect(screen.getByRole("status")).toHaveTextContent("Theme imported.");
+        expect(screen.queryByRole("textbox")).toBeNull();
+        expect(mockedSerialize).not.toHaveBeenCalled();
+        expect(mockedToast).toHaveBeenCalledWith(<div>Theme imported.</div>, 3000);
+        expect(screen.queryByRole("alert")).toBeNull();
     });
 
     test("shows validation errors without replacing the pasted JSON", () => {
@@ -72,13 +76,29 @@ describe("GobanThemeImportExport", () => {
             throw new Error("$.board.theme: is not an available theme");
         });
         render(<GobanThemeImportExport />);
-        fireEvent.click(screen.getByRole("button", { name: "Import / export" }));
+        fireEvent.click(screen.getByRole("button", { name: "Import theme" }));
         fireEvent.change(screen.getByRole("textbox"), { target: { value: "invalid JSON" } });
-        fireEvent.click(screen.getByRole("button", { name: "Import" }));
+        fireEvent.click(screen.getByRole("button", { name: "Apply theme" }));
 
         expect(screen.getByRole("alert")).toHaveTextContent(
             "$.board.theme: is not an available theme",
         );
         expect(screen.getByRole("textbox")).toHaveValue("invalid JSON");
+    });
+
+    test("shows current theme JSON for manual copying when clipboard access fails", async () => {
+        Object.defineProperty(navigator, "clipboard", {
+            configurable: true,
+            value: undefined,
+        });
+        render(<GobanThemeImportExport />);
+        fireEvent.click(screen.getByRole("button", { name: "Copy theme" }));
+
+        expect(await screen.findByRole("textbox", { name: "Theme JSON to copy" })).toHaveValue(
+            '{\n  "version": 1\n}',
+        );
+        expect(screen.getByRole("alert")).toHaveTextContent(
+            "The JSON has been selected for manual copying.",
+        );
     });
 });

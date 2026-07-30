@@ -242,7 +242,7 @@ export function ThemePreferences(): React.ReactElement | null {
 
             <PreferenceLine
                 className="goban-theme-sharing"
-                title={pgettext("Goban theme sharing settings", "Share theme")}
+                title={pgettext("Goban theme import and sharing settings", "Share or import theme")}
             >
                 <GobanThemeImportExport />
             </PreferenceLine>
