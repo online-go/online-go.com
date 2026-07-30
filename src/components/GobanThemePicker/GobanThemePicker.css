@@ -221,3 +221,30 @@
     margin-top: 1rem;
     margin-bottom: 1rem;
 }
+
+.GobanCustomStonePicker {
+    .theme-set {
+        align-items: center;
+    }
+
+    .custom-stone-color-controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+
+        .color-input {
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="color"] {
+            margin-left: 0;
+        }
+
+        .color-reset {
+            margin-top: 0;
+        }
+    }
+}

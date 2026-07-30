@@ -122,8 +122,10 @@ export const defaults = {
     "goban-theme-custom-board-line": "#000000",
     "goban-theme-custom-board-label": blendWithInverseColor("#000000", 0.75),
     "goban-theme-custom-black-stone-color": "#000000",
+    "goban-theme-custom-black-text-color": "",
     "goban-theme-custom-black-urls": [] as string[],
     "goban-theme-custom-white-stone-color": "#ffffff",
+    "goban-theme-custom-white-text-color": "",
     "goban-theme-custom-white-urls": [] as string[],
     "hide-ranks": false,
     "label-positioning": "all" as LabelPosition,
@@ -429,8 +431,10 @@ export function watchSelectedThemes(cb: (themes: GobanSelectedThemes) => void) {
         "goban-theme-custom-board-line",
         "goban-theme-custom-board-label",
         "goban-theme-custom-black-stone-color",
+        "goban-theme-custom-black-text-color",
         "goban-theme-custom-black-urls",
         "goban-theme-custom-white-stone-color",
+        "goban-theme-custom-white-text-color",
         "goban-theme-custom-white-urls",
     ];
 

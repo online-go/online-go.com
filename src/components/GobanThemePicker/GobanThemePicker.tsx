@@ -441,6 +441,8 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): React
 
     const [urls, setUrls] = usePreference("goban-theme-custom-black-urls");
     const [color, _setColor] = usePreference("goban-theme-custom-black-stone-color");
+    const [marker_color, setMarkerColor] = usePreference("goban-theme-custom-black-text-color");
+    const [opponent_color] = usePreference("goban-theme-custom-white-stone-color");
     const [, refresh] = React.useState(0);
     const theme = Goban.THEMES_SORTED.black.filter((x) => x.theme_name === "Custom")[0];
     const [, setBlack] = usePreference("goban-theme-black");
@@ -452,6 +454,7 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): React
     const [background_image, _setBackgroundImage] = usePreference("goban-theme-custom-board-url");
 
     const inputStyle = { height: `${size}px`, width: `${size * 1.5}px` };
+    const effective_marker_color = marker_color || opponent_color || "#ffffff";
 
     if (!theme) {
         requestAnimationFrame(() => refresh((x) => x + 1));
@@ -462,6 +465,10 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): React
     }
 
     const color_title = pgettext("Custom goban stone color input title", "Black stone color");
+    const marker_color_title = pgettext(
+        "Custom goban stone marker color input title",
+        "Black stone marker color",
+    );
 
     const custom_board = Goban.THEMES_SORTED.board.filter((x) => x.theme_name === "Custom")[0];
 
@@ -495,21 +502,43 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): React
                             style={{ ...theme.styles, ...board_styles }}
                             onClick={() => setBlack("Custom")}
                         >
-                            <ThemeSample theme={theme} size={size} color={"black"} />
+                            <ThemeSample
+                                theme={theme}
+                                size={size}
+                                color={"black"}
+                                markerColor={effective_marker_color}
+                            />
                         </div>
                     </div>
 
-                    <input
-                        type="color"
-                        style={inputStyle}
-                        value={color}
-                        title={color_title}
-                        aria-label={color_title}
-                        onChange={setColor}
-                    />
-                    <button className="color-reset" onClick={() => _setColor("")}>
-                        <i className="fa fa-undo" />
-                    </button>
+                    <div className="custom-stone-color-controls">
+                        <span className="color-input">
+                            <input
+                                type="color"
+                                style={inputStyle}
+                                value={color}
+                                title={color_title}
+                                aria-label={color_title}
+                                onChange={setColor}
+                            />
+                            <button className="color-reset" onClick={() => _setColor("")}>
+                                <i className="fa fa-undo" />
+                            </button>
+                        </span>
+                        <span className="color-input">
+                            <input
+                                type="color"
+                                style={inputStyle}
+                                value={effective_marker_color}
+                                title={marker_color_title}
+                                aria-label={marker_color_title}
+                                onChange={(ev) => setMarkerColor(ev.target.value)}
+                            />
+                            <button className="color-reset" onClick={() => setMarkerColor("")}>
+                                <i className="fa fa-undo" />
+                            </button>
+                        </span>
+                    </div>
                 </div>
             </div>
 
@@ -629,12 +658,15 @@ export function GobanCustomWhitePicker(props: GobanThemePickerProperties): React
 
     const [urls, setUrls] = usePreference("goban-theme-custom-white-urls");
     const [color, _setColor] = usePreference("goban-theme-custom-white-stone-color");
+    const [marker_color, setMarkerColor] = usePreference("goban-theme-custom-white-text-color");
+    const [opponent_color] = usePreference("goban-theme-custom-black-stone-color");
     const [, refresh] = React.useState(0);
     const theme = Goban.THEMES_SORTED.white.filter((x) => x.theme_name === "Custom")[0];
     const [, setWhite] = usePreference("goban-theme-white");
     const selected = getSelectedThemes();
 
     const inputStyle = { height: `${size}px`, width: `${size * 1.5}px` };
+    const effective_marker_color = marker_color || opponent_color || "#000000";
 
     if (!theme) {
         requestAnimationFrame(() => refresh((x) => x + 1));
@@ -645,6 +677,10 @@ export function GobanCustomWhitePicker(props: GobanThemePickerProperties): React
     }
 
     const color_title = pgettext("Custom goban stone color input title", "White stone color");
+    const marker_color_title = pgettext(
+        "Custom goban stone marker color input title",
+        "White stone marker color",
+    );
 
     return (
         <div className="GobanCustomStonePicker">
@@ -662,21 +698,43 @@ export function GobanCustomWhitePicker(props: GobanThemePickerProperties): React
                             style={theme.styles}
                             onClick={() => setWhite("Custom")}
                         >
-                            <ThemeSample theme={theme} size={size} color={"white"} />
+                            <ThemeSample
+                                theme={theme}
+                                size={size}
+                                color={"white"}
+                                markerColor={effective_marker_color}
+                            />
                         </div>
                     </div>
 
-                    <input
-                        type="color"
-                        style={inputStyle}
-                        value={color}
-                        title={color_title}
-                        aria-label={color_title}
-                        onChange={setColor}
-                    />
-                    <button className="color-reset" onClick={() => _setColor("")}>
-                        <i className="fa fa-undo" />
-                    </button>
+                    <div className="custom-stone-color-controls">
+                        <span className="color-input">
+                            <input
+                                type="color"
+                                style={inputStyle}
+                                value={color}
+                                title={color_title}
+                                aria-label={color_title}
+                                onChange={setColor}
+                            />
+                            <button className="color-reset" onClick={() => _setColor("")}>
+                                <i className="fa fa-undo" />
+                            </button>
+                        </span>
+                        <span className="color-input">
+                            <input
+                                type="color"
+                                style={inputStyle}
+                                value={effective_marker_color}
+                                title={marker_color_title}
+                                aria-label={marker_color_title}
+                                onChange={(ev) => setMarkerColor(ev.target.value)}
+                            />
+                            <button className="color-reset" onClick={() => setMarkerColor("")}>
+                                <i className="fa fa-undo" />
+                            </button>
+                        </span>
+                    </div>
                 </div>
             </div>
 
@@ -699,10 +757,12 @@ function ThemeSample({
     theme,
     color,
     size,
+    markerColor,
 }: {
     theme: GobanTheme;
     color: "black" | "white";
     size: number;
+    markerColor?: string;
 }) {
     const div = React.useRef<HTMLDivElement>(null);
 
@@ -745,6 +805,19 @@ function ThemeSample({
             theme.placeWhiteStoneSVG(g, undefined, white_stones[0], cx, cy, radius);
         }
 
+        if (markerColor) {
+            const marker = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            marker.setAttribute("x", cx.toString());
+            marker.setAttribute("y", cy.toString());
+            marker.setAttribute("fill", markerColor);
+            marker.setAttribute("font-size", `${radius}px`);
+            marker.setAttribute("font-weight", "bold");
+            marker.setAttribute("text-anchor", "middle");
+            marker.setAttribute("dominant-baseline", "central");
+            marker.textContent = "A";
+            g.appendChild(marker);
+        }
+
         host.replaceChildren(svg);
 
         return () => {
@@ -766,6 +839,7 @@ function ThemeSample({
         white_color,
         white_urls,
         stone_scale,
+        markerColor,
     ]);
 
     return <div ref={div} />;
