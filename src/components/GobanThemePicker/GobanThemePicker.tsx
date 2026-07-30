@@ -17,14 +17,20 @@
 
 import * as React from "react";
 import { _, pgettext } from "@/lib/translate";
-import { blendWithInverseColor, Goban, GobanTheme /*, GobanThemeBackgroundCSS */ } from "goban";
+import { Goban, GobanTheme /*, GobanThemeBackgroundCSS */ } from "goban";
 import { getSelectedThemes, usePreference } from "@/lib/preferences";
+import {
+    createGobanThemePreferenceDefaults,
+    defaultGobanLabelColor,
+} from "@/lib/goban_theme_defaults";
 import { PersistentElement } from "@/components/PersistentElement";
 import { Experiment, Variant, Default } from "../Experiment";
 import { LineText } from "../misc-ui";
 import { GobanCustomBoardGridBackgroundPicker } from "./GobanCustomBoardGridBackgroundPicker";
 import { GobanCustomStoneUrlInput } from "./GobanCustomStoneUrlInput";
 import "./GobanThemePicker.css";
+
+const theme_defaults = createGobanThemePreferenceDefaults();
 
 interface GobanThemePickerProperties {
     size?: number;
@@ -207,7 +213,11 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React
                             />
                             <button
                                 className="color-reset"
-                                onClick={() => _setBackgroundColor("#DCB35C")}
+                                onClick={() =>
+                                    _setBackgroundColor(
+                                        theme_defaults["goban-theme-custom-board-background"],
+                                    )
+                                }
                             >
                                 <i className="fa fa-undo" />
                             </button>
@@ -224,7 +234,9 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React
                             />
                             <button
                                 className="color-reset"
-                                onClick={() => _setLineColor("#000000")}
+                                onClick={() =>
+                                    _setLineColor(theme_defaults["goban-theme-custom-board-line"])
+                                }
                             >
                                 <i className="fa fa-undo" />
                             </button>
@@ -241,9 +253,7 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React
                             />
                             <button
                                 className="color-reset"
-                                onClick={() =>
-                                    _setLabelColor(blendWithInverseColor(line_color, 0.75))
-                                }
+                                onClick={() => _setLabelColor(defaultGobanLabelColor(line_color))}
                             >
                                 <i className="fa fa-undo" />
                             </button>
@@ -278,7 +288,14 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React
                                 onChange={setBackgroundImage}
                             />
 
-                            <button className="color-reset" onClick={() => _setBackgroundImage("")}>
+                            <button
+                                className="color-reset"
+                                onClick={() =>
+                                    _setBackgroundImage(
+                                        theme_defaults["goban-theme-custom-board-url"],
+                                    )
+                                }
+                            >
                                 <i className="fa fa-undo" />
                             </button>
                         </div>
@@ -521,7 +538,14 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): React
                                 aria-label={color_title}
                                 onChange={setColor}
                             />
-                            <button className="color-reset" onClick={() => _setColor("")}>
+                            <button
+                                className="color-reset"
+                                onClick={() =>
+                                    _setColor(
+                                        theme_defaults["goban-theme-custom-black-stone-color"],
+                                    )
+                                }
+                            >
                                 <i className="fa fa-undo" />
                             </button>
                         </span>
@@ -534,7 +558,14 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): React
                                 aria-label={marker_color_title}
                                 onChange={(ev) => setMarkerColor(ev.target.value)}
                             />
-                            <button className="color-reset" onClick={() => setMarkerColor("")}>
+                            <button
+                                className="color-reset"
+                                onClick={() =>
+                                    setMarkerColor(
+                                        theme_defaults["goban-theme-custom-black-text-color"],
+                                    )
+                                }
+                            >
                                 <i className="fa fa-undo" />
                             </button>
                         </span>
@@ -717,7 +748,14 @@ export function GobanCustomWhitePicker(props: GobanThemePickerProperties): React
                                 aria-label={color_title}
                                 onChange={setColor}
                             />
-                            <button className="color-reset" onClick={() => _setColor("")}>
+                            <button
+                                className="color-reset"
+                                onClick={() =>
+                                    _setColor(
+                                        theme_defaults["goban-theme-custom-white-stone-color"],
+                                    )
+                                }
+                            >
                                 <i className="fa fa-undo" />
                             </button>
                         </span>
@@ -730,7 +768,14 @@ export function GobanCustomWhitePicker(props: GobanThemePickerProperties): React
                                 aria-label={marker_color_title}
                                 onChange={(ev) => setMarkerColor(ev.target.value)}
                             />
-                            <button className="color-reset" onClick={() => setMarkerColor("")}>
+                            <button
+                                className="color-reset"
+                                onClick={() =>
+                                    setMarkerColor(
+                                        theme_defaults["goban-theme-custom-white-text-color"],
+                                    )
+                                }
+                            >
                                 <i className="fa fa-undo" />
                             </button>
                         </span>

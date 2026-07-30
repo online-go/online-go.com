@@ -18,9 +18,11 @@
 import * as React from "react";
 import { useData } from "@/lib/hooks";
 import { pgettext } from "@/lib/translate";
+import { createGobanThemePreferenceDefaults } from "@/lib/goban_theme_defaults";
 import "./GobanCustomStoneUrlInput.css";
 
 type StoneColor = "black" | "white";
+const theme_defaults = createGobanThemePreferenceDefaults();
 
 interface GobanCustomStoneUrlInputProperties {
     color: StoneColor;
@@ -90,9 +92,13 @@ export function GobanCustomStoneUrlInput({
     }
 
     function resetUrls(): void {
+        const default_urls =
+            color === "black"
+                ? theme_defaults["goban-theme-custom-black-urls"]
+                : theme_defaults["goban-theme-custom-white-urls"];
         last_emitted_urls.current = "";
         setDraft("");
-        setUrls([]);
+        setUrls([...default_urls]);
         setVariantsOpen(false);
     }
 
