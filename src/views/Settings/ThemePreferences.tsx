@@ -35,6 +35,7 @@ import { useData } from "@/lib/hooks";
 import { MiniGoban } from "@/components/MiniGoban";
 import { GobanEngineConfig, setGobanRenderer } from "goban";
 import { Toggle } from "@/components/Toggle";
+import { GobanThemeImportExport } from "./GobanThemeImportExport";
 import "./ThemePreferences.css";
 
 const sample_board_data: GobanEngineConfig = {
@@ -237,6 +238,13 @@ export function ThemePreferences(): React.ReactElement | null {
             <PreferenceLine className="title-on-top body-as-column" title={_("White stone theme")}>
                 <GobanWhiteThemePicker />
                 <GobanCustomWhitePicker />
+            </PreferenceLine>
+
+            <PreferenceLine
+                className="goban-theme-sharing"
+                title={pgettext("Goban theme sharing settings", "Share theme")}
+            >
+                <GobanThemeImportExport />
             </PreferenceLine>
 
             <PreferenceLine title={_("Board label positioning")}>
