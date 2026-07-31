@@ -161,7 +161,7 @@
                navbar and the tab bar) so the scroll area below always fits. */
             --goban-view-portrait-max-height: calc(
                 100dvh - var(--below-navbar) - var(--goban-view-tab-bar-height) -
-                    env(safe-area-inset-bottom)
+                    var(--safe-area-inset-bottom)
             );
             flex-basis: auto;
             flex-shrink: 0;
@@ -204,7 +204,7 @@
                 top: 0;
                 left: 0;
                 right: 0;
-                bottom: calc(var(--goban-view-tab-bar-height) + env(safe-area-inset-bottom));
+                bottom: calc(var(--goban-view-tab-bar-height) + var(--safe-area-inset-bottom));
                 z-index: 10;
                 background: var(--bg);
                 overflow-y: auto;
@@ -216,6 +216,6 @@
        overlay's bottom by the slider's intrinsic height so the strip stays
        visible above the tab bar. */
     &.has-custom-slider.portrait .GobanView-tab-panel.takeover.active:not(.keep-goban-visible) {
-        bottom: calc(var(--goban-view-tab-bar-height) + 2.6rem + env(safe-area-inset-bottom));
+        bottom: calc(var(--goban-view-tab-bar-height) + 2.6rem + var(--safe-area-inset-bottom));
     }
 }

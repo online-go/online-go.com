@@ -207,6 +207,7 @@ import { routes } from "./routes";
 //import {Promise} from "es6-promise";
 import { errorAlerter } from "@/lib/misc";
 import { close_all_popovers } from "@/lib/popover";
+import { init_safe_area_variables } from "@/lib/safe_area";
 import * as sockets from "@/lib/sockets";
 import { _, setCurrentLanguage } from "@/lib/translate";
 
@@ -375,6 +376,8 @@ browserHistory.listen(() => {
 if (user.anonymous) {
     data.remove("rdh-system-state");
 }
+
+init_safe_area_variables();
 
 /* Initialization done, render!! */
 const svg_loader = document.getElementById("loading-svg-container");

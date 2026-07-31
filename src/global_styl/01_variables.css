@@ -33,6 +33,12 @@
     --goban-view-sidebar-width: 400px;
     --goban-view-tab-bar-height: 3rem;
 
+    /* Bottom safe area to actually reserve. Defaults to what the browser
+       reports; lib/safe_area.ts replaces it with 0 on browsers that report an
+       inset for system UI the viewport already stops above (Chrome on
+       Android), where padding by it would reserve the strip twice. */
+    --safe-area-inset-bottom: env(safe-area-inset-bottom);
+
     /* Chat */
     --channel-utils-height: 8.4rem;
     --channel-width: 20%;
