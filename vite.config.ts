@@ -15,13 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Plugin, defineConfig, ResolvedConfig, ViteDevServer, ProxyOptions } from "vite";
+import { defineConfig } from "vite";
+import type { Plugin, ResolvedConfig, ViteDevServer, ProxyOptions } from "vite";
 import react from "@vitejs/plugin-react";
 //import circularDependency from "vite-plugin-circular-dependency";
-import fixReactVirtualized from "esbuild-plugin-react-virtualized";
 import path from "path";
 import { promises as fs, accessSync, readFileSync } from "fs";
-import { IncomingMessage } from "http";
+import type { IncomingMessage } from "http";
+import type { Plugin as PostcssPlugin } from "postcss";
 import http from "http";
 import checker from "vite-plugin-checker";
 import comment from "postcss-comment";
@@ -33,7 +34,6 @@ import simpleVars from "postcss-simple-vars";
 import functions from "postcss-functions";
 import postcssUrl from "postcss-url";
 import inline_svg from "postcss-inline-svg";
-import viewportUnitFallback from "postcss-viewport-unit-fallback";
 import autoprefixer from "autoprefixer";
 import cssnano from "cssnano";
 import Color from "color";
@@ -41,9 +41,10 @@ import { nodePolyfills } from "vite-plugin-node-polyfills";
 import cssSourcemap from "vite-plugin-css-sourcemap";
 import { execSync } from "child_process";
 
-const _workerVersionMatch = readFileSync(path.resolve(__dirname, "Makefile"), "utf-8").match(
-    /^GOBAN_SOCKET_WORKER_VERSION=(.+)$/m,
-);
+const _workerVersionMatch = readFileSync(
+    path.resolve(import.meta.dirname, "Makefile"),
+    "utf-8",
+).match(/^GOBAN_SOCKET_WORKER_VERSION=(.+)$/m);
 if (!_workerVersionMatch) {
     throw new Error("GOBAN_SOCKET_WORKER_VERSION not found in Makefile");
 }
@@ -62,6 +63,38 @@ function getVersionInfo(): string {
         console.warn("Could not get git version, using timestamp");
         return Date.now().toString();
     }
+}
+
+/*
+ * Emits a plain viewport unit fallback ahead of any declaration using a
+ * dynamic one, so `height: 100dvh` is preceded by `height: 100vh`.
+ *
+ * This replaces the postcss-viewport-unit-fallback package (MIT,
+ * https://github.com/gooodev/postcss-viewport-unit-fallback), which only ever
+ * had a single release and inserts its fallback with `decl.before(string)`.
+ * postcss parses that string without a `from` option, so the declaration it
+ * creates carries no source file, and Vite warns that imported assets may be
+ * transformed incorrectly. Cloning the original declaration keeps its source
+ * information intact.
+ *
+ * The pattern matches only a single character after the l/s/d, which is what
+ * lets units like dvmin and dvmax fall back to vmin/vmax as well as dvh/dvw.
+ */
+function viewportUnitFallback(): PostcssPlugin {
+    const viewport_unit_re = /(\d)[l|s|d]([vh|vw])/g;
+
+    return {
+        postcssPlugin: "postcss-viewport-unit-fallback",
+        OnceExit: (root) => {
+            root.walkDecls((decl) => {
+                if (typeof decl.value === "string" && decl.value.match(viewport_unit_re)) {
+                    decl.cloneBefore({
+                        value: decl.value.replace(viewport_unit_re, "$1$2"),
+                    });
+                }
+            });
+        },
+    };
 }
 
 const SUPPORTED_BACKENDS = ["BETA", "PRODUCTION", "LOCAL"] as const;
@@ -150,7 +183,7 @@ export default defineConfig({
               chunkSizeWarningLimit: 1024 * 1024 * 1.5,
               rollupOptions: {
                   input: {
-                      ogs: "src/main.tsx",
+                      ogs: path.resolve(import.meta.dirname, "src/main.tsx"),
                   },
                   output: {
                       assetFileNames: (assetInfo) => {
@@ -194,26 +227,66 @@ export default defineConfig({
               chunkSizeWarningLimit: 1024 * 1024 * 99,
               rollupOptions: {
                   input: {
-                      ogs: "src/main.tsx",
+                      ogs: path.resolve(import.meta.dirname, "src/main.tsx"),
+                  },
+                  /*
+                   * These bundles are only ever read as text by xgettext, never
+                   * executed, so Rolldown rewriting `import.meta` to `{}` for the
+                   * CommonJS output below costs us nothing. CommonJS is what
+                   * xgettext-js needs: its parser defaults to a script source
+                   * type and cannot parse ESM syntax.
+                   */
+                  onwarn: (warning, defaultHandler) => {
+                      if (warning.code === "EMPTY_IMPORT_META") {
+                          return;
+                      }
+                      defaultHandler(warning);
                   },
                   output: {
                       format: "commonjs",
                       assetFileNames: "[name].strings.[ext]",
                       entryFileNames: "[name].strings.js",
                       chunkFileNames: "[name].strings.js",
-                      manualChunks: (id: string) => {
-                          if (id.includes("node_modules")) {
-                              return "vendor";
-                          }
-                          if (id.includes("/goban/")) {
-                              return "goban";
-                          }
-                          if (id.includes("react-dynamic-help")) {
-                              return "rdh";
-                          }
-                          // Bundle everything else (including LearningHub and other lazy-loaded modules)
-                          // into the main ogs.strings.js file so the extraction scripts can process it
-                          return "ogs";
+                      /*
+                       * Keep third-party code out of ogs.strings.js and bundle
+                       * everything of ours (including LearningHub and the other
+                       * lazy-loaded modules) into it, so the extraction scripts
+                       * see all our strings and none of theirs.
+                       *
+                       * This has to be advancedChunks rather than manualChunks:
+                       * under Rolldown, manualChunks still names the chunks but
+                       * its grouping is subject to size heuristics, which left
+                       * ~977 node_modules modules in ogs.strings.js. @nivo
+                       * declares its own top-level `_`, so our gettext `_` from
+                       * lib/translate.ts got renamed to `_$6` to deconflict and
+                       * xgettext silently stopped recognising it. The explicit
+                       * zero thresholds below disable that merging.
+                       */
+                      codeSplitting: {
+                          minSize: 0,
+                          minShareCount: 1,
+                          groups: [
+                              { name: "goban", test: /\/goban\//, minSize: 0, minShareCount: 1 },
+                              {
+                                  name: "rdh",
+                                  test: /react-dynamic-help/,
+                                  minSize: 0,
+                                  minShareCount: 1,
+                              },
+                              {
+                                  name: "vendor",
+                                  test: /node_modules/,
+                                  minSize: 0,
+                                  minShareCount: 1,
+                              },
+                              /*
+                               * Catch-all, matched last: keeps LearningHub and the
+                               * other lazy-loaded modules in ogs.strings.js instead
+                               * of splitting them into chunks the extraction
+                               * scripts never read.
+                               */
+                              { name: "ogs", test: /.*/, minSize: 0, minShareCount: 1 },
+                          ],
                       },
                   },
               },
@@ -278,7 +351,10 @@ export default defineConfig({
                 }),
                 postcssUrl({ url: "inline" }),
                 inline_svg({
-                    paths: [path.resolve(__dirname, "assets"), path.resolve(__dirname, "src")],
+                    paths: [
+                        path.resolve(import.meta.dirname, "assets"),
+                        path.resolve(import.meta.dirname, "src"),
+                    ],
                 }),
                 viewportUnitFallback(),
                 autoprefixer() as any,
@@ -304,11 +380,11 @@ export default defineConfig({
                 if (id.startsWith("@moderator-ui/")) {
                     const moduleName = id.replace("@moderator-ui/", "");
                     const submodulePath = path.resolve(
-                        __dirname,
+                        import.meta.dirname,
                         `submodules/moderator-ui/${moduleName}/index.ts`,
                     );
                     const stubPath = path.resolve(
-                        __dirname,
+                        import.meta.dirname,
                         `src/stubs/moderator-ui/${moduleName}/index.ts`,
                     );
 
@@ -349,7 +425,15 @@ export default defineConfig({
                 };
             },
         },
-        process.env.NODE_ENV !== "production" ? nodePolyfills() : null,
+        // This plugin's inject step filters on file contents rather than file
+        // type, so the bare word "global" in ogs.css (which imports
+        // ./global_styl/*) makes it hand the stylesheet to the JS parser, which
+        // then warns that it cannot parse it. Browsers provide globalThis, and
+        // production builds ship without these polyfills entirely, so the
+        // `global` shim is not needed here. Buffer and process remain polyfilled.
+        process.env.NODE_ENV !== "production"
+            ? nodePolyfills({ globals: { global: false } })
+            : null,
         // Enable CSS sourcemaps in production builds
         cssSourcemap(),
         // checker relative directory is src/
@@ -364,7 +448,7 @@ export default defineConfig({
                   },
                   eslint: {
                       useFlatConfig: true,
-                      lintCommand: `eslint ${path.resolve(__dirname, "src")}`,
+                      lintCommand: `eslint ${path.resolve(import.meta.dirname, "src")}`,
                   },
                   overlay: {
                       initialIsOpen: true,
@@ -376,15 +460,18 @@ export default defineConfig({
     resolve: {
         alias: Object.assign(
             {
-                "@stubs/*": path.resolve(__dirname, "src/stubs/*"),
-                "@moderator-ui/*": path.resolve(__dirname, "src/stubs/moderator-ui/*"),
-                "@": path.resolve(__dirname, "src"),
-                goban: path.resolve(__dirname, "submodules/goban/src"),
+                "@stubs/*": path.resolve(import.meta.dirname, "src/stubs/*"),
+                "@moderator-ui/*": path.resolve(import.meta.dirname, "src/stubs/moderator-ui/*"),
+                "@": path.resolve(import.meta.dirname, "src"),
+                goban: path.resolve(import.meta.dirname, "submodules/goban/src"),
                 goscorer: path.resolve(
-                    __dirname,
+                    import.meta.dirname,
                     "submodules/goban/src/third_party/goscorer/goscorer",
                 ),
-                "react-dynamic-help": path.resolve(__dirname, "submodules/react-dynamic-help/src"),
+                "react-dynamic-help": path.resolve(
+                    import.meta.dirname,
+                    "submodules/react-dynamic-help/src",
+                ),
             },
             process.env.NODE_ENV !== "production"
                 ? {
@@ -405,9 +492,6 @@ export default defineConfig({
             "moment",
             "sweetalert2",
         ],
-        esbuildOptions: {
-            plugins: [fixReactVirtualized as any],
-        },
     },
 
     server: {
@@ -457,8 +541,8 @@ function ogs_vite_middleware(): Plugin {
                  * hide the problem). This is safe because /img/ is never used for SPA
                  * routes; it is reserved for CDN-mirrored repo assets. */
                 const assetRoots = [
-                    path.resolve(__dirname, "assets/img"),
-                    path.resolve(__dirname, "submodules/goban/assets/img"),
+                    path.resolve(import.meta.dirname, "assets/img"),
+                    path.resolve(import.meta.dirname, "submodules/goban/assets/img"),
                 ];
                 const mimeByExt: Record<string, string> = {
                     ".jpg": "image/jpeg",
