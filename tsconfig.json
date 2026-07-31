@@ -3,6 +3,7 @@
     "buildOnSave": false,
     "compilerOptions": {
         "outDir": "./dist/",
+        "rootDir": ".",
         "target": "es2020",
         "module": "esnext",
         "moduleResolution": "bundler",

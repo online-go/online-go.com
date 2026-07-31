@@ -587,7 +587,7 @@ export function Game(): React.ReactElement | null {
             try {
                 goban_controller.current?.destroy();
             } catch (e) {
-                console.error(e.stack);
+                console.error(e);
             }
             goban_controller.current = null;
             goban = null;

@@ -762,7 +762,7 @@ function MarkupChatLine({ line }: { line: ChatLine }): React.ReactElement {
                     return <span>[error loading chat line]</span>;
             }
         } catch (e) {
-            console.log(e.stack);
+            console.log(e);
             return <span>[error loading chat line]</span>;
         }
     }

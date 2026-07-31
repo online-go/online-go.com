@@ -332,7 +332,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
                     }
                 }
             } catch (e) {
-                console.error(e.stack);
+                console.error(e);
             }
         });
     }
