@@ -41,6 +41,7 @@ export interface TabDefinition {
     active?: boolean;
     disabled?: boolean;
     hideFromBar?: boolean;
+    keepGobanVisible?: boolean;
     onClick?: (event?: React.MouseEvent<HTMLButtonElement>) => void;
     onToggle?: (active: boolean) => void;
     children: React.ReactNode;
@@ -93,6 +94,7 @@ function partitionChildren(children: React.ReactNode): {
                 active: props.active,
                 disabled: props.disabled,
                 hideFromBar: props.hideFromBar,
+                keepGobanVisible: props.keepGobanVisible,
                 onClick: props.onClick,
                 onToggle: props.onToggle,
                 children: props.children,
@@ -263,7 +265,8 @@ function GobanViewComponent({
                 className={
                     `GobanView-tab-panel ${tab.type}` +
                     (visible ? "" : " hidden") +
-                    (tab.type === "takeover" && activeTakeover === tab.id ? " active" : "")
+                    (tab.type === "takeover" && activeTakeover === tab.id ? " active" : "") +
+                    (tab.keepGobanVisible ? " keep-goban-visible" : "")
                 }
             >
                 {showCloseButton && (
@@ -295,6 +298,11 @@ function GobanViewComponent({
         const bottomPanels = inlinePanels.filter((t) => t.mobilePosition === "bottom");
         const orderedPanels = [...topPanels, ...bottomPanels];
 
+        // keepGobanVisible takeovers displace the inline panels rather than
+        // the whole view, so they live in the scroll area below the goban.
+        const scrollingTakeovers = takeoverPanels.filter((t) => t.keepGobanVisible);
+        const overlayTakeovers = takeoverPanels.filter((t) => !t.keepGobanVisible);
+
         return (
             <GobanControllerContext.Provider value={controller}>
                 <GobanViewStateContext.Provider value={tabState}>
@@ -313,8 +321,9 @@ function GobanViewComponent({
                         </div>
                         <div className="GobanView-mobile-scroll">
                             {orderedPanels.map((t) => renderPanel(t, isInlineVisible(t)))}
+                            {scrollingTakeovers.map((t) => renderPanel(t, activeTakeover === t.id))}
                         </div>
-                        {takeoverPanels.map((t) => renderPanel(t, activeTakeover === t.id))}
+                        {overlayTakeovers.map((t) => renderPanel(t, activeTakeover === t.id))}
                         {sliderSlot}
                         <TabBar tabs={tabs} />
                         {others}

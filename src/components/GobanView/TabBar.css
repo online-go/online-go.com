@@ -18,15 +18,16 @@
 .GobanView-tab-bar {
     display: flex;
     align-items: center;
+    box-sizing: border-box;
     border-top: 1px solid var(--shade3);
     background: var(--shade4);
     padding: 0.25rem 0.5rem;
     padding-bottom: calc(0.25rem + constant(safe-area-inset-bottom));
-    padding-bottom: calc(0.25rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(0.25rem + var(--safe-area-inset-bottom));
     padding-left: calc(0.5rem + env(safe-area-inset-left));
     padding-right: calc(0.5rem + env(safe-area-inset-right));
     flex-shrink: 0;
-    min-height: calc(var(--goban-view-tab-bar-height) + env(safe-area-inset-bottom));
+    min-height: calc(var(--goban-view-tab-bar-height) + var(--safe-area-inset-bottom));
     z-index: 5;
 
     .GobanView-tab-bar-left {

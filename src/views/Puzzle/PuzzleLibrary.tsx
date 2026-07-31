@@ -19,6 +19,7 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { _ } from "@/lib/translate";
 import {
+    closestCenter,
     DndContext,
     DragEndEvent,
     MouseSensor,
@@ -46,6 +47,8 @@ interface PuzzleLibraryProps {
     /** Move `moved_id` to sit immediately after `after_id`. `after_id === 0`
      *  moves the puzzle to the top of the list. */
     onReorderPuzzle: (moved_id: number, after_id: number) => void;
+    /** Called when the user clicks a puzzle in the list, before navigation. */
+    onSelectPuzzle?: () => void;
 }
 
 export function PuzzleLibrary({
@@ -57,6 +60,7 @@ export function PuzzleLibrary({
     onRenameCollection,
     onDeletePuzzle,
     onReorderPuzzle,
+    onSelectPuzzle,
 }: PuzzleLibraryProps): React.ReactElement {
     return (
         <div className="PuzzleLibrary">
@@ -76,6 +80,7 @@ export function PuzzleLibrary({
                     can_edit={can_edit}
                     onDeletePuzzle={onDeletePuzzle}
                     onReorderPuzzle={onReorderPuzzle}
+                    onSelectPuzzle={onSelectPuzzle}
                 />
             )}
             {can_edit && (
@@ -182,12 +187,14 @@ function LibraryList({
     can_edit,
     onDeletePuzzle,
     onReorderPuzzle,
+    onSelectPuzzle,
 }: {
     items: PuzzleLibraryItem[];
     current_id?: number;
     can_edit: boolean;
     onDeletePuzzle: (puzzle_id: number) => void;
     onReorderPuzzle: (moved_id: number, after_id: number) => void;
+    onSelectPuzzle?: () => void;
 }): React.ReactElement {
     // Slight activation threshold so clicks on the name link aren't swallowed
     // by drag gesture recognition.
@@ -224,14 +231,17 @@ function LibraryList({
                         current_id={current_id}
                         can_edit={false}
                         onDelete={onDeletePuzzle}
+                        onSelect={onSelectPuzzle}
                     />
                 ))}
             </ul>
         );
     }
 
+    // closestCenter rather than the default rectIntersection, which drops
+    // short drags in a dense list as no-ops.
     return (
-        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={items} strategy={verticalListSortingStrategy}>
                 <ul className="PuzzleLibrary-list">
                     {items.map((item) => (
@@ -241,6 +251,7 @@ function LibraryList({
                             current_id={current_id}
                             can_edit
                             onDelete={onDeletePuzzle}
+                            onSelect={onSelectPuzzle}
                         />
                     ))}
                 </ul>
@@ -254,11 +265,13 @@ function PuzzleLibraryEntry({
     current_id,
     can_edit,
     onDelete,
+    onSelect,
 }: {
     item: PuzzleLibraryItem;
     current_id?: number;
     can_edit: boolean;
     onDelete: (puzzle_id: number) => void;
+    onSelect?: () => void;
 }): React.ReactElement {
     const sortable = useSortable({ id: item.id, disabled: !can_edit });
     const style: React.CSSProperties = can_edit
@@ -284,10 +297,15 @@ function PuzzleLibraryEntry({
                     {...sortable.attributes}
                     {...sortable.listeners}
                 >
-                    <i className="fa fa-bars" />
+                    <i className="fa fa-ellipsis-v"></i>
+                    <i className="fa fa-ellipsis-v"></i>
                 </span>
             )}
-            <Link to={`/puzzle/${item.id}`} className="PuzzleLibrary-entry-link">
+            <Link
+                to={`/puzzle/${item.id}`}
+                className="PuzzleLibrary-entry-link"
+                onClick={() => onSelect?.()}
+            >
                 {item.name}
             </Link>
             {can_edit && (

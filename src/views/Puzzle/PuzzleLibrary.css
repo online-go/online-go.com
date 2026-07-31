@@ -93,11 +93,19 @@
 
     .PuzzleLibrary-entry-handle {
         flex-shrink: 0;
-        padding: 0.5rem 0.25rem;
+        padding: 0rem 0.25rem;
         color: var(--shade2);
         cursor: grab;
         user-select: none;
         touch-action: none;
+
+        i {
+            font-size: 1.25rem !important;
+            margin: 0.25rem 0.1rem;
+        }
+        &:first-child {
+            margin-left: 0.25rem;
+        }
 
         &:active {
             cursor: grabbing;
@@ -136,6 +144,12 @@
     .PuzzleLibrary-footer {
         padding-top: 0.5rem;
         border-top: 1px solid var(--shade3);
+    }
+
+    /* The portrait takeover is full width, so keep the handle out of the
+       phone's edge-swipe strip. */
+    .GobanView.portrait & .PuzzleLibrary-entry-handle {
+        margin-left: 0.75rem;
     }
 
     .PuzzleLibrary-new-puzzle {

@@ -32,8 +32,8 @@ import "./PuzzleCollection.css";
  * tells the Puzzle view to open the library panel on mount.
  *
  * An empty collection has no puzzle to land on, so we render the same
- * PuzzleLibrary list standalone (with no entries). Owners and moderators get
- * the library's usual rename control and "New puzzle" link, so a brand-new
+ * PuzzleLibrary list standalone (with no entries). The owner gets the
+ * library's usual rename control and "New puzzle" link, so a brand-new
  * collection is immediately manageable.
  */
 export function PuzzleCollection(): React.ReactElement | null {
@@ -83,7 +83,8 @@ export function PuzzleCollection(): React.ReactElement | null {
     }
 
     const user = data.get("user");
-    const can_edit = collection.owner.id === user.id || !!user?.is_moderator;
+    // Renaming and adding puzzles are owner-only server side.
+    const can_edit = collection.owner.id === user.id;
 
     return (
         <div className="PuzzleCollection">
