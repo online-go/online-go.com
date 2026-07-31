@@ -21,7 +21,7 @@ jobs:
 
             - uses: actions/setup-node@v4
               with:
-                  node-version: "20"
+                  node-version: "24"
 
             - name: Cache node modules
               id: cache-node-modules
@@ -55,7 +55,7 @@ jobs:
 
             - uses: actions/setup-node@v4
               with:
-                  node-version: "20"
+                  node-version: "24"
 
             - name: Cache node modules
               id: cache-node-modules
@@ -89,7 +89,7 @@ jobs:
 
             - uses: actions/setup-node@v4
               with:
-                  node-version: "20"
+                  node-version: "24"
 
             - name: Cache node modules
               id: cache-node-modules
@@ -123,7 +123,7 @@ jobs:
 
             - uses: actions/setup-node@v4
               with:
-                  node-version: "20"
+                  node-version: "24"
 
             - name: Cache node modules
               id: cache-node-modules
