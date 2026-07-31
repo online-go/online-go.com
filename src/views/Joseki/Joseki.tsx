@@ -1544,6 +1544,7 @@ export function Joseki(): React.ReactElement {
                 icon={<i className="ogs-goban" />}
                 title={_("Play")}
                 onToggle={handlePlayToggle}
+                keepGobanVisible
             >
                 <PlayPane
                     move_type_sequence={move_type_sequence}
