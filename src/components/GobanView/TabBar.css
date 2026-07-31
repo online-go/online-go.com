@@ -18,12 +18,6 @@
 .GobanView-tab-bar {
     display: flex;
     align-items: center;
-    /* Without this the min-height below applies to the content box, so the
-       safe-area inset lands once in min-height and again in padding-bottom,
-       and the 3rem stacks on top of the button row rather than containing
-       it. The rest of GobanView.css offsets things by
-       calc(--goban-view-tab-bar-height + safe-area-inset-bottom), so the bar
-       has to actually be that tall. */
     box-sizing: border-box;
     border-top: 1px solid var(--shade3);
     background: var(--shade4);
