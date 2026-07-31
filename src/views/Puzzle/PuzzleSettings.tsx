@@ -34,6 +34,8 @@ interface PuzzleSettingsProps {
     color_transform_enabled: boolean;
     label_positioning: string;
     owner_id?: number;
+    /** Gates the collection settings — see the server's owner-only checks. */
+    is_collection_owner?: boolean;
     /** Collection info — optional because the new-puzzle flow has none. */
     collection_id?: number;
     collection_private?: boolean;
@@ -71,6 +73,7 @@ export function PuzzleSettings({
     color_transform_enabled,
     label_positioning,
     owner_id,
+    is_collection_owner,
     collection_id,
     collection_private,
     onToggleTransformX,
@@ -92,11 +95,10 @@ export function PuzzleSettings({
     const [debug, setDebug] = React.useState(false);
 
     const user = data.get("user");
-    const is_owner = !!user && user.id === owner_id;
-    const is_owner_or_mod = !!user && (user.is_moderator || user.id === owner_id);
-    const show_debug_toggle = is_owner_or_mod;
-    const show_collection_settings = is_owner_or_mod && collection_id !== undefined;
-    const show_acl = is_owner && collection_id !== undefined;
+    // The debug rows are local-only; the collection settings hit the server,
+    // which accepts the collection's owner alone.
+    const show_debug_toggle = !!user && (user.is_moderator || user.id === owner_id);
+    const show_collection_settings = !!is_collection_owner && collection_id !== undefined;
 
     const handleRandomizeTransform = (checked: boolean) => {
         preferences.set("puzzle.randomize.transform", checked);
@@ -257,7 +259,7 @@ export function PuzzleSettings({
                 <>
                     <h3 className="PuzzleSettings-heading">{_("Puzzle Collection Settings")}</h3>
                     <ul className="PuzzleSettings-list">{collection_rows.map(renderToggleRow)}</ul>
-                    {collection_private && show_acl && (
+                    {collection_private && (
                         <div className="PuzzleSettings-subsection">
                             <h4 className="PuzzleSettings-subheading">{_("Access control")}</h4>
                             <PuzzleCollectionAcl collection_id={collection_id} />

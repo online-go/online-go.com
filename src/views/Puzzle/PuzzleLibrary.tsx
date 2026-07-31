@@ -19,6 +19,7 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { _ } from "@/lib/translate";
 import {
+    closestCenter,
     DndContext,
     DragEndEvent,
     MouseSensor,
@@ -237,8 +238,10 @@ function LibraryList({
         );
     }
 
+    // closestCenter rather than the default rectIntersection, which drops
+    // short drags in a dense list as no-ops.
     return (
-        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={items} strategy={verticalListSortingStrategy}>
                 <ul className="PuzzleLibrary-list">
                     {items.map((item) => (
@@ -294,7 +297,8 @@ function PuzzleLibraryEntry({
                     {...sortable.attributes}
                     {...sortable.listeners}
                 >
-                    <i className="fa fa-bars" />
+                    <i className="fa fa-ellipsis-v"></i>
+                    <i className="fa fa-ellipsis-v"></i>
                 </span>
             )}
             <Link

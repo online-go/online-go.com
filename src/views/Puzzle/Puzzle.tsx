@@ -47,6 +47,8 @@ type TransformationOptions = "x" | "h" | "v" | "color" | "zoom";
 interface PuzzleCollectionInfo {
     id: number;
     name: string;
+    /** Absent on the /puzzle/new path, where no collection is chosen yet. */
+    owner?: rest_api.MinimalPlayerDetail;
     position_transform_enabled?: boolean;
     color_transform_enabled?: boolean;
     private?: boolean;
@@ -751,9 +753,7 @@ export function Puzzle(): React.ReactElement {
         [withMutation],
     );
 
-    // On mobile the library takeover covers the goban, so picking a puzzle
-    // from it should close it and reveal the puzzle immediately. On desktop
-    // the list sits alongside the board, so it stays open.
+    // The portrait takeover covers the goban; the landscape sidebar doesn't.
     const closeLibraryOnMobile = React.useCallback(() => {
         if (goban_view_mode() === "portrait") {
             gobanViewRef.current?.setActiveTakeover(null);
@@ -1140,8 +1140,10 @@ export function Puzzle(): React.ReactElement {
             (!goban!.engine.cur_move.parent && !!goban!.engine.puzzle_description);
 
         const user = data.get("user");
-        const is_owner = loadedState.owner.id === user.id;
-        const is_owner_or_mod = is_owner || !!user?.is_moderator;
+        // Every puzzle and collection mutation is collection-owner-only
+        // server side, moderators included.
+        const is_collection_owner =
+            !!playState.collection.owner && playState.collection.owner.id === user.id;
         const has_prev = findSiblingPuzzleId(state.puzzle_collection_summary, state.id, -1) !== 0;
         const has_next = findSiblingPuzzleId(state.puzzle_collection_summary, state.id, 1) !== 0;
         const at_start = !goban!.engine.cur_move.parent;
@@ -1181,6 +1183,7 @@ export function Puzzle(): React.ReactElement {
                         color_transform_enabled={!!playState.collection.color_transform_enabled}
                         label_positioning={state.label_positioning}
                         owner_id={loadedState.owner.id}
+                        is_collection_owner={is_collection_owner}
                         collection_id={playState.collection.id}
                         collection_private={!!playState.collection.private}
                         onToggleTransformX={toggle_transform_x}
@@ -1205,7 +1208,7 @@ export function Puzzle(): React.ReactElement {
                         collection_name={playState.collection.name}
                         current_id={state.id}
                         items={state.puzzle_collection_summary}
-                        can_edit={is_owner_or_mod}
+                        can_edit={is_collection_owner}
                         onRenameCollection={renameCollection}
                         onDeletePuzzle={deletePuzzleFromCollection}
                         onReorderPuzzle={reorderPuzzle}
@@ -1213,7 +1216,7 @@ export function Puzzle(): React.ReactElement {
                     />
                 </GobanView.Tab>
 
-                {is_owner_or_mod && (
+                {is_collection_owner && (
                     <GobanView.Tab
                         id="puzzle-edit"
                         icon="pencil"
