@@ -26,7 +26,7 @@ import { rankList } from "@/lib/rank_utils";
 import { GobanRendererConfig, GobanRenderer, PuzzleConfig, PuzzlePlacementSetting } from "goban";
 import type { PlayerCacheEntry } from "@/lib/player_cache";
 import { GobanController } from "@/lib/GobanController";
-import { GobanView, GobanViewRef } from "@/components/GobanView";
+import { goban_view_mode, GobanView, GobanViewRef } from "@/components/GobanView";
 import { Markdown } from "@/components/Markdown";
 import { StarRating } from "@/components/StarRating";
 import { Resizable } from "@/components/Resizable";
@@ -751,6 +751,15 @@ export function Puzzle(): React.ReactElement {
         [withMutation],
     );
 
+    // On mobile the library takeover covers the goban, so picking a puzzle
+    // from it should close it and reveal the puzzle immediately. On desktop
+    // the list sits alongside the board, so it stays open.
+    const closeLibraryOnMobile = React.useCallback(() => {
+        if (goban_view_mode() === "portrait") {
+            gobanViewRef.current?.setActiveTakeover(null);
+        }
+    }, []);
+
     // PuzzleLibrary emits a single-item move with the id of the puzzle that
     // should precede the moved one (after_id === 0 → move to the top).
     const reorderPuzzle = React.useCallback(
@@ -1200,6 +1209,7 @@ export function Puzzle(): React.ReactElement {
                         onRenameCollection={renameCollection}
                         onDeletePuzzle={deletePuzzleFromCollection}
                         onReorderPuzzle={reorderPuzzle}
+                        onSelectPuzzle={closeLibraryOnMobile}
                     />
                 </GobanView.Tab>
 
