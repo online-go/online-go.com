@@ -163,7 +163,7 @@ export function User(props: { user_id?: number }): React.ReactElement {
 
                     window.document.title = response.user.username;
                 } catch (err) {
-                    console.error(err.stack);
+                    console.error(err);
                 }
             })
             .catch((err) => {

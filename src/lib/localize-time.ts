@@ -39,7 +39,7 @@ export function localize_time_strings(str: string): string {
 
         return str;
     } catch (e) {
-        console.log(e.toString());
+        console.log(e);
         return str;
     }
 }

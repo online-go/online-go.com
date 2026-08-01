@@ -19,6 +19,13 @@
 
 import { Goban } from "goban";
 import moment from "moment/min/moment-with-locales";
+import momentDurationFormatSetup from "moment-duration-format";
+
+/* Installs Duration.format() on the moment instance we export. This has to
+ * happen here rather than at the call sites, since the bundled
+ * moment-with-locales build is a distinct moment instance from the one the
+ * plugin patches by default. */
+momentDurationFormatSetup(moment);
 
 export { moment };
 

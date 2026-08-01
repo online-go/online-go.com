@@ -13,18 +13,18 @@ jobs:
         timeout-minutes: 10
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
               with:
                   submodules: recursive
                   lfs: true
 
-            - uses: actions/setup-node@v4
+            - uses: actions/setup-node@v7
               with:
                   node-version: "24"
 
             - name: Cache node modules
               id: cache-node-modules
-              uses: actions/cache@v4
+              uses: actions/cache@v6
               with:
                   path: node_modules
                   key: ${{ runner.os }}-node-modules-${{ hashFiles('**/yarn.lock') }}
@@ -33,7 +33,7 @@ jobs:
 
             - name: yarn install
               if: steps.cache-node-modules.outputs.cache-hit != 'true'
-              uses: nick-fields/retry@v3
+              uses: nick-fields/retry@v4
               with:
                   timeout_minutes: 10
                   max_attempts: 3
