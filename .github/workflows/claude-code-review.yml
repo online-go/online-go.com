@@ -41,8 +41,10 @@ jobs:
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
 
-            Please analyze this pull request for bugs and performance issues. If you find any,
-            please leave concise professional comments describing what you found. Avoid nit picking.
+            Please analyze this pull request for bugs and performance issues. If
+            you find any, please leave concise professional comments describing what you
+            found. Avoid nit picking. If everything looks good, leave a quick "looks good to
+            me" comment, providing concise positive feedback if appropriate.
 
             After your first pass, please verify your analysis and remove any comments that are not
             relevant or accurate, or that turned out to not be real issues.
