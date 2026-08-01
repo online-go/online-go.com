@@ -17,17 +17,23 @@ opacity, variation display, undo indicators, and accessibility settings are excl
 
 ## Effective theme settings
 
-The selected `theme` is authoritative. A built-in board theme such as `Kaya` supplies its
-own background, grid, and label colors, so its exported `board` object contains only the
-selected theme name. The `custom` object is required when the selected theme is `Custom`
-and is rejected when a built-in theme is selected.
+The JSON stores only the settings that currently affect how the goban looks.
 
-Black and white stones follow the same rule independently. Custom shadow colors and
-gradients are included only when the selected shadow style is `custom`.
+For example, a built-in board theme such as `Kaya` already defines its background, grid,
+and label colors. When `Kaya` is selected, the exported `board` object therefore contains
+only the theme name. When `Custom` is selected, the `custom` object is required and
+contains the custom board settings. A `custom` object is not allowed for a built-in theme.
 
-This makes the document a portable description of the effective goban appearance rather
-than a backup of dormant theme-editor settings. Importing a built-in selection resets its
-inactive Custom settings to the documented defaults.
+Black and white stones follow the same rule separately: each stone color can use either a
+built-in theme or `Custom`. Custom shadow colors and gradients are exported only when the
+selected shadow style is `custom`.
+
+Unused Custom settings are not preserved. For example, if someone configured a custom
+board and later selected `Kaya`, the old custom settings are not exported. Importing that
+theme resets the unused Custom settings to their documented defaults.
+
+In short, the document describes what the goban looks like now. It is not a backup of
+every setting previously entered in the theme editor.
 
 ## Replacement and defaults
 
