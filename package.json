@@ -63,9 +63,9 @@
         "@types/postcss-import": "^14.0.3",
         "@types/postcss-inline-svg": "^5.0.4",
         "@types/qrcode": "^1.5.6",
-        "@types/react": "19.2.2",
+        "@types/react": "19.2.18",
         "@types/react-autosuggest": "^10.1.11",
-        "@types/react-dom": "19.2.2",
+        "@types/react-dom": "19.2.4",
         "@types/react-virtualized": "^9.22.3",
         "@types/sanitize-html": "^2.16.0",
         "@types/valid-url": "^1.0.7",
@@ -74,7 +74,7 @@
         "@typescript/native": "npm:typescript@7.0.2",
         "@vitejs/plugin-basic-ssl": "2.3.0",
         "@vitejs/plugin-react": "6.0.5",
-        "autoprefixer": "^10.4.23",
+        "autoprefixer": "^10.5.4",
         "body-parser": "2.2.0",
         "cspell": "^9.2.2",
         "cssnano": "^7.1.1",
@@ -151,10 +151,10 @@
         "prop-types": "^15.5.0",
         "qrcode": "^1.5.4",
         "query-string": "^9.3.1",
-        "react": "19.2.4",
+        "react": "19.2.8",
         "react-autosuggest": "^10.1.0",
         "react-datetime": "^3.3.1",
-        "react-dom": "19.2.4",
+        "react-dom": "19.2.8",
         "react-dropzone": "^14.3.8",
         "react-router-dom": "7.9.4",
         "react-select": "^5.10.2",
@@ -175,12 +175,12 @@
         ]
     },
     "resolutions": {
-        "**/react": "19.2.4",
-        "**/react-dom": "19.2.4",
-        "**/@types/react": "19.2.13",
-        "**/@types/react-dom": "19.2.3",
+        "**/react": "19.2.8",
+        "**/react-dom": "19.2.8",
+        "**/@types/react": "19.2.18",
+        "**/@types/react-dom": "19.2.4",
         "**/prettier": "3.8.2",
-        "**/vite": "^7.3.1"
+        "**/vite": "^8.2.0"
     },
     "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
