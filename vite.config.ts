@@ -177,8 +177,7 @@ export default defineConfig({
               // This is our production build
               outDir: "../dist",
               sourcemap: true,
-              minify: "esbuild",
-              // Maintain Vite 6 browser support
+              minify: "oxc",
               target: ["es2020", "edge88", "firefox78", "chrome87", "safari14"],
               chunkSizeWarningLimit: 1024 * 1024 * 1.5,
               rollupOptions: {
@@ -582,7 +581,9 @@ function ogs_vite_middleware(): Plugin {
                             return;
                         } catch (err) {
                             const code = (err as NodeJS.ErrnoException).code;
-                            if (code === "ENOENT" || code === "EISDIR") continue;
+                            if (code === "ENOENT" || code === "EISDIR") {
+                                continue;
+                            }
                             return next(err);
                         }
                     }
