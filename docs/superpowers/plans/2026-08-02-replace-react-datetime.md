@@ -706,7 +706,8 @@ Immediately above `export const suspendedUserCannotUpdateProfileTest`, add:
 /* AccountSettings fetches me/account_settings on mount and overwrites the username field with the
  * server value when it resolves. The field renders from cached user data before that, so navigating
  * and waiting only for the field to appear leaves a window where a typed value is silently
- * discarded. Waiting for the response closes it. */
+ * discarded. Waiting for the response removes the bulk of that window; callers retry their fill to
+ * cover the remaining gap between the response arriving and React committing the state update. */
 const gotoAccountSettings = async (page: Page) => {
     await Promise.all([
         page.waitForResponse(
@@ -755,9 +756,13 @@ with:
 
 ```ts
     const newUsername = "HackedUsername" + Date.now();
-    await usernameInput.fill(newUsername);
-    await expect(usernameInput).toHaveValue(newUsername);
+    await expect(async () => {
+        await usernameInput.fill(newUsername);
+        await expect(usernameInput).toHaveValue(newUsername);
+    }).toPass({ timeout: 15000 });
 ```
+
+`waitForResponse` resolves when the response headers arrive, which is before `requests.ts` parses the JSON body and before React commits `setUsername`. Retrying the fill until the value survives covers that remaining gap; a plain assertion would only detect the overwrite, not recover from it.
 
 - [ ] **Step 5: Apply the same two fixes to the normal-user test**
 
@@ -786,8 +791,10 @@ with:
 
 ```ts
     const newUsername = "ChangedUsername" + Date.now();
-    await usernameInput.fill(newUsername);
-    await expect(usernameInput).toHaveValue(newUsername);
+    await expect(async () => {
+        await usernameInput.fill(newUsername);
+        await expect(usernameInput).toHaveValue(newUsername);
+    }).toPass({ timeout: 15000 });
 ```
 
 - [ ] **Step 6: Verify statically**
