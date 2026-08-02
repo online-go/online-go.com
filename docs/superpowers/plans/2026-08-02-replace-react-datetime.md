@@ -19,8 +19,7 @@
 - Run `yarn prettier:file <modified-files>` on only the files you modified, never the whole tree.
 - Create the branch with `--no-track` so it does not inherit `origin/main` as upstream.
 - **Do not push.** Commit per task as directed, then show the diff and wait for the author's go-ahead before pushing.
-- E2E runner selection: run `hostname` first. Anything other than `e2eserver` is local dev, where the `yarn test:e2e*` variants in `package.json` are correct. This plan assumes local dev.
-- Pause between consecutive e2e runs to let the stack quiesce.
+- **Do not run Playwright.** Every task verifies statically (`prettier:file`, `type-check`, `lint`, `jest`) plus `yarn build` at the end. All e2e verification is deferred to the Handover section, which the author drives. A task that ends with its static checks green is complete for review purposes.
 - Do not translate or otherwise change the existing untranslated English headings in `BanModal.tsx` (`Public reason (displayed to user)`, `Moderator only notes (optional)`, `Ban expiration`). They are pre-existing and out of scope.
 - Do not change the pre-existing `onChange: (d: any) => void` prop type on `BanDetails` or the `Modal<Events, BanModalProperties, any>` state type. Pre-existing, out of scope.
 - Do not add `min`/`max` constraints to the new inputs. `react-datetime` imposed none; this change preserves behaviour rather than adding validation.
@@ -315,7 +314,7 @@ with:
     }
 ```
 
-- [ ] **Step 6: Verify the modal renders and suspension still works**
+- [ ] **Step 6: Verify statically**
 
 ```bash
 yarn --cwd /Users/mgregory/src/OGS/ogs-ui prettier:file src/components/BanModal/BanModal.tsx
@@ -323,10 +322,9 @@ yarn --cwd /Users/mgregory/src/OGS/ogs-ui type-check
 yarn --cwd /Users/mgregory/src/OGS/ogs-ui lint
 ```
 
-Then run the whole moderation e2e family, not just the one failing test — several tests in it drive the ban modal (`mod-suspend-appeal-restore.ts`, `mod-system-pm-button.ts`, `ai-detector-sees-suspension-modlog.ts`):
+Expected: all clean.
 
-Run: `yarn --cwd /Users/mgregory/src/OGS/ogs-ui test:e2e -- --grep "@Mod"`
-Expected: PASS. Before this task these fail at `expect(modPage.locator(".BanModal")).toBeVisible()`.
+Do not run Playwright. The moderation family (`mod-suspend-appeal-restore.ts`, `mod-system-pm-button.ts`, `ai-detector-sees-suspension-modlog.ts`) all drive this modal and are the behavioural check for this change, but they run once at Handover rather than per task.
 
 - [ ] **Step 7: Commit**
 
@@ -409,7 +407,7 @@ with:
 
 The `id="start-time"` connects the existing `<label className="control-label" htmlFor="start-time">` at line 1144, which currently points at no element because `react-datetime` never rendered that id.
 
-- [ ] **Step 4: Verify tournament creation works**
+- [ ] **Step 4: Verify statically**
 
 ```bash
 yarn --cwd /Users/mgregory/src/OGS/ogs-ui prettier:file src/views/Tournament/Tournament.tsx
@@ -417,21 +415,11 @@ yarn --cwd /Users/mgregory/src/OGS/ogs-ui type-check
 yarn --cwd /Users/mgregory/src/OGS/ogs-ui lint
 ```
 
-Then run the whole tournament e2e family. These tests navigate to `/tournament/new/<groupId>`, which renders this picker, so they are expected to be failing on the crash before this task even though none of them sets a start time explicitly. That expectation is inferred from the code, not observed — only the moderation failure was captured in a trace. If they were passing beforehand, stop and work out why before continuing, because it would mean the picker is not reached the way this plan assumes:
+Expected: all clean. `type-check` is the meaningful gate here — it is what catches a mismatch between the new `React.ChangeEvent<HTMLInputElement>` handler signature and the element it is attached to.
 
-Run: `yarn --cwd /Users/mgregory/src/OGS/ogs-ui test:e2e -- --grep "@Tournament"`
-Expected: PASS.
+Do not run Playwright. The tournament family navigates to `/tournament/new/<groupId>`, which renders this picker, so it is the behavioural check for this change — but it runs once at Handover rather than per task.
 
-- [ ] **Step 5: Manually confirm the value round-trips**
-
-The e2e tests use the default start time and never edit it, so exercise the edit path by hand:
-
-1. Open `/tournament/new` while logged in.
-2. Confirm the Start time field is pre-filled with the next whole hour in your local timezone.
-3. Change it to a different date and time.
-4. Create the tournament, then reopen it and confirm the displayed start time matches what you entered.
-
-- [ ] **Step 6: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 git -C /Users/mgregory/src/OGS/ogs-ui add src/views/Tournament/Tournament.tsx
@@ -508,33 +496,48 @@ yarn --cwd /Users/mgregory/src/OGS/ogs-ui build
 
 Expected: all clean. `yarn build` matters here specifically — the original bug only manifested in a bundled build, and this is the step that proves the dependency is gone from the graph.
 
-- [ ] **Step 6: Confirm the dev server no longer crashes**
-
-Load `/dev/styling` in a browser against the dev server and confirm the page renders with no `Element type is invalid` error in the console. This route was one of the three crash sites.
-
-- [ ] **Step 7: Re-run both e2e families**
-
-Pause between the two runs to let the stack quiesce.
-
-```bash
-yarn --cwd /Users/mgregory/src/OGS/ogs-ui test:e2e -- --grep "@Mod"
-yarn --cwd /Users/mgregory/src/OGS/ogs-ui test:e2e -- --grep "@Tournament"
-```
-
-Expected: PASS.
-
-- [ ] **Step 8: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
 git -C /Users/mgregory/src/OGS/ogs-ui add src/views/Styling/Styling.tsx package.json yarn.lock
 git -C /Users/mgregory/src/OGS/ogs-ui commit -m "chore(deps): drop react-datetime"
 ```
 
-- [ ] **Step 9: Show the diff and stop**
+- [ ] **Step 7: Show the diff and stop**
 
 Run: `git -C /Users/mgregory/src/OGS/ogs-ui diff main...replace-react-datetime`
 
-Show the author the diff and wait for their go-ahead before pushing. Remind them that PR CI does not run Playwright, so the e2e results above are the only e2e evidence, and that the PR needs manual testing in both mobile and desktop browsers — native `datetime-local` renders with a browser-supplied picker whose appearance differs from `react-datetime`'s, so this is a visible UI change on both call sites.
+Show the author the diff. Do not push. Implementation is then complete and the Handover section below is the author's to drive.
+
+---
+
+## Handover: verification the author drives
+
+Implementation ends at Task 4. Nothing below is dispatched to a subagent — this is the checklist for the author, in the order that fails fastest.
+
+**1. Load `/dev/styling`.** Against the dev server, with the console open. Expect the page to render with no `Element type is invalid` error. This was one of the three crash sites and is the cheapest possible confirmation that the fix works at all.
+
+**2. Ban expiration, by hand.** As a moderator, open a player's Suspend modal. Expect the modal to open at all — that is the exact failure from the original trace. Set an expiration, confirm the suspension applies, and confirm a suspension with the field left blank still works (blank means no expiration, and must send no `ban_expiration`).
+
+**3. Tournament start time round-trip, by hand.** No e2e test edits the start time, so this path has no automated cover in either direction:
+
+1. Open `/tournament/new` while logged in.
+2. Confirm the Start time field pre-fills with the next whole hour in local time.
+3. Change it to a different date and time.
+4. Create the tournament, reopen it, and confirm the displayed start time matches what was entered.
+
+**4. The two e2e families.** Pause between runs to let the stack quiesce.
+
+```bash
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui test:e2e -- --grep "@Mod"
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui test:e2e -- --grep "@Tournament"
+```
+
+Both are expected to pass. Before this branch, `@Mod` fails at `expect(modPage.locator(".BanModal")).toBeVisible()`. `@Tournament` is expected to be failing too, since those tests navigate to `/tournament/new/<groupId>` which renders the picker — but that expectation is inferred from the code, not observed, since only the moderation failure was captured in a trace.
+
+**5. Mobile and desktop browsers.** Native `datetime-local` renders a browser-supplied picker whose appearance differs from `react-datetime`'s, and differs between browsers. Both call sites are a visible UI change, so CONTRIBUTING's mobile/desktop check matters here more than usual.
+
+Note that PR CI does not run Playwright, so steps 1-4 are the only e2e evidence this change will ever get.
 
 ---
 
