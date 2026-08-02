@@ -41,7 +41,8 @@ import { log } from "@helpers/logger";
 /* AccountSettings fetches me/account_settings on mount and overwrites the username field with the
  * server value when it resolves. The field renders from cached user data before that, so navigating
  * and waiting only for the field to appear leaves a window where a typed value is silently
- * discarded. Waiting for the response closes it. */
+ * discarded. Waiting for the response removes the bulk of that window; callers retry their fill to
+ * cover the remaining gap between the response arriving and React committing the state update. */
 const gotoAccountSettings = async (page: Page) => {
     await Promise.all([
         page.waitForResponse(
@@ -93,8 +94,10 @@ export const suspendedUserCannotUpdateProfileTest = async ({
     await expect(usernameInput).toBeVisible({ timeout: 15000 });
 
     const newUsername = "HackedUsername" + Date.now();
-    await usernameInput.fill(newUsername);
-    await expect(usernameInput).toHaveValue(newUsername);
+    await expect(async () => {
+        await usernameInput.fill(newUsername);
+        await expect(usernameInput).toHaveValue(newUsername);
+    }).toPass({ timeout: 15000 });
 
     const saveButton = await expectOGSClickableByName(userPage, /Save/i);
     await saveButton.click();
@@ -148,8 +151,10 @@ export const normalUserCanUpdateProfileTest = async ({
     // Try to update username (should succeed for normal user)
     log("Attempting to update username...");
     const newUsername = "ChangedUsername" + Date.now();
-    await usernameInput.fill(newUsername);
-    await expect(usernameInput).toHaveValue(newUsername);
+    await expect(async () => {
+        await usernameInput.fill(newUsername);
+        await expect(usernameInput).toHaveValue(newUsername);
+    }).toPass({ timeout: 15000 });
 
     const saveButton = await expectOGSClickableByName(userPage, /Save/i);
     await saveButton.click();
