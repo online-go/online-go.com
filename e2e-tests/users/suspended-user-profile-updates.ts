@@ -29,7 +29,7 @@
 
 import type { CreateContextOptions } from "@helpers";
 
-import { BrowserContext, expect } from "@playwright/test";
+import { BrowserContext, expect, Page } from "@playwright/test";
 import {
     prepareNewUser,
     newTestUsername,
@@ -37,6 +37,19 @@ import {
 } from "../helpers/user-utils";
 import { expectOGSClickableByName } from "../helpers/matchers";
 import { log } from "@helpers/logger";
+
+/* AccountSettings fetches me/account_settings on mount and overwrites the username field with the
+ * server value when it resolves. The field renders from cached user data before that, so navigating
+ * and waiting only for the field to appear leaves a window where a typed value is silently
+ * discarded. Waiting for the response closes it. */
+const gotoAccountSettings = async (page: Page) => {
+    await Promise.all([
+        page.waitForResponse(
+            (response) => response.url().includes("/api/v1/me/account_settings") && response.ok(),
+        ),
+        page.goto("/settings/account"),
+    ]);
+};
 
 export const suspendedUserCannotUpdateProfileTest = async ({
     createContext,
@@ -52,7 +65,7 @@ export const suspendedUserCannotUpdateProfileTest = async ({
 
     // Navigate to account settings page to get initial username
     log("Getting initial username...");
-    await userPage.goto("/settings/account");
+    await gotoAccountSettings(userPage);
 
     // The username input is the first input in the settings page (after the Username label)
     const usernameInput = userPage.locator('dt:has-text("Username") + dd input');
@@ -76,11 +89,12 @@ export const suspendedUserCannotUpdateProfileTest = async ({
 
     // Try to update username while suspended
     log("Attempting to update username while suspended...");
-    await userPage.goto("/settings/account");
+    await gotoAccountSettings(userPage);
     await expect(usernameInput).toBeVisible({ timeout: 15000 });
 
     const newUsername = "HackedUsername" + Date.now();
     await usernameInput.fill(newUsername);
+    await expect(usernameInput).toHaveValue(newUsername);
 
     const saveButton = await expectOGSClickableByName(userPage, /Save/i);
     await saveButton.click();
@@ -122,7 +136,7 @@ export const normalUserCanUpdateProfileTest = async ({
 
     // Navigate to account settings page to get initial username
     log("Getting initial username...");
-    await userPage.goto("/settings/account");
+    await gotoAccountSettings(userPage);
 
     // The username input is the first input in the settings page (after the Username label)
     const usernameInput = userPage.locator('dt:has-text("Username") + dd input');
@@ -135,6 +149,7 @@ export const normalUserCanUpdateProfileTest = async ({
     log("Attempting to update username...");
     const newUsername = "ChangedUsername" + Date.now();
     await usernameInput.fill(newUsername);
+    await expect(usernameInput).toHaveValue(newUsername);
 
     const saveButton = await expectOGSClickableByName(userPage, /Save/i);
     await saveButton.click();
