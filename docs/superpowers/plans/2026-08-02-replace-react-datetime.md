@@ -511,9 +511,161 @@ Show the author the diff. Do not push. Implementation is then complete and the H
 
 ---
 
+### Task 5: Regression test for the BanDetails wiring
+
+Added after the final whole-branch review, which raised as its only Important finding that neither converted call site has any automated regression cover while PR CI never runs Playwright. This task closes that gap for the ban modal. There is no equivalent task for `Tournament.tsx`: it is a very large view component with heavy module-level dependencies, so an isolated render test there is disproportionate. That site stays manual-only, covered by Handover step 3.
+
+**Files:**
+- Modify: `src/components/BanModal/BanModal.tsx` (export `BanDetails`)
+- Create: `src/components/BanModal/BanModal.test.tsx`
+
+**Interfaces:**
+- Consumes: `BanDetails` from `./BanModal`, and the `fromDatetimeLocalValue` contract it relies on (empty value yields `undefined`).
+- Produces: nothing other code depends on.
+
+**What is being pinned:** `BanDetails` emits its state through `onChange` in a `React.useEffect`, so `onChange` fires once on mount and again after every field change. The contract under test is the shape of that emitted object — specifically that `ban_expiration` is `undefined` while the field is blank and a local-time `Date` once a value is chosen. That is exactly the wiring nothing else verifies.
+
+- [ ] **Step 1: Export BanDetails**
+
+`BanDetails` is currently module-private. In `src/components/BanModal/BanModal.tsx`, change:
+
+```tsx
+function BanDetails({ onChange }: { onChange: (d: any) => void }): React.ReactElement {
+```
+
+to:
+
+```tsx
+export function BanDetails({ onChange }: { onChange: (d: any) => void }): React.ReactElement {
+```
+
+Change nothing else about the function. Do not alter the `any` in its prop type — that is pre-existing and out of scope.
+
+- [ ] **Step 2: Write the failing test**
+
+Create `src/components/BanModal/BanModal.test.tsx`:
+
+```tsx
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import * as React from "react";
+import { fireEvent, render } from "@testing-library/react";
+import { BanDetails } from "./BanModal";
+
+jest.mock("@/lib/translate", () => ({
+    _: (msgid: string) => msgid,
+    pgettext: (_context: string, msgid: string) => msgid,
+    interpolate: (msgid: string) => msgid,
+}));
+
+/* The Date constructor's multi-argument form builds a local-time date, and the
+ * expiration field is local wall-clock, so these expectations hold in any timezone. */
+
+function expirationInput(container: HTMLElement): HTMLInputElement {
+    const input = container.querySelector('input[type="datetime-local"]');
+    if (!input) {
+        throw new Error("expiration input not found");
+    }
+    return input as HTMLInputElement;
+}
+
+describe("BanDetails", () => {
+    test("reports no expiration while the field is blank", () => {
+        const onChange = jest.fn();
+
+        render(<BanDetails onChange={onChange} />);
+
+        expect(onChange).toHaveBeenLastCalledWith({
+            public_reason: "",
+            moderator_notes: "",
+            ban_expiration: undefined,
+        });
+    });
+
+    test("reports the chosen expiration as a local-time Date", () => {
+        const onChange = jest.fn();
+        const { container } = render(<BanDetails onChange={onChange} />);
+
+        fireEvent.change(expirationInput(container), { target: { value: "2026-08-02T15:04" } });
+
+        expect(onChange).toHaveBeenLastCalledWith({
+            public_reason: "",
+            moderator_notes: "",
+            ban_expiration: new Date(2026, 7, 2, 15, 4),
+        });
+    });
+
+    test("returns to no expiration when the field is cleared", () => {
+        const onChange = jest.fn();
+        const { container } = render(<BanDetails onChange={onChange} />);
+
+        fireEvent.change(expirationInput(container), { target: { value: "2026-08-02T15:04" } });
+        fireEvent.change(expirationInput(container), { target: { value: "" } });
+
+        expect(onChange).toHaveBeenLastCalledWith({
+            public_reason: "",
+            moderator_notes: "",
+            ban_expiration: undefined,
+        });
+    });
+});
+```
+
+- [ ] **Step 3: Run the tests to verify they fail**
+
+Run: `yarn --cwd /Users/mgregory/src/OGS/ogs-ui test BanModal`
+Expected: FAIL. If Step 1 has not been applied, the failure is that `BanDetails` is not exported.
+
+If instead the failure is a module-resolution or import-time error from a transitive dependency of `BanModal.tsx` (it imports `@/lib/requests`, `@/lib/misc`, `@/components/Modal` and `@/lib/player_cache`), add the narrowest `jest.mock` that clears it, following the house pattern in `src/views/Settings/AccountSettings.test.tsx` (which mocks `@/lib/sockets`) and `src/components/GobanThemePicker/GobanCustomStoneUrlInput.test.tsx` (which mocks `@/lib/translate` and `@/lib/hooks`). Report every mock you added and why. Do not mock `@/components/Modal` — `BanModal` extends it, so a non-class mock breaks the module at import time.
+
+- [ ] **Step 4: Apply Step 1 if not already done, and run the tests to verify they pass**
+
+Run: `yarn --cwd /Users/mgregory/src/OGS/ogs-ui test BanModal`
+Expected: PASS, 3 tests.
+
+- [ ] **Step 5: Confirm the whole suite is still green**
+
+Run: `yarn --cwd /Users/mgregory/src/OGS/ogs-ui test`
+Expected: PASS. The branch was at 406 passing before this task, so expect 409.
+
+- [ ] **Step 6: Verify statically**
+
+```bash
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui prettier:file src/components/BanModal/BanModal.tsx src/components/BanModal/BanModal.test.tsx
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui type-check
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui lint
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui spellcheck
+```
+
+Expected: all clean. `spellcheck` is included because cspell is a CI gate in this repo and this task adds new prose.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git -C /Users/mgregory/src/OGS/ogs-ui add src/components/BanModal/BanModal.tsx src/components/BanModal/BanModal.test.tsx
+git -C /Users/mgregory/src/OGS/ogs-ui commit -m "test(moderation): pin the BanDetails expiration contract"
+```
+
+---
+
 ## Handover: verification the author drives
 
-Implementation ends at Task 4. Nothing below is dispatched to a subagent — this is the checklist for the author, in the order that fails fastest.
+Implementation ends at Task 5. Nothing below is dispatched to a subagent — this is the checklist for the author, in the order that fails fastest.
 
 **1. Load `/dev/styling`.** Against the dev server, with the console open. Expect the page to render with no `Element type is invalid` error. This was one of the three crash sites and is the cheapest possible confirmation that the fix works at all.
 
