@@ -517,14 +517,19 @@ Implementation ends at Task 4. Nothing below is dispatched to a subagent — thi
 
 **1. Load `/dev/styling`.** Against the dev server, with the console open. Expect the page to render with no `Element type is invalid` error. This was one of the three crash sites and is the cheapest possible confirmation that the fix works at all.
 
-**2. Ban expiration, by hand.** As a moderator, open a player's Suspend modal. Expect the modal to open at all — that is the exact failure from the original trace. Set an expiration, confirm the suspension applies, and confirm a suspension with the field left blank still works (blank means no expiration, and must send no `ban_expiration`).
+**2. Ban expiration, by hand.** No e2e test sets an expiration — every one of them fills only the public reason — so this whole path is manual-only.
 
-**3. Tournament start time round-trip, by hand.** No e2e test edits the start time, so this path has no automated cover in either direction:
+1. As a moderator, open a player's Suspend modal. Expect it to open at all: that is the exact failure from the original trace.
+2. Suspend with the expiration left blank. Blank must send no `ban_expiration` at all — `fromDatetimeLocalValue("")` returns `undefined` and `JSON.stringify` drops the key. This path is exercised incidentally by the e2e suite but never asserted.
+3. Suspend with an expiration set. Check the value actually recorded on the server, not just that the suspension applied. The field is local wall-clock and `BanModal.tsx:57` sends `.toISOString()`, so a value entered as 15:04 local must arrive as the correct UTC instant. This local-to-UTC hop has no automated cover of any kind.
+
+**3. Tournament start time round-trip, by hand.** The e2e tests create tournaments with the default time and never touch the field, so `setStartTime` is never invoked by any automated test:
 
 1. Open `/tournament/new` while logged in.
-2. Confirm the Start time field pre-fills with the next whole hour in local time.
-3. Change it to a different date and time.
-4. Create the tournament, reopen it, and confirm the displayed start time matches what was entered.
+2. Confirm the Start time field pre-fills with the next whole hour in local time. This much the e2e suite does cover, since it renders the default.
+3. Change it to a different date and time. Everything from here down is uncovered.
+4. Create the tournament, reopen it, and confirm the displayed start time matches what was entered. The value goes local wall-clock to `moment(start).format()` to `.utc().format()` on save (`Tournament.tsx:575`) and back through `moment(...).format("LLLL")` for display (`:888`), so a mismatch here means the timezone hop is wrong.
+5. Worth doing once with a value that crosses a DST boundary in your local zone, since that is where a local-time-only helper is most likely to be wrong.
 
 **4. The three affected e2e families.** Pause between runs to let the stack quiesce.
 
