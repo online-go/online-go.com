@@ -16,9 +16,9 @@
  */
 
 import * as React from "react";
-import Datetime from "react-datetime";
 import { put } from "@/lib/requests";
 import { _ } from "@/lib/translate";
+import { fromDatetimeLocalValue } from "@/lib/datetime_input";
 import { errorAlerter } from "@/lib/misc";
 import { Modal } from "@/components/Modal";
 import * as player_cache from "@/lib/player_cache";
@@ -91,13 +91,13 @@ export class BanModal extends Modal<Events, BanModalProperties, any> {
 function BanDetails({ onChange }: { onChange: (d: any) => void }): React.ReactElement {
     const [public_reason, set_public_reason] = React.useState("");
     const [moderator_notes, set_moderator_notes] = React.useState("");
-    const [expiration, set_expiration] = React.useState();
+    const [expiration, set_expiration] = React.useState("");
 
     React.useEffect(() => {
         onChange({
             public_reason: public_reason,
             moderator_notes: moderator_notes,
-            ban_expiration: expiration,
+            ban_expiration: fromDatetimeLocalValue(expiration),
         });
     }, [public_reason, moderator_notes, expiration]);
 
@@ -113,7 +113,12 @@ function BanDetails({ onChange }: { onChange: (d: any) => void }): React.ReactEl
             />
 
             <h3>Ban expiration</h3>
-            <Datetime value={expiration} onChange={(d: any) => set_expiration(d._d)} />
+            <input
+                type="datetime-local"
+                className="ban-expiration"
+                value={expiration}
+                onChange={(e) => set_expiration(e.target.value)}
+            />
         </div>
     );
 }
