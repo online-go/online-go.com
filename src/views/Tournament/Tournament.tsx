@@ -29,7 +29,7 @@ import { handicapText } from "@/components/GameAcceptModal";
 import { TimeControl, timeControlDescription } from "@/components/TimeControl";
 import { Markdown } from "@/components/Markdown";
 import { Player, setExtraActionCallback } from "@/components/Player";
-import Datetime from "react-datetime";
+import { fromDatetimeLocalValue, toDatetimeLocalValue } from "@/lib/datetime_input";
 import { UIPush } from "@/components/UIPush";
 import { Card } from "@/components/material";
 import { EmbeddedChatCard } from "@/components/Chat";
@@ -613,9 +613,10 @@ export function Tournament(): React.ReactElement {
     const setTournamentName = (ev: React.ChangeEvent<HTMLInputElement>) => {
         setTournament({ ...tournament, name: ev.target.value });
     };
-    const setStartTime = (t: any) => {
-        if (t && t.format) {
-            setTournament({ ...tournament, time_start: t.format() });
+    const setStartTime = (ev: React.ChangeEvent<HTMLInputElement>) => {
+        const start = fromDatetimeLocalValue(ev.target.value);
+        if (start) {
+            setTournament({ ...tournament, time_start: moment(start).format() });
         }
     };
 
@@ -1149,9 +1150,13 @@ export function Tournament(): React.ReactElement {
                             </label>
                             <div className="controls">
                                 <div className="checkbox">
-                                    <Datetime
+                                    <input
+                                        type="datetime-local"
+                                        id="start-time"
+                                        value={toDatetimeLocalValue(
+                                            new Date(tournament.time_start),
+                                        )}
                                         onChange={setStartTime}
-                                        value={new Date(tournament.time_start)}
                                     />
                                 </div>
                             </div>
