@@ -92,11 +92,14 @@ export const suspendedUserCannotUpdateProfileTest = async ({
     log("Attempting to update username while suspended...");
     await gotoAccountSettings(userPage);
     await expect(usernameInput).toBeVisible({ timeout: 15000 });
+    // The field holding the fetched username proves AccountSettings has committed its state
+    // update, so nothing remains that can overwrite the value typed below.
+    await expect(usernameInput).toHaveValue(initialUsername);
 
     const newUsername = "HackedUsername" + Date.now();
     await expect(async () => {
         await usernameInput.fill(newUsername);
-        await expect(usernameInput).toHaveValue(newUsername);
+        await expect(usernameInput).toHaveValue(newUsername, { timeout: 1000 });
     }).toPass({ timeout: 15000 });
 
     const saveButton = await expectOGSClickableByName(userPage, /Save/i);
@@ -153,7 +156,7 @@ export const normalUserCanUpdateProfileTest = async ({
     const newUsername = "ChangedUsername" + Date.now();
     await expect(async () => {
         await usernameInput.fill(newUsername);
-        await expect(usernameInput).toHaveValue(newUsername);
+        await expect(usernameInput).toHaveValue(newUsername, { timeout: 1000 });
     }).toPass({ timeout: 15000 });
 
     const saveButton = await expectOGSClickableByName(userPage, /Save/i);
