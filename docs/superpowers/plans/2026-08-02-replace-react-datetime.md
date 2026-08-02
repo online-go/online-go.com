@@ -513,7 +513,9 @@ Show the author the diff. Do not push. Implementation is then complete and the H
 
 ### Task 5: Regression test for the BanDetails wiring
 
-Added after the final whole-branch review, which raised as its only Important finding that neither converted call site has any automated regression cover while PR CI never runs Playwright. This task closes that gap for the ban modal. There is no equivalent task for `Tournament.tsx`: it is a very large view component with heavy module-level dependencies, so an isolated render test there is disproportionate. That site stays manual-only, covered by Handover step 3.
+Added after the final whole-branch review, which raised as its only Important finding that neither converted call site has any automated regression cover.
+
+Be accurate about what this buys. PR CI runs `lint.yml` (prettier:check, lint, type-check, spellcheck) and `build.yml` (`yarn build-ci`). It does **not** run jest: `.github/workflows/unit_test.yml:3-7` is `workflow_dispatch:` only, with `push:` and `pull_request:` commented out. `e2e-tests.yml` runs on push to `main`, i.e. post-merge. So this test protects the contract for whoever runs `yarn test` locally, and becomes a genuine PR gate only if `unit_test.yml` is re-enabled on `pull_request` — a separate decision. There is no equivalent task for `Tournament.tsx`: it is a very large view component with heavy module-level dependencies, so an isolated render test there is disproportionate. That site stays manual-only, covered by Handover step 3.
 
 **Files:**
 - Modify: `src/components/BanModal/BanModal.tsx` (export `BanDetails`)
