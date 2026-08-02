@@ -38,8 +38,8 @@ export function toDatetimeLocalValue(date: Date): string {
 }
 
 /** Parses an `<input type="datetime-local">` value as local wall-clock time.
- *  An empty or unparseable value yields undefined, which both callers treat as
- *  "no date chosen". */
+ *  An empty value, or one that cannot be parsed, yields undefined, which both
+ *  callers treat as "no date chosen". */
 export function fromDatetimeLocalValue(value: string): Date | undefined {
     if (!value) {
         return undefined;

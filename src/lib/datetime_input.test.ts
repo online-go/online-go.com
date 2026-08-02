@@ -47,7 +47,7 @@ describe("fromDatetimeLocalValue", () => {
         expect(fromDatetimeLocalValue("")).toBeUndefined();
     });
 
-    test("returns undefined for an unparseable value", () => {
+    test("returns undefined for a value that cannot be parsed", () => {
         expect(fromDatetimeLocalValue("not a date")).toBeUndefined();
     });
 
