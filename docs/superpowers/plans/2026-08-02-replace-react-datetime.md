@@ -663,9 +663,157 @@ git -C /Users/mgregory/src/OGS/ogs-ui commit -m "test(moderation): pin the BanDe
 
 ---
 
+### Task 6: Close the account-settings race in the @User profile tests
+
+Added after the author ran the `@User` family against this branch and hit a failure. This is a **pre-existing e2e defect, not caused by the react-datetime work** — it is being fixed here because this branch is what exposed it, and merging with a red `@User` family would be worse.
+
+**The defect.** `AccountSettings.tsx:86-103` runs `refreshAccountSettings` on mount: it sets `loading` true, fetches `me/account_settings`, and in the `.then()` calls `setUsername(settings.username)` and `setLoading(false)`. `AccountSettings.tsx:274` computes `save_button_disabled = (loading || !profile_changed) && password1.length === 0`. The tests `goto("/settings/account")`, wait only for the username input to be *visible*, then `fill()` a new name. The input renders immediately from `React.useState(user.username)` (`AccountSettings.tsx:42`), long before the fetch resolves — so when the response lands it overwrites the typed value, `profile_changed` goes false and Save stays disabled.
+
+Observed margin in the captured trace: the response returned 200 at t=18991.4 ms and `fill()` ran at t=19013.0 ms, 21.6 ms later. The `.then()` callback re-rendered after the fill.
+
+This became reachable only now: since the vite 8 bump, `banUserAsModerator` (`helpers/user-utils.ts:809`) crashed on `.BanModal`, so the suspended test never got this far. The race itself dates to `5cb26ff16` (2025-12-13), which replaced `await userPage.waitForLoadState("networkidle")` with `await expect(usernameInput).toBeVisible()`; visible is not populated.
+
+`normalUserCanUpdateProfileTest` in the same file has the identical pattern and passed by luck — fix both. `suspended-user-deletion-request.ts` never fills an input and needs no change.
+
+**Files:**
+- Modify: `e2e-tests/users/suspended-user-profile-updates.ts`
+
+**Interfaces:**
+- Consumes: nothing from earlier tasks.
+- Produces: nothing.
+
+- [ ] **Step 1: Wait for the fetch before reading the initial username (suspended test)**
+
+In `suspendedUserCannotUpdateProfileTest`, replace:
+
+```ts
+    log("Getting initial username...");
+    await userPage.goto("/settings/account");
+```
+
+with:
+
+```ts
+    log("Getting initial username...");
+    await gotoAccountSettings(userPage);
+```
+
+- [ ] **Step 2: Add the shared navigation helper**
+
+Immediately above `export const suspendedUserCannotUpdateProfileTest`, add:
+
+```ts
+/* AccountSettings fetches me/account_settings on mount and overwrites the username field with the
+ * server value when it resolves. The field renders from cached user data before that, so navigating
+ * and waiting only for the field to appear leaves a window where a typed value is silently
+ * discarded. Waiting for the response closes it. */
+const gotoAccountSettings = async (page: Page) => {
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes("/api/v1/me/account_settings") && response.ok(),
+        ),
+        page.goto("/settings/account"),
+    ]);
+};
+```
+
+Add `Page` to the existing `@playwright/test` import so it reads:
+
+```ts
+import { BrowserContext, expect, Page } from "@playwright/test";
+```
+
+- [ ] **Step 3: Wait for the fetch on the post-suspension navigation**
+
+Replace:
+
+```ts
+    log("Attempting to update username while suspended...");
+    await userPage.goto("/settings/account");
+    await expect(usernameInput).toBeVisible({ timeout: 15000 });
+```
+
+with:
+
+```ts
+    log("Attempting to update username while suspended...");
+    await gotoAccountSettings(userPage);
+    await expect(usernameInput).toBeVisible({ timeout: 15000 });
+```
+
+- [ ] **Step 4: Confirm the typed value was accepted (suspended test)**
+
+Replace:
+
+```ts
+    const newUsername = "HackedUsername" + Date.now();
+    await usernameInput.fill(newUsername);
+```
+
+with:
+
+```ts
+    const newUsername = "HackedUsername" + Date.now();
+    await usernameInput.fill(newUsername);
+    await expect(usernameInput).toHaveValue(newUsername);
+```
+
+- [ ] **Step 5: Apply the same two fixes to the normal-user test**
+
+In `normalUserCanUpdateProfileTest`, replace:
+
+```ts
+    log("Getting initial username...");
+    await userPage.goto("/settings/account");
+```
+
+with:
+
+```ts
+    log("Getting initial username...");
+    await gotoAccountSettings(userPage);
+```
+
+and replace:
+
+```ts
+    const newUsername = "ChangedUsername" + Date.now();
+    await usernameInput.fill(newUsername);
+```
+
+with:
+
+```ts
+    const newUsername = "ChangedUsername" + Date.now();
+    await usernameInput.fill(newUsername);
+    await expect(usernameInput).toHaveValue(newUsername);
+```
+
+- [ ] **Step 6: Verify statically**
+
+```bash
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui prettier:file e2e-tests/users/suspended-user-profile-updates.ts
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui type-check
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui lint
+```
+
+Expected: all clean. Note `lint` only covers `src/`, and `spellcheck` only covers `src/**`, so neither reads this file — `type-check` is the gate that does, since tsconfig includes `e2e-tests`.
+
+Do not run Playwright. The author runs the `@User` family at Handover step 4 and that is the real verification for this task.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git -C /Users/mgregory/src/OGS/ogs-ui add e2e-tests/users/suspended-user-profile-updates.ts
+git -C /Users/mgregory/src/OGS/ogs-ui commit -m "test(e2e): wait for account settings to load before editing the username"
+```
+
+---
+
 ## Handover: verification the author drives
 
-Implementation ends at Task 5. Nothing below is dispatched to a subagent — this is the checklist for the author, in the order that fails fastest.
+Implementation ends at Task 6. Nothing below is dispatched to a subagent — this is the checklist for the author, in the order that fails fastest.
 
 **1. Load `/dev/styling`.** Against the dev server, with the console open. Expect the page to render with no `Element type is invalid` error. This was one of the three crash sites and is the cheapest possible confirmation that the fix works at all.
 
