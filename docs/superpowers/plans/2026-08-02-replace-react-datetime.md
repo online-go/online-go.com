@@ -526,14 +526,35 @@ Implementation ends at Task 4. Nothing below is dispatched to a subagent — thi
 3. Change it to a different date and time.
 4. Create the tournament, reopen it, and confirm the displayed start time matches what was entered.
 
-**4. The two e2e families.** Pause between runs to let the stack quiesce.
+**4. The three affected e2e families.** Pause between runs to let the stack quiesce.
 
 ```bash
 yarn --cwd /Users/mgregory/src/OGS/ogs-ui test:e2e -- --grep "@Mod"
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui test:e2e -- --grep "@User"
 yarn --cwd /Users/mgregory/src/OGS/ogs-ui test:e2e -- --grep "@Tournament"
 ```
 
-Both are expected to pass. Before this branch, `@Mod` fails at `expect(modPage.locator(".BanModal")).toBeVisible()`. `@Tournament` is expected to be failing too, since those tests navigate to `/tournament/new/<groupId>` which renders the picker — but that expectation is inferred from the code, not observed, since only the moderation failure was captured in a trace.
+**Use `test:e2e`, not `test:e2e:quick`.** `:quick` applies `--grep-invert "@Smoke|@Slow|@Visual|@E2EUtils|@Manual"`, which excludes the one affected `@Slow` test (see the table below).
+
+`@User` is affected because `helpers/user-utils.ts:772` exports `banUserAsModerator`, which drives the ban modal, and two `@User Profile Tests` call it.
+
+Nine tests across the three families render a converted picker:
+
+| Family | Test | Reaches the picker via | `@Slow`? |
+|---|---|---|---|
+| `@Mod` | Complete suspend-appeal-restore flow | `.BanModal` directly | no |
+| `@Mod` | System PM button | `.BanModal` directly | no |
+| `@Mod` | Suspended user can login to reach appeal page | `banUserAsModerator` | no |
+| `@Mod` | AI Detector sees SUSPENSION ModLog entries | `.BanModal` directly | **yes** |
+| `@User` | Suspended users cannot update their profile name | `banUserAsModerator` | no |
+| `@User` | Suspended users see deletion request button | `banUserAsModerator` | no |
+| `@Tournament` | Round robin start | `/tournament/new/<groupId>` | no |
+| `@Tournament` | McMahon start | `/tournament/new/<groupId>` | no |
+| `@Tournament` | Disable vacation | `/tournament/new/<groupId>` | no |
+
+All are expected to pass. Before this branch, `@Mod` fails at `expect(modPage.locator(".BanModal")).toBeVisible()`. `@User` and `@Tournament` are expected to be failing too for the same reason — but that expectation is inferred from the code, not observed, since only the moderation failure was captured in a trace.
+
+No `cm/` test touches the ban modal or `banUserAsModerator`, and `tournaments/` has no `@Slow` tests, so the `@CM` family is unaffected.
 
 **5. Mobile and desktop browsers.** Native `datetime-local` renders a browser-supplied picker whose appearance differs from `react-datetime`'s, and differs between browsers. Both call sites are a visible UI change, so CONTRIBUTING's mobile/desktop check matters here more than usual.
 
