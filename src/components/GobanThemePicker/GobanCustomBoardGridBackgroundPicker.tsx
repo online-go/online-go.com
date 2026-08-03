@@ -19,10 +19,13 @@ import * as React from "react";
 import { pgettext, interpolate } from "@/lib/translate";
 import { usePreference } from "@/lib/preferences";
 import type { CustomBoardGridBackgrounds } from "goban";
+import { createGobanThemePreferenceDefaults } from "@/lib/goban_theme_defaults";
 import { LineText } from "../misc-ui";
 import "./GobanCustomBoardGridBackgroundPicker.css";
 
 const grid_background_sizes: (keyof CustomBoardGridBackgrounds)[] = ["9", "13", "19"];
+const default_grid_backgrounds =
+    createGobanThemePreferenceDefaults()["goban-theme-custom-board-grid-backgrounds"];
 
 // Compact label shown next to each input, e.g. "9×9".
 function getGridSizeLabel(size: keyof CustomBoardGridBackgrounds): string {
@@ -109,7 +112,9 @@ export function GobanCustomBoardGridBackgroundPicker(): React.ReactElement {
                                 className="color-reset"
                                 title={reset_label}
                                 aria-label={reset_label}
-                                onClick={() => setGridBackground(size, "")}
+                                onClick={() =>
+                                    setGridBackground(size, default_grid_backgrounds[size])
+                                }
                             >
                                 <i className="fa fa-undo" />
                             </button>

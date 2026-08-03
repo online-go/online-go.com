@@ -15,6 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 .ThemePreferences {
+    flex: 1;
+    min-width: 0;
+
+    .PreferenceLine.goban-theme-sharing {
+        display: flex;
+        width: 100%;
+        align-items: flex-start;
+
+        .PreferenceLineTitle {
+            padding-top: 0.5rem;
+        }
+
+        .PreferenceLineBody {
+            flex: 1 1 24rem;
+            min-width: 0;
+        }
+    }
+
     .select-custom {
         font-size: larger;
         font-weight: bold;
