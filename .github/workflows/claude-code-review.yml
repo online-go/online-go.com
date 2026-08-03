@@ -37,6 +37,10 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           allowed_non_write_users: '*'
+          # TODO: temporary diagnostic - remove after one run. Prints the full
+          # session transcript to the workflow log so we can see which tool calls
+          # are being denied.
+          show_full_output: true
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
@@ -49,9 +53,17 @@ jobs:
             After your first pass, please verify your analysis and remove any comments that are not
             relevant or accurate, or that turned out to not be real issues.
 
-            Use `gh pr comment` with your Bash tool to leave your review as a comment on the PR.
+            For findings tied to specific lines, use the
+            `mcp__github_inline_comment__create_inline_comment` tool to comment directly on
+            those lines rather than describing the location in prose. Use `startLine` with
+            `line` for a range. Where you can name the exact replacement, include a
+            ```suggestion``` block so the author can apply it in one click; the block
+            replaces the entire line range, so make sure it is syntactically complete.
+
+            Use `gh pr comment` with your Bash tool for the overall summary, and to leave
+            your "looks good to me" when there is nothing line-specific to raise.
 
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options
-          claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
+          claude_args: '--allowed-tools "mcp__github_inline_comment__create_inline_comment,Read,Grep,Glob,Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
 
