@@ -48,14 +48,19 @@
     display: block;
 }
 
-html, body, #main-content {
+html,
+body,
+#main-content {
     height: 100%;
     font-size: var(--font-size-normal);
     -webkit-backface-visibility: hidden;
     -webkit-tap-highlight-color: transparent;
 }
 
-html, body, #main-content, #main-content > div {
+html,
+body,
+#main-content,
+#main-content > div {
     margin: 0;
     padding: 0;
     min-height: 100%;
@@ -64,7 +69,7 @@ html, body, #main-content, #main-content > div {
 }
 
 .monospace {
-    font-family: 'Source Code Pro', monospace;
+    font-family: "Source Code Pro", monospace;
 }
 
 .text-align-center {
@@ -92,23 +97,33 @@ html, body, #main-content, #main-content > div {
     flex: 1 0 auto;
 }
 
-a, .clickable, .fakelink {
+a,
+.clickable,
+.fakelink {
     text-decoration: none;
     color: var(--link-color);
     cursor: pointer;
 }
 
-a:active, a:hover, .clickable:hover, .fakelink:hover {
+a:active,
+a:hover,
+.clickable:hover,
+.fakelink:hover {
     text-decoration: underline;
     color: var(--link-color-active);
 }
 
-a.primary, .primary.clickable, .primary.fakelink {
+a.primary,
+.primary.clickable,
+.primary.fakelink {
     color: var(--primary);
     background-color: var(--clear);
 }
 
-a.primary:active, a.primary:hover, .primary.clickable:hover, .primary.fakelink:hover {
+a.primary:active,
+a.primary:hover,
+.primary.clickable:hover,
+.primary.fakelink:hover {
     color: var(--primary);
 }
 
@@ -192,19 +207,43 @@ a.primary:active, a.primary:hover, .primary.clickable:hover, .primary.fakelink:h
     }
 }
 
-.fg-shade0 { color: var(--shade0); }
-.fg-shade1 { color: var(--shade1); }
-.fg-shade2 { color: var(--shade2); }
-.fg-shade3 { color: var(--shade3); }
-.fg-shade4 { color: var(--shade4); }
-.fg-shade5 { color: var(--shade5); }
+.fg-shade0 {
+    color: var(--shade0);
+}
+.fg-shade1 {
+    color: var(--shade1);
+}
+.fg-shade2 {
+    color: var(--shade2);
+}
+.fg-shade3 {
+    color: var(--shade3);
+}
+.fg-shade4 {
+    color: var(--shade4);
+}
+.fg-shade5 {
+    color: var(--shade5);
+}
 
-.bg-shade0 { background-color: var(--shade0); }
-.bg-shade1 { background-color: var(--shade1); }
-.bg-shade2 { background-color: var(--shade2); }
-.bg-shade3 { background-color: var(--shade3); }
-.bg-shade4 { background-color: var(--shade4); }
-.bg-shade5 { background-color: var(--shade5); }
+.bg-shade0 {
+    background-color: var(--shade0);
+}
+.bg-shade1 {
+    background-color: var(--shade1);
+}
+.bg-shade2 {
+    background-color: var(--shade2);
+}
+.bg-shade3 {
+    background-color: var(--shade3);
+}
+.bg-shade4 {
+    background-color: var(--shade4);
+}
+.bg-shade5 {
+    background-color: var(--shade5);
+}
 
 /* ** Error stuff ** */
 .error-message {
@@ -214,14 +253,17 @@ a.primary:active, a.primary:hover, .primary.clickable:hover, .primary.fakelink:h
     background-color: var(--error-boundary-bg);
 }
 
-input.boxed.validation-error, input.validation-error {
+input.boxed.validation-error,
+input.validation-error {
     box-shadow: 0px 0px 5px rgba(255, 128, 128, 0.2);
     border-color: var(--reject);
     background-color: var(--error-boundary-bg);
 }
 
 /* ** INPUT ** */
-input, select, textarea {
+input,
+select,
+textarea {
     font-size: var(--font-size-normal);
     padding-top: 0.2rem;
     padding-left: 0.2rem;
@@ -235,13 +277,21 @@ input, select, textarea {
     color: var(--input-fg);
 }
 
+/* Date and time pickers are drawn by the browser, so they need to be told which
+ * scheme to use or they follow the OS rather than the active theme. */
+input[type="datetime-local"] {
+    color-scheme: var(--control-color-scheme);
+}
+
 textarea {
     border: 1px solid transparent;
     border-color: var(--input-border);
     padding: 0.3rem;
 }
 
-input.boxed, select.boxed, textarea.boxed {
+input.boxed,
+select.boxed,
+textarea.boxed {
     padding: 0.5rem 0.5rem;
     box-sizing: border-box;
     border: 1px solid transparent;
@@ -250,16 +300,29 @@ input.boxed, select.boxed, textarea.boxed {
     color: var(--input-fg);
 }
 
-input.fill, textarea.fill {
+input.fill,
+textarea.fill {
     width: 100%;
 }
 
-.big { font-size: var(--font-size-big); }
-.mid { font-size: var(--font-size-mid); }
-.normal { font-size: var(--font-size-normal); }
-.small { font-size: var(--font-size-small); }
-.smaller { font-size: var(--font-size-smaller); }
-.extra-small { font-size: var(--font-size-extra-small); }
+.big {
+    font-size: var(--font-size-big);
+}
+.mid {
+    font-size: var(--font-size-mid);
+}
+.normal {
+    font-size: var(--font-size-normal);
+}
+.small {
+    font-size: var(--font-size-small);
+}
+.smaller {
+    font-size: var(--font-size-smaller);
+}
+.extra-small {
+    font-size: var(--font-size-extra-small);
+}
 
 input.search {
     background-color: var(--clear);
@@ -279,7 +342,9 @@ input.search {
         margin: 0;
     }
 
-    & input, & button, & select {
+    & input,
+    & button,
+    & select {
         &:not(:first-child):not(:last-child) {
             border-radius: 0;
         }
@@ -322,40 +387,65 @@ hr {
 }
 
 /* Color classes for primary, success, info, danger, reject */
-.primary, a.btn.primary, .btn.primary, button.primary {
+.primary,
+a.btn.primary,
+.btn.primary,
+button.primary {
     background-color: var(--primary);
     border-color: var(--primary);
     color: var(--colored-background-fg);
 }
-.primary-text { color: var(--primary); }
+.primary-text {
+    color: var(--primary);
+}
 
-.success, a.btn.success, .btn.success, button.success {
+.success,
+a.btn.success,
+.btn.success,
+button.success {
     background-color: var(--success);
     border-color: var(--success);
     color: var(--colored-background-fg);
 }
-.success-text { color: var(--success); }
+.success-text {
+    color: var(--success);
+}
 
-.info, a.btn.info, .btn.info, button.info {
+.info,
+a.btn.info,
+.btn.info,
+button.info {
     background-color: var(--info);
     border-color: var(--info);
     color: var(--colored-background-fg);
 }
-.info-text { color: var(--info); }
+.info-text {
+    color: var(--info);
+}
 
-.danger, a.btn.danger, .btn.danger, button.danger {
+.danger,
+a.btn.danger,
+.btn.danger,
+button.danger {
     background-color: var(--danger);
     border-color: var(--danger);
     color: var(--colored-background-fg);
 }
-.danger-text { color: var(--danger); }
+.danger-text {
+    color: var(--danger);
+}
 
-.reject, a.btn.reject, .btn.reject, button.reject {
+.reject,
+a.btn.reject,
+.btn.reject,
+button.reject {
     background-color: var(--reject);
     border-color: var(--reject);
     color: var(--colored-background-fg);
 }
-.reject-text { color: var(--reject); }
+.reject-text {
+    color: var(--reject);
+}
 
 /* ** LISTS ** */
 dl.horizontal {
@@ -431,7 +521,9 @@ dl.horizontal {
 }
 
 /* ** BUTTON ** */
-button, a.btn, .btn {
+button,
+a.btn,
+.btn {
     display: inline-block;
     margin: 0.15em;
     user-select: none;
@@ -451,24 +543,28 @@ button, a.btn, .btn {
     line-height: var(--font-size-normal);
     background-color: var(--default-button);
     color: var(--default-button-color);
-    transition: background-color 0.3s ease, filter 0.3s ease;
+    transition:
+        background-color 0.3s ease,
+        filter 0.3s ease;
 
     &.no-shadow {
         box-shadow: none;
     }
 
     &:before {
-        content: '';
+        content: "";
         display: inline-block;
         vertical-align: middle;
     }
 
-    &:hover, &:focus {
+    &:hover,
+    &:focus {
         text-decoration: none;
         filter: brightness(1.1);
     }
 
-    &:active, &.active {
+    &:active,
+    &.active {
         text-decoration: none;
         filter: brightness(0.9);
     }
@@ -494,7 +590,8 @@ button, a.btn, .btn {
     }
 }
 
-a.btn, .btn {
+a.btn,
+.btn {
     &:before {
         height: 100%;
     }
@@ -509,18 +606,30 @@ a.btn {
 }
 
 /* Button color class interactions */
-button.primary, a.btn.primary, .btn.primary,
-button.success, a.btn.success, .btn.success,
-button.info, a.btn.info, .btn.info,
-button.danger, a.btn.danger, .btn.danger,
-button.reject, a.btn.reject, .btn.reject {
+button.primary,
+a.btn.primary,
+.btn.primary,
+button.success,
+a.btn.success,
+.btn.success,
+button.info,
+a.btn.info,
+.btn.info,
+button.danger,
+a.btn.danger,
+.btn.danger,
+button.reject,
+a.btn.reject,
+.btn.reject {
     color: var(--colored-background-fg);
 
-    &:hover, &:focus {
+    &:hover,
+    &:focus {
         filter: brightness(1.15);
     }
 
-    &:active, &.active {
+    &:active,
+    &.active {
         filter: brightness(0.85);
     }
 
@@ -531,17 +640,36 @@ button.reject, a.btn.reject, .btn.reject {
     }
 }
 
-button.primary, button.danger, button.info, button.reject,
-a.btn.primary, a.btn.danger, a.btn.info, a.btn.reject,
-.btn.primary, .btn.danger, .btn.info, .btn.reject {
+button.primary,
+button.danger,
+button.info,
+button.reject,
+a.btn.primary,
+a.btn.danger,
+a.btn.info,
+a.btn.reject,
+.btn.primary,
+.btn.danger,
+.btn.info,
+.btn.reject {
     text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
 }
 
-.fab.primary { background-color: var(--primary); }
-.fab.success { background-color: var(--success); }
-.fab.info { background-color: var(--info); }
-.fab.danger { background-color: var(--danger); }
-.fab.reject { background-color: var(--reject); }
+.fab.primary {
+    background-color: var(--primary);
+}
+.fab.success {
+    background-color: var(--success);
+}
+.fab.info {
+    background-color: var(--info);
+}
+.fab.danger {
+    background-color: var(--danger);
+}
+.fab.reject {
+    background-color: var(--reject);
+}
 
 .fab.primary:hover,
 .fab.success:hover,
@@ -555,7 +683,9 @@ a.btn.primary, a.btn.danger, a.btn.info, a.btn.reject,
     display: inline-block;
     margin: 0.15em;
 
-    & button, & a.btn, & .btn {
+    & button,
+    & a.btn,
+    & .btn {
         border-radius: 0;
         margin: 0;
 
@@ -647,7 +777,8 @@ a.btn.primary, a.btn.danger, a.btn.info, a.btn.reject,
     touch-action: none;
 }
 
-ol, ul {
+ol,
+ul {
     &.unstyled {
         list-style: none;
         margin: 0;

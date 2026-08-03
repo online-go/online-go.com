@@ -142,10 +142,9 @@
     $info: #c376fe;
     $colored-background-fg: $bg;
 
-    /* Renders browser-drawn controls - date pickers, range and colour inputs,
-     * checkboxes, radios, select option lists, autofill - in this theme instead
-     * of the OS default. Scrollbars are themed explicitly in global.css. */
-    color-scheme: light;
+    /* Colour scheme for browser-drawn controls. Declaring this as a custom property
+     * has no effect on its own; only rules that read it are affected. */
+    --control-color-scheme: light;
 
     --clear: transparent;
 
@@ -330,10 +329,9 @@
     $info: #9c5fcc;
     $colored-background-fg: #eeeeee;
 
-    /* Renders browser-drawn controls - date pickers, range and colour inputs,
-     * checkboxes, radios, select option lists, autofill - in this theme instead
-     * of the OS default. Scrollbars are themed explicitly in global.css. */
-    color-scheme: dark;
+    /* Colour scheme for browser-drawn controls. Declaring this as a custom property
+     * has no effect on its own; only rules that read it are affected. */
+    --control-color-scheme: dark;
 
     --clear: transparent;
 
