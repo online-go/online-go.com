@@ -48,6 +48,12 @@ export function WorstMovesList({
 
     return (
         <div className="worst-move-list-container">
+            <div className="key-moves">
+                {pgettext(
+                    "Label above the list of the most significant mistakes in an AI review",
+                    "Key moves",
+                )}
+            </div>
             <div className="move-list">
                 {moves.slice(0, maxMovesShown).map((de, idx) => {
                     const pretty_coords = goban.engine!.prettyCoordinates(de.move.x, de.move.y);
