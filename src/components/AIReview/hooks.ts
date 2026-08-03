@@ -26,7 +26,6 @@ import {
     Goban,
 } from "goban";
 import { ai_socket } from "@/lib/sockets";
-import { close_all_popovers } from "@/lib/popover";
 import { get, post } from "@/lib/requests";
 import { errorLogger } from "@/lib/misc";
 
@@ -63,8 +62,6 @@ export function useAIReviewData({
 
     const setSelectedAIReview = useCallback(
         (aiReview: JGOFAIReview | undefined) => {
-            close_all_popovers();
-
             // Clean up existing AIReviewData instance if it exists
             if (reviewDataRef.current) {
                 reviewDataRef.current.destroy();
