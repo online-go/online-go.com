@@ -1175,6 +1175,130 @@ git -C /Users/mgregory/src/OGS/ogs-ui commit -m "fix(theme): scope the colour-sc
 
 ---
 
+### Task 10: Extract BanDetails into its own file
+
+`BanModal.tsx` defines two components, which CLAUDE.md forbids ("One component per file ... Never define multiple components in one file"). The violation is pre-existing — `BanDetails` was always a second component in that file — but this branch added `export` to it so a test could render it, which makes it part of the module's public surface and the thing a PR reviewer notices. Extracting it satisfies the rule and gives the test a natural home.
+
+`BanDetails` is used only by `BanModal`, so per CLAUDE.md it is co-located in the parent's directory rather than promoted to `src/components/`.
+
+**Files:**
+- Create: `src/components/BanModal/BanDetails.tsx`
+- Modify: `src/components/BanModal/BanModal.tsx`
+- Rename: `src/components/BanModal/BanModal.test.tsx` -> `src/components/BanModal/BanDetails.test.tsx`
+
+**No CSS file is created.** CLAUDE.md pairs each component with a matching `.css`, but `BanDetails` has no styles of its own: its one styled element, `.ban-expiration`, is a spacing rule nested inside `.BanModal` in `BanModal.css` because it concerns the modal's internal layout. The input still renders inside the modal, so the rule continues to apply unchanged. An empty `BanDetails.css` would be noise.
+
+- [ ] **Step 1: Create the new file**
+
+Create `src/components/BanModal/BanDetails.tsx` with the standard AGPL header used by every other file in this directory (copy it verbatim from `BanModal.tsx`), followed by:
+
+```tsx
+import * as React from "react";
+import { fromDatetimeLocalValue } from "@/lib/datetime_input";
+
+export function BanDetails({ onChange }: { onChange: (d: any) => void }): React.ReactElement {
+    const [public_reason, set_public_reason] = React.useState("");
+    const [moderator_notes, set_moderator_notes] = React.useState("");
+    const [expiration, set_expiration] = React.useState("");
+
+    React.useEffect(() => {
+        onChange({
+            public_reason: public_reason,
+            moderator_notes: moderator_notes,
+            ban_expiration: fromDatetimeLocalValue(expiration),
+        });
+    }, [public_reason, moderator_notes, expiration]);
+
+    return (
+        <div>
+            <h3>Public reason (displayed to user)</h3>
+            <textarea onChange={(e) => set_public_reason(e.target.value)} value={public_reason} />
+
+            <h3>Moderator only notes (optional)</h3>
+            <textarea
+                onChange={(e) => set_moderator_notes(e.target.value)}
+                value={moderator_notes}
+            />
+
+            <h3>Ban expiration</h3>
+            <input
+                type="datetime-local"
+                className="ban-expiration"
+                value={expiration}
+                onChange={(e) => set_expiration(e.target.value)}
+            />
+        </div>
+    );
+}
+```
+
+This is the existing component verbatim. Do not change its behaviour, its `any` prop type (pre-existing and explicitly out of scope), or the untranslated English headings.
+
+- [ ] **Step 2: Remove it from BanModal.tsx**
+
+Delete the entire `export function BanDetails(...) { ... }` block from `src/components/BanModal/BanModal.tsx` (it is the last thing in the file, after the closing brace of the `BanModal` class).
+
+Then fix the imports: delete
+
+```tsx
+import { fromDatetimeLocalValue } from "@/lib/datetime_input";
+```
+
+which becomes unused, and add
+
+```tsx
+import { BanDetails } from "./BanDetails";
+```
+
+alongside the other imports. `lint` will fail on the unused import if it is left behind.
+
+- [ ] **Step 3: Move the test**
+
+```bash
+git -C /Users/mgregory/src/OGS/ogs-ui mv src/components/BanModal/BanModal.test.tsx src/components/BanModal/BanDetails.test.tsx
+```
+
+In the moved file, change the import from `./BanModal` to `./BanDetails`. Change nothing else about the assertions.
+
+- [ ] **Step 4: Try dropping the now-unnecessary mock**
+
+The test currently carries `jest.mock("@/lib/translate", ...)`. It was needed because importing `BanModal.tsx` transitively pulled in `@/lib/misc`, which imports from `@/lib/translate`. `BanDetails.tsx` imports only React and `@/lib/datetime_input`, so that chain is gone.
+
+Delete the `jest.mock("@/lib/translate", ...)` block and run:
+
+`yarn --cwd /Users/mgregory/src/OGS/ogs-ui test BanDetails`
+
+If the tests pass, leave it out. **If they fail, restore the mock exactly as it was** and say so in your report — do not attempt to fix the failure another way.
+
+- [ ] **Step 5: Verify**
+
+```bash
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui prettier:file src/components/BanModal/BanDetails.tsx src/components/BanModal/BanModal.tsx src/components/BanModal/BanDetails.test.tsx
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui type-check
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui lint
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui test
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui spellcheck
+```
+
+Expected: all clean, 409 tests across 53 suites — the same totals as before, since the test file moved rather than changed.
+
+Then confirm nothing still imports `BanDetails` from the old location:
+
+```bash
+grep -rn "BanDetails" /Users/mgregory/src/OGS/ogs-ui/src
+```
+
+Expected: the definition and its export in `BanDetails.tsx`, the import and usage in `BanModal.tsx`, and the import and describe block in `BanDetails.test.tsx`. Nothing else.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git -C /Users/mgregory/src/OGS/ogs-ui add src/components/BanModal/
+git -C /Users/mgregory/src/OGS/ogs-ui commit -m "refactor(moderation): give BanDetails its own file"
+```
+
+---
+
 ## Handover: verification the author drives
 
 Implementation ends at Task 7. Nothing below is dispatched to a subagent — this is the checklist for the author, in the order that fails fastest.
