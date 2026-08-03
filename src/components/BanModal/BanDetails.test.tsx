@@ -17,13 +17,7 @@
 
 import * as React from "react";
 import { fireEvent, render } from "@testing-library/react";
-import { BanDetails } from "./BanModal";
-
-jest.mock("@/lib/translate", () => ({
-    _: (msgid: string) => msgid,
-    pgettext: (_context: string, msgid: string) => msgid,
-    interpolate: (msgid: string) => msgid,
-}));
+import { BanDetails } from "./BanDetails";
 
 /* The Date constructor's multi-argument form builds a local-time date, and the
  * expiration field is local wall-clock, so these expectations hold in any timezone. */
