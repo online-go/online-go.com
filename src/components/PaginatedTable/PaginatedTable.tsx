@@ -85,10 +85,14 @@ function PaginatedTableImpl<RawEntryT = any, GroomedEntryT = RawEntryT>(
     ref: React.ForwardedRef<PaginatedTableRef>,
 ): React.ReactElement {
     const table_name = props.name || "default";
+    const initial_page = data.get(
+        `paginated-table.${table_name}.page`,
+        props.startingPage || 1,
+    ) as number;
     const [rows, setRows]: [any[], (x: any[]) => void] = React.useState<GroomedEntryT[]>([]);
-    const [page, _setPage]: [number, (x: number) => void] = React.useState(props.startingPage || 1);
+    const [page, _setPage]: [number, (x: number) => void] = React.useState(initial_page);
     const [page_input_text, _setPageInputText]: [string, (s: string) => void] = React.useState(
-        (props.startingPage || 1).toString(),
+        initial_page.toString(),
     );
     const [num_pages, setNumPages]: [number, (x: number) => void] = React.useState(1);
     const [page_size, _setPageSize]: [number, (x: number) => void] = React.useState(
@@ -176,6 +180,7 @@ function PaginatedTableImpl<RawEntryT = any, GroomedEntryT = RawEntryT>(
                 setNumPages(Math.ceil(res.count / page_size) || 1);
                 if (page > Math.ceil(res.count / page_size)) {
                     const new_page = Math.max(1, Math.ceil(res.count / page_size));
+                    data.set(`paginated-table.${table_name}.page`, new_page);
                     _setPage(new_page);
                     setPageInputText(new_page.toString());
                 }
@@ -232,6 +237,7 @@ function PaginatedTableImpl<RawEntryT = any, GroomedEntryT = RawEntryT>(
 
     function setPage(page: number): void {
         const new_page = Math.max(1, Math.min(page, num_pages));
+        data.set(`paginated-table.${table_name}.page`, new_page);
         _setPage(new_page);
         setPageInputText(new_page.toString());
     }
@@ -258,6 +264,7 @@ function PaginatedTableImpl<RawEntryT = any, GroomedEntryT = RawEntryT>(
         _setPageSize(new_page_size);
 
         const new_page = Math.floor(Math.max(0, ((page - 1) * old_page_size) / new_page_size) + 1);
+        data.set(`paginated-table.${table_name}.page`, new_page);
         _setPage(new_page);
         setPageInputText(new_page.toString());
     }
