@@ -242,14 +242,19 @@
                 flex-direction: column;
             }
 
+            /* color-scheme matches the background so browser-drawn controls do not
+               render in the OS scheme and then flip when ogs.css loads. */
             [data-theme="dark"] {
                 background-color: #1a1a1a;
+                color-scheme: dark;
             }
             [data-theme="light"] {
                 background-color: #ffffff;
+                color-scheme: light;
             }
             [data-theme="accessible"] {
                 background-color: #1a1a1a;
+                color-scheme: dark;
             }
             .sr-only {
                 position: absolute;
