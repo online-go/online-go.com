@@ -142,6 +142,10 @@
     $info: #c376fe;
     $colored-background-fg: $bg;
 
+    /* Renders browser-drawn controls - date pickers, scrollbars, selects,
+     * checkboxes, autofill - in this theme instead of the OS default. */
+    color-scheme: light;
+
     --clear: transparent;
 
     /* Core colors */
@@ -324,6 +328,10 @@
     $success: #289f2d;
     $info: #9c5fcc;
     $colored-background-fg: #eeeeee;
+
+    /* Renders browser-drawn controls - date pickers, scrollbars, selects,
+     * checkboxes, autofill - in this theme instead of the OS default. */
+    color-scheme: dark;
 
     --clear: transparent;
 
