@@ -153,7 +153,6 @@
         "query-string": "^9.3.1",
         "react": "19.2.8",
         "react-autosuggest": "^10.1.0",
-        "react-datetime": "^3.3.1",
         "react-dom": "19.2.8",
         "react-dropzone": "^14.3.8",
         "react-router-dom": "7.9.4",

@@ -24,6 +24,7 @@ import { openBecomeASiteSupporterModal } from "@/views/Supporter";
 import { errorAlerter, errorLogger } from "@/lib/misc";
 import { toast } from "@/lib/toast";
 import { post } from "@/lib/requests";
+import { close_all_popovers } from "@/lib/popover";
 import { _, pgettext, moment } from "@/lib/translate";
 import { ReviewChart } from "./ReviewChart";
 import { SummaryTable } from "./SummaryTable";
@@ -148,6 +149,11 @@ export function AIReview({
     // Handle AI review selection
     const handleAIReviewSelect = useCallback(
         (ai_review: JGOFAIReview) => {
+            // Selecting a review is a user action, so any OGS popover open at the time is
+            // dismissed with it. ReviewSelector is a react-select and closes its own menu,
+            // so this only affects popovers elsewhere on the page.
+            close_all_popovers();
+
             setSelectedAiReviewInList(ai_review);
             setSelectedAIReviewData(ai_review);
             onAIReviewSelected(ai_review);

@@ -235,6 +235,12 @@ input, select, textarea {
     color: var(--input-fg);
 }
 
+/* Date and time pickers are drawn by the browser, so they need to be told which
+ * scheme to use or they follow the OS rather than the active theme. */
+input[type="datetime-local"] {
+    color-scheme: var(--control-color-scheme);
+}
+
 textarea {
     border: 1px solid transparent;
     border-color: var(--input-border);

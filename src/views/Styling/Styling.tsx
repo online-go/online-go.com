@@ -23,7 +23,6 @@ import { Ribbon } from "@/components/misc-ui";
 import { Player } from "@/components/Player";
 import { PlayerIcon } from "@/components/PlayerIcon";
 import { toast } from "@/lib/toast";
-import Datetime from "react-datetime";
 import { StarRating } from "@/components/StarRating";
 import { PlayerAutocomplete } from "@/components/PlayerAutocomplete";
 import { GroupAutocomplete } from "@/components/GroupAutocomplete";
@@ -359,7 +358,6 @@ export class Styling extends React.PureComponent<{}, any> {
 
                                 <input type="date" placeholder="Date" />
                                 <input type="datetime-local" placeholder="Date Time" />
-                                <Datetime onChange={(time) => console.log(time)} />
                             </div>
                         </Card>
                         <Card>

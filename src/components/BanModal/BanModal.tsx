@@ -16,12 +16,12 @@
  */
 
 import * as React from "react";
-import Datetime from "react-datetime";
 import { put } from "@/lib/requests";
 import { _ } from "@/lib/translate";
 import { errorAlerter } from "@/lib/misc";
 import { Modal } from "@/components/Modal";
 import * as player_cache from "@/lib/player_cache";
+import { BanDetails } from "./BanDetails";
 import "./BanModal.css";
 
 interface Events {}
@@ -86,34 +86,4 @@ export class BanModal extends Modal<Events, BanModalProperties, any> {
             </div>
         );
     }
-}
-
-function BanDetails({ onChange }: { onChange: (d: any) => void }): React.ReactElement {
-    const [public_reason, set_public_reason] = React.useState("");
-    const [moderator_notes, set_moderator_notes] = React.useState("");
-    const [expiration, set_expiration] = React.useState();
-
-    React.useEffect(() => {
-        onChange({
-            public_reason: public_reason,
-            moderator_notes: moderator_notes,
-            ban_expiration: expiration,
-        });
-    }, [public_reason, moderator_notes, expiration]);
-
-    return (
-        <div>
-            <h3>Public reason (displayed to user)</h3>
-            <textarea onChange={(e) => set_public_reason(e.target.value)} value={public_reason} />
-
-            <h3>Moderator only notes (optional)</h3>
-            <textarea
-                onChange={(e) => set_moderator_notes(e.target.value)}
-                value={moderator_notes}
-            />
-
-            <h3>Ban expiration</h3>
-            <Datetime value={expiration} onChange={(d: any) => set_expiration(d._d)} />
-        </div>
-    );
 }

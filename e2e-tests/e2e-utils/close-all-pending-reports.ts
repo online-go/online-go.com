@@ -31,10 +31,36 @@
 
 import type { CreateContextOptions } from "@helpers";
 
-import { BrowserContext, TestInfo, expect } from "@playwright/test";
+import { BrowserContext, Page, TestInfo, expect } from "@playwright/test";
 import { generateUniqueTestIPv6, loginAsUser, turnOffDynamicHelp } from "@helpers/user-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { log } from "@helpers/logger";
+
+/**
+ * Perform an action that triggers the history table to (re)load, and wait until
+ * the resulting data has arrived and been rendered.
+ *
+ * The history table is a PaginatedTable fed by a GET to `moderation/incident`.
+ * Simply checking the table for pending rows is racy: the table renders (empty)
+ * before the fetch completes, so a "no pending reports" conclusion can be drawn
+ * while the data is still loading. We arm a wait for the network response
+ * *before* the triggering action so it can't be missed, then wait for the
+ * table's `loading` class (set by PaginatedTable while a fetch is in flight)
+ * to clear, confirming the rows have been rendered.
+ */
+async function reloadHistoryAndWait(page: Page, action: () => Promise<unknown>): Promise<void> {
+    const historyResponse = page.waitForResponse(
+        (response) =>
+            response.url().includes("moderation/incident") && response.request().method() === "GET",
+        { timeout: 30000 },
+    );
+    await action();
+    await historyResponse;
+
+    const table = page.locator(".ReportsCenterHistory .PaginatedTable.history");
+    await expect(table).toBeVisible({ timeout: 10000 });
+    await expect(table).not.toHaveClass(/\bloading\b/, { timeout: 10000 });
+}
 
 export const closeAllPendingReportsTest = async (
     {
@@ -66,18 +92,18 @@ export const closeAllPendingReportsTest = async (
 
     // Navigate to reports history page
     log("Navigating to reports history page...");
-    await modPage.goto("/reports-center/history");
+    await reloadHistoryAndWait(modPage, () => modPage.goto("/reports-center/history"));
     log("Reports history page loaded ✓");
 
     // Set page size to 50 to show more reports per page
     log("Setting page size to 50...");
     const pageSizeSelect = modPage.locator(".ReportsCenterHistory select");
     await expect(pageSizeSelect).toBeVisible({ timeout: 5000 });
-    await pageSizeSelect.selectOption("50");
-
-    // Wait for the table to be ready after page size change
-    const historyTableSetup = modPage.locator(".ReportsCenterHistory .history table");
-    await expect(historyTableSetup).toBeVisible({ timeout: 10000 });
+    // Changing the page size triggers a re-fetch; skip if already at 50
+    // (no change event would fire, so there would be no response to wait for)
+    if ((await pageSizeSelect.inputValue()) !== "50") {
+        await reloadHistoryAndWait(modPage, () => pageSizeSelect.selectOption("50"));
+    }
     log("Page size set to 50 ✓");
 
     let processedCount = 0;
@@ -90,11 +116,9 @@ export const closeAllPendingReportsTest = async (
         iterationCount++;
         log(`\n--- Iteration ${iterationCount} ---`);
 
-        // Wait for the table to be visible
-        const historyTable = modPage.locator(".ReportsCenterHistory .history table");
-        await expect(historyTable).toBeVisible({ timeout: 10000 });
-
-        // Check for pending reports on the first page
+        // The table is known to be loaded here: every path into this point
+        // (initial navigation, page-size change, return from closing a report)
+        // goes through reloadHistoryAndWait().
         const pendingRows = modPage.locator("tr .state.pending");
         const pendingCount = await pendingRows.count();
 
@@ -146,11 +170,7 @@ export const closeAllPendingReportsTest = async (
 
         // Navigate back to history page
         log("Returning to history page...");
-        await modPage.goto("/reports-center/history");
-        // Wait for page size select to be visible again
-        await expect(modPage.locator(".ReportsCenterHistory select")).toBeVisible({
-            timeout: 10000,
-        });
+        await reloadHistoryAndWait(modPage, () => modPage.goto("/reports-center/history"));
     }
 
     if (iterationCount >= maxIterations) {

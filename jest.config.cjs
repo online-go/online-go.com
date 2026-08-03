@@ -1,3 +1,17 @@
+/* Pin a timezone so unit tests are reproducible and, more importantly, capable of
+ * failing. Assertions about local wall-clock handling cannot distinguish correct
+ * code from a UTC-based implementation when the offset is zero, and CI runners
+ * default to UTC.
+ *
+ * The zone is arbitrary - nothing in OGS depends on Adelaide. It is chosen for three
+ * testing properties: a non-zero offset, a half-hour offset (whole-hour zones mask a
+ * class of bug), and DST (UTC+10:30 in January, UTC+9:30 in July). Any zone with
+ * those properties is an equally valid choice.
+ *
+ * This is set here, rather than in setupFiles, because it must be in the environment
+ * before Jest constructs any Date, which happens before setupFiles runs. */
+process.env.TZ = "Australia/Adelaide";
+
 module.exports = {
     roots: ["<rootDir>"],
     testEnvironment: "jsdom",

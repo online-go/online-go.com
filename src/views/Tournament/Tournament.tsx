@@ -29,7 +29,7 @@ import { handicapText } from "@/components/GameAcceptModal";
 import { TimeControl, timeControlDescription } from "@/components/TimeControl";
 import { Markdown } from "@/components/Markdown";
 import { Player, setExtraActionCallback } from "@/components/Player";
-import Datetime from "react-datetime";
+import { fromDatetimeLocalValue, toDatetimeLocalValue } from "@/lib/datetime_input";
 import { UIPush } from "@/components/UIPush";
 import { Card } from "@/components/material";
 import { EmbeddedChatCard } from "@/components/Chat";
@@ -613,9 +613,10 @@ export function Tournament(): React.ReactElement {
     const setTournamentName = (ev: React.ChangeEvent<HTMLInputElement>) => {
         setTournament({ ...tournament, name: ev.target.value });
     };
-    const setStartTime = (t: any) => {
-        if (t && t.format) {
-            setTournament({ ...tournament, time_start: t.format() });
+    const setStartTime = (ev: React.ChangeEvent<HTMLInputElement>) => {
+        const start = fromDatetimeLocalValue(ev.target.value);
+        if (start) {
+            setTournament({ ...tournament, time_start: moment(start).format() });
         }
     };
 
@@ -1149,9 +1150,13 @@ export function Tournament(): React.ReactElement {
                             </label>
                             <div className="controls">
                                 <div className="checkbox">
-                                    <Datetime
+                                    <input
+                                        type="datetime-local"
+                                        id="start-time"
+                                        value={toDatetimeLocalValue(
+                                            new Date(tournament.time_start),
+                                        )}
                                         onChange={setStartTime}
-                                        value={new Date(tournament.time_start)}
                                     />
                                 </div>
                             </div>
@@ -1665,46 +1670,6 @@ export function Tournament(): React.ReactElement {
                                     )}
                                 </td>
                             </tr>
-                            {/*
-                        {has_fixed_number_of_rounds &&
-                            <React.Fragment>
-                                <tr>
-
-                                    <th>
-                                        <label
-                                            htmlFor="scheduled_rounds"
-                                            title={_("When selected, rounds will have a set start time. Otherwise rounds will automatically start when the last round ends.")}>
-                                                {pgettext("When selected, rounds will have a set start time. Otherwise rounds will automatically start when the last round ends.", "Scheduled rounds")}
-                                        </label>
-                                    </th>
-                                    <td>
-                                        {!editing
-                                            ? scheduled_rounds_text
-                                            : <input type="checkbox" id="scheduled_rounds" checked={tournament.scheduled_rounds} onChange={setScheduledRounds} />
-                                        }
-                                    </td>
-                                </tr>
-                            </React.Fragment>
-                        }
-                        {has_fixed_number_of_rounds && tournament.scheduled_rounds &&
-                            <React.Fragment>
-                                {(new Array(parseInt(tournament.settings.num_rounds))).fill(0).map((elt:any, idx:number) => (
-                                    <tr key={idx}>
-                                        <th>
-                                            {interpolate(pgettext("Tournament round number. The {{num}} is placeholder text, please leave it as {{num}}", "Round {{num}}"), {num: idx + 1})}
-                                        </th>
-                                        <td>
-                                            <Datetime
-                                                inputProps={{
-                                                    placeholder: pgettext("Time a tournament round starts", "Round start time")
-                                                }}
-                                                onChange={(d) => setRoundStartTime(idx, d)} value={getRoundStartTime(idx)}/>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </React.Fragment>
-                        }
-                        */}
                         </tbody>
                     </table>
                 </div>

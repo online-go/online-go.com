@@ -142,6 +142,10 @@
     $info: #c376fe;
     $colored-background-fg: $bg;
 
+    /* Colour scheme for browser-drawn controls. Declaring this as a custom property
+     * has no effect on its own; only rules that read it are affected. */
+    --control-color-scheme: light;
+
     --clear: transparent;
 
     /* Core colors */
@@ -324,6 +328,10 @@
     $success: #289f2d;
     $info: #9c5fcc;
     $colored-background-fg: #eeeeee;
+
+    /* Colour scheme for browser-drawn controls. Declaring this as a custom property
+     * has no effect on its own; only rules that read it are affected. */
+    --control-color-scheme: dark;
 
     --clear: transparent;
 
