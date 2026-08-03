@@ -34,10 +34,13 @@ export async function expectOGSClickableByName(page: Page, name: string | RegExp
         .or(page.getByRole("navigation", { name }));
 
     // Retry scrollIntoViewIfNeeded if element becomes detached during React re-renders
-    // This can happen when React hydrates or updates state after initial page load
+    // This can happen when React hydrates or updates state after initial page load.
+    // The explicit timeout matters: playwright.config.ts sets no actionTimeout, so an
+    // unbounded scroll on an element that never appears blocks until the whole test
+    // times out, which also starves the retries below of their remaining attempts.
     for (let attempt = 0; attempt < 3; attempt++) {
         try {
-            await element.scrollIntoViewIfNeeded();
+            await element.scrollIntoViewIfNeeded({ timeout: 5000 });
             break;
         } catch (e) {
             const isDetachmentError = e instanceof Error && e.message?.includes("not attached");
