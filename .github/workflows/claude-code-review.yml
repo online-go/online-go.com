@@ -19,6 +19,12 @@ jobs:
     #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
 
     runs-on: ubuntu-latest
+    # `allowed_non_write_users` turns on subprocess isolation, which installs
+    # bubblewrap. Since Claude Code 2.1.216 that sandbox fails on every Bash
+    # command with "bwrap: Can't create file at /home/.mcp.json", which stops
+    # the reviewer from reading the diff or posting. Opt out until it is fixed.
+    env:
+      CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: 0
     permissions:
       contents: read
       pull-requests: write
@@ -37,9 +43,8 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           allowed_non_write_users: '*'
-          # TODO: temporary diagnostic - remove after one run. Prints the full
-          # session transcript to the workflow log so we can see which tool calls
-          # are being denied.
+          # TODO: temporary diagnostic - remove as soon as a review posts again.
+          # Prints the full session transcript to the public workflow log.
           show_full_output: true
           prompt: |
             REPO: ${{ github.repository }}
