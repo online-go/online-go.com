@@ -968,6 +968,128 @@ git -C /Users/mgregory/src/OGS/ogs-ui commit -m "test(e2e): bound the scroll in 
 
 ---
 
+### Task 8: Make native controls follow the app theme
+
+Added after review feedback that the new datetime input renders in the wrong theme: always dark on the reviewer's Firefox (Linux), always light on Chrome.
+
+**The defect.** Nothing in the tree sets the CSS `color-scheme` property — the only match is a `prefers-color-scheme` media query at `01_variables.css:530`, which is a different thing. Without it each browser picks its own default for native controls: Firefox follows the OS/GTK theme, Chrome always renders light. Neither consults the app's theme, so the control disagrees with the page it sits on.
+
+Verified in both engines with a scripted probe: with `color-scheme: dark` set, Firefox 148 and Chromium both render the control dark with light text and a light calendar glyph; without it, both render a light control on a dark page.
+
+This is pre-existing — it also affects the five `datetime-local` inputs in `moderator-ui` — but this branch made it user-visible in the main UI, so it is in scope here.
+
+**Blast radius, which is the reason this needs care:** `color-scheme` affects *every* native control, not just this input — scrollbars, `<select>`, checkboxes, radio buttons, autofill backgrounds. That is the intended improvement, but it is a site-wide visual change and the Handover check below is not optional.
+
+**Files:**
+- Modify: `src/global_styl/01_variables.css`
+
+**Interfaces:**
+- Consumes: nothing. Produces: nothing.
+
+**Structure note:** the file defines `@define-mixin light` (`:135`), `@define-mixin dark` (`:318`) and `@define-mixin accessible` (`:502`). The mixins are applied at `:525` (`:root`, light by default), `:530` (`prefers-color-scheme: dark`), and `:537`/`:541`/`:545` (`[data-theme=...]`). `accessible` starts with `@mixin dark`, so it inherits whatever `dark` declares — **do not add a third declaration to it.** Two edits only.
+
+- [ ] **Step 1: Declare the light scheme**
+
+In `src/global_styl/01_variables.css`, change:
+
+```css
+@define-mixin light {
+    /* Build-time variables for color derivation */
+    $bg: #fff;
+    $fg: #202020;
+    $default-button: #e6e6e0;
+    $primary: #2480ff;
+    $success: #32c738;
+    $info: #c376fe;
+    $colored-background-fg: $bg;
+
+    --clear: transparent;
+```
+
+to:
+
+```css
+@define-mixin light {
+    /* Build-time variables for color derivation */
+    $bg: #fff;
+    $fg: #202020;
+    $default-button: #e6e6e0;
+    $primary: #2480ff;
+    $success: #32c738;
+    $info: #c376fe;
+    $colored-background-fg: $bg;
+
+    /* Renders browser-drawn controls - date pickers, scrollbars, selects,
+     * checkboxes, autofill - in this theme instead of the OS default. */
+    color-scheme: light;
+
+    --clear: transparent;
+```
+
+- [ ] **Step 2: Declare the dark scheme**
+
+Change:
+
+```css
+@define-mixin dark {
+    /* Build-time variables for color derivation */
+    $bg: #1a1a1a;
+    $fg: #bbbbbb;
+    $default-button: #474747;
+    $primary: #1d66cc;
+    $success: #289f2d;
+    $info: #9c5fcc;
+    $colored-background-fg: #eeeeee;
+
+    --clear: transparent;
+```
+
+to:
+
+```css
+@define-mixin dark {
+    /* Build-time variables for color derivation */
+    $bg: #1a1a1a;
+    $fg: #bbbbbb;
+    $default-button: #474747;
+    $primary: #1d66cc;
+    $success: #289f2d;
+    $info: #9c5fcc;
+    $colored-background-fg: #eeeeee;
+
+    /* Renders browser-drawn controls - date pickers, scrollbars, selects,
+     * checkboxes, autofill - in this theme instead of the OS default. */
+    color-scheme: dark;
+
+    --clear: transparent;
+```
+
+- [ ] **Step 3: Verify**
+
+```bash
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui prettier:file src/global_styl/01_variables.css
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui build
+```
+
+Expected: both clean. `build` is the meaningful check here — `type-check` and `lint` do not read CSS, so a PostCSS syntax error would otherwise go unnoticed until runtime.
+
+Then confirm the property reached the compiled output rather than being swallowed by the mixin expansion:
+
+```bash
+grep -rn "color-scheme" /Users/mgregory/src/OGS/ogs-ui/dist/*.css | head
+```
+
+Expected: at least one `color-scheme:light` and one `color-scheme:dark`. If neither appears, stop and report — the mixin did not expand as intended and the change is inert.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git -C /Users/mgregory/src/OGS/ogs-ui add src/global_styl/01_variables.css
+git -C /Users/mgregory/src/OGS/ogs-ui commit -m "fix(theme): render native controls in the app's colour scheme"
+```
+
+---
+
 ## Handover: verification the author drives
 
 Implementation ends at Task 7. Nothing below is dispatched to a subagent — this is the checklist for the author, in the order that fails fastest.
@@ -1024,6 +1146,10 @@ All are expected to pass. Before this branch, `@Mod` fails at `expect(modPage.lo
 No `cm/` test touches the ban modal or `banUserAsModerator`, and `tournaments/` has no `@Slow` tests, so the `@CM` family is unaffected.
 
 **5. Mobile and desktop browsers.** Native `datetime-local` renders a browser-supplied picker whose appearance differs from `react-datetime`'s, and differs between browsers. Both call sites are a visible UI change, so CONTRIBUTING's mobile/desktop check matters here more than usual.
+
+Known and accepted: Firefox's dropdown picker panel is a calendar with no clock, so the time is set by typing or arrow keys rather than from the panel. Verified on Firefox 148 across en-US, en-GB and de-DE that all six segments are editable and that typing fills date and time in one pass. A reviewer on Firefox ESR (Linux) reported being unable to edit the time; that could not be reproduced and may be build-specific — worth confirming their `about:support` version before treating it as a defect.
+
+**6. Native controls in both themes — Task 8's blast radius.** `color-scheme` now applies site-wide, so it changes every browser-drawn control, not just the datetime input. Switch between the light, dark and accessible themes and check: scrollbars, `<select>` dropdowns, checkboxes and radio buttons, autofill backgrounds on the sign-in and settings forms, and the datetime pickers themselves. This is the one check that cannot be skipped — it is the only thing standing between this change and a site-wide visual regression.
 
 Note that PR CI does not run Playwright, so steps 1-4 are the only e2e evidence this change will ever get.
 
