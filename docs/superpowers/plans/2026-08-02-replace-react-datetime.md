@@ -1424,13 +1424,13 @@ yarn --cwd /Users/mgregory/src/OGS/ogs-ui build
 
 Expected: clean. `type-check`, `lint`, `spellcheck` and `prettier:check` are all scoped to `src/**/*.{ts,tsx}` and do not read `index.html`. Do not run prettier on it; match the file's existing indentation by hand.
 
-Then confirm the declarations reached the built HTML:
+Then confirm the declarations are actually served. Note `src/index.html` is a **template** the backend fills in (`{{PAGE_TITLE}}` and similar), not a build output — there is no `dist/index.html`, so check the running dev server instead:
 
 ```bash
-grep -c "color-scheme" /Users/mgregory/src/OGS/ogs-ui/dist/index.html
+curl -s http://localhost:8080/ | grep -n "color-scheme"
 ```
 
-Expected: 3. If it is 0, the inline style was not carried through and the change is inert — stop and report.
+Expected: the three declarations plus the comment. Ignore the `prefers-color-scheme` match from the inline theme-detection script, which is pre-existing. If the three declarations are absent, the template was not picked up and the change is inert — stop and report.
 
 - [ ] **Step 3: Commit**
 
