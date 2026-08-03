@@ -19,12 +19,6 @@ jobs:
     #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
 
     runs-on: ubuntu-latest
-    # `allowed_non_write_users` turns on subprocess isolation, which installs
-    # bubblewrap. Since Claude Code 2.1.216 that sandbox fails on every Bash
-    # command with "bwrap: Can't create file at /home/.mcp.json", which stops
-    # the reviewer from reading the diff or posting. Opt out until it is fixed.
-    env:
-      CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: 0
     permissions:
       contents: read
       pull-requests: write
@@ -35,6 +29,17 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 1
+
+      # Workaround for an upstream sandbox bug. `allowed_non_write_users` makes
+      # the action install bubblewrap. Claude Code 2.1.216 and later ask
+      # bubblewrap to mount /dev/null over config files such as $HOME/.mcp.json,
+      # to stop a command from creating them. Here $HOME resolves to /home,
+      # which the runner user cannot write. Bubblewrap cannot create the mount
+      # point, so every Bash command fails and the review never runs. Make
+      # /home writable so bubblewrap can create the mount points it needs.
+      # Remove this step when the upstream bug is fixed.
+      - name: Make sandbox mount points creatable
+        run: sudo chmod 777 /home
 
       - name: Run Claude Code Review
         id: claude-review
