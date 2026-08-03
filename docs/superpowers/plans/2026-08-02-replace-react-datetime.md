@@ -1299,6 +1299,75 @@ git -C /Users/mgregory/src/OGS/ogs-ui commit -m "refactor(moderation): give BanD
 
 ---
 
+### Task 11: Pin the test timezone to a non-UTC zone
+
+`jest.config.cjs` sets no timezone, so unit tests run in whatever zone the machine is in. That makes the coverage in `src/lib/datetime_input.test.ts` and `src/components/BanModal/BanDetails.test.tsx` environment-dependent, and specifically worthless under UTC.
+
+**Why UTC is the dangerous case.** Those files assert that local wall-clock handling is correct. Under `TZ=UTC` a wrong, UTC-based implementation — say `date.toISOString().slice(0, 16)` — produces output byte-identical to the correct one for every value the tests use, so every assertion passes against the exact bug they exist to catch. The tests only have teeth when the offset is non-zero. `ubuntu-latest` defaults to UTC, so if unit tests are ever run in CI without this pin they run in precisely the environment that makes them inert.
+
+**The zone is arbitrary and must be documented as such.** Nothing about OGS, its servers or its users depends on Australia/Adelaide. It is chosen only for three testing properties: a non-zero offset, a *half-hour* offset (which catches a class of bug that whole-hour zones mask), and DST (verified: UTC+10:30 in January, UTC+9:30 in July). Any zone with those properties would do. The comment must say this plainly so nobody later reads it as meaningful and either preserves it for the wrong reason or "corrects" it to match a server.
+
+**Mechanism.** `setup-jest.cjs` is already wired as `setupFiles` in `jest.config.cjs:41`, which runs per test file before the framework loads and before any `Date` is constructed. Verified on this Node that assigning `process.env.TZ` at runtime takes effect: starting from `TZ=UTC`, `new Date(2026, 0, 15).getTimezoneOffset()` goes from `0` to `-630` after the assignment. This needs no new dependency and works on Windows, unlike a `TZ=... jest` prefix in the npm script.
+
+**Files:**
+- Modify: `setup-jest.cjs`
+
+**Out of scope:** re-enabling `.github/workflows/unit_test.yml` on `pull_request`. That is the Lead's decision and must not be touched by this task.
+
+- [ ] **Step 1: Pin the zone**
+
+At the **top** of `setup-jest.cjs`, above the existing `require` calls, add:
+
+```js
+/* Pin a timezone so unit tests are reproducible and, more importantly, capable of
+ * failing. Assertions about local wall-clock handling cannot distinguish correct
+ * code from a UTC-based implementation when the offset is zero, and CI runners
+ * default to UTC.
+ *
+ * The zone is arbitrary - nothing in OGS depends on Adelaide. It is chosen for three
+ * testing properties: a non-zero offset, a half-hour offset (whole-hour zones mask a
+ * class of bug), and DST (UTC+10:30 in January, UTC+9:30 in July). Any zone with
+ * those properties is an equally valid choice.
+ *
+ * This runs via setupFiles, before the test framework and before any Date is built. */
+process.env.TZ = "Australia/Adelaide";
+```
+
+Add nothing else and change nothing else in the file.
+
+- [ ] **Step 2: Prove the pin actually takes effect**
+
+A passing suite does not prove this worked — the datetime tests are deliberately timezone-independent, so they pass either way. Demonstrate it directly:
+
+```bash
+TZ=UTC yarn --cwd /Users/mgregory/src/OGS/ogs-ui test datetime_input
+```
+
+Then confirm the pin overrode the ambient `TZ=UTC` by adding a temporary `console.log` of `new Date(2026, 0, 15).getTimezoneOffset()` inside `src/lib/datetime_input.test.ts`, running that one file with `TZ=UTC` as above, and checking the printed value is **-630**, not `0`.
+
+**Remove the temporary `console.log` afterwards** and re-run to confirm the file is back to its committed state apart from nothing. Report the observed value.
+
+- [ ] **Step 3: Verify**
+
+```bash
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui test
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui type-check
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui lint
+```
+
+Expected: all clean, 409 tests across 53 suites.
+
+Note `setup-jest.cjs` sits at the repo root, not under `src/`, so `prettier:check`, `lint` and `spellcheck` do not read it. Match the file's existing style by hand; do not run prettier on it.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git -C /Users/mgregory/src/OGS/ogs-ui add setup-jest.cjs
+git -C /Users/mgregory/src/OGS/ogs-ui commit -m "test: pin a non-UTC timezone so local-time assertions can fail"
+```
+
+---
+
 ## Handover: verification the author drives
 
 Implementation ends at Task 7. Nothing below is dispatched to a subagent — this is the checklist for the author, in the order that fails fastest.
