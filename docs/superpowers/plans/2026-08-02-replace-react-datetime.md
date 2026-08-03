@@ -1090,6 +1090,91 @@ git -C /Users/mgregory/src/OGS/ogs-ui commit -m "fix(theme): render native contr
 
 ---
 
+### Task 9: Narrow the colour-scheme fix to datetime inputs
+
+Task 8 declared `color-scheme` on the theme mixins, which applies it at `:root` and therefore to every browser-drawn control in the app. That is the correct long-term destination, but it makes a dependency removal carry a site-wide visual sweep. At the author's direction this task narrows the fix to the controls this branch actually introduced; the site-wide change becomes its own PR.
+
+**Why the app has so much browser-drawn UI:** there are zero `appearance` declarations in `src/global_styl/`, and only six CSS files in `src` use `appearance: none` at all. So roughly 32 `range`/`color` inputs, every checkbox and radio, and every `<select>` option list are drawn by the browser in a palette the app does not control. Declaring `color-scheme` at the root takes ownership of all of them at once — a worthwhile change, but not this branch's job.
+
+**Mechanism.** A custom property is inert until something consumes it, so the mixins can carry the value with zero blast radius; only the rule that reads it has any effect. Verified in both engines that `color-scheme: var(--custom-prop)` resolves correctly and stays element-scoped: on a page whose root declares nothing, the scoped input computes `dark` while `:root` and an unscoped sibling both compute `normal`.
+
+The follow-up PR then becomes a one-line addition of `color-scheme: var(--control-color-scheme);` to `:root`, with the mixin values already in place.
+
+**Files:**
+- Modify: `src/global_styl/01_variables.css` (replace the two declarations from Task 8)
+- Modify: `src/global_styl/global.css` (add the scoped rule)
+
+**Interfaces:**
+- Consumes: nothing. Produces: the `--control-color-scheme` custom property, read only by the rule added in Step 2.
+
+- [ ] **Step 1: Turn the root declarations into an inert custom property**
+
+In `src/global_styl/01_variables.css`, in the **`light`** mixin, replace:
+
+```css
+    /* Renders browser-drawn controls - date pickers, range and colour inputs,
+     * checkboxes, radios, select option lists, autofill - in this theme instead
+     * of the OS default. Scrollbars are themed explicitly in global.css. */
+    color-scheme: light;
+```
+
+with:
+
+```css
+    /* Colour scheme for browser-drawn controls. Declaring this as a custom property
+     * has no effect on its own; only rules that read it are affected. */
+    --control-color-scheme: light;
+```
+
+and in the **`dark`** mixin, replace the identical comment plus `color-scheme: dark;` with the same comment plus:
+
+```css
+    --control-color-scheme: dark;
+```
+
+`accessible` opens with `@mixin dark` and needs no declaration of its own — do not add one.
+
+- [ ] **Step 2: Apply it to datetime inputs only**
+
+In `src/global_styl/global.css`, immediately after the `input, select, textarea` rule that ends at line 236, add:
+
+```css
+/* Date and time pickers are drawn by the browser, so they need to be told which
+ * scheme to use or they follow the OS rather than the active theme. */
+input[type="datetime-local"] {
+    color-scheme: var(--control-color-scheme);
+}
+```
+
+Target the input type rather than the two call sites' class and id: it is the same size, does not depend on markup details, and covers any datetime input added later. It also picks up the five pre-existing `datetime-local` inputs in `submodules/moderator-ui`, which have the identical defect.
+
+- [ ] **Step 3: Verify**
+
+```bash
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui prettier:file src/global_styl/01_variables.css src/global_styl/global.css
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui build
+```
+
+Expected: both clean. `build` is the meaningful check — `type-check` and `lint` do not read CSS.
+
+Then confirm the root declaration is gone and the scoped rule is present:
+
+```bash
+grep -o "color-scheme:[a-z]*" /Users/mgregory/src/OGS/ogs-ui/dist/*.css | sort | uniq -c
+grep -o "\-\-control-color-scheme:[a-z]*" /Users/mgregory/src/OGS/ogs-ui/dist/*.css | sort | uniq -c
+```
+
+Expected: `--control-color-scheme` appears with both `light` and `dark` values, and the only bare `color-scheme:` occurrences are `var(--control-color-scheme)` inside the datetime rule plus any `prefers-color-scheme` media queries. If a bare `color-scheme:light` or `color-scheme:dark` survives on a `:root` or `[data-theme]` selector, Step 1 was not applied correctly — stop and report.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git -C /Users/mgregory/src/OGS/ogs-ui add src/global_styl/01_variables.css src/global_styl/global.css
+git -C /Users/mgregory/src/OGS/ogs-ui commit -m "fix(theme): scope the colour-scheme fix to datetime inputs"
+```
+
+---
+
 ## Handover: verification the author drives
 
 Implementation ends at Task 7. Nothing below is dispatched to a subagent — this is the checklist for the author, in the order that fails fastest.
@@ -1149,7 +1234,11 @@ No `cm/` test touches the ban modal or `banUserAsModerator`, and `tournaments/` 
 
 Known and accepted: Firefox's dropdown picker panel is a calendar with no clock, so the time is set by typing or arrow keys rather than from the panel. Verified on Firefox 148 across en-US, en-GB and de-DE that all six segments are editable and that typing fills date and time in one pass. A reviewer on Firefox ESR (Linux) reported being unable to edit the time; that could not be reproduced and may be build-specific — worth confirming their `about:support` version before treating it as a defect.
 
-**6. Native controls in both themes — Task 8's blast radius.** `color-scheme` now applies site-wide, so it changes every browser-drawn control, not just the datetime input. Switch between the light, dark and accessible themes and check: scrollbars, `<select>` dropdowns, checkboxes and radio buttons, autofill backgrounds on the sign-in and settings forms, and the datetime pickers themselves. This is the one check that cannot be skipped — it is the only thing standing between this change and a site-wide visual regression.
+**6. The two datetime pickers in each theme.** Task 9 scoped `color-scheme` to `input[type="datetime-local"]`, so this is a two-field check, not a site-wide sweep. In light, dark and accessible themes, confirm the ban expiration field and the tournament start time field render with the field background, segment text and calendar glyph all matching the surrounding page. Nothing else in the app changes — verified in both engines that the scoped rule leaves `:root` and unscoped controls computing `normal`.
+
+If you also have `moderator-ui` open, its five `datetime-local` inputs (AI review request stats, fair play actions and search) are picked up by the same rule and are worth a glance.
+
+**Deliberately not done here:** declaring `color-scheme` at `:root`, which would make every browser-drawn control follow the theme — roughly 32 `range`/`color` inputs, all checkboxes and radios, `<select>` option lists and autofill. That is a worthwhile change and the `--control-color-scheme` values are already in place for it, but it needs its own PR with a full visual sweep rather than riding on a dependency removal.
 
 Note that PR CI does not run Playwright, so steps 1-4 are the only e2e evidence this change will ever get.
 
