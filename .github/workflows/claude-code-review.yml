@@ -38,8 +38,10 @@ jobs:
       # point, so every Bash command fails and the review never runs. Make
       # /home writable so bubblewrap can create the mount points it needs.
       # Remove this step when the upstream bug is fixed.
+      # The sticky bit lets any user create entries, but only the owner can
+      # remove or rename them, as with /tmp.
       - name: Make sandbox mount points creatable
-        run: sudo chmod 777 /home
+        run: sudo chmod 1777 /home
 
       - name: Run Claude Code Review
         id: claude-review
@@ -48,9 +50,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           allowed_non_write_users: '*'
-          # TODO: temporary diagnostic - remove as soon as a review posts again.
-          # Prints the full session transcript to the public workflow log.
-          show_full_output: true
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
