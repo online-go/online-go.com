@@ -26,7 +26,8 @@ is the primary trunk git branch.
 - No pulsing/throbbing animations. No `translateY`/`translateX` on hover. No hover background changes on non-interactive elements.
 - All user-visible strings must be translated. Use `pgettext(context, msgid)` (or `llm_pgettext` for LLM-translated strings), `ngettext`/`npgettext` for plurals, and `interpolate()` for parameterized strings. Import from `@/lib/translate`. See `src/lib/translate.ts` for details.
 - Code must build and pass linting/formatting.
-- No train of thought comments regarding what is currently being worked on. Comments should be reserved for things like explaining particularly complicated code and documenting functions and classes, they are NOT meant for describing what you're currently thinking while working through a change request.
+- Use ASD-STE100 when communicating
+- Comments should be reserved for things like explaining particularly complicated code and documenting functions and classes, they are NOT meant for describing what you're currently thinking while working through a change request, or responses to requests. Avoid chain of thought comments.
 
 ## Before Committing or Considering a Change Complete
 
