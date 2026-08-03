@@ -1368,6 +1368,79 @@ git -C /Users/mgregory/src/OGS/ogs-ui commit -m "test: pin a non-UTC timezone so
 
 ---
 
+### Task 12: Declare the colour scheme on the pre-paint splash
+
+`src/index.html` carries inline theme rules used before `ogs.css` loads, so the page is not white for a moment on a dark theme. They set `background-color` but no `color-scheme`, so any browser-drawn control rendered during that window uses the OS scheme and then flips once the stylesheet applies.
+
+Small and self-contained: three one-line additions matching the three rules that already exist.
+
+**Files:**
+- Modify: `src/index.html`
+
+- [ ] **Step 1: Add the declarations**
+
+In `src/index.html`, in the inline `<style>` block, change:
+
+```css
+            [data-theme="dark"] {
+                background-color: #1a1a1a;
+            }
+            [data-theme="light"] {
+                background-color: #ffffff;
+            }
+            [data-theme="accessible"] {
+                background-color: #1a1a1a;
+            }
+```
+
+to:
+
+```css
+            /* color-scheme matches the background so browser-drawn controls do not
+               render in the OS scheme and then flip when ogs.css loads. */
+            [data-theme="dark"] {
+                background-color: #1a1a1a;
+                color-scheme: dark;
+            }
+            [data-theme="light"] {
+                background-color: #ffffff;
+                color-scheme: light;
+            }
+            [data-theme="accessible"] {
+                background-color: #1a1a1a;
+                color-scheme: dark;
+            }
+```
+
+`accessible` gets `dark` because it is a dark theme, matching its `#1a1a1a` background and the way `@define-mixin accessible` derives from `@mixin dark` in `01_variables.css`.
+
+Note this is a bare `color-scheme`, not the `--control-color-scheme` custom property used elsewhere: these rules run before `ogs.css` defines that property, so `var()` would resolve to nothing here.
+
+- [ ] **Step 2: Verify**
+
+```bash
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui build
+```
+
+Expected: clean. `type-check`, `lint`, `spellcheck` and `prettier:check` are all scoped to `src/**/*.{ts,tsx}` and do not read `index.html`. Do not run prettier on it; match the file's existing indentation by hand.
+
+Then confirm the declarations reached the built HTML:
+
+```bash
+grep -c "color-scheme" /Users/mgregory/src/OGS/ogs-ui/dist/index.html
+```
+
+Expected: 3. If it is 0, the inline style was not carried through and the change is inert — stop and report.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git -C /Users/mgregory/src/OGS/ogs-ui add src/index.html
+git -C /Users/mgregory/src/OGS/ogs-ui commit -m "fix(theme): set the colour scheme on the pre-paint splash"
+```
+
+---
+
 ## Handover: verification the author drives
 
 Implementation ends at Task 7. Nothing below is dispatched to a subagent — this is the checklist for the author, in the order that fails fastest.
@@ -1389,6 +1462,10 @@ Task 7 added a fourth affected family, `@CM`, and a behaviour change to verify b
 3. Change it to a different date and time. Everything from here down is uncovered.
 4. Create the tournament, reopen it, and confirm the displayed start time matches what was entered. The value goes local wall-clock to `moment(start).format()` to `.utc().format()` on save (`Tournament.tsx:575`) and back through `moment(...).format("LLLL")` for display (`:888`), so a mismatch here means the timezone hop is wrong.
 5. Worth doing once with a value that crosses a DST boundary in your local zone, since that is where a local-time-only helper is most likely to be wrong.
+
+**Expected behaviour that looks like a bug.** In the tournament field, *clearing* a segment — Backspace or Delete on the year, say — makes the browser report the whole value as `""`. `setStartTime` discards unparseable values, so React re-renders from the unchanged `time_start` and the field snaps back to its previous value, wiping the in-progress edit. Typing *over* a segment is unaffected, because the value stays complete throughout. This matches how `react-datetime` refused invalid input, so it is not a regression, but it is the most likely thing to be reported as one.
+
+The ban expiration field is immune: `BanDetails` holds the raw input string in its own state and converts only on the way out, so a partially-cleared value survives. Making the tournament field behave the same way means giving `Tournament.tsx` a local raw-value state and syncing it when `time_start` changes externally — a real change to a 3800-line component with no test cover, deliberately not attempted here.
 
 **4. The three affected e2e families.** Pause between runs to let the stack quiesce.
 
