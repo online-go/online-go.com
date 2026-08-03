@@ -149,7 +149,9 @@ export function AIReview({
     // Handle AI review selection
     const handleAIReviewSelect = useCallback(
         (ai_review: JGOFAIReview) => {
-            // The review picker is itself a popover, so choosing a review dismisses it.
+            // Selecting a review is a user action, so any OGS popover open at the time is
+            // dismissed with it. ReviewSelector is a react-select and closes its own menu,
+            // so this only affects popovers elsewhere on the page.
             close_all_popovers();
 
             setSelectedAiReviewInList(ai_review);
