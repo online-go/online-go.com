@@ -820,9 +820,159 @@ git -C /Users/mgregory/src/OGS/ogs-ui commit -m "test(e2e): wait for account set
 
 ---
 
+### Task 7: Stop the AI review auto-selection closing unrelated popovers
+
+Added after the author ran the `@CM` family and hit `File a malicious report from the report view` failing. Like Task 6 this is a **pre-existing defect, not caused by the react-datetime work** — but unlike Task 6 it is an app bug, not a test bug, and the branch cannot go green without it.
+
+**The defect.** `src/components/AIReview/hooks.ts:64-66` calls `close_all_popovers()` at the top of `setSelectedAIReview`. That callback has two callers in `AIReview.tsx`:
+
+- `:149-156` `handleAIReviewSelect` — the user picking a review from the review picker. The picker is itself a popover, so closing is correct here.
+- `:128-135` — a `useEffect` whose comment reads "This handles the initial auto-selection from useAIReviewList". Not a user action.
+
+The second path fires from a React passive mount effect and closes *every* open popover, including ones the user opened for unrelated reasons. Captured from an instrumented run:
+
+```
+69306.0  [POPOVER-DEBUG] open id=1                  <- player popover opened
+69486.1  [POPOVER-DEBUG] close_all_popovers open=1
+           at hooks.ts:35 -> AIReview.tsx:74 -> commitHookPassiveMountEffects
+69487.3  [POPOVER-DEBUG] close id=1 ev=none will_close=true
+```
+
+The Reports Center embeds the reported game, which mounts an `AIReview`. When its review list resolves after a moderator has opened a player popover, the popover is destroyed 181 ms later. That is a real moderator-facing bug; the e2e failure is the symptom.
+
+The race is why it is intermittent, and why clearing stale reports changed nothing — that altered timing, not the mechanism.
+
+**Files:**
+- Modify: `src/components/AIReview/hooks.ts` (remove the call and its now-unused import)
+- Modify: `src/components/AIReview/AIReview.tsx` (add the call to the user-initiated handler)
+- Modify: `e2e-tests/helpers/matchers.ts` (bound the scroll — see Step 4)
+
+**Interfaces:**
+- Consumes: nothing from earlier tasks.
+- Produces: nothing. `setSelectedAIReview`'s signature is unchanged.
+
+Scope check performed while writing this task: `setSelectedAIReview` is exported from `hooks.ts:135` and consumed only in `AIReview.tsx` (the two call sites above). No other component depends on it closing popovers.
+
+- [ ] **Step 1: Remove the unconditional close**
+
+In `src/components/AIReview/hooks.ts`, delete line 29:
+
+```ts
+import { close_all_popovers } from "@/lib/popover";
+```
+
+and change:
+
+```ts
+    const setSelectedAIReview = useCallback(
+        (aiReview: JGOFAIReview | undefined) => {
+            close_all_popovers();
+
+            // Clean up existing AIReviewData instance if it exists
+```
+
+to:
+
+```ts
+    const setSelectedAIReview = useCallback(
+        (aiReview: JGOFAIReview | undefined) => {
+            // Clean up existing AIReviewData instance if it exists
+```
+
+The import must go or `lint` will fail on an unused import — `close_all_popovers` has no other use in that file.
+
+- [ ] **Step 2: Close popovers only on user selection**
+
+In `src/components/AIReview/AIReview.tsx`, add alongside the other `@/lib` imports:
+
+```ts
+import { close_all_popovers } from "@/lib/popover";
+```
+
+and change:
+
+```ts
+    const handleAIReviewSelect = useCallback(
+        (ai_review: JGOFAIReview) => {
+            setSelectedAiReviewInList(ai_review);
+```
+
+to:
+
+```ts
+    const handleAIReviewSelect = useCallback(
+        (ai_review: JGOFAIReview) => {
+            // The review picker is itself a popover, so choosing a review dismisses it.
+            close_all_popovers();
+
+            setSelectedAiReviewInList(ai_review);
+```
+
+Leave the dependency array unchanged — `close_all_popovers` is a module-level import, not a reactive value.
+
+- [ ] **Step 3: Verify the app change**
+
+```bash
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui prettier:file src/components/AIReview/hooks.ts src/components/AIReview/AIReview.tsx
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui type-check
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui lint
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui test
+```
+
+Expected: all clean, 409 tests passing across 53 suites.
+
+- [ ] **Step 4: Bound the scroll in the e2e clickable matcher**
+
+Independent of the app fix, and worth keeping regardless: `playwright.config.ts` sets no `actionTimeout`, so an unbounded `scrollIntoViewIfNeeded` on an element that never appears blocks until the whole test times out. That is what turned this failure into a silent 420-second hang with no call log, and it also starves the surrounding retry loop of its remaining attempts.
+
+In `e2e-tests/helpers/matchers.ts`, change:
+
+```ts
+    // Retry scrollIntoViewIfNeeded if element becomes detached during React re-renders
+    // This can happen when React hydrates or updates state after initial page load
+    for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+            await element.scrollIntoViewIfNeeded();
+            break;
+```
+
+to:
+
+```ts
+    // Retry scrollIntoViewIfNeeded if element becomes detached during React re-renders
+    // This can happen when React hydrates or updates state after initial page load.
+    // The explicit timeout matters: playwright.config.ts sets no actionTimeout, so an
+    // unbounded scroll on an element that never appears blocks until the whole test
+    // times out, which also starves the retries below of their remaining attempts.
+    for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+            await element.scrollIntoViewIfNeeded({ timeout: 5000 });
+            break;
+```
+
+Then re-run `type-check` (it is the only one of the repo's static checks that reads `e2e-tests/`; `lint` and `spellcheck` are scoped to `src/**`).
+
+Do not run Playwright. The author runs the affected families at Handover.
+
+- [ ] **Step 5: Commit**
+
+Two commits, since the app fix and the test-harness fix are independent.
+
+```bash
+git -C /Users/mgregory/src/OGS/ogs-ui add src/components/AIReview/hooks.ts src/components/AIReview/AIReview.tsx
+git -C /Users/mgregory/src/OGS/ogs-ui commit -m "fix(ai-review): only close popovers when the user picks a review"
+
+git -C /Users/mgregory/src/OGS/ogs-ui add e2e-tests/helpers/matchers.ts
+git -C /Users/mgregory/src/OGS/ogs-ui commit -m "test(e2e): bound the scroll in expectOGSClickableByName"
+```
+
+---
+
 ## Handover: verification the author drives
 
-Implementation ends at Task 6. Nothing below is dispatched to a subagent — this is the checklist for the author, in the order that fails fastest.
+Implementation ends at Task 7. Nothing below is dispatched to a subagent — this is the checklist for the author, in the order that fails fastest.
+
+Task 7 added a fourth affected family, `@CM`, and a behaviour change to verify by hand: open the AI review picker on a game and select a review — the picker must still dismiss itself. Then, on a Reports Center report whose game has an AI review, click a player and confirm the popover stays open.
 
 **1. Load `/dev/styling`.** Against the dev server, with the console open. Expect the page to render with no `Element type is invalid` error. This was one of the three crash sites and is the cheapest possible confirmation that the fix works at all.
 
@@ -846,7 +996,10 @@ Implementation ends at Task 6. Nothing below is dispatched to a subagent — thi
 yarn --cwd /Users/mgregory/src/OGS/ogs-ui test:e2e -- --grep "@Mod"
 yarn --cwd /Users/mgregory/src/OGS/ogs-ui test:e2e -- --grep "@User"
 yarn --cwd /Users/mgregory/src/OGS/ogs-ui test:e2e -- --grep "@Tournament"
+yarn --cwd /Users/mgregory/src/OGS/ogs-ui test:e2e -- --grep "@CM"
 ```
+
+`@CM` is affected by Task 7's popover fix, not by the datetime conversion. `File a malicious report from the report view` is the test that surfaced it.
 
 **Use `test:e2e`, not `test:e2e:quick`.** `:quick` applies `--grep-invert "@Smoke|@Slow|@Visual|@E2EUtils|@Manual"`, which excludes the one affected `@Slow` test (see the table below).
 
