@@ -3267,10 +3267,7 @@ function createEliminationNodes(rounds: Round[]) {
             }
             if (obj.white_src) {
                 obj.white_src.parent = obj;
-                // Is this a bug?  TypeScript complains because black_src
-                // can be null.  Perhaps this should be white_src.feeding_white?
-                //  -bpj
-                (obj.black_src as ObjectType).feeding_white = true;
+                obj.white_src.feeding_white = true;
             }
             all_objects.push(obj);
 
