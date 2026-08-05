@@ -3268,7 +3268,7 @@ function createEliminationNodes(rounds: Round[]) {
             if (obj.white_src) {
                 obj.white_src.parent = obj;
                 obj.white_src.feeding_white = true;
-            }    
+            }
             all_objects.push(obj);
 
             cur_bucket[match.black] = obj;
