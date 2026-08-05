@@ -337,6 +337,7 @@ export interface DataSchema
     [moderator_join_game_publicly_key: `moderator.join-game-publicly.${string}`]: boolean;
     [puzzle_last_visited_key: `puzzle.collection.${number}.last-visited`]: number;
     [paginated_table_page_size_key: `paginated-table.${string}.page_size`]: number;
+    [paginated_table_page_key: `paginated-table.${string}.page`]: number;
     [dismissed_key: `dismissed.${string}`]: boolean;
     [experiments_key: `experiments.${string}`]: string;
 
