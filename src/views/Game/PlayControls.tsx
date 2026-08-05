@@ -16,8 +16,7 @@
  */
 import * as React from "react";
 import { useSearchParams } from "react-router-dom";
-import { _, interpolate, pgettext, moment } from "@/lib/translate";
-import * as DynamicHelp from "react-dynamic-help";
+import { _, interpolate, pgettext } from "@/lib/translate";
 import * as data from "@/lib/data";
 import {
     Goban,
@@ -29,7 +28,6 @@ import {
 import { alert } from "@/lib/swal_config";
 import { challengeRematch } from "@/components/ChallengeModal";
 import { Clock } from "@/components/Clock";
-import { getOutcomeTranslation } from "@/lib/misc";
 import { Link } from "react-router-dom";
 import { Resizable } from "@/components/Resizable";
 import { ChatMode } from "./GameChat";
@@ -40,17 +38,12 @@ import {
     generateGobanHook,
     subscribeAllEvents,
     useCurrentMoveNumber,
-    useShowUndoRequested,
     useUserIsParticipant,
-    usePlayerToMove,
-    useShowTitle,
-    useViewMode,
     useVariationName,
     useSelectedChatLog,
     useAnnulled,
     useMode,
     usePhase,
-    useTitle,
     useZenMode,
     useStashedConditionalMoves,
 } from "./GameHooks";
@@ -81,9 +74,6 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
     const engine = goban.engine;
-    const { registerTargetItem, triggerFlow, signalUsed } = React.useContext(DynamicHelp.Api);
-    const { ref: game_state_pane, active: gameStatePaneActive } =
-        registerTargetItem("undo-requested-message");
     const [searchParams] = useSearchParams();
     const return_param = searchParams.get("return");
     const return_url = return_param && is_valid_url(return_param) ? return_param : null;
@@ -96,14 +86,16 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
     const [autoscoring_taking_too_long, setAutoscoringTakingTooLong] = React.useState(false);
     const annulled = useAnnulled(goban_controller);
     const onVariationKeyPress = useOnVariationKeyPress();
-    const show_title = useShowTitle(goban);
-    const view_mode = useViewMode(goban_controller);
     const zen_mode = useZenMode(goban_controller);
-    const show_cancel = view_mode !== "portrait" ? true : zen_mode;
+    // PlayButtons owns the cancel/resign button in every layout now. The old
+    // `view_mode !== "portrait" ? true : zen_mode` carve-out existed only
+    // because Game.tsx used to render its own portrait-non-zen CancelButton
+    // outside PlayControls; the GobanView migration consolidated everything
+    // into one stack, so PlayButtons handles it unconditionally.
+    const show_cancel = true;
     const variation_name = useVariationName(goban_controller);
     const selected_chat_log = useSelectedChatLog(goban_controller);
     const phase = usePhase(goban);
-    const title = useTitle(goban);
     const stashed_conditional_moves = useStashedConditionalMoves(goban_controller);
 
     const user_is_active_player = [engine.players.black.id, engine.players.white.id].includes(
@@ -202,41 +194,11 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
     }, [black_accepted, white_accepted]);
 
     const paused = usePaused(goban);
-    const show_undo_requested = useShowUndoRequested(goban);
-    const undo_requester_name = React.useMemo(() => {
-        const requested_by = engine.undo_requested_by;
-        if (requested_by === engine.players.black.id) {
-            return engine.players.black.username;
-        }
-        if (requested_by === engine.players.white.id) {
-            return engine.players.white.username;
-        }
-        return _("A player");
-    }, [show_undo_requested, engine.undo_requested_by]);
-    const winner = useWinner(goban);
     const official_move_number = useOfficialMoveNumber(goban);
     const conditional_moves = useConditionalMoveTree(goban);
     const user_is_player = useUserIsParticipant(goban);
     const cur_move_number = useCurrentMoveNumber(goban);
-    const this_users_turn = usePlayerToMove(goban) === user.id;
     const mode = useMode(goban);
-
-    React.useEffect(() => {
-        if (show_undo_requested && moment(user.registration_date).isBefore(moment("2023-06-14"))) {
-            // This condition protects against established users seeing this message introduced 2023-6-14
-            // Could be removed once all the "regulars" have done this
-            signalUsed("undo-requested-message"); // stops the following "triggerFlow" from doing anything.
-            signalUsed("accept-undo-button");
-        }
-
-        if (show_undo_requested && gameStatePaneActive()) {
-            if (this_users_turn) {
-                triggerFlow("undo-request-received-intro");
-            } else {
-                triggerFlow("undo-requested-intro");
-            }
-        }
-    }, [show_undo_requested, game_state_pane, user_is_player]);
 
     const goban_setMode_play = () => {
         goban.setMode("play");
@@ -292,106 +254,11 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
         goban.performStoneRemovalAutoScoring();
     };
 
-    const sse = engine.stalling_score_estimate;
-
     return (
         <div className="PlayControls">
             <div className="game-action-buttons">
                 {mode === "play" && phase === "play" && user_is_player && (
                     <PlayButtons show_cancel={show_cancel} />
-                )}
-            </div>
-            <div className="game-state" ref={game_state_pane}>
-                {((mode === "play" && phase === "play") || null) && (
-                    <span>
-                        {((show_title && !goban?.engine?.rengo) || null) && <span>{title}</span>}
-                        {show_undo_requested && (
-                            <span className="undo-requested-message">
-                                {interpolate(
-                                    pgettext(
-                                        "Notification that a player has requested to undo their last move",
-                                        "{{player_name}} has requested an undo",
-                                    ),
-                                    {
-                                        player_name: undo_requester_name,
-                                    },
-                                )}
-                            </span>
-                        )}
-                    </span>
-                )}
-
-                {((mode === "play" && phase === "stone removal") || null) && (
-                    <span>{_("Stone Removal Phase")}</span>
-                )}
-
-                {(mode === "analyze" || null) && (
-                    <span>
-                        {show_undo_requested ? (
-                            <span>
-                                {interpolate(
-                                    pgettext(
-                                        "Notification that a player has requested to undo their last move",
-                                        "{{player_name}} has requested an undo",
-                                    ),
-                                    {
-                                        player_name: undo_requester_name,
-                                    },
-                                )}
-                            </span>
-                        ) : (
-                            <span>{_("Analyze Mode")}</span>
-                        )}
-                    </span>
-                )}
-
-                {(mode === "conditional" || null) && <span>{_("Conditional Move Planner")}</span>}
-
-                {(mode === "score estimation" || null) && <EstimateScore />}
-
-                {((mode === "play" && phase === "finished") || null) && (
-                    <>
-                        <span style={{ textDecoration: annulled ? "line-through" : "none" }}>
-                            {winner
-                                ? interpolate(
-                                      pgettext("Game winner", "{{color}} wins by {{outcome}}"),
-                                      {
-                                          // When is winner an id?
-                                          color:
-                                              (winner as any) === engine.players.black.id ||
-                                              winner === "black"
-                                                  ? _("Black")
-                                                  : _("White"),
-                                          outcome: getOutcomeTranslation(engine.outcome),
-                                      },
-                                  )
-                                : interpolate(pgettext("Game winner", "Tie by {{outcome}}"), {
-                                      outcome: pgettext("Game outcome", engine.outcome),
-                                  })}
-                        </span>
-                        {engine.stalling_score_estimate && sse && (
-                            <div className="stalling-score-estimate">
-                                <span>
-                                    {interpolate(
-                                        _(
-                                            "The AI has concluded {{color}} will win with {{certainty}}% certainty. This result has been accepted by one or more players",
-                                        ),
-                                        {
-                                            color:
-                                                sse.predicted_winner === "black"
-                                                    ? _("Black")
-                                                    : _("White"),
-                                            certainty: (
-                                                (sse.predicted_winner === "black"
-                                                    ? sse.win_rate
-                                                    : 1.0 - sse.win_rate) * 100.0
-                                            ).toFixed(2),
-                                        },
-                                    )}
-                                </span>
-                            </div>
-                        )}
-                    </>
                 )}
             </div>
             <div className="annulled-indicator">
@@ -1010,10 +877,9 @@ function stoneRemovalAccepted(goban: Goban, color: PlayerColor) {
 }
 
 const useOfficialMoveNumber = generateGobanHook(
-    (goban) => goban!.engine.last_official_move?.move_number || -1,
+    (goban) => goban!.engine.last_official_move?.move_number ?? -1,
     ["last_official_move"],
 );
-const useWinner = generateGobanHook((goban) => goban!.engine.winner, ["winner"]);
 const usePaused = generateGobanHook(
     (goban) => goban!.pause_control && !!goban!.pause_control.paused,
     ["paused"],

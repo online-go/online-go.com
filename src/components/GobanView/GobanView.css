@@ -61,19 +61,39 @@
         background: var(--shade5);
         border-radius: 8px;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-        margin: 1rem 1rem 1rem 0;
+        /* The 1.25rem on the left creates a consistent gap between the
+         * goban area and the sidebar across all GobanView consumers (game,
+         * puzzle, joseki). The Game view places its fullscreen-toggle icon
+         * inside this gap; on other pages it's just visual breathing room.
+         *
+         * Top is 0 because --below-navbar already provides a small (~0.3rem)
+         * spacer below the navbar — adding more margin doubles up. Bottom
+         * mirrors that natural top gap via --goban-view-bottom-margin
+         * (0.3rem normally, 0 below 700px viewport height) so the framing
+         * stays symmetric and the sidebar fills the available height on
+         * short viewports. */
+        margin: 0 1rem var(--goban-view-bottom-margin) 1.25rem;
         overflow: hidden;
     }
 
+    /* Header pinned above the scrollable sidebar content. Hidden via
+     * :empty when the `header` prop's component renders nothing, so we
+     * don't leave a stray bordered band at the top. */
     .GobanView-header {
         flex-shrink: 0;
-        padding: 0.6rem 0.875rem;
-        font-size: 1.5rem;
+        padding: 0.4rem 0.75rem;
+        font-size: 1.1rem;
         font-weight: 600;
         text-align: center;
         color: var(--fg);
         background: var(--shade4);
         border-bottom: 1px solid var(--shade3);
+        border-top-left-radius: inherit;
+        border-top-right-radius: inherit;
+
+        &:empty {
+            display: none;
+        }
     }
 
     .GobanView-sidebar-content {
@@ -83,16 +103,26 @@
         display: flex;
         flex-direction: column;
         gap: 0.75rem;
-        padding: 0.75rem;
+        padding-bottom: 0.75rem;
     }
 
     /* Tab panels */
     .GobanView-tab-panel {
-        padding: 0.875rem 0;
+        padding-bottom: 0.875rem;
         position: relative;
 
         &.hidden {
             display: none;
+        }
+
+        /* Non-takeover panels (always + toggle) render at their natural
+         * content height; the sidebar scrolls when their combined height
+         * exceeds the viewport. Without this, flex-shrink would squash
+         * them so the chat (which has a fixed inner height) overflows
+         * visibly into the panel below. */
+        &.always,
+        &.toggle {
+            flex-shrink: 0;
         }
 
         &.takeover {
@@ -151,7 +181,7 @@
         }
 
         .GobanView-sidebar-content {
-            padding: 0.5rem;
+            padding-bottom: 0.5rem;
             gap: 0.5rem;
         }
 
@@ -179,18 +209,27 @@
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
-            padding: 0.5rem;
+            /* Top breathing room only — consumers run flush to the
+             * viewport's left/right/bottom edges in portrait. */
+            padding: 0.5rem 0 0;
             background: var(--shade5);
 
             .GobanView-tab-panel {
-                padding: 0.75rem 0;
+                padding-bottom: 0.75rem;
+            }
+
+            /* The always panel runs to the viewport bottom on mobile —
+             * the chat area inside it has its own scroll, so the wrapper
+             * doesn't need its own bottom breathing room. */
+            .GobanView-tab-panel.always {
+                padding-bottom: 0;
             }
         }
 
         /* Takeover panels overlay the scroll area */
         .GobanView-tab-panel.takeover {
             display: none;
-            padding: 0.75rem 0;
+            padding-bottom: 0.75rem;
 
             &.active {
                 display: flex;

@@ -51,6 +51,10 @@ export interface GobanViewRef {
     /** Open or close a takeover programmatically. Pass null to close any
      *  currently-active takeover. */
     setActiveTakeover: (id: string | null) => void;
+    /** The current root DOM element of this GobanView. Returns null between
+     *  unmount and remount. Lets consumers scope DOM queries to this
+     *  instance instead of querying document globally. */
+    getRootElement: () => HTMLDivElement | null;
 }
 
 interface GobanViewProps {
@@ -71,6 +75,14 @@ interface GobanViewProps {
      *  above the goban (portrait). Stays visible across takeovers so
      *  consumers can use it to label the current view. */
     header?: React.ReactNode;
+    /** Forwarded to the GobanContainer — fires when the user scrolls the wheel
+     *  over the board. Used by the Game view for scroll-to-navigate. */
+    onWheel?: React.WheelEventHandler<HTMLDivElement>;
+    /** Optional content rendered inside the center column above the goban.
+     *  Used by the Game view's "stacked" layout to put a player card on top. */
+    centerTop?: React.ReactNode;
+    /** Optional content rendered inside the center column below the goban. */
+    centerBottom?: React.ReactNode;
     ref?: React.Ref<GobanViewRef>;
 }
 
@@ -113,6 +125,9 @@ function GobanViewComponent({
     defaultActiveTakeover,
     customSlider,
     header,
+    onWheel,
+    centerTop,
+    centerBottom,
     ref,
 }: GobanViewProps): React.ReactElement {
     const { tabs, others } = React.useMemo(() => partitionChildren(children), [children]);
@@ -185,6 +200,7 @@ function GobanViewComponent({
     tabsRef.current = tabs;
     const activeTakeoverRef = React.useRef(activeTakeover);
     activeTakeoverRef.current = activeTakeover;
+    const rootRef = React.useRef<HTMLDivElement>(null);
 
     React.useImperativeHandle(
         ref,
@@ -208,6 +224,7 @@ function GobanViewComponent({
                     opened?.onToggle?.(true);
                 }
             },
+            getRootElement: () => rootRef.current,
         }),
         [],
     );
@@ -307,6 +324,7 @@ function GobanViewComponent({
             <GobanControllerContext.Provider value={controller}>
                 <GobanViewStateContext.Provider value={tabState}>
                     <div
+                        ref={rootRef}
                         className={
                             `GobanView portrait` +
                             (squashed ? " squashed" : "") +
@@ -315,9 +333,11 @@ function GobanViewComponent({
                             (className ? ` ${className}` : "")
                         }
                     >
-                        {header && <div className="GobanView-header">{header}</div>}
+                        <div className="GobanView-header">{header}</div>
                         <div className="GobanView-center">
-                            <GobanContainer onResize={onResize} />
+                            {centerTop}
+                            <GobanContainer onResize={onResize} onWheel={onWheel} />
+                            {centerBottom}
                         </div>
                         <div className="GobanView-mobile-scroll">
                             {orderedPanels.map((t) => renderPanel(t, isInlineVisible(t)))}
@@ -337,6 +357,7 @@ function GobanViewComponent({
         <GobanControllerContext.Provider value={controller}>
             <GobanViewStateContext.Provider value={tabState}>
                 <div
+                    ref={rootRef}
                     className={
                         `GobanView ${viewMode}` +
                         (squashed ? " squashed" : "") +
@@ -346,10 +367,12 @@ function GobanViewComponent({
                     }
                 >
                     <div className="GobanView-center">
-                        <GobanContainer onResize={onResize} />
+                        {centerTop}
+                        <GobanContainer onResize={onResize} onWheel={onWheel} />
+                        {centerBottom}
                     </div>
                     <div className="GobanView-sidebar">
-                        {header && <div className="GobanView-header">{header}</div>}
+                        <div className="GobanView-header">{header}</div>
                         <div className="GobanView-sidebar-content">
                             {inlinePanels.map((t) => renderPanel(t, isInlineVisible(t)))}
                             {takeoverPanels.map((t) => renderPanel(t, activeTakeover === t.id))}
