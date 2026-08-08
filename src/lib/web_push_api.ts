@@ -29,6 +29,10 @@ export interface WebPushSubscription {
     keys: WebPushSubscriptionKeys;
 }
 
+export interface WebPushSubscriptionDelete {
+    endpoint: string;
+}
+
 export interface PushPreferences {
     turn: boolean;
     time: boolean;
@@ -40,7 +44,7 @@ type PushApiPath =
     | "/api/v1/push/config"
     | "/api/v1/push/subscriptions"
     | "/api/v1/push/preferences";
-type PushApiPayload = WebPushSubscription | PushPreferences | undefined;
+type PushApiPayload = WebPushSubscription | WebPushSubscriptionDelete | PushPreferences | undefined;
 type PushApiResponse = VapidPublicKeyResponse | WebPushSubscription | PushPreferences | undefined;
 
 const MOCK_LATENCY_MS = 100;
@@ -76,6 +80,12 @@ async function mockRequest(
     }
 
     if (method === "DELETE" && path === "/api/v1/push/subscriptions") {
+        const subscription = payload as WebPushSubscriptionDelete;
+        if (subscription.endpoint !== mockSubscription?.endpoint) {
+            throw new Error(
+                "The Web Push subscription endpoint does not match the mock subscription",
+            );
+        }
         mockSubscription = undefined;
         return undefined;
     }
@@ -96,7 +106,7 @@ export interface WebPushApi {
     getConfig(): Promise<VapidPublicKeyResponse>;
     getPreferences(): Promise<PushPreferences>;
     saveSubscription(subscription: WebPushSubscription): Promise<WebPushSubscription>;
-    deleteSubscription(): Promise<void>;
+    deleteSubscription(endpoint: string): Promise<void>;
     updatePreferences(preferences: PushPreferences): Promise<PushPreferences>;
 }
 
@@ -117,8 +127,8 @@ export const mockWebPushApi: WebPushApi = {
         )) as WebPushSubscription;
     },
 
-    async deleteSubscription(): Promise<void> {
-        await mockRequest("DELETE", "/api/v1/push/subscriptions");
+    async deleteSubscription(endpoint: string): Promise<void> {
+        await mockRequest("DELETE", "/api/v1/push/subscriptions", { endpoint });
     },
 
     async updatePreferences(preferences: PushPreferences): Promise<PushPreferences> {

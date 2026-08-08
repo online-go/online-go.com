@@ -34,13 +34,13 @@ _(Required for the settings page to load initial state)_
 
 Retrieves the user's current push notification settings.
 
-**Response:** `{ "notify_turn": true, "notify_time": true, "notify_challenge": false }`
+**Response:** `{ "turn": true, "time": true, "challenge": false }`
 
 ### `PUT /api/v1/push/preferences`
 
 Updates the user's push notification settings.
 
-**Request Body:** `{ "notify_turn": true, "notify_time": true, "notify_challenge": true }`
+**Request Body:** `{ "turn": true, "time": true, "challenge": true }`
 
 **Response:** `200 OK`
 

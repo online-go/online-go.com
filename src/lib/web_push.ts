@@ -131,9 +131,10 @@ export async function unsubscribeFromPush(): Promise<boolean> {
         return false;
     }
 
+    const endpoint = subscription.endpoint;
     const unsubscribed = await subscription.unsubscribe();
     if (unsubscribed) {
-        await mockWebPushApi.deleteSubscription();
+        await mockWebPushApi.deleteSubscription(endpoint);
     }
 
     return unsubscribed;
