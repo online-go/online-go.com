@@ -36,6 +36,7 @@ import { Toggle } from "@/components/Toggle";
 
 import { SettingGroupPageProps, PreferenceLine, PreferenceDropdown } from "@/lib/SettingsCommon";
 import { useData } from "@/lib/hooks";
+import { PushNotificationPreferences } from "./PushNotificationPreferences";
 import "./GeneralPreferences.css";
 
 export function GeneralPreferences(props: SettingGroupPageProps): React.ReactElement {
@@ -267,6 +268,8 @@ export function GeneralPreferences(props: SettingGroupPageProps): React.ReactEle
                     </div>
                 )}
             </PreferenceLine>
+
+            <PushNotificationPreferences />
 
             {/* desktop_notifications_enabled && (
                 <PreferenceLine

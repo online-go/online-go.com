@@ -80,6 +80,10 @@ async function mockRequest(
         return undefined;
     }
 
+    if (method === "GET" && path === "/api/v1/push/preferences") {
+        return mockPreferences;
+    }
+
     if (method === "PUT" && path === "/api/v1/push/preferences") {
         mockPreferences = payload as PushPreferences;
         return mockPreferences;
@@ -90,6 +94,7 @@ async function mockRequest(
 
 export interface WebPushApi {
     getConfig(): Promise<VapidPublicKeyResponse>;
+    getPreferences(): Promise<PushPreferences>;
     saveSubscription(subscription: WebPushSubscription): Promise<WebPushSubscription>;
     deleteSubscription(): Promise<void>;
     updatePreferences(preferences: PushPreferences): Promise<PushPreferences>;
@@ -98,6 +103,10 @@ export interface WebPushApi {
 export const mockWebPushApi: WebPushApi = {
     async getConfig(): Promise<VapidPublicKeyResponse> {
         return (await mockRequest("GET", "/api/v1/push/config")) as VapidPublicKeyResponse;
+    },
+
+    async getPreferences(): Promise<PushPreferences> {
+        return (await mockRequest("GET", "/api/v1/push/preferences")) as PushPreferences;
     },
 
     async saveSubscription(subscription: WebPushSubscription): Promise<WebPushSubscription> {
