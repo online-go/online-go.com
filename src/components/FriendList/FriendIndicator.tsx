@@ -36,7 +36,13 @@ export function FriendIndicator(): React.ReactElement | null {
     const friend_list = React.useRef<any[]>([]);
 
     React.useEffect(() => {
-        setSetShowFriendList((show) => setActiveMenu(show ? "friends" : null));
+        setSetShowFriendList((show) => {
+            if (show) {
+                setActiveMenu("friends");
+            } else {
+                setActiveMenu((currentMenu) => (currentMenu === "friends" ? null : currentMenu));
+            }
+        });
         return () => setSetShowFriendList(() => {});
     }, [setActiveMenu]);
 
