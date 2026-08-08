@@ -150,8 +150,8 @@ export function Menu<T extends React.ElementType = "li">({
 // menu context to track currently open menu
 export const MenuContext = React.createContext<{
     activeMenu: string | null;
-    setActiveMenu: (menu: string | null) => void;
+    setActiveMenu: React.Dispatch<React.SetStateAction<string | null>>;
 }>({
     activeMenu: null,
-    setActiveMenu: (_menu: string | null) => {},
+    setActiveMenu: (_menu: React.SetStateAction<string | null>) => {},
 });

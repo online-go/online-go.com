@@ -21,6 +21,7 @@ import * as data from "@/lib/data";
 import { FriendList } from "./FriendList";
 import { KBShortcut } from "@/components/KBShortcut";
 import cached from "@/lib/cached";
+import { MenuContext } from "@/components/NavBar/Menu";
 import { setSetShowFriendList } from "./close_friend_list";
 import "./FriendIndicator.css";
 
@@ -28,12 +29,22 @@ const online_subscriptions = {};
 
 export function FriendIndicator(): React.ReactElement | null {
     const user = data.get("user");
-    const [show_friend_list, setShowFriendList] = React.useState(false);
+    const { activeMenu, setActiveMenu } = React.useContext(MenuContext);
+    const show_friend_list = activeMenu === "friends";
     const [online_ct, setOnlineCt] = React.useState(0);
     const [, refresh] = React.useState(0);
     const friend_list = React.useRef<any[]>([]);
 
-    setSetShowFriendList(setShowFriendList);
+    React.useEffect(() => {
+        setSetShowFriendList((show) => {
+            if (show) {
+                setActiveMenu("friends");
+            } else {
+                setActiveMenu((currentMenu) => (currentMenu === "friends" ? null : currentMenu));
+            }
+        });
+        return () => setSetShowFriendList(() => {});
+    }, [setActiveMenu]);
 
     React.useEffect(() => {
         if (user.id) {
@@ -67,7 +78,7 @@ export function FriendIndicator(): React.ReactElement | null {
     }, [user.id]);
 
     const toggleFriendList = () => {
-        setShowFriendList(!show_friend_list);
+        setActiveMenu(show_friend_list ? null : "friends");
     };
 
     if (friend_list.current.length === 0) {

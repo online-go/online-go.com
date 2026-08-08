@@ -72,8 +72,7 @@ export function NavBar(): React.ReactElement {
     const [search, setSearch] = React.useState<string>("");
     const [search_focus, setSearchFocus] = React.useState<boolean>(false);
     const [omniMouseOver, setOmniMouseOver] = React.useState<boolean>(false);
-    const [right_nav_active, setRightNavActive] = React.useState(false);
-    const [notifications_active, setNotificationsActive] = React.useState(false);
+    const [activeMenu, setActiveMenu] = useState<null | string>(null);
     const [hamburger_expanded, setHamburgerExpanded] = React.useState(false);
     const search_input = React.useRef<HTMLInputElement>(null);
     const [force_nav_close, setForceNavClose] = React.useState(false);
@@ -103,21 +102,23 @@ export function NavBar(): React.ReactElement {
 
     const { ref: settingsNavLink } = registerTargetItem("settings-nav-link");
 
+    const notifications_active = activeMenu === "notifications";
+    const right_nav_active = activeMenu === "right-nav";
+
     const closeNavbar = () => {
-        setRightNavActive(false);
-        setNotificationsActive(false);
+        setActiveMenu(null);
         setSearch("");
     };
 
     const toggleNotifications = () => {
-        if (notifications_active === false) {
+        if (!notifications_active) {
             notification_manager.event_emitter.emit("notification-count", 0);
         }
-        setNotificationsActive(!notifications_active);
+        setActiveMenu(notifications_active ? null : "notifications");
     };
 
     const toggleRightNav = () => {
-        setRightNavActive(!right_nav_active);
+        setActiveMenu(right_nav_active ? null : "right-nav");
         rightNavToggled();
     };
 
@@ -125,7 +126,7 @@ export function NavBar(): React.ReactElement {
         if (hamburger_expanded) {
             setSearch("");
         }
-        setRightNavActive(false);
+        setActiveMenu(null);
         setHamburgerExpanded(!hamburger_expanded);
     };
 
@@ -166,8 +167,6 @@ export function NavBar(): React.ReactElement {
     const show_appeal_box = !window.location.pathname.includes("/appeal");
 
     const searchInputId = useId();
-
-    const [activeMenu, setActiveMenu] = useState<null | string>(null);
 
     return (
         <MenuContext.Provider value={{ setActiveMenu, activeMenu }}>
