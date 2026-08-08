@@ -17,6 +17,42 @@
 
 import { mockWebPushApi, WebPushSubscription } from "@/lib/web_push_api";
 
+const notification_channel_name = "ogs-notifications";
+
+interface ForegroundCheckMessage {
+    type: "foreground-check";
+}
+
+function isForegroundCheckMessage(message: unknown): message is ForegroundCheckMessage {
+    if (typeof message !== "object" || message === null) {
+        return false;
+    }
+
+    return (message as Partial<ForegroundCheckMessage>).type === "foreground-check";
+}
+
+export function initializeWebPush(): void {
+    if (!("serviceWorker" in navigator) || typeof BroadcastChannel === "undefined") {
+        return;
+    }
+
+    const notification_channel = new BroadcastChannel(notification_channel_name);
+    notification_channel.addEventListener("message", (event: MessageEvent<unknown>) => {
+        if (!isForegroundCheckMessage(event.data)) {
+            return;
+        }
+
+        notification_channel.postMessage({
+            type: "foreground-response",
+            visible: document.visibilityState === "visible" && document.hasFocus(),
+        });
+    });
+
+    void navigator.serviceWorker.register("/service-worker.js").catch((error: unknown) => {
+        console.error("Unable to register the Web Push service worker", error);
+    });
+}
+
 export function isWebPushSupported(): boolean {
     return (
         typeof navigator !== "undefined" &&

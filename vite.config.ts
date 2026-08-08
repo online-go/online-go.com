@@ -183,6 +183,7 @@ export default defineConfig({
               rollupOptions: {
                   input: {
                       ogs: path.resolve(import.meta.dirname, "src/main.tsx"),
+                      "service-worker": path.resolve(import.meta.dirname, "src/service-worker.ts"),
                   },
                   output: {
                       assetFileNames: (assetInfo) => {

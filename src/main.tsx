@@ -29,7 +29,10 @@ import { HelpFlows } from "@/views/HelpFlows";
 import { sfx } from "@/lib/sfx";
 import { post } from "@/lib/requests";
 import { ai_host } from "@/lib/sockets";
+import { initializeWebPush } from "@/lib/web_push";
 sfx.sync();
+
+initializeWebPush();
 
 declare let ogs_current_language: string;
 declare let ogs_language_version: string;
