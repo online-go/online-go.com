@@ -18,6 +18,8 @@
 import * as React from "react";
 
 import { _ } from "@/lib/translate";
+import { ENABLE_WEB_PUSH } from "@/lib/features";
+import { isWebPushSupported } from "@/lib/web_push";
 
 import { put } from "@/lib/requests";
 import { errorAlerter } from "@/lib/misc";
@@ -27,43 +29,72 @@ import { Toggle } from "@/components/Toggle";
 import { SettingGroupPageProps, SettingsState } from "@/lib/SettingsCommon";
 
 export function EmailPreferences(props: SettingGroupPageProps): React.ReactElement {
+    const web_push_available =
+        ENABLE_WEB_PUSH &&
+        typeof Notification !== "undefined" &&
+        isWebPushSupported() &&
+        Notification.permission === "granted";
+    const notifications = (props.state.notifications ?? {}) as NotificationSettings;
+
     return (
         <div>
             {_("Email me a notification when ...")}
-            {Object.keys(props.state.notifications).map((k) => (
+            {Object.keys(notifications).map((k) => (
                 <EmailNotificationToggle
                     key={k}
-                    name={_(props.state.notifications[k].description)}
+                    name={_(notifications[k].description)}
                     notification={k}
                     state={props.state}
+                    webPushAvailable={web_push_available}
                 />
             ))}
         </div>
     );
 }
 
+interface NotificationValue {
+    email?: boolean;
+    mobile?: boolean;
+    web_push?: boolean;
+}
+
+interface NotificationSetting {
+    description: string;
+    value: NotificationValue;
+}
+
+type NotificationSettings = Record<string, NotificationSetting>;
+
 function EmailNotificationToggle(props: {
     state: SettingsState;
     name: string;
     notification: string;
+    webPushAvailable: boolean;
 }): React.ReactElement {
-    const [on, __set]: [boolean, (x: boolean) => void] = React.useState(
-        !!props.state.notifications[props.notification].value.email,
-    );
+    const notifications = props.state.notifications as NotificationSettings;
+    const setting = notifications[props.notification];
+    const [email_on, setEmailOn] = React.useState(!!setting.value.email);
+    const [web_push_on, setWebPushOn] = React.useState(!!setting.value.web_push);
 
-    function save(on: boolean): void {
-        __set(on);
-        const up: any = {};
-        up[props.notification] = {
-            description: props.state.notifications[props.notification].description,
+    function save(channel: "email" | "web_push", on: boolean): void {
+        if (channel === "email") {
+            setEmailOn(on);
+        } else {
+            setWebPushOn(on);
+        }
+
+        const updated_setting: NotificationSetting = {
+            description: setting.description,
             value: {
-                email: on,
-                mobile: on,
+                ...setting.value,
+                [channel]: on,
             },
         };
-        props.state.notifications[props.notification] = up[props.notification];
+        notifications[props.notification] = updated_setting;
         put("me/settings", {
-            notifications: up,
+            notifications: {
+                [props.notification]: updated_setting,
+            },
         })
             .then(() => 0)
             .catch(errorAlerter);
@@ -71,10 +102,21 @@ function EmailNotificationToggle(props: {
 
     return (
         <div className="EmailNotificationToggle">
+            <span className="preference-toggle-name">{props.name}</span>
             <label>
-                <span className="preference-toggle-name">{props.name}</span>
-                <Toggle onChange={save} checked={on} />
+                <span>{_("Email")}</span>
+                <Toggle onChange={(on) => save("email", on)} checked={email_on} />
             </label>
+            {ENABLE_WEB_PUSH && (
+                <label>
+                    <span>{_("Web Push")}</span>
+                    <Toggle
+                        onChange={(on) => save("web_push", on)}
+                        checked={web_push_on}
+                        disabled={!props.webPushAvailable}
+                    />
+                </label>
+            )}
         </div>
     );
 }

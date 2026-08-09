@@ -33,10 +33,6 @@ import { ENABLE_WEB_PUSH } from "@/lib/features";
 import { initializeWebPush } from "@/lib/web_push";
 sfx.sync();
 
-if (ENABLE_WEB_PUSH) {
-    initializeWebPush();
-}
-
 declare let ogs_current_language: string;
 declare let ogs_language_version: string;
 declare let ogs_version: string;
@@ -270,6 +266,10 @@ if (import.meta.env.DEV && window.cdn_service) {
 }
 
 const user = data.get("config.user"); // guaranteed to return anonymous by the defaults, unless they are logged in
+
+if (ENABLE_WEB_PUSH && !user.anonymous) {
+    initializeWebPush();
+}
 
 try {
     Sentry.setUser({

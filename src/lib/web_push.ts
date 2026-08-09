@@ -15,9 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { mockWebPushApi, WebPushSubscription } from "@/lib/web_push_api";
+import * as data from "@/lib/data";
+import { post } from "@/lib/requests";
 
 const notification_channel_name = "ogs-notifications";
+
+interface WebPushSubscription {
+    endpoint: string;
+    keys: {
+        p256dh: string;
+        auth: string;
+    };
+}
+
+interface WebPushSubscriptionDelete {
+    endpoint: string;
+}
 
 interface ForegroundCheckMessage {
     type: "foreground-check";
@@ -114,14 +127,18 @@ export async function subscribeToPush(): Promise<PushSubscription> {
         return existingSubscription;
     }
 
-    const { vapid_public_key } = await mockWebPushApi.getConfig();
+    const vapid_public_key = data.get("config.vapid_public_key");
+    if (!vapid_public_key) {
+        throw new Error("The Web Push VAPID public key is not configured");
+    }
+
     const registration = await navigator.serviceWorker.ready;
     const subscription = await registration.pushManager.subscribe({
         applicationServerKey: publicKeyToUint8Array(vapid_public_key),
         userVisibleOnly: true,
     });
 
-    await mockWebPushApi.saveSubscription(serializeSubscription(subscription));
+    await post("me/push_subscriptions", serializeSubscription(subscription));
     return subscription;
 }
 
@@ -134,7 +151,8 @@ export async function unsubscribeFromPush(): Promise<boolean> {
     const endpoint = subscription.endpoint;
     const unsubscribed = await subscription.unsubscribe();
     if (unsubscribed) {
-        await mockWebPushApi.deleteSubscription(endpoint);
+        const payload: WebPushSubscriptionDelete = { endpoint };
+        await post("me/push_subscriptions/delete", payload);
     }
 
     return unsubscribed;

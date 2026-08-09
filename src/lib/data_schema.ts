@@ -56,6 +56,7 @@ export interface DismissableMessagesSchema {
 
 export interface ConfigSchema {
     user: any;
+    vapid_public_key?: string;
     cdn: string;
     cdn_release: string;
     cdn_host: string;
