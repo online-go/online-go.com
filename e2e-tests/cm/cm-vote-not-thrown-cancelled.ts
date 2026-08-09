@@ -192,8 +192,12 @@ export const cmVoteNotThrownCancelledTest = async (
         // The whole point of "not a thrown game - they used cancel" is that the
         // accused gets no warning: cancelling in the opening is permitted, not
         // sanctioned. Reload so any warning issued after consensus has a chance
-        // to appear, then confirm none did.
+        // to appear, then confirm none did. The wait gives the AccountWarning
+        // fetch/render cycle time to complete before the negative assertion
+        // checks, since `not.toBeVisible()` only proves absence at the instant
+        // it runs, not that the element never appears.
         await accusedPage.goto("/");
+        await accusedPage.waitForTimeout(2000);
         await expect(accusedPage.locator("div.AccountWarning")).not.toBeVisible();
     });
 };
