@@ -95,7 +95,7 @@ export const cmVoteNotThrownCancelledTest = async (
     await goban.waitFor({ state: "visible" });
 
     // Two moves keeps the game inside the cancellation window
-    // (GobanEngine.gameCanBeCancelled allows 5 + handicap moves).
+    // (GobanEngine.gameCanBeCancelled allows up to 6 moves in a non-handicap game).
     await playMoves(accusedPage, otherPage, ["D5", "E5"], "9x9", 0);
 
     // The accused cancels. This must be the accused: the canceller is recorded
@@ -188,5 +188,12 @@ export const cmVoteNotThrownCancelledTest = async (
 
         // After clicking OK on the acknowledgement, the count should return to initial
         await tracker.assertCountReturnedToInitial(reporterPage);
+
+        // The whole point of "not a thrown game - they used cancel" is that the
+        // accused gets no warning: cancelling in the opening is permitted, not
+        // sanctioned. Reload so any warning issued after consensus has a chance
+        // to appear, then confirm none did.
+        await accusedPage.goto("/");
+        await expect(accusedPage.locator("div.AccountWarning")).not.toBeVisible();
     });
 };

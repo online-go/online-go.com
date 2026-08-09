@@ -200,7 +200,8 @@ export const resignActiveGame = async (page: Page) => {
 
 // Cancels a game that is still within its first moves. The same button becomes
 // "Resign" once the game passes the cancellation window - see
-// GobanEngine.gameCanBeCancelled, which allows 5 + handicap moves.
+// GobanEngine.gameCanBeCancelled, which allows up to 6 moves in a non-handicap
+// game (5 + handicap moves when using free handicap placement).
 export const cancelActiveGame = async (page: Page) => {
     const cancel = page.locator(".play-buttons .cancel-button");
     await expect(cancel).toBeVisible();
