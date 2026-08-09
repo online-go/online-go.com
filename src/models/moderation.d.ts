@@ -109,6 +109,7 @@ declare namespace rest_api {
             | "annul_thrown_games"
             | "warn_thrown_game"
             | "no_thrown_game"
+            | "not_thrown_game_cancel"
             | "informal_warn_escaper"
             | "informal_warn_escaper_and_annul";
 

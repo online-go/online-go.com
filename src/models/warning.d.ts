@@ -91,6 +91,7 @@ declare namespace rest_api {
             | "ack_warned_thrown_game"
             | "ack_warned_thrown_game_and_annul"
             | "no_thrown_game_evident"
+            | "not_thrown_game_cancel"
             | "informal_warn_escaper"
             | "ack_informal_warn_escaper"
             | "warn_malicious_reporter"
