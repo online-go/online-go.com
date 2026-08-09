@@ -984,6 +984,23 @@ Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
             ),
             { reported },
         ),
+    not_thrown_game_cancel: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement message to a user who reported someone for throwing a game",
+                `
+Thank you for bringing the possible instance of deliberately losing a game by '{{reported}}' to our attention.
+
+We looked into the game and see that they used "Cancel".
+
+Players are allowed to "Cancel" a game during the first moves, and a cancelled game does not count.
+
+If you think the person is abusing this feature, please file a report with more details.
+
+Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
+            ),
+            { reported },
+        ),
     warn_malicious_reporter: (reported) =>
         interpolate(
             llm_pgettext(
