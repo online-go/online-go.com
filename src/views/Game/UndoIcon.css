@@ -1,0 +1,44 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.UndoIcon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1em;
+    height: 1em;
+    flex: 0 0 auto;
+
+    /* Host containers size their own icons (the actions menu pins every
+     * `i` to 1.1rem, for instance). Opt both glyphs out of that so the
+     * badge stays pinned to the arrow's corner. */
+    .fa-undo {
+        position: static;
+        width: auto;
+        flex: 0 0 auto;
+    }
+
+    .UndoIcon-badge {
+        position: absolute;
+        top: -0.45em;
+        right: -0.35em;
+        width: auto;
+        flex: 0 0 auto;
+        font-size: 0.6em;
+    }
+}

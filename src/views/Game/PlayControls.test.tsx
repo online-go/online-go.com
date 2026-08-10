@@ -112,7 +112,8 @@ test("No moves have been played", () => {
         </WrapTest>,
     );
 
-    expect(screen.getByText("Cancel game")).toBeDefined();
+    // Undo and resign live in the action bar, not here.
+    expect(screen.queryByText("Cancel game")).toBeNull();
     expect(screen.queryByText("Undo")).toBeNull();
     expect(screen.queryByText("Accept Undo")).toBeNull();
     expect(screen.queryByText("Submit")).toBeNull();
@@ -136,17 +137,16 @@ test("Don't render play buttons if user is not a player", () => {
     expect(screen.queryByText("Pass")).toBeNull();
 });
 
-test("Renders undo if it is not the players turn", () => {
+test("PlayControls is empty when there is nothing to show", () => {
     const controller = new GobanController({
         game_id: 1234,
-        // Need to play at least one move before Undo button shows up
         moves: [
             [15, 15, 5241],
             [2, 2, 68110],
             [16, 2, 53287],
         ],
-        // Since three moves have been played, black must have had the last move
-        // That is one of the requirements for "undo" to show up.
+        // Black went last, so it is the opponent's turn and there is no
+        // move control to offer the user.
         players: {
             black: { id: 123, username: "test_user" },
             white: { id: 456, username: "test_user2" },
@@ -154,37 +154,14 @@ test("Renders undo if it is not the players turn", () => {
     });
     data.set("user", TEST_USER);
 
-    render(
+    const { container } = render(
         <WrapTest controller={controller}>
             <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
         </WrapTest>,
     );
 
-    expect(screen.getByText("Undo")).toBeDefined();
-    expect(screen.queryByText("Accept Undo")).toBeNull();
-});
-
-test("Renders undo if it is the players turn", () => {
-    const controller = new GobanController({
-        game_id: 1234,
-        moves: [
-            [15, 15, 5241],
-            [2, 2, 68110],
-        ],
-        players: {
-            black: { id: 456, username: "test_user2" },
-            white: { id: 123, username: "test_user" },
-        },
-    });
-    data.set("user", TEST_USER);
-
-    render(
-        <WrapTest controller={controller}>
-            <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
-        </WrapTest>,
-    );
-
-    expect(screen.getByText("Undo")).toBeDefined();
+    // Truly empty, so the `.PlayControls:empty` rule can drop its padding.
+    expect(container.querySelector(".PlayControls")).toBeEmptyDOMElement();
 });
 
 test("Renders accept undo if undo requested", () => {

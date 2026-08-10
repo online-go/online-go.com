@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { _ } from "@/lib/translate";
+import { _, pgettext } from "@/lib/translate";
 import { api1 } from "@/lib/requests";
 import { useUser } from "@/lib/hooks";
 import { alert } from "@/lib/swal_config";
@@ -26,10 +26,21 @@ import { openReport } from "@/components/Report";
 import { openSGFCollectionModal } from "@/components/SGFCollectionModal";
 import { ModalContext, ModalTypes } from "@/components/ModalProvider";
 import { GobanEngine, GobanRenderer } from "goban";
-import { useAnnulled, usePhase } from "./GameHooks";
+import {
+    useAnnulled,
+    useCanAnswerUndoRequest,
+    useCanRequestUndo,
+    useMode,
+    usePhase,
+    useResignMode,
+    useUndoRequestIsMine,
+    useUserIsParticipant,
+} from "./GameHooks";
 import { useGobanController } from "./goban_context";
 import { openGameInfoModal } from "./GameInfoModal";
 import { openGameLinkModal } from "./GameLinkModal";
+import { cancelOrResignGame, requestUndo } from "./game_actions";
+import { UndoIcon } from "./UndoIcon";
 import "./GameSidebarPanels.css";
 
 const handleForkGameClick = (
@@ -68,10 +79,20 @@ export function GameActionsPanel({
     const goban = goban_controller.goban;
     const engine = goban.engine;
     const phase = usePhase(goban);
+    const mode = useMode(goban);
     const user = useUser();
     const { showModal } = React.useContext(ModalContext);
 
     const annulled = useAnnulled(goban_controller);
+
+    // The same in-game actions the action bar offers, repeated here so the
+    // menu is a complete list of what a player can do.
+    const user_is_player = useUserIsParticipant(goban);
+    const can_request_undo = useCanRequestUndo(goban);
+    const undo_request_is_mine = useUndoRequestIsMine(goban);
+    const can_answer_undo_request = useCanAnswerUndoRequest(goban);
+    const resign_mode = useResignMode(goban);
+    const show_play_actions = user_is_player && mode === "play" && phase === "play";
 
     const review_id: number | undefined = goban.config.review_id;
     const game_id: number | undefined = Number(goban.config.game_id);
@@ -169,6 +190,13 @@ export function GameActionsPanel({
     const onFork = wrap(() => handleForkGameClick(showModal, user, engine, goban));
     const onEstimateScore = wrap(goban_controller.estimateScore);
 
+    const onUndo = wrap(() =>
+        undo_request_is_mine ? goban.cancelUndo() : requestUndo(goban, user.id),
+    );
+    const onAcceptUndo = wrap(() => goban.acceptUndo());
+    const onRejectUndo = wrap(() => goban.cancelUndo());
+    const onCancelOrResign = wrap(() => cancelOrResignGame(goban, resign_mode));
+
     const sgf_disabled =
         !sgf_download_enabled ||
         (phase !== "finished" &&
@@ -203,6 +231,50 @@ export function GameActionsPanel({
                     <i className="fa fa-list-ol" />
                     <span>{_("Ladder")}</span>
                 </Link>
+            )}
+
+            {show_play_actions && (
+                <>
+                    <button
+                        className={
+                            "GameSidebarPanel-item" +
+                            (!undo_request_is_mine && !can_request_undo ? " disabled" : "")
+                        }
+                        disabled={!undo_request_is_mine && !can_request_undo}
+                        onClick={onUndo}
+                    >
+                        <UndoIcon badge="question" />
+                        <span>
+                            {undo_request_is_mine
+                                ? pgettext("Withdraw your own undo request", "Cancel undo request")
+                                : pgettext(
+                                      "Ask the opponent to undo the last move",
+                                      "Request undo",
+                                  )}
+                        </span>
+                    </button>
+
+                    {can_answer_undo_request && (
+                        <button className="GameSidebarPanel-item" onClick={onAcceptUndo}>
+                            <UndoIcon badge="check" />
+                            <span>{_("Accept Undo")}</span>
+                        </button>
+                    )}
+
+                    {can_answer_undo_request && (
+                        <button className="GameSidebarPanel-item" onClick={onRejectUndo}>
+                            <UndoIcon badge="times" />
+                            <span>{_("Reject Undo")}</span>
+                        </button>
+                    )}
+
+                    <button className="GameSidebarPanel-item" onClick={onCancelOrResign}>
+                        <i className="fa fa-flag" />
+                        <span>{resign_mode === "cancel" ? _("Cancel game") : _("Resign")}</span>
+                    </button>
+
+                    <hr />
+                </>
             )}
 
             <button className="GameSidebarPanel-item" onClick={showGameInfo}>

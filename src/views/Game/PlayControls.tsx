@@ -87,12 +87,6 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
     const annulled = useAnnulled(goban_controller);
     const onVariationKeyPress = useOnVariationKeyPress();
     const zen_mode = useZenMode(goban_controller);
-    // PlayButtons owns the cancel/resign button in every layout now. The old
-    // `view_mode !== "portrait" ? true : zen_mode` carve-out existed only
-    // because Game.tsx used to render its own portrait-non-zen CancelButton
-    // outside PlayControls; the GobanView migration consolidated everything
-    // into one stack, so PlayButtons handles it unconditionally.
-    const show_cancel = true;
     const variation_name = useVariationName(goban_controller);
     const selected_chat_log = useSelectedChatLog(goban_controller);
     const phase = usePhase(goban);
@@ -256,17 +250,11 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
 
     return (
         <div className="PlayControls">
-            <div className="game-action-buttons">
-                {mode === "play" && phase === "play" && user_is_player && (
-                    <PlayButtons show_cancel={show_cancel} />
-                )}
-            </div>
-            <div className="annulled-indicator">
-                {annulled &&
-                    pgettext("Displayed to the user when the game is annulled", "Game Annulled")}
-                {annulled && <i className="fa fa-question-circle" />}
-
-                {annulled && (
+            {mode === "play" && phase === "play" && user_is_player && <PlayButtons />}
+            {annulled && (
+                <div className="annulled-indicator">
+                    {pgettext("Displayed to the user when the game is annulled", "Game Annulled")}
+                    <i className="fa fa-question-circle" />
                     <AnnulmentReason
                         reason={
                             annulment_reason ||
@@ -277,8 +265,8 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
                                 : null)
                         }
                     />
-                )}
-            </div>
+                </div>
+            )}
             {((phase === "play" &&
                 mode === "play" &&
                 paused &&

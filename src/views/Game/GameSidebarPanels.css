@@ -84,6 +84,14 @@
             color: var(--shade1);
         }
 
+        /* Composite icons occupy the same 1.1rem gutter as the plain ones so
+         * every label in the list starts at the same x. */
+        .UndoIcon {
+            flex: 0 0 1.1rem;
+            width: 1.1rem;
+            color: var(--shade1);
+        }
+
         span {
             overflow: hidden;
             text-overflow: ellipsis;
