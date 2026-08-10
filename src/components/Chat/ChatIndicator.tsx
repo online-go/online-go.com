@@ -25,6 +25,7 @@ import {
 } from "@/lib/chat_manager";
 import * as data from "@/lib/data";
 import { KBShortcut } from "../KBShortcut";
+import { MenuContext } from "@/components/NavBar/Menu";
 import { ChatList } from "./ChatList";
 import * as preferences from "@/lib/preferences";
 import {
@@ -37,6 +38,10 @@ import {
 import "./ChatIndicator.css";
 
 export class ChatIndicator extends React.PureComponent<{}, any> {
+    /* The navbar menu state is shared so that only one navbar panel is open at a time. */
+    static contextType = MenuContext;
+    declare context: React.ContextType<typeof MenuContext>;
+
     channels: { [channel: string]: ChatChannelProxy } = {};
 
     constructor(props: {}) {
@@ -44,7 +49,6 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
         this.state = {
             unread_ct: 0,
             mentioned: false,
-            show_channel_list: false,
             show_empty_notification: true,
         };
     }
@@ -130,9 +134,7 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
     }
 
     toggleChannelList = () => {
-        this.setState({
-            show_channel_list: !this.state.show_channel_list,
-        });
+        this.context.setActiveMenu(this.context.activeMenu === "chat" ? null : "chat");
     };
 
     partFunc = (channel: string) => {
@@ -163,7 +165,7 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
                         <span className="count">{this.state.unread_ct} </span>
                     </span>
                 )}
-                {(this.state.show_channel_list || null) && (
+                {(this.context.activeMenu === "chat" || null) && (
                     <div>
                         <KBShortcut shortcut="escape" action={this.toggleChannelList} />
                         <div className="FriendListBackdrop" onClick={this.toggleChannelList} />

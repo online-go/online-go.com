@@ -61,9 +61,11 @@
     text-decoration: none;
 }
 
+/* Starts below the navbar so a click on another navbar icon reaches that icon
+ * instead of only closing this panel. */
 .FriendListBackdrop {
     position: fixed;
-    top: 0;
+    top: var(--navbar-height);
     bottom: 0;
     right: 0;
     left: 0;
