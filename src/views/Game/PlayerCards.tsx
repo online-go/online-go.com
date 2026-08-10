@@ -275,7 +275,9 @@ export function PlayerCard({
         (engine.phase === "finished" || engine.phase === "stone removal") &&
         goban.mode !== "analyze" &&
         engine.outcome !== "Timeout" &&
+        engine.outcome !== "Disconnection" &&
         engine.outcome !== "Resignation" &&
+        engine.outcome !== "Abandonment" &&
         engine.outcome !== "Cancellation" &&
         !engine.outcome.startsWith("Server Decision");
 
