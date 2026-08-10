@@ -36,15 +36,20 @@ import { PlayerCard, PlayerCards } from "./PlayerCards";
 import { PlayControls, ReviewControls } from "./PlayControls";
 import { alert } from "@/lib/swal_config";
 import {
+    useCanRequestUndo,
     useCurrentMoveNumber,
     useMode,
     usePhase,
     usePlayerToMove,
+    useResignMode,
     useScorePopup,
+    useUndoRequestIsMine,
     useUserIsParticipant,
     useViewMode,
     useZenMode,
 } from "./GameHooks";
+import { cancelOrResignGame, requestUndo } from "./game_actions";
+import { UndoIcon } from "./UndoIcon";
 import { GobanControllerContext, GobanView, GobanViewRef } from "@/components/GobanView";
 import { ModalContext } from "@/components/ModalProvider";
 import { useUser } from "@/lib/hooks";
@@ -127,6 +132,9 @@ export function Game(): React.ReactElement | null {
     const mode = useMode(goban);
     const player_to_move = usePlayerToMove(goban);
     const current_move_number = useCurrentMoveNumber(goban);
+    const can_request_undo = useCanRequestUndo(goban);
+    const undo_request_is_mine = useUndoRequestIsMine(goban);
+    const resign_mode = useResignMode(goban);
     const modal_context = React.useContext(ModalContext);
     const more_actions_popover_ref = React.useRef<PopOver | null>(null);
     const settings_popover_ref = React.useRef<PopOver | null>(null);
@@ -819,6 +827,10 @@ export function Game(): React.ReactElement | null {
     const analysis_disabled = goban.isAnalysisDisabled();
     const is_analyzing = mode === "analyze";
 
+    // Undo and resign apply only while the user is actually playing a game
+    // that is still in progress.
+    const show_play_action_tabs = user_is_player && mode === "play" && phase === "play";
+
     // Toggle behavior: if the mode is already on, clicking exits back to play.
     // Reading the live `mode`/`estimating_score` for the `active` prop also
     // means anything else that exits the mode (Escape key, navigation,
@@ -1181,6 +1193,41 @@ export function Game(): React.ReactElement | null {
                     disabled={analysis_disabled}
                     active={is_planning_conditional}
                     onClick={onConditionalClick}
+                />
+            )}
+
+            {/* Ask the opponent to take back the last move. The button stays
+             *  lit while your own request is pending, and pressing it again
+             *  withdraws that request. It greys out when an undo can't be
+             *  asked for right now (rengo, the opening move, the opponent's
+             *  request pending, a staged move). */}
+            {show_play_action_tabs && (
+                <GobanView.Tab
+                    id="game-undo"
+                    type="action"
+                    align="center"
+                    icon={<UndoIcon badge="question" />}
+                    title={
+                        undo_request_is_mine
+                            ? pgettext("Withdraw your own undo request", "Cancel undo request")
+                            : pgettext("Ask the opponent to undo the last move", "Request undo")
+                    }
+                    active={undo_request_is_mine}
+                    disabled={!undo_request_is_mine && !can_request_undo}
+                    onClick={() =>
+                        undo_request_is_mine ? goban!.cancelUndo() : requestUndo(goban!, user.id)
+                    }
+                />
+            )}
+
+            {show_play_action_tabs && (
+                <GobanView.Tab
+                    id="game-resign"
+                    type="action"
+                    align="center"
+                    icon="flag"
+                    title={resign_mode === "cancel" ? _("Cancel game") : _("Resign")}
+                    onClick={() => cancelOrResignGame(goban!, resign_mode)}
                 />
             )}
 

@@ -146,6 +146,112 @@ export const useUserIsParticipant = generateGobanHook((goban: Goban | null) => {
     return goban.engine.isParticipant(user.id);
 });
 
+/** React hook that returns "cancel" while the game is still young enough to
+ *  be cancelled outright, and "resign" after that. */
+export const useResignMode = generateGobanHook(
+    (goban: Goban | null): "cancel" | "resign" =>
+        goban?.engine.gameCanBeCancelled() ? "cancel" : "resign",
+    ["cur_move"],
+);
+
+/** React hook that returns true when the user may ask the opponent to take
+ *  back the last official move right now. */
+export const useCanRequestUndo = generateGobanHook(
+    (goban: Goban | null) => {
+        const user = data.get("user");
+        if (!goban || !user) {
+            return false;
+        }
+        const engine = goban.engine;
+        return (
+            !engine.rengo &&
+            engine.isParticipant(user.id) &&
+            engine.cur_move.move_number === engine.last_official_move.move_number &&
+            engine.cur_move.move_number >= 1 &&
+            (engine.undo_requested ?? -1) < engine.getMoveNumber() &&
+            goban.submit_move == null
+        );
+    },
+    ["cur_move", "last_official_move", "submit_move", "undo_requested", "undo_canceled"],
+);
+
+/** React hook that returns true when the opponent has an undo request
+ *  pending on the current move and this user is the one who can accept or
+ *  reject it. */
+export function useCanAnswerUndoRequest(goban: Goban): boolean {
+    const goban_controller = useGobanController();
+    const user_id = data.get("user")?.id;
+    const [in_pushed_analysis, set_in_pushed_analysis] = React.useState(
+        goban_controller.in_pushed_analysis,
+    );
+    const [can_answer, set_can_answer] = React.useState(false);
+
+    React.useEffect(() => {
+        goban_controller.on("in_pushed_analysis", set_in_pushed_analysis);
+        return () => {
+            goban_controller.off("in_pushed_analysis", set_in_pushed_analysis);
+        };
+    }, [goban_controller]);
+
+    React.useEffect(() => {
+        const syncCanAnswer = () => {
+            if (in_pushed_analysis || user_id === undefined) {
+                set_can_answer(false);
+                return;
+            }
+
+            if (!goban.engine.undo_requested || !goban.engine.isParticipant(user_id)) {
+                set_can_answer(false);
+                return;
+            }
+
+            const requested_by = goban.engine.undo_requested_by;
+            if (requested_by !== undefined) {
+                set_can_answer(requested_by !== user_id);
+                return;
+            }
+
+            // Older games don't record who asked, so fall back to "the side
+            // that would be undoing its own move can't be the requester".
+            set_can_answer(
+                goban.engine.playerToMove() === user_id ||
+                    (goban.submit_move != null && goban.engine.playerNotToMove() === user_id),
+            );
+        };
+        syncCanAnswer();
+
+        return subscribeAllEvents(
+            goban,
+            ["cur_move", "submit_move", "undo_requested", "undo_canceled"],
+            syncCanAnswer,
+        );
+    }, [goban, in_pushed_analysis, user_id]);
+
+    const show_undo_requested = useShowUndoRequested(goban);
+
+    return show_undo_requested && can_answer;
+}
+
+/** React hook that returns true when an undo request this user made is
+ *  pending on the current move. The action-bar undo button toggles off in
+ *  that state, so pressing it again cancels the request. */
+export const useUndoRequestIsMine = generateGobanHook(
+    (goban: Goban | null) => {
+        const user = data.get("user");
+        if (!goban || !user) {
+            return false;
+        }
+        const engine = goban.engine;
+        return (
+            engine.undo_requested !== undefined &&
+            engine.undo_requested === engine.last_official_move.move_number &&
+            engine.undo_requested === engine.cur_move.move_number &&
+            engine.undo_requested_by === user.id
+        );
+    },
+    ["cur_move", "last_official_move", "undo_requested", "undo_canceled"],
+);
+
 /** React hook that returns the current move number from goban */
 export const useCurrentMoveNumber = generateGobanHook(
     (goban: Goban | null) => goban?.engine.cur_move?.move_number ?? -1,

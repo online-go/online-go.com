@@ -127,3 +127,99 @@ test("'Add to library' button is disabled for anonymous users", () => {
     expect(addToLibraryButton).toBeDisabled();
     expect(addToLibraryButton).toHaveClass("disabled");
 });
+
+const OPPONENT = { id: 456, username: "test_user2" };
+const ME = { id: TEST_USER.id, username: TEST_USER.username };
+
+/** Four moves played, white went last, so it is black's (my) turn. */
+function playerController() {
+    return new GobanController({
+        game_id: 456789,
+        moves: [
+            [16, 3, 9136.12], // B
+            [3, 2, 1897.853], // W
+            [15, 16, 4274.0], // B
+            [14, 2, 3816], // W
+        ],
+        players: { black: ME, white: OPPONENT },
+    });
+}
+
+describe("in-game actions", () => {
+    beforeEach(() => {
+        data.set("user", TEST_USER);
+    });
+
+    test("are absent for a spectator", () => {
+        renderPanel(new GobanController({ game_id: 456789 }));
+
+        expect(screen.queryByText("Request undo")).toBeNull();
+        expect(screen.queryByText("Cancel game")).toBeNull();
+        expect(screen.queryByText("Resign")).toBeNull();
+    });
+
+    test("offer undo and cancel game to a player", () => {
+        renderPanel(playerController());
+
+        expect(screen.getByText("Request undo").closest("button")).not.toBeDisabled();
+        expect(screen.getByText("Cancel game")).toBeInTheDocument();
+
+        // Only the requester's side is offered until the opponent asks.
+        expect(screen.queryByText("Accept Undo")).toBeNull();
+        expect(screen.queryByText("Reject Undo")).toBeNull();
+    });
+
+    test("say 'Resign' once the game is too old to cancel", () => {
+        renderPanel(
+            new GobanController({
+                game_id: 456789,
+                moves: [
+                    [16, 3, 9136],
+                    [3, 2, 18978.5],
+                    [15, 16, 4274.5],
+                    [14, 2, 3816],
+                    [2, 15, 6869],
+                    [16, 14, 6241.5],
+                    [15, 4, 4485],
+                ],
+                players: { black: ME, white: OPPONENT },
+            }),
+        );
+
+        expect(screen.getByText("Resign")).toBeInTheDocument();
+        expect(screen.queryByText("Cancel game")).toBeNull();
+    });
+
+    test("turn the undo item into a withdrawal while my request is pending", () => {
+        const controller = playerController();
+        controller.goban.engine.undo_requested_by = ME.id;
+        controller.goban.engine.undo_requested = 4;
+        const cancel_undo = jest.spyOn(controller.goban, "cancelUndo").mockImplementation(() => {
+            return;
+        });
+
+        renderPanel(controller);
+
+        expect(screen.queryByText("Request undo")).toBeNull();
+        fireEvent.click(screen.getByText("Cancel undo request"));
+        expect(cancel_undo).toHaveBeenCalledTimes(1);
+    });
+
+    test("offer accept and reject when the opponent requested an undo", () => {
+        const controller = playerController();
+        controller.goban.engine.undo_requested_by = OPPONENT.id;
+        controller.goban.engine.undo_requested = 4;
+        const accept_undo = jest.spyOn(controller.goban, "acceptUndo").mockImplementation(() => {
+            return;
+        });
+
+        renderPanel(controller);
+
+        expect(screen.getByText("Reject Undo")).toBeInTheDocument();
+        // Asking again is not on the table while their request is open.
+        expect(screen.getByText("Request undo").closest("button")).toBeDisabled();
+
+        fireEvent.click(screen.getByText("Accept Undo"));
+        expect(accept_undo).toHaveBeenCalledTimes(1);
+    });
+});

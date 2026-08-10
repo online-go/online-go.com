@@ -552,9 +552,10 @@
     &.zen {
         background-color: var(--bg);
 
-        /* Hide the tab bar, chat, analyze toolbar, move tree, and full-page
-         * AI review in zen mode — they aren't part of the focused view. */
-        .GobanView-tab-bar,
+        /* Hide the chat, analyze toolbar, move tree, and full-page AI review
+         * in zen mode — they aren't part of the focused view. The tab bar
+         * stays: it holds the only route to undo, resign, settings and the
+         * other game actions. */
         .chat-container,
         .game-analyze-button-bar,
         #move-tree-container,
@@ -568,6 +569,13 @@
             border-radius: 0;
             box-shadow: none;
             margin: 0;
+        }
+
+        /* The sidebar is transparent in zen, so the tab bar drops its own
+         * panel styling and reads as a bare row of glyphs. */
+        .GobanView-tab-bar {
+            background: transparent;
+            border-top: none;
         }
 
         /* Stack the few items that remain — player cards, controls — so they
