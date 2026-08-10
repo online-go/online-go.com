@@ -154,41 +154,6 @@
         }
     }
 
-    .custom-board-advanced {
-        display: flex;
-        flex-direction: column;
-        margin-top: 0.5rem;
-        max-width: 100%;
-    }
-
-    .advanced-toggle {
-        display: inline-flex;
-        align-self: flex-start;
-        align-items: center;
-        gap: 0.4rem;
-        margin: 0;
-        padding: 0.25rem 0.25rem 0.25rem 0;
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        color: var(--text-color);
-        font-weight: bold;
-
-        .fa {
-            width: 0.7rem;
-            text-align: center;
-        }
-    }
-
-    .advanced-content {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        margin-top: 0.5rem;
-        padding-left: 0.5rem;
-        max-width: 100%;
-    }
-
     .custom-url-selection {
         display: flex;
         flex-direction: row;
