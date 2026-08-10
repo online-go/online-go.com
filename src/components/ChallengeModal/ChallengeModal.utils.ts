@@ -27,6 +27,31 @@ import {
 import { rankSelectorIndexToText } from "@/lib/rank_utils";
 import { RuleSet } from "@/lib/types";
 
+export function preferred_setting_label(setting: ChallengeDetails): string {
+    const description = challenge_text_description(setting);
+    const name = setting.game.name?.trim();
+    return name ? `${name} | ${description}` : description;
+}
+
+export function sort_preferred_settings<T extends { setting: ChallengeDetails; label: string }>(
+    options: T[],
+): T[] {
+    return options.sort((a, b) => {
+        const a_name = a.setting.game.name?.trim().toLocaleLowerCase() ?? "";
+        const b_name = b.setting.game.name?.trim().toLocaleLowerCase() ?? "";
+        const a_named = a_name.length > 0;
+        const b_named = b_name.length > 0;
+
+        if (a_named !== b_named) {
+            return a_named ? -1 : 1;
+        }
+
+        const a_key = a_named ? a_name : a.label.toLocaleLowerCase();
+        const b_key = b_named ? b_name : b.label.toLocaleLowerCase();
+        return a_key.localeCompare(b_key);
+    });
+}
+
 export function challenge_text_description(challenge: ChallengeDetails) {
     const c = challenge;
     const g = "game" in challenge ? challenge.game : challenge;

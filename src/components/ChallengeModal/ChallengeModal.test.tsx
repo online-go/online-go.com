@@ -17,11 +17,14 @@
 
 import * as React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { ChallengeModalBody } from "./ChallengeModal";
 import { post } from "@/lib/requests";
 import { ChallengeModalProperties } from "@/components/ChallengeModal/ChallengeModal.types";
 import { sanitizeChallengeDetails } from "./ChallengeModal.utils";
 import { bots_list, Bot } from "@/lib/bots";
+
+let mockPreferredSettings: unknown[] = [];
 
 // Mock data module
 jest.mock("@/lib/data", () => ({
@@ -63,7 +66,7 @@ jest.mock("@/lib/data", () => ({
             return false;
         }
         if (key === "preferred-game-settings") {
-            return [];
+            return mockPreferredSettings;
         }
 
         return default_value;
@@ -78,7 +81,7 @@ jest.mock("@/lib/data", () => ({
 jest.mock("@/lib/requests", () => ({
     post: jest.fn(),
     del: jest.fn(),
-    get: jest.fn(),
+    get: jest.fn(() => Promise.resolve({})),
 }));
 
 jest.mock("@/lib/bots", () => ({
@@ -97,6 +100,11 @@ jest.mock("@/lib/translate", () => ({
         if (Array.isArray(params)) {
             for (const p of params) {
                 res = res.replace("%s", p);
+            }
+        }
+        if (typeof params === "object" && params !== null) {
+            for (const [key, value] of Object.entries(params)) {
+                res = res.replace(`{{${key}}}`, value);
             }
         }
         return res;
@@ -171,12 +179,127 @@ const mockModal = {
 describe("ChallengeModalBody", () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        mockPreferredSettings = [];
     });
 
     it("renders game name input", () => {
         render(<ChallengeModalBody {...defaultProps} modal={mockModal} />);
         const gameNameInput = screen.getByPlaceholderText("Game Name");
         expect(gameNameInput).toBeInTheDocument();
+    });
+
+    it("shows the game name at the start of preferred settings options", async () => {
+        const user = userEvent.setup();
+        mockPreferredSettings = [
+            {
+                initialized: false,
+                min_ranking: -1000,
+                max_ranking: 1000,
+                challenger_color: "automatic",
+                rengo_auto_start: 0,
+                game: {
+                    name: "Bot Practice 1",
+                    rules: "japanese",
+                    ranked: false,
+                    width: 19,
+                    height: 19,
+                    handicap: 0,
+                    komi_auto: "automatic",
+                    disable_analysis: false,
+                    initial_state: null,
+                    private: false,
+                    rengo: false,
+                    rengo_casual_mode: true,
+                },
+            },
+        ];
+
+        render(<ChallengeModalBody {...defaultProps} modal={mockModal} />);
+
+        await user.click(screen.getByText("Preferred settings (1)"));
+
+        const options = Array.from(document.querySelectorAll(".ogs-react-select__option"));
+        expect(options[0].textContent).toBe(
+            "Bot Practice 1 | Unranked, 19x19, Japanese rules, 0 handicap",
+        );
+    });
+
+    it("sorts named preferred settings before unnamed ones", async () => {
+        const user = userEvent.setup();
+        mockPreferredSettings = [
+            {
+                initialized: false,
+                min_ranking: -1000,
+                max_ranking: 1000,
+                challenger_color: "automatic",
+                rengo_auto_start: 0,
+                game: {
+                    name: "",
+                    rules: "japanese",
+                    ranked: false,
+                    width: 19,
+                    height: 19,
+                    handicap: 0,
+                    komi_auto: "automatic",
+                    disable_analysis: false,
+                    initial_state: null,
+                    private: false,
+                    rengo: false,
+                    rengo_casual_mode: true,
+                },
+            },
+            {
+                initialized: false,
+                min_ranking: -1000,
+                max_ranking: 1000,
+                challenger_color: "automatic",
+                rengo_auto_start: 0,
+                game: {
+                    name: "Zebra",
+                    rules: "japanese",
+                    ranked: false,
+                    width: 19,
+                    height: 19,
+                    handicap: 0,
+                    komi_auto: "automatic",
+                    disable_analysis: false,
+                    initial_state: null,
+                    private: false,
+                    rengo: false,
+                    rengo_casual_mode: true,
+                },
+            },
+            {
+                initialized: false,
+                min_ranking: -1000,
+                max_ranking: 1000,
+                challenger_color: "automatic",
+                rengo_auto_start: 0,
+                game: {
+                    name: "Alpha",
+                    rules: "japanese",
+                    ranked: false,
+                    width: 19,
+                    height: 19,
+                    handicap: 0,
+                    komi_auto: "automatic",
+                    disable_analysis: false,
+                    initial_state: null,
+                    private: false,
+                    rengo: false,
+                    rengo_casual_mode: true,
+                },
+            },
+        ];
+
+        render(<ChallengeModalBody {...defaultProps} modal={mockModal} />);
+
+        await user.click(screen.getByText("Preferred settings (3)"));
+
+        const options = Array.from(document.querySelectorAll(".ogs-react-select__option"));
+        expect(options[0].textContent).toContain("Alpha |");
+        expect(options[1].textContent).toContain("Zebra |");
+        expect(options[2].textContent).toBe("Unranked, 19x19, Japanese rules, 0 handicap");
     });
 
     it("renders private checkbox", () => {
