@@ -91,7 +91,7 @@ export class BlockPlayerModal extends React.PureComponent<BlockPlayerModalProper
                                 onChange={this.toggleGameBlock}
                             />
                             <label htmlFor={"block-game-" + this.props.playerId}>
-                                {_("Block user from accepting my open games")}
+                                {_("Block user from making games with me")}
                             </label>
                         </div>
                     )}
