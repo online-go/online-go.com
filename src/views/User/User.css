@@ -484,11 +484,22 @@
         .ratings-chart {
             display: flex;
             flex-direction: column;
+            max-width: 100%;
+            overflow-x: auto;
         }
 
         .graph-type-toggle {
             position: absolute;
             top: -5px; /* manually align with first label row in chart */
+        }
+
+        /* On narrow screens the absolute toggle can sit on top of chart axis labels /
+           game-count details (#3461). Flow it in the document instead. */
+        @media (max-width: 767px) {
+            .graph-type-toggle {
+                position: static;
+                margin-bottom: 0.5rem;
+            }
         }
     }
 
