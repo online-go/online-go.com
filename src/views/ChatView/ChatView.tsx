@@ -43,6 +43,17 @@ export function ChatView(): React.ReactElement | null {
         };
     }, [channel]);
 
+    // Keep the site navbar fixed while chat is open. ChatView is position:fixed
+    // for the pane, but mobile browsers can still scroll the document and
+    // push the navbar off-screen (#3011).
+    useEffect(() => {
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        return () => {
+            document.body.style.overflow = previousOverflow;
+        };
+    }, []);
+
     useEffect(() => {
         set_showing_channels(false);
         set_showing_users(false);

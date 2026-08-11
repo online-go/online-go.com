@@ -24,6 +24,7 @@
     width: 100dvw;
     max-width: 100dvw;
     flex-direction: row;
+    overscroll-behavior: none;
 
     .ChatChannelList, .ChatUsersList {
         flex-basis: 20%;
