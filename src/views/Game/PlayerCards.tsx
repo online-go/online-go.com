@@ -21,6 +21,7 @@ import {
     GobanRenderer,
     Goban,
     JGOFClockWithTransmitting,
+    JGOFPauseState,
     PlayerScore,
     JGOFPlayerSummary,
 } from "goban";
@@ -34,7 +35,13 @@ import { Player } from "@/components/Player";
 import { lookup, fetch } from "@/lib/player_cache";
 import { _, interpolate, ngettext } from "@/lib/translate";
 import * as data from "@/lib/data";
-import { generateGobanHook, usePlayerToMove, useScorePopup, useZenMode } from "./GameHooks";
+import {
+    generateGobanHook,
+    usePhase,
+    usePlayerToMove,
+    useScorePopup,
+    useZenMode,
+} from "./GameHooks";
 import { get_network_latency, get_clock_drift } from "@/lib/sockets";
 import { useGobanController } from "./goban_context";
 import { player_is_ignored } from "@/components/BlockPlayer";
@@ -161,6 +168,7 @@ export function PlayerCard({
     const engine = goban.engine;
     const player = { ...engine.players[color] };
     const player_to_move = usePlayerToMove(goban);
+    const phase = usePhase(goban);
 
     const auto_resign_expiration = useAutoResignExpiration(goban, color);
     const score = useScore(goban)[color];
@@ -188,7 +196,9 @@ export function PlayerCard({
         player_bg.backgroundImage = ``;
     }
 
-    const their_turn = player_to_move === player.id;
+    /* The engine always reports a player-to-move, even once the game is
+     * over — only treat it as "their turn" while moves can still be made. */
+    const their_turn = phase === "play" && player_to_move === player.id;
     const highlight_their_turn = their_turn ? `their-turn` : "";
 
     const show_points =
@@ -304,10 +314,15 @@ interface ClockWithPauseOverlayProps {
 
 /**
  * Wraps the live in-game Clock with an explicit pause/resume button beside
- * it. The button only renders for users allowed to control the pause state
- * (a participant in a vacation-eligible game still in progress). When the
- * game is currently paused the icon and click handler flip to "resume";
- * otherwise they "pause".
+ * it. The button only renders for users allowed to change the pause state
+ * right now:
+ *
+ *   - unpaused → "pause" for a participant in a vacation-eligible game
+ *     still in progress, or for a moderator;
+ *   - paused by a player → "resume" for participants and moderators;
+ *   - paused by a moderator → "resume" for moderators only;
+ *   - any other pause (weekend, vacation, server, stone removal) is not
+ *     user-resumable, so no button renders at all.
  */
 function ClockWithPauseOverlay({ goban, color }: ClockWithPauseOverlayProps): React.ReactElement {
     const user = useUser();
@@ -325,16 +340,30 @@ function ClockWithPauseOverlay({ goban, color }: ClockWithPauseOverlayProps): Re
         engine.phase !== "finished" &&
         ((user_is_player && !engine.config.disable_vacation) || !!user?.is_moderator);
 
-    const [paused, set_paused] = React.useState<boolean>(false);
+    const [pause_state, set_pause_state] = React.useState<JGOFPauseState | null>(null);
     React.useEffect(() => {
         const onClock = (clock: JGOFClockWithTransmitting | null) => {
-            set_paused(!!clock?.pause_state);
+            set_pause_state(clock?.pause_state ?? null);
         };
         goban.on("clock", onClock);
         return () => {
             goban.off("clock", onClock);
         };
     }, [goban]);
+
+    const paused = !!pause_state;
+    const can_resume = pause_state?.player
+        ? user_is_player || !!user?.is_moderator
+        : pause_state?.moderator
+          ? !!user?.is_moderator
+          : false;
+    const action: "pause" | "resume" | null = paused
+        ? can_resume
+            ? "resume"
+            : null
+        : can_pause
+          ? "pause"
+          : null;
 
     const onClick = () => {
         if (paused) {
@@ -348,7 +377,7 @@ function ClockWithPauseOverlay({ goban, color }: ClockWithPauseOverlayProps): Re
     return (
         <div className="clock-pause-host">
             <Clock goban={goban} color={color} className="in-game-clock" />
-            {can_pause && (
+            {action !== null && (
                 <button
                     type="button"
                     className="clock-pause-button"

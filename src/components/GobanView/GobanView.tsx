@@ -336,7 +336,11 @@ function GobanViewComponent({
                         <div className="GobanView-header">{header}</div>
                         <div className="GobanView-center">
                             {centerTop}
-                            <GobanContainer onResize={onResize} onWheel={onWheel} />
+                            <GobanContainer
+                                onResize={onResize}
+                                onWheel={onWheel}
+                                respectContainerBounds
+                            />
                             {centerBottom}
                         </div>
                         <div className="GobanView-mobile-scroll">
@@ -368,7 +372,11 @@ function GobanViewComponent({
                 >
                     <div className="GobanView-center">
                         {centerTop}
-                        <GobanContainer onResize={onResize} onWheel={onWheel} />
+                        <GobanContainer
+                            onResize={onResize}
+                            onWheel={onWheel}
+                            respectContainerBounds
+                        />
                         {centerBottom}
                     </div>
                     <div className="GobanView-sidebar">

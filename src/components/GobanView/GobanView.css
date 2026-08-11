@@ -72,7 +72,10 @@
          * (0.3rem normally, 0 below 700px viewport height) so the framing
          * stays symmetric and the sidebar fills the available height on
          * short viewports. */
-        margin: 0 1rem var(--goban-view-bottom-margin) 1.25rem;
+        /* The right margin matches the 0.3rem the sidebar sits below the
+         * navbar (--below-navbar minus the navbar height) and the 0.3rem
+         * bottom margin, so the framing reads evenly on all three edges. */
+        margin: 0 0.3rem var(--goban-view-bottom-margin) 1.25rem;
         overflow: hidden;
     }
 
@@ -81,8 +84,8 @@
      * don't leave a stray bordered band at the top. */
     .GobanView-header {
         flex-shrink: 0;
-        padding: 0.4rem 0.75rem;
-        font-size: 1.1rem;
+        padding: 0.6rem 0.875rem;
+        font-size: 1.5rem;
         font-weight: 600;
         text-align: center;
         color: var(--fg);
@@ -103,12 +106,12 @@
         display: flex;
         flex-direction: column;
         gap: 0.75rem;
-        padding-bottom: 0.75rem;
+        padding: 0.75rem;
     }
 
     /* Tab panels */
     .GobanView-tab-panel {
-        padding-bottom: 0.875rem;
+        padding: 0.875rem 0;
         position: relative;
 
         &.hidden {
@@ -181,22 +184,27 @@
         }
 
         .GobanView-sidebar-content {
-            padding-bottom: 0.5rem;
+            padding: 0.5rem;
             gap: 0.5rem;
         }
 
         .GobanView-center {
             /* The goban area is square on portrait, so its height follows the
                viewport width. Cap at the remaining viewport height (minus the
-               navbar and the tab bar) so the scroll area below always fits. */
+               navbar and the tab bar) so the scroll area below always fits.
+               The cap can't account for the header/slider rows (their
+               presence varies per consumer), so the center is also allowed
+               to flex-shrink: on squat viewports where the capped square
+               still doesn't fit, the board shrinks instead of pushing the
+               slider and tab bar off the bottom of the screen. */
             --goban-view-portrait-max-height: calc(
                 100dvh - var(--below-navbar) - var(--goban-view-tab-bar-height) -
                     var(--safe-area-inset-bottom)
             );
             flex-basis: auto;
-            flex-shrink: 0;
+            flex-shrink: 1;
             height: min(100dvw, var(--goban-view-portrait-max-height));
-            min-height: min(100dvw, var(--goban-view-portrait-max-height));
+            min-height: 8rem;
             max-height: min(100dvw, var(--goban-view-portrait-max-height));
         }
 
@@ -209,27 +217,18 @@
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
-            /* Top breathing room only — consumers run flush to the
-             * viewport's left/right/bottom edges in portrait. */
-            padding: 0.5rem 0 0;
+            padding: 0.5rem;
             background: var(--shade5);
 
             .GobanView-tab-panel {
-                padding-bottom: 0.75rem;
-            }
-
-            /* The always panel runs to the viewport bottom on mobile —
-             * the chat area inside it has its own scroll, so the wrapper
-             * doesn't need its own bottom breathing room. */
-            .GobanView-tab-panel.always {
-                padding-bottom: 0;
+                padding: 0.75rem 0;
             }
         }
 
         /* Takeover panels overlay the scroll area */
         .GobanView-tab-panel.takeover {
             display: none;
-            padding-bottom: 0.75rem;
+            padding: 0.75rem 0;
 
             &.active {
                 display: flex;

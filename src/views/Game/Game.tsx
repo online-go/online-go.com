@@ -37,7 +37,7 @@ import { PlayControls, ReviewControls } from "./PlayControls";
 import { alert } from "@/lib/swal_config";
 import {
     useCanRequestUndo,
-    useCurrentMoveNumber,
+    useHasStagedMove,
     useMode,
     usePhase,
     usePlayerToMove,
@@ -131,10 +131,10 @@ export function Game(): React.ReactElement | null {
     const user_is_player = useUserIsParticipant(goban);
     const mode = useMode(goban);
     const player_to_move = usePlayerToMove(goban);
-    const current_move_number = useCurrentMoveNumber(goban);
     const can_request_undo = useCanRequestUndo(goban);
     const undo_request_is_mine = useUndoRequestIsMine(goban);
     const resign_mode = useResignMode(goban);
+    const has_staged_move = useHasStagedMove(goban);
     const modal_context = React.useContext(ModalContext);
     const more_actions_popover_ref = React.useRef<PopOver | null>(null);
     const settings_popover_ref = React.useRef<PopOver | null>(null);
@@ -158,6 +158,32 @@ export function Game(): React.ReactElement | null {
     //     on desktop (chat is always visible there if the feature is on).
     const [chat_enabled] = usePreference("game.chat-enabled");
     const [mobile_chat_visible, set_mobile_chat_visible] = React.useState(false);
+    // Unread marker for the mobile chat tab: the chat is hidden by default
+    // there, so without this a message from the opponent would arrive
+    // invisibly. Set on chat lines that arrive after page load (the
+    // initial backlog replayed on connect carries older timestamps) from
+    // someone other than the user; cleared when the chat is opened.
+    const [chat_unread, set_chat_unread] = React.useState(false);
+    React.useEffect(() => {
+        const chat_goban = goban;
+        if (!chat_goban || !is_mobile || !chat_enabled || mobile_chat_visible) {
+            set_chat_unread(false);
+            return undefined;
+        }
+        const onChat = (line: { player_id?: number; date?: number }) => {
+            if (line.player_id === user.id) {
+                return;
+            }
+            if (line.date && line.date * 1000 < page_loaded_time.current) {
+                return;
+            }
+            set_chat_unread(true);
+        };
+        chat_goban.on("chat", onChat);
+        return () => {
+            chat_goban.off("chat", onChat);
+        };
+    }, [goban, is_mobile, chat_enabled, mobile_chat_visible, user.id]);
     // Zen mode always uses the standard sidebar layout regardless of the
     // user's saved preference, so the small vertically-centered controls fit.
     const stacked = !is_mobile && !zen_mode && layout_preference === "stacked";
@@ -173,6 +199,22 @@ export function Game(): React.ReactElement | null {
         }
     }, [zen_mode]);
 
+    // The mobile chat renders at the bottom of the scroll area, usually well
+    // below the fold, so toggling it on would otherwise appear to do
+    // nothing. Bring it into view when it appears.
+    React.useEffect(() => {
+        if (!is_mobile || !mobile_chat_visible || !chat_enabled) {
+            return undefined;
+        }
+        const raf = requestAnimationFrame(() => {
+            goban_view_ref.current
+                ?.getRootElement()
+                ?.querySelector(".GameChat")
+                ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        });
+        return () => cancelAnimationFrame(raf);
+    }, [is_mobile, mobile_chat_visible, chat_enabled]);
+
     // popover() appends its container + backdrop to document.body, outside
     // the React tree, so they survive Game unmounting. Close any open
     // popovers on unmount to keep them from leaking as orphaned nodes.
@@ -182,105 +224,6 @@ export function Game(): React.ReactElement | null {
             settings_popover_ref.current?.close();
         };
     }, []);
-
-    // Stacked mode wants the player cards' width to match the actual
-    // board. The goban renderers write `parent.style.width = metrics.width`
-    // on the `.Goban` element (SVGRenderer.ts:3912 / CanvasRenderer.ts:2740),
-    // where `metrics.width = square_size × (cells + edges)` — which is
-    // typically a few px smaller than the available container space (each
-    // cell rounds down). Read that width directly so the cards line up
-    // exactly with the rendered board edges, not the container edges.
-    //
-    // The goban controller is created in a *later* useEffect, and until it
-    // exists Game.tsx returns null, so the GobanView (and therefore the
-    // .goban-container we want to observe) isn't even in the DOM when
-    // this effect first fires. Depend on `goban` too so the effect re-runs
-    // once the DOM materialises. The .Goban element is then created
-    // synchronously by PersistentElement; we still watch the container
-    // subtree with a MutationObserver in case the controller is rebuilt
-    // (e.g. a game/review id change) so the ResizeObserver re-attaches to
-    // the new .Goban node.
-    React.useEffect(() => {
-        if (!stacked || !goban) {
-            return undefined;
-        }
-        const root = goban_view_ref.current?.getRootElement() ?? null;
-        const container = root?.querySelector(".goban-container") as HTMLElement | null;
-        if (!root || !container) {
-            return undefined;
-        }
-        const cards = () => root.querySelectorAll<HTMLElement>(".GameStackedPlayer");
-        // The DOM has TWO nested elements with class "Goban":
-        //   <div class="Goban">         (PersistentElement wrapper, no width)
-        //     <div class="Goban">        (goban_div — has style.width=metrics.width)
-        // querySelector returns the outer wrapper (offsetWidth=0). Use the
-        // last match instead (deepest in DOM order) to get the real board.
-        const getInnerGoban = (): HTMLElement | null => {
-            const all = container.querySelectorAll<HTMLElement>(".Goban");
-            return all.length ? all[all.length - 1] : null;
-        };
-        const update = () => {
-            const goban_el = getInnerGoban();
-            // Prefer the inner .Goban's measured width — that's the actual board.
-            let target = goban_el?.offsetWidth ?? 0;
-            // Until the goban has been laid out, fall back to min(w, h) of
-            // the container so cards aren't stuck at zero on first mount.
-            if (target < 100) {
-                const r = container.getBoundingClientRect();
-                target = Math.floor(Math.min(r.width, r.height));
-                if (target < 100) {
-                    return;
-                }
-            }
-            const value = `${target}px`;
-            cards().forEach((card) => {
-                card.style.width = value;
-                card.style.maxWidth = "100%";
-            });
-        };
-        const resize_observer = new ResizeObserver(update);
-        resize_observer.observe(container);
-        // Observe the inner .Goban once it exists. The reference can change
-        // (the controller is destroyed and rebuilt on game/review id
-        // changes), so swap the observed element whenever we see a
-        // different node.
-        let observed_goban: Element | null = null;
-        const syncGobanObservation = () => {
-            const goban_el = getInnerGoban();
-            if (goban_el && goban_el !== observed_goban) {
-                if (observed_goban) {
-                    resize_observer.unobserve(observed_goban);
-                }
-                resize_observer.observe(goban_el);
-                observed_goban = goban_el;
-            }
-        };
-        syncGobanObservation();
-        const mutation_observer = new MutationObserver(() => {
-            syncGobanObservation();
-            update();
-        });
-        // Only the inner .Goban swap matters here (a fresh goban_div is
-        // appended into the PersistentElement wrapper when the controller
-        // is rebuilt on a game/review-id change). Observing the container
-        // subtree would also fire on every SVG mutation inside the board —
-        // i.e. every stone placement during playback or AI review — which
-        // makes update() do a forced layout read for nothing. Watch just
-        // the wrapper's direct children instead.
-        const wrapper_goban = container.querySelector<HTMLElement>(".Goban");
-        if (wrapper_goban) {
-            mutation_observer.observe(wrapper_goban, { childList: true });
-        }
-        update();
-        return () => {
-            resize_observer.disconnect();
-            mutation_observer.disconnect();
-            cards().forEach((card) => {
-                card.style.width = "";
-                card.style.maxWidth = "";
-            });
-        };
-    }, [stacked, goban]);
 
     /* Functions */
     const getLocation = (): string => {
@@ -860,16 +803,13 @@ export function Game(): React.ReactElement | null {
     // the planner; clicking it again while in the planner exits to play.
     //
     // When the user has placed a provisional stone but hasn't submitted
-    // yet (submit-move or double-click mode), `engine.getMoveNumber()` is
-    // already ahead of `current_move_number` (the hook only updates on
-    // committed moves), and `engine.playerToMove()` has swung to the
-    // opponent. Treat that case as still-the-user's-turn by inverting to
-    // `playerNotToMove()` so the tab hides until the move is submitted.
+    // yet (submit-move or double-click mode), `engine.playerToMove()` has
+    // already swung to the opponent. Treat that case as still-the-user's-
+    // turn by inverting to `playerNotToMove()` so the tab hides until the
+    // move is submitted — entering the planner would silently discard the
+    // staged move.
     const is_planning_conditional = mode === "conditional";
-    const live_player_to_move =
-        goban.engine.getMoveNumber() === current_move_number
-            ? player_to_move
-            : goban.engine.playerNotToMove();
+    const live_player_to_move = has_staged_move ? goban.engine.playerNotToMove() : player_to_move;
     const show_conditional_tab =
         !review &&
         user_is_player &&
@@ -1101,12 +1041,15 @@ export function Game(): React.ReactElement | null {
                                 {pgettext(
                                     "A label that means the game is played at the same time as another game",
                                     "Simul",
-                                )}
+                                )}{" "}
                                 {simul_black && simul_white
-                                    ? " (both players)"
+                                    ? pgettext(
+                                          "Both players played simultaneous games",
+                                          "(both players)",
+                                      )
                                     : simul_black
-                                      ? " (black)"
-                                      : " (white)"}
+                                      ? pgettext("Black played simultaneous games", "(black)")
+                                      : pgettext("White played simultaneous games", "(white)")}
                             </div>
                         )}
                         <BotDetectionResults
@@ -1162,7 +1105,12 @@ export function Game(): React.ReactElement | null {
                     id="game-chat-toggle"
                     type="action"
                     align="left"
-                    icon="comment"
+                    icon={
+                        <span className="game-chat-tab-icon">
+                            <i className="fa fa-comment" />
+                            {chat_unread && <span className="game-chat-unread-dot" />}
+                        </span>
+                    }
                     title={_("Chat")}
                     active={mobile_chat_visible}
                     onClick={() => set_mobile_chat_visible((v) => !v)}

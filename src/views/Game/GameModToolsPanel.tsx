@@ -18,7 +18,7 @@
 import * as React from "react";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
-import { _ } from "@/lib/translate";
+import { _, interpolate, pgettext } from "@/lib/translate";
 import { post, del } from "@/lib/requests";
 import { useUser } from "@/lib/hooks";
 import { alert } from "@/lib/swal_config";
@@ -77,7 +77,15 @@ export function GameModToolsPanel({
         }
         let moderation_note: string | null = null;
         do {
-            moderation_note = prompt(`Deciding for ${winner.toUpperCase()} - Moderator note:`);
+            moderation_note = prompt(
+                interpolate(
+                    pgettext(
+                        "Moderator dialog asking for a note when deciding a game's outcome",
+                        "Deciding for {{winner}} - Moderator note:",
+                    ),
+                    { winner: winner.toUpperCase() },
+                ),
+            );
             if (moderation_note == null) {
                 return;
             }
@@ -97,7 +105,12 @@ export function GameModToolsPanel({
         }
         let moderation_note: string | null = null;
         do {
-            moderation_note = prompt("Autoscoring game - Moderator note:");
+            moderation_note = prompt(
+                pgettext(
+                    "Moderator dialog asking for a note when force auto-scoring a game",
+                    "Autoscoring game - Moderator note:",
+                ),
+            );
             if (moderation_note == null) {
                 return;
             }

@@ -81,15 +81,20 @@
 }
 
 .MainGobanView {
-    /* Chat flushes against the sidebar's inner bottom edge — the rounded
-     * sidebar already provides visual termination, so no extra padding.
-     * The sidebar's outer top/bottom margin is now controlled centrally
-     * via --goban-view-edge-margin (GobanView.css). */
+    /* The shared GobanView chrome (GobanView.css) keeps its roomier
+     * default insets for the other consumers (joseki, puzzle, kibitz);
+     * the Game view opts into a tighter, flush layout: panels manage
+     * their own padding, and the chat runs against the sidebar's inner
+     * bottom edge. */
+    .GobanView-header {
+        padding: 0.4rem 0.75rem;
+        font-size: 1.1rem;
+    }
     .GobanView-sidebar-content {
-        padding-bottom: 0;
+        padding: 0;
     }
     .GobanView-tab-panel {
-        padding-bottom: 0;
+        padding: 0;
     }
 
     /* The always-panel needs to be a flex column that fills the sidebar so
@@ -169,69 +174,17 @@
         display: inline-block;
     }
 
-    .action-bar {
-        display: flex;
-        min-height: 2rem;
-        justify-content: center;
-        align-items: center;
-        user-select: none;
-        color: var(--shade0);
-
-        .move-number,
-        .icons {
-            flex-shrink: 0;
-            flex-grow: 1;
-            white-space: nowrap;
-        }
-
-        .move-number {
-            flex-basis: 1rem;
-            text-align: right;
-        }
-
-        .fa-trophy,
-        .fa-lock {
-            color: var(--shade0);
-            margin-left: 0.2rem;
-        }
-
-        .fa-trophy:hover,
-        .fa-lock:hover {
-            color: var(--fg);
-        }
-
-        .controls {
-            flex-shrink: 1;
-            flex-grow: 1;
-            flex-basis: 30rem;
-            display: flex;
-
-            .move-control {
-                flex-shrink: 0;
-                flex-grow: 1;
-                cursor: pointer;
-                text-align: center;
-            }
-
-            .move-control:hover,
-            .move-number:hover,
-            .icons:hover {
-                color: var(--fg);
-            }
-        }
-    }
-
     /* In stacked mode, centre each stacked card via `align-self` rather
      * than `align-items: center` on the parent. Centring the column would
      * also affect `.goban-container`, which has no explicit width and
      * relies on the default `align-items: stretch` to fill the column.
-     * Under center alignment its width collapses to its natural content
-     * size — and the board inside is `position: absolute`, contributing
-     * zero — so the JS sizer would compute `min(0, h)` and the board
-     * would collapse to nothing. The cards' widths are written inline by
-     * a ResizeObserver in Game.tsx so they track the rendered board side. */
+     * The cards' width tracks the rendered board side so they line up
+     * with the board's edges: GobanContainer publishes the board's actual
+     * rendered width as `--goban-rendered-width` on the center column
+     * every time it (re)sizes the goban. */
     &.stacked .GameStackedPlayer {
         align-self: center;
+        width: min(100%, var(--goban-rendered-width, 100%));
     }
 
     /* In stacked mode the sidebar's vertical space is at a premium —
@@ -263,11 +216,22 @@
          * the inner `.player-icons` and `.player-container` padding) so the
          * card content lines up flush with the board's left/right edges
          * instead of being inset by ~17px of stacked paddings. The card's
-         * outer width is locked to the board's rendered side by the inline
-         * style applied in Game.tsx; with border-box that's the visible
-         * width too. */
+         * outer width is locked to the board's rendered side via
+         * `--goban-rendered-width` (see the .stacked rule above); with
+         * border-box that's the visible width too. */
         padding: 0.5rem 0;
         box-sizing: border-box;
+        /* Hard cap on the card's height. Without it the layout has a
+         * feedback loop with a degenerate stable state: the board is sized
+         * to the space the cards leave, the cards' widths are then set to
+         * the board's side, and a *narrow* card wraps its content and
+         * grows tall — which shrinks the board further, narrowing the
+         * cards again until the board collapses to nothing. Capping the
+         * height (with overflow clipping the rare over-tall content, e.g.
+         * rengo team lists) removes the degenerate state, so the sizing
+         * always converges back to the correct board size on resize. */
+        max-height: 7rem;
+        overflow: hidden;
 
         .player-icons {
             display: flex;
@@ -498,6 +462,10 @@
             align-self: end;
             margin-top: 0;
             justify-content: flex-start;
+            /* Players.css relies on space-between to separate the score
+             * items; with flex-start they'd run together ("0+ 0.5"), so
+             * restore the separation with an explicit gap. */
+            gap: 0.4rem;
             font-size: 0.7rem;
             line-height: 1.1;
         }
@@ -545,6 +513,24 @@
         }
     }
 
+    /* Unread marker on the mobile chat tab's comment icon. */
+    .game-chat-tab-icon {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        .game-chat-unread-dot {
+            position: absolute;
+            top: -0.15rem;
+            right: -0.3rem;
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            background: var(--danger);
+        }
+    }
+
     /* Zen mode: full-screen board on the left, transparent sidebar with the
      * essential controls vertically centered on the right. The navbar is
      * hidden globally via body.zen, and `.GobanView.Game.zen { top: 0 }`
@@ -579,9 +565,24 @@
         }
 
         /* Stack the few items that remain — player cards, controls — so they
-         * read top to bottom centered in the column. */
+         * read top to bottom centered in the column. The always-panel keeps
+         * its flex-grow: 1 (from the .MainGobanView rule above), so the
+         * centering has to happen inside the panel itself — centering the
+         * sidebar-content children does nothing when one child fills all
+         * the space. */
         .GobanView-sidebar-content {
             justify-content: center;
+        }
+
+        .GobanView-tab-panel.always:not(.hidden) {
+            justify-content: center;
+        }
+
+        /* The slider strip keeps its own panel chrome (background + border),
+         * which reads as a stray grey card on zen's transparent sidebar. */
+        .MoveNumberSlider {
+            background: transparent;
+            border-top: none;
         }
 
         .GameStackedPlayer {
@@ -611,10 +612,10 @@
          * GobanView container (margin-top: 0 in GobanView.css), so the
          * icon pins to top: 0 in all viewport heights. */
         top: 0;
-        /* In normal layout the sidebar has margin-right: 1rem, so its
-         * left edge sits at sidebar_width + 1rem from the viewport's
+        /* In normal layout the sidebar has margin-right: 0.3rem, so its
+         * left edge sits at sidebar_width + 0.3rem from the viewport's
          * right. The icon sits another 0.2rem to the left of that. */
-        right: calc(var(--goban-view-sidebar-width) + 1.2rem);
+        right: calc(var(--goban-view-sidebar-width) + 0.5rem);
         font-size: 0.95rem;
         color: var(--fg);
         opacity: 0.5;
@@ -639,6 +640,27 @@
      * margin to anchor to — so just hide the icon there. */
     &.portrait .goban-fullscreen-toggle {
         display: none;
+    }
+}
+
+/* Portrait: the Game view runs its panels flush to the viewport's
+ * left/right/bottom edges, overriding the shared GobanView insets kept
+ * for the other consumers. The extra .GobanView class outranks the
+ * equal-specificity shared portrait rules regardless of import order. */
+.GobanView.MainGobanView.portrait {
+    .GobanView-mobile-scroll {
+        padding: 0.5rem 0 0;
+
+        .GobanView-tab-panel {
+            padding: 0 0 0.75rem;
+        }
+
+        /* The always panel runs to the viewport bottom on mobile — the
+         * chat area inside it has its own scroll, so the wrapper doesn't
+         * need its own bottom breathing room. */
+        .GobanView-tab-panel.always {
+            padding-bottom: 0;
+        }
     }
 }
 

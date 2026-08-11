@@ -18,6 +18,7 @@
 import * as React from "react";
 import { useUser } from "@/lib/hooks";
 import { usePreference } from "@/lib/preferences";
+import { MODERATOR_POWERS } from "@/lib/moderation";
 import { useGobanController } from "./goban_context";
 import { usePhase } from "./GameHooks";
 import { PlayerModSection } from "./PlayerModSection";
@@ -38,9 +39,11 @@ interface GameModeratorAreaPanelProps {
  * indicators (AI Suspected, blur rate, slow_moving) for each color. Sits
  * inside the gavel toggle tab alongside GameModToolsPanel.
  *
- * Renders `null` for non-moderators (or games without an id), so it can
- * be dropped into the toggle tab unconditionally — non-mods just see the
- * GameModToolsPanel content (e.g. AI-detector inspect tools) below.
+ * Renders for full moderators and for community moderators holding the
+ * AI_DETECTOR power (who need the per-player AI-suspected / behavior
+ * flags); the prev/next-game and annul controls stay moderator-only.
+ * Renders `null` for everyone else (or games without an id), so it can
+ * be dropped into the toggle tab unconditionally.
  */
 export function GameModeratorAreaPanel({
     historical_black,
@@ -57,8 +60,9 @@ export function GameModeratorAreaPanel({
     const [hide_flags] = usePreference("moderator.hide-flags");
     const [hide_controls] = usePreference("moderator.hide-player-card-mod-controls");
     const game_id = goban.config.game_id ? Number(goban.config.game_id) : 0;
+    const user_detects_ai = ((user?.moderator_powers ?? 0) & MODERATOR_POWERS.AI_DETECTOR) !== 0;
 
-    if (!user?.is_moderator || !game_id) {
+    if ((!user?.is_moderator && !user_detects_ai) || !game_id) {
         return null;
     }
 
@@ -78,7 +82,7 @@ export function GameModeratorAreaPanel({
                 ai_suspected={black_ai_suspected}
                 flags={black_flags}
                 hide_flags={hide_flags}
-                hide_controls={hide_controls}
+                hide_controls={hide_controls || !user.is_moderator}
                 phase={phase}
                 game_id={game_id}
             />
@@ -89,7 +93,7 @@ export function GameModeratorAreaPanel({
                 ai_suspected={white_ai_suspected}
                 flags={white_flags}
                 hide_flags={hide_flags}
-                hide_controls={hide_controls}
+                hide_controls={hide_controls || !user.is_moderator}
                 phase={phase}
                 game_id={game_id}
             />
