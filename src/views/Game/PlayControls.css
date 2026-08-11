@@ -15,10 +15,10 @@
      * nothing to show. Drop the padding then, otherwise the empty control
      * area leaves a visible gap between the player cards and the chat. */
     &:empty {
-        padding-top: 0.5rem;
+        padding: 0;
     }
 
-    >div {
+    > div {
         width: 100%;
     }
 
@@ -87,7 +87,7 @@
         width: 100%;
         justify-content: space-between;
 
-        >span {
+        > span {
             flex-grow: 1;
             flex-basis: 33%;
             display: flex;
@@ -96,11 +96,11 @@
             gap: 0.5rem;
         }
 
-        >span:first-child {
+        > span:first-child {
             justify-content: flex-start;
         }
 
-        >span:last-child {
+        > span:last-child {
             justify-content: flex-end;
         }
 

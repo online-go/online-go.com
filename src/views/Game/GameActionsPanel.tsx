@@ -16,8 +16,8 @@
  */
 
 import * as React from "react";
-import { Link } from "react-router-dom";
 import { _, pgettext } from "@/lib/translate";
+import { browserHistory } from "@/lib/ogsHistory";
 import { api1 } from "@/lib/requests";
 import { useUser } from "@/lib/hooks";
 import { alert } from "@/lib/swal_config";
@@ -120,6 +120,20 @@ export function GameActionsPanel({
         onClose?.();
     };
 
+    // The panel is mounted in popover()'s standalone React root, which has
+    // no Router context, so react-router's <Link> would throw. Plain
+    // anchors keep open-in-new-tab semantics; plain left-clicks route
+    // through the SPA history instead of a full page load.
+    const navigateTo = (path: string) => (ev: React.MouseEvent<HTMLAnchorElement>) => {
+        if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey || ev.button !== 0) {
+            onClose?.();
+            return;
+        }
+        ev.preventDefault();
+        onClose?.();
+        browserHistory.push(path);
+    };
+
     const showLinkModal = wrap(() => openGameLinkModal(goban));
 
     const showGameInfo = wrap(() => {
@@ -213,24 +227,24 @@ export function GameActionsPanel({
     return (
         <div className="GameSidebarPanel GameActionsPanel">
             {!!tournament_id && (
-                <Link
+                <a
                     className="GameSidebarPanel-item"
-                    to={`/tournament/${tournament_id}`}
-                    onClick={onClose}
+                    href={`/tournament/${tournament_id}`}
+                    onClick={navigateTo(`/tournament/${tournament_id}`)}
                 >
                     <i className="fa fa-trophy" />
                     <span>{tournament_name || _("Tournament")}</span>
-                </Link>
+                </a>
             )}
             {!!ladder_id && (
-                <Link
+                <a
                     className="GameSidebarPanel-item"
-                    to={`/ladder/${ladder_id}`}
-                    onClick={onClose}
+                    href={`/ladder/${ladder_id}`}
+                    onClick={navigateTo(`/ladder/${ladder_id}`)}
                 >
                     <i className="fa fa-list-ol" />
                     <span>{_("Ladder")}</span>
-                </Link>
+                </a>
             )}
 
             {show_play_actions && (
@@ -317,10 +331,14 @@ export function GameActionsPanel({
             </button>
 
             {review && !!game_id && (
-                <Link className="GameSidebarPanel-item" to={`/game/${game_id}`} onClick={onClose}>
+                <a
+                    className="GameSidebarPanel-item"
+                    href={`/game/${game_id}`}
+                    onClick={navigateTo(`/game/${game_id}`)}
+                >
                     <i className="ogs-goban" />
                     <span>{_("Original game")}</span>
-                </Link>
+                </a>
             )}
 
             <button className="GameSidebarPanel-item" onClick={showLinkModal}>

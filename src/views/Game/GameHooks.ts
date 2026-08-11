@@ -252,6 +252,14 @@ export const useUndoRequestIsMine = generateGobanHook(
     ["cur_move", "last_official_move", "undo_requested", "undo_canceled"],
 );
 
+/** React hook that returns true while the user has staged a move on the
+ *  board (submit-move / double-click confirmation modes) that has not been
+ *  submitted yet. */
+export const useHasStagedMove = generateGobanHook(
+    (goban: Goban | null) => !!goban && goban.submit_move != null,
+    ["submit_move"],
+);
+
 /** React hook that returns the current move number from goban */
 export const useCurrentMoveNumber = generateGobanHook(
     (goban: Goban | null) => goban?.engine.cur_move?.move_number ?? -1,

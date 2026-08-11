@@ -87,6 +87,23 @@ export function MoveNumberSlider(): React.ReactElement {
     const at_start = current <= 0;
     const at_end = current >= max;
 
+    // On-screen autoplay toggle — the only autoplay control reachable on
+    // touch devices (the keyboard shortcut is the space bar). Hidden in puzzle
+    // mode, where auto-advancing would walk into the saved solution the
+    // forward-restriction above exists to protect.
+    const [autoplaying, set_autoplaying] = React.useState(controller.autoplaying);
+    React.useEffect(() => {
+        set_autoplaying(controller.autoplaying);
+        controller.on("autoplaying", set_autoplaying);
+        return () => {
+            controller.off("autoplaying", set_autoplaying);
+        };
+    }, [controller]);
+
+    const handlePlayPause = React.useCallback(() => {
+        controller.togglePlayPause();
+    }, [controller]);
+
     const handlePrev = React.useCallback(() => {
         controller.previousMove();
     }, [controller]);
@@ -159,6 +176,20 @@ export function MoveNumberSlider(): React.ReactElement {
             >
                 <i className="fa fa-step-backward" />
             </button>
+            {!restrict_forward && (
+                <button
+                    className="MoveNumberSlider-button"
+                    onClick={handlePlayPause}
+                    disabled={at_end && !autoplaying}
+                    title={
+                        autoplaying
+                            ? pgettext("Move navigation: stop autoplay", "Pause autoplay")
+                            : pgettext("Move navigation: play through the moves", "Autoplay")
+                    }
+                >
+                    <i className={"fa " + (autoplaying ? "fa-pause" : "fa-play")} />
+                </button>
+            )}
             <div
                 className="MoveNumberSlider-track"
                 style={{ "--move-frac": knob_frac } as React.CSSProperties}
