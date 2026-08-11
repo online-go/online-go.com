@@ -389,6 +389,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     addToPreferredSettings = () => {
         const preferred_settings = getPreferredSettings();
         const challenge = dup(this.getChallenge());
+        challenge.game.name = (this.gameState().name ?? "").trim();
         preferred_settings.push(challenge);
         data.set(
             "preferred-game-settings",

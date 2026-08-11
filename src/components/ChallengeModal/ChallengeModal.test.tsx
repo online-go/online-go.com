@@ -20,7 +20,10 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ChallengeModalBody } from "./ChallengeModal";
 import { post } from "@/lib/requests";
-import { ChallengeModalProperties } from "@/components/ChallengeModal/ChallengeModal.types";
+import {
+    ChallengeDetails,
+    ChallengeModalProperties,
+} from "@/components/ChallengeModal/ChallengeModal.types";
 import { sanitizeChallengeDetails } from "./ChallengeModal.utils";
 import { bots_list, Bot } from "@/lib/bots";
 
@@ -28,6 +31,12 @@ let mockPreferredSettings: unknown[] = [];
 
 // Mock data module
 jest.mock("@/lib/data", () => ({
+    Replication: {
+        NONE: 0x0,
+        LOCAL_OVERWRITES_REMOTE: 0x1,
+        REMOTE_OVERWRITES_LOCAL: 0x2,
+        REMOTE_ONLY: 0x4,
+    },
     get: (key: string, default_value: unknown) => {
         if (key === "user") {
             return { id: 123, ranking: 10 };
@@ -300,6 +309,37 @@ describe("ChallengeModalBody", () => {
         expect(options[0].textContent).toContain("Alpha |");
         expect(options[1].textContent).toContain("Zebra |");
         expect(options[2].textContent).toBe("Unranked, 19x19, Japanese rules, 0 handicap");
+    });
+
+    it("saves the typed game name in preferred settings", async () => {
+        const user = userEvent.setup();
+        render(<ChallengeModalBody {...defaultProps} modal={mockModal} />);
+
+        const gameNameInput = screen.getByPlaceholderText("Game Name");
+        await user.clear(gameNameInput);
+        await user.type(gameNameInput, "My Custom Game");
+        await user.click(screen.getByText("Add current setting"));
+
+        const { set } = jest.requireMock("@/lib/data");
+        const savedSettings = set.mock.calls.find(
+            ([key]: string[]) => key === "preferred-game-settings",
+        )?.[1] as ChallengeDetails[];
+        expect(savedSettings[0].game.name).toBe("My Custom Game");
+    });
+
+    it("saves unnamed games without the default game name", async () => {
+        const user = userEvent.setup();
+        render(<ChallengeModalBody {...defaultProps} modal={mockModal} />);
+
+        const gameNameInput = screen.getByPlaceholderText("Game Name");
+        await user.clear(gameNameInput);
+        await user.click(screen.getByText("Add current setting"));
+
+        const { set } = jest.requireMock("@/lib/data");
+        const savedSettings = set.mock.calls.find(
+            ([key]: string[]) => key === "preferred-game-settings",
+        )?.[1] as ChallengeDetails[];
+        expect(savedSettings[0].game.name).toBe("");
     });
 
     it("renders private checkbox", () => {
