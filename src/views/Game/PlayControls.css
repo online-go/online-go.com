@@ -182,7 +182,7 @@
 
     .cancel-button {
         position: relative;
-        z-index: 2;
+        z-index: calc(var(--z-dock) + 1);
         margin-left: 0.5rem;
     }
 
