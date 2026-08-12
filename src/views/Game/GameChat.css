@@ -96,6 +96,7 @@
         display: flex;
         align-items: flex-end;
         justify-content: center;
+        font-style: italic;
         height: 100%;
     }
 
@@ -161,17 +162,16 @@
     }
 
     .chat-input-player-list-toggle {
-        flex: 0;
-        height: 30px;
-        width: 30px;
-        font-size: 1.2rem;
-        border-radius: 0;
-        padding: 0;
+        border-top-right-radius: 0;
+        box-shadow: none;
+        white-space: nowrap;
     }
 
     .chat-input-container {
+        flex-shrink: 0;
+        flex-grow: 0;
+        /* flex-basis: auto; */
         display: flex;
-        max-height: 30%;
         /* max-width: 100%; */
         /* width: 100%; */
         /* overflow: hidden; */
