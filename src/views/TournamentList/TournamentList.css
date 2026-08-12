@@ -96,7 +96,7 @@
 
     .TournamentList-Schedule {
         display: flex;
-        justify-content: center;
+        justify-content: flex-start;
         max-width: 100%;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
