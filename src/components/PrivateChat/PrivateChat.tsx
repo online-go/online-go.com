@@ -30,6 +30,7 @@ import * as player_cache from "@/lib/player_cache";
 import online_status from "@/lib/online_status";
 import { openReport } from "@/components/Report";
 import { alert } from "@/lib/swal_config";
+import { chat_markup } from "./chat_markup";
 import { nicknameTabComplete } from "./tab_complete";
 import "./PrivateChat.css";
 
@@ -964,115 +965,4 @@ export function getPrivateChat(user_id: number, username?: string) {
         pc = instances[user_id] = new PrivateChat(user_id, username ?? "<unknown>");
     }
     return pc;
-}
-
-function chat_markup(body: string): Node[] | undefined {
-    if (typeof body !== "string") {
-        console.log("Attempted to markup non-text object: ", body);
-        return;
-    }
-
-    const rules: Array<{ pattern: RegExp; render: (m: RegExpExecArray) => HTMLAnchorElement }> = [
-        {
-            pattern: /((?:ftp|http)s?:\/\/[^<> ]+)/gi,
-            render: (m) => {
-                const a = document.createElement("a");
-                a.target = "_blank";
-                a.href = m[1].replace("@", "%40");
-                a.textContent = m[1];
-                return a;
-            },
-        },
-        {
-            pattern: /[^<> ]+[@][^<> ]+[.][^<> ]+/gi,
-            render: (m) => {
-                const a = document.createElement("a");
-                a.target = "_blank";
-                a.href = "mailto:" + m[0];
-                a.textContent = m[0];
-                return a;
-            },
-        },
-        {
-            pattern: /(^##([0-9]{3,})|([ ])##([0-9]{3,}))/gi,
-            render: (m) => {
-                const a = document.createElement("a");
-                a.target = "_blank";
-                a.href = `/review/${m[2] || m[4] || ""}`;
-                a.textContent = `${m[3] || ""}##${m[2] || m[4] || ""}`;
-                return a;
-            },
-        },
-        {
-            pattern: /(^#([0-9]{3,})|([ ])#([0-9]{3,}))/gi,
-            render: (m) => {
-                const a = document.createElement("a");
-                a.target = "_blank";
-                a.href = `/game/${m[2] || m[4] || ""}`;
-                a.textContent = `${m[3] || ""}#${m[2] || m[4] || ""}`;
-                return a;
-            },
-        },
-        {
-            pattern: /(player ([0-9]+))/gi,
-            render: (m) => {
-                const a = document.createElement("a");
-                a.target = "_blank";
-                a.href = `/user/view/${m[2]}`;
-                a.textContent = m[1];
-                return a;
-            },
-        },
-        {
-            pattern: /(#group-([0-9]+))/gi,
-            render: (m) => {
-                const a = document.createElement("a");
-                a.target = "_blank";
-                a.href = `/group/${m[2]}`;
-                a.textContent = m[1];
-                return a;
-            },
-        },
-    ];
-
-    const nodes: Node[] = [];
-    let pos = 0;
-
-    while (pos < body.length) {
-        let matched: {
-            m: RegExpExecArray;
-            render: (m: RegExpExecArray) => HTMLAnchorElement;
-        } | null = null;
-
-        for (const rule of rules) {
-            rule.pattern.lastIndex = pos;
-            const m = rule.pattern.exec(body);
-            if (m && m.index === pos) {
-                matched = { m, render: rule.render };
-                break;
-            }
-        }
-
-        if (matched && matched.m[0].length > 0) {
-            nodes.push(matched.render(matched.m));
-            pos = matched.m.index + matched.m[0].length;
-            continue;
-        }
-
-        let next = body.length;
-        for (const rule of rules) {
-            rule.pattern.lastIndex = pos + 1;
-            const m = rule.pattern.exec(body);
-            if (m && m.index < next) {
-                next = m.index;
-            }
-        }
-        if (next <= pos) {
-            next = pos + 1;
-        }
-        nodes.push(document.createTextNode(body.substring(pos, next)));
-        pos = next;
-    }
-
-    return nodes;
 }
