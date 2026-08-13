@@ -628,7 +628,12 @@ class PrivateChat {
         }
 
         const message = document.createElement("span");
-        message.innerHTML = chat_markup(profanity_filter(txt)) || "";
+        const message_nodes = chat_markup(profanity_filter(txt));
+        if (message_nodes) {
+            for (const node of message_nodes) {
+                message.appendChild(node);
+            }
+        }
         line.appendChild(message);
 
         this.lines.push(line);
@@ -961,37 +966,113 @@ export function getPrivateChat(user_id: number, username?: string) {
     return pc;
 }
 
-function chat_markup(body: string): string | undefined {
-    if (typeof body === "string") {
-        const div = document.createElement("div");
-        div.textContent = body;
-        let ret = div.innerHTML;
-        // Some link urls can have an @-sign in. Be careful not to cause the link_matcher
-        // and email_matcher to overlap! See for example
-        // https://www.google.co.uk/maps/place/Platform+9%C2%BE/@51.5321578,-0.1261661
-        const link_matcher = /(((ftp|http)(s)?:\/\/)([^<> ]+))/gi;
-        ret = ret.replace(
-            link_matcher,
-            (match) =>
-                "<a target='_blank' href='" +
-                match.replace("@", "%40") +
-                "'>" +
-                match.replace("@", "&commat;") +
-                "</a>",
-        );
-        const email_matcher = /([^<> ]+[@][^<> ]+[.][^<> ]+)/gi;
-        ret = ret.replace(email_matcher, "<a target='_blank' href='mailto:$1'>$1</a>");
-        const review_matcher = /(^##([0-9]{3,})|([ ])##([0-9]{3,}))/gi;
-        ret = ret.replace(review_matcher, "<a target='_blank' href='/review/$2$4'>$3##$2$4</a>");
-        const game_matcher = /(^#([0-9]{3,})|([ ])#([0-9]{3,}))/gi;
-        ret = ret.replace(game_matcher, "<a target='_blank' href='/game/$2$4'>$3#$2$4</a>");
-        const player_matcher = /(player ([0-9]+))/gi;
-        ret = ret.replace(player_matcher, "<a target='_blank' href='/user/view/$2'>$1</a>");
-        const group_matcher = /(#group-([0-9]+))/gi;
-        ret = ret.replace(group_matcher, "<a target='_blank' href='/group/$2'>$1</a>");
-        return ret;
-    } else {
+function chat_markup(body: string): Node[] | undefined {
+    if (typeof body !== "string") {
         console.log("Attempted to markup non-text object: ", body);
+        return;
     }
-    return;
+
+    const rules: Array<{ pattern: RegExp; render: (m: RegExpExecArray) => HTMLAnchorElement }> = [
+        {
+            pattern: /((?:ftp|http)s?:\/\/[^<> ]+)/gi,
+            render: (m) => {
+                const a = document.createElement("a");
+                a.target = "_blank";
+                a.href = m[1].replace("@", "%40");
+                a.textContent = m[1];
+                return a;
+            },
+        },
+        {
+            pattern: /[^<> ]+[@][^<> ]+[.][^<> ]+/gi,
+            render: (m) => {
+                const a = document.createElement("a");
+                a.target = "_blank";
+                a.href = "mailto:" + m[0];
+                a.textContent = m[0];
+                return a;
+            },
+        },
+        {
+            pattern: /(^##([0-9]{3,})|([ ])##([0-9]{3,}))/gi,
+            render: (m) => {
+                const a = document.createElement("a");
+                a.target = "_blank";
+                a.href = `/review/${m[2] || m[4] || ""}`;
+                a.textContent = `${m[3] || ""}##${m[2] || m[4] || ""}`;
+                return a;
+            },
+        },
+        {
+            pattern: /(^#([0-9]{3,})|([ ])#([0-9]{3,}))/gi,
+            render: (m) => {
+                const a = document.createElement("a");
+                a.target = "_blank";
+                a.href = `/game/${m[2] || m[4] || ""}`;
+                a.textContent = `${m[3] || ""}#${m[2] || m[4] || ""}`;
+                return a;
+            },
+        },
+        {
+            pattern: /(player ([0-9]+))/gi,
+            render: (m) => {
+                const a = document.createElement("a");
+                a.target = "_blank";
+                a.href = `/user/view/${m[2]}`;
+                a.textContent = m[1];
+                return a;
+            },
+        },
+        {
+            pattern: /(#group-([0-9]+))/gi,
+            render: (m) => {
+                const a = document.createElement("a");
+                a.target = "_blank";
+                a.href = `/group/${m[2]}`;
+                a.textContent = m[1];
+                return a;
+            },
+        },
+    ];
+
+    const nodes: Node[] = [];
+    let pos = 0;
+
+    while (pos < body.length) {
+        let matched: {
+            m: RegExpExecArray;
+            render: (m: RegExpExecArray) => HTMLAnchorElement;
+        } | null = null;
+
+        for (const rule of rules) {
+            rule.pattern.lastIndex = pos;
+            const m = rule.pattern.exec(body);
+            if (m && m.index === pos) {
+                matched = { m, render: rule.render };
+                break;
+            }
+        }
+
+        if (matched && matched.m[0].length > 0) {
+            nodes.push(matched.render(matched.m));
+            pos = matched.m.index + matched.m[0].length;
+            continue;
+        }
+
+        let next = body.length;
+        for (const rule of rules) {
+            rule.pattern.lastIndex = pos + 1;
+            const m = rule.pattern.exec(body);
+            if (m && m.index < next) {
+                next = m.index;
+            }
+        }
+        if (next <= pos) {
+            next = pos + 1;
+        }
+        nodes.push(document.createTextNode(body.substring(pos, next)));
+        pos = next;
+    }
+
+    return nodes;
 }
