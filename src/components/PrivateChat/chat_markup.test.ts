@@ -64,6 +64,13 @@ test("adjacent urls are linked separately", () => {
     expect(links[1].getAttribute("href")).toBe("http://b.com");
 });
 
+test("many repeated tokens are all linked", () => {
+    const message = "http://a.com ".repeat(500).trimEnd();
+    const nodes = chat_markup(message);
+    expect(linkNodes(nodes)).toHaveLength(500);
+    expect(textOf(nodes)).toBe(message);
+});
+
 test("url containing an at sign is not parsed as an e-mail address", () => {
     const nodes = chat_markup("https://www.google.com/maps/@50.7,-3.1,13.75z");
     const links = linkNodes(nodes);

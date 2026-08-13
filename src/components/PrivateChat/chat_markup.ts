@@ -66,42 +66,40 @@ export function chat_markup(body: string): Node[] | undefined {
     }
 
     const nodes: Node[] = [];
-    let pos = 0;
+    const combined = new RegExp(rules.map((rule) => `(${rule.pattern.source})`).join("|"), "gi");
 
-    while (pos < body.length) {
-        let matched: {
-            m: RegExpExecArray;
-            render: (m: RegExpExecArray) => HTMLAnchorElement;
-        } | null = null;
-
-        for (const rule of rules) {
-            rule.pattern.lastIndex = pos;
-            const m = rule.pattern.exec(body);
-            if (m && m.index === pos) {
-                matched = { m, render: rule.render };
-                break;
-            }
+    let last = 0;
+    let m: RegExpExecArray | null;
+    while ((m = combined.exec(body)) !== null) {
+        if (m.index > last) {
+            nodes.push(document.createTextNode(body.substring(last, m.index)));
         }
 
-        if (matched && matched.m[0].length > 0) {
-            nodes.push(matched.render(matched.m));
-            pos = matched.m.index + matched.m[0].length;
+        if (m[0].length === 0) {
+            last = Math.min(last + 1, body.length);
+            combined.lastIndex = Math.max(combined.lastIndex, m.index + 1);
             continue;
         }
 
-        let next = body.length;
+        let rendered = false;
         for (const rule of rules) {
-            rule.pattern.lastIndex = pos + 1;
-            const m = rule.pattern.exec(body);
-            if (m && m.index < next) {
-                next = m.index;
+            rule.pattern.lastIndex = 0;
+            const match = rule.pattern.exec(m[0]);
+            if (match && match.index === 0 && match[0].length === m[0].length) {
+                nodes.push(rule.render(match));
+                rendered = true;
+                break;
             }
         }
-        if (next <= pos) {
-            next = pos + 1;
+        if (!rendered) {
+            nodes.push(document.createTextNode(m[0]));
         }
-        nodes.push(document.createTextNode(body.substring(pos, next)));
-        pos = next;
+
+        last = m.index + m[0].length;
+    }
+
+    if (last < body.length) {
+        nodes.push(document.createTextNode(body.substring(last)));
     }
 
     return nodes;
