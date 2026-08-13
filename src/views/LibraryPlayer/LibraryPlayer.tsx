@@ -673,7 +673,9 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                 onClick={this.setCollection.bind(this, collection.id)}
                                 key={idx}
                             >
-                                <span className="breadcrumb-name">{collection.name}</span>
+                                <span className="breadcrumb-name">
+                                    {collection.name || _("SGF Library")}
+                                </span>
                                 <span className="breadcrumb-slash">/</span>
                             </span>
                         ))}
