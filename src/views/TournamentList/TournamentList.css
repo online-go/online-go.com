@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 .TournamentList {
+    max-width: 100%;
+
     .fa, .ogs-turtle {
         padding-right: 0.4rem;
     }
@@ -71,9 +73,38 @@
         vertical-align: top;
     }
 
+    /*
+     * Wide nowrap columns need horizontal scroll on narrow phones.
+     * Keep overflow on the wrapper and let the table grow past the viewport
+     * so the left edge stays reachable via scroll (iOS otherwise clips it).
+     */
+    .PaginatedTable {
+        max-width: 100%;
+
+        > div {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            max-width: 100%;
+
+            table {
+                width: max-content;
+                min-width: 100%;
+                max-width: none;
+            }
+        }
+    }
+
     .TournamentList-Schedule {
         display: flex;
-        justify-content: center;
+        justify-content: flex-start;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+
+        .schedule-table {
+            width: max-content;
+            min-width: 100%;
+        }
 
         .fa, .ogs-turtle {
             color: var(--supporter-gold);
@@ -113,6 +144,8 @@
     .open-tourney-header {
         display: flex;
         justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.5rem;
 
         div {
             color: #919191;
