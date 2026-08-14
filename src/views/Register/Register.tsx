@@ -23,6 +23,7 @@ import { _, pgettext } from "@/lib/translate";
 import { Card } from "@/components/material";
 import { errorAlerter } from "@/lib/misc";
 import { post } from "@/lib/requests";
+import { valid_next_url } from "@/lib/url_validation";
 import { get_ebi } from "@/views/SignIn";
 import { useUser } from "@/lib/hooks";
 import cached from "@/lib/cached";
@@ -43,7 +44,7 @@ export function Register(): React.ReactElement {
     const [submitLoading, setSubmitLoading] = React.useState(false);
 
     // Get the next URL from query params (for OAuth flow)
-    const nextParam = searchParams.get("next");
+    const nextParam = valid_next_url(searchParams.get("next"));
     const socialNextUrl = nextParam || "/wait-for-user#" + window.location.hash.substring(1);
 
     if (!user.anonymous) {

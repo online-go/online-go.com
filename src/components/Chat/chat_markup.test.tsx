@@ -32,13 +32,25 @@ test("No markup", () => {
 test("GitHub", () => {
     expect_singular_markup(
         "https://github.com/online-go/online-go.com/pull/1",
-        <a key={0} target="_blank" href={"https://github.com/online-go/online-go.com/pull/1"}>
+        <a
+            key={0}
+            target="_blank"
+            /* cspell:disable-next-line */
+            rel="noopener noreferrer"
+            href={"https://github.com/online-go/online-go.com/pull/1"}
+        >
             {"GH-1"}
         </a>,
     );
     expect_singular_markup(
         "https://github.com/online-go/online-go.com/issues/4",
-        <a key={0} target="_blank" href={"https://github.com/online-go/online-go.com/issues/4"}>
+        <a
+            key={0}
+            target="_blank"
+            /* cspell:disable-next-line */
+            rel="noopener noreferrer"
+            href={"https://github.com/online-go/online-go.com/issues/4"}
+        >
             {"GH-4"}
         </a>,
     );
@@ -47,7 +59,13 @@ test("GitHub", () => {
 test("E-mail", () => {
     expect_singular_markup(
         "john.doe@emailhost.com",
-        <a key={0} target="_blank" href={"mailto:john.doe@emailhost.com"}>
+        <a
+            key={0}
+            target="_blank"
+            /* cspell:disable-next-line */
+            rel="noopener noreferrer"
+            href={"mailto:john.doe@emailhost.com"}
+        >
             {"john.doe@emailhost.com"}
         </a>,
     );
@@ -60,6 +78,8 @@ test("Google Maps link not parsed as e-mail", () => {
         <a
             key={0}
             target="_blank"
+            /* cspell:disable-next-line */
+            rel="noopener noreferrer"
             href={"https://www.google.com/maps/@50.7006874,-3.0915427,13.75z"}
         >
             {"https://www.google.com/maps/@50.7006874,-3.0915427,13.75z"}
