@@ -23,6 +23,7 @@ import { _ } from "@/lib/translate";
 import { Card } from "@/components/material";
 import { errorAlerter, uuid } from "@/lib/misc";
 import { post } from "@/lib/requests";
+import { valid_next_url } from "@/lib/url_validation";
 import cached from "@/lib/cached";
 import { Md5 } from "ts-md5";
 import { useUser } from "@/lib/hooks";
@@ -98,7 +99,7 @@ export function SignIn(): React.ReactElement {
     }
 
     // Get the next URL from query params (for OAuth flow) or hash (for regular flow)
-    const nextParam = searchParams.get("next");
+    const nextParam = valid_next_url(searchParams.get("next"));
     const socialNextUrl = nextParam || "/wait-for-user#" + window.location.hash.substring(1);
 
     const onSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
@@ -141,8 +142,9 @@ export function SignIn(): React.ReactElement {
 
                     // Note: this causes a page reload, and the new user is set up from scratch in the process
                     // Check for ?next= query parameter first (used by OAuth authorization flow)
-                    const searchParams = new URLSearchParams(window.location.search);
-                    const nextParam = searchParams.get("next");
+                    const nextParam = valid_next_url(
+                        new URLSearchParams(window.location.search).get("next"),
+                    );
 
                     if (nextParam) {
                         // Redirect to the ?next= URL (for OAuth authorization flow)
