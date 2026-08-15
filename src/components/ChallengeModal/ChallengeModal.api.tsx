@@ -77,6 +77,8 @@ export function challengeRematch(
     //config.syncBoardSize();
     //config.syncTimeControl();
 
+    const is_bot_game = conf.is_bot_game ? true : false;
+
     const config: ChallengeModalConfig = {
         conf: {
             selected_board_size: isStandardBoardSize(board_size) ? board_size : "custom",
@@ -104,5 +106,5 @@ export function challengeRematch(
         time_control: dup(conf.time_control),
     };
 
-    challenge(opponent.id, null, false, config);
+    challenge(opponent.id, null, is_bot_game, config);
 }

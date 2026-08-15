@@ -507,6 +507,10 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             challenge.game.komi = undefined;
         }
 
+        if (this.props.mode === "computer") {
+            challenge.game.is_bot_game = true;
+        }
+
         return challenge;
     }
 

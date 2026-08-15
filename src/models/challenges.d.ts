@@ -107,6 +107,7 @@ declare namespace rest_api {
             pause_on_weekends?: boolean;
             time_control?: import("../components/TimeControl").TimeControlTypes.TimeControlSystem;
             time_control_parameters?: import("../components/TimeControl").TimeControl;
+            is_bot_game?: boolean;
         };
     }
 
