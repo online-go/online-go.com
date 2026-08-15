@@ -1181,7 +1181,11 @@ function PaymentMethod({ payment }: { payment: Payment }): React.ReactElement {
     if (payment.ref_id && user.is_superuser) {
         if (payment.payment_processor === "stripe") {
             return (
-                <a href={`https://dashboard.stripe.com/payments/${payment.ref_id}`} target="_blank">
+                <a
+                    href={`https://dashboard.stripe.com/payments/${payment.ref_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
                     {ret}
                 </a>
             );
@@ -1191,6 +1195,7 @@ function PaymentMethod({ payment }: { payment: Payment }): React.ReactElement {
                 <a
                     href={`https://www.paypal.com/activity/payment/${payment.ref_id}`}
                     target="_blank"
+                    rel="noopener noreferrer"
                 >
                     {ret}
                 </a>
@@ -1202,6 +1207,7 @@ function PaymentMethod({ payment }: { payment: Payment }): React.ReactElement {
                 <a
                     href={`https://vendors.paddle.com/subscriptions/customers/manage/${subscriptionId}`}
                     target="_blank"
+                    rel="noopener noreferrer"
                 >
                     {ret}
                 </a>

@@ -124,7 +124,7 @@ export function PuzzleCollectionAcl({
                                 <a
                                     href={`/group/${entry.group_id}`}
                                     target="_blank"
-                                    rel="noreferrer"
+                                    rel="noopener noreferrer"
                                     className="PuzzleCollectionAcl-group"
                                 >
                                     {entry.group_name}

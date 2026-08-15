@@ -1042,7 +1042,11 @@ export function AnnouncementCenter(): React.ReactElement {
                                             {a.entries.map(
                                                 (entry: AnnouncementEntry, idx: number) => (
                                                     <div key={idx}>
-                                                        <a href={entry.link} target="_blank">
+                                                        <a
+                                                            href={entry.link}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                        >
                                                             {entry.en || entry.link}
                                                         </a>
                                                     </div>

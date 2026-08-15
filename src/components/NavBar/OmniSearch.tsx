@@ -99,7 +99,7 @@ export function OmniSearch(props: OmniSearchProperties): React.ReactElement | nu
                             {e?.[1]?.[0] === "/" ? (
                                 <Link to={e[1]}>{e[0]}</Link>
                             ) : (
-                                <a href={e[1]} target="_blank">
+                                <a href={e[1]} target="_blank" rel="noopener noreferrer">
                                     {e[0]}
                                 </a>
                             )}

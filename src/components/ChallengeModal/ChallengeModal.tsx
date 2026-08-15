@@ -1031,6 +1031,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                         href="https://github.com/online-go/online-go.com/wiki/Rengo"
                                         className="help"
                                         target="_blank"
+                                        rel="noopener noreferrer"
                                     >
                                         <i className="fa fa-question-circle-o"></i>
                                     </a>

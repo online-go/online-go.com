@@ -310,7 +310,7 @@ export function AvatarCard({
 
             {!editing && user.website && cleaned_website && (
                 <div className="website-url">
-                    <a target="_blank" rel="noopener" href={cleaned_website}>
+                    <a target="_blank" rel="noopener noreferrer" href={cleaned_website}>
                         {user.website}
                     </a>
                 </div>

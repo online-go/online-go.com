@@ -152,6 +152,7 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
                                         target="_blank"
                                         href={`/group/${obj.group_id}`}
                                         className="group"
+                                        rel="noopener noreferrer"
                                     >
                                         {obj.group_name}
                                     </a>

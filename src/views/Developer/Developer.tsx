@@ -47,7 +47,7 @@ export class Developer extends React.PureComponent {
                 <h1>API Documentation</h1>
                 <h2>(out-dated)</h2>
                 <h2>
-                    <a href="https://docs.online-go.com" target="_blank">
+                    <a href="https://docs.online-go.com" target="_blank" rel="noopener noreferrer">
                         https://docs.online-go.com
                     </a>
                 </h2>

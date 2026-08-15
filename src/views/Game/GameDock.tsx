@@ -541,6 +541,7 @@ export function GameDock({
                 <a
                     href={sgf_url}
                     target="_blank"
+                    rel="noopener noreferrer"
                     onClick={(ev) => {
                         if (ev.currentTarget.className.indexOf("disabled") !== -1) {
                             ev.preventDefault();
@@ -583,7 +584,7 @@ export function GameDock({
             {/*
             {sgf_download_enabled && sgf_with_ai_review_url && (
                 <Tooltip tooltipRequired={tooltipRequired} title={_("SGF with AI Review")}>
-                    <a href={sgf_with_ai_review_url} target="_blank">
+                    <a href={sgf_with_ai_review_url} target="_blank" rel="noopener noreferrer">
                         <i className="fa fa-download"></i> {_("SGF with AI Review")}
                     </a>
                 </Tooltip>
@@ -591,7 +592,7 @@ export function GameDock({
             */}
             {sgf_download_enabled && sgf_with_comments_url && (
                 <Tooltip tooltipRequired={tooltipRequired} title={_("SGF with comments")}>
-                    <a href={sgf_with_comments_url} target="_blank">
+                    <a href={sgf_with_comments_url} target="_blank" rel="noopener noreferrer">
                         <i className="fa fa-download"></i> {_("SGF with comments")}
                     </a>
                 </Tooltip>

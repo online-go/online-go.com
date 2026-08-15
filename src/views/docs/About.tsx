@@ -67,7 +67,11 @@ export class About extends React.Component<{}, any> {
                     )}
 
                     <h4 className="about-links">
-                        <a href="https://translate.online-go.com" target="_blank">
+                        <a
+                            href="https://translate.online-go.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
                             {_("Help translate Online-Go.com")}
                         </a>
                         <Link to="/developer">Developers</Link>

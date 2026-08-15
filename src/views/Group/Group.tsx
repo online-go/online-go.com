@@ -897,6 +897,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                                     <a
                                                         target="_blank"
                                                         href={group_website_href as string}
+                                                        rel="noopener noreferrer"
                                                     >
                                                         {group_website_href}
                                                     </a>

@@ -115,7 +115,7 @@ function AnimatedPngCreator({ goban }: { goban: GobanRenderer }): React.ReactEle
     return (
         <div className="AnimatedPngCreator">
             <div className="GameLink-kv">
-                <a href={url} target="_blank">
+                <a href={url} target="_blank" rel="noopener noreferrer">
                     <i className="fa fa-link" />
                 </a>
                 <span style={{ textAlign: "right" }}>{_("Animated")}: </span>
@@ -207,7 +207,7 @@ function GameLinkKv({ name, value, nolink }: { name: string; value: string; noli
     return (
         <div className="GameLink-kv">
             {!nolink && (
-                <a href={value} target="_blank">
+                <a href={value} target="_blank" rel="noopener noreferrer">
                     <i className="fa fa-link" />
                 </a>
             )}

@@ -1066,6 +1066,7 @@ export function Tournament(): React.ReactElement {
                             <a
                                 href="https://github.com/online-go/online-go.com/wiki/OpenGotha-Tournaments"
                                 target="_blank"
+                                rel="noopener noreferrer"
                             >
                                 documentation
                             </a>{" "}
@@ -3016,6 +3017,7 @@ function OpenGothaTournamentUploadDownload({
                     className="pull-right"
                     href="https://github.com/online-go/online-go.com/wiki/OpenGotha-Tournaments"
                     target="_blank"
+                    rel="noopener noreferrer"
                 >
                     {_("Documentation")}
                 </a>

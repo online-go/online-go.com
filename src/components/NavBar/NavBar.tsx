@@ -625,6 +625,7 @@ const MenuLink = forwardRef<HTMLElement, MenuLinkProps>(
             Element = "a";
             elementProps.href = to;
             elementProps.target = target;
+            elementProps.rel = "noopener noreferrer";
         } else {
             // Internal link
             Element = Link;
