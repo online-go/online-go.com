@@ -20,7 +20,7 @@ import { protocol, GobanRenderer, JGOFTimeControl, DeviceInfo } from "goban";
 import { GobanSocketProxy } from "@/lib/GobanSocketProxy";
 import { lookingAtOurLiveGame } from "@/components/TimeControl/util";
 import {
-    isValidWebsocketRoute,
+    isValidWebsocketOverride,
     ROUTE_CLOUDFLARE,
     ROUTE_GOOGLE_PREMIUM,
     ROUTE_PUBLIC,
@@ -128,10 +128,14 @@ try {
         const override = JSON.parse(
             localStorage.getItem("ogs.websocket_host") as string,
         ) as unknown;
-        /* Only accept an official gateway route. Any other value (e.g. a
-         * host injected into localStorage by an attacker) would receive the
-         * session JWT on the next connect, so it is ignored. */
-        if (typeof override === "string" && isValidWebsocketRoute(override)) {
+        /* Only accept an official gateway route or the page's own origin (for
+         * beta/self-hosted/dev deployments). Any other value (e.g. a host
+         * injected into localStorage by an attacker) would receive the session
+         * JWT on the next connect, so it is ignored. */
+        if (
+            typeof override === "string" &&
+            isValidWebsocketOverride(override, window.location.origin)
+        ) {
             main_websocket_host = override;
             console.log("Websocket host overridden to:", main_websocket_host);
         } else {

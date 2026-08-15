@@ -16,6 +16,7 @@
  */
 
 import {
+    isValidWebsocketOverride,
     isValidWebsocketRoute,
     ROUTE_CLOUDFLARE,
     ROUTE_GOOGLE_PREMIUM,
@@ -48,5 +49,34 @@ describe("isValidWebsocketRoute", () => {
     test("rejects non-route strings", () => {
         expect(isValidWebsocketRoute("null")).toBe(false);
         expect(isValidWebsocketRoute("42")).toBe(false);
+    });
+});
+
+describe("isValidWebsocketOverride", () => {
+    const BETA_ORIGIN = "https://beta.online-go.com";
+    const DEV_ORIGIN = "http://localhost:3000";
+
+    test("accepts each official gateway route for any origin", () => {
+        expect(isValidWebsocketOverride(ROUTE_CLOUDFLARE, BETA_ORIGIN)).toBe(true);
+        expect(isValidWebsocketOverride(ROUTE_GOOGLE_PREMIUM, BETA_ORIGIN)).toBe(true);
+        expect(isValidWebsocketOverride(ROUTE_PUBLIC, DEV_ORIGIN)).toBe(true);
+    });
+
+    test("accepts the page's own origin for beta and dev deployments", () => {
+        expect(isValidWebsocketOverride("https://beta.online-go.com", BETA_ORIGIN)).toBe(true);
+        expect(isValidWebsocketOverride("http://localhost:3000", DEV_ORIGIN)).toBe(true);
+        expect(isValidWebsocketOverride("https://online-go.com", "https://online-go.com")).toBe(
+            true,
+        );
+    });
+
+    test("rejects a third-party host even when it matches the origin scheme", () => {
+        expect(isValidWebsocketOverride("http://localhost:3000", BETA_ORIGIN)).toBe(false);
+        expect(
+            isValidWebsocketOverride("https://beta.online-go.com.evil.example", BETA_ORIGIN),
+        ).toBe(false);
+        expect(isValidWebsocketOverride("https://evil.example", BETA_ORIGIN)).toBe(false);
+        expect(isValidWebsocketOverride("", BETA_ORIGIN)).toBe(false);
+        expect(isValidWebsocketOverride("null", BETA_ORIGIN)).toBe(false);
     });
 });

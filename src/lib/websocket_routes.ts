@@ -36,3 +36,16 @@ const WEBSOCKET_ROUTES: ReadonlySet<string> = new Set([
 export function isValidWebsocketRoute(host: string): boolean {
     return WEBSOCKET_ROUTES.has(host);
 }
+
+/**
+ * Returns true when a localStorage `ogs.websocket_host` override may be used.
+ *
+ * Besides the official gateway routes, an override equal to the page's own
+ * origin is accepted so that same-origin deployments (e.g. beta, self-hosted,
+ * and development servers) can keep pointing the socket at themselves. Since
+ * that host already serves the page and receives the JWT legitimately, it does
+ * not expose the session token to a third party.
+ */
+export function isValidWebsocketOverride(host: string, origin: string): boolean {
+    return host === origin || isValidWebsocketRoute(host);
+}
