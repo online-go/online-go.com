@@ -19,23 +19,14 @@ import Debug from "@/lib/debug";
 import { protocol, GobanRenderer, JGOFTimeControl, DeviceInfo } from "goban";
 import { GobanSocketProxy } from "@/lib/GobanSocketProxy";
 import { lookingAtOurLiveGame } from "@/components/TimeControl/util";
-
-const debug = new Debug("sockets");
-
-const ROUTE_CLOUDFLARE = "wss://online-go.com";
-const ROUTE_GOOGLE_PREMIUM = "wss://wsp.online-go.com";
-const ROUTE_PUBLIC = "wss://wss.online-go.com";
-
-/* The only WebSocket gateway routes the client may connect to. The session
- * JWT is transmitted to the chosen host on connect (see the socket
- * `authenticate` call in main.tsx), so an arbitrary host here would silently
- * exfiltrate the live session token. The `ogs.websocket_host` localStorage
- * override is therefore restricted to this allowlist. */
-const WEBSOCKET_ROUTES: ReadonlySet<string> = new Set([
+import {
+    isValidWebsocketRoute,
     ROUTE_CLOUDFLARE,
     ROUTE_GOOGLE_PREMIUM,
     ROUTE_PUBLIC,
-]);
+} from "@/lib/websocket_routes";
+
+const debug = new Debug("sockets");
 
 // Detect if the user is on an Apple device (iOS or macOS)
 // This is used for routing WebSocket connections around CloudFlare connectivity issues
@@ -140,7 +131,7 @@ try {
         /* Only accept an official gateway route. Any other value (e.g. a
          * host injected into localStorage by an attacker) would receive the
          * session JWT on the next connect, so it is ignored. */
-        if (typeof override === "string" && WEBSOCKET_ROUTES.has(override)) {
+        if (typeof override === "string" && isValidWebsocketRoute(override)) {
             main_websocket_host = override;
             console.log("Websocket host overridden to:", main_websocket_host);
         } else {
