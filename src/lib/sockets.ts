@@ -26,6 +26,17 @@ const ROUTE_CLOUDFLARE = "wss://online-go.com";
 const ROUTE_GOOGLE_PREMIUM = "wss://wsp.online-go.com";
 const ROUTE_PUBLIC = "wss://wss.online-go.com";
 
+/* The only WebSocket gateway routes the client may connect to. The session
+ * JWT is transmitted to the chosen host on connect (see the socket
+ * `authenticate` call in main.tsx), so an arbitrary host here would silently
+ * exfiltrate the live session token. The `ogs.websocket_host` localStorage
+ * override is therefore restricted to this allowlist. */
+const WEBSOCKET_ROUTES: ReadonlySet<string> = new Set([
+    ROUTE_CLOUDFLARE,
+    ROUTE_GOOGLE_PREMIUM,
+    ROUTE_PUBLIC,
+]);
+
 // Detect if the user is on an Apple device (iOS or macOS)
 // This is used for routing WebSocket connections around CloudFlare connectivity issues
 export function isAppleDevice(): boolean {
@@ -123,8 +134,18 @@ let main_websocket_host: string = window.websocket_host ?? default_websocket_hos
 try {
     // can't use `data` here because of a dependency loop
     if (typeof localStorage !== "undefined" && localStorage.getItem("ogs.websocket_host")) {
-        main_websocket_host = JSON.parse(localStorage.getItem("ogs.websocket_host") as string);
-        console.log("Websocket host overridden to:", main_websocket_host);
+        const override = JSON.parse(
+            localStorage.getItem("ogs.websocket_host") as string,
+        ) as unknown;
+        /* Only accept an official gateway route. Any other value (e.g. a
+         * host injected into localStorage by an attacker) would receive the
+         * session JWT on the next connect, so it is ignored. */
+        if (typeof override === "string" && WEBSOCKET_ROUTES.has(override)) {
+            main_websocket_host = override;
+            console.log("Websocket host overridden to:", main_websocket_host);
+        } else {
+            console.warn("Ignoring invalid websocket host override:", override);
+        }
     } else {
         console.log("Websocket host not overridden");
     }
