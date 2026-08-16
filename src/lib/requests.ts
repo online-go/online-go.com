@@ -110,10 +110,7 @@ function request(method: Method): RequestFunction {
 
                 // CSRF is required only for unsafe requests.
                 if (!csrf_safe) {
-                    headers.append(
-                        "X-CSRFToken",
-                        getCookie("csrftoken"),
-                    );
+                    headers.append("X-CSRFToken", getCookie("csrftoken"));
                 }
 
                 if (data) {
