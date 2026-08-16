@@ -151,8 +151,9 @@ function request(method: Method): RequestFunction {
                     } else {
                         prepared_data = JSON.stringify(data);
                         headers.append(
-                            "Content-Type"
-                            "application/json",
+                           "Content-Type",
+                           "application/json",
+                        );
                         );
                     }
                 }
