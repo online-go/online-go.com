@@ -148,11 +148,10 @@ function request(method: Method): RequestFunction {
 
                         // Keep the normalized URL in sync with the URL
                         // actually being fetched.
-                        requests_in_flight[request_id].url = url;
                     } else {
                         prepared_data = JSON.stringify(data);
                         headers.append(
-                            "Content-Type",
+                            "Content-Type"
                             "application/json",
                         );
                     }
