@@ -20,11 +20,15 @@
         justify-content: space-between;
         align-items: center;
         gap: 1rem;
+        flex-wrap: wrap;
     }
 
     .breadcrumbs {
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
+        min-width: 0;
+        flex: 1 1 auto;
         padding: 1rem;
         font-size: var(--font-size-big);
 
@@ -213,14 +217,20 @@
         display: flex;
         align-items: center;
         gap: 1rem;
+        flex-wrap: wrap;
+        min-width: 0;
 
         button {
             height: auto;
             min-height: 2em;
+            flex-shrink: 0;
         }
 
         input[type='text'] {
-            min-width: 200px;
+            min-width: 0;
+            width: 12rem;
+            max-width: 100%;
+            flex: 1 1 8rem;
             margin: 0;
         }
 
@@ -265,4 +275,27 @@
         }
     }
 
+}
+
+/* Keep header controls usable on narrow phones (e.g. iPhone 14 Pro) */
+@media (max-width: 767px) {
+    .LibraryPlayer {
+        .space-between {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .breadcrumbs {
+            padding: 0.5rem 0;
+        }
+
+        .new-collection {
+            width: 100%;
+
+            input[type='text'] {
+                width: 100%;
+                flex: 1 1 auto;
+            }
+        }
+    }
 }

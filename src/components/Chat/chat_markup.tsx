@@ -37,6 +37,8 @@ const global_replacements: TextReplacement[] = [
             <a
                 key={idx}
                 target="_blank"
+                /* cspell:disable-next-line */
+                rel="noopener noreferrer"
                 href={`https://github.com/online-go/online-go.com/pull/${m[2]}`}
             >
                 {"GH-" + m[2]}
@@ -51,6 +53,8 @@ const global_replacements: TextReplacement[] = [
             <a
                 key={idx}
                 target="_blank"
+                /* cspell:disable-next-line */
+                rel="noopener noreferrer"
                 href={`https://github.com/online-go/online-go.com/issues/${m[2]}`}
             >
                 {"GH-" + m[2]}
@@ -64,6 +68,8 @@ const global_replacements: TextReplacement[] = [
             <a
                 key={idx}
                 target="_blank"
+                /* cspell:disable-next-line */
+                rel="noopener noreferrer"
                 href={`https://github.com/online-go/online-go.com/issues/${m[2]}`}
             >
                 {m[1] + "-" + m[2]}
@@ -97,7 +103,13 @@ const global_replacements: TextReplacement[] = [
         pattern:
             /\b(https?:\/\/forums\.online-go\.com\/t\/([a-zA-Z0-9-]+)\/[0-9]+(?:\/[0-9]+)?(?:\?[^\/<> ]+)?(?:\/|\b))/i,
         replacement: (m, idx) => (
-            <a key={idx} target="_blank" href={m[1]}>
+            <a
+                key={idx}
+                target="_blank"
+                /* cspell:disable-next-line */
+                rel="noopener noreferrer"
+                href={m[1]}
+            >
                 {m[2].replace(/(\-)/i, " ")}
             </a>
         ),
@@ -354,7 +366,13 @@ const global_replacements: TextReplacement[] = [
         split: /\b(https?:\/\/senseis\.xmp\.net\/\?(?:[^\/<> ]+)*(?:\/|\b))/i,
         pattern: /\b(https?:\/\/senseis\.xmp\.net\/\?([^\/<> ]+)(?:\/|\b))/i,
         replacement: (m, idx) => (
-            <a key={idx} target="_blank" href={m[1]}>
+            <a
+                key={idx}
+                target="_blank"
+                /* cspell:disable-next-line */
+                rel="noopener noreferrer"
+                href={m[1]}
+            >
                 {"senseis: " + m[2]}
             </a>
         ),
@@ -364,7 +382,13 @@ const global_replacements: TextReplacement[] = [
         split: /\b([A-Za-z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}(?:\/|\b))/i,
         pattern: /\b([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}(?:\/|\b))/i,
         replacement: (m, idx) => (
-            <a key={idx} target="_blank" href={"mailto:" + m[1]}>
+            <a
+                key={idx}
+                target="_blank"
+                /* cspell:disable-next-line */
+                rel="noopener noreferrer"
+                href={"mailto:" + m[1]}
+            >
                 {m[1]}
             </a>
         ),
@@ -375,7 +399,13 @@ const global_replacements: TextReplacement[] = [
         split: /(https?:\/\/[^<> ]+)/i,
         pattern: /(https?:\/\/[^<> ]+)/i,
         replacement: (m, idx) => (
-            <a key={idx} target="_blank" href={m[1]}>
+            <a
+                key={idx}
+                target="_blank"
+                /* cspell:disable-next-line */
+                rel="noopener noreferrer"
+                href={m[1]}
+            >
                 {m[1]}
             </a>
         ),

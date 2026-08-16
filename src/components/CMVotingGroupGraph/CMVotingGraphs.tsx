@@ -20,6 +20,8 @@ import { subDays, startOfWeek as startOfWeekDateFns } from "date-fns";
 import { dropCurrentPeriod } from "@/lib/misc";
 import * as data from "@/lib/data";
 
+import { weeklyTickInterval } from "./weekly_ticks";
+
 import { ResponsiveLine } from "@nivo/line";
 import React from "react";
 
@@ -176,6 +178,8 @@ export const CMVoteCountGraph = ({
     // Use the first data point's date as the x-axis minimum, with fallback to period start
     const xScaleMin = filteredDataByWeek[0]?.date ?? periodStartDate.toISOString().slice(0, 10);
 
+    const tick_interval = weeklyTickInterval(period);
+
     if (!totals_data[0].data.length) {
         return <div className="aggregate-vote-activity-graph">No activity yet</div>;
     }
@@ -192,7 +196,7 @@ export const CMVoteCountGraph = ({
                     enableSlices="x"
                     axisBottom={{
                         format: "%d %b %g",
-                        tickValues: "every week",
+                        tickValues: tick_interval,
                     }}
                     xFormat="time:%Y-%m-%d"
                     xScale={{
@@ -233,7 +237,7 @@ export const CMVoteCountGraph = ({
                     enableSlices="x"
                     axisBottom={{
                         format: "%d %b %g",
-                        tickValues: "every week",
+                        tickValues: tick_interval,
                     }}
                     xFormat="time:%Y-%m-%d"
                     xScale={{
@@ -393,6 +397,8 @@ export const CMVotingGroupGraph = ({
     // Use the first data point's date as the x-axis minimum, with fallback to period start
     const xScaleMin = filteredDataByWeek[0]?.date ?? periodStartDate.toISOString().slice(0, 10);
 
+    const tick_interval = weeklyTickInterval(period);
+
     if (!totals_data[0].data.length) {
         return <div className="aggregate-vote-activity-graph">No activity yet</div>;
     }
@@ -409,7 +415,7 @@ export const CMVotingGroupGraph = ({
                     enableSlices="x"
                     axisBottom={{
                         format: "%d %b %g",
-                        tickValues: "every week",
+                        tickValues: tick_interval,
                     }}
                     xFormat="time:%Y-%m-%d"
                     xScale={{
@@ -450,7 +456,7 @@ export const CMVotingGroupGraph = ({
                     enableSlices="x"
                     axisBottom={{
                         format: "%d %b %g",
-                        tickValues: "every week",
+                        tickValues: tick_interval,
                     }}
                     xFormat="time:%Y-%m-%d"
                     xScale={{

@@ -28,6 +28,7 @@ import { Experiment, Variant, Default } from "../Experiment";
 import { LineText } from "../misc-ui";
 import { GobanCustomBoardGridBackgroundPicker } from "./GobanCustomBoardGridBackgroundPicker";
 import { GobanCustomStoneUrlInput } from "./GobanCustomStoneUrlInput";
+import { ThemeAdvancedSection } from "./ThemeAdvancedSection";
 import "./GobanThemePicker.css";
 
 const theme_defaults = createGobanThemePreferenceDefaults();
@@ -139,9 +140,8 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React
     const theme = Goban.THEMES_SORTED.board.filter((x) => x.theme_name === "Custom")[0];
     const [, setBoard] = usePreference("goban-theme-board");
     const selected = getSelectedThemes();
-    const [advanced_open, setAdvancedOpen] = React.useState(
-        () => !!background_image || Object.values(grid_backgrounds).some((url) => !!url),
-    );
+    const has_advanced_settings =
+        !!background_image || Object.values(grid_backgrounds).some((url) => !!url);
 
     const inputStyle: React.CSSProperties & { "--custom-board-color-input-width": string } = {
         "--custom-board-color-input-width": `${size * 1.5}px`,
@@ -262,48 +262,32 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React
                 </div>
             </div>
 
-            <div className="custom-board-advanced">
-                <button
-                    type="button"
-                    className="advanced-toggle"
-                    aria-expanded={advanced_open}
-                    onClick={() => setAdvancedOpen((open) => !open)}
-                >
-                    <i className={`fa fa-caret-${advanced_open ? "down" : "right"}`} />
-                    <span>{pgettext("Advanced custom board theme settings", "Advanced")}</span>
-                </button>
+            <ThemeAdvancedSection defaultOpen={has_advanced_settings}>
+                <div className="custom-url-selection">
+                    <input
+                        className="customUrlSelector"
+                        type="text"
+                        value={background_image}
+                        placeholder={pgettext(
+                            "Custom background image url for the goban",
+                            "Custom background URL",
+                        )}
+                        onFocus={(e) => e.target.select()}
+                        onChange={setBackgroundImage}
+                    />
 
-                {advanced_open && (
-                    <div className="advanced-content">
-                        <div className="custom-url-selection">
-                            <input
-                                className="customUrlSelector"
-                                type="text"
-                                value={background_image}
-                                placeholder={pgettext(
-                                    "Custom background image url for the goban",
-                                    "Custom background URL",
-                                )}
-                                onFocus={(e) => e.target.select()}
-                                onChange={setBackgroundImage}
-                            />
+                    <button
+                        className="color-reset"
+                        onClick={() =>
+                            _setBackgroundImage(theme_defaults["goban-theme-custom-board-url"])
+                        }
+                    >
+                        <i className="fa fa-undo" />
+                    </button>
+                </div>
 
-                            <button
-                                className="color-reset"
-                                onClick={() =>
-                                    _setBackgroundImage(
-                                        theme_defaults["goban-theme-custom-board-url"],
-                                    )
-                                }
-                            >
-                                <i className="fa fa-undo" />
-                            </button>
-                        </div>
-
-                        <GobanCustomBoardGridBackgroundPicker />
-                    </div>
-                )}
-            </div>
+                <GobanCustomBoardGridBackgroundPicker />
+            </ThemeAdvancedSection>
         </div>
     );
 }
@@ -573,7 +557,9 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): React
                 </div>
             </div>
 
-            <GobanCustomStoneUrlInput color="black" urls={urls} setUrls={setUrls} />
+            <ThemeAdvancedSection defaultOpen={urls.length > 0}>
+                <GobanCustomStoneUrlInput color="black" urls={urls} setUrls={setUrls} />
+            </ThemeAdvancedSection>
         </div>
     );
 }
@@ -783,7 +769,9 @@ export function GobanCustomWhitePicker(props: GobanThemePickerProperties): React
                 </div>
             </div>
 
-            <GobanCustomStoneUrlInput color="white" urls={urls} setUrls={setUrls} />
+            <ThemeAdvancedSection defaultOpen={urls.length > 0}>
+                <GobanCustomStoneUrlInput color="white" urls={urls} setUrls={setUrls} />
+            </ThemeAdvancedSection>
         </div>
     );
 }

@@ -172,7 +172,12 @@ export function IncidentReportCard({ report }: IncidentReportCardProps): React.R
 
             <div className="spread">
                 {report.url && (
-                    <a href={report.url} target="_blank">
+                    <a
+                        href={report.url}
+                        target="_blank"
+                        /* cspell:disable-next-line */
+                        rel="noopener noreferrer"
+                    >
                         {report.url}
                     </a>
                 )}

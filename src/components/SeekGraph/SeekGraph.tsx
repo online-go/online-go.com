@@ -820,20 +820,20 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                 </React.StrictMode>,
             );
 
-            let details_html =
+            let details =
                 ", " +
                 (C.rengo ? _("Rengo") + ", " : "") +
                 (C.ranked ? _("Ranked") : _("Unranked")) +
                 ", " +
-                C.width +
+                String(C.width) +
                 "x" +
-                C.height +
+                String(C.height) +
                 (C.handicap === 0
                     ? ", " + _("no handicap")
-                    : C.handicap < 0
-                      ? ""
-                      : interpolate(_(", %s handicap"), [C.handicap])) +
-                (C.komi === null ? "" : ", " + C.komi + " " + _("komi")) +
+                    : C.handicap > 0
+                      ? interpolate(_(", %s handicap"), [String(C.handicap)])
+                      : "") +
+                (C.komi === null ? "" : ", " + String(C.komi) + " " + _("komi")) +
                 (C.disable_analysis ? ", " + _("analysis disabled") : "");
 
             if (C.challenger_color !== "automatic") {
@@ -846,13 +846,12 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                     your_color = _(C.challenger_color);
                 }
 
-                details_html +=
-                    ", " + interpolate(pgettext("color", "you play as %s"), [your_color]);
+                details += ", " + interpolate(pgettext("color", "you play as %s"), [your_color]);
             }
 
             if (C.time_control !== "none") {
                 try {
-                    details_html +=
+                    details +=
                         ", " +
                         interpolate(pgettext("time control", "%s %s timing"), [
                             shortShortTimeControl(C.time_control_parameters),
@@ -864,32 +863,34 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             }
 
             if (C.time_control_parameters.pause_on_weekends) {
-                details_html += ", " + _("pause on weekends");
+                details += ", " + _("pause on weekends");
             }
 
             if (C.name.length > 3) {
-                const div = document.createElement("div");
-                div.textContent = C.name;
-                details_html += ', "' + div.innerHTML + '"';
-            }
-
-            if (!data.get("user").anonymous) {
-                if (C.min_rank > this.userRank()) {
-                    details_html +=
-                        ", <span class='cause'>" +
-                        interpolate(_("min. rank: %s"), [rankString(C.min_rank)]) +
-                        "</span>";
-                } else if (C.max_rank < this.userRank()) {
-                    details_html +=
-                        ", <span class='cause'>" +
-                        interpolate(_("max. rank: %s"), [rankString(C.max_rank)]) +
-                        "</span>";
-                }
+                details += ', "' + C.name + '"';
             }
 
             const detailsSpan = document.createElement("span");
             detailsSpan.className = "details";
-            detailsSpan.innerHTML = details_html;
+            detailsSpan.textContent = details;
+
+            if (!data.get("user").anonymous) {
+                let cause_text = "";
+                if (C.min_rank > this.userRank()) {
+                    cause_text = interpolate(_("min. rank: %s"), [rankString(C.min_rank)]);
+                } else if (C.max_rank < this.userRank()) {
+                    cause_text = interpolate(_("max. rank: %s"), [rankString(C.max_rank)]);
+                }
+
+                if (cause_text !== "") {
+                    detailsSpan.appendChild(document.createTextNode(", "));
+                    const cause = document.createElement("span");
+                    cause.className = "cause";
+                    cause.textContent = cause_text;
+                    detailsSpan.appendChild(cause);
+                }
+            }
+
             e.appendChild(detailsSpan);
 
             list.appendChild(e);

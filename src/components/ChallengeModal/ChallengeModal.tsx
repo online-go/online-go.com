@@ -51,7 +51,8 @@ import { SPEED_OPTIONS } from "@/views/Play/SPEED_OPTIONS";
 import Select from "react-select";
 import {
     rejectionDetailsToMessage,
-    challenge_text_description,
+    preferred_setting_label,
+    sort_preferred_settings,
     sanitizeChallengeDetails,
     getPreferredSettings,
     getDefaultKomi,
@@ -388,6 +389,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     addToPreferredSettings = () => {
         const preferred_settings = getPreferredSettings();
         const challenge = dup(this.getChallenge());
+        challenge.game.name = (this.gameState().name ?? "").trim();
         preferred_settings.push(challenge);
         data.set(
             "preferred-game-settings",
@@ -1540,12 +1542,12 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     };
 
     preferredGameSettings = () => {
-        const options: PreferredSettingOption[] = this.state.preferred_settings.map(
-            (setting: ChallengeDetails, index: number) => ({
+        const options: PreferredSettingOption[] = sort_preferred_settings(
+            this.state.preferred_settings.map((setting: ChallengeDetails, index: number) => ({
                 value: index,
-                label: challenge_text_description(setting),
+                label: preferred_setting_label(setting),
                 setting: setting,
-            }),
+            })),
         );
 
         const handicap = this.state.challenge.game.handicap;
