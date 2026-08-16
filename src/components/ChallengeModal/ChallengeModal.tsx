@@ -265,9 +265,11 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         }
 
         state.challenge.game = coerceKomiForAutoHandicap(state.challenge.game);
-        if (this.props.mode === "computer") {
+
+        if (this.props.mode === "computer" || state.challenge.game.is_bot_game) {
             state.challenge.game = applyBotRanked(state.challenge.game);
             state.challenge.game.disable_analysis = false;
+            state.challenge.game.is_bot_game = true;
         }
 
         if (this.props.autoCreate) {
@@ -505,10 +507,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         }
         if (challenge.game.komi_auto === "automatic") {
             challenge.game.komi = undefined;
-        }
-
-        if (this.props.mode === "computer") {
-            challenge.game.is_bot_game = true;
         }
 
         return challenge;
@@ -1222,6 +1220,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             >
                 {!this.state.forking_game &&
                     this.props.mode !== "computer" &&
+                    !this.state.challenge.game.is_bot_game &&
                     this.rankedSettings()}
                 {!this.state.forking_game && this.boardSizeSettings()}
             </div>

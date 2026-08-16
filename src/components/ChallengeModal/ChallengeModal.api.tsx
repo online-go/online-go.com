@@ -77,8 +77,6 @@ export function challengeRematch(
     //config.syncBoardSize();
     //config.syncTimeControl();
 
-    const is_bot_game = conf.is_bot_game ? true : false;
-
     const config: ChallengeModalConfig = {
         conf: {
             selected_board_size: isStandardBoardSize(board_size) ? board_size : "custom",
@@ -99,12 +97,13 @@ export function challengeRematch(
                 disable_analysis: conf.disable_analysis,
                 pause_on_weekends: original_game_meta.pause_on_weekends ?? false,
                 initial_state: null,
-                private: (conf as any)["private"], // this is either missing from the type def or invalid
+                private: (conf as any)["private"], // this is either missing from the type def or invalid,
+                is_bot_game: conf.is_bot_game,
             },
             invite_only: false, // maybe one day we will support challenge-links on the rematch dialog!
         },
         time_control: dup(conf.time_control),
     };
 
-    challenge(opponent.id, null, is_bot_game, config);
+    challenge(opponent.id, null, false, config);
 }

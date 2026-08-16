@@ -105,6 +105,7 @@ export interface ChallengeModalConfig {
             height?: number;
             komi?: number;
             pause_on_weekends?: boolean;
+            is_bot_game?: boolean;
         };
     };
     conf: {
@@ -155,6 +156,7 @@ export type GameInput = {
     time_control?: TimeControlTypes.TimeControlSystem;
     time_control_parameters?: TimeControl;
     speed?: JGOFTimeControlSpeed;
+    is_bot_game?: boolean;
 };
 
 export type ChallengeInput = {
