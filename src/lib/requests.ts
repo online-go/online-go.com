@@ -26,9 +26,11 @@ export function api1ify(path: string) {
     if (path.indexOf("/api/v") === 0) {
         return path;
     }
+
     if (path.indexOf("/") === 0) {
         return path;
     }
+
     if (path.indexOf("://") > 0) {
         return path;
     }
@@ -49,7 +51,9 @@ interface OgsRequest {
 }
 
 const requests_in_flight: { [id: string]: OgsRequest } = {};
+
 let last_request_id = 0;
+
 type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 interface RequestFunction {
@@ -63,22 +67,29 @@ function request(method: Method): RequestFunction {
     return async (url: string, data?: object): Promise<any> => {
         url = api1ify(url);
 
+        // Resolve relative URLs against the current origin and determine
+        // whether this is a same-origin request.
+        const request_url = new URL(url, window.location.origin);
+        const same_origin = request_url.origin === window.location.origin;
+
+        // Keep the normalized URL for request deduplication.
+        url = request_url.toString();
+
         for (const req_id in requests_in_flight) {
             const req = requests_in_flight[req_id];
+
             if (
                 req.promise &&
                 req.url === url &&
                 method === req.method &&
                 deepCompare(req.data, data)
             ) {
-                //console.log(`Duplicate in flight request: ${url} , chaining`);
                 return req.promise;
             }
         }
 
         const request_id = ++last_request_id;
         const traceback = new Error();
-
         const controller = new AbortController();
         const signal = controller.signal;
 
@@ -90,150 +101,175 @@ function request(method: Method): RequestFunction {
             signal,
         };
 
-        requests_in_flight[request_id].promise = new Promise((resolve, reject) => {
-            let prepared_data: string | FormData | undefined;
-            const headers: Headers = new Headers();
-            headers.append("Accept", "application/json");
+        requests_in_flight[request_id].promise = new Promise(
+            (resolve, reject) => {
+                let prepared_data: string | FormData | undefined;
 
-            if (!csrf_safe) {
-                headers.append("X-CSRFToken", getCookie("csrftoken"));
-            }
+                const headers = new Headers();
+                headers.append("Accept", "application/json");
 
-            if (data) {
-                if (data instanceof Blob || (Array.isArray(data) && data[0] instanceof Blob)) {
-                    prepared_data = new FormData();
-                    if (data instanceof Blob) {
-                        prepared_data.append("file", data);
-                    } else {
-                        for (const file of data as Array<Blob>) {
-                            prepared_data.append("file", file);
+                // CSRF is required only for unsafe requests.
+                if (!csrf_safe) {
+                    headers.append(
+                        "X-CSRFToken",
+                        getCookie("csrftoken"),
+                    );
+                }
+
+                if (data) {
+                    if (
+                        data instanceof Blob ||
+                        (Array.isArray(data) && data[0] instanceof Blob)
+                    ) {
+                        prepared_data = new FormData();
+
+                        if (data instanceof Blob) {
+                            prepared_data.append("file", data);
+                        } else {
+                            for (const file of data as Array<Blob>) {
+                                prepared_data.append("file", file);
+                            }
                         }
-                    }
-                } else {
-                    if (method === "GET") {
-                        url +=
-                            (url.indexOf("?") >= 0 ? "&" : "?") +
-                            Object.keys(data)
-                                .map((k) => `${k}=` + encodeURIComponent((data as any)[k]))
-                                .join("&");
+                    } else if (method === "GET") {
+                        const params = new URLSearchParams();
+
+                        Object.keys(data).forEach((key) => {
+                            params.append(
+                                key,
+                                String((data as any)[key]),
+                            );
+                        });
+
+                        request_url.search = request_url.search
+                            ? `${request_url.search}&${params.toString()}`
+                            : params.toString();
+
+                        url = request_url.toString();
+
+                        // Keep the normalized URL in sync with the URL
+                        // actually being fetched.
+                        requests_in_flight[request_id].url = url;
                     } else {
                         prepared_data = JSON.stringify(data);
-                        headers.append("Content-Type", "application/json");
+                        headers.append(
+                            "Content-Type",
+                            "application/json",
+                        );
                     }
                 }
-            }
 
-            const same_origin = url.indexOf("://") < 0 || url.indexOf(window.location.origin) === 0;
+                fetch(url, {
+                    signal,
+                    method,
 
-            fetch(url, {
-                signal,
-                method,
-                credentials: same_origin ? "include" : undefined,
-                mode: same_origin ? (csrf_safe ? "no-cors" : "cors") : undefined,
-                cache: cacheable ? "default" : "no-cache",
-                body: prepared_data as any,
-                headers,
-            })
-                .then((res) => {
-                    delete requests_in_flight[request_id];
+                    // Same-origin requests need cookies. Cross-origin
+                    // requests don't send credentials unless explicitly
+                    // required and supported by the server.
+                    credentials: same_origin ? "include" : "omit",
 
-                    // Handle 204 No Content responses before trying to parse JSON
-                    if (res.status === 204) {
-                        resolve({});
-                        return;
-                    }
+                    // NEVER use "no-cors" for API requests whose JSON
+                    // response needs to be read by JavaScript.
+                    mode: same_origin ? "same-origin" : "cors",
 
-                    const onJson = (data: any) => {
-                        if (res.ok) {
-                            resolve(data);
-                        } else {
-                            console.error(res.status, url, data);
-                            console.error(traceback.stack);
-                            reject(data);
-                        }
-                    };
-
-                    const errorHandler = () => {
-                        reject(res.statusText);
-                    };
-
-                    res.json().then(onJson).catch(errorHandler);
+                    cache: cacheable ? "default" : "no-cache",
+                    body: prepared_data as BodyInit | undefined,
+                    headers,
                 })
-                .catch((err) => {
-                    delete requests_in_flight[request_id];
-                    if (err.name !== "AbortError") {
-                        console.error(err.name, url);
-                        console.error(traceback.stack);
-                    }
-                    reject(err);
-                });
-        });
+                    .then((res) => {
+                        delete requests_in_flight[request_id];
 
-        return requests_in_flight[request_id].promise;
+                        // Handle 204 No Content responses before trying
+                        // to parse JSON.
+                        if (res.status === 204) {
+                            resolve({});
+                            return;
+                        }
+
+                        const onJson = (data: any) => {
+                            if (res.ok) {
+                                resolve(data);
+                            } else {
+                                console.error(res.status, url, data);
+                                console.error(traceback.stack);
+                                reject(data);
+                            }
+                        };
+
+                        const errorHandler = () => {
+                            reject(res.statusText);
+                        };
+
+                        res.json()
+                            .then(onJson)
+                            .catch(errorHandler);
+                    })
+                    .catch((err) => {
+                        delete requests_in_flight[request_id];
+
+                        if (err.name !== "AbortError") {
+                            console.error(err.name, url);
+                            console.error(traceback.stack);
+                        }
+
+                        reject(err);
+                    });
+            },
+        );
+
+        return requests_in_flight[request_id].promise!;
     };
 }
 
 /**
  * Fetches data using the GET method.
- * @param url the URL for the request. If a relative path is passed, /api/vi/
- *     will be appended.
- * @param [data] providing data is optional. This is used as the request payload
- *     in JSON format.
- * @returns a Promise that resolves with the response payload.
  */
 export const get = request("GET");
+
 /**
  * Fetches data using the POST method.
- * @param url the URL for the request. If a relative path is passed, /api/vi/
- *     will be appended.
- * @param [data] providing data is optional. This is used as the request payload
- *     in JSON format.
- * @returns a Promise that resolves with the response payload.
  */
 export const post = request("POST");
+
 /**
  * Fetches data using the PUT method.
- * @param url the URL for the request. If a relative path is passed, /api/vi/
- *     will be appended.
- * @param [data] providing data is optional. This is used as the request payload
- *     in JSON format.
- * @returns a Promise that resolves with the response payload.
  */
 export const put = request("PUT");
+
 /**
  * Fetches data using the PATCH method.
- * @param url the URL for the request. If a relative path is passed, /api/vi/
- *     will be appended.
- * @param [data] providing data is optional. This is used as the request payload
- *     in JSON format.
- * @returns a Promise that resolves with the response payload.
  */
 export const patch = request("PATCH");
+
 /**
  * Fetches data using the DELETE method.
- * @param url the URL for the request. If a relative path is passed, /api/vi/
- *     will be appended.
- * @param [data] providing data is optional. This is used as the request payload
- *     in JSON format.
- * @returns a Promise that resolves with the response payload.
  */
 export const del = request("DELETE");
 
 /**
  * Cancels any requests using the specified URL and method.
- * @param url the URL for the request.
- * @param [method] providing a method is optional.  If no method is provided,
- *     all requests to the URL will be cancelled.
  */
-export function abort_requests_in_flight(url: string, method?: Method): boolean {
+export function abort_requests_in_flight(
+    url: string,
+    method?: Method,
+): boolean {
     let aborted = false;
+
     url = api1ify(url);
+
+    const request_url = new URL(url, window.location.origin);
+    const normalized_url = request_url.toString();
 
     for (const request_id in requests_in_flight) {
         const req = requests_in_flight[request_id];
-        if (req.url === url && (!method || method === req.method)) {
-            console.log("Aborting request", url);
+
+        if (
+            req.url === normalized_url &&
+            (!method || method === req.method)
+        ) {
+            console.log("Aborting request", normalized_url);
+
             req.controller.abort();
+
             aborted = true;
             delete requests_in_flight[request_id];
         }
@@ -244,15 +280,24 @@ export function abort_requests_in_flight(url: string, method?: Method): boolean 
 
 export function getCookie(name: string): string {
     let cookieValue = "";
+
     if (document.cookie && document.cookie !== "") {
         const cookies = document.cookie.split(";");
+
         for (let i = 0; i < cookies.length; i++) {
             const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === name + "=") {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+
+            if (
+                cookie.substring(0, name.length + 1) ===
+                name + "="
+            ) {
+                cookieValue = decodeURIComponent(
+                    cookie.substring(name.length + 1),
+                );
                 break;
             }
         }
     }
+
     return cookieValue;
 }
