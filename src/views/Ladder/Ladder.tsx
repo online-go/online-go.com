@@ -398,6 +398,14 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
         }
     }
 
+    componentDidMount() {
+        // The constructor starts a load whose result arrives after mount, and
+        // sync() drops that result when `unmounted` is set. React re-mounts the
+        // same instance in development, so the flag has to be cleared here or a
+        // remounted row discards its own data and renders empty forever.
+        this.unmounted = false;
+    }
+
     componentWillUnmount() {
         this.unmounted = true;
     }
