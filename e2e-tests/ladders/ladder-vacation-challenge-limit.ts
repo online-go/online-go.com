@@ -179,32 +179,43 @@ export const ladderVacationChallengeLimitTest = async (
     // 2. P1 creates a public group. A fresh group means a fresh ladder, which is
     //    what keeps these reused seeded accounts free of prior-run state.
     log("P1 creating a group...");
-    await p1Page.goto("/group/create");
 
-    const groupName = `E2E Ladder Vac ${Date.now()}`;
-    const groupNameInput = p1Page.locator("#group-create-name");
-    await expect(groupNameInput).toBeVisible();
-    await groupNameInput.fill(groupName);
-    await expect(groupNameInput).toHaveValue(groupName);
-
-    // Public by default (GroupCreate.tsx) - assert rather than toggle.
-    await expect(p1Page.locator("#group-create-public")).toBeChecked();
-
-    const createGroupButton = await expectOGSClickableByName(p1Page, /Create your group!/);
-    await createGroupButton.click();
-    await p1Page.waitForURL(/\/group\/\d+/, { timeout: 30000 });
-
-    const groupUrl = p1Page.url();
-    log(`Group created at: ${groupUrl}`);
-
-    // Find the 9x9 ladder URL from the group page.
-    const ladderLink = p1Page.getByRole("link", { name: "9x9 Ladder" });
-    await expect(ladderLink).toBeVisible();
-    const ladderHref = await ladderLink.getAttribute("href");
-    const ladderUrl = ladderHref as string;
-    log(`9x9 ladder at: ${ladderUrl}`);
+    // Declared outside the try so the finally below can still reach them to tear
+    // the group down, even if a step inside the try throws before both are
+    // assigned - see the undefined check in the finally.
+    let groupUrl: string | undefined;
+    let ladderUrl: string | undefined;
 
     try {
+        // The try opens right after this navigation: from here on a group may
+        // exist in the database, so everything that follows - including reading
+        // back the group's URL and looking up its ladder link - runs inside the
+        // block whose finally deletes it.
+        await p1Page.goto("/group/create");
+
+        const groupName = `E2E Ladder Vac ${Date.now()}`;
+        const groupNameInput = p1Page.locator("#group-create-name");
+        await expect(groupNameInput).toBeVisible();
+        await groupNameInput.fill(groupName);
+        await expect(groupNameInput).toHaveValue(groupName);
+
+        // Public by default (GroupCreate.tsx) - assert rather than toggle.
+        await expect(p1Page.locator("#group-create-public")).toBeChecked();
+
+        const createGroupButton = await expectOGSClickableByName(p1Page, /Create your group!/);
+        await createGroupButton.click();
+        await p1Page.waitForURL(/\/group\/\d+/, { timeout: 30000 });
+
+        groupUrl = p1Page.url();
+        log(`Group created at: ${groupUrl}`);
+
+        // Find the 9x9 ladder URL from the group page.
+        const ladderLink = p1Page.getByRole("link", { name: "9x9 Ladder" });
+        await expect(ladderLink).toBeVisible();
+        const ladderHref = await ladderLink.getAttribute("href");
+        ladderUrl = ladderHref as string;
+        log(`9x9 ladder at: ${ladderUrl}`);
+
         // 3. Each player joins the group, then the ladder, in order. Join order sets
         //    ladder rank, so P6 ends up at the bottom.
         for (let i = 0; i < pages.length; i++) {
@@ -295,39 +306,63 @@ export const ladderVacationChallengeLimitTest = async (
         //     If an assertion above failed before steps 8/9 turned their vacation
         //     back off, leaving either on vacation would break every subsequent run
         //     (a player already on vacation cannot be challenged at all - the very
-        //     rule this test is checking). Restore both unconditionally.
+        //     rule this test is checking). Restore both unconditionally. Each call
+        //     is isolated in its own try/catch: a navigation or locator timeout in
+        //     one - the same risk every other step in this test carries - is
+        //     logged rather than thrown, so it can never suppress the other restore
+        //     or block the group deletion below, the one guarantee here that is
+        //     non-negotiable.
         log("Ensuring P1 and P5 are not left on vacation...");
-        await ensureVacationOff(p1Page);
-        await ensureVacationOff(p5Page);
+        try {
+            await ensureVacationOff(p1Page);
+        } catch (error) {
+            log(`Failed to ensure P1 is off vacation: ${String(error)}`);
+        }
+
+        try {
+            await ensureVacationOff(p5Page);
+        } catch (error) {
+            log(`Failed to ensure P5 is off vacation: ${String(error)}`);
+        }
 
         // 11. Drop the group. Its three ladders go with it (LadderTournament.group
         //     is on_delete=CASCADE), which stops every run leaving ladders behind.
-        log(`Deleting group ${groupUrl}...`);
-        await deleteGroup(p1Page, groupUrl);
+        //     Skipped only when group creation itself never got far enough to
+        //     yield a URL, in which case there is nothing in the database to
+        //     remove.
+        if (groupUrl === undefined) {
+            log("Group was never created - nothing to delete.");
+        } else {
+            log(`Deleting group ${groupUrl}...`);
+            await deleteGroup(p1Page, groupUrl);
 
-        // /group/:id and /ladder/:id match unconditionally in routes.tsx - only
-        // genuinely unmatched paths hit PageNotFound - so navigating to a deleted
-        // group or ladder still gets a 200-status page load; React Router renders
-        // the view, which then fails to load its data. The real proof the group
-        // and ladder are gone is the API call each view makes to resolve itself:
-        // assert that call's response status directly, not the outer navigation.
-        const groupId = groupUrl.match(/\/group\/(\d+)/)?.[1];
-        const ladderId = ladderUrl.match(/\/ladder\/(\d+)/)?.[1];
-        if (!groupId || !ladderId) {
-            throw new Error(`Could not parse ids from groupUrl=${groupUrl} ladderUrl=${ladderUrl}`);
+            // /group/:id and /ladder/:id match unconditionally in routes.tsx - only
+            // genuinely unmatched paths hit PageNotFound - so navigating to a
+            // deleted group or ladder still gets a 200-status page load; React
+            // Router renders the view, which then fails to load its data. The real
+            // proof the group and ladder are gone is the API call each view makes
+            // to resolve itself: assert that call's response status directly, not
+            // the outer navigation.
+            const groupId = groupUrl.match(/\/group\/(\d+)/)?.[1];
+            const ladderId = ladderUrl?.match(/\/ladder\/(\d+)/)?.[1];
+            if (!groupId || !ladderUrl || !ladderId) {
+                throw new Error(
+                    `Could not parse ids from groupUrl=${groupUrl} ladderUrl=${ladderUrl}`,
+                );
+            }
+
+            const [groupApiResponse] = await Promise.all([
+                p1Page.waitForResponse((res) => res.url().endsWith(`/api/v1/groups/${groupId}`)),
+                p1Page.goto(groupUrl),
+            ]);
+            expect(groupApiResponse.status()).toBe(404);
+
+            const [ladderApiResponse] = await Promise.all([
+                p1Page.waitForResponse((res) => res.url().endsWith(`/api/v1/ladders/${ladderId}`)),
+                p1Page.goto(ladderUrl),
+            ]);
+            expect(ladderApiResponse.status()).toBe(404);
+            log("Group and its ladders confirmed deleted (API returns 404 for both)");
         }
-
-        const [groupApiResponse] = await Promise.all([
-            p1Page.waitForResponse((res) => res.url().endsWith(`/api/v1/groups/${groupId}`)),
-            p1Page.goto(groupUrl),
-        ]);
-        expect(groupApiResponse.status()).toBe(404);
-
-        const [ladderApiResponse] = await Promise.all([
-            p1Page.waitForResponse((res) => res.url().endsWith(`/api/v1/ladders/${ladderId}`)),
-            p1Page.goto(ladderUrl),
-        ]);
-        expect(ladderApiResponse.status()).toBe(404);
-        log("Group and its ladders confirmed deleted (API returns 404 for both)");
     }
 };
