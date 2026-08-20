@@ -174,18 +174,20 @@ class _Ladder extends React.PureComponent<LadderProperties, LadderState> {
 
                         <div className="ladder-configuration">
                             <table>
-                                <tr>
-                                    <th>{_("Rules")}</th>
-                                    <td>{rulesText(this.state.ladder?.rules ?? "japanese")}</td>
-                                </tr>
-                                <tr>
-                                    <th>{_("Handicap")}</th>
-                                    <td>
-                                        {this.state.ladder?.handicap === -1
-                                            ? _("Automatic")
-                                            : _("None")}
-                                    </td>
-                                </tr>
+                                <tbody>
+                                    <tr>
+                                        <th>{_("Rules")}</th>
+                                        <td>{rulesText(this.state.ladder?.rules ?? "japanese")}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>{_("Handicap")}</th>
+                                        <td>
+                                            {this.state.ladder?.handicap === -1
+                                                ? _("Automatic")
+                                                : _("None")}
+                                        </td>
+                                    </tr>
+                                </tbody>
                             </table>
                         </div>
 
