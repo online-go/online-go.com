@@ -84,14 +84,27 @@
         cursor: pointer;
 
         &.not-challengeable {
-            .Player, .right {
+            .Player,
+            .right {
                 color: #888 !important;
             }
         }
 
         &.challengeable {
-            .Player, .right {
+            .Player,
+            .right {
                 color: var(--link-color) !important;
+            }
+        }
+
+        &.on-vacation {
+            .Player,
+            .right {
+                opacity: 0.6;
+            }
+
+            .on-vacation-icon {
+                opacity: 1;
             }
         }
 
@@ -151,7 +164,8 @@
                     text-align: left;
                 }
 
-                .incoming, .outgoing {
+                .incoming,
+                .outgoing {
                     display: inline-block;
                     width: 1.2rem;
                 }
@@ -163,7 +177,9 @@
 .Ladder-challenge-details {
     box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.2);
     border: 1px solid transparent;
-    box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.16), 0px 2px 5px 0px rgba(0, 0, 0, 0.15);
+    box-shadow:
+        0px 2px 10px 0px rgba(0, 0, 0, 0.16),
+        0px 2px 5px 0px rgba(0, 0, 0, 0.15);
     background-color: var(--shade4);
     border-color: var(--shade3);
     color: var(--fg);

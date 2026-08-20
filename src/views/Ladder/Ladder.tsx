@@ -31,6 +31,7 @@ import { alert } from "@/lib/swal_config";
 import { RouteComponentProps, rr6ClassShim } from "@/lib/ogs-rr6-shims";
 import { IdType } from "@/lib/types";
 import { PlayerCacheEntry } from "@/lib/player_cache";
+import { OnVacationIcon } from "./OnVacationIcon";
 import "./Ladder.css";
 
 type LadderProperties = RouteComponentProps<{
@@ -347,6 +348,7 @@ interface LadderRowState {
         outgoing_challenges: any;
         can_challenge: { challengeable: boolean };
         rank: number;
+        on_vacation: boolean;
         player: PlayerCacheEntry;
     };
 }
@@ -455,6 +457,7 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
                 className={
                     "LadderRow " +
                     (row && row.rank === this.props.highlightRank ? " highlight " : "") +
+                    (row?.on_vacation ? " on-vacation " : "") +
                     row_class
                 }
             >
@@ -462,6 +465,8 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
                     <span className="rank"># {(row && row.rank) || this.props.index + 1}</span>
 
                     {row && <Player flag nochallenge nolink user={row.player} />}
+
+                    {row?.on_vacation && <OnVacationIcon />}
 
                     <span className="right">
                         {(challenging || null) && (
@@ -534,6 +539,7 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
                 <div className="Ladder-challenge-details">
                     <h3>
                         <Player flag nochallenge user={row.player} />
+                        {row.on_vacation && <OnVacationIcon />}
                     </h3>
 
                     {row && row.can_challenge && (
@@ -577,6 +583,7 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
                                             #{challenge.player.ladder_rank}
                                         </span>
                                         <Player nolink user={challenge.player} />
+                                        {challenge.player.on_vacation && <OnVacationIcon />}
                                     </span>
                                 ))}
                             </span>
@@ -607,6 +614,7 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
                                             #{challenge.player.ladder_rank}
                                         </span>
                                         <Player nolink user={challenge.player} />
+                                        {challenge.player.on_vacation && <OnVacationIcon />}
                                     </span>
                                 ))}
                             </span>
@@ -706,6 +714,11 @@ function canChallengeTooltip(obj: any): string | null {
                 return pgettext(
                     "Can't challenge player in ladder because: ",
                     "Player already has the maximum number of challenges",
+                );
+            case 0x009:
+                return pgettext(
+                    "Can't challenge player in ladder because: ",
+                    "Player is on vacation",
                 );
         }
     }
