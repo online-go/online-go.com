@@ -549,7 +549,6 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
                 <div className="Ladder-challenge-details">
                     <h3>
                         <Player flag nochallenge user={row.player} />
-                        {row.on_vacation && <OnVacationIcon />}
                     </h3>
 
                     {row && row.can_challenge && (
