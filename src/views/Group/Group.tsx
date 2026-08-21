@@ -1359,14 +1359,16 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                         <Card className="ladders">
                             <div className="ladder-configuration">
                                 <table>
-                                    <tr>
-                                        <th>{_("Rules")}</th>
-                                        <td>{this.renderRules()}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>{_("Handicap")}</th>
-                                        <td>{this.renderHandicap()}</td>
-                                    </tr>
+                                    <tbody>
+                                        <tr>
+                                            <th>{_("Rules")}</th>
+                                            <td>{this.renderRules()}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>{_("Handicap")}</th>
+                                            <td>{this.renderHandicap()}</td>
+                                        </tr>
+                                    </tbody>
                                 </table>
                             </div>
                             <div>
