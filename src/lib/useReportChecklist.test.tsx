@@ -116,6 +116,32 @@ test("a rejected fetch yields unavailable and does not gate", async () => {
     await waitFor(() => expect(result.current[0].state).toBe("unavailable"));
 });
 
+test("a rejected fetch is retried, not cached, on the next evaluation", async () => {
+    mockGet.mockRejectedValueOnce(new Error("network"));
+    mockGet.mockResolvedValueOnce({ outcome: "", winner: 0, phase: "finished", moves: [1, 2, 3] });
+
+    const { result, rerender } = renderHook(
+        ({ reported_user_id }: { reported_user_id: number }) =>
+            useReportChecklist({
+                items,
+                game_id: 1,
+                note: "",
+                attestations: {},
+                reported_user_id,
+            }),
+        { initialProps: { reported_user_id: 1 } },
+    );
+
+    await waitFor(() => expect(result.current[0].state).toBe("unavailable"));
+    expect(mockGet).toHaveBeenCalledTimes(1);
+
+    // A later evaluation for the same game must retry, not re-serve the cached rejection.
+    rerender({ reported_user_id: 2 });
+
+    await waitFor(() => expect(result.current[0].state).toBe("satisfied"));
+    expect(mockGet).toHaveBeenCalledTimes(2);
+});
+
 test("a stale response for a previous game is discarded", async () => {
     let resolveFirst: (v: unknown) => void = () => undefined;
     mockGet.mockImplementationOnce(

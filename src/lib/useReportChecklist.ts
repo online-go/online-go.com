@@ -65,6 +65,14 @@ export function useReportChecklist({
         }
         const promise = get(`/termination-api/game/${game_id}`) as Promise<Gamedata>;
         gamedata_cache.current = { game_id, promise };
+        // A cached rejection would silently disable this game's screening for the
+        // rest of the dialog session. Clear it so the next call retries; the identity
+        // check keeps this from wiping a newer entry that has since replaced it.
+        promise.catch(() => {
+            if (gamedata_cache.current?.promise === promise) {
+                gamedata_cache.current = null;
+            }
+        });
         return promise;
     }, [game_id]);
 
@@ -87,10 +95,13 @@ export function useReportChecklist({
                 set_outcomes(result);
             }
         });
-        // `note` is deliberately absent from the dependencies: async checks never read
-        // it, and including it would restart evaluation — flashing every check back to
-        // pending — on every keystroke. Synchronous checks read the live note through
-        // buildResults below, which runs on every render.
+        // `note` is deliberately absent from the dependencies. Async checks must not
+        // read `ctx.note`: they would see a stale value frozen at the last report-type
+        // or game change, not what the reporter is currently typing, and including it
+        // here would restart evaluation — flashing every check back to pending — on
+        // every keystroke. A check that needs live form state must be `sync: true`;
+        // synchronous checks read the live note through buildResults below, which runs
+        // on every render.
     }, [items, game_id, review_id, reported_user_id, fetchGamedata]);
 
     return buildResults(
