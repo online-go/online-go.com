@@ -55,7 +55,7 @@
     }
 
     li[data-state="actionable"] .marker::before {
-        content: "\270E";
+        content: "\2022";
         color: var(--danger);
     }
 

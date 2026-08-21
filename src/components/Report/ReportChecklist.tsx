@@ -56,6 +56,19 @@ export function ReportChecklist({
                         ) : (
                             <div className="check-row">
                                 <span className="marker" aria-hidden="true" />
+                                {(result.state === "satisfied" || result.state === "pending") && (
+                                    <span className="sr-only">
+                                        {result.state === "satisfied"
+                                            ? pgettext(
+                                                  "Screen-reader label for a checklist item that passed",
+                                                  "Done:",
+                                              )
+                                            : pgettext(
+                                                  "Screen-reader label for a checklist item still being checked",
+                                                  "Checking:",
+                                              )}
+                                    </span>
+                                )}
                                 <span className="label-text">{result.label}</span>
                             </div>
                         )}
