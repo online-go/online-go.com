@@ -24,12 +24,11 @@
  * 1. P1 creates a public group; P1-P6 join it and its 9x9 ladder in order,
  *    so P6 sits at the bottom and can challenge everyone above.
  * 2. P6 challenges P1, P2 and P3 - at the cap. P4 reports 0x005.
- * 3. P5, never challenged, goes on vacation. P5's row is dimmed with the
- *    umbrella and reports 0x009.
+ * 3. P5, never challenged, goes on vacation and reports 0x009.
  * 4. P1 goes on vacation. P6's count drops to two and P4 becomes challengeable.
  * 5. P6 challenges P4 - four open games, three counting.
- * 6. P5 ends vacation (row clears), then P1 ends vacation: P6 is at four
- *    counting, and P5 reports 0x005 again.
+ * 6. P5 ends vacation (0x009 gives way to the cap), then P1 ends vacation:
+ *    P6 is at four counting, and P5 reports 0x005 again.
  * 7. Teardown (in a finally, so it runs even when an assertion fails): P1
  *    deletes the group, taking its three ladders with it, and the test
  *    confirms they are gone.
@@ -259,13 +258,9 @@ export const ladderVacationChallengeLimitTest = async (
         log("P5 is on vacation");
 
         await p6Page.goto(ladderUrl);
-        const p5Row = p6Page.locator(".LadderRow").filter({ hasText: "E2E_LADDER_P5" });
-        await expect(p5Row).toHaveClass(/on-vacation/, { timeout: 15000 });
-        await expect(p5Row.locator(".on-vacation-icon")).toBeVisible();
-
         await openRowPopover(p6Page, "E2E_LADDER_P5");
         await expect(p6Page.getByText("Player is on vacation")).toBeVisible({ timeout: 15000 });
-        log("P5 shows the vacation indicator and reports 0x009");
+        log("P5 reports 0x009 - a player on vacation cannot be challenged");
 
         // 6. P1 goes on vacation: P6's discounted count drops to two, freeing a slot.
         await setVacation(p1Page, true);
@@ -281,13 +276,16 @@ export const ladderVacationChallengeLimitTest = async (
         await challengePlayer(p6Page, ladderUrl, "E2E_LADDER_P4");
         log("P6 challenged P4");
 
-        // 8. P5 comes back: the indicator clears.
+        // 8. P5 comes back: the vacation reason gives way to the cap reason. P6
+        //    holds four open games and P1 is still away, so three of them count.
         await setVacation(p5Page, false);
         await p6Page.goto(ladderUrl);
-        const p5RowBack = p6Page.locator(".LadderRow").filter({ hasText: "E2E_LADDER_P5" });
-        await expect(p5RowBack).not.toHaveClass(/on-vacation/, { timeout: 15000 });
-        await expect(p5RowBack.locator(".on-vacation-icon")).toHaveCount(0);
-        log("P5's vacation indicator cleared");
+        await openRowPopover(p6Page, "E2E_LADDER_P5");
+        await expect(p6Page.getByText("Already playing 3 games you've initiated")).toBeVisible({
+            timeout: 15000,
+        });
+        await expect(p6Page.getByText("Player is on vacation")).toHaveCount(0);
+        log("P5 is back: reports the cap with three counting, no longer 0x009");
 
         // 9. P1 comes back: P6 is at four counting games, over the cap. P5 is the
         //    only player P6 has not challenged, and is no longer on vacation, so P5

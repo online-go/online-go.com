@@ -350,7 +350,6 @@ interface LadderRowState {
         outgoing_challenges: any;
         can_challenge: { challengeable: boolean };
         rank: number;
-        on_vacation: boolean;
         player: PlayerCacheEntry;
     };
 }
@@ -467,7 +466,6 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
                 className={
                     "LadderRow " +
                     (row && row.rank === this.props.highlightRank ? " highlight " : "") +
-                    (row?.on_vacation ? " on-vacation " : "") +
                     row_class
                 }
             >
@@ -475,8 +473,6 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
                     <span className="rank"># {(row && row.rank) || this.props.index + 1}</span>
 
                     {row && <Player flag nochallenge nolink user={row.player} />}
-
-                    {row?.on_vacation && <OnVacationIcon />}
 
                     <span className="right">
                         {(challenging || null) && (

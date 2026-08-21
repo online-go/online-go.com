@@ -97,18 +97,6 @@
             }
         }
 
-        &.on-vacation {
-            .Player,
-            .right {
-                opacity: 0.6;
-            }
-
-            /* Full strength so the marker stays readable on a dimmed row. */
-            .on-vacation-icon {
-                opacity: 1;
-            }
-        }
-
         &:hover {
             background-color: var(--shade4);
         }
@@ -176,8 +164,8 @@
 }
 
 /*
- * The vacation marker appears both in a ladder row and in the challenge
- * popover, which render in separate trees, so this sits at the top level.
+ * The vacation marker renders inside the challenge popover, which is a
+ * separate tree from the ladder rows, so this sits at the top level.
  */
 .on-vacation-icon {
     /* Clear of the rank label the Player component renders. */
