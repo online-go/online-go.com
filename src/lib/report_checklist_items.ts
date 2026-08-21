@@ -104,8 +104,14 @@ const escapingNotResigned: AsyncDataCheckItem = {
     blocking: true,
     evaluate: async (ctx) => {
         const gamedata = await ctx.fetchGamedata();
+        // ctx.reported_user_id is optional. When it is unknown we cannot tell who
+        // resigned, so this check must not block: an unknown accused is treated as
+        // permissive, per the framework's rule that a check which cannot be run
+        // never blocks. Do not tighten this to a strict comparison.
         const accused_resigned =
-            gamedata.outcome?.includes("Resignation") && gamedata.winner !== ctx.reported_user_id;
+            ctx.reported_user_id !== undefined &&
+            gamedata.outcome?.includes("Resignation") &&
+            gamedata.winner !== ctx.reported_user_id;
         return accused_resigned
             ? {
                   met: false,
@@ -166,7 +172,7 @@ const stallingEnoughMoves: AsyncDataCheckItem = {
                   message: pgettext(
                       "A message when the user is trying to report something that we don't want them to report yet",
                       `There aren't enough moves played in this game to decide if someone is playing stalling moves.
-
+                
 If the other player leaves the game without playing, we will automatically warn them about that.
 
 Please choose a different type of report, if there is a different problem.`,

@@ -127,6 +127,19 @@ describe("escaping data checks", () => {
         expect(results[0].id).toBe("escaping.not_resigned");
     });
 
+    test("does not block on not_resigned when the accused is unknown", async () => {
+        const items = getChecklist("escaping", { game_id_required: true });
+        const ctx = {
+            game_id: 4471,
+            note: "",
+            fetchGamedata: () => Promise.resolve(gamedata({ outcome: "Resignation", winner: 99 })),
+        };
+        const outcomes = await evaluateAsyncChecks(items, ctx);
+        const results = buildResults(items, ctx, outcomes, {});
+        const states = Object.fromEntries(results.map((r) => [r.id, r.state]));
+        expect(states["escaping.not_resigned"]).toBe("satisfied");
+    });
+
     test("blocks on enough_moves when fewer than two moves were played", async () => {
         const results = await evaluate(gamedata({ outcome: "Resignation", winner: 7, moves: [1] }));
         expect(results).toHaveLength(1);
