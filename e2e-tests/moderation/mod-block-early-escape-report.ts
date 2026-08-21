@@ -68,10 +68,13 @@ export const modBlockEarlyEscapeReportTest = async ({
 
     await reporterPage.selectOption(".type-picker select", { value: "escaping" }); // cspell:disable-line
 
-    const notesBox = reporterPage.locator(".notes");
+    // The blocking check collapses the form, so there is no textarea to inspect —
+    // the reason now appears in the blocker at the top of the dialog.
+    const blocker = reporterPage.locator('[data-checklist-blocker="escaping.enough_moves"]');
+    await expect(blocker).toBeVisible();
+    await expect(blocker).toContainText("leaves the game without playing");
 
-    // Wait for the placeholder to change to include the expected text
-    await expect(notesBox).toHaveAttribute("placeholder", /leaves the game without playing/);
+    await expect(reporterPage.locator("textarea.notes")).toHaveCount(0);
 
     await expect(reporterPage.getByRole("button", { name: /Report User$/ })).not.toBeEnabled();
 };

@@ -46,7 +46,7 @@ ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest("@Slow Auto-warn first turn escapers (black)", modWarnFirstTurnEscaperBlackTest);
     ogsTest("Block early escape reports", modBlockEarlyEscapeReportTest);
     ogsTest("Block early stalling reports", modBlockEarlyStallingReportTest);
-    ogsTest("Reject escape reports during active game", modRejectEscapeReportDuringGameTest);
+    ogsTest("Block escape reports during an active game", modRejectEscapeReportDuringGameTest);
     ogsTest(
         "Complete suspend-appeal-restore flow with two-button functionality",
         suspendAppealRestoreTest,

@@ -498,6 +498,30 @@ export const openPlayerDetailsPopover = async (page: Page, playerLinkLocator: Lo
 };
 
 /**
+ * Tick every attestation the report checklist is still waiting on. Reports cannot be
+ * submitted until they are all ticked, so every helper that files a report calls this.
+ */
+export const tickReportAttestations = async (page: Page) => {
+    const boxes = page.locator(
+        '[data-checklist-item][data-state="actionable"] input[type=checkbox]',
+    );
+
+    // Ticking a box flips its row to data-state="satisfied", which drops it out of this
+    // locator's match set and renumbers whatever is left. Always take the first
+    // remaining match rather than indexing. The bound is a guard against a box that
+    // never changes state, so a UI regression fails here instead of hanging.
+    const MAX_ATTESTATIONS = 20;
+    for (let i = 0; i < MAX_ATTESTATIONS; i++) {
+        if ((await boxes.count()) === 0) {
+            break;
+        }
+        await boxes.first().check();
+    }
+
+    await expect(boxes, "every attestation should be ticked before submitting").toHaveCount(0);
+};
+
+/**
  * Internal helper to fill and submit the report form after PlayerDetails is open.
  * Verifies the PlayerDetails popover is still visible before attempting to click Report.
  */
@@ -520,6 +544,8 @@ const submitReportForm = async (page: Page, type: string, notes: string) => {
     // would otherwise satisfy a strict locator match.
     const notesBox = page.locator("textarea.notes");
     await notesBox.fill(notes);
+
+    await tickReportAttestations(page);
 
     const submitButton = await expectOGSClickableByName(page, /Report User$/);
     await submitButton.click();

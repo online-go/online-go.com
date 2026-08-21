@@ -23,7 +23,7 @@ import type { CreateContextOptions } from "@helpers";
 
 import { BrowserContext, expect } from "@playwright/test";
 
-import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
+import { newTestUsername, prepareNewUser, tickReportAttestations } from "@helpers/user-utils";
 import {
     createDirectChallenge,
     acceptDirectChallenge,
@@ -95,22 +95,19 @@ export const modRejectEscapeReportDuringGameTest = async ({
 
     await reporterPage.selectOption(".type-picker select", { value: "escaping" }); // cspell:disable-line
 
-    const notesBoxDuringGame = reporterPage.locator(".notes");
+    // The client now blocks this before any request is sent, so there is no server
+    // error to dismiss. The backend rule at moderate.py:758-769 still stands as
+    // defence in depth; nothing in the browser suite exercises it any more.
+    const blocker = reporterPage.locator('[data-checklist-blocker="escaping.game_ended"]');
+    await expect(blocker).toBeVisible();
+    await expect(blocker).toContainText("has not ended yet");
 
-    // Fill in the notes
-    await expect(notesBoxDuringGame).toBeVisible();
-    await notesBoxDuringGame.fill("E2E test - attempting to report during active game");
+    await expect(reporterPage.locator("textarea.notes")).toHaveCount(0);
+    await expect(reporterPage.getByRole("button", { name: /Report User$/ })).not.toBeEnabled();
 
-    // Try to submit the report during the game - this should fail
-    const reportButtonDuringGame = await expectOGSClickableByName(reporterPage, /Report User$/);
-    await reportButtonDuringGame.click();
-
-    // Should get an error message (backend blocks the report)
-    await expect(reporterPage.getByText(/There was an error submitting your report/)).toBeVisible();
-
-    // Close the error alert
-    const okButtonDuringGame = await expectOGSClickableByName(reporterPage, "OK");
-    await okButtonDuringGame.click();
+    // Close the dialog before playing the game out.
+    const closeButton = await expectOGSClickableByName(reporterPage, /^Close$/);
+    await closeButton.click();
 
     // Now finish the game by passing and scoring
     // Both players pass
@@ -153,6 +150,8 @@ export const modRejectEscapeReportDuringGameTest = async ({
     // Fill in the notes
     await expect(notesBoxAfterGame).toBeVisible();
     await notesBoxAfterGame.fill("E2E test - reporting after game ended");
+
+    await tickReportAttestations(reporterPage);
 
     // Try to submit the report after the game - this should succeed
     const reportButtonAfterGame = await expectOGSClickableByName(reporterPage, /Report User$/);
