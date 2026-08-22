@@ -239,18 +239,46 @@ written later is still meaningful after items are reordered or strings retransla
 
 ## Evaluation
 
-`evaluateChecklist(items, ctx, attestations)` is a pure function returning
-`Promise<ChecklistItemResult[]>`. It contains no React and is unit-testable directly.
+Two functions divide the work, in `src/lib/report_checklist.ts`, because sync and async checks
+must run on different schedules. `evaluateAsyncChecks(items, ctx): Promise<AsyncOutcomes>` runs the
+async data checks; `useReportChecklist` calls it only when the report type or reported game
+changes, from an effect. `buildResults(items, ctx, asyncOutcomes, attestations):
+ChecklistItemResult[]` is synchronous and pure, and runs on every render — including every
+keystroke, since it re-evaluates sync checks against the live `ctx.note` each time it is called. A
+single combined function could not serve both call sites: an async check must not be re-invoked on
+every keystroke, and a sync check must not be frozen at whatever value it held when the report type
+last changed. Splitting the two makes each function's calling contract explicit rather than leaving
+it to be inferred from how a caller happens to invoke it.
 
-1. **Synchronous checks run first**, in declaration order. The first blocking failure
-   short-circuits: evaluation stops and that single blocked item is the entire result.
-2. **Asynchronous checks run only if no synchronous blocker failed.** They run in parallel.
-   If more than one blocking async check fails, the one earliest in declaration order wins, so
-   which blocker the reporter sees is deterministic rather than a race.
-3. Otherwise every item is evaluated and the full list is returned.
+`evaluateAsyncChecks`:
 
-Step 1 is what gates game-data fetches behind "we have a game id", replacing the ad-hoc
-`needs_game_id_first` guard in the current effect.
+1. Walks items in declaration order. Synchronous checks are evaluated here too, but only to decide
+   whether to short-circuit: if a synchronous check fails and is `blocking`, the function returns
+   `{}` immediately, without waiting on any async check that may already have started. This is
+   what keeps game-data fetches behind "we actually have a game" — an escaping check never fires
+   against a missing game id, because `report.game_identified` is synchronous and ordered first.
+2. Otherwise every async check's `evaluate(ctx)` is called and the resulting promises run in
+   parallel via `Promise.all`. A rejection is caught and mapped to `"unavailable"` rather than
+   propagating; the caught error is logged with `console.warn`.
+3. Returns a map from item id to `CheckOutcome | "unavailable"`, covering only the async items
+   that were actually run.
+
+`buildResults` turns items plus that map into the displayable list, and is where the
+form-collapsing behaviour lives:
+
+- An attestation is `satisfied` if ticked, else `actionable`.
+- A sync data check is re-evaluated fresh, right here, against the `ctx` passed in — this is how
+  it sees the live note on every render.
+- An async data check looks itself up in `asyncOutcomes`. A missing entry (the map is `null`,
+  i.e. evaluation is still in flight) means `pending`. `"unavailable"` means `unavailable`.
+  Otherwise `met` decides `satisfied` vs. (`blocked` if `blocking`, else `actionable`).
+- If any item's state comes out `blocked`, the function discards every other result and returns
+  that one item alone — callers never have to apply that rule themselves. If more than one
+  blocking check has failed, the earliest in declaration order wins, so which blocker the reporter
+  sees is deterministic rather than a race.
+
+Step 1 of `evaluateAsyncChecks` is what gates game-data fetches behind "we have a game id",
+replacing the ad-hoc `needs_game_id_first` guard in the current effect.
 
 **Invariant:** an async check that needs a game id must belong to a report type whose category
 declares `game_id_required`. Otherwise the synchronous game-id blocker will not exist to gate it,
@@ -271,12 +299,14 @@ rejection from wiping a newer cache entry that has since replaced it.
 
 ### Submission gate
 
-Every result must be `satisfied` or `unavailable`. `pending` therefore gates submission, exactly
-as the current `validating` flag does.
+`checklistSatisfied(results): boolean` returns `results.every((r) => r.state === "satisfied" ||
+r.state === "unavailable")`. `pending` therefore gates submission, exactly as the current
+`validating` flag does.
 
-**Correctness trap:** `Array.prototype.every` is vacuously true on an empty array. `canSubmit()`
-must keep its existing `if (!category) return false` guard first, or selecting no report type
-enables the button.
+**Correctness trap:** `Array.prototype.every` is vacuously true on an empty array, so
+`checklistSatisfied([])` is `true`. `canSubmit()` in `Report.tsx` must keep its existing
+`if (!category) return false` guard ahead of the call to `checklistSatisfied`, or selecting no
+report type — which produces an empty checklist — would enable the button.
 
 ### Error handling
 
@@ -290,22 +320,26 @@ explaining it.
 
 **Stale-response guard.** The current effect at `Report.tsx:335-351` has no request-generation
 guard, so a slow response for one game can land after the reporter has changed context and
-overwrite the state. The hook keys in-flight evaluations by `(report_type, game_id)` and discards
-resolutions that no longer match. This is a latent bug in the existing code, fixed as part of
-this work.
+overwrite the state. `useReportChecklist` guards against this with a monotonic `generation` ref:
+each run of the effect increments it and captures its own value, and a result is applied only if
+the ref still holds that value when the promise resolves — so a response for a superseded report
+type or game is discarded, rather than being matched against a `(report_type, game_id)` key. This
+is a latent bug in the existing code, fixed as part of this work.
 
 ## Files
 
 ### New
 
-| Path                                                        | Contents                                                | Why separate                                                                                                               |
-| ----------------------------------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `src/lib/report_checklist.ts`                               | Types, `evaluateChecklist()`, `getChecklist()`          | Pure logic, no React, directly unit-testable. `report_util.test.ts` sets the precedent.                                    |
-| `src/lib/report_checklist_items.ts`                         | `REPORT_CHECKLISTS` registry and its `pgettext` strings | The policy file. Adding an attestation to another report type means editing only this, with no need to read the evaluator. |
-| `src/lib/useReportChecklist.ts`                             | React binding: effect, result state, staleness guard    | Keeps async lifecycle out of both the engine and `Report.tsx`.                                                             |
-| `src/components/Report/ReportChecklist.tsx` + `.css`        | The below-description list                              | One component per file, co-located with its only parent.                                                                   |
-| `src/components/Report/ReportChecklistBlocker.tsx` + `.css` | The single above-description blocker                    | As above.                                                                                                                  |
-| `src/lib/report_checklist.test.ts`                          | Evaluator unit tests                                    | See "Testing".                                                                                                             |
+| Path                                                        | Contents                                                                   | Why separate                                                                                                               |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/report_checklist.ts`                               | Types, `evaluateAsyncChecks()`, `buildResults()`                           | Pure logic, no React, directly unit-testable. `report_util.test.ts` sets the precedent.                                    |
+| `src/lib/report_checklist_items.ts`                         | `REPORT_CHECKLISTS` registry, its `pgettext` strings, and `getChecklist()` | The policy file. Adding an attestation to another report type means editing only this, with no need to read the evaluator. |
+| `src/lib/useReportChecklist.ts`                             | React binding: effect, result state, staleness guard                       | Keeps async lifecycle out of both the engine and `Report.tsx`.                                                             |
+| `src/components/Report/ReportChecklist.tsx` + `.css`        | The below-description list                                                 | One component per file, co-located with its only parent.                                                                   |
+| `src/components/Report/ReportChecklistBlocker.tsx` + `.css` | The single above-description blocker                                       | As above.                                                                                                                  |
+| `src/lib/report_checklist.test.ts`                          | Evaluator unit tests                                                       | See "Testing".                                                                                                             |
+| `src/lib/report_checklist_items.test.ts`                    | Registry and synthesis unit tests                                          | See "Testing".                                                                                                             |
+| `src/lib/useReportChecklist.test.tsx`                       | Hook unit tests                                                            | See "Testing".                                                                                                             |
 
 `REPORT_CHECKLISTS` is `Partial<Record<ReportType, ChecklistItem[]>>`, deliberately mirroring the
 existing idiom: `REPORT_TYPE_VOTABLE_ACTIONS` in `ogs/go_app/models/moderation.py` and
@@ -422,8 +456,20 @@ a description and submitting, and sees it as the generic _"There was an error su
 report"_. The data check turns that into a specific explanation before any effort is spent. The
 backend rule stays in place as defence-in-depth.
 
-`escaping.not_resigned` and `escaping.enough_moves` carry the existing translated strings from
+`escaping.enough_moves` carries the existing translated string from
 `checkGameForEscapingReportApplicability` unchanged.
+
+`escaping.not_resigned` carries its existing translated string unchanged, but its logic does not:
+it now treats an unknown accused as passing rather than failing. The check has to tell whether
+_the reported player_ resigned, which needs `ctx.reported_user_id`. The code this replaced compared
+`gamedata.winner !== ctx.reported_user_id` unconditionally; when `reported_user_id` was `undefined`
+that comparison was true for any real game, since `winner` is never `undefined`, so every finished
+game the accused won by resignation was flagged as "that player resigned" regardless of who
+actually resigned. `escaping.not_resigned` now guards on `ctx.reported_user_id !== undefined`
+first and reports `{ met: true }` when it is unknown: an unknown accused means the check cannot be
+determined, and the framework's rule is that a check which cannot be determined must not block.
+The same bug still exists in `checkGameForEscapingReportApplicability`, the pre-checklist code this
+replaced — it is recorded here rather than treated as a silent improvement.
 
 ### Authoring guidelines for future items
 
@@ -444,15 +490,19 @@ them.
 
 ### Unit
 
-`src/lib/report_checklist.test.ts`, against `evaluateChecklist` directly:
+`src/lib/report_checklist.test.ts`, against `evaluateAsyncChecks` and `buildResults` directly:
 
 - a synchronous blocking failure short-circuits before any async check runs
 - with several failing async blocking checks, declaration order decides the result
 - `pending` gates submission
 - `unavailable` does not gate submission
 - an async rejection produces `unavailable`, not `blocked`
-- a stale `(report_type, game_id)` resolution is discarded
-- `canSubmit()` is false with no category selected, despite an empty result array
+- `canSubmit()` is false with no category selected, despite an empty result array —
+  `checklistSatisfied([])` is vacuously `true`
+
+`src/lib/useReportChecklist.test.tsx`, against the hook:
+
+- a stale response for a superseded report type or game is discarded
 
 ### End to end
 
