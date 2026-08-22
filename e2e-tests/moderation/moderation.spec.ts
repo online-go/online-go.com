@@ -24,6 +24,7 @@ import { modDontAutoWarnBlitzTest } from "./mod-dont-auto-warn-first-turn-blitz"
 import { modBlockEscapeReportUnfinishedGameTest } from "./mod-block-escape-report-unfinished-game";
 import { modBlockEarlyStallingReportTest } from "./mod-block-early-stall-report";
 import { modRejectEscapeReportDuringGameTest } from "./mod-reject-escape-report-during-game";
+import { escapingAttestationRequiredTest } from "./mod-escaping-attestation-required";
 import { autoSuspensionTest } from "./mod-auto-suspension";
 import { suspendAppealRestoreTest } from "./mod-suspend-appeal-restore";
 import { suspendedUserCanLoginToAppealTest } from "./mod-suspended-user-can-login-to-appeal";
@@ -50,6 +51,7 @@ ogsTest.describe("@Mod Moderation Tests", () => {
     );
     ogsTest("Block early stalling reports", modBlockEarlyStallingReportTest);
     ogsTest("Block escape reports during an active game", modRejectEscapeReportDuringGameTest);
+    ogsTest("Escaping report requires the attestation", escapingAttestationRequiredTest);
     ogsTest(
         "Complete suspend-appeal-restore flow with two-button functionality",
         suspendAppealRestoreTest,
