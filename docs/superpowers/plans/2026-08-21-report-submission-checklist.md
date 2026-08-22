@@ -1161,7 +1161,7 @@ export function ReportChecklist({ results, onToggle }: ReportChecklistProps): Re
     return (
         <div className="ReportChecklist">
             <div className="checklist-heading">
-                {pgettext("Heading above the report submission checklist", "Before you can submit")}
+                {pgettext("Heading above the report submission checklist", "Before you submit")}
             </div>
             <ul>
                 {results.map((result) => (

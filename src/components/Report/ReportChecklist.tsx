@@ -29,7 +29,7 @@ interface ReportChecklistProps {
 }
 
 /**
- * A satisfied data check is dropped: it taught everything it has to teach by passing
+ * A satisfied data check is not shown: it taught everything it has to teach by passing
  * without a fuss, and showing a tick just restates something already visible
  * elsewhere in the dialog. A satisfied attestation is kept regardless — it is the
  * reporter's own confirmation, not a fact the system worked out for them, so they
@@ -67,7 +67,7 @@ export function ReportChecklist({
     return (
         <div className="ReportChecklist">
             <div className="checklist-heading">
-                {pgettext("Heading above the report submission checklist", "Before you can submit")}
+                {pgettext("Heading above the report submission checklist", "Before you submit")}
             </div>
             <ul>
                 {showPendingRow && (

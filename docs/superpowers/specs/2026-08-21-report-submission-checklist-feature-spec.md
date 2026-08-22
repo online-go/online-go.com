@@ -81,9 +81,12 @@ anything about it.
 
 ### Everything is in order
 
-Below the description box, a short list headed **Before you can submit**. The checks we have
-done are listed with ticks. Anything the reporter still needs to do sits in the same list — a
-tickbox to confirm, or a note that the description needs to be longer.
+Below the description box, a short list headed **Before you submit**, showing only what still
+needs attention — a tickbox to confirm, or a note that the description needs to be longer.
+
+Checks that passed are not listed at all. A check only teaches the reporter something when it
+fails; when it passes it is invisible work, and a list of things requiring no action is just
+something else to read. If nothing needs attention, no list appears.
 
 They tick the box, write their description, and the button becomes available. The list sits
 directly above the button, so it plainly explains what the button is waiting for.
