@@ -21,7 +21,7 @@ import { modWarnFirstTurnEscapersTest } from "./mod-auto-warn-first-turn-escaper
 import { modWarnFirstTurnEscaperBlackTest } from "./mod-auto-warn-first-turn-escaper-black";
 import { modWarnFirstTurnDisconnectorTest } from "./mod-auto-warn-first-turn-disconnector";
 import { modDontAutoWarnBlitzTest } from "./mod-dont-auto-warn-first-turn-blitz";
-import { modBlockEarlyEscapeReportTest } from "./mod-block-early-escape-report";
+import { modBlockEscapeReportUnfinishedGameTest } from "./mod-block-escape-report-unfinished-game";
 import { modBlockEarlyStallingReportTest } from "./mod-block-early-stall-report";
 import { modRejectEscapeReportDuringGameTest } from "./mod-reject-escape-report-during-game";
 import { autoSuspensionTest } from "./mod-auto-suspension";
@@ -44,7 +44,10 @@ ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest("@Slow Skip auto-warn for blitz games", modDontAutoWarnBlitzTest);
     ogsTest("@Slow Auto-warn first turn escapers", modWarnFirstTurnEscapersTest);
     ogsTest("@Slow Auto-warn first turn escapers (black)", modWarnFirstTurnEscaperBlackTest);
-    ogsTest("Block early escape reports", modBlockEarlyEscapeReportTest);
+    ogsTest(
+        "Block escaping reports while the game is unfinished",
+        modBlockEscapeReportUnfinishedGameTest,
+    );
     ogsTest("Block early stalling reports", modBlockEarlyStallingReportTest);
     ogsTest("Block escape reports during an active game", modRejectEscapeReportDuringGameTest);
     ogsTest(

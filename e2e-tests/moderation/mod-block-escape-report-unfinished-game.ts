@@ -27,7 +27,17 @@ import { prepareNewUser, newTestUsername, openPlayerDetailsPopover } from "@help
 import { createDirectChallenge, acceptDirectChallenge } from "@helpers/challenge-utils";
 import { clickInTheMiddle, waitForGameViewReady } from "@helpers/game-utils";
 
-export const modBlockEarlyEscapeReportTest = async ({
+// This is the fast smoke check that the "escaping" checklist blocks submission at all
+// while the reported game is still in progress: one move, no scoring, dialog open, assert
+// the blocker, done. It is not redundant with `mod-reject-escape-report-during-game.ts`,
+// which plays a full game to completion and additionally proves a report succeeds once
+// the game has ended — a slower, end-to-end path this test does not cover.
+//
+// `escaping.enough_moves` has no e2e coverage. It only becomes the displayed blocker for
+// a game that has already finished with fewer than two moves played — e.g. a first-turn
+// timeout — and reaching that state here would require this test to wait out a timeout,
+// making it @Slow. It is covered by unit tests in `src/lib/report_checklist_items.test.ts`.
+export const modBlockEscapeReportUnfinishedGameTest = async ({
     createContext,
 }: {
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
@@ -70,9 +80,9 @@ export const modBlockEarlyEscapeReportTest = async ({
 
     // The blocking check collapses the form, so there is no textarea to inspect —
     // the reason now appears in the blocker at the top of the dialog.
-    const blocker = reporterPage.locator('[data-checklist-blocker="escaping.enough_moves"]');
+    const blocker = reporterPage.locator('[data-checklist-blocker="escaping.game_ended"]');
     await expect(blocker).toBeVisible();
-    await expect(blocker).toContainText("leaves the game without playing");
+    await expect(blocker).toContainText("has not ended yet");
 
     await expect(reporterPage.locator("textarea.notes")).toHaveCount(0);
 
