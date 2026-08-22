@@ -16,7 +16,7 @@
  */
 
 import { buildResults, evaluateAsyncChecks, type Gamedata } from "@/lib/report_checklist";
-import { getChecklist } from "@/lib/report_checklist_items";
+import { getChecklist, REPORT_CHECKLISTS } from "@/lib/report_checklist_items";
 
 const gamedata = (over: Partial<Gamedata> = {}): Gamedata => ({
     outcome: "Resignation",
@@ -33,40 +33,74 @@ const ctxFor = (data: Gamedata, note = "") => ({
     fetchGamedata: () => Promise.resolve(data),
 });
 
-describe("getChecklist synthesis", () => {
-    test("a category needing a game gets the game-identified blocker first", () => {
-        const items = getChecklist("score_cheating", { game_id_required: true });
-        expect(items[0].id).toBe("report.game_identified");
+describe("REPORT_CHECKLISTS resolved lists", () => {
+    // The complete answer to "what does this report type require?" — read this table,
+    // not report_checklist_items.ts, to find out. Each row is asserted against
+    // getChecklist(), in evaluation order.
+    const cases: Array<[type: string, ids: string[]]> = [
+        [
+            "escaping",
+            [
+                "report.game_identified",
+                "escaping.game_ended",
+                "escaping.not_resigned",
+                "escaping.enough_moves",
+                "escaping.waited_reasonable_time",
+            ],
+        ],
+        [
+            "stalling",
+            ["report.game_identified", "stalling.enough_moves", "report.description_length"],
+        ],
+        ["score_cheating", ["report.game_identified"]],
+        ["sandbagging", ["report.game_identified"]],
+        ["ai_use", ["report.game_identified", "report.description_length"]],
+        ["inappropriate_content", ["report.description_length"]],
+        ["harassment", ["report.description_length"]],
+        ["other", ["report.description_length"]],
+        ["malicious_report", ["report.description_length"]],
+        // not_reportable in Report.tsx today, but listed so the table stays complete —
+        // see the doc comment on REPORT_CHECKLISTS.
+        ["thrown_game", ["report.game_identified"]],
+        ["sandbagging_assessment", ["report.game_identified"]],
+        ["assess_ai_play", ["report.game_identified"]],
+        // moderator-only, no report-type requirements of their own.
+        ["warning", []],
+        ["troll", []],
+    ];
+
+    test.each(cases)("%s", (type, ids) => {
+        expect(getChecklist(type).map((i) => i.id)).toEqual(ids);
     });
 
-    test("a category with a minimum description gets the length check last", () => {
-        const items = getChecklist("other", { min_description_length: 20 });
-        expect(items[items.length - 1].id).toBe("report.description_length");
+    test("an unknown report type yields an empty list", () => {
+        expect(getChecklist("not-a-real-type")).toEqual([]);
     });
+});
 
-    test("registry items sit between the two synthesised checks", () => {
-        const ids = getChecklist("escaping", { game_id_required: true }).map((i) => i.id);
-        expect(ids).toEqual([
-            "report.game_identified",
-            "escaping.game_ended",
-            "escaping.not_resigned",
-            "escaping.enough_moves",
-            "escaping.waited_reasonable_time",
-        ]);
-    });
-
-    test("a type with no items and no gates yields an empty list", () => {
-        expect(getChecklist("troll", {})).toEqual([]);
-    });
-
-    test("no category yields an empty list", () => {
-        expect(getChecklist("escaping", undefined)).toEqual([]);
+describe("game_identified ordering invariant", () => {
+    test("report.game_identified is first wherever a type has an async check", () => {
+        // Derived from REPORT_CHECKLISTS itself, not a hard-coded type list, so a type
+        // added later is covered automatically. game_identified is the synchronous
+        // blocker evaluateAsyncChecks (report_checklist.ts) checks before running any
+        // async check — out of order, an async check would fetch a game that isn't
+        // there.
+        for (const [type, items] of Object.entries(REPORT_CHECKLISTS)) {
+            const has_async_check = items.some((i) => i.kind === "data_check" && !i.sync);
+            if (!has_async_check) {
+                continue;
+            }
+            expect({ type, first_id: items[0].id }).toEqual({
+                type,
+                first_id: "report.game_identified",
+            });
+        }
     });
 });
 
 describe("synthesised checks", () => {
     test("game_identified blocks when there is no game id", () => {
-        const items = getChecklist("escaping", { game_id_required: true });
+        const items = getChecklist("escaping");
         const results = buildResults(
             items,
             { note: "", fetchGamedata: () => Promise.reject(new Error("no game")) },
@@ -79,15 +113,15 @@ describe("synthesised checks", () => {
     });
 
     test("description_length is actionable while short and satisfied once long enough", () => {
-        const items = getChecklist("other", { min_description_length: 5 });
+        const items = getChecklist("malicious_report");
         const ctx = (note: string) => ({ note, fetchGamedata: () => Promise.reject(new Error()) });
 
         expect(buildResults(items, ctx(""), {}, {})[0].state).toBe("actionable");
-        expect(buildResults(items, ctx("abcde"), {}, {})[0].state).toBe("satisfied");
+        expect(buildResults(items, ctx("a"), {}, {})[0].state).toBe("satisfied");
     });
 
     test("description_length does not block — the rest of the list survives", () => {
-        const items = getChecklist("other", { min_description_length: 5 });
+        const items = getChecklist("other");
         const results = buildResults(
             items,
             { note: "", fetchGamedata: () => Promise.reject(new Error()) },
@@ -100,7 +134,7 @@ describe("synthesised checks", () => {
 
 describe("escaping data checks", () => {
     const evaluate = async (data: Gamedata) => {
-        const items = getChecklist("escaping", { game_id_required: true });
+        const items = getChecklist("escaping");
         const ctx = ctxFor(data);
         const outcomes = await evaluateAsyncChecks(items, ctx);
         return buildResults(items, ctx, outcomes, {});
@@ -131,7 +165,7 @@ describe("escaping data checks", () => {
         // A check that cannot be determined must not report success — the framework's
         // first invariant. An unknown accused means we cannot tell who resigned, so
         // this must come back "unavailable" rather than a false "satisfied".
-        const items = getChecklist("escaping", { game_id_required: true });
+        const items = getChecklist("escaping");
         const ctx = {
             game_id: 4471,
             note: "",
@@ -194,10 +228,7 @@ describe("escaping data checks", () => {
 
 describe("stalling data checks", () => {
     test("blocks when fewer than two moves were played", async () => {
-        const items = getChecklist("stalling", {
-            game_id_required: true,
-            min_description_length: 20,
-        });
+        const items = getChecklist("stalling");
         const ctx = ctxFor(gamedata({ moves: [1] }), "a".repeat(20));
         const outcomes = await evaluateAsyncChecks(items, ctx);
         const results = buildResults(items, ctx, outcomes, {});

@@ -180,6 +180,14 @@ meaningful.
 
 ## Authoring items
 
+A report type's complete requirements live in one table, `REPORT_CHECKLISTS` in
+`src/lib/report_checklist_items.ts`, listed in evaluation order. Adding a check to a type means
+adding a line to that table — not touching a synthesis function, not editing a second file. This is
+what makes the "rules become inspectable" claim above true rather than aspirational.
+`report.game_identified` goes first in any type's list that has an async data check: it is the
+synchronous blocker that stops a game-data fetch firing when there is no game, and out of order it
+does not.
+
 Rules for anyone wording a new item, not just style preference — the last one below is a real
 constraint on what a blocking check is allowed to ship.
 

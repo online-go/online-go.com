@@ -111,7 +111,7 @@ nothing in this design may grow in that direction.
 Two states, selected during design review against mockups.
 
 **No data check has failed.** No section above the description. Below the description, above the
-buttons, a single list headed "Before you can submit" containing only what still needs the
+buttons, a single list headed "Before you submit" containing only what still needs the
 reporter's attention: attestation tickboxes (ticked or not — a ticked box is the reporter's own
 confirmation and stays visible), and any actionable shortfall such as "20 more characters needed".
 A data check that has passed is not listed: it taught everything it has to teach by passing
@@ -127,10 +127,10 @@ together, beside the button it governs.
 blocker, carrying its reason and the instruction to choose a different report type. The
 description textarea and the rest of the checklist are **not rendered**.
 
-A missing game id reaches this state through the synthesised `report.game_identified` blocker, so
-the existing behaviour is preserved: the reporter sees _"Please report the user on the game page
-so we know where to look."_ and no textarea. It arrives by the general rule instead of the
-special-cased `show_game_id_required_text` branch.
+A missing game id reaches this state through the `report.game_identified` blocker listed in
+`REPORT_CHECKLISTS`, so the existing behaviour is preserved: the reporter sees _"Please report the
+user on the game page so we know where to look."_ and no textarea. It arrives by the general rule
+instead of the special-cased `show_game_id_required_text` branch.
 
 When a report type has no items at all — `warning` and `troll` declare none — the checklist
 renders nothing, and the dialog looks as it does today.
@@ -295,9 +295,11 @@ form-collapsing behaviour lives:
 Step 1 of `evaluateAsyncChecks` is what gates game-data fetches behind "we have a game id",
 replacing the ad-hoc `needs_game_id_first` guard in the current effect.
 
-**Invariant:** an async check that needs a game id must belong to a report type whose category
-declares `game_id_required`. Otherwise the synchronous game-id blocker will not exist to gate it,
-and the check will fetch a missing game.
+**Invariant:** an async check that needs a game id must belong to a `REPORT_CHECKLISTS` entry that
+lists `report.game_identified` first. Otherwise the synchronous game-id blocker will not exist —
+or will not run before it — to gate it, and the check will fetch a missing game. A test in
+`report_checklist_items.test.ts` derives this from `REPORT_CHECKLISTS` itself, so a type added
+later without `report.game_identified` first is caught automatically.
 
 **Shared fetch.** The three `escaping` data checks all need the same game data. `ChecklistContext`
 exposes `fetchGamedata()`, implemented in `useReportChecklist.ts` as a promise held in a ref and
@@ -357,32 +359,40 @@ is a latent bug in the existing code, fixed as part of this work.
 | `src/components/Report/ReportChecklist.tsx` + `.css`        | The below-description list                                                 | One component per file, co-located with its only parent.                                                                   |
 | `src/components/Report/ReportChecklistBlocker.tsx` + `.css` | The single above-description blocker                                       | As above.                                                                                                                  |
 | `src/lib/report_checklist.test.ts`                          | Evaluator unit tests                                                       | See "Testing".                                                                                                             |
-| `src/lib/report_checklist_items.test.ts`                    | Registry and synthesis unit tests                                          | See "Testing".                                                                                                             |
+| `src/lib/report_checklist_items.test.ts`                    | Registry and resolved-list unit tests                                      | See "Testing".                                                                                                             |
 | `src/lib/useReportChecklist.test.tsx`                       | Hook unit tests                                                            | See "Testing".                                                                                                             |
 
 `REPORT_CHECKLISTS` is `Record<string, ChecklistItem[]>`, not `Partial<Record<ReportType, ChecklistItem[]>>`
 as the idiom it mirrors — `REPORT_TYPE_VOTABLE_ACTIONS` in `ogs/go_app/models/moderation.py` and
 `COMMUNITY_MODERATION_REPORT_TYPES` in `report_util.ts` — would suggest. Keying on `string` rather than
-`ReportType` is deliberate: importing `ReportType` here would reintroduce the dependency on `Report.tsx`
-that `report_checklist_items.ts` is built to avoid (see `ChecklistCategory`'s own doc comment). The
-cost is that a typo'd report-type key compiles silently instead of being caught by the type checker;
-that is accepted, not fixed, in the review that produced this correction.
+`ReportType` is deliberate: importing `ReportType` here would reintroduce the dependency on
+`Report.tsx` that `report_checklist_items.ts` is built to avoid. The cost is that a typo'd
+report-type key compiles silently instead of being caught by the type checker; that is accepted,
+not fixed, in the review that produced this correction.
 
 ### The seam
 
-`getChecklist(type, category)` is the single point of access, and the only place a future source
-needs to be merged in. In v1 it composes, in this order:
+`getChecklist(type)` is the single point of access, and the only place a future source needs to be
+merged in: `REPORT_CHECKLISTS[type] ?? []`, nothing else.
 
-1. `report.game_identified` — synthesised when `category.game_id_required`. Synchronous,
-   **blocking**. Message: the existing _"Please report the user on the game page so we know where
-   to look."_
-2. `REPORT_CHECKLISTS[type] ?? []`
-3. `report.description_length` — synthesised when `category.min_description_length`.
-   Synchronous, **not** blocking. Message: the existing _"{{required}} more characters needed"_.
+`REPORT_CHECKLISTS` is one table, keyed by report type, holding each type's complete item list in
+evaluation order. There is no synthesis step: a v1 draft of this design built
+`report.game_identified` and `report.description_length` on the fly from `category.game_id_required`
+and `category.min_description_length` on `report_categories` in `Report.tsx`, and `getChecklist`
+spliced them around the type's registry entry. That was cheap to build, but it meant a type's
+requirements were split across two files and a function's control flow — the project owner tried to
+answer "what does Score Cheating require?" from the code and could not, which is exactly the
+inspectability the framework spec argues for. `REPORT_CHECKLISTS` now lists every item explicitly,
+including `report.game_identified` and `report.description_length` where a type needs them, so the
+table is the literal answer.
 
-Synthesising from the existing declarative fields means none of the fourteen entries in
-`report_categories` need editing. Only `check_applicability` is deleted outright, because it
-carries no label to display and must be re-expressed as properly labelled data checks.
+`gameIdentifiedItem` is a module-level constant — it takes no arguments, so a factory function
+bought nothing. `descriptionLengthItem(minimum)` stays a factory, since its minimum differs per
+type (`malicious_report` needs only 1 character; most others need 20).
+
+`report_categories` in `Report.tsx` no longer carries `game_id_required` or
+`min_description_length` — those fields drove the deleted synthesis step and nothing else read
+them.
 
 ### `Report.tsx` changes
 
@@ -394,6 +404,8 @@ Removed:
 - the `inapplicable_reason` and `validating` state and the effect at lines 335-351
 - `show_game_id_required_text` and its `.required-text` block
 - `more_description_needed` and the `.characters-remaining-prompt` block
+- `game_id_required` and `min_description_length` from the `ReportDescription` interface, once the
+  one-table correction above deleted the synthesis step that had read them
 
 Added:
 
@@ -401,10 +413,7 @@ Added:
 const [attestations, set_attestations] = React.useState<Record<ChecklistItemId, boolean>>({});
 // Memoised: useReportChecklist restarts its async evaluation whenever the items
 // array identity changes, and a fresh array each render would loop forever.
-const checklist_items = React.useMemo(
-    () => getChecklist(report_type, category),
-    [report_type, category],
-);
+const checklist_items = React.useMemo(() => getChecklist(report_type), [report_type]);
 const results = useReportChecklist({
     items: checklist_items,
     game_id,
@@ -453,29 +462,38 @@ All labels and messages are translated with `pgettext` at module scope in
 
 ## v1 content
 
-The framework migrates the existing gates for every type that declares them, and adds genuinely
+The framework migrates the existing gates for every type that declared them, and adds genuinely
 new items for `escaping` only. No other report type gains new items in v1.
 
-Migrated automatically by synthesis, with no per-type authoring:
+Every reportable type — and, for completeness, the three `not_reportable` types described below —
+has an explicit entry in `REPORT_CHECKLISTS`. Migrated straight across from the old
+`game_id_required` / `min_description_length` flags:
 
-- `game_id_required` — `escaping`, `score_cheating`, `stalling`, `thrown_game`, `sandbagging`,
-  `sandbagging_assessment`, `ai_use`, `assess_ai_play`
-- `min_description_length` — `stalling`, `malicious_report`, `inappropriate_content`,
-  `harassment`, `ai_use`, `other`
+- `report.game_identified` first — `escaping`, `score_cheating`, `stalling`, `thrown_game`,
+  `sandbagging`, `sandbagging_assessment`, `ai_use`, `assess_ai_play`
+- `report.description_length` last — `stalling` (20), `malicious_report` (1),
+  `inappropriate_content` (20), `harassment` (20), `ai_use` (20), `other` (20)
 
-Migrated by hand into `REPORT_CHECKLISTS`:
+`thrown_game`, `sandbagging_assessment` and `assess_ai_play` are `not_reportable` — they are
+produced by server-side conversion or by the AI detector, never chosen from the report dropdown, so
+their single-item lists (`report.game_identified`) are never evaluated today. They are listed
+anyway so `REPORT_CHECKLISTS` stays a complete statement of what each type requires, rather than
+silently leaving a type ungoverned if it is ever made reportable. `warning` and `troll` have no
+entry: both are moderator-only paths with no report-type requirements of their own.
+
+Authored directly into `REPORT_CHECKLISTS`, not migrated from an old flag:
 
 - `stalling.enough_moves` — data check, blocking. Label: _"Enough moves were played to judge
   this"_. Message: the existing stalling applicability string.
 
 ### `escaping`
 
-Note that the `escaping` category declares no `min_description_length`, so no description-length
-item is synthesised for it. Evaluation order:
+Note that `escaping`'s list carries no `report.description_length` item — the old
+`min_description_length` flag was never set for it. Evaluation order:
 
 | id                                | Kind                    | Blocking | Label                                                |
 | --------------------------------- | ----------------------- | -------- | ---------------------------------------------------- |
-| `report.game_identified`          | data check, synthesised | yes      | _The reported game is identified_                    |
+| `report.game_identified`          | data check, listed      | yes      | _The reported game is identified_                    |
 | `escaping.game_ended`             | data check, **new**     | yes      | _The game has ended_                                 |
 | `escaping.not_resigned`           | data check, migrated    | yes      | _This player did not resign the game_                |
 | `escaping.enough_moves`           | data check, migrated    | yes      | _Enough moves were played to judge this_             |

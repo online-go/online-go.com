@@ -24,37 +24,23 @@ import type {
     SyncDataCheckItem,
 } from "@/lib/report_checklist";
 
-/**
- * The parts of a ReportDescription that produce synthesised checks. Declared
- * structurally rather than imported, so this module has no dependency on the
- * Report component that consumes it.
- */
-export interface ChecklistCategory {
-    game_id_required?: boolean;
-    min_description_length?: number;
-}
-
-function gameIdentifiedItem(): SyncDataCheckItem {
-    return {
-        kind: "data_check",
-        sync: true,
-        id: "report.game_identified",
-        label: pgettext("A report checklist item", "The reported game is identified"),
-        blocking: true,
-        evaluate: (ctx) =>
-            ctx.game_id
-                ? { met: true }
-                : {
-                      met: false,
-                      // Kept as _() rather than pgettext(context, ...): a msgctxt makes this
-                      // a new gettext entry, orphaning the translations of the identical
-                      // string Report.tsx used before this checklist existed.
-                      message: _(
-                          "Please report the user on the game page so we know where to look.",
-                      ),
-                  },
-    };
-}
+const gameIdentifiedItem: SyncDataCheckItem = {
+    kind: "data_check",
+    sync: true,
+    id: "report.game_identified",
+    label: pgettext("A report checklist item", "The reported game is identified"),
+    blocking: true,
+    evaluate: (ctx) =>
+        ctx.game_id
+            ? { met: true }
+            : {
+                  met: false,
+                  // Kept as _() rather than pgettext(context, ...): a msgctxt makes this
+                  // a new gettext entry, orphaning the translations of the identical
+                  // string Report.tsx used before this checklist existed.
+                  message: _("Please report the user on the game page so we know where to look."),
+              },
+};
 
 function descriptionLengthItem(minimum: number): SyncDataCheckItem {
     return {
@@ -212,46 +198,55 @@ Please choose a different type of report, if there is a different problem.`,
 };
 
 /**
- * Per-report-type checklist items. Mirrors REPORT_TYPE_VOTABLE_ACTIONS in the
- * backend's moderation.py: the report type is the key, and everything a type
- * requires is readable in one place.
+ * Per-report-type checklists. Mirrors REPORT_TYPE_VOTABLE_ACTIONS in the backend's
+ * moderation.py: the report type is the key, and everything a type requires is
+ * readable in one place, in evaluation order.
  *
- * Ordering matters. When several blocking checks fail, the earliest is the one the
- * reporter is shown.
+ * Ordering matters in two ways:
+ *
+ * - When several blocking checks fail, the earliest is the one the reporter is shown.
+ * - `report.game_identified` must be first wherever a type has any async data check.
+ *   It is the synchronous blocker that `evaluateAsyncChecks` (report_checklist.ts)
+ *   checks before running anything async, so a failing game-identified check stops
+ *   the game-data fetch from firing at all. Out of order, an async check would run
+ *   against a game that does not exist.
+ *
+ * `thrown_game`, `sandbagging_assessment` and `assess_ai_play` are `not_reportable` in
+ * `report_categories` (Report.tsx) — they are produced by server-side conversion or by
+ * the AI detector, never chosen from the report dropdown, so these lists are never
+ * evaluated today. They are listed anyway so this table stays a complete statement of
+ * what each type requires, and so that making one reportable in the future does not
+ * silently leave it with no gate.
+ *
+ * `warning` and `troll` are moderator-only paths with no report-type requirements of
+ * their own — `warning` has its own note-length gate in Report.tsx's `canWarn`, and
+ * `troll` has none — so neither has an entry; `getChecklist` returns `[]` for both.
  */
 export const REPORT_CHECKLISTS: Record<string, ChecklistItem[]> = {
     escaping: [
+        gameIdentifiedItem,
         escapingGameEnded,
         escapingNotResigned,
         escapingEnoughMoves,
         escapingWaitedReasonableTime,
     ],
-    stalling: [stallingEnoughMoves],
+    stalling: [gameIdentifiedItem, stallingEnoughMoves, descriptionLengthItem(20)],
+    score_cheating: [gameIdentifiedItem],
+    sandbagging: [gameIdentifiedItem],
+    ai_use: [gameIdentifiedItem, descriptionLengthItem(20)],
+    inappropriate_content: [descriptionLengthItem(20)],
+    harassment: [descriptionLengthItem(20)],
+    other: [descriptionLengthItem(20)],
+    malicious_report: [descriptionLengthItem(1)],
+    thrown_game: [gameIdentifiedItem],
+    sandbagging_assessment: [gameIdentifiedItem],
+    assess_ai_play: [gameIdentifiedItem],
 };
 
 /**
  * The single point of access for a report type's checklist. A future source of items
  * — an administrative form, a rule engine — is merged in here and nowhere else.
  */
-export function getChecklist(
-    report_type: string,
-    category: ChecklistCategory | undefined,
-): ChecklistItem[] {
-    if (!category) {
-        return [];
-    }
-
-    const items: ChecklistItem[] = [];
-
-    if (category.game_id_required) {
-        items.push(gameIdentifiedItem());
-    }
-
-    items.push(...(REPORT_CHECKLISTS[report_type] ?? []));
-
-    if (category.min_description_length) {
-        items.push(descriptionLengthItem(category.min_description_length));
-    }
-
-    return items;
+export function getChecklist(report_type: string): ChecklistItem[] {
+    return REPORT_CHECKLISTS[report_type] ?? [];
 }

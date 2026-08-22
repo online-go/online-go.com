@@ -59,8 +59,6 @@ export interface ReportDescription {
     type: ReportType;
     title: string;
     description: string;
-    game_id_required?: boolean;
-    min_description_length?: number;
     moderator_only?: boolean;
     cm_only?: boolean; // visible only to CMs (any non-zero moderator_powers)
     not_reportable?: boolean;
@@ -89,7 +87,6 @@ export const report_categories: ReportDescription[] = [
             "Report user for not finishing the game properly",
             "User left the game or stopped playing without concluding it properly.",
         ),
-        game_id_required: true,
     },
     {
         type: "score_cheating",
@@ -98,7 +95,6 @@ export const report_categories: ReportDescription[] = [
             "Report user for score cheating",
             "User is attempting to cheat in the stone removal phase, or the game has been mis-scored.",
         ),
-        game_id_required: true,
     },
     {
         type: "stalling",
@@ -107,8 +103,6 @@ export const report_categories: ReportDescription[] = [
             "Report user for stalling in a game",
             "User is playing time wasting moves, or passing and resuming needlessly, delaying completion of the game.",
         ),
-        game_id_required: true,
-        min_description_length: 20,
     },
     {
         type: "thrown_game",
@@ -117,7 +111,6 @@ export const report_categories: ReportDescription[] = [
             "Report user for throwing a game",
             "User intentionally lost the game.",
         ),
-        game_id_required: true,
         not_reportable: true, // Reports of this type result from sandbagging reports where the accused lost
     },
     {
@@ -131,7 +124,6 @@ export const report_categories: ReportDescription[] = [
             "The accused player filed a report deemed to be malicious. File this from the source report's detail view.",
         ),
         cm_only: true,
-        min_description_length: 1,
     },
     {
         type: "sandbagging",
@@ -140,7 +132,6 @@ export const report_categories: ReportDescription[] = [
             "Report user for sandbagging",
             "User is resigning or timing out won games to purposefully lower their rank.",
         ),
-        game_id_required: true,
     },
     {
         type: "sandbagging_assessment",
@@ -149,7 +140,6 @@ export const report_categories: ReportDescription[] = [
             "Sandbagging assessment by moderators",
             "Escalated sandbagging reports for moderator review.",
         ),
-        game_id_required: true,
         moderator_only: true,
         not_reportable: true, // Reports of this type result from CM escalation, not from a player
     },
@@ -160,13 +150,11 @@ export const report_categories: ReportDescription[] = [
             "Report user for inappropriate content",
             "User is posting inappropriate content.",
         ),
-        min_description_length: 20,
     },
     {
         type: "harassment",
         title: pgettext("Report user for harassment", "Harassment"),
         description: pgettext("Report user for harassment", "User is harassing other users."),
-        min_description_length: 20,
     },
     {
         type: "ai_use",
@@ -175,14 +163,11 @@ export const report_categories: ReportDescription[] = [
             "Report user for AI use",
             "Use this if you are quite certain that AI is being used.  Please don't report unless you have convincing evidence.  Please make sure you provide the evidence in the report.",
         ),
-        min_description_length: 20,
-        game_id_required: true,
     },
     {
         type: "assess_ai_play",
         title: pgettext("Assess AI play", "Assess AI play"),
         description: pgettext("Assess AI play", "Assess AI play"),
-        game_id_required: true,
         not_reportable: true, // Reports of this type result from the AI detector process, not from a player
     },
     {
@@ -192,7 +177,6 @@ export const report_categories: ReportDescription[] = [
             "User is reporting something else",
             "Please describe in detail the issue in the text box below.",
         ),
-        min_description_length: 20,
     },
     {
         type: "warning",
@@ -249,10 +233,7 @@ export function Report(props: ReportProperties): React.ReactElement {
 
     // Memoised because useReportChecklist restarts its async evaluation whenever the
     // items array identity changes. A fresh array each render would loop forever.
-    const checklist_items = React.useMemo(
-        () => getChecklist(report_type, category),
-        [report_type, category],
-    );
+    const checklist_items = React.useMemo(() => getChecklist(report_type), [report_type]);
 
     const checklist = useReportChecklist({
         items: checklist_items,
