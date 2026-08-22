@@ -173,6 +173,45 @@ only thing standing between a bad report and the queue.
 This costs nothing now and is what makes any later record of what a reporter was shown
 meaningful.
 
+## Authoring items
+
+Rules for anyone wording a new item, not just style preference — the last one below is a real
+constraint on what a blocking check is allowed to ship.
+
+**Attestations state the natural things a careful reporter would check.** Not warnings, not
+cautions, not threats. Deterrence is a by-product of having to think, never the purpose of the
+wording.
+
+**Attestation labels are first person and specific to the report type.** *"I waited a reasonable
+time for this player to play,"* not a generic *"I have read the guidelines."* Boilerplate that
+applies to every report type gets clicked past without being read, which defeats the point of
+asking.
+
+**Data-check labels are positive statements about the world** — *"This player did not resign the
+game"* — but they serve **the list only**, where a tick or an unticked marker sits beside them.
+A blocking failure never renders in that list: it takes over the dialog alone, and shows no label
+at all, only its `message`. A label that reads correctly with a tick beside it says nothing about
+whether it reads correctly on its own, because it never has to — the blocker never shows it.
+
+**Every blocking message must therefore be self-contained.** With no label and no tick or cross to
+carry meaning, the message is the entire explanation. It must state what is actually true about
+this case — not a general policy, not a hypothetical — and what the reporter should do instead.
+
+`escaping.enough_moves` was shipped wrong this way and is the worked example. Its message opened
+with *"If the other player leaves the game without playing the first move we will automatically
+warn them about this."* — a conditional about what the system does in general, never a statement
+of what is true about this game. Read under its label, *"Enough moves were played to judge this,"*
+crossed out, the omission didn't show: the label supplied the missing fact. Read alone, as a
+blocking message now always is, it told a blocked reporter nothing about their own situation. The
+fix prepended a fact about the case, as a separately translated sentence joined by a blank line so
+the existing translated paragraph could be kept unchanged: *"There aren't enough moves played in
+this game to decide whether this player stopped playing."* Its sibling, `stalling.enough_moves`,
+had carried that opening sentence from the start and did not need the fix.
+
+**Item identifiers are stable and opaque.** Never renamed, never reused for a different claim.
+Repeated here because it is the one rule that also binds anyone editing an item's wording: the id
+does not change even when the label or message does.
+
 ## What it is not
 
 - **Not a replacement for server-side rules.** Those are the enforcement; this is the

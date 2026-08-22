@@ -138,12 +138,15 @@ const escapingEnoughMoves: AsyncDataCheckItem = {
             ? { met: true }
             : {
                   met: false,
-                  message: pgettext(
+                  message: `${pgettext(
+                      "Explains why a stopped-playing report cannot be filed on a game with almost no moves",
+                      "There aren't enough moves played in this game to decide whether this player stopped playing.",
+                  )}\n\n${pgettext(
                       "A message when the user is trying to report something that we don't want them to report yet",
                       `If the other player leaves the game without playing the first move we will automatically warn them about this.
 
 Please choose a different type of report, if there is a different problem.`,
-                  ),
+                  )}`,
               };
     },
 };

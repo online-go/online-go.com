@@ -30,8 +30,7 @@ export function ReportChecklistBlocker({
 }: ReportChecklistBlockerProps): React.ReactElement {
     return (
         <div className="ReportChecklistBlocker" data-checklist-blocker={result.id}>
-            <div className="claim">{result.label}</div>
-            {result.message && <div className="reason">{result.message}</div>}
+            <div className="reason">{result.message || result.label}</div>
         </div>
     );
 }
