@@ -47,13 +47,20 @@ export class PopOver extends TypedEventEmitter<Events> {
     config: PopoverConfig;
     container: HTMLElement;
     backdrop: HTMLElement;
+    private root: ReactDOM.Root | null;
 
-    constructor(config: PopoverConfig, backdrop: HTMLElement, container: HTMLElement) {
+    constructor(
+        config: PopoverConfig,
+        backdrop: HTMLElement,
+        container: HTMLElement,
+        root: ReactDOM.Root | null = null,
+    ) {
         super();
         this.id = ++last_id;
         this.config = config;
         this.container = container;
         this.backdrop = backdrop;
+        this.root = root;
         this.backdrop.addEventListener("click", this.close);
         this.container.addEventListener("click", this.close);
         open_popovers[this.id] = this;
@@ -72,6 +79,17 @@ export class PopOver extends TypedEventEmitter<Events> {
             this.container.remove();
             this.backdrop.remove();
             delete open_popovers[this.id];
+
+            // Unmount the React root so effect cleanups run (event
+            // listener subscriptions in the popover content would
+            // otherwise leak). Deferred because close() is often called
+            // from an event handler inside the root's own tree, and React
+            // forbids synchronously unmounting a root while it renders.
+            const root = this.root;
+            this.root = null;
+            if (root) {
+                setTimeout(() => root.unmount(), 0);
+            }
 
             this.emit("close");
         }
@@ -148,5 +166,5 @@ export function popover(config: PopoverConfig): PopOver {
     const root = ReactDOM.createRoot(container);
     root.render(<React.StrictMode>{config.elt}</React.StrictMode>);
 
-    return new PopOver(config, backdrop, container);
+    return new PopOver(config, backdrop, container, root);
 }

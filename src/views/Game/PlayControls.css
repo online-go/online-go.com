@@ -8,11 +8,16 @@
     flex-direction: column;
     justify-content: center;
     padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
     max-width: 100dvw;
-    min-height: 5rem;
 
-    /* height: 23rem; */
-    /* min-height: 5rem; */
+    /* Every child here is conditional, so the whole block can end up with
+     * nothing to show. Drop the padding then, otherwise the empty control
+     * area leaves a visible gap between the player cards and the chat. */
+    &:empty {
+        padding: 0;
+    }
+
     > div {
         width: 100%;
     }
@@ -50,11 +55,6 @@
             max-width: 90dvw;
             text-align: justify;
         }
-    }
-
-    .game-action-buttons {
-        position: relative;
-        text-align: center;
     }
 
     .analyze-mode-buttons {
@@ -162,19 +162,6 @@
             padding: 1rem;
             font-style: italic;
         }
-    }
-
-    .cancel-button {
-        /*
-        position: absolute;
-        right: 0.5em;
-        bottom: 0.5em;
-        */
-    }
-
-    .undo-button {
-        /* position: absolute; */
-        /* left: 0.5em; */
     }
 
     .accept-undo-button {
