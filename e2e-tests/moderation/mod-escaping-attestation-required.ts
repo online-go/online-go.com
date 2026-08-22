@@ -35,6 +35,7 @@ import {
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
 import { playMoves, waitForGameViewReady } from "@helpers/game-utils";
+import { expectOGSClickableByName } from "@helpers/matchers";
 
 /*
  * The escaping checklist's one attestation, escaping.waited_reasonable_time, is the only
@@ -104,8 +105,8 @@ export const escapingAttestationRequiredTest = async ({
     );
     await openPlayerDetailsPopover(reporterPage, playerLink);
 
-    await expect(reporterPage.getByRole("button", { name: /Report$/ })).toBeVisible();
-    await reporterPage.getByRole("button", { name: /Report$/ }).click();
+    const reportButton = await expectOGSClickableByName(reporterPage, /Report$/);
+    await reportButton.click();
 
     await expect(reporterPage.getByText("Request Moderator Assistance")).toBeVisible();
 

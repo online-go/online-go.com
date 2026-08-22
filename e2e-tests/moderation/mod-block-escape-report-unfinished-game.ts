@@ -26,6 +26,7 @@ import { BrowserContext, expect } from "@playwright/test";
 import { prepareNewUser, newTestUsername, openPlayerDetailsPopover } from "@helpers/user-utils";
 import { createDirectChallenge, acceptDirectChallenge } from "@helpers/challenge-utils";
 import { clickInTheMiddle, waitForGameViewReady } from "@helpers/game-utils";
+import { expectOGSClickableByName } from "@helpers/matchers";
 
 // This is the fast smoke check that the "escaping" checklist blocks submission at all
 // while the reported game is still in progress: one move, no scoring, dialog open, assert
@@ -71,8 +72,8 @@ export const modBlockEscapeReportUnfinishedGameTest = async ({
     );
     await openPlayerDetailsPopover(reporterPage, playerLink);
 
-    await expect(reporterPage.getByRole("button", { name: /Report$/ })).toBeVisible();
-    await reporterPage.getByRole("button", { name: /Report$/ }).click();
+    const reportButton = await expectOGSClickableByName(reporterPage, /Report$/);
+    await reportButton.click();
 
     await expect(reporterPage.getByText("Request Moderator Assistance")).toBeVisible();
 
