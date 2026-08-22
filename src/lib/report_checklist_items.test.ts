@@ -112,12 +112,32 @@ describe("synthesised checks", () => {
         expect(results[0].state).toBe("blocked");
     });
 
-    test("description_length is actionable while short and satisfied once long enough", () => {
+    // The two description minimums are part of what a report type requires, but the
+    // resolved-list table above cannot show them — both produce the same item id. These
+    // two tests are what pin the actual thresholds, so a change to either is caught.
+    test("malicious_report is satisfied by a single character", () => {
         const items = getChecklist("malicious_report");
         const ctx = (note: string) => ({ note, fetchGamedata: () => Promise.reject(new Error()) });
 
         expect(buildResults(items, ctx(""), {}, {})[0].state).toBe("actionable");
         expect(buildResults(items, ctx("a"), {}, {})[0].state).toBe("satisfied");
+    });
+
+    test("every other type needs exactly 20 characters", () => {
+        const ctx = (note: string) => ({ note, fetchGamedata: () => Promise.reject(new Error()) });
+
+        for (const type of ["stalling", "ai_use", "inappropriate_content", "harassment", "other"]) {
+            const items = getChecklist(type).filter((i) => i.id === "report.description_length");
+
+            expect({
+                type,
+                at_19: buildResults(items, ctx("a".repeat(19)), {}, {})[0].state,
+            }).toEqual({ type, at_19: "actionable" });
+            expect({
+                type,
+                at_20: buildResults(items, ctx("a".repeat(20)), {}, {})[0].state,
+            }).toEqual({ type, at_20: "satisfied" });
+        }
     });
 
     test("description_length does not block — the rest of the list survives", () => {
