@@ -858,7 +858,7 @@ export function getChecklist(
 - [ ] **Step 4: Run the tests to verify they pass**
 
 Run: `yarn test src/lib/report_checklist_items.test.ts`
-Expected: PASS, 13 tests.
+Expected: PASS, 14 tests.
 
 - [ ] **Step 5: Commit**
 
@@ -1043,19 +1043,33 @@ export function useReportChecklist({
     const [outcomes, set_outcomes] = React.useState<AsyncOutcomes | null>(null);
 
     // One in-flight request per game, shared by every check that needs game data.
-    const gamedata_cache = React.useRef<{ game_id?: number; promise?: Promise<Gamedata> }>({});
+    // Either both fields are set or the ref is null: a game id can never sit here
+    // without the promise that belongs to it.
+    const gamedata_cache = React.useRef<{ game_id: number; promise: Promise<Gamedata> } | null>(
+        null,
+    );
 
     const fetchGamedata = React.useCallback((): Promise<Gamedata> => {
         if (!game_id) {
             return Promise.reject(new Error("no reported game"));
         }
-        if (gamedata_cache.current.game_id !== game_id || !gamedata_cache.current.promise) {
-            gamedata_cache.current = {
-                game_id,
-                promise: get(`/termination-api/game/${game_id}`) as Promise<Gamedata>,
-            };
+        const cached = gamedata_cache.current;
+        if (cached && cached.game_id === game_id) {
+            return cached.promise;
         }
-        return gamedata_cache.current.promise;
+        const promise = get(`/termination-api/game/${game_id}`) as Promise<Gamedata>;
+        gamedata_cache.current = { game_id, promise };
+        // A rejected promise must not stay cached. Leaving it there turns one network
+        // blip into a session-long screening hole: `unavailable` deliberately does not
+        // block submission, so a report that should have been stopped stays submittable
+        // even after the network recovers. The identity check stops a stale rejection
+        // wiping a newer entry. Return the original promise, never the .catch() result.
+        promise.catch(() => {
+            if (gamedata_cache.current?.promise === promise) {
+                gamedata_cache.current = null;
+            }
+        });
+        return promise;
     }, [game_id]);
 
     // Guards against a slow response for one report type or game landing after the
@@ -1095,7 +1109,9 @@ export function useReportChecklist({
 - [ ] **Step 4: Run the tests to verify they pass**
 
 Run: `yarn test src/lib/useReportChecklist.test.tsx`
-Expected: PASS, 5 tests.
+Expected: PASS, 7 tests. Two beyond the five listed above were added during execution: one
+asserting that typing in the note does not refetch game data, and one asserting a rejected fetch
+is retried on the next evaluation rather than served from cache.
 
 - [ ] **Step 5: Commit**
 
@@ -1162,6 +1178,25 @@ export function ReportChecklist({ results, onToggle }: ReportChecklistProps): Re
                         ) : (
                             <div className="check-row">
                                 <span className="marker" aria-hidden="true" />
+                                {/* State is otherwise carried only by the marker's glyph and
+                                    colour, which is hidden from assistive technology. These two
+                                    states render no visible detail text, so without this a
+                                    screen-reader user cannot tell a passed check from a running
+                                    one. `actionable` and `unavailable` are excluded on purpose:
+                                    both already render a .detail line stating their situation. */}
+                                {(result.state === "satisfied" || result.state === "pending") && (
+                                    <span className="sr-only">
+                                        {result.state === "satisfied"
+                                            ? pgettext(
+                                                  "Screen-reader label for a checklist item that passed",
+                                                  "Done:",
+                                              )
+                                            : pgettext(
+                                                  "Screen-reader label for a checklist item still being checked",
+                                                  "Checking:",
+                                              )}
+                                    </span>
+                                )}
                                 <span className="label-text">{result.label}</span>
                             </div>
                         )}
@@ -1226,24 +1261,44 @@ Create `src/components/Report/ReportChecklist.css`:
         gap: 0.4rem;
     }
 
-    .marker::before {
-        content: "\2713";
+    .marker {
+        flex: none;
+        width: 1rem;
+        text-align: center;
+    }
+
+    /* Glyph and colour come entirely from the state — there is deliberately no
+     * default, so a state added later cannot silently inherit the satisfied tick. */
+    li[data-state="satisfied"] {
+        .marker::before {
+            content: "\2713";
+            color: var(--success);
+        }
+
+        .label-text {
+            opacity: 0.7;
+        }
+    }
+
+    /* A bullet, not a pencil: U+270E is emoji-eligible and gets colour-emoji
+     * presentation on some platforms, which this repository forbids. */
+    li[data-state="actionable"] .marker::before {
+        content: "\2022";
+        color: var(--danger);
     }
 
     li[data-state="pending"] .marker::before {
         content: "\22EF";
+        opacity: 0.6;
     }
 
     li[data-state="unavailable"] .marker::before {
         content: "?";
-    }
-
-    li[data-state="satisfied"] .label-text {
-        opacity: 0.7;
+        opacity: 0.6;
     }
 
     .detail {
-        margin-left: 1.15rem;
+        margin-left: 1.4rem;
         font-size: 0.85rem;
         opacity: 0.8;
         white-space: pre-line;
@@ -1283,9 +1338,11 @@ export function ReportChecklistBlocker({
 Create `src/components/Report/ReportChecklistBlocker.css`:
 
 ```css
+/* --reject is OGS's red in both themes (#ff410f light, #a62705 dark).
+ * Deliberately NOT --danger, which is orange in this codebase. */
 .ReportChecklistBlocker {
-    border: 1px solid var(--danger-border, #e0b6b6);
-    border-left: 3px solid var(--danger, #9c3232);
+    border: 1px solid var(--shade4);
+    border-left: 3px solid var(--reject);
     border-radius: 0.25rem;
     padding: 0.6rem 0.75rem;
     margin: 0 0 0.75rem;
@@ -1338,7 +1395,10 @@ In `src/components/Report/Report.tsx`:
 5. Delete these state declarations: `validating`, `set_validating`, `inapplicable_reason`, `set_inapplicable_reason`.
 6. Delete the whole `React.useEffect` that calls `category.check_applicability` (the one whose dependency array is `[category, game_id]`).
 7. Delete `const show_game_id_required_text = ...` and `const more_description_needed = ...`.
-8. Remove the now-unused `get` import if nothing else in the file uses it. Keep `post`.
+8. Remove `interpolate` from the `@/lib/translate` import on line 23. Its only use is the
+   character-countdown block deleted in item 7, so leaving it in fails lint.
+   **Keep `get`** — it is still used by the source-report effect (`get(\`moderation/incident/...\`)`),
+   which this task does not touch. Keep `post`, `_` and `pgettext`.
 
 - [ ] **Step 2: Add the checklist wiring**
 
@@ -1433,6 +1493,21 @@ Replace the whole `<div className="details">…</div>` block, and the
 
 The `required` class on the textarea is gone: the description-length shortfall now appears
 as a checklist row instead of a border colour.
+
+- [ ] **Step 4b: Fix the layout in `src/components/Report/Report.css`**
+
+`.Report` is a flex column, but `.details` is `display: flex` with no direction — it defaults to
+row. That never mattered while `.details` held one child at a time; now it holds the textarea and
+the checklist as siblings, which would render them side by side in a 25rem card.
+
+- Add `flex-direction: column;` to `.details`.
+- Change `.buttons` from `margin-top: 1px` to `margin-top: auto`. A no-op normally, since
+  `.details { flex: 1 }` already pushes the buttons down — but when a blocker replaces `.details`
+  nothing claims the leftover height, and without this the buttons ride up under the blocker.
+- Delete the now-dead `.characters-remaining-prompt` and `.required-text` rules.
+- **Do not delete `.required`.** It sits between them and looks like part of the same group, but
+  it is still applied to the type-picker `<select>`. Removing it silently drops the "choose a
+  report type" highlight.
 
 - [ ] **Step 5: Verify it compiles and unit tests still pass**
 

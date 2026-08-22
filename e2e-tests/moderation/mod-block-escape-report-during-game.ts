@@ -32,7 +32,7 @@ import {
 import { playMoves } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 
-export const modRejectEscapeReportDuringGameTest = async ({
+export const modBlockEscapeReportDuringGameTest = async ({
     createContext,
 }: {
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;

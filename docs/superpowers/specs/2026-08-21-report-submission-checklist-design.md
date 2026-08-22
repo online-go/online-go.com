@@ -40,8 +40,8 @@ find out.
 The gates that already exist are evidence of the gap rather than a solution to it. There are
 three of them, they were each added to solve a specific nuisance, and none of them communicates:
 
-- Two applicability checks (`escaping`, `stalling`) report their reason as *placeholder text
-  inside the description textarea*, which disappears the moment the reporter types and which
+- Two applicability checks (`escaping`, `stalling`) report their reason as _placeholder text
+  inside the description textarea_, which disappears the moment the reporter types and which
   most people never read.
 - `game_id_required` swaps the textarea for a line of prose.
 - `min_description_length` shows a character countdown.
@@ -58,7 +58,7 @@ In priority order, as set by the requester:
 2. **Educate the reporter at the point of reporting**, so they understand the standard, select
    themselves out when it does not apply, and report better next time. This is the half that
    compounds — a reporter who learns the rule stops generating the cost.
-3. **Make careless reporting harder.** Served *indirectly*: requiring explicit confirmation of
+3. **Make careless reporting harder.** Served _indirectly_: requiring explicit confirmation of
    the natural things to check raises the effort of filing without thinking. It is explicitly
    **not** served by threatening language — see "Authoring guidelines".
 
@@ -79,16 +79,16 @@ deflects reports and teaches anybody is a question the first release exists to a
 
 ## Decisions
 
-| Question | Decision | Rationale |
-| --- | --- | --- |
-| Enforcement | **Client-only.** The submit button stays disabled; no POST-time revalidation. | Matches how `game_id_required` and `check_applicability` work today. The backend keeps its own independent rules. |
-| Definition source | **Code registry only**, behind one lookup function that is the seam for later sources. | The requester named admin-config forms and fair-play-filter-style rules as eventual sources. Neither is in v1. |
-| Persistence | **Nothing stored in v1.** | Moderator evidence is not a goal. No model change, no migration. |
-| Data source for checks | **Client-side fetches** against existing endpoints, via a source-agnostic async interface. | Covers everything v1 needs. A check backed by a new endpoint drops in later without reshaping the framework. |
-| Check failure or timeout | **Fail open**, with a visible "could not check" state. | Never trap a legitimate reporter behind a network fault. Silently dropping the item, as the current code does, teaches nobody anything. |
-| Item scope | **Per report type only.** No site-wide item set. | Avoids a boilerplate "I have read the guidelines" tickbox that everyone learns to click past, which would work against goal 2. |
-| Layout | **Failed data checks hoist above the description and collapse the rest of the form.** Everything else renders below the description, next to the button. | See "Layout" below. |
-| Backend test coverage | **Accepted loss** on the during-game escaping rule. | Defence-in-depth. See "Testing". |
+| Question                 | Decision                                                                                                                                                 | Rationale                                                                                                                               |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Enforcement              | **Client-only.** The submit button stays disabled; no POST-time revalidation.                                                                            | Matches how `game_id_required` and `check_applicability` work today. The backend keeps its own independent rules.                       |
+| Definition source        | **Code registry only**, behind one lookup function that is the seam for later sources.                                                                   | The requester named admin-config forms and fair-play-filter-style rules as eventual sources. Neither is in v1.                          |
+| Persistence              | **Nothing stored in v1.**                                                                                                                                | Moderator evidence is not a goal. No model change, no migration.                                                                        |
+| Data source for checks   | **Client-side fetches** against existing endpoints, via a source-agnostic async interface.                                                               | Covers everything v1 needs. A check backed by a new endpoint drops in later without reshaping the framework.                            |
+| Check failure or timeout | **Fail open**, with a visible "could not check" state.                                                                                                   | Never trap a legitimate reporter behind a network fault. Silently dropping the item, as the current code does, teaches nobody anything. |
+| Item scope               | **Per report type only.** No site-wide item set.                                                                                                         | Avoids a boilerplate "I have read the guidelines" tickbox that everyone learns to click past, which would work against goal 2.          |
+| Layout                   | **Failed data checks hoist above the description and collapse the rest of the form.** Everything else renders below the description, next to the button. | See "Layout" below.                                                                                                                     |
+| Backend test coverage    | **Accepted loss** on the during-game escaping rule.                                                                                                      | Defence-in-depth. See "Testing".                                                                                                        |
 
 ### Invariants inherited from the framework
 
@@ -120,8 +120,8 @@ blocker, carrying its reason and the instruction to choose a different report ty
 description textarea and the rest of the checklist are **not rendered**.
 
 A missing game id reaches this state through the synthesised `report.game_identified` blocker, so
-the existing behaviour is preserved: the reporter sees *"Please report the user on the game page
-so we know where to look."* and no textarea. It arrives by the general rule instead of the
+the existing behaviour is preserved: the reporter sees _"Please report the user on the game page
+so we know where to look."_ and no textarea. It arrives by the general rule instead of the
 special-cased `show_game_id_required_text` branch.
 
 When a report type has no items at all — `warning` and `troll` declare none — the checklist
@@ -130,7 +130,7 @@ renders nothing, and the dialog looks as it does today.
 The reasoning for collapsing rather than dimming or leaving the form live: once a blocking data
 check fails, the reporter cannot submit whatever else they do, so soliciting tickboxes and a
 longer description asks for work that cannot pay off. A reporter who ticks every box, writes a
-description and *still* cannot submit reads the dialog as broken. Collapsing also matches what
+description and _still_ cannot submit reads the dialog as broken. Collapsing also matches what
 `Report.tsx` already does when a game id is missing, where `show_game_id_required_text`
 suppresses the textarea entirely.
 
@@ -153,34 +153,62 @@ export interface ChecklistContext {
     review_id?: number;
     reported_user_id?: number;
     note: string;
-    /** Memoised for one evaluation pass, so sibling checks share one request. */
+    /** Memoised by game id, so sibling checks share one request. */
     fetchGamedata: () => Promise<Gamedata>;
 }
 
 export type CheckOutcome = { met: true } | { met: false; message: string };
 
-export type ChecklistItem =
-    | { kind: "attestation"; id: ChecklistItemId; label: string }
-    | {
-          kind: "data_check";
-          id: ChecklistItemId;
-          label: string;
-          /** True when the reporter cannot fix this from inside the dialog. */
-          blocking: boolean;
-          evaluate: (ctx: ChecklistContext) => CheckOutcome | Promise<CheckOutcome>;
-      };
+export interface AttestationItem {
+    kind: "attestation";
+    id: ChecklistItemId;
+    label: string;
+}
+
+interface DataCheckCommon {
+    kind: "data_check";
+    id: ChecklistItemId;
+    label: string;
+    /** True when the reporter cannot satisfy this from inside the dialog. */
+    blocking: boolean;
+}
+
+/** Re-evaluated on every render, so it may depend on live form state. */
+export interface SyncDataCheckItem extends DataCheckCommon {
+    sync: true;
+    evaluate: (ctx: ChecklistContext) => CheckOutcome;
+}
+
+/** Evaluated only when the report type or reported game changes. */
+export interface AsyncDataCheckItem extends DataCheckCommon {
+    sync: false;
+    evaluate: (ctx: ChecklistContext) => Promise<CheckOutcome>;
+}
+
+export type DataCheckItem = SyncDataCheckItem | AsyncDataCheckItem;
+export type ChecklistItem = AttestationItem | DataCheckItem;
 ```
 
-The two kinds are a discriminated union rather than one type with optional fields, because they
-carry different data and are phrased differently. An attestation has no `evaluate` and its label
-is first person — *"I waited a reasonable time for this player to play"*. A data check has an
-`evaluate` and its label is a third-person statement about the world — *"This player did not
-resign the game"*. The union makes it impossible to construct an attestation with an evaluate
-function, or a data check with no way to be established.
+The two kinds — attestation and data check — are a discriminated union rather than one type with
+optional fields, because they carry different data and are phrased differently. An attestation has
+no `evaluate` and its label is first person — _"I waited a reasonable time for this player to
+play"_. A data check has an `evaluate` and its label is a third-person statement about the world —
+_"This player did not resign the game"_. The union makes it impossible to construct an attestation
+with an evaluate function, or a data check with no way to be established.
 
 `blocking` exists only on `data_check`. An unticked attestation is never blocking: by definition
 the reporter can satisfy it, which is what the tickbox is for. The form-collapsing state is
 therefore triggered only by a failed data check.
+
+A data check further declares whether it is synchronous — `SyncDataCheckItem` (`sync: true`) or
+`AsyncDataCheckItem` (`sync: false`) — rather than one `data_check` variant whose `evaluate`
+returns `CheckOutcome | Promise<CheckOutcome>`. The two must run on different schedules: the
+description-length check has to re-run on every keystroke, while the game-data checks must run
+only when the report type or reported game changes, not on every keystroke. Telling them apart by
+inspecting what `evaluate` returns (`instanceof Promise`) cannot express this — it only reveals
+whether a call has already been made, not how the call should be scheduled. Splitting the type
+lets the compiler enforce the correct treatment of each item instead of leaving it to be inferred
+at each call site.
 
 ### Result
 
@@ -229,8 +257,17 @@ declares `game_id_required`. Otherwise the synchronous game-id blocker will not 
 and the check will fetch a missing game.
 
 **Shared fetch.** The three `escaping` data checks all need the same game data. `ChecklistContext`
-exposes `fetchGamedata()`, memoised per evaluation pass, so they share one request to
-`/termination-api/game/{id}` rather than making three.
+exposes `fetchGamedata()`, implemented in `useReportChecklist.ts` as a promise held in a ref and
+keyed by game id — not memoised per evaluation pass. A per-pass memo is too narrow: typing in the
+description re-runs the synchronous checks, which re-runs evaluation, and a per-pass cache would
+refetch game data alongside every keystroke. Keying by game id in a ref means the three escaping
+checks share one request to `/termination-api/game/{id}` and typing costs nothing.
+
+A rejected promise is cleared from that cache rather than being re-served on the next call.
+Leaving it cached would turn one network blip into a session-long screening hole: `unavailable`
+deliberately does not block submission, so a report that should have been screened out would stay
+submittable even after the network recovers. An identity check on eviction stops a late, stale
+rejection from wiping a newer cache entry that has since replaced it.
 
 ### Submission gate
 
@@ -243,8 +280,13 @@ enables the button.
 
 ### Error handling
 
-An async check that rejects yields `unavailable`, carrying a translated "We could not check this"
-message, and does not gate submission. The rejection is logged to the console.
+An async check that rejects yields `unavailable` and does not gate submission. The rejection is
+logged to the console with `console.warn`.
+
+The `unavailable` result carries no message. `report_checklist.ts` holds no user-visible strings
+at all; `ReportChecklist.tsx` supplies the wording for that state — _"We could not check this. You
+can still submit your report."_ — so the engine stays a clean boundary between evaluating state and
+explaining it.
 
 **Stale-response guard.** The current effect at `Report.tsx:335-351` has no request-generation
 guard, so a slow response for one game can land after the reporter has changed context and
@@ -256,14 +298,14 @@ this work.
 
 ### New
 
-| Path | Contents | Why separate |
-| --- | --- | --- |
-| `src/lib/report_checklist.ts` | Types, `evaluateChecklist()`, `getChecklist()` | Pure logic, no React, directly unit-testable. `report_util.test.ts` sets the precedent. |
-| `src/lib/report_checklist_items.ts` | `REPORT_CHECKLISTS` registry and its `pgettext` strings | The policy file. Adding an attestation to another report type means editing only this, with no need to read the evaluator. |
-| `src/lib/useReportChecklist.ts` | React binding: effect, result state, staleness guard | Keeps async lifecycle out of both the engine and `Report.tsx`. |
-| `src/components/Report/ReportChecklist.tsx` + `.css` | The below-description list | One component per file, co-located with its only parent. |
-| `src/components/Report/ReportChecklistBlocker.tsx` + `.css` | The single above-description blocker | As above. |
-| `src/lib/report_checklist.test.ts` | Evaluator unit tests | See "Testing". |
+| Path                                                        | Contents                                                | Why separate                                                                                                               |
+| ----------------------------------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/report_checklist.ts`                               | Types, `evaluateChecklist()`, `getChecklist()`          | Pure logic, no React, directly unit-testable. `report_util.test.ts` sets the precedent.                                    |
+| `src/lib/report_checklist_items.ts`                         | `REPORT_CHECKLISTS` registry and its `pgettext` strings | The policy file. Adding an attestation to another report type means editing only this, with no need to read the evaluator. |
+| `src/lib/useReportChecklist.ts`                             | React binding: effect, result state, staleness guard    | Keeps async lifecycle out of both the engine and `Report.tsx`.                                                             |
+| `src/components/Report/ReportChecklist.tsx` + `.css`        | The below-description list                              | One component per file, co-located with its only parent.                                                                   |
+| `src/components/Report/ReportChecklistBlocker.tsx` + `.css` | The single above-description blocker                    | As above.                                                                                                                  |
+| `src/lib/report_checklist.test.ts`                          | Evaluator unit tests                                    | See "Testing".                                                                                                             |
 
 `REPORT_CHECKLISTS` is `Partial<Record<ReportType, ChecklistItem[]>>`, deliberately mirroring the
 existing idiom: `REPORT_TYPE_VOTABLE_ACTIONS` in `ogs/go_app/models/moderation.py` and
@@ -275,11 +317,11 @@ existing idiom: `REPORT_TYPE_VOTABLE_ACTIONS` in `ogs/go_app/models/moderation.p
 needs to be merged in. In v1 it composes, in this order:
 
 1. `report.game_identified` — synthesised when `category.game_id_required`. Synchronous,
-   **blocking**. Message: the existing *"Please report the user on the game page so we know where
-   to look."*
+   **blocking**. Message: the existing _"Please report the user on the game page so we know where
+   to look."_
 2. `REPORT_CHECKLISTS[type] ?? []`
 3. `report.description_length` — synthesised when `category.min_description_length`.
-   Synchronous, **not** blocking. Message: the existing *"{{required}} more characters needed"*.
+   Synchronous, **not** blocking. Message: the existing _"{{required}} more characters needed"_.
 
 Synthesising from the existing declarative fields means none of the fourteen entries in
 `report_categories` need editing. Only `check_applicability` is deleted outright, because it
@@ -300,7 +342,14 @@ Added:
 
 ```tsx
 const [attestations, set_attestations] = React.useState<Record<ChecklistItemId, boolean>>({});
-const results = useReportChecklist({ category, game_id, review_id, reported_user_id, note, attestations });
+const results = useReportChecklist({
+    category,
+    game_id,
+    review_id,
+    reported_user_id,
+    note,
+    attestations,
+});
 const blocker = results.find((r) => r.state === "blocked");
 ```
 
@@ -350,27 +399,27 @@ Migrated automatically by synthesis, with no per-type authoring:
 
 Migrated by hand into `REPORT_CHECKLISTS`:
 
-- `stalling.enough_moves` — data check, blocking. Label: *"Enough moves were played to judge
-  this"*. Message: the existing stalling applicability string.
+- `stalling.enough_moves` — data check, blocking. Label: _"Enough moves were played to judge
+  this"_. Message: the existing stalling applicability string.
 
 ### `escaping`
 
 Note that the `escaping` category declares no `min_description_length`, so no description-length
 item is synthesised for it. Evaluation order:
 
-| id | Kind | Blocking | Label |
-| --- | --- | --- | --- |
-| `report.game_identified` | data check, synthesised | yes | *The reported game is identified* |
-| `escaping.game_ended` | data check, **new** | yes | *The game has ended* |
-| `escaping.not_resigned` | data check, migrated | yes | *This player did not resign the game* |
-| `escaping.enough_moves` | data check, migrated | yes | *Enough moves were played to judge this* |
-| `escaping.waited_reasonable_time` | attestation, **new** | — | *I waited a reasonable time for this player to play* |
+| id                                | Kind                    | Blocking | Label                                                |
+| --------------------------------- | ----------------------- | -------- | ---------------------------------------------------- |
+| `report.game_identified`          | data check, synthesised | yes      | _The reported game is identified_                    |
+| `escaping.game_ended`             | data check, **new**     | yes      | _The game has ended_                                 |
+| `escaping.not_resigned`           | data check, migrated    | yes      | _This player did not resign the game_                |
+| `escaping.enough_moves`           | data check, migrated    | yes      | _Enough moves were played to judge this_             |
+| `escaping.waited_reasonable_time` | attestation, **new**    | —        | _I waited a reasonable time for this player to play_ |
 
 `escaping.game_ended` reads `phase === "finished"` from the shared game-data fetch. It mirrors a
 rule the backend already enforces at `ogs/api/views/moderate.py:758-769`, which rejects escaping
-reports while the game is still underway. Today the reporter meets that rule only *after* writing
-a description and submitting, and sees it as the generic *"There was an error submitting your
-report"*. The data check turns that into a specific explanation before any effort is spent. The
+reports while the game is still underway. Today the reporter meets that rule only _after_ writing
+a description and submitting, and sees it as the generic _"There was an error submitting your
+report"_. The data check turns that into a specific explanation before any effort is spent. The
 backend rule stays in place as defence-in-depth.
 
 `escaping.not_resigned` and `escaping.enough_moves` carry the existing translated strings from
@@ -409,28 +458,42 @@ them.
 
 One shared edit and four targeted ones.
 
-1. `e2e-tests/helpers/user-utils.ts:504` — `submitReportForm` ticks every
-   `[data-checklist-item][data-state="actionable"] input[type=checkbox]` before submitting. This
-   one edit covers `cm/escape-rate-helpers.ts`, the `cm-*` escaping and stalling tests, and the
-   `ai-detector-*` tests.
-2. `moderation/mod-block-early-escape-report.ts:74` and
-   `moderation/mod-block-early-stall-report.ts:75` — both currently assert the block message
-   arrives as the textarea's `placeholder` attribute. Under the collapsing layout the textarea is
-   absent, so both re-target `[data-checklist-blocker=...]` and additionally assert the textarea
-   is not present.
-3. `moderation/mod-reject-escape-report-during-game.ts` — **its premise changes.** The during-game
-   half currently submits and asserts the server's error alert. The client now blocks first, so it
-   asserts the `escaping.game_ended` blocker and a disabled button instead. The test fills notes
-   inline rather than through `submitReportForm`, in both halves, so it also needs the
-   attestation-ticking step added to its after-game half.
-4. New `moderation/mod-escaping-attestation-required.ts` — with all data checks passing, the
-   submit button stays disabled until `escaping.waited_reasonable_time` is ticked, then enables.
+1. `e2e-tests/helpers/user-utils.ts` — a new shared helper, `tickReportAttestations(page)`, ticks
+   every `[data-checklist-item][data-state="actionable"] input[type=checkbox]` before submitting.
+   `submitReportForm` calls it. This one edit covers `cm/escape-rate-helpers.ts`, the `cm-*`
+   escaping and stalling tests, and the `ai-detector-*` tests.
+2. `moderation/mod-block-early-escape-report.ts` is renamed to
+   `moderation/mod-block-escape-report-unfinished-game.ts`. It, and
+   `moderation/mod-block-early-stall-report.ts`, previously asserted the block message arrived as
+   the textarea's `placeholder` attribute. Under the collapsing layout the textarea is absent, so
+   both re-target `[data-checklist-blocker=...]` and additionally assert the textarea is not
+   present. The escaping test asserts the `escaping.game_ended` blocker specifically, not
+   `escaping.enough_moves` — see the accepted coverage gap below.
+3. `moderation/mod-reject-escape-report-during-game.ts` — **its premise changes**, and it is
+   renamed to `moderation/mod-block-escape-report-during-game.ts` with its exported test function
+   renamed from `modRejectEscapeReportDuringGameTest` to `modBlockEscapeReportDuringGameTest` to
+   match, since the server rejects nothing any more. Its registered name changes from "Reject
+   escape reports during active game" to "Block escape reports during an active game", because the
+   client now blocks the report before any request reaches the server. The during-game half
+   previously submitted and asserted the server's error alert; it now asserts the
+   `escaping.game_ended` blocker and a disabled button instead. The test fills notes inline rather
+   than through `submitReportForm` in both halves, so it also needs the attestation-ticking step
+   added to its after-game half.
+4. New `moderation/mod-escaping-attestation-required.ts`, registered as "Escaping report requires
+   the attestation" — with all data checks passing, the submit button stays disabled until
+   `escaping.waited_reasonable_time` is ticked, then enables.
 
 **Accepted coverage loss.** After change 3, no test drives the backend rule at
 `moderate.py:758-769` through the user interface. This is accepted: the rule only fires for a
 client that bypasses the dialog, which is exactly the case end-to-end tests cannot drive, and
 `e2e-tests/CLAUDE.md` directs tests to drive the system as a user does rather than call the API
 directly.
+
+**Accepted coverage gap: `escaping.enough_moves`.** No end-to-end test reaches this check. It only
+becomes the displayed blocker for a game that has already finished with fewer than two moves
+played — e.g. a first-turn timeout — and driving that through the browser would mean waiting out a
+timeout, which would force the test to carry `@Slow`. It is covered instead by unit tests in
+`src/lib/report_checklist_items.test.ts`.
 
 **Verification scope.** Because `submitReportForm` is shared, verification runs the whole
 `moderation` and `cm` end-to-end families, not only the four tests above. Pull-request CI does not

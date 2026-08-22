@@ -30,7 +30,7 @@ import { expectOGSClickableByName } from "@helpers/matchers";
 
 // This is the fast smoke check that the "escaping" checklist blocks submission at all
 // while the reported game is still in progress: one move, no scoring, dialog open, assert
-// the blocker, done. It is not redundant with `mod-reject-escape-report-during-game.ts`,
+// the blocker, done. It is not redundant with `mod-block-escape-report-during-game.ts`,
 // which plays a full game to completion and additionally proves a report succeeds once
 // the game has ended — a slower, end-to-end path this test does not cover.
 //
