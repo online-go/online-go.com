@@ -51,16 +51,24 @@ interface DataCheckCommon {
     blocking: boolean;
 }
 
-/** Re-evaluated on every render, so it may depend on live form state. */
+/**
+ * Re-evaluated on every render, so it may depend on live form state.
+ * `evaluate` may return "unavailable" when it cannot determine the outcome at all —
+ * distinct from `{ met: false }`, which means it determined the claim does not hold.
+ */
 export interface SyncDataCheckItem extends DataCheckCommon {
     sync: true;
-    evaluate: (ctx: ChecklistContext) => CheckOutcome;
+    evaluate: (ctx: ChecklistContext) => CheckOutcome | "unavailable";
 }
 
-/** Evaluated only when the report type or reported game changes. */
+/**
+ * Evaluated only when the report type or reported game changes.
+ * `evaluate` may return "unavailable" when it cannot determine the outcome at all —
+ * distinct from `{ met: false }`, which means it determined the claim does not hold.
+ */
 export interface AsyncDataCheckItem extends DataCheckCommon {
     sync: false;
-    evaluate: (ctx: ChecklistContext) => Promise<CheckOutcome>;
+    evaluate: (ctx: ChecklistContext) => Promise<CheckOutcome | "unavailable">;
 }
 
 export type DataCheckItem = SyncDataCheckItem | AsyncDataCheckItem;
@@ -82,12 +90,19 @@ export type AsyncOutcomes = Record<ChecklistItemId, CheckOutcome | "unavailable"
  * Runs the async data checks. Synchronous checks are evaluated here only to decide
  * whether to short-circuit: a failing synchronous blocker means no async check runs,
  * which is what keeps game fetches behind "we actually have a game".
+ *
+ * Returns `{}` both when a sync blocker short-circuited and when there were simply no
+ * async checks to run — the two cases are indistinguishable from the return value
+ * alone. Callers must always pass the result to `buildResults`, which independently
+ * re-evaluates the sync checks and so renders the short-circuited blocker correctly
+ * either way; do not treat an empty `AsyncOutcomes` as "nothing to show".
  */
 export async function evaluateAsyncChecks(
     items: ChecklistItem[],
     ctx: ChecklistContext,
 ): Promise<AsyncOutcomes> {
-    const pending: Array<{ id: ChecklistItemId; promise: Promise<CheckOutcome> }> = [];
+    const pending: Array<{ id: ChecklistItemId; promise: Promise<CheckOutcome | "unavailable"> }> =
+        [];
 
     for (const item of items) {
         if (item.kind !== "data_check") {
@@ -95,7 +110,9 @@ export async function evaluateAsyncChecks(
         }
         if (item.sync) {
             const outcome = item.evaluate(ctx);
-            if (!outcome.met && item.blocking) {
+            // "unavailable" is not a blocking failure — it is the absence of a
+            // determination, so it must not short-circuit the checks after it.
+            if (outcome !== "unavailable" && !outcome.met && item.blocking) {
                 return {};
             }
             continue;

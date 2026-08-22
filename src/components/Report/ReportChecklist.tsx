@@ -76,7 +76,7 @@ export function ReportChecklist({
                             <div className="detail">
                                 {pgettext(
                                     "Shown when a report checklist check could not be run",
-                                    "We could not check this. You can still submit your report.",
+                                    "We could not check this, but it will not stop your report.",
                                 )}
                             </div>
                         )}

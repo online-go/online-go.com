@@ -103,6 +103,44 @@ describe("evaluateAsyncChecks", () => {
 
         expect(outcomes["async.boom"]).toBe("unavailable");
     });
+
+    test("a sync check returning 'unavailable' does not short-circuit, even when blocking", async () => {
+        let called = false;
+        const unavailableSyncBlocker: SyncDataCheckItem = {
+            kind: "data_check",
+            sync: true,
+            id: "sync.unavailable",
+            label: "sync.unavailable",
+            blocking: true,
+            evaluate: () => "unavailable",
+        };
+        const items: ChecklistItem[] = [
+            unavailableSyncBlocker,
+            asyncCheck("async.one", true, true, () => {
+                called = true;
+            }),
+        ];
+
+        const outcomes = await evaluateAsyncChecks(items, ctx);
+
+        expect(called).toBe(true);
+        expect(outcomes["async.one"]).toEqual({ met: true });
+    });
+
+    test("an async check returning 'unavailable' directly is passed through unchanged", async () => {
+        const unavailableAsync: AsyncDataCheckItem = {
+            kind: "data_check",
+            sync: false,
+            id: "async.unavailable",
+            label: "async.unavailable",
+            blocking: true,
+            evaluate: async () => "unavailable",
+        };
+
+        const outcomes = await evaluateAsyncChecks([unavailableAsync], ctx);
+
+        expect(outcomes["async.unavailable"]).toBe("unavailable");
+    });
 });
 
 describe("buildResults", () => {
@@ -200,6 +238,22 @@ describe("buildResults", () => {
         const items: ChecklistItem[] = [asyncCheck("async.one", true, true)];
 
         const results = buildResults(items, ctx, { "async.one": "unavailable" }, {});
+
+        expect(results[0].state).toBe("unavailable");
+        expect(results[0].message).toBeUndefined();
+    });
+
+    test("a sync check returning 'unavailable' renders as unavailable, not blocked", () => {
+        const unavailableSyncBlocker: SyncDataCheckItem = {
+            kind: "data_check",
+            sync: true,
+            id: "sync.unavailable",
+            label: "sync.unavailable",
+            blocking: true,
+            evaluate: () => "unavailable",
+        };
+
+        const results = buildResults([unavailableSyncBlocker], ctx, {}, {});
 
         expect(results[0].state).toBe("unavailable");
         expect(results[0].message).toBeUndefined();

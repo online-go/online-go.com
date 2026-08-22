@@ -191,7 +191,10 @@ asking.
 game"* — but they serve **the list only**, where a tick or an unticked marker sits beside them.
 A blocking failure never renders in that list: it takes over the dialog alone, and shows no label
 at all, only its `message`. A label that reads correctly with a tick beside it says nothing about
-whether it reads correctly on its own, because it never has to — the blocker never shows it.
+whether it reads correctly on its own, because it never has to — the blocker never shows it. The
+blocker component does fall back to the label if `message` is ever empty — a last-resort guard so
+the blocker can never render an empty box — but that fallback exists purely as a guard, not as a
+second place a label is expected to read correctly alone.
 
 **Every blocking message must therefore be self-contained.** With no label and no tick or cross to
 carry meaning, the message is the entire explanation. It must state what is actually true about

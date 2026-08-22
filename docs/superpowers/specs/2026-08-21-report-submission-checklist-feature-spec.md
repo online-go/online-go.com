@@ -67,7 +67,10 @@ entry:
 this player to play."*
 
 **Things we check for them.** We look at the game and show the result. *"This player did not
-resign the game"* — with a tick, or with a cross and an explanation.
+resign the game"* — with a tick when it passes. When a check like this fails, it is never shown
+as a cross next to its tick in the list: the check moves to the top of the dialog alone, with its
+explanation, and the list disappears along with the rest of the form. See "Something they cannot
+fix" below.
 
 The reporter cannot submit until everything is satisfied.
 

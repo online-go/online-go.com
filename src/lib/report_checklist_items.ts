@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { interpolate, pgettext } from "@/lib/translate";
+import { _, interpolate, pgettext } from "@/lib/translate";
 
 import type {
     AsyncDataCheckItem,
@@ -46,8 +46,10 @@ function gameIdentifiedItem(): SyncDataCheckItem {
                 ? { met: true }
                 : {
                       met: false,
-                      message: pgettext(
-                          "Shown when a report needs a game but none is known",
+                      // Kept as _() rather than pgettext(context, ...): a msgctxt makes this
+                      // a new gettext entry, orphaning the translations of the identical
+                      // string Report.tsx used before this checklist existed.
+                      message: _(
                           "Please report the user on the game page so we know where to look.",
                       ),
                   },
@@ -82,6 +84,14 @@ const escapingGameEnded: AsyncDataCheckItem = {
     blocking: true,
     evaluate: async (ctx) => {
         const gamedata = await ctx.fetchGamedata();
+        // The response is fetched as an untyped payload and cast to Gamedata, so a
+        // missing field here is a real possibility, not just a type-system fiction.
+        // A missing `phase` means we cannot tell whether the game ended, so this must
+        // report "unavailable" rather than falling through to "not finished", which
+        // would wrongly block the report.
+        if (typeof gamedata.phase !== "string") {
+            return "unavailable";
+        }
         return gamedata.phase === "finished"
             ? { met: true }
             : {
@@ -103,15 +113,21 @@ const escapingNotResigned: AsyncDataCheckItem = {
     label: pgettext("A report checklist item", "This player did not resign the game"),
     blocking: true,
     evaluate: async (ctx) => {
+        // ctx.reported_user_id is optional. Without it we cannot tell who resigned,
+        // so this check cannot be determined at all — "unavailable" says that
+        // honestly, rather than reporting a pass we never actually established.
+        if (ctx.reported_user_id === undefined) {
+            return "unavailable";
+        }
         const gamedata = await ctx.fetchGamedata();
-        // ctx.reported_user_id is optional. When it is unknown we cannot tell who
-        // resigned, so this check must not block: an unknown accused is treated as
-        // permissive, per the framework's rule that a check which cannot be run
-        // never blocks. Do not tighten this to a strict comparison.
+        // As above: the payload is an untyped fetch cast to Gamedata, so `outcome`
+        // and `winner` may genuinely be missing. Guard each field this check reads
+        // rather than trusting the declared type.
+        if (typeof gamedata.outcome !== "string" || typeof gamedata.winner !== "number") {
+            return "unavailable";
+        }
         const accused_resigned =
-            ctx.reported_user_id !== undefined &&
-            gamedata.outcome?.includes("Resignation") &&
-            gamedata.winner !== ctx.reported_user_id;
+            gamedata.outcome.includes("Resignation") && gamedata.winner !== ctx.reported_user_id;
         return accused_resigned
             ? {
                   met: false,
@@ -134,6 +150,11 @@ const escapingEnoughMoves: AsyncDataCheckItem = {
     blocking: true,
     evaluate: async (ctx) => {
         const gamedata = await ctx.fetchGamedata();
+        // As above: guard the specific field this check reads, rather than relying on
+        // a missing `moves` array to throw its way to "unavailable".
+        if (!Array.isArray(gamedata.moves)) {
+            return "unavailable";
+        }
         return gamedata.moves.length >= 2
             ? { met: true }
             : {
@@ -174,8 +195,14 @@ const stallingEnoughMoves: AsyncDataCheckItem = {
                   met: false,
                   message: pgettext(
                       "A message when the user is trying to report something that we don't want them to report yet",
+                      // The blank line below carries 16 trailing spaces that are part of this
+                      // gettext msgid — the existing .po translations only match with them
+                      // present. Expressing them as `${"                "}` keeps the string
+                      // bytes intact while giving the editor nothing to trim on save
+                      // (.editorconfig strips real trailing whitespace from *.ts on save).
+                      // Do not "simplify" this back to a literal blank line.
                       `There aren't enough moves played in this game to decide if someone is playing stalling moves.
-                
+${"                "}
 If the other player leaves the game without playing, we will automatically warn them about that.
 
 Please choose a different type of report, if there is a different problem.`,

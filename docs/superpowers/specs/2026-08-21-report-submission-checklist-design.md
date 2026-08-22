@@ -173,16 +173,20 @@ interface DataCheckCommon {
     blocking: boolean;
 }
 
-/** Re-evaluated on every render, so it may depend on live form state. */
+/**
+ * Re-evaluated on every render, so it may depend on live form state. `evaluate` may
+ * return "unavailable" when it cannot determine the outcome at all — see "Error
+ * handling" below.
+ */
 export interface SyncDataCheckItem extends DataCheckCommon {
     sync: true;
-    evaluate: (ctx: ChecklistContext) => CheckOutcome;
+    evaluate: (ctx: ChecklistContext) => CheckOutcome | "unavailable";
 }
 
 /** Evaluated only when the report type or reported game changes. */
 export interface AsyncDataCheckItem extends DataCheckCommon {
     sync: false;
-    evaluate: (ctx: ChecklistContext) => Promise<CheckOutcome>;
+    evaluate: (ctx: ChecklistContext) => Promise<CheckOutcome | "unavailable">;
 }
 
 export type DataCheckItem = SyncDataCheckItem | AsyncDataCheckItem;
@@ -253,9 +257,11 @@ it to be inferred from how a caller happens to invoke it.
 `evaluateAsyncChecks`:
 
 1. Walks items in declaration order. Synchronous checks are evaluated here too, but only to decide
-   whether to short-circuit: if a synchronous check fails and is `blocking`, the function returns
-   `{}` immediately, without waiting on any async check that may already have started. This is
-   what keeps game-data fetches behind "we actually have a game" — an escaping check never fires
+   whether to short-circuit: if a synchronous check fails, is `blocking`, and did **not** return
+   `"unavailable"`, the function returns `{}` immediately, without waiting on any async check that
+   may already have started. `"unavailable"` is excluded deliberately — it is not a blocking
+   failure, so a sync check reporting it must let the checks after it keep running. This is what
+   keeps game-data fetches behind "we actually have a game" — an escaping check never fires
    against a missing game id, because `report.game_identified` is synchronous and ordered first.
 2. Otherwise every async check's `evaluate(ctx)` is called and the resulting promises run in
    parallel via `Promise.all`. A rejection is caught and mapped to `"unavailable"` rather than
@@ -268,7 +274,8 @@ form-collapsing behaviour lives:
 
 - An attestation is `satisfied` if ticked, else `actionable`.
 - A sync data check is re-evaluated fresh, right here, against the `ctx` passed in — this is how
-  it sees the live note on every render.
+  it sees the live note on every render. Its return, like an async check's, can itself be
+  `"unavailable"`.
 - An async data check looks itself up in `asyncOutcomes`. A missing entry (the map is `null`,
   i.e. evaluation is still in flight) means `pending`. `"unavailable"` means `unavailable`.
   Otherwise `met` decides `satisfied` vs. (`blocked` if `blocking`, else `actionable`).
@@ -311,11 +318,15 @@ report type — which produces an empty checklist — would enable the button.
 ### Error handling
 
 An async check that rejects yields `unavailable` and does not gate submission. The rejection is
-logged to the console with `console.warn`.
+logged to the console with `console.warn`. A check — sync or async — can also return `unavailable`
+directly from `evaluate`, for the case where it ran without error but still could not determine
+the outcome (a required field missing from a payload, an argument it needs not being available).
+Both paths land on the same state and are handled identically by `buildResults` and
+`checklistSatisfied`.
 
 The `unavailable` result carries no message. `report_checklist.ts` holds no user-visible strings
-at all; `ReportChecklist.tsx` supplies the wording for that state — _"We could not check this. You
-can still submit your report."_ — so the engine stays a clean boundary between evaluating state and
+at all; `ReportChecklist.tsx` supplies the wording for that state — _"We could not check this, but
+it will not stop your report."_ — so the engine stays a clean boundary between evaluating state and
 explaining it.
 
 **Stale-response guard.** The current effect at `Report.tsx:335-351` has no request-generation
@@ -341,9 +352,13 @@ is a latent bug in the existing code, fixed as part of this work.
 | `src/lib/report_checklist_items.test.ts`                    | Registry and synthesis unit tests                                          | See "Testing".                                                                                                             |
 | `src/lib/useReportChecklist.test.tsx`                       | Hook unit tests                                                            | See "Testing".                                                                                                             |
 
-`REPORT_CHECKLISTS` is `Partial<Record<ReportType, ChecklistItem[]>>`, deliberately mirroring the
-existing idiom: `REPORT_TYPE_VOTABLE_ACTIONS` in `ogs/go_app/models/moderation.py` and
-`COMMUNITY_MODERATION_REPORT_TYPES` in `report_util.ts`.
+`REPORT_CHECKLISTS` is `Record<string, ChecklistItem[]>`, not `Partial<Record<ReportType, ChecklistItem[]>>`
+as the idiom it mirrors — `REPORT_TYPE_VOTABLE_ACTIONS` in `ogs/go_app/models/moderation.py` and
+`COMMUNITY_MODERATION_REPORT_TYPES` in `report_util.ts` — would suggest. Keying on `string` rather than
+`ReportType` is deliberate: importing `ReportType` here would reintroduce the dependency on `Report.tsx`
+that `report_checklist_items.ts` is built to avoid (see `ChecklistCategory`'s own doc comment). The
+cost is that a typo'd report-type key compiles silently instead of being caught by the type checker;
+that is accepted, not fixed, in the review that produced this correction.
 
 ### The seam
 
@@ -376,8 +391,11 @@ Added:
 
 ```tsx
 const [attestations, set_attestations] = React.useState<Record<ChecklistItemId, boolean>>({});
+// Memoised: useReportChecklist restarts its async evaluation whenever the items
+// array identity changes, and a fresh array each render would loop forever.
+const checklist_items = React.useMemo(() => getChecklist(report_type, category), [report_type, category]);
 const results = useReportChecklist({
-    category,
+    items: checklist_items,
     game_id,
     review_id,
     reported_user_id,
@@ -393,10 +411,13 @@ const blocker = results.find((r) => r.state === "blocked");
 ) : category ? (
     <>
         <textarea className={...} ... />
-        <ReportChecklist results={results} attestations={attestations} onToggle={toggleAttestation} />
+        <ReportChecklist results={results} onToggle={toggleAttestation} />
     </>
 ) : null}
 ```
+
+`ReportChecklist` takes `results` and `onToggle` only — `attestations` stays local to `Report.tsx` and is
+never passed as a prop; the component reads ticked-vs-not entirely from each result's `state`.
 
 `attestations` is cleared whenever `report_type` changes.
 
@@ -457,19 +478,26 @@ report"_. The data check turns that into a specific explanation before any effor
 backend rule stays in place as defence-in-depth.
 
 `escaping.enough_moves` carries the existing translated string from
-`checkGameForEscapingReportApplicability` unchanged.
+`checkGameForEscapingReportApplicability`, with one addition: its message now opens with a
+self-contained sentence stating what is true about this game — see the framework spec's
+"Authoring items" section, which carries the worked example of why that sentence was needed.
 
 `escaping.not_resigned` carries its existing translated string unchanged, but its logic does not:
-it now treats an unknown accused as passing rather than failing. The check has to tell whether
-_the reported player_ resigned, which needs `ctx.reported_user_id`. The code this replaced compared
-`gamedata.winner !== ctx.reported_user_id` unconditionally; when `reported_user_id` was `undefined`
-that comparison was true for any real game, since `winner` is never `undefined`, so every finished
-game the accused won by resignation was flagged as "that player resigned" regardless of who
-actually resigned. `escaping.not_resigned` now guards on `ctx.reported_user_id !== undefined`
-first and reports `{ met: true }` when it is unknown: an unknown accused means the check cannot be
-determined, and the framework's rule is that a check which cannot be determined must not block.
-The same bug still exists in `checkGameForEscapingReportApplicability`, the pre-checklist code this
-replaced — it is recorded here rather than treated as a silent improvement.
+it now reports `"unavailable"` for an unknown accused, rather than either passing or failing. The
+check has to tell whether _the reported player_ resigned, which needs `ctx.reported_user_id`. The
+code this replaced compared `gamedata.winner !== ctx.reported_user_id` unconditionally; when
+`reported_user_id` was `undefined` that comparison was true for any real game, since `winner` is
+never `undefined`, so every finished game the accused won by resignation was flagged as "that
+player resigned" regardless of who actually resigned. `escaping.not_resigned` now guards on
+`ctx.reported_user_id !== undefined` first and reports `"unavailable"` when it is unknown: an
+unknown accused means the check cannot be determined at all, and the framework's first invariant
+is that a reporter is never told a check passed when it did not run. Reporting `{ met: true }` for
+"cannot determine" — this design's original choice — violated that invariant; `"unavailable"` is
+the state the framework already has for exactly this case, and it satisfies the *second* invariant
+too, since `checklistSatisfied` treats `unavailable` the same as `satisfied` and so it still does
+not block. The same bug still exists in `checkGameForEscapingReportApplicability`, the
+pre-checklist code this replaced — it is recorded here rather than treated as a silent
+improvement.
 
 ### Authoring guidelines for future items
 
@@ -510,8 +538,12 @@ One shared edit and four targeted ones.
 
 1. `e2e-tests/helpers/user-utils.ts` — a new shared helper, `tickReportAttestations(page)`, ticks
    every `[data-checklist-item][data-state="actionable"] input[type=checkbox]` before submitting.
-   `submitReportForm` calls it. This one edit covers `cm/escape-rate-helpers.ts`, the `cm-*`
-   escaping and stalling tests, and the `ai-detector-*` tests.
+   `submitReportForm` calls it, and so does `reportUser`/`reportPlayerByColor` by extension. This
+   one edit covers `cm/escape-rate-helpers.ts`, the `cm-*` escaping and stalling tests, and most of
+   the `ai-detector-*` tests. `moderation/ai-detector-sees-suspension-modlog.ts` is the exception:
+   it drives the report dialog directly rather than through `submitReportForm`, so it never calls
+   `tickReportAttestations`. This is safe only because it files an `ai_use` report and `ai_use` has
+   no attestation item today; see the note on `tickReportAttestations` itself.
 2. `moderation/mod-block-early-escape-report.ts` is renamed to
    `moderation/mod-block-escape-report-unfinished-game.ts`. It, and
    `moderation/mod-block-early-stall-report.ts`, previously asserted the block message arrived as

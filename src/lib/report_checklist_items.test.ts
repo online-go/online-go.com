@@ -127,7 +127,10 @@ describe("escaping data checks", () => {
         expect(results[0].id).toBe("escaping.not_resigned");
     });
 
-    test("does not block on not_resigned when the accused is unknown", async () => {
+    test("not_resigned is unavailable, not satisfied, when the accused is unknown", async () => {
+        // A check that cannot be determined must not report success — the framework's
+        // first invariant. An unknown accused means we cannot tell who resigned, so
+        // this must come back "unavailable" rather than a false "satisfied".
         const items = getChecklist("escaping", { game_id_required: true });
         const ctx = {
             game_id: 4471,
@@ -137,18 +140,55 @@ describe("escaping data checks", () => {
         const outcomes = await evaluateAsyncChecks(items, ctx);
         const results = buildResults(items, ctx, outcomes, {});
         const states = Object.fromEntries(results.map((r) => [r.id, r.state]));
-        expect(states["escaping.not_resigned"]).toBe("satisfied");
+        expect(states["escaping.not_resigned"]).toBe("unavailable");
     });
 
     test("blocks on enough_moves when fewer than two moves were played", async () => {
         const results = await evaluate(gamedata({ outcome: "Resignation", winner: 7, moves: [1] }));
         expect(results).toHaveLength(1);
         expect(results[0].id).toBe("escaping.enough_moves");
+        expect(results[0].message).toMatch(
+            /There aren't enough moves played in this game to decide whether this player stopped playing/,
+        );
     });
 
     test("game_ended is checked before not_resigned", async () => {
         const results = await evaluate(gamedata({ phase: "play", winner: 99 }));
         expect(results[0].id).toBe("escaping.game_ended");
+    });
+
+    test("game_ended is unavailable, not blocking, when phase is missing from the payload", async () => {
+        // winner: 7 matches reported_user_id, so not_resigned is satisfied rather than
+        // blocking — otherwise buildResults would collapse the list down to that
+        // blocker and game_ended's state would not be observable here.
+        const results = await evaluate(
+            gamedata({ phase: undefined as unknown as string, winner: 7 }),
+        );
+        const states = Object.fromEntries(results.map((r) => [r.id, r.state]));
+        expect(states["escaping.game_ended"]).toBe("unavailable");
+    });
+
+    test("not_resigned is unavailable when outcome or winner is missing from the payload", async () => {
+        const missingOutcome = await evaluate(
+            gamedata({ outcome: undefined as unknown as string }),
+        );
+        const missingWinner = await evaluate(gamedata({ winner: undefined as unknown as number }));
+        const stateOf = (results: typeof missingOutcome) =>
+            Object.fromEntries(results.map((r) => [r.id, r.state]))["escaping.not_resigned"];
+        expect(stateOf(missingOutcome)).toBe("unavailable");
+        expect(stateOf(missingWinner)).toBe("unavailable");
+    });
+
+    test("enough_moves is unavailable when moves is missing from the payload", async () => {
+        const results = await evaluate(
+            gamedata({
+                outcome: "Resignation",
+                winner: 7,
+                moves: undefined as unknown as Array<unknown>,
+            }),
+        );
+        const states = Object.fromEntries(results.map((r) => [r.id, r.state]));
+        expect(states["escaping.enough_moves"]).toBe("unavailable");
     });
 });
 
