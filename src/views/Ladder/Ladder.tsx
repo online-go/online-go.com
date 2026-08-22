@@ -31,6 +31,7 @@ import { alert } from "@/lib/swal_config";
 import { RouteComponentProps, rr6ClassShim } from "@/lib/ogs-rr6-shims";
 import { IdType } from "@/lib/types";
 import { PlayerCacheEntry } from "@/lib/player_cache";
+import { OnVacationIcon } from "./OnVacationIcon";
 import "./Ladder.css";
 
 type LadderProperties = RouteComponentProps<{
@@ -173,18 +174,20 @@ class _Ladder extends React.PureComponent<LadderProperties, LadderState> {
 
                         <div className="ladder-configuration">
                             <table>
-                                <tr>
-                                    <th>{_("Rules")}</th>
-                                    <td>{rulesText(this.state.ladder?.rules ?? "japanese")}</td>
-                                </tr>
-                                <tr>
-                                    <th>{_("Handicap")}</th>
-                                    <td>
-                                        {this.state.ladder?.handicap === -1
-                                            ? _("Automatic")
-                                            : _("None")}
-                                    </td>
-                                </tr>
+                                <tbody>
+                                    <tr>
+                                        <th>{_("Rules")}</th>
+                                        <td>{rulesText(this.state.ladder?.rules ?? "japanese")}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>{_("Handicap")}</th>
+                                        <td>
+                                            {this.state.ladder?.handicap === -1
+                                                ? _("Automatic")
+                                                : _("None")}
+                                        </td>
+                                    </tr>
+                                </tbody>
                             </table>
                         </div>
 
@@ -394,6 +397,14 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
         }
     }
 
+    componentDidMount() {
+        // The constructor starts a load whose result arrives after mount, and
+        // sync() drops that result when `unmounted` is set. React re-mounts the
+        // same instance in development, so the flag has to be cleared here or a
+        // remounted row discards its own data and renders empty forever.
+        this.unmounted = false;
+    }
+
     componentWillUnmount() {
         this.unmounted = true;
     }
@@ -577,6 +588,7 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
                                             #{challenge.player.ladder_rank}
                                         </span>
                                         <Player nolink user={challenge.player} />
+                                        {challenge.player.on_vacation && <OnVacationIcon />}
                                     </span>
                                 ))}
                             </span>
@@ -607,6 +619,7 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
                                             #{challenge.player.ladder_rank}
                                         </span>
                                         <Player nolink user={challenge.player} />
+                                        {challenge.player.on_vacation && <OnVacationIcon />}
                                     </span>
                                 ))}
                             </span>
@@ -706,6 +719,11 @@ function canChallengeTooltip(obj: any): string | null {
                 return pgettext(
                     "Can't challenge player in ladder because: ",
                     "Player already has the maximum number of challenges",
+                );
+            case 0x009:
+                return pgettext(
+                    "Can't challenge player in ladder because: ",
+                    "Player is on vacation",
                 );
         }
     }

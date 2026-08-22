@@ -84,13 +84,15 @@
         cursor: pointer;
 
         &.not-challengeable {
-            .Player, .right {
+            .Player,
+            .right {
                 color: #888 !important;
             }
         }
 
         &.challengeable {
-            .Player, .right {
+            .Player,
+            .right {
                 color: var(--link-color) !important;
             }
         }
@@ -151,7 +153,8 @@
                     text-align: left;
                 }
 
-                .incoming, .outgoing {
+                .incoming,
+                .outgoing {
                     display: inline-block;
                     width: 1.2rem;
                 }
@@ -160,10 +163,22 @@
     }
 }
 
+/*
+ * The vacation marker renders inside the challenge popover, which is a
+ * separate tree from the ladder rows, so this sits at the top level.
+ */
+.on-vacation-icon {
+    /* Clear of the rank label the Player component renders. */
+    margin-left: 0.5rem;
+    color: #888;
+}
+
 .Ladder-challenge-details {
     box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.2);
     border: 1px solid transparent;
-    box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.16), 0px 2px 5px 0px rgba(0, 0, 0, 0.15);
+    box-shadow:
+        0px 2px 10px 0px rgba(0, 0, 0, 0.16),
+        0px 2px 5px 0px rgba(0, 0, 0, 0.15);
     background-color: var(--shade4);
     border-color: var(--shade3);
     color: var(--fg);

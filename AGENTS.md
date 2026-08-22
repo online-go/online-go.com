@@ -47,6 +47,29 @@ Before submitting a PR, remind the author to perform manual testing in both mobi
 
 - Follow the repository PR template at `.github/pull_request_template.md` when creating pull requests.
 
+## OGS-Wide Development Policy
+
+Applies to all OGS repositories: `ogs`, `ogs-ui`, `goban`, `moderator-ui`.
+
+### Design artifact storage
+
+Non-trivial work produces two kinds of document. They have different lifetimes. Keep them apart.
+
+**Working artifacts** — `docs/superpowers/specs/` and `docs/superpowers/plans/`
+
+- Name them `YYYY-MM-DD-<topic>-design.md` and `YYYY-MM-DD-<topic>.md`.
+- Commit each as its own `docs:` commit on the feature branch: spec first, plan second, then the implementation.
+- Amend them in place as the work teaches you things. A plan that no longer matches what was built is worse than no plan.
+- Put them in the repository the work is in. Work that spans repositories goes in the repository carrying most of it.
+
+**Durable documents** — `docs/<topic>.md`
+
+- Subject-named, undated, present tense. They say what the system does now, not what some change proposed.
+- Work that establishes a lasting capability, contract or convention must leave one behind. Open it during the work, not after.
+- Curate them. Delete what has become false instead of appending corrections.
+
+**A working artifact with no durable document behind it is scaffolding.** It can be deleted once the work has landed. If something in a spec is worth keeping, move it to the durable document.
+
 ## graphify
 
 This project has a graphify knowledge graph at graphify-out/.
