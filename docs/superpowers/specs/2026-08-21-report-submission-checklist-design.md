@@ -111,9 +111,17 @@ nothing in this design may grow in that direction.
 Two states, selected during design review against mockups.
 
 **No data check has failed.** No section above the description. Below the description, above the
-buttons, a single list headed "Before you can submit" containing every item: satisfied data
-checks, attestation tickboxes, and any actionable shortfall such as "20 more characters needed".
-Everything the reporter can act on sits together, beside the button it governs.
+buttons, a single list headed "Before you can submit" containing only what still needs the
+reporter's attention: attestation tickboxes (ticked or not — a ticked box is the reporter's own
+confirmation and stays visible), and any actionable shortfall such as "20 more characters needed".
+A data check that has passed is not listed: it taught everything it has to teach by passing
+silently, and a static mockup's column of ticks turned out in practice to be a list that demands
+reading and asks nothing. While any data check is still in flight, its row is not shown either —
+a single shared line stands in for all of them, so the reporter still sees why the button is
+disabled, and the list reflows once when the checks resolve rather than once per check. When
+nothing is left to show — every data check passed, no attestation to tick, checks resolved — the
+list renders nothing at all: no heading, no border. Everything the reporter can still act on sits
+together, beside the button it governs.
 
 **A data check has failed.** The failed item renders alone above the description, styled as a
 blocker, carrying its reason and the instruction to choose a different report type. The
@@ -393,7 +401,10 @@ Added:
 const [attestations, set_attestations] = React.useState<Record<ChecklistItemId, boolean>>({});
 // Memoised: useReportChecklist restarts its async evaluation whenever the items
 // array identity changes, and a fresh array each render would loop forever.
-const checklist_items = React.useMemo(() => getChecklist(report_type, category), [report_type, category]);
+const checklist_items = React.useMemo(
+    () => getChecklist(report_type, category),
+    [report_type, category],
+);
 const results = useReportChecklist({
     items: checklist_items,
     game_id,
@@ -493,7 +504,7 @@ player resigned" regardless of who actually resigned. `escaping.not_resigned` no
 unknown accused means the check cannot be determined at all, and the framework's first invariant
 is that a reporter is never told a check passed when it did not run. Reporting `{ met: true }` for
 "cannot determine" — this design's original choice — violated that invariant; `"unavailable"` is
-the state the framework already has for exactly this case, and it satisfies the *second* invariant
+the state the framework already has for exactly this case, and it satisfies the _second_ invariant
 too, since `checklistSatisfied` treats `unavailable` the same as `satisfied` and so it still does
 not block. The same bug still exists in `checkGameForEscapingReportApplicability`, the
 pre-checklist code this replaced — it is recorded here rather than treated as a silent

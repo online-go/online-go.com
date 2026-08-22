@@ -112,16 +112,35 @@ export const escapingAttestationRequiredTest = async ({
 
     await reporterPage.selectOption(".type-picker select", { value: "escaping" }); // cspell:disable-line
 
-    // Every data check should pass, leaving only the attestation outstanding.
+    // Every data check should pass, leaving only the attestation outstanding. A
+    // satisfied data check is not rendered at all (see ReportChecklist.tsx), so its
+    // absence alone would not distinguish "passed" from "never resolved" or "excluded
+    // for some other reason". Instead: wait out the shared pending row so evaluation
+    // has definitely finished, then confirm none of the three escaping data checks
+    // rendered a row of their own. `blocked` and `actionable` both render a row and
+    // `unavailable` does too, so ruling those out - plus the textarea being present at
+    // all, which rules out `blocked` collapsing the form - leaves `satisfied` as the
+    // only state each of the three checks could be in.
+    await expect(reporterPage.locator('li[data-state="pending"]')).toHaveCount(0);
+
+    await expect(reporterPage.locator('[data-checklist-item="escaping.game_ended"]')).toHaveCount(
+        0,
+    );
+    await expect(reporterPage.locator('[data-checklist-item="escaping.not_resigned"]')).toHaveCount(
+        0,
+    );
+    await expect(reporterPage.locator('[data-checklist-item="escaping.enough_moves"]')).toHaveCount(
+        0,
+    );
+
     const attestation = reporterPage.locator(
         '[data-checklist-item="escaping.waited_reasonable_time"]',
     );
     await expect(attestation).toBeVisible();
     await expect(attestation).toHaveAttribute("data-state", "actionable");
 
-    await expect(
-        reporterPage.locator('[data-checklist-item="escaping.game_ended"]'),
-    ).toHaveAttribute("data-state", "satisfied");
+    // The attestation is the only checklist row left at all.
+    await expect(reporterPage.locator("[data-checklist-item]")).toHaveCount(1);
 
     await reporterPage.locator("textarea.notes").fill("E2E test - checking the attestation gate");
 

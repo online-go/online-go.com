@@ -28,11 +28,39 @@ interface ReportChecklistProps {
     onToggle: (id: ChecklistItemId) => void;
 }
 
+/**
+ * A satisfied data check is dropped: it taught everything it has to teach by passing
+ * without a fuss, and showing a tick just restates something already visible
+ * elsewhere in the dialog. A satisfied attestation is kept regardless — it is the
+ * reporter's own confirmation, not a fact the system worked out for them, so they
+ * should still see it recorded as ticked. This asymmetry is deliberate; the two
+ * kinds are not unified into one rule.
+ *
+ * While any data check is still pending, its per-item row is not shown either. In
+ * its place, a single shared "checking" row stands for all of them, so the panel
+ * reflows once when the checks resolve rather than once per check, and the reporter
+ * still sees why the submit button is disabled while nothing has failed yet.
+ * Attestations and already-resolved data checks render alongside that row as usual.
+ */
 export function ReportChecklist({
     results,
     onToggle,
 }: ReportChecklistProps): React.ReactElement | null {
-    if (results.length === 0) {
+    let showPendingRow = false;
+    const rows: ChecklistItemResult[] = [];
+
+    for (const result of results) {
+        if (result.state === "pending") {
+            showPendingRow = true;
+            continue;
+        }
+        if (result.kind === "data_check" && result.state === "satisfied") {
+            continue;
+        }
+        rows.push(result);
+    }
+
+    if (rows.length === 0 && !showPendingRow) {
         return null;
     }
 
@@ -42,7 +70,20 @@ export function ReportChecklist({
                 {pgettext("Heading above the report submission checklist", "Before you can submit")}
             </div>
             <ul>
-                {results.map((result) => (
+                {showPendingRow && (
+                    <li data-state="pending">
+                        <div className="check-row">
+                            <span className="marker" aria-hidden="true" />
+                            <span className="label-text">
+                                {pgettext(
+                                    "Report checklist row standing in for all data checks still running",
+                                    "Checking…",
+                                )}
+                            </span>
+                        </div>
+                    </li>
+                )}
+                {rows.map((result) => (
                     <li key={result.id} data-checklist-item={result.id} data-state={result.state}>
                         {result.kind === "attestation" ? (
                             <label>
@@ -56,19 +97,6 @@ export function ReportChecklist({
                         ) : (
                             <div className="check-row">
                                 <span className="marker" aria-hidden="true" />
-                                {(result.state === "satisfied" || result.state === "pending") && (
-                                    <span className="sr-only">
-                                        {result.state === "satisfied"
-                                            ? pgettext(
-                                                  "Screen-reader label for a checklist item that passed",
-                                                  "Done:",
-                                              )
-                                            : pgettext(
-                                                  "Screen-reader label for a checklist item still being checked",
-                                                  "Checking:",
-                                              )}
-                                    </span>
-                                )}
                                 <span className="label-text">{result.label}</span>
                             </div>
                         )}

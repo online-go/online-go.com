@@ -32,7 +32,7 @@ motivated to find out.
 
 Screening and education are not two features. They are one mechanism seen from two sides: a
 check that stops a report has to explain itself to do its job, and an explanation delivered at
-the moment of reporting *is* the teaching. That is the observation this framework is built on.
+the moment of reporting _is_ the teaching. That is the observation this framework is built on.
 
 ## The idea
 
@@ -40,12 +40,12 @@ A report type declares a list of items. The reporter cannot submit until every i
 satisfied. Items come in two kinds, and the difference between them is who establishes the
 claim.
 
-**An attestation is a claim the reporter confirms.** *"I waited a reasonable time for this player
-to play."* It does the educating: it names a standard the reporter may not have known, at the
+**An attestation is a claim the reporter confirms.** _"I waited a reasonable time for this player
+to play."_ It does the educating: it names a standard the reporter may not have known, at the
 moment they care. It screens by self-selection — someone who cannot honestly tick it has learned
 why their report would fail, and has done so without consuming any moderator time.
 
-**A data check is a claim we establish for them.** *"This player did not resign the game."* It
+**A data check is a claim we establish for them.** _"This player did not resign the game."_ It
 does the screening: it stops a report that cannot be acted on. It educates through its failure
 message, which has to explain itself to be worth anything.
 
@@ -58,8 +58,13 @@ check never is. Everything about how the two behave follows from that one distin
 Three situations. Which one they are in depends only on whether they can do something about it.
 
 **Everything is satisfied, or nearly so.** A short list sits between the description and the
-submit button. Checks that passed are ticked off; anything outstanding is in the same list, in
-the same visual language. The list explains what the button is waiting for.
+submit button, but it shows only what needs attention. A data check that passed is not listed at
+all — it taught everything it has to teach by passing silently, and a tick beside it would only
+restate something already visible elsewhere in the dialog. A ticked attestation is the exception:
+it stays, because it is the reporter's own confirmation, not a fact the system worked out for
+them. Anything still outstanding — an unticked attestation, a shortfall, a check that could not
+run — is in the same list, in the same visual language. When nothing is left to show, the list
+does not render at all.
 
 **Something is outstanding that they can fix.** No different. The unticked item simply stays in
 the list and the button stays unavailable. The reporter is never guessing.
@@ -79,8 +84,8 @@ placeholder text inside a textarea, one replaces the textarea with a line of pro
 character countdown. There is no shared vocabulary, and no consistent place a reporter learns to
 look.
 
-More importantly, the category that does the actual teaching — *here is what you should have
-checked before filing this* — cannot be expressed at all. There is nowhere to put it.
+More importantly, the category that does the actual teaching — _here is what you should have
+checked before filing this_ — cannot be expressed at all. There is nowhere to put it.
 
 So the argument for a framework is not tidiness. It is that:
 
@@ -106,11 +111,11 @@ exist.
 ### Reach — what a data check can see
 
 Today a data check sees what the reporter is already allowed to see: public game data. That
-supports claims like *did this game end*, *did the accused resign*, *were enough moves played*.
+supports claims like _did this game end_, _did the accused resign_, _were enough moves played_.
 
 Beyond that lie checks the browser cannot make:
 
-- Things about the reporter's own history — *you have already reported this game*.
+- Things about the reporter's own history — _you have already reported this game_.
 - Things about the wider picture that the reporter cannot see — patterns across recent reports,
   prior findings against the accused, rank movement.
 
@@ -182,33 +187,42 @@ constraint on what a blocking check is allowed to ship.
 cautions, not threats. Deterrence is a by-product of having to think, never the purpose of the
 wording.
 
-**Attestation labels are first person and specific to the report type.** *"I waited a reasonable
-time for this player to play,"* not a generic *"I have read the guidelines."* Boilerplate that
+**Attestation labels are first person and specific to the report type.** _"I waited a reasonable
+time for this player to play,"_ not a generic _"I have read the guidelines."_ Boilerplate that
 applies to every report type gets clicked past without being read, which defeats the point of
 asking.
 
-**Data-check labels are positive statements about the world** — *"This player did not resign the
-game"* — but they serve **the list only**, where a tick or an unticked marker sits beside them.
-A blocking failure never renders in that list: it takes over the dialog alone, and shows no label
-at all, only its `message`. A label that reads correctly with a tick beside it says nothing about
-whether it reads correctly on its own, because it never has to — the blocker never shows it. The
-blocker component does fall back to the label if `message` is ever empty — a last-resort guard so
-the blocker can never render an empty box — but that fallback exists purely as a guard, not as a
-second place a label is expected to read correctly alone.
+**Data-check labels are positive statements about the world** — _"This player did not resign the
+game"_ — but they serve **the list only**, and only when the list has something to say about
+them: an unticked marker beside a non-blocking failure, or the "could not check" wording beside
+`unavailable`. A blocking failure never renders in that list: it takes over the dialog alone, and
+shows no label at all, only its `message`. A label that reads correctly with a marker beside it
+says nothing about whether it reads correctly on its own, because it never has to — the blocker
+never shows it. The blocker component does fall back to the label if `message` is ever empty — a
+last-resort guard so the blocker can never render an empty box — but that fallback exists purely
+as a guard, not as a second place a label is expected to read correctly alone.
+
+**A data check is seen at all only when it fails or cannot be run.** A satisfied data check
+renders nothing whatsoever — no label, no tick, no row. It taught everything it has to teach by
+passing without a fuss; showing it would only restate, as a tick, something the reporter can
+already see elsewhere in the dialog. This sharpens the point above rather than repeating it: a
+data check's `message` — and, for a non-blocking failure, its label — is not merely the _best_
+place to put the explanation, it is the check's _entire visible existence_ whenever it has
+anything to show at all.
 
 **Every blocking message must therefore be self-contained.** With no label and no tick or cross to
 carry meaning, the message is the entire explanation. It must state what is actually true about
 this case — not a general policy, not a hypothetical — and what the reporter should do instead.
 
 `escaping.enough_moves` was shipped wrong this way and is the worked example. Its message opened
-with *"If the other player leaves the game without playing the first move we will automatically
-warn them about this."* — a conditional about what the system does in general, never a statement
-of what is true about this game. Read under its label, *"Enough moves were played to judge this,"*
+with _"If the other player leaves the game without playing the first move we will automatically
+warn them about this."_ — a conditional about what the system does in general, never a statement
+of what is true about this game. Read under its label, _"Enough moves were played to judge this,"_
 crossed out, the omission didn't show: the label supplied the missing fact. Read alone, as a
 blocking message now always is, it told a blocked reporter nothing about their own situation. The
 fix prepended a fact about the case, as a separately translated sentence joined by a blank line so
-the existing translated paragraph could be kept unchanged: *"There aren't enough moves played in
-this game to decide whether this player stopped playing."* Its sibling, `stalling.enough_moves`,
+the existing translated paragraph could be kept unchanged: _"There aren't enough moves played in
+this game to decide whether this player stopped playing."_ Its sibling, `stalling.enough_moves`,
 had carried that opening sentence from the start and did not need the fix.
 
 **Item identifiers are stable and opaque.** Never renamed, never reused for a different claim.
@@ -230,7 +244,7 @@ does not change even when the label or message does.
 
 The framework earns further investment by evidence, not by existing.
 
-**For coverage:** a fall in reports of the covered type being closed as inapplicable, *without* a
+**For coverage:** a fall in reports of the covered type being closed as inapplicable, _without_ a
 matching rise in the same complaints arriving under another type. A fall accompanied by that rise
 means the checklist screened without educating — it moved the problem, and the honest reading is
 that it failed.
