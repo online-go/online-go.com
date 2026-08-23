@@ -823,22 +823,18 @@ export class ChatChannelProxy extends TypedEventEmitter<Events> {
         this._destroy();
     }
 
-    // Re-emit the underlying channel's single-payload events as-is. The
-    // channel always emits (event, payload) - a single argument - so we
-    // must forward that same single argument, not wrap the captured
-    // (...args) rest-array in another array (which used to produce
-    // listeners receiving `[payload]` instead of `payload`).
-    _onChat = (...args: any[]) => {
-        this.emit("chat", args[0]);
+    // Forward the channel's events unchanged. The channel emits a single payload.
+    _onChat = (msg?: Events["chat"]) => {
+        this.emit("chat", msg);
     };
-    _onTopic = (...args: any[]) => {
-        this.emit("topic", args[0]);
+    _onTopic = (topic?: Events["topic"]) => {
+        this.emit("topic", topic);
     };
-    _onJoin = (...args: any[]) => {
-        this.emit("join", args[0]);
+    _onJoin = (users?: Events["join"]) => {
+        this.emit("join", users);
     };
-    _onPart = (...args: any[]) => {
-        this.emit("part", args[0]);
+    _onPart = (user?: Events["part"]) => {
+        this.emit("part", user);
     };
     _onUserMetadataUpdate = (update?: { user: User; previous_user: User }) => {
         if (!update) {
@@ -846,11 +842,11 @@ export class ChatChannelProxy extends TypedEventEmitter<Events> {
         }
         this.emit("user-metadata-update", update);
     };
-    _onChatRemoved = (...args: any[]) => {
-        this.emit("chat-removed", args[0]);
+    _onChatRemoved = (msg?: Events["chat-removed"]) => {
+        this.emit("chat-removed", msg);
     };
-    _onUnreadChanged = (...args: any[]) => {
-        this.emit("unread-count-changed", args[0]);
+    _onUnreadChanged = (update?: Events["unread-count-changed"]) => {
+        this.emit("unread-count-changed", update);
     };
     _destroy() {
         this.channel.off("chat", this._onChat);
