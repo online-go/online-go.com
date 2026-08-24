@@ -278,10 +278,8 @@ player_cache.update(user);
 data.set("user", user);
 window.user = user;
 
-/* The goban engine reads window.user when it is constructed, so keep it in
- * sync when the logged-in user finishes loading after startup (e.g. the
- * ui/config fetch on a session whose localStorage cache was empty or stale).
- * See https://github.com/online-go/online-go.com/issues/1765 */
+/* The goban engine reads window.user when it is constructed, so it must be
+ * kept in sync when the logged-in user finishes loading after startup. */
 data.watch("config.user", (updated_user) => {
     if (updated_user) {
         window.user = updated_user;

@@ -105,14 +105,11 @@ describe("isAnalysisDisabled", () => {
         expect(isAnalysisDisabled(goban)).toBe(false);
     });
 
-    test("disables analysis for a participant even when the engine was constructed before the user was loaded (issue #1765)", () => {
-        // Simulate a fresh session: window.user and the data store still hold
-        // the anonymous placeholder while the engine is constructed...
+    test("disables analysis for a participant even when the engine was constructed before the user was loaded", () => {
         setUser(0, true);
         window.user = data.get("user");
         const goban = makeGoban();
 
-        // ...and the real logged-in user arrives afterwards (ui/config fetch).
         setUser(BLACK_ID);
         window.user = data.get("user");
 
