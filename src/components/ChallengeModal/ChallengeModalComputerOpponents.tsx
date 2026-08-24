@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-import React from "react";
+import React, { useEffect } from "react";
 import * as data from "@/lib/data";
 import { Bot, bots_list, getAcceptableTimeSetting } from "@/lib/bots";
 import * as preferences from "@/lib/preferences";
@@ -132,9 +132,11 @@ export const ChallengeModalComputerOpponents = (props: ChallengeModalComputerOpp
     });
 
     const selected_bot_value = available_bots.find((b) => b.id === props.state.conf.bot_id);
-    if (selected_bot_value?.disabled) {
-        props.updateBotId(0);
-    }
+    useEffect(() => {
+        if (selected_bot_value?.disabled) {
+            props.updateBotId(0);
+        }
+    }, [props.state.conf.bot_id, selected_bot_value?.disabled]);
 
     if (available_bots.length <= 0) {
         return (
