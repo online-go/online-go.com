@@ -76,6 +76,7 @@ import {
 import "./ChallengeModal.css";
 import { ChallengeModalRankedSettings } from "./ChallengeModalRankedSettings";
 import { ChallengeModalBoardSizeSettings } from "./ChallengeModalBoardSizeSettings";
+import { ChallengeModalComputerOpponents } from "./ChallengeModalComputerOpponents";
 
 /* Constants  */
 
@@ -1732,7 +1733,12 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                     ) : (
                         <div className="computer-opponents">
                             <h2>{_("Pick your computer opponent")}:</h2>
-                            <div>{this.renderComputerOpponents()}</div>
+                            <div>
+                                <ChallengeModalComputerOpponents
+                                    state={this.state}
+                                    updateBotId={this.update_bot_id}
+                                />
+                            </div>
                         </div>
                     )}
                 </div>
