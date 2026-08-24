@@ -84,14 +84,9 @@ beforeAll(() => {
     configure_goban();
 });
 
-beforeEach(() => {
-    delete (window as { user?: unknown }).user;
-});
-
 describe("isAnalysisDisabled", () => {
     test("disables analysis for a participant in a no-analysis game", () => {
         setUser(BLACK_ID);
-        window.user = data.get("user");
         const goban = makeGoban();
 
         expect(isAnalysisDisabled(goban)).toBe(true);
@@ -99,7 +94,6 @@ describe("isAnalysisDisabled", () => {
 
     test("allows analysis for a spectator in a no-analysis game", () => {
         setUser(SPECTATOR_ID);
-        window.user = data.get("user");
         const goban = makeGoban();
 
         expect(isAnalysisDisabled(goban)).toBe(false);
@@ -107,18 +101,15 @@ describe("isAnalysisDisabled", () => {
 
     test("disables analysis for a participant even when the engine was constructed before the user was loaded", () => {
         setUser(0, true);
-        window.user = data.get("user");
         const goban = makeGoban();
 
         setUser(BLACK_ID);
-        window.user = data.get("user");
 
         expect(isAnalysisDisabled(goban)).toBe(true);
     });
 
     test("allows analysis for a participant once the game is finished", () => {
         setUser(BLACK_ID);
-        window.user = data.get("user");
         const goban = makeGoban({ phase: "finished" });
 
         expect(isAnalysisDisabled(goban)).toBe(false);
@@ -126,7 +117,6 @@ describe("isAnalysisDisabled", () => {
 
     test("allows analysis for a participant when the game does not disable it", () => {
         setUser(BLACK_ID);
-        window.user = data.get("user");
         const goban = makeGoban({ disable_analysis: false });
 
         expect(isAnalysisDisabled(goban)).toBe(false);
@@ -134,7 +124,6 @@ describe("isAnalysisDisabled", () => {
 
     test("per-game setting applies to spectators when requested (SGF download)", () => {
         setUser(SPECTATOR_ID);
-        window.user = data.get("user");
         const goban = makeGoban();
 
         expect(isAnalysisDisabled(goban, true)).toBe(true);

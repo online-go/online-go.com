@@ -278,14 +278,6 @@ player_cache.update(user);
 data.set("user", user);
 window.user = user;
 
-/* The goban engine reads window.user when it is constructed, so it must be
- * kept in sync when the logged-in user finishes loading after startup. */
-data.watch("config.user", (updated_user) => {
-    if (updated_user) {
-        window.user = updated_user;
-    }
-});
-
 /***
  * Test if local storage is disabled for some reason (Either because the user
  * turned it off, the browser doesn't support it, or because the user is using
