@@ -75,6 +75,7 @@ import {
 } from "@/components/ChallengeModal/ChallengeModal.types";
 import "./ChallengeModal.css";
 import { ChallengeModalRankedSettings } from "./ChallengeModalRankedSettings";
+import { ChallengeModalBoardSizeSettings } from "./ChallengeModalBoardSizeSettings";
 
 /* Constants  */
 
@@ -761,8 +762,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     };
 
     update_ranked = (ev: React.ChangeEvent<HTMLInputElement>) => this.setRanked(ev.target.checked);
-    update_board_size = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        const selection = ev.target.value;
+    update_board_size = (selection: string) => {
         this.update_conf((prev) => ({ ...prev, selected_board_size: selection }));
 
         if (selection === "custom") {
@@ -1212,6 +1212,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     // board size and 'Ranked' checkbox
     additionalSettings = () => {
         const showRankedSettings = !this.state.forking_game && this.props.mode !== "computer";
+        const showBoardSizeSettings = !this.state.forking_game;
 
         return (
             <div
@@ -1225,101 +1226,17 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                         updateRanked={this.update_ranked}
                     />
                 )}
-                {!this.state.forking_game && this.boardSizeSettings()}
-            </div>
-        );
-    };
-
-    boardSizeSettings = () => {
-        const conf = this.state.conf;
-        const enable_custom_board_sizes =
-            this.props.mode === "computer" || !this.state.challenge.game.ranked;
-
-        return (
-            <>
-                <div className="form-group" id="challenge-board-size-group">
-                    <label className="control-label" htmlFor="challenge-board-size">
-                        {_("Board Size")}
-                    </label>
-                    <div className="controls">
-                        <div className="checkbox">
-                            <select
-                                id="challenge-board-size"
-                                value={conf.selected_board_size}
-                                onChange={this.update_board_size}
-                                className="challenge-dropdown form-control"
-                            >
-                                <optgroup label={_("Normal Sizes")}>
-                                    <option value="19x19">19x19</option>
-                                    <option value="13x13">13x13</option>
-                                    <option value="9x9">9x9</option>
-                                </optgroup>
-                                <optgroup label={_("Extreme Sizes")}>
-                                    <option disabled={!enable_custom_board_sizes} value="25x25">
-                                        25x25
-                                    </option>
-                                    <option disabled={!enable_custom_board_sizes} value="21x21">
-                                        21x21
-                                    </option>
-                                    <option disabled={!enable_custom_board_sizes} value="5x5">
-                                        5x5
-                                    </option>
-                                </optgroup>
-                                <optgroup label={_("Non-Square")}>
-                                    <option disabled={!enable_custom_board_sizes} value="19x9">
-                                        19x9
-                                    </option>
-                                    <option disabled={!enable_custom_board_sizes} value="5x13">
-                                        5x13
-                                    </option>
-                                </optgroup>
-                                <optgroup label={_("Custom")}>
-                                    <option disabled={!enable_custom_board_sizes} value="custom">
-                                        {_("Custom Size")}
-                                    </option>
-                                </optgroup>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                {conf.selected_board_size === "custom" && (
-                    <div className="form-group">
-                        <label
-                            className="control-label"
-                            htmlFor="challenge-board-size-custom"
-                        ></label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <input
-                                    type="number"
-                                    value={this.gameState().width ?? ""}
-                                    onChange={(ev) =>
-                                        this.update_board_width(parseNumberInput(ev.target.value))
-                                    }
-                                    id="challenge-goban-width"
-                                    className="form-control"
-                                    style={{ width: "3em" }}
-                                    min="1"
-                                    max="25"
-                                />
-                                x
-                                <input
-                                    type="number"
-                                    value={this.gameState().height ?? ""}
-                                    onChange={(ev) =>
-                                        this.update_board_height(parseNumberInput(ev.target.value))
-                                    }
-                                    id="challenge-goban-height"
-                                    className="form-control"
-                                    style={{ width: "3em" }}
-                                    min="1"
-                                    max="25"
-                                />
-                            </div>
-                        </div>
-                    </div>
+                {showBoardSizeSettings && (
+                    <ChallengeModalBoardSizeSettings
+                        game={this.state.challenge.game}
+                        conf={this.state.conf}
+                        mode={this.props.mode}
+                        updateBoardSize={this.update_board_size}
+                        updateBoardWidth={this.update_board_width}
+                        updateBoardHeight={this.update_board_height}
+                    />
                 )}
-            </>
+            </div>
         );
     };
 
