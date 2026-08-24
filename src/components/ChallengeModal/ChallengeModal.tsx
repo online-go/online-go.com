@@ -74,6 +74,7 @@ import {
     UpdateFn,
 } from "@/components/ChallengeModal/ChallengeModal.types";
 import "./ChallengeModal.css";
+import { ChallengeModalRankedSettings } from "./ChallengeModalRankedSettings";
 
 /* Constants  */
 
@@ -1210,15 +1211,20 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
     // board size and 'Ranked' checkbox
     additionalSettings = () => {
+        const showRankedSettings = !this.state.forking_game && this.props.mode !== "computer";
+
         return (
             <div
                 id="challenge-basic-settings"
                 className="right-pane pane form-horizontal"
                 role="form"
             >
-                {!this.state.forking_game &&
-                    this.props.mode !== "computer" &&
-                    this.rankedSettings()}
+                {showRankedSettings && (
+                    <ChallengeModalRankedSettings
+                        game={this.state.challenge.game}
+                        updateRanked={this.update_ranked}
+                    />
+                )}
                 {!this.state.forking_game && this.boardSizeSettings()}
             </div>
         );
@@ -1314,33 +1320,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                     </div>
                 )}
             </>
-        );
-    };
-
-    rankedSettings = () => {
-        return (
-            <div>
-                <div className="form-group">
-                    <label className="control-label" htmlFor="challenge-ranked">
-                        {_("Ranked")}
-                    </label>
-                    <div className="controls">
-                        <div className="checkbox">
-                            <input
-                                type="checkbox"
-                                id="challenge-ranked"
-                                disabled={
-                                    !this.state.challenge.game.ranked &&
-                                    (this.state.challenge.game.private ||
-                                        this.state.challenge.game.rengo)
-                                }
-                                checked={this.state.challenge.game.ranked}
-                                onChange={this.update_ranked}
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
         );
     };
 
