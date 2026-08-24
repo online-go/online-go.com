@@ -65,6 +65,14 @@ export const escapingAttestationRequiredTest = async ({
 
     // 60s main time: the default 2s blitz can time the game out mid-sequence on a loaded
     // dev stack, ending the game the wrong way for this test.
+    //
+    // Reporter plays white deliberately: ranked challenges (the default here) disable
+    // custom komi entirely, so automatic komi's default advantage to white is
+    // unavoidable. With only a handful of symmetric center stones and no captures,
+    // that advantage decides the game — putting the accused on black instead of white
+    // means the accused loses on komi rather than winning, which escaping.not_winner
+    // now requires. Otherwise the checklist collapses to that single blocker instead
+    // of leaving the attestation this test means to exercise.
     await createDirectChallenge(reporterPage, accusedUsername, {
         ...defaultChallengeSettings,
         gameName: "E2E escaping attestation",
@@ -73,7 +81,7 @@ export const escapingAttestationRequiredTest = async ({
         mainTime: "60",
         timePerPeriod: "10",
         periods: "1",
-        color: "black",
+        color: "white",
     });
 
     await acceptDirectChallenge(accusedPage);
@@ -81,12 +89,16 @@ export const escapingAttestationRequiredTest = async ({
     const goban = reporterPage.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });
 
-    // At least two moves, so escaping.enough_moves passes.
-    await playMoves(reporterPage, accusedPage, ["D5", "E5", "D6", "E6"], "9x9");
+    // At least two moves, so escaping.enough_moves passes. playMoves takes
+    // (black, white) positionally — accused is black here, reporter is white.
+    await playMoves(accusedPage, reporterPage, ["D5", "E5", "D6", "E6"], "9x9");
 
     // End by passing and scoring: escaping.game_ended passes and nobody resigned.
-    await reporterPage.getByText("Pass", { exact: true }).click();
+    // 4 moves were played (black, white alternating), so it is black's (accused's)
+    // turn again — pass out of order and the click just waits on a button that is
+    // not yet actionable, burning the clock.
     await accusedPage.getByText("Pass", { exact: true }).click();
+    await reporterPage.getByText("Pass", { exact: true }).click();
 
     const accusedAccept = accusedPage.getByText("Accept");
     await expect(accusedAccept).toBeVisible();
@@ -101,7 +113,7 @@ export const escapingAttestationRequiredTest = async ({
     await waitForGameViewReady(reporterPage);
 
     const playerLink = reporterPage.locator(
-        `.white.player-name-container a.Player[data-ready="true"]`,
+        `.black.player-name-container a.Player[data-ready="true"]`,
     );
     await openPlayerDetailsPopover(reporterPage, playerLink);
 
@@ -116,14 +128,17 @@ export const escapingAttestationRequiredTest = async ({
     // satisfied data check is not rendered at all (see ReportChecklist.tsx), so its
     // absence alone would not distinguish "passed" from "never resolved" or "excluded
     // for some other reason". Instead: wait out the shared pending row so evaluation
-    // has definitely finished, then confirm none of the three escaping data checks
+    // has definitely finished, then confirm none of the four escaping data checks
     // rendered a row of their own. `blocked` and `actionable` both render a row and
     // `unavailable` does too, so ruling those out - plus the textarea being present at
     // all, which rules out `blocked` collapsing the form - leaves `satisfied` as the
-    // only state each of the three checks could be in.
+    // only state each of the four checks could be in.
     await expect(reporterPage.locator('li[data-state="pending"]')).toHaveCount(0);
 
     await expect(reporterPage.locator('[data-checklist-item="escaping.game_ended"]')).toHaveCount(
+        0,
+    );
+    await expect(reporterPage.locator('[data-checklist-item="escaping.not_winner"]')).toHaveCount(
         0,
     );
     await expect(reporterPage.locator('[data-checklist-item="escaping.not_resigned"]')).toHaveCount(

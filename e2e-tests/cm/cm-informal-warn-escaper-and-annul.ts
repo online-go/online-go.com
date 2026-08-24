@@ -90,12 +90,19 @@ export const cmInformalWarnEscaperAndAnnulTest = async (
             // Phase 0: Play a real game, then file escaping report
             // ========================================
 
+            // Reporter plays white deliberately: ranked challenges (the default here)
+            // disable custom komi entirely, so automatic komi's default advantage to
+            // white is unavoidable. With only a handful of symmetric center stones and
+            // no captures, that advantage decides the game — putting the accused on
+            // black instead of white means the accused loses on komi rather than
+            // winning, which escaping.not_winner now requires for the report below to
+            // be filed at all.
             await createDirectChallenge(reporterPage, accusedUsername, {
                 ...defaultChallengeSettings,
                 gameName: "E2E CM IWEA Report Game",
                 boardSize: "9x9",
                 speed: "blitz",
-                color: "black",
+                color: "white",
             });
 
             await acceptDirectChallenge(accusedPage);
@@ -103,12 +110,17 @@ export const cmInformalWarnEscaperAndAnnulTest = async (
             const goban = reporterPage.locator(".Goban[data-pointers-bound]");
             await goban.waitFor({ state: "visible" });
 
-            // Play a few moves (need >= 2 to pass the escaping report applicability check)
-            await playMoves(reporterPage, accusedPage, ["D5", "E5", "D6", "E6"], "9x9");
+            // Play a few moves (need >= 2 to pass the escaping report applicability check).
+            // playMoves takes (black, white) positionally — accused is black here,
+            // reporter is white.
+            await playMoves(accusedPage, reporterPage, ["D5", "E5", "D6", "E6"], "9x9");
 
-            // End the game: both pass, both accept scoring
-            await reporterPage.getByText("Pass", { exact: true }).click();
+            // End the game: both pass, both accept scoring. 4 moves were played
+            // (black, white alternating), so it is black's (accused's) turn again —
+            // pass out of order and the click just waits on a button that is not yet
+            // actionable, burning the clock.
             await accusedPage.getByText("Pass", { exact: true }).click();
+            await reporterPage.getByText("Pass", { exact: true }).click();
 
             const accusedAccept = accusedPage.getByText("Accept");
             await expect(accusedAccept).toBeVisible();
@@ -127,10 +139,10 @@ export const cmInformalWarnEscaperAndAnnulTest = async (
             // AIReview) before opening PlayerDetails.
             await waitForGameViewReady(reporterPage);
 
-            // Report the accused (white) for escaping
+            // Report the accused (black) for escaping
             await reportPlayerByColor(
                 reporterPage,
-                ".white",
+                ".black",
                 "escaping",
                 "E2E test: player escaped this game (annul test)",
             );

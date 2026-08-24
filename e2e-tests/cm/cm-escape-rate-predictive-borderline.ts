@@ -79,6 +79,13 @@ async function playAndFinishGame(
     // and end the game by timeout rather than pass+accept, leaving the test
     // waiting forever on the "Pass"/"Accept" buttons. 60s main + 1×10s
     // byoyomi gives ample headroom while still being "live" speed.
+    //
+    // Reporter plays white deliberately: ranked challenges (the default here)
+    // disable custom komi entirely, so automatic komi's default advantage to white
+    // is unavoidable. With only a handful of symmetric center stones and no
+    // captures, that advantage decides the game — putting the accused on black
+    // instead of white means the accused loses on komi rather than winning, which
+    // escaping.not_winner now requires for the report below to be filed at all.
     await createDirectChallenge(reporterPage, accusedUsername, {
         ...defaultChallengeSettings,
         gameName,
@@ -87,7 +94,7 @@ async function playAndFinishGame(
         mainTime: "60",
         timePerPeriod: "10",
         periods: "1",
-        color: "black",
+        color: "white",
     });
 
     await acceptDirectChallenge(accusedPage);
@@ -95,10 +102,15 @@ async function playAndFinishGame(
     const goban = reporterPage.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });
 
-    await playMoves(reporterPage, accusedPage, ["D5", "E5", "D6", "E6"], "9x9");
+    // playMoves takes (black, white) positionally — accused is black here, reporter
+    // is white.
+    await playMoves(accusedPage, reporterPage, ["D5", "E5", "D6", "E6"], "9x9");
 
-    await reporterPage.getByText("Pass", { exact: true }).click();
+    // 4 moves were played (black, white alternating), so it is black's (accused's)
+    // turn again — pass out of order and the click just waits on a button that is
+    // not yet actionable, burning the clock.
     await accusedPage.getByText("Pass", { exact: true }).click();
+    await reporterPage.getByText("Pass", { exact: true }).click();
 
     const accusedAccept = accusedPage.getByText("Accept");
     await expect(accusedAccept).toBeVisible();
@@ -126,7 +138,7 @@ async function reportAndVote(
 ): Promise<void> {
     await reportPlayerByColor(
         reporterPage,
-        ".white",
+        ".black",
         "escaping",
         "E2E test: player escaped this game",
     );
@@ -188,7 +200,7 @@ export const cmEscapeRatePredictiveBorderlineTest = async (
 
             await reportPlayerByColor(
                 reporterPage,
-                ".white",
+                ".black",
                 "escaping",
                 "E2E test: player escaped (report 3, borderline)",
             );

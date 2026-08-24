@@ -92,6 +92,49 @@ Please choose a different type of report, if there is a different problem.`,
     },
 };
 
+const escapingNotWinner: AsyncDataCheckItem = {
+    kind: "data_check",
+    sync: false,
+    id: "escaping.not_winner",
+    label: pgettext("A report checklist item", "This player did not win the game"),
+    blocking: true,
+    evaluate: async (ctx) => {
+        // ctx.reported_user_id is optional. Without it we cannot tell who won,
+        // so this check cannot be determined at all — "unavailable" says that
+        // honestly, rather than reporting a pass we never actually established.
+        if (ctx.reported_user_id === undefined) {
+            return "unavailable";
+        }
+        const gamedata = await ctx.fetchGamedata();
+        // As above: the payload is an untyped fetch cast to Gamedata, so `winner`
+        // and `outcome` may genuinely be missing. Guard the fields this check
+        // reads rather than trusting the declared type.
+        if (typeof gamedata.winner !== "number" || typeof gamedata.outcome !== "string") {
+            return "unavailable";
+        }
+        // A resignation is judged by who resigned, not who won — that is
+        // escaping.not_resigned's job. A reporter whose opponent has stopped
+        // playing may reasonably resign to end the game rather than wait out the
+        // clock; if that resignation makes the *accused* the winner, this check
+        // must not treat it as evidence the accused played on. Only a win by
+        // score — the board, or the reporter timing out — means "stopped
+        // playing" plainly does not apply.
+        const accused_won_without_resignation =
+            gamedata.winner === ctx.reported_user_id && !gamedata.outcome.includes("Resignation");
+        return accused_won_without_resignation
+            ? {
+                  met: false,
+                  message: pgettext(
+                      "A message when trying to create a report that doesn't make sense",
+                      `That player won this game on score, so 'stopped playing' does not apply.
+
+Please choose a different type of report, if there is a different problem.`,
+                  ),
+              }
+            : { met: true };
+    },
+};
+
 const escapingNotResigned: AsyncDataCheckItem = {
     kind: "data_check",
     sync: false,
@@ -226,6 +269,7 @@ export const REPORT_CHECKLISTS: Record<string, ChecklistItem[]> = {
     escaping: [
         gameIdentifiedItem,
         escapingGameEnded,
+        escapingNotWinner,
         escapingNotResigned,
         escapingEnoughMoves,
         escapingWaitedReasonableTime,

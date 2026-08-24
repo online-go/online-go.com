@@ -301,11 +301,11 @@ or will not run before it — to gate it, and the check will fetch a missing gam
 `report_checklist_items.test.ts` derives this from `REPORT_CHECKLISTS` itself, so a type added
 later without `report.game_identified` first is caught automatically.
 
-**Shared fetch.** The three `escaping` data checks all need the same game data. `ChecklistContext`
+**Shared fetch.** The four `escaping` data checks all need the same game data. `ChecklistContext`
 exposes `fetchGamedata()`, implemented in `useReportChecklist.ts` as a promise held in a ref and
 keyed by game id — not memoised per evaluation pass. A per-pass memo is too narrow: typing in the
 description re-runs the synchronous checks, which re-runs evaluation, and a per-pass cache would
-refetch game data alongside every keystroke. Keying by game id in a ref means the three escaping
+refetch game data alongside every keystroke. Keying by game id in a ref means the four escaping
 checks share one request to `/termination-api/game/{id}` and typing costs nothing.
 
 A rejected promise is cleared from that cache rather than being re-served on the next call.
@@ -491,13 +491,14 @@ Authored directly into `REPORT_CHECKLISTS`, not migrated from an old flag:
 Note that `escaping`'s list carries no `report.description_length` item — the old
 `min_description_length` flag was never set for it. Evaluation order:
 
-| id                                | Kind                    | Blocking | Label                                                |
-| --------------------------------- | ----------------------- | -------- | ---------------------------------------------------- |
-| `report.game_identified`          | data check, listed      | yes      | _The reported game is identified_                    |
-| `escaping.game_ended`             | data check, **new**     | yes      | _The game has ended_                                 |
-| `escaping.not_resigned`           | data check, migrated    | yes      | _This player did not resign the game_                |
-| `escaping.enough_moves`           | data check, migrated    | yes      | _Enough moves were played to judge this_             |
-| `escaping.waited_reasonable_time` | attestation, **new**    | —        | _I waited a reasonable time for this player to play_ |
+| id                                | Kind                 | Blocking | Label                                                |
+| --------------------------------- | -------------------- | -------- | ---------------------------------------------------- |
+| `report.game_identified`          | data check, listed   | yes      | _The reported game is identified_                    |
+| `escaping.game_ended`             | data check, **new**  | yes      | _The game has ended_                                 |
+| `escaping.not_winner`             | data check, **new**  | yes      | _This player did not win the game_                   |
+| `escaping.not_resigned`           | data check, migrated | yes      | _This player did not resign the game_                |
+| `escaping.enough_moves`           | data check, migrated | yes      | _Enough moves were played to judge this_             |
+| `escaping.waited_reasonable_time` | attestation, **new** | —        | _I waited a reasonable time for this player to play_ |
 
 `escaping.game_ended` reads `phase === "finished"` from the shared game-data fetch. It mirrors a
 rule the backend already enforces at `ogs/api/views/moderate.py:758-769`, which rejects escaping
@@ -510,6 +511,23 @@ backend rule stays in place as defence-in-depth.
 `checkGameForEscapingReportApplicability`, with one addition: its message now opens with a
 self-contained sentence stating what is true about this game — see the framework spec's
 "Authoring items" section, which carries the worked example of why that sentence was needed.
+
+`escaping.not_winner` catches the case where the accused plainly played on: they won the game
+outright, whether on the board after both players passed and scored, or because the reporter timed
+out. It deliberately does **not** fire on a Resignation outcome, even one the accused won. A
+reporter whose opponent has stopped playing may reasonably resign to end the game rather than wait
+out the clock, and that resignation making the accused the technical "winner" is not evidence
+anyone kept playing — it would be wrong to block that report. The check reads
+`gamedata.outcome.includes("Resignation")` — the same idiom `not_resigned` uses below — to
+recognise a resignation and exempt it.
+
+The two checks split cleanly by how the game ended, not by who won it: a Resignation-ended game is
+judged solely by `not_resigned` (did _the accused_ resign?), and a scored game is judged solely by
+`not_winner` (did the accused win?) — `not_resigned` is trivially satisfied on a scored outcome, and
+`not_winner` is inert on a resignation outcome. `not_winner` reads `winner` and `outcome` from the
+shared game-data fetch and guards every field it needs — `ctx.reported_user_id`, `gamedata.winner`,
+`gamedata.outcome` — returning `"unavailable"` when any is missing, for the same reason
+`not_resigned` does below.
 
 `escaping.not_resigned` carries its existing translated string unchanged, but its logic does not:
 it now reports `"unavailable"` for an unknown accused, rather than either passing or failing. The
@@ -593,6 +611,25 @@ One shared edit and four targeted ones.
 4. New `moderation/mod-escaping-attestation-required.ts`, registered as "Escaping report requires
    the attestation" — with all data checks passing, the submit button stays disabled until
    `escaping.waited_reasonable_time` is ticked, then enables.
+5. `escaping.not_winner`, added after the four tests above already existed, forced a colour swap
+   in every test that plays a scored game and reports the accused: `cm/escape-rate-helpers.ts`,
+   `cm/cm-escape-rate-predictive-borderline.ts`, `cm/cm-escaping-one-at-a-time.ts`,
+   `cm/cm-informal-warn-escaper.ts`, `cm/cm-informal-warn-escaper-and-annul.ts`,
+   `moderation/mod-escaping-attestation-required.ts`, and
+   `moderation/mod-block-escape-report-during-game.ts`. These tests played a few symmetric
+   center-only stones and ended by pass-and-accept with the accused on white; automatic komi is
+   positive and decides an otherwise-even score, so the accused (white) was winning every one of
+   these games — exactly what the new check now blocks. **Adjusting komi was not an option**:
+   every challenge in this suite is ranked, and `ChallengeModal.tsx` disables the "custom" komi
+   option whenever the game is ranked (`disable_custom_komi = restrict_ranked_only ||
+auto_handicap`), so `#challenge-komi` never offers a value to override. The only lever left is
+   which colour the accused plays. The fix in each file put the accused on black (loses the komi
+   race) and the reporter on white, which meant also swapping `playMoves`'s `(black, white)`
+   argument order and the order of the two post-game "Pass" clicks — passing out of turn does not
+   error, it just waits on a not-yet-actionable button until the player's own clock runs out — and
+   retargeting any `.white`-scoped selector that had been finding the accused to `.black`. A
+   future e2e test that needs a particular winner should expect the same constraint: komi cannot
+   be used to control the outcome of a ranked game, only colour can.
 
 **Accepted coverage loss.** After change 3, no test drives the backend rule at
 `moderate.py:758-769` through the user interface. This is accepted: the rule only fires for a

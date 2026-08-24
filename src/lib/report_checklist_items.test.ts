@@ -43,6 +43,7 @@ describe("REPORT_CHECKLISTS resolved lists", () => {
             [
                 "report.game_identified",
                 "escaping.game_ended",
+                "escaping.not_winner",
                 "escaping.not_resigned",
                 "escaping.enough_moves",
                 "escaping.waited_reasonable_time",
@@ -160,12 +161,81 @@ describe("escaping data checks", () => {
         return buildResults(items, ctx, outcomes, {});
     };
 
-    test("passes for a finished game the accused did not resign", async () => {
-        const results = await evaluate(gamedata({ outcome: "Resignation", winner: 7 }));
+    test("passes for a finished game the accused did not resign or win", async () => {
+        const results = await evaluate(gamedata({ outcome: "Score", winner: 99 }));
         const states = Object.fromEntries(results.map((r) => [r.id, r.state]));
         expect(states["escaping.game_ended"]).toBe("satisfied");
+        expect(states["escaping.not_winner"]).toBe("satisfied");
         expect(states["escaping.not_resigned"]).toBe("satisfied");
         expect(states["escaping.enough_moves"]).toBe("satisfied");
+    });
+
+    test("blocks on not_winner when the accused won a scored game", async () => {
+        // A scored finish — both players passed and accepted, nobody resigned — is
+        // exactly the case not_winner exists to catch: the accused plainly played,
+        // whether they won on the board or the reporter simply timed out.
+        const results = await evaluate(gamedata({ outcome: "Score", winner: 7 }));
+        expect(results).toHaveLength(1);
+        expect(results[0].id).toBe("escaping.not_winner");
+        expect(results[0].message).toMatch(/that player won this game/i);
+    });
+
+    test("not_winner does not block a resignation-ended game the accused won", async () => {
+        // The reporter resigned, so the accused (7) won by resignation. A reporter
+        // whose opponent has stopped playing may reasonably resign to end the game
+        // rather than wait out the clock, so this must not be blocked — the
+        // framework's rule is to fail open on that ambiguity. A resignation-ended
+        // game is judged only by who resigned (escaping.not_resigned's job), never
+        // by who won.
+        const results = await evaluate(gamedata({ outcome: "Resignation", winner: 7 }));
+        const states = Object.fromEntries(results.map((r) => [r.id, r.state]));
+        expect(states["escaping.not_winner"]).toBe("satisfied");
+    });
+
+    test("not_winner is unavailable, not satisfied, when the accused is unknown", async () => {
+        // As with not_resigned: an unknown accused means we cannot tell who won, so
+        // this must come back "unavailable" rather than a false "satisfied".
+        const items = getChecklist("escaping");
+        const ctx = {
+            game_id: 4471,
+            note: "",
+            fetchGamedata: () => Promise.resolve(gamedata({ outcome: "Score", winner: 7 })),
+        };
+        const outcomes = await evaluateAsyncChecks(items, ctx);
+        const results = buildResults(items, ctx, outcomes, {});
+        const states = Object.fromEntries(results.map((r) => [r.id, r.state]));
+        expect(states["escaping.not_winner"]).toBe("unavailable");
+    });
+
+    test("not_winner is unavailable when winner or outcome is missing from the payload", async () => {
+        const missingWinner = await evaluate(
+            gamedata({ outcome: "Score", winner: undefined as unknown as number }),
+        );
+        const missingOutcome = await evaluate(
+            gamedata({ outcome: undefined as unknown as string, winner: 7 }),
+        );
+        const stateOf = (results: typeof missingWinner) =>
+            Object.fromEntries(results.map((r) => [r.id, r.state]))["escaping.not_winner"];
+        expect(stateOf(missingWinner)).toBe("unavailable");
+        expect(stateOf(missingOutcome)).toBe("unavailable");
+    });
+
+    test("complementarity: not_winner and not_resigned split by how the game ended, not by who won", async () => {
+        // Resignation ending: judged solely by who resigned. The accused won
+        // because the reporter resigned — not_winner exempts resignation endings
+        // entirely, and not_resigned is satisfied too (the accused isn't who
+        // resigned), so the whole checklist passes: the report can be filed.
+        const resignedResults = await evaluate(gamedata({ outcome: "Resignation", winner: 7 }));
+        const resignedStates = Object.fromEntries(resignedResults.map((r) => [r.id, r.state]));
+        expect(resignedStates["escaping.not_winner"]).toBe("satisfied");
+        expect(resignedStates["escaping.not_resigned"]).toBe("satisfied");
+
+        // Scored ending: judged solely by who won. not_resigned is trivially
+        // satisfied (there was no resignation to catch) — not_winner is what
+        // blocks here.
+        const scoredResults = await evaluate(gamedata({ outcome: "Score", winner: 7 }));
+        expect(scoredResults).toHaveLength(1);
+        expect(scoredResults[0].id).toBe("escaping.not_winner");
     });
 
     test("blocks on game_ended while the game is still being played", async () => {
@@ -198,7 +268,7 @@ describe("escaping data checks", () => {
     });
 
     test("blocks on enough_moves when fewer than two moves were played", async () => {
-        const results = await evaluate(gamedata({ outcome: "Resignation", winner: 7, moves: [1] }));
+        const results = await evaluate(gamedata({ outcome: "Score", winner: 99, moves: [1] }));
         expect(results).toHaveLength(1);
         expect(results[0].id).toBe("escaping.enough_moves");
         expect(results[0].message).toMatch(
@@ -212,11 +282,12 @@ describe("escaping data checks", () => {
     });
 
     test("game_ended is unavailable, not blocking, when phase is missing from the payload", async () => {
-        // winner: 7 matches reported_user_id, so not_resigned is satisfied rather than
-        // blocking — otherwise buildResults would collapse the list down to that
-        // blocker and game_ended's state would not be observable here.
+        // A scored finish with someone else as winner keeps both not_winner and
+        // not_resigned satisfied rather than blocking — otherwise buildResults would
+        // collapse the list down to whichever one blocks and game_ended's state would
+        // not be observable here.
         const results = await evaluate(
-            gamedata({ phase: undefined as unknown as string, winner: 7 }),
+            gamedata({ phase: undefined as unknown as string, outcome: "Score", winner: 99 }),
         );
         const states = Object.fromEntries(results.map((r) => [r.id, r.state]));
         expect(states["escaping.game_ended"]).toBe("unavailable");
@@ -236,8 +307,8 @@ describe("escaping data checks", () => {
     test("enough_moves is unavailable when moves is missing from the payload", async () => {
         const results = await evaluate(
             gamedata({
-                outcome: "Resignation",
-                winner: 7,
+                outcome: "Score",
+                winner: 99,
                 moves: undefined as unknown as Array<unknown>,
             }),
         );

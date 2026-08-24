@@ -114,22 +114,34 @@ export const cmEscapingOneAtATimeTest = async (
 
             // Game 1
             log("Playing game 1...");
+            // Reporter plays white deliberately: ranked challenges (the default here)
+            // disable custom komi entirely, so automatic komi's default advantage to
+            // white is unavoidable. With only a handful of symmetric center stones and
+            // no captures, that advantage decides the game — putting the accused on
+            // black instead of white means the accused loses on komi rather than
+            // winning, which escaping.not_winner now requires for the report below to
+            // be filed at all.
             await createDirectChallenge(reporterPage, accusedUsername, {
                 ...defaultChallengeSettings,
                 gameName: "E2E EQD Game 1",
                 boardSize: "9x9",
                 speed: "blitz",
-                color: "black",
+                color: "white",
             });
             await acceptDirectChallenge(accusedPage);
 
             const goban1 = reporterPage.locator(".Goban[data-pointers-bound]");
             await goban1.waitFor({ state: "visible" });
-            await playMoves(reporterPage, accusedPage, ["D5", "E5", "D6", "E6"], "9x9");
+            // playMoves takes (black, white) positionally — accused is black here,
+            // reporter is white.
+            await playMoves(accusedPage, reporterPage, ["D5", "E5", "D6", "E6"], "9x9");
 
-            // End game 1: both pass, both accept
-            await reporterPage.getByText("Pass", { exact: true }).click();
+            // End game 1: both pass, both accept. 4 moves were played (black, white
+            // alternating), so it is black's (accused's) turn again — pass out of
+            // order and the click just waits on a button that is not yet actionable,
+            // burning the clock.
             await accusedPage.getByText("Pass", { exact: true }).click();
+            await reporterPage.getByText("Pass", { exact: true }).click();
             await expect(accusedPage.getByText("Accept")).toBeVisible();
             await accusedPage.getByText("Accept").click();
             await expect(reporterPage.getByText("Accept")).toBeVisible();
@@ -142,7 +154,7 @@ export const cmEscapingOneAtATimeTest = async (
             // Report accused for escaping in game 1
             await reportPlayerByColor(
                 reporterPage,
-                ".white",
+                ".black",
                 "escaping",
                 "E2E dedup test: escaping report 1",
             );
@@ -151,22 +163,25 @@ export const cmEscapingOneAtATimeTest = async (
 
             // Game 2
             log("Playing game 2...");
+            // Same color override as game 1 — see its comment.
             await createDirectChallenge(reporterPage, accusedUsername, {
                 ...defaultChallengeSettings,
                 gameName: "E2E EQD Game 2",
                 boardSize: "9x9",
                 speed: "blitz",
-                color: "black",
+                color: "white",
             });
             await acceptDirectChallenge(accusedPage);
 
             const goban2 = reporterPage.locator(".Goban[data-pointers-bound]");
             await goban2.waitFor({ state: "visible" });
-            await playMoves(reporterPage, accusedPage, ["D5", "E5", "D6", "E6"], "9x9");
+            // playMoves takes (black, white) positionally — accused is black here,
+            // reporter is white.
+            await playMoves(accusedPage, reporterPage, ["D5", "E5", "D6", "E6"], "9x9");
 
-            // End game 2
-            await reporterPage.getByText("Pass", { exact: true }).click();
+            // End game 2. Same turn-order note as game 1: accused (black) passes first.
             await accusedPage.getByText("Pass", { exact: true }).click();
+            await reporterPage.getByText("Pass", { exact: true }).click();
             await expect(accusedPage.getByText("Accept")).toBeVisible();
             await accusedPage.getByText("Accept").click();
             await expect(reporterPage.getByText("Accept")).toBeVisible();
@@ -179,7 +194,7 @@ export const cmEscapingOneAtATimeTest = async (
             // Report accused for escaping in game 2
             await reportPlayerByColor(
                 reporterPage,
-                ".white",
+                ".black",
                 "escaping",
                 "E2E dedup test: escaping report 2",
             );

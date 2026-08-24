@@ -28,8 +28,15 @@ import { captureReportNumber, navigateToReport, reportPlayerByColor } from "@hel
 import { expectOGSClickableByName } from "@helpers/matchers";
 
 /**
- * Play a 9x9 game between reporter (black) and accused (white),
+ * Play a 9x9 game between reporter (white) and accused (black),
  * ending by pass+accept. Returns the game URL.
+ *
+ * Reporter plays white deliberately: ranked challenges (the default here) disable
+ * custom komi entirely, so automatic komi's default advantage to white is
+ * unavoidable. With only a handful of symmetric center stones and no captures,
+ * that advantage decides the game — putting the accused on black instead of white
+ * means the accused loses on komi rather than winning, which escaping.not_winner
+ * now requires for the report below to be filed at all.
  */
 export async function playAndFinishGame(
     reporterPage: Page,
@@ -50,7 +57,7 @@ export async function playAndFinishGame(
         mainTime: "60",
         timePerPeriod: "10",
         periods: "1",
-        color: "black",
+        color: "white",
     });
 
     await acceptDirectChallenge(accusedPage);
@@ -58,12 +65,16 @@ export async function playAndFinishGame(
     const goban = reporterPage.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });
 
-    // Play a few moves (need >= 2 for escaping report applicability)
-    await playMoves(reporterPage, accusedPage, ["D5", "E5", "D6", "E6"], "9x9");
+    // Play a few moves (need >= 2 for escaping report applicability). playMoves takes
+    // (black, white) positionally — accused is black here, reporter is white.
+    await playMoves(accusedPage, reporterPage, ["D5", "E5", "D6", "E6"], "9x9");
 
-    // End the game: both pass, both accept scoring
-    await reporterPage.getByText("Pass", { exact: true }).click();
+    // End the game: both pass, both accept scoring. 4 moves were played (black,
+    // white alternating), so it is black's (accused's) turn again — pass out of
+    // order and the click just waits on a button that is not yet actionable,
+    // burning the clock.
     await accusedPage.getByText("Pass", { exact: true }).click();
+    await reporterPage.getByText("Pass", { exact: true }).click();
 
     const accusedAccept = accusedPage.getByText("Accept");
     await expect(accusedAccept).toBeVisible();
@@ -99,10 +110,10 @@ export async function reportAndVote(
     // before opening PlayerDetails.
     await waitForGameViewReady(reporterPage);
 
-    // Report the accused (white) for escaping
+    // Report the accused (black) for escaping
     await reportPlayerByColor(
         reporterPage,
-        ".white",
+        ".black",
         "escaping",
         "E2E test: player escaped this game",
     );

@@ -50,7 +50,13 @@ export const modBlockEscapeReportDuringGameTest = async ({
         "test",
     );
 
-    // Reporter challenges the reported user
+    // Reporter challenges the reported user, taking white deliberately: ranked
+    // challenges (the default here) disable custom komi entirely, so automatic
+    // komi's default advantage to white is unavoidable. With only a handful of
+    // symmetric center stones and no captures, that advantage decides the game —
+    // putting the reported user on black instead of white means they lose on komi
+    // rather than winning, which escaping.not_winner now requires for the after-game
+    // report below to succeed.
     await createDirectChallenge(reporterPage, reportedUsername, {
         ...defaultChallengeSettings,
         gameName: "E2E Mod Escape Report Test Game",
@@ -60,30 +66,32 @@ export const modBlockEscapeReportDuringGameTest = async ({
         mainTime: "180",
         timePerPeriod: "30",
         periods: "3",
+        color: "white",
     });
 
     // Reported user accepts
     await acceptDirectChallenge(reportedPage);
 
-    // Reporter is black
+    // Reporter is white; the reported user is black and moves first.
     // Wait for the Goban to be visible & definitely ready
     const goban = reporterPage.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });
 
     await reporterPage.waitForTimeout(1000);
 
-    // Wait for the game state to indicate it's the reporter's move
-    const reportersMove = reporterPage.getByText("Your move", { exact: true });
-    await expect(reportersMove).toBeVisible();
+    // Wait for the game state to indicate it's the reported user's move
+    const reportedUsersMove = reportedPage.getByText("Your move", { exact: true });
+    await expect(reportedUsersMove).toBeVisible();
 
     // Play a few moves to establish the game is underway
-    // Need at least 6 moves to allow resignation
+    // Need at least 6 moves to allow resignation. playMoves takes (black, white)
+    // positionally — the reported user is black here, reporter is white.
     const moves = ["D5", "E5", "D6", "E6", "D7", "E7"];
 
-    await playMoves(reporterPage, reportedPage, moves, "9x9");
+    await playMoves(reportedPage, reporterPage, moves, "9x9");
 
     // Try to report escaping during the game - this should be blocked
-    const playerLink = reporterPage.locator(`.white.player-name-container a.Player`);
+    const playerLink = reporterPage.locator(`.black.player-name-container a.Player`);
     await expect(playerLink).toBeVisible();
     await playerLink.hover(); // Stabilize popover before clicking
     await playerLink.click();
@@ -109,15 +117,17 @@ export const modBlockEscapeReportDuringGameTest = async ({
     const closeButton = await expectOGSClickableByName(reporterPage, /^Close$/);
     await closeButton.click();
 
-    // Now finish the game by passing and scoring
-    // Both players pass
-    const reporterPass = reporterPage.getByText("Pass", { exact: true });
-    await expect(reporterPass).toBeVisible();
-    await reporterPass.click();
-
+    // Now finish the game by passing and scoring. Both players pass, the reported
+    // user (black) first: 6 moves were played (black, white alternating), so it is
+    // black's turn again — passing out of turn just waits on a button that is not
+    // yet actionable, burning the clock.
     const reportedPass = reportedPage.getByText("Pass", { exact: true });
     await expect(reportedPass).toBeVisible();
     await reportedPass.click();
+
+    const reporterPass = reporterPage.getByText("Pass", { exact: true });
+    await expect(reporterPass).toBeVisible();
+    await reporterPass.click();
 
     // Both players accept the score
     const reportedAccept = reportedPage.getByText("Accept");
@@ -133,7 +143,7 @@ export const modBlockEscapeReportDuringGameTest = async ({
     await expect(reporterFinished).toBeVisible();
 
     // Now try to report escaping after the game - this should be allowed
-    const playerLinkAfterGame = reporterPage.locator(`.white.player-name-container a.Player`);
+    const playerLinkAfterGame = reporterPage.locator(`.black.player-name-container a.Player`);
     await expect(playerLinkAfterGame).toBeVisible();
     await playerLinkAfterGame.hover(); // Stabilize popover before clicking
     await playerLinkAfterGame.click();

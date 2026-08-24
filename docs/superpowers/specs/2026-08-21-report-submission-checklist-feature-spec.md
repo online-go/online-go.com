@@ -43,12 +43,12 @@ and it has nowhere to put the education.
   reason exists, but it is grey placeholder text inside the description box: it disappears the
   moment the reporter types, and most people never read it at all.
 - Report a game that is **still being played**, and the refusal comes from the server. So the
-  reporter writes the whole description, presses the button, waits, and gets *"There was an error
-  submitting your report"* — which tells them nothing and reads like a bug.
+  reporter writes the whole description, presses the button, waits, and gets _"There was an error
+  submitting your report"_ — which tells them nothing and reads like a bug.
 - Elsewhere the dialog swaps the textarea for a line of prose, or shows a character countdown.
 
 Three different mechanisms, three different presentations, no shared language. And the category
-that would do the actual teaching — *here is what you should have checked before filing this* —
+that would do the actual teaching — _here is what you should have checked before filing this_ —
 does not exist anywhere.
 
 ### This is a first step
@@ -63,11 +63,11 @@ effort — and the reporters' patience — on every other report type.
 A checklist in the report dialog, specific to the type of report being filed. Two sorts of
 entry:
 
-**Things the reporter confirms.** A short statement they tick. *"I waited a reasonable time for
-this player to play."*
+**Things the reporter confirms.** A short statement they tick. _"I waited a reasonable time for
+this player to play."_
 
-**Things we check for them.** We look at the game and show the result. *"This player did not
-resign the game"* — with a tick when it passes. When a check like this fails, it is never shown
+**Things we check for them.** We look at the game and show the result. _"This player did not
+resign the game"_ — with a tick when it passes. When a check like this fails, it is never shown
 as a cross next to its tick in the list: the check moves to the top of the dialog alone, with its
 explanation, and the list disappears along with the rest of the form. See "Something they cannot
 fix" below.
@@ -121,17 +121,25 @@ reporting a genuine incident. Today this case fails silently; the item just disa
 Only one report type gets new items in this first version: **Stopped Playing**. Everything
 already enforced elsewhere carries on being enforced, just presented properly.
 
-| The reporter sees | Sort | New? |
-| --- | --- | --- |
-| The reported game is identified | We check | Already enforced |
-| The game has ended | We check | **New** |
-| This player did not resign the game | We check | Already enforced |
-| Enough moves were played to judge this | We check | Already enforced |
-| I waited a reasonable time for this player to play | They confirm | **New** |
+| The reporter sees                                  | Sort         | New?             |
+| -------------------------------------------------- | ------------ | ---------------- |
+| The reported game is identified                    | We check     | Already enforced |
+| The game has ended                                 | We check     | **New**          |
+| This player did not win the game                   | We check     | **New**          |
+| This player did not resign the game                | We check     | Already enforced |
+| Enough moves were played to judge this             | We check     | Already enforced |
+| I waited a reasonable time for this player to play | They confirm | **New**          |
 
 **"The game has ended"** is the one that changes an outcome rather than just an appearance. The
 server already refuses these reports; this stops the reporter reaching that refusal, and
 replaces the meaningless error with an explanation given before they have written anything.
+
+**"This player did not win the game"** stops a report where the accused plainly played: they won
+outright, either on the board once both players passed and agreed the score, or because the
+reporter's own clock ran out. It only looks at games that ended that way. If the game instead ended
+by resignation, this check stands aside — "did not resign" is what judges that case, and it is
+about who actually gave up, not who is left holding the win. A reporter whose opponent has stopped
+playing may reasonably resign rather than wait out the clock, and should still be able to report.
 
 **"I waited a reasonable time"** is the only thing we ask the reporter to confirm. It is the
 question a moderator would ask first, so asking it up front should divert some reports that
@@ -185,7 +193,7 @@ context on screen. We judged the unambiguous version better, but it is a taste c
    allowed through anyway, that changes the design.
 
 4. **Where should a blocked reporter be sent?** At present they are told to choose a different
-   type of report. Some of them will choose *Other* and write the same complaint. Whether that
+   type of report. Some of them will choose _Other_ and write the same complaint. Whether that
    is acceptable, or whether we should say something more specific, is worth a view.
 
 ## How we would know it worked
