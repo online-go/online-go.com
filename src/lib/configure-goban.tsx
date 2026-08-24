@@ -97,8 +97,9 @@ export function configure_goban() {
                 return !!goban.engine.config.original_disable_analysis;
             } else {
                 // The per-game setting applies only to participants, spectators may always
-                // analyze. Participation must be evaluated at call time; the engine's own
-                // disable_analysis is computed once at construction and can be stale.
+                // analyze. Participation must be evaluated at call time; the engine clears
+                // its own disable_analysis at construction when window.user is not a
+                // participant, and window.user may not be loaded yet at that point.
                 return (
                     !!goban.engine.config.original_disable_analysis &&
                     goban.engine.isParticipant(data.get("user")?.id || 0)
