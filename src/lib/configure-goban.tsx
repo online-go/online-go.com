@@ -96,7 +96,15 @@ export function configure_goban() {
                 // participating in the game (or not signed in)
                 return !!goban.engine.config.original_disable_analysis;
             } else {
-                return !!goban.engine.config.disable_analysis;
+                // The per-game setting applies only to participants; spectators may always
+                // analyze. Participation is evaluated here at call time rather than trusting
+                // engine.config.disable_analysis, which is computed once at engine construction
+                // and can be wrong when the engine was constructed before the logged-in user
+                // had finished loading (issue #1765).
+                return (
+                    !!goban.engine.config.original_disable_analysis &&
+                    goban.engine.isParticipant(data.get("user")?.id || 0)
+                );
             }
         },
 

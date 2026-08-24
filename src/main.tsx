@@ -278,6 +278,16 @@ player_cache.update(user);
 data.set("user", user);
 window.user = user;
 
+/* The goban engine reads window.user when it is constructed, so keep it in
+ * sync when the logged-in user finishes loading after startup (e.g. the
+ * ui/config fetch on a session whose localStorage cache was empty or stale).
+ * See https://github.com/online-go/online-go.com/issues/1765 */
+data.watch("config.user", (updated_user) => {
+    if (updated_user) {
+        window.user = updated_user;
+    }
+});
+
 /***
  * Test if local storage is disabled for some reason (Either because the user
  * turned it off, the browser doesn't support it, or because the user is using
