@@ -64,6 +64,9 @@ export function DemoBoardModal(
     const [isCustomBoardSize, setIsCustomBoardSize] = React.useState<boolean>(
         !isStandardBoardSize(`${initialSettings.width}x${initialSettings.height}`),
     );
+    const [handicap, setHandicap] = React.useState<number>(
+        (initialSettings as any).handicap ?? 0,
+    );
 
     const isGameRecordMode = !!props.players_list;
 
@@ -113,6 +116,11 @@ export function DemoBoardModal(
             void alert.fire(_("Please enter a number for komi."));
             return null;
         }
+        if (handicap < 0 || handicap > 36) {
+            document.getElementById("demo-board-modal-handicap")?.focus();
+            void alert.fire(_("Handicap must be between 0 and 36."));
+            return null;
+        }
 
         return {
             name: name,
@@ -126,6 +134,7 @@ export function DemoBoardModal(
             private: isPrivate,
             komi_auto: komiOption,
             ...(komi !== null && { komi: komi }),
+            ...(handicap > 0 && { handicap: handicap }),
         };
     }
 
@@ -148,6 +157,7 @@ export function DemoBoardModal(
             black_ranking: validatedSettings.black_ranking - (black_pro ? 1000 : 0),
             white_ranking: validatedSettings.white_ranking - (white_pro ? 1000 : 0),
             name: validatedSettings.name || _("Demo Board"),
+            handicap: handicap,
         };
 
         await post("demos", extendedSettings)
@@ -203,6 +213,27 @@ export function DemoBoardModal(
                                     checked={isPrivate}
                                     onChange={(ev) => setIsPrivate(ev.target.checked)}
                                 ></input>
+                            </div>
+                        </div>
+
+                        {/** Handicap */}
+                        <div className="form-group">
+                            <label className="control-label" htmlFor="demo-handicap">
+                                {_("Handicap")}
+                            </label>
+                            <div className="controls">
+                                <select
+                                    id="demo-board-modal-handicap"
+                                    value={handicap}
+                                    onChange={(ev) => setHandicap(parseInt(ev.target.value))}
+                                    className="form-control"
+                                >
+                                    {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((h) => (
+                                        <option key={h} value={h}>
+                                            {h === 0 ? _("No handicap") : h}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
                     </div>
