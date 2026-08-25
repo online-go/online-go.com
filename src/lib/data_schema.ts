@@ -197,6 +197,7 @@ export interface DemoSettings {
     private: boolean;
     komi_auto: rest_api.KomiOption;
     komi?: number;
+    handicap?: number;
 }
 
 interface DebugSchema {
