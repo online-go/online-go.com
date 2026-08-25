@@ -60,10 +60,11 @@ export function MoveNumberSlider(): React.ReactElement {
     // Puzzles save their solution as the move tree's trunk_next chain. Walking
     // it forward via `next()` would let the slider drag through unplayed
     // solution moves, spoiling the puzzle. Detect puzzle mode at mount time
-    // (the slider switches the goban to "analyze" on first navigation, so
-    // `goban.mode` isn't reliable later) and constrain the slider's max to a
-    // session high-water mark of the user's actual position. Reset whenever
-    // the goban changes so loading a new puzzle starts from move 0.
+    // (other navigation paths, e.g. the puzzle editor's keyboard shortcuts,
+    // may switch the goban to "analyze", so `goban.mode` isn't reliable
+    // later) and constrain the slider's max to a session high-water mark of
+    // the user's actual position. Reset whenever the goban changes so
+    // loading a new puzzle starts from move 0.
     //
     // Both the mode and the hwm need to be reset *synchronously* on goban
     // change, before the first render with the new goban — otherwise that
