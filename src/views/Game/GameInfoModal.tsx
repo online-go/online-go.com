@@ -391,7 +391,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
                         </dd>
                         <dt>{_("Analysis")}</dt>
                         <dd>
-                            {config.original_disable_analysis
+                            {config.disable_analysis
                                 ? _("Analysis and conditional moves disabled")
                                 : _("Analysis and conditional moves enabled")}
                         </dd>

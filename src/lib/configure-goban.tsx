@@ -94,9 +94,13 @@ export function configure_goban() {
             if (perGameSettingAppliesToNonPlayers) {
                 // This is used for the SGF download which is disabled even for users that are not
                 // participating in the game (or not signed in)
-                return !!goban.engine.config.original_disable_analysis;
-            } else {
                 return !!goban.engine.config.disable_analysis;
+            } else {
+                // The per-game setting applies only to participants, spectators may always analyze.
+                return (
+                    !!goban.engine.config.disable_analysis &&
+                    goban.engine.isParticipant(data.get("user")?.id || 0)
+                );
             }
         },
 
