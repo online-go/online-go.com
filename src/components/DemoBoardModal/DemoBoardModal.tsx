@@ -64,9 +64,7 @@ export function DemoBoardModal(
     const [isCustomBoardSize, setIsCustomBoardSize] = React.useState<boolean>(
         !isStandardBoardSize(`${initialSettings.width}x${initialSettings.height}`),
     );
-    const [handicap, setHandicap] = React.useState<number>(
-        (initialSettings as any).handicap ?? 0,
-    );
+    const [handicap, setHandicap] = React.useState<number>(initialSettings.handicap ?? 0);
 
     const isGameRecordMode = !!props.players_list;
 
