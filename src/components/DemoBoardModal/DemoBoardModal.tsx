@@ -155,7 +155,6 @@ export function DemoBoardModal(
             black_ranking: validatedSettings.black_ranking - (black_pro ? 1000 : 0),
             white_ranking: validatedSettings.white_ranking - (white_pro ? 1000 : 0),
             name: validatedSettings.name || _("Demo Board"),
-            handicap: handicap,
         };
 
         await post("demos", extendedSettings)
