@@ -113,11 +113,11 @@ export function DemoBoardModal(
             document.getElementById("demo-board-modal-komi")?.focus();
             void alert.fire(_("Please enter a number for komi."));
             return null;
+        }
         if (handicap < 0 || handicap > 9) {
             document.getElementById("demo-board-modal-handicap")?.focus();
             void alert.fire(_("Handicap must be between 0 and 9."));
             return null;
-        }
         }
 
         return {
