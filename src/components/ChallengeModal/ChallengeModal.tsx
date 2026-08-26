@@ -22,11 +22,11 @@ import * as preferences from "@/lib/preferences";
 
 import { OgsResizeDetector } from "@/components/OgsResizeDetector";
 import { browserHistory } from "@/lib/ogsHistory";
-import { _, pgettext, interpolate, llm_pgettext } from "@/lib/translate";
+import { _, pgettext, interpolate } from "@/lib/translate";
 import { post, del } from "@/lib/requests";
 import { Modal } from "@/components/Modal";
 import { socket } from "@/lib/sockets";
-import { rankString, amateurRanks } from "@/lib/rank_utils";
+import { amateurRanks } from "@/lib/rank_utils";
 import { CreatedChallengeInfo } from "@/lib/types";
 import { errorLogger, errorAlerter, dup } from "@/lib/misc";
 import { PlayerIcon } from "@/components/PlayerIcon";
@@ -36,7 +36,7 @@ import {
     notification_manager,
     NotificationManagerEvents,
 } from "@/components/Notifications/NotificationManager";
-import { one_bot, bot_count, bots_list, getAcceptableTimeSetting, Bot } from "@/lib/bots";
+import { one_bot, bot_count, bots_list } from "@/lib/bots";
 import { goban_view_mode } from "@/views/Game/util";
 
 import { copyChallengeLinkURL } from "@/components/ChallengeLinkButton";
@@ -47,7 +47,6 @@ import {
     saveTimeControlSettings,
     updateSystem,
 } from "@/components/TimeControl/TimeControlUpdates";
-import { SPEED_OPTIONS } from "@/views/Play/SPEED_OPTIONS";
 import Select from "react-select";
 import {
     rejectionDetailsToMessage,
@@ -1525,170 +1524,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             </div>
         );
     };
-
-    renderComputerOpponents() {
-        interface Category {
-            sort_index: number;
-            label: string;
-            lower_bound: number;
-            upper_bound: number;
-        }
-
-        const user = data.get("user");
-        let available_bots: (Bot & { category?: Category })[] = bots_list().filter((b) => b.id > 0);
-        const board_size = `${this.state.challenge.game.width}x${this.state.challenge.game.height}`;
-
-        const categories = [
-            {
-                sort_index: 1,
-                label: pgettext("Bot strength category", "Beginner"),
-                lower_bound: -99,
-                upper_bound: 10,
-            },
-            {
-                sort_index: 2,
-                label: pgettext("Bot strength category", "Intermediate"),
-                lower_bound: 10,
-                upper_bound: 25,
-            },
-            {
-                sort_index: 3,
-                label: pgettext("Bot strength category", "Advanced"),
-                lower_bound: 25,
-                upper_bound: 99,
-            },
-        ];
-        available_bots = available_bots.filter((b) => {
-            const speed_settings = (SPEED_OPTIONS as any)?.[board_size]?.[
-                this.state.time_control.speed
-            ]?.[this.state.time_control.system];
-            if (!speed_settings) {
-                return false;
-            }
-
-            const settings = {
-                rank: user.ranking,
-                width: this.state.challenge.game.width ?? -1,
-                height: this.state.challenge.game.height ?? -1,
-                ranked: true,
-                handicap: this.state.challenge.game.handicap !== 0,
-                system: this.state.time_control.system,
-                speed: this.state.time_control.speed,
-                [this.state.time_control.system]: speed_settings,
-            };
-            const [options, message] = getAcceptableTimeSetting(b, settings);
-            if (!options) {
-                b.disabled = message || undefined;
-            } else if (options && options._config_version && options._config_version === 0) {
-                b.disabled = llm_pgettext(
-                    "Bot is not configured correctly",
-                    "Bot is not configured correctly",
-                );
-            } else {
-                b.disabled = undefined;
-            }
-
-            b.category = categories[0];
-            for (const category of categories) {
-                if (
-                    b.ranking &&
-                    b.ranking > category.lower_bound &&
-                    b.ranking <= category.upper_bound
-                ) {
-                    b.category = category;
-                    break;
-                }
-            }
-
-            return true;
-        });
-
-        // testing
-        //available_bots = [...available_bots, ...available_bots];
-        //available_bots = [...available_bots, ...available_bots];
-        //available_bots = [...available_bots, ...available_bots];
-
-        available_bots.sort((a, b) => {
-            if (a.category!.sort_index !== b.category!.sort_index) {
-                return a.category!.sort_index - b.category!.sort_index;
-            }
-
-            if (a.disabled && !b.disabled) {
-                return 1;
-            }
-            if (b.disabled && !a.disabled) {
-                return -1;
-            }
-
-            return (a.ranking || 0) - (b.ranking || 0);
-        });
-
-        const selected_bot_value = available_bots.find((b) => b.id === this.state.conf.bot_id);
-        if (selected_bot_value?.disabled) {
-            this.update_bot_id(0);
-        }
-
-        return available_bots.length <= 0 ? (
-            <div className="no-available-bots">
-                {_("No bots available that can play with the selected settings")}
-            </div>
-        ) : (
-            <div className="bot-categories">
-                {categories.map((category) => {
-                    return (
-                        <div key={category.upper_bound} className="bot-category">
-                            <h1>{category.label}</h1>
-
-                            <div key={category.upper_bound} className="bot-options">
-                                {available_bots
-                                    //.filter((bot) => !bot.disabled)
-                                    .filter((bot) => bot.category === category)
-                                    .map((bot) => {
-                                        return (
-                                            <div
-                                                key={bot.id}
-                                                className={
-                                                    "bot-option" +
-                                                    (bot.id === selected_bot_value?.id
-                                                        ? " selected"
-                                                        : "") +
-                                                    (bot.disabled ? " disabled" : "")
-                                                }
-                                                onClick={() => {
-                                                    if (!bot.disabled) {
-                                                        this.update_bot_id(bot.id);
-                                                    }
-                                                }}
-                                            >
-                                                <PlayerIcon
-                                                    user={bot}
-                                                    size={64}
-                                                    style={{ width: "48px", height: "48px" }}
-                                                />
-                                                <span className="username-rank">
-                                                    <span className="username">{bot.username}</span>
-                                                    {!preferences.get("hide-ranks") && (
-                                                        <span className="rank">
-                                                            ({rankString(bot.ranking || 0)})
-                                                        </span>
-                                                    )}
-                                                </span>
-
-                                                {bot.disabled && (
-                                                    <span className="disabled-reason">
-                                                        {bot.disabled}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-        );
-    }
 
     render() {
         const user = data.get("user");
