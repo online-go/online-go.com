@@ -76,6 +76,8 @@ import "./ChallengeModal.css";
 import { ChallengeModalRankedSettings } from "./ChallengeModalRankedSettings";
 import { ChallengeModalBoardSizeSettings } from "./ChallengeModalBoardSizeSettings";
 import { ChallengeModalComputerOpponents } from "./ChallengeModalComputerOpponents";
+import { State } from "./type";
+import { ChallengeModalBasicSettings } from "./ChallengeModalBasicSettings";
 
 /* Constants  */
 
@@ -886,211 +888,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
     /* rendering  */
 
-    // game name and privacy
-    basicSettings = () => {
-        const mode = this.props.mode;
-        const bots = bots_list();
-        const selected_bot = bots.find((bot) => bot.id === this.state.conf.bot_id);
-
-        return (
-            <div
-                id="challenge-basic-settings"
-                className="left-pane pane form-horizontal"
-                role="form"
-            >
-                {mode === "computer" && (
-                    <div className="form-group">
-                        <label className="control-label" htmlFor="engine">
-                            {pgettext("Computer opponent", "AI Player")}
-                        </label>
-                        <div
-                            style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                width: "10rem",
-                            }}
-                        >
-                            <span
-                                style={{
-                                    display: "inline-block",
-                                    width: "8rem",
-                                    overflow: "hidden",
-                                }}
-                            >
-                                {selected_bot ? selected_bot.username : ""}
-                            </span>
-                            {selected_bot && (
-                                <a href={`/player/${selected_bot?.id}`}>
-                                    <i className="fa fa-external-link"></i>
-                                </a>
-                            )}
-                        </div>
-                    </div>
-                )}
-                {mode !== "computer" && (
-                    <div className="form-group">
-                        <label className="control-label" htmlFor="challenge_game_name">
-                            {_("Game Name")}
-                        </label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <input
-                                    type="text"
-                                    value={this.gameState().name}
-                                    onChange={(ev) => this.update_game_name(ev.target.value)}
-                                    className="form-control"
-                                    id="challenge-game-name"
-                                    placeholder={_("Game Name")}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                )}
-                {!(this.props.playerId || null) && mode === "open" && (
-                    <div className="form-group">
-                        <label className="control-label" htmlFor="challenge-invite-only">
-                            {pgettext(
-                                "A checkbox to make a challenge open only to invited people who have the link to it",
-                                "Invite-only",
-                            )}
-                        </label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <input
-                                    type="checkbox"
-                                    id="challenge-invite-only"
-                                    checked={this.state.challenge.invite_only}
-                                    onChange={(ev) => this.update_invite_only(ev.target.checked)}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                )}
-                {/* Only show Private checkbox if not in open mode, or if in open mode with invite-only checked */}
-                {(mode !== "open" || this.state.challenge.invite_only) && (
-                    <div className="form-group">
-                        <label className="control-label" htmlFor="challenge-private">
-                            {_("Private")}
-                        </label>
-
-                        <div className="controls">
-                            <div className="checkbox">
-                                <input
-                                    type="checkbox"
-                                    id="challenge-private"
-                                    disabled={this.state.challenge.game.rengo}
-                                    checked={this.gameState().private}
-                                    onChange={(ev) => this.update_private(ev.target.checked)}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                )}
-                {mode === "open" && (
-                    <div className="form-group">
-                        <label className="control-label" htmlFor="rengo-option">
-                            {_("Rengo")}
-                        </label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <input
-                                    type="checkbox"
-                                    id="rengo-option"
-                                    disabled={
-                                        !this.state.challenge.game.rengo &&
-                                        (this.state.challenge.game.private ||
-                                            this.state.challenge.game.ranked)
-                                    }
-                                    checked={this.state.challenge.game.rengo}
-                                    onChange={(ev) => this.update_rengo(ev.target.checked)}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                )}
-                {mode === "open" && (
-                    <>
-                        <div
-                            className={
-                                "form-group" + (this.state.challenge.game.rengo ? "" : " hide")
-                            }
-                        >
-                            <label className="control-label" htmlFor="rengo-casual-mode">
-                                {_("Casual")}
-                            </label>
-                            <div className="controls">
-                                <div className="checkbox">
-                                    <input
-                                        type="checkbox"
-                                        id="rengo-casual-mode"
-                                        checked={this.state.challenge.game.rengo_casual_mode}
-                                        onChange={(ev) =>
-                                            this.update_rengo_casual(ev.target.checked)
-                                        }
-                                    />
-                                    <a
-                                        href="https://github.com/online-go/online-go.com/wiki/Rengo"
-                                        className="help"
-                                        target="_blank"
-                                    >
-                                        <i className="fa fa-question-circle-o"></i>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </>
-                )}
-                {mode === "open" && (
-                    <>
-                        <div
-                            className={
-                                "form-group" +
-                                (this.state.challenge.game.rengo &&
-                                this.state.challenge.game.rengo_casual_mode
-                                    ? ""
-                                    : " hide")
-                            }
-                        >
-                            <label className="control-label" htmlFor="rengo-auto-start">
-                                {_("Auto-start")}
-                            </label>
-                            <div className="controls">
-                                <div className={"checkbox"}>
-                                    <input
-                                        type="number"
-                                        // It's clearer to display blank ("") if there is no auto-start.  Blank means no autostart, the same as zero.
-                                        value={
-                                            !this.state.challenge.rengo_auto_start
-                                                ? ""
-                                                : this.state.challenge.rengo_auto_start
-                                        }
-                                        onChange={(ev) =>
-                                            this.update_rengo_auto_start(parseInt(ev.target.value))
-                                        }
-                                        id="rengo-auto-start"
-                                        className="form-control"
-                                        style={{ width: "3em" }}
-                                        min="0"
-                                        max=""
-                                    />
-
-                                    <i
-                                        className={
-                                            "fa fa-exclamation-circle " +
-                                            (this.rengo_auto_start_input_warning()
-                                                ? "value-warning"
-                                                : "")
-                                        }
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </>
-                )}
-            </div>
-        );
-    };
-
     rulesSettings = () => {
         return (
             <div>
@@ -1570,7 +1367,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                             <h2>{_("Pick your computer opponent")}:</h2>
                             <div>
                                 <ChallengeModalComputerOpponents
-                                    state={this.state}
+                                    state={this.state as any as State}
                                     updateBotId={this.update_bot_id}
                                 />
                             </div>
@@ -1586,7 +1383,17 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                     >
                         <div className="challenge  form-inline">
                             <div className="challenge-pane-container">
-                                {this.basicSettings()}
+                                <ChallengeModalBasicSettings
+                                    state={this.state as any as State}
+                                    mode={mode}
+                                    updateGameName={this.update_game_name}
+                                    updateInviteOnly={this.update_invite_only}
+                                    updatePrivate={this.update_private}
+                                    updateRengo={this.update_rengo}
+                                    updateRengoCasual={this.update_rengo_casual}
+                                    updateRengoAutoStart={this.update_rengo_auto_start}
+                                    rengoAutoStartInputWarning={this.rengo_auto_start_input_warning}
+                                />
                                 {!this.state.initial_state && this.additionalSettings()}
                             </div>
 
