@@ -30,7 +30,7 @@ import { amateurRanks } from "@/lib/rank_utils";
 import { CreatedChallengeInfo } from "@/lib/types";
 import { errorLogger, errorAlerter, dup } from "@/lib/misc";
 import { PlayerIcon } from "@/components/PlayerIcon";
-import { isLiveGame, TimeControlPicker, TimeControl } from "@/components/TimeControl";
+import { isLiveGame, TimeControl } from "@/components/TimeControl";
 import { sfx } from "@/lib/sfx";
 import {
     notification_manager,
@@ -74,9 +74,7 @@ import {
 import "./ChallengeModal.css";
 import { ChallengeModalComputerOpponents } from "./ChallengeModalComputerOpponents";
 import { ChallengeModalAdditionalSettings } from "./ChallengeModalAdditionalSettings";
-import { ChallengeModalHandicapSettings } from "./ChallengeModalHandicapSettings";
-import { ChallengeModalKomiSettings } from "./ChallengeModalKomiSettings";
-import { ChallengeModalRulesSettings } from "./ChallengeModalRulesSettings";
+import { ChallengeModalAdvancedSettings } from "./ChallengeModalAdvancedSettings";
 import { State } from "./type";
 import { ChallengeModalBasicSettings } from "./ChallengeModalBasicSettings";
 
@@ -889,205 +887,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
     /* rendering  */
 
-    advancedSettings = () => {
-        const mode = this.props.mode;
-        const challenge = this.state.challenge;
-        const game = this.gameState();
-        const conf = this.state.conf;
-
-        const forceSystem: boolean = challenge.game.rengo && challenge.game.rengo_casual_mode;
-
-        return (
-            <div
-                id="challenge-advanced-fields"
-                className="challenge-pane-container form-inline"
-                style={{ marginTop: "1em" }}
-            >
-                <div className="left-pane pane form-horizontal">
-                    {mode !== "computer" && (
-                        <ChallengeModalRulesSettings
-                            rules={this.gameState().rules}
-                            updateRules={this.update_rules}
-                        />
-                    )}
-                    <TimeControlPicker
-                        timeControl={this.state.time_control}
-                        onChange={(tc) => {
-                            // console.log("Time control changed to ", tc);
-                            this.setState({
-                                time_control: tc,
-                            });
-                        }}
-                        boardWidth={game.width}
-                        boardHeight={game.height}
-                        forceSystem={forceSystem}
-                    />
-                </div>
-
-                <div className="right-pane pane form-horizontal">
-                    {!this.state.forking_game && (
-                        <ChallengeModalHandicapSettings
-                            game={game}
-                            mode={mode}
-                            handicapRanges={handicapRanges}
-                            updateHandicap={this.update_handicap}
-                        />
-                    )}
-                    <ChallengeModalKomiSettings
-                        game={game}
-                        mode={mode}
-                        updateKomiOption={this.update_komi_option}
-                        updateKomi={this.update_komi}
-                    />
-
-                    <div className="form-group">
-                        <label className="control-label" htmlFor="challenge-color">
-                            {_("Your Color")}
-                        </label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <select
-                                    value={this.state.challenge.challenger_color}
-                                    onChange={(ev) => this.update_challenge_color(ev.target.value)}
-                                    id="challenge-color"
-                                    className="challenge-dropdown form-control"
-                                >
-                                    <option value="automatic">{_("Automatic")}</option>
-                                    <option value="black">{_("Black")}</option>
-                                    <option value="white">{_("White")}</option>
-                                    <option value="random">{_("Random")}</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        {mode !== "computer" && (
-                            <div className="form-group" style={{ position: "relative" }}>
-                                <label
-                                    className="control-label"
-                                    htmlFor="challenge-disable-analysis"
-                                >
-                                    {_("Disable Analysis")}
-                                </label>
-                                <div className="controls">
-                                    <div className="checkbox">
-                                        <input
-                                            checked={game.disable_analysis}
-                                            onChange={(ev) =>
-                                                this.update_disable_analysis(ev.target.checked)
-                                            }
-                                            id="challenge-disable-analysis"
-                                            type="checkbox"
-                                        />{" "}
-                                        *
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {mode === "open" && (
-                            <div>
-                                <div className="form-group" id="challenge-restrict-rank-group">
-                                    <label
-                                        className="control-label"
-                                        htmlFor="challenge-restrict-rank"
-                                    >
-                                        {_("Restrict Rank")}
-                                    </label>
-                                    <div className="controls">
-                                        <div className="checkbox">
-                                            <input
-                                                checked={this.state.conf.restrict_rank}
-                                                onChange={(ev) =>
-                                                    this.update_restrict_rank(ev.target.checked)
-                                                }
-                                                id="challenge-restrict-rank"
-                                                type="checkbox"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                                {conf.restrict_rank && (
-                                    <div>
-                                        <div className="form-group" id="challenge-min-rank-group">
-                                            <label
-                                                className="control-label"
-                                                htmlFor="challenge-min-rank"
-                                            >
-                                                {_("Minimum Ranking")}
-                                            </label>
-                                            <div className="controls">
-                                                <div className="checkbox">
-                                                    <select
-                                                        value={this.state.challenge.min_ranking}
-                                                        onChange={(ev) =>
-                                                            this.update_min_rank(
-                                                                parseInt(ev.target.value),
-                                                            )
-                                                        }
-                                                        id="challenge-min-rank"
-                                                        className="challenge-dropdown form-control"
-                                                    >
-                                                        {ranks.map((r, idx) => (
-                                                            <option key={idx} value={r.rank}>
-                                                                {r.label}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="form-group" id="challenge-max-rank-group">
-                                            <label
-                                                className="control-label"
-                                                htmlFor="challenge-max-rank"
-                                            >
-                                                {_("Maximum Ranking")}
-                                            </label>
-                                            <div className="controls">
-                                                <div className="checkbox">
-                                                    <select
-                                                        value={this.state.challenge.max_ranking}
-                                                        onChange={(ev) =>
-                                                            this.update_max_rank(
-                                                                parseInt(ev.target.value),
-                                                            )
-                                                        }
-                                                        id="challenge-max-rank"
-                                                        className="challenge-dropdown form-control"
-                                                    >
-                                                        {ranks.map((r, idx) => (
-                                                            <option key={idx} value={r.rank}>
-                                                                {r.label}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                        {mode !== "computer" && (
-                            <div
-                                style={{
-                                    marginTop: "1.0em",
-                                    textAlign: "right",
-                                    fontSize: "0.8em",
-                                }}
-                            >
-                                * {_("Also disables conditional moves")}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
     togglePreferredSettings = () => {
         if (this.state.view_mode === "portrait") {
             this.setState({
@@ -1278,7 +1077,30 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                             </div>
 
                             <hr />
-                            {this.advancedSettings()}
+                            <ChallengeModalAdvancedSettings
+                                mode={mode}
+                                challenge={this.state.challenge}
+                                game={this.gameState()}
+                                conf={this.state.conf}
+                                timeControl={this.state.time_control}
+                                forkingGame={this.state.forking_game}
+                                handicapRanges={handicapRanges}
+                                ranks={ranks}
+                                onTimeControlChange={(tc) => {
+                                    this.setState({
+                                        time_control: tc,
+                                    });
+                                }}
+                                updateRules={this.update_rules}
+                                updateHandicap={this.update_handicap}
+                                updateKomiOption={this.update_komi_option}
+                                updateKomi={this.update_komi}
+                                updateChallengeColor={this.update_challenge_color}
+                                updateDisableAnalysis={this.update_disable_analysis}
+                                updateRestrictRank={this.update_restrict_rank}
+                                updateMinRank={this.update_min_rank}
+                                updateMaxRank={this.update_max_rank}
+                            />
                         </div>
                     </div>
                 )}
