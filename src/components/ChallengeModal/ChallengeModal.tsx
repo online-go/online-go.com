@@ -75,6 +75,7 @@ import {
 import "./ChallengeModal.css";
 import { ChallengeModalComputerOpponents } from "./ChallengeModalComputerOpponents";
 import { ChallengeModalAdditionalSettings } from "./ChallengeModalAdditionalSettings";
+import { ChallengeModalHandicapSettings } from "./ChallengeModalHandicapSettings";
 import { ChallengeModalRulesSettings } from "./ChallengeModalRulesSettings";
 import { State } from "./type";
 import { ChallengeModalBasicSettings } from "./ChallengeModalBasicSettings";
@@ -888,44 +889,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
     /* rendering  */
 
-    handicapSettings = () => {
-        const game = this.gameState();
-        // In bot mode, users can pick any handicap; ranked auto-flips to false.
-        const restrict_ranked_only = game.ranked && this.props.mode !== "computer";
-        return (
-            <div className="form-group" id="challenge.game.handicap-group">
-                <label className="control-label">{_("Handicap")}</label>
-                <div className="controls">
-                    <div className="checkbox">
-                        <select
-                            value={game.handicap}
-                            onChange={(ev) => this.update_handicap(parseInt(ev.target.value))}
-                            className="challenge-dropdown form-control"
-                            id="challenge-handicap"
-                        >
-                            <option
-                                value="-1"
-                                /*{disabled={!this.state.conf.handicap_enabled}}*/
-                            >
-                                {_("Automatic")}
-                            </option>
-                            <option value="0">{_("None")}</option>
-                            {handicapRanges.map((n, idx) => (
-                                <option
-                                    key={idx}
-                                    value={n}
-                                    disabled={n > 9 && restrict_ranked_only}
-                                >
-                                    {n}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
     komiSettings = () => {
         const game = this.gameState();
         // In bot mode, users can pick custom komi; ranked auto-flips to false.
@@ -1013,7 +976,14 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                 </div>
 
                 <div className="right-pane pane form-horizontal">
-                    {!this.state.forking_game && this.handicapSettings()}
+                    {!this.state.forking_game && (
+                        <ChallengeModalHandicapSettings
+                            game={game}
+                            mode={mode}
+                            handicapRanges={handicapRanges}
+                            updateHandicap={this.update_handicap}
+                        />
+                    )}
                     {this.komiSettings()}
 
                     <div className="form-group">
