@@ -56,7 +56,7 @@ export function bot_count() {
     return Object.keys(active_bots).length;
 }
 
-interface BotChallengeOptions {
+export interface BotChallengeOptions {
     rank: number;
     width: number;
     height: number;

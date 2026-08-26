@@ -16,16 +16,21 @@
  */
 import React, { useEffect } from "react";
 import * as data from "@/lib/data";
-import { Bot, bots_list, getAcceptableTimeSetting } from "@/lib/bots";
+import { Bot, BotChallengeOptions, bots_list, getAcceptableTimeSetting } from "@/lib/bots";
 import * as preferences from "@/lib/preferences";
 import { rankString } from "@/lib/rank_utils";
 import { _, llm_pgettext, pgettext } from "@/lib/translate";
 import { SPEED_OPTIONS } from "@/views/Play/SPEED_OPTIONS";
 import { PlayerIcon } from "../PlayerIcon";
-import { State } from "./type";
+import { Speed, TimeControlSystem } from "@/lib/types";
 
 type ChallengeModalComputerOpponentsProps = {
-    state: State;
+    width: number | null;
+    height: number | null;
+    handicap: number;
+    speed: Speed;
+    system: TimeControlSystem;
+    botId: number;
     updateBotId: (bot_id: number) => void;
 };
 
@@ -39,7 +44,7 @@ export const ChallengeModalComputerOpponents = (props: ChallengeModalComputerOpp
 
     const user = data.get("user");
     let available_bots: (Bot & { category?: Category })[] = bots_list().filter((b) => b.id > 0);
-    const board_size = `${props.state.challenge.game.width}x${props.state.challenge.game.height}`;
+    const board_size = `${props.width}x${props.height}`;
 
     const categories = [
         {
@@ -62,22 +67,20 @@ export const ChallengeModalComputerOpponents = (props: ChallengeModalComputerOpp
         },
     ];
     available_bots = available_bots.filter((b) => {
-        const speed_settings = (SPEED_OPTIONS as any)?.[board_size]?.[
-            props.state.time_control.speed
-        ]?.[props.state.time_control.system];
+        const speed_settings = (SPEED_OPTIONS as any)?.[board_size]?.[props.speed]?.[props.system];
         if (!speed_settings) {
             return false;
         }
 
-        const settings = {
+        const settings: BotChallengeOptions = {
             rank: user.ranking,
-            width: props.state.challenge.game.width ?? -1,
-            height: props.state.challenge.game.height ?? -1,
+            width: props.width ?? -1,
+            height: props.height ?? -1,
             ranked: true,
-            handicap: props.state.challenge.game.handicap !== 0,
-            system: props.state.time_control.system,
-            speed: props.state.time_control.speed,
-            [props.state.time_control.system]: speed_settings,
+            handicap: props.handicap !== 0,
+            system: props.system,
+            speed: props.speed,
+            [props.system]: speed_settings,
         };
         const [options, message] = getAcceptableTimeSetting(b, settings);
         if (!options) {
@@ -126,12 +129,12 @@ export const ChallengeModalComputerOpponents = (props: ChallengeModalComputerOpp
         return (a.ranking || 0) - (b.ranking || 0);
     });
 
-    const selected_bot_value = available_bots.find((b) => b.id === props.state.conf.bot_id);
+    const selected_bot_value = available_bots.find((b) => b.id === props.botId);
     useEffect(() => {
         if (selected_bot_value?.disabled) {
             props.updateBotId(0);
         }
-    }, [props.state.conf.bot_id, selected_bot_value?.disabled]);
+    }, [props.botId, selected_bot_value?.disabled]);
 
     if (available_bots.length <= 0) {
         return (

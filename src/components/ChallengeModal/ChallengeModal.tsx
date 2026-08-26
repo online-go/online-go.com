@@ -937,7 +937,12 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                             <h2>{_("Pick your computer opponent")}:</h2>
                             <div>
                                 <ChallengeModalComputerOpponents
-                                    state={this.state as any as State}
+                                    width={this.state.challenge.game.width}
+                                    height={this.state.challenge.game.height}
+                                    handicap={this.state.challenge.game.handicap}
+                                    speed={this.state.time_control.speed}
+                                    system={this.state.time_control.system}
+                                    botId={this.state.conf.bot_id}
                                     updateBotId={this.update_bot_id}
                                 />
                             </div>
