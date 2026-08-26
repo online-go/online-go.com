@@ -22,12 +22,7 @@ import { rankString } from "@/lib/rank_utils";
 import { _, llm_pgettext, pgettext } from "@/lib/translate";
 import { SPEED_OPTIONS } from "@/views/Play/SPEED_OPTIONS";
 import { PlayerIcon } from "../PlayerIcon";
-
-type State = {
-    challenge: any;
-    time_control: any;
-    conf: any;
-};
+import { State } from "./type";
 
 type ChallengeModalComputerOpponentsProps = {
     state: State;
