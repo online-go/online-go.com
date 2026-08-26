@@ -18,8 +18,6 @@
 import { TimeControl, TimeControlTypes } from "./TimeControl";
 import { classifyGameSpeed, getDefaultTimeControl, getInputRange, getTimeOptions } from "./util";
 import * as data from "@/lib/data";
-import { interpolate, pgettext } from "@/lib/translate";
-import { computeAverageMoveTime } from "goban";
 
 type TimeControlSystem = TimeControlTypes.TimeControlSystem;
 type TimeControlSpeed = TimeControlTypes.TimeControlSpeed;
@@ -132,25 +130,6 @@ function validateSettings(
         tc.pause_on_weekends = false;
     }
     return tc;
-}
-
-export function getTimeControlSpeedWarning(
-    tc: TimeControl,
-    boardWidth: number,
-    boardHeight: number,
-): string | null {
-    const actual = classifyGameSpeed(tc, boardWidth, boardHeight);
-    const tpm = computeAverageMoveTime(tc, boardWidth, boardHeight);
-    if (actual !== tc.speed) {
-        return interpolate(
-            pgettext(
-                "",
-                "The current settings will create a %s game instead of a %s game since the average time per move given the board size is ~%d seconds per move",
-            ),
-            [actual, tc.speed, tpm],
-        );
-    }
-    return null;
 }
 
 // Ensures that the value of property is restricted to one of the valid choices shown in the time control picker

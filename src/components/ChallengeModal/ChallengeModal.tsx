@@ -883,27 +883,12 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
     /* rendering  */
 
-    togglePreferredSettings = () => {
-        if (this.state.view_mode === "portrait") {
-            this.setState({
-                hide_preferred_settings_on_portrait:
-                    !this.state.hide_preferred_settings_on_portrait,
-            });
-        }
-    };
-
     render() {
         const user = data.get("user");
         const mode = this.props.mode;
         const player_id = this.props.playerId;
         const player = player_id && player_cache.lookup(player_id);
         const player_username = player ? player.username : "...";
-
-        // const speed_warning = getTimeControlSpeedWarning(
-        //     this.state.time_control,
-        //     this.state.challenge.game.width,
-        //     this.state.challenge.game.height,
-        // );
 
         if (player_id && !player) {
             player_cache
