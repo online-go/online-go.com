@@ -75,6 +75,7 @@ import {
 import "./ChallengeModal.css";
 import { ChallengeModalComputerOpponents } from "./ChallengeModalComputerOpponents";
 import { ChallengeModalAdditionalSettings } from "./ChallengeModalAdditionalSettings";
+import { ChallengeModalRulesSettings } from "./ChallengeModalRulesSettings";
 import { State } from "./type";
 import { ChallengeModalBasicSettings } from "./ChallengeModalBasicSettings";
 
@@ -887,35 +888,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
     /* rendering  */
 
-    rulesSettings = () => {
-        return (
-            <div>
-                <div className="form-group" id="challenge.game.rules-group">
-                    <label className="control-label" htmlFor="rules">
-                        {_("Rules")}
-                    </label>
-                    <div className="controls">
-                        <div className="checkbox">
-                            <select
-                                id="challenge-rules"
-                                value={this.gameState().rules}
-                                onChange={(ev) => this.update_rules(ev.target.value)}
-                                className="challenge-dropdown form-control"
-                            >
-                                <option value="aga">{_("AGA")}</option>
-                                <option value="chinese">{_("Chinese")}</option>
-                                <option value="ing">{_("Ing SST")}</option>
-                                <option value="japanese">{_("Japanese")}</option>
-                                <option value="korean">{_("Korean")}</option>
-                                <option value="nz">{_("New Zealand")}</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
     handicapSettings = () => {
         const game = this.gameState();
         // In bot mode, users can pick any handicap; ranked auto-flips to false.
@@ -1020,7 +992,12 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                 style={{ marginTop: "1em" }}
             >
                 <div className="left-pane pane form-horizontal">
-                    {mode !== "computer" && this.rulesSettings()}
+                    {mode !== "computer" && (
+                        <ChallengeModalRulesSettings
+                            rules={this.gameState().rules}
+                            updateRules={this.update_rules}
+                        />
+                    )}
                     <TimeControlPicker
                         timeControl={this.state.time_control}
                         onChange={(tc) => {
