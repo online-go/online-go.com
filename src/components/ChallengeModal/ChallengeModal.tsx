@@ -73,9 +73,8 @@ import {
     UpdateFn,
 } from "@/components/ChallengeModal/ChallengeModal.types";
 import "./ChallengeModal.css";
-import { ChallengeModalRankedSettings } from "./ChallengeModalRankedSettings";
-import { ChallengeModalBoardSizeSettings } from "./ChallengeModalBoardSizeSettings";
 import { ChallengeModalComputerOpponents } from "./ChallengeModalComputerOpponents";
+import { ChallengeModalAdditionalSettings } from "./ChallengeModalAdditionalSettings";
 import { State } from "./type";
 import { ChallengeModalBasicSettings } from "./ChallengeModalBasicSettings";
 
@@ -1006,37 +1005,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         );
     };
 
-    // board size and 'Ranked' checkbox
-    additionalSettings = () => {
-        const showRankedSettings = !this.state.forking_game && this.props.mode !== "computer";
-        const showBoardSizeSettings = !this.state.forking_game;
-
-        return (
-            <div
-                id="challenge-basic-settings"
-                className="right-pane pane form-horizontal"
-                role="form"
-            >
-                {showRankedSettings && (
-                    <ChallengeModalRankedSettings
-                        game={this.state.challenge.game}
-                        updateRanked={this.update_ranked}
-                    />
-                )}
-                {showBoardSizeSettings && (
-                    <ChallengeModalBoardSizeSettings
-                        game={this.state.challenge.game}
-                        conf={this.state.conf}
-                        mode={this.props.mode}
-                        updateBoardSize={this.update_board_size}
-                        updateBoardWidth={this.update_board_width}
-                        updateBoardHeight={this.update_board_height}
-                    />
-                )}
-            </div>
-        );
-    };
-
     advancedSettings = () => {
         const mode = this.props.mode;
         const challenge = this.state.challenge;
@@ -1394,7 +1362,18 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                     updateRengoAutoStart={this.update_rengo_auto_start}
                                     rengoAutoStartInputWarning={this.rengo_auto_start_input_warning}
                                 />
-                                {!this.state.initial_state && this.additionalSettings()}
+                                {!this.state.initial_state && (
+                                    <ChallengeModalAdditionalSettings
+                                        forkingGame={this.state.forking_game}
+                                        mode={mode}
+                                        game={this.state.challenge.game}
+                                        conf={this.state.conf}
+                                        updateRanked={this.update_ranked}
+                                        updateBoardSize={this.update_board_size}
+                                        updateBoardWidth={this.update_board_width}
+                                        updateBoardHeight={this.update_board_height}
+                                    />
+                                )}
                             </div>
 
                             <hr />
