@@ -587,9 +587,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                 if (open_now) {
                     if (this.props.mode !== "open") {
                         /* This is a direct challenge, which can be made in any context (not necessarily one showing challenges)
-                           so it needs a dialog to let them know that we made the challenge.
-
-                           This doesn't _have to be_ a modal, but currently is a modal pending a different design.
+                         * so it needs a dialog to let them know that we made the challenge.
+                         *
+                         * This doesn't _have to be_ a modal, but currently is a modal pending a different design.
                          */
                         alert
                             .fire({
