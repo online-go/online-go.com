@@ -624,13 +624,14 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             return true;
         }
 
-        // Puzzle mode → analyze, without jumping to the last official move
-        // (puzzles have no official moves; jumping would reset the position
-        // the user is navigating from). Mirrors PuzzleNavigation so the
-        // controller-driven nav paths (slider, prev/next buttons) match the
-        // keyboard-shortcut path.
+        // Puzzle mode: navigate without leaving puzzle mode. Answer
+        // detection, the "Correct!"/"Incorrect" events, and the opponent's
+        // automatic responses only run while the goban is in "puzzle" mode,
+        // so switching to analyze here would silently disable the puzzle
+        // after any slider navigation. This matches the puzzle view's
+        // left-arrow/undo path; the puzzle editor's keyboard navigation
+        // enters analyze mode explicitly via PuzzleNavigation.
         if (this.goban.mode === "puzzle") {
-            this.goban.setMode("analyze", true);
             if (move) {
                 this.goban.engine.jumpTo(move);
             }

@@ -983,15 +983,13 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.setVariations(variations);
     };
 
-    // ChatChannelProxy._onChat / _onChatRemoved (chat_manager.ts:841-861)
-    // collect (...args) and re-emit with args wrapped in an array
-    // (`emit.apply(this, ["chat", args])`), so listeners can't trust the
-    // event payload — every other consumer in the codebase ignores it and
-    // re-derives from proxy.channel.chat_log. We do the same, but stay
-    // incremental by inspecting whether the log grew by one (the common
-    // path for both send and receive) vs. some other delta (initial sync,
-    // bulk clear via clearSystemMessages, etc.) which falls back to a full
-    // rebuild.
+    // ChatChannelProxy._onChat / _onChatRemoved (chat_manager.ts) now forward
+    // the underlying channel's single payload correctly, but we still
+    // re-derive from proxy.channel.chat_log rather than trust the payload
+    // shape, staying incremental by inspecting whether the log grew by one
+    // (the common path for both send and receive) vs. some other delta
+    // (initial sync, bulk clear via clearSystemMessages, etc.) which falls
+    // back to a full rebuild.
     private onChatMessage = (): void => {
         const proxy = this._active_chat_proxy;
         const room = this._active_room;

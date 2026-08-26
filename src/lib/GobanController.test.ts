@@ -82,4 +82,37 @@ describe("GobanController", () => {
         expect(controller.goban.engine.last_official_move).toBe(variation);
         expect(trunkTail).not.toBe(variation);
     });
+
+    it("stays in puzzle mode when navigating backward", () => {
+        const controller = new GobanController({
+            width: 9,
+            height: 9,
+            move_tree: {
+                x: -1,
+                y: -1,
+                trunk_next: {
+                    x: 3,
+                    y: 3,
+                    trunk_next: {
+                        x: 4,
+                        y: 3,
+                    },
+                },
+            },
+        });
+        const goban = controller.goban;
+        goban.setMode("puzzle");
+
+        const second_move = goban.engine.move_tree.trunk_next?.trunk_next;
+        if (!second_move) {
+            throw new Error("Expected test move tree to contain two trunk moves");
+        }
+        goban.engine.jumpTo(second_move);
+        expect(goban.engine.cur_move.move_number).toBe(2);
+
+        controller.previousMove();
+
+        expect(goban.engine.cur_move.move_number).toBe(1);
+        expect(goban.mode).toBe("puzzle");
+    });
 });

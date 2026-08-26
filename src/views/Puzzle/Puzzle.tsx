@@ -23,7 +23,13 @@ import { get, post, put, del } from "@/lib/requests";
 import { KBShortcut } from "@/components/KBShortcut";
 import { errorAlerter, errorLogger, ignore } from "@/lib/misc";
 import { rankList } from "@/lib/rank_utils";
-import { GobanRendererConfig, GobanRenderer, PuzzleConfig, PuzzlePlacementSetting } from "goban";
+import {
+    GobanRendererConfig,
+    GobanRenderer,
+    MoveTree,
+    PuzzleConfig,
+    PuzzlePlacementSetting,
+} from "goban";
 import type { PlayerCacheEntry } from "@/lib/player_cache";
 import { GobanController } from "@/lib/GobanController";
 import { goban_view_mode, GobanView, GobanViewRef } from "@/components/GobanView";
@@ -255,6 +261,21 @@ export function Puzzle(): React.ReactElement {
         attemptsRef.current++;
     }, []);
 
+    // The move slider and its step buttons navigate without going through
+    // this view's undo handler, so clear the correct/incorrect banner on any
+    // backward navigation — it describes a position the user has left.
+    const lastMoveNumberRef = React.useRef(0);
+    const onCurMove = React.useCallback((move: MoveTree) => {
+        const receded = move.move_number < lastMoveNumberRef.current;
+        lastMoveNumberRef.current = move.move_number;
+        if (receded && (stateRef.current.show_wrong || stateRef.current.show_correct)) {
+            setState({
+                show_correct: false,
+                show_wrong: false,
+            });
+        }
+    }, []);
+
     const onCorrectAnswer = React.useCallback(() => {
         const pid = puzzleIdRef.current;
         const goban = gobanRef.current;
@@ -332,6 +353,8 @@ export function Puzzle(): React.ReactElement {
             goban.on("update", onUpdate);
             goban.on("puzzle-wrong-answer", onWrongAnswer);
             goban.on("puzzle-correct-answer", onCorrectAnswer);
+            lastMoveNumberRef.current = goban.engine.cur_move.move_number;
+            goban.on("cur_move", onCurMove);
             navigation.goban = goban;
         },
         [
@@ -341,6 +364,7 @@ export function Puzzle(): React.ReactElement {
             onUpdate,
             onWrongAnswer,
             onCorrectAnswer,
+            onCurMove,
             replacementSettingFunction,
         ],
     );
