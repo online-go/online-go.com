@@ -20,9 +20,8 @@ import * as data from "@/lib/data";
 import * as player_cache from "@/lib/player_cache";
 import * as preferences from "@/lib/preferences";
 
-import { OgsResizeDetector } from "@/components/OgsResizeDetector";
 import { browserHistory } from "@/lib/ogsHistory";
-import { _, pgettext, interpolate } from "@/lib/translate";
+import { _, pgettext } from "@/lib/translate";
 import { post, del } from "@/lib/requests";
 import { Modal } from "@/components/Modal";
 import { socket } from "@/lib/sockets";
@@ -47,11 +46,8 @@ import {
     saveTimeControlSettings,
     updateSystem,
 } from "@/components/TimeControl/TimeControlUpdates";
-import Select from "react-select";
 import {
     rejectionDetailsToMessage,
-    preferred_setting_label,
-    sort_preferred_settings,
     sanitizeChallengeDetails,
     getPreferredSettings,
     getDefaultKomi,
@@ -67,7 +63,6 @@ import {
     ChallengeModalInput,
     ChallengeModalProperties,
     ChallengeModalState,
-    PreferredSettingOption,
     RejectionDetails,
     UpdateFn,
 } from "@/components/ChallengeModal/ChallengeModal.types";
@@ -75,6 +70,7 @@ import "./ChallengeModal.css";
 import { ChallengeModalComputerOpponents } from "./ChallengeModalComputerOpponents";
 import { ChallengeModalAdditionalSettings } from "./ChallengeModalAdditionalSettings";
 import { ChallengeModalAdvancedSettings } from "./ChallengeModalAdvancedSettings";
+import { ChallengeModalPreferredGameSettings } from "./ChallengeModalPreferredGameSettings";
 import { State } from "./type";
 import { ChallengeModalBasicSettings } from "./ChallengeModalBasicSettings";
 
@@ -414,7 +410,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         );
     };
 
-    usePreferredSetting = (index: number) => {
+    selectPreferredSetting = (index: number) => {
         const preferred_settings = getPreferredSettings();
         const setting: ChallengeDetails = dup(preferred_settings[index]);
         if (this.props.mode !== "open") {
@@ -896,100 +892,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         }
     };
 
-    handlePreferredSettingChange = (option: PreferredSettingOption | null) => {
-        if (option) {
-            this.usePreferredSetting(option.value);
-        }
-    };
-
-    preferredGameSettings = () => {
-        const options: PreferredSettingOption[] = sort_preferred_settings(
-            this.state.preferred_settings.map((setting: ChallengeDetails, index: number) => ({
-                value: index,
-                label: preferred_setting_label(setting),
-                setting: setting,
-            })),
-        );
-
-        const handicap = this.state.challenge.game.handicap;
-
-        // see usePreferredSetting
-        const rank_min = this.state.conf.restrict_rank ? this.state.challenge.min_ranking : -1000;
-        const rank_max = this.state.challenge.max_ranking;
-
-        const selected =
-            options.find((opt: PreferredSettingOption) => {
-                // note that for some reason this.state.conf.restrict_rank is not stored with prefs
-                const opt_restrict_rank =
-                    opt.setting.min_ranking > -1000 && opt.setting.max_ranking < 1000;
-
-                const rank_choice_match =
-                    (!opt_restrict_rank && !this.state.conf.restrict_rank) ||
-                    (opt_restrict_rank &&
-                        this.state.conf.restrict_rank &&
-                        opt.setting.min_ranking === rank_min &&
-                        opt.setting.max_ranking === rank_max);
-
-                const selected =
-                    (opt.setting.game.rules === this.state.challenge.game.rules &&
-                        opt.setting.game.width === this.state.challenge.game.width &&
-                        opt.setting.game.height === this.state.challenge.game.height &&
-                        opt.setting.game.handicap === handicap &&
-                        rank_choice_match &&
-                        JSON.stringify(opt.setting.game.time_control_parameters) ===
-                            JSON.stringify(this.state.time_control)) ||
-                    null;
-
-                return selected;
-            }) || null;
-
-        return (
-            <div
-                className="preferred-settings-container"
-                style={{ padding: "0.5em" }}
-                ref={this.ref}
-            >
-                <OgsResizeDetector onResize={this.onResize} targetRef={this.ref} />
-                <hr />
-                <div className="preferred-settings-container">
-                    <div style={{ display: "flex", gap: "1em", alignItems: "center" }}>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                            <Select
-                                classNamePrefix="ogs-react-select"
-                                value={selected}
-                                onChange={this.handlePreferredSettingChange}
-                                options={options}
-                                isClearable={false}
-                                isSearchable={false}
-                                menuPlacement="auto"
-                                placeholder={interpolate(
-                                    _("Preferred settings ({{preferred_settings_count}})"),
-                                    {
-                                        preferred_settings_count:
-                                            this.state.preferred_settings.length,
-                                    },
-                                )}
-                            />
-                        </div>
-                        {selected ? (
-                            <button
-                                onClick={() => this.deletePreferredSetting(selected.value)}
-                                className="xs reject"
-                                style={{ flexShrink: 0 }}
-                            >
-                                {_("Delete")}
-                            </button>
-                        ) : (
-                            <button onClick={this.addToPreferredSettings} className="sm success">
-                                {_("Add current setting")}
-                            </button>
-                        )}
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
     render() {
         const user = data.get("user");
         const mode = this.props.mode;
@@ -1154,7 +1056,19 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                         </button>
                     )}
                 </div>
-                {mode !== "computer" && this.preferredGameSettings()}
+                {mode !== "computer" && (
+                    <ChallengeModalPreferredGameSettings
+                        preferredSettings={this.state.preferred_settings}
+                        challenge={this.state.challenge}
+                        conf={this.state.conf}
+                        timeControl={this.state.time_control}
+                        containerRef={this.ref}
+                        onResize={this.onResize}
+                        selectPreferredSetting={this.selectPreferredSetting}
+                        deletePreferredSetting={this.deletePreferredSetting}
+                        addToPreferredSettings={this.addToPreferredSettings}
+                    />
+                )}
             </div>
         );
     }
