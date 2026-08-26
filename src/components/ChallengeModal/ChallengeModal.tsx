@@ -56,7 +56,6 @@ import {
     getPreferredSettings,
     getDefaultKomi,
     isKomiOption,
-    parseNumberInput,
     isRuleSet,
     isColorSelectionOption,
 } from "@/components/ChallengeModal/ChallengeModal.utils";
@@ -76,6 +75,7 @@ import "./ChallengeModal.css";
 import { ChallengeModalComputerOpponents } from "./ChallengeModalComputerOpponents";
 import { ChallengeModalAdditionalSettings } from "./ChallengeModalAdditionalSettings";
 import { ChallengeModalHandicapSettings } from "./ChallengeModalHandicapSettings";
+import { ChallengeModalKomiSettings } from "./ChallengeModalKomiSettings";
 import { ChallengeModalRulesSettings } from "./ChallengeModalRulesSettings";
 import { State } from "./type";
 import { ChallengeModalBasicSettings } from "./ChallengeModalBasicSettings";
@@ -889,57 +889,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
     /* rendering  */
 
-    komiSettings = () => {
-        const game = this.gameState();
-        // In bot mode, users can pick custom komi; ranked auto-flips to false.
-        const restrict_ranked_only = game.ranked && this.props.mode !== "computer";
-        // Auto handicap forces auto komi - the backend handicap calculator
-        // ignores requested_komi in the auto-handicap branch.
-        const auto_handicap = game.handicap < 0;
-        const disable_custom_komi = restrict_ranked_only || auto_handicap;
-        return (
-            <>
-                <div className="form-group">
-                    <label className="control-label">{_("Komi")}</label>
-                    <div className="controls">
-                        <div className="checkbox">
-                            <select
-                                value={game.komi_auto}
-                                onChange={(ev) => this.update_komi_option(ev.target.value)}
-                                className="challenge-dropdown form-control"
-                                id="challenge-komi"
-                            >
-                                <option value="automatic">{_("Automatic")}</option>
-                                <option value="custom" disabled={disable_custom_komi}>
-                                    {_("Custom")}
-                                </option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                {game.komi_auto === "custom" && (
-                    <div className="form-group">
-                        <label className="control-label"></label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <input
-                                    type="number"
-                                    value={game.komi ?? ""}
-                                    onChange={(ev) =>
-                                        this.update_komi(parseNumberInput(ev.target.value))
-                                    }
-                                    className="form-control"
-                                    style={{ width: "4em" }}
-                                    step="0.5"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </>
-        );
-    };
-
     advancedSettings = () => {
         const mode = this.props.mode;
         const challenge = this.state.challenge;
@@ -984,7 +933,12 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                             updateHandicap={this.update_handicap}
                         />
                     )}
-                    {this.komiSettings()}
+                    <ChallengeModalKomiSettings
+                        game={game}
+                        mode={mode}
+                        updateKomiOption={this.update_komi_option}
+                        updateKomi={this.update_komi}
+                    />
 
                     <div className="form-group">
                         <label className="control-label" htmlFor="challenge-color">
