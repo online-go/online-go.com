@@ -161,6 +161,7 @@ export type ChallengeInput = {
     min_ranking: number;
     max_ranking: number;
     challenger_color: rest_api.ColorSelectionOptions;
+    /** number of players required to auto start a rengo game */
     rengo_auto_start: number;
     invite_only?: boolean;
     boardWidth?: number;

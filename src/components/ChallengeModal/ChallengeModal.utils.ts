@@ -22,6 +22,8 @@ import { rulesText } from "@/lib/misc";
 import { shortShortTimeControl, timeControlSystemText } from "@/components/TimeControl";
 import {
     ChallengeDetails,
+    ChallengeInput,
+    GameInput,
     RejectionDetails,
 } from "@/components/ChallengeModal/ChallengeModal.types";
 import { rankSelectorIndexToText } from "@/lib/rank_utils";
@@ -282,3 +284,33 @@ export function isRuleSet(v: string): v is RuleSet {
 export function isColorSelectionOption(v: string): v is rest_api.ColorSelectionOptions {
     return ["black", "white", "automatic", "random"].includes(v);
 }
+
+// Auto-sets `ranked` for bot challenges based on whether the game looks like
+// a normal ranked game. User-controlled fields (handicap, komi, etc.) are
+// left alone - picking unusual values just flips `ranked` to false.
+export function applyBotRanked(game: GameInput): GameInput {
+    return { ...game, ranked: computeBotRanked(game) };
+}
+
+export function computeBotRanked(
+    game: Pick<GameInput, "private" | "width" | "height" | "handicap" | "komi_auto">,
+): boolean {
+    return (
+        !game.private &&
+        isRankedBotBoardSize(game.width, game.height) &&
+        game.handicap <= 9 &&
+        game.komi_auto === "automatic"
+    );
+}
+
+export function isRankedBotBoardSize(width: number | null, height: number | null): boolean {
+    return (
+        (width === 19 && height === 19) ||
+        (width === 13 && height === 13) ||
+        (width === 9 && height === 9)
+    );
+}
+
+export const rengoAutoStartInputWarning = (challenge: ChallengeInput): boolean => {
+    return challenge.rengo_auto_start === 1 || challenge.rengo_auto_start === 2;
+};

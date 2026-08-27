@@ -54,6 +54,8 @@ import {
     isKomiOption,
     isRuleSet,
     isColorSelectionOption,
+    applyBotRanked,
+    rengoAutoStartInputWarning,
 } from "@/components/ChallengeModal/ChallengeModal.utils";
 import {
     ChallengeDetails,
@@ -92,32 +94,6 @@ const standard_board_sizes: { [k: string]: string | undefined } = {
     "19x9": "19x9",
     "5x13": "5x13",
 };
-
-function isRankedBotBoardSize(width: number | null, height: number | null): boolean {
-    return (
-        (width === 19 && height === 19) ||
-        (width === 13 && height === 13) ||
-        (width === 9 && height === 9)
-    );
-}
-
-function computeBotRanked(
-    game: Pick<GameInput, "private" | "width" | "height" | "handicap" | "komi_auto">,
-): boolean {
-    return (
-        !game.private &&
-        isRankedBotBoardSize(game.width, game.height) &&
-        game.handicap <= 9 &&
-        game.komi_auto === "automatic"
-    );
-}
-
-// Auto-sets `ranked` for bot challenges based on whether the game looks like
-// a normal ranked game. User-controlled fields (handicap, komi, etc.) are
-// left alone - picking unusual values just flips `ranked` to false.
-function applyBotRanked(game: GameInput): GameInput {
-    return { ...game, ranked: computeBotRanked(game) };
-}
 
 // The backend's handicap calculator ignores requested_komi when the handicap
 // is automatic (<0), so in the UI we keep komi in lockstep: auto handicap =>
@@ -281,13 +257,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         this.props.modal.on("close", () => {
             data.unwatch("preferred-game-settings", this.preferredSettingsUpdated);
         });
-    }
-
-    rengo_auto_start_input_warning(): boolean {
-        return (
-            this.state.challenge.rengo_auto_start === 1 ||
-            this.state.challenge.rengo_auto_start === 2
-        );
     }
 
     gameStateOf(state: ChallengeModalState): any {
@@ -709,54 +678,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     /* direct fn updates */
     update_bot_id = (id: number) => this.update_conf((prev) => ({ ...prev, bot_id: id }));
 
-    update_game_name = (name: string): void =>
-        this.update_game_settings((prev) => ({ ...prev, name: name }));
-
-    update_private = (isPrivate: boolean) =>
-        this.update_game_settings((prev) => {
-            const next = { ...prev, private: isPrivate };
-            if (this.props.mode === "computer") {
-                return applyBotRanked(next);
-            }
-            return { ...next, ranked: false };
-        });
-
-    update_invite_only = (invite_only: boolean) => {
-        this.update_challenge_settings((prev) => ({ ...prev, invite_only: invite_only }));
-        // If we're in open mode and invite_only is being turned off, also turn off private
-        if (this.props.mode === "open" && !invite_only && this.state.challenge.game.private) {
-            this.update_private(false);
-        }
-    };
-
-    update_rengo = (isRengo: boolean) => {
-        this.forceTimeControlSystemIfNecessary(
-            isRengo,
-            this.state.challenge.game.rengo_casual_mode,
-        );
-        this.update_game_settings((prev) => ({
-            ...prev,
-            rengo: isRengo,
-            ranked: false,
-            handicap: 0,
-        }));
-    };
-    update_rengo_casual = (isRengoCasual: boolean) => {
-        this.forceTimeControlSystemIfNecessary(this.state.challenge.game.rengo, isRengoCasual);
-        this.update_game_settings((prev) => ({ ...prev, rengo_casual_mode: isRengoCasual }));
-    };
-
-    update_rengo_auto_start = (auto_start_threshold: number) => {
-        const new_val = isNaN(auto_start_threshold) ? 0 : auto_start_threshold;
-
-        if (new_val >= 0) {
-            this.update_challenge_settings((prev) => ({
-                ...prev,
-                rengo_auto_start: new_val,
-            }));
-        }
-    };
-
     update_ranked = (ev: React.ChangeEvent<HTMLInputElement>) => this.setRanked(ev.target.checked);
     update_board_size = (selection: string) => {
         this.update_conf((prev) => ({ ...prev, selected_board_size: selection }));
@@ -947,13 +868,11 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                     mode={mode}
                                     challenge={this.state.challenge}
                                     conf={this.state.conf}
-                                    updateGameName={this.update_game_name}
-                                    updateInviteOnly={this.update_invite_only}
-                                    updatePrivate={this.update_private}
-                                    updateRengo={this.update_rengo}
-                                    updateRengoCasual={this.update_rengo_casual}
-                                    updateRengoAutoStart={this.update_rengo_auto_start}
-                                    rengoAutoStartInputWarning={this.rengo_auto_start_input_warning}
+                                    updateGameSettings={this.update_game_settings}
+                                    updateChallengeSettings={this.update_challenge_settings}
+                                    forceTimeControlSystemIfNecessary={
+                                        this.forceTimeControlSystemIfNecessary
+                                    }
                                 />
                                 {!this.state.initial_state && (
                                     <ChallengeModalAdditionalSettings
@@ -1041,7 +960,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                         <button
                             onClick={this.createChallenge}
                             className="primary"
-                            disabled={this.rengo_auto_start_input_warning()}
+                            disabled={rengoAutoStartInputWarning(this.state.challenge)}
                         >
                             {pgettext("Create a game anyone can join", "Create Game")}
                         </button>

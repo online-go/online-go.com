@@ -17,50 +17,58 @@
 import { bots_list } from "@/lib/bots";
 import { _, pgettext } from "@/lib/translate";
 import * as React from "react";
-import { ChallengeModalConf, ChallengeInput } from "./ChallengeModal.types";
+import { ChallengeModalConf, ChallengeInput, UpdateFn, GameInput } from "./ChallengeModal.types";
+import { rengoAutoStartInputWarning } from "./ChallengeModal.utils";
 
 type ChallengeModalBasicSettingsProps = {
     playerId?: number;
     challenge: ChallengeInput;
     conf: ChallengeModalConf;
     mode: string;
-    updateGameName: (name: string) => void;
-    updateInviteOnly: (invite_only: boolean) => void;
-    updatePrivate: (is_private: boolean) => void;
-    updateRengo: (is_rengo: boolean) => void;
-    updateRengoCasual: (is_casual: boolean) => void;
-    updateRengoAutoStart: (auto_start: number) => void;
-    rengoAutoStartInputWarning: () => boolean;
+    updateGameSettings: (update_fn: UpdateFn<GameInput>) => void;
+    updateChallengeSettings: (update_fn: UpdateFn<ChallengeInput>) => void;
+    forceTimeControlSystemIfNecessary: (is_rengo: boolean, is_rengo_casual: boolean) => void;
 };
 
 export const ChallengeModalBasicSettings = ({
     playerId,
-    conf,
-    challenge,
     mode,
-    updateGameName,
-    updateInviteOnly,
-    updatePrivate,
-    updateRengo,
-    updateRengoCasual,
-    updateRengoAutoStart,
-    rengoAutoStartInputWarning,
+    challenge,
+    conf,
+    updateGameSettings,
+    updateChallengeSettings,
+    forceTimeControlSystemIfNecessary,
 }: ChallengeModalBasicSettingsProps) => {
     const bots = bots_list();
     const selected_bot = bots.find((bot) => bot.id === conf.bot_id);
+    const showRengoAutoStartWarning = rengoAutoStartInputWarning(challenge);
 
     const cbUpdateGameName = React.useCallback(
         (ev: React.ChangeEvent<HTMLInputElement>) => {
-            updateGameName(ev.target.value);
+            updateGameSettings((prev) => ({ ...prev, name: ev.target.value }));
         },
-        [updateGameName],
+        [updateGameSettings],
+    );
+
+    const updatePrivate = React.useCallback(
+        (is_private: boolean) => {
+            updateChallengeSettings((prev) => ({
+                ...prev,
+                game: { ...prev.game, private: is_private },
+            }));
+        },
+        [updateChallengeSettings],
     );
 
     const cbUpdateInviteOnly = React.useCallback(
         (ev: React.ChangeEvent<HTMLInputElement>) => {
-            updateInviteOnly(ev.target.checked);
+            updateChallengeSettings((prev) => ({ ...prev, invite_only: ev.target.checked }));
+            // If we're in open mode and invite_only is being turned off, also turn off private
+            if (mode === "open" && !ev.target.checked && challenge.game.private) {
+                updatePrivate(false);
+            }
         },
-        [updateInviteOnly],
+        [updateChallengeSettings, updatePrivate, mode, challenge.game.private],
     );
 
     const cbUpdatePrivate = React.useCallback(
@@ -72,24 +80,41 @@ export const ChallengeModalBasicSettings = ({
 
     const cbUpdateRengo = React.useCallback(
         (ev: React.ChangeEvent<HTMLInputElement>) => {
-            updateRengo(ev.target.checked);
+            const isRengo = ev.target.checked;
+            forceTimeControlSystemIfNecessary(isRengo, challenge.game.rengo_casual_mode);
+
+            updateGameSettings((prev) => ({
+                ...prev,
+                rengo: isRengo,
+                ranked: false,
+                handicap: 0,
+            }));
         },
-        [updateRengo],
+        [updateGameSettings, forceTimeControlSystemIfNecessary],
     );
 
     const cbUpdateRengoCasual = React.useCallback(
         (ev: React.ChangeEvent<HTMLInputElement>) => {
-            updateRengoCasual(ev.target.checked);
+            const isRengoCasual = ev.target.checked;
+            forceTimeControlSystemIfNecessary(challenge.game.rengo, isRengoCasual);
+            updateGameSettings((prev) => ({ ...prev, rengo_casual_mode: isRengoCasual }));
         },
-        [updateRengoCasual],
+        [updateGameSettings, forceTimeControlSystemIfNecessary],
     );
 
     const cbUpdateRengoAutoStart = React.useCallback(
         (ev: React.ChangeEvent<HTMLInputElement>) => {
-            const value = ev.target.value;
-            updateRengoAutoStart(parseInt(value));
+            const auto_start_threshold = parseInt(ev.target.value);
+            const new_val = isNaN(auto_start_threshold) ? 0 : auto_start_threshold;
+
+            if (new_val >= 0) {
+                updateChallengeSettings((prev) => ({
+                    ...prev,
+                    rengo_auto_start: new_val,
+                }));
+            }
         },
-        [updateRengoAutoStart],
+        [updateChallengeSettings],
     );
 
     return (
@@ -263,7 +288,7 @@ export const ChallengeModalBasicSettings = ({
                                 <i
                                     className={
                                         "fa fa-exclamation-circle " +
-                                        (rengoAutoStartInputWarning() ? "value-warning" : "")
+                                        (showRengoAutoStartWarning ? "value-warning" : "")
                                     }
                                 />
                             </div>
