@@ -17,12 +17,13 @@
 import { bots_list } from "@/lib/bots";
 import { _, pgettext } from "@/lib/translate";
 import * as React from "react";
-import { State } from "./type";
+import { ChallengeModalConf, ChallengeInput } from "./ChallengeModal.types";
 
 type ChallengeModalBasicSettingsProps = {
     playerId?: number;
+    challenge: ChallengeInput;
+    conf: ChallengeModalConf;
     mode: string;
-    state: State;
     updateGameName: (name: string) => void;
     updateInviteOnly: (invite_only: boolean) => void;
     updatePrivate: (is_private: boolean) => void;
@@ -34,8 +35,9 @@ type ChallengeModalBasicSettingsProps = {
 
 export const ChallengeModalBasicSettings = ({
     playerId,
+    conf,
+    challenge,
     mode,
-    state,
     updateGameName,
     updateInviteOnly,
     updatePrivate,
@@ -45,7 +47,7 @@ export const ChallengeModalBasicSettings = ({
     rengoAutoStartInputWarning,
 }: ChallengeModalBasicSettingsProps) => {
     const bots = bots_list();
-    const selected_bot = bots.find((bot) => bot.id === state.conf.bot_id);
+    const selected_bot = bots.find((bot) => bot.id === conf.bot_id);
 
     const cbUpdateGameName = React.useCallback(
         (ev: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,7 +132,7 @@ export const ChallengeModalBasicSettings = ({
                         <div className="checkbox">
                             <input
                                 type="text"
-                                value={state.challenge.game.name}
+                                value={challenge.game.name}
                                 onChange={cbUpdateGameName}
                                 className="form-control"
                                 id="challenge-game-name"
@@ -153,7 +155,7 @@ export const ChallengeModalBasicSettings = ({
                             <input
                                 type="checkbox"
                                 id="challenge-invite-only"
-                                checked={state.challenge.invite_only}
+                                checked={challenge.invite_only}
                                 onChange={cbUpdateInviteOnly}
                             />
                         </div>
@@ -161,7 +163,7 @@ export const ChallengeModalBasicSettings = ({
                 </div>
             )}
             {/* Only show Private checkbox if not in open mode, or if in open mode with invite-only checked */}
-            {(mode !== "open" || state.challenge.invite_only) && (
+            {(mode !== "open" || challenge.invite_only) && (
                 <div className="form-group">
                     <label className="control-label" htmlFor="challenge-private">
                         {_("Private")}
@@ -172,8 +174,8 @@ export const ChallengeModalBasicSettings = ({
                             <input
                                 type="checkbox"
                                 id="challenge-private"
-                                disabled={state.challenge.game.rengo}
-                                checked={state.challenge.game.private}
+                                disabled={challenge.game.rengo}
+                                checked={challenge.game.private}
                                 onChange={cbUpdatePrivate}
                             />
                         </div>
@@ -191,10 +193,10 @@ export const ChallengeModalBasicSettings = ({
                                 type="checkbox"
                                 id="rengo-option"
                                 disabled={
-                                    !state.challenge.game.rengo &&
-                                    (state.challenge.game.private || state.challenge.game.ranked)
+                                    !challenge.game.rengo &&
+                                    (challenge.game.private || challenge.game.ranked)
                                 }
-                                checked={state.challenge.game.rengo}
+                                checked={challenge.game.rengo}
                                 onChange={cbUpdateRengo}
                             />
                         </div>
@@ -203,7 +205,7 @@ export const ChallengeModalBasicSettings = ({
             )}
             {mode === "open" && (
                 <>
-                    <div className={"form-group" + (state.challenge.game.rengo ? "" : " hide")}>
+                    <div className={"form-group" + (challenge.game.rengo ? "" : " hide")}>
                         <label className="control-label" htmlFor="rengo-casual-mode">
                             {_("Casual")}
                         </label>
@@ -212,7 +214,7 @@ export const ChallengeModalBasicSettings = ({
                                 <input
                                     type="checkbox"
                                     id="rengo-casual-mode"
-                                    checked={state.challenge.game.rengo_casual_mode}
+                                    checked={challenge.game.rengo_casual_mode}
                                     onChange={cbUpdateRengoCasual}
                                 />
                                 <a
@@ -232,7 +234,7 @@ export const ChallengeModalBasicSettings = ({
                     <div
                         className={
                             "form-group" +
-                            (state.challenge.game.rengo && state.challenge.game.rengo_casual_mode
+                            (challenge.game.rengo && challenge.game.rengo_casual_mode
                                 ? ""
                                 : " hide")
                         }
@@ -246,9 +248,9 @@ export const ChallengeModalBasicSettings = ({
                                     type="number"
                                     // It's clearer to display blank ("") if there is no auto-start.  Blank means no autostart, the same as zero.
                                     value={
-                                        !state.challenge.rengo_auto_start
+                                        !challenge.rengo_auto_start
                                             ? ""
-                                            : state.challenge.rengo_auto_start
+                                            : challenge.rengo_auto_start
                                     }
                                     onChange={cbUpdateRengoAutoStart}
                                     id="rengo-auto-start"

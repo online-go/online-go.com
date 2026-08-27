@@ -71,7 +71,6 @@ import { ChallengeModalComputerOpponents } from "./ChallengeModalComputerOpponen
 import { ChallengeModalAdditionalSettings } from "./ChallengeModalAdditionalSettings";
 import { ChallengeModalAdvancedSettings } from "./ChallengeModalAdvancedSettings";
 import { ChallengeModalPreferredGameSettings } from "./ChallengeModalPreferredGameSettings";
-import { State } from "./type";
 import { ChallengeModalBasicSettings } from "./ChallengeModalBasicSettings";
 
 /* Constants  */
@@ -945,8 +944,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                             <div className="challenge-pane-container">
                                 <ChallengeModalBasicSettings
                                     playerId={player_id}
-                                    state={this.state as any as State}
                                     mode={mode}
+                                    challenge={this.state.challenge}
+                                    conf={this.state.conf}
                                     updateGameName={this.update_game_name}
                                     updateInviteOnly={this.update_invite_only}
                                     updatePrivate={this.update_private}

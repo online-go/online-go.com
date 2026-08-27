@@ -22,6 +22,16 @@ export type Challenge = {
     rengo_auto_start: number | null;
 };
 
+export type Game = {
+    id: number;
+    name: string;
+    private: boolean;
+    ranked: boolean;
+    rengo: boolean;
+    rengo_casual_mode: boolean;
+    bot_id: number | null;
+};
+
 export type State = {
     challenge: Challenge;
     time_control: any;
