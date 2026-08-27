@@ -20,6 +20,7 @@ import * as React from "react";
 import { State } from "./type";
 
 type ChallengeModalBasicSettingsProps = {
+    playerId?: number;
     mode: string;
     state: State;
     updateGameName: (name: string) => void;
@@ -32,6 +33,7 @@ type ChallengeModalBasicSettingsProps = {
 };
 
 export const ChallengeModalBasicSettings = ({
+    playerId,
     mode,
     state,
     updateGameName,
@@ -138,7 +140,7 @@ export const ChallengeModalBasicSettings = ({
                     </div>
                 </div>
             )}
-            {!(state.playerId || null) && mode === "open" && (
+            {!(playerId || null) && mode === "open" && (
                 <div className="form-group">
                     <label className="control-label" htmlFor="challenge-invite-only">
                         {pgettext(

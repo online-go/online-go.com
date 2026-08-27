@@ -944,6 +944,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                         <div className="challenge  form-inline">
                             <div className="challenge-pane-container">
                                 <ChallengeModalBasicSettings
+                                    playerId={player_id}
                                     state={this.state as any as State}
                                     mode={mode}
                                     updateGameName={this.update_game_name}
