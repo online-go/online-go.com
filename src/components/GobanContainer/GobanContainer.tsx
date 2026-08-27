@@ -131,16 +131,6 @@ export function GobanContainer({
                 ? "0px"
                 : `${Math.ceil((containerHeight - scaledHeight) / 2)}px`;
         goban_div.style.left = `${Math.ceil((containerWidth - scaledWidth) / 2)}px`;
-
-        // Publish the rendered board width for sibling layout (e.g. the Game
-        // view's stacked player cards size themselves to the board's edges
-        // via `var(--goban-rendered-width)`). Set on the parent because the
-        // consumers are siblings of this container, and CSS custom
-        // properties only cascade downward.
-        ref_goban_container.current.parentElement?.style.setProperty(
-            "--goban-rendered-width",
-            `${Math.round(scaledWidth)}px`,
-        );
     };
     const onResize = React.useCallback(
         (no_debounce: boolean = false, do_cb: boolean = true) => {

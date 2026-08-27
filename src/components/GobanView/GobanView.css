@@ -63,8 +63,7 @@
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
         /* The 1.25rem on the left creates a consistent gap between the
          * goban area and the sidebar across all GobanView consumers (game,
-         * puzzle, joseki). The Game view places its fullscreen-toggle icon
-         * inside this gap; on other pages it's just visual breathing room.
+         * puzzle, joseki) — visual breathing room.
          *
          * Top is 0 because --below-navbar already provides a small (~0.3rem)
          * spacer below the navbar — adding more margin doubles up. Bottom

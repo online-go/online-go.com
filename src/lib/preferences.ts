@@ -93,7 +93,6 @@ export const defaults = {
     "hide-ranks": false,
     "label-positioning": "all" as LabelPosition,
     "label-positioning-puzzles": "all" as LabelPosition,
-    "game.layout": "standard" as "standard" | "stacked",
     "game.chat-enabled": true,
     "moderator.game-moderator-tab-visible": true,
     language: "auto",

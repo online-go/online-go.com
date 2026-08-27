@@ -25,7 +25,7 @@ import { _, interpolate, pgettext } from "@/lib/translate";
 import { popover, PopOver } from "@/lib/popover";
 import { get, abort_requests_in_flight } from "@/lib/requests";
 import { UIPush } from "@/components/UIPush";
-import { GobanRendererConfig, JGOFNumericPlayerColor } from "goban";
+import { GobanRendererConfig, JGOFNumericPlayerColor, LabelPosition } from "goban";
 import { isLiveGame } from "@/components/TimeControl";
 import { setExtraActionCallback, PlayerDetails } from "@/components/Player";
 import * as player_cache from "@/lib/player_cache";
@@ -39,6 +39,7 @@ import {
     useCanRequestUndo,
     useHasStagedMove,
     useMode,
+    usePauseControl,
     usePhase,
     usePlayerToMove,
     useResignMode,
@@ -60,6 +61,7 @@ import { ActiveTournament } from "@/lib/types";
 import { GobanController } from "@/lib/GobanController";
 import { FragAIReview, GameInformation, GameKeyboardShortcuts, RengoHeader } from "./fragments";
 import { GameSettingsPanel } from "./GameSettingsPanel";
+import { GameThemeSettingsPanel } from "./GameThemeSettingsPanel";
 import { GameActionsPanel } from "./GameActionsPanel";
 import { GameModToolsPanel } from "./GameModToolsPanel";
 import { GameModeratorAreaPanel } from "./GameModeratorAreaPanel";
@@ -124,8 +126,8 @@ export function Game(): React.ReactElement | null {
     const [simul_black, set_simul_black] = React.useState<boolean | null>(null);
     const [simul_white, set_simul_white] = React.useState<boolean | null>(null);
     const zen_mode = useZenMode(goban_controller.current);
-    // Score-details popup for the stacked/mobile player cards (the standard
-    // desktop layout's PlayerCards wrapper manages its own instance).
+    // Score-details popup for the mobile player cards (the desktop
+    // layout's PlayerCards wrapper manages its own instance).
     const { show_score_breakdown, toggleScorePopup } = useScorePopup(goban);
     const user = useUser();
     const user_is_player = useUserIsParticipant(goban);
@@ -135,17 +137,17 @@ export function Game(): React.ReactElement | null {
     const undo_request_is_mine = useUndoRequestIsMine(goban);
     const resign_mode = useResignMode(goban);
     const has_staged_move = useHasStagedMove(goban);
+    const pause_control = usePauseControl(goban);
     const modal_context = React.useContext(ModalContext);
     const more_actions_popover_ref = React.useRef<PopOver | null>(null);
     const settings_popover_ref = React.useRef<PopOver | null>(null);
     const goban_view_ref = React.useRef<GobanViewRef>(null);
-    const [layout_preference] = usePreference("game.layout");
     const [moderator_tab_visible, set_moderator_tab_visible] = usePreference(
         "moderator.game-moderator-tab-visible",
     );
     // Mobile (portrait) gets a dedicated, non-configurable layout: both
     // player cards above the board, chat hidden behind a toggle in the
-    // action bar. The standard / stacked preference doesn't apply.
+    // action bar.
     const view_mode = useViewMode(goban_controller.current);
     const is_mobile = view_mode === "portrait";
     // Two-level chat gating:
@@ -158,6 +160,14 @@ export function Game(): React.ReactElement | null {
     //     on desktop (chat is always visible there if the feature is on).
     const [chat_enabled] = usePreference("game.chat-enabled");
     const [mobile_chat_visible, set_mobile_chat_visible] = React.useState(false);
+    // Whether the Themes & Visuals takeover is showing. Synced from the
+    // takeover tab's onToggle (the authoritative open/close signal), and
+    // used to light up the settings gear while it's open.
+    const [theme_settings_open, set_theme_settings_open] = React.useState(false);
+    // Bumped when the goban must be rebuilt from scratch (switching
+    // between the SVG and canvas renderers); the constructor effect below
+    // lists it as a dependency.
+    const [goban_generation, bump_goban_generation] = React.useReducer((x: number) => x + 1, 0);
     // Unread marker for the mobile chat tab: the chat is hidden by default
     // there, so without this a message from the opponent would arrive
     // invisibly. Set on chat lines that arrive after page load (the
@@ -184,9 +194,6 @@ export function Game(): React.ReactElement | null {
             chat_goban.off("chat", onChat);
         };
     }, [goban, is_mobile, chat_enabled, mobile_chat_visible, user.id]);
-    // Zen mode always uses the standard sidebar layout regardless of the
-    // user's saved preference, so the small vertically-centered controls fit.
-    const stacked = !is_mobile && !zen_mode && layout_preference === "stacked";
 
     // Entering zen mode while a takeover (e.g. Settings) is open leaves the
     // user stuck: the tab bar that would normally toggle the takeover off
@@ -716,7 +723,70 @@ export function Game(): React.ReactElement | null {
 
             goban_div.current?.childNodes.forEach((node) => node.remove());
         };
-    }, [game_id, review_id]);
+    }, [game_id, review_id, goban_generation]);
+
+    // Keep the live goban in sync with visual preferences set from the
+    // Themes & Visuals panel that the goban's own theme watcher doesn't
+    // cover: values it caches or reads imperatively need an explicit poke,
+    // and switching renderers needs a full rebuild (goban_generation).
+    React.useEffect(() => {
+        const current_goban = () => goban_controller.current?.goban;
+
+        // Covers values cached at construction (variation move numbers,
+        // stone font scale) and values read live at draw time (fuzzy
+        // placement, undo request indicator, A1/1-1 labeling).
+        const refresh = () => current_goban()?.refreshVisualPreferences();
+        const refresh_keys = [
+            "fuzzy-stone-placement",
+            "visual-undo-request-indicator",
+            "board-labeling",
+            "show-variation-move-numbers",
+            "stone-font-scale",
+        ] as const;
+
+        const onVariationStoneOpacity = (v: number) => {
+            const g = current_goban();
+            if (g) {
+                g.variation_stone_opacity = v;
+                g.redraw(true);
+            }
+        };
+        const onLastMoveOpacity = (v: number) => {
+            const g = current_goban();
+            if (g) {
+                g.setLastMoveOpacity(v);
+                g.redraw(true);
+            }
+        };
+        const onLabelPosition = (v: LabelPosition) => current_goban()?.setLabelPosition(v);
+        // useData() re-emits its key with an unchanged value whenever a
+        // component using it mounts (e.g. opening the Settings popover),
+        // so only rebuild when the renderer selection actually changed.
+        let last_renderer = data.get("experiments.canvas");
+        const onRendererChange = (v?: string) => {
+            if (v !== last_renderer) {
+                last_renderer = v;
+                bump_goban_generation();
+            }
+        };
+
+        for (const key of refresh_keys) {
+            preferences.watch(key, refresh, false, true);
+        }
+        preferences.watch("variation-stone-opacity", onVariationStoneOpacity, false, true);
+        preferences.watch("last-move-opacity", onLastMoveOpacity, false, true);
+        preferences.watch("label-positioning", onLabelPosition, false, true);
+        data.watch("experiments.canvas", onRendererChange, false, true);
+        return () => {
+            for (const key of refresh_keys) {
+                preferences.unwatch(key, refresh);
+            }
+            preferences.unwatch("variation-stone-opacity", onVariationStoneOpacity);
+            preferences.unwatch("last-move-opacity", onLastMoveOpacity);
+            preferences.unwatch("label-positioning", onLabelPosition);
+            data.unwatch("experiments.canvas", onRendererChange);
+        };
+    }, []);
 
     /* Handle return urls */
     React.useEffect(() => {
@@ -849,7 +919,13 @@ export function Game(): React.ReactElement | null {
                 <GobanControllerContext.Provider value={controller}>
                     <ModalContext.Provider value={modal_context}>
                         <div className="GamePopover GameSettingsPopover">
-                            <GameSettingsPanel onClose={close} compact={is_mobile} />
+                            <GameSettingsPanel
+                                onClose={close}
+                                compact={is_mobile}
+                                onShowThemeSettings={() =>
+                                    goban_view_ref.current?.setActiveTakeover("game-theme-settings")
+                                }
+                            />
                         </div>
                     </ModalContext.Provider>
                 </GobanControllerContext.Provider>
@@ -920,17 +996,6 @@ export function Game(): React.ReactElement | null {
 
     (window as any)["goban_controller"] = goban_controller.current;
 
-    // Determine which color sits at the bottom: the user's own color when
-    // they're playing, else black (the side that moves first).
-    const user_color: "black" | "white" | null =
-        user.id === goban.engine.players.black?.id
-            ? "black"
-            : user.id === goban.engine.players.white?.id
-              ? "white"
-              : null;
-    const bottom_color: "black" | "white" = user_color ?? "black";
-    const top_color: "black" | "white" = bottom_color === "black" ? "white" : "black";
-
     const renderPlayerCard = (color: "black" | "white") => (
         <PlayerCard
             color={color}
@@ -948,33 +1013,9 @@ export function Game(): React.ReactElement | null {
             ref={goban_view_ref}
             controller={goban_controller.current}
             className={
-                "Game MainGobanView" +
-                (stacked ? " stacked" : "") +
-                (is_mobile ? " mobile" : "") +
-                (zen_mode ? " zen" : "")
+                "Game MainGobanView" + (is_mobile ? " mobile" : "") + (zen_mode ? " zen" : "")
             }
             onWheel={onWheel}
-            centerTop={
-                !is_mobile &&
-                stacked && (
-                    <div className="GameStackedPlayer top">
-                        {/* PlayerCard inherits its styling from
-                         *  `.MainGobanView .player-icons .player-container`; wrap
-                         *  it so those selectors match and override the 49%
-                         *  width that's appropriate for the two-up sidebar
-                         *  layout but not for a solo full-width card. */}
-                        <div className="player-icons">{renderPlayerCard(top_color)}</div>
-                    </div>
-                )
-            }
-            centerBottom={
-                !is_mobile &&
-                stacked && (
-                    <div className="GameStackedPlayer bottom">
-                        <div className="player-icons">{renderPlayerCard(bottom_color)}</div>
-                    </div>
-                )
-            }
             header={<GameStateHeader />}
         >
             {game_id > 0 && (
@@ -986,29 +1027,11 @@ export function Game(): React.ReactElement | null {
             )}
             <GameKeyboardShortcuts />
 
-            {/* Full-screen / zen-mode toggle, pinned just to the left of the
-             *  sidebar's top edge. Hidden on mobile (no fullscreen there;
-             *  the viewport is already the full screen). Opacity 0.5 by
-             *  default, animates to 1 on hover. Esc also toggles zen via
-             *  handleEscapeKey. */}
-            {!is_mobile && (
-                <i
-                    className={
-                        "goban-fullscreen-toggle fa " + (zen_mode ? "fa-compress" : "fa-expand")
-                    }
-                    onClick={goban_controller.current.toggleZenMode}
-                    role="button"
-                    aria-label={zen_mode ? _("Exit full screen") : _("Full screen")}
-                    title={zen_mode ? _("Exit full screen") : _("Full screen")}
-                />
-            )}
-
             <GobanView.Tab id="game-main" type="always">
                 {is_mobile && (
                     // Mobile renders both players inside the always-panel so
                     // they appear in the scroll area immediately under the
-                    // square goban (centerBottom is clipped because .GobanView-
-                    // center is locked to a goban-sized square in portrait).
+                    // square goban.
                     <div className="GameMobilePlayers">
                         <div className="player-icons">
                             {renderPlayerCard("black")}
@@ -1016,7 +1039,7 @@ export function Game(): React.ReactElement | null {
                         </div>
                     </div>
                 )}
-                {!stacked && !is_mobile && (
+                {!is_mobile && (
                     <PlayerCards
                         historical_black={historical_black}
                         historical_white={historical_white}
@@ -1080,8 +1103,30 @@ export function Game(): React.ReactElement | null {
                 align="left"
                 icon="gear"
                 title={_("Settings")}
-                onClick={openSettings}
+                active={theme_settings_open}
+                onClick={(event) => {
+                    if (theme_settings_open) {
+                        goban_view_ref.current?.setActiveTakeover(null);
+                    } else {
+                        openSettings(event);
+                    }
+                }}
             />
+
+            {/* Full Themes & Visuals settings, opened from the Settings
+             *  popover's "More options" item. Hidden from the tab bar —
+             *  the gear icon doubles as its lit-up toggle. */}
+            <GobanView.Tab
+                id="game-theme-settings"
+                type="takeover"
+                hideFromBar
+                title={_("Themes & Visuals")}
+                onToggle={set_theme_settings_open}
+            >
+                <GameThemeSettingsPanel
+                    onClose={() => goban_view_ref.current?.setActiveTakeover(null)}
+                />
+            </GobanView.Tab>
 
             {game && (
                 <GobanView.Tab
@@ -1117,9 +1162,8 @@ export function Game(): React.ReactElement | null {
                 />
             )}
 
-            {/* Center: contextual single-purpose actions. Pausing is offered
-             *  via an overlay on the player clocks; Review here is for
-             *  spectators or once the game is finished. */}
+            {/* Center: contextual single-purpose actions. Review here is
+             *  for spectators or once the game is finished. */}
             {show_review_tab && (
                 <GobanView.Tab
                     id="game-review"
@@ -1165,6 +1209,21 @@ export function Game(): React.ReactElement | null {
                     onClick={() =>
                         undo_request_is_mine ? goban!.cancelUndo() : requestUndo(goban!, user.id)
                     }
+                />
+            )}
+
+            {/* Pause / resume the game clock. Rendered only for users
+             *  allowed to change the pause state right now (participants
+             *  in vacation-eligible games, moderators — see
+             *  usePauseControl). */}
+            {pause_control.action !== null && (
+                <GobanView.Tab
+                    id="game-pause"
+                    type="action"
+                    align="center"
+                    icon={pause_control.paused ? "play" : "pause"}
+                    title={pause_control.paused ? _("Resume game") : _("Pause game")}
+                    onClick={pause_control.togglePause}
                 />
             )}
 

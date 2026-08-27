@@ -1,0 +1,84 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.GameThemeSettingsPanel {
+    flex-grow: 1;
+    min-height: 0;
+
+    .GameThemeSettingsPanel-content {
+        flex-grow: 1;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        /* The Settings page disables selection page-wide; keep that here. */
+        user-select: none;
+
+        /* The label-positioning sample goban carries a 3rem indent sized
+         * for the wide Settings page; it forces horizontal overflow at
+         * sidebar width. */
+        .ThemePreferences .MiniGoban.inline {
+            margin-left: 0.5rem;
+        }
+
+        /* Stack each PreferenceLine's title above its body (the Settings
+         * page's 20rem side-by-side columns can't fit the sidebar), but
+         * leave every element at its stock Settings-page size. */
+        .PreferenceLine {
+            .PreferenceLineTitle,
+            .PreferenceLineDescription {
+                width: 100%;
+                min-width: 0;
+            }
+
+            /* Settings.css sets these to `large` for the full-width
+             * settings page; that reads oversized in the sidebar. */
+            .PreferenceLineTitle {
+                font-size: 0.95rem;
+            }
+
+            .PreferenceLineBody {
+                width: 100%;
+                margin-left: 0;
+                flex-wrap: wrap;
+                box-sizing: border-box;
+            }
+        }
+
+        /* "Customize board" / "Customize … stones" section headings
+         * (`font-size: larger` on the settings page). */
+        .ThemePreferences .select-custom {
+            font-size: 0.95rem;
+        }
+
+        /* The swatches are fixed-size canvases inside overflow-hidden
+         * selectors; without this the selectors flex-shrink below the
+         * canvas size at sidebar width and the stones render clipped.
+         * Let the rows wrap instead. */
+        .GobanThemePicker .theme-set .selector,
+        .GobanThemePicker .custom-theme-set .selector {
+            flex-shrink: 0;
+        }
+    }
+
+    .GameThemeSettingsPanel-buttons {
+        flex-shrink: 0;
+        display: flex;
+        justify-content: center;
+        padding: 0.5rem 0 0.25rem;
+        border-top: 1px solid var(--shade4);
+    }
+}

@@ -17,20 +17,12 @@
 
 import * as React from "react";
 
-import {
-    GobanRenderer,
-    Goban,
-    JGOFClockWithTransmitting,
-    JGOFPauseState,
-    PlayerScore,
-    JGOFPlayerSummary,
-} from "goban";
+import { GobanRenderer, Goban, PlayerScore, JGOFPlayerSummary } from "goban";
 import { user_uploads_url } from "@/lib/cdn";
 import { CountDown } from "./CountDown";
 import { Flag } from "@/components/Flag";
 import { ChatPresenceIndicator } from "@/components/ChatPresenceIndicator";
 import { Clock, SGFClock } from "@/components/Clock";
-import { useUser } from "@/lib/hooks";
 import { Player } from "@/components/Player";
 import { lookup, fetch } from "@/lib/player_cache";
 import { _, interpolate, ngettext } from "@/lib/translate";
@@ -45,7 +37,6 @@ import {
 import { get_network_latency, get_clock_drift } from "@/lib/sockets";
 import { useGobanController } from "./goban_context";
 import { player_is_ignored } from "@/components/BlockPlayer";
-import "./PlayerCards.css";
 
 type PlayerType = rest_api.games.Player;
 
@@ -232,15 +223,8 @@ export function PlayerCard({
                     !!goban.engine.sgf_time_settings && <div className="player-icon-container" />
                 )}
 
-                {/* "Their turn" indicator. Hidden via display:none in the
-                 *  sidebar layout (PlayerCards.css); the stacked layout
-                 *  flips it to visibility-controlled so the space is
-                 *  reserved whether or not it's currently this player's
-                 *  turn — no reflow when the turn alternates. */}
-                <i className="fa fa-clock-o player-turn-indicator" aria-hidden="true" />
-
                 {engine.phase !== "finished" && !goban.review_id ? (
-                    <ClockWithPauseOverlay goban={goban} color={color} />
+                    <Clock goban={goban} color={color} className="in-game-clock" />
                 ) : (
                     goban.engine.sgf_time_settings && (
                         <SGFClock goban={goban} color={color} className="in-game-clock" />
@@ -302,91 +286,6 @@ export function PlayerCard({
                         </div>
                     ))}
                 </div>
-            )}
-        </div>
-    );
-}
-
-interface ClockWithPauseOverlayProps {
-    goban: GobanRenderer;
-    color: "black" | "white";
-}
-
-/**
- * Wraps the live in-game Clock with an explicit pause/resume button beside
- * it. The button only renders for users allowed to change the pause state
- * right now:
- *
- *   - unpaused → "pause" for a participant in a vacation-eligible game
- *     still in progress, or for a moderator;
- *   - paused by a player → "resume" for participants and moderators;
- *   - paused by a moderator → "resume" for moderators only;
- *   - any other pause (weekend, vacation, server, stone removal) is not
- *     user-resumable, so no button renders at all.
- */
-function ClockWithPauseOverlay({ goban, color }: ClockWithPauseOverlayProps): React.ReactElement {
-    const user = useUser();
-    const engine = goban.engine;
-    const user_is_player =
-        !user.anonymous &&
-        (user.id === engine.players.black?.id || user.id === engine.players.white?.id);
-    // Moderators bypass the vacation / participant gating that applies to
-    // players — `disable_vacation` only constrains player-side pauses, and
-    // the server stamps the pause as `moderator_paused` regardless. This
-    // gives moderators a pause affordance without a dedicated mod-tools
-    // button.
-    const can_pause =
-        !goban.review_id &&
-        engine.phase !== "finished" &&
-        ((user_is_player && !engine.config.disable_vacation) || !!user?.is_moderator);
-
-    const [pause_state, set_pause_state] = React.useState<JGOFPauseState | null>(null);
-    React.useEffect(() => {
-        const onClock = (clock: JGOFClockWithTransmitting | null) => {
-            set_pause_state(clock?.pause_state ?? null);
-        };
-        goban.on("clock", onClock);
-        return () => {
-            goban.off("clock", onClock);
-        };
-    }, [goban]);
-
-    const paused = !!pause_state;
-    const can_resume = pause_state?.player
-        ? user_is_player || !!user?.is_moderator
-        : pause_state?.moderator
-          ? !!user?.is_moderator
-          : false;
-    const action: "pause" | "resume" | null = paused
-        ? can_resume
-            ? "resume"
-            : null
-        : can_pause
-          ? "pause"
-          : null;
-
-    const onClick = () => {
-        if (paused) {
-            goban.resumeGame();
-        } else {
-            goban.pauseGame();
-        }
-    };
-    const label = paused ? _("Resume game") : _("Pause game");
-
-    return (
-        <div className="clock-pause-host">
-            <Clock goban={goban} color={color} className="in-game-clock" />
-            {action !== null && (
-                <button
-                    type="button"
-                    className="clock-pause-button"
-                    onClick={onClick}
-                    title={label}
-                    aria-label={label}
-                >
-                    <i className={"fa " + (paused ? "fa-play" : "fa-pause")} />
-                </button>
             )}
         </div>
     );

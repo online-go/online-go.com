@@ -28,18 +28,22 @@ import "./GameSidebarPanels.css";
 
 interface GameSettingsPanelProps {
     /** Called by actions that commit to a final state the user wants to see
-     *  applied (layout switch, zen mode). Toggles that the user is likely to
-     *  flip multiple times (coordinates, AI review, volume) don't fire this. */
+     *  applied (full screen). Toggles that the user is likely to flip
+     *  multiple times (coordinates, AI review, volume) don't fire this. */
     onClose?: () => void;
-    /** Hide the Standard/Stacked layout chooser and the Full screen zen mode
-     *  button. The mobile (portrait) layout doesn't expose those — the
-     *  layout is fixed and the viewport is already the full screen. */
+    /** Hide the Full screen toggle. The mobile (portrait) layout doesn't
+     *  expose it — the viewport is already the full screen. */
     compact?: boolean;
+    /** When provided, a "More options" item renders under the theme quick
+     *  select; clicking it fires this (the Game view opens the full
+     *  Themes & Visuals takeover) and then onClose. */
+    onShowThemeSettings?: () => void;
 }
 
 export function GameSettingsPanel({
     onClose,
     compact = false,
+    onShowThemeSettings,
 }: GameSettingsPanelProps = {}): React.ReactElement {
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
@@ -102,8 +106,16 @@ export function GameSettingsPanel({
 
     const isPrivate = !!engine.config.private;
 
-    const [layout, setLayout] = usePreference("game.layout");
     const [chat_enabled, set_chat_enabled] = usePreference("game.chat-enabled");
+
+    const [zen_mode, set_zen_mode] = React.useState(goban_controller.zen_mode);
+    React.useEffect(() => {
+        set_zen_mode(goban_controller.zen_mode);
+        goban_controller.on("zen_mode", set_zen_mode);
+        return () => {
+            goban_controller.off("zen_mode", set_zen_mode);
+        };
+    }, [goban_controller]);
 
     const [label_position, setLabelPositionPref] = usePreference("label-positioning");
     // The preference is the source of truth; the goban needs an explicit
@@ -145,54 +157,20 @@ export function GameSettingsPanel({
             </div>
 
             {!compact && (
-                <>
-                    <div className="GameSidebarPanel-section-header">{_("Layout")}</div>
-                    <button
-                        className={
-                            "GameSidebarPanel-item" + (layout === "standard" ? " active" : "")
-                        }
-                        onClick={() => {
-                            setLayout("standard");
-                            onClose?.();
-                        }}
-                        title={pgettext("Game layout option", "Standard")}
-                    >
-                        <i className="fa fa-columns" />
-                        <span>{pgettext("Game layout option", "Standard")}</span>
-                    </button>
-                    <button
-                        className={
-                            "GameSidebarPanel-item" + (layout === "stacked" ? " active" : "")
-                        }
-                        onClick={() => {
-                            setLayout("stacked");
-                            onClose?.();
-                        }}
-                        title={pgettext(
-                            "Game layout option: players above and below the board",
-                            "Stacked",
-                        )}
-                    >
-                        <i className="fa fa-th-list" />
-                        <span>
-                            {pgettext(
-                                "Game layout option: players above and below the board",
-                                "Stacked",
-                            )}
-                        </span>
-                    </button>
-                    <button
-                        className="GameSidebarPanel-item"
-                        onClick={() => {
+                <div className="GameSidebarPanel-labeled-row">
+                    <label htmlFor="game-settings-full-screen">
+                        <i className="fa fa-expand" />
+                        <span>{_("Full screen")}</span>
+                    </label>
+                    <Toggle
+                        id="game-settings-full-screen"
+                        checked={zen_mode}
+                        onChange={() => {
                             goban_controller.toggleZenMode();
                             onClose?.();
                         }}
-                        title={_("Full screen zen mode")}
-                    >
-                        <i className="fa fa-expand" />
-                        <span>{_("Full screen zen mode")}</span>
-                    </button>
-                </>
+                    />
+                </div>
             )}
 
             <div className="GameSidebarPanel-labeled-row">
@@ -265,6 +243,19 @@ export function GameSettingsPanel({
             <div className="GameSettingsPanel-theme-picker">
                 <GobanThemePicker size={32} />
             </div>
+            {onShowThemeSettings && (
+                <button
+                    className="GameSidebarPanel-item"
+                    onClick={() => {
+                        onShowThemeSettings();
+                        onClose?.();
+                    }}
+                    title={pgettext("Open the full theme settings", "More options")}
+                >
+                    <i className="fa fa-sliders" />
+                    <span>{pgettext("Open the full theme settings", "More options")}</span>
+                </button>
+            )}
         </div>
     );
 }

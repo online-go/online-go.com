@@ -70,7 +70,6 @@
     --z-goban-pen-layer: 30;
     --z-goban-message: 40;
     --z-goban-tab-icon: 160;
-    --z-goban-exit-zenmode: 45;
     --z-goban-score-details: 50;
     --z-play-buttons: 140;
     --z-seek-graph-challenge-list: 150;
@@ -308,13 +307,17 @@
     --miniboard-stone-removal-hover: #ffffff;
     --miniboard-stone-removal-hover-border: #a5a58c;
 
-    /* Player cards */
-    --player-black-background: linear-gradient(to bottom, #7d7e7d 0%, #0e0e0e 100%);
-    --player-white-background: linear-gradient(to bottom, #cccccc 0%, #eeeeee 30%, #ffffff 100%);
+    /* Player cards: the black card reads as a slate stone (cool near-black),
+     * the white card as a clamshell stone (warm off-white). The subtle
+     * two-stop gradients suggest material depth without gloss. */
+    --player-black-background: linear-gradient(to bottom, #40454d 0%, #282c32 100%);
+    --player-white-background: linear-gradient(to bottom, #ffffff 0%, #f1efea 100%);
+    --player-black-border: #1c1f24;
+    --player-white-border: #d3d0c9;
     --inactive-support-gradient: linear-gradient(to bottom, #ffffff 0%, #e5e5e5 100%);
     --active-support-gradient: linear-gradient(to bottom, #ffffff 0%, #f5e79c 100%);
-    --player-black-fg: #eeeeee;
-    --player-white-fg: #202020;
+    --player-black-fg: #e8eaed;
+    --player-white-fg: #24262a;
     --player-black-clock: #ffffff;
     --player-white-clock: #202020;
     --player-black-paused-clock: #aba8ad;
@@ -496,13 +499,17 @@
     --miniboard-stone-removal-hover: #251d06;
     --miniboard-stone-removal-hover-border: #0c0902;
 
-    /* Player cards */
-    --player-black-background: linear-gradient(to bottom, #7d7d7d 0%, #333333 50%, #0c0c0c 100%);
-    --player-white-background: linear-gradient(to bottom, #888888 0%, #efefef 50%, #efefef 100%);
+    /* Player cards: same stone palette as the light theme (stones are
+     * stones); the black card gets a lighter hairline border so it still
+     * separates from the dark page background. */
+    --player-black-background: linear-gradient(to bottom, #23262c 0%, #121418 100%);
+    --player-white-background: linear-gradient(to bottom, #f4f2ee 0%, #dedbd4 100%);
+    --player-black-border: #3c4047;
+    --player-white-border: #b9b6ae;
     --inactive-support-gradient: linear-gradient(to bottom, #7d7d7d 0%, #333333 100%);
     --active-support-gradient: linear-gradient(to bottom, #9c8200 0%, #584a00 100%);
-    --player-black-fg: $fg;
-    --player-white-fg: #131313;
+    --player-black-fg: #c9ccd1;
+    --player-white-fg: #1d1f23;
     --player-black-clock: #ffffff;
     --player-white-clock: #000;
     --player-white-paused-clock: #5f4a71;

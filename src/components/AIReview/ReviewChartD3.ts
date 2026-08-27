@@ -445,15 +445,23 @@ export class ReviewChartD3 {
             .attr("d", this.win_rate_line);
     }
 
+    /* The area fill is a flat two-tone split — solid dark where black is
+     * ahead (above the midline), solid light where white is ahead — done
+     * with a single linearGradient whose stops change color at the same
+     * offset, so there is no visible gradient. The tones match the player
+     * cards' slate/shell stone palette. */
     private updateGradient(use_score_safe: boolean): void {
-        let gradient_transition_point = 50;
+        let transition_point = 50;
         if (use_score_safe) {
             const [min_score, max_score] = this.y.domain();
             const yRange = max_score - min_score;
             if (yRange !== 0) {
-                gradient_transition_point = (max_score / yRange) * 100;
+                transition_point = (max_score / yRange) * 100;
             }
         }
+
+        const [black_fill, white_fill] =
+            data.get("theme") === "light" ? ["#363b42", "#f1efea"] : ["#0e1013", "#96938c"];
 
         this.svg?.select("linearGradient").remove();
         this.svg
@@ -465,35 +473,12 @@ export class ReviewChartD3 {
             .attr("x2", 0)
             .attr("y2", this.height)
             .selectAll("stop")
-            .data(
-                data.get("theme") === "light"
-                    ? [
-                          { offset: "0%", color: "#222222" },
-                          {
-                              offset: `${(gradient_transition_point - 1).toFixed(0)}%`,
-                              color: "#444444",
-                          },
-                          { offset: `${gradient_transition_point.toFixed(0)}%`, color: "#888888" },
-                          {
-                              offset: `${(gradient_transition_point + 1).toFixed(0)}%`,
-                              color: "#cccccc",
-                          },
-                          { offset: "100%", color: "#eeeeee" },
-                      ]
-                    : [
-                          { offset: "0%", color: "#000000" },
-                          {
-                              offset: `${(gradient_transition_point - 1).toFixed(0)}%`,
-                              color: "#333333",
-                          },
-                          { offset: `${gradient_transition_point.toFixed(0)}%`, color: "#888888" },
-                          {
-                              offset: `${(gradient_transition_point + 1).toFixed(0)}%`,
-                              color: "#909090",
-                          },
-                          { offset: "100%", color: "#999999" },
-                      ],
-            )
+            .data([
+                { offset: "0%", color: black_fill },
+                { offset: `${transition_point.toFixed(2)}%`, color: black_fill },
+                { offset: `${transition_point.toFixed(2)}%`, color: white_fill },
+                { offset: "100%", color: white_fill },
+            ])
             .enter()
             .append("stop")
             .attr("offset", (d) => d.offset)

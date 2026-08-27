@@ -16,11 +16,18 @@
  */
 
 import * as React from "react";
-import { ConditionalMoveTree, Goban } from "goban";
+import {
+    ConditionalMoveTree,
+    Goban,
+    GobanRenderer,
+    JGOFClockWithTransmitting,
+    JGOFPauseState,
+} from "goban";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
 import { useGobanController } from "@/components/GobanView";
 import { GobanController } from "@/lib/GobanController";
+import { useUser } from "@/lib/hooks";
 import { ChatMode } from "./GameChat";
 
 // Shared hooks live in GobanView; import locally and re-export for callers.
@@ -34,7 +41,7 @@ export { generateGobanHook, subscribeAllEvents, useViewMode, useZenMode };
 
 /**
  * Score-details popup state shared by the PlayerCards wrapper and the Game
- * view's stacked/mobile player cards. Opening the popup temporarily paints
+ * view's mobile player cards. Opening the popup temporarily paints
  * the current score onto the board (stashing the move's marks); closing it
  * restores the previous marks and score visibility.
  */
@@ -268,6 +275,84 @@ export const useCurrentMoveNumber = generateGobanHook(
 
 /** React hook that returns the phase */
 export const usePhase = generateGobanHook((goban: Goban | null) => goban?.engine.phase, ["phase"]);
+
+/**
+ * Pause/resume control for the game clock. `action` is non-null only for
+ * users allowed to change the pause state right now:
+ *
+ *   - unpaused → "pause" for a participant in a vacation-eligible game
+ *     still in progress, or for a moderator;
+ *   - paused by a player → "resume" for participants and moderators;
+ *   - paused by a moderator → "resume" for moderators only;
+ *   - any other pause (weekend, vacation, server, stone removal) is not
+ *     user-resumable, so `action` is null.
+ *
+ * Moderators bypass the vacation / participant gating that applies to
+ * players — `disable_vacation` only constrains player-side pauses, and
+ * the server stamps the pause as `moderator_paused` regardless. This
+ * gives moderators a pause affordance without a dedicated mod-tools
+ * button.
+ */
+export function usePauseControl(goban: GobanRenderer | null): {
+    paused: boolean;
+    action: "pause" | "resume" | null;
+    togglePause: () => void;
+} {
+    const user = useUser();
+    const engine = goban?.engine;
+    const phase = usePhase(goban);
+    const user_is_player =
+        !user.anonymous &&
+        !!engine &&
+        (user.id === engine.players.black?.id || user.id === engine.players.white?.id);
+    const can_pause =
+        !!goban &&
+        !goban.review_id &&
+        phase !== "finished" &&
+        ((user_is_player && !engine?.config.disable_vacation) || !!user?.is_moderator);
+
+    const [pause_state, set_pause_state] = React.useState<JGOFPauseState | null>(null);
+    React.useEffect(() => {
+        set_pause_state(null);
+        if (!goban) {
+            return undefined;
+        }
+        const onClock = (clock: JGOFClockWithTransmitting | null) => {
+            set_pause_state(clock?.pause_state ?? null);
+        };
+        goban.on("clock", onClock);
+        return () => {
+            goban.off("clock", onClock);
+        };
+    }, [goban]);
+
+    const paused = !!pause_state;
+    const can_resume = pause_state?.player
+        ? user_is_player || !!user?.is_moderator
+        : pause_state?.moderator
+          ? !!user?.is_moderator
+          : false;
+    const action: "pause" | "resume" | null = paused
+        ? can_resume
+            ? "resume"
+            : null
+        : can_pause
+          ? "pause"
+          : null;
+
+    const togglePause = () => {
+        if (!goban) {
+            return;
+        }
+        if (paused) {
+            goban.resumeGame();
+        } else {
+            goban.pauseGame();
+        }
+    };
+
+    return { paused, action, togglePause };
+}
 
 /** React hook that returns the current move tree from goban */
 export const useCurrentMove = generateGobanHook(
