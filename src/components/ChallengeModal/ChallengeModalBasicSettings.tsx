@@ -18,7 +18,7 @@ import { bots_list } from "@/lib/bots";
 import { _, pgettext } from "@/lib/translate";
 import * as React from "react";
 import { ChallengeModalConf, ChallengeInput, UpdateFn, GameInput } from "./ChallengeModal.types";
-import { rengoAutoStartInputWarning } from "./ChallengeModal.utils";
+import { applyBotRanked, rengoAutoStartInputWarning } from "./ChallengeModal.utils";
 
 type ChallengeModalBasicSettingsProps = {
     playerId?: number;
@@ -52,12 +52,15 @@ export const ChallengeModalBasicSettings = ({
 
     const updatePrivate = React.useCallback(
         (is_private: boolean) => {
-            updateChallengeSettings((prev) => ({
-                ...prev,
-                game: { ...prev.game, private: is_private },
-            }));
+            updateGameSettings((prev) => {
+                const next = { ...prev, private: is_private };
+                if (mode === "computer") {
+                    return applyBotRanked(next);
+                }
+                return { ...next, ranked: false };
+            });
         },
-        [updateChallengeSettings],
+        [updateGameSettings, mode],
     );
 
     const cbUpdateInviteOnly = React.useCallback(
