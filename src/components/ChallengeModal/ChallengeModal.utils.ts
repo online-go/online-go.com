@@ -26,7 +26,16 @@ import {
 } from "@/components/ChallengeModal/ChallengeModal.types";
 import { rankSelectorIndexToText } from "@/lib/rank_utils";
 import { RuleSet } from "@/lib/types";
-import { standard_board_sizes } from "./ChallengeModal";
+export const standard_board_sizes: { [k: string]: string | undefined } = {
+    "19x19": "19x19",
+    "13x13": "13x13",
+    "9x9": "9x9",
+    "25x25": "25x25",
+    "21x21": "21x21",
+    "5x5": "5x5",
+    "19x9": "19x9",
+    "5x13": "5x13",
+};
 
 export function preferred_setting_label(setting: ChallengeDetails): string {
     const description = challenge_text_description(setting);
