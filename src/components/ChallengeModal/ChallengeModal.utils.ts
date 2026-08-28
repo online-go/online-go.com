@@ -314,3 +314,13 @@ export function isRankedBotBoardSize(width: number | null, height: number | null
 export const rengoAutoStartInputWarning = (challenge: ChallengeInput): boolean => {
     return challenge.rengo_auto_start === 1 || challenge.rengo_auto_start === 2;
 };
+
+// The backend's handicap calculator ignores requested_komi when the handicap
+// is automatic (<0), so in the UI we keep komi in lockstep: auto handicap =>
+// auto komi.
+export function coerceKomiForAutoHandicap(game: GameInput): GameInput {
+    if (game.handicap < 0) {
+        return { ...game, komi_auto: "automatic", komi: undefined };
+    }
+    return game;
+}

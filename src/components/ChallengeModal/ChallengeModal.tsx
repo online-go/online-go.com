@@ -50,12 +50,9 @@ import {
     rejectionDetailsToMessage,
     sanitizeChallengeDetails,
     getPreferredSettings,
-    getDefaultKomi,
-    isKomiOption,
-    isRuleSet,
-    isColorSelectionOption,
     applyBotRanked,
     rengoAutoStartInputWarning,
+    coerceKomiForAutoHandicap,
 } from "@/components/ChallengeModal/ChallengeModal.utils";
 import {
     ChallengeDetails,
@@ -94,16 +91,6 @@ const standard_board_sizes: { [k: string]: string | undefined } = {
     "19x9": "19x9",
     "5x13": "5x13",
 };
-
-// The backend's handicap calculator ignores requested_komi when the handicap
-// is automatic (<0), so in the UI we keep komi in lockstep: auto handicap =>
-// auto komi.
-function coerceKomiForAutoHandicap(game: GameInput): GameInput {
-    if (game.handicap < 0) {
-        return { ...game, komi_auto: "automatic", komi: undefined };
-    }
-    return game;
-}
 
 export class ChallengeModal extends Modal<{}, ChallengeModalProperties, ChallengeModalState> {
     constructor(props: ChallengeModalProperties) {
@@ -635,81 +622,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     /* direct fn updates */
     update_bot_id = (id: number) => this.update_conf((prev) => ({ ...prev, bot_id: id }));
 
-    update_rules = (rules: string) => {
-        if (!isRuleSet(rules)) {
-            return;
-        }
-        this.update_game_settings((prev) => ({ ...prev, rules: rules }));
-    };
-    update_handicap = (handicap: number) =>
-        this.update_game_settings((prev) => {
-            const next = coerceKomiForAutoHandicap({ ...prev, handicap: handicap });
-            if (this.props.mode === "computer") {
-                return applyBotRanked(next);
-            }
-            return next;
-        });
-
-    update_komi_option = (komi_option: string) => {
-        if (!isKomiOption(komi_option)) {
-            console.error(`invalid komi option: ${komi_option}`);
-            return;
-        }
-        this.setState((prev) => {
-            const changedToCustom =
-                komi_option === "custom" && prev.challenge.game.komi_auto !== "custom";
-
-            const nextGame = {
-                ...prev.challenge.game,
-                komi_auto: komi_option,
-                // If we just switched to custom komi, set it to the default for the current
-                // rules.
-                ...(changedToCustom && {
-                    komi: getDefaultKomi(
-                        prev.challenge.game.rules,
-                        prev.challenge.game.handicap > 0,
-                    ),
-                }),
-            };
-
-            return {
-                challenge: {
-                    ...prev.challenge,
-                    game: this.props.mode === "computer" ? applyBotRanked(nextGame) : nextGame,
-                },
-            };
-        });
-    };
-
-    update_komi = (komi: number | null) =>
-        this.update_game_settings((prev) => ({ ...prev, komi: komi }));
-    update_challenge_color = (color_selection: string) => {
-        if (!isColorSelectionOption(color_selection)) {
-            return;
-        }
-        this.update_challenge_settings((prev) => ({ ...prev, challenger_color: color_selection }));
-    };
-    update_disable_analysis = (disable_analysis: boolean) =>
-        this.update_game_settings((prev) => ({ ...prev, disable_analysis: disable_analysis }));
-    update_restrict_rank = (restrict_rank: boolean) =>
-        this.update_conf((prev) => ({ ...prev, restrict_rank: restrict_rank }));
-    update_min_rank = (min_rank: number) =>
-        this.setState((state) => ({
-            challenge: {
-                ...state.challenge,
-                min_ranking: min_rank,
-                max_ranking: Math.max(state.challenge.max_ranking, min_rank),
-            },
-        }));
-    update_max_rank = (max_rank: number) =>
-        this.setState((state) => ({
-            challenge: {
-                ...state.challenge,
-                min_ranking: Math.min(state.challenge.min_ranking, max_rank),
-                max_ranking: max_rank,
-            },
-        }));
-
     forceTimeControlSystemIfNecessary = (rengo: boolean, casual: boolean) => {
         if (rengo && casual) {
             const tc = updateSystem(
@@ -826,15 +738,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                         time_control: tc,
                                     });
                                 }}
-                                updateRules={this.update_rules}
-                                updateHandicap={this.update_handicap}
-                                updateKomiOption={this.update_komi_option}
-                                updateKomi={this.update_komi}
-                                updateChallengeColor={this.update_challenge_color}
-                                updateDisableAnalysis={this.update_disable_analysis}
-                                updateRestrictRank={this.update_restrict_rank}
-                                updateMinRank={this.update_min_rank}
-                                updateMaxRank={this.update_max_rank}
+                                updateChallenge={this.update_challenge_settings}
+                                updateConf={this.update_conf}
+                                updateGameSettings={this.update_game_settings}
                             />
                         </div>
                     </div>

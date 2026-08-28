@@ -17,10 +17,23 @@
 import * as React from "react";
 import { _ } from "@/lib/translate";
 import { TimeControl, TimeControlPicker } from "@/components/TimeControl";
-import { ChallengeInput, ChallengeModalConf, GameInput } from "./ChallengeModal.types";
+import {
+    ChallengeDetails,
+    ChallengeInput,
+    ChallengeModalConf,
+    GameInput,
+} from "./ChallengeModal.types";
 import { ChallengeModalRulesSettings } from "./ChallengeModalRulesSettings";
 import { ChallengeModalHandicapSettings } from "./ChallengeModalHandicapSettings";
 import { ChallengeModalKomiSettings } from "./ChallengeModalKomiSettings";
+import {
+    applyBotRanked,
+    coerceKomiForAutoHandicap,
+    getDefaultKomi,
+    isColorSelectionOption,
+    isKomiOption,
+    isRuleSet,
+} from "./ChallengeModal.utils";
 
 type ChallengeModalAdvancedSettingsProps = {
     mode: string;
@@ -32,15 +45,9 @@ type ChallengeModalAdvancedSettingsProps = {
     handicapRanges: number[];
     ranks: Array<{ rank: number; label: string }>;
     onTimeControlChange: (tc: TimeControl) => void;
-    updateRules: (rules: string) => void;
-    updateHandicap: (handicap: number) => void;
-    updateKomiOption: (komiOption: string) => void;
-    updateKomi: (komi: number | null) => void;
-    updateChallengeColor: (colorSelection: string) => void;
-    updateDisableAnalysis: (disableAnalysis: boolean) => void;
-    updateRestrictRank: (restrictRank: boolean) => void;
-    updateMinRank: (minRank: number) => void;
-    updateMaxRank: (maxRank: number) => void;
+    updateChallenge: (challenge: any) => void;
+    updateConf: (conf: any) => void;
+    updateGameSettings: (game: any) => void;
 };
 
 export function ChallengeModalAdvancedSettings({
@@ -53,17 +60,134 @@ export function ChallengeModalAdvancedSettings({
     handicapRanges,
     ranks,
     onTimeControlChange,
-    updateRules,
-    updateHandicap,
-    updateKomiOption,
-    updateKomi,
-    updateChallengeColor,
-    updateDisableAnalysis,
-    updateRestrictRank,
-    updateMinRank,
-    updateMaxRank,
+    updateChallenge,
+    updateConf,
+    updateGameSettings,
 }: ChallengeModalAdvancedSettingsProps) {
     const forceSystem: boolean = challenge.game.rengo && challenge.game.rengo_casual_mode;
+
+    const updateRules = React.useCallback(
+        (rules: string) => {
+            if (!isRuleSet(rules)) {
+                return;
+            }
+            updateGameSettings((prev: GameInput) => ({ ...prev, rules: rules }));
+        },
+        [updateGameSettings],
+    );
+
+    const updateHandicap = React.useCallback(
+        (handicap: number) => {
+            updateGameSettings((prev: GameInput) => {
+                const next = coerceKomiForAutoHandicap({ ...prev, handicap: handicap });
+                if (mode === "computer") {
+                    return applyBotRanked(next);
+                }
+                return next;
+            });
+        },
+        [updateGameSettings, mode],
+    );
+
+    const updateKomiOption = React.useCallback(
+        (komi_option: string) => {
+            if (!isKomiOption(komi_option)) {
+                console.error(`invalid komi option: ${komi_option}`);
+                return;
+            }
+            updateChallenge((prev: ChallengeDetails) => {
+                const changedToCustom =
+                    komi_option === "custom" && prev.game.komi_auto !== "custom";
+
+                const nextGame = {
+                    ...prev.game,
+                    komi_auto: komi_option,
+                    // If we just switched to custom komi, set it to the default for the current
+                    // rules.
+                    ...(changedToCustom && {
+                        komi: getDefaultKomi(prev.game.rules, prev.game.handicap > 0),
+                    }),
+                };
+
+                return {
+                    ...prev,
+                    game: mode === "computer" ? applyBotRanked(nextGame) : nextGame,
+                };
+            });
+        },
+        [updateChallenge, mode],
+    );
+
+    const updateKomi = React.useCallback(
+        (komi: number | null) => {
+            updateGameSettings((prev: GameInput) => ({ ...prev, komi: komi }));
+        },
+        [updateGameSettings],
+    );
+
+    const cbUpdateChallengeColor = React.useCallback(
+        (ev: React.ChangeEvent<HTMLSelectElement>) => {
+            const color_selection = ev.target.value;
+            if (!isColorSelectionOption(color_selection)) {
+                return;
+            }
+            updateChallenge((prev: ChallengeDetails) => ({
+                ...prev,
+                challenger_color: color_selection,
+            }));
+        },
+        [updateChallenge],
+    );
+
+    const cbUpdateDisableAnalysis = React.useCallback(
+        (ev: React.ChangeEvent<HTMLInputElement>) => {
+            const disable_analysis = ev.target.checked;
+            updateGameSettings((prev: GameInput) => ({
+                ...prev,
+                disable_analysis: disable_analysis,
+            }));
+        },
+        [updateGameSettings],
+    );
+
+    const cbUpdateRestrictRank = React.useCallback(
+        (ev: React.ChangeEvent<HTMLInputElement>) => {
+            const restrict_rank = ev.target.checked;
+            updateConf((prev: ChallengeModalConf) => ({
+                ...prev,
+                restrict_rank: restrict_rank,
+            }));
+        },
+        [updateConf],
+    );
+
+    const cbUpdateMinRank = React.useCallback(
+        (ev: React.ChangeEvent<HTMLSelectElement>) => {
+            const min_ranking = parseInt(ev.target.value);
+            updateChallenge(
+                (prev: ChallengeInput): ChallengeInput => ({
+                    ...prev,
+                    min_ranking,
+                    max_ranking: Math.max(prev.max_ranking, min_ranking),
+                }),
+            );
+        },
+        [updateChallenge],
+    );
+
+    const cbUpdateMaxRank = React.useCallback(
+        (ev: React.ChangeEvent<HTMLSelectElement>) => {
+            const max_ranking = parseInt(ev.target.value);
+            updateChallenge(
+                (prev: ChallengeInput): ChallengeInput => ({
+                    ...prev,
+                    min_ranking: Math.min(prev.min_ranking, max_ranking),
+                    max_ranking,
+                }),
+            );
+        },
+        [updateChallenge],
+    );
 
     return (
         <div
@@ -108,7 +232,7 @@ export function ChallengeModalAdvancedSettings({
                         <div className="checkbox">
                             <select
                                 value={challenge.challenger_color}
-                                onChange={(ev) => updateChallengeColor(ev.target.value)}
+                                onChange={cbUpdateChallengeColor}
                                 id="challenge-color"
                                 className="challenge-dropdown form-control"
                             >
@@ -131,7 +255,7 @@ export function ChallengeModalAdvancedSettings({
                                 <div className="checkbox">
                                     <input
                                         checked={game.disable_analysis}
-                                        onChange={(ev) => updateDisableAnalysis(ev.target.checked)}
+                                        onChange={cbUpdateDisableAnalysis}
                                         id="challenge-disable-analysis"
                                         type="checkbox"
                                     />{" "}
@@ -151,7 +275,7 @@ export function ChallengeModalAdvancedSettings({
                                     <div className="checkbox">
                                         <input
                                             checked={conf.restrict_rank}
-                                            onChange={(ev) => updateRestrictRank(ev.target.checked)}
+                                            onChange={cbUpdateRestrictRank}
                                             id="challenge-restrict-rank"
                                             type="checkbox"
                                         />
@@ -171,9 +295,7 @@ export function ChallengeModalAdvancedSettings({
                                             <div className="checkbox">
                                                 <select
                                                     value={challenge.min_ranking}
-                                                    onChange={(ev) =>
-                                                        updateMinRank(parseInt(ev.target.value))
-                                                    }
+                                                    onChange={cbUpdateMinRank}
                                                     id="challenge-min-rank"
                                                     className="challenge-dropdown form-control"
                                                 >
@@ -198,9 +320,7 @@ export function ChallengeModalAdvancedSettings({
                                             <div className="checkbox">
                                                 <select
                                                     value={challenge.max_ranking}
-                                                    onChange={(ev) =>
-                                                        updateMaxRank(parseInt(ev.target.value))
-                                                    }
+                                                    onChange={cbUpdateMaxRank}
                                                     id="challenge-max-rank"
                                                     className="challenge-dropdown form-control"
                                                 >
