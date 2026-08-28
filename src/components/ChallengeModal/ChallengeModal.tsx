@@ -278,49 +278,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         this.setState({ preferred_settings: preferred_settings.map(sanitizeChallengeDetails) });
     };
 
-    setRanked(tf: boolean) {
-        const next = this.nextState();
-
-        this.gameStateOf(next).ranked = tf;
-        if (tf && this.state.challenge && data.get("user")) {
-            this.gameStateOf(next).handicap = Math.min(9, this.gameStateOf(next).handicap);
-            this.gameStateOf(next).komi_auto = "automatic";
-            next.challenge.min_ranking = Math.max(
-                next.challenge.min_ranking,
-                data.get("user").ranking - 9,
-            );
-            next.challenge.min_ranking = Math.min(
-                next.challenge.min_ranking,
-                data.get("user").ranking + 9,
-            );
-            next.challenge.max_ranking = Math.max(
-                next.challenge.max_ranking,
-                data.get("user").ranking - 9,
-            );
-            next.challenge.max_ranking = Math.min(
-                next.challenge.max_ranking,
-                data.get("user").ranking + 9,
-            );
-
-            if (
-                next.conf.selected_board_size !== "19x19" &&
-                next.conf.selected_board_size !== "13x13" &&
-                next.conf.selected_board_size !== "9x9"
-            ) {
-                next.conf.selected_board_size = "19x19";
-                this.gameStateOf(next).width = 19;
-                this.gameStateOf(next).height = 19;
-            }
-        } else {
-            next.challenge.aga_ranked = false;
-        }
-
-        this.setState({
-            challenge: next.challenge,
-            conf: next.conf,
-        });
-    }
-
     loadLastTimeControlSettings(): TimeControl {
         const speed = data.get(`time_control.speed`, "correspondence");
         const system = data.get(`time_control.system`, "byoyomi");
@@ -678,40 +635,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     /* direct fn updates */
     update_bot_id = (id: number) => this.update_conf((prev) => ({ ...prev, bot_id: id }));
 
-    update_ranked = (ev: React.ChangeEvent<HTMLInputElement>) => this.setRanked(ev.target.checked);
-    update_board_size = (selection: string) => {
-        this.update_conf((prev) => ({ ...prev, selected_board_size: selection }));
-
-        if (selection === "custom") {
-            return;
-        }
-
-        const sizes = selection.split("x");
-        const width = parseInt(sizes[0]);
-        const height = parseInt(sizes[1]);
-
-        this.update_board_width(width);
-        this.update_board_height(height);
-    };
-
-    update_board_width = (width: number | null) =>
-        this.update_game_settings((prev) => {
-            const next = { ...prev, width: width };
-            if (this.props.mode === "computer") {
-                return applyBotRanked(next);
-            }
-            return next;
-        });
-
-    update_board_height = (height: number | null) =>
-        this.update_game_settings((prev) => {
-            const next = { ...prev, height: height };
-            if (this.props.mode === "computer") {
-                return applyBotRanked(next);
-            }
-            return next;
-        });
-
     update_rules = (rules: string) => {
         if (!isRuleSet(rules)) {
             return;
@@ -878,12 +801,12 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                     <ChallengeModalAdditionalSettings
                                         forkingGame={this.state.forking_game}
                                         mode={mode}
-                                        game={this.state.challenge.game}
+                                        challenge={this.state.challenge}
                                         conf={this.state.conf}
-                                        updateRanked={this.update_ranked}
-                                        updateBoardSize={this.update_board_size}
-                                        updateBoardWidth={this.update_board_width}
-                                        updateBoardHeight={this.update_board_height}
+                                        updateChallengeSettings={this.update_challenge_settings}
+                                        updateGameSettings={this.update_game_settings}
+                                        updateConf={this.update_conf}
+                                        setState={this.setState}
                                     />
                                 )}
                             </div>

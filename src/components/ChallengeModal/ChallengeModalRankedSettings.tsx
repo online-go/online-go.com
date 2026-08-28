@@ -23,7 +23,7 @@ type ChallengeModalRankedSettingsProps = {
         private: boolean;
         rengo: boolean;
     };
-    updateRanked: (ev: React.ChangeEvent<HTMLInputElement>) => void;
+    updateRanked: (ranked: boolean) => void;
 };
 
 export const ChallengeModalRankedSettings = ({
@@ -31,6 +31,13 @@ export const ChallengeModalRankedSettings = ({
     updateRanked,
 }: ChallengeModalRankedSettingsProps) => {
     const isRankedDisabled = !game.ranked && (game.private || game.rengo);
+
+    const cbUpdateRanked = React.useCallback(
+        (ev: React.ChangeEvent<HTMLInputElement>) => {
+            updateRanked(ev.target.checked);
+        },
+        [updateRanked],
+    );
 
     return (
         <div>
@@ -45,7 +52,7 @@ export const ChallengeModalRankedSettings = ({
                             id="challenge-ranked"
                             disabled={isRankedDisabled}
                             checked={game.ranked}
-                            onChange={updateRanked}
+                            onChange={cbUpdateRanked}
                         />
                     </div>
                 </div>
