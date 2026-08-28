@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import * as React from "react";
+import { useCallback } from "react";
 import Select from "react-select";
 import { OgsResizeDetector } from "@/components/OgsResizeDetector";
 import { _, interpolate } from "@/lib/translate";
@@ -99,6 +100,10 @@ export function ChallengeModalPreferredGameSettings({
         }
     };
 
+    const handleAddToPreferredSettings = useCallback(() => {
+        addToPreferredSettings();
+    }, [addToPreferredSettings]);
+
     return (
         <div
             className="preferred-settings-container"
@@ -135,7 +140,7 @@ export function ChallengeModalPreferredGameSettings({
                             {_("Delete")}
                         </button>
                     ) : (
-                        <button onClick={addToPreferredSettings} className="sm success">
+                        <button onClick={handleAddToPreferredSettings} className="sm success">
                             {_("Add current setting")}
                         </button>
                     )}
