@@ -30,14 +30,3 @@ export const defaultInitialSettings: DemoSettings = {
     private: false,
     komi_auto: "automatic",
 };
-
-export const standard_board_sizes: string[] = [
-    "19x19",
-    "13x13",
-    "9x9",
-    "25x25",
-    "21x21",
-    "5x5",
-    "19x9",
-    "5x13",
-];

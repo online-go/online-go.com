@@ -84,7 +84,7 @@ for (let i = 1; i <= 36; ++i) {
 
 const ranks = amateurRanks();
 
-const standard_board_sizes: { [k: string]: string | undefined } = {
+export const standard_board_sizes: { [k: string]: string | undefined } = {
     "19x19": "19x19",
     "13x13": "13x13",
     "9x9": "9x9",
@@ -1934,8 +1934,4 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         this.setState((state) => ({
             show_computer_settings: !state.show_computer_settings,
         }));
-}
-
-export function isStandardBoardSize(board_size: string): boolean {
-    return board_size in standard_board_sizes;
 }
