@@ -112,12 +112,14 @@ test("No moves have been played", () => {
         </WrapTest>,
     );
 
-    // Undo and resign live in the action bar, not here.
-    expect(screen.queryByText("Cancel game")).toBeNull();
+    // Undo lives in the action bar, not here.
     expect(screen.queryByText("Undo")).toBeNull();
     expect(screen.queryByText("Accept Undo")).toBeNull();
     expect(screen.queryByText("Submit")).toBeNull();
     expect(screen.getByText("Pass")).toBeDefined();
+    // Resign sits beside Pass; an unplayed game can still be cancelled, so
+    // the button labels itself accordingly.
+    expect(screen.getByText("Cancel game")).toBeDefined();
 });
 
 test("Don't render play buttons if user is not a player", () => {
@@ -131,6 +133,7 @@ test("Don't render play buttons if user is not a player", () => {
     );
 
     expect(screen.queryByText("Resign")).toBeNull();
+    expect(screen.queryByText("Cancel game")).toBeNull();
     expect(screen.queryByText("Undo")).toBeNull();
     expect(screen.queryByText("Accept Undo")).toBeNull();
     expect(screen.queryByText("Submit")).toBeNull();
@@ -138,6 +141,33 @@ test("Don't render play buttons if user is not a player", () => {
 });
 
 test("PlayControls is empty when there is nothing to show", () => {
+    // A spectator has nothing to act on. (A player always has at least the
+    // resign button while the game is in progress.)
+    const controller = new GobanController({
+        game_id: 1234,
+        moves: [
+            [15, 15, 5241],
+            [2, 2, 68110],
+            [16, 2, 53287],
+        ],
+        players: {
+            black: { id: 987, username: "someone" },
+            white: { id: 456, username: "test_user2" },
+        },
+    });
+    data.set("user", TEST_USER);
+
+    const { container } = render(
+        <WrapTest controller={controller}>
+            <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
+        </WrapTest>,
+    );
+
+    // Truly empty, so the `.PlayControls:empty` rule can drop its padding.
+    expect(container.querySelector(".PlayControls")).toBeEmptyDOMElement();
+});
+
+test("A player on the opponent's turn still gets the resign button", () => {
     const controller = new GobanController({
         game_id: 1234,
         moves: [
@@ -160,8 +190,8 @@ test("PlayControls is empty when there is nothing to show", () => {
         </WrapTest>,
     );
 
-    // Truly empty, so the `.PlayControls:empty` rule can drop its padding.
-    expect(container.querySelector(".PlayControls")).toBeEmptyDOMElement();
+    expect(screen.queryByText("Pass")).toBeNull();
+    expect(container.querySelector(".resign-button")).not.toBeNull();
 });
 
 test("Renders accept undo if undo requested", () => {

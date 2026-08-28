@@ -62,7 +62,7 @@ function WrapTest(props: { controller: GobanController; children: any }): React.
 }
 
 describe("PlayButtons", () => {
-    test("renders nothing when it's my opponent's turn.", () => {
+    test("renders only resign when it's my opponent's turn.", () => {
         const controller = new GobanController({
             moves: [
                 [16, 3, 9136.12], // B
@@ -81,7 +81,12 @@ describe("PlayButtons", () => {
             </WrapTest>,
         );
 
-        expect(container).toBeEmptyDOMElement();
+        // No move controls on the opponent's turn, but a player can always
+        // resign (or cancel) a game that is still in progress.
+        expect(screen.queryByText("Pass")).toBeNull();
+        expect(screen.queryByText("Submit Move")).toBeNull();
+        expect(screen.queryByText("Accept Undo")).toBeNull();
+        expect(container.querySelector(".resign-button")).not.toBeNull();
     });
 
     test("normal game when it's my turn.", () => {
@@ -106,10 +111,42 @@ describe("PlayButtons", () => {
 
         // Present
         expect(screen.getByText("Pass")).toBeDefined();
+        // Early enough that the game can still be cancelled outright.
+        expect(screen.getByText("Cancel game")).toBeDefined();
 
         // Absent
         expect(screen.queryByText("Accept Undo")).toBeNull();
         expect(screen.queryByText("Submit Move")).toBeNull();
+    });
+
+    test("the resign button says Resign once the game can no longer be cancelled", () => {
+        const controller = new GobanController({
+            // Past the 6-move cancellation window (GobanEngine
+            // .gameCanBeCancelled), so cancelling becomes resigning.
+            moves: [
+                [16, 3, 100], // B
+                [3, 2, 100], // W
+                [15, 16, 100], // B
+                [14, 2, 100], // W
+                [4, 4, 100], // B
+                [5, 5, 100], // W
+                [6, 6, 100], // B
+                [7, 7, 100], // White went last
+            ],
+            players: {
+                black: { id: LOGGED_IN_USER.id, username: LOGGED_IN_USER.username },
+                white: { id: 456, username: "test_user2" },
+            },
+        });
+
+        render(
+            <WrapTest controller={controller}>
+                <PlayButtons />
+            </WrapTest>,
+        );
+
+        expect(screen.getByText("Resign")).toBeDefined();
+        expect(screen.queryByText("Cancel game")).toBeNull();
     });
 
     test('shows "Accept Undo" when opponent requested an undo.', () => {
@@ -177,7 +214,7 @@ describe("PlayButtons", () => {
         expect(screen.queryByText("Cancel Undo")).toBeNull();
     });
 
-    test("renders nothing to the player who requested the undo", () => {
+    test("renders no undo response to the player who requested the undo", () => {
         const controller = new GobanController({
             moves: [
                 [16, 3, 9136.12], // B
@@ -197,14 +234,16 @@ describe("PlayButtons", () => {
         });
 
         // The requester withdraws from the action bar's undo button, so
-        // there is nothing for them here.
+        // there is no undo response for them here — only resign.
         const { container } = render(
             <WrapTest controller={controller}>
                 <PlayButtons />
             </WrapTest>,
         );
 
-        expect(container).toBeEmptyDOMElement();
+        expect(screen.queryByText("Accept Undo")).toBeNull();
+        expect(screen.queryByText("Reject Undo")).toBeNull();
+        expect(container.querySelector(".resign-button")).not.toBeNull();
     });
 
     test("engine reports both stones when undoing two moves", () => {
@@ -291,7 +330,7 @@ describe("PlayButtons", () => {
         expect(screen.queryByText("Submit Move")).toBeNull();
     });
 
-    test("renders nothing while analyzing the game", () => {
+    test("renders no move controls while looking back through the game", () => {
         const controller = new GobanController({
             moves: [
                 [16, 3, 9136.12], // B
@@ -316,7 +355,10 @@ describe("PlayButtons", () => {
             controller.goban.engine.showPrevious();
         });
 
-        expect(container).toBeEmptyDOMElement();
+        // Move controls need the current position; resign does not.
+        expect(screen.queryByText("Pass")).toBeNull();
+        expect(screen.queryByText("Submit Move")).toBeNull();
+        expect(container.querySelector(".resign-button")).not.toBeNull();
     });
 
     test("Don't show accept undo if analyzing the game", () => {

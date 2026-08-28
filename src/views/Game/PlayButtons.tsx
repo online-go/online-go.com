@@ -24,8 +24,13 @@ import {
     generateGobanHook,
     useCanAnswerUndoRequest,
     useCurrentMoveNumber,
+    useMode,
+    usePhase,
     usePlayerToMove,
+    useResignMode,
+    useUserIsParticipant,
 } from "./GameHooks";
+import { cancelOrResignGame } from "./game_actions";
 import * as DynamicHelp from "react-dynamic-help";
 import { useGobanController } from "./goban_context";
 import { useUser } from "@/lib/hooks";
@@ -260,6 +265,16 @@ export function PlayButtons(): React.ReactElement | null {
     // toggles off while their own request is pending.
     const show_undo_response = useCanAnswerUndoRequest(goban);
 
+    // Resign (or cancel, while the game is young enough) sits at the right
+    // edge of this strip. It only applies to a player in a game that is
+    // still in progress.
+    const resign_mode = useResignMode(goban);
+    const user_is_player = useUserIsParticipant(goban);
+    const mode = useMode(goban);
+    const phase = usePhase(goban);
+    const show_resign = user_is_player && mode === "play" && phase === "play";
+    const resign_label = resign_mode === "cancel" ? _("Cancel game") : _("Resign");
+
     const pass = () => {
         if (
             !isLiveGame(goban.engine.time_control, goban.engine.width, goban.engine.height) ||
@@ -301,11 +316,17 @@ export function PlayButtons(): React.ReactElement | null {
         cur_move_number === official_move_number;
     const show_submit_button = show_submit && engine.undo_requested !== engine.getMoveNumber();
 
-    // Undo and resign moved to the action bar; what is left here is the
-    // response to the opponent's undo request, plus the move controls.
+    // Undo moved to the action bar; what is left here is the response to
+    // the opponent's undo request, the move controls, and resign.
     // Collapse the strip entirely when none of them apply so it takes up
     // no space.
-    if (!show_undo_response && !show_pass && !show_submit_button && !keyboard_coordinates_enabled) {
+    if (
+        !show_undo_response &&
+        !show_pass &&
+        !show_submit_button &&
+        !keyboard_coordinates_enabled &&
+        !show_resign
+    ) {
         return null;
     }
 
@@ -354,6 +375,16 @@ export function PlayButtons(): React.ReactElement | null {
                 {show_undo_response && (
                     <button className="bold reject-undo-button xs" onClick={() => cancelUndo()}>
                         {_("Reject Undo")}
+                    </button>
+                )}
+                {show_resign && (
+                    <button
+                        className="sm resign-button"
+                        onClick={() => cancelOrResignGame(goban, resign_mode)}
+                        title={resign_label}
+                    >
+                        <i className="fa fa-flag" />
+                        <span>{resign_label}</span>
                     </button>
                 )}
             </span>

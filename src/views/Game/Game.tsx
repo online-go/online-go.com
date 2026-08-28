@@ -42,14 +42,13 @@ import {
     usePauseControl,
     usePhase,
     usePlayerToMove,
-    useResignMode,
     useScorePopup,
     useUndoRequestIsMine,
     useUserIsParticipant,
     useViewMode,
     useZenMode,
 } from "./GameHooks";
-import { cancelOrResignGame, requestUndo } from "./game_actions";
+import { requestUndo } from "./game_actions";
 import { UndoIcon } from "./UndoIcon";
 import { GobanControllerContext, GobanView, GobanViewRef } from "@/components/GobanView";
 import { ModalContext } from "@/components/ModalProvider";
@@ -135,7 +134,6 @@ export function Game(): React.ReactElement | null {
     const player_to_move = usePlayerToMove(goban);
     const can_request_undo = useCanRequestUndo(goban);
     const undo_request_is_mine = useUndoRequestIsMine(goban);
-    const resign_mode = useResignMode(goban);
     const has_staged_move = useHasStagedMove(goban);
     const pause_control = usePauseControl(goban);
     const modal_context = React.useContext(ModalContext);
@@ -840,8 +838,8 @@ export function Game(): React.ReactElement | null {
     const analysis_disabled = goban.isAnalysisDisabled();
     const is_analyzing = mode === "analyze";
 
-    // Undo and resign apply only while the user is actually playing a game
-    // that is still in progress.
+    // Undo applies only while the user is actually playing a game that is
+    // still in progress.
     const show_play_action_tabs = user_is_player && mode === "play" && phase === "play";
 
     // Toggle behavior: if the mode is already on, clicking exits back to play.
@@ -1224,17 +1222,6 @@ export function Game(): React.ReactElement | null {
                     icon={pause_control.paused ? "play" : "pause"}
                     title={pause_control.paused ? _("Resume game") : _("Pause game")}
                     onClick={pause_control.togglePause}
-                />
-            )}
-
-            {show_play_action_tabs && (
-                <GobanView.Tab
-                    id="game-resign"
-                    type="action"
-                    align="center"
-                    icon="flag"
-                    title={resign_mode === "cancel" ? _("Cancel game") : _("Resign")}
-                    onClick={() => cancelOrResignGame(goban!, resign_mode)}
                 />
             )}
 
