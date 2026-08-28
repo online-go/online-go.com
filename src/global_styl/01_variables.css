@@ -502,7 +502,7 @@
     /* Player cards: same stone palette as the light theme (stones are
      * stones); the black card gets a lighter hairline border so it still
      * separates from the dark page background. */
-    --player-black-background: linear-gradient(to bottom, #23262c 0%, #121418 100%);
+    --player-black-background: linear-gradient(to bottom, #212121 0%, #212121 100%);
     --player-white-background: linear-gradient(to bottom, #f4f2ee 0%, #dedbd4 100%);
     --player-black-border: #3c4047;
     --player-white-border: #b9b6ae;
