@@ -620,7 +620,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         this.update_challenge_settings((prev) => ({ ...prev, game: update_fn(prev.game) }));
 
     /* direct fn updates */
-    update_bot_id = (id: number) => this.update_conf((prev) => ({ ...prev, bot_id: id }));
 
     forceTimeControlSystemIfNecessary = (rengo: boolean, casual: boolean) => {
         if (rengo && casual) {
@@ -683,7 +682,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                     speed={this.state.time_control.speed}
                                     system={this.state.time_control.system}
                                     botId={this.state.conf.bot_id}
-                                    updateBotId={this.update_bot_id}
+                                    updateConf={this.update_conf}
                                 />
                             </div>
                         </div>

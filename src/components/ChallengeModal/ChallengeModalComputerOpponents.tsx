@@ -23,6 +23,7 @@ import { _, llm_pgettext, pgettext } from "@/lib/translate";
 import { SPEED_OPTIONS } from "@/views/Play/SPEED_OPTIONS";
 import { PlayerIcon } from "../PlayerIcon";
 import { Speed, TimeControlSystem } from "@/lib/types";
+import { ChallengeModalConf } from "./ChallengeModal.types";
 
 type ChallengeModalComputerOpponentsProps = {
     width: number | null;
@@ -31,7 +32,7 @@ type ChallengeModalComputerOpponentsProps = {
     speed: Speed;
     system: TimeControlSystem;
     botId: number;
-    updateBotId: (bot_id: number) => void;
+    updateConf: (config: any) => void;
 };
 
 export const ChallengeModalComputerOpponents = (props: ChallengeModalComputerOpponentsProps) => {
@@ -129,12 +130,29 @@ export const ChallengeModalComputerOpponents = (props: ChallengeModalComputerOpp
         return (a.ranking || 0) - (b.ranking || 0);
     });
 
+    const updateBotId = (id: number) =>
+        props.updateConf((prev: ChallengeModalConf) => ({
+            ...prev,
+            bot_id: id,
+        }));
+
     const selected_bot_value = available_bots.find((b) => b.id === props.botId);
     useEffect(() => {
         if (selected_bot_value?.disabled) {
-            props.updateBotId(0);
+            updateBotId(0);
         }
     }, [props.botId, selected_bot_value?.disabled]);
+
+    const cbUpdateBotId = React.useCallback(
+        (ev: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+            const botId = parseInt((ev.currentTarget as HTMLDivElement).dataset.id || "0", 10);
+            const isDisabled = (ev.currentTarget as HTMLDivElement).dataset.disabled === "1";
+            if (!isDisabled) {
+                updateBotId(botId);
+            }
+        },
+        [updateBotId],
+    );
 
     if (available_bots.length <= 0) {
         return (
@@ -159,6 +177,8 @@ export const ChallengeModalComputerOpponents = (props: ChallengeModalComputerOpp
                                     return (
                                         <div
                                             key={bot.id}
+                                            data-id={bot.id}
+                                            data-disabled={bot.disabled ? "1" : "0"}
                                             className={
                                                 "bot-option" +
                                                 (bot.id === selected_bot_value?.id
@@ -166,11 +186,7 @@ export const ChallengeModalComputerOpponents = (props: ChallengeModalComputerOpp
                                                     : "") +
                                                 (bot.disabled ? " disabled" : "")
                                             }
-                                            onClick={() => {
-                                                if (!bot.disabled) {
-                                                    props.updateBotId(bot.id);
-                                                }
-                                            }}
+                                            onClick={cbUpdateBotId}
                                         >
                                             <PlayerIcon
                                                 user={bot}
