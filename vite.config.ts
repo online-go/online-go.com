@@ -528,6 +528,25 @@ function ogs_vite_middleware(): Plugin {
          * if MPA, check pageName(default is index) and write /${pagesDir}/{pageName}/${entry}.html
          */
         configureServer(server: ViteDevServer) {
+            /* The index template's deferred stylesheet link points at the
+             * built ogs.css, which only exists in production; in dev the same
+             * styles are injected by Vite through the main.tsx module import.
+             * This must run as a pre middleware: the post middlewares below
+             * run after Vite's transform middleware, which would otherwise
+             * compile the linked URL into a second, stale copy of every rule
+             * that wins the cascade and masks HMR updates. Stylesheet
+             * requests carry Accept: text/css; the module import fetches with
+             * Accept: star-slash-star, so it still gets the real styles. */
+            server.middlewares.use((req, res, next) => {
+                const url = (req.originalUrl || "").split("?")[0];
+                if (url.endsWith("ogs.css") && (req.headers.accept || "").includes("text/css")) {
+                    res.setHeader("Content-Type", "text/css; charset=utf-8");
+                    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+                    res.end("");
+                    return;
+                }
+                next();
+            });
             return () => {
                 /* Serve /img/* from the repo's asset directories so board/stone textures
                  * referenced via the CDN-rewritten base URL resolve against local disk in dev.
@@ -657,12 +676,6 @@ function ogs_vite_middleware(): Plugin {
                         send_response(JSON.stringify(manifest), "application/json");
                         return;
                     }
-                    if (url?.endsWith("ogs.css")) {
-                        // blank, vite deals with css stuff until production
-                        send_response("", "text/css");
-                        return;
-                    }
-
                     if (url?.endsWith("vendor.js")) {
                         console.info(`GET ${url} -> node_modules/vendor.js`);
                         send_response("");
