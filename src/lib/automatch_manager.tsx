@@ -112,11 +112,20 @@ class AutomatchManager extends TypedEventEmitter<Events> {
         this.emit("entry", entry);
     };
     private onAutomatchStart = (entry: { uuid: string; game_id: number }) => {
+        /* A socket reconnect clears last_find_match_uuid, but the live seek
+         * survives on the server and is restored via automatch/list, so treat
+         * a restored live seek as ours too. Otherwise the player is placed
+         * into a game they are never navigated to, times out without playing
+         * a move, and is flagged as a first turn escaper. */
+        const is_our_live_seek =
+            entry.uuid === this.last_find_match_uuid ||
+            entry.uuid === this.active_live_automatcher?.uuid;
+
         this.remove(entry.uuid);
 
         console.log("Automatch started", entry);
 
-        if (entry.uuid === this.last_find_match_uuid) {
+        if (is_our_live_seek) {
             browserHistory.push(`/game/${entry.game_id}`);
             //sfx.play("match_found");
         }
