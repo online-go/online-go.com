@@ -169,53 +169,50 @@
         display: inline-block;
     }
 
-    /* Mobile (portrait) layout: both player cards rendered below the
-     * board in a single .GameMobilePlayers row. Each card is a 3x3 grid
-     * with a deliberately-empty centre cell so opposite-corner items can
-     * grow into the slack space without crowding the centre:
+    /* Mobile (portrait) layout: the two player cards straddle the board —
+     * the opponent above it, the local player below it — each one full
+     * width in its own .GameMobilePlayers wrapper. A card is a 2-row grid:
      *
-     *      col1     col2     col3
-     *    ┌──────┬─────────┬──────┐
-     *  1 │ icon │  name (cols 2–3)│  ← name spans the top
-     *    ├      ┼─────────┼──────┤
-     *  2 │ icon │  (empty)│ clock│  ← icon climbs row 2 from above
-     *    ├──────┼─────────┼      ┤  ← clock climbs row 2 from below
-     *  3 │ score (cols 1–2)│ clock│  ← score spans the bottom
-     *    └──────┴─────────┴──────┘
+     *       col1        col2         col3
+     *     ┌──────┬───────────────────────┐
+     *   1 │      │ name (cols 2–3)       │  ← name spans the top
+     *     │ icon ├─────────────┬─────────┤
+     *   2 │      │ score       │  clock  │  ← icon spans both rows
+     *     └──────┴─────────────┴─────────┘
      *
-     * Spans:
-     *   icon  — col 1, rows 1–2  (1 wide × 2 high)
-     *   name  — cols 2–3, row 1  (2 wide × 1 high)
-     *   (col 2, row 2 stays empty)
-     *   clock — col 3, rows 2–3  (1 wide × 2 high)
-     *   score — cols 1–2, row 3  (2 wide × 1 high)
-     *
-     * The icon and clock are pinned to opposite corners (top-left,
-     * bottom-right) and grow toward the centre, so long names get the
-     * full top width and the clock gets extra vertical room from the
-     * empty middle cell — exactly the "expand upward" behaviour we want.
+     * The icon fills the card's full height on the left, the name gets the
+     * whole top row, and score and clock share the bottom row pinned to
+     * opposite ends.
      *
      * Extra specificity (`.player-icons`) is required throughout to win
      * against the same-length `.MainGobanView.portrait .player-icons ...`
      * rules in Players.css. */
     &.mobile .GameMobilePlayers {
         flex-shrink: 0;
-        padding: 0.25rem 0;
 
         .player-icons {
             display: flex;
             flex-direction: row;
             width: 100%;
+            /* Players.css reserves a strip below the cards for the
+             * their-turn arrow. Each card now owns the edge facing the
+             * board instead, so the arrow strip is placed per-slot below. */
+            margin-bottom: 0;
         }
 
         .player-icons .player-container {
             display: grid;
             grid-template-columns: auto 1fr auto;
-            grid-template-rows: auto auto auto;
-            column-gap: 0.4rem;
+            grid-template-rows: auto auto;
+            column-gap: 0.5rem;
             row-gap: 0.1rem;
-            padding: 0.15rem 0.25rem;
+            width: 100%;
+            padding: 0.3rem 0.5rem;
             min-width: 0;
+            /* Full-width cards sit against the board, so only the
+             * board-facing edge is drawn; the per-slot rules below pick
+             * which one that is. */
+            border: none;
         }
 
         /* Flatten the icon-clock-row so the icon and clock can land in
@@ -227,19 +224,19 @@
         .player-icons .player-icon-container {
             grid-column: 1;
             grid-row: 1 / span 2;
-            align-self: start;
-            flex-basis: 1.5rem;
-            min-height: 1.5rem;
-            min-width: 1.5rem;
-            width: 1.5rem;
-            height: 1.5rem;
+            align-self: center;
+            flex-basis: 2.5rem;
+            min-height: 2.5rem;
+            min-width: 2.5rem;
+            width: 2.5rem;
+            height: 2.5rem;
         }
 
         .player-icons .player-name-container,
         .player-icons .player-name-plain {
             grid-column: 2 / span 2;
             grid-row: 1;
-            align-self: start;
+            align-self: end;
             font-size: 0.8rem;
             line-height: 1.1;
             overflow: hidden;
@@ -249,16 +246,16 @@
         }
 
         .player-icons .score-container {
-            grid-column: 1 / span 2;
-            grid-row: 3;
-            align-self: end;
+            grid-column: 2;
+            grid-row: 2;
+            align-self: start;
             margin-top: 0;
             justify-content: flex-start;
             /* Players.css relies on space-between to separate the score
              * items; with flex-start they'd run together ("0+ 0.5"), so
              * restore the separation with an explicit gap. */
             gap: 0.4rem;
-            font-size: 0.7rem;
+            font-size: 0.8rem;
             line-height: 1.1;
         }
 
@@ -268,19 +265,13 @@
             display: none;
         }
 
-        /* Clock occupies col 3 across rows 2–3, climbing up into the
-         * empty middle cell. align-self: end pins its bounding box to
-         * the bottom of the span; justify-content: flex-end aligns the
-         * clock's in-flow content (the live time text) to the bottom of
-         * the cell so multi-line clocks (main time + byo-yomi) read
-         * bottom-up against the score row. */
         .player-icons .in-game-clock {
             grid-column: 3;
-            grid-row: 2 / span 2;
-            align-self: end;
+            grid-row: 2;
+            align-self: start;
             justify-self: end;
             justify-content: flex-end;
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             line-height: 1.2;
         }
 
@@ -293,6 +284,48 @@
          * digits stay flush with the score row. */
         .player-icons .Clock .pause-and-transmit {
             order: -1;
+        }
+    }
+
+    /* The cards sit flush against the board, so the their-turn arrow that
+     * hangs outside a card on desktop has nowhere to go without opening a
+     * gap. On mobile the card's board-facing edge carries the indicator
+     * instead: it is always drawn, and takes the card's own foreground
+     * colour on the player to move, which contrasts against either card
+     * background. Nothing moves when the turn changes. */
+    &.mobile .GameMobilePlayers .player-icons .player-container.their-turn::after {
+        content: none;
+    }
+
+    &.mobile .GobanView-above-board .GameMobilePlayers .player-icons .player-container {
+        border-bottom: 0.2rem solid transparent;
+
+        &.white {
+            border-bottom-color: var(--player-white-border);
+        }
+
+        &.black {
+            border-bottom-color: var(--player-black-border);
+        }
+
+        &.their-turn {
+            border-bottom-color: currentColor;
+        }
+    }
+
+    &.mobile .GobanView-below-board .GameMobilePlayers .player-icons .player-container {
+        border-top: 0.2rem solid transparent;
+
+        &.white {
+            border-top-color: var(--player-white-border);
+        }
+
+        &.black {
+            border-top-color: var(--player-black-border);
+        }
+
+        &.their-turn {
+            border-top-color: currentColor;
         }
     }
 
@@ -387,7 +420,7 @@
  * for the other consumers. The extra .GobanView class outranks the
  * equal-specificity shared portrait rules regardless of import order. */
 .GobanView.MainGobanView.portrait {
-    .GobanView-mobile-scroll {
+    .GobanView-mobile-panels {
         padding: 0.5rem 0 0;
 
         .GobanView-tab-panel {

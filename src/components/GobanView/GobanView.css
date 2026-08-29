@@ -190,29 +190,44 @@
         .GobanView-center {
             /* The goban area is square on portrait, so its height follows the
                viewport width. Cap at the remaining viewport height (minus the
-               navbar and the tab bar) so the scroll area below always fits.
-               The cap can't account for the header/slider rows (their
-               presence varies per consumer), so the center is also allowed
-               to flex-shrink: on squat viewports where the capped square
-               still doesn't fit, the board shrinks instead of pushing the
-               slider and tab bar off the bottom of the screen. */
+               navbar and the tab bar) so a board never fills more than one
+               screen on squat viewports. The board scrolls with everything
+               else, so it must not shrink to make room for what follows. */
             --goban-view-portrait-max-height: calc(
                 100dvh - var(--below-navbar) - var(--goban-view-tab-bar-height) -
                     var(--safe-area-inset-bottom)
             );
             flex-basis: auto;
-            flex-shrink: 1;
+            flex-shrink: 0;
             height: min(100dvw, var(--goban-view-portrait-max-height));
             min-height: 8rem;
             max-height: min(100dvw, var(--goban-view-portrait-max-height));
+            background: var(--bg);
         }
 
+        /* The single portrait scroll container. It holds the board and the
+           two board-adjacent slots as well as the tab panels, so the user
+           can scroll the board off-screen to reach the content below it. */
         .GobanView-mobile-scroll {
             flex-grow: 1;
             flex-basis: 0;
             min-height: 0;
             overflow-y: auto;
             overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg);
+        }
+
+        .GobanView-above-board,
+        .GobanView-below-board {
+            flex-shrink: 0;
+        }
+
+        /* Tab panels keep the padded, shaded slab they had when they were
+           the whole of the scroll area. */
+        .GobanView-mobile-panels {
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
             gap: 0.5rem;

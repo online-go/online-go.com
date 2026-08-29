@@ -31,7 +31,7 @@ import { setExtraActionCallback, PlayerDetails } from "@/components/Player";
 import * as player_cache from "@/lib/player_cache";
 import { notification_manager } from "@/components/Notifications";
 import { GameChat } from "./GameChat";
-import { goban_view_mode } from "./util";
+import { goban_view_mode, user_color } from "./util";
 import { PlayerCard, PlayerCards } from "./PlayerCards";
 import { PlayControls, ReviewControls } from "./PlayControls";
 import { alert } from "@/lib/swal_config";
@@ -143,8 +143,8 @@ export function Game(): React.ReactElement | null {
     const [moderator_tab_visible, set_moderator_tab_visible] = usePreference(
         "moderator.game-moderator-tab-visible",
     );
-    // Mobile (portrait) gets a dedicated, non-configurable layout: both
-    // player cards above the board, chat hidden behind a toggle in the
+    // Mobile (portrait) gets a dedicated, non-configurable layout: the
+    // player cards straddle the board, chat hidden behind a toggle in the
     // action bar.
     const view_mode = useViewMode(goban_controller.current);
     const is_mobile = view_mode === "portrait";
@@ -1006,6 +1006,18 @@ export function Game(): React.ReactElement | null {
         />
     );
 
+    /* Mobile straddles the board with the two cards: the opponent above it
+     * and the user below it, so each player sits on the side of the board
+     * they face. Spectators, reviews and game records have no "user"
+     * colour, so they fall back to black above and white below. */
+    const bottom_color = user_color(goban!, user.id) ?? "white";
+    const top_color: "black" | "white" = bottom_color === "black" ? "white" : "black";
+    const renderMobilePlayerCard = (color: "black" | "white") => (
+        <div className="GameMobilePlayers">
+            <div className="player-icons">{renderPlayerCard(color)}</div>
+        </div>
+    );
+
     return (
         <GobanView
             ref={goban_view_ref}
@@ -1015,6 +1027,8 @@ export function Game(): React.ReactElement | null {
             }
             onWheel={onWheel}
             header={<GameStateHeader />}
+            aboveBoard={is_mobile && renderMobilePlayerCard(top_color)}
+            belowBoard={is_mobile && renderMobilePlayerCard(bottom_color)}
         >
             {game_id > 0 && (
                 <UIPush
@@ -1026,17 +1040,8 @@ export function Game(): React.ReactElement | null {
             <GameKeyboardShortcuts />
 
             <GobanView.Tab id="game-main" type="always">
-                {is_mobile && (
-                    // Mobile renders both players inside the always-panel so
-                    // they appear in the scroll area immediately under the
-                    // square goban.
-                    <div className="GameMobilePlayers">
-                        <div className="player-icons">
-                            {renderPlayerCard("black")}
-                            {renderPlayerCard("white")}
-                        </div>
-                    </div>
-                )}
+                {/* Mobile renders the two player cards in GobanView's
+                    aboveBoard / belowBoard slots, not here. */}
                 {!is_mobile && (
                     <PlayerCards
                         historical_black={historical_black}

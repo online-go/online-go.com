@@ -75,6 +75,14 @@ interface GobanViewProps {
      *  above the goban (portrait). Stays visible across takeovers so
      *  consumers can use it to label the current view. */
     header?: React.ReactNode;
+    /** Portrait-only slot rendered directly above the goban, inside the
+     *  scroll flow. Ignored in landscape. Used by the Game view for the
+     *  opponent's player card. */
+    aboveBoard?: React.ReactNode;
+    /** Portrait-only slot rendered directly below the goban, inside the
+     *  scroll flow and above the tab panels. Ignored in landscape. Used by
+     *  the Game view for the local player's card. */
+    belowBoard?: React.ReactNode;
     /** Forwarded to the GobanContainer — fires when the user scrolls the wheel
      *  over the board. Used by the Game view for scroll-to-navigate. */
     onWheel?: React.WheelEventHandler<HTMLDivElement>;
@@ -120,6 +128,8 @@ function GobanViewComponent({
     defaultActiveTakeover,
     customSlider,
     header,
+    aboveBoard,
+    belowBoard,
     onWheel,
     ref,
 }: GobanViewProps): React.ReactElement {
@@ -327,16 +337,30 @@ function GobanViewComponent({
                         }
                     >
                         <div className="GobanView-header">{header}</div>
-                        <div className="GobanView-center">
-                            <GobanContainer
-                                onResize={onResize}
-                                onWheel={onWheel}
-                                respectContainerBounds
-                            />
-                        </div>
+                        {/* The goban lives inside the scroll area on portrait
+                            so the whole column — board included — scrolls as
+                            one. Only the header, slider and tab bar stay
+                            pinned. */}
                         <div className="GobanView-mobile-scroll">
-                            {orderedPanels.map((t) => renderPanel(t, isInlineVisible(t)))}
-                            {scrollingTakeovers.map((t) => renderPanel(t, activeTakeover === t.id))}
+                            {aboveBoard && (
+                                <div className="GobanView-above-board">{aboveBoard}</div>
+                            )}
+                            <div className="GobanView-center">
+                                <GobanContainer
+                                    onResize={onResize}
+                                    onWheel={onWheel}
+                                    respectContainerBounds
+                                />
+                            </div>
+                            {belowBoard && (
+                                <div className="GobanView-below-board">{belowBoard}</div>
+                            )}
+                            <div className="GobanView-mobile-panels">
+                                {orderedPanels.map((t) => renderPanel(t, isInlineVisible(t)))}
+                                {scrollingTakeovers.map((t) =>
+                                    renderPanel(t, activeTakeover === t.id),
+                                )}
+                            </div>
                         </div>
                         {overlayTakeovers.map((t) => renderPanel(t, activeTakeover === t.id))}
                         {sliderSlot}
