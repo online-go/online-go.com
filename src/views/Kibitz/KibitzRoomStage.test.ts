@@ -29,7 +29,6 @@ import {
     buildSelectedGameBaseSnapshotFromDetails,
     clearDraftBaseAppliedState,
     clearInstalledSecondaryVariationBaseState,
-    buildSnapshotFromEngine,
     decideSecondaryVariationReloadAction,
     getSameGameVariationBaseSnapshotState,
     getCurrentSecondaryVariationBaseTreeIdentity,
@@ -63,6 +62,7 @@ import {
     selectedGameSnapshotFailureKey,
     type SelectedGameBaseSnapshotFailure,
 } from "./KibitzRoomStage";
+import { buildSnapshotFromEngine } from "./kibitzCurrentGameBaseSnapshot";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 
 function makeUser(id: number, username: string) {

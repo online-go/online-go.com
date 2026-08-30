@@ -3670,6 +3670,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 setPickerMode(null);
                 void navigate(`/kibitz/${nextRoomId}`);
             }}
+            currentGameBaseSnapshot={currentGameBaseSnapshot}
         />
     ) : null;
 
@@ -3941,6 +3942,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                 mode={mobileOverlayMode}
                                                 rooms={rooms}
                                                 currentRoom={resolvedRoom}
+                                                currentGameBaseSnapshot={currentGameBaseSnapshot}
                                                 canOpenCreateRoomFlow={canOpenCreateRoomFlow}
                                                 signInHref={createRoomSignInHref}
                                                 onClose={onCloseMobileOverlay}

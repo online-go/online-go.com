@@ -33,6 +33,11 @@ import {
 } from "./kibitzAnalysisPolicyText";
 import { parseGameId } from "./parseGameId";
 import { useCurrentKibitzUser } from "./useCurrentKibitzUser";
+import {
+    buildCurrentGameBaseSnapshotFromGameDetails,
+    createCurrentGameMiniGobanSnapshotOverrides,
+} from "./kibitzCurrentGameBaseSnapshot";
+import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 import "./KibitzGamePickerOverlay.css";
 
 type KibitzGamePickerOverlayMode = "create-room" | "change-board";
@@ -54,6 +59,7 @@ interface KibitzGamePickerOverlayProps {
     ) => Promise<string | null> | string | null;
     onChangeBoard: (game: KibitzWatchedGame) => Promise<boolean> | boolean;
     onJoinRoom: (roomId: string) => void;
+    currentGameBaseSnapshot?: KibitzCurrentGameBaseSnapshot | null;
 }
 
 interface SelectedGameState {
@@ -150,6 +156,7 @@ export function KibitzGamePickerOverlay({
     onCreateRoom,
     onChangeBoard,
     onJoinRoom,
+    currentGameBaseSnapshot,
 }: KibitzGamePickerOverlayProps): React.ReactElement {
     const resolveGameRequestIdRef = React.useRef(0);
     const [selectedGame, setSelectedGame] = React.useState<SelectedGameState | null>(null);
@@ -183,6 +190,25 @@ export function KibitzGamePickerOverlay({
     }, []);
 
     const currentGameId = currentRoom?.current_game?.game_id ?? null;
+    const miniGobanSnapshotOverrides = React.useMemo(
+        () => createCurrentGameMiniGobanSnapshotOverrides(currentGameBaseSnapshot, currentGameId),
+        [currentGameBaseSnapshot, currentGameId],
+    );
+    const selectedGamePreviewSnapshot = React.useMemo(() => {
+        if (!selectedGame) {
+            return null;
+        }
+
+        try {
+            return buildCurrentGameBaseSnapshotFromGameDetails({
+                details: selectedGame.details,
+                gameId: selectedGame.game.game_id,
+                requiredSnapshotMoveNumber: selectedGame.game.move_number,
+            });
+        } catch {
+            return null;
+        }
+    }, [selectedGame]);
     const existingRoom = React.useMemo(() => {
         if (!selectedGame) {
             return null;
@@ -558,7 +584,7 @@ export function KibitzGamePickerOverlay({
                         </div>
                     </div>
                 )}
-                {showBoardPreview && !hidePickerGamePreviews ? (
+                {showBoardPreview && !hidePickerGamePreviews && selectedGamePreviewSnapshot ? (
                     <div
                         className={
                             "KibitzGamePickerOverlay-boardWrap" +
@@ -568,6 +594,11 @@ export function KibitzGamePickerOverlay({
                         <KibitzBoard
                             role="preview"
                             gameId={selectedGameSummary.game_id}
+                            width={selectedGame.details.width}
+                            height={selectedGame.details.height}
+                            moveTree={selectedGamePreviewSnapshot.config.move_tree}
+                            movePath={selectedGamePreviewSnapshot.movePath}
+                            restoreToOfficialTailOnLoad={true}
                             className="KibitzGamePickerOverlay-board"
                         />
                     </div>
@@ -757,6 +788,9 @@ export function KibitzGamePickerOverlay({
                                 updateTitle={false}
                                 channel=""
                                 initialMiniGoban={true}
+                                miniGobanProps={{
+                                    miniGobanSnapshotOverrides,
+                                }}
                                 onSelectGameId={onSelectGameId}
                             />
                         )}
@@ -906,6 +940,9 @@ export function KibitzGamePickerOverlay({
                             updateTitle={false}
                             channel=""
                             initialMiniGoban={true}
+                            miniGobanProps={{
+                                miniGobanSnapshotOverrides,
+                            }}
                             onSelectGameId={onSelectGameId}
                         />
                     )}

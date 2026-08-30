@@ -232,6 +232,21 @@ export function getMoveTreeTrunkTail(moveTree: MoveTree | null | undefined): Mov
     return cursor;
 }
 
+export function restoreGobanToOfficialTail(goban: GobanRenderer): MoveTree | null {
+    const officialTail = getMoveTreeTrunkTail(goban.engine.move_tree);
+
+    if (!officialTail || officialTail.move_number <= 0) {
+        return null;
+    }
+
+    goban.engine.jumpTo(officialTail);
+    goban.engine.setLastOfficialMove();
+    goban.jumpToLastOfficialMove();
+    goban.redraw(true);
+
+    return officialTail;
+}
+
 export interface ReviewListEntry {
     owner: PlayerCacheEntry;
     id: number;
