@@ -19,13 +19,8 @@ import { _, pgettext } from "@/lib/translate";
 import React from "react";
 import { allRanks, rankString } from "@/lib/rank_utils";
 import { DemoBoardModalProps, shortPlayerInfo } from "./DemoBoardModal.types";
-import {
-    isKomiOption,
-    isRuleSet,
-    isStandardBoardSize,
-    parseNumberInput,
-} from "./DemoBoardModal.utils";
-import { getDefaultKomi } from "../ChallengeModal/ChallengeModal.utils";
+import { isKomiOption, isRuleSet, parseNumberInput } from "./DemoBoardModal.utils";
+import { getDefaultKomi, isStandardBoardSize } from "../ChallengeModal/ChallengeModal.utils";
 import { RuleSet } from "@/lib/types";
 import * as data from "@/lib/data";
 import { defaultInitialSettings } from "./DemoBoardModal.config";

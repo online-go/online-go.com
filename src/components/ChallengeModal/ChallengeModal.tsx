@@ -60,6 +60,7 @@ import {
     parseNumberInput,
     isRuleSet,
     isColorSelectionOption,
+    standard_board_sizes,
 } from "@/components/ChallengeModal/ChallengeModal.utils";
 import {
     ChallengeDetails,
@@ -83,17 +84,6 @@ for (let i = 1; i <= 36; ++i) {
 }
 
 const ranks = amateurRanks();
-
-const standard_board_sizes: { [k: string]: string | undefined } = {
-    "19x19": "19x19",
-    "13x13": "13x13",
-    "9x9": "9x9",
-    "25x25": "25x25",
-    "21x21": "21x21",
-    "5x5": "5x5",
-    "19x9": "19x9",
-    "5x13": "5x13",
-};
 
 function isRankedBotBoardSize(width: number | null, height: number | null): boolean {
     return (
@@ -1934,8 +1924,4 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         this.setState((state) => ({
             show_computer_settings: !state.show_computer_settings,
         }));
-}
-
-export function isStandardBoardSize(board_size: string): boolean {
-    return board_size in standard_board_sizes;
 }
