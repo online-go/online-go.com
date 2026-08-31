@@ -29,6 +29,7 @@ interface Window {
 
     // Set by vite dev server
     websocket_host: string;
+    OGS_DEV_BACKEND?: "BETA" | "PRODUCTION" | "LOCAL";
 
     // set in main.tsx
     user: unknown;

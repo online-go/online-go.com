@@ -366,7 +366,6 @@ export default defineConfig({
     },
     define: {
         "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
-        "process.env.OGS_BACKEND": JSON.stringify(OGS_BACKEND),
         GOBAN_SOCKET_WORKER_VERSION: JSON.stringify(GOBAN_SOCKET_WORKER_VERSION),
 
         /* This is for goban to let it know we are building for a front end, as opposed to server usage */
@@ -812,9 +811,18 @@ async function ogs_process_template(content: string, req: IncomingMessage): Prom
                 const ip = req.socket.remoteAddress;
                 const location = undefined;
                 //return `<script>window['websocket_host'] = "${server_url}";</script>`;
+
+                /* OGS_DEV_BACKEND tells the client which backend the dev
+                 * server was started with. It cannot be a compile-time
+                 * `define` constant: in dev, rolldown-vite does not replace
+                 * bare identifiers, and vite-plugin-node-polyfills turns
+                 * `process` into an imported shim binding with an empty `env`,
+                 * so `process.env.*` defines are not replaced either. Deployed
+                 * builds never set it, and select servers by hostname. */
                 return `<script>
                     window.ip_location = ${JSON.stringify(location)};
                     window.ip_address = "${ip}";
+                    window.OGS_DEV_BACKEND = ${JSON.stringify(OGS_BACKEND)};
                 </script>`;
             }
         }
