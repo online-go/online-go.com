@@ -174,15 +174,14 @@
      * width in its own .GameMobilePlayers wrapper. A card is a 2-row grid:
      *
      *       col1        col2         col3
-     *     ┌──────┬───────────────────────┐
-     *   1 │      │ name (cols 2–3)       │  ← name spans the top
-     *     │ icon ├─────────────┬─────────┤
-     *   2 │      │ score       │  clock  │  ← icon spans both rows
+     *     ┌──────┬─────────────┬─────────┐
+     *   1 │      │ name        │         │
+     *     │ icon ├─────────────┤  clock  │  ← icon and clock each span
+     *   2 │      │ score       │         │    both rows
      *     └──────┴─────────────┴─────────┘
      *
-     * The icon fills the card's full height on the left, the name gets the
-     * whole top row, and score and clock share the bottom row pinned to
-     * opposite ends.
+     * The icon and the clock fill the card's full height on either side and
+     * centre in it, with the name and the score stacked between them.
      *
      * Extra specificity (`.player-icons`) is required throughout to win
      * against the same-length `.MainGobanView.portrait .player-icons ...`
@@ -194,10 +193,6 @@
             display: flex;
             flex-direction: row;
             width: 100%;
-            /* Players.css reserves a strip below the cards for the
-             * their-turn arrow. Each card now owns the edge facing the
-             * board instead, so the arrow strip is placed per-slot below. */
-            margin-bottom: 0;
         }
 
         .player-icons .player-container {
@@ -209,9 +204,8 @@
             width: 100%;
             padding: 0.3rem 0.5rem;
             min-width: 0;
-            /* Full-width cards sit against the board, so only the
-             * board-facing edge is drawn; the per-slot rules below pick
-             * which one that is. */
+            /* Full-width cards sit flush against the board, so they carry no
+             * border of their own. */
             border: none;
         }
 
@@ -234,9 +228,9 @@
 
         .player-icons .player-name-container,
         .player-icons .player-name-plain {
-            grid-column: 2 / span 2;
+            grid-column: 2;
             grid-row: 1;
-            align-self: end;
+            align-self: start;
             font-size: 0.8rem;
             line-height: 1.1;
             overflow: hidden;
@@ -248,7 +242,7 @@
         .player-icons .score-container {
             grid-column: 2;
             grid-row: 2;
-            align-self: start;
+            align-self: end;
             margin-top: 0;
             justify-content: flex-start;
             /* Players.css relies on space-between to separate the score
@@ -259,73 +253,29 @@
             line-height: 1.1;
         }
 
+        /* The Player component's leading margin would set the name in from
+         * the column edge, out of line with the score stacked below it. */
+        .player-icons .Player-username {
+            margin-left: 0;
+        }
+
         /* Hide the "captures" unit text on mobile — just show the count
          * since the row's already labelled by context. */
         .player-icons .num-captures-units {
             display: none;
         }
 
+        /* The clock owns the right-hand column outright, so the face and
+         * the digits sit level with the middle of the card rather than
+         * hanging off the score row. */
         .player-icons .in-game-clock {
             grid-column: 3;
-            grid-row: 2;
-            align-self: start;
+            grid-row: 1 / span 2;
+            align-self: center;
             justify-self: end;
             justify-content: flex-end;
             font-size: 0.9rem;
             line-height: 1.2;
-        }
-
-        /* Move the pause-text / transmitting placeholder row to the
-         * top of the clock. The Clock is a `flex-wrap: wrap` row, and
-         * `.pause-and-transmit` carries `width: 100%` so it always wraps
-         * onto its own line. By default it lands below the time, leaving
-         * a strange-looking empty band underneath. Flipping its order
-         * puts the placeholder above the time so the actual clock
-         * digits stay flush with the score row. */
-        .player-icons .Clock .pause-and-transmit {
-            order: -1;
-        }
-    }
-
-    /* The cards sit flush against the board, so the their-turn arrow that
-     * hangs outside a card on desktop has nowhere to go without opening a
-     * gap. On mobile the card's board-facing edge carries the indicator
-     * instead: it is always drawn, and takes the card's own foreground
-     * colour on the player to move, which contrasts against either card
-     * background. Nothing moves when the turn changes. */
-    &.mobile .GameMobilePlayers .player-icons .player-container.their-turn::after {
-        content: none;
-    }
-
-    &.mobile .GobanView-above-board .GameMobilePlayers .player-icons .player-container {
-        border-bottom: 0.2rem solid transparent;
-
-        &.white {
-            border-bottom-color: var(--player-white-border);
-        }
-
-        &.black {
-            border-bottom-color: var(--player-black-border);
-        }
-
-        &.their-turn {
-            border-bottom-color: currentColor;
-        }
-    }
-
-    &.mobile .GobanView-below-board .GameMobilePlayers .player-icons .player-container {
-        border-top: 0.2rem solid transparent;
-
-        &.white {
-            border-top-color: var(--player-white-border);
-        }
-
-        &.black {
-            border-top-color: var(--player-black-border);
-        }
-
-        &.their-turn {
-            border-top-color: currentColor;
         }
     }
 

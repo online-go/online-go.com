@@ -72,8 +72,6 @@
     min-height: 2.7rem;
     flex-direction: row;
     box-sizing: border-box;
-    /* Room for the their-turn arrow that hangs below the active card. */
-    margin-bottom: 0.55rem;
 
     .player-container {
         position: relative;
@@ -246,20 +244,8 @@
         }
     }
 
-    /* Player to move: an arrow under the card, pointing up at it. The
-     * wrapper's margin-bottom (above) reserves the strip the arrow hangs
-     * into, so it never overlaps the content below and the layout doesn't
-     * shift when the turn changes. */
-    .player-container.their-turn::after {
-        content: "";
-        position: absolute;
-        top: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        border-left: 0.55rem solid transparent;
-        border-right: 0.55rem solid transparent;
-        border-bottom: 0.55rem solid var(--fg);
-    }
+    /* The player to move is marked by the TurnClock face in their clock,
+     * so the card itself needs no marker. */
 
     .player-container.shortgame.offline {
         border: 1px solid #f66 !important;

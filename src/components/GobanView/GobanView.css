@@ -175,6 +175,12 @@
     &.portrait {
         flex-direction: column;
 
+        /* --below-navbar carries a small spacer under the navbar, which
+           frames the floating sidebar on desktop. Portrait has no frame to
+           draw: the sidebar runs edge to edge, so the spacer reads as a gap
+           above its header. Sit straight under the navbar instead. */
+        top: var(--navbar-height);
+
         .GobanView-sidebar {
             border-radius: 0;
             box-shadow: none;
@@ -188,20 +194,24 @@
         }
 
         .GobanView-center {
-            /* The goban area is square on portrait, so its height follows the
-               viewport width. Cap at the remaining viewport height (minus the
-               navbar and the tab bar) so a board never fills more than one
-               screen on squat viewports. The board scrolls with everything
-               else, so it must not shrink to make room for what follows. */
+            /* The goban area is square on portrait, so its height follows its
+               own width. It must not follow 100dvw: that counts a scrollbar
+               the element itself does not have, and every pixel of the
+               difference shows up as a band of background above and below the
+               board. Cap at the remaining viewport height (minus the navbar
+               and the tab bar) so a board never fills more than one screen on
+               squat viewports. The board scrolls with everything else, so it
+               must not shrink to make room for what follows. */
             --goban-view-portrait-max-height: calc(
-                100dvh - var(--below-navbar) - var(--goban-view-tab-bar-height) -
+                100dvh - var(--navbar-height) - var(--goban-view-tab-bar-height) -
                     var(--safe-area-inset-bottom)
             );
             flex-basis: auto;
             flex-shrink: 0;
-            height: min(100dvw, var(--goban-view-portrait-max-height));
+            aspect-ratio: 1;
+            height: auto;
             min-height: 8rem;
-            max-height: min(100dvw, var(--goban-view-portrait-max-height));
+            max-height: var(--goban-view-portrait-max-height);
             background: var(--bg);
         }
 

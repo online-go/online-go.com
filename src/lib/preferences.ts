@@ -37,6 +37,7 @@ export const defaults = {
     },
     "ai-summary-table-show": true,
     "always-disable-analysis": false,
+    "animate-turn-clock": true,
     "asked-to-enable-desktop-notifications": false,
     "auto-advance-after-submit": true,
     "autofocus-submit-button": false,

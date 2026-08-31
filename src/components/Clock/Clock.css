@@ -99,11 +99,11 @@
 
     &.start-mode {
         &.black {
-            color: #63A7FF !important;
+            color: #63a7ff !important;
         }
 
         &.white {
-            color: #147AFF !important;
+            color: #147aff !important;
         }
     }
 
@@ -130,7 +130,9 @@
         }
 
         &.in-overtime {
-            .periods, .period-time, .byo-yomi-periods {
+            .periods,
+            .period-time,
+            .byo-yomi-periods {
                 font-size: var(--font-size-small);
             }
         }
@@ -138,8 +140,32 @@
 }
 
 .MainGobanView {
-    .byo-yomi-container, .canadian-container {
+    .byo-yomi-container,
+    .canadian-container {
         font-size: var(--font-size-mid);
+    }
+}
+
+/* In the game view's player cards the turn clock, the pause text and the
+   transmitting placeholder sit on the same line as the digits, to their
+   left. Everywhere else `.pause-and-transmit` carries `width: 100%`, so the
+   `flex-wrap: wrap` row breaks it onto a line of its own below the time.
+   Dropping the width and ordering it first pulls the group up beside the
+   digits; the wrap still catches it if a long pause reason needs the space.
+   The digits must not grow, or the row's free space would open up between
+   the group and them instead of collecting to the left of both. */
+.Clock.in-game-clock {
+    .main-time {
+        flex-grow: 0;
+    }
+
+    .pause-and-transmit {
+        order: -1;
+        width: auto;
+        display: inline-flex;
+        align-items: center;
+        margin-left: 0;
+        margin-right: 1rem;
     }
 }
 
