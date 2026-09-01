@@ -23,6 +23,7 @@ import { simulPauseDetectionTest } from "./simul-pause-detection";
 import { gameLogThumbnailMarksTest } from "./game-log-thumbnail-marks";
 import { gameLogScoringAreasTest } from "./game-log-scoring-areas";
 import { sgfDownloadRestrictionsTest } from "./sgf-download-restrictions";
+import { multiMoveUndoTest, multiMoveUndoWhiteRequesterTest } from "./multi-move-undo";
 
 ogsTest.describe("@Games Tests", () => {
     ogsTest("Pass and score a game", basicScoringTest);
@@ -35,4 +36,9 @@ ogsTest.describe("@Games Tests", () => {
     );
     ogsTest("@Visual Scored area marking VISUAL INSPECTION REQUIRED", gameLogScoringAreasTest);
     ogsTest("SGF download restrictions by auth and game state", sgfDownloadRestrictionsTest);
+    ogsTest("Undo on requester's turn covers the last two moves", multiMoveUndoTest);
+    ogsTest(
+        "Undo on white requester's turn covers the last two moves",
+        multiMoveUndoWhiteRequesterTest,
+    );
 });

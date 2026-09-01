@@ -30,21 +30,29 @@
     min-height: calc(var(--goban-view-tab-bar-height) + var(--safe-area-inset-bottom));
     z-index: 5;
 
+    /* The left and right groups take equal shares of the leftover space so
+     * the center group stays truly centered regardless of how many buttons
+     * each side holds. */
     .GobanView-tab-bar-left {
         display: flex;
         gap: 0.5rem;
-        margin-right: auto;
+        flex: 1 1 0;
+        min-width: 0;
+        justify-content: flex-start;
     }
 
     .GobanView-tab-bar-center {
         display: flex;
         gap: 0.5rem;
+        flex-shrink: 0;
     }
 
     .GobanView-tab-bar-right {
         display: flex;
         gap: 0.5rem;
-        margin-left: auto;
+        flex: 1 1 0;
+        min-width: 0;
+        justify-content: flex-end;
     }
 
     .GobanView-tab-button {
@@ -56,6 +64,9 @@
         border: none;
         border-radius: 0.25rem;
         background: transparent;
+        /* The global button rule adds a drop shadow; on the tab bar's flat
+         * strip (and zen's transparent bar) it reads as a stray card edge. */
+        box-shadow: none;
         color: var(--fg);
         cursor: pointer;
         position: relative;
@@ -78,6 +89,26 @@
             opacity: 1;
             background: var(--shade2);
             border-color: var(--shade2);
+        }
+    }
+
+    /* Narrow phones: a player mid-game can have 7+ tabs (settings, analyze,
+     * chat, conditional, undo, resign, more). Tighten the buttons and gaps
+     * so the full set fits without overflowing a 320px viewport. */
+    @media (max-width: 400px) {
+        gap: 0;
+        padding-left: calc(0.25rem + env(safe-area-inset-left));
+        padding-right: calc(0.25rem + env(safe-area-inset-right));
+
+        .GobanView-tab-bar-left,
+        .GobanView-tab-bar-center,
+        .GobanView-tab-bar-right {
+            gap: 0.25rem;
+        }
+
+        .GobanView-tab-button {
+            width: 2.25rem;
+            height: 2.25rem;
         }
     }
 }

@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { Goban } from "goban";
 import { socket } from "@/lib/sockets";
 
 // Re-export from shared location for backward compatibility
@@ -29,3 +30,22 @@ socket.on(
         shared_ip_with_player_map[state.game_id] = state.shared_ip_with_player;
     },
 );
+
+/** The colour the given player is playing, or null when they are not in the
+ *  game. Unlike `GobanEngine.playerColor`, this resolves rengo team members
+ *  who are not the currently-seated player for their team. */
+export function user_color(goban: Goban, player_id: number): "black" | "white" | null {
+    const engine = goban.engine;
+    const color = engine.playerColor(player_id);
+    if (color !== "invalid") {
+        return color;
+    }
+    if (engine.rengo && engine.rengo_teams) {
+        for (const team of ["black", "white"] as const) {
+            if (engine.rengo_teams[team].some((player) => player.id === player_id)) {
+                return team;
+            }
+        }
+    }
+    return null;
+}

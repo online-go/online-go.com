@@ -366,7 +366,6 @@ export default defineConfig({
     },
     define: {
         "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
-        "process.env.OGS_BACKEND": JSON.stringify(OGS_BACKEND),
         GOBAN_SOCKET_WORKER_VERSION: JSON.stringify(GOBAN_SOCKET_WORKER_VERSION),
 
         /* This is for goban to let it know we are building for a front end, as opposed to server usage */
@@ -528,6 +527,25 @@ function ogs_vite_middleware(): Plugin {
          * if MPA, check pageName(default is index) and write /${pagesDir}/{pageName}/${entry}.html
          */
         configureServer(server: ViteDevServer) {
+            /* The index template's deferred stylesheet link points at the
+             * built ogs.css, which only exists in production; in dev the same
+             * styles are injected by Vite through the main.tsx module import.
+             * This must run as a pre middleware: the post middlewares below
+             * run after Vite's transform middleware, which would otherwise
+             * compile the linked URL into a second, stale copy of every rule
+             * that wins the cascade and masks HMR updates. Stylesheet
+             * requests carry Accept: text/css; the module import fetches with
+             * Accept: star-slash-star, so it still gets the real styles. */
+            server.middlewares.use((req, res, next) => {
+                const url = (req.originalUrl || "").split("?")[0];
+                if (url.endsWith("ogs.css") && (req.headers.accept || "").includes("text/css")) {
+                    res.setHeader("Content-Type", "text/css; charset=utf-8");
+                    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+                    res.end("");
+                    return;
+                }
+                next();
+            });
             return () => {
                 /* Serve /img/* from the repo's asset directories so board/stone textures
                  * referenced via the CDN-rewritten base URL resolve against local disk in dev.
@@ -657,12 +675,6 @@ function ogs_vite_middleware(): Plugin {
                         send_response(JSON.stringify(manifest), "application/json");
                         return;
                     }
-                    if (url?.endsWith("ogs.css")) {
-                        // blank, vite deals with css stuff until production
-                        send_response("", "text/css");
-                        return;
-                    }
-
                     if (url?.endsWith("vendor.js")) {
                         console.info(`GET ${url} -> node_modules/vendor.js`);
                         send_response("");
@@ -799,9 +811,18 @@ async function ogs_process_template(content: string, req: IncomingMessage): Prom
                 const ip = req.socket.remoteAddress;
                 const location = undefined;
                 //return `<script>window['websocket_host'] = "${server_url}";</script>`;
+
+                /* OGS_DEV_BACKEND tells the client which backend the dev
+                 * server was started with. It cannot be a compile-time
+                 * `define` constant: in dev, rolldown-vite does not replace
+                 * bare identifiers, and vite-plugin-node-polyfills turns
+                 * `process` into an imported shim binding with an empty `env`,
+                 * so `process.env.*` defines are not replaced either. Deployed
+                 * builds never set it, and select servers by hostname. */
                 return `<script>
                     window.ip_location = ${JSON.stringify(location)};
                     window.ip_address = "${ip}";
+                    window.OGS_DEV_BACKEND = ${JSON.stringify(OGS_BACKEND)};
                 </script>`;
             }
         }

@@ -42,7 +42,9 @@ export function TabBar({ tabs }: TabBarProps): React.ReactElement {
 
     const handleClick = (tab: TabDefinition, event: React.MouseEvent<HTMLButtonElement>) => {
         if (tab.type === "toggle") {
-            state.setToggle(tab.id, !state.toggleVisibility[tab.id]);
+            const willBeVisible = !state.toggleVisibility[tab.id];
+            state.setToggle(tab.id, willBeVisible);
+            tab.onToggle?.(willBeVisible);
         } else if (tab.type === "takeover") {
             const prevActiveId = state.activeTakeover;
             const willBeActive = prevActiveId !== tab.id;

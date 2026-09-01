@@ -21,12 +21,19 @@
     max-width: calc(100dvw);
     /* max-width: 100%; */
     user-select: none;
+    /* Set the chart slightly off from the sidebar's --shade5 surface —
+     * a smidge darker in the light theme, lighter in the dark theme —
+     * with a hairline above and below to frame it. */
+    background: var(--shade4);
+    border-top: 1px solid var(--shade3);
+    border-bottom: 1px solid var(--shade3);
 
     svg {
         font-size: var(--font-size-smaller);
     }
 
-    .axis path, .axis line {
+    .axis path,
+    .axis line {
         fill: none;
         stroke: var(--shade3);
         shape-rendering: crispEdges;
@@ -41,7 +48,8 @@
         }
     }
 
-    .loading, .nodata {
+    .loading,
+    .nodata {
         height: 100px;
         display: flex;
         justify-content: center;
@@ -53,13 +61,13 @@
         cursor: crosshair;
 
         text {
-            fill: #7F8FAF;
+            fill: #7f8faf;
         }
 
         .line {
             fill: none;
             stroke-width: 1px;
-            clip-path: url('#clip');
+            clip-path: url("#clip");
             shape-rendering: crispEdges;
         }
 
@@ -73,7 +81,7 @@
             stroke-width: 1px;
             stroke: var(--chart-line);
             shape-rendering: crispEdges;
-            fill: url('#win-rate-area-gradient');
+            fill: url("#win-rate-area-gradient");
         }
 
         .variation-win-rate-line {
@@ -129,7 +137,8 @@
     }
 
     .timeline .axis {
-        path, line {
+        path,
+        line {
             display: none;
         }
     }
@@ -138,7 +147,7 @@
         .tick {
             text {
                 text-anchor: start !important;
-                fill: #7F8FAF;
+                fill: #7f8faf;
             }
 
             line {

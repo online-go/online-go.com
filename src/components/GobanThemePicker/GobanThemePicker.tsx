@@ -114,7 +114,7 @@ export function GobanBoardThemePicker(props: GobanThemePickerProperties): React.
                         className={
                             "selector" + (selected.board === theme.theme_name ? " active" : "")
                         }
-                        style={theme.styles}
+                        style={{ ...theme.styles, width: size + "px", height: size + "px" }}
                         onClick={selectTheme.current[theme.theme_name]}
                     >
                         {canvases.current[idx] && <PersistentElement elt={canvases.current[idx]} />}
@@ -194,7 +194,7 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React
                             key={theme.theme_name}
                             title={_(theme.theme_name)}
                             className={"selector" + (selected.board === "Custom" ? " active" : "")}
-                            style={theme.styles}
+                            style={{ ...theme.styles, width: size + "px", height: size + "px" }}
                             onClick={() => setBoard("Custom")}
                         >
                             {sample_canvas && <PersistentElement elt={sample_canvas.current} />}
@@ -401,6 +401,12 @@ export function GobanWhiteThemePicker(props: GobanThemePickerProperties): React.
                                 style={{
                                     ...theme.styles,
                                     ...board_styles,
+                                    /* renderSampleStone stamps width/height onto the
+                                     * shared theme.styles using the LAST size any picker
+                                     * instance rendered with; pin this instance's own
+                                     * size so differently-sized pickers don't clip. */
+                                    width: size + "px",
+                                    height: size + "px",
                                 }}
                                 onClick={selectTheme.current[theme.theme_name]}
                             >
@@ -422,6 +428,12 @@ export function GobanWhiteThemePicker(props: GobanThemePickerProperties): React.
                                 style={{
                                     ...theme.styles,
                                     ...board_styles,
+                                    /* renderSampleStone stamps width/height onto the
+                                     * shared theme.styles using the LAST size any picker
+                                     * instance rendered with; pin this instance's own
+                                     * size so differently-sized pickers don't clip. */
+                                    width: size + "px",
+                                    height: size + "px",
                                 }}
                                 onClick={selectTheme.current[theme.theme_name]}
                             >
@@ -500,7 +512,12 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): React
                             key={theme.theme_name}
                             title={_(theme.theme_name)}
                             className={"selector" + (selected.black === "Custom" ? " active" : "")}
-                            style={{ ...theme.styles, ...board_styles }}
+                            style={{
+                                ...theme.styles,
+                                ...board_styles,
+                                width: size + "px",
+                                height: size + "px",
+                            }}
                             onClick={() => setBlack("Custom")}
                         >
                             <ThemeSample
@@ -634,6 +651,12 @@ export function GobanBlackThemePicker(props: GobanThemePickerProperties): React.
                                 style={{
                                     ...theme.styles,
                                     ...board_styles,
+                                    /* renderSampleStone stamps width/height onto the
+                                     * shared theme.styles using the LAST size any picker
+                                     * instance rendered with; pin this instance's own
+                                     * size so differently-sized pickers don't clip. */
+                                    width: size + "px",
+                                    height: size + "px",
                                 }}
                                 onClick={selectTheme.current[theme.theme_name]}
                             >
@@ -655,6 +678,12 @@ export function GobanBlackThemePicker(props: GobanThemePickerProperties): React.
                                 style={{
                                     ...theme.styles,
                                     ...board_styles,
+                                    /* renderSampleStone stamps width/height onto the
+                                     * shared theme.styles using the LAST size any picker
+                                     * instance rendered with; pin this instance's own
+                                     * size so differently-sized pickers don't clip. */
+                                    width: size + "px",
+                                    height: size + "px",
                                 }}
                                 onClick={selectTheme.current[theme.theme_name]}
                             >
@@ -712,7 +741,7 @@ export function GobanCustomWhitePicker(props: GobanThemePickerProperties): React
                             key={theme.theme_name}
                             title={_(theme.theme_name)}
                             className={"selector" + (selected.white === "Custom" ? " active" : "")}
-                            style={theme.styles}
+                            style={{ ...theme.styles, width: size + "px", height: size + "px" }}
                             onClick={() => setWhite("Custom")}
                         >
                             <ThemeSample

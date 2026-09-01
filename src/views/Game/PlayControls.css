@@ -8,11 +8,16 @@
     flex-direction: column;
     justify-content: center;
     padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
     max-width: 100dvw;
-    min-height: 5rem;
 
-    /* height: 23rem; */
-    /* min-height: 5rem; */
+    /* Every child here is conditional, so the whole block can end up with
+     * nothing to show. Drop the padding then, otherwise the empty control
+     * area leaves a visible gap between the player cards and the chat. */
+    &:empty {
+        padding: 0;
+    }
+
     > div {
         width: 100%;
     }
@@ -50,11 +55,6 @@
             max-width: 90dvw;
             text-align: justify;
         }
-    }
-
-    .game-action-buttons {
-        position: relative;
-        text-align: center;
     }
 
     .analyze-mode-buttons {
@@ -164,25 +164,43 @@
         }
     }
 
-    .cancel-button {
-        /*
-        position: absolute;
-        right: 0.5em;
-        bottom: 0.5em;
-        */
-    }
-
-    .undo-button {
-        /* position: absolute; */
-        /* left: 0.5em; */
-    }
-
     .accept-undo-button {
         white-space: nowrap;
     }
 
     .reject-undo-button {
         white-space: nowrap;
+    }
+
+    /* Resign (or cancel) control at the right edge of the play-buttons
+     * strip. Quiet by default so it never competes with the primary
+     * Pass / Submit buttons beside it. */
+    .resign-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        white-space: nowrap;
+        padding: 0.3rem 0.5rem;
+        box-shadow: none;
+        background: transparent;
+        border: 1px solid transparent;
+        color: var(--fg);
+        opacity: 0.6;
+        transition:
+            opacity 0.15s ease,
+            border-color 0.15s ease;
+
+        &::before {
+            content: none;
+        }
+
+        &:hover,
+        &:focus-visible {
+            opacity: 1;
+            border-color: var(--shade3);
+            background: transparent;
+        }
     }
 
     .undo-requested-message {

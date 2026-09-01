@@ -329,7 +329,12 @@ export class ReviewChartD3 {
         this.updateGradient(use_score_safe);
         this.updateAxes(use_score_safe);
         const hasPendingMoves = this.updatePendingBackgrounds();
-        this.updateHighlightedMoves(entries, use_score_safe, hasPendingMoves);
+        // Highlight circles come from the real entries only: prepareMainEntries
+        // pads the array with artificial start/end points to close the line,
+        // which must not produce phantom highlight dots
+        const highlight_entries =
+            this.data.entries.length > 0 ? entries.slice(1, entries.length - 1) : entries;
+        this.updateHighlightedMoves(highlight_entries, use_score_safe, hasPendingMoves);
         this.updateCrosshairs();
     }
 
@@ -445,15 +450,23 @@ export class ReviewChartD3 {
             .attr("d", this.win_rate_line);
     }
 
+    /* The area fill is a flat two-tone split — solid dark where black is
+     * ahead (above the midline), solid light where white is ahead — done
+     * with a single linearGradient whose stops change color at the same
+     * offset, so there is no visible gradient. The tones match the player
+     * cards' slate/shell stone palette. */
     private updateGradient(use_score_safe: boolean): void {
-        let gradient_transition_point = 50;
+        let transition_point = 50;
         if (use_score_safe) {
             const [min_score, max_score] = this.y.domain();
             const yRange = max_score - min_score;
             if (yRange !== 0) {
-                gradient_transition_point = (max_score / yRange) * 100;
+                transition_point = (max_score / yRange) * 100;
             }
         }
+
+        const [black_fill, white_fill] =
+            data.get("theme") === "light" ? ["#363b42", "#f1efea"] : ["#0e1013", "#96938c"];
 
         this.svg?.select("linearGradient").remove();
         this.svg
@@ -465,35 +478,12 @@ export class ReviewChartD3 {
             .attr("x2", 0)
             .attr("y2", this.height)
             .selectAll("stop")
-            .data(
-                data.get("theme") === "light"
-                    ? [
-                          { offset: "0%", color: "#222222" },
-                          {
-                              offset: `${(gradient_transition_point - 1).toFixed(0)}%`,
-                              color: "#444444",
-                          },
-                          { offset: `${gradient_transition_point.toFixed(0)}%`, color: "#888888" },
-                          {
-                              offset: `${(gradient_transition_point + 1).toFixed(0)}%`,
-                              color: "#cccccc",
-                          },
-                          { offset: "100%", color: "#eeeeee" },
-                      ]
-                    : [
-                          { offset: "0%", color: "#000000" },
-                          {
-                              offset: `${(gradient_transition_point - 1).toFixed(0)}%`,
-                              color: "#333333",
-                          },
-                          { offset: `${gradient_transition_point.toFixed(0)}%`, color: "#888888" },
-                          {
-                              offset: `${(gradient_transition_point + 1).toFixed(0)}%`,
-                              color: "#909090",
-                          },
-                          { offset: "100%", color: "#999999" },
-                      ],
-            )
+            .data([
+                { offset: "0%", color: black_fill },
+                { offset: `${transition_point.toFixed(2)}%`, color: black_fill },
+                { offset: `${transition_point.toFixed(2)}%`, color: white_fill },
+                { offset: "100%", color: white_fill },
+            ])
             .enter()
             .append("stop")
             .attr("offset", (d) => d.offset)
@@ -526,9 +516,13 @@ export class ReviewChartD3 {
         use_score_safe: boolean,
         useGoldColor: boolean = false,
     ): void {
-        const show_all = Object.keys(this.data.ai_review.moves).length <= 3;
+        const moves = this.data.ai_review.moves;
+        const show_all = Object.keys(moves).length <= 3;
         const circle_coords = entries.filter((entry) => {
-            if (!this.data.ai_review.moves[entry.move_number]) {
+            /* Chart x and highlighted_moves are in presented move space:
+             * move N is analyzed from the position before it, keyed N-1 in
+             * ai_review.moves. */
+            if (!moves[entry.move_number - 1]) {
                 return false;
             }
 
@@ -537,10 +531,10 @@ export class ReviewChartD3 {
                 return true;
             }
 
-            // Show if it's the last move in a sequence
+            // Show if it's the last move in an analyzed sequence
             const isLastInSequence =
-                !this.data.ai_review.moves[entry.move_number + 1] &&
-                entry.move_number !== (this.data.ai_review.win_rates as number[]).length - 1;
+                !moves[entry.move_number] &&
+                entry.move_number - 1 !== (this.data.ai_review.win_rates as number[]).length - 1;
 
             // Show if explicitly highlighted
             const isHighlighted = this.data.highlighted_moves?.includes(entry.move_number);

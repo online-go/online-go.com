@@ -29,7 +29,15 @@ import { _, pgettext, moment } from "@/lib/translate";
 import { ReviewChart } from "./ReviewChart";
 import { SummaryTable } from "./SummaryTable";
 import { FairPlayGameSummary } from "@moderator-ui/FairPlay";
-import { MoveTree, JGOFAIReview, JGOFAIReviewMove, ColoredCircle, GobanMovesArray } from "goban";
+import {
+    MoveTree,
+    JGOFAIReview,
+    JGOFAIReviewMove,
+    JGOFNumericPlayerColor,
+    ColoredCircle,
+    GobanMovesArray,
+    AIQualityMark,
+} from "goban";
 import { alert } from "@/lib/swal_config";
 import { useGobanControllerOrNull } from "@/views/Game/goban_context";
 import { MODERATOR_POWERS } from "@/lib/moderation";
@@ -102,6 +110,7 @@ export function AIReview({
 
     // State management
     const [useScore, setUseScore] = useState(preferences.get("ai-review-use-score"));
+    const [showVisitCounts] = preferences.usePreference("ai-review-show-visit-counts");
     const [tableHidden, setTableHidden] = useState(!preferences.get("ai-summary-table-show"));
     const [currentPopupMoves, setCurrentPopupMoves] = useState<number[]>([]);
 
@@ -229,17 +238,41 @@ export function AIReview({
         [refresh],
     );
 
-    // Calculate table data
-    const calculateAndUpdateTableData = useCallback(() => {
-        if (!gobanController?.goban || !reviewData) {
-            return;
-        }
-
-        reviewData.categorize(gobanController.goban.engine);
-    }, [gobanController, reviewData]);
-
     // State for win rate and score from highlights update
     const [winRateScore, setWinRateScore] = useState<[number, number]>([0, 0]);
+
+    /**
+     * Single categorization pass per review update, shared by the played-move
+     * badge map and the summary table. categorize() walks the whole game, so
+     * it must not run once per render during a streaming review.
+     */
+    const categorization = useMemo(() => {
+        const engine = gobanController?.goban?.engine;
+        if (!reviewData || !engine) {
+            return null;
+        }
+        return reviewData.categorize(engine);
+    }, [reviewData, gobanController, updateCount]);
+
+    /**
+     * Map of trunk move number to its AI review quality classification,
+     * used to badge the played move on the board.
+     */
+    const moveCategoryMap = useMemo((): Map<number, AIQualityMark> | null => {
+        if (!categorization) {
+            return null;
+        }
+        const map = new Map<number, AIQualityMark>();
+        for (const player of ["black", "white"] as const) {
+            const categorized = categorization.categorized_moves[player];
+            for (const category of Object.keys(categorized) as (keyof typeof categorized)[]) {
+                for (const move_number of categorized[category]) {
+                    map.set(move_number, category.toLowerCase() as AIQualityMark);
+                }
+            }
+        }
+        return map;
+    }, [categorization]);
 
     /**
      * Retrieves AI review entries for the current variation branch
@@ -280,7 +313,7 @@ export function AIReview({
     }, [reviewData, move, updateCount]);
 
     /**
-     * Updates the board visualization with AI analysis marks, heatmaps, and colored circles
+     * Updates the board visualization with AI analysis marks and colored circles
      * @returns Tuple of [win_rate, score] for current position
      */
     const updateHighlightsMarksAndHeatmaps = useCallback((): [number, number] => {
@@ -292,7 +325,6 @@ export function AIReview({
         let ai_review_move: JGOFAIReviewMove | undefined;
         let win_rate: number;
         let score: number;
-        let next_move: MoveTree | null = null;
         const cur_move = move;
         const trunk_move = cur_move.getBranchPoint();
         const move_number = trunk_move.move_number;
@@ -335,27 +367,74 @@ export function AIReview({
             }
         }
 
+        // Marks are written to the engine's current move. When the engine has
+        // already navigated away from the move this render is for (rapid
+        // navigation, or an update landing mid-jump), writing would smear this
+        // move's marks onto another node; skip, the effect for the new move
+        // will redraw.
+        if (goban.engine.cur_move.id !== cur_move.id) {
+            return [win_rate, score];
+        }
+
+        // Clear this move's previous AI marks so marks from earlier updates
+        // (a different branch set, toggled options, stray writes) don't
+        // accumulate under the fresh ones
+        cur_move.clearAIMarks();
+
         let marks: { [mark: string]: string } = {};
-        let heatmap: Array<Array<number>> | null = null;
         let colored_circles: ColoredCircle[] = [];
 
         try {
             if ((cur_move.trunk || have_variation_results) && ai_review_move) {
-                next_move = cur_move.trunk_next || null;
+                // The move played from this position, shown as a translucent
+                // stone. Clicking it follows the trunk to the next move.
+                const played_move = cur_move.trunk_next || null;
 
-                // Use the extracted heatmap generator
+                // Positional fallback delta shown on the played move when it
+                // is not among the analyzed branches
+                let played_move_delta: number | null = null;
+                if (played_move) {
+                    const next_review_move = reviewData.moves[played_move.move_number];
+                    const next_win_rate =
+                        next_review_move?.win_rate ?? win_rates[played_move.move_number];
+                    const next_score = next_review_move?.score ?? scores[played_move.move_number];
+
+                    if (
+                        useScore &&
+                        !!reviewData.scores &&
+                        ai_review_move.score !== undefined &&
+                        next_score !== undefined
+                    ) {
+                        played_move_delta =
+                            played_move.player === JGOFNumericPlayerColor.WHITE
+                                ? ai_review_move.score - next_score
+                                : next_score - ai_review_move.score;
+                    } else if (next_win_rate !== undefined) {
+                        played_move_delta =
+                            100 *
+                            (played_move.player === JGOFNumericPlayerColor.WHITE
+                                ? ai_review_move.win_rate - next_win_rate
+                                : next_win_rate - ai_review_move.win_rate);
+                    }
+                }
+
+                // Use the extracted marks generator
                 const result = generateHeatmapAndMarks({
                     ai_review_move,
-                    next_move,
+                    played_move,
                     cur_move,
+                    played_move_category: played_move
+                        ? (moveCategoryMap?.get(played_move.move_number) ?? null)
+                        : null,
+                    played_move_delta,
                     goban,
                     strength: reviewData.strength,
                     useScore,
                     hasScores: !!reviewData.scores,
+                    show_visit_counts: showVisitCounts,
                 });
 
                 marks = result.marks;
-                heatmap = result.heatmap;
                 colored_circles = result.colored_circles;
             } else {
                 if (!cur_move.trunk) {
@@ -368,6 +447,26 @@ export function AIReview({
                     reviewData || null,
                     goban.engine || null,
                 );
+
+                // No analysis for this position: still present the played
+                // move as a translucent stone, with a neutral triangle in
+                // place of the quality badge.
+                const played_move = cur_move.trunk ? cur_move.trunk_next : undefined;
+                if (
+                    played_move &&
+                    played_move.x >= 0 &&
+                    !goban.engine.board[played_move.y][played_move.x] &&
+                    Object.keys(reviewData.moves).length > 0
+                ) {
+                    goban.setMark(
+                        played_move.x,
+                        played_move.y,
+                        played_move.player === JGOFNumericPlayerColor.BLACK ? "black" : "white",
+                        false,
+                        true,
+                    );
+                    goban.setMark(played_move.x, played_move.y, "sub_triangle", false, true);
+                }
             }
         } catch (e) {
             errorLogger(e);
@@ -377,14 +476,22 @@ export function AIReview({
 
         try {
             goban.setMarks(marks, true, true);
-            goban.setHeatmap(heatmap || undefined, true);
+            goban.setHeatmap(undefined, true);
             goban.setColoredCircles(colored_circles, false);
         } catch (e) {
             errorLogger(e);
         }
 
         return [win_rate, score];
-    }, [reviewData, gobanController, move, useScore, updateCount]);
+    }, [
+        reviewData,
+        gobanController,
+        move,
+        useScore,
+        showVisitCounts,
+        updateCount,
+        moveCategoryMap,
+    ]);
 
     /**
      * Requests AI analysis for a specific variation branch
@@ -436,10 +543,22 @@ export function AIReview({
         }
     }, [reviewData, hidden, move, updateHighlightsMarksAndHeatmaps, updateCount]);
 
-    // Update table data when dependencies change
+    // While a review with analysis data is shown, the controller operates in
+    // presented move space: displays show the next trunk move's number and
+    // gotoMove(n) navigates so that move n is presented. See
+    // GobanController.setAIReviewPresentationActive.
+    const presentation_active =
+        !hidden && !!reviewData && !reviewData.error && Object.keys(reviewData.moves).length > 0;
+
     useEffect(() => {
-        calculateAndUpdateTableData();
-    }, [calculateAndUpdateTableData]);
+        gobanController?.setAIReviewPresentationActive(presentation_active);
+    }, [gobanController, presentation_active]);
+
+    useEffect(() => {
+        return () => {
+            gobanController?.setAIReviewPresentationActive(false);
+        };
+    }, [gobanController]);
 
     // Prepare data for rendering
     const [win_rate, score] = winRateScore;
@@ -553,7 +672,19 @@ export function AIReview({
                                 entries={ai_review_chart_entries}
                                 variation_entries={ai_review_chart_variation_entries}
                                 update_count={updateCount}
-                                move_number={move_number}
+                                move_number={
+                                    // Clamped to the last real move: the explorable
+                                    // position past it is not on the graph.
+                                    // Derived from the local presentation_active
+                                    // rather than the controller flag, which is
+                                    // only synced in an effect after this render.
+                                    move.trunk
+                                        ? Math.min(
+                                              move.move_number + (presentation_active ? 1 : 0),
+                                              (reviewData.win_rates?.length ?? 1) - 1,
+                                          )
+                                        : move_number
+                                }
                                 variation_move_number={variation_move_number}
                                 set_move={(num: number) => gobanController.gotoMove(num)}
                                 use_score={useScore}
@@ -562,7 +693,7 @@ export function AIReview({
                                         ? currentPopupMoves
                                         : worst_move_list
                                               .slice(0, WORST_MOVES_SHOWN)
-                                              .map((m) => m.move_number - 1)
+                                              .map((m) => m.move_number)
                                 }
                             />
 
@@ -589,9 +720,7 @@ export function AIReview({
                             {reviewData?.engine.includes("katago") &&
                                 gobanController?.goban?.engine && (
                                     <SummaryTable
-                                        categorization={reviewData?.categorize(
-                                            gobanController.goban.engine,
-                                        )}
+                                        categorization={categorization}
                                         table_hidden={tableHidden}
                                         onPopupMovesChange={(moves) => {
                                             setCurrentPopupMoves(moves);

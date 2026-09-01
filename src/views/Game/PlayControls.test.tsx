@@ -4,6 +4,7 @@
  */
 
 import { PlayControls } from "./PlayControls";
+import { GameStateHeader } from "./GameStateHeader";
 import { render, screen } from "@testing-library/react";
 import * as React from "react";
 import * as data from "@/lib/data";
@@ -111,11 +112,14 @@ test("No moves have been played", () => {
         </WrapTest>,
     );
 
-    expect(screen.getByText("Cancel game")).toBeDefined();
+    // Undo lives in the action bar, not here.
     expect(screen.queryByText("Undo")).toBeNull();
     expect(screen.queryByText("Accept Undo")).toBeNull();
     expect(screen.queryByText("Submit")).toBeNull();
     expect(screen.getByText("Pass")).toBeDefined();
+    // Resign sits beside Pass; an unplayed game can still be cancelled, so
+    // the button labels itself accordingly.
+    expect(screen.getByText("Cancel game")).toBeDefined();
 });
 
 test("Don't render play buttons if user is not a player", () => {
@@ -129,23 +133,50 @@ test("Don't render play buttons if user is not a player", () => {
     );
 
     expect(screen.queryByText("Resign")).toBeNull();
+    expect(screen.queryByText("Cancel game")).toBeNull();
     expect(screen.queryByText("Undo")).toBeNull();
     expect(screen.queryByText("Accept Undo")).toBeNull();
     expect(screen.queryByText("Submit")).toBeNull();
     expect(screen.queryByText("Pass")).toBeNull();
 });
 
-test("Renders undo if it is not the players turn", () => {
+test("PlayControls is empty when there is nothing to show", () => {
+    // A spectator has nothing to act on. (A player always has at least the
+    // resign button while the game is in progress.)
     const controller = new GobanController({
         game_id: 1234,
-        // Need to play at least one move before Undo button shows up
         moves: [
             [15, 15, 5241],
             [2, 2, 68110],
             [16, 2, 53287],
         ],
-        // Since three moves have been played, black must have had the last move
-        // That is one of the requirements for "undo" to show up.
+        players: {
+            black: { id: 987, username: "someone" },
+            white: { id: 456, username: "test_user2" },
+        },
+    });
+    data.set("user", TEST_USER);
+
+    const { container } = render(
+        <WrapTest controller={controller}>
+            <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
+        </WrapTest>,
+    );
+
+    // Truly empty, so the `.PlayControls:empty` rule can drop its padding.
+    expect(container.querySelector(".PlayControls")).toBeEmptyDOMElement();
+});
+
+test("A player on the opponent's turn still gets the resign button", () => {
+    const controller = new GobanController({
+        game_id: 1234,
+        moves: [
+            [15, 15, 5241],
+            [2, 2, 68110],
+            [16, 2, 53287],
+        ],
+        // Black went last, so it is the opponent's turn and there is no
+        // move control to offer the user.
         players: {
             black: { id: 123, username: "test_user" },
             white: { id: 456, username: "test_user2" },
@@ -153,37 +184,14 @@ test("Renders undo if it is not the players turn", () => {
     });
     data.set("user", TEST_USER);
 
-    render(
+    const { container } = render(
         <WrapTest controller={controller}>
             <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
         </WrapTest>,
     );
 
-    expect(screen.getByText("Undo")).toBeDefined();
-    expect(screen.queryByText("Accept Undo")).toBeNull();
-});
-
-test("Renders undo if it is the players turn", () => {
-    const controller = new GobanController({
-        game_id: 1234,
-        moves: [
-            [15, 15, 5241],
-            [2, 2, 68110],
-        ],
-        players: {
-            black: { id: 456, username: "test_user2" },
-            white: { id: 123, username: "test_user" },
-        },
-    });
-    data.set("user", TEST_USER);
-
-    render(
-        <WrapTest controller={controller}>
-            <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
-        </WrapTest>,
-    );
-
-    expect(screen.getByText("Undo")).toBeDefined();
+    expect(screen.queryByText("Pass")).toBeNull();
+    expect(container.querySelector(".resign-button")).not.toBeNull();
 });
 
 test("Renders accept undo if undo requested", () => {
@@ -208,6 +216,7 @@ test("Renders accept undo if undo requested", () => {
 
     render(
         <WrapTest controller={controller}>
+            <GameStateHeader />
             <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
         </WrapTest>,
     );
@@ -278,6 +287,7 @@ test("Renders conditional moves", () => {
 
     render(
         <WrapTest controller={controller}>
+            <GameStateHeader />
             <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
         </WrapTest>,
     );

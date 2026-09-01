@@ -61,10 +61,26 @@
         background: var(--shade5);
         border-radius: 8px;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-        margin: 1rem 1rem 1rem 0;
+        /* The 1.25rem on the left creates a consistent gap between the
+         * goban area and the sidebar across all GobanView consumers (game,
+         * puzzle, joseki) — visual breathing room.
+         *
+         * Top is 0 because --below-navbar already provides a small (~0.3rem)
+         * spacer below the navbar — adding more margin doubles up. Bottom
+         * mirrors that natural top gap via --goban-view-bottom-margin
+         * (0.3rem normally, 0 below 700px viewport height) so the framing
+         * stays symmetric and the sidebar fills the available height on
+         * short viewports. */
+        /* The right margin matches the 0.3rem the sidebar sits below the
+         * navbar (--below-navbar minus the navbar height) and the 0.3rem
+         * bottom margin, so the framing reads evenly on all three edges. */
+        margin: 0 0.3rem var(--goban-view-bottom-margin) 1.25rem;
         overflow: hidden;
     }
 
+    /* Header pinned above the scrollable sidebar content. Hidden via
+     * :empty when the `header` prop's component renders nothing, so we
+     * don't leave a stray bordered band at the top. */
     .GobanView-header {
         flex-shrink: 0;
         padding: 0.6rem 0.875rem;
@@ -74,6 +90,12 @@
         color: var(--fg);
         background: var(--shade4);
         border-bottom: 1px solid var(--shade3);
+        border-top-left-radius: inherit;
+        border-top-right-radius: inherit;
+
+        &:empty {
+            display: none;
+        }
     }
 
     .GobanView-sidebar-content {
@@ -93,6 +115,16 @@
 
         &.hidden {
             display: none;
+        }
+
+        /* Non-takeover panels (always + toggle) render at their natural
+         * content height; the sidebar scrolls when their combined height
+         * exceeds the viewport. Without this, flex-shrink would squash
+         * them so the chat (which has a fixed inner height) overflows
+         * visibly into the panel below. */
+        &.always,
+        &.toggle {
+            flex-shrink: 0;
         }
 
         &.takeover {
@@ -143,6 +175,12 @@
     &.portrait {
         flex-direction: column;
 
+        /* --below-navbar carries a small spacer under the navbar, which
+           frames the floating sidebar on desktop. Portrait has no frame to
+           draw: the sidebar runs edge to edge, so the spacer reads as a gap
+           above its header. Sit straight under the navbar instead. */
+        top: var(--navbar-height);
+
         .GobanView-sidebar {
             border-radius: 0;
             box-shadow: none;
@@ -156,26 +194,50 @@
         }
 
         .GobanView-center {
-            /* The goban area is square on portrait, so its height follows the
-               viewport width. Cap at the remaining viewport height (minus the
-               navbar and the tab bar) so the scroll area below always fits. */
+            /* The goban area is square on portrait, so its height follows its
+               own width. It must not follow 100dvw: that counts a scrollbar
+               the element itself does not have, and every pixel of the
+               difference shows up as a band of background above and below the
+               board. Cap at the remaining viewport height (minus the navbar
+               and the tab bar) so a board never fills more than one screen on
+               squat viewports. The board scrolls with everything else, so it
+               must not shrink to make room for what follows. */
             --goban-view-portrait-max-height: calc(
-                100dvh - var(--below-navbar) - var(--goban-view-tab-bar-height) -
+                100dvh - var(--navbar-height) - var(--goban-view-tab-bar-height) -
                     var(--safe-area-inset-bottom)
             );
             flex-basis: auto;
             flex-shrink: 0;
-            height: min(100dvw, var(--goban-view-portrait-max-height));
-            min-height: min(100dvw, var(--goban-view-portrait-max-height));
-            max-height: min(100dvw, var(--goban-view-portrait-max-height));
+            aspect-ratio: 1;
+            height: auto;
+            min-height: 8rem;
+            max-height: var(--goban-view-portrait-max-height);
+            background: var(--bg);
         }
 
+        /* The single portrait scroll container. It holds the board and the
+           two board-adjacent slots as well as the tab panels, so the user
+           can scroll the board off-screen to reach the content below it. */
         .GobanView-mobile-scroll {
             flex-grow: 1;
             flex-basis: 0;
             min-height: 0;
             overflow-y: auto;
             overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg);
+        }
+
+        .GobanView-above-board,
+        .GobanView-below-board {
+            flex-shrink: 0;
+        }
+
+        /* Tab panels keep the padded, shaded slab they had when they were
+           the whole of the scroll area. */
+        .GobanView-mobile-panels {
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
             gap: 0.5rem;

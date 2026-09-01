@@ -17,13 +17,7 @@
 
 import * as React from "react";
 import { useGobanController } from "./goban_context";
-import {
-    useShowTitle,
-    useTitle,
-    useCurrentMove,
-    useAIReviewEnabled,
-    useCurrentMoveNumber,
-} from "./GameHooks";
+import { useShowTitle, useTitle, useCurrentMove, useAIReviewEnabled } from "./GameHooks";
 import { _, interpolate } from "@/lib/translate";
 import { rulesText } from "@/lib/misc";
 import { KBShortcut } from "@/components/KBShortcut";
@@ -281,81 +275,4 @@ export function FragAIReview(props: FragAIReviewProps): React.ReactElement | nul
         return <AIDemoReview goban={goban} controller={goban.review_controller_id} />;
     }
     return null;
-}
-export function FragBelowBoardControls(): React.ReactElement | null {
-    const goban_controller = useGobanController();
-    const goban = goban_controller.goban;
-    const [view_mode, set_view_mode] = React.useState(goban_controller.view_mode);
-    const [autoplaying, set_autoplaying] = React.useState(goban_controller.autoplaying);
-    const current_move_number = useCurrentMoveNumber(goban);
-
-    React.useEffect(() => {
-        goban_controller.on("view_mode", set_view_mode);
-        goban_controller.on("autoplaying", set_autoplaying);
-        return () => {
-            goban_controller.off("view_mode", set_view_mode);
-            goban_controller.off("autoplaying", set_autoplaying);
-        };
-    }, [goban_controller]);
-
-    return (
-        <div className="action-bar">
-            <span className="icons" />
-            <span className="controls">
-                <button
-                    type="button"
-                    onClick={goban_controller.gotoFirstMove}
-                    className="move-control"
-                >
-                    <i className="fa fa-fast-backward"></i>
-                </button>
-                <button
-                    type="button"
-                    onClick={goban_controller.previous10Moves}
-                    className="move-control"
-                >
-                    <i className="fa fa-backward"></i>
-                </button>
-                <button
-                    type="button"
-                    onClick={goban_controller.previousMove}
-                    className="move-control"
-                >
-                    <i className="fa fa-step-backward"></i>
-                </button>
-                <button
-                    type="button"
-                    onClick={goban_controller.togglePlayPause}
-                    className="move-control"
-                >
-                    <i className={"fa " + (autoplaying ? "fa-pause" : "fa-play")}></i>
-                </button>
-                <button type="button" onClick={goban_controller.nextMove} className="move-control">
-                    <i className="fa fa-step-forward"></i>
-                </button>
-                <button
-                    type="button"
-                    onClick={goban_controller.forwardTenMoves}
-                    className="move-control"
-                >
-                    <i className="fa fa-forward"></i>
-                </button>
-                <button
-                    type="button"
-                    onClick={goban_controller.gotoLastMove}
-                    className="move-control"
-                >
-                    <i className="fa fa-fast-forward"></i>
-                </button>
-            </span>
-
-            {view_mode !== "portrait" && (
-                <span className="move-number">
-                    {interpolate(_("Move {{move_number}}"), {
-                        move_number: current_move_number >= 0 ? current_move_number : 0,
-                    })}
-                </span>
-            )}
-        </div>
-    );
 }

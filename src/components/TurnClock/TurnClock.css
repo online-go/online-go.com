@@ -15,4 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from "./Dock";
+/* The face tracks the size of the text it sits with, so it is sized in em
+ * while the space around it stays in rem. */
+.TurnClock {
+    width: 1.4em;
+    height: 1.4em;
+    margin-left: 0.35rem;
+    vertical-align: -0.35em;
+    overflow: visible;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.7;
+    stroke-linecap: round;
+}
