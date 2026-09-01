@@ -171,7 +171,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
         } else {
             // They are about to be a new CM ... we have to "offer"
             this.setState({
-                offered_moderator_powers: this.state.moderator_powers | power_mask,
+                offered_moderator_powers: this.state.offered_moderator_powers | power_mask,
             });
         }
     };
