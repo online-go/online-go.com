@@ -18,14 +18,7 @@
 /* cspell:ignore unhydrated */
 
 import * as React from "react";
-import {
-    GobanEngine,
-    type GobanConfig,
-    type GobanEngineConfig,
-    type GobanModes,
-    type MoveTree,
-    type MoveTreeJson,
-} from "goban";
+import { type GobanConfig, type GobanModes, type MoveTree, type MoveTreeJson } from "goban";
 import { Resizable } from "@/components/Resizable";
 import { KBShortcut } from "@/components/KBShortcut";
 import { GobanController, getMoveTreeTrunkTail } from "@/lib/GobanController";
@@ -41,6 +34,7 @@ import type {
     KibitzWatchedGame,
 } from "@/models/kibitz";
 import {
+    buildCurrentGameBaseSnapshotFromGameDetails,
     cloneOfficialTrunkMoveTreeJson,
     hydrateMainBoardFromRoomBaseSnapshot,
     restoreMainBoardToOfficialTail,
@@ -318,41 +312,6 @@ export function buildSelectedGameSnapshotFailureFromError(params: {
     };
 }
 
-export function buildSnapshotFromEngine({
-    engine,
-    gameId,
-    roomId,
-    source,
-    requiredSnapshotMoveNumber,
-}: {
-    engine: GobanEngine;
-    gameId: number;
-    roomId: string | null | undefined;
-    source: KibitzCurrentGameBaseSnapshot["source"];
-    requiredSnapshotMoveNumber: number;
-}): KibitzCurrentGameBaseSnapshot | null {
-    const officialTail = getMoveTreeTrunkTail(engine.move_tree);
-    if (!officialTail || officialTail.move_number < requiredSnapshotMoveNumber) {
-        return null;
-    }
-
-    return {
-        gameId,
-        roomId: roomId ?? null,
-        trunkTailMoveNumber: officialTail.move_number,
-        moveTreeId: engine.move_tree?.id ?? null,
-        movePath: officialTail.getMoveStringToThisPoint(),
-        source,
-        fetchedMoveCount: null,
-        config: {
-            ...(engine.config as Record<string, unknown>),
-            game_id: gameId,
-            moves: undefined,
-            move_tree: cloneOfficialTrunkMoveTreeJson(engine.move_tree),
-        },
-    };
-}
-
 export function isSelectedGameBaseSnapshotFreshEnough(
     snapshot: KibitzCurrentGameBaseSnapshot | null | undefined,
     selectedGameId: number | null | undefined,
@@ -482,17 +441,34 @@ export function buildSelectedGameBaseSnapshotFromDetails({
         };
     }
 
-    let engine: GobanEngine;
-
     try {
-        const engineConfig = {
-            ...details.gamedata,
-            game_id: gameId,
-            width: details.width,
-            height: details.height,
-            moves: details.gamedata.moves,
-        } as unknown as GobanEngineConfig;
-        engine = new GobanEngine(engineConfig);
+        const snapshot = buildCurrentGameBaseSnapshotFromGameDetails({
+            details,
+            gameId,
+            roomId,
+            source: "selected-game-details",
+            requiredSnapshotMoveNumber,
+        });
+
+        if (!snapshot) {
+            return {
+                kind: "failure",
+                failure: {
+                    kind: "not-fresh-enough",
+                    retryAfter: Date.now() + SELECTED_GAME_NOT_FRESH_RETRY_MS,
+                    details: {
+                        trunkTailMoveNumber: details.gamedata.moves.length,
+                        requiredMoveNumber: requiredSnapshotMoveNumber,
+                    },
+                },
+            };
+        }
+
+        snapshot.fetchedMoveCount = details.gamedata.moves.length;
+        return {
+            kind: "ready",
+            snapshot,
+        };
     } catch (error) {
         return {
             kind: "failure",
@@ -505,34 +481,6 @@ export function buildSelectedGameBaseSnapshotFromDetails({
             },
         };
     }
-
-    const snapshot = buildSnapshotFromEngine({
-        engine,
-        gameId,
-        roomId,
-        source: "selected-game-details",
-        requiredSnapshotMoveNumber,
-    });
-
-    if (!snapshot) {
-        return {
-            kind: "failure",
-            failure: {
-                kind: "not-fresh-enough",
-                retryAfter: Date.now() + SELECTED_GAME_NOT_FRESH_RETRY_MS,
-                details: {
-                    trunkTailMoveNumber: getMoveTreeTrunkTail(engine.move_tree)?.move_number ?? 0,
-                    requiredMoveNumber: requiredSnapshotMoveNumber,
-                },
-            },
-        };
-    }
-
-    snapshot.fetchedMoveCount = details.gamedata.moves.length;
-    return {
-        kind: "ready",
-        snapshot,
-    };
 }
 
 async function fetchSelectedGameBaseSnapshot({

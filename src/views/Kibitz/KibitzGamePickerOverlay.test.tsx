@@ -19,11 +19,33 @@ import * as React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { KibitzRoomSummary, KibitzWatchedGame } from "@/models/kibitz";
 import { KibitzGamePickerOverlay } from "./KibitzGamePickerOverlay";
+import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 import { get } from "@/lib/requests";
 
 jest.mock("./KibitzBoard", () => ({
     __esModule: true,
-    KibitzBoard: () => <div data-testid="KibitzBoard" />,
+    KibitzBoard: (props: {
+        role?: string;
+        gameId?: number;
+        width?: number;
+        height?: number;
+        moveTree?: unknown;
+        movePath?: string;
+        restoreToOfficialTailOnLoad?: boolean;
+        connectToGame?: boolean;
+    }) => (
+        <div
+            data-testid="KibitzBoard"
+            data-role={props.role}
+            data-game-id={props.gameId}
+            data-width={props.width}
+            data-height={props.height}
+            data-move-tree-present={String(Boolean(props.moveTree))}
+            data-move-path={props.movePath}
+            data-restore-to-official-tail={String(props.restoreToOfficialTailOnLoad)}
+            data-connect-to-game={String(props.connectToGame)}
+        />
+    ),
 }));
 
 jest.mock("./KibitzUserAvatar", () => ({
@@ -33,10 +55,38 @@ jest.mock("./KibitzUserAvatar", () => ({
 
 jest.mock("@/components/ObserveGamesComponent", () => ({
     __esModule: true,
-    ObserveGamesComponent: ({ onSelectGameId }: { onSelectGameId: (gameId: number) => void }) => (
-        <div data-testid="ObserveGamesComponent">
+    ObserveGamesComponent: ({
+        onSelectGameId,
+        miniGobanProps,
+    }: {
+        onSelectGameId: (gameId: number) => void;
+        miniGobanProps?: {
+            miniGobanSnapshotOverrides?: ReadonlyMap<
+                number,
+                { game_id?: number; move_tree?: { id?: number | string } } | null
+            >;
+        };
+    }) => (
+        <div
+            data-testid="ObserveGamesComponent"
+            data-current-game-id={String(
+                miniGobanProps?.miniGobanSnapshotOverrides?.keys().next().value,
+            )}
+            data-snapshot-game-id={String(
+                miniGobanProps?.miniGobanSnapshotOverrides?.values().next().value?.game_id,
+            )}
+            data-snapshot-move-tree-id={String(
+                miniGobanProps?.miniGobanSnapshotOverrides?.values().next().value?.move_tree?.id,
+            )}
+            data-snapshot-ready={String(
+                Boolean(miniGobanProps?.miniGobanSnapshotOverrides?.values().next().value),
+            )}
+        >
             <button type="button" onClick={() => onSelectGameId(1234)}>
                 Select game
+            </button>
+            <button type="button" onClick={() => onSelectGameId(456)}>
+                Select another game
             </button>
         </div>
     ),
@@ -149,9 +199,9 @@ function makeRoom(currentGameId: number): KibitzRoomSummary {
     };
 }
 
-function makeGameDetails() {
+function makeGameDetails(gameId = 1234, moves: Array<{ x: number; y: number }> = []) {
     return {
-        id: 1234,
+        id: gameId,
         width: 19,
         height: 19,
         name: "Selected game",
@@ -177,7 +227,7 @@ function makeGameDetails() {
             },
         },
         gamedata: {
-            moves: [],
+            moves,
             private: false,
             disable_analysis: false,
         },
@@ -189,6 +239,62 @@ describe("KibitzGamePickerOverlay", () => {
         mockedGet.mockReset();
         installMatchMedia(false);
         installRequestAnimationFrame();
+    });
+
+    it("provides the current game's authoritative snapshot to picker thumbnails", () => {
+        const snapshot = {
+            gameId: 123,
+            roomId: "room-1",
+            trunkTailMoveNumber: 4,
+            moveTreeId: "official-tree",
+            movePath: "abcd",
+            source: "main-board",
+            config: {
+                game_id: 123,
+                move_tree: { id: "official-tree" },
+            },
+        } as unknown as KibitzCurrentGameBaseSnapshot;
+
+        render(
+            <KibitzGamePickerOverlay
+                mode="create-room"
+                rooms={[]}
+                currentRoom={makeRoom(123)}
+                currentGameBaseSnapshot={snapshot}
+                canOpenCreateRoomFlow={true}
+                signInHref="/sign-in#/kibitz"
+                onClose={jest.fn()}
+                onCreateRoom={jest.fn()}
+                onChangeBoard={jest.fn()}
+                onJoinRoom={jest.fn()}
+            />,
+        );
+
+        const picker = screen.getByTestId("ObserveGamesComponent");
+        expect(picker).toHaveAttribute("data-current-game-id", "123");
+        expect(picker).toHaveAttribute("data-snapshot-game-id", "undefined");
+        expect(picker).toHaveAttribute("data-snapshot-move-tree-id", "official-tree");
+        expect(picker).toHaveAttribute("data-snapshot-ready", "true");
+    });
+
+    it("keeps the current game in the detached snapshot map while pending", () => {
+        render(
+            <KibitzGamePickerOverlay
+                mode="create-room"
+                rooms={[]}
+                currentRoom={makeRoom(123)}
+                canOpenCreateRoomFlow={true}
+                signInHref="/sign-in#/kibitz"
+                onClose={jest.fn()}
+                onCreateRoom={jest.fn()}
+                onChangeBoard={jest.fn()}
+                onJoinRoom={jest.fn()}
+            />,
+        );
+
+        const picker = screen.getByTestId("ObserveGamesComponent");
+        expect(picker).toHaveAttribute("data-current-game-id", "123");
+        expect(picker).toHaveAttribute("data-snapshot-ready", "false");
     });
 
     it("disables create room while the submit request is in flight", async () => {
@@ -225,6 +331,83 @@ describe("KibitzGamePickerOverlay", () => {
         await waitFor(() => {
             expect(screen.getByRole("button", { name: "Create room" })).toBeEnabled();
         });
+    });
+
+    it("hydrates the desktop selected preview from the resolved game details", async () => {
+        mockedGet.mockResolvedValue(
+            makeGameDetails(1234, [
+                { x: 3, y: 4 },
+                { x: 15, y: 14 },
+            ]),
+        );
+
+        render(
+            <KibitzGamePickerOverlay
+                mode="create-room"
+                rooms={[]}
+                canOpenCreateRoomFlow={true}
+                signInHref="/sign-in#/kibitz"
+                onClose={jest.fn()}
+                onCreateRoom={jest.fn()}
+                onChangeBoard={jest.fn()}
+                onJoinRoom={jest.fn()}
+            />,
+        );
+
+        fireEvent.change(screen.getByLabelText("Game ID"), { target: { value: "1234" } });
+        fireEvent.click(screen.getByRole("button", { name: "Load" }));
+
+        const board = await screen.findByTestId("KibitzBoard");
+        expect(board).toHaveAttribute("data-role", "preview");
+        expect(board).toHaveAttribute("data-game-id", "1234");
+        expect(board).toHaveAttribute("data-width", "19");
+        expect(board).toHaveAttribute("data-height", "19");
+        expect(board).toHaveAttribute("data-move-tree-present", "true");
+        expect(board).toHaveAttribute("data-restore-to-official-tail", "true");
+        expect(board).toHaveAttribute("data-connect-to-game", "undefined");
+        expect(mockedGet).toHaveBeenCalledTimes(1);
+        expect(mockedGet).toHaveBeenCalledWith("games/1234");
+    });
+
+    it("switches the desktop selected preview to the newly resolved game", async () => {
+        mockedGet
+            .mockResolvedValueOnce(makeGameDetails(1234, [{ x: 3, y: 4 }]))
+            .mockResolvedValueOnce(
+                makeGameDetails(456, [
+                    { x: 10, y: 10 },
+                    { x: 11, y: 11 },
+                ]),
+            );
+
+        render(
+            <KibitzGamePickerOverlay
+                mode="create-room"
+                rooms={[]}
+                canOpenCreateRoomFlow={true}
+                signInHref="/sign-in#/kibitz"
+                onClose={jest.fn()}
+                onCreateRoom={jest.fn()}
+                onChangeBoard={jest.fn()}
+                onJoinRoom={jest.fn()}
+            />,
+        );
+
+        fireEvent.change(screen.getByLabelText("Game ID"), { target: { value: "1234" } });
+        fireEvent.click(screen.getByRole("button", { name: "Load" }));
+        const firstBoard = await screen.findByTestId("KibitzBoard");
+        expect(firstBoard).toHaveAttribute("data-game-id", "1234");
+        const firstMovePath = firstBoard.getAttribute("data-move-path");
+        expect(firstMovePath).not.toBeNull();
+
+        fireEvent.change(screen.getByLabelText("Game ID"), { target: { value: "456" } });
+        fireEvent.click(screen.getByRole("button", { name: "Load" }));
+        await waitFor(() => {
+            expect(screen.getByTestId("KibitzBoard")).toHaveAttribute("data-game-id", "456");
+        });
+        expect(mockedGet).toHaveBeenCalledTimes(2);
+        const secondBoard = screen.getByTestId("KibitzBoard");
+        expect(secondBoard).toHaveAttribute("data-move-tree-present", "true");
+        expect(secondBoard.getAttribute("data-move-path")).not.toBe(firstMovePath);
     });
 
     it("disables change board while the submit request is in flight", async () => {

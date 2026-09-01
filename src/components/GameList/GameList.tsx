@@ -32,6 +32,7 @@ import {
     AdHocPackedMove,
     GobanRenderer,
 } from "goban";
+import { SnapshotMiniGoban } from "./SnapshotMiniGoban";
 import "./GameList.css";
 
 interface UserType {
@@ -64,13 +65,18 @@ interface GameListProps {
     player?: { id: number };
     emptyMessage?: string;
     disableSort?: boolean;
-    miniGobanProps?: any;
+    miniGobanProps?: GameListMiniGobanProps;
     namesByGobans?: boolean;
     forceList?: boolean;
     forceMiniGoban?: boolean;
     lineSummaryMode: LineSummaryTableMode;
     onSelectGameId?: (gameId: number) => void;
 }
+
+type GameListMiniGobanProps = MiniGobanProps & {
+    /** Render selected list thumbnails from detached snapshots without subscribing. */
+    miniGobanSnapshotOverrides?: ReadonlyMap<number, MiniGobanProps["json"] | null>;
+};
 
 type SortOrder = "clock" | "move-number" | "name" | "opponent" | "opponent-clock" | "size";
 type DescendingSortOrder = `-${SortOrder}`;
@@ -542,24 +548,42 @@ function MiniGobanList(
     withNames: boolean,
     onGobanCreated: (game: GameType, goban: GobanRenderer) => void,
     player?: { id: number },
-    miniGobanProps?: MiniGobanProps,
+    miniGobanProps?: GameListMiniGobanProps,
     onSelectGameId?: (gameId: number) => void,
 ): React.ReactElement {
+    const { miniGobanSnapshotOverrides, ...forwardedMiniGobanProps } = miniGobanProps || {};
+
     return (
         <div className="GameList">
             {games.map((game) => {
-                const miniGoban = (
-                    <MiniGoban
-                        key={!withNames ? game.id : undefined}
+                const hasSnapshotOverride = miniGobanSnapshotOverrides?.has(game.id) ?? false;
+                const snapshot = hasSnapshotOverride
+                    ? (miniGobanSnapshotOverrides?.get(game.id) ?? null)
+                    : undefined;
+                const gobanCreated = (goban_controller: { goban: GobanRenderer }) =>
+                    onGobanCreated(game, goban_controller.goban);
+                const miniGoban = hasSnapshotOverride ? (
+                    <SnapshotMiniGoban
+                        key={game.id}
+                        {...forwardedMiniGobanProps}
                         game_id={game.id}
                         width={game.width}
                         height={game.height}
-                        onGobanCreated={(goban_controller) =>
-                            onGobanCreated(game, goban_controller.goban)
-                        }
                         player={player}
-                        {...(miniGobanProps || {})}
+                        snapshot={snapshot}
                         onSelectGameId={onSelectGameId ?? miniGobanProps?.onSelectGameId}
+                        onGobanCreated={gobanCreated}
+                    />
+                ) : (
+                    <MiniGoban
+                        key={game.id}
+                        {...forwardedMiniGobanProps}
+                        game_id={game.id}
+                        width={game.width}
+                        height={game.height}
+                        player={player}
+                        onSelectGameId={onSelectGameId ?? miniGobanProps?.onSelectGameId}
+                        onGobanCreated={gobanCreated}
                     />
                 );
                 if (withNames) {

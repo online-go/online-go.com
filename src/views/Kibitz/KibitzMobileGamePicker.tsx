@@ -33,6 +33,11 @@ import {
 } from "./kibitzAnalysisPolicyText";
 import { parseGameId } from "./parseGameId";
 import { useCurrentKibitzUser } from "./useCurrentKibitzUser";
+import {
+    buildCurrentGameBaseSnapshotFromGameDetails,
+    createCurrentGameMiniGobanSnapshotOverrides,
+} from "./kibitzCurrentGameBaseSnapshot";
+import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 
 type KibitzGamePickerMode = "create-room" | "change-board";
 type PickerSourceMode = "ongoing" | "game-id";
@@ -54,6 +59,7 @@ interface KibitzMobileGamePickerProps {
     onChangeBoard: (game: KibitzWatchedGame) => Promise<boolean> | boolean;
     onJoinRoom: (roomId: string) => void;
     onBackToMenu?: () => void;
+    currentGameBaseSnapshot?: KibitzCurrentGameBaseSnapshot | null;
 }
 
 interface SelectedGameState {
@@ -151,6 +157,7 @@ export function KibitzMobileGamePicker({
     onChangeBoard,
     onJoinRoom,
     onBackToMenu,
+    currentGameBaseSnapshot,
 }: KibitzMobileGamePickerProps): React.ReactElement {
     const resolveGameRequestIdRef = React.useRef(0);
     const [selectedGame, setSelectedGame] = React.useState<SelectedGameState | null>(null);
@@ -184,6 +191,25 @@ export function KibitzMobileGamePicker({
     }, []);
 
     const currentGameId = currentRoom?.current_game?.game_id ?? null;
+    const miniGobanSnapshotOverrides = React.useMemo(
+        () => createCurrentGameMiniGobanSnapshotOverrides(currentGameBaseSnapshot, currentGameId),
+        [currentGameBaseSnapshot, currentGameId],
+    );
+    const selectedGamePreviewSnapshot = React.useMemo(() => {
+        if (!selectedGame) {
+            return null;
+        }
+
+        try {
+            return buildCurrentGameBaseSnapshotFromGameDetails({
+                details: selectedGame.details,
+                gameId: selectedGame.game.game_id,
+                requiredSnapshotMoveNumber: selectedGame.game.move_number,
+            });
+        } catch {
+            return null;
+        }
+    }, [selectedGame]);
     const existingRoom = React.useMemo(() => {
         if (!selectedGame) {
             return null;
@@ -538,7 +564,7 @@ export function KibitzMobileGamePicker({
                             "Switching board...",
                         )}
                     </div>
-                ) : (
+                ) : selectedGamePreviewSnapshot ? (
                     <div
                         className={
                             "KibitzGamePickerOverlay-boardWrap" +
@@ -548,10 +574,15 @@ export function KibitzMobileGamePicker({
                         <KibitzBoard
                             role="preview"
                             gameId={selectedGameSummary.game_id}
+                            width={selectedGame.details.width}
+                            height={selectedGame.details.height}
+                            moveTree={selectedGamePreviewSnapshot.config.move_tree}
+                            movePath={selectedGamePreviewSnapshot.movePath}
+                            restoreToOfficialTailOnLoad={true}
                             className="KibitzGamePickerOverlay-board"
                         />
                     </div>
-                )}
+                ) : null}
                 {selectionErrorMessage ? (
                     <div className="KibitzGamePickerOverlay-error">{selectionErrorMessage}</div>
                 ) : null}
@@ -660,6 +691,9 @@ export function KibitzMobileGamePicker({
                             updateTitle={false}
                             channel=""
                             initialMiniGoban={true}
+                            miniGobanProps={{
+                                miniGobanSnapshotOverrides,
+                            }}
                             onSelectGameId={onSelectGameId}
                             compactControls={true}
                         />

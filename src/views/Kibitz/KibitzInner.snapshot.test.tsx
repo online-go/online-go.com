@@ -18,7 +18,7 @@
 /* cspell:ignore refetches */
 
 import * as React from "react";
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { KibitzController } from "./KibitzController";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 import type { KibitzRoom, KibitzRoomSummary, KibitzWatchedGame } from "@/models/kibitz";
@@ -95,7 +95,11 @@ jest.mock("./KibitzDebugPanel", () => ({
 
 jest.mock("./KibitzRoomList", () => ({
     __esModule: true,
-    KibitzRoomList: () => null,
+    KibitzRoomList: ({ onCreateRoom }: { onCreateRoom: () => void }) => (
+        <button type="button" onClick={onCreateRoom}>
+            Open create room
+        </button>
+    ),
 }));
 
 jest.mock("./KibitzRoomStage", () => ({
@@ -189,7 +193,15 @@ jest.mock("./KibitzMobileComparePanel", () => ({
 
 jest.mock("./KibitzGamePickerOverlay", () => ({
     __esModule: true,
-    KibitzGamePickerOverlay: () => null,
+    KibitzGamePickerOverlay: ({ mode }: { mode: string }) =>
+        mode ? (
+            <div role="dialog">
+                <label>
+                    Room name
+                    <input aria-label="Room name" defaultValue="initial room name" />
+                </label>
+            </div>
+        ) : null,
 }));
 
 jest.mock("./KibitzMobileGamePicker", () => ({
@@ -547,6 +559,7 @@ describe("KibitzInner current-game base snapshot fetch", () => {
 
     beforeEach(() => {
         mockedGet.mockReset();
+        mockedUseNavigate.mockReset();
         mockedGobanController.mockClear();
         mockedCaptureCurrentGameBaseSnapshotFromController.mockClear();
         mockedLogKibitzVariationDebug.mockClear();
@@ -876,6 +889,51 @@ describe("KibitzInner current-game base snapshot fetch", () => {
             expect(mockedGet).toHaveBeenCalledTimes(2);
             expect(mockedGet).toHaveBeenNthCalledWith(2, "games/2");
         });
+    });
+
+    it("keeps create-room open through a same-room live move update", async () => {
+        mockedGet.mockResolvedValue({
+            id: 1,
+            width: 19,
+            height: 19,
+            name: "Game 1",
+            ended: false,
+            players: {
+                black: makeUser(11, "black"),
+                white: makeUser(12, "white"),
+            },
+            gamedata: {
+                moves: Array.from({ length: 10 }, () => ({ x: 0, y: 0 })),
+                private: false,
+                disable_analysis: false,
+            },
+        });
+
+        const controller = makeController(makeRoom({ current_game: makeGame(1, 10) }));
+        render(<KibitzInner controller={controller} />);
+
+        fireEvent.click(screen.getByRole("button", { name: "Open create room" }));
+        expect(screen.getByRole("dialog")).toBeInTheDocument();
+        fireEvent.change(screen.getByRole("textbox", { name: "Room name" }), {
+            target: { value: "edited room name" },
+        });
+        expect(screen.getByRole("textbox", { name: "Room name" })).toHaveValue("edited room name");
+
+        act(() => {
+            const mutableController = controller as unknown as {
+                active_room: KibitzRoom;
+            };
+            mutableController.active_room = makeRoom({ current_game: makeGame(1, 11) });
+            controller.emit("room-changed", mutableController.active_room);
+        });
+
+        await waitFor(() => {
+            expect(screen.getByRole("dialog")).toBeInTheDocument();
+            expect(screen.getByRole("textbox", { name: "Room name" })).toHaveValue(
+                "edited room name",
+            );
+        });
+        expect(mockedUseNavigate).not.toHaveBeenCalled();
     });
 });
 
