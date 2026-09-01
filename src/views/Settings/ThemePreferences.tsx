@@ -102,6 +102,7 @@ export function ThemePreferences(): React.ReactElement | null {
 
     const [variation_stone_opacity, _setVariationStoneOpacity] =
         usePreference("variation-stone-opacity");
+    const [show_visit_counts, setShowVisitCounts] = usePreference("ai-review-show-visit-counts");
 
     //const [show_move_numbers, _setShowMoveNumbers] = usePreference("show-move-numbers");
     const [show_variation_move_numbers, _setShowVariationMoveNumbers] = usePreference(
@@ -640,6 +641,20 @@ export function ThemePreferences(): React.ReactElement | null {
                         sampleOptions={{ undo: true }}
                     />
                 </div>
+            </PreferenceLine>
+
+            <PreferenceLine
+                title={_("Show AI visit counts")}
+                description={_(
+                    "In AI reviews, show how many times the AI considered each suggested move underneath its score difference.",
+                )}
+            >
+                <Toggle
+                    checked={show_visit_counts}
+                    onChange={(tf) => {
+                        setShowVisitCounts(tf);
+                    }}
+                />
             </PreferenceLine>
 
             <PreferenceLine

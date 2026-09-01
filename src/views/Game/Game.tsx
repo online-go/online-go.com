@@ -37,13 +37,12 @@ import { PlayControls, ReviewControls } from "./PlayControls";
 import { alert } from "@/lib/swal_config";
 import {
     useCanRequestUndo,
-    useHasStagedMove,
     useMode,
     usePauseControl,
     usePhase,
-    usePlayerToMove,
     useScorePopup,
     useUndoRequestIsMine,
+    useUserIsLivePlayerToMove,
     useUserIsParticipant,
     useViewMode,
     useZenMode,
@@ -131,10 +130,9 @@ export function Game(): React.ReactElement | null {
     const user = useUser();
     const user_is_player = useUserIsParticipant(goban);
     const mode = useMode(goban);
-    const player_to_move = usePlayerToMove(goban);
+    const user_is_live_player_to_move = useUserIsLivePlayerToMove(goban);
     const can_request_undo = useCanRequestUndo(goban);
     const undo_request_is_mine = useUndoRequestIsMine(goban);
-    const has_staged_move = useHasStagedMove(goban);
     const pause_control = usePauseControl(goban);
     const modal_context = React.useContext(ModalContext);
     const more_actions_popover_ref = React.useRef<PopOver | null>(null);
@@ -870,20 +868,18 @@ export function Game(): React.ReactElement | null {
     // UX shape as the Analyze tab) so clicking it always switches *into*
     // the planner; clicking it again while in the planner exits to play.
     //
-    // When the user has placed a provisional stone but hasn't submitted
-    // yet (submit-move or double-click mode), `engine.playerToMove()` has
-    // already swung to the opponent. Treat that case as still-the-user's-
-    // turn by inverting to `playerNotToMove()` so the tab hides until the
-    // move is submitted — entering the planner would silently discard the
-    // staged move.
+    // useUserIsLivePlayerToMove treats a staged (not yet submitted) stone in
+    // submit-move / double-click mode as still the user's turn, so the tab
+    // hides until the move is submitted — entering the planner would
+    // silently discard the staged move. It derives a boolean so this
+    // component doesn't re-render on every move navigation event.
     const is_planning_conditional = mode === "conditional";
-    const live_player_to_move = has_staged_move ? goban.engine.playerNotToMove() : player_to_move;
     const show_conditional_tab =
         !review &&
         user_is_player &&
         phase !== "finished" &&
         !goban.engine.rengo &&
-        (is_planning_conditional || live_player_to_move !== user?.id);
+        (is_planning_conditional || !user_is_live_player_to_move);
     const onConditionalClick = () => {
         const controller = goban_controller.current;
         if (!controller) {

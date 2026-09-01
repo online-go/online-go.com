@@ -23,6 +23,7 @@ import type { LabelPosition } from "goban";
 import { Toggle } from "@/components/Toggle";
 import { GobanThemePicker } from "@/components/GobanThemePicker/GobanThemePicker";
 import { openACLModal } from "@/components/ACLModal";
+import { useAIReviewEnabled, useZenMode } from "./GameHooks";
 import { useGobanController } from "./goban_context";
 import "./GameSidebarPanels.css";
 
@@ -49,17 +50,7 @@ export function GameSettingsPanel({
     const goban = goban_controller.goban;
     const engine = goban.engine;
 
-    const [ai_review_enabled, set_ai_review_enabled] = React.useState(
-        goban_controller.ai_review_enabled,
-    );
-
-    React.useEffect(() => {
-        set_ai_review_enabled(goban_controller.ai_review_enabled);
-        goban_controller.on("ai_review_enabled", set_ai_review_enabled);
-        return () => {
-            goban_controller.off("ai_review_enabled", set_ai_review_enabled);
-        };
-    }, [goban_controller]);
+    const ai_review_enabled = useAIReviewEnabled(goban_controller);
 
     const [volume, set_volume] = React.useState(sfx.getVolume("master"));
     const volume_slider_ref = React.useRef<HTMLInputElement>(null);
@@ -109,14 +100,7 @@ export function GameSettingsPanel({
     const [chat_enabled, set_chat_enabled] = usePreference("game.chat-enabled");
     const [animate_turn_clock, set_animate_turn_clock] = usePreference("animate-turn-clock");
 
-    const [zen_mode, set_zen_mode] = React.useState(goban_controller.zen_mode);
-    React.useEffect(() => {
-        set_zen_mode(goban_controller.zen_mode);
-        goban_controller.on("zen_mode", set_zen_mode);
-        return () => {
-            goban_controller.off("zen_mode", set_zen_mode);
-        };
-    }, [goban_controller]);
+    const zen_mode = useZenMode(goban_controller);
 
     const [label_position, setLabelPositionPref] = usePreference("label-positioning");
     // The preference is the source of truth; the goban needs an explicit

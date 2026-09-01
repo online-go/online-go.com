@@ -24,17 +24,9 @@ import { usePreference, ValidPreference } from "@/lib/preferences";
 
 import { Toggle } from "@/components/Toggle";
 
-import {
-    PreferenceLine,
-    PreferenceDropdown,
-    MAX_DOCK_DELAY,
-    MAX_AI_VAR_MOVES,
-} from "@/lib/SettingsCommon";
+import { PreferenceLine, PreferenceDropdown, MAX_AI_VAR_MOVES } from "@/lib/SettingsCommon";
 
 export function GamePreferences(): React.ReactElement {
-    const [dock_delay, _setDockDelay]: [number, (x: number) => void] = React.useState(
-        preferences.get("dock-delay"),
-    );
     const [ai_review_enabled, setAiReviewEnabled] = usePreference("ai-review-enabled");
     const [variations_in_chat, setVariationsInChat] = usePreference("variations-in-chat-enabled");
     const [_live_submit_mode, _setLiveSubmitMode]: [string, (x: string) => void] = React.useState(
@@ -63,11 +55,6 @@ export function GamePreferences(): React.ReactElement {
     const [scroll_to_navigate, setScrollToNavigate] = usePreference("scroll-to-navigate");
     const [animate_turn_clock, setAnimateTurnClock] = usePreference("animate-turn-clock");
 
-    function setDockDelay(ev: React.ChangeEvent<HTMLInputElement>) {
-        const new_delay = parseFloat(ev.target.value);
-        preferences.set("dock-delay", new_delay);
-        _setDockDelay(new_delay);
-    }
     function toggleAIReview(checked: boolean) {
         setAiReviewEnabled(!checked);
     }
@@ -133,29 +120,6 @@ export function GamePreferences(): React.ReactElement {
 
     return (
         <div>
-            <PreferenceLine
-                title={
-                    _("Game-control-dock pop-out delay") // translators: This is the text under settings for controlling the slide out delay of the list of game buttons in the game (pause, review, sgf link, etc...)
-                }
-            >
-                <input
-                    type="range"
-                    onChange={setDockDelay}
-                    value={dock_delay}
-                    min={0}
-                    max={MAX_DOCK_DELAY}
-                    step={0.1}
-                />
-                <span>
-                    &nbsp;
-                    {
-                        dock_delay === MAX_DOCK_DELAY
-                            ? _("Off") // translators: Indicates the dock slide out has been turned off
-                            : interpolate(_("{{number_of}} seconds"), { number_of: dock_delay }) // translators: Indicates the number of seconds to delay the slide out of the panel of game buttons on the right side of the game page
-                    }
-                </span>
-            </PreferenceLine>
-
             <PreferenceLine title={_("Live game submit mode")}>
                 <PreferenceDropdown
                     value={getSubmitMode("live")}

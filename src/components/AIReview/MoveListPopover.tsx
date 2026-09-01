@@ -64,7 +64,7 @@ export function MoveListPopover({
                                 className={`move-number${isOpening ? " opening" : ""}`}
                                 title={isOpening ? _("Opening") : undefined}
                                 onClick={() => {
-                                    goban_controller.gotoMove(move - 1);
+                                    goban_controller.gotoMove(move);
                                 }}
                             >
                                 {move}

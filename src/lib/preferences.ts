@@ -27,14 +27,7 @@ import { createGobanThemePreferenceDefaults } from "./goban_theme_defaults";
 export const defaults = {
     "ai-review-enabled": true,
     "ai-review-use-score": true,
-    "ai-review-categorization-method": "old" as "old" | "new",
-    "ai-review-score-diff-thresholds": {
-        Excellent: 0.2,
-        Great: 0.6,
-        Good: 1.0,
-        Inaccuracy: 2.0,
-        Mistake: 5.0,
-    },
+    "ai-review-show-visit-counts": true,
     "ai-summary-table-show": true,
     "always-disable-analysis": false,
     "animate-turn-clock": true,
@@ -78,7 +71,6 @@ export const defaults = {
     "dynamic-title": true,
     "function-keys-enabled": false,
     "game-list-threshold": 10,
-    "dock-delay": 0, // seconds.
     "double-click-submit-correspondence": false,
     "double-click-submit-live": false,
     "last-move-opacity": 1.0,

@@ -181,7 +181,7 @@ export const playMoves = async (
 };
 
 export const resignActiveGame = async (page: Page) => {
-    const resign = page.locator(".play-buttons .cancel-button");
+    const resign = page.locator(".play-buttons .resign-button");
     await expect(resign).toBeVisible();
     await resign.click();
 
@@ -203,7 +203,7 @@ export const resignActiveGame = async (page: Page) => {
 // GobanEngine.gameCanBeCancelled, which allows up to 6 moves in a non-handicap
 // game (5 + handicap moves when using free handicap placement).
 export const cancelActiveGame = async (page: Page) => {
-    const cancel = page.locator(".play-buttons .cancel-button");
+    const cancel = page.locator(".play-buttons .resign-button");
     await expect(cancel).toBeVisible();
     await expect(cancel).toHaveText(/Cancel game/);
     await cancel.click();

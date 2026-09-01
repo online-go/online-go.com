@@ -29,6 +29,7 @@ import { _, interpolate, ngettext } from "@/lib/translate";
 import * as data from "@/lib/data";
 import {
     generateGobanHook,
+    useHasStagedMove,
     usePhase,
     usePlayerToMove,
     useScorePopup,
@@ -159,6 +160,7 @@ export function PlayerCard({
     const engine = goban.engine;
     const player = { ...engine.players[color] };
     const player_to_move = usePlayerToMove(goban);
+    const has_staged_move = useHasStagedMove(goban);
     const phase = usePhase(goban);
 
     const auto_resign_expiration = useAutoResignExpiration(goban, color);
@@ -188,8 +190,13 @@ export function PlayerCard({
     }
 
     /* The engine always reports a player-to-move, even once the game is
-     * over — only treat it as "their turn" while moves can still be made. */
-    const their_turn = phase === "play" && player_to_move === player.id;
+     * over — only treat it as "their turn" while moves can still be made.
+     * A staged (not yet submitted) stone in submit-move / double-click mode has
+     * already swung playerToMove() to the opponent while the server clock
+     * still runs on the user, so invert to playerNotToMove() until the move
+     * is actually submitted. */
+    const effective_player_to_move = has_staged_move ? engine.playerNotToMove() : player_to_move;
+    const their_turn = phase === "play" && effective_player_to_move === player.id;
     const highlight_their_turn = their_turn ? `their-turn` : "";
 
     const show_points =

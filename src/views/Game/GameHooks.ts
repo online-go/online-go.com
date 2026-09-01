@@ -301,10 +301,7 @@ export function usePauseControl(goban: GobanRenderer | null): {
     const user = useUser();
     const engine = goban?.engine;
     const phase = usePhase(goban);
-    const user_is_player =
-        !user.anonymous &&
-        !!engine &&
-        (user.id === engine.players.black?.id || user.id === engine.players.white?.id);
+    const user_is_player = !user.anonymous && !!engine && engine.isParticipant(user.id);
     const can_pause =
         !!goban &&
         !goban.review_id &&
@@ -367,6 +364,24 @@ export const useCurrentMove = generateGobanHook(
 export const usePlayerToMove = generateGobanHook(
     (goban: Goban | null) => goban?.engine.playerToMove() ?? 0,
     ["cur_move", "last_official_move"],
+);
+
+/** React hook that returns true while it is the user's live turn to move,
+ *  treating a staged (not yet submitted) move in submit-move / double-click mode
+ *  as still the user's turn. Derives a boolean so consumers re-render only
+ *  when the answer flips, not on every move navigation event. */
+export const useUserIsLivePlayerToMove = generateGobanHook(
+    (goban: Goban | null) => {
+        const user = data.get("user");
+        if (!goban || !user) {
+            return false;
+        }
+        const engine = goban.engine;
+        const live_player_to_move =
+            goban.submit_move != null ? engine.playerNotToMove() : engine.playerToMove();
+        return live_player_to_move === user.id;
+    },
+    ["cur_move", "last_official_move", "submit_move"],
 );
 
 /** React hook that returns true if the title should be shown. */

@@ -82,8 +82,29 @@ export function MoveNumberSlider(): React.ReactElement {
         setHwm((prev) => (prev < current ? current : prev));
     }, [current]);
 
+    // While the AI review presentation is active the engine sits on the
+    // position before the presented move, so the knob label shows the
+    // presented move number instead of the raw position.
+    const [presentation_active, set_presentation_active] = React.useState(
+        controller.ai_review_presentation_active,
+    );
+    React.useEffect(() => {
+        set_presentation_active(controller.ai_review_presentation_active);
+        controller.on("ai_review_presentation_active", set_presentation_active);
+        return () => {
+            controller.off("ai_review_presentation_active", set_presentation_active);
+        };
+    }, [controller]);
+    const knob_number = presentation_active ? controller.presentedMoveNumber() : current;
+
     const restrict_forward = initial_mode_ref.current === "puzzle";
-    const max = restrict_forward ? Math.max(current, hwm) : reachable;
+    // In presented move space, natural navigation stops on the last trunk
+    // move; the position past it (the engine's prediction for the next,
+    // never-played move) is only reached deliberately.
+    const on_trunk = goban?.engine.cur_move.trunk ?? false;
+    const natural_reachable =
+        presentation_active && on_trunk ? Math.max(0, reachable - 1) : reachable;
+    const max = restrict_forward ? Math.max(current, hwm) : natural_reachable;
 
     const at_start = current <= 0;
     const at_end = current >= max;
@@ -165,7 +186,7 @@ export function MoveNumberSlider(): React.ReactElement {
     // The CSS lays out our custom knob using `--move-frac` (0..1) so it
     // tracks the (invisible) native slider thumb across the track — see the
     // calc() in the accompanying CSS for the formula.
-    const knob_frac = max > 0 ? current / max : 0;
+    const knob_frac = max > 0 ? Math.min(1, current / max) : 0;
 
     return (
         <div className="MoveNumberSlider">
@@ -206,7 +227,7 @@ export function MoveNumberSlider(): React.ReactElement {
                     aria-label={pgettext("Move navigation slider", "Move number")}
                 />
                 <div className="MoveNumberSlider-knob" aria-hidden="true">
-                    <span className="MoveNumberSlider-knob-text">{current}</span>
+                    <span className="MoveNumberSlider-knob-text">{knob_number}</span>
                 </div>
             </div>
             <button
