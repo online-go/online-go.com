@@ -577,13 +577,13 @@ function MiniGobanList(
                 ) : (
                     <MiniGoban
                         key={game.id}
+                        {...forwardedMiniGobanProps}
                         game_id={game.id}
                         width={game.width}
                         height={game.height}
-                        onGobanCreated={gobanCreated}
                         player={player}
-                        {...forwardedMiniGobanProps}
                         onSelectGameId={onSelectGameId ?? miniGobanProps?.onSelectGameId}
+                        onGobanCreated={gobanCreated}
                     />
                 );
                 if (withNames) {

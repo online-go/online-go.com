@@ -100,7 +100,7 @@ describe("GameList thumbnail snapshots", () => {
         expect(ordinaryGame).toHaveAttribute("data-snapshot-move-tree-id", "undefined");
     });
 
-    it("preserves ordinary MiniGoban prop precedence and selection resolution", () => {
+    it("lets per-game props win over shared miniGobanProps for ordinary MiniGobans", () => {
         const miniGobanOnSelect = jest.fn();
         const outerOnSelect = jest.fn();
 
@@ -117,12 +117,12 @@ describe("GameList thumbnail snapshots", () => {
             />,
         );
 
-        const ordinaryGame = screen.getByTestId("mini-goban-999");
-        expect(ordinaryGame).toHaveAttribute("data-game-id", "999");
-        expect(ordinaryGame).toHaveAttribute("data-width", "13");
+        const ordinaryGame = screen.getByTestId("mini-goban-456");
+        expect(ordinaryGame).toHaveAttribute("data-game-id", "456");
+        expect(ordinaryGame).toHaveAttribute("data-width", "19");
 
         fireEvent.click(ordinaryGame);
-        expect(outerOnSelect).toHaveBeenCalledWith(999);
+        expect(outerOnSelect).toHaveBeenCalledWith(456);
         expect(miniGobanOnSelect).not.toHaveBeenCalled();
     });
 
