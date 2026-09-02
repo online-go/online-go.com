@@ -40,6 +40,15 @@
        Android), where padding by it would reserve the strip twice. */
     --safe-area-inset-bottom: env(safe-area-inset-bottom);
 
+    /* Where the visual viewport sits inside the layout viewport. Both insets
+       stay 0 unless the on-screen keyboard shrinks the visual viewport
+       without resizing the layout viewport (Safari on iOS), in which case
+       lib/visual_viewport.ts keeps them current so fixed elements can pin
+       themselves to the visible region. */
+    --visual-viewport-top: 0px;
+    --visual-viewport-bottom: 0px;
+    --visual-viewport-height: 100dvh;
+
     /* Chat */
     --channel-utils-height: 8.4rem;
     --channel-width: 20%;

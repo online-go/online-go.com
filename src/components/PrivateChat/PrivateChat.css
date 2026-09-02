@@ -20,7 +20,9 @@
 .private-chat-window {
     position: fixed;
     display: inline-block;
-    bottom: 0;
+    /* Docked above the on-screen keyboard rather than behind it; see
+       lib/visual_viewport.ts. */
+    bottom: var(--visual-viewport-bottom);
     right: 0;
     border: 1px solid #4e697a;
     border-radius: 4px;
@@ -146,6 +148,7 @@
 .private-chat-window.open {
     /* background-color: @ogs-private-chat-bg; */
     height: 26rem;
+    max-height: var(--visual-viewport-height);
     display: flex;
     flex-direction: column;
     background-color: var(--card-background-color);

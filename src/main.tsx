@@ -208,6 +208,7 @@ import { routes } from "./routes";
 import { errorAlerter } from "@/lib/misc";
 import { close_all_popovers } from "@/lib/popover";
 import { init_safe_area_variables } from "@/lib/safe_area";
+import { init_visual_viewport_variables } from "@/lib/visual_viewport";
 import * as sockets from "@/lib/sockets";
 import { _, setCurrentLanguage } from "@/lib/translate";
 
@@ -378,6 +379,7 @@ if (user.anonymous) {
 }
 
 init_safe_area_variables();
+init_visual_viewport_variables();
 
 /* Initialization done, render!! */
 const svg_loader = document.getElementById("loading-svg-container");
