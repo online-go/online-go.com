@@ -58,21 +58,42 @@
         }
     }
 
+    /* Stretch the track through the strip's vertical padding so the whole
+       height of the component is a hit target for the slider. The thin
+       gray bar is hard to hit on its own; the negative margin cancels the
+       strip's padding. */
     .MoveNumberSlider-track {
         flex-grow: 1;
         position: relative;
         display: flex;
         align-items: center;
-        height: var(--thumb-size);
+        align-self: stretch;
+        margin: -0.4rem 0;
+
+        /* The visible gray bar. Painted here instead of on the input so the
+           input can be transparent and full height. */
+        &::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: var(--track-height);
+            background: var(--shade2);
+            border-radius: calc(var(--track-height) / 2);
+        }
     }
 
     .MoveNumberSlider-input {
         appearance: none;
         -webkit-appearance: none;
         width: 100%;
-        height: var(--track-height);
-        background: var(--shade2);
-        border-radius: calc(var(--track-height) / 2);
+        /* Fill the stretched track so clicks anywhere in the strip land on
+           the input. The native thumb stays vertically centered in the
+           full-height input. */
+        height: 100%;
+        background: transparent;
         outline: none;
         margin: 0;
         cursor: pointer;
