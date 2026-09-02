@@ -29,9 +29,8 @@ import { _, interpolate, ngettext } from "@/lib/translate";
 import * as data from "@/lib/data";
 import {
     generateGobanHook,
-    useHasStagedMove,
     usePhase,
-    usePlayerToMove,
+    usePlayerToMoveOnOfficialBranch,
     useScorePopup,
     useZenMode,
 } from "./GameHooks";
@@ -159,8 +158,7 @@ export function PlayerCard({
 }: PlayerCardProps) {
     const engine = goban.engine;
     const player = { ...engine.players[color] };
-    const player_to_move = usePlayerToMove(goban);
-    const has_staged_move = useHasStagedMove(goban);
+    const player_to_move = usePlayerToMoveOnOfficialBranch(goban);
     const phase = usePhase(goban);
 
     const auto_resign_expiration = useAutoResignExpiration(goban, color);
@@ -191,12 +189,10 @@ export function PlayerCard({
 
     /* The engine always reports a player-to-move, even once the game is
      * over — only treat it as "their turn" while moves can still be made.
-     * A staged (not yet submitted) stone in submit-move / double-click mode has
-     * already swung playerToMove() to the opponent while the server clock
-     * still runs on the user, so invert to playerNotToMove() until the move
-     * is actually submitted. */
-    const effective_player_to_move = has_staged_move ? engine.playerNotToMove() : player_to_move;
-    const their_turn = phase === "play" && effective_player_to_move === player.id;
+     * The player to move comes from the official branch so the turn clock
+     * stays on the player the server clock is running for while the user
+     * views an earlier move or stages (but has not yet submitted) a stone. */
+    const their_turn = phase === "play" && player_to_move === player.id;
     const highlight_their_turn = their_turn ? `their-turn` : "";
 
     const show_points =

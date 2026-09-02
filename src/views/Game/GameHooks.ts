@@ -366,6 +366,15 @@ export const usePlayerToMove = generateGobanHook(
     ["cur_move", "last_official_move"],
 );
 
+/** React hook that returns the id of the player to move in the live game,
+ *  regardless of which move is being viewed. Unlike usePlayerToMove it does
+ *  not change while navigating the move tree, and a staged (not yet
+ *  submitted) move does not affect it either. */
+export const usePlayerToMoveOnOfficialBranch = generateGobanHook(
+    (goban: Goban | null) => goban?.engine.playerToMoveOnOfficialBranch() ?? 0,
+    ["cur_move", "last_official_move"],
+);
+
 /** React hook that returns true while it is the user's live turn to move,
  *  treating a staged (not yet submitted) move in submit-move / double-click mode
  *  as still the user's turn. Derives a boolean so consumers re-render only

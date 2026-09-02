@@ -20,7 +20,12 @@ import { act, cleanup, render, screen } from "@testing-library/react";
 import * as data from "@/lib/data";
 import { GobanControllerContext } from "./goban_context";
 import { GobanController } from "../../lib/GobanController";
-import { useCanRequestUndo, useResignMode, useUndoRequestIsMine } from "./GameHooks";
+import {
+    useCanRequestUndo,
+    usePlayerToMoveOnOfficialBranch,
+    useResignMode,
+    useUndoRequestIsMine,
+} from "./GameHooks";
 
 const LOGGED_IN_USER = {
     anonymous: false,
@@ -69,8 +74,10 @@ function Probe({ controller }: { controller: GobanController }): React.ReactElem
     const can_request_undo = useCanRequestUndo(controller.goban);
     const undo_request_is_mine = useUndoRequestIsMine(controller.goban);
     const resign_mode = useResignMode(controller.goban);
+    const official_player_to_move = usePlayerToMoveOnOfficialBranch(controller.goban);
     return (
         <div>
+            <span data-testid="official-player-to-move">{official_player_to_move}</span>
             <span data-testid="can-request-undo">{can_request_undo ? "yes" : "no"}</span>
             <span data-testid="undo-request-is-mine">{undo_request_is_mine ? "yes" : "no"}</span>
             <span data-testid="resign-mode">{resign_mode}</span>
@@ -89,6 +96,8 @@ function renderProbe(controller: GobanController) {
 const canRequestUndo = () => screen.getByTestId("can-request-undo").textContent === "yes";
 const undoRequestIsMine = () => screen.getByTestId("undo-request-is-mine").textContent === "yes";
 const resignMode = () => screen.getByTestId("resign-mode").textContent;
+const officialPlayerToMove = () =>
+    parseInt(screen.getByTestId("official-player-to-move").textContent ?? "", 10);
 
 describe("useResignMode", () => {
     test("is 'cancel' in the first 6 moves", () => {
@@ -318,5 +327,33 @@ describe("useUndoRequestIsMine", () => {
         });
 
         expect(undoRequestIsMine()).toBe(false);
+    });
+});
+
+describe("usePlayerToMoveOnOfficialBranch", () => {
+    test("stays on the live player while viewing an earlier move", () => {
+        const controller = new GobanController({
+            moves: [
+                [16, 3, 9136.12], // B
+                [3, 2, 1897.853], // W
+                [15, 16, 4274.0], // Black went last
+            ],
+            players: { black: ME, white: OPPONENT },
+        });
+        renderProbe(controller);
+
+        expect(officialPlayerToMove()).toBe(OPPONENT.id);
+
+        act(() => {
+            controller.goban.engine.showPrevious();
+        });
+
+        expect(officialPlayerToMove()).toBe(OPPONENT.id);
+
+        act(() => {
+            controller.goban.engine.showPrevious();
+        });
+
+        expect(officialPlayerToMove()).toBe(OPPONENT.id);
     });
 });
