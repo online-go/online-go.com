@@ -254,8 +254,10 @@ export const tournamentDisableVacationTest = async ({
     const goban = player1Page.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible", timeout: 30000 });
 
-    // The pause button should NOT be visible for a player in a disable-vacation game
-    const pauseLink = player1Page.locator("a").filter({ hasText: "Pause game" });
+    // The pause button should NOT be visible for a player in a disable-vacation game.
+    // It would render as a GobanView action tab: <button class="GobanView-tab-button"
+    // title="Pause game"> when pausing is allowed.
+    const pauseLink = player1Page.locator('button.GobanView-tab-button[title="Pause game"]');
     await expect(pauseLink).not.toBeVisible();
     log("Confirmed: Pause game button is NOT visible for player in disable-vacation game");
 

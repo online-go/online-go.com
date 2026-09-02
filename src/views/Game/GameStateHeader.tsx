@@ -116,7 +116,7 @@ export function GameStateHeader(): React.ReactElement | null {
     }
 
     return (
-        <>
+        <div className="game-state-header">
             {isPlayPlay && (
                 <span>
                     {show_title && !engine.rengo && <span>{title}</span>}
@@ -201,6 +201,6 @@ export function GameStateHeader(): React.ReactElement | null {
                     )}
                 </>
             )}
-        </>
+        </div>
     );
 }

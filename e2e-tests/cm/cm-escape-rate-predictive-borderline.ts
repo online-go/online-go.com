@@ -116,7 +116,7 @@ async function playAndFinishGame(
     // Navigate via the accused's finished-game list — the game only appears
     // there once the DB has Game.ended set — then load the game page fresh.
     await goToUsersFinishedGame(reporterPage, accusedUsername, gameName);
-    await expect(reporterPage.locator(".game-state")).toContainText("wins by");
+    await expect(reporterPage.locator(".game-state-header")).toContainText("wins by");
 }
 
 async function reportAndVote(
