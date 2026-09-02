@@ -1114,11 +1114,13 @@ export function Game(): React.ReactElement | null {
 
             {/* Full Themes & Visuals settings, opened from the Settings
              *  popover's "More options" item. Hidden from the tab bar —
-             *  the gear icon doubles as its lit-up toggle. */}
+             *  the gear icon doubles as its lit-up toggle, and the panel
+             *  has a Done button, so it needs no close button. */}
             <GobanView.Tab
                 id="game-theme-settings"
                 type="takeover"
                 hideFromBar
+                hideCloseButton
                 title={_("Themes & Visuals")}
                 onToggle={set_theme_settings_open}
             >
