@@ -42,8 +42,11 @@ const undoEngineState = (page: Page) =>
     });
 
 /* The goban renders into a shadow root, so count marks with a Playwright
- * locator (which pierces shadow DOM), not document.querySelectorAll. */
-const renderedUndoMarkCount = (page: Page) => page.locator("svg text", { hasText: "↶" }).count();
+ * locator (which pierces shadow DOM), not document.querySelectorAll.
+ * Count only *visible* marks — what the user actually sees — rather than all
+ * matching DOM nodes, which can include non-rendered/stale <text> elements. */
+const renderedUndoMarkCount = (page: Page) =>
+    page.locator("svg text", { hasText: "↶" }).filter({ visible: true }).count();
 
 /**
  * Requesting an undo while it is the requester's own turn must cover the

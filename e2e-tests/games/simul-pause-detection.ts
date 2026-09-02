@@ -152,8 +152,11 @@ export const simulPauseDetectionTest = async (
 
     // === Challenger pauses game 1 BEFORE game 2 ends ===
     log("Challenger pausing game 1 BEFORE game 2 ends...");
-    // Click on "Pause game" link in the game dock (not the tooltip title)
-    const pauseLink = challengerGame1Page.locator("a").filter({ hasText: "Pause game" });
+    // Click on the "Pause game" action tab in the game dock. It renders as a
+    // GobanView action tab: <button class="GobanView-tab-button" title="Pause game">.
+    const pauseLink = challengerGame1Page.locator(
+        'button.GobanView-tab-button[title="Pause game"]',
+    );
     await expect(pauseLink).toBeVisible();
     await pauseLink.click();
     log("Pause game clicked");
