@@ -96,7 +96,6 @@ export function GameSettingsPanel({
     const isPrivate = !!engine.config.private;
 
     const [chat_enabled, set_chat_enabled] = usePreference("game.chat-enabled");
-    const [animate_turn_clock, set_animate_turn_clock] = usePreference("animate-turn-clock");
 
     const zen_mode = useZenMode(goban_controller);
 
@@ -181,23 +180,6 @@ export function GameSettingsPanel({
                         {pgettext("Coordinate label position", "Bottom Right")}
                     </option>
                 </select>
-            </div>
-
-            <div className="GameSidebarPanel-labeled-row">
-                <label htmlFor="game-settings-animate-turn-clock">
-                    <i className="fa fa-clock-o" />
-                    <span>
-                        {pgettext(
-                            "Game setting: move the hands of the small clock next to the player to move",
-                            "Animate turn clock",
-                        )}
-                    </span>
-                </label>
-                <Toggle
-                    id="game-settings-animate-turn-clock"
-                    checked={animate_turn_clock}
-                    onChange={(checked) => set_animate_turn_clock(checked)}
-                />
             </div>
 
             <div className="GameSidebarPanel-labeled-row">

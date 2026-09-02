@@ -17,7 +17,7 @@
 
 import * as React from "react";
 
-import { _, interpolate, pgettext } from "@/lib/translate";
+import { _, interpolate } from "@/lib/translate";
 
 import * as preferences from "@/lib/preferences";
 import { usePreference, ValidPreference } from "@/lib/preferences";
@@ -53,7 +53,6 @@ export function GamePreferences(): React.ReactElement {
     const [variation_move_count, _setVariationMoveCount] = usePreference("variation-move-count");
     const [zen_mode_by_default, setZenModeByDefault] = usePreference("start-in-zen-mode");
     const [scroll_to_navigate, setScrollToNavigate] = usePreference("scroll-to-navigate");
-    const [animate_turn_clock, setAnimateTurnClock] = usePreference("animate-turn-clock");
 
     function toggleAIReview(checked: boolean) {
         setAiReviewEnabled(!checked);
@@ -201,19 +200,6 @@ export function GamePreferences(): React.ReactElement {
                 )}
             >
                 <Toggle checked={dynamic_title} onChange={setDynamicTitle} />
-            </PreferenceLine>
-
-            <PreferenceLine
-                title={pgettext(
-                    "Game preference: move the hands of the small clock next to the player to move",
-                    "Animate the turn clock",
-                )}
-                description={pgettext(
-                    "Game preference description: the small clock marks the player to move",
-                    "Turn the hand of the small clock beside the player to move once a second, while they have less than an hour left. Turn this off to hold the hand still.",
-                )}
-            >
-                <Toggle checked={animate_turn_clock} onChange={setAnimateTurnClock} />
             </PreferenceLine>
 
             <PreferenceLine title={_("Enable function keys for game analysis shortcuts")}>
