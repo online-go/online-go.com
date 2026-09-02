@@ -71,8 +71,11 @@ export function visual_viewport_insets(
         return { top: 0, bottom: 0, height: layout_height };
     }
 
-    const top = Math.max(0, Math.round(offset_top));
-    const bottom = Math.max(0, Math.round(layout_height - offset_top - height));
+    /* Safari reports a negative offset during rubber-band overscroll; treat
+     * that as no pan so the bottom inset does not grow past the keyboard. */
+    const clamped_top = Math.max(0, offset_top);
+    const top = Math.round(clamped_top);
+    const bottom = Math.max(0, Math.round(layout_height - clamped_top - height));
     return { top, bottom, height: Math.round(height) };
 }
 

@@ -77,6 +77,17 @@ describe("visual_viewport_insets", () => {
         });
     });
 
+    test("does not let overscroll inflate the bottom inset", () => {
+        /* Safari reports a negative offset while the page rubber-bands past
+         * its top edge. The keyboard is still 337pt tall, so the bottom
+         * inset must not grow with the overscroll. */
+        expect(visual_viewport_insets(714, -20, 377, 1)).toEqual({
+            top: 0,
+            bottom: 337,
+            height: 377,
+        });
+    });
+
     test("survives unmeasurable metrics", () => {
         expect(visual_viewport_insets(714, NaN, NaN, NaN)).toEqual({
             top: 0,
