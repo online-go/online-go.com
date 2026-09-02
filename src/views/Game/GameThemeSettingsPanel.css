@@ -27,34 +27,127 @@
         /* The Settings page disables selection page-wide; keep that here. */
         user-select: none;
 
-        /* The label-positioning sample goban carries a 3rem indent sized
-         * for the wide Settings page; it forces horizontal overflow at
-         * sidebar width. */
-        .ThemePreferences .MiniGoban.inline {
-            margin-left: 0.5rem;
-        }
-
-        /* Stack each PreferenceLine's title above its body (the Settings
-         * page's 20rem side-by-side columns can't fit the sidebar), but
-         * leave every element at its stock Settings-page size. */
+        /* Each PreferenceLine is a two column grid: the title text sits in
+         * the first row and the description in the second. The title span
+         * is flattened with `display: contents` so its text and the nested
+         * description become separate grid items. */
         .PreferenceLine {
-            .PreferenceLineTitle,
-            .PreferenceLineDescription {
-                width: 100%;
-                min-width: 0;
-            }
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            column-gap: 0.75rem;
+            align-items: center;
 
-            /* Settings.css sets these to `large` for the full-width
-             * settings page; that reads oversized in the sidebar. */
             .PreferenceLineTitle {
+                display: contents;
+                /* Settings.css sets this to `large` for the full-width
+                 * settings page; that reads oversized in the sidebar. */
                 font-size: 0.95rem;
             }
 
+            .PreferenceLineDescription {
+                grid-column: 1 / -1;
+                grid-row: 2;
+                width: auto;
+                min-width: 0;
+            }
+
+            /* Default: the body stacks under the title and description
+             * (the Settings page's 20rem side-by-side columns can't fit
+             * the sidebar). */
             .PreferenceLineBody {
-                width: 100%;
-                margin-left: 0;
+                grid-column: 1 / -1;
+                grid-row: 3;
+                margin: 0;
+                min-width: 0;
                 flex-wrap: wrap;
                 box-sizing: border-box;
+            }
+
+            /* Rows whose control is a toggle, a dropdown or a short button
+             * group: the control sits at the right end of the title line. */
+            &:has(> .PreferenceLineBody > .Toggle),
+            &:has(> .PreferenceLineBody > .PreferenceDropdown),
+            &:has(> .PreferenceLineBody > .theme-button) {
+                .PreferenceLineBody {
+                    grid-column: 2;
+                    grid-row: 1;
+                    justify-self: end;
+                }
+
+                .Toggle {
+                    margin-right: 0;
+                }
+            }
+
+            /* Rows with a sample goban: the control sits at the right end
+             * of the title line and the sample goban at the right end of
+             * the description line. */
+            &:has(.with-sample-goban) {
+                .PreferenceLineBody,
+                .with-sample-goban {
+                    display: contents;
+                }
+
+                .with-sample-goban .left {
+                    grid-column: 2;
+                    grid-row: 1;
+                    justify-self: end;
+                    width: auto;
+                    margin: 0;
+
+                    /* Fixed slider and value widths so the sliders line
+                     * up across rows regardless of the value's length. */
+                    input[type="range"] {
+                        width: 8rem;
+                        flex-shrink: 0;
+                    }
+
+                    > span {
+                        min-width: 2.5rem;
+                        text-align: right;
+                        margin-right: 0;
+                    }
+                }
+
+                .with-sample-goban .left .Toggle {
+                    margin-right: 0;
+                }
+
+                .PreferenceLineDescription {
+                    grid-column: 1;
+                }
+
+                /* ThemePreferences.css gives the inline sample a fixed
+                 * 10rem by 1.5rem box; let it size to its content so the
+                 * grid row grows to fit the larger label-lettering sample. */
+                .with-sample-goban > .MiniGoban {
+                    grid-column: 2;
+                    grid-row: 2;
+                    justify-self: end;
+                    margin-left: 0;
+                    width: auto;
+                    height: auto;
+
+                    /* The board's 1.2em padding reserves room for the
+                     * player labels, which the samples don't show. */
+                    .small.board {
+                        padding: 0;
+                    }
+                }
+            }
+
+            /* Site theme: center the light / dark / accessible / system
+             * button group under its title. */
+            &:has(> .PreferenceLineBody > .theme-selectors) .PreferenceLineBody {
+                justify-content: center;
+            }
+
+            /* The board label lettering sample (the one preview row driven
+             * by a dropdown) is redundant next to the live goban. */
+            &:has(> .PreferenceLineBody > .with-sample-goban > .left > .PreferenceDropdown)
+                .with-sample-goban
+                > .MiniGoban {
+                display: none;
             }
         }
 

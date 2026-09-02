@@ -41,6 +41,7 @@ export interface TabDefinition {
     active?: boolean;
     disabled?: boolean;
     hideFromBar?: boolean;
+    hideCloseButton?: boolean;
     keepGobanVisible?: boolean;
     onClick?: (event?: React.MouseEvent<HTMLButtonElement>) => void;
     onToggle?: (active: boolean) => void;
@@ -109,6 +110,7 @@ function partitionChildren(children: React.ReactNode): {
                 active: props.active,
                 disabled: props.disabled,
                 hideFromBar: props.hideFromBar,
+                hideCloseButton: props.hideCloseButton,
                 keepGobanVisible: props.keepGobanVisible,
                 onClick: props.onClick,
                 onToggle: props.onToggle,
@@ -277,8 +279,8 @@ function GobanViewComponent({
 
     const renderPanel = (tab: TabDefinition, visible: boolean) => {
         // hideFromBar takeovers have no tab-bar button to click again, so
-        // they need an in-panel close button.
-        const showCloseButton = tab.type === "takeover" && tab.hideFromBar;
+        // they need an in-panel close button unless the panel opts out.
+        const showCloseButton = tab.type === "takeover" && tab.hideFromBar && !tab.hideCloseButton;
         return (
             <div
                 key={tab.id}

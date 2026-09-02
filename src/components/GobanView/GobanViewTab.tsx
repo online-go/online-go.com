@@ -30,6 +30,10 @@ export interface GobanViewTabProps {
     /** Suppress the tab's button in the bottom tab bar. The panel still
      *  renders when activated via the imperative setActiveTakeover ref. */
     hideFromBar?: boolean;
+    /** For hideFromBar takeovers: omit the in-panel close button. Use when
+     *  the panel provides its own way to close (a Done button, or a tab-bar
+     *  action that toggles it). */
+    hideCloseButton?: boolean;
     /** For takeover tabs: keep the goban on screen while this panel is open.
      *  Portrait takeovers normally cover the whole view, which is fine for
      *  panels you read (collection lists, settings) but not for panels you
