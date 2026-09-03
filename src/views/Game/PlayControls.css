@@ -80,126 +80,12 @@
         text-align: center;
     }
 
-    .play-buttons {
-        height: 2.6rem;
-        min-height: 2.6rem;
-        display: flex;
-        width: 100%;
-        justify-content: space-between;
-
-        > span {
-            flex-grow: 1;
-            flex-basis: 33%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        > span:first-child {
-            justify-content: flex-start;
-        }
-
-        > span:last-child {
-            justify-content: flex-end;
-        }
-
-        .keyboard-coordinate-input {
-            display: inline-flex;
-            align-items: center;
-            margin-right: 0.5rem;
-
-            input {
-                width: 4rem;
-                padding: 0.3rem 0.5rem;
-                border: 1px solid;
-                border-color: var(--shade3);
-                border-radius: 0.25rem;
-                font-size: 0.9rem;
-                text-align: center;
-                text-transform: uppercase;
-                background-color: var(--shade5);
-                color: var(--fg);
-                transition:
-                    border-color 0.2s ease,
-                    background-color 0.2s ease;
-
-                &::placeholder {
-                    text-transform: none;
-                    color: var(--shade2);
-                }
-
-                &:focus {
-                    outline: 2px solid;
-                    outline-color: var(--primary);
-                    outline-offset: 1px;
-                }
-
-                &:disabled {
-                    opacity: 0.5;
-                    cursor: not-allowed;
-                }
-            }
-        }
-
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border-width: 0;
-        }
-    }
-
     .stone-removal-controls {
         text-align: center;
 
         .explanation {
             padding: 1rem;
             font-style: italic;
-        }
-    }
-
-    .accept-undo-button {
-        white-space: nowrap;
-    }
-
-    .reject-undo-button {
-        white-space: nowrap;
-    }
-
-    /* Resign (or cancel) control at the right edge of the play-buttons
-     * strip. Quiet by default so it never competes with the primary
-     * Pass / Submit buttons beside it. */
-    .resign-button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.35rem;
-        white-space: nowrap;
-        padding: 0.3rem 0.5rem;
-        box-shadow: none;
-        background: transparent;
-        border: 1px solid transparent;
-        color: var(--fg);
-        opacity: 0.6;
-        transition:
-            opacity 0.15s ease,
-            border-color 0.15s ease;
-
-        &::before {
-            content: none;
-        }
-
-        &:hover,
-        &:focus-visible {
-            opacity: 1;
-            border-color: var(--shade3);
-            background: transparent;
         }
     }
 

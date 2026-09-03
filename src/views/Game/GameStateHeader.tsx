@@ -29,6 +29,7 @@ import {
     useShowTitle,
     useShowUndoRequested,
     useTitle,
+    useViewMode,
     useWinner,
 } from "./GameHooks";
 import { EstimateScore } from "./fragments";
@@ -102,7 +103,12 @@ export function GameStateHeader(): React.ReactElement | null {
     const isScoreEstimation = mode === "score estimation";
     const isFinished = mode === "play" && phase === "finished";
 
-    const has_play_content = isPlayPlay && ((show_title && !engine.rengo) || show_undo_requested);
+    // Portrait drops the "Your move" style title during play to save
+    // vertical space for the board; the clocks already say whose turn it
+    // is. The undo request message stays since it needs a response.
+    const is_portrait = useViewMode(goban_controller) === "portrait";
+    const show_play_title = show_title && !engine.rengo && !is_portrait;
+    const has_play_content = isPlayPlay && (show_play_title || show_undo_requested);
     const has_any_content =
         has_play_content ||
         isStoneRemoval ||
@@ -119,7 +125,7 @@ export function GameStateHeader(): React.ReactElement | null {
         <div className="game-state-header">
             {isPlayPlay && (
                 <span>
-                    {show_title && !engine.rengo && <span>{title}</span>}
+                    {show_play_title && <span>{title}</span>}
                     {show_undo_requested && (
                         <span className="undo-requested-message" ref={undo_message_ref}>
                             {interpolate(

@@ -64,15 +64,62 @@ const BASE_PROPS = {
     historical_white: null,
 };
 
-function renderPanel(gameController: GobanController) {
+function renderPanel(
+    gameController: GobanController,
+    extra_props: Partial<React.ComponentProps<typeof GameActionsPanel>> = {},
+) {
     return render(
         <Router>
             <GobanControllerContext.Provider value={gameController}>
-                <GameActionsPanel {...BASE_PROPS} />
+                <GameActionsPanel {...BASE_PROPS} {...extra_props} />
             </GobanControllerContext.Provider>
         </Router>,
     );
 }
+
+test("action-bar tabs are listed by name at the top of the menu", () => {
+    data.set("user", TEST_USER);
+    const gameController = new GobanController({ game_id: 123456 });
+    const onAnalyze = jest.fn();
+    const onConditional = jest.fn();
+    const onClose = jest.fn();
+
+    const { container } = renderPanel(gameController, {
+        onClose,
+        action_tabs: [
+            {
+                id: "game-analyze",
+                type: "action",
+                icon: "sitemap",
+                title: "Analyze game",
+                active: true,
+                onClick: onAnalyze,
+            },
+            {
+                id: "game-conditional",
+                type: "action",
+                icon: "exchange",
+                title: "Plan conditional moves",
+                disabled: true,
+                onClick: onConditional,
+            },
+        ],
+    });
+
+    const items = container.querySelectorAll(".GameSidebarPanel-item");
+    expect(items[0].textContent).toBe("Analyze game");
+    expect(items[0].classList.contains("active")).toBe(true);
+    expect(items[0].querySelector("i.fa-sitemap")).not.toBeNull();
+    expect(items[1].textContent).toBe("Plan conditional moves");
+    expect((items[1] as HTMLButtonElement).disabled).toBe(true);
+
+    fireEvent.click(screen.getByText("Analyze game"));
+    expect(onAnalyze).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByText("Plan conditional moves"));
+    expect(onConditional).not.toHaveBeenCalled();
+});
 
 test("providing both Game ID and Review ID cause SGF buttons to link to review SGFs", () => {
     data.set("user", TEST_USER);
