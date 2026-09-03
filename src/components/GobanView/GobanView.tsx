@@ -72,17 +72,25 @@ interface GobanViewProps {
      *  class is added to the GobanView root so portrait CSS can leave room
      *  for it above the tab bar. */
     customSlider?: React.ReactNode;
+    /** Leave out the built-in MoveNumberSlider. Has no effect when a
+     *  `customSlider` is given. Consumers use this to drop the strip when
+     *  move navigation is not relevant, e.g. on mobile during live play. */
+    hideSlider?: boolean;
     /** Optional title bar rendered at the top of the sidebar (landscape) or
      *  above the goban (portrait). Stays visible across takeovers so
      *  consumers can use it to label the current view. */
     header?: React.ReactNode;
     /** Portrait-only slot rendered directly above the goban, inside the
      *  scroll flow. Ignored in landscape. Used by the Game view for the
-     *  opponent's player card. */
+     *  opponent's player card.
+     *
+     *  The two slots and the goban form a "stage" that is capped to the
+     *  visible height of the scroll area: the goban shrinks so that both
+     *  slots stay on screen without scrolling, whatever the device size. */
     aboveBoard?: React.ReactNode;
     /** Portrait-only slot rendered directly below the goban, inside the
      *  scroll flow and above the tab panels. Ignored in landscape. Used by
-     *  the Game view for the local player's card. */
+     *  the Game view for the local player's card and the play buttons. */
     belowBoard?: React.ReactNode;
     /** Forwarded to the GobanContainer — fires when the user scrolls the wheel
      *  over the board. Used by the Game view for scroll-to-navigate. */
@@ -129,6 +137,7 @@ function GobanViewComponent({
     children,
     defaultActiveTakeover,
     customSlider,
+    hideSlider,
     header,
     aboveBoard,
     belowBoard,
@@ -311,7 +320,7 @@ function GobanViewComponent({
     // keeps its existing "hide during takeover" rule.
     const sliderSlot: React.ReactNode = customSlider
         ? customSlider
-        : !hasTakeover && <MoveNumberSlider />;
+        : !hasTakeover && !hideSlider && <MoveNumberSlider />;
 
     const customSliderClass = customSlider ? " has-custom-slider" : "";
 
@@ -344,19 +353,21 @@ function GobanViewComponent({
                             one. Only the header, slider and tab bar stay
                             pinned. */}
                         <div className="GobanView-mobile-scroll">
-                            {aboveBoard && (
-                                <div className="GobanView-above-board">{aboveBoard}</div>
-                            )}
-                            <div className="GobanView-center">
-                                <GobanContainer
-                                    onResize={onResize}
-                                    onWheel={onWheel}
-                                    respectContainerBounds
-                                />
+                            <div className="GobanView-stage">
+                                {aboveBoard && (
+                                    <div className="GobanView-above-board">{aboveBoard}</div>
+                                )}
+                                <div className="GobanView-center">
+                                    <GobanContainer
+                                        onResize={onResize}
+                                        onWheel={onWheel}
+                                        respectContainerBounds
+                                    />
+                                </div>
+                                {belowBoard && (
+                                    <div className="GobanView-below-board">{belowBoard}</div>
+                                )}
                             </div>
-                            {belowBoard && (
-                                <div className="GobanView-below-board">{belowBoard}</div>
-                            )}
                             <div className="GobanView-mobile-panels">
                                 {orderedPanels.map((t) => renderPanel(t, isInlineVisible(t)))}
                                 {scrollingTakeovers.map((t) =>

@@ -49,7 +49,12 @@ import {
 } from "./GameHooks";
 import { requestUndo } from "./game_actions";
 import { UndoIcon } from "./UndoIcon";
-import { GobanControllerContext, GobanView, GobanViewRef } from "@/components/GobanView";
+import {
+    GobanControllerContext,
+    GobanView,
+    GobanViewRef,
+    GobanViewTabProps,
+} from "@/components/GobanView";
 import { ModalContext } from "@/components/ModalProvider";
 import { useUser } from "@/lib/hooks";
 import { MODERATOR_POWERS } from "@/lib/moderation";
@@ -856,6 +861,22 @@ export function Game(): React.ReactElement | null {
         }
     };
 
+    // The analyze / chat / review / conditional tabs are defined once here
+    // and rendered twice: as icons in the action bar and as labeled items at
+    // the top of the More-actions menu.
+    const analyze_tab: GobanViewTabProps | null = game
+        ? {
+              id: "game-analyze",
+              type: "action",
+              align: "left",
+              icon: "sitemap",
+              title: _("Analyze game"),
+              disabled: analysis_disabled,
+              active: is_analyzing,
+              onClick: onAnalyzeClick,
+          }
+        : null;
+
     // "Review this game" is for spectators reviewing a live game and for
     // anyone (including the players) once it's finished — never for an
     // active player mid-game.
@@ -891,6 +912,56 @@ export function Game(): React.ReactElement | null {
             controller.enterConditionalMovePlanner();
         }
     };
+
+    // Mobile-only chat toggle. The tab itself is hidden when the chat
+    // feature is disabled in Settings (chat_enabled false) — re-enable from
+    // Settings to bring it back. Otherwise it toggles the chat's session
+    // visibility.
+    const chat_tab: GobanViewTabProps | null =
+        is_mobile && chat_enabled
+            ? {
+                  id: "game-chat-toggle",
+                  type: "action",
+                  align: "left",
+                  icon: (
+                      <span className="game-chat-tab-icon">
+                          <i className="fa fa-comment" />
+                          {chat_unread && <span className="game-chat-unread-dot" />}
+                      </span>
+                  ),
+                  title: _("Chat"),
+                  active: mobile_chat_visible,
+                  onClick: () => set_mobile_chat_visible((v) => !v),
+              }
+            : null;
+
+    const review_tab: GobanViewTabProps | null = show_review_tab
+        ? {
+              id: "game-review",
+              type: "action",
+              align: "center",
+              icon: "refresh",
+              title: _("Review this game"),
+              onClick: goban_controller.current.startReview,
+          }
+        : null;
+
+    const conditional_tab: GobanViewTabProps | null = show_conditional_tab
+        ? {
+              id: "game-conditional",
+              type: "action",
+              align: "center",
+              icon: "exchange",
+              title: _("Plan conditional moves"),
+              disabled: analysis_disabled,
+              active: is_planning_conditional,
+              onClick: onConditionalClick,
+          }
+        : null;
+
+    const menu_action_tabs = [analyze_tab, chat_tab, review_tab, conditional_tab].filter(
+        (tab): tab is GobanViewTabProps => tab !== null,
+    );
 
     const CONTROLS = review ? (
         <ReviewControls review_id={review_id} />
@@ -962,6 +1033,7 @@ export function Game(): React.ReactElement | null {
                                 ladder_id={ladder_id.current}
                                 historical_black={historical_black}
                                 historical_white={historical_white}
+                                action_tabs={menu_action_tabs}
                                 onClose={close}
                             />
                         </div>
@@ -1010,12 +1082,22 @@ export function Game(): React.ReactElement | null {
             ref={goban_view_ref}
             controller={goban_controller.current}
             className={
-                "Game MainGobanView" + (is_mobile ? " mobile" : "") + (zen_mode ? " zen" : "")
+                "Game MainGobanView" +
+                (is_mobile ? " mobile" : "") +
+                /* Mobile reserves room under the board stage for the play
+                 * buttons at the top of PlayControls, so the board shrinks
+                 * to keep them on screen along with both player cards. */
+                (is_mobile && show_play_action_tabs ? " has-play-buttons" : "") +
+                (zen_mode ? " zen" : "")
             }
             onWheel={onWheel}
             header={<GameStateHeader />}
             aboveBoard={is_mobile && renderMobilePlayerCard(top_color)}
             belowBoard={is_mobile && renderMobilePlayerCard(bottom_color)}
+            /* On mobile the move slider only earns its row while analyzing;
+             * during play it is dropped to leave the board and the controls
+             * more room. */
+            hideSlider={is_mobile && !is_analyzing}
         >
             {game_id > 0 && (
                 <UIPush
@@ -1036,7 +1118,7 @@ export function Game(): React.ReactElement | null {
                         estimating_score={estimating_score}
                     />
                 )}
-                <GameInformation />
+                {!is_mobile && <GameInformation />}
                 <RengoHeader />
 
                 {!zen_mode && (
@@ -1120,65 +1202,15 @@ export function Game(): React.ReactElement | null {
                 />
             </GobanView.Tab>
 
-            {game && (
-                <GobanView.Tab
-                    id="game-analyze"
-                    type="action"
-                    align="left"
-                    icon="sitemap"
-                    title={_("Analyze game")}
-                    disabled={analysis_disabled}
-                    active={is_analyzing}
-                    onClick={onAnalyzeClick}
-                />
-            )}
+            {analyze_tab && <GobanView.Tab {...analyze_tab} />}
 
-            {/* Mobile-only chat toggle. The icon itself is hidden when
-             *  the chat feature is disabled in Settings (chat_enabled
-             *  false) — re-enable from Settings to bring it back.
-             *  Otherwise the icon toggles the chat's session visibility. */}
-            {is_mobile && chat_enabled && (
-                <GobanView.Tab
-                    id="game-chat-toggle"
-                    type="action"
-                    align="left"
-                    icon={
-                        <span className="game-chat-tab-icon">
-                            <i className="fa fa-comment" />
-                            {chat_unread && <span className="game-chat-unread-dot" />}
-                        </span>
-                    }
-                    title={_("Chat")}
-                    active={mobile_chat_visible}
-                    onClick={() => set_mobile_chat_visible((v) => !v)}
-                />
-            )}
+            {chat_tab && <GobanView.Tab {...chat_tab} />}
 
             {/* Center: contextual single-purpose actions. Review here is
              *  for spectators or once the game is finished. */}
-            {show_review_tab && (
-                <GobanView.Tab
-                    id="game-review"
-                    type="action"
-                    align="center"
-                    icon="refresh"
-                    title={_("Review this game")}
-                    onClick={goban_controller.current.startReview}
-                />
-            )}
+            {review_tab && <GobanView.Tab {...review_tab} />}
 
-            {show_conditional_tab && (
-                <GobanView.Tab
-                    id="game-conditional"
-                    type="action"
-                    align="center"
-                    icon="exchange"
-                    title={_("Plan conditional moves")}
-                    disabled={analysis_disabled}
-                    active={is_planning_conditional}
-                    onClick={onConditionalClick}
-                />
-            )}
+            {conditional_tab && <GobanView.Tab {...conditional_tab} />}
 
             {/* Ask the opponent to take back the last move. The button stays
              *  lit while your own request is pending, and pressing it again

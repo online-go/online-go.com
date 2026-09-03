@@ -182,6 +182,42 @@ export const useCanRequestUndo = generateGobanHook(
     ["cur_move", "last_official_move", "submit_move", "undo_requested", "undo_canceled"],
 );
 
+/** True while submit-move mode holds a staged move and the user is looking
+ *  at it (one past the last official move). */
+export function hasStagedMove(goban: Goban | null): boolean {
+    if (!goban) {
+        return false;
+    }
+    const engine = goban.engine;
+    return (
+        !!goban.submit_move &&
+        !!engine.cur_move?.parent &&
+        !!engine.last_official_move &&
+        engine.cur_move.parent.id === engine.last_official_move.id
+    );
+}
+
+/** React hook that returns true while a staged move is waiting for the user
+ *  to submit it and no undo request is pending on that move. */
+export const useShowSubmitButton = generateGobanHook(
+    (goban: Goban | null) =>
+        hasStagedMove(goban) && goban!.engine.undo_requested !== goban!.engine.getMoveNumber(),
+    ["cur_move", "last_official_move", "submit_move", "undo_requested", "undo_canceled"],
+);
+
+/** React hook that returns true while the goban is sending a move to the
+ *  server, so submit controls can disable themselves in the meantime. */
+export function useSubmittingMove(goban: Goban): boolean {
+    const [submitting_move, set_submitting_move] = React.useState(false);
+    React.useEffect(() => {
+        goban.on("submitting-move", set_submitting_move);
+        return () => {
+            goban.off("submitting-move", set_submitting_move);
+        };
+    }, [goban]);
+    return submitting_move;
+}
+
 /** React hook that returns true when the opponent has an undo request
  *  pending on the current move and this user is the one who can accept or
  *  reject it. */
