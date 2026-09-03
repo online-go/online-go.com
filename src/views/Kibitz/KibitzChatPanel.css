@@ -42,9 +42,12 @@
         position: relative;
 
         .KibitzChatPanel-log {
+            display: flex;
+            flex-direction: column;
             flex-grow: 1;
+            min-height: 0;
             min-width: 0;
-            overflow-y: auto;
+            overflow: hidden;
         }
 
         .ChatUserList {
@@ -236,14 +239,14 @@
         inset 0 0 7px 0 color-mix(in srgb, var(--primary) 85%, transparent);
 }
 
-.KibitzChatPanel-composer .TabCompleteInput {
+.KibitzChatPanel-composer .chat-input {
     box-sizing: border-box;
     display: block;
     width: 100%;
 }
 
-.KibitzChatPanel-composer .TabCompleteInput:focus,
-.KibitzChatPanel-composer .TabCompleteInput:focus-visible {
+.KibitzChatPanel-composer .chat-input:focus,
+.KibitzChatPanel-composer .chat-input:focus-visible {
     outline: none;
 }
 

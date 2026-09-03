@@ -658,6 +658,11 @@ export function KibitzChatPanel({
         "Can't send messages to game chat",
     );
 
+    const roomDisabledPlaceholder = pgettext(
+        "Placeholder shown in the Kibitz room chat input when the user cannot chat",
+        "Sign in with a validated email to chat",
+    );
+
     const disabledComposer = (
         <div className="KibitzChatPanel-disabledComposer chat-input-container input-group">
             <TabCompleteInput
@@ -699,12 +704,7 @@ export function KibitzChatPanel({
                     ) : null}
                 </button>
             </div>
-            <div
-                className={
-                    "KibitzChatPanel-body" +
-                    (showUserList && tab === "room" ? " show-user-list" : "")
-                }
-            >
+            <div className="KibitzChatPanel-body">
                 <div className="KibitzChatPanel-log">
                     {tab === "game"
                         ? renderEntries(gameEntries, "game")
@@ -717,7 +717,7 @@ export function KibitzChatPanel({
                     <TabCompleteInput
                         id={"kibitz-chat-input-" + room.id}
                         className="chat-input"
-                        placeholder={chatDisabled ? disabledPlaceholder : roomPlaceholder}
+                        placeholder={chatDisabled ? roomDisabledPlaceholder : roomPlaceholder}
                         disabled={chatDisabled}
                         onKeyPress={onRoomKeyPress}
                     />

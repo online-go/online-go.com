@@ -247,4 +247,26 @@ describe("KibitzChatPanel variation posts", () => {
         fireEvent.click(screen.getByTestId("user-toggle"));
         expect(screen.getByTestId("user-list")).toHaveTextContent("kibitz-room-1");
     });
+
+    test("renders room and game chat entries under their respective tabs", () => {
+        render(
+            <KibitzChatPanel
+                {...baseProps()}
+                items={[
+                    makeChatItem("room-chat-1", "room-stream", "Room hello"),
+                    makeChatItem("game-chat-1", "game-chat", "Game hello"),
+                ]}
+            />,
+        );
+
+        fireEvent.click(screen.getByText("Kibitz chat"));
+        const roomEntry = screen.getByText("Room hello").closest(".kibitz-chat-entry");
+        expect(roomEntry).not.toBeNull();
+        expect(roomEntry?.querySelector("time")).not.toBeNull();
+
+        fireEvent.click(screen.getByText("Game chat"));
+        const gameEntry = screen.getByText("Game hello").closest(".kibitz-chat-entry");
+        expect(gameEntry).not.toBeNull();
+        expect(gameEntry?.querySelector("time")).not.toBeNull();
+    });
 });
