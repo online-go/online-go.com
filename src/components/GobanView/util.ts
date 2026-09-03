@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { Goban } from "goban";
+
 export type ViewMode = "portrait" | "wide" | "square";
 
 export function goban_view_mode(bar_width?: number): ViewMode {
@@ -36,4 +38,22 @@ export function goban_view_mode(bar_width?: number): ViewMode {
 export function goban_view_squashed(): boolean {
     /* This value needs to match the "dock-inline-height" found in Dock.css */
     return window.innerHeight <= 500;
+}
+
+/** Which seat the given player occupies, including rengo team membership.
+ *  Returns null for spectators. */
+export function user_color(goban: Goban, player_id: number): "black" | "white" | null {
+    const engine = goban.engine;
+    const color = engine.playerColor(player_id);
+    if (color !== "invalid") {
+        return color;
+    }
+    if (engine.rengo && engine.rengo_teams) {
+        for (const team of ["black", "white"] as const) {
+            if (engine.rengo_teams[team].some((player) => player.id === player_id)) {
+                return team;
+            }
+        }
+    }
+    return null;
 }
