@@ -1,0 +1,16 @@
+.GobanView.Kibitz {
+    .GobanView-header {
+        font-size: 1.1rem;
+    }
+
+    .KibitzChatPanel {
+        min-height: 20rem;
+        flex-grow: 1;
+    }
+
+    &.is-streamer-mode {
+        .GobanView-sidebar {
+            display: none;
+        }
+    }
+}
