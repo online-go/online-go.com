@@ -6,11 +6,22 @@
     padding: 0.4rem 0.75rem;
     box-shadow: 0 -1px 0 color-mix(in srgb, var(--shade3) 55%, transparent);
 
+    .KibitzVariationList-titleRow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 0.25rem;
+    }
+
     .variation-title {
         flex: 0 0 auto;
         font-weight: bold;
         font-size: 0.85rem;
-        margin-bottom: 0.25rem;
+    }
+
+    .KibitzVariationList-createButton {
+        flex: 0 0 auto;
     }
 
     .variation-scroll {

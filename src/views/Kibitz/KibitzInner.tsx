@@ -3330,6 +3330,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 blockedVariationFlashId={blockedVariationFlashId}
                 onRecallVariation={(variationId) => onOpenVariation(variationId, true)}
                 onHideVariation={onToggleVariation}
+                onCreateVariation={onCreateVariation}
                 helpTargetId={KIBITZ_HELP_TARGETS.desktopVariationList}
             />
             {queuedRoomProposals.length > 0 ? (
@@ -3690,7 +3691,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                             onCreateRoom={onOpenCreateRoom}
                             canOpenCreateRoomFlow={canOpenCreateRoomFlow}
                             signInHref={createRoomSignInHref}
-                            onCreateVariation={onCreateVariation}
                             blockedRoomIds={blockedRoomIds}
                         />
                     </div>
@@ -3905,7 +3905,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                                     onCreateRoom={onOpenCreateRoom}
                                                     canOpenCreateRoomFlow={canOpenCreateRoomFlow}
                                                     signInHref={createRoomSignInHref}
-                                                    onCreateVariation={onCreateVariation}
                                                     blockedRoomIds={blockedRoomIds}
                                                 />
                                             </div>

@@ -18,9 +18,8 @@
 import * as React from "react";
 import * as DynamicHelp from "react-dynamic-help";
 
-import { KIBITZ_HELP_TARGETS } from "./KibitzHelpTargets";
+import type { KibitzHelpTargetId } from "./KibitzHelpTargets";
 
-type KibitzHelpTargetId = (typeof KIBITZ_HELP_TARGETS)[keyof typeof KIBITZ_HELP_TARGETS];
 type DynamicHelpApi = React.ContextType<typeof DynamicHelp.Api>;
 type DynamicHelpTarget = ReturnType<DynamicHelpApi["registerTargetItem"]>;
 

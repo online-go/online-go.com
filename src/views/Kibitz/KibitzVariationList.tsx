@@ -36,6 +36,7 @@ interface KibitzVariationListProps {
     blockedVariationFlashId?: string | null;
     onRecallVariation: (variationId: string) => void;
     onHideVariation?: (variationId: string) => void;
+    onCreateVariation?: () => void;
     title?: string;
     helpTargetId?: (typeof KIBITZ_HELP_TARGETS)[keyof typeof KIBITZ_HELP_TARGETS];
 }
@@ -50,6 +51,7 @@ export function KibitzVariationList({
     blockedVariationFlashId = null,
     onRecallVariation,
     onHideVariation,
+    onCreateVariation,
     title,
     helpTargetId,
 }: KibitzVariationListProps): React.ReactElement {
@@ -115,10 +117,29 @@ export function KibitzVariationList({
 
     return (
         <div className="KibitzVariationList" ref={variationListTarget?.ref}>
-            {title === "" ? null : (
-                <div className="variation-title">
-                    {title ??
-                        pgettext("Heading for the variations list in kibitz", "Active variations")}
+            {title === "" && !onCreateVariation ? null : (
+                <div className="KibitzVariationList-titleRow">
+                    {title === "" ? null : (
+                        <div className="variation-title">
+                            {title ??
+                                pgettext(
+                                    "Heading for the variations list in kibitz",
+                                    "Active variations",
+                                )}
+                        </div>
+                    )}
+                    {onCreateVariation ? (
+                        <button
+                            type="button"
+                            className="xs primary KibitzVariationList-createButton"
+                            onClick={onCreateVariation}
+                        >
+                            {pgettext(
+                                "Button label for opening Kibitz variation creation",
+                                "New variation",
+                            )}
+                        </button>
+                    ) : null}
                 </div>
             )}
             <div className="variation-scroll">

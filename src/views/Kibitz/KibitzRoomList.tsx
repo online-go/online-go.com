@@ -30,7 +30,6 @@ interface KibitzRoomListProps {
     onCreateRoom?: () => void;
     canOpenCreateRoomFlow: boolean;
     signInHref: string;
-    onCreateVariation?: () => void;
     blockedRoomIds?: Set<string>;
     helpTargetId?: (typeof KIBITZ_HELP_TARGETS)[keyof typeof KIBITZ_HELP_TARGETS];
 }
@@ -42,7 +41,6 @@ export function KibitzRoomList({
     onCreateRoom,
     canOpenCreateRoomFlow,
     signInHref,
-    onCreateVariation,
     blockedRoomIds,
     helpTargetId,
 }: KibitzRoomListProps): React.ReactElement {
@@ -65,44 +63,27 @@ export function KibitzRoomList({
                         )}
                     </div>
                 </div>
-                {onCreateRoom || onCreateVariation ? (
+                {onCreateRoom ? (
                     <div className="KibitzRoomList-actions">
-                        {onCreateRoom ? (
-                            canOpenCreateRoomFlow ? (
-                                <button
-                                    type="button"
-                                    className="xs primary KibitzRoomList-createButton"
-                                    onClick={onCreateRoom}
-                                >
-                                    {pgettext(
-                                        "Button label for opening the Kibitz create room picker",
-                                        "Create room",
-                                    )}
-                                </button>
-                            ) : (
-                                <a
-                                    className="xs primary KibitzRoomList-createButton"
-                                    href={signInHref}
-                                >
-                                    {pgettext(
-                                        "Button label for signing in before creating a Kibitz room",
-                                        "Sign in to create room",
-                                    )}
-                                </a>
-                            )
-                        ) : null}
-                        {onCreateVariation ? (
+                        {canOpenCreateRoomFlow ? (
                             <button
                                 type="button"
                                 className="xs primary KibitzRoomList-createButton"
-                                onClick={onCreateVariation}
+                                onClick={onCreateRoom}
                             >
                                 {pgettext(
-                                    "Button label for opening Kibitz variation creation",
-                                    "Create variation",
+                                    "Button label for opening the Kibitz create room picker",
+                                    "Create room",
                                 )}
                             </button>
-                        ) : null}
+                        ) : (
+                            <a className="xs primary KibitzRoomList-createButton" href={signInHref}>
+                                {pgettext(
+                                    "Button label for signing in before creating a Kibitz room",
+                                    "Sign in to create room",
+                                )}
+                            </a>
+                        )}
                     </div>
                 ) : null}
             </div>
