@@ -971,15 +971,6 @@ export function Game(): React.ReactElement | null {
             below: button,
             minWidth: 220,
         });
-        // The popover utility anchors the LEFT edge of the popover to the
-        // button. The More-actions button lives at the right edge of the
-        // tab bar, and (especially in the two-column moderator layout) the
-        // popover would extend off-screen to the right. Re-anchor the RIGHT
-        // edge to the button's right edge so the popover grows leftward.
-        const button_rect = button.getBoundingClientRect();
-        const offset_from_right = Math.max(0, window.innerWidth - button_rect.right);
-        instance.container.style.left = "auto";
-        instance.container.style.right = `${offset_from_right}px`;
         instance.on("close", () => {
             if (more_actions_popover_ref.current === instance) {
                 more_actions_popover_ref.current = null;

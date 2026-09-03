@@ -38,5 +38,8 @@
 .popover-container {
     position: absolute;
     display: inline-block;
+    /* Size from the content, never from the available space to the right,
+     * so the rendered size does not change when popover() moves it. */
+    width: max-content;
     z-index: var(--z-popover);
 }
