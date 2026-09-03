@@ -1,6 +1,11 @@
 .KibitzMiniMainBoard {
     display: block;
     width: 100%;
+    /* Global button rules set a fixed height; aspect-ratio needs height
+       to stay auto so the board renders square. */
+    height: auto;
+    min-height: 0;
+    line-height: 0;
     aspect-ratio: 1;
     padding: 0;
     margin: 0;
