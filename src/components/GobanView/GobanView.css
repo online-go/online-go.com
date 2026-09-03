@@ -25,6 +25,15 @@
     left: 0;
     right: 0;
 
+    .GobanView-player-bar {
+        flex-shrink: 0;
+        padding: 0.3rem 0;
+    }
+
+    .GobanView-center .GobanView-player-bar {
+        padding: 0.3rem 1.25rem 0.3rem 0.3rem;
+    }
+
     /* Desktop: goban on left, sidebar on right */
     .GobanView-center {
         flex-grow: 1;

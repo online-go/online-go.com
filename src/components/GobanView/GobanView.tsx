@@ -16,7 +16,9 @@
  */
 
 import * as React from "react";
+import { GobanRenderer } from "goban";
 import { _ } from "@/lib/translate";
+import { useUser } from "@/lib/hooks";
 import { GobanController } from "@/lib/GobanController";
 import { GobanContainer } from "@/components/GobanContainer";
 import {
@@ -27,7 +29,9 @@ import {
 import { GobanViewTab, GobanViewTabProps } from "./GobanViewTab";
 import { TabBar } from "./TabBar";
 import { MoveNumberSlider } from "./MoveNumberSlider";
-import { goban_view_mode, goban_view_squashed, ViewMode } from "./util";
+import { PlayerBar } from "./PlayerBar";
+import { generateGobanHook } from "./hooks";
+import { goban_view_mode, goban_view_squashed, user_color, ViewMode } from "./util";
 import "./GobanView.css";
 
 export interface TabDefinition {
@@ -84,11 +88,19 @@ interface GobanViewProps {
      *  scroll flow and above the tab panels. Ignored in landscape. Used by
      *  the Game view for the local player's card. */
     belowBoard?: React.ReactNode;
+    /** Render a PlayerBar above and below the board. The current user's
+     *  seat (or black for spectators) is on the bottom. */
+    playerBars?: boolean;
     /** Forwarded to the GobanContainer — fires when the user scrolls the wheel
      *  over the board. Used by the Game view for scroll-to-navigate. */
     onWheel?: React.WheelEventHandler<HTMLDivElement>;
     ref?: React.Ref<GobanViewRef>;
 }
+
+const usePlayerIds = generateGobanHook(
+    (goban: GobanRenderer) => `${goban.engine.players.black.id}:${goban.engine.players.white.id}`,
+    ["gamedata"],
+);
 
 function partitionChildren(children: React.ReactNode): {
     tabs: TabDefinition[];
@@ -132,6 +144,7 @@ function GobanViewComponent({
     header,
     aboveBoard,
     belowBoard,
+    playerBars,
     onWheel,
     ref,
 }: GobanViewProps): React.ReactElement {
@@ -252,6 +265,21 @@ function GobanViewComponent({
     );
 
     const isPortrait = viewMode === "portrait";
+
+    const user = useUser();
+    usePlayerIds(controller.goban);
+    const bottom_color: "black" | "white" = user_color(controller.goban, user.id) ?? "black";
+    const top_color: "black" | "white" = bottom_color === "black" ? "white" : "black";
+    const topBar = playerBars ? (
+        <div className="GobanView-player-bar top">
+            <PlayerBar color={top_color} />
+        </div>
+    ) : null;
+    const bottomBar = playerBars ? (
+        <div className="GobanView-player-bar bottom">
+            <PlayerBar color={bottom_color} />
+        </div>
+    ) : null;
     const hasTakeover = activeTakeover !== null;
 
     const { inlinePanels, takeoverPanels } = React.useMemo(
@@ -347,6 +375,7 @@ function GobanViewComponent({
                             {aboveBoard && (
                                 <div className="GobanView-above-board">{aboveBoard}</div>
                             )}
+                            {topBar}
                             <div className="GobanView-center">
                                 <GobanContainer
                                     onResize={onResize}
@@ -354,6 +383,7 @@ function GobanViewComponent({
                                     respectContainerBounds
                                 />
                             </div>
+                            {bottomBar}
                             {belowBoard && (
                                 <div className="GobanView-below-board">{belowBoard}</div>
                             )}
@@ -388,11 +418,13 @@ function GobanViewComponent({
                     }
                 >
                     <div className="GobanView-center">
+                        {topBar}
                         <GobanContainer
                             onResize={onResize}
                             onWheel={onWheel}
                             respectContainerBounds
                         />
+                        {bottomBar}
                     </div>
                     <div className="GobanView-sidebar">
                         <div className="GobanView-header">{header}</div>
