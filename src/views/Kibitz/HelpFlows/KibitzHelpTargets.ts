@@ -19,7 +19,6 @@ export const KIBITZ_HELP_TARGETS = {
     mobileRoomTitle: "kibitz-mobile-room-title",
     mobileMainBoard: "kibitz-mobile-main-board",
     mobilePanelSwitcher: "kibitz-mobile-panel-switcher",
-    mobileChatTab: "kibitz-mobile-chat-tab",
     mobileVariationsTab: "kibitz-mobile-variations-tab",
     mobileVariationsPanel: "kibitz-mobile-variations-panel",
     mobileVariationBoard: "kibitz-mobile-variation-board",

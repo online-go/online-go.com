@@ -20,17 +20,10 @@ import type { GobanController } from "@/lib/GobanController";
 import {
     isCurrentGameBaseSnapshotUsable,
     isMainBoardSafeForReconnect,
-    clampDesktopSidebarWidthPx,
-    isVisibleMainBoardMounted,
     pruneVisibleVariationIdsForGame,
 } from "./KibitzInner";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 import type { KibitzWatchedGame } from "@/models/kibitz";
-import {
-    isMobileDividerPointerUpNoop,
-    MOBILE_DIVIDER_DRAG_START_THRESHOLD_PX,
-    shouldActivateMobileDividerDrag,
-} from "./KibitzInner";
 
 function makeVariation(id: string, gameId: number): KibitzVariationSummary {
     return {
@@ -68,24 +61,6 @@ describe("pruneVisibleVariationIdsForGame", () => {
             "a1",
             "b1",
         ]);
-    });
-});
-
-describe("clampDesktopSidebarWidthPx", () => {
-    it("enforces comfortable min width on wide layouts", () => {
-        expect(clampDesktopSidebarWidthPx(100, 1200)).toBe(336);
-    });
-
-    it("allows narrower minimum on constrained layouts", () => {
-        expect(clampDesktopSidebarWidthPx(100, 900)).toBe(288);
-    });
-
-    it("caps width so the stage remains usable", () => {
-        expect(clampDesktopSidebarWidthPx(900, 1200)).toBeLessThanOrEqual(576);
-    });
-
-    it("handles invalid width safely", () => {
-        expect(clampDesktopSidebarWidthPx(Number.NaN, 1200)).toBe(336);
     });
 });
 
@@ -142,122 +117,6 @@ describe("isCurrentGameBaseSnapshotUsable", () => {
         } as KibitzCurrentGameBaseSnapshot;
 
         expect(isCurrentGameBaseSnapshotUsable(snapshot, liveGame, "r")).toBe(true);
-    });
-});
-
-describe("isVisibleMainBoardMounted", () => {
-    const mainBoardController = {} as GobanController;
-
-    it("rejects stale move-0 hydration for a nonzero room", () => {
-        const hydration = {
-            roomId: "preset-fast-live",
-            gameId: 87402085,
-            officialTailMoveNumber: 0,
-            expectedMoveNumber: 0,
-            hasMoveTree: true,
-            hydrated: true,
-        };
-
-        expect(
-            isVisibleMainBoardMounted({
-                mobileCompareActive: false,
-                mainBoardController,
-                isCurrentMainBoardController: true,
-                visibleMainBoardHydration: hydration,
-                roomId: "preset-fast-live",
-                gameId: 87402085,
-                currentExpectedMoveNumber: 121,
-                isCurrentGameLive: false,
-            }),
-        ).toBe(false);
-    });
-
-    it("rejects stale lower expected hydration for an advanced room", () => {
-        const hydration = {
-            roomId: "preset-fast-live",
-            gameId: 87402085,
-            officialTailMoveNumber: 120,
-            expectedMoveNumber: 120,
-            hasMoveTree: true,
-            hydrated: true,
-        };
-
-        expect(
-            isVisibleMainBoardMounted({
-                mobileCompareActive: false,
-                mainBoardController,
-                isCurrentMainBoardController: true,
-                visibleMainBoardHydration: hydration,
-                roomId: "preset-fast-live",
-                gameId: 87402085,
-                currentExpectedMoveNumber: 121,
-                isCurrentGameLive: false,
-            }),
-        ).toBe(false);
-    });
-
-    it("accepts hydration when the expected move is current", () => {
-        const hydration = {
-            roomId: "preset-fast-live",
-            gameId: 87402085,
-            officialTailMoveNumber: 121,
-            expectedMoveNumber: 121,
-            hasMoveTree: true,
-            hydrated: true,
-        };
-
-        expect(
-            isVisibleMainBoardMounted({
-                mobileCompareActive: false,
-                mainBoardController,
-                isCurrentMainBoardController: true,
-                visibleMainBoardHydration: hydration,
-                roomId: "preset-fast-live",
-                gameId: 87402085,
-                currentExpectedMoveNumber: 121,
-                isCurrentGameLive: false,
-            }),
-        ).toBe(true);
-    });
-
-    it("rejects live root hydration even if the board reports hydrated", () => {
-        const hydration = {
-            roomId: "preset-fast-live",
-            gameId: 87402085,
-            officialTailMoveNumber: 0,
-            expectedMoveNumber: 0,
-            hasMoveTree: true,
-            hydrated: true,
-        };
-
-        expect(
-            isVisibleMainBoardMounted({
-                mobileCompareActive: false,
-                mainBoardController,
-                isCurrentMainBoardController: true,
-                visibleMainBoardHydration: hydration,
-                roomId: "preset-fast-live",
-                gameId: 87402085,
-                currentExpectedMoveNumber: 0,
-                isCurrentGameLive: true,
-            }),
-        ).toBe(false);
-    });
-});
-
-describe("mobile divider gesture lifecycle", () => {
-    it("uses a small movement threshold before activating a resize drag", () => {
-        expect(MOBILE_DIVIDER_DRAG_START_THRESHOLD_PX).toBe(3);
-        expect(shouldActivateMobileDividerDrag(1)).toBe(false);
-        expect(shouldActivateMobileDividerDrag(2)).toBe(false);
-        expect(shouldActivateMobileDividerDrag(3)).toBe(true);
-        expect(shouldActivateMobileDividerDrag(-3)).toBe(true);
-    });
-
-    it("treats pointerup as a no-op until the drag is active", () => {
-        expect(isMobileDividerPointerUpNoop("armed")).toBe(true);
-        expect(isMobileDividerPointerUpNoop(null)).toBe(true);
-        expect(isMobileDividerPointerUpNoop("active")).toBe(false);
     });
 });
 

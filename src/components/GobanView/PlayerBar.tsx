@@ -107,7 +107,7 @@ export function PlayerBar({ color }: PlayerBarProps): React.ReactElement {
         <div className={`PlayerBar ${color}` + (state.their_turn ? " their-turn" : "")}>
             <div className="PlayerBar-icon">
                 {state.player_id ? (
-                    <PlayerIcon id={state.player_id} size={40} />
+                    <PlayerIcon id={state.player_id} size={64} />
                 ) : (
                     <div className={`PlayerBar-stone ${color}`} />
                 )}

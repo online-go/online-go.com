@@ -25,18 +25,13 @@ import { KIBITZ_HELP_FLOW_IDS } from "./KibitzHelpFlows";
 type KibitzHelpFlowId = (typeof KIBITZ_HELP_FLOW_IDS)[keyof typeof KIBITZ_HELP_FLOW_IDS];
 
 type UseKibitzHelpTriggersArgs = {
-    isMobileLayout: boolean;
     room: KibitzRoomSummary | null;
     flowReadiness: Partial<Record<KibitzHelpFlowId, boolean>>;
     pickerOpen: boolean;
-    mobileOverlayOpen: boolean;
 };
 
 type UseKibitzHelpTriggersResult = {
-    noteMobileVariationsPanelOpened: () => void;
     noteDesktopVariationMadeVisible: () => void;
-    notePostedVariationOpened: () => void;
-    noteDraftStartedFromPostedVariation: () => void;
 };
 
 const KIBITZ_HELP_FLOW_ID_SET = new Set<string>(Object.values(KIBITZ_HELP_FLOW_IDS));
@@ -65,16 +60,12 @@ function isFlowSeen(
 }
 
 export function useKibitzHelpTriggers({
-    isMobileLayout,
     room,
     flowReadiness,
     pickerOpen,
-    mobileOverlayOpen,
 }: UseKibitzHelpTriggersArgs): UseKibitzHelpTriggersResult {
     const { triggerFlow, getFlowInfo, getSystemStatus } = React.useContext(DynamicHelp.Api);
-    const firstRunFlowId = isMobileLayout
-        ? KIBITZ_HELP_FLOW_IDS.mobileFirstRun
-        : KIBITZ_HELP_FLOW_IDS.desktopFirstRun;
+    const firstRunFlowId = KIBITZ_HELP_FLOW_IDS.desktopFirstRun;
     const previousMainBoardIdRef = React.useRef<number | null>(null);
     const hydratedMainBoardRef = React.useRef(false);
     const pendingFlowIdRef = React.useRef<KibitzHelpFlowId | null>(null);
@@ -145,7 +136,7 @@ export function useKibitzHelpTriggers({
     const firstRunReady = Boolean(flowReadiness[firstRunFlowId]);
 
     React.useEffect(() => {
-        if (!room || pickerOpen || mobileOverlayOpen) {
+        if (!room || pickerOpen) {
             return;
         }
 
@@ -158,18 +149,10 @@ export function useKibitzHelpTriggers({
         }
 
         queueFlow(firstRunFlowId, true);
-    }, [
-        firstRunFlowId,
-        firstRunReady,
-        mobileOverlayOpen,
-        pickerOpen,
-        queueFlow,
-        room,
-        firstRunSeen,
-    ]);
+    }, [firstRunFlowId, firstRunReady, pickerOpen, queueFlow, room, firstRunSeen]);
 
     React.useEffect(() => {
-        if (!room || pickerOpen || mobileOverlayOpen) {
+        if (!room || pickerOpen) {
             return;
         }
 
@@ -196,7 +179,7 @@ export function useKibitzHelpTriggers({
         }
 
         queueFlow(KIBITZ_HELP_FLOW_IDS.roomBoardChange, false);
-    }, [firstRunSeen, mobileOverlayOpen, pickerOpen, queueFlow, room]);
+    }, [firstRunSeen, pickerOpen, queueFlow, room]);
 
     React.useEffect(() => {
         if (pendingFlowIdRef.current == null) {
@@ -222,47 +205,15 @@ export function useKibitzHelpTriggers({
         };
     }, [flushPendingFlow, pendingFlowTick]);
 
-    const noteMobileVariationsPanelOpened = React.useCallback(() => {
-        if (!isMobileLayout || !firstRunSeen()) {
-            return;
-        }
-
-        queueFlow(KIBITZ_HELP_FLOW_IDS.mobileFirstVariations, false);
-    }, [firstRunSeen, isMobileLayout, queueFlow]);
-
     const noteDesktopVariationMadeVisible = React.useCallback(() => {
-        if (isMobileLayout || !firstRunSeen()) {
+        if (!firstRunSeen()) {
             return;
         }
 
         queueFlow(KIBITZ_HELP_FLOW_IDS.desktopFirstVariations, false);
-    }, [firstRunSeen, isMobileLayout, queueFlow]);
-
-    const notePostedVariationOpened = React.useCallback(() => {
-        if (!firstRunSeen()) {
-            return;
-        }
-
-        queueFlow(
-            isMobileLayout
-                ? KIBITZ_HELP_FLOW_IDS.mobilePostedVariation
-                : KIBITZ_HELP_FLOW_IDS.desktopPostedVariation,
-            false,
-        );
-    }, [firstRunSeen, isMobileLayout, queueFlow]);
-
-    const noteDraftStartedFromPostedVariation = React.useCallback(() => {
-        if (!firstRunSeen()) {
-            return;
-        }
-
-        queueFlow(KIBITZ_HELP_FLOW_IDS.draftFromPostedVariation, false);
     }, [firstRunSeen, queueFlow]);
 
     return {
-        noteMobileVariationsPanelOpened,
         noteDesktopVariationMadeVisible,
-        notePostedVariationOpened,
-        noteDraftStartedFromPostedVariation,
     };
 }
