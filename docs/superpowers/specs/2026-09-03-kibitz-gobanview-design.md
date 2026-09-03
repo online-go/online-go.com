@@ -139,8 +139,7 @@ Kibitz transport controls.
 | Position | Tab | Type | Notes |
 | --- | --- | --- | --- |
 | left | `kibitz-settings` | action, gear | Opens `KibitzRoomSettingsPopover` anchored to the button. |
-| left, portrait only | `kibitz-rooms` | takeover, list icon | Room list. |
-| left, portrait only | `kibitz-variations` | takeover, code-fork icon | Variation list with New variation and the mini main board. |
+| left, portrait only | `kibitz-rooms` | takeover, list icon | The whole left aside: room list, variation list with New variation, and the mini main board. |
 | center | `kibitz-return-to-game` | action, arrow-left | Shown while a draft, variation, or preview is open. Exits to the main game. |
 | center | `kibitz-return-to-live` | action, forward | Shown while the main game is in the center and the user is not at the official tail. Jumps to the tail. |
 | right | `kibitz-more` | action, ellipsis-h | Popover: Game information, Link to game, Download SGF, Call moderator. |
@@ -156,11 +155,11 @@ Exiting a draft discards it; the composer's Discard button does the same.
 
 GobanView's standard portrait column: header (room title), the top player
 bar, the board, the bottom player bar, then the proposal, variation, and chat
-panels inline, with the slider and tab bar pinned at the bottom. The rooms
-and variations lists open as takeover panels from the tab bar. The
-`kibitz-variations` takeover contains the mini main board so the main
-controller always has a mount point; when the center shows the main game the
-mini board is not rendered there either.
+panels inline, with the slider and tab bar pinned at the bottom. The left
+aside content opens as one Rooms takeover panel from the tab bar. That
+takeover contains the mini main board so the main controller always has a
+mount point; when the center shows the main game the mini board is not
+rendered there either.
 
 Removed on portrait: the draggable board and chat split, the mobile room
 shell and its overlays, the mobile scoreboard, the companion panel switcher,
@@ -176,8 +175,8 @@ storage under the existing key.
 ### Controller ownership: `useKibitzGobans`
 
 A hook in `src/views/Kibitz/useKibitzGobans.ts` owns both controllers and
-replaces `KibitzBoard`, the snapshot bookkeeping in `KibitzRoomStage`,
-`useKibitzCurrentGameBaseBroker`, and `useKibitzCurrentGameConnectionKeeper`.
+replaces `KibitzBoard`, the snapshot bookkeeping in `KibitzRoomStage`, and
+`useKibitzCurrentGameBaseBroker`.
 
 Inputs: the active room's current game id, the secondary pane state from
 `KibitzController`, and the variation summaries.
@@ -212,8 +211,12 @@ Rules:
 - The hook exposes `center`, which GobanView receives as its `controller`.
   The slider, keyboard shortcuts, player bars, and chat follow it.
 - The offscreen broker is unnecessary because the main controller is never
-  unmounted. The connection keeper is unnecessary because the main
-  controller keeps its own socket connection.
+  unmounted.
+- `useKibitzCurrentGameConnectionKeeper` stays. It solves a socket problem,
+  not a layout one: mini gobans in the game picker send `game/disconnect`
+  for the room's game when they unmount, and the keeper re-sends
+  `game/connect` for the main controller after the picker closes. It is
+  called from `KibitzView` with the main controller.
 
 ### State changes
 
@@ -233,7 +236,8 @@ and its types, `kibitzAnalysisPolicy` and its text, `KibitzRoomList`,
 `KibitzMobileGamePicker`, `KibitzPresetChangePendingBanner`,
 `KibitzDebugPanel`, `KibitzNodeText`, `KibitzVariationComposer`,
 `kibitzVariationDebug`, `KibitzUserAvatar`, `useCurrentKibitzUser`,
-`parseGameId`, and the `HelpFlows` directory with its target ids. The
+`parseGameId`, `useKibitzCurrentGameConnectionKeeper`, and the `HelpFlows`
+directory with its target ids. The
 `refreshLastOfficialMoveFromTrunk` and `restoreToOfficialTail` helpers move
 from `KibitzBoard.tsx` into `kibitzCurrentGameBaseSnapshot.ts`.
 
@@ -244,8 +248,7 @@ from `KibitzBoard.tsx` into `kibitzCurrentGameBaseSnapshot.ts`.
 `KibitzDesktopMainGameScoreboard`, `KibitzMobileMainGameScoreboard`,
 `kibitzScoreboardPlayerDisplay`, `KibitzMainGameStats` (already unreferenced),
 `KibitzPresence`, `KibitzPresencePanel`, `KibitzMobileComparePanel`,
-`useKibitzCurrentGameBaseBroker`, `useKibitzCurrentGameConnectionKeeper`,
-`KibitzBoardControls`, `KibitzMoveTreeStrip`, and `KibitzSharedStreamPanel`
+`useKibitzCurrentGameBaseBroker`, `KibitzBoardControls`, `KibitzMoveTreeStrip`, and `KibitzSharedStreamPanel`
 (replaced by `KibitzChatPanel`, which keeps its message rendering). Each
 deleted module's test file and CSS file go with it. `KibitzInner.tsx` is
 rewritten; the surviving state and effects (room resolution, stream and
