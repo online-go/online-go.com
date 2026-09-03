@@ -64,7 +64,7 @@ jest.mock("./KibitzMoreActionsPopover", () => ({
 jest.mock("./HelpFlows/useKibitzHelpTarget", () => ({ useKibitzHelpTarget: () => null }));
 jest.mock("@/lib/hooks", () => ({ useUser: () => ({ id: 1, anonymous: false }) }));
 
-function fakeController(): GobanController {
+function fakeController(curMove = 5, lastOfficialMove = 5): GobanController {
     return {
         goban: {
             config: { game_id: 100 },
@@ -72,8 +72,8 @@ function fakeController(): GobanController {
                 players: { black: { id: 1 }, white: { id: 2 } },
                 playerColor: () => "invalid",
                 rengo: false,
-                cur_move: { move_number: 5 },
-                last_official_move: { move_number: 5 },
+                cur_move: { move_number: curMove },
+                last_official_move: { move_number: lastOfficialMove },
             },
             on: jest.fn(),
             off: jest.fn(),
@@ -139,8 +139,37 @@ describe("KibitzView", () => {
         expect(screen.getByTestId("variation-panel-variation")).toBeInTheDocument();
     });
 
-    test("streamer mode hides the asides", () => {
+    test("preview mode shows no variation panel but keeps the return action", () => {
+        const props = baseProps();
+        const secondary = fakeController();
+        props.gobans = { ...props.gobans, secondary, center: secondary, centerMode: "preview" };
+        render(<KibitzView {...props} />);
+        expect(screen.queryByTestId(/variation-panel/)).toBeNull();
+        expect(screen.getByTitle("Return to game")).toBeInTheDocument();
+    });
+
+    test("a main board behind the official tail offers Return to live", () => {
+        const main = fakeController(3, 5);
+        const props = baseProps({
+            gobans: { main, secondary: null, center: main, centerMode: "main" },
+        });
+        render(<KibitzView {...props} />);
+        expect(screen.getByTitle("Return to live")).toBeInTheDocument();
+    });
+
+    test("streamer mode hides the asides but keeps the action bar reachable", () => {
         const { container } = render(<KibitzView {...baseProps({ streamerMode: true })} />);
         expect(container.querySelector(".Kibitz.is-streamer-mode")).not.toBeNull();
+        expect(screen.queryByTestId("left-aside")).toBeNull();
+        expect(screen.getByTitle("Settings")).toBeInTheDocument();
+    });
+
+    test("portrait offers the Rooms takeover, except in streamer mode", () => {
+        const { unmount } = render(<KibitzView {...baseProps({ isPortrait: true })} />);
+        expect(screen.getByTitle("Rooms")).toBeInTheDocument();
+        unmount();
+
+        render(<KibitzView {...baseProps({ isPortrait: true, streamerMode: true })} />);
+        expect(screen.queryByTitle("Rooms")).toBeNull();
     });
 });

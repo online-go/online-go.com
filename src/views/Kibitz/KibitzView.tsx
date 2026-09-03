@@ -78,51 +78,63 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
         gobans.centerMode === "main" ? (gobans.main?.goban ?? null) : null,
     );
 
+    const { onExitVariation, onStreamerModeChange, roomSettings } = props;
+
+    React.useEffect(
+        () => () => {
+            settingsPopoverRef.current?.close();
+            settingsPopoverRef.current = null;
+        },
+        [],
+    );
+
+    const openSettings = React.useCallback(
+        (event?: React.MouseEvent<HTMLButtonElement>) => {
+            if (!event) {
+                return;
+            }
+            settingsPopoverRef.current?.close();
+            const close = () => {
+                settingsPopoverRef.current?.close();
+                settingsPopoverRef.current = null;
+            };
+            settingsPopoverRef.current = popover({
+                elt: (
+                    <KibitzRoomSettingsPopover
+                        room={room}
+                        canEditRoom={roomSettings.canEditRoom}
+                        canDeleteRoom={roomSettings.canDeleteRoom}
+                        canChangeBoard={!!roomSettings.onChangeBoard}
+                        isMobileLayout={isPortrait}
+                        streamerMode={streamerMode}
+                        onStreamerModeChange={onStreamerModeChange}
+                        onClose={close}
+                        onRequestChangeBoard={() => {
+                            close();
+                            roomSettings.onChangeBoard?.();
+                        }}
+                        onDeleteRoom={roomSettings.onDeleteRoom}
+                        onSaveRoomDetails={roomSettings.onSaveRoomDetails}
+                    />
+                ),
+                below: event.currentTarget,
+                minWidth: 280,
+            });
+        },
+        [room, roomSettings, isPortrait, streamerMode, onStreamerModeChange],
+    );
+
+    const exitVariation = React.useCallback(() => {
+        gobanViewRef.current?.setActiveTakeover(null);
+        onExitVariation();
+    }, [onExitVariation]);
+
     if (!gobans.center) {
         return null;
     }
 
     const viewingOther = gobans.centerMode !== "main";
     const miniBoardController = viewingOther ? gobans.main : null;
-
-    const openSettings = (event?: React.MouseEvent<HTMLButtonElement>) => {
-        if (!event) {
-            return;
-        }
-        settingsPopoverRef.current?.close();
-        const close = () => {
-            settingsPopoverRef.current?.close();
-            settingsPopoverRef.current = null;
-        };
-        settingsPopoverRef.current = popover({
-            elt: (
-                <KibitzRoomSettingsPopover
-                    room={room}
-                    canEditRoom={props.roomSettings.canEditRoom}
-                    canDeleteRoom={props.roomSettings.canDeleteRoom}
-                    canChangeBoard={!!props.roomSettings.onChangeBoard}
-                    isMobileLayout={isPortrait}
-                    streamerMode={streamerMode}
-                    onStreamerModeChange={props.onStreamerModeChange}
-                    onClose={close}
-                    onRequestChangeBoard={() => {
-                        close();
-                        props.roomSettings.onChangeBoard?.();
-                    }}
-                    onDeleteRoom={props.roomSettings.onDeleteRoom}
-                    onSaveRoomDetails={props.roomSettings.onSaveRoomDetails}
-                />
-            ),
-            below: event.currentTarget,
-            minWidth: 280,
-        });
-    };
-
-    const closeTakeovers = () => gobanViewRef.current?.setActiveTakeover(null);
-    const exitVariation = () => {
-        closeTakeovers();
-        props.onExitVariation();
-    };
 
     const leftAside = (
         <KibitzLeftAside
@@ -166,7 +178,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 onClick={openSettings}
             />
 
-            {isPortrait && (
+            {isPortrait && !streamerMode && (
                 <GobanView.Tab
                     id="kibitz-rooms"
                     type="takeover"

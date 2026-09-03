@@ -5,12 +5,19 @@
 
     .KibitzChatPanel {
         min-height: 20rem;
-        flex-grow: 1;
     }
 
+    /* Streamer mode strips the sidebar down to its tab bar so the board fills
+       the capture area while the action tabs stay reachable. */
     &.is-streamer-mode {
         .GobanView-sidebar {
-            display: none;
+            width: auto;
+
+            .GobanView-header,
+            .GobanView-sidebar-content,
+            .MoveNumberSlider {
+                display: none;
+            }
         }
     }
 }
