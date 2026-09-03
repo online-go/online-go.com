@@ -73,6 +73,7 @@ jest.mock("@/lib/preferences", () => ({
 
 import {
     deriveKibitzCenterMode,
+    parseKibitzBoardDimensions,
     useKibitzGobans,
     UseKibitzGobansOptions,
     KibitzGobans,
@@ -81,6 +82,15 @@ import {
 const instances = (
     jest.requireMock("@/lib/GobanController") as { __instances: Array<Record<string, unknown>> }
 ).__instances;
+
+const { captureCurrentGameBaseSnapshotFromController, restoreMainBoardToOfficialTail } =
+    jest.requireMock("./kibitzCurrentGameBaseSnapshot") as {
+        captureCurrentGameBaseSnapshotFromController: jest.Mock;
+        restoreMainBoardToOfficialTail: jest.Mock;
+    };
+const { applyKibitzVariationToController } = jest.requireMock("./kibitzVariationTree") as {
+    applyKibitzVariationToController: jest.Mock;
+};
 
 const game: KibitzWatchedGame = {
     game_id: 100,
@@ -91,6 +101,23 @@ const game: KibitzWatchedGame = {
 };
 
 const collapsed: KibitzSecondaryPaneState = { collapsed: true };
+
+function makeUser(id: number, username: string) {
+    return { id, username, ranking: 0, professional: false, ui_class: "" };
+}
+
+function makeVariation(id: string, overrides: Partial<Record<string, unknown>> = {}) {
+    return {
+        id,
+        room_id: "room-1",
+        game_id: 100,
+        creator: makeUser(1, "b"),
+        created_at: 0,
+        viewer_count: 0,
+        current_viewers: [],
+        ...overrides,
+    };
+}
 
 function Harness(props: { options: UseKibitzGobansOptions; onResult: (r: KibitzGobans) => void }) {
     const result = useKibitzGobans(props.options);
@@ -113,8 +140,24 @@ function baseOptions(overrides: Partial<UseKibitzGobansOptions> = {}): UseKibitz
     };
 }
 
+function emit(instance: Record<string, unknown>, event: string) {
+    act(() => {
+        (instance as { emitGoban: (e: string) => void }).emitGoban(event);
+    });
+}
+
 beforeEach(() => {
     instances.length = 0;
+    jest.clearAllMocks();
+    // clearAllMocks() only wipes call history; re-apply the defaults so a
+    // custom mockImplementation set inside one test never bleeds into the
+    // next one.
+    captureCurrentGameBaseSnapshotFromController.mockImplementation(() => null);
+    restoreMainBoardToOfficialTail.mockImplementation(() => null);
+    applyKibitzVariationToController.mockImplementation(() => ({
+        variationId: "v1",
+        endpoint: null,
+    }));
 });
 
 describe("deriveKibitzCenterMode", () => {
@@ -138,6 +181,22 @@ describe("deriveKibitzCenterMode", () => {
     });
 });
 
+describe("parseKibitzBoardDimensions", () => {
+    test("parses a board_size string", () => {
+        expect(parseKibitzBoardDimensions({ ...game, board_size: "9x9" })).toEqual({
+            width: 9,
+            height: 9,
+        });
+    });
+    test("defaults to 19x19 when no game is given", () => {
+        expect(parseKibitzBoardDimensions(undefined)).toEqual({ width: 19, height: 19 });
+    });
+    test("defaults to 19x19 for a malformed board_size", () => {
+        const malformed = { ...game, board_size: "abc" } as unknown as KibitzWatchedGame;
+        expect(parseKibitzBoardDimensions(malformed)).toEqual({ width: 19, height: 19 });
+    });
+});
+
 describe("useKibitzGobans", () => {
     test("creates a connected main controller and shows it in the center", () => {
         let latest: KibitzGobans | null = null;
@@ -154,23 +213,12 @@ describe("useKibitzGobans", () => {
         expect(latest!.secondary).toBeNull();
     });
 
-    test("opening a variation creates a secondary controller and restores main to the tail", () => {
-        const { restoreMainBoardToOfficialTail } = jest.requireMock(
-            "./kibitzCurrentGameBaseSnapshot",
-        );
+    test("does not build a secondary controller until the main trunk snapshot is ready", () => {
         let latest: KibitzGobans | null = null;
         const { rerender } = render(
             <Harness options={baseOptions()} onResult={(r) => (latest = r)} />,
         );
-        const variation = {
-            id: "v1",
-            room_id: "room-1",
-            game_id: 100,
-            creator: { id: 1, username: "b", ranking: 0, professional: false, ui_class: "" },
-            created_at: 0,
-            viewer_count: 0,
-            current_viewers: [],
-        };
+        const variation = makeVariation("v1");
         rerender(
             <Harness
                 options={baseOptions({
@@ -181,15 +229,80 @@ describe("useKibitzGobans", () => {
                 onResult={(r) => (latest = r)}
             />,
         );
+        // captureCurrentGameBaseSnapshotFromController defaults to null, so
+        // the main board's trunk isn't ready yet -- no secondary is built.
+        expect(instances).toHaveLength(1);
+        expect(latest!.center).toBe(latest!.main);
+        expect(latest!.secondary).toBeNull();
+
+        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => ({
+            gameId: 100,
+            trunkTailMoveNumber: 3,
+            config: { move_tree: { x: 1 } },
+        }));
+        emit(instances[0], "load");
+
         expect(instances).toHaveLength(2);
-        expect(instances[1].config).toMatchObject({ interactive: false });
+        expect(latest!.center).toBe(latest!.secondary);
+    });
+
+    test("opening a same-game variation composes onto the main trunk once ready", () => {
+        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => ({
+            gameId: 100,
+            trunkTailMoveNumber: 3,
+            config: { move_tree: { x: 1 } },
+        }));
+        let latest: KibitzGobans | null = null;
+        const { rerender } = render(
+            <Harness options={baseOptions()} onResult={(r) => (latest = r)} />,
+        );
+        emit(instances[0], "load");
+
+        const selected = makeVariation("v1");
+        const otherVisible = makeVariation("v2", { creator: makeUser(3, "c") });
+        rerender(
+            <Harness
+                options={baseOptions({
+                    secondaryPane: { collapsed: false, variation_id: "v1" },
+                    variations: [otherVisible, selected],
+                    visibleVariationIds: ["v1", "v2"],
+                })}
+                onResult={(r) => (latest = r)}
+            />,
+        );
+
+        expect(instances).toHaveLength(2);
+        expect(instances[1].config).toMatchObject({
+            game_id: undefined,
+            interactive: false,
+            move_tree: { x: 1 },
+        });
         expect(latest!.centerMode).toBe("variation");
         expect(latest!.center).toBe(latest!.secondary);
         expect(restoreMainBoardToOfficialTail).toHaveBeenCalledWith(latest!.main);
+        expect(applyKibitzVariationToController).toHaveBeenNthCalledWith(
+            1,
+            expect.anything(),
+            otherVisible,
+            0,
+            false,
+        );
+        expect(applyKibitzVariationToController).toHaveBeenLastCalledWith(
+            expect.anything(),
+            selected,
+            0,
+            true,
+        );
     });
 
     test("a draft controller is interactive and enters analyze mode", () => {
+        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => ({
+            gameId: 100,
+            trunkTailMoveNumber: 3,
+            config: { move_tree: { x: 1 } },
+        }));
         const { rerender } = render(<Harness options={baseOptions()} onResult={() => undefined} />);
+        emit(instances[0], "load");
         rerender(
             <Harness
                 options={baseOptions({
@@ -203,11 +316,31 @@ describe("useKibitzGobans", () => {
                 onResult={() => undefined}
             />,
         );
-        expect(instances[1].config).toMatchObject({ interactive: true });
+        expect(instances[1].config).toMatchObject({ interactive: true, game_id: undefined });
         expect((instances[1] as { setAnalyzeTool: jest.Mock }).setAnalyzeTool).toHaveBeenCalledWith(
             "stone",
             "alternate",
         );
+    });
+
+    test("previewing another game connects and defers composition until load", () => {
+        const { rerender } = render(<Harness options={baseOptions()} onResult={() => undefined} />);
+        rerender(
+            <Harness
+                options={baseOptions({ secondaryPane: { collapsed: false, preview_game_id: 7 } })}
+                onResult={() => undefined}
+            />,
+        );
+        expect(instances).toHaveLength(2);
+        expect(instances[1].config).toMatchObject({ game_id: 7 });
+        const secondaryGoban = (instances[1] as { goban: { redraw: jest.Mock } }).goban;
+        expect(secondaryGoban.redraw).not.toHaveBeenCalled();
+        expect(applyKibitzVariationToController).not.toHaveBeenCalled();
+
+        emit(instances[1], "load");
+
+        expect(secondaryGoban.redraw).toHaveBeenCalledWith(true);
+        expect(applyKibitzVariationToController).not.toHaveBeenCalled();
     });
 
     test("closing the pane destroys the secondary controller", () => {
@@ -235,22 +368,27 @@ describe("useKibitzGobans", () => {
     });
 
     test("unmount destroys everything", () => {
-        const { unmount } = render(<Harness options={baseOptions()} onResult={() => undefined} />);
+        const { rerender, unmount } = render(
+            <Harness options={baseOptions()} onResult={() => undefined} />,
+        );
+        rerender(
+            <Harness
+                options={baseOptions({ secondaryPane: { collapsed: false, preview_game_id: 7 } })}
+                onResult={() => undefined}
+            />,
+        );
+        expect(instances).toHaveLength(2);
         unmount();
         expect((instances[0] as { destroy: jest.Mock }).destroy).toHaveBeenCalled();
+        expect((instances[1] as { destroy: jest.Mock }).destroy).toHaveBeenCalled();
     });
 
     test("main snapshots are reported on goban load", () => {
-        const { captureCurrentGameBaseSnapshotFromController } = jest.requireMock(
-            "./kibitzCurrentGameBaseSnapshot",
-        );
         const snapshot = { gameId: 100, trunkTailMoveNumber: 3 };
         captureCurrentGameBaseSnapshotFromController.mockReturnValueOnce(snapshot);
         const onMainSnapshot = jest.fn();
         render(<Harness options={baseOptions({ onMainSnapshot })} onResult={() => undefined} />);
-        act(() => {
-            (instances[0] as { emitGoban: (e: string) => void }).emitGoban("load");
-        });
+        emit(instances[0], "load");
         expect(onMainSnapshot).toHaveBeenCalledWith(snapshot);
     });
 });

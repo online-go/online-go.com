@@ -34,7 +34,8 @@ import { applyKibitzVariationToController } from "./kibitzVariationTree";
 export type KibitzCenterMode = "main" | "draft" | "variation" | "preview";
 
 export interface KibitzGobans {
-    /** The live game controller. Always mounted somewhere in the DOM. */
+    /** The live game controller. The consumer is responsible for keeping
+     *  its board div mounted in the DOM; this hook does not mount it. */
     main: GobanController | null;
     /** Draft, posted variation, or preview controller. Null when the center
      *  shows the main game. */
@@ -102,7 +103,6 @@ function labelConfig(): Pick<
 function baseConfig(game: KibitzWatchedGame | null | undefined): GobanRendererConfig {
     const { width, height } = parseKibitzBoardDimensions(game);
     return {
-        board_div: document.createElement("div"),
         square_size: "auto",
         width,
         height,
@@ -148,15 +148,17 @@ export function useKibitzGobans({
 }: UseKibitzGobansOptions): KibitzGobans {
     const [main, setMain] = React.useState<GobanController | null>(null);
     const [secondary, setSecondary] = React.useState<GobanController | null>(null);
+    const [mainReady, setMainReady] = React.useState(false);
     const centerMode = deriveKibitzCenterMode(secondaryPane);
 
     const onMainSnapshotRef = React.useRef(onMainSnapshot);
     onMainSnapshotRef.current = onMainSnapshot;
     const currentGameRef = React.useRef(currentGame);
     currentGameRef.current = currentGame;
+    const roomIdRef = React.useRef(roomId);
+    roomIdRef.current = roomId;
 
     const gameId = currentGame?.game_id ?? null;
-    const boardSize = currentGame?.board_size ?? null;
 
     React.useEffect(() => {
         if (gameId == null) {
@@ -165,6 +167,7 @@ export function useKibitzGobans({
         }
         const controller = new GobanController({
             ...baseConfig(currentGameRef.current),
+            board_div: document.createElement("div"),
             interactive: false,
             connect_to_chat: true,
             game_id: gameId,
@@ -173,10 +176,11 @@ export function useKibitzGobans({
             const snapshot = captureCurrentGameBaseSnapshotFromController(
                 controller,
                 currentGameRef.current,
-                roomId,
+                roomIdRef.current,
                 "main-board",
             );
             if (snapshot) {
+                setMainReady(true);
                 onMainSnapshotRef.current?.(snapshot);
             }
         };
@@ -185,6 +189,7 @@ export function useKibitzGobans({
         controller.goban.on("last_official_move", sync);
         controller.goban.on("move-made", sync);
         setMain(controller);
+        setMainReady(false);
         return () => {
             controller.goban.off("load", sync);
             controller.goban.off("gamedata", sync);
@@ -192,8 +197,9 @@ export function useKibitzGobans({
             controller.goban.off("move-made", sync);
             controller.destroy();
             setMain(null);
+            setMainReady(false);
         };
-    }, [gameId, boardSize, roomId]);
+    }, [gameId]);
 
     // Any change to what the secondary board shows rebuilds it from scratch.
     const secondaryKey =
@@ -255,8 +261,21 @@ export function useKibitzGobans({
         // Other games connect read-only.
         const useMainTrunk = mode !== "preview" && targetGameId === currentGameId;
         const mainSnapshot = useMainTrunk
-            ? captureCurrentGameBaseSnapshotFromController(main, currentGameRef.current, roomId)
+            ? captureCurrentGameBaseSnapshotFromController(
+                  main,
+                  currentGameRef.current,
+                  roomIdRef.current,
+              )
             : null;
+
+        if (useMainTrunk && !mainSnapshot) {
+            // The main board hasn't produced a usable trunk snapshot yet
+            // (its div isn't in the DOM, or the engine has no move tree).
+            // Wait for `mainReady` to flip before building a secondary
+            // board off of it.
+            setSecondary(null);
+            return;
+        }
 
         const controller = new GobanController({
             ...baseConfig(targetGame),
@@ -323,11 +342,12 @@ export function useKibitzGobans({
             controller.goban.redraw(true);
         };
 
-        if (useMainTrunk || mode === "draft") {
-            compose();
-        } else {
+        const connected = !useMainTrunk && targetGameId != null;
+        if (connected) {
             // Connected boards compose once the server has sent the game.
             controller.goban.on("load", compose);
+        } else {
+            compose();
         }
 
         restoreMainBoardToOfficialTail(main);
@@ -337,7 +357,7 @@ export function useKibitzGobans({
             controller.destroy();
             setSecondary(null);
         };
-    }, [secondaryKey, main, roomId]);
+    }, [secondaryKey, main, mainReady]);
 
     const center = centerMode === "main" ? main : (secondary ?? main);
 
