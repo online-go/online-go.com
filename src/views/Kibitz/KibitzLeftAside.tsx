@@ -54,30 +54,32 @@ export interface KibitzLeftAsideProps {
 export function KibitzLeftAside(props: KibitzLeftAsideProps): React.ReactElement {
     return (
         <div className="KibitzLeftAside">
-            <KibitzRoomList
-                rooms={props.rooms}
-                activeRoomId={props.activeRoomId}
-                onSelectRoom={props.onSelectRoom}
-                onCreateRoom={props.onCreateRoom}
-                canOpenCreateRoomFlow={props.canOpenCreateRoomFlow}
-                signInHref={props.signInHref}
-                blockedRoomIds={props.blockedRoomIds}
-                helpTargetId={props.roomListHelpTargetId}
-            />
-            <KibitzVariationList
-                title={pgettext("Heading for the Kibitz variation list", "Variations")}
-                variations={props.variations}
-                currentGameId={props.currentGameId}
-                gameById={props.variationGameById}
-                selectedVariationId={props.selectedVariationId}
-                variationFocusRequestId={props.variationFocusRequestId}
-                variationColorIndexes={props.variationColorIndexes}
-                blockedVariationFlashId={props.blockedVariationFlashId}
-                onRecallVariation={props.onRecallVariation}
-                onHideVariation={props.onHideVariation}
-                onCreateVariation={props.onCreateVariation}
-                helpTargetId={props.variationListHelpTargetId}
-            />
+            <div className="KibitzLeftAside-scroll">
+                <KibitzRoomList
+                    rooms={props.rooms}
+                    activeRoomId={props.activeRoomId}
+                    onSelectRoom={props.onSelectRoom}
+                    onCreateRoom={props.onCreateRoom}
+                    canOpenCreateRoomFlow={props.canOpenCreateRoomFlow}
+                    signInHref={props.signInHref}
+                    blockedRoomIds={props.blockedRoomIds}
+                    helpTargetId={props.roomListHelpTargetId}
+                />
+                <KibitzVariationList
+                    title={pgettext("Heading for the Kibitz variation list", "Variations")}
+                    variations={props.variations}
+                    currentGameId={props.currentGameId}
+                    gameById={props.variationGameById}
+                    selectedVariationId={props.selectedVariationId}
+                    variationFocusRequestId={props.variationFocusRequestId}
+                    variationColorIndexes={props.variationColorIndexes}
+                    blockedVariationFlashId={props.blockedVariationFlashId}
+                    onRecallVariation={props.onRecallVariation}
+                    onHideVariation={props.onHideVariation}
+                    onCreateVariation={props.onCreateVariation}
+                    helpTargetId={props.variationListHelpTargetId}
+                />
+            </div>
             {props.miniBoardController && (
                 <div className="KibitzLeftAside-miniBoard">
                     <KibitzMiniMainBoard
