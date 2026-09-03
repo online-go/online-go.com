@@ -340,6 +340,18 @@
     /* Selection header (for dropdowns etc) */
     --select-header-bg: #f5f5f5;
     --select-header-fg: $fg;
+
+    /* AI review move quality palette. Shared by the board badges and
+     * circles, the summary table and the move list popover. */
+    --move-quality-excellent: #3c8ccd;
+    --move-quality-great: #369d57;
+    --move-quality-good: #559a35;
+    --move-quality-inaccuracy: #e8a838;
+    --move-quality-mistake: #e87d3e;
+    --move-quality-blunder: #d64545;
+    /* The official best move. The blue, the excellent blue-green and the
+     * great green share one perceptual lightness. */
+    --ai-blue-move: #0082ff;
 }
 
 /* Dark theme mixin */
@@ -532,6 +544,15 @@
     /* Selection header */
     --select-header-bg: $default-button;
     --select-header-fg: #9a9a9a;
+
+    /* AI review move quality palette */
+    --move-quality-excellent: #378fbf;
+    --move-quality-great: #14a052;
+    --move-quality-good: #449e05;
+    --move-quality-inaccuracy: #f5b942;
+    --move-quality-mistake: #f5924b;
+    --move-quality-blunder: #ef5555;
+    --ai-blue-move: #0082ff;
 }
 
 /* Accessible theme (extends dark with colorblind-friendly overrides) */
