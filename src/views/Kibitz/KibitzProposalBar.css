@@ -260,12 +260,12 @@
         width: var(--proposal-preview-size);
     }
 
-    .proposal-preview-thumb .KibitzBoard {
+    .proposal-preview-thumb .KibitzBoardPreview {
         height: 100%;
         width: 100%;
     }
 
-    .proposal-preview-thumb .KibitzBoard .goban-container {
+    .proposal-preview-thumb .KibitzBoardPreview .goban-container {
         height: 100% !important;
         width: 100% !important;
     }
@@ -373,12 +373,12 @@
         min-width: 0;
     }
 
-    .proposal-expanded-board-wrap .KibitzBoard {
+    .proposal-expanded-board-wrap .KibitzBoardPreview {
         height: min(17rem, 58vw);
         width: min(17rem, 58vw);
     }
 
-    .proposal-expanded-board-wrap .KibitzBoard .goban-container {
+    .proposal-expanded-board-wrap .KibitzBoardPreview .goban-container {
         height: 100% !important;
         width: 100% !important;
     }
@@ -444,7 +444,7 @@
             width: 2.8rem;
         }
 
-        .proposal-preview-thumb .KibitzBoard {
+        .proposal-preview-thumb .KibitzBoardPreview {
             height: 2.8rem;
             width: 2.8rem;
         }
@@ -473,7 +473,7 @@
             align-self: flex-start;
         }
 
-        .proposal-expanded-board-wrap .KibitzBoard {
+        .proposal-expanded-board-wrap .KibitzBoardPreview {
             height: min(15rem, 74vw);
             width: min(15rem, 74vw);
         }

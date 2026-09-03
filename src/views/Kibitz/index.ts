@@ -16,7 +16,6 @@
  */
 
 export * from "./Kibitz";
-export * from "./KibitzBoard";
 export * from "./KibitzDebugPanel";
 export * from "./KibitzProposalBar";
 export * from "./KibitzProposalQueue";

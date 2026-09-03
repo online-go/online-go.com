@@ -16,20 +16,9 @@
  */
 
 export const KIBITZ_HELP_TARGETS = {
-    mobileRoomTitle: "kibitz-mobile-room-title",
-    mobileMainBoard: "kibitz-mobile-main-board",
-    mobilePanelSwitcher: "kibitz-mobile-panel-switcher",
-    mobileVariationsTab: "kibitz-mobile-variations-tab",
-    mobileVariationsPanel: "kibitz-mobile-variations-panel",
-    mobileVariationBoard: "kibitz-mobile-variation-board",
-    mobileVariationActions: "kibitz-mobile-variation-actions",
-    mobileRoomMenu: "kibitz-mobile-room-menu",
     desktopRoomList: "kibitz-desktop-room-list",
     desktopRoomTitle: "kibitz-desktop-room-title",
-    desktopMainBoard: "kibitz-desktop-main-board",
-    desktopVariations: "kibitz-desktop-variations",
     desktopVariationList: "kibitz-desktop-variation-list",
-    desktopVariationBoard: "kibitz-desktop-variation-board",
     desktopVariationActions: "kibitz-desktop-variation-actions",
     desktopStream: "kibitz-desktop-stream",
 } as const;

@@ -22,7 +22,7 @@ import { interpolate, pgettext } from "@/lib/translate";
 import { Player } from "@/components/Player";
 import { ObserveGamesComponent } from "@/components/ObserveGamesComponent";
 import type { KibitzRoomSummary, KibitzRoomUser, KibitzWatchedGame } from "@/models/kibitz";
-import { KibitzBoard } from "./KibitzBoard";
+import { KibitzBoardPreview } from "./KibitzBoardPreview";
 import { KibitzUserAvatar } from "./KibitzUserAvatar";
 import { getKibitzAccessPolicyForUser } from "./kibitzAnalysisPolicy";
 import {
@@ -591,14 +591,12 @@ export function KibitzGamePickerOverlay({
                             (mobile ? " KibitzGamePickerOverlay-boardWrap-mobile" : "")
                         }
                     >
-                        <KibitzBoard
-                            role="preview"
+                        <KibitzBoardPreview
                             gameId={selectedGameSummary.game_id}
                             width={selectedGame.details.width}
                             height={selectedGame.details.height}
                             moveTree={selectedGamePreviewSnapshot.config.move_tree}
                             movePath={selectedGamePreviewSnapshot.movePath}
-                            restoreToOfficialTailOnLoad={true}
                             className="KibitzGamePickerOverlay-board"
                         />
                     </div>

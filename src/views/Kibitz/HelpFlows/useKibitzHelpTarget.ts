@@ -29,8 +29,8 @@ type DynamicHelpTarget = ReturnType<DynamicHelpApi["registerTargetItem"]>;
  *
  * Calling registerTargetItem directly from a component body can ask the RDH
  * provider to update while React is rendering Kibitz. That is especially risky
- * in KibitzRoomStage, where many targets are present and the first-run trigger
- * can queue another update immediately afterwards.
+ * where many targets are present and the first-run trigger can queue another
+ * update immediately afterwards.
  */
 export function useKibitzHelpTarget(
     targetId: KibitzHelpTargetId | null | undefined,

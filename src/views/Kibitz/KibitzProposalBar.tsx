@@ -19,7 +19,7 @@ import * as React from "react";
 import * as data from "@/lib/data";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { KibitzProposal } from "@/models/kibitz";
-import { KibitzBoard } from "./KibitzBoard";
+import { KibitzBoardPreview } from "./KibitzBoardPreview";
 import "./KibitzProposalBar.css";
 
 // cspell:ignore cooldown
@@ -276,7 +276,7 @@ export function KibitzProposalBar({
                         }
                     >
                         <span className="proposal-preview-thumb">
-                            <KibitzBoard
+                            <KibitzBoardPreview
                                 gameId={proposal.proposed_game.game_id}
                                 className="proposal-preview-board-surface"
                                 size={PROPOSAL_PREVIEW_SIZE}
@@ -430,7 +430,7 @@ export function KibitzProposalBar({
                         </button>
                     </div>
                     <div className="proposal-expanded-board-wrap">
-                        <KibitzBoard
+                        <KibitzBoardPreview
                             gameId={proposal.proposed_game.game_id}
                             className="proposal-expanded-board-surface"
                         />
