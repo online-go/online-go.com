@@ -82,7 +82,7 @@
 **Interfaces:**
 - Produces: `user_color(goban: Goban, player_id: number): "black" | "white" | null` exported from `@/components/GobanView`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `src/components/GobanView/util.test.ts`:
 
@@ -129,12 +129,12 @@ describe("user_color", () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `yarn test src/components/GobanView/util.test.ts`
 Expected: FAIL, `user_color` is not exported from `./util`.
 
-- [ ] **Step 3: Move the function**
+- [x] **Step 3: Move the function**
 
 Append to `src/components/GobanView/util.ts` (add `import { Goban } from "goban";` at the top):
 
@@ -175,12 +175,12 @@ import { user_color } from "@/components/GobanView";
 
 If `Game.tsx` already imports from `@/components/GobanView`, add `user_color` to that import instead.
 
-- [ ] **Step 4: Run the test and type-check**
+- [x] **Step 4: Run the test and type-check**
 
 Run: `yarn test src/components/GobanView/util.test.ts && yarn type-check`
 Expected: PASS, no type errors.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 yarn prettier:file src/components/GobanView/util.ts src/components/GobanView/util.test.ts src/components/GobanView/index.ts src/views/Game/util.ts src/views/Game/Game.tsx
@@ -202,7 +202,7 @@ git commit -m "refactor: move user_color into GobanView util"
 - Consumes: `useGobanController` from `./GobanViewContext`, `generateGobanHook` from `./hooks`.
 - Produces: `export function PlayerBar({ color }: { color: "black" | "white" }): React.ReactElement`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `src/components/GobanView/PlayerBar.test.tsx`:
 
@@ -287,12 +287,12 @@ describe("PlayerBar", () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `yarn test src/components/GobanView/PlayerBar.test.tsx`
 Expected: FAIL, cannot find module `./PlayerBar`.
 
-- [ ] **Step 3: Write PlayerBar**
+- [x] **Step 3: Write PlayerBar**
 
 Create `src/components/GobanView/PlayerBar.tsx`:
 
@@ -480,12 +480,12 @@ Add to `src/components/GobanView/index.ts`:
 export { PlayerBar } from "./PlayerBar";
 ```
 
-- [ ] **Step 4: Run the test**
+- [x] **Step 4: Run the test**
 
 Run: `yarn test src/components/GobanView/PlayerBar.test.tsx && yarn type-check`
 Expected: PASS. If `engine.outcome` or `playerToMoveOnOfficialBranch` type names differ, follow the compiler and adjust `deriveState`, not the test.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 yarn prettier:file src/components/GobanView/PlayerBar.tsx src/components/GobanView/PlayerBar.css src/components/GobanView/PlayerBar.test.tsx src/components/GobanView/index.ts
@@ -504,7 +504,7 @@ git commit -m "feat(GobanView): add PlayerBar component"
 **Interfaces:**
 - Produces: `playerBars?: boolean` on `GobanViewProps`. When true, a `PlayerBar` for the top color renders above the board and one for the bottom color renders below it, in both view modes.
 
-- [ ] **Step 1: Add the prop and color hook**
+- [x] **Step 1: Add the prop and color hook**
 
 In `GobanView.tsx` add imports:
 
@@ -555,13 +555,13 @@ Inside `GobanViewComponent`, after `const isPortrait = ...`:
 
 Destructure `playerBars` from props.
 
-- [ ] **Step 2: Render the bars**
+- [x] **Step 2: Render the bars**
 
 Portrait branch: inside `.GobanView-mobile-scroll`, render `{topBar}` directly after the `aboveBoard` block and `{bottomBar}` directly before the `belowBoard` block, as siblings of `.GobanView-center`.
 
 Landscape branch: inside `.GobanView-center`, render `{topBar}` before `<GobanContainer>` and `{bottomBar}` after it.
 
-- [ ] **Step 3: CSS**
+- [x] **Step 3: CSS**
 
 In `GobanView.css`, inside `.GobanView`:
 
@@ -576,12 +576,12 @@ In `GobanView.css`, inside `.GobanView`:
     }
 ```
 
-- [ ] **Step 4: Verify**
+- [x] **Step 4: Verify**
 
 Run: `yarn type-check && yarn lint && yarn test src/components/GobanView`
 Expected: PASS. Then run the dev server (`yarn dev`) and open a game page to confirm nothing changed there (the prop is off).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 yarn prettier:file src/components/GobanView/GobanView.tsx src/components/GobanView/GobanView.css
@@ -601,7 +601,7 @@ git commit -m "feat(GobanView): optional player bars around the board"
 **Interfaces:**
 - Produces: `leftAside?: React.ReactNode` on `GobanViewProps`. Landscape only.
 
-- [ ] **Step 1: Add the prop**
+- [x] **Step 1: Add the prop**
 
 In `GobanViewProps`:
 
@@ -620,7 +620,7 @@ Destructure it. In the landscape return, before `<div className="GobanView-cente
 
 Add `(leftAside ? " has-left-aside" : "")` to the landscape root className expression.
 
-- [ ] **Step 2: Variable and CSS**
+- [x] **Step 2: Variable and CSS**
 
 In `src/global_styl/01_variables.css` after line 34 (`--goban-view-sidebar-width: 400px;`):
 
@@ -646,12 +646,12 @@ In `GobanView.css` inside `.GobanView`, after the `.GobanView-sidebar` block:
     }
 ```
 
-- [ ] **Step 3: Verify**
+- [x] **Step 3: Verify**
 
 Run: `yarn type-check && yarn lint`
 Expected: PASS.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 yarn prettier:file src/components/GobanView/GobanView.tsx src/components/GobanView/GobanView.css src/global_styl/01_variables.css
@@ -673,7 +673,7 @@ git commit -m "feat(GobanView): optional left aside column"
 **Interfaces:**
 - Produces: `KibitzSecondaryPaneState` without `size`; `KibitzController.closeSecondaryPane(): void` replaces `setSecondaryPaneMode`, `increaseSecondaryPaneSize`, `decreaseSecondaryPaneSize`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add to `src/views/Kibitz/KibitzController.test.ts` inside the existing top-level `describe`:
 
@@ -689,12 +689,12 @@ Add to `src/views/Kibitz/KibitzController.test.ts` inside the existing top-level
 
 Check how other tests in that file construct a `KibitzController` (some mock sockets) and mirror the setup.
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `yarn test src/views/Kibitz/KibitzController.test.ts -t closeSecondaryPane`
 Expected: FAIL, `closeSecondaryPane` is not a function.
 
-- [ ] **Step 3: Remove `size`**
+- [x] **Step 3: Remove `size`**
 
 In `src/models/kibitz.d.ts` delete the line `size?: "small" | "equal";`.
 
@@ -711,16 +711,16 @@ In `KibitzController.ts`:
     }
 ```
 
-- [ ] **Step 4: Fix compile errors in callers**
+- [x] **Step 4: Fix compile errors in callers**
 
 Run `yarn type-check`. Every error will be in `KibitzInner.tsx`, `KibitzRoomStage.tsx`, `KibitzDividerHandle.tsx`, or their tests. Those files are deleted or rewritten in Tasks 12 and 13; for now, in `KibitzInner.tsx` replace the body of `onSetSecondaryPaneMode` (line 2971) and the flush effect (3143-3155) so they call `controller.closeSecondaryPane()` when the mode is `"hidden"` and do nothing otherwise, and in `KibitzRoomStage.tsx` and `KibitzDividerHandle.tsx` replace reads of `secondaryPane.size` with the literal `"equal"`. Update `KibitzRoomStage.scoreboard.test.tsx:188` to drop `size`. The goal of this step is only a green type-check; these files disappear later.
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 Run: `yarn test src/views/Kibitz/KibitzController.test.ts && yarn type-check`
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 yarn prettier:file src/models/kibitz.d.ts src/views/Kibitz/KibitzController.ts src/views/Kibitz/KibitzController.test.ts src/views/Kibitz/KibitzInner.tsx src/views/Kibitz/KibitzRoomStage.tsx src/views/Kibitz/KibitzDividerHandle.tsx src/views/Kibitz/KibitzRoomStage.scoreboard.test.tsx
@@ -763,7 +763,7 @@ export interface UseKibitzGobansOptions {
 export function useKibitzGobans(options: UseKibitzGobansOptions): KibitzGobans;
 ```
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `src/views/Kibitz/useKibitzGobans.test.tsx`:
 
@@ -967,12 +967,12 @@ describe("useKibitzGobans", () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `yarn test src/views/Kibitz/useKibitzGobans.test.tsx`
 Expected: FAIL, cannot find module `./useKibitzGobans`.
 
-- [ ] **Step 3: Write the hook**
+- [x] **Step 3: Write the hook**
 
 Create `src/views/Kibitz/useKibitzGobans.ts`:
 
@@ -1300,12 +1300,12 @@ export function useKibitzGobans({
 }
 ```
 
-- [ ] **Step 4: Run the tests**
+- [x] **Step 4: Run the tests**
 
 Run: `yarn test src/views/Kibitz/useKibitzGobans.test.tsx && yarn type-check`
 Expected: PASS. If `GobanRendererConfig` rejects a spread of `mainSnapshot.config`, cast through `Partial<GobanRendererConfig>` at that single spot; never `any`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 yarn prettier:file src/views/Kibitz/useKibitzGobans.ts src/views/Kibitz/useKibitzGobans.test.tsx
@@ -1356,7 +1356,7 @@ export interface KibitzLeftAsideProps {
 }
 ```
 
-- [ ] **Step 1: Mini main board**
+- [x] **Step 1: Mini main board**
 
 Create `src/views/Kibitz/KibitzMiniMainBoard.tsx`:
 
@@ -1422,7 +1422,7 @@ Create `src/views/Kibitz/KibitzMiniMainBoard.css`:
 }
 ```
 
-- [ ] **Step 2: Move the New variation button into the variation list**
+- [x] **Step 2: Move the New variation button into the variation list**
 
 In `KibitzVariationList.tsx` add `onCreateVariation?: () => void;` to `KibitzVariationListProps` and destructure it. Find where `title` is rendered (the list header) and render, next to the title:
 
@@ -1451,7 +1451,7 @@ If the header is not a flex row, wrap the title and button in `<div className="K
 
 In `KibitzRoomList.tsx` remove the `onCreateVariation` prop, its destructuring, and the `{onCreateVariation ? (...) : null}` block. Change the surrounding condition `onCreateRoom || onCreateVariation` to `onCreateRoom`. Update `KibitzRoomList.test.tsx` if it references the variation button.
 
-- [ ] **Step 3: Left aside**
+- [x] **Step 3: Left aside**
 
 Create `src/views/Kibitz/KibitzLeftAside.tsx`:
 
@@ -1563,12 +1563,12 @@ Create `src/views/Kibitz/KibitzLeftAside.css`:
 
 Check `HelpFlows/KibitzHelpTargets.ts` exports a `KibitzHelpTargetId` type (the `useKibitzHelpTarget` signature uses it). If it is not exported, export it there.
 
-- [ ] **Step 4: Verify**
+- [x] **Step 4: Verify**
 
 Run: `yarn type-check && yarn lint && yarn test src/views/Kibitz/KibitzRoomList.test.tsx src/views/Kibitz/KibitzVariationList.test.tsx`
 Expected: PASS after updating any test that asserted the variation button inside the room list.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 yarn prettier:file src/views/Kibitz/KibitzMiniMainBoard.tsx src/views/Kibitz/KibitzMiniMainBoard.css src/views/Kibitz/KibitzLeftAside.tsx src/views/Kibitz/KibitzLeftAside.css src/views/Kibitz/KibitzVariationList.tsx src/views/Kibitz/KibitzVariationList.css src/views/Kibitz/KibitzRoomList.tsx src/views/Kibitz/KibitzRoomList.test.tsx
@@ -1599,7 +1599,7 @@ export function KibitzChatPanel(props: KibitzChatPanelProps): React.ReactElement
 export function createChatLineFromGobanLine(roomChannel: string, line: protocol.GameChatLine, includeMalkovich: boolean): PaneEntry | null;  // unchanged
 ```
 
-- [ ] **Step 1: Rename**
+- [x] **Step 1: Rename**
 
 ```bash
 git mv src/views/Kibitz/KibitzSharedStreamPanel.tsx src/views/Kibitz/KibitzChatPanel.tsx
@@ -1610,7 +1610,7 @@ git mv src/views/Kibitz/KibitzSharedStreamPanel.render.test.tsx src/views/Kibitz
 
 Replace every `KibitzSharedStreamPanel` identifier and CSS class prefix in those four files with `KibitzChatPanel` (`sed -i '' 's/KibitzSharedStreamPanel/KibitzChatPanel/g'`).
 
-- [ ] **Step 2: Update the render test to the tab layout**
+- [x] **Step 2: Update the render test to the tab layout**
 
 In `KibitzChatPanel.render.test.tsx`:
 - Add a mock for `@/components/ChatUserList`:
@@ -1641,12 +1641,12 @@ jest.mock("@/components/ChatUserList", () => ({
 
 where `baseProps()` returns the existing room (`channel: "kibitz-room-1"`), items, variations, `onOpenVariation: jest.fn()`, `gameController: null`. Import `fireEvent` from `@testing-library/react`.
 
-- [ ] **Step 3: Run the tests to verify they fail**
+- [x] **Step 3: Run the tests to verify they fail**
 
 Run: `yarn test src/views/Kibitz/KibitzChatPanel.render.test.tsx`
 Expected: FAIL on props and on the missing user toggle.
 
-- [ ] **Step 4: Trim the panel**
+- [x] **Step 4: Trim the panel**
 
 In `KibitzChatPanel.tsx`:
 
@@ -1782,12 +1782,12 @@ Keep the existing `renderEntries`, `roomEntries`, `gameEntries`, `onRoomKeyPress
 
 Adjust the existing nested rules under the renamed root so the `chat-lines`, `kibitz-chat-entry`, and `variation-post` rules still apply.
 
-- [ ] **Step 5: Run the tests**
+- [x] **Step 5: Run the tests**
 
 Run: `yarn test src/views/Kibitz/KibitzChatPanel && yarn type-check`
 Expected: both test files PASS. The type-check will fail only in `KibitzInner.tsx` where the old panel was rendered; update those two render sites to `<KibitzChatPanel room=... items=... variations=... onOpenVariation=... gameController={mainBoardController} />` so the tree compiles (they get replaced in Task 12).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 yarn prettier:file src/views/Kibitz/KibitzChatPanel.tsx src/views/Kibitz/KibitzChatPanel.css src/views/Kibitz/KibitzChatPanel.test.ts src/views/Kibitz/KibitzChatPanel.render.test.tsx src/views/Kibitz/KibitzInner.tsx
@@ -1821,7 +1821,7 @@ export interface KibitzProposalPanelProps {
 }
 ```
 
-- [ ] **Step 1: Variation panel**
+- [x] **Step 1: Variation panel**
 
 Create `src/views/Kibitz/KibitzVariationPanel.tsx`:
 
@@ -1906,7 +1906,7 @@ Create `src/views/Kibitz/KibitzVariationPanel.css`:
 }
 ```
 
-- [ ] **Step 2: Proposal panel**
+- [x] **Step 2: Proposal panel**
 
 Create `src/views/Kibitz/KibitzProposalPanel.tsx`:
 
@@ -1948,7 +1948,7 @@ Create `src/views/Kibitz/KibitzProposalPanel.css`:
 
 Check `KibitzProposal` is exported from `@/models/kibitz` (it is referenced by `KibitzProposalQueue.tsx:40`; copy that file's import path).
 
-- [ ] **Step 3: Verify and commit**
+- [x] **Step 3: Verify and commit**
 
 Run: `yarn type-check && yarn lint`
 Expected: PASS.
@@ -1979,7 +1979,7 @@ export function KibitzMoreActionsPopover(props: KibitzMoreActionsPopoverProps): 
 export function openKibitzMoreActions(button: HTMLElement, controller: GobanController): PopOver;
 ```
 
-- [ ] **Step 1: Write the component**
+- [x] **Step 1: Write the component**
 
 Create `src/views/Kibitz/KibitzMoreActionsPopover.tsx`:
 
@@ -2095,7 +2095,7 @@ Create `src/views/Kibitz/KibitzMoreActionsPopover.css`:
 }
 ```
 
-- [ ] **Step 2: Verify and commit**
+- [x] **Step 2: Verify and commit**
 
 Run: `yarn type-check && yarn lint`
 
@@ -2143,7 +2143,7 @@ export interface KibitzViewProps {
 export function KibitzView(props: KibitzViewProps): React.ReactElement;
 ```
 
-- [ ] **Step 1: Write the failing render test**
+- [x] **Step 1: Write the failing render test**
 
 Create `src/views/Kibitz/KibitzView.test.tsx`:
 
@@ -2265,12 +2265,12 @@ describe("KibitzView", () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `yarn test src/views/Kibitz/KibitzView.test.tsx`
 Expected: FAIL, cannot find module `./KibitzView`.
 
-- [ ] **Step 3: Write KibitzView**
+- [x] **Step 3: Write KibitzView**
 
 Create `src/views/Kibitz/KibitzView.tsx`:
 
@@ -2497,12 +2497,12 @@ Create `src/views/Kibitz/KibitzView.css`:
 }
 ```
 
-- [ ] **Step 4: Run the test**
+- [x] **Step 4: Run the test**
 
 Run: `yarn test src/views/Kibitz/KibitzView.test.tsx && yarn type-check`
 Expected: PASS. Type errors about mock shapes belong in the test; fix them there.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 yarn prettier:file src/views/Kibitz/KibitzView.tsx src/views/Kibitz/KibitzView.css src/views/Kibitz/KibitzView.test.tsx
@@ -2523,7 +2523,7 @@ git commit -m "feat(kibitz): KibitzView lays the room out on GobanView"
 
 This task keeps every non-layout item listed below and deletes the rest. Work in the order given so the type-checker guides each step.
 
-- [ ] **Step 1: Delete the snapshot test**
+- [x] **Step 1: Delete the snapshot test**
 
 ```bash
 git rm src/views/Kibitz/KibitzInner.snapshot.test.tsx
@@ -2531,7 +2531,7 @@ git rm src/views/Kibitz/KibitzInner.snapshot.test.tsx
 
 It asserts the old DOM. Coverage moves to `KibitzView.test.tsx` and `KibitzInner.test.ts` (pure logic, kept).
 
-- [ ] **Step 2: Remove layout state and effects from KibitzInner**
+- [x] **Step 2: Remove layout state and effects from KibitzInner**
 
 Delete these, with any helper only they used:
 - `MOBILE_SPLIT_STORAGE_KEY`, `DESKTOP_SIDEBAR_WIDTH_STORAGE_KEY` (lines 325, 329) and every `desktopSidebarWidthPx`, `isDesktopSidebarDragging`, `mobileSplitRatio`, `mobileDividerDragging` state, ref, handler, and effect.
@@ -2542,7 +2542,7 @@ Delete these, with any helper only they used:
 - The `variationPanels` element (3318-3336) and the three return branches' JSX (3679 to the end). The `KibitzRoomStage`, `KibitzPresence`, `KibitzPresencePanel`, `KibitzMobileMainGameScoreboard`, `KibitzMobileComparePanel`, `KibitzMobileGamePicker` imports go unless the mobile picker is still needed for the change-board flow on portrait; if so keep `KibitzMobileGamePicker` and open it from `onOpenChangeBoard` when `isPortrait`.
 - Help targets registered only for the mobile shell or the stage: `mobileRoomTitle`, `mobileRoomMenu`, `mobilePanelSwitcher`, `mobileVariationsTab`, `mobileVariationsPanel`, `mobileVariationBoard`, `mobileVariationActions`, `mobileMainBoard`, `desktopMainBoard`, `desktopVariationBoard`, `desktopVariationActions`. Keep `desktopRoomList`, `desktopVariations`, `desktopStream`, `desktopVariationList` (passed down) and update `useKibitzHelpTriggers`'s `flowReadiness` argument to only reference targets that still exist; edit `HelpFlows/KibitzHelpFlows.tsx` and `KibitzHelpTargets.ts` to drop steps that pointed at removed targets.
 
-- [ ] **Step 3: Add the hook and view mode**
+- [x] **Step 3: Add the hook and view mode**
 
 Near the other hooks in `KibitzInner`:
 
@@ -2570,7 +2570,7 @@ Where `getCurrentGameBaseSnapshotForVariation` previously consulted the main boa
 
 The game-chat variation effect (line 3168, `goban.on("chat" ...)`) subscribed to `mainBoardController.goban`; point it at `gobans.main?.goban` with `gobans.main` in its dependency list.
 
-- [ ] **Step 4: Add exit and return handlers**
+- [x] **Step 4: Add exit and return handlers**
 
 ```ts
     const onExitVariation = React.useCallback(() => {
@@ -2591,7 +2591,7 @@ The game-chat variation effect (line 3168, `goban.on("chat" ...)`) subscribed to
 
 `onClearPreview` (line 2744) keeps its "open the next visible variation, else clear" behaviour; the `KibitzVariationList` hide path already calls it.
 
-- [ ] **Step 5: Replace the three return branches**
+- [x] **Step 5: Replace the three return branches**
 
 Replace everything from the first `if (rooms.length === 0)` return branch (line 3679) to the end of the component with:
 
@@ -2685,18 +2685,18 @@ Replace everything from the first `if (rooms.length === 0)` return branch (line 
 
 `KibitzView` overrides `miniBoardController` and `onExitVariation` inside `leftAside`, so the `null` placeholder here is only to satisfy the type. `activeProposal` and `queuedRoomProposals` already exist in `KibitzInner` (the inventory shows `mobileHasActiveVote={Boolean(activeProposal)}` and `<KibitzProposalQueue proposals={queuedRoomProposals} />`). Copy the banner and debug panel props from their existing render sites before deleting those sites.
 
-- [ ] **Step 6: Type-check until clean**
+- [x] **Step 6: Type-check until clean**
 
 Run `yarn type-check` repeatedly. Every remaining error is either an unused import, a deleted identifier still referenced, or a leftover mobile branch. Remove them. Do not stub anything with `any`.
 
 Run: `yarn test src/views/Kibitz/KibitzInner.test.ts src/views/Kibitz/KibitzView.test.tsx src/views/Kibitz/useKibitzGobans.test.tsx`
 Expected: PASS.
 
-- [ ] **Step 7: Manual check**
+- [x] **Step 7: Manual check**
 
 Run `yarn dev`, open `/kibitz`. Confirm: rooms on the left, board with bars in the center, chat on the right; opening a variation shows the mini board and the variation panel; Escape and the mini board return to the live game; the gear opens room settings; the ellipsis opens the actions popover. Narrow the window below portrait width and confirm the Rooms takeover and inline panels.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 yarn prettier:file src/views/Kibitz/KibitzInner.tsx src/views/Kibitz/HelpFlows/KibitzHelpFlows.tsx src/views/Kibitz/HelpFlows/KibitzHelpTargets.ts src/views/Kibitz/HelpFlows/useKibitzHelpTriggers.ts
@@ -2712,7 +2712,7 @@ git commit -m "feat(kibitz): render the room through KibitzView"
 - Delete (each with its `.css` and test files where they exist): `KibitzRoomStage`, `KibitzBoard`, `kibitzBoardSizing`, `kibitzBoardSizeDebug`, `KibitzDividerHandle`, `KibitzDesktopMainGameScoreboard`, `KibitzMobileMainGameScoreboard`, `kibitzScoreboardPlayerDisplay`, `KibitzMainGameStats`, `KibitzPresence`, `KibitzPresencePanel`, `KibitzMobileComparePanel`, `useKibitzCurrentGameBaseBroker`, `KibitzBoardControls`, `KibitzMoveTreeStrip`.
 - Modify: `src/views/Kibitz/Kibitz.css`, `src/views/Kibitz/index.ts`, `src/views/Kibitz/style-imports.d.ts` if it lists CSS files.
 
-- [ ] **Step 1: Delete**
+- [x] **Step 1: Delete**
 
 ```bash
 cd src/views/Kibitz
@@ -2734,23 +2734,23 @@ cd -
 
 If any of these files does not exist, drop it from the command. If `kibitzBoardSizing.ts` has a test file, remove it too.
 
-- [ ] **Step 2: Fix references**
+- [x] **Step 2: Fix references**
 
 Run `yarn type-check`. Fix imports of the deleted modules in surviving files:
 - `kibitzCurrentGameBaseSnapshot.ts` may import `KibitzBoardLoadConfig` from its own types file (fine) or helpers from `KibitzBoard.tsx` (move them in).
 - `KibitzGamePickerOverlay.tsx` and `KibitzMobileGamePicker.tsx` may import `KibitzBoard` for previews. Replace each with a `GobanContainer` over a locally created read-only `GobanController` (`game_id` set, `interactive: false`), destroyed on unmount, or with the existing `MiniGoban` component from `@/components/MiniGoban` if it already fits. Check which one those files use today and prefer the smaller change.
 - Tests that mock deleted modules: delete the mock lines.
 
-- [ ] **Step 3: Trim Kibitz.css**
+- [x] **Step 3: Trim Kibitz.css**
 
 Keep only `.Kibitz.Kibitz-empty` styling and delete the grid layout, sidebar, left rail, resizer, streamer mode, mobile shell, and media query rules that referred to removed class names. Streamer mode now lives in `KibitzView.css`.
 
-- [ ] **Step 4: Verify**
+- [x] **Step 4: Verify**
 
 Run: `yarn type-check && yarn lint && yarn test src/views/Kibitz src/components/GobanView`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 yarn prettier:file src/views/Kibitz/*.ts src/views/Kibitz/*.tsx src/views/Kibitz/*.css
@@ -2768,7 +2768,7 @@ git commit -m "refactor(kibitz): remove the old stage, board host, sizing and sc
 - Create: `docs/kibitz.md`
 - Modify: `docs/superpowers/plans/2026-09-03-kibitz-gobanview.md` (tick boxes, note deviations)
 
-- [ ] **Step 1: Write `docs/kibitz.md`**
+- [x] **Step 1: Write `docs/kibitz.md`**
 
 ```markdown
 # Kibitz
@@ -2813,7 +2813,7 @@ what the center shows; `deriveKibitzCenterMode` maps it to
 `main | draft | variation | preview`.
 ```
 
-- [ ] **Step 2: Update the graph and build**
+- [x] **Step 2: Update the graph and build**
 
 ```bash
 graphify update .
@@ -2822,17 +2822,28 @@ yarn build
 
 Expected: build succeeds.
 
-- [ ] **Step 3: Amend the plan**
+- [x] **Step 3: Amend the plan**
 
 Tick completed steps and record any deviation taken during execution in a short "Deviations" section at the end of this plan.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add docs/kibitz.md docs/superpowers/plans/2026-09-03-kibitz-gobanview.md graphify-out
 git commit -m "docs: describe the Kibitz layout and controller ownership"
 ```
 
-- [ ] **Step 5: Before opening the PR**
+- [x] **Step 5: Before opening the PR**
 
 Remind the author to test manually in a desktop browser and a mobile browser: room switching, opening and exiting a variation, drafting and posting, previewing a game from the picker, chat in both tabs, the room user list, and the More actions items. Use the repository PR template at `.github/pull_request_template.md`.
+
+## Deviations
+
+- Task 5: transitional no-op of the old pane-open paths, resolved by Task 13.
+- Task 6: two fix rounds — mainReady gate for the null main snapshot; connected boards compose on load; main effect deps reduced to [gameId]; gate only applies to same-game boards.
+- Task 7: `KibitzHelpTargetId` exported; create-variation button moved to the variation list.
+- Task 8: room composer got its own disabled placeholder; `.KibitzChatPanel-log` made a flex column so `.chat-lines` scrolls.
+- Task 10: `openGameInfoModal` arguments taken from `controller.annulled` and `controller.creator_id || goban.review_owner_id || 0` (the plan's expressions did not type-check).
+- Task 11: streamer mode keeps the tab bar; portrait Rooms takeover suppressed in streamer mode; settings popover closed on unmount.
+- Task 12: body class `kibitz-streamer-mode` restored; waiting layout for rooms without a game; "New variation from here" restored; `roomManagement` help flow and `desktopRoomSettings` target removed; `PlayerIcon` size 64 (40 is not a CDN size) fitted into the 40px box by CSS; view mode from `goban_view_mode()` plus a resize listener.
+- Task 13: `KibitzBoardPreview` added for picker/proposal thumbnails; `KibitzMobileGamePicker` and `Kibitz.css` deleted as unreferenced; `e2e-tests/kibitz/*` still reference old class names and must be updated separately.
