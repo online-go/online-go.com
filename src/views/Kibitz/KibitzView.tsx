@@ -39,7 +39,7 @@ export interface KibitzViewProps {
     isPortrait: boolean;
     streamerMode: boolean;
     onStreamerModeChange: (enabled: boolean) => void;
-    leftAside: KibitzLeftAsideProps;
+    leftAside: Omit<KibitzLeftAsideProps, "miniBoardController" | "onExitVariation">;
     chat: Omit<KibitzChatPanelProps, "gameController">;
     proposals: KibitzProposalPanelProps;
     onPostVariation: (controller: GobanController) => void;
@@ -75,6 +75,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const { room, gobans, isPortrait, streamerMode } = props;
     const gobanViewRef = React.useRef<GobanViewRef>(null);
     const settingsPopoverRef = React.useRef<PopOver | null>(null);
+    const moreActionsPopoverRef = React.useRef<PopOver | null>(null);
     const roomTitleTarget = useKibitzHelpTarget(KIBITZ_HELP_TARGETS.desktopRoomTitle);
     const behindLive = useBehindLive(
         gobans.centerMode === "main" ? (gobans.main?.goban ?? null) : null,
@@ -86,6 +87,8 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
         () => () => {
             settingsPopoverRef.current?.close();
             settingsPopoverRef.current = null;
+            moreActionsPopoverRef.current?.close();
+            moreActionsPopoverRef.current = null;
         },
         [],
     );
@@ -151,9 +154,20 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
         );
         const waitingSidebar = (
             <div className="KibitzView-waiting-sidebar">
-                <span className="KibitzView-waiting-title" ref={roomTitleTarget?.ref}>
-                    {room.title}
-                </span>
+                <div className="KibitzView-waiting-header">
+                    <span className="KibitzView-waiting-title" ref={roomTitleTarget?.ref}>
+                        {room.title}
+                    </span>
+                    <button
+                        type="button"
+                        className="KibitzView-waiting-settings"
+                        title={_("Settings")}
+                        onClick={openSettings}
+                    >
+                        <i className="fa fa-gear" />
+                    </button>
+                </div>
+                {props.banner}
                 <KibitzProposalPanel {...props.proposals} />
                 <KibitzChatPanel {...props.chat} gameController={null} />
             </div>
@@ -181,7 +195,11 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     }
 
     const viewingOther = gobans.centerMode !== "main";
-    const miniBoardController = viewingOther ? gobans.main : null;
+    // Derived from identity, not mode: while a variation opens there is one
+    // commit where the mode has changed but the secondary controller does not
+    // exist yet, so `center` still is `main`. Mounting the same board div in
+    // the center and in the thumbnail at once breaks the next unmount.
+    const miniBoardController = gobans.center !== gobans.main ? gobans.main : null;
 
     const leftAside = (
         <KibitzLeftAside
@@ -197,7 +215,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             controller={gobans.center}
             className={"Kibitz" + (streamerMode ? " is-streamer-mode" : "")}
             header={<span ref={roomTitleTarget?.ref}>{room.title}</span>}
-            leftAside={!isPortrait && !streamerMode ? leftAside : undefined}
+            leftAside={!isPortrait ? leftAside : undefined}
             playerBars
         >
             {viewingOther && <KBShortcut shortcut="esc" action={exitVariation} />}
@@ -230,7 +248,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 onClick={openSettings}
             />
 
-            {isPortrait && !streamerMode && (
+            {isPortrait && (
                 <GobanView.Tab
                     id="kibitz-rooms"
                     type="takeover"
@@ -278,7 +296,11 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 title={_("More actions")}
                 onClick={(event) => {
                     if (event && gobans.main) {
-                        openKibitzMoreActions(event.currentTarget, gobans.main);
+                        moreActionsPopoverRef.current?.close();
+                        moreActionsPopoverRef.current = openKibitzMoreActions(
+                            event.currentTarget,
+                            gobans.main,
+                        );
                     }
                 }}
             />

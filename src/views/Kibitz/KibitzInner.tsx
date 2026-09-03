@@ -124,10 +124,6 @@ function moveTreeIdAsNumber(moveTreeId: number | string | null): number | undefi
     return typeof moveTreeId === "number" ? moveTreeId : undefined;
 }
 
-export function isLiveGameMoveNumberKnown(game: KibitzWatchedGame | null | undefined): boolean {
-    return typeof game?.move_number === "number" && game.move_number > 0;
-}
-
 export function isLiveRootSnapshotAllowed(params: {
     game: KibitzWatchedGame | null | undefined;
     snapshotTailMoveNumber: number;
@@ -1434,8 +1430,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 onRecallVariation: (variationId) => onOpenVariation(variationId, true),
                 onHideVariation: onToggleVariation,
                 onCreateVariation,
-                miniBoardController: null,
-                onExitVariation,
                 roomListHelpTargetId: KIBITZ_HELP_TARGETS.desktopRoomList,
                 variationListHelpTargetId: KIBITZ_HELP_TARGETS.desktopVariationList,
             }}

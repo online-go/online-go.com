@@ -41,7 +41,8 @@ export function goban_view_squashed(): boolean {
 }
 
 /** Which seat the given player occupies, including rengo team membership.
- *  Returns null for spectators. */
+ *  Returns null for spectators. Unlike `GobanEngine.playerColor`, this also
+ *  resolves rengo team members who are not the current seat holders. */
 export function user_color(goban: Goban, player_id: number): "black" | "white" | null {
     const engine = goban.engine;
     const color = engine.playerColor(player_id);

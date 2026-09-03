@@ -157,11 +157,21 @@ describe("KibitzView", () => {
         expect(screen.getByTitle("Return to live")).toBeInTheDocument();
     });
 
-    test("streamer mode hides the asides but keeps the action bar reachable", () => {
+    test("streamer mode keeps the left aside mounted for CSS to hide", () => {
         const { container } = render(<KibitzView {...baseProps({ streamerMode: true })} />);
         expect(container.querySelector(".Kibitz.is-streamer-mode")).not.toBeNull();
-        expect(screen.queryByTestId("left-aside")).toBeNull();
+        expect(screen.getByTestId("left-aside")).toBeInTheDocument();
         expect(screen.getByTitle("Settings")).toBeInTheDocument();
+    });
+
+    test("a variation opening before its controller exists mounts one board", () => {
+        const main = fakeController();
+        const props = baseProps({
+            gobans: { main, secondary: null, center: main, centerMode: "variation" },
+        });
+        render(<KibitzView {...props} />);
+        expect(screen.getAllByTestId("goban-container")).toHaveLength(1);
+        expect(screen.getByTestId("left-aside")).toHaveAttribute("data-mini", "no");
     });
 
     test("a room with no board shows the waiting message, rooms and chat", () => {
@@ -175,12 +185,8 @@ describe("KibitzView", () => {
         expect(screen.queryByTestId("goban-container")).toBeNull();
     });
 
-    test("portrait offers the Rooms takeover, except in streamer mode", () => {
-        const { unmount } = render(<KibitzView {...baseProps({ isPortrait: true })} />);
+    test("portrait offers the Rooms takeover", () => {
+        render(<KibitzView {...baseProps({ isPortrait: true })} />);
         expect(screen.getByTitle("Rooms")).toBeInTheDocument();
-        unmount();
-
-        render(<KibitzView {...baseProps({ isPortrait: true, streamerMode: true })} />);
-        expect(screen.queryByTitle("Rooms")).toBeNull();
     });
 });

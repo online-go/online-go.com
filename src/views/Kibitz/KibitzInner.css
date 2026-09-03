@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* States shown instead of the board view: a blocked room, no room yet, or a
-   preset room that is still looking for a game. */
+/* States shown instead of the board view: a blocked room, or no room yet. */
 .Kibitz-empty {
     display: flex;
     flex-direction: column;

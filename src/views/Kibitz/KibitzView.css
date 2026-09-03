@@ -10,6 +10,12 @@
     /* Streamer mode strips the sidebar down to its tab bar so the board fills
        the capture area while the action tabs stay reachable. */
     &.is-streamer-mode {
+        /* Hidden, not unmounted: the main goban needs a connected parent so a
+           trunk snapshot can still be captured for a new variation. */
+        .GobanView-left-aside {
+            display: none;
+        }
+
         .GobanView-sidebar {
             width: auto;
 
@@ -59,10 +65,27 @@
         overflow: hidden;
     }
 
-    .KibitzView-waiting-title {
+    .KibitzView-waiting-header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.5rem;
         flex-shrink: 0;
+    }
+
+    .KibitzView-waiting-title {
+        flex-grow: 1;
+        min-width: 0;
         padding: 0.6rem 0.875rem;
         font-size: 1.1rem;
+    }
+
+    .KibitzView-waiting-settings {
+        flex-shrink: 0;
+        margin: 0 0.5rem 0 0;
+        padding: 0.3rem 0.6rem;
+        background: transparent;
+        box-shadow: none;
     }
 
     .KibitzView-waiting-message {
