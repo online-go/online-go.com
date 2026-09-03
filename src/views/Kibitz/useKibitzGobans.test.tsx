@@ -343,6 +343,28 @@ describe("useKibitzGobans", () => {
         expect(applyKibitzVariationToController).not.toHaveBeenCalled();
     });
 
+    test("main becoming ready does not tear down an already-connected secondary board", () => {
+        const { rerender } = render(<Harness options={baseOptions()} onResult={() => undefined} />);
+        rerender(
+            <Harness
+                options={baseOptions({ secondaryPane: { collapsed: false, preview_game_id: 7 } })}
+                onResult={() => undefined}
+            />,
+        );
+        expect(instances).toHaveLength(2);
+        const secondaryDestroy = (instances[1] as { destroy: jest.Mock }).destroy;
+
+        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => ({
+            gameId: 100,
+            trunkTailMoveNumber: 3,
+            config: { move_tree: { x: 1 } },
+        }));
+        emit(instances[0], "load");
+
+        expect(instances).toHaveLength(2);
+        expect(secondaryDestroy).not.toHaveBeenCalled();
+    });
+
     test("closing the pane destroys the secondary controller", () => {
         const { rerender } = render(
             <Harness

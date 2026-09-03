@@ -112,6 +112,25 @@ function baseConfig(game: KibitzWatchedGame | null | undefined): GobanRendererCo
     };
 }
 
+/** The game id the secondary board should show, given the center mode and
+ *  the pane state that selects it. `null` when nothing is selected yet. */
+function computeSecondaryTargetGameId(
+    mode: KibitzCenterMode,
+    pane: KibitzSecondaryPaneState,
+    variations: readonly KibitzVariationSummary[],
+): number | null {
+    if (mode === "preview") {
+        return pane.preview_game_id ?? null;
+    }
+    if (mode === "variation") {
+        return variations.find((v) => v.id === pane.variation_id)?.game_id ?? null;
+    }
+    if (mode === "draft") {
+        return pane.variation_source_game_id ?? null;
+    }
+    return null;
+}
+
 /** Re-anchor the engine's last official move at the trunk tail without
  *  moving the current position. Needed before composing a variation onto a
  *  freshly loaded tree. */
@@ -216,6 +235,21 @@ export function useKibitzGobans({
                   centerMode === "variation" ? visibleVariationIds.join(",") : "",
               ].join(":");
 
+    // A same-game secondary board reuses the main controller's trunk, so it
+    // must wait for `mainReady`. A board for a different game connects on
+    // its own and never needs to wait -- gating the effect on `mainReady`
+    // regardless would tear down and rebuild an already-connected board
+    // (losing a socket connection or in-progress draft edits) every time
+    // the main board's readiness flips.
+    const secondaryTargetGameId = computeSecondaryTargetGameId(
+        centerMode,
+        secondaryPane,
+        variations,
+    );
+    const secondaryUsesMainTrunk =
+        centerMode !== "main" && centerMode !== "preview" && secondaryTargetGameId === gameId;
+    const secondaryGate = secondaryUsesMainTrunk ? mainReady : true;
+
     const paneRef = React.useRef(secondaryPane);
     paneRef.current = secondaryPane;
     const variationsRef = React.useRef(variations);
@@ -245,12 +279,7 @@ export function useKibitzGobans({
                 ? (variationsRef.current.find((v) => v.id === pane.variation_draft_base_id) ?? null)
                 : null;
 
-        const targetGameId =
-            mode === "preview"
-                ? (pane.preview_game_id ?? null)
-                : mode === "variation"
-                  ? (selectedVariation?.game_id ?? null)
-                  : (pane.variation_source_game_id ?? null);
+        const targetGameId = computeSecondaryTargetGameId(mode, pane, variationsRef.current);
         const targetGame =
             (targetGameId != null ? gameByIdRef.current.get(targetGameId) : undefined) ??
             pane.variation_source_game ??
@@ -357,7 +386,7 @@ export function useKibitzGobans({
             controller.destroy();
             setSecondary(null);
         };
-    }, [secondaryKey, main, mainReady]);
+    }, [secondaryKey, main, secondaryGate]);
 
     const center = centerMode === "main" ? main : (secondary ?? main);
 
