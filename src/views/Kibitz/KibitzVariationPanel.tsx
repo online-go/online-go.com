@@ -21,6 +21,8 @@ import { GobanController } from "@/lib/GobanController";
 import { Resizable } from "@/components/Resizable";
 import { GobanAnalyzeButtonBar } from "@/components/GobanAnalyzeButtonBar/GobanAnalyzeButtonBar";
 import { KibitzNodeText } from "./KibitzNodeText";
+import { useKibitzHelpTarget } from "./HelpFlows/useKibitzHelpTarget";
+import { KIBITZ_HELP_TARGETS } from "./HelpFlows/KibitzHelpTargets";
 import { KibitzVariationComposer } from "./KibitzVariationComposer";
 import "./KibitzVariationPanel.css";
 
@@ -29,6 +31,8 @@ export interface KibitzVariationPanelProps {
     mode: "draft" | "variation";
     onPost: (controller: GobanController) => void;
     onDiscard: () => void;
+    /** Starts a new draft from the posted variation being viewed. */
+    onBranch?: () => void;
 }
 
 /**
@@ -41,7 +45,11 @@ export function KibitzVariationPanel({
     mode,
     onPost,
     onDiscard,
+    onBranch,
 }: KibitzVariationPanelProps): React.ReactElement {
+    const branchActionsTarget = useKibitzHelpTarget(
+        mode === "variation" ? KIBITZ_HELP_TARGETS.desktopVariationActions : null,
+    );
     const setMoveTree = React.useCallback(
         (resizable: Resizable | null) => controller.setMoveTreeContainer(resizable),
         [controller],
@@ -63,6 +71,16 @@ export function KibitzVariationPanel({
                 ref={setMoveTree}
             />
             <KibitzNodeText controller={controller} editable={mode === "draft"} />
+            {mode === "variation" && onBranch && (
+                <div className="KibitzVariationPanel-actions" ref={branchActionsTarget?.ref}>
+                    <button type="button" onClick={onBranch}>
+                        {pgettext(
+                            "Button that starts a new Kibitz variation draft from the posted variation being viewed",
+                            "New variation from here",
+                        )}
+                    </button>
+                </div>
+            )}
             {mode === "draft" && (
                 <div className="KibitzVariationPanel-actions">
                     <KibitzVariationComposer controller={controller} onSubmit={onPost} />

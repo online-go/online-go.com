@@ -21,3 +21,63 @@
         }
     }
 }
+
+/* Shown while the room has no game to display: the same three columns as
+   GobanView, with a message where the board goes. */
+.KibitzView-waiting {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    position: absolute;
+    top: var(--below-navbar);
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    .KibitzView-waiting-aside {
+        display: flex;
+        flex-direction: column;
+        width: var(--goban-view-left-aside-width);
+        flex-shrink: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .KibitzView-waiting-center {
+        display: flex;
+        flex-grow: 1;
+        align-items: center;
+        justify-content: center;
+        min-width: 0;
+    }
+
+    .KibitzView-waiting-sidebar {
+        display: flex;
+        flex-direction: column;
+        width: var(--goban-view-sidebar-width);
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+
+    .KibitzView-waiting-title {
+        flex-shrink: 0;
+        padding: 0.6rem 0.875rem;
+        font-size: 1.1rem;
+    }
+
+    .KibitzView-waiting-message {
+        padding: 1rem;
+        text-align: center;
+    }
+
+    &.is-portrait {
+        flex-direction: column;
+        overflow-y: auto;
+
+        .KibitzView-waiting-sidebar {
+            width: auto;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+    }
+}

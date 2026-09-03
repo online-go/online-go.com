@@ -2115,7 +2115,6 @@ export function KibitzRoomStage({
     );
     const isDraftingVariation = secondaryPane.variation_source_game_id != null;
     const desktopRoomTitleTarget = useKibitzHelpTarget(KIBITZ_HELP_TARGETS.desktopRoomTitle);
-    const desktopRoomSettingsTarget = useKibitzHelpTarget(KIBITZ_HELP_TARGETS.desktopRoomSettings);
     const desktopMainBoardTarget = useKibitzHelpTarget(KIBITZ_HELP_TARGETS.desktopMainBoard);
     const desktopVariationBoardTarget = useKibitzHelpTarget(
         KIBITZ_HELP_TARGETS.desktopVariationBoard,
@@ -6169,7 +6168,6 @@ export function KibitzRoomStage({
                             type="button"
                             className="board-settings-button"
                             onClick={openRoomSettings}
-                            ref={desktopRoomSettingsTarget?.ref}
                             aria-label={pgettext(
                                 "Aria label for opening room settings in Kibitz",
                                 "Room settings",

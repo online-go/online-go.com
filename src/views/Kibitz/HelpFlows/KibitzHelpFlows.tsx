@@ -25,8 +25,8 @@ import { KIBITZ_HELP_TARGETS } from "./KibitzHelpTargets";
 export const KIBITZ_HELP_FLOW_IDS = {
     desktopFirstRun: "kibitz-desktop-first-run",
     desktopFirstVariations: "kibitz-desktop-first-variations",
+    draftFromPostedVariation: "kibitz-first-draft-from-posted-variation",
     roomBoardChange: "kibitz-first-room-board-change",
-    roomManagement: "kibitz-first-room-management",
 } as const;
 
 export function KibitzHelpFlows(): React.ReactElement {
@@ -77,6 +77,25 @@ export function KibitzHelpFlows(): React.ReactElement {
             </HelpFlow>
 
             <HelpFlow
+                id={KIBITZ_HELP_FLOW_IDS.draftFromPostedVariation}
+                showInitially={false}
+                description={pgettext(
+                    "Name of a dynamic help flow for Kibitz branching from a posted variation",
+                    "Kibitz draft from posted variation",
+                )}
+            >
+                <HelpItem
+                    target={KIBITZ_HELP_TARGETS.desktopVariationActions}
+                    position="top-centre"
+                >
+                    {pgettext(
+                        "Kibitz help bubble explaining how drafts start from posted variations",
+                        "Starting from here creates a new draft. It does not edit the posted variation.",
+                    )}
+                </HelpItem>
+            </HelpFlow>
+
+            <HelpFlow
                 id={KIBITZ_HELP_FLOW_IDS.roomBoardChange}
                 showInitially={false}
                 description={pgettext(
@@ -88,22 +107,6 @@ export function KibitzHelpFlows(): React.ReactElement {
                     {pgettext(
                         "Kibitz help bubble explaining that the room board changed",
                         "This room has a new main board. Chat and history stay with the room.",
-                    )}
-                </HelpItem>
-            </HelpFlow>
-
-            <HelpFlow
-                id={KIBITZ_HELP_FLOW_IDS.roomManagement}
-                showInitially={false}
-                description={pgettext(
-                    "Name of a dynamic help flow for Kibitz room management",
-                    "Kibitz room management",
-                )}
-            >
-                <HelpItem target={KIBITZ_HELP_TARGETS.desktopRoomSettings} position="bottom-centre">
-                    {pgettext(
-                        "Kibitz help bubble for room management",
-                        "Room settings. Manage room details and the live game here.",
                     )}
                 </HelpItem>
             </HelpFlow>

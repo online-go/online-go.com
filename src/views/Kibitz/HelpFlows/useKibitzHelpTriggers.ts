@@ -32,6 +32,7 @@ type UseKibitzHelpTriggersArgs = {
 
 type UseKibitzHelpTriggersResult = {
     noteDesktopVariationMadeVisible: () => void;
+    noteDraftStartedFromPostedVariation: () => void;
 };
 
 const KIBITZ_HELP_FLOW_ID_SET = new Set<string>(Object.values(KIBITZ_HELP_FLOW_IDS));
@@ -213,7 +214,16 @@ export function useKibitzHelpTriggers({
         queueFlow(KIBITZ_HELP_FLOW_IDS.desktopFirstVariations, false);
     }, [firstRunSeen, queueFlow]);
 
+    const noteDraftStartedFromPostedVariation = React.useCallback(() => {
+        if (!firstRunSeen()) {
+            return;
+        }
+
+        queueFlow(KIBITZ_HELP_FLOW_IDS.draftFromPostedVariation, false);
+    }, [firstRunSeen, queueFlow]);
+
     return {
         noteDesktopVariationMadeVisible,
+        noteDraftStartedFromPostedVariation,
     };
 }

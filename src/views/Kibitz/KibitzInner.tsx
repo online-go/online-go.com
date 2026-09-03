@@ -415,7 +415,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const createRoomSignInHref = `/sign-in#${location.pathname}${location.search}`;
     const currentRoomIdRef = React.useRef<string | null>(null);
     const currentRoomGameIdRef = React.useRef<number | null>(null);
-    const currentGameMoveNumberRef = React.useRef(0);
     const [currentGameBaseSnapshot, setCurrentGameBaseSnapshot] =
         React.useState<KibitzCurrentGameBaseSnapshot | null>(null);
     const [currentGameBaseSnapshotLoadingGameId, setCurrentGameBaseSnapshotLoadingGameId] =
@@ -633,7 +632,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     // reject snapshots that arrive after a room or board change.
     currentRoomIdRef.current = resolvedRoom?.id ?? null;
     currentRoomGameIdRef.current = currentGameId;
-    currentGameMoveNumberRef.current = currentGameMoveNumber;
 
     const activePostedVariations = React.useMemo(
         () => getVisiblePostedVariations(displayedVariations, visibleVariationIds),
@@ -942,6 +940,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             [KIBITZ_HELP_FLOW_IDS.desktopFirstRun]: desktopHelpTargetsReady,
             [KIBITZ_HELP_FLOW_IDS.desktopFirstVariations]: desktopHelpTargetsReady,
             [KIBITZ_HELP_FLOW_IDS.roomBoardChange]: helpTargetsReady,
+            [KIBITZ_HELP_FLOW_IDS.draftFromPostedVariation]:
+                gobans.centerMode === "variation" && Boolean(gobans.secondary),
         },
         pickerOpen: Boolean(pickerMode),
     });
@@ -1067,9 +1067,55 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             moveTreeIdAsNumber(snapshot.moveTreeId),
         );
     }, [controller, getCurrentGameBaseSnapshotForVariation, showCurrentGameBaseNotReadyToast]);
+    const onCreateVariationFromPostedVariation = React.useCallback(
+        (variation: KibitzVariationSummary) => {
+            const snapshot =
+                variation.game_id === currentGameId
+                    ? getCurrentGameBaseSnapshotForVariation("new-variation-from-posted")
+                    : null;
+
+            if (variation.game_id === currentGameId && !snapshot) {
+                showCurrentGameBaseNotReadyToast();
+                return;
+            }
+
+            controller.startVariationFromPostedVariation(
+                variation,
+                snapshot?.config.move_tree,
+                snapshot?.movePath,
+                moveTreeIdAsNumber(snapshot?.moveTreeId ?? null),
+            );
+            kibitzHelpTriggers.noteDraftStartedFromPostedVariation();
+        },
+        [
+            controller,
+            currentGameId,
+            getCurrentGameBaseSnapshotForVariation,
+            kibitzHelpTriggers,
+            showCurrentGameBaseNotReadyToast,
+        ],
+    );
+    const onBranchFromVariation = React.useCallback(() => {
+        const variation = displayedVariations.find(
+            (candidate) => candidate.id === secondaryPane.variation_id,
+        );
+        if (variation) {
+            onCreateVariationFromPostedVariation(variation);
+        }
+    }, [displayedVariations, onCreateVariationFromPostedVariation, secondaryPane.variation_id]);
 
     React.useEffect(() => {
         window.sessionStorage.setItem(STREAMER_MODE_STORAGE_KEY, streamerMode ? "true" : "false");
+    }, [streamerMode]);
+
+    // NavBar, announcements, private chat and toasts all hide themselves for
+    // streamer mode through this class.
+    React.useEffect(() => {
+        document.body.classList.toggle("kibitz-streamer-mode", streamerMode);
+
+        return () => {
+            document.body.classList.remove("kibitz-streamer-mode");
+        };
     }, [streamerMode]);
 
     React.useEffect(() => {
@@ -1101,7 +1147,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         [controller],
     );
 
-    const isPresetWithNoGame = Boolean(resolvedRoom?.preset && !resolvedRoom.current_game?.game_id);
     const roomProposals = proposals.filter((proposal) => proposal.room_id === resolvedRoom?.id);
     const activeProposal = roomProposals.find((proposal) => proposal.status === "active");
     const queuedRoomProposals = roomProposals.filter((proposal) => proposal.status !== "active");
@@ -1175,11 +1220,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             ),
         );
     }, [displayedVariations]);
-    React.useLayoutEffect(() => {
-        setVariationColorIndexes((previous) => {
-            return assignVisibleVariationColorIndexes(previous, visibleVariationIds);
-        });
-    }, [visibleVariationIds]);
     const onPostVariation = React.useCallback(
         (boardController: GobanController, sourceGameId: number | undefined) => {
             if (resolvedRoom) {
@@ -1343,22 +1383,17 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         );
     }
 
-    if (!resolvedRoom || isPresetWithNoGame) {
+    if (!resolvedRoom) {
         return (
             <div className="Kibitz-empty">
                 {showDebug ? <KibitzDebugPanel debug={debug} /> : null}
                 <div className="Kibitz-empty-message">
-                    {!resolvedRoom
-                        ? rooms.length === 0
-                            ? pgettext(
-                                  "Kibitz placeholder shown when no rooms exist",
-                                  "Create a Kibitz room to start watching a game with friends.",
-                              )
-                            : pgettext("Kibitz loading state", "Loading Kibitz...")
-                        : pgettext(
-                              "Shown in a kibitz preset room when no eligible live game is currently being watched",
-                              "Looking for a suitable live game.",
-                          )}
+                    {rooms.length === 0
+                        ? pgettext(
+                              "Kibitz placeholder shown when no rooms exist",
+                              "Create a Kibitz room to start watching a game with friends.",
+                          )
+                        : pgettext("Kibitz loading state", "Loading Kibitz...")}
                 </div>
                 <div className="Kibitz-empty-rooms">{roomList}</div>
                 {pickerOverlay}
@@ -1418,6 +1453,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             onPostVariation={(boardController) =>
                 onPostVariation(boardController, secondaryPane.variation_source_game_id)
             }
+            onBranchFromVariation={onBranchFromVariation}
             onExitVariation={onExitVariation}
             onReturnToLive={onReturnToLive}
             roomSettings={{

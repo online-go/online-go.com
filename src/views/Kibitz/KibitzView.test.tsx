@@ -164,6 +164,17 @@ describe("KibitzView", () => {
         expect(screen.getByTitle("Settings")).toBeInTheDocument();
     });
 
+    test("a room with no board shows the waiting message, rooms and chat", () => {
+        const props = baseProps({
+            gobans: { main: null, secondary: null, center: null, centerMode: "main" },
+        });
+        render(<KibitzView {...props} />);
+        expect(screen.getByText("Looking for a suitable live game.")).toBeInTheDocument();
+        expect(screen.getByTestId("chat")).toBeInTheDocument();
+        expect(screen.getByTestId("left-aside")).toBeInTheDocument();
+        expect(screen.queryByTestId("goban-container")).toBeNull();
+    });
+
     test("portrait offers the Rooms takeover, except in streamer mode", () => {
         const { unmount } = render(<KibitzView {...baseProps({ isPortrait: true })} />);
         expect(screen.getByTitle("Rooms")).toBeInTheDocument();

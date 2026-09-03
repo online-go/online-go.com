@@ -43,6 +43,8 @@ export interface KibitzViewProps {
     chat: Omit<KibitzChatPanelProps, "gameController">;
     proposals: KibitzProposalPanelProps;
     onPostVariation: (controller: GobanController) => void;
+    /** Starts a draft from the posted variation in the center. */
+    onBranchFromVariation?: () => void;
     onExitVariation: () => void;
     onReturnToLive: () => void;
     roomSettings: {
@@ -130,7 +132,52 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     }, [onExitVariation]);
 
     if (!gobans.center) {
-        return null;
+        // The room has no live game yet, usually a preset room between games.
+        // Keep the room's people and chat reachable while it waits.
+        const waitingAside = (
+            <KibitzLeftAside
+                {...props.leftAside}
+                miniBoardController={null}
+                onExitVariation={exitVariation}
+            />
+        );
+        const waitingMessage = (
+            <div className="KibitzView-waiting-message">
+                {pgettext(
+                    "Shown in a kibitz preset room when no eligible live game is currently being watched",
+                    "Looking for a suitable live game.",
+                )}
+            </div>
+        );
+        const waitingSidebar = (
+            <div className="KibitzView-waiting-sidebar">
+                <span className="KibitzView-waiting-title" ref={roomTitleTarget?.ref}>
+                    {room.title}
+                </span>
+                <KibitzProposalPanel {...props.proposals} />
+                <KibitzChatPanel {...props.chat} gameController={null} />
+            </div>
+        );
+
+        if (isPortrait) {
+            return (
+                <div className="KibitzView-waiting is-portrait">
+                    {waitingMessage}
+                    {waitingAside}
+                    {waitingSidebar}
+                    {props.children}
+                </div>
+            );
+        }
+
+        return (
+            <div className="KibitzView-waiting">
+                <div className="KibitzView-waiting-aside">{waitingAside}</div>
+                <div className="KibitzView-waiting-center">{waitingMessage}</div>
+                {waitingSidebar}
+                {props.children}
+            </div>
+        );
     }
 
     const viewingOther = gobans.centerMode !== "main";
@@ -164,6 +211,11 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         mode={gobans.centerMode === "draft" ? "draft" : "variation"}
                         onPost={props.onPostVariation}
                         onDiscard={exitVariation}
+                        onBranch={
+                            gobans.centerMode === "variation"
+                                ? props.onBranchFromVariation
+                                : undefined
+                        }
                     />
                 )}
                 <KibitzChatPanel {...props.chat} gameController={gobans.main} />

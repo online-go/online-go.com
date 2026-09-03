@@ -32,7 +32,6 @@ export const KIBITZ_HELP_TARGETS = {
     desktopVariationBoard: "kibitz-desktop-variation-board",
     desktopVariationActions: "kibitz-desktop-variation-actions",
     desktopStream: "kibitz-desktop-stream",
-    desktopRoomSettings: "kibitz-desktop-room-settings",
 } as const;
 
 export type KibitzHelpTargetId = (typeof KIBITZ_HELP_TARGETS)[keyof typeof KIBITZ_HELP_TARGETS];
