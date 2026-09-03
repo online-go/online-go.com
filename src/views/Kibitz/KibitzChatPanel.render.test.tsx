@@ -19,7 +19,7 @@ import * as React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import type { ChatMessage } from "@/lib/chat_manager";
 import type { KibitzRoomSummary, KibitzStreamItem, KibitzVariationSummary } from "@/models/kibitz";
-import { KibitzSharedStreamPanel } from "./KibitzSharedStreamPanel";
+import { KibitzChatPanel } from "./KibitzChatPanel";
 
 const mockRoomProxy = {
     channel: {
@@ -50,9 +50,14 @@ jest.mock("@/components/TabCompleteInput", () => ({
     TabCompleteInput: (props: React.ComponentProps<"input">) => <input {...props} />,
 }));
 
-jest.mock("@/components/GobanView", () => ({
+jest.mock("@/components/ChatUserList", () => ({
     __esModule: true,
-    useGobanControllerOrNull: () => null,
+    ChatUserList: ({ channel }: { channel: string }) => (
+        <div data-testid="user-list">{channel}</div>
+    ),
+    ChatUserCount: ({ onClick, active }: { onClick: () => void; active: boolean }) => (
+        <button type="button" data-testid="user-toggle" data-active={active} onClick={onClick} />
+    ),
 }));
 
 jest.mock("@/lib/chat_manager", () => ({
@@ -104,13 +109,13 @@ jest.mock("./kibitzVariationQuickList", () => ({
     formatVariationLengthLabel: () => "18 moves",
 }));
 
-jest.mock("./KibitzSharedStreamPanel.css", () => ({}));
+jest.mock("./KibitzChatPanel.css", () => ({}));
 jest.mock("@/components/Chat/ChatLog.css", () => ({}));
 
 function makeRoom(): KibitzRoomSummary {
     return {
         id: "room-1",
-        channel: "room-1",
+        channel: "kibitz-room-1",
         title: "Room 1",
         kind: "preset",
         viewer_count: 0,
@@ -178,7 +183,17 @@ function makeVariation(): KibitzVariationSummary {
     };
 }
 
-describe("KibitzSharedStreamPanel variation posts", () => {
+function baseProps() {
+    return {
+        room: makeRoom(),
+        items: [] as KibitzStreamItem[],
+        variations: [] as KibitzVariationSummary[],
+        onOpenVariation: jest.fn(),
+        gameController: null,
+    };
+}
+
+describe("KibitzChatPanel variation posts", () => {
     beforeEach(() => {
         mockRoomProxy.channel.markAsRead.mockClear();
         mockRoomProxy.channel.send.mockClear();
@@ -191,8 +206,7 @@ describe("KibitzSharedStreamPanel variation posts", () => {
         const onOpenVariation = jest.fn();
 
         const { container } = render(
-            <KibitzSharedStreamPanel
-                mode="live"
+            <KibitzChatPanel
                 room={makeRoom()}
                 items={[
                     makeItem(),
@@ -201,13 +215,9 @@ describe("KibitzSharedStreamPanel variation posts", () => {
                 ]}
                 variations={[makeVariation()]}
                 onOpenVariation={onOpenVariation}
-                onSendMessage={jest.fn()}
-                isMobileLayout={false}
+                gameController={null}
             />,
         );
-
-        const chatTimes = container.querySelectorAll(".kibitz-chat-entry time");
-        expect(chatTimes).toHaveLength(2);
 
         const time = container.querySelector(".variation-post-time");
         expect(time).not.toBeNull();
@@ -230,20 +240,11 @@ describe("KibitzSharedStreamPanel variation posts", () => {
         expect(onOpenVariation).toHaveBeenCalledWith("variation-1", true);
     });
 
-    it("renders the mobile switch labels with the updated wording", () => {
-        render(
-            <KibitzSharedStreamPanel
-                mode="live"
-                room={makeRoom()}
-                items={[]}
-                variations={[]}
-                onOpenVariation={jest.fn()}
-                onSendMessage={jest.fn()}
-                isMobileLayout={true}
-            />,
-        );
-
-        expect(screen.getByText("Kibitz chat")).toBeInTheDocument();
-        expect(screen.getByText("Game chat")).toBeInTheDocument();
+    test("room tab toggles the user list", () => {
+        render(<KibitzChatPanel {...baseProps()} />);
+        fireEvent.click(screen.getByText("Kibitz chat"));
+        expect(screen.queryByTestId("user-list")).toBeNull();
+        fireEvent.click(screen.getByTestId("user-toggle"));
+        expect(screen.getByTestId("user-list")).toHaveTextContent("kibitz-room-1");
     });
 });

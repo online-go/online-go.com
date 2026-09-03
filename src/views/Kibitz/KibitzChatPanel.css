@@ -1,0 +1,274 @@
+.KibitzChatPanel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+
+    .KibitzChatPanel-tabs {
+        display: flex;
+        flex-shrink: 0;
+        border-bottom: 1px solid var(--shade3);
+
+        .KibitzChatPanel-tab {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 0.4rem 0.5rem;
+            color: var(--shade1);
+            cursor: pointer;
+            position: relative;
+
+            &.active {
+                color: var(--fg);
+                box-shadow: inset 0 -2px 0 var(--primary);
+            }
+        }
+
+        .KibitzChatPanel-unread {
+            position: absolute;
+            top: 0.35rem;
+            right: 0.5rem;
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            background: var(--primary);
+        }
+    }
+
+    .KibitzChatPanel-body {
+        flex-grow: 1;
+        min-height: 0;
+        display: flex;
+        position: relative;
+
+        .KibitzChatPanel-log {
+            flex-grow: 1;
+            min-width: 0;
+            overflow-y: auto;
+        }
+
+        .ChatUserList {
+            width: 10rem;
+            flex-shrink: 0;
+            overflow-y: auto;
+            border-left: 1px solid var(--shade3);
+        }
+    }
+
+    .KibitzChatPanel-composer {
+        flex-shrink: 0;
+        display: flex;
+        align-items: flex-end;
+    }
+}
+
+.KibitzChatPanel-log .chat-lines,
+.KibitzChatPanel-log .stream-empty {
+    min-width: 0;
+}
+
+.KibitzChatPanel-log .chat-lines {
+    box-sizing: border-box;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    width: 100%;
+}
+
+.KibitzChatPanel-log .chat-lines .chat-line,
+.KibitzChatPanel-log .chat-lines .variation-post,
+.KibitzChatPanel-log .chat-lines .variation-post-entry {
+    max-width: 100%;
+    min-width: 0;
+}
+
+.KibitzChatPanel-log .stream-empty {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    padding: 0.25rem 0.75rem 0.5rem;
+}
+
+.KibitzChatPanel-log .kibitz-chat-entry {
+    box-sizing: border-box;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.35rem;
+    max-width: 100%;
+    min-width: 0;
+    margin: 0.25rem 0;
+    padding: 0 0.75rem;
+}
+
+.KibitzChatPanel-log .kibitz-chat-entry-time {
+    flex: 0 0 auto;
+    color: var(--text-color);
+    opacity: 0.65;
+    font-size: 0.8rem;
+    line-height: 1.25;
+    padding-top: 0.45rem;
+    white-space: nowrap;
+}
+
+.KibitzChatPanel-log .kibitz-chat-entry.game-chat:not(.has-move-number) .kibitz-chat-entry-time {
+    padding-top: 0;
+}
+
+.KibitzChatPanel-log .timestamp {
+    display: none;
+}
+
+/* Game-chat lines flow tight in the game tab — no per-entry
+   padding/margin/background. The tab already separates game chat
+   from room chat, so the per-line wrapper styling that used to
+   distinguish them was producing roughly a blank line of vertical space
+   per chat line. */
+
+.KibitzChatPanel-log .kibitz-chat-entry.game-chat .chat-line {
+    margin-top: 0;
+}
+
+/* Player vs spectator coloration mirrors GameChat.css's
+   `.chat-line.spectator { color: var(--spectator-text-color) }`. The
+   class lives on the kibitz wrapper because <ChatLine> doesn't know
+   about goban channels. */
+.KibitzChatPanel-log .kibitz-chat-entry.spectator,
+.KibitzChatPanel-log .kibitz-chat-entry.spectator .chat-line {
+    color: var(--spectator-text-color);
+}
+
+.KibitzChatPanel-log .kibitz-chat-entry.room-stream .Player.provisional.with-flare:before {
+    content: none;
+    width: 0;
+    margin: 0;
+}
+
+.KibitzChatPanel-log
+    .kibitz-chat-entry.room-stream
+    .Player.provisional.with-flare
+    .Player-username {
+    margin-left: 0;
+}
+
+.KibitzChatPanel-log button[data-variation-post="true"] {
+    flex: 1 1 auto;
+    width: auto;
+    height: auto;
+    min-width: 0;
+    margin: 0;
+    background: var(--shade4);
+    border: 0;
+    box-sizing: border-box;
+    color: var(--variation);
+    cursor: pointer;
+    display: block;
+    font-size: 0.85rem;
+    font-weight: bold;
+    line-height: 1.25;
+    min-height: 2.7rem;
+    max-height: 12rem;
+    overflow: hidden;
+    padding: 0.25rem 0.75rem;
+    text-align: left;
+    transition: background-color 120ms ease;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.KibitzChatPanel-log .variation-post-entry {
+    box-sizing: border-box;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.35rem;
+    max-width: 100%;
+    min-width: 0;
+    margin: 0.25rem 0;
+    padding: 0 0.75rem;
+}
+
+.KibitzChatPanel-log .variation-post-time {
+    flex: 0 0 auto;
+    color: var(--text-color);
+    opacity: 0.65;
+    font-size: 0.8rem;
+    line-height: 1.25;
+    padding-top: 0.45rem;
+    white-space: nowrap;
+}
+
+.KibitzChatPanel-log .variation-post:hover {
+    background: color-mix(in srgb, var(--shade1) 100%, transparent);
+}
+
+.KibitzChatPanel-log .variation-post.variation-post-flash {
+    background: color-mix(in srgb, var(--primary) 14%, var(--shade4));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 35%, transparent);
+}
+
+.KibitzChatPanel-log .variation-post-entry.variation-post-flash .variation-post {
+    background: color-mix(in srgb, var(--primary) 14%, var(--shade4));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 35%, transparent);
+}
+
+[data-theme="light"] .KibitzChatPanel-log .variation-post:hover {
+    background: color-mix(in srgb, var(--shade2) 100%, transparent);
+}
+
+.KibitzChatPanel-composer {
+    background: var(--card-background-color);
+    padding: 0 0.75rem 0.5rem;
+    box-shadow:
+        0 0 0px 0px color-mix(in srgb, var(--primary) 60%, transparent),
+        inset 0 0 0px 0 rgba(0, 255, 0, 1),
+        inset 0 0 5px 0 color-mix(in srgb, var(--primary) 40%, transparent);
+    border-radius: 3px;
+}
+
+.KibitzChatPanel-composer:focus-within {
+    box-shadow:
+        0 0 0px 0px color-mix(in srgb, var(--primary) 60%, transparent),
+        inset 0 0 0px 0 rgba(0, 255, 0, 1),
+        inset 0 0 7px 0 color-mix(in srgb, var(--primary) 85%, transparent);
+}
+
+.KibitzChatPanel-composer .TabCompleteInput {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+}
+
+.KibitzChatPanel-composer .TabCompleteInput:focus,
+.KibitzChatPanel-composer .TabCompleteInput:focus-visible {
+    outline: none;
+}
+
+.KibitzChatPanel-disabledComposer {
+    display: flex;
+    align-items: stretch;
+    flex: 0 0 30px;
+    height: 30px;
+    min-height: 30px;
+    overflow: hidden;
+    background: var(--card-background-color);
+    padding: 0 0.75rem 0.5rem;
+}
+
+.KibitzChatPanel-disabledComposer.chat-input-container {
+    box-sizing: border-box;
+    margin: 0;
+    width: 100%;
+}
+
+@media (max-width: 1000px) {
+    .KibitzChatPanel-log .stream-empty,
+    .KibitzChatPanel-log .kibitz-chat-entry,
+    .KibitzChatPanel-log .variation-post-entry {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+}

@@ -19,6 +19,7 @@ import * as React from "react";
 import { ChatLine } from "@/components/Chat";
 import { GameChatLine } from "@/components/Chat/GameChatLine";
 import { TabCompleteInput } from "@/components/TabCompleteInput";
+import { ChatUserList, ChatUserCount } from "@/components/ChatUserList";
 import {
     cachedChannelInformation,
     chat_manager,
@@ -26,11 +27,10 @@ import {
     ChatMessage,
 } from "@/lib/chat_manager";
 import { useUser } from "@/lib/hooks";
-import { useGobanControllerOrNull } from "@/components/GobanView";
+import type { GobanController } from "@/lib/GobanController";
 import { interpolate, moment, pgettext } from "@/lib/translate";
 import { protocol } from "goban";
 import type {
-    KibitzMode,
     KibitzRoomSummary,
     KibitzStreamItem,
     KibitzStreamItemSource,
@@ -39,17 +39,10 @@ import type {
 import { KIBITZ_HELP_TARGETS } from "./HelpFlows/KibitzHelpTargets";
 import { useKibitzHelpTarget } from "./HelpFlows/useKibitzHelpTarget";
 import { formatVariationBranchLabel, formatVariationLengthLabel } from "./kibitzVariationQuickList";
-import "./KibitzSharedStreamPanel.css";
+import "./KibitzChatPanel.css";
 import "@/components/Chat/ChatLog.css";
 
-type DesktopSplitState =
-    | "game-only"
-    | "game-70-room-30"
-    | "game-50-room-50"
-    | "game-30-room-70"
-    | "room-only";
-
-type MobileTab = "room" | "game";
+type ChatTab = "room" | "game";
 
 type PaneEntry =
     | {
@@ -72,103 +65,25 @@ type PaneEntry =
           item: KibitzStreamItem;
       };
 
-interface KibitzSharedStreamPanelProps {
-    mode: KibitzMode;
+export interface KibitzChatPanelProps {
     room: KibitzRoomSummary;
     items: KibitzStreamItem[];
     variations: KibitzVariationSummary[];
     onOpenVariation: (variationId: string, focusVariation?: boolean) => void;
-    onSendMessage: (text: string) => void;
-    isMobileLayout: boolean;
-    compact?: boolean;
+    /** Live game controller whose chat_log feeds the Game tab. */
+    gameController: GobanController | null;
 }
 
-const DESKTOP_SPLIT_STORAGE_KEY = "kibitz.shared_stream.desktop_split";
-const MOBILE_TAB_STORAGE_KEY = "kibitz.shared_stream.mobile_tab";
-const DEFAULT_DESKTOP_SPLIT: DesktopSplitState = "game-30-room-70";
-const DESKTOP_SPLITS: DesktopSplitState[] = [
-    "game-only",
-    "game-70-room-30",
-    "game-50-room-50",
-    "game-30-room-70",
-    "room-only",
-];
-const DEFAULT_MOBILE_TAB: MobileTab = "room";
+const TAB_STORAGE_KEY = "kibitz.chat_tab";
+const DEFAULT_TAB: ChatTab = "room";
 
-function isDesktopSplitState(value: string | null): value is DesktopSplitState {
-    return (
-        value === "game-only" ||
-        value === "game-70-room-30" ||
-        value === "game-50-room-50" ||
-        value === "game-30-room-70" ||
-        value === "room-only"
-    );
-}
-
-function isMobileTab(value: string | null): value is MobileTab {
+function isChatTab(value: string | null): value is ChatTab {
     return value === "room" || value === "game";
 }
 
-function readDesktopSplit(): DesktopSplitState {
-    const stored = window.localStorage.getItem(DESKTOP_SPLIT_STORAGE_KEY);
-    return isDesktopSplitState(stored) ? stored : DEFAULT_DESKTOP_SPLIT;
-}
-
-function readMobileTab(): MobileTab {
-    const stored = window.localStorage.getItem(MOBILE_TAB_STORAGE_KEY);
-    return isMobileTab(stored) ? stored : DEFAULT_MOBILE_TAB;
-}
-
-function splitPercentage(split: DesktopSplitState): { game: number; room: number } {
-    switch (split) {
-        case "game-only":
-            return { game: 100, room: 0 };
-        case "game-70-room-30":
-            return { game: 70, room: 30 };
-        case "game-50-room-50":
-            return { game: 50, room: 50 };
-        case "game-30-room-70":
-            return { game: 30, room: 70 };
-        case "room-only":
-            return { game: 0, room: 100 };
-    }
-}
-
-function snapDesktopSplitFromRatio(gameRatio: number): DesktopSplitState {
-    const nearest = DESKTOP_SPLITS.reduce<{
-        split: DesktopSplitState;
-        distance: number;
-    } | null>((best, split) => {
-        const distance = Math.abs(splitPercentage(split).game - gameRatio);
-        if (!best || distance < best.distance) {
-            return { split, distance };
-        }
-
-        return best;
-    }, null);
-
-    return nearest?.split ?? DEFAULT_DESKTOP_SPLIT;
-}
-
-function clampPercentage(value: number): number {
-    return Math.min(100, Math.max(0, value));
-}
-
-function ratioFromPointerPosition(
-    clientY: number,
-    dragState: {
-        top: number;
-        height: number;
-        dividerHeight: number;
-    },
-): number {
-    const availableHeight = dragState.height - dragState.dividerHeight;
-    if (availableHeight <= 0) {
-        return splitPercentage(DEFAULT_DESKTOP_SPLIT).game;
-    }
-
-    const centeredPosition = clientY - dragState.top - dragState.dividerHeight / 2;
-    return clampPercentage((centeredPosition / availableHeight) * 100);
+function readTab(): ChatTab {
+    const stored = window.localStorage.getItem(TAB_STORAGE_KEY);
+    return isChatTab(stored) ? stored : DEFAULT_TAB;
 }
 
 // Goban chat lines come off goban.chat_log (fed by game-server / Scylla).
@@ -307,55 +222,39 @@ function isAtBottom(container: HTMLDivElement | null): boolean {
     return container.scrollHeight - container.scrollTop - 10 < container.clientHeight;
 }
 
-export function KibitzSharedStreamPanel({
-    mode,
+export function KibitzChatPanel({
     room,
     items,
     variations,
     onOpenVariation,
-    onSendMessage,
-    isMobileLayout,
-    compact = false,
-}: KibitzSharedStreamPanelProps): React.ReactElement {
+    gameController,
+}: KibitzChatPanelProps): React.ReactElement {
     const user = useUser();
     const chatDisabled = user.anonymous || !user.email_validated;
-    // The watched-game's GobanController is provided by KibitzInner via
-    // GobanControllerContext. The game pane reads chat off goban.chat_log
-    // (which is fed by game-server via Scylla — the real game chat path).
-    // chat_manager.join("game-X") would join an unrelated comm-server Redis
-    // channel and stay empty.
-    const watchedController = useGobanControllerOrNull();
+    // The watched-game's GobanController is passed in by KibitzInner. The
+    // game tab reads chat off goban.chat_log (which is fed by game-server
+    // via Scylla — the real game chat path). chat_manager.join("game-X")
+    // would join an unrelated comm-server Redis channel and stay empty.
+    const watchedController = gameController;
     const roomScrollRef = React.useRef<HTMLDivElement | null>(null);
     const gameScrollRef = React.useRef<HTMLDivElement | null>(null);
     const [roomProxy, setRoomProxy] = React.useState<ChatChannelProxy | null>(null);
     const [, refresh] = React.useState(0);
     const [gobanGameEntries, setGobanGameEntries] = React.useState<PaneEntry[]>([]);
     const gobanGameEntryKeysRef = React.useRef<Set<string>>(new Set());
-    const [desktopSplit, setDesktopSplit] = React.useState<DesktopSplitState>(readDesktopSplit);
-    const [desktopDragRatio, setDesktopDragRatio] = React.useState<number | null>(null);
-    const [desktopDragging, setDesktopDragging] = React.useState(false);
-    const [mobileTab, setMobileTab] = React.useState<MobileTab>(readMobileTab);
+    const [tab, setTab] = React.useState<ChatTab>(readTab);
+    const [showUserList, setShowUserList] = React.useState(false);
     const [roomFollowLatest, setRoomFollowLatest] = React.useState(true);
     const [gameFollowLatest, setGameFollowLatest] = React.useState(true);
     const [roomUnread, setRoomUnread] = React.useState(false);
     const [gameUnread, setGameUnread] = React.useState(false);
-    const desktopStackRef = React.useRef<HTMLDivElement | null>(null);
-    const desktopStreamTarget = useKibitzHelpTarget(KIBITZ_HELP_TARGETS.desktopStream);
-    const mobileChatTabTarget = useKibitzHelpTarget(KIBITZ_HELP_TARGETS.mobileChatTab);
-    const desktopDragStateRef = React.useRef<{
-        pointerId: number;
-        top: number;
-        height: number;
-        dividerHeight: number;
-    } | null>(null);
+    const streamHelpTarget = useKibitzHelpTarget(KIBITZ_HELP_TARGETS.desktopStream);
     const roomChannel = room.channel;
     const includeMalkovich = room.current_game?.live === false;
     const roomPreviousEntryCountRef = React.useRef(0);
     const gamePreviousEntryCountRef = React.useRef(0);
-    const desktopGameRatio = desktopDragRatio ?? splitPercentage(desktopSplit).game;
-    const desktopRoomRatio = 100 - desktopGameRatio;
-    const roomVisible = isMobileLayout ? mobileTab === "room" : desktopRoomRatio > 0;
-    const gameVisible = isMobileLayout ? mobileTab === "game" : desktopGameRatio > 0;
+    const roomVisible = tab === "room";
+    const gameVisible = tab === "game";
     const channelName = cachedChannelInformation(room.channel)?.name ?? room.title;
     const roomEntries = React.useMemo<PaneEntry[]>(() => {
         const entries: PaneEntry[] = [];
@@ -405,11 +304,6 @@ export function KibitzSharedStreamPanel({
     }, [gobanGameEntries, items, room]);
 
     React.useEffect(() => {
-        if (mode === "demo") {
-            setRoomProxy(null);
-            return;
-        }
-
         const nextRoomProxy = chat_manager.join(room.channel);
         setRoomProxy(nextRoomProxy);
 
@@ -433,7 +327,7 @@ export function KibitzSharedStreamPanel({
             nextRoomProxy.off("user-metadata-update", sync);
             nextRoomProxy.part();
         };
-    }, [mode, room.channel]);
+    }, [room.channel]);
 
     // Subscribe to the watched game's chat. The chat lives on the goban
     // instance (fed by game-server / Scylla), so we append one entry for
@@ -553,103 +447,8 @@ export function KibitzSharedStreamPanel({
     }, [gameFollowLatest, gameVisible]);
 
     React.useEffect(() => {
-        window.localStorage.setItem(DESKTOP_SPLIT_STORAGE_KEY, desktopSplit);
-    }, [desktopSplit]);
-
-    React.useEffect(() => {
-        if (!isMobileLayout) {
-            return;
-        }
-
-        window.localStorage.setItem(MOBILE_TAB_STORAGE_KEY, mobileTab);
-    }, [isMobileLayout, mobileTab]);
-
-    const showDesktopSplitControl = !isMobileLayout;
-    const showMobileSwitcher = isMobileLayout;
-
-    const finishDesktopDrag = React.useCallback((clientY: number) => {
-        const dragState = desktopDragStateRef.current;
-
-        if (!dragState) {
-            setDesktopDragging(false);
-            setDesktopDragRatio(null);
-            return;
-        }
-
-        const nextSplit = snapDesktopSplitFromRatio(ratioFromPointerPosition(clientY, dragState));
-        desktopDragStateRef.current = null;
-        setDesktopDragging(false);
-        setDesktopDragRatio(null);
-        setDesktopSplit(nextSplit);
-    }, []);
-
-    const handleDesktopDividerPointerDown = React.useCallback(
-        (event: React.PointerEvent<HTMLButtonElement>) => {
-            if (event.button !== 0 || isMobileLayout) {
-                return;
-            }
-
-            const stack = desktopStackRef.current;
-            const divider = event.currentTarget;
-            if (!stack) {
-                return;
-            }
-
-            const stackRect = stack.getBoundingClientRect();
-            const dividerRect = divider.getBoundingClientRect();
-            desktopDragStateRef.current = {
-                pointerId: event.pointerId,
-                top: stackRect.top,
-                height: stackRect.height,
-                dividerHeight: dividerRect.height,
-            };
-            setDesktopDragging(true);
-            setDesktopDragRatio(
-                ratioFromPointerPosition(event.clientY, desktopDragStateRef.current),
-            );
-            divider.setPointerCapture(event.pointerId);
-            event.preventDefault();
-        },
-        [isMobileLayout],
-    );
-
-    React.useEffect(() => {
-        if (!desktopDragging) {
-            return;
-        }
-
-        const handlePointerMove = (event: PointerEvent) => {
-            const dragState = desktopDragStateRef.current;
-            if (!dragState || event.pointerId !== dragState.pointerId) {
-                return;
-            }
-
-            setDesktopDragRatio(ratioFromPointerPosition(event.clientY, dragState));
-        };
-
-        const handlePointerEnd = (event: PointerEvent) => {
-            const dragState = desktopDragStateRef.current;
-            if (!dragState || event.pointerId !== dragState.pointerId) {
-                return;
-            }
-
-            finishDesktopDrag(event.clientY);
-        };
-
-        window.addEventListener("pointermove", handlePointerMove);
-        window.addEventListener("pointerup", handlePointerEnd);
-        window.addEventListener("pointercancel", handlePointerEnd);
-
-        return () => {
-            window.removeEventListener("pointermove", handlePointerMove);
-            window.removeEventListener("pointerup", handlePointerEnd);
-            window.removeEventListener("pointercancel", handlePointerEnd);
-        };
-    }, [desktopDragging, finishDesktopDrag]);
-
-    const handleMobileTabChange = React.useCallback((tab: MobileTab) => {
-        setMobileTab(tab);
-    }, []);
+        window.localStorage.setItem(TAB_STORAGE_KEY, tab);
+    }, [tab]);
 
     const onRoomScroll = React.useCallback(() => {
         const container = roomScrollRef.current;
@@ -707,12 +506,6 @@ export function KibitzSharedStreamPanel({
                 return false;
             }
 
-            if (mode === "demo") {
-                onSendMessage(value);
-                input.value = "";
-                return false;
-            }
-
             if (!roomProxy) {
                 return false;
             }
@@ -721,7 +514,7 @@ export function KibitzSharedStreamPanel({
             input.value = "";
             return false;
         },
-        [mode, onSendMessage, roomProxy],
+        [roomProxy],
     );
 
     let roomLastLine: ChatMessage | undefined;
@@ -855,66 +648,23 @@ export function KibitzSharedStreamPanel({
         );
     };
 
-    const roomPane = (
-        <div
-            className={
-                "KibitzSharedStreamPanel-pane KibitzSharedStreamPanel-roomPane" +
-                (roomVisible ? "" : " hidden") +
-                (roomUnread ? " has-unread" : "")
-            }
-            style={!isMobileLayout ? { flexBasis: `${desktopRoomRatio}%` } : undefined}
-        >
-            <div className="KibitzSharedStreamPanel-paneBody">
-                <div className="KibitzSharedStreamPanel-paneFeed">
-                    {renderEntries(roomEntries, "room")}
-                </div>
-                <div className="KibitzSharedStreamPanel-composer">
-                    <TabCompleteInput
-                        id={`kibitz-chat-input-${room.id}`}
-                        className="TabCompleteInput"
-                        autoComplete="off"
-                        placeholder={interpolate(
-                            pgettext(
-                                "Placeholder text for the kibitz room chat input",
-                                "Message {{who}}",
-                            ),
-                            { who: channelName },
-                        )}
-                        disabled={chatDisabled || !roomVisible}
-                        onKeyPress={onRoomKeyPress}
-                    />
-                </div>
-            </div>
-        </div>
+    const roomPlaceholder = interpolate(
+        pgettext("Placeholder text for the kibitz room chat input", "Message {{who}}"),
+        { who: channelName },
     );
 
-    const gamePane = (
-        <div
-            className={
-                "KibitzSharedStreamPanel-pane KibitzSharedStreamPanel-gamePane" +
-                (gameVisible ? "" : " hidden") +
-                (gameUnread ? " has-unread" : "")
-            }
-            style={!isMobileLayout ? { flexBasis: `${desktopGameRatio}%` } : undefined}
-        >
-            <div className="KibitzSharedStreamPanel-paneBody">
-                <div className="KibitzSharedStreamPanel-paneFeed">
-                    {renderEntries(gameEntries, "game")}
-                </div>
-            </div>
-        </div>
+    const disabledPlaceholder = pgettext(
+        "Placeholder text shown when the kibitz game chat composer is disabled",
+        "Can't send messages to game chat",
     );
 
     const disabledComposer = (
-        <div className="KibitzSharedStreamPanel-disabledComposer chat-input-container input-group">
+        <div className="KibitzChatPanel-disabledComposer chat-input-container input-group">
             <TabCompleteInput
                 id={`kibitz-chat-disabled-${room.id}`}
                 className="TabCompleteInput chat-input"
                 autoComplete="off"
-                placeholder={pgettext(
-                    "Placeholder text shown when the kibitz game chat composer is disabled",
-                    "Can't send messages to game chat",
-                )}
+                placeholder={disabledPlaceholder}
                 disabled={true}
                 onKeyPress={() => false}
             />
@@ -922,135 +672,64 @@ export function KibitzSharedStreamPanel({
     );
 
     return (
-        <div
-            className={
-                "KibitzSharedStreamPanel" +
-                (isMobileLayout ? " mobile" : " desktop") +
-                (compact ? " compact" : "") +
-                (desktopDragging ? " is-dragging" : "") +
-                " split-" +
-                (isMobileLayout ? mobileTab : desktopSplit)
-            }
-            ref={desktopStreamTarget?.ref}
-        >
-            {showMobileSwitcher ? (
-                <div
-                    className="KibitzSharedStreamPanel-mobileSwitcher"
-                    style={{ background: "var(--mobile-room-bar-bg)" }}
+        <div className="KibitzChatPanel" ref={streamHelpTarget?.ref}>
+            <div className="KibitzChatPanel-tabs" role="tablist">
+                <button
+                    type="button"
+                    role="tab"
+                    aria-selected={tab === "game"}
+                    className={"KibitzChatPanel-tab" + (tab === "game" ? " active" : "")}
+                    onClick={() => setTab("game")}
                 >
-                    <button
-                        type="button"
-                        className={
-                            "KibitzSharedStreamPanel-mobileSwitchButton" +
-                            (mobileTab === "room" ? " active" : "")
-                        }
-                        ref={mobileChatTabTarget?.ref}
-                        aria-pressed={mobileTab === "room"}
-                        onClick={() => handleMobileTabChange("room")}
-                    >
-                        <span className="KibitzSharedStreamPanel-mobileSwitchContent">
-                            <span
-                                className="KibitzSharedStreamPanel-mobileSwitchSpacer"
-                                aria-hidden="true"
-                            />
-                            <span className="KibitzSharedStreamPanel-mobileSwitchLabel">
-                                {pgettext("Label for the kibitz mobile room tab", "Kibitz chat")}
-                            </span>
-                            <span
-                                className={
-                                    "KibitzSharedStreamPanel-mobileSwitchIndicator" +
-                                    (roomUnread ? " active" : "")
-                                }
-                                aria-hidden="true"
-                            >
-                                {roomUnread ? (
-                                    <span className="KibitzSharedStreamPanel-unreadDot" />
-                                ) : null}
-                            </span>
-                        </span>
-                    </button>
-                    <button
-                        type="button"
-                        className={
-                            "KibitzSharedStreamPanel-mobileSwitchButton" +
-                            (mobileTab === "game" ? " active" : "")
-                        }
-                        aria-pressed={mobileTab === "game"}
-                        onClick={() => handleMobileTabChange("game")}
-                    >
-                        <span className="KibitzSharedStreamPanel-mobileSwitchContent">
-                            <span
-                                className="KibitzSharedStreamPanel-mobileSwitchSpacer"
-                                aria-hidden="true"
-                            />
-                            <span className="KibitzSharedStreamPanel-mobileSwitchLabel">
-                                {pgettext("Label for the kibitz mobile game tab", "Game chat")}
-                            </span>
-                            <span
-                                className={
-                                    "KibitzSharedStreamPanel-mobileSwitchIndicator" +
-                                    (gameUnread ? " active" : "")
-                                }
-                                aria-hidden="true"
-                            >
-                                {gameUnread ? (
-                                    <span className="KibitzSharedStreamPanel-unreadDot" />
-                                ) : null}
-                            </span>
-                        </span>
-                    </button>
-                </div>
-            ) : null}
-
-            <div className="KibitzSharedStreamPanel-stack" ref={desktopStackRef}>
-                {gamePane}
-                {showDesktopSplitControl ? (
-                    <button
-                        type="button"
-                        className={
-                            "KibitzSharedStreamPanel-divider" +
-                            (desktopDragging ? " is-dragging" : "")
-                        }
-                        aria-label={pgettext(
-                            "Aria label for the kibitz shared stream split control",
-                            "Shared stream split",
-                        )}
-                        onPointerDown={handleDesktopDividerPointerDown}
-                    >
-                        <span
-                            className="KibitzSharedStreamPanel-dividerSide left"
-                            aria-hidden="true"
-                        >
-                            <span className="KibitzSharedStreamPanel-dividerArrow">^</span>
-                            <span className="KibitzSharedStreamPanel-dividerLabel">
-                                {pgettext(
-                                    "Label for the Kibitz game stream in the split divider",
-                                    "Game chat",
-                                )}
-                            </span>
-                        </span>
-                        <span className="KibitzSharedStreamPanel-dividerHandle" aria-hidden="true">
-                            <span className="KibitzSharedStreamPanel-dividerHandleDot" />
-                            <span className="KibitzSharedStreamPanel-dividerHandleDot" />
-                            <span className="KibitzSharedStreamPanel-dividerHandleDot" />
-                        </span>
-                        <span
-                            className="KibitzSharedStreamPanel-dividerSide right"
-                            aria-hidden="true"
-                        >
-                            <span className="KibitzSharedStreamPanel-dividerLabel">
-                                {pgettext(
-                                    "Label for the Kibitz room stream in the split divider",
-                                    "Kibitz chat",
-                                )}
-                            </span>
-                            <span className="KibitzSharedStreamPanel-dividerArrow">v</span>
-                        </span>
-                    </button>
-                ) : null}
-                {roomPane}
-                {gameVisible && !roomVisible ? disabledComposer : null}
+                    {pgettext("Kibitz chat tab for the watched game's chat", "Game chat")}
+                    {gameUnread && tab !== "game" ? (
+                        <span className="KibitzChatPanel-unread" />
+                    ) : null}
+                </button>
+                <button
+                    type="button"
+                    role="tab"
+                    aria-selected={tab === "room"}
+                    className={"KibitzChatPanel-tab" + (tab === "room" ? " active" : "")}
+                    onClick={() => setTab("room")}
+                >
+                    {pgettext("Kibitz chat tab for the kibitz room's chat", "Kibitz chat")}
+                    {roomUnread && tab !== "room" ? (
+                        <span className="KibitzChatPanel-unread" />
+                    ) : null}
+                </button>
             </div>
+            <div
+                className={
+                    "KibitzChatPanel-body" +
+                    (showUserList && tab === "room" ? " show-user-list" : "")
+                }
+            >
+                <div className="KibitzChatPanel-log">
+                    {tab === "game"
+                        ? renderEntries(gameEntries, "game")
+                        : renderEntries(roomEntries, "room")}
+                </div>
+                {tab === "room" && showUserList ? <ChatUserList channel={room.channel} /> : null}
+            </div>
+            {tab === "room" ? (
+                <div className="KibitzChatPanel-composer chat-input-container input-group">
+                    <TabCompleteInput
+                        id={"kibitz-chat-input-" + room.id}
+                        className="chat-input"
+                        placeholder={chatDisabled ? disabledPlaceholder : roomPlaceholder}
+                        disabled={chatDisabled}
+                        onKeyPress={onRoomKeyPress}
+                    />
+                    <ChatUserCount
+                        channel={room.channel}
+                        active={showUserList}
+                        onClick={() => setShowUserList((v) => !v)}
+                    />
+                </div>
+            ) : (
+                disabledComposer
+            )}
         </div>
     );
 }

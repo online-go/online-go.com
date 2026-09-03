@@ -161,9 +161,9 @@ jest.mock("./KibitzMobileMainGameScoreboard", () => ({
         isMainBoardVisible ? <div data-testid="mobile-scoreboard" /> : null,
 }));
 
-jest.mock("./KibitzSharedStreamPanel", () => ({
+jest.mock("./KibitzChatPanel", () => ({
     __esModule: true,
-    KibitzSharedStreamPanel: () => null,
+    KibitzChatPanel: () => null,
 }));
 
 jest.mock("./KibitzPresence", () => ({

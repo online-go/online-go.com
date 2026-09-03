@@ -2597,7 +2597,7 @@ export function KibitzRoomStage({
     );
     // Wrap the setter so the parent (KibitzInner) is notified whenever the
     // main board's controller is (re)created. Lets the parent provide it via
-    // GobanControllerContext so descendants like KibitzSharedStreamPanel can
+    // GobanControllerContext so descendants like KibitzChatPanel can
     // hook into the watched game's chat without prop drilling.
     React.useEffect(() => {
         currentRoomIdRef.current = room.id;

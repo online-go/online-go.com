@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { createChatLineFromGobanLine } from "./KibitzSharedStreamPanel";
+import { createChatLineFromGobanLine } from "./KibitzChatPanel";
 import { protocol } from "goban";
 
 describe("createChatLineFromGobanLine", () => {

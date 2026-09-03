@@ -941,7 +941,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         proxy.on("part", this.syncPresenceFromChat);
         proxy.on("user-metadata-update", this.syncPresenceFromChat);
         // Initial full sync; chat_log may already be populated if another
-        // subscriber held the channel (e.g. KibitzSharedStreamPanel) and
+        // subscriber held the channel (e.g. KibitzChatPanel) and
         // gets fed by replay events afterwards.
         this.syncMessagesFromChat();
         this.syncPresenceFromChat();
@@ -1083,7 +1083,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             // joinActiveChat fires syncMessagesFromChat and syncPresenceFromChat, which set stream/variations
             // from the channel's chat_log — empty if this is a fresh join,
             // populated if chat_manager was already holding the channel for
-            // another subscriber (KibitzSharedStreamPanel also joins it). The
+            // another subscriber (KibitzChatPanel also joins it). The
             // previous explicit setStream/setVariations([]) here was a leftover
             // placeholder from before 1C-b wired chat-derived state and would
             // wipe whatever syncMessagesFromChat had just produced.

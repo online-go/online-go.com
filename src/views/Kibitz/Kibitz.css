@@ -885,7 +885,7 @@
             overflow: hidden;
         }
 
-        .Kibitz-mobile-panel-surface > .KibitzSharedStreamPanel,
+        .Kibitz-mobile-panel-surface > .KibitzChatPanel,
         .Kibitz-mobile-panel-surface > .Kibitz-mobile-panel {
             flex: 1 1 auto;
             min-height: 0;
@@ -972,7 +972,7 @@
             padding: 0.75rem 0.75rem 0.4rem 1.15rem;
         }
 
-        .Kibitz-mobile-panel-surface > .KibitzSharedStreamPanel,
+        .Kibitz-mobile-panel-surface > .KibitzChatPanel,
         .Kibitz-mobile-panel-surface > .Kibitz-mobile-panel,
         .Kibitz-mobile-panel-surface > .Kibitz-mobile-panel .KibitzVariationList {
             background: var(--card-background-color);

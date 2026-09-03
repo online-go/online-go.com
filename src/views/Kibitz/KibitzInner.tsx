@@ -18,7 +18,6 @@
 import * as React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { GobanController, getMoveTreeTrunkTail } from "@/lib/GobanController";
-import { GobanControllerContext } from "@/components/GobanView";
 import { toast } from "@/lib/toast";
 import { get } from "@/lib/requests";
 import { interpolate, pgettext } from "@/lib/translate";
@@ -41,7 +40,7 @@ import { KibitzRoomStage } from "./KibitzRoomStage";
 import type { MobileBoardResizeOwner } from "./KibitzRoomStage";
 import { KibitzMobileMainGameScoreboard } from "./KibitzMobileMainGameScoreboard";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
-import { KibitzSharedStreamPanel } from "./KibitzSharedStreamPanel";
+import { KibitzChatPanel } from "./KibitzChatPanel";
 import { KibitzPresence } from "./KibitzPresence";
 import { KibitzPresencePanel } from "./KibitzPresencePanel";
 import { KibitzPresetChangePendingBanner } from "./KibitzPresetChangePendingBanner";
@@ -699,10 +698,10 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         React.useState<MobileCompanionPanel>("chat");
     const [mobileCompareController, setMobileCompareController] =
         React.useState<GobanController | null>(null);
-    // Lifted from KibitzRoomStage so we can provide it via GobanControllerContext
-    // around KibitzSharedStreamPanel — that's how the panel's game pane reads
-    // the watched game's chat (off goban.chat_log via the existing context hook)
-    // instead of incorrectly trying to join a comm-server Redis channel.
+    // Lifted from KibitzRoomStage so we can pass it as the `gameController`
+    // prop to KibitzChatPanel — that's how the panel's game tab reads the
+    // watched game's chat (off goban.chat_log) instead of incorrectly trying
+    // to join a comm-server Redis channel.
     const [mainBoardController, setMainBoardControllerState] =
         React.useState<GobanController | null>(null);
     const [visibleMainBoardHydration, setVisibleMainBoardHydration] =
@@ -4096,20 +4095,13 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                             }}
                                         >
                                             {mobileCompanionPanel === "chat" ? (
-                                                <GobanControllerContext.Provider
-                                                    value={mainBoardController}
-                                                >
-                                                    <KibitzSharedStreamPanel
-                                                        mode="live"
-                                                        room={resolvedRoom}
-                                                        items={stream}
-                                                        variations={displayedVariations}
-                                                        onOpenVariation={onOpenVariation}
-                                                        onSendMessage={() => undefined}
-                                                        isMobileLayout={true}
-                                                        compact={true}
-                                                    />
-                                                </GobanControllerContext.Provider>
+                                                <KibitzChatPanel
+                                                    room={resolvedRoom}
+                                                    items={stream}
+                                                    variations={displayedVariations}
+                                                    onOpenVariation={onOpenVariation}
+                                                    gameController={mainBoardController}
+                                                />
                                             ) : null}
                                             {mobileCompanionPanel === "vote" ? (
                                                 <div className="Kibitz-mobile-panel Kibitz-mobile-vote-panel">
@@ -4251,18 +4243,13 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                         onVote={onVoteProposal}
                                     />
                                 </div>
-                                <GobanControllerContext.Provider value={mainBoardController}>
-                                    <KibitzSharedStreamPanel
-                                        mode="live"
-                                        room={resolvedRoom}
-                                        items={stream}
-                                        variations={displayedVariations}
-                                        onOpenVariation={onOpenVariation}
-                                        onSendMessage={() => undefined}
-                                        isMobileLayout={false}
-                                        compact={Boolean(activeProposal)}
-                                    />
-                                </GobanControllerContext.Provider>
+                                <KibitzChatPanel
+                                    room={resolvedRoom}
+                                    items={stream}
+                                    variations={displayedVariations}
+                                    onOpenVariation={onOpenVariation}
+                                    gameController={mainBoardController}
+                                />
                                 <div className="Kibitz-sidebar-stream-spacer" aria-hidden="true" />
                                 <div
                                     className="Kibitz-footer-panels"
