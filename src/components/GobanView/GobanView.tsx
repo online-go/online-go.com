@@ -91,6 +91,10 @@ interface GobanViewProps {
     /** Render a PlayerBar above and below the board. The current user's
      *  seat (or black for spectators) is on the bottom. */
     playerBars?: boolean;
+    /** Landscape-only column rendered before the board, styled like the
+     *  sidebar. Ignored in portrait; consumers provide takeover tabs for
+     *  the same content there. */
+    leftAside?: React.ReactNode;
     /** Forwarded to the GobanContainer — fires when the user scrolls the wheel
      *  over the board. Used by the Game view for scroll-to-navigate. */
     onWheel?: React.WheelEventHandler<HTMLDivElement>;
@@ -145,6 +149,7 @@ function GobanViewComponent({
     aboveBoard,
     belowBoard,
     playerBars,
+    leftAside,
     onWheel,
     ref,
 }: GobanViewProps): React.ReactElement {
@@ -414,9 +419,11 @@ function GobanViewComponent({
                         (squashed ? " squashed" : "") +
                         (hasTakeover ? " has-takeover" : "") +
                         customSliderClass +
+                        (leftAside ? " has-left-aside" : "") +
                         (className ? ` ${className}` : "")
                     }
                 >
+                    {leftAside && <div className="GobanView-left-aside">{leftAside}</div>}
                     <div className="GobanView-center">
                         {topBar}
                         <GobanContainer

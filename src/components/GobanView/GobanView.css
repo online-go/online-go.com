@@ -87,6 +87,20 @@
         overflow: hidden;
     }
 
+    .GobanView-left-aside {
+        display: flex;
+        flex-direction: column;
+        width: var(--goban-view-left-aside-width);
+        flex-shrink: 0;
+        z-index: 2;
+        background: var(--shade5);
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        margin: 0 1.25rem var(--goban-view-bottom-margin) 0.3rem;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
     /* Header pinned above the scrollable sidebar content. Hidden via
      * :empty when the `header` prop's component renders nothing, so we
      * don't leave a stray bordered band at the top. */
