@@ -2847,3 +2847,6 @@ Remind the author to test manually in a desktop browser and a mobile browser: ro
 - Task 11: streamer mode keeps the tab bar; portrait Rooms takeover suppressed in streamer mode; settings popover closed on unmount.
 - Task 12: body class `kibitz-streamer-mode` restored; waiting layout for rooms without a game; "New variation from here" restored; `roomManagement` help flow and `desktopRoomSettings` target removed; `PlayerIcon` size 64 (40 is not a CDN size) fitted into the 40px box by CSS; view mode from `goban_view_mode()` plus a resize listener.
 - Task 13: `KibitzBoardPreview` added for picker/proposal thumbnails; `KibitzMobileGamePicker` and `Kibitz.css` deleted as unreferenced; `e2e-tests/kibitz/*` still reference old class names and must be updated separately.
+- Task 12: mobile help flows (`mobileFirstRun`, `mobileFirstVariations`, `mobilePostedVariation`, `desktopPostedVariation`) and their target ids were removed because their surfaces no longer exist; portrait has no onboarding flow (follow-up).
+- Spec: the mini main board cannot hide coordinate labels because it shares the main goban; labels follow the main board.
+- Final review: thumbnail derived from controller identity, not center mode; the left aside stays mounted (hidden with CSS) in streamer mode so the main board always has a connected parent.
