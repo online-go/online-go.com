@@ -140,7 +140,6 @@ export interface KibitzStreamItem {
 
 export interface KibitzSecondaryPaneState {
     collapsed: boolean;
-    size?: "small" | "equal";
     preview_game_id?: number;
     variation_id?: string;
     variation_source_game_id?: number;

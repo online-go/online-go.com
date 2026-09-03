@@ -466,7 +466,6 @@ function makeController(initialRoom: KibitzRoomSummary): KibitzController {
         variations: [],
         secondary_pane: {
             collapsed: true,
-            size: "small",
         },
         debug: {},
         permissions: {
@@ -504,7 +503,7 @@ function makeController(initialRoom: KibitzRoomSummary): KibitzController {
         createRoom: jest.fn(),
         updateRoomDetails: jest.fn(),
         voteOnProposal: jest.fn(),
-        setSecondaryPaneMode: jest.fn(),
+        closeSecondaryPane: jest.fn(),
     } as unknown as KibitzController;
 
     return Object.assign(controller, {

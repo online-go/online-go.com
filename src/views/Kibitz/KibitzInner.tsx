@@ -1985,7 +1985,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
     const currentSecondaryPaneMode: SecondaryPaneMode = secondaryPane.collapsed
         ? "hidden"
-        : (secondaryPane.size ?? "small");
+        : "equal";
     const [pickerMode, setPickerMode] = React.useState<KibitzGamePickerMode>(null);
 
     React.useEffect(() => {
@@ -2968,9 +2968,14 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             showCurrentGameBaseNotReadyToast,
         ],
     );
-    const onSetSecondaryPaneMode = React.useCallback((nextMode: SecondaryPaneMode) => {
-        setPendingSecondaryPaneMode(nextMode);
-    }, []);
+    const onSetSecondaryPaneMode = React.useCallback(
+        (nextMode: SecondaryPaneMode) => {
+            if (nextMode === "hidden") {
+                controller.closeSecondaryPane();
+            }
+        },
+        [controller],
+    );
 
     const onDesktopSidebarResizerPointerDown = React.useCallback(
         (event: React.PointerEvent<HTMLDivElement>) => {
@@ -3145,14 +3150,11 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             return;
         }
 
-        if (pendingSecondaryPaneMode === currentSecondaryPaneMode) {
-            setPendingSecondaryPaneMode(null);
-            return;
+        if (pendingSecondaryPaneMode === "hidden") {
+            controller.closeSecondaryPane();
         }
-
-        controller.setSecondaryPaneMode(pendingSecondaryPaneMode);
         setPendingSecondaryPaneMode(null);
-    }, [controller, currentSecondaryPaneMode, pendingSecondaryPaneMode]);
+    }, [controller, pendingSecondaryPaneMode]);
 
     const onVoteProposal = React.useCallback(
         (proposalId: string, choice: "change" | "keep") => {

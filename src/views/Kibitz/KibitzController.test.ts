@@ -320,4 +320,12 @@ describe("KibitzController room ordering", () => {
         expect(controller.rooms[0].title).toBe("Renamed Room");
         expect(controller.rooms[0].current_game?.game_id).toBe(123);
     });
+
+    test("closeSecondaryPane collapses without a size field", () => {
+        const controller = new KibitzController();
+        controller.setSecondaryPane({ collapsed: false, variation_id: "v1" });
+        controller.closeSecondaryPane();
+        expect(controller.secondary_pane).toEqual({ collapsed: true });
+        controller.destroy();
+    });
 });

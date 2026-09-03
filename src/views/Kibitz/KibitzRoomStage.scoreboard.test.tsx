@@ -185,7 +185,7 @@ describe("KibitzRoomStage header scoreboard integration", () => {
         variations: [],
         visibleVariationIds: [],
         variationColorIndexes: {},
-        secondaryPane: { collapsed: false, size: "small" as const },
+        secondaryPane: { collapsed: false },
         onClearPreview: jest.fn(),
         onPostVariation: jest.fn(),
         onSetSecondaryPaneMode: jest.fn(),

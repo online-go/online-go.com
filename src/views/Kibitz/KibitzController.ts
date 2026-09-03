@@ -456,7 +456,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     private _stream: KibitzStreamItem[] = [];
     private _proposals: KibitzProposal[] = [];
     private _variations: KibitzVariationSummary[] = [];
-    private _secondary_pane: KibitzSecondaryPaneState = { collapsed: true, size: "small" };
+    private _secondary_pane: KibitzSecondaryPaneState = { collapsed: true };
     private _permissions: KibitzPermissions = DEFAULT_PERMISSIONS;
     private _access_blocked: KibitzAccessBlock | null = null;
     private _debug: KibitzDebugState = {
@@ -641,7 +641,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.setProposals([]);
         this.setSecondaryPane({
             collapsed: true,
-            size: "small",
         });
         this.setPermissions(DEFAULT_PERMISSIONS);
         this.setAccessBlocked({
@@ -1092,7 +1091,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             this.setProposals([]);
             this.setSecondaryPane({
                 collapsed: true,
-                size: "small",
             });
         } catch (error) {
             if (token !== this._select_room_token || this._destroyed) {
@@ -1315,7 +1313,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.setSecondaryPane({
             ...this._secondary_pane,
             collapsed: false,
-            size: this._secondary_pane.size ?? "small",
             preview_game_id: gameId,
             variation_id: undefined,
             variation_source_game_id: undefined,
@@ -1340,7 +1337,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.setSecondaryPane({
             ...this._secondary_pane,
             collapsed: false,
-            size: "equal",
             preview_game_id: currentGameId,
             variation_id: undefined,
             variation_source_game_id: currentGameId,
@@ -1368,7 +1364,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.setSecondaryPane({
             ...this._secondary_pane,
             collapsed: false,
-            size: "equal",
             preview_game_id: variation.game_id,
             variation_id: undefined,
             variation_source_game_id: variation.game_id,
@@ -1383,7 +1378,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     public clearPreviewGame(): void {
         this.setSecondaryPane({
             ...this._secondary_pane,
-            size: this._secondary_pane.size ?? "small",
+            collapsed: true,
             preview_game_id: undefined,
             variation_id: undefined,
             variation_source_game_id: undefined,
@@ -1399,7 +1394,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.setSecondaryPane({
             ...this._secondary_pane,
             collapsed: false,
-            size: "equal",
             preview_game_id: undefined,
             variation_id: variationId,
             variation_source_game_id: undefined,
@@ -1411,59 +1405,8 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         });
     }
 
-    public setSecondaryPaneMode(mode: "hidden" | "small" | "equal"): void {
-        if (mode === "hidden") {
-            this.setSecondaryPane({
-                ...this._secondary_pane,
-                collapsed: true,
-                size: this._secondary_pane.size ?? "small",
-            });
-            return;
-        }
-
-        this.setSecondaryPane({
-            ...this._secondary_pane,
-            collapsed: false,
-            size: mode,
-        });
-    }
-
-    public increaseSecondaryPaneSize(): void {
-        if (this._secondary_pane.collapsed) {
-            this.setSecondaryPane({
-                ...this._secondary_pane,
-                collapsed: false,
-                size: "small",
-            });
-            return;
-        }
-
-        if ((this._secondary_pane.size ?? "small") === "small") {
-            this.setSecondaryPane({
-                ...this._secondary_pane,
-                collapsed: false,
-                size: "equal",
-            });
-        }
-    }
-
-    public decreaseSecondaryPaneSize(): void {
-        if ((this._secondary_pane.size ?? "small") === "equal") {
-            this.setSecondaryPane({
-                ...this._secondary_pane,
-                collapsed: false,
-                size: "small",
-            });
-            return;
-        }
-
-        if (!this._secondary_pane.collapsed) {
-            this.setSecondaryPane({
-                ...this._secondary_pane,
-                collapsed: true,
-                size: "small",
-            });
-        }
+    public closeSecondaryPane(): void {
+        this.setSecondaryPane({ collapsed: true });
     }
 
     public getRoomUsers(roomId: string): KibitzRoomUser[] {

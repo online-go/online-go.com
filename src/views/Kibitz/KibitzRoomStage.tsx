@@ -2106,7 +2106,7 @@ export function KibitzRoomStage({
     const mainGame = room.current_game;
     const currentRoomGameId = mainGame?.game_id ?? null;
     const secondaryGameId = secondaryPane.preview_game_id;
-    const secondaryPaneSize = secondaryPane.collapsed ? "hidden" : (secondaryPane.size ?? "small");
+    const secondaryPaneSize = secondaryPane.collapsed ? "hidden" : "equal";
     const selectedVariation = variations.find(
         (variation) => variation.id === secondaryPane.variation_id,
     );

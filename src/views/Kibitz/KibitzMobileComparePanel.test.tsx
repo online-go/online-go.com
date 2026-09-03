@@ -122,7 +122,6 @@ function makeController(): GobanController {
 function makeSecondaryPane(): KibitzSecondaryPaneState {
     return {
         collapsed: false,
-        size: "equal",
         variation_source_game_id: 4321,
         variation_draft_base_id: "draft-1",
     };
