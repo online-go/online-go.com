@@ -22,6 +22,8 @@ import {
     GobanRenderer,
     JGOFClockWithTransmitting,
     JGOFPauseState,
+    JGOFSealingIntersection,
+    PlayerColor,
 } from "goban";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
@@ -312,6 +314,90 @@ export const useCurrentMoveNumber = generateGobanHook(
 /** React hook that returns the phase */
 export const usePhase = generateGobanHook((goban: Goban | null) => goban?.engine.phase, ["phase"]);
 
+/** React hook that returns the move number of the last official move */
+export const useOfficialMoveNumber = generateGobanHook(
+    (goban: Goban | null) => goban?.engine.last_official_move?.move_number ?? -1,
+    ["last_official_move"],
+);
+
+/**
+ * Intersections the auto-scorer wants sealed before the stone removal
+ * phase can be scored correctly. Undefined when nothing needs sealing.
+ */
+export const useNeedsSealing = generateGobanHook(
+    (goban: Goban | null): JGOFSealingIntersection[] | undefined => goban?.engine.needs_sealing,
+    ["stone-removal.needs-sealing", "engine.updated"],
+);
+
+/**
+ * Whether `color` has accepted the current stone removal state. Undefined
+ * outside of the stone removal phase.
+ */
+export function useStoneRemovalAccepted(goban: Goban, color: PlayerColor): boolean | undefined {
+    const derive = React.useCallback(() => {
+        const engine = goban.engine;
+        if (engine.phase !== "stone removal") {
+            return undefined;
+        }
+        return engine.players[color].accepted_stones === engine.getStoneRemovalString();
+    }, [goban, color]);
+    const [accepted, setAccepted] = React.useState<boolean | undefined>(derive);
+
+    React.useEffect(() => {
+        const sync = () => setAccepted(derive());
+        sync();
+        return subscribeAllEvents(
+            goban,
+            ["phase", "mode", "outcome", "stone-removal.accepted", "stone-removal.updated"],
+            sync,
+        );
+    }, [goban, derive]);
+
+    return accepted;
+}
+
+/**
+ * Tracks the server's stone removal auto-scoring. `taking_too_long` turns
+ * on when a run has been going for two seconds, so the user is not left
+ * waiting on a stuck scorer before they can accept.
+ */
+export function useAutoScoring(goban: Goban): { in_progress: boolean; taking_too_long: boolean } {
+    const [in_progress, setInProgress] = React.useState(false);
+    const [taking_too_long, setTakingTooLong] = React.useState(false);
+
+    React.useEffect(() => {
+        let timeout: ReturnType<typeof setTimeout> | null = null;
+        const onStarted = () => {
+            setInProgress(true);
+            if (timeout) {
+                clearTimeout(timeout);
+            }
+            timeout = setTimeout(() => {
+                setTakingTooLong(true);
+                timeout = null;
+            }, 2000);
+        };
+        const onComplete = () => {
+            setInProgress(false);
+            if (timeout) {
+                clearTimeout(timeout);
+                timeout = null;
+            }
+        };
+        goban.on("stone-removal.auto-scoring-started", onStarted);
+        goban.on("stone-removal.auto-scoring-complete", onComplete);
+        return () => {
+            goban.off("stone-removal.auto-scoring-started", onStarted);
+            goban.off("stone-removal.auto-scoring-complete", onComplete);
+            if (timeout) {
+                clearTimeout(timeout);
+            }
+        };
+    }, [goban]);
+
+    return { in_progress, taking_too_long };
+}
+
 /**
  * Pause/resume control for the game clock. `action` is non-null only for
  * users allowed to change the pause state right now:
@@ -411,22 +497,20 @@ export const usePlayerToMoveOnOfficialBranch = generateGobanHook(
     ["cur_move", "last_official_move"],
 );
 
-/** React hook that returns true while it is the user's live turn to move,
- *  treating a staged (not yet submitted) move in submit-move / double-click mode
- *  as still the user's turn. Derives a boolean so consumers re-render only
- *  when the answer flips, not on every move navigation event. */
+/** React hook that returns true while it is the user's live turn to move.
+ *  It follows the official branch, so navigating the move tree in analyze
+ *  mode does not change the answer, and a staged (not yet submitted) move
+ *  still counts as the user's turn. Derives a boolean so consumers
+ *  re-render only when the answer flips. */
 export const useUserIsLivePlayerToMove = generateGobanHook(
     (goban: Goban | null) => {
         const user = data.get("user");
         if (!goban || !user) {
             return false;
         }
-        const engine = goban.engine;
-        const live_player_to_move =
-            goban.submit_move != null ? engine.playerNotToMove() : engine.playerToMove();
-        return live_player_to_move === user.id;
+        return goban.engine.playerToMoveOnOfficialBranch() === user.id;
     },
-    ["cur_move", "last_official_move", "submit_move"],
+    ["last_official_move"],
 );
 
 /** React hook that returns true if the title should be shown. */

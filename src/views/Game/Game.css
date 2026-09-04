@@ -370,18 +370,12 @@
  * for the other consumers. The extra .GobanView class outranks the
  * equal-specificity shared portrait rules regardless of import order. */
 .GobanView.MainGobanView.portrait {
-    /* The play buttons run edge to edge on portrait; keep them off the
-     * screen edges. */
-    .play-buttons {
+    /* The action area runs edge to edge under the bottom player card and
+     * reads as the top of the panel slab below it. */
+    .GameActionArea {
         box-sizing: border-box;
         padding: 0 0.5rem;
-    }
-
-    /* Leave room under the board stage for the play-buttons strip (2.6rem)
-     * plus the panel slab's and PlayControls' top padding (0.5rem each), so
-     * the strip lands on screen without scrolling. */
-    &.has-play-buttons .GobanView-stage {
-        max-height: calc(100% - 3.6rem);
+        background: var(--shade5);
     }
 
     .GobanView-mobile-panels {
