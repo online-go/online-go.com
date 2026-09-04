@@ -1168,7 +1168,7 @@ export function Game(): React.ReactElement | null {
 
             {/* Left: settings + the two analysis tools that used to live in
              *  the More-actions takeover. Move navigation comes from
-             *  GobanView's built-in MoveNumberSlider above the tab bar. */}
+             *  GobanView's built-in MoveNumberControl above the tab bar. */}
             <GobanView.Tab
                 id="game-settings"
                 type="action"

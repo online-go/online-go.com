@@ -1166,7 +1166,7 @@ export function Joseki(): React.ReactElement {
                   </div>
               ));
 
-    // Reuses .MoveNumberSlider classes for visual parity with the standard
+    // Reuses .MoveNumberControl classes for visual parity with the standard
     // bar but is wired to joseki's own server-driven nav (back_stepping flag
     // + per-step fetch) rather than the controller's previousMove/nextMove.
     function renderMoveControls() {
@@ -1186,12 +1186,12 @@ export function Joseki(): React.ReactElement {
         return (
             <div
                 className={
-                    "Joseki-move-bar MoveNumberSlider" +
+                    "Joseki-move-bar MoveNumberControl" +
                     (played_mistake.current ? " highlight" : "")
                 }
             >
                 <button
-                    className="MoveNumberSlider-button"
+                    className="MoveNumberControl-button"
                     onClick={resetBoard}
                     disabled={at_start}
                     title={pgettext("Move navigation: reset to root", "Reset to root")}
@@ -1199,7 +1199,7 @@ export function Joseki(): React.ReactElement {
                     <i className="fa fa-refresh" />
                 </button>
                 <button
-                    className="MoveNumberSlider-button"
+                    className="MoveNumberControl-button"
                     onClick={backOneMove}
                     disabled={!can_back}
                     title={pgettext("Move navigation: previous move", "Previous move")}
@@ -1207,7 +1207,7 @@ export function Joseki(): React.ReactElement {
                     <i className="fa fa-step-backward" />
                 </button>
                 <div
-                    className="MoveNumberSlider-track"
+                    className="MoveNumberControl-track"
                     style={
                         {
                             "--move-frac": (slider_target ?? move_number) / Math.max(knob_max, 1),
@@ -1215,7 +1215,7 @@ export function Joseki(): React.ReactElement {
                     }
                 >
                     <input
-                        className="MoveNumberSlider-input"
+                        className="MoveNumberControl-input"
                         type="range"
                         min={0}
                         max={knob_max}
@@ -1229,8 +1229,8 @@ export function Joseki(): React.ReactElement {
                         }}
                         aria-label={pgettext("Move navigation slider", "Move number")}
                     />
-                    <div className="MoveNumberSlider-knob">
-                        <span className="MoveNumberSlider-knob-text">
+                    <div className="MoveNumberControl-knob">
+                        <span className="MoveNumberControl-knob-text">
                             {slider_target ?? move_number}
                         </span>
                     </div>
@@ -1239,7 +1239,7 @@ export function Joseki(): React.ReactElement {
                     </div>
                 </div>
                 <button
-                    className="MoveNumberSlider-button"
+                    className="MoveNumberControl-button"
                     onClick={forwardOneMove}
                     disabled={!can_forward}
                     title={pgettext("Move navigation: next move", "Next move")}

@@ -104,6 +104,9 @@ export function ThemePreferences(): React.ReactElement | null {
         usePreference("variation-stone-opacity");
     const [show_visit_counts, setShowVisitCounts] = usePreference("ai-review-show-visit-counts");
     const [animate_turn_clock, setAnimateTurnClock] = usePreference("animate-turn-clock");
+    const [move_number_control_mode, _setMoveNumberControlMode] = usePreference(
+        "move-number-control-mode",
+    );
 
     //const [show_move_numbers, _setShowMoveNumbers] = usePreference("show-move-numbers");
     const [show_variation_move_numbers, _setShowVariationMoveNumbers] = usePreference(
@@ -655,6 +658,33 @@ export function ThemePreferences(): React.ReactElement | null {
                 )}
             >
                 <Toggle checked={animate_turn_clock} onChange={setAnimateTurnClock} />
+            </PreferenceLine>
+
+            <PreferenceLine
+                title={pgettext("Theme preference title", "Move navigation control")}
+                description={pgettext(
+                    "Theme preference description",
+                    "Navigate moves with a slider, or with first, back 10, back, forward, forward 10, and last buttons.",
+                )}
+            >
+                <PreferenceDropdown
+                    value={move_number_control_mode}
+                    options={[
+                        {
+                            value: "buttons",
+                            label: pgettext("Move navigation control mode", "Buttons"),
+                        },
+                        {
+                            value: "slider",
+                            label: pgettext("Move navigation control mode", "Slider"),
+                        },
+                    ]}
+                    onChange={(value: string) => {
+                        if (value === "slider" || value === "buttons") {
+                            _setMoveNumberControlMode(value);
+                        }
+                    }}
+                />
             </PreferenceLine>
 
             <PreferenceLine
