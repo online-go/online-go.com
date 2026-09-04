@@ -100,10 +100,12 @@ describe("boardAlignmentClass", () => {
         expect(boardAlignmentClass("group")).toBe("board-align-group");
     });
 
-    test("falls back to window centering for unknown stored values", () => {
-        expect(boardAlignmentClass("bogus" as GobanViewBoardAlignment)).toBe("board-align-window");
+    test("falls back to container centering for unknown stored values", () => {
+        expect(boardAlignmentClass("bogus" as GobanViewBoardAlignment)).toBe(
+            "board-align-container",
+        );
         expect(boardAlignmentClass(undefined as unknown as GobanViewBoardAlignment)).toBe(
-            "board-align-window",
+            "board-align-container",
         );
     });
 });

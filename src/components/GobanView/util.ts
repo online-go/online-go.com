@@ -59,9 +59,9 @@ export function boardAlignmentOptions(): BoardAlignmentOption[] {
     ];
 }
 
-/** Root class for the alignment; unknown stored values fall back to `window`. */
+/** Root class for the alignment; unknown stored values fall back to `container`. */
 export function boardAlignmentClass(alignment: GobanViewBoardAlignment): string {
-    const valid = GOBAN_VIEW_BOARD_ALIGNMENTS.includes(alignment) ? alignment : "window";
+    const valid = GOBAN_VIEW_BOARD_ALIGNMENTS.includes(alignment) ? alignment : "container";
     return `board-align-${valid}`;
 }
 
