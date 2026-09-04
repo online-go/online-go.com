@@ -284,12 +284,17 @@ export function useWorstMoves(
 
         let moves: AIReviewWorstMoveEntry[] =
             reviewData.type === "fast"
-                ? Object.values(reviewData.moves).map((move) => ({
-                      move_number: move.move_number + 1,
-                      player: goban.engine!.move_tree!.index(move.move_number).player,
-                      delta: move.win_rate,
-                      move: move.move,
-                  }))
+                ? Object.values(reviewData.moves).map((move) => {
+                      /* A fast review entry analyzes a position; the move
+                       * it describes is the one played from there */
+                      const move_number = move.move_number + 1;
+                      return {
+                          move_number,
+                          player: goban.engine!.move_tree!.index(move_number).player,
+                          delta: move.win_rate,
+                          move: move.move,
+                      };
+                  })
                 : getWorstMoves(goban.engine.move_tree as MoveTree, reviewData, 100);
 
         // Filter to show only 3 worst moves per player

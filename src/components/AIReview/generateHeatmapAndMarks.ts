@@ -79,8 +79,9 @@ interface HeatmapGenerationParams {
     /** The analysis of the current position. */
     ai_review_move: JGOFAIReviewMove;
     /**
-     * The move that was played from this position, shown as a translucent
-     * stone of its color. Clicking it follows the trunk to the next move.
+     * The move that was played from this position, shown as a quality-colored
+     * circle like the other suggestions, badged with its quality
+     * classification. Clicking it follows the trunk to the next move.
      */
     played_move: MoveTree | null;
     cur_move: MoveTree;
@@ -314,22 +315,14 @@ export function generateHeatmapAndMarks({
         }
     }
 
+    /* The played move draws like any other suggestion; its quality badge is
+     * what marks it as the move played. Without a classification a plain
+     * triangle marks it instead */
     const markPlayedMove = (x: number, y: number) => {
-        goban.setMark(
-            x,
-            y,
-            played_move?.player === JGOFNumericPlayerColor.BLACK ? "black" : "white",
-            true,
-            true,
-        );
         if (played_move_category) {
             goban.setAIQualityMark(x, y, played_move_category, true, true);
         } else {
-            /* No quality classification available: neutral triangle
-             * indicator. dont_draw=false so the square repaints even when no
-             * colored circles follow (setColoredCircles skips its redraw
-             * when the circle list is empty). */
-            goban.setMark(x, y, "sub_triangle", false, true);
+            goban.setMark(x, y, "sub_triangle", true, true);
         }
     };
 
@@ -426,7 +419,9 @@ export function generateHeatmapAndMarks({
 
         if (is_played_move) {
             markPlayedMove(mv.x, mv.y);
-        } else if (i === 0) {
+        }
+
+        if (i === 0) {
             /* The official blue move draws bold and solid */
             colored_circles.push({
                 move: branch.moves[0],
@@ -436,8 +431,8 @@ export function generateHeatmapAndMarks({
             });
             goban.setMark(mv.x, mv.y, "blue_move", true, true);
         } else {
-            /* Other suggestions shade with their share of the visits, like
-             * the heatmap squares they replaced, and are colored by their
+            /* Suggestions shade with their share of the visits, like the
+             * heatmap squares they replaced, and are colored by their
              * quality. The displayed delta is negative for a loss, while the
              * quality thresholds classify a positive loss. */
             const color =
@@ -459,13 +454,14 @@ export function generateHeatmapAndMarks({
     }
 
     // The played move was not among the analyzed branches: still show its
-    // translucent stone and, when known, its positional delta.
+    // circle, colored and captioned by its positional delta when known.
     if (
         played_move &&
         !found_played_branch &&
         played_move.x >= 0 &&
         !goban.engine.board[played_move.y][played_move.x]
     ) {
+        let color: string | null = null;
         if (played_move_delta !== undefined && played_move_delta !== null) {
             goban.setSubscriptMark(
                 played_move.x,
@@ -474,7 +470,19 @@ export function generateHeatmapAndMarks({
                 true,
                 true,
             );
+            /* The delta is in the displayed metric; a loss is negative */
+            color =
+                useScore && hasScores
+                    ? qualityColor(-played_move_delta, undefined, palette)
+                    : qualityColor(undefined, -played_move_delta, palette);
         }
+        const circle_color = color ?? NEUTRAL_CIRCLE_COLOR;
+        colored_circles.push({
+            move: { x: played_move.x, y: played_move.y },
+            color: withAlpha(circle_color, 0.25),
+            border_width: 0.1,
+            border_color: circle_color,
+        });
         markPlayedMove(played_move.x, played_move.y);
     }
 

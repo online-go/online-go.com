@@ -19,6 +19,7 @@ import * as React from "react";
 import { Toggle } from "@/components/Toggle";
 import { pgettext } from "@/lib/translate";
 import * as preferences from "@/lib/preferences";
+import { AIReviewBoardToggle } from "./AIReviewBoardToggle";
 
 interface ScoreWinRateToggleProps {
     useScore: boolean;
@@ -61,7 +62,9 @@ export function ScoreWinRateToggle({
 
     return (
         <div className="ai-review-togglers">
-            <div className="left-section"></div>
+            <div className="left-section">
+                <AIReviewBoardToggle />
+            </div>
             <div className="middle-section">
                 <span className="win-toggle" onClick={handleWinToggleClick}>
                     {pgettext("Display the win % that the AI estimates", "Win %")}
