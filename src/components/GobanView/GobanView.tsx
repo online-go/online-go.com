@@ -27,7 +27,9 @@ import {
 import { GobanViewTab, GobanViewTabProps } from "./GobanViewTab";
 import { TabBar } from "./TabBar";
 import { MoveNumberControl } from "./MoveNumberControl";
+import { SidebarResizer } from "./SidebarResizer";
 import { goban_view_mode, goban_view_squashed, ViewMode } from "./util";
+import { usePreference } from "@/lib/preferences";
 import "./GobanView.css";
 
 export interface TabDefinition {
@@ -215,6 +217,22 @@ function GobanViewComponent({
     const activeTakeoverRef = React.useRef(activeTakeover);
     activeTakeoverRef.current = activeTakeover;
     const rootRef = React.useRef<HTMLDivElement>(null);
+    const sidebarRef = React.useRef<HTMLDivElement>(null);
+
+    // Landscape sidebar width chosen by the user, in px; null means the
+    // automatic width computed in CSS. While a drag is in progress the live
+    // width is held in state so the preference is only written once, on
+    // release.
+    const [savedSidebarWidth, setSavedSidebarWidth] = usePreference("goban-view-sidebar-width");
+    const [dragSidebarWidth, setDragSidebarWidth] = React.useState<number | null>(null);
+    const sidebarWidth = dragSidebarWidth ?? savedSidebarWidth;
+    const commitSidebarWidth = React.useCallback(
+        (width: number | null) => {
+            setSavedSidebarWidth(width);
+            setDragSidebarWidth(null);
+        },
+        [setSavedSidebarWidth],
+    );
 
     React.useImperativeHandle(
         ref,
@@ -394,8 +412,17 @@ function GobanViewComponent({
                         `GobanView ${viewMode}` +
                         (squashed ? " squashed" : "") +
                         (hasTakeover ? " has-takeover" : "") +
+                        (sidebarWidth !== null ? " has-custom-sidebar-width" : "") +
+                        (dragSidebarWidth !== null ? " is-resizing-sidebar" : "") +
                         customSliderClass +
                         (className ? ` ${className}` : "")
+                    }
+                    style={
+                        sidebarWidth !== null
+                            ? ({
+                                  "--goban-view-sidebar-user-width": `${sidebarWidth}px`,
+                              } as React.CSSProperties)
+                            : undefined
                     }
                 >
                     <div className="GobanView-center">
@@ -405,7 +432,13 @@ function GobanViewComponent({
                             respectContainerBounds
                         />
                     </div>
-                    <div className="GobanView-sidebar">
+                    <SidebarResizer
+                        rootRef={rootRef}
+                        sidebarRef={sidebarRef}
+                        onPreview={setDragSidebarWidth}
+                        onCommit={commitSidebarWidth}
+                    />
+                    <div className="GobanView-sidebar" ref={sidebarRef}>
                         <div className="GobanView-header">{header}</div>
                         <div className="GobanView-sidebar-content">
                             {inlinePanels.map((t) => renderPanel(t, isInlineVisible(t)))}
