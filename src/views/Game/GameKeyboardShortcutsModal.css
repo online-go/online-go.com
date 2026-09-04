@@ -1,0 +1,90 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+.GameKeyboardShortcutsModal.Modal {
+    width: 100%;
+    max-width: 36rem;
+
+    .body {
+        padding: 0.5rem 1.5rem 1rem 1.5rem;
+    }
+
+    .shortcut-group {
+        margin-top: 1rem;
+
+        &:first-child {
+            margin-top: 0.25rem;
+        }
+
+        h3 {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--shade1);
+            margin: 0 0 0.35rem 0;
+            padding-bottom: 0.3rem;
+            border-bottom: 1px solid var(--shade4);
+        }
+
+        .shortcut-note {
+            font-size: 0.85rem;
+            color: var(--shade1);
+            margin: 0 0 0.35rem 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        td {
+            padding: 0.25rem 0;
+            vertical-align: middle;
+        }
+
+        .shortcut-keys {
+            width: 11rem;
+            white-space: nowrap;
+            padding-right: 1rem;
+        }
+
+        .shortcut-plus {
+            display: inline-block;
+            padding: 0 0.3rem;
+            color: var(--shade1);
+        }
+
+        .shortcut-description {
+            font-size: 0.95rem;
+        }
+    }
+
+    kbd {
+        display: inline-block;
+        min-width: 1.4em;
+        padding: 0.1rem 0.45rem;
+        font-family: inherit;
+        font-size: 0.85rem;
+        line-height: 1.4;
+        text-align: center;
+        color: var(--fg);
+        background-color: var(--shade5);
+        border: 1px solid var(--shade3);
+        border-bottom-width: 2px;
+        border-radius: 4px;
+    }
+}
