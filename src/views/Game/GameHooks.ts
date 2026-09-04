@@ -561,9 +561,12 @@ export function useSelectedChatLog(controller: GobanController): ChatMode {
     return selected_chat_log;
 }
 
-export function useAnnulled(controller: GobanController): boolean {
-    const [annulled, set_annulled] = React.useState(controller.annulled);
+export function useAnnulled(controller: GobanController | null): boolean {
+    const [annulled, set_annulled] = React.useState(controller?.annulled ?? false);
     React.useEffect(() => {
+        if (!controller) {
+            return undefined;
+        }
         controller.on("annulled", set_annulled);
         return () => {
             controller.off("annulled", set_annulled);

@@ -38,9 +38,8 @@ import {
     useUserIsParticipant,
 } from "./GameHooks";
 import { useGobanController } from "./goban_context";
-import { openGameInfoModal } from "./GameInfoModal";
 import { openGameLinkModal } from "./GameLinkModal";
-import { cancelOrResignGame, requestUndo } from "./game_actions";
+import { cancelOrResignGame, openGameInfo, requestUndo } from "./game_actions";
 import { UndoIcon } from "./UndoIcon";
 import "./GameSidebarPanels.css";
 
@@ -142,25 +141,9 @@ export function GameActionsPanel({
 
     const showLinkModal = wrap(() => openGameLinkModal(goban));
 
-    const showGameInfo = wrap(() => {
-        const ec = goban.engine.config;
-        Object.assign(goban.config, {
-            komi: ec.komi,
-            rules: ec.rules,
-            handicap: ec.handicap,
-            handicap_rank_difference: ec.handicap_rank_difference,
-            rengo: ec.rengo,
-            rengo_teams: ec.rengo_teams,
-            disable_vacation: ec.disable_vacation,
-        });
-        openGameInfoModal(
-            goban.config,
-            historical_black || goban.engine.players.black,
-            historical_white || goban.engine.players.white,
-            annulled,
-            goban_controller.creator_id || goban.review_owner_id || 0,
-        );
-    });
+    const showGameInfo = wrap(() =>
+        openGameInfo(goban_controller, historical_black, historical_white, annulled),
+    );
 
     const alertModerator = wrap(() => {
         if (!user || user.anonymous) {

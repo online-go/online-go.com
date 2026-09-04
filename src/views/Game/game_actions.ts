@@ -19,6 +19,8 @@ import { Goban } from "goban";
 import { _ } from "@/lib/translate";
 import * as data from "@/lib/data";
 import { alert } from "@/lib/swal_config";
+import { GobanController } from "@/lib/GobanController";
+import { openGameInfoModal } from "./GameInfoModal";
 
 /**
  * Ask the opponent to undo the last official move. Does nothing when the
@@ -81,4 +83,35 @@ export function cancelOrResignGame(goban: Goban, resign_mode: "cancel" | "resign
                 cb();
             }
         });
+}
+
+/**
+ * Open the game information modal. The modal reads the game's settings
+ * from the goban config, so the values the engine holds are copied there
+ * first; they can differ from what the config was loaded with.
+ */
+export function openGameInfo(
+    goban_controller: GobanController,
+    historical_black: rest_api.games.Player | null,
+    historical_white: rest_api.games.Player | null,
+    annulled: boolean,
+): void {
+    const goban = goban_controller.goban;
+    const ec = goban.engine.config;
+    Object.assign(goban.config, {
+        komi: ec.komi,
+        rules: ec.rules,
+        handicap: ec.handicap,
+        handicap_rank_difference: ec.handicap_rank_difference,
+        rengo: ec.rengo,
+        rengo_teams: ec.rengo_teams,
+        disable_vacation: ec.disable_vacation,
+    });
+    openGameInfoModal(
+        goban.config,
+        historical_black || goban.engine.players.black,
+        historical_white || goban.engine.players.white,
+        annulled,
+        goban_controller.creator_id || goban.review_owner_id || 0,
+    );
 }
