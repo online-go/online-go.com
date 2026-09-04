@@ -346,7 +346,7 @@
 
         /* The slider strip keeps its own panel chrome (background + border),
          * which reads as a stray grey card on zen's transparent sidebar. */
-        .MoveNumberSlider {
+        .MoveNumberControl {
             background: transparent;
             border-top: none;
         }

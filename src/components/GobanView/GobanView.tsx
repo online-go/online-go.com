@@ -26,7 +26,7 @@ import {
 } from "./GobanViewContext";
 import { GobanViewTab, GobanViewTabProps } from "./GobanViewTab";
 import { TabBar } from "./TabBar";
-import { MoveNumberSlider } from "./MoveNumberSlider";
+import { MoveNumberControl } from "./MoveNumberControl";
 import { goban_view_mode, goban_view_squashed, ViewMode } from "./util";
 import "./GobanView.css";
 
@@ -65,14 +65,14 @@ interface GobanViewProps {
     /** Open this takeover on initial mount. Only read once; subsequent
      *  renders ignore changes. Use the ref API for mid-lifetime control. */
     defaultActiveTakeover?: string;
-    /** Replace the built-in MoveNumberSlider. Renders unconditionally —
+    /** Replace the built-in MoveNumberControl. Renders unconditionally —
      *  including during takeovers — so consumers whose navigation model
      *  needs to remain visible across modes (e.g. joseki) keep a single
      *  control strip in the standard location. The "has-custom-slider"
      *  class is added to the GobanView root so portrait CSS can leave room
      *  for it above the tab bar. */
     customSlider?: React.ReactNode;
-    /** Leave out the built-in MoveNumberSlider. Has no effect when a
+    /** Leave out the built-in MoveNumberControl. Has no effect when a
      *  `customSlider` is given. Consumers use this to drop the strip when
      *  move navigation is not relevant, e.g. on mobile during live play. */
     hideSlider?: boolean;
@@ -320,7 +320,7 @@ function GobanViewComponent({
     // keeps its existing "hide during takeover" rule.
     const sliderSlot: React.ReactNode = customSlider
         ? customSlider
-        : !hasTakeover && !hideSlider && <MoveNumberSlider />;
+        : !hasTakeover && !hideSlider && <MoveNumberControl />;
 
     const customSliderClass = customSlider ? " has-custom-slider" : "";
 

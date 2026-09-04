@@ -158,6 +158,7 @@ export const defaults = {
     "variations-in-chat-enabled": true,
     "start-in-zen-mode": false,
     "scroll-to-navigate": false,
+    "move-number-control-mode": "buttons" as "slider" | "buttons",
     "show-empty-chat-notification": true,
     "chat-subscribe-group-chat-unread": true,
     "chat-subscribe-group-mentions": true,

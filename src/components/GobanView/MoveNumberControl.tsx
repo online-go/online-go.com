@@ -17,10 +17,11 @@
 
 import * as React from "react";
 import { GobanRenderer } from "goban";
-import { pgettext } from "@/lib/translate";
+import { interpolate, pgettext } from "@/lib/translate";
+import { usePreference } from "@/lib/preferences";
 import { useGobanController } from "./GobanViewContext";
 import { generateGobanHook } from "./hooks";
-import "./MoveNumberSlider.css";
+import "./MoveNumberControl.css";
 
 interface MoveBounds {
     current: number;
@@ -52,10 +53,18 @@ const useMoveBounds = generateGobanHook<MoveBounds, GobanRenderer | null>(
     ["cur_move", "last_official_move"],
 );
 
-export function MoveNumberSlider(): React.ReactElement {
+/**
+ * Move navigation strip rendered below the goban. Two layouts share the
+ * same navigation state: a draggable slider with prev/next/autoplay
+ * buttons, or a row of first / back 10 / back / autoplay / forward /
+ * forward 10 / last buttons around the move number. The layout is chosen
+ * by the "move-number-control-mode" preference.
+ */
+export function MoveNumberControl(): React.ReactElement {
     const controller = useGobanController();
     const goban = controller.goban;
     const { current, reachable } = useMoveBounds(goban);
+    const [mode] = usePreference("move-number-control-mode");
 
     // Puzzles save their solution as the move tree's trunk_next chain. Walking
     // it forward via `next()` would let the slider drag through unplayed
@@ -134,6 +143,22 @@ export function MoveNumberSlider(): React.ReactElement {
         controller.nextMove();
     }, [controller]);
 
+    const handleFirst = React.useCallback(() => {
+        controller.gotoFirstMove();
+    }, [controller]);
+
+    const handlePrev10 = React.useCallback(() => {
+        controller.previous10Moves();
+    }, [controller]);
+
+    const handleNext10 = React.useCallback(() => {
+        controller.forwardTenMoves();
+    }, [controller]);
+
+    const handleLast = React.useCallback(() => {
+        controller.gotoLastMove();
+    }, [controller]);
+
     const handleSliderChange = React.useCallback(
         (ev: React.ChangeEvent<HTMLInputElement>) => {
             const target = parseInt(ev.target.value, 10);
@@ -183,41 +208,111 @@ export function MoveNumberSlider(): React.ReactElement {
         [controller],
     );
 
+    const play_pause_button = !restrict_forward && (
+        <button
+            className="MoveNumberControl-button"
+            onClick={handlePlayPause}
+            disabled={at_end && !autoplaying}
+            title={
+                autoplaying
+                    ? pgettext("Move navigation: stop autoplay", "Pause autoplay")
+                    : pgettext("Move navigation: play through the moves", "Autoplay")
+            }
+        >
+            <i className={"fa " + (autoplaying ? "fa-pause" : "fa-play")} />
+        </button>
+    );
+
+    const prev_button = (
+        <button
+            className="MoveNumberControl-button"
+            onClick={handlePrev}
+            disabled={at_start}
+            title={pgettext("Move navigation: previous move", "Previous move")}
+        >
+            <i className="fa fa-step-backward" />
+        </button>
+    );
+
+    const next_button = (
+        <button
+            className="MoveNumberControl-button"
+            onClick={handleNext}
+            disabled={at_end}
+            title={pgettext("Move navigation: next move", "Next move")}
+        >
+            <i className="fa fa-step-forward" />
+        </button>
+    );
+
+    if (mode === "buttons") {
+        // In puzzle mode the forward-jumping buttons would walk into the
+        // saved solution, so only single-step forward navigation is offered.
+        return (
+            <div className="MoveNumberControl MoveNumberControl-buttons">
+                <button
+                    className="MoveNumberControl-button"
+                    onClick={handleFirst}
+                    disabled={at_start}
+                    title={pgettext("Move navigation: first move", "First move")}
+                >
+                    <i className="fa fa-fast-backward" />
+                </button>
+                <button
+                    className="MoveNumberControl-button"
+                    onClick={handlePrev10}
+                    disabled={at_start}
+                    title={pgettext("Move navigation: back 10 moves", "Back 10 moves")}
+                >
+                    <i className="fa fa-backward" />
+                </button>
+                {prev_button}
+                {play_pause_button}
+                {next_button}
+                {!restrict_forward && (
+                    <button
+                        className="MoveNumberControl-button"
+                        onClick={handleNext10}
+                        disabled={at_end}
+                        title={pgettext("Move navigation: forward 10 moves", "Forward 10 moves")}
+                    >
+                        <i className="fa fa-forward" />
+                    </button>
+                )}
+                {!restrict_forward && (
+                    <button
+                        className="MoveNumberControl-button"
+                        onClick={handleLast}
+                        disabled={at_end}
+                        title={pgettext("Move navigation: last move", "Last move")}
+                    >
+                        <i className="fa fa-fast-forward" />
+                    </button>
+                )}
+                <span className="MoveNumberControl-move-number">
+                    {interpolate(pgettext("Current move number", "Move {{move_number}}"), {
+                        move_number: knob_number,
+                    })}
+                </span>
+            </div>
+        );
+    }
+
     // The CSS lays out our custom knob using `--move-frac` (0..1) so it
     // tracks the (invisible) native slider thumb across the track — see the
     // calc() in the accompanying CSS for the formula.
     const knob_frac = max > 0 ? Math.min(1, current / max) : 0;
 
     return (
-        <div className="MoveNumberSlider">
-            <button
-                className="MoveNumberSlider-button"
-                onClick={handlePrev}
-                disabled={at_start}
-                title={pgettext("Move navigation: previous move", "Previous move")}
-            >
-                <i className="fa fa-step-backward" />
-            </button>
-            {!restrict_forward && (
-                <button
-                    className="MoveNumberSlider-button"
-                    onClick={handlePlayPause}
-                    disabled={at_end && !autoplaying}
-                    title={
-                        autoplaying
-                            ? pgettext("Move navigation: stop autoplay", "Pause autoplay")
-                            : pgettext("Move navigation: play through the moves", "Autoplay")
-                    }
-                >
-                    <i className={"fa " + (autoplaying ? "fa-pause" : "fa-play")} />
-                </button>
-            )}
+        <div className="MoveNumberControl MoveNumberControl-slider">
+            {prev_button}
+            {play_pause_button}
             <div
-                className="MoveNumberSlider-track"
+                className="MoveNumberControl-track"
                 style={{ "--move-frac": knob_frac } as React.CSSProperties}
             >
                 <input
-                    className="MoveNumberSlider-input"
+                    className="MoveNumberControl-input"
                     type="range"
                     min={0}
                     max={max}
@@ -226,18 +321,11 @@ export function MoveNumberSlider(): React.ReactElement {
                     onChange={handleSliderChange}
                     aria-label={pgettext("Move navigation slider", "Move number")}
                 />
-                <div className="MoveNumberSlider-knob" aria-hidden="true">
-                    <span className="MoveNumberSlider-knob-text">{knob_number}</span>
+                <div className="MoveNumberControl-knob" aria-hidden="true">
+                    <span className="MoveNumberControl-knob-text">{knob_number}</span>
                 </div>
             </div>
-            <button
-                className="MoveNumberSlider-button"
-                onClick={handleNext}
-                disabled={at_end}
-                title={pgettext("Move navigation: next move", "Next move")}
-            >
-                <i className="fa fa-step-forward" />
-            </button>
+            {next_button}
         </div>
     );
 }
