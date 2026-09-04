@@ -19,7 +19,7 @@ import * as React from "react";
 import { _, pgettext } from "@/lib/translate";
 import { browserHistory } from "@/lib/ogsHistory";
 import { api1 } from "@/lib/requests";
-import { useUser } from "@/lib/hooks";
+import { useIsTouchOnlyDevice, useUser } from "@/lib/hooks";
 import { alert } from "@/lib/swal_config";
 import { toast } from "@/lib/toast";
 import { openReport } from "@/components/Report";
@@ -40,6 +40,7 @@ import {
 import { useGobanController } from "./goban_context";
 import { openGameInfoModal } from "./GameInfoModal";
 import { openGameLinkModal } from "./GameLinkModal";
+import { openGameKeyboardShortcutsModal } from "./GameKeyboardShortcutsModal";
 import { cancelOrResignGame, requestUndo } from "./game_actions";
 import { UndoIcon } from "./UndoIcon";
 import "./GameSidebarPanels.css";
@@ -87,6 +88,9 @@ export function GameActionsPanel({
     const phase = usePhase(goban);
     const mode = useMode(goban);
     const user = useUser();
+    // Phones and tablets have no keyboard to speak of, so the shortcut list
+    // is only offered where a mouse or trackpad suggests one is present.
+    const touch_only_device = useIsTouchOnlyDevice();
     const { showModal } = React.useContext(ModalContext);
 
     const annulled = useAnnulled(goban_controller);
@@ -141,6 +145,7 @@ export function GameActionsPanel({
     };
 
     const showLinkModal = wrap(() => openGameLinkModal(goban));
+    const showKeyboardShortcuts = wrap(openGameKeyboardShortcutsModal);
 
     const showGameInfo = wrap(() => {
         const ec = goban.engine.config;
@@ -418,6 +423,13 @@ export function GameActionsPanel({
                     <i className="fa fa-download" />
                     <span>{_("SGF with comments")}</span>
                 </a>
+            )}
+
+            {!touch_only_device && (
+                <button className="GameSidebarPanel-item" onClick={showKeyboardShortcuts}>
+                    <i className="fa fa-keyboard-o" />
+                    <span>{_("Keyboard shortcuts")}</span>
+                </button>
             )}
         </div>
     );
