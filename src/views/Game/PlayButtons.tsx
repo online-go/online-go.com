@@ -21,10 +21,10 @@ import { isLiveGame } from "@/components/TimeControl";
 import * as preferences from "@/lib/preferences";
 import { alert } from "@/lib/swal_config";
 import {
-    generateGobanHook,
     useCanAnswerUndoRequest,
     useCurrentMoveNumber,
     useMode,
+    useOfficialMoveNumber,
     usePhase,
     usePlayerToMove,
     hasStagedMove,
@@ -34,17 +34,13 @@ import {
     useUserIsParticipant,
 } from "./GameHooks";
 import { cancelOrResignGame } from "./game_actions";
+import { enableTouchAction } from "./touch_actions";
 import * as DynamicHelp from "react-dynamic-help";
 import { useGobanController } from "./goban_context";
 import { useUser } from "@/lib/hooks";
 import { sfx } from "@/lib/sfx";
 import { decodeMoves } from "goban";
 import "./PlayButtons.css";
-
-const useOfficialMoveNumber = generateGobanHook(
-    (goban) => goban!.engine.last_official_move?.move_number ?? -1,
-    ["last_official_move"],
-);
 
 function KeyboardCoordinateInput(): React.ReactElement | null {
     const goban_controller = useGobanController();
@@ -294,6 +290,14 @@ export function PlayButtons(): React.ReactElement | null {
         cur_move_number === official_move_number;
     const show_submit_button = show_submit;
 
+    // With analysis disabled, stepping back through the game only shows
+    // earlier positions; this is the way back to the live position.
+    const show_back_to_game =
+        mode === "play" &&
+        phase === "play" &&
+        goban.isAnalysisDisabled() &&
+        cur_move_number < official_move_number;
+
     // Undo moved to the action bar; what is left here is the response to
     // the opponent's undo request, the move controls, and resign.
     // Collapse the strip entirely when none of them apply so it takes up
@@ -302,6 +306,7 @@ export function PlayButtons(): React.ReactElement | null {
         !show_undo_response &&
         !show_pass &&
         !show_submit_button &&
+        !show_back_to_game &&
         !keyboard_coordinates_enabled &&
         !show_resign
     ) {
@@ -322,6 +327,17 @@ export function PlayButtons(): React.ReactElement | null {
                 )}
             </span>
             <span>
+                {show_back_to_game && (
+                    <button
+                        className="sm primary bold back-to-game-button"
+                        onClick={() => {
+                            enableTouchAction();
+                            goban.setModeDeferred("play");
+                        }}
+                    >
+                        {_("Back to Game")}
+                    </button>
+                )}
                 <KeyboardCoordinateInput />
                 {show_pass && (
                     <button className="sm primary bold pass-button" onClick={pass}>

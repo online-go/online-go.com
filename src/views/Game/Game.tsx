@@ -34,6 +34,7 @@ import { GameChat } from "./GameChat";
 import { goban_view_mode, user_color } from "./util";
 import { PlayerCard, PlayerCards } from "./PlayerCards";
 import { PlayControls, ReviewControls } from "./PlayControls";
+import { GameActionArea } from "./GameActionArea";
 import { alert } from "@/lib/swal_config";
 import {
     useCanRequestUndo,
@@ -889,11 +890,10 @@ export function Game(): React.ReactElement | null {
     // UX shape as the Analyze tab) so clicking it always switches *into*
     // the planner; clicking it again while in the planner exits to play.
     //
-    // useUserIsLivePlayerToMove treats a staged (not yet submitted) stone in
-    // submit-move / double-click mode as still the user's turn, so the tab
-    // hides until the move is submitted — entering the planner would
-    // silently discard the staged move. It derives a boolean so this
-    // component doesn't re-render on every move navigation event.
+    // useUserIsLivePlayerToMove follows the official branch, so walking
+    // through the game in analyze mode does not toggle the tab, and a
+    // staged (not yet submitted) stone still counts as the user's turn —
+    // entering the planner would silently discard the staged move.
     const is_planning_conditional = mode === "conditional";
     const show_conditional_tab =
         !review &&
@@ -1097,18 +1097,22 @@ export function Game(): React.ReactElement | null {
             ref={goban_view_ref}
             controller={goban_controller.current}
             className={
-                "Game MainGobanView" +
-                (is_mobile ? " mobile" : "") +
-                /* Mobile reserves room under the board stage for the play
-                 * buttons at the top of PlayControls, so the board shrinks
-                 * to keep them on screen along with both player cards. */
-                (is_mobile && show_play_action_tabs ? " has-play-buttons" : "") +
-                (zen_mode ? " zen" : "")
+                "Game MainGobanView" + (is_mobile ? " mobile" : "") + (zen_mode ? " zen" : "")
             }
             onWheel={onWheel}
             header={<GameStateHeader />}
             aboveBoard={is_mobile && renderMobilePlayerCard(top_color)}
-            belowBoard={is_mobile && renderMobilePlayerCard(bottom_color)}
+            /* The action area sits in the stage with the player cards, so
+             * the board gives up room for it instead of pushing it below
+             * the fold. */
+            belowBoard={
+                is_mobile && (
+                    <>
+                        {renderMobilePlayerCard(bottom_color)}
+                        <GameActionArea />
+                    </>
+                )
+            }
             /* On mobile the move slider only earns its row while analyzing;
              * during play it is dropped to leave the board and the controls
              * more room. */

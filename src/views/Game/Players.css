@@ -276,6 +276,15 @@
         margin-left: 0.4em;
     }
 
+    .stone-removal-accepted {
+        margin-right: 0.3rem;
+        color: var(--danger);
+
+        &.accepted {
+            color: var(--success);
+        }
+    }
+
     .player-name-container {
         overflow: hidden;
         text-align: left;

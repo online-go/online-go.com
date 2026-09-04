@@ -32,7 +32,6 @@ import {
     useViewMode,
     useWinner,
 } from "./GameHooks";
-import { EstimateScore } from "./fragments";
 import "./GameStateHeader.css";
 
 /**
@@ -96,25 +95,30 @@ export function GameStateHeader(): React.ReactElement | null {
 
     const sse = engine.stalling_score_estimate;
 
-    const isPlayPlay = mode === "play" && phase === "play";
-    const isStoneRemoval = mode === "play" && phase === "stone removal";
+    // Score estimation keeps the header content of the mode it was entered
+    // from; the estimate itself is shown in PlayControls above the
+    // "Back to Board" button.
+    const is_play_like = mode === "play" || mode === "score estimation";
+    const isPlayPlay = is_play_like && phase === "play";
+    const isStoneRemoval = is_play_like && phase === "stone removal";
     const isAnalyze = mode === "analyze";
     const isConditional = mode === "conditional";
-    const isScoreEstimation = mode === "score estimation";
-    const isFinished = mode === "play" && phase === "finished";
+    const isFinished = is_play_like && phase === "finished";
 
-    // Portrait drops the "Your move" style title during play to save
-    // vertical space for the board; the clocks already say whose turn it
-    // is. The undo request message stays since it needs a response.
+    // Portrait drops the mode and phase labels ("Your move", "Analyze
+    // Mode", "Stone Removal Phase", ...) to save vertical space for the
+    // board; the clocks and the lit action bar icons already say as much.
+    // The undo request message stays since it needs a response, and the
+    // final result stays since nothing else on screen shows it.
     const is_portrait = useViewMode(goban_controller) === "portrait";
-    const show_play_title = show_title && !engine.rengo && !is_portrait;
+    const show_labels = !is_portrait;
+    const show_play_title = show_title && !engine.rengo && show_labels;
     const has_play_content = isPlayPlay && (show_play_title || show_undo_requested);
+    const has_analyze_content = isAnalyze && (show_labels || show_undo_requested);
     const has_any_content =
         has_play_content ||
-        isStoneRemoval ||
-        isAnalyze ||
-        isConditional ||
-        isScoreEstimation ||
+        has_analyze_content ||
+        (show_labels && (isStoneRemoval || isConditional)) ||
         isFinished;
 
     if (!has_any_content) {
@@ -140,9 +144,9 @@ export function GameStateHeader(): React.ReactElement | null {
                 </span>
             )}
 
-            {isStoneRemoval && <span>{_("Stone Removal Phase")}</span>}
+            {isStoneRemoval && show_labels && <span>{_("Stone Removal Phase")}</span>}
 
-            {isAnalyze && (
+            {has_analyze_content && (
                 <span>
                     {show_undo_requested ? (
                         <span className="undo-requested-message" ref={undo_message_ref}>
@@ -160,9 +164,7 @@ export function GameStateHeader(): React.ReactElement | null {
                 </span>
             )}
 
-            {isConditional && <span>{_("Conditional Move Planner")}</span>}
-
-            {isScoreEstimation && <EstimateScore />}
+            {isConditional && show_labels && <span>{_("Conditional Move Planner")}</span>}
 
             {isFinished && (
                 <>
