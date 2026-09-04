@@ -52,6 +52,24 @@ function minSidebarWidthPx(root: HTMLElement | null): number {
     return value.trim().endsWith("rem") ? remToPx(parsed) : parsed;
 }
 
+/** The range the sidebar width can be set to, in pixels. */
+function sidebarWidthBoundsPx(root: HTMLElement | null): { min: number; max: number } {
+    const view_width = root?.offsetWidth ?? window.innerWidth;
+    const min = minSidebarWidthPx(root);
+    const max = Math.max(min, view_width * MAX_SIDEBAR_WIDTH_FRACTION);
+    return { min: Math.round(min), max: Math.round(max) };
+}
+
+interface SidebarWidthValues {
+    now: number;
+    min: number;
+    max: number;
+}
+
+function sameValues(a: SidebarWidthValues | null, b: SidebarWidthValues): boolean {
+    return a !== null && a.now === b.now && a.min === b.min && a.max === b.max;
+}
+
 /**
  * The drag handle in the gap between the goban and the landscape sidebar.
  * Dragging it left widens the sidebar. Double-click, Enter or Escape reset
@@ -73,13 +91,44 @@ export function SidebarResizer({
 
     const clampWidth = React.useCallback(
         (width: number): number => {
-            const view_width = rootRef.current?.offsetWidth ?? window.innerWidth;
-            const min = minSidebarWidthPx(rootRef.current);
-            const max = Math.max(min, view_width * MAX_SIDEBAR_WIDTH_FRACTION);
+            const { min, max } = sidebarWidthBoundsPx(rootRef.current);
             return Math.round(Math.min(max, Math.max(min, width)));
         },
         [rootRef],
     );
+
+    // The sidebar width is CSS-driven when no custom width is set, so the
+    // values reported to assistive technology are measured from the DOM and
+    // kept current as the sidebar or the view changes size. This is a passive
+    // effect because the sidebar is rendered after the resizer, so its ref is
+    // not attached yet when layout effects run.
+    const [width_values, setWidthValues] = React.useState<SidebarWidthValues | null>(null);
+    React.useEffect(() => {
+        const measure = () => {
+            const sidebar = sidebarRef.current;
+            if (!sidebar) {
+                return;
+            }
+            const next = {
+                now: Math.round(sidebar.offsetWidth),
+                ...sidebarWidthBoundsPx(rootRef.current),
+            };
+            setWidthValues((prev) => (sameValues(prev, next) ? prev : next));
+        };
+        measure();
+        if (typeof window.ResizeObserver !== "function") {
+            window.addEventListener("resize", measure);
+            return () => window.removeEventListener("resize", measure);
+        }
+        const observer = new ResizeObserver(measure);
+        if (sidebarRef.current) {
+            observer.observe(sidebarRef.current);
+        }
+        if (rootRef.current) {
+            observer.observe(rootRef.current);
+        }
+        return () => observer.disconnect();
+    }, [rootRef, sidebarRef]);
 
     const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
         if (event.button !== 0 || !sidebarRef.current) {
@@ -159,6 +208,9 @@ export function SidebarResizer({
             role="separator"
             aria-orientation="vertical"
             aria-label={label}
+            aria-valuenow={width_values?.now}
+            aria-valuemin={width_values?.min}
+            aria-valuemax={width_values?.max}
             title={pgettext(
                 "Tooltip on the handle that resizes the panel next to the board",
                 "Drag to resize, double-click to reset",
