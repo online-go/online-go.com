@@ -15,7 +15,55 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { pgettext } from "@/lib/translate";
+
 export type ViewMode = "portrait" | "wide" | "square";
+
+/**
+ * Where the board sits in the landscape layout.
+ *
+ * - `window`: the board is centered in the window; the sidebar sits in
+ *   the space to its right.
+ * - `container`: the board is centered in the space beside the sidebar.
+ * - `group`: the board and the sidebar are centered together, as one
+ *   block, with equal empty space on both sides.
+ */
+export type GobanViewBoardAlignment = "window" | "container" | "group";
+
+export const GOBAN_VIEW_BOARD_ALIGNMENTS: readonly GobanViewBoardAlignment[] = [
+    "window",
+    "container",
+    "group",
+];
+
+export interface BoardAlignmentOption {
+    value: GobanViewBoardAlignment;
+    label: string;
+}
+
+/** Translated labels for the board alignment preference, in display order. */
+export function boardAlignmentOptions(): BoardAlignmentOption[] {
+    return [
+        {
+            value: "window",
+            label: pgettext("Board alignment on the game page", "Center in window"),
+        },
+        {
+            value: "container",
+            label: pgettext("Board alignment on the game page", "Center beside sidebar"),
+        },
+        {
+            value: "group",
+            label: pgettext("Board alignment on the game page", "Center with sidebar"),
+        },
+    ];
+}
+
+/** Root class for the alignment; unknown stored values fall back to `window`. */
+export function boardAlignmentClass(alignment: GobanViewBoardAlignment): string {
+    const valid = GOBAN_VIEW_BOARD_ALIGNMENTS.includes(alignment) ? alignment : "window";
+    return `board-align-${valid}`;
+}
 
 export function goban_view_mode(bar_width?: number): ViewMode {
     if (!bar_width) {

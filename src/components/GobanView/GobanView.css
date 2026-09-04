@@ -99,6 +99,31 @@
         }
     }
 
+    /* Board alignment preference (landscape only). `board-align-window` is
+     * the default described above and needs no extra rules. */
+
+    /* Center the board in the space beside the sidebar. */
+    &.board-align-container .GobanView-center {
+        padding-left: 0;
+    }
+
+    /* Center the board and the sidebar together: the center column hugs
+     * the square board (100cqh wide, shrinking when the sidebar is too
+     * wide) and the row is centered, so the empty space splits evenly
+     * between the far left and the far right. The left margin mirrors the
+     * sidebar's right margin. */
+    &.board-align-group {
+        justify-content: center;
+
+        .GobanView-center {
+            flex-grow: 0;
+            flex-basis: 50%;
+            flex-basis: 100cqh;
+            padding-left: 0;
+            margin-left: 0.3rem;
+        }
+    }
+
     /* The gap between the goban area and the sidebar, shared by all
      * GobanView consumers (game, puzzle, joseki). It doubles as the drag
      * handle for resizing the sidebar: a thin bar appears in the middle of
