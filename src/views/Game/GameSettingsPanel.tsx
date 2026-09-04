@@ -30,10 +30,10 @@ import "./GameSidebarPanels.css";
 
 interface GameSettingsPanelProps {
     /** Called by actions that commit to a final state the user wants to see
-     *  applied (full screen). Toggles that the user is likely to flip
+     *  applied (zen mode). Toggles that the user is likely to flip
      *  multiple times (coordinates, AI review, volume) don't fire this. */
     onClose?: () => void;
-    /** Hide the Full screen toggle. The mobile (portrait) layout doesn't
+    /** Hide the Zen Mode toggle. The mobile (portrait) layout doesn't
      *  expose it — the viewport is already the full screen. */
     compact?: boolean;
     /** When provided, a "More options" item renders under the theme quick
@@ -144,12 +144,12 @@ export function GameSettingsPanel({
 
             {!compact && (
                 <div className="GameSidebarPanel-labeled-row">
-                    <label htmlFor="game-settings-full-screen">
+                    <label htmlFor="game-settings-zen-mode">
                         <i className="fa fa-expand" />
-                        <span>{_("Full screen")}</span>
+                        <span>{_("Zen Mode")}</span>
                     </label>
                     <Toggle
-                        id="game-settings-full-screen"
+                        id="game-settings-zen-mode"
                         checked={zen_mode}
                         onChange={() => {
                             goban_controller.toggleZenMode();

@@ -525,6 +525,8 @@
     }
 
     .player-icons {
+        gap: 0.5rem;
+
         .player-container {
             justify-content: center;
             min-width: 150px;
@@ -537,6 +539,7 @@
 
         .Clock {
             min-height: 80px;
+            justify-content: center;
 
             .pause-text {
                 display: none;
@@ -564,24 +567,27 @@
             }
         }
 
+        /* The score row sits in the lower left corner of the card, out of
+         * the way of the centered clock. */
         .captures {
             display: flex;
-            justify-content: center;
-            flex-basis: 70%;
+            justify-content: flex-start;
+            flex-basis: auto;
         }
 
         .score-container {
             margin: 0px;
-            justify-content: center;
+            padding: 0 0.4rem 0.1rem;
+            justify-content: flex-start;
             flex-grow: 0;
         }
 
         .num-captures-container {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             flex-direction: row;
-            flex-grow: 1;
+            flex-grow: 0;
 
             .stone-image {
                 width: 14px;

@@ -162,6 +162,7 @@ export function TabBar({ tabs }: TabBarProps): React.ReactElement {
         <button
             key={tab.id}
             className={`GobanView-tab-button ${isActive(tab) ? "active" : ""}`}
+            data-tab-id={tab.id}
             title={tab.title}
             disabled={tab.disabled}
             onClick={(e) => handleClick(tab, e)}

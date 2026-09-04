@@ -186,7 +186,7 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
                             {_("Rematch")}
                         </button>
                     )}
-                    {(goban_controller.review_list.length > 0 || null) && (
+                    {((!zen_mode && goban_controller.review_list.length > 0) || null) && (
                         <div className="review-list">
                             <h3>{_("Reviews")}</h3>
                             {goban_controller.review_list.map((review, idx) => (
