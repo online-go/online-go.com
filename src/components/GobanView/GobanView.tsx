@@ -44,6 +44,7 @@ export interface TabDefinition {
     disabled?: boolean;
     hideFromBar?: boolean;
     hideCloseButton?: boolean;
+    priority?: number;
     keepGobanVisible?: boolean;
     onClick?: (event?: React.MouseEvent<HTMLButtonElement>) => void;
     onToggle?: (active: boolean) => void;
@@ -121,6 +122,7 @@ function partitionChildren(children: React.ReactNode): {
                 disabled: props.disabled,
                 hideFromBar: props.hideFromBar,
                 hideCloseButton: props.hideCloseButton,
+                priority: props.priority,
                 keepGobanVisible: props.keepGobanVisible,
                 onClick: props.onClick,
                 onToggle: props.onToggle,

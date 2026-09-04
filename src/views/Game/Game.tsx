@@ -37,6 +37,7 @@ import { PlayControls, ReviewControls } from "./PlayControls";
 import { GameActionArea } from "./GameActionArea";
 import { alert } from "@/lib/swal_config";
 import {
+    useAnnulled,
     useCanRequestUndo,
     useMode,
     usePauseControl,
@@ -48,7 +49,8 @@ import {
     useViewMode,
     useZenMode,
 } from "./GameHooks";
-import { requestUndo } from "./game_actions";
+import { openGameInfo, requestUndo } from "./game_actions";
+import { openGameLinkModal } from "./GameLinkModal";
 import { UndoIcon } from "./UndoIcon";
 import {
     GobanControllerContext,
@@ -140,6 +142,7 @@ export function Game(): React.ReactElement | null {
     const can_request_undo = useCanRequestUndo(goban);
     const undo_request_is_mine = useUndoRequestIsMine(goban);
     const pause_control = usePauseControl(goban);
+    const annulled = useAnnulled(goban_controller.current);
     const modal_context = React.useContext(ModalContext);
     const more_actions_popover_ref = React.useRef<PopOver | null>(null);
     const settings_popover_ref = React.useRef<PopOver | null>(null);
@@ -978,6 +981,59 @@ export function Game(): React.ReactElement | null {
         (tab): tab is GobanViewTabProps => tab !== null,
     );
 
+    // Optional tabs: shown only when the bar has room, dropped lowest
+    // priority first. The More-actions menu always lists these same
+    // actions, so nothing is lost when they are hidden.
+    const onEstimateScoreClick = () => {
+        const controller = goban_controller.current;
+        if (!controller) {
+            return;
+        }
+        if (estimating_score) {
+            controller.stopEstimatingScore();
+        } else {
+            controller.estimateScore();
+        }
+    };
+
+    const estimate_score_tab: GobanViewTabProps = {
+        id: "game-estimate-score",
+        type: "action",
+        align: "left",
+        priority: 3,
+        icon: "tachometer",
+        title: _("Estimate score"),
+        disabled: analysis_disabled,
+        active: estimating_score,
+        onClick: onEstimateScoreClick,
+    };
+
+    const link_tab: GobanViewTabProps = {
+        id: "game-link",
+        type: "action",
+        align: "right",
+        priority: 2,
+        icon: "share-alt",
+        title: review ? _("Link to review") : _("Link to game"),
+        onClick: () => openGameLinkModal(goban!),
+    };
+
+    const info_tab: GobanViewTabProps = {
+        id: "game-info",
+        type: "action",
+        align: "right",
+        priority: 1,
+        icon: "info",
+        title: _("Game information"),
+        onClick: () => {
+            const controller = goban_controller.current;
+            if (!controller) {
+                return;
+            }
+            openGameInfo(controller, historical_black, historical_white, annulled);
+        },
+    };
+
     const CONTROLS = review ? (
         <ReviewControls review_id={review_id} />
     ) : (
@@ -1185,9 +1241,9 @@ export function Game(): React.ReactElement | null {
                 )}
             </GobanView.Tab>
 
-            {/* Left: settings + the two analysis tools that used to live in
-             *  the More-actions takeover. Move navigation comes from
-             *  GobanView's built-in MoveNumberControl above the tab bar. */}
+            {/* Left: settings + the analysis tools that used to live in the
+             *  More-actions takeover. Move navigation comes from GobanView's
+             *  built-in MoveNumberControl above the tab bar. */}
             <GobanView.Tab
                 id="game-settings"
                 type="action"
@@ -1222,6 +1278,8 @@ export function Game(): React.ReactElement | null {
             </GobanView.Tab>
 
             {analyze_tab && <GobanView.Tab {...analyze_tab} />}
+
+            <GobanView.Tab {...estimate_score_tab} />
 
             {chat_tab && <GobanView.Tab {...chat_tab} />}
 
@@ -1263,7 +1321,11 @@ export function Game(): React.ReactElement | null {
              *     reloads via the `moderator.game-moderator-tab-visible`
              *     preference, gated on user role.
              *  2. More actions (ellipsis) — popover with the
-             *     non-moderator game actions. */}
+             *     non-moderator game actions.
+             *  Link and game information come first; they are optional and
+             *  give way when the bar is short of room. */}
+            <GobanView.Tab {...link_tab} />
+            <GobanView.Tab {...info_tab} />
             {show_mod_tab && (
                 <GobanView.Tab
                     id="game-moderator"
