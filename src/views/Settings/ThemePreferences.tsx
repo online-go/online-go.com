@@ -36,6 +36,7 @@ import { MiniGoban } from "@/components/MiniGoban";
 import { GobanEngineConfig, setGobanRenderer } from "goban";
 import { Toggle } from "@/components/Toggle";
 import { GobanThemeImportExport } from "./GobanThemeImportExport";
+import { boardAlignmentOptions } from "@/components/GobanView/util";
 import "./ThemePreferences.css";
 
 const sample_board_data: GobanEngineConfig = {
@@ -56,6 +57,7 @@ const sample_board_data: GobanEngineConfig = {
 };
 
 export function ThemePreferences(): React.ReactElement | null {
+    const [board_alignment, setBoardAlignment] = usePreference("goban-view-board-alignment");
     const [stone_removal_graphic, _setStoneRemovalGraphic] = usePreference(
         "goban-theme-removal-graphic",
     );
@@ -252,6 +254,13 @@ export function ThemePreferences(): React.ReactElement | null {
                 <GobanThemeImportExport />
             </PreferenceLine>
 
+            <PreferenceLine title={pgettext("Board alignment on the game page", "Board alignment")}>
+                <PreferenceDropdown
+                    value={board_alignment}
+                    options={boardAlignmentOptions()}
+                    onChange={setBoardAlignment}
+                />
+            </PreferenceLine>
             <PreferenceLine title={_("Board label positioning")}>
                 <PreferenceDropdown
                     value={label_positioning}

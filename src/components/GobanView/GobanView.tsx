@@ -28,7 +28,7 @@ import { GobanViewTab, GobanViewTabProps } from "./GobanViewTab";
 import { TabBar } from "./TabBar";
 import { MoveNumberControl } from "./MoveNumberControl";
 import { SidebarResizer } from "./SidebarResizer";
-import { goban_view_mode, goban_view_squashed, ViewMode } from "./util";
+import { boardAlignmentClass, goban_view_mode, goban_view_squashed, ViewMode } from "./util";
 import { usePreference } from "@/lib/preferences";
 import "./GobanView.css";
 
@@ -227,6 +227,7 @@ function GobanViewComponent({
     // release.
     const [savedSidebarWidth, setSavedSidebarWidth] = usePreference("goban-view-sidebar-width");
     const [dragSidebarWidth, setDragSidebarWidth] = React.useState<number | null>(null);
+    const [boardAlignment] = usePreference("goban-view-board-alignment");
     const sidebarWidth = dragSidebarWidth ?? savedSidebarWidth;
     const commitSidebarWidth = React.useCallback(
         (width: number | null) => {
@@ -411,7 +412,7 @@ function GobanViewComponent({
                 <div
                     ref={rootRef}
                     className={
-                        `GobanView ${viewMode}` +
+                        `GobanView ${viewMode} ${boardAlignmentClass(boardAlignment)}` +
                         (squashed ? " squashed" : "") +
                         (hasTakeover ? " has-takeover" : "") +
                         (sidebarWidth !== null ? " has-custom-sidebar-width" : "") +
