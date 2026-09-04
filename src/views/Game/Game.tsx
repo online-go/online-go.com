@@ -39,7 +39,9 @@ import { alert } from "@/lib/swal_config";
 import {
     useAnnulled,
     useCanRequestUndo,
+    useCurrentMoveNumber,
     useMode,
+    useOfficialMoveNumber,
     usePauseControl,
     usePhase,
     useScorePopup,
@@ -138,6 +140,8 @@ export function Game(): React.ReactElement | null {
     const user = useUser();
     const user_is_player = useUserIsParticipant(goban);
     const mode = useMode(goban);
+    const cur_move_number = useCurrentMoveNumber(goban);
+    const official_move_number = useOfficialMoveNumber(goban);
     const user_is_live_player_to_move = useUserIsLivePlayerToMove(goban);
     const can_request_undo = useCanRequestUndo(goban);
     const undo_request_is_mine = useUndoRequestIsMine(goban);
@@ -844,6 +848,12 @@ export function Game(): React.ReactElement | null {
 
     const analysis_disabled = goban.isAnalysisDisabled();
     const is_analyzing = mode === "analyze";
+    // With analysis disabled, stepping back in play mode only shows earlier
+    // positions. While the user is behind the live position this way, the
+    // move slider is shown so they can move around; "Back to Game" in
+    // PlayButtons returns them to the live position.
+    const is_browsing_history =
+        analysis_disabled && mode === "play" && cur_move_number < official_move_number;
 
     // Undo applies only while the user is actually playing a game that is
     // still in progress.
@@ -868,18 +878,35 @@ export function Game(): React.ReactElement | null {
     // The analyze / chat / review / conditional tabs are defined once here
     // and rendered twice: as icons in the action bar and as labeled items at
     // the top of the More-actions menu.
-    const analyze_tab: GobanViewTabProps | null = game
-        ? {
-              id: "game-analyze",
-              type: "action",
-              align: "left",
-              icon: "sitemap",
-              title: _("Analyze game"),
-              disabled: analysis_disabled,
-              active: is_analyzing,
-              onClick: onAnalyzeClick,
-          }
-        : null;
+    //
+    // On mobile the move slider is hidden during play, so with analysis
+    // disabled the greyed-out analyze button would leave no way to look at
+    // earlier moves. Swap it for a "Previous move" button that steps back
+    // and thereby brings up the slider. Desktop keeps the disabled analyze
+    // button since its slider is always visible.
+    const swap_analyze_for_step_back = is_mobile && analysis_disabled;
+    const analyze_tab: GobanViewTabProps | null = !game
+        ? null
+        : swap_analyze_for_step_back
+          ? {
+                id: "game-step-back",
+                type: "action",
+                align: "left",
+                icon: "step-backward",
+                title: pgettext("Move navigation: previous move", "Previous move"),
+                disabled: cur_move_number <= 0,
+                onClick: () => goban_controller.current?.previousMove(),
+            }
+          : {
+                id: "game-analyze",
+                type: "action",
+                align: "left",
+                icon: "sitemap",
+                title: _("Analyze game"),
+                disabled: analysis_disabled,
+                active: is_analyzing,
+                onClick: onAnalyzeClick,
+            };
 
     // "Review this game" is for spectators reviewing a live game and for
     // anyone (including the players) once it's finished — never for an
@@ -1169,11 +1196,13 @@ export function Game(): React.ReactElement | null {
                     </>
                 )
             }
-            /* On mobile the move slider only earns its row while analyzing;
-             * during play it is dropped to leave the board and the controls
-             * more room. Zen mode drops it everywhere: keyboard navigation
-             * still works, and the strip is not part of the focused view. */
-            hideSlider={(is_mobile && !is_analyzing) || zen_mode}
+            /* On mobile the move slider only earns its row while analyzing,
+             * or while stepping back through played moves in a game with
+             * analysis disabled; during play it is dropped to leave the board
+             * and the controls more room. Zen mode drops it everywhere:
+             * keyboard navigation still works, and the strip is not part of
+             * the focused view. */
+            hideSlider={(is_mobile && !is_analyzing && !is_browsing_history) || zen_mode}
         >
             {game_id > 0 && (
                 <UIPush
