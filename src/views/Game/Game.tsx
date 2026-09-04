@@ -65,7 +65,7 @@ import { ActiveTournament } from "@/lib/types";
 import { GobanController } from "@/lib/GobanController";
 import { FragAIReview, GameInformation, GameKeyboardShortcuts, RengoHeader } from "./fragments";
 import { GameSettingsPanel } from "./GameSettingsPanel";
-import { GameThemeSettingsPanel } from "./GameThemeSettingsPanel";
+import { GameMoreSettingsPanel } from "./GameMoreSettingsPanel";
 import { GameActionsPanel } from "./GameActionsPanel";
 import { GameModToolsPanel } from "./GameModToolsPanel";
 import { GameModeratorAreaPanel } from "./GameModeratorAreaPanel";
@@ -162,10 +162,10 @@ export function Game(): React.ReactElement | null {
     //     on desktop (chat is always visible there if the feature is on).
     const [chat_enabled] = usePreference("game.chat-enabled");
     const [mobile_chat_visible, set_mobile_chat_visible] = React.useState(false);
-    // Whether the Themes & Visuals takeover is showing. Synced from the
+    // Whether the full settings takeover is showing. Synced from the
     // takeover tab's onToggle (the authoritative open/close signal), and
     // used to light up the settings gear while it's open.
-    const [theme_settings_open, set_theme_settings_open] = React.useState(false);
+    const [more_settings_open, set_more_settings_open] = React.useState(false);
     // Bumped when the goban must be rebuilt from scratch (switching
     // between the SVG and canvas renderers); the constructor effect below
     // lists it as a dependency.
@@ -1003,7 +1003,7 @@ export function Game(): React.ReactElement | null {
                                 onClose={close}
                                 compact={is_mobile}
                                 onShowThemeSettings={() =>
-                                    goban_view_ref.current?.setActiveTakeover("game-theme-settings")
+                                    goban_view_ref.current?.setActiveTakeover("game-more-settings")
                                 }
                             />
                         </div>
@@ -1194,9 +1194,9 @@ export function Game(): React.ReactElement | null {
                 align="left"
                 icon="gear"
                 title={_("Settings")}
-                active={theme_settings_open}
+                active={more_settings_open}
                 onClick={(event) => {
-                    if (theme_settings_open) {
+                    if (more_settings_open) {
                         goban_view_ref.current?.setActiveTakeover(null);
                     } else {
                         openSettings(event);
@@ -1204,19 +1204,19 @@ export function Game(): React.ReactElement | null {
                 }}
             />
 
-            {/* Full Themes & Visuals settings, opened from the Settings
-             *  popover's "More options" item. Hidden from the tab bar —
-             *  the gear icon doubles as its lit-up toggle, and the panel
-             *  has a Done button, so it needs no close button. */}
+            {/* Full Themes & Visuals and Game Preferences settings, opened
+             *  from the Settings popover's "More options" item. Hidden from
+             *  the tab bar — the gear icon doubles as its lit-up toggle, and
+             *  the panel has a Done button, so it needs no close button. */}
             <GobanView.Tab
-                id="game-theme-settings"
+                id="game-more-settings"
                 type="takeover"
                 hideFromBar
                 hideCloseButton
-                title={_("Themes & Visuals")}
-                onToggle={set_theme_settings_open}
+                title={_("Settings")}
+                onToggle={set_more_settings_open}
             >
-                <GameThemeSettingsPanel
+                <GameMoreSettingsPanel
                     onClose={() => goban_view_ref.current?.setActiveTakeover(null)}
                 />
             </GobanView.Tab>
