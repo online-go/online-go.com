@@ -1171,8 +1171,9 @@ export function Game(): React.ReactElement | null {
             }
             /* On mobile the move slider only earns its row while analyzing;
              * during play it is dropped to leave the board and the controls
-             * more room. */
-            hideSlider={is_mobile && !is_analyzing}
+             * more room. Zen mode drops it everywhere: keyboard navigation
+             * still works, and the strip is not part of the focused view. */
+            hideSlider={(is_mobile && !is_analyzing) || zen_mode}
         >
             {game_id > 0 && (
                 <UIPush
@@ -1182,6 +1183,18 @@ export function Game(): React.ReactElement | null {
                 />
             )}
             <GameKeyboardShortcuts />
+
+            {zen_mode && (
+                <button
+                    type="button"
+                    className="leave-zen-mode-button"
+                    title={_("Exit zen mode")}
+                    aria-label={_("Exit zen mode")}
+                    onClick={goban_controller.current.toggleZenMode}
+                >
+                    <i className="ogs-zen-mode" />
+                </button>
+            )}
 
             <GobanView.Tab id="game-main" type="always">
                 {/* Mobile renders the two player cards in GobanView's

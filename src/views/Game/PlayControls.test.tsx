@@ -349,3 +349,30 @@ test("Pause buttons show up", () => {
     expect(screen.getByText("Game Paused")).toBeDefined();
     expect(screen.getByText("4 pauses left for Black")).toBeDefined();
 });
+
+test("Review list is hidden in zen mode", () => {
+    const controller = new GobanController({
+        game_id: 1234,
+        phase: "finished",
+        players: {
+            black: { id: 987, username: "someone" },
+            white: { id: 456, username: "test_user2" },
+        },
+    });
+    controller.review_list = [{ id: 1, owner: { id: 987, username: "someone" } }] as any;
+    data.set("user", TEST_USER);
+
+    render(
+        <WrapTest controller={controller}>
+            <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
+        </WrapTest>,
+    );
+
+    expect(screen.getByText("Reviews")).toBeDefined();
+
+    act(() => {
+        controller.setZenMode(true);
+    });
+
+    expect(screen.queryByText("Reviews")).toBeNull();
+});
