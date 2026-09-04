@@ -29,6 +29,7 @@ export const defaults = {
     "ai-review-enabled": true,
     "ai-review-use-score": true,
     "ai-review-show-visit-counts": true,
+    "ai-review-show-on-board": true,
     "ai-summary-table-show": true,
     "always-disable-analysis": false,
     "animate-turn-clock": true,

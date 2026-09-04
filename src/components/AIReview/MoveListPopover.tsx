@@ -19,6 +19,7 @@ import * as React from "react";
 import { useGobanController } from "@/views/Game/goban_context";
 import { _, interpolate } from "@/lib/translate";
 import { FullReviewButton } from "./FullReviewButton";
+import { reviewPositionOfMove } from "./utils";
 
 interface MoveListPopoverProps {
     moves: number[];
@@ -64,7 +65,7 @@ export function MoveListPopover({
                                 className={`move-number${isOpening ? " opening" : ""}`}
                                 title={isOpening ? _("Opening") : undefined}
                                 onClick={() => {
-                                    goban_controller.gotoMove(move);
+                                    goban_controller.gotoMove(reviewPositionOfMove(move));
                                 }}
                             >
                                 {move}

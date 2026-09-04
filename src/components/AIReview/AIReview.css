@@ -17,7 +17,8 @@
 .AIReview {
     margin-top: 0.7rem;
 
-    .reviewing, .pending {
+    .reviewing,
+    .pending {
         text-align: center;
         width: 100%;
 
@@ -56,7 +57,8 @@
         margin-left: 0.5rem;
     }
 
-    .increased-win-rate, .decreased-win-rate {
+    .increased-win-rate,
+    .decreased-win-rate {
         margin-left: 0.1rem;
         display: inline-block;
         width: 2rem;
@@ -106,7 +108,8 @@
         display: flex;
     }
 
-    .prediction, .ai-review-win-rate-container {
+    .prediction,
+    .ai-review-win-rate-container {
         text-align: center;
         align-items: center;
 
@@ -230,9 +233,13 @@
         margin-bottom: 0.5rem;
         display: flex;
         justify-content: space-between;
+        align-items: center;
 
         .left-section {
             flex: 0.8;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
         }
 
         .middle-section {
@@ -252,8 +259,15 @@
             padding-right: 0.25rem;
         }
 
+        /* The switches sit on the text baseline by default, a few pixels
+         * above the labels' center; center them on the row instead */
+        .Toggle {
+            vertical-align: middle;
+        }
+
         .ai-summary-toggler {
             display: flex;
+            align-items: center;
         }
 
         .win-toggle {
@@ -265,7 +279,8 @@
             text-align: left;
         }
 
-        .score-toggle, .win-toggle {
+        .score-toggle,
+        .win-toggle {
             cursor: pointer;
             flex: 1;
         }
@@ -301,12 +316,15 @@
     }
 }
 
-.ai-review-list, .ai-review-more-info {
+.ai-review-list,
+.ai-review-more-info {
     padding: 0.5rem;
     overflow-y: auto;
     box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.2);
     border: 1px solid transparent;
-    box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.16), 0px 2px 5px 0px rgba(0, 0, 0, 0.15);
+    box-shadow:
+        0px 2px 10px 0px rgba(0, 0, 0, 0.16),
+        0px 2px 5px 0px rgba(0, 0, 0, 0.15);
     background-color: var(--shade4);
     border-color: var(--shade3);
     color: var(--fg);
@@ -314,7 +332,8 @@
     background-color: var(--shade5);
 
     .ai-review-item {
-        &.selected, &:hover {
+        &.selected,
+        &:hover {
             cursor: pointer;
             background-color: var(--shade3);
         }
@@ -326,7 +345,13 @@
     }
 }
 
-.ai-review-fast, .ai-review-strength-0, .ai-review-strength-1, .ai-review-strength-2, .ai-review-strength-3, .ai-review-strength-4, .ai-cheat-detection-review {
+.ai-review-fast,
+.ai-review-strength-0,
+.ai-review-strength-1,
+.ai-review-strength-2,
+.ai-review-strength-3,
+.ai-review-strength-4,
+.ai-cheat-detection-review {
     display: inline-flex;
     width: 1.1rem;
     height: 1rem;
@@ -334,14 +359,18 @@
     margin-left: 0.2rem;
     border: 2px solid #000;
     border-radius: 50%;
-    font-family: 'Times New Roman', Times, serif;
+    font-family: "Times New Roman", Times, serif;
     align-content: center;
     justify-content: center;
     align-items: center;
     font-size: 0.8rem;
 }
 
-.ai-review-strength-0, .ai-review-strength-1, .ai-review-strength-2, .ai-review-strength-3, .ai-review-strength-4 {
+.ai-review-strength-0,
+.ai-review-strength-1,
+.ai-review-strength-2,
+.ai-review-strength-3,
+.ai-review-strength-4 {
     color: var(--supporter);
     border-color: var(--supporter);
 }
@@ -372,7 +401,9 @@
     position: absolute;
     box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.2);
     border: 1px solid transparent;
-    box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.16), 0px 2px 5px 0px rgba(0, 0, 0, 0.15);
+    box-shadow:
+        0px 2px 10px 0px rgba(0, 0, 0, 0.16),
+        0px 2px 5px 0px rgba(0, 0, 0, 0.15);
     background-color: var(--shade4);
     border-color: var(--shade3);
     color: var(--fg);

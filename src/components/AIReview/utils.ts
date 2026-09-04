@@ -127,6 +127,17 @@ export function powerToSeeTable(moderator_powers: number | undefined): boolean {
 }
 
 /**
+ * The position a move is reviewed from: the one it was played into. The
+ * AI review analyzes each position, so move N's analysis (its alternatives
+ * and its quality badge) is shown on the board at position N - 1, with the
+ * move itself drawn as a translucent stone. Move numbers in the review's
+ * lists and charts are converted through this before navigating.
+ */
+export function reviewPositionOfMove(move_number: number): number {
+    return Math.max(0, move_number - 1);
+}
+
+/**
  * Determines if a user has permission to start a full AI review
  * @param user Current user object
  * @param goban_controller Controller for the goban
