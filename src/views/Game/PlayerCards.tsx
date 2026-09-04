@@ -25,13 +25,14 @@ import { ChatPresenceIndicator } from "@/components/ChatPresenceIndicator";
 import { Clock, SGFClock } from "@/components/Clock";
 import { Player } from "@/components/Player";
 import { lookup, fetch } from "@/lib/player_cache";
-import { _, interpolate, ngettext } from "@/lib/translate";
+import { _, interpolate, ngettext, pgettext } from "@/lib/translate";
 import * as data from "@/lib/data";
 import {
     generateGobanHook,
     usePhase,
     usePlayerToMoveOnOfficialBranch,
     useScorePopup,
+    useStoneRemovalAccepted,
     useZenMode,
 } from "./GameHooks";
 import { get_network_latency, get_clock_drift } from "@/lib/sockets";
@@ -163,6 +164,7 @@ export function PlayerCard({
 
     const auto_resign_expiration = useAutoResignExpiration(goban, color);
     const score = useScore(goban)[color];
+    const stone_removal_accepted = useStoneRemovalAccepted(goban, color);
     const { game_id, review_id } = goban;
     const chat_channel = game_id ? `game-${game_id}` : `review-${review_id}`;
 
@@ -242,6 +244,25 @@ export function PlayerCard({
 
             {player && player.rank !== -1 && (
                 <div className={`${color} player-name-container`}>
+                    {stone_removal_accepted !== undefined && (
+                        <i
+                            className={
+                                "stone-removal-accepted fa " +
+                                (stone_removal_accepted ? "fa-check accepted" : "fa-times")
+                            }
+                            title={
+                                stone_removal_accepted
+                                    ? pgettext(
+                                          "Player card badge during the stone removal phase",
+                                          "Accepted the removed stones",
+                                      )
+                                    : pgettext(
+                                          "Player card badge during the stone removal phase",
+                                          "Has not accepted the removed stones yet",
+                                      )
+                            }
+                        />
+                    )}
                     <Player
                         user={player.id}
                         historical={(!engine.rengo && historical) || player}

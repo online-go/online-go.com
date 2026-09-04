@@ -18,26 +18,16 @@ import * as React from "react";
 import { useSearchParams } from "react-router-dom";
 import { _, interpolate, pgettext } from "@/lib/translate";
 import * as data from "@/lib/data";
-import {
-    Goban,
-    ConditionalMoveTree,
-    PlayerColor,
-    JGOFSealingIntersection,
-    GobanEngine,
-} from "goban";
-import { alert } from "@/lib/swal_config";
+import { Goban, ConditionalMoveTree } from "goban";
 import { challengeRematch } from "@/components/ChallengeModal";
-import { Clock } from "@/components/Clock";
 import { Link } from "react-router-dom";
 import { Resizable } from "@/components/Resizable";
 import { ChatMode } from "./GameChat";
 import { close_all_popovers } from "@/lib/popover";
 import { setExtraActionCallback, Player } from "@/components/Player";
-import { PlayButtons } from "./PlayButtons";
+import { GameActionArea } from "./GameActionArea";
 import {
     generateGobanHook,
-    subscribeAllEvents,
-    useCurrentMoveNumber,
     useUserIsParticipant,
     useVariationName,
     useSelectedChatLog,
@@ -46,15 +36,15 @@ import {
     usePhase,
     useZenMode,
     useStashedConditionalMoves,
+    useNeedsSealing,
+    useViewMode,
 } from "./GameHooks";
 import { useGobanController } from "./goban_context";
 import { is_valid_url } from "@/lib/url_validation";
-import { enableTouchAction } from "./touch_actions";
 import { ConditionalMoveTreeDisplay } from "./ConditionalMoveTreeDisplay";
 import { useUser } from "@/lib/hooks";
 import { AntiGrief } from "./AntiGrief";
 import { GobanAnalyzeButtonBar } from "@/components/GobanAnalyzeButtonBar/GobanAnalyzeButtonBar";
-
 import { EstimateScore } from "./fragments";
 import "./PlayControls.css";
 
@@ -77,13 +67,9 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
     const [searchParams] = useSearchParams();
     const return_param = searchParams.get("return");
     const return_url = return_param && is_valid_url(return_param) ? return_param : null;
-    const [stone_removal_accept_disabled, setStoneRemovalAcceptDisabled] = React.useState(false);
-    const [needs_sealing, setNeedsSealing] = React.useState<JGOFSealingIntersection[] | undefined>(
-        engine?.needs_sealing,
-    );
+    const needs_sealing = useNeedsSealing(goban);
     const need_to_seal = needs_sealing && needs_sealing.length > 0;
-    const [autoscoring_in_progress, setAutoScoringInProgress] = React.useState(false);
-    const [autoscoring_taking_too_long, setAutoscoringTakingTooLong] = React.useState(false);
+    const is_portrait = useViewMode(goban_controller) === "portrait";
     const annulled = useAnnulled(goban_controller);
     const onVariationKeyPress = useOnVariationKeyPress();
     const zen_mode = useZenMode(goban_controller);
@@ -92,106 +78,9 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
     const phase = usePhase(goban);
     const stashed_conditional_moves = useStashedConditionalMoves(goban_controller);
 
-    const user_is_active_player = [engine.players.black.id, engine.players.white.id].includes(
-        user.id,
-    );
-
-    const [black_accepted, set_black_accepted] = React.useState(
-        stoneRemovalAccepted(goban, "black"),
-    );
-    const [white_accepted, set_white_accepted] = React.useState(
-        stoneRemovalAccepted(goban, "white"),
-    );
-
-    // Setup: when there's a new goban in play, we need to make sure we have the current
-    // state of acceptance captured
-    React.useEffect(() => {
-        const syncStoneRemovalAcceptance = () => {
-            if (goban.engine.phase === "stone removal") {
-                set_black_accepted(stoneRemovalAccepted(goban, "black"));
-                set_white_accepted(stoneRemovalAccepted(goban, "white"));
-            }
-        };
-        syncStoneRemovalAcceptance();
-
-        return subscribeAllEvents(
-            goban,
-            ["phase", "mode", "outcome", "stone-removal.accepted", "stone-removal.updated"],
-            syncStoneRemovalAcceptance,
-        );
-    }, [goban]);
-
-    React.useEffect(() => {
-        const syncNeedsSealing = (locs?: JGOFSealingIntersection[]) => {
-            setNeedsSealing(locs);
-        };
-        const engineUpdated = (engine: GobanEngine) => {
-            syncNeedsSealing(engine.needs_sealing);
-        };
-
-        let autoscoring_timeout: any;
-        const onAutoScoringStarted = () => {
-            console.log("Auto-scoring started");
-            setAutoScoringInProgress(true);
-            if (autoscoring_timeout) {
-                clearTimeout(autoscoring_timeout);
-            }
-            autoscoring_timeout = setTimeout(() => {
-                setAutoscoringTakingTooLong(true);
-                autoscoring_timeout = null;
-            }, 2000);
-        };
-        const onAutoScoringComplete = () => {
-            console.log("Auto-scoring complete");
-            setAutoScoringInProgress(false);
-            if (autoscoring_timeout) {
-                clearTimeout(autoscoring_timeout);
-                autoscoring_timeout = null;
-            }
-        };
-
-        if (goban?.engine) {
-            engineUpdated(goban.engine);
-        } else {
-            console.error("No engine in PlayControls");
-        }
-        goban.on("stone-removal.needs-sealing", syncNeedsSealing);
-        goban.on("engine.updated", engineUpdated);
-        goban.on("stone-removal.auto-scoring-started", onAutoScoringStarted);
-        goban.on("stone-removal.auto-scoring-complete", onAutoScoringComplete);
-
-        return () => {
-            goban.off("engine.updated", engineUpdated);
-            goban.off("stone-removal.needs-sealing", syncNeedsSealing);
-            goban.off("stone-removal.auto-scoring-started", onAutoScoringStarted);
-            goban.off("stone-removal.auto-scoring-complete", onAutoScoringComplete);
-        };
-    }, [goban]);
-
-    /*
-    React.useEffect(() => {
-        setStoneRemovalAcceptDisabled(true);
-        const timeout = setTimeout(() => {
-            console.log("setting false");
-            setStoneRemovalAcceptDisabled(false);
-        }, 1500);
-
-        return () => clearTimeout(timeout);
-    }, [stone_removal_string]);
-    */
-
-    React.useEffect(() => {
-        const player_accepted =
-            goban.engine?.playerColor(user.id) === "black" ? black_accepted : white_accepted;
-
-        setStoneRemovalAcceptDisabled(player_accepted ?? false);
-    }, [black_accepted, white_accepted]);
-
     const paused = usePaused(goban);
-    const official_move_number = useOfficialMoveNumber(goban);
     const conditional_moves = useConditionalMoveTree(goban);
     const user_is_player = useUserIsParticipant(goban);
-    const cur_move_number = useCurrentMoveNumber(goban);
     const mode = useMode(goban);
 
     const goban_setMode_play = () => {
@@ -228,29 +117,10 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
             goban.engine.config,
         );
     };
-    const onStoneRemovalCancel = () => {
-        void alert
-            .fire({
-                text: _("Are you sure you want to resume the game?"),
-                showCancelButton: true,
-            })
-            .then(({ value: accept }) => {
-                if (accept) {
-                    goban.rejectRemovedStones();
-                }
-            });
-        return false;
-    };
-    const onStoneRemovalAccept = (): void => {
-        goban.acceptRemovedStones();
-    };
-    const onStoneRemovalAutoScore = (): void => {
-        goban.performStoneRemovalAutoScoring();
-    };
 
     return (
         <div className="PlayControls">
-            {mode === "play" && phase === "play" && user_is_player && <PlayButtons />}
+            {!is_portrait && <GameActionArea />}
             {annulled && (
                 <div className="annulled-indicator">
                     {pgettext("Displayed to the user when the game is annulled", "Game Annulled")}
@@ -361,106 +231,6 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
                                     <span>...</span>
                                 )}
                             </div>
-
-                            <div style={{ textAlign: "center" }}>
-                                {(user_is_player || null) && (
-                                    <button
-                                        id="game-stone-removal-cancel"
-                                        onClick={onStoneRemovalCancel}
-                                        className={need_to_seal ? "primary" : ""}
-                                    >
-                                        {_("Cancel and resume game")}
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                    <div>
-                        {(user_is_active_player || user.is_moderator || null) && ( // moderators see the button, with its timer, but can't press it
-                            <button
-                                className={
-                                    (user.is_moderator && !user_is_active_player) ||
-                                    need_to_seal ||
-                                    autoscoring_in_progress
-                                        ? ""
-                                        : "primary"
-                                }
-                                disabled={
-                                    (user.is_moderator && !user_is_active_player) ||
-                                    stone_removal_accept_disabled ||
-                                    (autoscoring_in_progress && !autoscoring_taking_too_long)
-                                }
-                                onClick={onStoneRemovalAccept}
-                            >
-                                {_("Accept removed stones")}
-                                <Clock goban={goban} color="stone-removal" />
-                            </button>
-                        )}
-
-                        {autoscoring_in_progress && (
-                            <div className="autoscoring-in-progress">
-                                <i className="fa fa-circle-o-notch rotating" /> {_("Scoring game")}
-                            </div>
-                        )}
-                    </div>
-                    <br />
-                    <div style={{ textAlign: "center" }}>
-                        <div style={{ textAlign: "left", display: "inline-block" }}>
-                            <div>
-                                {(black_accepted || null) && (
-                                    <i
-                                        className="fa fa-check"
-                                        style={{ color: "green", width: "1.5em" }}
-                                    ></i>
-                                )}
-                                {(!black_accepted || null) && (
-                                    <i
-                                        className="fa fa-times"
-                                        style={{ color: "red", width: "1.5em" }}
-                                    ></i>
-                                )}
-                                {engine.players.black.username}
-                            </div>
-                            <div>
-                                {(white_accepted || null) && (
-                                    <i
-                                        className="fa fa-check"
-                                        style={{ color: "green", width: "1.5em" }}
-                                    ></i>
-                                )}
-                                {(!white_accepted || null) && (
-                                    <i
-                                        className="fa fa-times"
-                                        style={{ color: "red", width: "1.5em" }}
-                                    ></i>
-                                )}
-                                {engine.players.white.username}
-                            </div>
-                        </div>
-                    </div>
-                    <br />
-
-                    <div style={{ textAlign: "center" }}>
-                        {(user_is_player || null) && (
-                            <button
-                                id="game-stone-removal-auto-score"
-                                onClick={onStoneRemovalAutoScore}
-                            >
-                                {_("Auto-score")}
-                            </button>
-                        )}
-                    </div>
-                    {!need_to_seal && (
-                        <div style={{ textAlign: "center" }}>
-                            {(user_is_player || null) && (
-                                <button
-                                    id="game-stone-removal-cancel"
-                                    onClick={onStoneRemovalCancel}
-                                    className={need_to_seal ? "primary" : ""}
-                                >
-                                    {_("Cancel and resume game")}
-                                </button>
-                            )}
                         </div>
                     )}
 
@@ -525,37 +295,6 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
                             </div>
                         </div>
                     )}
-                </div>
-            )}
-            {((mode === "play" &&
-                phase === "play" &&
-                goban.isAnalysisDisabled() &&
-                cur_move_number < official_move_number) ||
-                null) && (
-                <div className="analyze-mode-buttons">
-                    <span>
-                        <button
-                            className="sm primary bold"
-                            onClick={() => {
-                                enableTouchAction();
-                                goban.setModeDeferred("play");
-                            }}
-                        >
-                            {_("Back to Game")}
-                        </button>
-                    </span>
-                </div>
-            )}
-            {(mode === "score estimation" || null) && (
-                <div className="analyze-mode-buttons">
-                    <span>
-                        <button
-                            className="sm primary bold"
-                            onClick={goban_controller.stopEstimatingScore}
-                        >
-                            {_("Back to Board")}
-                        </button>
-                    </span>
                 </div>
             )}
         </div>
@@ -855,19 +594,6 @@ function ShareAnalysisButton(props: ShareAnalysisButtonProperties): React.ReactE
     }
 }
 
-function stoneRemovalAccepted(goban: Goban, color: PlayerColor) {
-    const engine = goban.engine;
-
-    if (engine.phase !== "stone removal") {
-        return undefined;
-    }
-    return engine.players[color].accepted_stones === engine.getStoneRemovalString();
-}
-
-const useOfficialMoveNumber = generateGobanHook(
-    (goban) => goban!.engine.last_official_move?.move_number ?? -1,
-    ["last_official_move"],
-);
 const usePaused = generateGobanHook(
     (goban) => goban!.pause_control && !!goban!.pause_control.paused,
     ["paused"],

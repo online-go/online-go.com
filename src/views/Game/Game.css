@@ -346,7 +346,7 @@
 
         /* The slider strip keeps its own panel chrome (background + border),
          * which reads as a stray grey card on zen's transparent sidebar. */
-        .MoveNumberSlider {
+        .MoveNumberControl {
             background: transparent;
             border-top: none;
         }
@@ -370,6 +370,14 @@
  * for the other consumers. The extra .GobanView class outranks the
  * equal-specificity shared portrait rules regardless of import order. */
 .GobanView.MainGobanView.portrait {
+    /* The action area runs edge to edge under the bottom player card and
+     * reads as the top of the panel slab below it. */
+    .GameActionArea {
+        box-sizing: border-box;
+        padding: 0 0.5rem;
+        background: var(--shade5);
+    }
+
     .GobanView-mobile-panels {
         padding: 0.5rem 0 0;
 

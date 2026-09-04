@@ -20,6 +20,7 @@ import * as data from "@/lib/data";
 import { DataSchema } from "./data_schema";
 import { Goban } from "goban";
 import { bot_event_emitter, bots_list, Bot } from "@/lib/bots";
+import { isTouchOnlyDevice, onTouchOnlyDeviceChange } from "@/lib/device";
 
 /**
  * React Hook that gives the value for a given key.  This should be preferred
@@ -85,6 +86,19 @@ export function useIsDesktop(): boolean {
     }, []);
 
     return isDesktop;
+}
+
+/**
+ * True on touch-only devices such as phones and tablets, where a physical
+ * keyboard is unlikely. Updates live when a pointing device is attached or
+ * removed. See `isTouchOnlyDevice` in `@/lib/device`.
+ */
+export function useIsTouchOnlyDevice(): boolean {
+    const [touch_only, setTouchOnly] = React.useState(isTouchOnlyDevice);
+
+    React.useEffect(() => onTouchOnlyDeviceChange(setTouchOnly), []);
+
+    return touch_only;
 }
 
 export function useBots() {

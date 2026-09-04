@@ -54,9 +54,6 @@ export function GamePreferences(): React.ReactElement {
     const [zen_mode_by_default, setZenModeByDefault] = usePreference("start-in-zen-mode");
     const [scroll_to_navigate, setScrollToNavigate] = usePreference("scroll-to-navigate");
 
-    function toggleAIReview(checked: boolean) {
-        setAiReviewEnabled(!checked);
-    }
     function toggleVariationsInChat(checked: boolean) {
         setVariationsInChat(checked);
     }
@@ -181,7 +178,7 @@ export function GamePreferences(): React.ReactElement {
                 title={_("Enable AI review")}
                 description={_("Enable AI review for your games")}
             >
-                <Toggle checked={!ai_review_enabled} onChange={toggleAIReview} />
+                <Toggle checked={ai_review_enabled} onChange={setAiReviewEnabled} />
             </PreferenceLine>
 
             <PreferenceLine

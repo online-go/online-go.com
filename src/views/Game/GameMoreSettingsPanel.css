@@ -15,17 +15,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.GameThemeSettingsPanel {
+.GameMoreSettingsPanel {
     flex-grow: 1;
     min-height: 0;
 
-    .GameThemeSettingsPanel-content {
+    .GameMoreSettingsPanel-content {
         flex-grow: 1;
         min-height: 0;
         overflow-y: auto;
         overflow-x: hidden;
         /* The Settings page disables selection page-wide; keep that here. */
         user-select: none;
+
+        /* The panel has no title of its own, so the first section header
+         * sits flush with the top. */
+        > .GameSidebarPanel-section-header:first-child {
+            margin-top: 0;
+        }
 
         /* Each PreferenceLine is a two column grid: the title text sits in
          * the first row and the description in the second. The title span
@@ -167,7 +173,7 @@
         }
     }
 
-    .GameThemeSettingsPanel-buttons {
+    .GameMoreSettingsPanel-buttons {
         flex-shrink: 0;
         display: flex;
         justify-content: center;

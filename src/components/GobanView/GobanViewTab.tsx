@@ -34,6 +34,10 @@ export interface GobanViewTabProps {
      *  the panel provides its own way to close (a Done button, or a tab-bar
      *  action that toggles it). */
     hideCloseButton?: boolean;
+    /** Make the tab optional. Tabs without a priority always show in the
+     *  tab bar. Tabs with one show only when the bar has room for them, and
+     *  are dropped lowest priority first when it does not. */
+    priority?: number;
     /** For takeover tabs: keep the goban on screen while this panel is open.
      *  Portrait takeovers normally cover the whole view, which is fine for
      *  panels you read (collection lists, settings) but not for panels you

@@ -117,6 +117,7 @@ export function popover(config: PopoverConfig): PopOver {
     const minWidth: number = config.minWidth || 150;
     const minHeight: number = config.minHeight || 25;
     container.style.minWidth = `${minWidth}px`;
+    container.style.maxWidth = `${window.innerWidth - 2 * VIEWPORT_MARGIN}px`;
 
     const scrollLeft =
         window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0;

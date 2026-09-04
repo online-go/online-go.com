@@ -23,14 +23,14 @@ import {
     AIQualityMark,
     AI_QUALITY_BADGES,
     DEFAULT_SCORE_DIFF_THRESHOLDS,
+    ScoreDiffThresholds,
 } from "goban";
 import { sameIntersection } from "@/lib/misc";
 import { errorLogger } from "@/lib/misc";
 
-const BLUE_MOVE_COLOR = "rgb(0, 130, 255)";
-/* Reviews without score data cannot be classified by the score-loss
- * thresholds, so their circles use a neutral shade rather than borrowing a
- * quality color that would assert a classification the data can't support. */
+/* Light theme value of --ai-blue-move */
+const BLUE_MOVE_COLOR = "#0082FF";
+/* Fallback for a suggestion with no loss data at all */
 const NEUTRAL_CIRCLE_COLOR = "#888888";
 
 interface Goban {
@@ -125,55 +125,140 @@ function hexToRgb(color: string): [number, number, number] {
     ];
 }
 
-function lerpColor(a: string, b: string, t: number): string {
+/** Linear blend of two "#rrggbb" colors, returned in the same form */
+export function lerpColor(a: string, b: string, t: number): string {
     const [ar, ag, ab] = hexToRgb(a);
     const [br, bg, bb] = hexToRgb(b);
-    const r = Math.round(ar + (br - ar) * t);
-    const g = Math.round(ag + (bg - ag) * t);
-    const bl = Math.round(ab + (bb - ab) * t);
-    return `rgb(${r}, ${g}, ${bl})`;
+    const hex = (v: number) => Math.round(v).toString(16).padStart(2, "0");
+    return `#${hex(ar + (br - ar) * t)}${hex(ag + (bg - ag) * t)}${hex(ab + (bb - ab) * t)}`;
 }
 
 /**
- * The circle color for an alternative move, from its score loss, using the
- * standard move quality palette. The midpoint of each quality band is that
- * quality's pure color, blending linearly toward the neighboring quality as
- * the loss approaches its band. Excellent moves get no special coloring and
- * share the "great" green: blue is reserved for the official blue move and
- * zero-loss alternatives.
- *
- * The displayed delta is negative for a loss, while the quality thresholds
- * classify a positive loss.
+ * Win rate loss thresholds, in percentage points, that pair with
+ * DEFAULT_SCORE_DIFF_THRESHOLDS. A point is worth roughly two to four percent
+ * of win rate in a close middle game, so these sit at about twice the score
+ * thresholds.
  */
-function qualityColor(score_delta: number | undefined): string | null {
-    if (score_delta === undefined) {
-        return null;
-    }
-    const loss = -score_delta;
-    const t = DEFAULT_SCORE_DIFF_THRESHOLDS;
-    const stops: Array<[number, string]> = [
-        [t.Great / 2, AI_QUALITY_BADGES.great.color],
-        [(t.Great + t.Good) / 2, AI_QUALITY_BADGES.good.color],
-        [(t.Good + t.Inaccuracy) / 2, AI_QUALITY_BADGES.inaccuracy.color],
-        [(t.Inaccuracy + t.Mistake) / 2, AI_QUALITY_BADGES.mistake.color],
-        /* fully a blunder at (and beyond) the blunder threshold */
-        [t.Mistake, AI_QUALITY_BADGES.blunder.color],
-    ];
+export const DEFAULT_WIN_RATE_DIFF_THRESHOLDS: ScoreDiffThresholds = {
+    Excellent: 0.4,
+    Great: 1.2,
+    Good: 2.4,
+    Inaccuracy: 8.0,
+    Mistake: 20.0,
+};
 
-    if (loss <= stops[0][0]) {
-        return stops[0][1];
-    }
-    for (let i = 1; i < stops.length; i++) {
-        if (loss <= stops[i][0]) {
-            const [x0, c0] = stops[i - 1];
-            const [x1, c1] = stops[i];
-            return lerpColor(c0, c1, (loss - x0) / (x1 - x0));
-        }
-    }
-    return stops[stops.length - 1][1];
+export type QualityPalette = { [quality in AIQualityMark]: string } & { blue_move: string };
+
+function cssColor(style: CSSStyleDeclaration | null, name: string, fallback: string): string {
+    const value = style?.getPropertyValue(name).trim();
+    return value && /^#[0-9a-fA-F]{6}$/.test(value) ? value : fallback;
 }
 
-function withAlpha(color: string, alpha: number): string {
+/**
+ * The move quality colors for the current theme, read from the
+ * `--move-quality-*` and `--ai-blue-move` CSS variables that also color the
+ * board badges and the summary table, so every quality indicator agrees.
+ * Falls back to the light theme defaults where the variables are not
+ * available.
+ */
+export function resolveQualityPalette(): QualityPalette {
+    const style =
+        typeof document === "undefined" ? null : getComputedStyle(document.documentElement);
+    const palette = {} as QualityPalette;
+    for (const quality of Object.keys(AI_QUALITY_BADGES) as AIQualityMark[]) {
+        palette[quality] = cssColor(
+            style,
+            `--move-quality-${quality}`,
+            AI_QUALITY_BADGES[quality].color,
+        );
+    }
+    palette.blue_move = cssColor(style, "--ai-blue-move", BLUE_MOVE_COLOR);
+    return palette;
+}
+
+/**
+ * Where a loss falls on the quality scale, as a fractional index into the
+ * quality color stops: 0 is excellent, 1 great, and so on up to 5 for a
+ * blunder. The midpoint of each quality band is that quality's whole-number
+ * index, so integer positions are pure colors and fractional positions blend
+ * toward the neighboring quality. The blunder stop sits at the blunder
+ * threshold itself, so any loss at or beyond it is fully red.
+ */
+function qualitySeverity(loss: number, t: ScoreDiffThresholds): number {
+    const stops = [
+        t.Excellent / 2,
+        (t.Excellent + t.Great) / 2,
+        (t.Great + t.Good) / 2,
+        (t.Good + t.Inaccuracy) / 2,
+        (t.Inaccuracy + t.Mistake) / 2,
+        t.Mistake,
+    ];
+
+    if (loss <= stops[0]) {
+        return 0;
+    }
+    for (let i = 1; i < stops.length; i++) {
+        if (loss <= stops[i]) {
+            return i - 1 + (loss - stops[i - 1]) / (stops[i] - stops[i - 1]);
+        }
+    }
+    return stops.length - 1;
+}
+
+/**
+ * How far a circle color may travel from great toward excellent. Circles at
+ * the excellent end keep a little green so they read as part of the green
+ * scale rather than as a second kind of blue move.
+ */
+export const EXCELLENT_BLEND_CAP = 0.75;
+
+/**
+ * The circle color for an alternative move, using the standard move quality
+ * palette. Both the score loss and the win rate loss are measured against
+ * their own thresholds and whichever is worse decides the color: a move that
+ * throws away many points in a decided game still reads as a blunder in win
+ * rate view, and a move that swings a close game still reads as a blunder in
+ * score view. The excellent end of the scale is capped at
+ * EXCELLENT_BLEND_CAP toward the excellent blue-green; pure blue is
+ * reserved for the official blue move.
+ *
+ * Losses are positive numbers; the win rate loss is in percentage points.
+ * Returns null when neither metric is available.
+ */
+export function qualityColor(
+    score_loss: number | undefined,
+    win_rate_loss: number | undefined,
+    palette: QualityPalette = resolveQualityPalette(),
+): string | null {
+    const stops = [
+        lerpColor(palette.great, palette.excellent, EXCELLENT_BLEND_CAP),
+        palette.great,
+        palette.good,
+        palette.inaccuracy,
+        palette.mistake,
+        palette.blunder,
+    ];
+    const severities: number[] = [];
+    if (score_loss !== undefined) {
+        severities.push(qualitySeverity(score_loss, DEFAULT_SCORE_DIFF_THRESHOLDS));
+    }
+    if (win_rate_loss !== undefined) {
+        severities.push(qualitySeverity(win_rate_loss, DEFAULT_WIN_RATE_DIFF_THRESHOLDS));
+    }
+    if (severities.length === 0) {
+        return null;
+    }
+
+    const severity = Math.max(...severities);
+    const i = Math.floor(severity);
+    const frac = severity - i;
+    if (frac === 0) {
+        return stops[i];
+    }
+    return lerpColor(stops[i], stops[i + 1], frac);
+}
+
+export function withAlpha(color: string, alpha: number): string {
     if (color.startsWith("#") && color.length === 7) {
         const r = parseInt(color.slice(1, 3), 16);
         const g = parseInt(color.slice(3, 5), 16);
@@ -200,6 +285,7 @@ export function generateHeatmapAndMarks({
 }: HeatmapGenerationParams): HeatmapGenerationResult {
     const marks: { [mark: string]: string } = {};
     const colored_circles: ColoredCircle[] = [];
+    const palette = resolveQualityPalette();
 
     const branches = ai_review_move.branches.slice(0, 6);
 
@@ -311,13 +397,14 @@ export function generateHeatmapAndMarks({
                     : branch.score - ai_review_move.score
                 : undefined;
 
+        const win_rate_delta: number =
+            100 *
+            (next_player === JGOFNumericPlayerColor.WHITE
+                ? ai_review_move.win_rate - branch.win_rate
+                : branch.win_rate - ai_review_move.win_rate);
+
         const delta: number =
-            useScore && hasScores && score_delta !== undefined
-                ? score_delta
-                : 100 *
-                  (next_player === JGOFNumericPlayerColor.WHITE
-                      ? ai_review_move.win_rate - branch.win_rate
-                      : branch.win_rate - ai_review_move.win_rate);
+            useScore && hasScores && score_delta !== undefined ? score_delta : win_rate_delta;
 
         const key = formatDelta(delta);
 
@@ -343,18 +430,22 @@ export function generateHeatmapAndMarks({
             /* The official blue move draws bold and solid */
             colored_circles.push({
                 move: branch.moves[0],
-                color: withAlpha(BLUE_MOVE_COLOR, 0.7),
+                color: withAlpha(palette.blue_move, 0.7),
                 border_width: 0.2,
-                border_color: BLUE_MOVE_COLOR,
+                border_color: palette.blue_move,
             });
             goban.setMark(mv.x, mv.y, "blue_move", true, true);
         } else {
             /* Other suggestions shade with their share of the visits, like
-             * the heatmap squares they replaced. Alternatives that lose
-             * nothing ("0" entries) share the blue move's blue; the rest are
-             * colored by their quality. */
+             * the heatmap squares they replaced, and are colored by their
+             * quality. The displayed delta is negative for a loss, while the
+             * quality thresholds classify a positive loss. */
             const color =
-                key === "0" ? BLUE_MOVE_COLOR : (qualityColor(score_delta) ?? NEUTRAL_CIRCLE_COLOR);
+                qualityColor(
+                    score_delta === undefined ? undefined : -score_delta,
+                    -win_rate_delta,
+                    palette,
+                ) ?? NEUTRAL_CIRCLE_COLOR;
             /* Opacity starts at a visible base and scales up with the
              * suggestion's visits relative to the most-visited branch */
             const fill_alpha = 0.25 + 0.55 * (branch.visits / max_branch_visits);

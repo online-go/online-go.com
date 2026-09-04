@@ -36,6 +36,7 @@ import { MiniGoban } from "@/components/MiniGoban";
 import { GobanEngineConfig, setGobanRenderer } from "goban";
 import { Toggle } from "@/components/Toggle";
 import { GobanThemeImportExport } from "./GobanThemeImportExport";
+import { boardAlignmentOptions } from "@/components/GobanView/util";
 import "./ThemePreferences.css";
 
 const sample_board_data: GobanEngineConfig = {
@@ -56,6 +57,7 @@ const sample_board_data: GobanEngineConfig = {
 };
 
 export function ThemePreferences(): React.ReactElement | null {
+    const [board_alignment, setBoardAlignment] = usePreference("goban-view-board-alignment");
     const [stone_removal_graphic, _setStoneRemovalGraphic] = usePreference(
         "goban-theme-removal-graphic",
     );
@@ -104,6 +106,9 @@ export function ThemePreferences(): React.ReactElement | null {
         usePreference("variation-stone-opacity");
     const [show_visit_counts, setShowVisitCounts] = usePreference("ai-review-show-visit-counts");
     const [animate_turn_clock, setAnimateTurnClock] = usePreference("animate-turn-clock");
+    const [move_number_control_mode, _setMoveNumberControlMode] = usePreference(
+        "move-number-control-mode",
+    );
 
     //const [show_move_numbers, _setShowMoveNumbers] = usePreference("show-move-numbers");
     const [show_variation_move_numbers, _setShowVariationMoveNumbers] = usePreference(
@@ -249,6 +254,13 @@ export function ThemePreferences(): React.ReactElement | null {
                 <GobanThemeImportExport />
             </PreferenceLine>
 
+            <PreferenceLine title={pgettext("Board alignment on the game page", "Board alignment")}>
+                <PreferenceDropdown
+                    value={board_alignment}
+                    options={boardAlignmentOptions()}
+                    onChange={setBoardAlignment}
+                />
+            </PreferenceLine>
             <PreferenceLine title={_("Board label positioning")}>
                 <PreferenceDropdown
                     value={label_positioning}
@@ -655,6 +667,33 @@ export function ThemePreferences(): React.ReactElement | null {
                 )}
             >
                 <Toggle checked={animate_turn_clock} onChange={setAnimateTurnClock} />
+            </PreferenceLine>
+
+            <PreferenceLine
+                title={pgettext("Theme preference title", "Move navigation control")}
+                description={pgettext(
+                    "Theme preference description",
+                    "Navigate moves with a slider, or with first, back 10, back, forward, forward 10, and last buttons.",
+                )}
+            >
+                <PreferenceDropdown
+                    value={move_number_control_mode}
+                    options={[
+                        {
+                            value: "buttons",
+                            label: pgettext("Move navigation control mode", "Buttons"),
+                        },
+                        {
+                            value: "slider",
+                            label: pgettext("Move navigation control mode", "Slider"),
+                        },
+                    ]}
+                    onChange={(value: string) => {
+                        if (value === "slider" || value === "buttons") {
+                            _setMoveNumberControlMode(value);
+                        }
+                    }}
+                />
             </PreferenceLine>
 
             <PreferenceLine

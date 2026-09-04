@@ -19,6 +19,10 @@
     overflow-x: hidden;
     text-align: center;
 
+    &.GobanLineSummaryContainer {
+        overflow-x: auto;
+    }
+
     .GobanLineSummaryContainerHeader {
         user-select: none;
 

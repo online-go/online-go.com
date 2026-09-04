@@ -19,12 +19,13 @@ import * as React from "react";
 import { _, pgettext } from "@/lib/translate";
 import { browserHistory } from "@/lib/ogsHistory";
 import { api1 } from "@/lib/requests";
-import { useUser } from "@/lib/hooks";
+import { useIsTouchOnlyDevice, useUser } from "@/lib/hooks";
 import { alert } from "@/lib/swal_config";
 import { toast } from "@/lib/toast";
 import { openReport } from "@/components/Report";
 import { openSGFCollectionModal } from "@/components/SGFCollectionModal";
 import { ModalContext, ModalTypes } from "@/components/ModalProvider";
+import { GobanViewTabProps } from "@/components/GobanView";
 import { GobanEngine, GobanRenderer } from "goban";
 import {
     useAnnulled,
@@ -37,9 +38,9 @@ import {
     useUserIsParticipant,
 } from "./GameHooks";
 import { useGobanController } from "./goban_context";
-import { openGameInfoModal } from "./GameInfoModal";
 import { openGameLinkModal } from "./GameLinkModal";
-import { cancelOrResignGame, requestUndo } from "./game_actions";
+import { openGameKeyboardShortcutsModal } from "./GameKeyboardShortcutsModal";
+import { cancelOrResignGame, openGameInfo, requestUndo } from "./game_actions";
 import { UndoIcon } from "./UndoIcon";
 import "./GameSidebarPanels.css";
 
@@ -60,6 +61,10 @@ interface GameActionsPanelProps {
     ladder_id?: number;
     historical_black: rest_api.games.Player | null;
     historical_white: rest_api.games.Player | null;
+    /** Action-bar tabs repeated at the top of the menu as labeled items, so
+     *  someone still learning the icons can find the same actions by name.
+     *  Each entry is the same props object the tab bar renders from. */
+    action_tabs?: GobanViewTabProps[];
     /** When the panel is presented as a popover, GobanView's container click
      *  handler doesn't reach into our content (target check is on the
      *  container element only), so each interactive item dismisses itself by
@@ -73,6 +78,7 @@ export function GameActionsPanel({
     ladder_id,
     historical_black,
     historical_white,
+    action_tabs,
     onClose,
 }: GameActionsPanelProps): React.ReactElement {
     const goban_controller = useGobanController();
@@ -81,6 +87,9 @@ export function GameActionsPanel({
     const phase = usePhase(goban);
     const mode = useMode(goban);
     const user = useUser();
+    // Phones and tablets have no keyboard to speak of, so the shortcut list
+    // is only offered where a mouse or trackpad suggests one is present.
+    const touch_only_device = useIsTouchOnlyDevice();
     const { showModal } = React.useContext(ModalContext);
 
     const annulled = useAnnulled(goban_controller);
@@ -135,26 +144,11 @@ export function GameActionsPanel({
     };
 
     const showLinkModal = wrap(() => openGameLinkModal(goban));
+    const showKeyboardShortcuts = wrap(openGameKeyboardShortcutsModal);
 
-    const showGameInfo = wrap(() => {
-        const ec = goban.engine.config;
-        Object.assign(goban.config, {
-            komi: ec.komi,
-            rules: ec.rules,
-            handicap: ec.handicap,
-            handicap_rank_difference: ec.handicap_rank_difference,
-            rengo: ec.rengo,
-            rengo_teams: ec.rengo_teams,
-            disable_vacation: ec.disable_vacation,
-        });
-        openGameInfoModal(
-            goban.config,
-            historical_black || goban.engine.players.black,
-            historical_white || goban.engine.players.white,
-            annulled,
-            goban_controller.creator_id || goban.review_owner_id || 0,
-        );
-    });
+    const showGameInfo = wrap(() =>
+        openGameInfo(goban_controller, historical_black, historical_white, annulled),
+    );
 
     const alertModerator = wrap(() => {
         if (!user || user.anonymous) {
@@ -226,6 +220,31 @@ export function GameActionsPanel({
 
     return (
         <div className="GameSidebarPanel GameActionsPanel">
+            {!!action_tabs?.length && (
+                <>
+                    {action_tabs.map((tab) => (
+                        <button
+                            key={tab.id}
+                            className={
+                                "GameSidebarPanel-item" +
+                                (tab.active ? " active" : "") +
+                                (tab.disabled ? " disabled" : "")
+                            }
+                            disabled={tab.disabled}
+                            onClick={wrap(() => tab.onClick?.())}
+                        >
+                            {typeof tab.icon === "string" ? (
+                                <i className={`fa fa-${tab.icon}`} />
+                            ) : (
+                                tab.icon
+                            )}
+                            <span>{tab.title}</span>
+                        </button>
+                    ))}
+                    <hr />
+                </>
+            )}
+
             {!!tournament_id && (
                 <a
                     className="GameSidebarPanel-item"
@@ -387,6 +406,13 @@ export function GameActionsPanel({
                     <i className="fa fa-download" />
                     <span>{_("SGF with comments")}</span>
                 </a>
+            )}
+
+            {!touch_only_device && (
+                <button className="GameSidebarPanel-item" onClick={showKeyboardShortcuts}>
+                    <i className="fa fa-keyboard-o" />
+                    <span>{_("Keyboard shortcuts")}</span>
+                </button>
             )}
         </div>
     );

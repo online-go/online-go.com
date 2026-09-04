@@ -454,7 +454,9 @@ export class ReviewChartD3 {
      * ahead (above the midline), solid light where white is ahead — done
      * with a single linearGradient whose stops change color at the same
      * offset, so there is no visible gradient. The tones match the player
-     * cards' slate/shell stone palette. */
+     * cards' slate/shell stone palette, with the off-theme side (black in
+     * the light theme, white in the dark theme) dimmed toward the chart
+     * background so it does not glare. */
     private updateGradient(use_score_safe: boolean): void {
         let transition_point = 50;
         if (use_score_safe) {
@@ -466,7 +468,7 @@ export class ReviewChartD3 {
         }
 
         const [black_fill, white_fill] =
-            data.get("theme") === "light" ? ["#363b42", "#f1efea"] : ["#0e1013", "#96938c"];
+            data.get("theme") === "light" ? ["#5f646d", "#f1efea"] : ["#242629", "#7f7c75"];
 
         this.svg?.select("linearGradient").remove();
         this.svg

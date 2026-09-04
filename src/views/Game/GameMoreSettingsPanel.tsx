@@ -17,34 +17,35 @@
 
 import * as React from "react";
 import { _ } from "@/lib/translate";
+import { GamePreferences } from "@/views/Settings/GamePreferences";
 import { ThemePreferences } from "@/views/Settings/ThemePreferences";
-import "./GameThemeSettingsPanel.css";
+import "./GameMoreSettingsPanel.css";
 
-interface GameThemeSettingsPanelProps {
+interface GameMoreSettingsPanelProps {
     /** Fired by the Done button at the bottom of the panel. */
     onClose?: () => void;
 }
 
 /**
- * Sidebar takeover hosting the full "Themes & Visuals" settings component
- * from the Settings page. Opened from the game Settings popover's
- * "More options" item; closed by the Done button, or by clicking the
- * settings gear again (wired in Game.tsx).
+ * Sidebar takeover hosting the full "Themes & Visuals" and "Game
+ * Preferences" settings components from the Settings page. Opened from
+ * the game Settings popover's "More options" item; closed by the Done
+ * button, or by clicking the settings gear again (wired in Game.tsx).
  *
  * The inner wrapper carries the `.Settings` class so the PreferenceLine
  * styles from Settings.css (scoped under `.Settings`) apply here; the
  * panel's own CSS compacts them to sidebar width.
  */
-export function GameThemeSettingsPanel({
-    onClose,
-}: GameThemeSettingsPanelProps): React.ReactElement {
+export function GameMoreSettingsPanel({ onClose }: GameMoreSettingsPanelProps): React.ReactElement {
     return (
-        <div className="GameSidebarPanel GameThemeSettingsPanel">
-            <h3 className="GameSidebarPanel-title">{_("Themes & Visuals")}</h3>
-            <div className="Settings GameThemeSettingsPanel-content">
+        <div className="GameSidebarPanel GameMoreSettingsPanel">
+            <div className="Settings GameMoreSettingsPanel-content">
+                <h4 className="GameSidebarPanel-section-header">{_("Themes & Visuals")}</h4>
                 <ThemePreferences />
+                <h4 className="GameSidebarPanel-section-header">{_("Game Preferences")}</h4>
+                <GamePreferences />
             </div>
-            <div className="GameThemeSettingsPanel-buttons">
+            <div className="GameMoreSettingsPanel-buttons">
                 <button className="primary" onClick={onClose}>
                     {_("Done")}
                 </button>

@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import Select from "react-select";
+import Select, { SelectComponentsConfig } from "react-select";
 
 import { usePreference } from "@/lib/preferences";
 import { ValidPreference } from "@/lib/preferences";
@@ -85,41 +85,51 @@ export interface PreferenceDropdownProps {
     onChange: (value: any) => void;
 }
 
+type PreferenceOption = { value: any; label: string };
+
+/* The custom parts are defined once at module scope. Defining them inline
+ * in the render function gives react-select a new component type on every
+ * parent re-render, which remounts every option element while the menu is
+ * open. On iOS Safari a tap whose touchstart target is replaced before
+ * touchend never becomes a click, so the options could not be selected
+ * anywhere the parent re-renders often, such as the game view. */
+const PREFERENCE_DROPDOWN_COMPONENTS: SelectComponentsConfig<PreferenceOption, false, never> = {
+    Option: ({ innerRef, innerProps, isFocused, isSelected, data }) => (
+        <div
+            ref={innerRef}
+            {...innerProps}
+            className={
+                "PreferenceDropdown-option " +
+                (isFocused ? "focused " : "") +
+                (isSelected ? "selected" : "")
+            }
+        >
+            {data.label}
+        </div>
+    ),
+    SingleValue: ({ innerProps, data }) => (
+        <span {...innerProps} className="PreferenceDropdown-value">
+            {data.label}
+        </span>
+    ),
+    ValueContainer: ({ children }) => (
+        <div className="PreferenceDropdown-value-container">{children}</div>
+    ),
+};
+
 export function PreferenceDropdown(props: PreferenceDropdownProps): React.ReactElement {
     return (
-        <Select
+        <Select<PreferenceOption, false, never>
             className="PreferenceDropdown"
             classNamePrefix="ogs-react-select"
             value={props.options.filter((opt) => opt.value === props.value)[0]}
             getOptionValue={(data) => data.value}
-            onChange={(data: any) => props.onChange(data.value)}
+            onChange={(data) => props.onChange(data?.value)}
             options={props.options}
             isClearable={false}
             isSearchable={false}
             blurInputOnSelect={true}
-            components={{
-                Option: ({ innerRef, innerProps, isFocused, isSelected, data }) => (
-                    <div
-                        ref={innerRef}
-                        {...innerProps}
-                        className={
-                            "PreferenceDropdown-option " +
-                            (isFocused ? "focused " : "") +
-                            (isSelected ? "selected" : "")
-                        }
-                    >
-                        {data.label}
-                    </div>
-                ),
-                SingleValue: ({ innerProps, data }) => (
-                    <span {...innerProps} className="PreferenceDropdown-value">
-                        {data.label}
-                    </span>
-                ),
-                ValueContainer: ({ children }) => (
-                    <div className="PreferenceDropdown-value-container">{children}</div>
-                ),
-            }}
+            components={PREFERENCE_DROPDOWN_COMPONENTS}
         />
     );
 }

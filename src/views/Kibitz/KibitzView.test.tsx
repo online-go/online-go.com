@@ -29,9 +29,9 @@ jest.mock("@/components/GobanView/PlayerBar", () => ({
     __esModule: true,
     PlayerBar: ({ color }: { color: string }) => <div data-testid={`bar-${color}`} />,
 }));
-jest.mock("@/components/GobanView/MoveNumberSlider", () => ({
+jest.mock("@/components/GobanView/MoveNumberControl", () => ({
     __esModule: true,
-    MoveNumberSlider: () => <div data-testid="slider" />,
+    MoveNumberControl: () => <div data-testid="slider" />,
 }));
 jest.mock("./KibitzLeftAside", () => ({
     __esModule: true,

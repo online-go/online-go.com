@@ -21,7 +21,7 @@
 
             .GobanView-header,
             .GobanView-sidebar-content,
-            .MoveNumberSlider {
+            .MoveNumberControl {
                 display: none;
             }
         }

@@ -21,26 +21,26 @@ import { isLiveGame } from "@/components/TimeControl";
 import * as preferences from "@/lib/preferences";
 import { alert } from "@/lib/swal_config";
 import {
-    generateGobanHook,
     useCanAnswerUndoRequest,
     useCurrentMoveNumber,
     useMode,
+    useOfficialMoveNumber,
     usePhase,
     usePlayerToMove,
+    hasStagedMove,
     useResignMode,
+    useShowSubmitButton,
+    useSubmittingMove,
     useUserIsParticipant,
 } from "./GameHooks";
 import { cancelOrResignGame } from "./game_actions";
+import { enableTouchAction } from "./touch_actions";
 import * as DynamicHelp from "react-dynamic-help";
 import { useGobanController } from "./goban_context";
 import { useUser } from "@/lib/hooks";
 import { sfx } from "@/lib/sfx";
 import { decodeMoves } from "goban";
-
-const useOfficialMoveNumber = generateGobanHook(
-    (goban) => goban!.engine.last_official_move?.move_number ?? -1,
-    ["last_official_move"],
-);
+import "./PlayButtons.css";
 
 function KeyboardCoordinateInput(): React.ReactElement | null {
     const goban_controller = useGobanController();
@@ -219,30 +219,10 @@ export function PlayButtons(): React.ReactElement | null {
     const player_to_move = usePlayerToMove(goban);
     const is_my_move = player_to_move === user_id;
 
-    const [show_submit, setShowSubmit] = React.useState(false);
-    React.useEffect(() => {
-        const syncShowSubmit = () => {
-            setShowSubmit(
-                !!(
-                    goban.submit_move &&
-                    goban.engine.cur_move &&
-                    goban.engine.cur_move.parent &&
-                    goban.engine.last_official_move &&
-                    goban.engine.cur_move.parent.id === goban.engine.last_official_move.id
-                ),
-            );
-        };
-        syncShowSubmit();
-
-        goban.on("submit_move", syncShowSubmit);
-        goban.on("last_official_move", syncShowSubmit);
-        goban.on("cur_move", syncShowSubmit);
-        return () => {
-            goban.off("submit_move", syncShowSubmit);
-            goban.off("last_official_move", syncShowSubmit);
-            goban.off("cur_move", syncShowSubmit);
-        };
-    }, [goban]);
+    const show_submit = useShowSubmitButton(goban);
+    // Re-read at render time; the hooks above re-render on every event that
+    // can change it.
+    const has_staged_move = hasStagedMove(goban);
 
     React.useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -301,20 +281,22 @@ export function PlayButtons(): React.ReactElement | null {
         goban.cancelUndo();
     };
 
-    const [submitting_move, setSubmittingMove] = React.useState(false);
-    React.useEffect(() => {
-        goban.on("submitting-move", setSubmittingMove);
-        return () => {
-            goban.off("submitting-move", setSubmittingMove);
-        };
-    }, [goban]);
+    const submitting_move = useSubmittingMove(goban);
 
     const show_pass =
-        !show_submit &&
+        !has_staged_move &&
         is_my_move &&
         engine.handicapMovesLeft() === 0 &&
         cur_move_number === official_move_number;
-    const show_submit_button = show_submit && engine.undo_requested !== engine.getMoveNumber();
+    const show_submit_button = show_submit;
+
+    // With analysis disabled, stepping back through the game only shows
+    // earlier positions; this is the way back to the live position.
+    const show_back_to_game =
+        mode === "play" &&
+        phase === "play" &&
+        goban.isAnalysisDisabled() &&
+        cur_move_number < official_move_number;
 
     // Undo moved to the action bar; what is left here is the response to
     // the opponent's undo request, the move controls, and resign.
@@ -324,6 +306,7 @@ export function PlayButtons(): React.ReactElement | null {
         !show_undo_response &&
         !show_pass &&
         !show_submit_button &&
+        !show_back_to_game &&
         !keyboard_coordinates_enabled &&
         !show_resign
     ) {
@@ -344,6 +327,17 @@ export function PlayButtons(): React.ReactElement | null {
                 )}
             </span>
             <span>
+                {show_back_to_game && (
+                    <button
+                        className="sm primary bold back-to-game-button"
+                        onClick={() => {
+                            enableTouchAction();
+                            goban.setModeDeferred("play");
+                        }}
+                    >
+                        {_("Back to Game")}
+                    </button>
+                )}
                 <KeyboardCoordinateInput />
                 {show_pass && (
                     <button className="sm primary bold pass-button" onClick={pass}>

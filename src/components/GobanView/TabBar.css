@@ -32,12 +32,16 @@
 
     /* The left and right groups take equal shares of the leftover space so
      * the center group stays truly centered regardless of how many buttons
-     * each side holds. */
+     * each side holds. Each side still keeps at least its own content
+     * width: with `flex-basis: 0` the equal split would otherwise win over
+     * the content and the buttons of a fuller side would spill over the
+     * center group on narrow phones. When that happens the center shifts
+     * slightly off-center instead. */
     .GobanView-tab-bar-left {
         display: flex;
         gap: 0.5rem;
         flex: 1 1 0;
-        min-width: 0;
+        min-width: max-content;
         justify-content: flex-start;
     }
 
@@ -51,7 +55,7 @@
         display: flex;
         gap: 0.5rem;
         flex: 1 1 0;
-        min-width: 0;
+        min-width: max-content;
         justify-content: flex-end;
     }
 

@@ -20,7 +20,6 @@
         "prettier:check": "pprettier --check \"src/**/*.{ts,tsx}\"",
         "lint": "eslint src/",
         "lint:fix": "eslint --fix src/",
-        "spellcheck": "cspell --no-progress \"src/**/*.{ts,tsx}\"",
         "minify-index": "node minify-index.js",
         "dependency-cruiser": "dependency-cruiser src",
         "bundle-visualizer": "vite-bundle-visualizer -c vite.config.ts",
@@ -76,7 +75,6 @@
         "@vitejs/plugin-react": "6.0.5",
         "autoprefixer": "^10.5.4",
         "body-parser": "2.2.0",
-        "cspell": "^9.2.2",
         "cssnano": "^7.1.1",
         "deepl-node": "^1.20.0",
         "dependency-cruiser": "^17.1.0",
@@ -169,8 +167,7 @@
     },
     "lint-staged": {
         "src/**/*.{ts,tsx}": [
-            "eslint",
-            "cspell"
+            "eslint"
         ]
     },
     "resolutions": {

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.MoveNumberSlider {
+.MoveNumberControl {
     --thumb-size: 1.4rem;
     --track-height: 0.35rem;
 
@@ -27,7 +27,7 @@
     border-top: 1px solid var(--shade3);
     background: var(--shade4);
 
-    .MoveNumberSlider-button {
+    .MoveNumberControl-button {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -62,7 +62,7 @@
        height of the component is a hit target for the slider. The thin
        gray bar is hard to hit on its own; the negative margin cancels the
        strip's padding. */
-    .MoveNumberSlider-track {
+    .MoveNumberControl-track {
         flex-grow: 1;
         position: relative;
         display: flex;
@@ -85,9 +85,12 @@
         }
     }
 
-    .MoveNumberSlider-input {
+    .MoveNumberControl-input {
         appearance: none;
         -webkit-appearance: none;
+        /* The global input rule draws a bottom border; at full strip height
+           it would paint a line along the bottom edge of the strip. */
+        border: none;
         width: 100%;
         /* Fill the stretched track so clicks anywhere in the strip land on
            the input. The native thumb stays vertically centered in the
@@ -128,7 +131,7 @@
         }
     }
 
-    .MoveNumberSlider-knob {
+    .MoveNumberControl-knob {
         position: absolute;
         /* Sit above the native input (z-index: 1) so the bar doesn't
            cover the knob's lower edge. */
@@ -151,7 +154,7 @@
         transition: transform 0.1s ease;
     }
 
-    .MoveNumberSlider-knob-text {
+    .MoveNumberControl-knob-text {
         /* Same background as the knob so longer numbers (e.g. 100+) extend
            beyond the circle into a readable pill rather than overflowing
            onto the bar. */
@@ -165,8 +168,28 @@
         white-space: nowrap;
     }
 
-    .MoveNumberSlider-input:hover ~ .MoveNumberSlider-knob,
-    .MoveNumberSlider-input:active ~ .MoveNumberSlider-knob {
+    .MoveNumberControl-input:hover ~ .MoveNumberControl-knob,
+    .MoveNumberControl-input:active ~ .MoveNumberControl-knob {
         transform: translate(-50%, -50%) scale(1.08);
+    }
+
+    /* Buttons layout: the buttons and the move label spread across the
+       full width of the strip. */
+    &.MoveNumberControl-buttons {
+        justify-content: space-between;
+        gap: 0.25rem;
+
+        .MoveNumberControl-button {
+            font-size: 1.1rem;
+        }
+
+        .MoveNumberControl-move-number {
+            color: var(--fg);
+            font-size: 0.85rem;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+            user-select: none;
+        }
     }
 }

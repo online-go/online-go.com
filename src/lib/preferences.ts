@@ -23,6 +23,7 @@ import { DataSchema } from "./data_schema";
 import { FollowedChannel } from "@/views/GoTV";
 import { getWindowWidth } from "./device";
 import { createGobanThemePreferenceDefaults } from "./goban_theme_defaults";
+import type { GobanViewBoardAlignment } from "@/components/GobanView/util";
 
 export const defaults = {
     "ai-review-enabled": true,
@@ -83,6 +84,8 @@ export const defaults = {
     //"goban-theme-white_stone_url": null as null | string,
     "goban-theme-removal-graphic": "square" as "square" | "x",
     "goban-theme-removal-scale": 0.9,
+    "goban-view-sidebar-width": null as number | null,
+    "goban-view-board-alignment": "window" as GobanViewBoardAlignment,
     "hide-ranks": false,
     "label-positioning": "all" as LabelPosition,
     "label-positioning-puzzles": "all" as LabelPosition,
@@ -158,6 +161,7 @@ export const defaults = {
     "variations-in-chat-enabled": true,
     "start-in-zen-mode": false,
     "scroll-to-navigate": false,
+    "move-number-control-mode": "buttons" as "slider" | "buttons",
     "show-empty-chat-notification": true,
     "chat-subscribe-group-chat-unread": true,
     "chat-subscribe-group-mentions": true,

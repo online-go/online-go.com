@@ -25,6 +25,7 @@ import { usePreference } from "@/lib/preferences";
 import { JGOFNumericPlayerColor, ColoredCircle, MoveTree, GobanRenderer, JGOFMove } from "goban";
 import { useUser } from "@/lib/hooks";
 import { trimMaxMoves } from "./utils";
+import { resolveQualityPalette, withAlpha } from "./generateHeatmapAndMarks";
 import "./AIDemoReview.css";
 
 const cached_data: { [review_id: number]: { [board_string: string]: any } } = {};
@@ -436,8 +437,9 @@ function renderAnalysis(goban: GobanRenderer, data: any) {
         if (i === 0) {
             goban.setMark(mv.x, mv.y, "blue_move", true, true);
             circle.border_width = 0.2;
-            circle.border_color = "rgb(0, 130, 255)";
-            circle.color = "rgba(0, 130, 255, 0.7)";
+            const blue_move = resolveQualityPalette().blue_move;
+            circle.border_color = blue_move;
+            circle.color = withAlpha(blue_move, 0.7);
             colored_circles.push(circle);
         }
     }

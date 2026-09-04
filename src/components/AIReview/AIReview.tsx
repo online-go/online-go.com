@@ -18,6 +18,7 @@
 import * as React from "react";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import * as data from "@/lib/data";
+import { useData } from "@/lib/hooks";
 import * as preferences from "@/lib/preferences";
 import { UIPush } from "@/components/UIPush";
 import { openBecomeASiteSupporterModal } from "@/views/Supporter";
@@ -110,6 +111,9 @@ export function AIReview({
 
     // State management
     const [useScore, setUseScore] = useState(preferences.get("ai-review-use-score"));
+    /* The quality colors come from theme CSS variables, so the board marks
+     * are regenerated when the theme changes */
+    const [theme] = useData("theme", "system");
     const [showVisitCounts] = preferences.usePreference("ai-review-show-visit-counts");
     const [tableHidden, setTableHidden] = useState(!preferences.get("ai-summary-table-show"));
     const [currentPopupMoves, setCurrentPopupMoves] = useState<number[]>([]);
@@ -491,6 +495,7 @@ export function AIReview({
         showVisitCounts,
         updateCount,
         moveCategoryMap,
+        theme,
     ]);
 
     /**

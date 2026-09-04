@@ -34,8 +34,10 @@ import { GameChat } from "./GameChat";
 import { goban_view_mode } from "./util";
 import { PlayerCard, PlayerCards } from "./PlayerCards";
 import { PlayControls, ReviewControls } from "./PlayControls";
+import { GameActionArea } from "./GameActionArea";
 import { alert } from "@/lib/swal_config";
 import {
+    useAnnulled,
     useCanRequestUndo,
     useMode,
     usePauseControl,
@@ -47,13 +49,15 @@ import {
     useViewMode,
     useZenMode,
 } from "./GameHooks";
-import { requestUndo } from "./game_actions";
+import { openGameInfo, requestUndo } from "./game_actions";
+import { openGameLinkModal } from "./GameLinkModal";
 import { UndoIcon } from "./UndoIcon";
 import {
     GobanControllerContext,
     GobanView,
     GobanViewRef,
     user_color,
+    GobanViewTabProps,
 } from "@/components/GobanView";
 import { ModalContext } from "@/components/ModalProvider";
 import { useUser } from "@/lib/hooks";
@@ -64,7 +68,7 @@ import { ActiveTournament } from "@/lib/types";
 import { GobanController } from "@/lib/GobanController";
 import { FragAIReview, GameInformation, GameKeyboardShortcuts, RengoHeader } from "./fragments";
 import { GameSettingsPanel } from "./GameSettingsPanel";
-import { GameThemeSettingsPanel } from "./GameThemeSettingsPanel";
+import { GameMoreSettingsPanel } from "./GameMoreSettingsPanel";
 import { GameActionsPanel } from "./GameActionsPanel";
 import { GameModToolsPanel } from "./GameModToolsPanel";
 import { GameModeratorAreaPanel } from "./GameModeratorAreaPanel";
@@ -139,6 +143,7 @@ export function Game(): React.ReactElement | null {
     const can_request_undo = useCanRequestUndo(goban);
     const undo_request_is_mine = useUndoRequestIsMine(goban);
     const pause_control = usePauseControl(goban);
+    const annulled = useAnnulled(goban_controller.current);
     const modal_context = React.useContext(ModalContext);
     const more_actions_popover_ref = React.useRef<PopOver | null>(null);
     const settings_popover_ref = React.useRef<PopOver | null>(null);
@@ -161,10 +166,10 @@ export function Game(): React.ReactElement | null {
     //     on desktop (chat is always visible there if the feature is on).
     const [chat_enabled] = usePreference("game.chat-enabled");
     const [mobile_chat_visible, set_mobile_chat_visible] = React.useState(false);
-    // Whether the Themes & Visuals takeover is showing. Synced from the
+    // Whether the full settings takeover is showing. Synced from the
     // takeover tab's onToggle (the authoritative open/close signal), and
     // used to light up the settings gear while it's open.
-    const [theme_settings_open, set_theme_settings_open] = React.useState(false);
+    const [more_settings_open, set_more_settings_open] = React.useState(false);
     // Bumped when the goban must be rebuilt from scratch (switching
     // between the SVG and canvas renderers); the constructor effect below
     // lists it as a dependency.
@@ -861,6 +866,22 @@ export function Game(): React.ReactElement | null {
         }
     };
 
+    // The analyze / chat / review / conditional tabs are defined once here
+    // and rendered twice: as icons in the action bar and as labeled items at
+    // the top of the More-actions menu.
+    const analyze_tab: GobanViewTabProps | null = game
+        ? {
+              id: "game-analyze",
+              type: "action",
+              align: "left",
+              icon: "sitemap",
+              title: _("Analyze game"),
+              disabled: analysis_disabled,
+              active: is_analyzing,
+              onClick: onAnalyzeClick,
+          }
+        : null;
+
     // "Review this game" is for spectators reviewing a live game and for
     // anyone (including the players) once it's finished — never for an
     // active player mid-game.
@@ -873,11 +894,10 @@ export function Game(): React.ReactElement | null {
     // UX shape as the Analyze tab) so clicking it always switches *into*
     // the planner; clicking it again while in the planner exits to play.
     //
-    // useUserIsLivePlayerToMove treats a staged (not yet submitted) stone in
-    // submit-move / double-click mode as still the user's turn, so the tab
-    // hides until the move is submitted — entering the planner would
-    // silently discard the staged move. It derives a boolean so this
-    // component doesn't re-render on every move navigation event.
+    // useUserIsLivePlayerToMove follows the official branch, so walking
+    // through the game in analyze mode does not toggle the tab, and a
+    // staged (not yet submitted) stone still counts as the user's turn —
+    // entering the planner would silently discard the staged move.
     const is_planning_conditional = mode === "conditional";
     const show_conditional_tab =
         !review &&
@@ -895,6 +915,124 @@ export function Game(): React.ReactElement | null {
         } else {
             controller.enterConditionalMovePlanner();
         }
+    };
+
+    // Mobile-only chat toggle. The tab itself is hidden when the chat
+    // feature is disabled in Settings (chat_enabled false) — re-enable from
+    // Settings to bring it back. Otherwise it toggles the chat's session
+    // visibility.
+    const chat_tab: GobanViewTabProps | null =
+        is_mobile && chat_enabled
+            ? {
+                  id: "game-chat-toggle",
+                  type: "action",
+                  align: "left",
+                  icon: (
+                      <span className="game-chat-tab-icon">
+                          <i className="fa fa-comment" />
+                          {chat_unread && <span className="game-chat-unread-dot" />}
+                      </span>
+                  ),
+                  title: _("Chat"),
+                  active: mobile_chat_visible,
+                  onClick: () => set_mobile_chat_visible((v) => !v),
+              }
+            : null;
+
+    const review_tab: GobanViewTabProps | null = show_review_tab
+        ? {
+              id: "game-review",
+              type: "action",
+              align: "center",
+              icon: "refresh",
+              title: _("Review this game"),
+              onClick: goban_controller.current.startReview,
+          }
+        : null;
+
+    const conditional_tab: GobanViewTabProps | null = show_conditional_tab
+        ? {
+              id: "game-conditional",
+              type: "action",
+              align: "center",
+              icon: "exchange",
+              title: _("Plan conditional moves"),
+              disabled: analysis_disabled,
+              active: is_planning_conditional,
+              onClick: onConditionalClick,
+          }
+        : null;
+
+    // Pause / resume the game clock. Rendered only for users allowed to
+    // change the pause state right now (participants in vacation-eligible
+    // games, moderators — see usePauseControl).
+    const pause_tab: GobanViewTabProps | null =
+        pause_control.action !== null
+            ? {
+                  id: "game-pause",
+                  type: "action",
+                  align: "center",
+                  icon: pause_control.paused ? "play" : "pause",
+                  title: pause_control.paused ? _("Resume game") : _("Pause game"),
+                  onClick: pause_control.togglePause,
+              }
+            : null;
+
+    const menu_action_tabs = [analyze_tab, chat_tab, review_tab, conditional_tab, pause_tab].filter(
+        (tab): tab is GobanViewTabProps => tab !== null,
+    );
+
+    // Optional tabs: shown only when the bar has room, dropped lowest
+    // priority first. The More-actions menu always lists these same
+    // actions, so nothing is lost when they are hidden.
+    const onEstimateScoreClick = () => {
+        const controller = goban_controller.current;
+        if (!controller) {
+            return;
+        }
+        if (estimating_score) {
+            controller.stopEstimatingScore();
+        } else {
+            controller.estimateScore();
+        }
+    };
+
+    const estimate_score_tab: GobanViewTabProps = {
+        id: "game-estimate-score",
+        type: "action",
+        align: "left",
+        priority: 3,
+        icon: "tachometer",
+        title: _("Estimate score"),
+        disabled: analysis_disabled,
+        active: estimating_score,
+        onClick: onEstimateScoreClick,
+    };
+
+    const link_tab: GobanViewTabProps = {
+        id: "game-link",
+        type: "action",
+        align: "right",
+        priority: 2,
+        icon: "share-alt",
+        title: review ? _("Link to review") : _("Link to game"),
+        onClick: () => openGameLinkModal(goban!),
+    };
+
+    const info_tab: GobanViewTabProps = {
+        id: "game-info",
+        type: "action",
+        align: "right",
+        priority: 1,
+        icon: "info",
+        title: _("Game information"),
+        onClick: () => {
+            const controller = goban_controller.current;
+            if (!controller) {
+                return;
+            }
+            openGameInfo(controller, historical_black, historical_white, annulled);
+        },
     };
 
     const CONTROLS = review ? (
@@ -922,7 +1060,7 @@ export function Game(): React.ReactElement | null {
                                 onClose={close}
                                 compact={is_mobile}
                                 onShowThemeSettings={() =>
-                                    goban_view_ref.current?.setActiveTakeover("game-theme-settings")
+                                    goban_view_ref.current?.setActiveTakeover("game-more-settings")
                                 }
                             />
                         </div>
@@ -967,6 +1105,7 @@ export function Game(): React.ReactElement | null {
                                 ladder_id={ladder_id.current}
                                 historical_black={historical_black}
                                 historical_white={historical_white}
+                                action_tabs={menu_action_tabs}
                                 onClose={close}
                             />
                         </div>
@@ -976,15 +1115,6 @@ export function Game(): React.ReactElement | null {
             below: button,
             minWidth: 220,
         });
-        // The popover utility anchors the LEFT edge of the popover to the
-        // button. The More-actions button lives at the right edge of the
-        // tab bar, and (especially in the two-column moderator layout) the
-        // popover would extend off-screen to the right. Re-anchor the RIGHT
-        // edge to the button's right edge so the popover grows leftward.
-        const button_rect = button.getBoundingClientRect();
-        const offset_from_right = Math.max(0, window.innerWidth - button_rect.right);
-        instance.container.style.left = "auto";
-        instance.container.style.right = `${offset_from_right}px`;
         instance.on("close", () => {
             if (more_actions_popover_ref.current === instance) {
                 more_actions_popover_ref.current = null;
@@ -1029,7 +1159,21 @@ export function Game(): React.ReactElement | null {
             onWheel={onWheel}
             header={<GameStateHeader />}
             aboveBoard={is_mobile && renderMobilePlayerCard(top_color)}
-            belowBoard={is_mobile && renderMobilePlayerCard(bottom_color)}
+            /* The action area sits in the stage with the player cards, so
+             * the board gives up room for it instead of pushing it below
+             * the fold. */
+            belowBoard={
+                is_mobile && (
+                    <>
+                        {renderMobilePlayerCard(bottom_color)}
+                        <GameActionArea />
+                    </>
+                )
+            }
+            /* On mobile the move slider only earns its row while analyzing;
+             * during play it is dropped to leave the board and the controls
+             * more room. */
+            hideSlider={is_mobile && !is_analyzing}
         >
             {game_id > 0 && (
                 <UIPush
@@ -1050,7 +1194,7 @@ export function Game(): React.ReactElement | null {
                         estimating_score={estimating_score}
                     />
                 )}
-                <GameInformation />
+                {!is_mobile && <GameInformation />}
                 <RengoHeader />
 
                 {!zen_mode && (
@@ -1098,18 +1242,18 @@ export function Game(): React.ReactElement | null {
                 )}
             </GobanView.Tab>
 
-            {/* Left: settings + the two analysis tools that used to live in
-             *  the More-actions takeover. Move navigation comes from
-             *  GobanView's built-in MoveNumberSlider above the tab bar. */}
+            {/* Left: settings + the analysis tools that used to live in the
+             *  More-actions takeover. Move navigation comes from GobanView's
+             *  built-in MoveNumberControl above the tab bar. */}
             <GobanView.Tab
                 id="game-settings"
                 type="action"
                 align="left"
                 icon="gear"
                 title={_("Settings")}
-                active={theme_settings_open}
+                active={more_settings_open}
                 onClick={(event) => {
-                    if (theme_settings_open) {
+                    if (more_settings_open) {
                         goban_view_ref.current?.setActiveTakeover(null);
                     } else {
                         openSettings(event);
@@ -1117,82 +1261,34 @@ export function Game(): React.ReactElement | null {
                 }}
             />
 
-            {/* Full Themes & Visuals settings, opened from the Settings
-             *  popover's "More options" item. Hidden from the tab bar —
-             *  the gear icon doubles as its lit-up toggle, and the panel
-             *  has a Done button, so it needs no close button. */}
+            {/* Full Themes & Visuals and Game Preferences settings, opened
+             *  from the Settings popover's "More options" item. Hidden from
+             *  the tab bar — the gear icon doubles as its lit-up toggle, and
+             *  the panel has a Done button, so it needs no close button. */}
             <GobanView.Tab
-                id="game-theme-settings"
+                id="game-more-settings"
                 type="takeover"
                 hideFromBar
                 hideCloseButton
-                title={_("Themes & Visuals")}
-                onToggle={set_theme_settings_open}
+                title={_("Settings")}
+                onToggle={set_more_settings_open}
             >
-                <GameThemeSettingsPanel
+                <GameMoreSettingsPanel
                     onClose={() => goban_view_ref.current?.setActiveTakeover(null)}
                 />
             </GobanView.Tab>
 
-            {game && (
-                <GobanView.Tab
-                    id="game-analyze"
-                    type="action"
-                    align="left"
-                    icon="sitemap"
-                    title={_("Analyze game")}
-                    disabled={analysis_disabled}
-                    active={is_analyzing}
-                    onClick={onAnalyzeClick}
-                />
-            )}
+            {analyze_tab && <GobanView.Tab {...analyze_tab} />}
 
-            {/* Mobile-only chat toggle. The icon itself is hidden when
-             *  the chat feature is disabled in Settings (chat_enabled
-             *  false) — re-enable from Settings to bring it back.
-             *  Otherwise the icon toggles the chat's session visibility. */}
-            {is_mobile && chat_enabled && (
-                <GobanView.Tab
-                    id="game-chat-toggle"
-                    type="action"
-                    align="left"
-                    icon={
-                        <span className="game-chat-tab-icon">
-                            <i className="fa fa-comment" />
-                            {chat_unread && <span className="game-chat-unread-dot" />}
-                        </span>
-                    }
-                    title={_("Chat")}
-                    active={mobile_chat_visible}
-                    onClick={() => set_mobile_chat_visible((v) => !v)}
-                />
-            )}
+            <GobanView.Tab {...estimate_score_tab} />
+
+            {chat_tab && <GobanView.Tab {...chat_tab} />}
 
             {/* Center: contextual single-purpose actions. Review here is
              *  for spectators or once the game is finished. */}
-            {show_review_tab && (
-                <GobanView.Tab
-                    id="game-review"
-                    type="action"
-                    align="center"
-                    icon="refresh"
-                    title={_("Review this game")}
-                    onClick={goban_controller.current.startReview}
-                />
-            )}
+            {review_tab && <GobanView.Tab {...review_tab} />}
 
-            {show_conditional_tab && (
-                <GobanView.Tab
-                    id="game-conditional"
-                    type="action"
-                    align="center"
-                    icon="exchange"
-                    title={_("Plan conditional moves")}
-                    disabled={analysis_disabled}
-                    active={is_planning_conditional}
-                    onClick={onConditionalClick}
-                />
-            )}
+            {conditional_tab && <GobanView.Tab {...conditional_tab} />}
 
             {/* Ask the opponent to take back the last move. The button stays
              *  lit while your own request is pending, and pressing it again
@@ -1218,20 +1314,7 @@ export function Game(): React.ReactElement | null {
                 />
             )}
 
-            {/* Pause / resume the game clock. Rendered only for users
-             *  allowed to change the pause state right now (participants
-             *  in vacation-eligible games, moderators — see
-             *  usePauseControl). */}
-            {pause_control.action !== null && (
-                <GobanView.Tab
-                    id="game-pause"
-                    type="action"
-                    align="center"
-                    icon={pause_control.paused ? "play" : "pause"}
-                    title={pause_control.paused ? _("Resume game") : _("Pause game")}
-                    onClick={pause_control.togglePause}
-                />
-            )}
+            {pause_tab && <GobanView.Tab {...pause_tab} />}
 
             {/* Right group, in source order (visually left → right):
              *  1. Moderator toggle (gavel) — per-player controls + decide /
@@ -1239,7 +1322,11 @@ export function Game(): React.ReactElement | null {
              *     reloads via the `moderator.game-moderator-tab-visible`
              *     preference, gated on user role.
              *  2. More actions (ellipsis) — popover with the
-             *     non-moderator game actions. */}
+             *     non-moderator game actions.
+             *  Link and game information come first; they are optional and
+             *  give way when the bar is short of room. */}
+            <GobanView.Tab {...link_tab} />
+            <GobanView.Tab {...info_tab} />
             {show_mod_tab && (
                 <GobanView.Tab
                     id="game-moderator"
