@@ -25,6 +25,40 @@
     left: 0;
     right: 0;
 
+    /* The root is a size container so the sidebar width and the board
+     * offset below can be written in terms of the view's own width (100cqw)
+     * and height (100cqh). On a landscape screen the board is height
+     * limited, so 100cqh is the board's size. */
+    container-type: size;
+
+    /* Landscape sidebar width.
+     *
+     * Auto: the sidebar reaches from the right edge of the view to the
+     * right edge of a viewport-centered board, i.e. half of the space the
+     * board does not use, minus the gap and margin around the sidebar. It
+     * never drops below the fixed fallback width and never exceeds 80rem.
+     *
+     * The user can override this by dragging the gap between the board and
+     * the sidebar; the override is bounded to the fallback width and 75% of
+     * the view. */
+    --goban-view-sidebar-gap: 1.25rem;
+    --goban-view-sidebar-effective-width: clamp(
+        var(--goban-view-sidebar-width),
+        calc((100cqw - 100cqh) / 2 - var(--goban-view-sidebar-gap) - 0.3rem),
+        80rem
+    );
+    --goban-view-sidebar-outer-width: calc(
+        var(--goban-view-sidebar-effective-width) + var(--goban-view-sidebar-gap) + 0.3rem
+    );
+
+    &.has-custom-sidebar-width {
+        --goban-view-sidebar-effective-width: clamp(
+            var(--goban-view-sidebar-width),
+            var(--goban-view-sidebar-user-width),
+            75cqw
+        );
+    }
+
     /* Desktop: goban on left, sidebar on right */
     .GobanView-center {
         flex-grow: 1;
@@ -35,6 +69,19 @@
         align-items: stretch;
         overflow: hidden;
         z-index: 1;
+
+        /* Keep the board centered in the viewport for as long as it fits:
+         * mirror the sidebar's outer width as left padding so the board
+         * centers in the space between. Once the sidebar is too wide for
+         * that, the padding shrinks so the board sits against the sidebar
+         * gap, and once it hits zero the board itself starts to shrink.
+         * Browsers without container query units skip this declaration and
+         * center the board in the remaining space instead. */
+        padding-left: clamp(
+            0px,
+            calc(100cqw - var(--goban-view-sidebar-outer-width) - 100cqh),
+            var(--goban-view-sidebar-outer-width)
+        );
 
         .goban-container {
             flex-grow: 1;
@@ -52,18 +99,56 @@
         }
     }
 
+    /* The gap between the goban area and the sidebar, shared by all
+     * GobanView consumers (game, puzzle, joseki). It doubles as the drag
+     * handle for resizing the sidebar: a thin bar appears in the middle of
+     * the gap on hover, focus and while dragging. */
+    .GobanView-sidebar-resizer {
+        position: relative;
+        flex-shrink: 0;
+        width: var(--goban-view-sidebar-gap);
+        cursor: ew-resize;
+        touch-action: none;
+        user-select: none;
+        z-index: 3;
+
+        &::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: var(--goban-view-bottom-margin);
+            left: 50%;
+            width: 3px;
+            margin-left: -1.5px;
+            border-radius: 999px;
+            background: var(--shade3);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 120ms ease;
+        }
+
+        &:hover::before,
+        &:focus-visible::before,
+        &.is-dragging::before {
+            opacity: 0.7;
+        }
+
+        &:focus {
+            outline: none;
+        }
+    }
+
     .GobanView-sidebar {
         display: flex;
         flex-direction: column;
         width: var(--goban-view-sidebar-width);
+        width: var(--goban-view-sidebar-effective-width);
         flex-shrink: 0;
         z-index: 2;
         background: var(--shade5);
         border-radius: 8px;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-        /* The 1.25rem on the left creates a consistent gap between the
-         * goban area and the sidebar across all GobanView consumers (game,
-         * puzzle, joseki) — visual breathing room.
+        /* The gap on the left is the .GobanView-sidebar-resizer element.
          *
          * Top is 0 because --below-navbar already provides a small (~0.3rem)
          * spacer below the navbar — adding more margin doubles up. Bottom
@@ -74,8 +159,13 @@
         /* The right margin matches the 0.3rem the sidebar sits below the
          * navbar (--below-navbar minus the navbar height) and the 0.3rem
          * bottom margin, so the framing reads evenly on all three edges. */
-        margin: 0 0.3rem var(--goban-view-bottom-margin) 1.25rem;
+        margin: 0 0.3rem var(--goban-view-bottom-margin) 0;
         overflow: hidden;
+    }
+
+    &.is-resizing-sidebar {
+        cursor: ew-resize;
+        user-select: none;
     }
 
     /* Header pinned above the scrollable sidebar content. Hidden via
