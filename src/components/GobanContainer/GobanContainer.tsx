@@ -229,6 +229,23 @@ export function GobanContainer({
         onResize(/* no_debounce */ true, /* do_cb */ true);
     }, [goban, goban_div, ref_goban_container.current, onResize]);
 
+    /* A new goban is a 19x19 board until its game or review data arrives.
+     * Loading that data can change the board size, and with it the square
+     * size the goban derives from the last display width, but the container
+     * does not resize, so nothing else recenters the board. Sizing again on
+     * load keeps the board centered no matter which arrives first, the data
+     * or the container's debounced resize. */
+    React.useEffect(() => {
+        if (!goban) {
+            return;
+        }
+        const onLoad = () => onResizeRef.current(/* no_debounce */ true, /* do_cb */ false);
+        goban.on("load", onLoad);
+        return () => {
+            goban.off("load", onLoad);
+        };
+    }, [goban]);
+
     React.useEffect(() => cancelPendingInitialResizeRetry, [cancelPendingInitialResizeRetry]);
 
     if (!goban || !goban_div) {
