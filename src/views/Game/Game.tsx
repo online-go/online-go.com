@@ -961,7 +961,7 @@ export function Game(): React.ReactElement | null {
               id: "game-review",
               type: "action",
               align: "center",
-              icon: "refresh",
+              icon: "search-plus",
               title: _("Review this game"),
               onClick: goban_controller.current.startReview,
           }
