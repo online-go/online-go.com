@@ -879,11 +879,11 @@ export function Game(): React.ReactElement | null {
     // and rendered twice: as icons in the action bar and as labeled items at
     // the top of the More-actions menu.
     //
-    // On mobile the move slider is hidden during play, so with analysis
-    // disabled the greyed-out analyze button would leave no way to look at
-    // earlier moves. Swap it for a "Previous move" button that steps back
-    // and thereby brings up the slider. Desktop keeps the disabled analyze
-    // button since its slider is always visible.
+    // On a cramped mobile screen the move slider is hidden during play, so
+    // with analysis disabled the greyed-out analyze button would leave no
+    // way to look at earlier moves. Swap it for a "Previous move" button
+    // that steps back and thereby brings up the slider. Desktop keeps the
+    // disabled analyze button since its slider is always visible.
     const swap_analyze_for_step_back = is_mobile && analysis_disabled;
     const analyze_tab: GobanViewTabProps | null = !game
         ? null
@@ -1196,13 +1196,21 @@ export function Game(): React.ReactElement | null {
                     </>
                 )
             }
-            /* On mobile the move slider only earns its row while analyzing,
+            /* On mobile the move slider always gets its row while analyzing,
              * or while stepping back through played moves in a game with
-             * analysis disabled; during play it is dropped to leave the board
-             * and the controls more room. Zen mode drops it everywhere:
-             * keyboard navigation still works, and the strip is not part of
-             * the focused view. */
-            hideSlider={(is_mobile && !is_analyzing && !is_browsing_history) || zen_mode}
+             * analysis disabled. During play it only gets the row when the
+             * board at full width, the player cards and the play buttons
+             * still fit on screen beside it; on a cramped screen it is
+             * dropped to leave the board and the controls the room. Zen mode
+             * drops it everywhere: keyboard navigation still works, and the
+             * strip is not part of the focused view. */
+            hideSlider={
+                zen_mode
+                    ? true
+                    : is_mobile && !is_analyzing && !is_browsing_history
+                      ? "when-cramped"
+                      : false
+            }
         >
             {game_id > 0 && (
                 <UIPush
