@@ -199,10 +199,11 @@ export function FragAIReview(props: FragAIReviewProps): React.ReactElement | nul
     }
 
     // Ongoing games - show the fair play summary while the moderator tools
-    // are open, with timings when requested. Render FairPlayGameSummary
-    // directly to avoid AIReview's API call for ai_reviews.
+    // are open, with the per-move timings when the Timing toggle is on.
+    // Render FairPlayGameSummary directly to avoid AIReview's API call for
+    // ai_reviews.
     if (
-        (props.showFairPlay || props.showGameTimings) &&
+        props.showFairPlay &&
         cur_move &&
         goban.engine &&
         goban.engine.config &&

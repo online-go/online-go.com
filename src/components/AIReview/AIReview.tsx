@@ -591,12 +591,12 @@ export function AIReview({
 
     // Handle hidden or no review data states
     if (!reviewData || hidden) {
-        // Still render FairPlayGameSummary when the moderator tools are open
-        // or timings were requested. All CMs (anyone with moderator_powers)
-        // can see GameTimings.
-        const canShowTimings =
-            !hidden &&
-            (showFairPlay || showGameTimings) &&
+        // The fair play summary follows the moderator tools alone: it shows
+        // while they are open whether or not the AI review is enabled, and
+        // the Timing toggle adds the per-move timings to it. All CMs (anyone
+        // with moderator_powers) can see it.
+        const canShowFairPlay =
+            showFairPlay &&
             (user.is_moderator || (user.moderator_powers ?? 0) !== 0) &&
             gobanController?.goban?.engine?.config?.black_player_id &&
             gobanController?.goban?.engine?.config?.white_player_id;
@@ -614,7 +614,7 @@ export function AIReview({
                         <i className="fa fa-desktop slowstrobe"></i>
                     </div>
                 )}
-                {canShowTimings && (
+                {canShowFairPlay && (
                     <FairPlayGameSummary
                         game_id={game_id}
                         black_player_id={gobanController.goban!.engine.config.black_player_id!}
@@ -734,8 +734,10 @@ export function AIReview({
                                 />
                             )}
 
-                            {/* All CMs (anyone with moderator_powers) can see GameTimings via FairPlayGameSummary */}
-                            {(showFairPlay || showGameTimings) &&
+                            {/* The fair play summary follows the moderator tools alone;
+                                the Timing toggle adds the per-move timings. All CMs
+                                (anyone with moderator_powers) can see it. */}
+                            {showFairPlay &&
                                 (user.is_moderator || (user.moderator_powers ?? 0) !== 0) &&
                                 gobanController?.goban?.engine?.config?.black_player_id &&
                                 gobanController?.goban?.engine?.config?.white_player_id && (
