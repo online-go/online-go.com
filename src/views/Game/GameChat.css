@@ -175,13 +175,18 @@
         /* max-width: 100%; */
         /* width: 100%; */
         /* overflow: hidden; */
-        align-items: flex-end;
+        /* The textarea gets taller when the message has more lines.
+           Stretch makes the controls on each side as tall as the row. */
+        align-items: stretch;
         /* flex-direction: column; */
         border-top: 1px solid var(--shade3);
 
         button {
             flex-shrink: 0;
-            height: 30px;
+            /* This overrides the global 2em button height. A definite
+               height stops a flex item from stretching. */
+            height: auto;
+            min-height: 30px;
         }
 
         .chat-input-chat-log-toggle {
@@ -199,6 +204,8 @@
         }
 
         .qc-toggle {
+            display: flex;
+            align-items: center;
             background-color: transparent;
             border-right: 1px solid #000;
             padding: 0rem 0.5rem 0rem 0.5rem;
@@ -206,7 +213,7 @@
             background-color: var(--default-button);
             color: var(--default-button-color);
             transition: background-color 0.3s ease;
-            height: 30px;
+            min-height: 30px;
 
             &:hover,
             &:focus {
