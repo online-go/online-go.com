@@ -250,6 +250,7 @@ export function GameActionsPanel({
                     className="GameSidebarPanel-item"
                     href={`/tournament/${tournament_id}`}
                     onClick={navigateTo(`/tournament/${tournament_id}`)}
+                    title={tournament_name}
                 >
                     <i className="fa fa-trophy" />
                     <span>{tournament_name || _("Tournament")}</span>

@@ -324,10 +324,20 @@
         }
 
         /* The sidebar is transparent in zen, so the tab bar drops its own
-         * panel styling and reads as a bare row of glyphs. */
+         * panel styling. Pause / resume is the only button that stays: it
+         * is the one action a player must be able to reach without leaving
+         * zen. Without it, the bar has nothing to show and goes away. */
         .GobanView-tab-bar {
             background: transparent;
             border-top: none;
+
+            .GobanView-tab-button:not([data-tab-id="game-pause"]) {
+                display: none;
+            }
+
+            &:not(:has([data-tab-id="game-pause"])) {
+                display: none;
+            }
         }
 
         /* Stack the few items that remain — player cards, controls — so they
@@ -361,6 +371,30 @@
 
         .PlayControls {
             flex-grow: 0;
+        }
+
+        /* The only on-screen way out of zen: a quiet glyph pinned to the
+         * top right corner of the viewport, above the board and sidebar. */
+        .leave-zen-mode-button {
+            position: fixed;
+            top: 0.5rem;
+            right: 0.5rem;
+            z-index: var(--z-dock);
+            height: auto;
+            min-height: 0;
+            padding: 0.25rem;
+            border: none;
+            background: transparent;
+            box-shadow: none;
+            font-size: 2rem;
+            line-height: 1;
+            color: var(--shade3);
+            cursor: pointer;
+
+            &:hover,
+            &:focus-visible {
+                color: var(--fg);
+            }
         }
     }
 }

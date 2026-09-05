@@ -38,6 +38,7 @@ import {
 import { get_network_latency, get_clock_drift } from "@/lib/sockets";
 import { useGobanController } from "./goban_context";
 import { player_is_ignored } from "@/components/BlockPlayer";
+import { openRengoTeamModal } from "@/components/RengoTeamModal";
 
 type PlayerType = rest_api.games.Player;
 
@@ -195,6 +196,7 @@ export function PlayerCard({
      * stays on the player the server clock is running for while the user
      * views an earlier move or stages (but has not yet submitted) a stone. */
     const their_turn = phase === "play" && player_to_move === player.id;
+    const rengo_team = engine.rengo && engine.rengo_teams ? engine.rengo_teams[color] : null;
     const highlight_their_turn = their_turn ? `their-turn` : "";
 
     const show_points =
@@ -268,6 +270,18 @@ export function PlayerCard({
                         historical={(!engine.rengo && historical) || player}
                         gameId={goban.game_id}
                     />
+                    {rengo_team && rengo_team.length > 1 && (
+                        <button
+                            className="rengo-team-count"
+                            title={pgettext(
+                                "Button on a rengo player card that opens the team list",
+                                "Show the other team members",
+                            )}
+                            onClick={() => openRengoTeamModal(color, rengo_team)}
+                        >
+                            {"+ " + (rengo_team.length - 1)}
+                        </button>
+                    )}
                 </div>
             )}
 
@@ -307,15 +321,6 @@ export function PlayerCard({
                     <ScorePopup goban={goban} color={color} show={show_score_breakdown} />
                 </div>
             </div>
-            {!!(engine.rengo && engine.rengo_teams) && (
-                <div className={"rengo-team-members player-name-container " + color}>
-                    {engine.rengo_teams[color].slice(1).map((player) => (
-                        <div className={"rengo-team-member"} key={player.id}>
-                            {<Player user={player} icon rank />}
-                        </div>
-                    ))}
-                </div>
-            )}
         </div>
     );
 }

@@ -521,10 +521,7 @@ export class ReviewChartD3 {
         const moves = this.data.ai_review.moves;
         const show_all = Object.keys(moves).length <= 3;
         const circle_coords = entries.filter((entry) => {
-            /* Chart x and highlighted_moves are in presented move space:
-             * move N is analyzed from the position before it, keyed N-1 in
-             * ai_review.moves. */
-            if (!moves[entry.move_number - 1]) {
+            if (!moves[entry.move_number]) {
                 return false;
             }
 
@@ -535,8 +532,8 @@ export class ReviewChartD3 {
 
             // Show if it's the last move in an analyzed sequence
             const isLastInSequence =
-                !moves[entry.move_number] &&
-                entry.move_number - 1 !== (this.data.ai_review.win_rates as number[]).length - 1;
+                !moves[entry.move_number + 1] &&
+                entry.move_number !== (this.data.ai_review.win_rates as number[]).length - 1;
 
             // Show if explicitly highlighted
             const isHighlighted = this.data.highlighted_moves?.includes(entry.move_number);

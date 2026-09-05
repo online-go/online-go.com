@@ -105,6 +105,7 @@ export function ThemePreferences(): React.ReactElement | null {
     const [variation_stone_opacity, _setVariationStoneOpacity] =
         usePreference("variation-stone-opacity");
     const [show_visit_counts, setShowVisitCounts] = usePreference("ai-review-show-visit-counts");
+    const [show_on_board, setShowOnBoard] = usePreference("ai-review-show-on-board");
     const [animate_turn_clock, setAnimateTurnClock] = usePreference("animate-turn-clock");
     const [move_number_control_mode, _setMoveNumberControlMode] = usePreference(
         "move-number-control-mode",
@@ -706,6 +707,20 @@ export function ThemePreferences(): React.ReactElement | null {
                     checked={show_visit_counts}
                     onChange={(tf) => {
                         setShowVisitCounts(tf);
+                    }}
+                />
+            </PreferenceLine>
+
+            <PreferenceLine
+                title={_("Show AI review on the board")}
+                description={_(
+                    "Draw the AI's suggested moves, their score differences and the move quality on the board. The chart and summary stay in the review panel.",
+                )}
+            >
+                <Toggle
+                    checked={show_on_board}
+                    onChange={(tf) => {
+                        setShowOnBoard(tf);
                     }}
                 />
             </PreferenceLine>

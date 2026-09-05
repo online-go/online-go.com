@@ -115,4 +115,43 @@ describe("GobanController", () => {
         expect(goban.engine.cur_move.move_number).toBe(1);
         expect(goban.mode).toBe("puzzle");
     });
+    it("navigates by engine move number", () => {
+        const controller = new GobanController({
+            width: 9,
+            height: 9,
+            move_tree: {
+                x: -1,
+                y: -1,
+                trunk_next: {
+                    x: 3,
+                    y: 3,
+                    trunk_next: {
+                        x: 4,
+                        y: 3,
+                        trunk_next: {
+                            x: 5,
+                            y: 3,
+                        },
+                    },
+                },
+            },
+        });
+        const goban = controller.goban;
+        goban.setMode("analyze");
+
+        controller.gotoMove(2);
+        expect(goban.engine.cur_move.move_number).toBe(2);
+
+        controller.nextMove();
+        expect(goban.engine.cur_move.move_number).toBe(3);
+
+        controller.nextMove();
+        expect(goban.engine.cur_move.move_number).toBe(3);
+
+        controller.gotoFirstMove();
+        expect(goban.engine.cur_move.move_number).toBe(0);
+
+        controller.gotoLastMove();
+        expect(goban.engine.cur_move.move_number).toBe(3);
+    });
 });

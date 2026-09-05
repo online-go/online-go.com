@@ -43,26 +43,6 @@
     background-color: var(--shade4);
 }
 
-.MainGobanView .players {
-    .rengo-team-members {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        flex-grow: 1;
-        margin: 0.3rem;
-
-        .rengo-team-member {
-            border-radius: 0.4em;
-            padding: 0.3rem;
-            padding-bottom: 0.1rem;
-            width: 100%;
-            box-sizing: border-box;
-            text-align: left;
-            background-color: var(--other-player-background);
-        }
-    }
-}
-
 .MainGobanView .player-icons {
     flex-shrink: 0;
     flex-grow: 0;
@@ -286,8 +266,32 @@
     }
 
     .player-name-container {
+        display: flex;
+        align-items: center;
         overflow: hidden;
         text-align: left;
+
+        /* The Player component wraps its link in a plain span. Let that
+         * span shrink so the username ellipsizes instead of pushing the
+         * team-count button out of the clipped row. */
+        > * {
+            min-width: 0;
+        }
+
+        .rengo-team-count {
+            flex-shrink: 0;
+            height: auto;
+            margin: 0 0 0 0.4rem;
+            padding: 0 0.4rem;
+            border: 0;
+            border-radius: 0.4em;
+            box-shadow: none;
+            font-size: 0.85em;
+            line-height: 1.4;
+            color: inherit;
+            background-color: var(--other-player-background);
+            cursor: pointer;
+        }
     }
 
     .player-name {
@@ -525,6 +529,8 @@
     }
 
     .player-icons {
+        gap: 0.5rem;
+
         .player-container {
             justify-content: center;
             min-width: 150px;
@@ -537,6 +543,7 @@
 
         .Clock {
             min-height: 80px;
+            justify-content: center;
 
             .pause-text {
                 display: none;
@@ -564,24 +571,27 @@
             }
         }
 
+        /* The score row sits in the lower left corner of the card, out of
+         * the way of the centered clock. */
         .captures {
             display: flex;
-            justify-content: center;
-            flex-basis: 70%;
+            justify-content: flex-start;
+            flex-basis: auto;
         }
 
         .score-container {
             margin: 0px;
-            justify-content: center;
+            padding: 0 0.4rem 0.1rem;
+            justify-content: flex-start;
             flex-grow: 0;
         }
 
         .num-captures-container {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             flex-direction: row;
-            flex-grow: 1;
+            flex-grow: 0;
 
             .stone-image {
                 width: 14px;
