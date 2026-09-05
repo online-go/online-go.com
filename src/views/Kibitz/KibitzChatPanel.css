@@ -224,7 +224,9 @@
 
 .KibitzChatPanel-composer {
     background: var(--card-background-color);
-    padding: 0 0.75rem 0.5rem;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0;
     box-shadow:
         0 0 0px 0px color-mix(in srgb, var(--primary) 60%, transparent),
         inset 0 0 0px 0 rgba(0, 255, 0, 1),
@@ -237,6 +239,11 @@
         0 0 0px 0px color-mix(in srgb, var(--primary) 60%, transparent),
         inset 0 0 0px 0 rgba(0, 255, 0, 1),
         inset 0 0 7px 0 color-mix(in srgb, var(--primary) 85%, transparent);
+}
+
+.KibitzChatPanel-composer .chat-input-wrapper {
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 .KibitzChatPanel-composer .chat-input {

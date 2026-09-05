@@ -3,6 +3,22 @@
         font-size: 1.1rem;
     }
 
+    /* The chat sits flush with the sidebar edges like the game chat; the
+       panels above it carry their own horizontal padding. */
+    .GobanView-sidebar-content {
+        padding: 0;
+        gap: 0;
+    }
+
+    .GobanView-tab-panel {
+        padding: 0;
+    }
+
+    .KibitzProposalPanel,
+    .KibitzVariationPanel {
+        padding: 0.5rem 0.75rem;
+    }
+
     /* The main panel fills the sidebar and the chat takes whatever height
        the proposal and variation panels leave, so the sidebar itself does
        not need to scroll. */
@@ -11,7 +27,6 @@
         min-height: 0;
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
     }
 
     .GobanView-sidebar-content .KibitzChatPanel {
