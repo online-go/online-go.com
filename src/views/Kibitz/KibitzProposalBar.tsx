@@ -321,10 +321,7 @@ export function KibitzProposalBar({
                         />
                         <button
                             type="button"
-                            className={
-                                "proposal-action " +
-                                (hasVotedChange || changeLeading ? "primary" : "secondary")
-                            }
+                            className="proposal-action primary xs"
                             onClick={() => onVote(proposal.id, "change")}
                         >
                             {hasVotedChange
@@ -379,10 +376,7 @@ export function KibitzProposalBar({
                         />
                         <button
                             type="button"
-                            className={
-                                "proposal-action " +
-                                (hasVotedKeep || keepLeading ? "primary" : "secondary")
-                            }
+                            className="proposal-action xs"
                             onClick={() => onVote(proposal.id, "keep")}
                         >
                             {hasVotedKeep

@@ -471,7 +471,7 @@ export function KibitzGamePickerOverlay({
                         <div className="KibitzGamePickerOverlay-headerControls" />
                         <button
                             type="button"
-                            className="xs KibitzGamePickerOverlay-closeButton KibitzGamePickerOverlay-dangerButton"
+                            className="xs danger KibitzGamePickerOverlay-closeButton"
                             onClick={onClose}
                             aria-label={pgettext(
                                 "Aria label for closing the Kibitz create room login-required state",
@@ -757,7 +757,7 @@ export function KibitzGamePickerOverlay({
                     </div>
                     <button
                         type="button"
-                        className="xs KibitzGamePickerOverlay-closeButton KibitzGamePickerOverlay-dangerButton"
+                        className="xs danger KibitzGamePickerOverlay-closeButton"
                         onClick={onClose}
                         aria-label={pgettext(
                             "Aria label for closing the Kibitz game picker overlay",
@@ -1108,7 +1108,7 @@ export function KibitzGamePickerOverlay({
                                 <button
                                     type="button"
                                     className={
-                                        "xs primary " +
+                                        "xs " +
                                         "KibitzGamePickerOverlay-mobileSourceButton" +
                                         (sourceMode === "ongoing" ? " active" : "")
                                     }
@@ -1123,7 +1123,7 @@ export function KibitzGamePickerOverlay({
                                 <button
                                     type="button"
                                     className={
-                                        "xs primary " +
+                                        "xs " +
                                         "KibitzGamePickerOverlay-mobileSourceButton" +
                                         (sourceMode === "game-id" ? " active" : "")
                                     }

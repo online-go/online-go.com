@@ -6,9 +6,12 @@
     padding: 0.4rem 0.75rem;
 
     .queue-title {
-        font-size: 0.85rem;
-        font-weight: bold;
+        color: var(--shade2);
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
         margin-bottom: 0.3rem;
+        text-transform: uppercase;
     }
 
     .queue-items {
@@ -61,7 +64,7 @@
     }
 
     .queue-status-pill.active {
-        background: rgba(38, 108, 215, 0.16);
+        background: color-mix(in srgb, var(--primary) 16%, transparent);
         color: var(--primary);
     }
 
@@ -117,7 +120,7 @@
     }
 
     .queue-vote-summary.queued-label {
-        color: var(--shade1);
+        color: var(--text-color-faded);
         font-weight: bold;
         text-transform: uppercase;
     }

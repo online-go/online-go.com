@@ -44,25 +44,6 @@
         min-width: min(24rem, 100%);
     }
 
-    button.KibitzGamePickerOverlay-dangerButton {
-        background-color: #c0392b !important;
-        border-color: #c0392b !important;
-        color: var(--colored-background-fg) !important;
-        box-shadow: none;
-    }
-
-    button.KibitzGamePickerOverlay-dangerButton:hover,
-    button.KibitzGamePickerOverlay-dangerButton:focus {
-        background-color: #d35445 !important;
-        filter: brightness(1.08);
-    }
-
-    button.KibitzGamePickerOverlay-dangerButton:active,
-    button.KibitzGamePickerOverlay-dangerButton.active {
-        background-color: #b03024 !important;
-        filter: brightness(0.92);
-    }
-
     .ObserveGamesComponent .header > .right > button.xs.primary {
         font-size: 1rem;
         line-height: 1.2;
@@ -182,7 +163,7 @@
     }
 
     .KibitzGamePickerOverlay-error {
-        color: var(--danger-fg, #ff8b8b);
+        color: var(--danger);
         font-size: 0.9rem;
     }
 
@@ -213,7 +194,7 @@
     }
 
     .KibitzGamePickerOverlay-stateLive {
-        color: var(--danger, #c0392b);
+        color: var(--danger);
     }
 
     .KibitzGamePickerOverlay-stateFinished {
@@ -597,15 +578,17 @@
     }
 
     .KibitzGamePickerOverlay-mobileSourceButton {
-        background: var(--shade3);
-        border: 1px solid var(--shade3);
-        color: var(--text-color-faded);
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        border-radius: 0;
+        box-shadow: none;
+        color: var(--shade2);
     }
 
     .KibitzGamePickerOverlay-mobileSourceButton.active,
     .KibitzGamePickerOverlay-mobileSourceButton[aria-pressed="true"] {
-        background: var(--shade2);
-        border-color: var(--shade2);
+        border-bottom: 2px solid var(--primary);
         color: var(--fg);
     }
 

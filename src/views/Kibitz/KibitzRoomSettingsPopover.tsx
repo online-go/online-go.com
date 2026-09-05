@@ -188,7 +188,7 @@ export function KibitzRoomSettingsPopover({
                     {canEditRoom || canDeleteRoom ? (
                         <button
                             type="button"
-                            className="KibitzRoomSettingsPopover-action"
+                            className="xs"
                             onClick={() => {
                                 setView("edit-details");
                             }}
@@ -202,7 +202,7 @@ export function KibitzRoomSettingsPopover({
                     {canChangeBoard ? (
                         <button
                             type="button"
-                            className="KibitzRoomSettingsPopover-action"
+                            className="xs"
                             onClick={() => {
                                 onClose();
                                 onRequestChangeBoard();
@@ -275,11 +275,7 @@ export function KibitzRoomSettingsPopover({
                             )}
                         </div>
                     ) : null}
-                    <button
-                        type="button"
-                        className="KibitzRoomSettingsPopover-secondaryAction"
-                        onClick={onClose}
-                    >
+                    <button type="button" className="xs" onClick={onClose}>
                         {pgettext(
                             "Button label for closing the Kibitz room settings popover",
                             "Close",
@@ -332,7 +328,7 @@ export function KibitzRoomSettingsPopover({
                     <div className="KibitzRoomSettingsPopover-actions">
                         <button
                             type="button"
-                            className="KibitzRoomSettingsPopover-secondaryAction"
+                            className="xs"
                             onClick={() => {
                                 setView("menu");
                                 setRoomTitle(room.title);
@@ -348,7 +344,7 @@ export function KibitzRoomSettingsPopover({
                         </button>
                         <button
                             type="button"
-                            className="KibitzRoomSettingsPopover-action"
+                            className="primary xs"
                             onClick={() => {
                                 void onSave();
                             }}
@@ -363,7 +359,7 @@ export function KibitzRoomSettingsPopover({
                         </button>
                         <button
                             type="button"
-                            className="KibitzRoomSettingsPopover-deleteAction"
+                            className="danger xs"
                             onClick={() => {
                                 void onDelete();
                             }}

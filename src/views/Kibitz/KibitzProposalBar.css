@@ -41,7 +41,7 @@
     .proposal-proposer-avatar,
     .proposal-voter-avatar {
         align-items: center;
-        background: rgba(0, 0, 0, 0.18);
+        background: color-mix(in srgb, var(--colored-background-fg) 18%, transparent);
         border: 0;
         color: var(--colored-background-fg);
         display: inline-flex;
@@ -72,7 +72,7 @@
     }
 
     .proposal-summary-prefix {
-        color: rgba(255, 255, 255, 0.88);
+        color: color-mix(in srgb, var(--colored-background-fg) 88%, transparent);
         font-size: 0.78rem;
         line-height: 1.1;
         min-width: 0;
@@ -93,7 +93,7 @@
     }
 
     .proposal-game-meta {
-        color: rgba(255, 255, 255, 0.84);
+        color: color-mix(in srgb, var(--colored-background-fg) 84%, transparent);
         font-size: 0.76rem;
         line-height: 1.1;
     }
@@ -208,30 +208,11 @@
     }
 
     .proposal-action {
-        background: var(--shade2);
-        border: 0;
-        box-shadow: none;
-        color: var(--fg);
-        cursor: pointer;
-        font-size: 0.82rem;
-        font-weight: bold;
-        line-height: 1;
         margin-top: auto;
         min-height: 2.1rem;
         min-width: 0;
-        padding: 0.5rem 0.7rem;
         white-space: nowrap;
         width: 100%;
-    }
-
-    .proposal-action.primary {
-        background: var(--primary);
-        color: var(--colored-background-fg);
-    }
-
-    .proposal-action.secondary {
-        background: var(--shade2);
-        color: var(--fg);
     }
 
     .proposal-preview-toggle {
@@ -265,6 +246,8 @@
         width: 100%;
     }
 
+    /* Goban sets min-height/flex-basis as an inline style on this element
+     * at runtime; !important is required to override that inline sizing. */
     .proposal-preview-thumb .KibitzBoardPreview .goban-container {
         height: 100% !important;
         width: 100% !important;
@@ -378,6 +361,8 @@
         width: min(17rem, 58vw);
     }
 
+    /* Goban sets min-height/flex-basis as an inline style on this element
+     * at runtime; !important is required to override that inline sizing. */
     .proposal-expanded-board-wrap .KibitzBoardPreview .goban-container {
         height: 100% !important;
         width: 100% !important;
@@ -456,6 +441,9 @@
 
         .proposal-timer-fill {
             height: 100%;
+            /* The component sets transform: scaleY(...) as an inline style
+             * for the vertical timer bar; !important is required to cancel
+             * it out on the horizontal mobile layout. */
             transform: none !important;
             transform-origin: left center;
             width: 100%;
