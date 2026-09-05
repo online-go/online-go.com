@@ -31,6 +31,7 @@ import {
     useResignMode,
     useShowSubmitButton,
     useSubmittingMove,
+    useUndoRequestIsMine,
     useUserIsParticipant,
 } from "./GameHooks";
 import { cancelOrResignGame } from "./game_actions";
@@ -240,10 +241,10 @@ export function PlayButtons(): React.ReactElement | null {
         };
     }, [goban]);
 
-    // Only the receiving side of an undo request is answered here. The
-    // requesting side withdraws from the action bar's undo button, which
-    // toggles off while their own request is pending.
+    // The receiving side of an undo request answers it here; the requesting
+    // side gets a button to withdraw it while it is still pending.
     const show_undo_response = useCanAnswerUndoRequest(goban);
+    const show_cancel_undo = useUndoRequestIsMine(goban);
 
     // Resign (or cancel, while the game is young enough) sits at the right
     // edge of this strip. It only applies to a player in a game that is
@@ -298,12 +299,13 @@ export function PlayButtons(): React.ReactElement | null {
         goban.isAnalysisDisabled() &&
         cur_move_number < official_move_number;
 
-    // Undo moved to the action bar; what is left here is the response to
-    // the opponent's undo request, the move controls, and resign.
-    // Collapse the strip entirely when none of them apply so it takes up
-    // no space.
+    // Requesting an undo lives in the More actions menu; what is left here
+    // is the response to the opponent's undo request, withdrawing your own,
+    // the move controls, and resign. Collapse the strip entirely when none
+    // of them apply so it takes up no space.
     if (
         !show_undo_response &&
+        !show_cancel_undo &&
         !show_pass &&
         !show_submit_button &&
         !show_back_to_game &&
@@ -323,6 +325,11 @@ export function PlayButtons(): React.ReactElement | null {
                         ref={accept_button}
                     >
                         {_("Accept Undo")}
+                    </button>
+                )}
+                {show_cancel_undo && (
+                    <button className="bold cancel-undo-button xs" onClick={() => cancelUndo()}>
+                        {_("Cancel Undo")}
                     </button>
                 )}
             </span>

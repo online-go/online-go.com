@@ -38,22 +38,19 @@ import { GameActionArea } from "./GameActionArea";
 import { alert } from "@/lib/swal_config";
 import {
     useAnnulled,
-    useCanRequestUndo,
     useCurrentMoveNumber,
     useMode,
     useOfficialMoveNumber,
     usePauseControl,
     usePhase,
     useScorePopup,
-    useUndoRequestIsMine,
     useUserIsLivePlayerToMove,
     useUserIsParticipant,
     useViewMode,
     useZenMode,
 } from "./GameHooks";
-import { openGameInfo, requestUndo } from "./game_actions";
+import { openGameInfo } from "./game_actions";
 import { openGameLinkModal } from "./GameLinkModal";
-import { UndoIcon } from "./UndoIcon";
 import {
     GobanControllerContext,
     GobanView,
@@ -143,8 +140,6 @@ export function Game(): React.ReactElement | null {
     const cur_move_number = useCurrentMoveNumber(goban);
     const official_move_number = useOfficialMoveNumber(goban);
     const user_is_live_player_to_move = useUserIsLivePlayerToMove(goban);
-    const can_request_undo = useCanRequestUndo(goban);
-    const undo_request_is_mine = useUndoRequestIsMine(goban);
     const pause_control = usePauseControl(goban);
     const annulled = useAnnulled(goban_controller.current);
     const modal_context = React.useContext(ModalContext);
@@ -855,10 +850,6 @@ export function Game(): React.ReactElement | null {
     const is_browsing_history =
         analysis_disabled && mode === "play" && cur_move_number < official_move_number;
 
-    // Undo applies only while the user is actually playing a game that is
-    // still in progress.
-    const show_play_action_tabs = user_is_player && mode === "play" && phase === "play";
-
     // Toggle behavior: if the mode is already on, clicking exits back to play.
     // Reading the live `mode`/`estimating_score` for the `active` prop also
     // means anything else that exits the mode (Escape key, navigation,
@@ -1330,30 +1321,6 @@ export function Game(): React.ReactElement | null {
             {review_tab && <GobanView.Tab {...review_tab} />}
 
             {conditional_tab && <GobanView.Tab {...conditional_tab} />}
-
-            {/* Ask the opponent to take back the last move. The button stays
-             *  lit while your own request is pending, and pressing it again
-             *  withdraws that request. It greys out when an undo can't be
-             *  asked for right now (rengo, the opening move, the opponent's
-             *  request pending, a staged move). */}
-            {show_play_action_tabs && (
-                <GobanView.Tab
-                    id="game-undo"
-                    type="action"
-                    align="center"
-                    icon={<UndoIcon badge="question" />}
-                    title={
-                        undo_request_is_mine
-                            ? pgettext("Withdraw your own undo request", "Cancel undo request")
-                            : pgettext("Ask the opponent to undo the last move", "Request undo")
-                    }
-                    active={undo_request_is_mine}
-                    disabled={!undo_request_is_mine && !can_request_undo}
-                    onClick={() =>
-                        undo_request_is_mine ? goban!.cancelUndo() : requestUndo(goban!, user.id)
-                    }
-                />
-            )}
 
             {pause_tab && <GobanView.Tab {...pause_tab} />}
 
