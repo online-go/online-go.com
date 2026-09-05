@@ -980,17 +980,18 @@ export function Game(): React.ReactElement | null {
           }
         : null;
 
-    // Pause / resume the game clock. Rendered only for users allowed to
-    // change the pause state right now (participants in vacation-eligible
-    // games, moderators — see usePauseControl).
+    // Pause / resume the game clock. Listed only in the More-actions menu,
+    // and only for users allowed to change the pause state right now
+    // (participants in vacation-eligible games, moderators — see
+    // usePauseControl).
     const pause_tab: GobanViewTabProps | null =
         pause_control.action !== null
             ? {
                   id: "game-pause",
                   type: "action",
                   align: "center",
-                  icon: pause_control.paused ? "play" : "pause",
-                  title: pause_control.paused ? _("Resume game") : _("Pause game"),
+                  icon: pause_control.action === "resume" ? "play" : "pause",
+                  title: pause_control.action === "resume" ? _("Resume game") : _("Pause game"),
                   onClick: pause_control.togglePause,
               }
             : null;
@@ -1330,8 +1331,6 @@ export function Game(): React.ReactElement | null {
             {review_tab && <GobanView.Tab {...review_tab} />}
 
             {conditional_tab && <GobanView.Tab {...conditional_tab} />}
-
-            {pause_tab && <GobanView.Tab {...pause_tab} />}
 
             {/* Right group, in source order (visually left → right):
              *  1. Moderator toggle (gavel) — per-player controls + decide /
