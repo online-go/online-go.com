@@ -79,6 +79,8 @@ interface AIReviewProperties {
     onAIReviewSelected: (ai_review: JGOFAIReview) => void;
     simul_black?: boolean | null;
     simul_white?: boolean | null;
+    /** When true, shows the FairPlayGameSummary (bound to the moderator tools being open) */
+    showFairPlay?: boolean;
     /** When true, shows GameTimings within FairPlayGameSummary */
     showGameTimings?: boolean;
     /** GameTimings props - required when showGameTimings is true */
@@ -104,6 +106,7 @@ export function AIReview({
     onAIReviewSelected,
     simul_black,
     simul_white,
+    showFairPlay,
     showGameTimings,
     moves,
     start_time,
@@ -588,11 +591,12 @@ export function AIReview({
 
     // Handle hidden or no review data states
     if (!reviewData || hidden) {
-        // Still render GameTimings via FairPlayGameSummary if showGameTimings is true
-        // All CMs (anyone with moderator_powers) can see GameTimings
-        const canShowTimings =
-            !hidden &&
-            showGameTimings &&
+        // The fair play summary follows the moderator tools alone: it shows
+        // while they are open whether or not the AI review is enabled, and
+        // the Timing toggle adds the per-move timings to it. All CMs (anyone
+        // with moderator_powers) can see it.
+        const canShowFairPlay =
+            showFairPlay &&
             (user.is_moderator || (user.moderator_powers ?? 0) !== 0) &&
             gobanController?.goban?.engine?.config?.black_player_id &&
             gobanController?.goban?.engine?.config?.white_player_id;
@@ -610,21 +614,25 @@ export function AIReview({
                         <i className="fa fa-desktop slowstrobe"></i>
                     </div>
                 )}
-                {canShowTimings && (
+                {canShowFairPlay && (
                     <FairPlayGameSummary
                         game_id={game_id}
                         black_player_id={gobanController.goban!.engine.config.black_player_id!}
                         white_player_id={gobanController.goban!.engine.config.white_player_id!}
                         board_size={gobanController.goban!.engine.width}
                         currentMoveNumber={move.move_number - 1}
-                        moves={moves}
-                        start_time={start_time}
-                        end_time={end_time}
-                        free_handicap_placement={free_handicap_placement}
-                        handicap={handicap}
-                        simul_black={simul_black}
-                        simul_white={simul_white}
-                        onFinalActionCalculated={onFinalActionCalculated}
+                        moves={showGameTimings ? moves : undefined}
+                        start_time={showGameTimings ? start_time : undefined}
+                        end_time={showGameTimings ? end_time : undefined}
+                        free_handicap_placement={
+                            showGameTimings ? free_handicap_placement : undefined
+                        }
+                        handicap={showGameTimings ? handicap : undefined}
+                        simul_black={showGameTimings ? simul_black : undefined}
+                        simul_white={showGameTimings ? simul_white : undefined}
+                        onFinalActionCalculated={
+                            showGameTimings ? onFinalActionCalculated : undefined
+                        }
                     />
                 )}
             </div>
@@ -726,8 +734,10 @@ export function AIReview({
                                 />
                             )}
 
-                            {/* All CMs (anyone with moderator_powers) can see GameTimings via FairPlayGameSummary */}
-                            {(!tableHidden || showGameTimings) &&
+                            {/* The fair play summary follows the moderator tools alone;
+                                the Timing toggle adds the per-move timings. All CMs
+                                (anyone with moderator_powers) can see it. */}
+                            {showFairPlay &&
                                 (user.is_moderator || (user.moderator_powers ?? 0) !== 0) &&
                                 gobanController?.goban?.engine?.config?.black_player_id &&
                                 gobanController?.goban?.engine?.config?.white_player_id && (
