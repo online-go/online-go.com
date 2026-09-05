@@ -276,8 +276,9 @@
         }
     }
 
+    /* The row reads like a variation link in the game chat. */
     .variation-name {
-        color: var(--fg);
+        color: var(--variation);
         display: block;
         font-size: 0.88rem;
         font-weight: bold;
@@ -287,6 +288,15 @@
         text-overflow: ellipsis;
         white-space: nowrap;
         width: 100%;
+    }
+
+    .variation-recall:hover .variation-name {
+        color: var(--variation-hover);
+        text-decoration: underline;
+    }
+
+    .variation-author-row .Player {
+        font-size: 0.76rem;
     }
 
     .variation-meta-row {

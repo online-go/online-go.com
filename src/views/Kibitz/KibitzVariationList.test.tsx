@@ -110,10 +110,10 @@ describe("KibitzVariationList", () => {
         );
 
         expect(screen.getByText("Active variations")).toBeInTheDocument();
-        expect(screen.getByText("A1")).toBeInTheDocument();
-        expect(screen.getByText("A2")).toBeInTheDocument();
-        expect(screen.getByText("B1")).toBeInTheDocument();
-        expect(screen.getByText("C1")).toBeInTheDocument();
+        expect(screen.getByText("Variation: A1")).toBeInTheDocument();
+        expect(screen.getByText("Variation: A2")).toBeInTheDocument();
+        expect(screen.getByText("Variation: B1")).toBeInTheDocument();
+        expect(screen.getByText("Variation: C1")).toBeInTheDocument();
         expect(screen.getByText("Current Game")).toBeInTheDocument();
         expect(screen.getAllByRole("link", { name: "Open original game" })).toHaveLength(2);
         expect(screen.getByText("Previous game: Older board")).toBeInTheDocument();
@@ -124,8 +124,8 @@ describe("KibitzVariationList", () => {
         expect(screen.getByText("Zeta")).toBeInTheDocument();
         expect(screen.getAllByText("M87")).toHaveLength(4);
         expect(screen.getAllByText("+5")).toHaveLength(4);
-        expect(screen.getAllByLabelText("Hide from board")).toHaveLength(4);
-        expect(screen.getAllByTestId("Player")).toHaveLength(4);
+        expect(screen.getAllByLabelText("Remove from board")).toHaveLength(4);
+        expect(screen.getAllByTestId("Player")).toHaveLength(8);
     });
 
     it("shows previous game separators without a current game separator when only older games are visible", () => {
@@ -151,6 +151,6 @@ describe("KibitzVariationList", () => {
         expect(screen.getByText("Previous game: Older board")).toBeInTheDocument();
         expect(screen.getByText("Gamma")).toBeInTheDocument();
         expect(screen.getByText("Delta")).toBeInTheDocument();
-        expect(screen.getAllByLabelText("Hide from board")).toHaveLength(2);
+        expect(screen.getAllByLabelText("Remove from board")).toHaveLength(2);
     });
 });

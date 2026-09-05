@@ -20,7 +20,6 @@ import { interpolate, pgettext } from "@/lib/translate";
 import type { KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
 import { Player } from "@/components/Player";
 import { getKibitzVariationColor } from "./kibitzVariationTree";
-import { KibitzUserAvatar } from "./KibitzUserAvatar";
 import { KIBITZ_HELP_TARGETS } from "./HelpFlows/KibitzHelpTargets";
 import { useKibitzHelpTarget } from "./HelpFlows/useKibitzHelpTarget";
 import { formatVariationBranchLabel, formatVariationLengthLabel } from "./kibitzVariationQuickList";
@@ -291,12 +290,21 @@ export function KibitzVariationList({
                                                         aria-hidden="true"
                                                     />
                                                     <span className="variation-main">
-                                                        <span className="variation-name">
-                                                            {variation.title ||
+                                                        <span className="variation-name variation">
+                                                            {interpolate(
                                                                 pgettext(
-                                                                    "Fallback title for an untitled variation in kibitz",
-                                                                    "Untitled variation",
-                                                                )}
+                                                                    "Posted analysis variation label",
+                                                                    "Variation: {{name}}",
+                                                                ),
+                                                                {
+                                                                    name:
+                                                                        variation.title ||
+                                                                        pgettext(
+                                                                            "Fallback title for an untitled variation in kibitz",
+                                                                            "Untitled variation",
+                                                                        ),
+                                                                },
+                                                            )}
                                                         </span>
                                                         <span className="variation-meta-row">
                                                             <span className="variation-meta-labels">
@@ -311,15 +319,10 @@ export function KibitzVariationList({
                                                             </span>
                                                             <span className="variation-meta-spacer" />
                                                             <span className="variation-author-row">
-                                                                <KibitzUserAvatar
+                                                                <Player
                                                                     user={variation.creator}
-                                                                    size={16}
-                                                                    className="variation-avatar"
-                                                                    iconClassName="variation-avatar-image"
+                                                                    disableCacheUpdate
                                                                 />
-                                                                <span className="variation-meta">
-                                                                    {variation.creator.username}
-                                                                </span>
                                                             </span>
                                                         </span>
                                                     </span>
@@ -332,19 +335,19 @@ export function KibitzVariationList({
                                                             (isBlockedFlash ? " limit-flash" : "")
                                                         }
                                                         aria-label={pgettext(
-                                                            "Tooltip for hiding a Kibitz variation in the tree",
-                                                            "Hide from board",
+                                                            "Tooltip for removing a Kibitz variation from the board",
+                                                            "Remove from board",
                                                         )}
                                                         title={pgettext(
-                                                            "Tooltip for hiding a Kibitz variation in the tree",
-                                                            "Hide from board",
+                                                            "Tooltip for removing a Kibitz variation from the board",
+                                                            "Remove from board",
                                                         )}
                                                         onClick={() =>
                                                             onHideVariation(variation.id)
                                                         }
                                                     >
                                                         <i
-                                                            className="fa fa-eye-slash"
+                                                            className="fa fa-trash"
                                                             aria-hidden="true"
                                                         />
                                                     </button>
