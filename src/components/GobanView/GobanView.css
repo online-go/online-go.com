@@ -30,8 +30,31 @@
         padding: 0.3rem 0;
     }
 
-    .GobanView-center .GobanView-player-bar {
-        padding: 0.3rem 1.25rem 0.3rem 0.3rem;
+    /* Landscape with player bars: the bars and the board form a stage that
+     * is as wide as the board. The board is height limited, so the stage
+     * width is the board size; when the column is narrower than that the
+     * stage shrinks to the column and the board follows its width. The
+     * stage is centered in the column both ways, so on a narrow column the
+     * bars still hug the board and the group floats in the middle. */
+    &.has-player-bars .GobanView-center {
+        align-items: center;
+        justify-content: center;
+
+        .GobanView-stage {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            width: min(100%, var(--goban-view-board-size));
+            max-height: 100%;
+        }
+
+        .GobanView-stage .goban-container {
+            flex: 0 1 auto;
+            flex-basis: auto;
+            width: 100%;
+            aspect-ratio: 1;
+            min-height: 0;
+        }
     }
 
     /* The root is a size container so the sidebar width and the board

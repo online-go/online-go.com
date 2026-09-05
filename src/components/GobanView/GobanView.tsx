@@ -503,13 +503,23 @@ function GobanViewComponent({
                 >
                     {leftAside && <div className="GobanView-left-aside">{leftAside}</div>}
                     <div className="GobanView-center">
-                        {topBar}
-                        <GobanContainer
-                            onResize={onResize}
-                            onWheel={onWheel}
-                            respectContainerBounds
-                        />
-                        {bottomBar}
+                        {playerBars ? (
+                            <div className="GobanView-stage">
+                                {topBar}
+                                <GobanContainer
+                                    onResize={onResize}
+                                    onWheel={onWheel}
+                                    respectContainerBounds
+                                />
+                                {bottomBar}
+                            </div>
+                        ) : (
+                            <GobanContainer
+                                onResize={onResize}
+                                onWheel={onWheel}
+                                respectContainerBounds
+                            />
+                        )}
                     </div>
                     <SidebarResizer
                         rootRef={rootRef}
