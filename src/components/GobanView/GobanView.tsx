@@ -30,6 +30,7 @@ import { MoveNumberControl } from "./MoveNumberControl";
 import { SidebarResizer } from "./SidebarResizer";
 import { boardAlignmentClass, goban_view_mode, goban_view_squashed, ViewMode } from "./util";
 import { usePreference } from "@/lib/preferences";
+import { useSliderFits } from "./hooks";
 import "./GobanView.css";
 
 export interface TabDefinition {
@@ -77,8 +78,13 @@ interface GobanViewProps {
     customSlider?: React.ReactNode;
     /** Leave out the built-in MoveNumberControl. Has no effect when a
      *  `customSlider` is given. Consumers use this to drop the strip when
-     *  move navigation is not relevant, e.g. on mobile during live play. */
-    hideSlider?: boolean;
+     *  move navigation is not relevant, e.g. on mobile during live play.
+     *
+     *  "when-cramped" drops the strip only in portrait and only when the
+     *  board stage (the `aboveBoard` and `belowBoard` slots and the board at
+     *  its full width) would no longer fit on screen with the strip's row
+     *  taken out; in landscape the strip is always shown. */
+    hideSlider?: boolean | "when-cramped";
     /** Optional title bar rendered at the top of the sidebar (landscape) or
      *  above the goban (portrait). Stays visible across takeovers so
      *  consumers can use it to label the current view. */
@@ -220,6 +226,10 @@ function GobanViewComponent({
     activeTakeoverRef.current = activeTakeover;
     const rootRef = React.useRef<HTMLDivElement>(null);
     const sidebarRef = React.useRef<HTMLDivElement>(null);
+    const scrollRef = React.useRef<HTMLDivElement>(null);
+    const aboveRef = React.useRef<HTMLDivElement>(null);
+    const centerRef = React.useRef<HTMLDivElement>(null);
+    const belowRef = React.useRef<HTMLDivElement>(null);
 
     // Landscape sidebar width chosen by the user, in px; null means the
     // automatic width computed in CSS. While a drag is in progress the live
@@ -284,6 +294,13 @@ function GobanViewComponent({
     const isPortrait = viewMode === "portrait";
     const hasTakeover = activeTakeover !== null;
 
+    const sliderFits = useSliderFits(
+        { root: rootRef, scroll: scrollRef, above: aboveRef, center: centerRef, below: belowRef },
+        isPortrait && hideSlider === "when-cramped",
+    );
+    const sliderHidden =
+        hideSlider === "when-cramped" ? isPortrait && !sliderFits : hideSlider === true;
+
     const { inlinePanels, takeoverPanels } = React.useMemo(
         () => ({
             inlinePanels: tabs.filter((t) => t.type === "toggle" || t.type === "always"),
@@ -341,7 +358,7 @@ function GobanViewComponent({
     // keeps its existing "hide during takeover" rule.
     const sliderSlot: React.ReactNode = customSlider
         ? customSlider
-        : !hasTakeover && !hideSlider && <MoveNumberControl />;
+        : !hasTakeover && !sliderHidden && <MoveNumberControl />;
 
     const customSliderClass = customSlider ? " has-custom-slider" : "";
 
@@ -373,12 +390,14 @@ function GobanViewComponent({
                             so the whole column — board included — scrolls as
                             one. Only the header, slider and tab bar stay
                             pinned. */}
-                        <div className="GobanView-mobile-scroll">
+                        <div className="GobanView-mobile-scroll" ref={scrollRef}>
                             <div className="GobanView-stage">
                                 {aboveBoard && (
-                                    <div className="GobanView-above-board">{aboveBoard}</div>
+                                    <div className="GobanView-above-board" ref={aboveRef}>
+                                        {aboveBoard}
+                                    </div>
                                 )}
-                                <div className="GobanView-center">
+                                <div className="GobanView-center" ref={centerRef}>
                                     <GobanContainer
                                         onResize={onResize}
                                         onWheel={onWheel}
@@ -386,7 +405,9 @@ function GobanViewComponent({
                                     />
                                 </div>
                                 {belowBoard && (
-                                    <div className="GobanView-below-board">{belowBoard}</div>
+                                    <div className="GobanView-below-board" ref={belowRef}>
+                                        {belowBoard}
+                                    </div>
                                 )}
                             </div>
                             <div className="GobanView-mobile-panels">

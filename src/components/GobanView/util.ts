@@ -81,6 +81,26 @@ export function goban_view_mode(bar_width?: number): ViewMode {
     return "wide";
 }
 
+export interface StageMeasurements {
+    /** Height of the portrait scroll area with no slider row taken out. */
+    available: number;
+    /** Height of the move slider row. */
+    slider: number;
+    /** Combined height of the above-board and below-board slots. */
+    slots: number;
+    /** Height of the board at its full width. */
+    board: number;
+}
+
+/**
+ * Whether the portrait stage (the two board-adjacent slots and the board at
+ * full width) fits in the scroll area together with the move slider, so the
+ * slider can take its row without the board having to shrink.
+ */
+export function stageFitsWithSlider(m: StageMeasurements): boolean {
+    return m.slots + m.board + m.slider <= m.available;
+}
+
 export function goban_view_squashed(): boolean {
     /* This value needs to match the "dock-inline-height" found in Dock.css */
     return window.innerHeight <= 500;

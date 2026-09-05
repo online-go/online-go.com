@@ -19,6 +19,7 @@ import {
     boardAlignmentClass,
     GobanViewBoardAlignment,
     selectVisibleTabs,
+    stageFitsWithSlider,
     TabBarSlot,
 } from "./util";
 
@@ -106,6 +107,20 @@ describe("boardAlignmentClass", () => {
         );
         expect(boardAlignmentClass(undefined as unknown as GobanViewBoardAlignment)).toBe(
             "board-align-container",
+        );
+    });
+});
+
+describe("stageFitsWithSlider", () => {
+    test("fits when the slots, the full board and the slider all have room", () => {
+        expect(stageFitsWithSlider({ available: 700, slider: 36, slots: 264, board: 400 })).toBe(
+            true,
+        );
+    });
+
+    test("does not fit when the slider would make the board shrink", () => {
+        expect(stageFitsWithSlider({ available: 699, slider: 36, slots: 264, board: 400 })).toBe(
+            false,
         );
     });
 });
