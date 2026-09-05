@@ -120,7 +120,7 @@ export function KibitzVariationList({
             {title === "" && !onCreateVariation ? null : (
                 <div className="KibitzVariationList-titleRow">
                     {title === "" ? null : (
-                        <div className="variation-title">
+                        <div className="variation-title Kibitz-section-header">
                             {title ??
                                 pgettext(
                                     "Heading for the variations list in kibitz",
@@ -275,14 +275,6 @@ export function KibitzVariationList({
                                                     "variation-item" +
                                                     (isSelected ? " selected" : "") +
                                                     (isBlockedFlash ? " limit-flash" : "")
-                                                }
-                                                style={
-                                                    isSelected
-                                                        ? ({
-                                                              "--variation-selected-color":
-                                                                  variationColor,
-                                                          } as React.CSSProperties)
-                                                        : undefined
                                                 }
                                             >
                                                 <button

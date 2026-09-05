@@ -59,7 +59,7 @@ export function KibitzVariationPanel({
     return (
         <div className={`KibitzVariationPanel ${mode}`}>
             <div className="KibitzVariationPanel-header">
-                <span className="KibitzVariationPanel-title">
+                <span className="KibitzVariationPanel-title Kibitz-section-header">
                     {mode === "draft"
                         ? pgettext(
                               "Heading of the Kibitz sidebar panel while drafting a variation",
@@ -70,7 +70,11 @@ export function KibitzVariationPanel({
                               "Variation",
                           )}
                 </span>
-                <button type="button" className="KibitzVariationPanel-back" onClick={onBackToGame}>
+                <button
+                    type="button"
+                    className="KibitzVariationPanel-back xs"
+                    onClick={onBackToGame}
+                >
                     <i className="fa fa-arrow-left" />{" "}
                     {pgettext(
                         "Button that closes a Kibitz variation and shows the live game",
@@ -94,7 +98,7 @@ export function KibitzVariationPanel({
             <KibitzNodeText controller={controller} editable={mode === "draft"} />
             {mode === "variation" && onBranch && (
                 <div className="KibitzVariationPanel-actions" ref={branchActionsTarget?.ref}>
-                    <button type="button" onClick={onBranch}>
+                    <button type="button" className="primary sm" onClick={onBranch}>
                         {pgettext(
                             "Button that starts a new Kibitz variation draft from the posted variation being viewed",
                             "New variation from here",

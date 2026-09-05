@@ -10,11 +10,6 @@
         gap: 0.5rem;
     }
 
-    .KibitzVariationPanel-title {
-        font-weight: bold;
-        font-size: 0.85rem;
-    }
-
     .KibitzVariationPanel-moveTree {
         height: 10em;
         background-color: #888888;

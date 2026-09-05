@@ -106,7 +106,6 @@ export function KibitzRoomList({
                             title={isBlocked ? getKibitzRoomLockedTooltip() : undefined}
                             onClick={() => onSelectRoom(room.id)}
                         >
-                            <span className="room-active-rail" aria-hidden="true" />
                             <div className="room-main">
                                 <div className="room-top-row">
                                     <span className="room-title">{room.title}</span>

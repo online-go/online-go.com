@@ -20,6 +20,7 @@ import { ChatLine } from "@/components/Chat";
 import { GameChatLine } from "@/components/Chat/GameChatLine";
 import { TabCompleteInput } from "@/components/TabCompleteInput";
 import { ChatUserList, ChatUserCount } from "@/components/ChatUserList";
+import { Player } from "@/components/Player";
 import {
     cachedChannelInformation,
     chat_manager,
@@ -549,25 +550,7 @@ export function KibitzChatPanel({
                             (candidate) => candidate.id === entry.item.variation_id,
                         );
                         const timeLabel = moment(entry.createdAt).format("HH:mm");
-                        const title =
-                            variation?.title ??
-                            pgettext(
-                                "Fallback title for a variation link in the kibitz stream",
-                                "Open variation",
-                            );
-                        const author =
-                            entry.item.author?.username ??
-                            pgettext(
-                                "Fallback username for a variation post in the kibitz stream",
-                                "Someone",
-                            );
-                        const metaParts = [
-                            pgettext(
-                                "Label for a posted variation entry in the kibitz stream",
-                                "Posted variation",
-                            ),
-                        ];
-
+                        const metaParts: string[] = [];
                         if (variation) {
                             metaParts.push(formatVariationBranchLabel(variation));
                             const lengthLabel = formatVariationLengthLabel(variation);
@@ -575,8 +558,11 @@ export function KibitzChatPanel({
                                 metaParts.push(lengthLabel);
                             }
                         }
-
-                        const label = `${title} - ${author} - ${metaParts.join(" - ")}`;
+                        const name = variation?.title ?? metaParts.join(" ");
+                        const label = interpolate(
+                            pgettext("Posted analysis variation label", "Variation: {{name}}"),
+                            { name },
+                        );
 
                         return (
                             <div
@@ -590,10 +576,15 @@ export function KibitzChatPanel({
                                 >
                                     {timeLabel}
                                 </time>
-
+                                {entry.item.author && (
+                                    <span className="variation-post-author">
+                                        <Player user={entry.item.author} disableCacheUpdate />
+                                        {": "}
+                                    </span>
+                                )}
                                 <button
                                     type="button"
-                                    className="variation-post"
+                                    className="variation-post variation"
                                     data-variation-post="true"
                                     data-variation-id={entry.item.variation_id}
                                     onClick={() =>
@@ -686,6 +677,7 @@ export function KibitzChatPanel({
                     className={"KibitzChatPanel-tab" + (tab === "game" ? " active" : "")}
                     onClick={() => setTab("game")}
                 >
+                    <i className="fa fa-comment" />{" "}
                     {pgettext("Kibitz chat tab for the watched game's chat", "Game chat")}
                     {gameUnread && tab !== "game" ? (
                         <span className="KibitzChatPanel-unread" />
@@ -698,6 +690,7 @@ export function KibitzChatPanel({
                     className={"KibitzChatPanel-tab" + (tab === "room" ? " active" : "")}
                     onClick={() => setTab("room")}
                 >
+                    <i className="fa fa-comments" />{" "}
                     {pgettext("Kibitz chat tab for the kibitz room's chat", "Kibitz chat")}
                     {roomUnread && tab !== "room" ? (
                         <span className="KibitzChatPanel-unread" />

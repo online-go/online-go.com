@@ -50,6 +50,11 @@ jest.mock("@/components/TabCompleteInput", () => ({
     TabCompleteInput: (props: React.ComponentProps<"input">) => <input {...props} />,
 }));
 
+jest.mock("@/components/Player", () => ({
+    __esModule: true,
+    Player: ({ user }: { user: { username?: string } }) => <span>{user.username}</span>,
+}));
+
 jest.mock("@/components/ChatUserList", () => ({
     __esModule: true,
     ChatUserList: ({ channel }: { channel: string }) => (
@@ -231,7 +236,7 @@ describe("KibitzChatPanel variation posts", () => {
         expect(row).toHaveAttribute("data-variation-id", "variation-1");
 
         const button = screen.getByRole("button", {
-            name: "Study line - Alice - Posted variation - Main branch - 18 moves",
+            name: "Variation: Study line",
         });
         expect(button).toHaveClass("variation-post");
         expect(button).not.toHaveTextContent(/\d{2}:\d{2}/);

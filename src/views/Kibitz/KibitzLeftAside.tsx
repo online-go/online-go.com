@@ -82,7 +82,7 @@ export function KibitzLeftAside(props: KibitzLeftAsideProps): React.ReactElement
             </div>
             {props.miniBoardController && (
                 <div className="KibitzLeftAside-miniBoard">
-                    <div className="KibitzLeftAside-miniBoardTitle">
+                    <div className="KibitzLeftAside-miniBoardTitle Kibitz-section-header">
                         {pgettext(
                             "Heading above the small live game board in the Kibitz left aside",
                             "Main board",

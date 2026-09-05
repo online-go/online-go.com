@@ -4,30 +4,46 @@
     height: 100%;
     min-height: 0;
 
+    /* Same tab strip as the tournament list: plain text with an underline
+       that fills in on hover and stays on the active tab. */
     .KibitzChatPanel-tabs {
         display: flex;
         flex-shrink: 0;
+        padding: 0 0.25rem;
         border-bottom: 1px solid var(--shade3);
 
         .KibitzChatPanel-tab {
-            flex: 1;
+            display: inline-block;
             background: transparent;
             border: none;
-            padding: 0.4rem 0.5rem;
-            color: var(--shade1);
+            border-bottom: 2px solid transparent;
+            border-radius: 0;
+            box-shadow: none;
+            height: auto;
+            margin: 0 0.5rem;
+            padding: 0.4rem;
+            color: var(--fg);
             cursor: pointer;
             position: relative;
+            white-space: nowrap;
+
+            &:hover {
+                border-color: var(--shade2);
+            }
 
             &.active {
-                color: var(--fg);
-                box-shadow: inset 0 -2px 0 var(--primary);
+                border-color: var(--shade1);
+            }
+
+            i {
+                color: var(--shade1);
             }
         }
 
         .KibitzChatPanel-unread {
             position: absolute;
             top: 0.35rem;
-            right: 0.5rem;
+            right: -0.2rem;
             width: 0.5rem;
             height: 0.5rem;
             border-radius: 50%;
@@ -158,35 +174,43 @@
     margin-left: 0;
 }
 
+/* A posted variation reads like the game chat's variation lines: bold text
+   in the variation colour that underlines on hover, no box. */
 .KibitzChatPanel-log button[data-variation-post="true"] {
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     width: auto;
     height: auto;
     min-width: 0;
-    margin: 0;
-    background: var(--shade4);
+    margin: 0 0.2em;
+    padding: 0 0.2em;
+    background: transparent;
     border: 0;
-    box-sizing: border-box;
+    border-radius: 2px;
+    box-shadow: none;
     color: var(--variation);
     cursor: pointer;
-    display: block;
-    font-size: 0.85rem;
+    display: inline;
+    font-size: inherit;
     font-weight: bold;
-    line-height: 1.25;
-    min-height: 2.7rem;
-    max-height: 12rem;
-    overflow: hidden;
-    padding: 0.25rem 0.75rem;
+    line-height: inherit;
     text-align: left;
-    transition: background-color 120ms ease;
     white-space: normal;
     word-break: break-word;
+}
+
+.KibitzChatPanel-log button[data-variation-post="true"]:hover {
+    color: var(--variation-hover);
+    text-decoration: underline;
+}
+
+.KibitzChatPanel-log .variation-post-author {
+    flex: 0 0 auto;
 }
 
 .KibitzChatPanel-log .variation-post-entry {
     box-sizing: border-box;
     display: flex;
-    align-items: flex-start;
+    align-items: baseline;
     gap: 0.35rem;
     max-width: 100%;
     min-width: 0;
@@ -196,30 +220,14 @@
 
 .KibitzChatPanel-log .variation-post-time {
     flex: 0 0 auto;
-    color: var(--text-color);
-    opacity: 0.65;
+    color: var(--text-color-faded);
     font-size: 0.8rem;
     line-height: 1.25;
-    padding-top: 0.45rem;
     white-space: nowrap;
 }
 
-.KibitzChatPanel-log .variation-post:hover {
-    background: color-mix(in srgb, var(--shade1) 100%, transparent);
-}
-
-.KibitzChatPanel-log .variation-post.variation-post-flash {
-    background: color-mix(in srgb, var(--primary) 14%, var(--shade4));
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 35%, transparent);
-}
-
-.KibitzChatPanel-log .variation-post-entry.variation-post-flash .variation-post {
-    background: color-mix(in srgb, var(--primary) 14%, var(--shade4));
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 35%, transparent);
-}
-
-[data-theme="light"] .KibitzChatPanel-log .variation-post:hover {
-    background: color-mix(in srgb, var(--shade2) 100%, transparent);
+.KibitzChatPanel-log .variation-post-entry.variation-post-flash {
+    background: color-mix(in srgb, var(--primary) 14%, transparent);
 }
 
 .KibitzChatPanel-composer {
@@ -227,18 +235,7 @@
     box-sizing: border-box;
     width: 100%;
     padding: 0;
-    box-shadow:
-        0 0 0px 0px color-mix(in srgb, var(--primary) 60%, transparent),
-        inset 0 0 0px 0 rgba(0, 255, 0, 1),
-        inset 0 0 5px 0 color-mix(in srgb, var(--primary) 40%, transparent);
-    border-radius: 3px;
-}
-
-.KibitzChatPanel-composer:focus-within {
-    box-shadow:
-        0 0 0px 0px color-mix(in srgb, var(--primary) 60%, transparent),
-        inset 0 0 0px 0 rgba(0, 255, 0, 1),
-        inset 0 0 7px 0 color-mix(in srgb, var(--primary) 85%, transparent);
+    border-top: 1px solid var(--shade4);
 }
 
 .KibitzChatPanel-composer .chat-input-wrapper {
