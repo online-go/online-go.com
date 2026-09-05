@@ -15,7 +15,8 @@ behind one takeover tab, "Rooms", that holds the room list, the variation
 list and the mini main-board thumbnail together.
 
 Action bar: settings gear (left), Return to game or Return to live (center),
-More actions (right).
+More actions (right). The variation panel's Back to game button, the mini
+main board and the Escape key also leave a variation.
 
 Help flows exist for landscape only (desktop first run, desktop variations,
 and the draft started from a posted variation); portrait has no onboarding

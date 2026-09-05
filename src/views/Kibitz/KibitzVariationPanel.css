@@ -3,6 +3,18 @@
     flex-direction: column;
     gap: 0.5rem;
 
+    .KibitzVariationPanel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+
+    .KibitzVariationPanel-title {
+        font-weight: bold;
+        font-size: 0.85rem;
+    }
+
     .KibitzVariationPanel-moveTree {
         height: 10em;
         background-color: #888888;

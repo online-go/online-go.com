@@ -30,7 +30,8 @@ export interface KibitzVariationPanelProps {
     controller: GobanController;
     mode: "draft" | "variation";
     onPost: (controller: GobanController) => void;
-    onDiscard: () => void;
+    /** Leaves the variation (a draft is thrown away) and shows the live game. */
+    onBackToGame: () => void;
     /** Starts a new draft from the posted variation being viewed. */
     onBranch?: () => void;
 }
@@ -44,7 +45,7 @@ export function KibitzVariationPanel({
     controller,
     mode,
     onPost,
-    onDiscard,
+    onBackToGame,
     onBranch,
 }: KibitzVariationPanelProps): React.ReactElement {
     const branchActionsTarget = useKibitzHelpTarget(
@@ -57,6 +58,26 @@ export function KibitzVariationPanel({
 
     return (
         <div className={`KibitzVariationPanel ${mode}`}>
+            <div className="KibitzVariationPanel-header">
+                <span className="KibitzVariationPanel-title">
+                    {mode === "draft"
+                        ? pgettext(
+                              "Heading of the Kibitz sidebar panel while drafting a variation",
+                              "New variation",
+                          )
+                        : pgettext(
+                              "Heading of the Kibitz sidebar panel while viewing a posted variation",
+                              "Variation",
+                          )}
+                </span>
+                <button type="button" className="KibitzVariationPanel-back" onClick={onBackToGame}>
+                    <i className="fa fa-arrow-left" />{" "}
+                    {pgettext(
+                        "Button that closes a Kibitz variation and shows the live game",
+                        "Back to game",
+                    )}
+                </button>
+            </div>
             {mode === "draft" && (
                 <GobanAnalyzeButtonBar
                     controller={controller}
@@ -84,9 +105,6 @@ export function KibitzVariationPanel({
             {mode === "draft" && (
                 <div className="KibitzVariationPanel-actions">
                     <KibitzVariationComposer controller={controller} onSubmit={onPost} />
-                    <button type="button" className="reject" onClick={onDiscard}>
-                        {pgettext("Button that throws away a Kibitz variation draft", "Discard")}
-                    </button>
                 </div>
             )}
         </div>

@@ -228,7 +228,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         controller={gobans.secondary}
                         mode={gobans.centerMode === "draft" ? "draft" : "variation"}
                         onPost={props.onPostVariation}
-                        onDiscard={exitVariation}
+                        onBackToGame={exitVariation}
                         onBranch={
                             gobans.centerMode === "variation"
                                 ? props.onBranchFromVariation
