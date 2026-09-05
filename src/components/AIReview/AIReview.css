@@ -246,23 +246,19 @@
             flex: 1.4;
             display: flex;
             justify-content: center;
+            align-items: center;
         }
 
         .right-section {
             flex: 0.8;
             display: flex;
             justify-content: flex-end;
+            align-items: center;
         }
 
         span {
             padding-left: 0.25rem;
             padding-right: 0.25rem;
-        }
-
-        /* The switches sit on the text baseline by default, a few pixels
-         * above the labels' center; center them on the row instead */
-        .Toggle {
-            vertical-align: middle;
         }
 
         .ai-summary-toggler {

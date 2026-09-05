@@ -70,9 +70,7 @@ export function ScoreWinRateToggle({
                     {pgettext("Display the win % that the AI estimates", "Win %")}
                 </span>
 
-                <span>
-                    <Toggle checked={useScore} onChange={handleToggleChange} />
-                </span>
+                <Toggle checked={useScore} onChange={handleToggleChange} />
 
                 <span className="score-toggle" onClick={handleScoreToggleClick}>
                     {pgettext("Display the game score that the AI estimates", "Score")}
@@ -84,9 +82,7 @@ export function ScoreWinRateToggle({
                         <span>
                             <i className="fa fa-table"></i>
                         </span>
-                        <span>
-                            <Toggle checked={!tableHidden} onChange={handleTableToggleChange} />
-                        </span>
+                        <Toggle checked={!tableHidden} onChange={handleTableToggleChange} />
                     </div>
                 )}
             </div>
