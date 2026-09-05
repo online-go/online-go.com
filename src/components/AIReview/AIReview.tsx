@@ -79,6 +79,8 @@ interface AIReviewProperties {
     onAIReviewSelected: (ai_review: JGOFAIReview) => void;
     simul_black?: boolean | null;
     simul_white?: boolean | null;
+    /** When true, shows the FairPlayGameSummary (bound to the moderator tools being open) */
+    showFairPlay?: boolean;
     /** When true, shows GameTimings within FairPlayGameSummary */
     showGameTimings?: boolean;
     /** GameTimings props - required when showGameTimings is true */
@@ -104,6 +106,7 @@ export function AIReview({
     onAIReviewSelected,
     simul_black,
     simul_white,
+    showFairPlay,
     showGameTimings,
     moves,
     start_time,
@@ -588,11 +591,12 @@ export function AIReview({
 
     // Handle hidden or no review data states
     if (!reviewData || hidden) {
-        // Still render GameTimings via FairPlayGameSummary if showGameTimings is true
-        // All CMs (anyone with moderator_powers) can see GameTimings
+        // Still render FairPlayGameSummary when the moderator tools are open
+        // or timings were requested. All CMs (anyone with moderator_powers)
+        // can see GameTimings.
         const canShowTimings =
             !hidden &&
-            showGameTimings &&
+            (showFairPlay || showGameTimings) &&
             (user.is_moderator || (user.moderator_powers ?? 0) !== 0) &&
             gobanController?.goban?.engine?.config?.black_player_id &&
             gobanController?.goban?.engine?.config?.white_player_id;
@@ -727,7 +731,7 @@ export function AIReview({
                             )}
 
                             {/* All CMs (anyone with moderator_powers) can see GameTimings via FairPlayGameSummary */}
-                            {(!tableHidden || showGameTimings) &&
+                            {(showFairPlay || showGameTimings) &&
                                 (user.is_moderator || (user.moderator_powers ?? 0) !== 0) &&
                                 gobanController?.goban?.engine?.config?.black_player_id &&
                                 gobanController?.goban?.engine?.config?.white_player_id && (

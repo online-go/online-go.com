@@ -1241,6 +1241,7 @@ export function Game(): React.ReactElement | null {
                     <FragAIReview
                         simul_black={simul_black}
                         simul_white={simul_white}
+                        showFairPlay={show_mod_tab && moderator_tab_visible}
                         showGameTimings={show_game_timing}
                     />
                 )}
