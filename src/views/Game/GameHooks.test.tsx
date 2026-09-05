@@ -18,10 +18,12 @@
 import * as React from "react";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import * as data from "@/lib/data";
+import { JGOFClockWithTransmitting } from "goban";
 import { GobanControllerContext } from "./goban_context";
 import { GobanController } from "../../lib/GobanController";
 import {
     useCanRequestUndo,
+    usePauseControl,
     usePlayerToMoveOnOfficialBranch,
     useResignMode,
     useUndoRequestIsMine,
@@ -75,8 +77,10 @@ function Probe({ controller }: { controller: GobanController }): React.ReactElem
     const undo_request_is_mine = useUndoRequestIsMine(controller.goban);
     const resign_mode = useResignMode(controller.goban);
     const official_player_to_move = usePlayerToMoveOnOfficialBranch(controller.goban);
+    const pause_control = usePauseControl(controller.goban);
     return (
         <div>
+            <span data-testid="pause-action">{pause_control.action ?? "none"}</span>
             <span data-testid="official-player-to-move">{official_player_to_move}</span>
             <span data-testid="can-request-undo">{can_request_undo ? "yes" : "no"}</span>
             <span data-testid="undo-request-is-mine">{undo_request_is_mine ? "yes" : "no"}</span>
@@ -98,6 +102,65 @@ const undoRequestIsMine = () => screen.getByTestId("undo-request-is-mine").textC
 const resignMode = () => screen.getByTestId("resign-mode").textContent;
 const officialPlayerToMove = () =>
     parseInt(screen.getByTestId("official-player-to-move").textContent ?? "", 10);
+const pauseAction = () => screen.getByTestId("pause-action").textContent;
+
+/** Feeds the hook a clock update carrying only the pause state. */
+function emitPauseState(
+    controller: GobanController,
+    pause_state: JGOFClockWithTransmitting["pause_state"],
+) {
+    act(() => {
+        controller.goban.emit("clock", { pause_state } as JGOFClockWithTransmitting);
+    });
+}
+
+const GAME_IN_PROGRESS = {
+    moves: [
+        [16, 3, 9136],
+        [3, 2, 18978.5],
+    ] as [number, number, number][],
+    players: { black: ME, white: OPPONENT },
+};
+
+describe("usePauseControl", () => {
+    test("offers 'pause' to a participant in an unpaused game", () => {
+        renderProbe(new GobanController(GAME_IN_PROGRESS));
+
+        expect(pauseAction()).toBe("pause");
+    });
+
+    test("still offers 'pause' during a weekend pause", () => {
+        const controller = new GobanController(GAME_IN_PROGRESS);
+        renderProbe(controller);
+
+        emitPauseState(controller, { weekend: true });
+
+        expect(pauseAction()).toBe("pause");
+    });
+
+    test("offers 'resume' once a player has paused", () => {
+        const controller = new GobanController(GAME_IN_PROGRESS);
+        renderProbe(controller);
+
+        emitPauseState(controller, { player: { player_id: String(OPPONENT.id), pauses_left: 3 } });
+
+        expect(pauseAction()).toBe("resume");
+    });
+
+    test("offers nothing to a spectator", () => {
+        const controller = new GobanController({
+            ...GAME_IN_PROGRESS,
+            players: { black: { id: 987, username: "someone" }, white: OPPONENT },
+        });
+        renderProbe(controller);
+
+        expect(pauseAction()).toBe("none");
+
+        emitPauseState(controller, { player: { player_id: String(OPPONENT.id), pauses_left: 3 } });
+
+        expect(pauseAction()).toBe("none");
+    });
+});
 
 describe("useResignMode", () => {
     test("is 'cancel' in the first 6 moves", () => {
