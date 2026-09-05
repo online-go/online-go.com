@@ -414,48 +414,8 @@
     background: var(--card-background-color);
 }
 
-[data-theme="light"] .KibitzVariationList {
-    .variation-item.selected .variation-recall {
-        background: color-mix(
-            in srgb,
-            var(--variation-selected-color) 20%,
-            var(--card-background-color)
-        );
-        box-shadow: inset 0 0 3px 1px
-            color-mix(in srgb, var(--variation-selected-color) 26%, transparent);
-    }
-
-    .variation-item.selected .variation-toggle {
-        background: color-mix(
-            in srgb,
-            var(--variation-selected-color) 10%,
-            var(--card-background-color)
-        );
-        box-shadow: inset 0 0 3px 1px
-            color-mix(in srgb, var(--variation-selected-color) 26%, transparent);
-    }
-
-    .variation-recall,
-    .variation-toggle {
-        background: var(--card-background-color);
-    }
-}
-
 @media (min-width: 1001px) {
     [data-theme="light"] .KibitzVariationList {
         background: var(--bg);
-    }
-
-    [data-theme="light"] .KibitzVariationList .variation-recall,
-    [data-theme="light"] .KibitzVariationList .variation-toggle {
-        background: var(--bg);
-    }
-
-    [data-theme="light"] .KibitzVariationList .variation-item.selected .variation-recall {
-        background: color-mix(in srgb, var(--variation-selected-color) 20%, var(--bg));
-    }
-
-    [data-theme="light"] .KibitzVariationList .variation-item.selected .variation-toggle {
-        background: color-mix(in srgb, var(--variation-selected-color) 10%, var(--bg));
     }
 }
