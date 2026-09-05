@@ -27,5 +27,14 @@
 
     .KibitzLeftAside-miniBoard {
         flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .KibitzLeftAside-miniBoardTitle {
+        font-weight: bold;
+        font-size: 0.85rem;
+        padding: 0 0.75rem;
     }
 }

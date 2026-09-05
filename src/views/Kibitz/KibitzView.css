@@ -3,8 +3,21 @@
         font-size: 1.1rem;
     }
 
-    .KibitzChatPanel {
-        min-height: 20rem;
+    /* The main panel fills the sidebar and the chat takes whatever height
+       the proposal and variation panels leave, so the sidebar itself does
+       not need to scroll. */
+    .GobanView-sidebar-content .GobanView-tab-panel.always {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .GobanView-sidebar-content .KibitzChatPanel {
+        flex: 1 1 auto;
+        min-height: 0;
+        height: auto;
     }
 
     /* Streamer mode strips the sidebar down to its tab bar so the board fills
@@ -63,6 +76,12 @@
         width: var(--goban-view-sidebar-width);
         flex-shrink: 0;
         overflow: hidden;
+    }
+
+    .KibitzView-waiting-sidebar .KibitzChatPanel {
+        flex: 1 1 auto;
+        min-height: 0;
+        height: auto;
     }
 
     .KibitzView-waiting-header {

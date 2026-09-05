@@ -82,6 +82,12 @@ export function KibitzLeftAside(props: KibitzLeftAsideProps): React.ReactElement
             </div>
             {props.miniBoardController && (
                 <div className="KibitzLeftAside-miniBoard">
+                    <div className="KibitzLeftAside-miniBoardTitle">
+                        {pgettext(
+                            "Heading above the small live game board in the Kibitz left aside",
+                            "Main board",
+                        )}
+                    </div>
                     <KibitzMiniMainBoard
                         controller={props.miniBoardController}
                         onClick={props.onExitVariation}
