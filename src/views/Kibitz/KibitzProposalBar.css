@@ -138,7 +138,7 @@
     }
 
     .proposal-choice-label {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 0.74rem;
         font-weight: bold;
         letter-spacing: 0.03em;
@@ -155,7 +155,7 @@
     .proposal-vote-count {
         align-items: center;
         background: var(--shade1);
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         display: inline-flex;
         flex: 0 0 auto;
         font-size: 0.76rem;
@@ -196,12 +196,12 @@
 
     .proposal-voter-avatar-overflow {
         background: var(--shade1);
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         min-width: 1.45rem;
     }
 
     .proposal-vote-empty {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 0.72rem;
         line-height: 1.1;
         min-height: 1.25rem;
@@ -272,7 +272,7 @@
     }
 
     .proposal-timer-label {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 0.66rem;
         font-weight: bold;
         letter-spacing: 0.04em;
@@ -331,7 +331,7 @@
     }
 
     .proposal-expanded-preview-meta {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 0.74rem;
         line-height: 1.2;
     }

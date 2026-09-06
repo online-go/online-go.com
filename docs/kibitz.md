@@ -63,10 +63,11 @@ snapshot. A board for another game, and every preview, connects with its own
 waits on the main board.
 
 `useKibitzCurrentGameConnectionKeeper` re-sends `game/connect` for the main
-game after the game picker closes, because mini gobans in the picker send
-`game/disconnect` for the same game id when they unmount. Game-picker
-thumbnails render with `KibitzBoardPreview`, a read-only board that never
-connects to a game.
+game after the game picker closes, because the picker's game lists render
+connecting `MiniGoban`s (through `ObserveGamesComponent`) that send
+`game/disconnect` for the same game id when they unmount. Only the selected
+game's preview and the proposal bar use `KibitzBoardPreview`, a read-only
+board that never connects to a game.
 
 ## State
 

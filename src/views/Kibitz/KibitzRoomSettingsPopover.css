@@ -18,7 +18,7 @@
     }
 
     .KibitzRoomSettingsPopover-fieldLabel {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 0.78rem;
         font-weight: 700;
         text-transform: uppercase;
@@ -59,7 +59,7 @@
     }
 
     .KibitzRoomSettingsPopover-toggleDescription {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 0.8rem;
         line-height: 1.3;
     }
@@ -110,7 +110,7 @@
     }
 
     .KibitzRoomSettingsPopover-note {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
     }
 
     .KibitzRoomSettingsPopover-error {

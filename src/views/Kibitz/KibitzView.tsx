@@ -51,6 +51,8 @@ export interface KibitzViewProps {
     onBranchFromVariation?: () => void;
     onExitVariation: () => void;
     onReturnToLive: () => void;
+    /** Portrait only: the Rooms takeover was opened. */
+    onRoomsOpened?: () => void;
     roomSettings: {
         canEditRoom: boolean;
         canDeleteRoom: boolean;
@@ -139,7 +141,13 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     }, [onExitVariation]);
 
     if (!gobans.center) {
-        // The room has no live game yet, usually a preset room between games.
+        if (room.current_game?.game_id) {
+            // The live controller is created after the first commit. Render
+            // nothing for that one commit rather than the waiting layout, so
+            // the chat and panels mount once, inside GobanView.
+            return null;
+        }
+        // The room has no live game, usually a preset room between games.
         // Keep the room's people and chat reachable while it waits.
         const waitingAside = (
             <KibitzLeftAside
@@ -273,6 +281,11 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                     align="left"
                     icon="list"
                     title={pgettext("Tab that lists Kibitz rooms", "Rooms")}
+                    onToggle={(active) => {
+                        if (active) {
+                            props.onRoomsOpened?.();
+                        }
+                    }}
                 >
                     {leftAside}
                 </GobanView.Tab>

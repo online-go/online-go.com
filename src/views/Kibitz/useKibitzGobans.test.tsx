@@ -489,4 +489,85 @@ describe("useKibitzGobans", () => {
         engine.move_tree = { branches: [{ branches: [] }] };
         expect(latest!.isDraftDirty()).toBe(true);
     });
+
+    test("a same-game draft starts in the play phase whatever the live game is in", () => {
+        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => ({
+            gameId: 100,
+            trunkTailMoveNumber: 3,
+            config: { move_tree: { x: 1 }, phase: "stone removal", removed: "aa" },
+        }));
+        const { rerender } = render(<Harness options={baseOptions()} onResult={() => undefined} />);
+        emit(instances[0], "load");
+        rerender(
+            <Harness
+                options={baseOptions({
+                    secondaryPane: {
+                        collapsed: false,
+                        preview_game_id: 100,
+                        variation_source_game_id: 100,
+                        variation_source_move_path: "aa",
+                    },
+                })}
+                onResult={() => undefined}
+            />,
+        );
+        expect(instances[1].config).toMatchObject({ phase: "play", removed: undefined });
+    });
+
+    test("a new draft from the same position rebuilds the board", () => {
+        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => ({
+            gameId: 100,
+            trunkTailMoveNumber: 3,
+            config: { move_tree: { x: 1 } },
+        }));
+        const { rerender } = render(<Harness options={baseOptions()} onResult={() => undefined} />);
+        emit(instances[0], "load");
+        const draft = (nonce: number): KibitzSecondaryPaneState => ({
+            collapsed: false,
+            preview_game_id: 100,
+            variation_source_game_id: 100,
+            variation_source_move_path: "aa",
+            variation_draft_nonce: nonce,
+        });
+        rerender(
+            <Harness
+                options={baseOptions({ secondaryPane: draft(1) })}
+                onResult={() => undefined}
+            />,
+        );
+        expect(instances).toHaveLength(2);
+        rerender(
+            <Harness
+                options={baseOptions({ secondaryPane: draft(2) })}
+                onResult={() => undefined}
+            />,
+        );
+        expect(instances).toHaveLength(3);
+        expect((instances[1] as { destroy: jest.Mock }).destroy).toHaveBeenCalled();
+    });
+
+    test("toggling a variation of another game leaves the shown variation's board alone", () => {
+        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => ({
+            gameId: 100,
+            trunkTailMoveNumber: 3,
+            config: { move_tree: { x: 1 } },
+        }));
+        const { rerender } = render(<Harness options={baseOptions()} onResult={() => undefined} />);
+        emit(instances[0], "load");
+        const shown = makeVariation("v1");
+        const otherGame = makeVariation("v2", { game_id: 7 });
+        const sameGame = makeVariation("v3");
+        const open = (visible: string[]) =>
+            baseOptions({
+                secondaryPane: { collapsed: false, variation_id: "v1" },
+                variations: [shown, otherGame, sameGame],
+                visibleVariationIds: visible,
+            });
+        rerender(<Harness options={open(["v1"])} onResult={() => undefined} />);
+        expect(instances).toHaveLength(2);
+        rerender(<Harness options={open(["v1", "v2"])} onResult={() => undefined} />);
+        expect(instances).toHaveLength(2);
+        rerender(<Harness options={open(["v1", "v2", "v3"])} onResult={() => undefined} />);
+        expect(instances).toHaveLength(3);
+    });
 });

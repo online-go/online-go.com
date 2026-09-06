@@ -148,6 +148,9 @@ export interface KibitzSecondaryPaneState {
     variation_source_move_tree_id?: number;
     variation_source_move_path?: string;
     variation_draft_base_id?: string;
+    /** Changes on every new draft so a draft started from the same
+     *  position as the previous one still rebuilds the board. */
+    variation_draft_nonce?: number;
 }
 
 export interface KibitzDebugCandidate {

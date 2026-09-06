@@ -220,7 +220,7 @@
 
 .KibitzChatPanel-log .variation-post-time {
     flex: 0 0 auto;
-    color: var(--text-color-faded);
+    color: var(--text-dimmed);
     font-size: 0.8rem;
     line-height: 1.25;
     white-space: nowrap;

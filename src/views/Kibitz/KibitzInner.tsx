@@ -1016,7 +1016,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 setVariationFocusRequestId((previous) => previous + 1);
             }
             controller.openVariation(variationId);
-            if (!isAlreadyVisibleInState) {
+            if (!isAlreadyVisibleInState && !isPortrait) {
                 kibitzHelpTriggers.noteDesktopVariationMadeVisible();
             }
         },
@@ -1024,6 +1024,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             activePostedVariations.length,
             activePostedVariationIds,
             controller,
+            isPortrait,
             kibitzHelpTriggers,
             visibleVariationIds,
         ],
@@ -1153,15 +1154,20 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         window.sessionStorage.setItem(STREAMER_MODE_STORAGE_KEY, streamerMode ? "true" : "false");
     }, [streamerMode]);
 
+    // Streamer mode only takes effect while a room is on screen; the
+    // blocked, empty and loading screens have no settings gear to turn it
+    // off, so they must keep the site chrome.
+    const streamerModeActive = streamerMode && Boolean(resolvedRoom) && !isBlockedRoom;
+
     // NavBar, announcements, private chat and toasts all hide themselves for
     // streamer mode through this class.
     React.useEffect(() => {
-        document.body.classList.toggle("kibitz-streamer-mode", streamerMode);
+        document.body.classList.toggle("kibitz-streamer-mode", streamerModeActive);
 
         return () => {
             document.body.classList.remove("kibitz-streamer-mode");
         };
-    }, [streamerMode]);
+    }, [streamerModeActive]);
 
     React.useEffect(() => {
         if (isPortrait && streamerMode) {
@@ -1393,6 +1399,10 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         });
     }, [confirmDiscardDraft, controller]);
 
+    const onRoomsOpened = React.useCallback(() => {
+        void controller.refreshRoomDirectory();
+    }, [controller]);
+
     const onReturnToLive = React.useCallback(() => {
         const main = gobans.main;
         if (!main) {
@@ -1455,7 +1465,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             room={resolvedRoom}
             gobans={gobans}
             isPortrait={isPortrait}
-            streamerMode={streamerMode}
+            streamerMode={streamerModeActive}
             onStreamerModeChange={setStreamerMode}
             banner={
                 resolvedRoom.preset?.selection_status === "change_pending" &&
@@ -1504,6 +1514,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             onBranchFromVariation={onBranchFromVariation}
             onExitVariation={onExitVariation}
             onReturnToLive={onReturnToLive}
+            onRoomsOpened={onRoomsOpened}
             roomSettings={{
                 canEditRoom: canManageRoom,
                 canDeleteRoom: permissions.can_delete_room,

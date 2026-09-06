@@ -457,6 +457,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     private _proposals: KibitzProposal[] = [];
     private _variations: KibitzVariationSummary[] = [];
     private _secondary_pane: KibitzSecondaryPaneState = { collapsed: true };
+    private _draft_nonce = 0;
     private _permissions: KibitzPermissions = DEFAULT_PERMISSIONS;
     private _access_blocked: KibitzAccessBlock | null = null;
     private _debug: KibitzDebugState = {
@@ -1347,6 +1348,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             variation_source_move_tree_id,
             variation_source_move_path,
             variation_draft_base_id: undefined,
+            variation_draft_nonce: ++this._draft_nonce,
         });
     }
 
@@ -1372,6 +1374,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             variation_source_move_tree_id,
             variation_source_move_path,
             variation_draft_base_id: variation.id,
+            variation_draft_nonce: ++this._draft_nonce,
         });
     }
 

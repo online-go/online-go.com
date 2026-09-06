@@ -245,6 +245,18 @@ export function useKibitzGobans({
     }, [gameId]);
 
     // Any change to what the secondary board shows rebuilds it from scratch.
+    // In variation mode only the visible variations of the same game are
+    // composed onto the board, so only those take part in the key.
+    const selectedVariationGameId =
+        centerMode === "variation"
+            ? (variations.find((v) => v.id === secondaryPane.variation_id)?.game_id ?? null)
+            : null;
+    const composedVariationIds =
+        centerMode === "variation"
+            ? visibleVariationIds.filter(
+                  (id) => variations.find((v) => v.id === id)?.game_id === selectedVariationGameId,
+              )
+            : [];
     const secondaryKey =
         centerMode === "main"
             ? null
@@ -254,9 +266,10 @@ export function useKibitzGobans({
                   secondaryPane.variation_id ?? "",
                   secondaryPane.variation_source_game_id ?? "",
                   secondaryPane.variation_draft_base_id ?? "",
+                  secondaryPane.variation_draft_nonce ?? "",
                   secondaryPane.variation_source_move_tree_id ?? "",
                   secondaryPane.variation_source_move_path ?? "",
-                  centerMode === "variation" ? visibleVariationIds.join(",") : "",
+                  composedVariationIds.join(","),
               ].join(":");
 
     // A same-game secondary board reuses the main controller's trunk, so it
@@ -330,8 +343,9 @@ export function useKibitzGobans({
         if (useMainTrunk && !mainSnapshot) {
             // The main board hasn't produced a usable trunk snapshot yet
             // (its div isn't in the DOM, or the engine has no move tree).
-            // Wait for `mainReady` to flip before building a secondary
-            // board off of it.
+            // Drop `mainReady` so the next snapshot the main board
+            // produces re-runs this effect.
+            setMainReady(false);
             setSecondary(null);
             return;
         }
@@ -340,6 +354,13 @@ export function useKibitzGobans({
             ...baseConfig(targetGame),
             ...(useMainTrunk && mainSnapshot
                 ? (mainSnapshot.config as Partial<GobanRendererConfig>)
+                : {}),
+            // The trunk snapshot carries the live game's gamedata. A draft or
+            // variation is a plain analysis board, so it must not inherit the
+            // live phase (stone removal or finished blocks analysis) or the
+            // removed-stone and score state that goes with it.
+            ...(useMainTrunk
+                ? { phase: "play" as const, removed: undefined, score: undefined }
                 : {}),
             board_div: document.createElement("div"),
             interactive: mode === "draft",

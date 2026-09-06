@@ -49,6 +49,14 @@
     /* Streamer mode strips the sidebar down to its tab bar so the board fills
        the capture area while the action tabs stay reachable. */
     &.is-streamer-mode {
+        /* The aside is hidden and the sidebar shrinks to its tab bar, so the
+           centering math must stop reserving room for either of them. */
+        --goban-view-left-aside-outer-width: 0px;
+
+        .GobanView-center {
+            padding-left: 0;
+        }
+
         /* Hidden, not unmounted: the main goban needs a connected parent so a
            trunk snapshot can still be captured for a new variation. */
         .GobanView-left-aside {

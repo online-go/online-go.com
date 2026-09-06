@@ -87,7 +87,7 @@
     }
 
     .KibitzGamePickerOverlay-subtitle {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 0.9rem;
         margin-top: 0.25rem;
     }
@@ -156,7 +156,7 @@
     }
 
     .KibitzGamePickerOverlay-fieldLabel {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 0.8rem;
         font-weight: 700;
         text-transform: uppercase;
@@ -168,7 +168,7 @@
     }
 
     .KibitzGamePickerOverlay-note {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 0.85rem;
     }
 
@@ -199,13 +199,13 @@
 
     .KibitzGamePickerOverlay-playerStackLoading {
         align-items: center;
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 1rem;
         font-weight: 600;
     }
 
     .KibitzGamePickerOverlay-playerRow {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         display: flex;
         flex-wrap: wrap;
         gap: 0.35rem 0.5rem;
@@ -271,7 +271,7 @@
     }
 
     .KibitzGamePickerOverlay-suggestionText {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 0.86rem;
         min-width: 0;
     }
@@ -294,13 +294,13 @@
     }
 
     .KibitzGamePickerOverlay-confirmationCopy span {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 0.9rem;
     }
 
     .KibitzGamePickerOverlay-emptyState {
         align-items: center;
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         display: flex;
         justify-content: center;
         min-height: 16rem;
@@ -421,7 +421,7 @@
     }
 
     .KibitzGamePickerOverlay-mobileHeaderSubtitle {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 0.88rem;
         line-height: 1.15;
         text-align: right;

@@ -52,7 +52,7 @@
 
     .queue-status-pill {
         background: var(--shade1);
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         display: inline-flex;
         font-size: 0.68rem;
         font-weight: bold;
@@ -70,7 +70,7 @@
 
     .queue-proposer {
         align-items: center;
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         display: inline-flex;
         gap: 0.3rem;
         min-width: 0;
@@ -105,7 +105,7 @@
 
     .queue-meta,
     .queue-vote-summary {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 0.76rem;
         line-height: 1.15;
         overflow-wrap: anywhere;
@@ -120,7 +120,7 @@
     }
 
     .queue-vote-summary.queued-label {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-weight: bold;
         text-transform: uppercase;
     }

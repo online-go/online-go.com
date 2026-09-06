@@ -217,4 +217,26 @@ describe("KibitzView", () => {
         render(<KibitzView {...baseProps({ isPortrait: true })} />);
         expect(screen.getByTitle("Rooms")).toBeInTheDocument();
     });
+
+    test("a room with a game but no controller yet renders nothing", () => {
+        const props = baseProps({
+            room: {
+                id: "r1",
+                title: "Room",
+                channel: "kibitz-r1",
+                current_game: { game_id: 100 },
+            } as unknown as KibitzViewProps["room"],
+            gobans: {
+                main: null,
+                secondary: null,
+                center: null,
+                centerMode: "main",
+                playerBars: null,
+                isDraftDirty: () => false,
+            },
+        });
+        const { container } = render(<KibitzView {...props} />);
+        expect(container).toBeEmptyDOMElement();
+        expect(screen.queryByText("Looking for a suitable live game.")).toBeNull();
+    });
 });

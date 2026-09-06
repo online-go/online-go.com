@@ -46,7 +46,7 @@
 
     .variation-divider {
         border-top: 1px solid var(--shade3);
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         padding: 0.45rem 0 0.3rem;
     }
 
@@ -128,7 +128,7 @@
     }
 
     .variation-divider-vs {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 0.68rem;
         font-weight: 700;
         text-transform: uppercase;
@@ -229,7 +229,7 @@
 
     .variation-branch,
     .variation-length {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 0.8rem;
         white-space: nowrap;
     }
@@ -280,7 +280,7 @@
 
     .variation-meta,
     .variation-empty {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 0.76rem;
         line-height: 1.1;
         padding: 0;
