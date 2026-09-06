@@ -16,8 +16,9 @@ list and the mini main-board thumbnail together.
 
 The left aside has two collapsible sections, Rooms and Variations, laid out
 like the chat page's channel list, each with a quiet "+ Room" / "+ Variation"
-row at the bottom (Variations also has "Clear all"). The collapsed state is
-kept in localStorage.
+row at the bottom (Variations also has "Clear all"). The collapsed state and
+the selected chat tab are kept per browser through `data.ts`
+(`kibitz.left_aside.collapsed`, `kibitz.chat_tab`).
 
 Action bar: settings gear and New variation (left), Return to game or
 Return to live (center), More actions with game information, the game link,
