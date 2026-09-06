@@ -6,6 +6,10 @@ game together, chat, and share variations. It renders through the shared
 
 ## Layout
 
+![The Kibitz room: rooms and variations on the left, the board with a player
+bar above and below it in the centre, and the room chat on the
+right](images/kibitz-room.jpg)
+
 Landscape: a left aside with the room list, the variation list and, while
 the center is not showing the live game, a small live-game thumbnail; the
 board with a player bar above and below it in the center; the room title,
@@ -16,8 +20,9 @@ list and the mini main-board thumbnail together.
 
 The left aside has two collapsible sections, Rooms and Variations, laid out
 like the chat page's channel list, each with a quiet "+ Room" / "+ Variation"
-row at the bottom (Variations also has "Clear all"). The collapsed state is
-kept in localStorage.
+row at the bottom (Variations also has "Clear all"). The collapsed state and
+the selected chat tab are kept per browser through `data.ts`
+(`kibitz.left_aside.collapsed`, `kibitz.chat_tab`).
 
 Action bar: settings gear and New variation (left), Return to game or
 Return to live (center), More actions with game information, the game link,
@@ -36,6 +41,13 @@ board the center shows.
 Help flows exist for landscape only (desktop first run, desktop variations,
 and the draft started from a posted variation); portrait has no onboarding
 flow.
+
+While the centre shows a variation, the live game moves to the thumbnail at
+the bottom of the left aside and the sidebar carries the variation's move
+tree and its actions:
+
+![A posted variation on the centre board, the live game as a thumbnail under
+"Main board", and the variation panel in the sidebar](images/kibitz-variation.jpg)
 
 When a room has no current game (a preset room sitting between games),
 `KibitzView` renders a waiting layout instead of the board: the left aside,
