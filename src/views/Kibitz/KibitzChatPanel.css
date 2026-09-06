@@ -226,10 +226,6 @@
     white-space: nowrap;
 }
 
-.KibitzChatPanel-log .variation-post-entry.variation-post-flash {
-    background: color-mix(in srgb, var(--primary) 14%, transparent);
-}
-
 .KibitzChatPanel-composer {
     background: var(--card-background-color);
     box-sizing: border-box;

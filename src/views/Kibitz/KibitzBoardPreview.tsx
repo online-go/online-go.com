@@ -75,6 +75,7 @@ export function KibitzBoardPreview({
             draw_bottom_labels:
                 showLabels && (labelPosition === "all" || labelPosition.indexOf("bottom") >= 0),
             variation_stone_opacity: preferences.get("variation-stone-opacity"),
+            last_move_opacity: preferences.get("last-move-opacity"),
             stone_font_scale: preferences.get("stone-font-scale"),
             square_size: "auto",
             move_tree: moveTree,

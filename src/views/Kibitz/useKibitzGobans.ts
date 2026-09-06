@@ -43,6 +43,13 @@ export interface KibitzGobans {
     /** Whichever controller GobanView should render in the center. */
     center: GobanController | null;
     centerMode: KibitzCenterMode;
+    /** The game whose players and clocks the player bars show: the live
+     *  game while the center shows a draft or variation of it, the center
+     *  board otherwise (a preview or a variation of another game). */
+    playerBars: GobanController | null;
+    /** True while the draft in the center has moves that have not been
+     *  posted yet. Always false outside draft mode. */
+    isDraftDirty: () => boolean;
 }
 
 export interface UseKibitzGobansOptions {
@@ -107,6 +114,7 @@ function baseConfig(game: KibitzWatchedGame | null | undefined): GobanRendererCo
         width,
         height,
         variation_stone_opacity: preferences.get("variation-stone-opacity"),
+        last_move_opacity: preferences.get("last-move-opacity"),
         stone_font_scale: preferences.get("stone-font-scale"),
         ...labelConfig(),
     };
@@ -129,6 +137,22 @@ function computeSecondaryTargetGameId(
         return pane.variation_source_game_id ?? null;
     }
     return null;
+}
+
+function countMoveTreeNodes(root: MoveTree | null | undefined): number {
+    let count = 0;
+    const stack: MoveTree[] = root ? [root] : [];
+    while (stack.length > 0) {
+        const node = stack.pop() as MoveTree;
+        count += 1;
+        if (node.trunk_next) {
+            stack.push(node.trunk_next);
+        }
+        for (const branch of node.branches ?? []) {
+            stack.push(branch);
+        }
+    }
+    return count;
 }
 
 /** Re-anchor the engine's last official move at the trunk tail without
@@ -260,6 +284,12 @@ export function useKibitzGobans({
     colorsRef.current = variationColorIndexes;
     const gameByIdRef = React.useRef(variationGameById);
     gameByIdRef.current = variationGameById;
+    // Node count of a draft right after it was composed; more nodes than
+    // this means the user has added moves that would be lost on exit.
+    const draftBaselineRef = React.useRef<{
+        controller: GobanController;
+        nodeCount: number;
+    } | null>(null);
 
     React.useEffect(() => {
         if (!secondaryKey || !main) {
@@ -367,6 +397,10 @@ export function useKibitzGobans({
             }
             if (mode === "draft") {
                 controller.setAnalyzeTool("stone", "alternate");
+                draftBaselineRef.current = {
+                    controller,
+                    nodeCount: countMoveTreeNodes(controller.goban.engine.move_tree),
+                };
             }
             controller.goban.redraw(true);
         };
@@ -383,12 +417,24 @@ export function useKibitzGobans({
         setSecondary(controller);
         return () => {
             controller.goban.off("load", compose);
+            if (draftBaselineRef.current?.controller === controller) {
+                draftBaselineRef.current = null;
+            }
             controller.destroy();
             setSecondary(null);
         };
     }, [secondaryKey, main, secondaryGate]);
 
-    const center = centerMode === "main" ? main : (secondary ?? main);
+    const isDraftDirty = React.useCallback(() => {
+        const baseline = draftBaselineRef.current;
+        if (!baseline || baseline.controller !== secondary) {
+            return false;
+        }
+        return countMoveTreeNodes(baseline.controller.goban.engine.move_tree) > baseline.nodeCount;
+    }, [secondary]);
 
-    return { main, secondary, center, centerMode };
+    const center = centerMode === "main" ? main : (secondary ?? main);
+    const playerBars = secondary && center === secondary && secondaryUsesMainTrunk ? main : center;
+
+    return { main, secondary, center, centerMode, playerBars, isDraftDirty };
 }

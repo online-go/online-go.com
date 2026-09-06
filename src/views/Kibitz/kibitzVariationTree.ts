@@ -26,7 +26,7 @@ import {
 
 export const KIBITZ_VARIATION_COLORS = GobanMoveTree.line_colors;
 
-export type KibitzVariationColorIndex = number;
+type KibitzVariationColorIndex = number;
 
 export interface AppliedKibitzVariation {
     variationId: string;
@@ -142,7 +142,7 @@ function duplicateMoveNodeAsBranch(
     return branch;
 }
 
-export function officialTrunkNodeByMoveNumber(root: MoveTree, moveNumber: number): MoveTree | null {
+function officialTrunkNodeByMoveNumber(root: MoveTree, moveNumber: number): MoveTree | null {
     let cursor: MoveTree | undefined = root;
 
     while (cursor) {
@@ -499,8 +499,4 @@ export function applyKibitzVariationToController(
         variationId: variation.id,
         endpoint: pathNodes[pathNodes.length - 1] ?? null,
     };
-}
-
-export function getKibitzVariationColor(colorIndex: KibitzVariationColorIndex): string {
-    return KIBITZ_VARIATION_COLORS[colorIndex % KIBITZ_VARIATION_COLORS.length];
 }

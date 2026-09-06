@@ -19,6 +19,7 @@ import * as React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { GobanController, getMoveTreeTrunkTail } from "@/lib/GobanController";
 import { toast } from "@/lib/toast";
+import { alert } from "@/lib/swal_config";
 import { get } from "@/lib/requests";
 import { pgettext } from "@/lib/translate";
 import { type GobanConfig, type GobanRendererConfig, protocol } from "goban";
@@ -124,7 +125,7 @@ function moveTreeIdAsNumber(moveTreeId: number | string | null): number | undefi
     return typeof moveTreeId === "number" ? moveTreeId : undefined;
 }
 
-export function isLiveRootSnapshotAllowed(params: {
+function isLiveRootSnapshotAllowed(params: {
     game: KibitzWatchedGame | null | undefined;
     snapshotTailMoveNumber: number;
     source: "visible-main-board" | "game-details";
@@ -712,6 +713,36 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         variationGameById,
         onMainSnapshot: acceptCurrentGameBaseSnapshot,
     });
+    const { centerMode, isDraftDirty } = gobans;
+
+    // Resolves true when it is fine to leave the current draft: there is no
+    // draft, it has no unposted moves, or the user chose to discard it.
+    const confirmDiscardDraft = React.useCallback(async (): Promise<boolean> => {
+        if (centerMode !== "draft" || !isDraftDirty()) {
+            return true;
+        }
+        const { value } = await alert.fire({
+            customClass: {
+                confirmButton: "reject",
+                cancelButton: "",
+            },
+            text: pgettext(
+                "Confirmation text for discarding a Kibitz variation draft",
+                "Discard this draft? Any variation that isn't shared will be lost.",
+            ),
+            confirmButtonText: pgettext(
+                "Confirmation button for discarding a Kibitz variation draft",
+                "Discard draft",
+            ),
+            cancelButtonText: pgettext(
+                "Cancel button for discarding a Kibitz variation draft",
+                "Cancel",
+            ),
+            showCancelButton: true,
+            focusConfirm: true,
+        });
+        return Boolean(value);
+    }, [centerMode, isDraftDirty]);
 
     const roomLiveMoveNumber = resolvedRoom?.current_game?.move_number ?? 0;
     const currentGameIsLive = Boolean(resolvedRoom?.current_game?.live);
@@ -1047,18 +1078,40 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         }
     }, [controller, secondaryPane.variation_id]);
     const onCreateVariation = React.useCallback(() => {
-        const snapshot = getCurrentGameBaseSnapshotForVariation("new-variation");
-        if (!snapshot) {
-            showCurrentGameBaseNotReadyToast();
-            return;
-        }
+        void confirmDiscardDraft().then((confirmed) => {
+            if (!confirmed) {
+                return;
+            }
+            const snapshot = getCurrentGameBaseSnapshotForVariation("new-variation");
+            if (!snapshot) {
+                showCurrentGameBaseNotReadyToast();
+                return;
+            }
 
-        controller.startVariationFromCurrentBoard(
-            snapshot.config.move_tree,
-            snapshot.movePath,
-            moveTreeIdAsNumber(snapshot.moveTreeId),
-        );
-    }, [controller, getCurrentGameBaseSnapshotForVariation, showCurrentGameBaseNotReadyToast]);
+            controller.startVariationFromCurrentBoard(
+                snapshot.config.move_tree,
+                snapshot.movePath,
+                moveTreeIdAsNumber(snapshot.moveTreeId),
+            );
+        });
+    }, [
+        confirmDiscardDraft,
+        controller,
+        getCurrentGameBaseSnapshotForVariation,
+        showCurrentGameBaseNotReadyToast,
+    ]);
+    // Opening a variation from the chat or the list while a draft has
+    // unposted moves asks first; the post-variation effect opens directly.
+    const onOpenVariationFromUser = React.useCallback(
+        (variationId: string, focusVariation: boolean = false) => {
+            void confirmDiscardDraft().then((confirmed) => {
+                if (confirmed) {
+                    onOpenVariation(variationId, focusVariation);
+                }
+            });
+        },
+        [confirmDiscardDraft, onOpenVariation],
+    );
     const onCreateVariationFromPostedVariation = React.useCallback(
         (variation: KibitzVariationSummary) => {
             const snapshot =
@@ -1333,8 +1386,12 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     ) : null;
 
     const onExitVariation = React.useCallback(() => {
-        controller.closeSecondaryPane();
-    }, [controller]);
+        void confirmDiscardDraft().then((confirmed) => {
+            if (confirmed) {
+                controller.closeSecondaryPane();
+            }
+        });
+    }, [confirmDiscardDraft, controller]);
 
     const onReturnToLive = React.useCallback(() => {
         const main = gobans.main;
@@ -1421,9 +1478,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 variationGameById,
                 selectedVariationId: secondaryPane.variation_id ?? null,
                 variationFocusRequestId,
-                variationColorIndexes,
                 blockedVariationFlashId,
-                onRecallVariation: (variationId) => onOpenVariation(variationId, true),
+                onRecallVariation: (variationId) => onOpenVariationFromUser(variationId, true),
                 onHideVariation: onToggleVariation,
                 onCreateVariation,
                 onClearVariations,
@@ -1434,7 +1490,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 room: resolvedRoom,
                 items: stream,
                 variations: displayedVariations,
-                onOpenVariation,
+                onOpenVariation: onOpenVariationFromUser,
             }}
             proposals={{
                 activeProposal,

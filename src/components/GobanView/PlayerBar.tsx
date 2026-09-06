@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import { GobanEnginePlayerEntry, GobanEvents, GobanRenderer } from "goban";
+import type { GobanController } from "@/lib/GobanController";
 import { _, interpolate, ngettext } from "@/lib/translate";
 import { Clock } from "@/components/Clock";
 import { PlayerIcon } from "@/components/PlayerIcon";
@@ -27,6 +28,8 @@ import "./PlayerBar.css";
 
 interface PlayerBarProps {
     color: "black" | "white";
+    /** The game to show. Defaults to the GobanControllerContext controller. */
+    controller?: GobanController;
 }
 
 interface PlayerBarState {
@@ -98,11 +101,14 @@ function usePlayerBarState(goban: GobanRenderer, color: "black" | "white"): Play
 /**
  * One player's strip for the board area: icon on the left, username with
  * the capture or point count stacked beside it, clock on the right.
- * Reads the goban from GobanControllerContext.
+ * Reads the goban from `controller`, or from GobanControllerContext.
  */
-export function PlayerBar({ color }: PlayerBarProps): React.ReactElement {
-    const controller = useGobanController();
-    const goban = controller.goban;
+export function PlayerBar({
+    color,
+    controller: controllerProp,
+}: PlayerBarProps): React.ReactElement {
+    const contextController = useGobanController();
+    const goban = (controllerProp ?? contextController).goban;
     const state = usePlayerBarState(goban, color);
 
     return (

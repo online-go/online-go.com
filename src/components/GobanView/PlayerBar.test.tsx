@@ -92,4 +92,16 @@ describe("PlayerBar", () => {
         const { container } = renderBar(fakeController({ phase: "play", to_move: 22 }), "white");
         expect(container.querySelector(".PlayerBar")).toHaveClass("their-turn");
     });
+
+    test("reads the controller prop instead of the context controller", () => {
+        const context = fakeController({ phase: "play" });
+        const other = fakeController({ phase: "finished", outcome: "2.5 points" });
+        render(
+            <GobanControllerContext.Provider value={context}>
+                <PlayerBar color="black" controller={other} />
+            </GobanControllerContext.Provider>,
+        );
+        expect(screen.getByText("40.5 points")).toBeInTheDocument();
+        expect(screen.queryByText("3 captures")).toBeNull();
+    });
 });

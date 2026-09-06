@@ -278,63 +278,6 @@
         }
     }
 
-    .variation-preview {
-        align-items: center;
-        display: inline-flex;
-        flex: 0 0 auto;
-        justify-content: flex-end;
-        margin-left: 0.5rem;
-        min-width: 2.95rem;
-    }
-
-    .variation-preview-goban.MiniGoban {
-        height: 2.95rem;
-        width: 2.95rem;
-    }
-
-    .variation-preview-goban .inner-container {
-        transform-origin: left top;
-    }
-
-    .variation-preview-goban .board {
-        box-shadow: none !important;
-    }
-
-    .variation-avatar {
-        align-items: center;
-        background: var(--shade2);
-        color: var(--fg);
-        display: inline-flex;
-        flex: 0 0 auto;
-        font-size: 0.5rem;
-        font-weight: bold;
-        height: 0.85rem;
-        justify-content: center;
-        line-height: 1;
-        min-width: 0.85rem;
-        width: 0.85rem;
-        overflow: hidden;
-        text-transform: uppercase;
-    }
-
-    .variation-avatar-image {
-        display: block;
-        flex: 0 0 auto;
-        height: 0.85rem !important;
-        max-height: 0.85rem;
-        max-width: 0.85rem;
-        min-height: 0.85rem;
-        min-width: 0.85rem;
-        object-fit: cover;
-        width: 0.85rem !important;
-    }
-
-    .variation-avatar-image.PlayerIcon {
-        display: block;
-        flex: 0 0 auto;
-        object-fit: cover;
-    }
-
     .variation-meta,
     .variation-empty {
         color: var(--text-color-faded);

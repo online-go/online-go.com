@@ -30,7 +30,6 @@ interface KibitzVariationListProps {
     gameById?: ReadonlyMap<number, KibitzWatchedGame>;
     selectedVariationId?: string | null;
     variationFocusRequestId?: number;
-    variationColorIndexes?: Record<string, number>;
     blockedVariationFlashId?: string | null;
     onRecallVariation: (variationId: string) => void;
     onHideVariation?: (variationId: string) => void;

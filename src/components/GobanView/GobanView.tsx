@@ -112,8 +112,10 @@ interface GobanViewProps {
      *  the Game view for the local player's card and the play buttons. */
     belowBoard?: React.ReactNode;
     /** Render a PlayerBar above and below the board. The current user's
-     *  seat (or black for spectators) is on the bottom. */
-    playerBars?: boolean;
+     *  seat (or black for spectators) is on the bottom. Pass a controller
+     *  to show that game's players and clocks instead of the center
+     *  board's, e.g. the live game while the center shows a variation. */
+    playerBars?: boolean | GobanController;
     /** Landscape-only column rendered before the board, styled like the
      *  sidebar. Ignored in portrait; consumers provide takeover tabs for
      *  the same content there. */
@@ -318,19 +320,22 @@ function GobanViewComponent({
     const isPortrait = viewMode === "portrait";
 
     const user = useUser();
-    usePlayerIds(controller.goban);
-    const bottom_color: "black" | "white" = user_color(controller.goban, user.id) ?? "black";
+    const barsController: GobanController | null =
+        playerBars && typeof playerBars === "object" ? playerBars : playerBars ? controller : null;
+    const barsGoban = (barsController ?? controller).goban;
+    usePlayerIds(barsGoban);
+    const bottom_color: "black" | "white" = user_color(barsGoban, user.id) ?? "black";
     const top_color: "black" | "white" = bottom_color === "black" ? "white" : "black";
     const topBarRef = React.useRef<HTMLDivElement>(null);
     const bottomBarRef = React.useRef<HTMLDivElement>(null);
-    const topBar = playerBars ? (
+    const topBar = barsController ? (
         <div className="GobanView-player-bar top" ref={topBarRef}>
-            <PlayerBar color={top_color} />
+            <PlayerBar color={top_color} controller={barsController} />
         </div>
     ) : null;
-    const bottomBar = playerBars ? (
+    const bottomBar = barsController ? (
         <div className="GobanView-player-bar bottom" ref={bottomBarRef}>
-            <PlayerBar color={bottom_color} />
+            <PlayerBar color={bottom_color} controller={barsController} />
         </div>
     ) : null;
     const hasTakeover = activeTakeover !== null;

@@ -76,7 +76,7 @@ function cloneMiniGobanSnapshotConfig(
     };
 }
 
-export function cloneOfficialTrunkMoveTreeJson(moveTree: MoveTree): MoveTreeJson {
+function cloneOfficialTrunkMoveTreeJson(moveTree: MoveTree): MoveTreeJson {
     const { branches: _branches, ...json } = moveTree.toJson();
 
     if (moveTree.trunk_next) {
@@ -86,7 +86,7 @@ export function cloneOfficialTrunkMoveTreeJson(moveTree: MoveTree): MoveTreeJson
     return json;
 }
 
-export interface KibitzGameDetailsForSnapshot {
+interface KibitzGameDetailsForSnapshot {
     width: number;
     height: number;
     gamedata?: {
@@ -94,7 +94,7 @@ export interface KibitzGameDetailsForSnapshot {
     };
 }
 
-export function buildSnapshotFromEngine({
+function buildSnapshotFromEngine({
     engine,
     gameId,
     roomId,

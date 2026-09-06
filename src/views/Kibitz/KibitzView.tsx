@@ -28,6 +28,7 @@ import { KibitzChatPanel, KibitzChatPanelProps } from "./KibitzChatPanel";
 import { KibitzVariationPanel } from "./KibitzVariationPanel";
 import { KibitzProposalPanel, KibitzProposalPanelProps } from "./KibitzProposalPanel";
 import { KibitzRoomSettingsPopover } from "./KibitzRoomSettingsPopover";
+import { KibitzKeyboardShortcuts } from "./KibitzKeyboardShortcuts";
 import { openKibitzMoreActions } from "./KibitzMoreActionsPopover";
 import { useKibitzHelpTarget } from "./HelpFlows/useKibitzHelpTarget";
 import { KIBITZ_HELP_TARGETS } from "./HelpFlows/KibitzHelpTargets";
@@ -219,8 +220,9 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             className={"Kibitz" + (streamerMode ? " is-streamer-mode" : "")}
             header={<span ref={roomTitleTarget?.ref}>{room.title}</span>}
             leftAside={!isPortrait ? leftAside : undefined}
-            playerBars
+            playerBars={gobans.playerBars ?? true}
         >
+            <KibitzKeyboardShortcuts />
             {viewingOther && <KBShortcut shortcut="esc" action={exitVariation} />}
 
             <GobanView.Tab id="kibitz-main" type="always">

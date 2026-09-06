@@ -413,4 +413,80 @@ describe("useKibitzGobans", () => {
         emit(instances[0], "load");
         expect(onMainSnapshot).toHaveBeenCalledWith(snapshot);
     });
+
+    test("player bars follow the live game for a same-game variation", () => {
+        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => ({
+            gameId: 100,
+            trunkTailMoveNumber: 3,
+            config: { move_tree: { x: 1 } },
+        }));
+        let latest: KibitzGobans | null = null;
+        const { rerender } = render(
+            <Harness options={baseOptions()} onResult={(r) => (latest = r)} />,
+        );
+        emit(instances[0], "load");
+        expect(latest!.playerBars).toBe(latest!.main);
+
+        rerender(
+            <Harness
+                options={baseOptions({
+                    secondaryPane: { collapsed: false, variation_id: "v1" },
+                    variations: [makeVariation("v1")],
+                    visibleVariationIds: ["v1"],
+                })}
+                onResult={(r) => (latest = r)}
+            />,
+        );
+        expect(latest!.center).toBe(latest!.secondary);
+        expect(latest!.playerBars).toBe(latest!.main);
+    });
+
+    test("player bars follow the center board for a preview of another game", () => {
+        let latest: KibitzGobans | null = null;
+        const { rerender } = render(
+            <Harness options={baseOptions()} onResult={(r) => (latest = r)} />,
+        );
+        rerender(
+            <Harness
+                options={baseOptions({ secondaryPane: { collapsed: false, preview_game_id: 7 } })}
+                onResult={(r) => (latest = r)}
+            />,
+        );
+        expect(latest!.center).toBe(latest!.secondary);
+        expect(latest!.playerBars).toBe(latest!.secondary);
+    });
+
+    test("isDraftDirty reports moves added to a draft", () => {
+        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => ({
+            gameId: 100,
+            trunkTailMoveNumber: 3,
+            config: { move_tree: { x: 1 } },
+        }));
+        let latest: KibitzGobans | null = null;
+        const { rerender } = render(
+            <Harness options={baseOptions()} onResult={(r) => (latest = r)} />,
+        );
+        emit(instances[0], "load");
+        expect(latest!.isDraftDirty()).toBe(false);
+
+        rerender(
+            <Harness
+                options={baseOptions({
+                    secondaryPane: {
+                        collapsed: false,
+                        preview_game_id: 100,
+                        variation_source_game_id: 100,
+                        variation_source_move_path: "aa",
+                    },
+                })}
+                onResult={(r) => (latest = r)}
+            />,
+        );
+        expect(latest!.centerMode).toBe("draft");
+        expect(latest!.isDraftDirty()).toBe(false);
+
+        const engine = (instances[1] as { goban: { engine: { move_tree: unknown } } }).goban.engine;
+        engine.move_tree = { branches: [{ branches: [] }] };
+        expect(latest!.isDraftDirty()).toBe(true);
+    });
 });

@@ -87,7 +87,14 @@ function baseProps(overrides: Partial<KibitzViewProps> = {}): KibitzViewProps {
     const main = fakeController();
     return {
         room: { id: "r1", title: "Room", channel: "kibitz-r1" } as KibitzViewProps["room"],
-        gobans: { main, secondary: null, center: main, centerMode: "main" },
+        gobans: {
+            main,
+            secondary: null,
+            center: main,
+            centerMode: "main",
+            playerBars: main,
+            isDraftDirty: () => false,
+        },
         isPortrait: false,
         streamerMode: false,
         onStreamerModeChange: jest.fn(),
@@ -151,7 +158,14 @@ describe("KibitzView", () => {
     test("a main board behind the official tail offers Return to live", () => {
         const main = fakeController(3, 5);
         const props = baseProps({
-            gobans: { main, secondary: null, center: main, centerMode: "main" },
+            gobans: {
+                main,
+                secondary: null,
+                center: main,
+                centerMode: "main",
+                playerBars: main,
+                isDraftDirty: () => false,
+            },
         });
         render(<KibitzView {...props} />);
         expect(screen.getByTitle("Return to live")).toBeInTheDocument();
@@ -167,7 +181,14 @@ describe("KibitzView", () => {
     test("a variation opening before its controller exists mounts one board", () => {
         const main = fakeController();
         const props = baseProps({
-            gobans: { main, secondary: null, center: main, centerMode: "variation" },
+            gobans: {
+                main,
+                secondary: null,
+                center: main,
+                centerMode: "variation",
+                playerBars: main,
+                isDraftDirty: () => false,
+            },
         });
         render(<KibitzView {...props} />);
         expect(screen.getAllByTestId("goban-container")).toHaveLength(1);
@@ -176,7 +197,14 @@ describe("KibitzView", () => {
 
     test("a room with no board shows the waiting message, rooms and chat", () => {
         const props = baseProps({
-            gobans: { main: null, secondary: null, center: null, centerMode: "main" },
+            gobans: {
+                main: null,
+                secondary: null,
+                center: null,
+                centerMode: "main",
+                playerBars: null,
+                isDraftDirty: () => false,
+            },
         });
         render(<KibitzView {...props} />);
         expect(screen.getByText("Looking for a suitable live game.")).toBeInTheDocument();

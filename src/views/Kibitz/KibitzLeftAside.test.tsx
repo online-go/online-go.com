@@ -48,7 +48,6 @@ function baseProps(overrides: Partial<KibitzLeftAsideProps> = {}): KibitzLeftAsi
         variationGameById: new Map(),
         selectedVariationId: null,
         variationFocusRequestId: 0,
-        variationColorIndexes: {},
         blockedVariationFlashId: null,
         onRecallVariation: jest.fn(),
         onHideVariation: jest.fn(),

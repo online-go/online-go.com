@@ -14,9 +14,24 @@ the right. Portrait: GobanView's single column, with the left aside content
 behind one takeover tab, "Rooms", that holds the room list, the variation
 list and the mini main-board thumbnail together.
 
-Action bar: settings gear (left), Return to game or Return to live (center),
-More actions (right). The variation panel's Back to game button, the mini
-main board and the Escape key also leave a variation.
+The left aside has two collapsible sections, Rooms and Variations, laid out
+like the chat page's channel list, each with a quiet "+ Room" / "+ Variation"
+row at the bottom (Variations also has "Clear all"). The collapsed state is
+kept in localStorage.
+
+Action bar: settings gear and New variation (left), Return to game or
+Return to live (center), More actions with game information, the game link,
+SGF download and Call moderator (right). The variation panel's Back to game
+button (Cancel while drafting), the mini main board, the x on a variation
+row and the Escape key also leave a variation. Leaving a draft that has
+unposted moves asks for confirmation first, as does starting another
+variation or opening a posted one while such a draft is open.
+
+The player bars show the live game's players and clocks whenever the center
+shows the live game or a draft or variation of it; a preview of another game
+shows that game's players. `KibitzKeyboardShortcuts` binds the Game page's
+move navigation keys (arrows, Home, End, Page Up, Page Down) to whichever
+board the center shows.
 
 Help flows exist for landscape only (desktop first run, desktop variations,
 and the draft started from a posted variation); portrait has no onboarding

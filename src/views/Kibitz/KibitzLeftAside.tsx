@@ -38,7 +38,6 @@ export interface KibitzLeftAsideProps {
     variationGameById: ReadonlyMap<number, KibitzWatchedGame>;
     selectedVariationId: string | null;
     variationFocusRequestId: number;
-    variationColorIndexes: Record<string, number>;
     blockedVariationFlashId: string | null;
     onRecallVariation: (variationId: string) => void;
     onHideVariation: (variationId: string) => void;
@@ -139,7 +138,6 @@ export function KibitzLeftAside(props: KibitzLeftAsideProps): React.ReactElement
                             gameById={props.variationGameById}
                             selectedVariationId={props.selectedVariationId}
                             variationFocusRequestId={props.variationFocusRequestId}
-                            variationColorIndexes={props.variationColorIndexes}
                             blockedVariationFlashId={props.blockedVariationFlashId}
                             onRecallVariation={props.onRecallVariation}
                             onHideVariation={props.onHideVariation}

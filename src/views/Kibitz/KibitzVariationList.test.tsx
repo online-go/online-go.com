@@ -103,7 +103,6 @@ describe("KibitzVariationList", () => {
                 currentGameId={10}
                 gameById={gameById}
                 selectedVariationId="a2"
-                variationColorIndexes={{ a1: 0, a2: 1, b1: 2, c1: 3 }}
                 onRecallVariation={onRecallVariation}
                 onHideVariation={onHideVariation}
             />,
@@ -140,7 +139,6 @@ describe("KibitzVariationList", () => {
                 currentGameId={10}
                 gameById={gameById}
                 selectedVariationId={null}
-                variationColorIndexes={{ c1: 0, c2: 1 }}
                 onRecallVariation={onRecallVariation}
                 onHideVariation={onHideVariation}
             />,
