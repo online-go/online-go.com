@@ -183,22 +183,6 @@ export function isCurrentGameBaseSnapshotUsable(
     return snapshot.trunkTailMoveNumber >= expectedMoveNumber;
 }
 
-function currentGameBoardDimensionsOf(game: KibitzWatchedGame | null | undefined): {
-    width: number | null;
-    height: number | null;
-} {
-    if (!game?.board_size) {
-        return { width: null, height: null };
-    }
-
-    const [width, height] = game.board_size.split("x").map(Number);
-    if (Number.isFinite(width) && Number.isFinite(height)) {
-        return { width, height };
-    }
-
-    return { width: null, height: null };
-}
-
 export async function fetchCurrentGameBaseSnapshot(
     game: KibitzWatchedGame,
     roomId: string | null,
@@ -593,12 +577,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
     const currentGameId = resolvedRoom?.current_game?.game_id ?? null;
     const currentGameMoveNumber = resolvedRoom?.current_game?.move_number ?? 0;
-    const currentGameBoardDimensions = React.useMemo(
-        () => currentGameBoardDimensionsOf(resolvedRoom?.current_game),
-        [resolvedRoom?.current_game?.board_size],
-    );
-    const currentGameWidth = currentGameBoardDimensions.width;
-    const currentGameHeight = currentGameBoardDimensions.height;
     const currentGameSnapshotTarget = React.useMemo(() => {
         const game = resolvedRoom?.current_game;
 
@@ -611,16 +589,11 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             game,
             gameId: currentGameId,
             moveNumber: currentGameMoveNumber,
-            width: currentGameWidth,
-            height: currentGameHeight,
         };
     }, [
-        currentGameHeight,
         currentGameId,
         currentGameMoveNumber,
-        currentGameWidth,
         resolvedRoom?.id,
-        resolvedRoom?.current_game?.board_size,
         resolvedRoom?.current_game?.game_id,
         resolvedRoom?.current_game?.move_number,
     ]);

@@ -1378,21 +1378,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         });
     }
 
-    public clearPreviewGame(): void {
-        this.setSecondaryPane({
-            ...this._secondary_pane,
-            collapsed: true,
-            preview_game_id: undefined,
-            variation_id: undefined,
-            variation_source_game_id: undefined,
-            variation_source_game: undefined,
-            variation_source_move_tree: undefined,
-            variation_source_move_tree_id: undefined,
-            variation_source_move_path: undefined,
-            variation_draft_base_id: undefined,
-        });
-    }
-
     public openVariation(variationId: string): void {
         this.setSecondaryPane({
             ...this._secondary_pane,

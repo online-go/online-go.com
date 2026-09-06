@@ -25,9 +25,14 @@
     left: 0;
     right: 0;
 
+    /* PlayerBar reads these so the board inset below stays in step with
+     * the bars' real height. */
+    --goban-view-player-bar-height: 3rem;
+    --goban-view-player-bar-padding: 0.3rem;
+
     .GobanView-player-bar {
         flex-shrink: 0;
-        padding: 0.3rem 0;
+        padding: var(--goban-view-player-bar-padding) 0;
     }
 
     /* Landscape with player bars: the bars and the board form a stage that
@@ -82,7 +87,9 @@
     --goban-view-board-size: calc(100cqh - var(--goban-view-board-inset));
 
     &.has-player-bars {
-        --goban-view-board-inset: 7.2rem;
+        --goban-view-board-inset: calc(
+            2 * (var(--goban-view-player-bar-height) + 2 * var(--goban-view-player-bar-padding))
+        );
     }
 
     --goban-view-sidebar-effective-width: clamp(

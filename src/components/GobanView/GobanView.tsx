@@ -339,6 +339,9 @@ function GobanViewComponent({
         </div>
     ) : null;
     const hasTakeover = activeTakeover !== null;
+    const landscapeGobanContainer = (
+        <GobanContainer onResize={onResize} onWheel={onWheel} respectContainerBounds />
+    );
 
     const sliderFits = useSliderFits(
         {
@@ -508,22 +511,14 @@ function GobanViewComponent({
                 >
                     {leftAside && <div className="GobanView-left-aside">{leftAside}</div>}
                     <div className="GobanView-center">
-                        {playerBars ? (
+                        {barsController ? (
                             <div className="GobanView-stage">
                                 {topBar}
-                                <GobanContainer
-                                    onResize={onResize}
-                                    onWheel={onWheel}
-                                    respectContainerBounds
-                                />
+                                {landscapeGobanContainer}
                                 {bottomBar}
                             </div>
                         ) : (
-                            <GobanContainer
-                                onResize={onResize}
-                                onWheel={onWheel}
-                                respectContainerBounds
-                            />
+                            landscapeGobanContainer
                         )}
                     </div>
                     <SidebarResizer

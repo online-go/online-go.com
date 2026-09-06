@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import * as data from "@/lib/data";
 import { pgettext } from "@/lib/translate";
 import { GobanController } from "@/lib/GobanController";
 import type { KibitzRoomSummary, KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
@@ -51,31 +52,20 @@ export interface KibitzLeftAsideProps {
     variationListHelpTargetId?: KibitzHelpTargetId;
 }
 
-const COLLAPSE_STORAGE_KEY = "kibitz.left_aside.collapsed";
-
 type SectionId = "rooms" | "variations";
 
-function readCollapsed(): Record<SectionId, boolean> {
-    try {
-        const raw = window.localStorage.getItem(COLLAPSE_STORAGE_KEY);
-        const parsed = raw ? (JSON.parse(raw) as Partial<Record<SectionId, boolean>>) : {};
-        return { rooms: !!parsed.rooms, variations: !!parsed.variations };
-    } catch {
-        return { rooms: false, variations: false };
-    }
-}
+const DEFAULT_COLLAPSED: Record<SectionId, boolean> = { rooms: false, variations: false };
 
 export function KibitzLeftAside(props: KibitzLeftAsideProps): React.ReactElement {
-    const [collapsed, setCollapsed] = React.useState<Record<SectionId, boolean>>(readCollapsed);
+    const [collapsed, setCollapsed] = React.useState<Record<SectionId, boolean>>(() => ({
+        ...DEFAULT_COLLAPSED,
+        ...data.get("kibitz.left_aside.collapsed", DEFAULT_COLLAPSED),
+    }));
 
     const toggle = (section: SectionId) => {
         setCollapsed((previous) => {
             const next = { ...previous, [section]: !previous[section] };
-            try {
-                window.localStorage.setItem(COLLAPSE_STORAGE_KEY, JSON.stringify(next));
-            } catch {
-                // Storage may be unavailable; the toggle still works for this page.
-            }
+            data.set("kibitz.left_aside.collapsed", next);
             return next;
         });
     };

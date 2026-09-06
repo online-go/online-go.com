@@ -73,6 +73,15 @@ jest.mock("@/lib/chat_manager", () => ({
     },
 }));
 
+jest.mock("@/lib/data", () => {
+    const store = new Map<string, unknown>();
+    return {
+        __esModule: true,
+        get: (key: string, fallback?: unknown) => (store.has(key) ? store.get(key) : fallback),
+        set: (key: string, value: unknown) => store.set(key, value),
+    };
+});
+
 jest.mock("@/lib/hooks", () => ({
     __esModule: true,
     useUser: () => ({

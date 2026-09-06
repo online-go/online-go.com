@@ -27,6 +27,7 @@ import {
     ChatChannelProxy,
     ChatMessage,
 } from "@/lib/chat_manager";
+import * as data from "@/lib/data";
 import { useUser } from "@/lib/hooks";
 import type { GobanController } from "@/lib/GobanController";
 import { interpolate, moment, pgettext } from "@/lib/translate";
@@ -75,16 +76,10 @@ export interface KibitzChatPanelProps {
     gameController: GobanController | null;
 }
 
-const TAB_STORAGE_KEY = "kibitz.chat_tab";
 const DEFAULT_TAB: ChatTab = "room";
 
-function isChatTab(value: string | null): value is ChatTab {
-    return value === "room" || value === "game";
-}
-
 function readTab(): ChatTab {
-    const stored = window.localStorage.getItem(TAB_STORAGE_KEY);
-    return isChatTab(stored) ? stored : DEFAULT_TAB;
+    return data.get("kibitz.chat_tab", DEFAULT_TAB);
 }
 
 // Goban chat lines come off goban.chat_log (fed by game-server / Scylla).
@@ -448,7 +443,7 @@ export function KibitzChatPanel({
     }, [gameFollowLatest, gameVisible]);
 
     React.useEffect(() => {
-        window.localStorage.setItem(TAB_STORAGE_KEY, tab);
+        data.set("kibitz.chat_tab", tab);
     }, [tab]);
 
     const onRoomScroll = React.useCallback(() => {
