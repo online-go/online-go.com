@@ -85,10 +85,15 @@ export const multiMoveUndoTest = async ({
     // Challenger is black. Black plays, white answers — black's turn again.
     await playMoves(challengerPage, acceptorPage, ["D4", "E5"], "9x9");
 
-    // Black requests an undo while it is black's turn.
-    const undoButton = challengerPage.getByTitle("Request undo");
-    await expect(undoButton).toBeEnabled();
-    await undoButton.click();
+    // Black requests an undo while it is black's turn. The undo request
+    // lives in the "More actions" (ellipsis) popover as a labeled item;
+    // the trigger is an icon-only tab labeled via its `title` attribute.
+    await challengerPage.locator('button.GobanView-tab-button[title="More actions"]').click();
+    const undoItem = challengerPage
+        .locator("button.GameSidebarPanel-item")
+        .filter({ hasText: "Request undo" });
+    await expect(undoItem).toBeEnabled();
+    await undoItem.click();
 
     // The opponent sees a request covering both moves...
     await expect(acceptorPage.getByText("Accept Undo")).toBeVisible({ timeout: 10000 });
@@ -145,9 +150,13 @@ export const multiMoveUndoWhiteRequesterTest = async ({
     // Three moves: B D4, W E5, B C3 — now it is white's turn.
     await playMoves(challengerPage, acceptorPage, ["D4", "E5", "C3"], "9x9");
 
-    const undoButton = acceptorPage.getByTitle("Request undo");
-    await expect(undoButton).toBeEnabled();
-    await undoButton.click();
+    // White requests the undo via the "More actions" popover item.
+    await acceptorPage.locator('button.GobanView-tab-button[title="More actions"]').click();
+    const undoItem = acceptorPage
+        .locator("button.GameSidebarPanel-item")
+        .filter({ hasText: "Request undo" });
+    await expect(undoItem).toBeEnabled();
+    await undoItem.click();
 
     await expect(challengerPage.getByText("Accept Undo")).toBeVisible({ timeout: 10000 });
     const seen_by_black = await undoEngineState(challengerPage);
