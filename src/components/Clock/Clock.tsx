@@ -116,7 +116,7 @@ export function Clock({
         }
 
         // The main time for correspondence games can get pretty lengthy, for those
-        // use a smaller font
+        // use use a smaller font
         const need_small_main_time_font = prettyTime(player_clock.main_time).length > 8;
 
         const show_pause = !compact && clock.pause_state;

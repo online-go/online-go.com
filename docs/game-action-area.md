@@ -26,6 +26,19 @@ It renders nothing when the current state has none of these.
   no fixed height reservation to keep in sync.
 - Wider layouts: `PlayControls` renders it at the top of the sidebar.
 
+## The move slider on portrait
+
+The move slider (`MoveNumberControl`) sits above the tab bar, outside the
+scroll area, so its row comes out of the room the stage has. During play the
+Game view passes `hideSlider="when-cramped"` to GobanView: the slider only
+takes its row when the player cards, the action area and the board at its
+full width still fit on screen next to it. On a shorter screen the row goes
+to the board instead. While analyzing, or stepping back through a game with
+analysis disabled, the slider is always shown and the board shrinks to make
+room. GobanView measures this with a ResizeObserver (`useSliderFits`), so a
+control added to the action area can push the slider off a screen that was
+just tall enough.
+
 ## Adding to it
 
 Put a control here only when a player must see it without scrolling and it

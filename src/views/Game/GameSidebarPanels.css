@@ -111,6 +111,7 @@
         }
 
         span {
+            min-width: 0;
             overflow: hidden;
             text-overflow: ellipsis;
         }
@@ -235,6 +236,13 @@
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
+}
+
+/* Cap each actions column so a long label (for example a tournament name)
+ * truncates with an ellipsis instead of stretching the popover. */
+.popover-container .GamePopover.GameMoreActionsPopover .GameSidebarPanel {
+    max-width: 22rem;
+    min-width: 0;
 }
 
 /* Moderator case: actions and mod-tools render as two columns side-by-side

@@ -17,7 +17,8 @@
 
 import * as React from "react";
 import { useGobanController } from "./goban_context";
-import { useShowTitle, useTitle, useCurrentMove, useAIReviewEnabled } from "./GameHooks";
+import { useShowTitle, useTitle, useCurrentMove, useAIReviewEnabled, useMode } from "./GameHooks";
+import { GAME_KEYBOARD_SHORTCUT_GROUPS } from "./game_keyboard_shortcuts";
 import { _, interpolate } from "@/lib/translate";
 import { rulesText } from "@/lib/misc";
 import { KBShortcut } from "@/components/KBShortcut";
@@ -119,75 +120,36 @@ export function GameInformation(): React.ReactElement | null {
 export function GameKeyboardShortcuts(): React.ReactElement | null {
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
+    const mode = useMode(goban);
+
+    // The list is rebuilt when the goban changes mode so `when` guards, such
+    // as F10 only applying in analysis mode, are re-evaluated.
+    const bindings = React.useMemo(
+        () =>
+            GAME_KEYBOARD_SHORTCUT_GROUPS.flatMap((group) =>
+                group.shortcuts
+                    .filter((entry) => !entry.when || entry.when(goban_controller))
+                    .map((entry) => ({
+                        shortcut: entry.shortcut,
+                        action: () => entry.action(goban_controller),
+                    })),
+            ),
+        [goban_controller, mode],
+    );
 
     return (
         <div>
-            <KBShortcut shortcut="up" action={goban_controller.nextBranchUp} />
-            <KBShortcut shortcut="down" action={goban_controller.nextBranchDown} />
-            <KBShortcut shortcut="left" action={goban_controller.previousMove} />
-            <KBShortcut shortcut="right" action={goban_controller.nextMove} />
-            <KBShortcut shortcut="page-up" action={goban_controller.previous10Moves} />
-            <KBShortcut shortcut="page-down" action={goban_controller.forwardTenMoves} />
-            <KBShortcut shortcut="space" action={goban_controller.togglePlayPause} />
-            <KBShortcut shortcut="home" action={goban_controller.gotoFirstMove} />
-            <KBShortcut shortcut="end" action={goban_controller.gotoLastMove} />
-            <KBShortcut shortcut="escape" action={goban_controller.handleEscapeKey} />
-            <KBShortcut
-                shortcut="f1"
-                action={() => goban_controller.setAnalyzeTool("stone", "alternate")}
-            />
-            <KBShortcut
-                shortcut="f2"
-                action={() => goban_controller.setAnalyzeTool("stone", "black")}
-            />
-            <KBShortcut
-                shortcut="f4"
-                action={() => goban_controller.setAnalyzeTool("label", "triangle")}
-            />
-            <KBShortcut
-                shortcut="f5"
-                action={() => goban_controller.setAnalyzeTool("label", "square")}
-            />
-            <KBShortcut
-                shortcut="f6"
-                action={() => goban_controller.setAnalyzeTool("label", "circle")}
-            />
-            <KBShortcut
-                shortcut="f7"
-                action={() => goban_controller.setAnalyzeTool("label", "letters")}
-            />
-            <KBShortcut
-                shortcut="f8"
-                action={() => goban_controller.setAnalyzeTool("label", "numbers")}
-            />
-            <KBShortcut shortcut="ctrl-c" action={goban_controller.copyBranch} />
-            <KBShortcut shortcut="ctrl-v" action={goban_controller.pasteBranch} />
-            <KBShortcut
-                shortcut="f9"
-                action={() =>
-                    goban_controller.setAnalyzeTool("draw", goban_controller.analyze_pencil_color)
-                }
-            />
-            {goban?.mode === "analyze" && (
-                <KBShortcut shortcut="f10" action={goban_controller.clearAndSync} />
-            )}
-            <KBShortcut shortcut="del" action={goban_controller.deleteBranch} />
-            <KBShortcut shortcut="shift-z" action={goban_controller.toggleZenMode} />
-            <KBShortcut shortcut="shift-c" action={goban_controller.toggleCoordinates} />
-            <KBShortcut shortcut="shift-i" action={goban_controller.toggleAIReview} />
-            <KBShortcut shortcut="shift-a" action={goban_controller.gameAnalyze} />
-            <KBShortcut shortcut="shift-r" action={goban_controller.startReview} />
-            <KBShortcut shortcut="shift-e" action={goban_controller.estimateScore} />
-            <KBShortcut
-                shortcut="shift-p"
-                action={() => goban_controller.goban.setModeDeferred("play")}
-            />
+            {bindings.map(({ shortcut, action }) => (
+                <KBShortcut key={shortcut} shortcut={shortcut} action={action} />
+            ))}
         </div>
     );
 }
+
 interface FragAIReviewProps {
     simul_black?: boolean | null;
     simul_white?: boolean | null;
+    showFairPlay?: boolean;
     showGameTimings?: boolean;
 }
 
@@ -225,6 +187,7 @@ export function FragAIReview(props: FragAIReviewProps): React.ReactElement | nul
                 hidden={!ai_review_enabled}
                 simul_black={props.simul_black}
                 simul_white={props.simul_white}
+                showFairPlay={props.showFairPlay}
                 showGameTimings={props.showGameTimings}
                 moves={goban.engine.config.moves}
                 start_time={goban.engine.config.start_time}
@@ -235,10 +198,12 @@ export function FragAIReview(props: FragAIReviewProps): React.ReactElement | nul
         );
     }
 
-    // Ongoing games - show timings only when requested (for moderators)
-    // Render FairPlayGameSummary directly to avoid AIReview's API call for ai_reviews
+    // Ongoing games - show the fair play summary while the moderator tools
+    // are open, with the per-move timings when the Timing toggle is on.
+    // Render FairPlayGameSummary directly to avoid AIReview's API call for
+    // ai_reviews.
     if (
-        props.showGameTimings &&
+        props.showFairPlay &&
         cur_move &&
         goban.engine &&
         goban.engine.config &&
@@ -255,13 +220,15 @@ export function FragAIReview(props: FragAIReviewProps): React.ReactElement | nul
                 white_player_id={goban.engine.config.white_player_id}
                 board_size={goban.engine.width}
                 currentMoveNumber={cur_move.move_number - 1}
-                moves={goban.engine.config.moves}
-                start_time={goban.engine.config.start_time}
-                end_time={goban.engine.config.end_time}
-                free_handicap_placement={goban.engine.config.free_handicap_placement}
-                handicap={goban.engine.config.handicap}
-                simul_black={props.simul_black}
-                simul_white={props.simul_white}
+                moves={props.showGameTimings ? goban.engine.config.moves : undefined}
+                start_time={props.showGameTimings ? goban.engine.config.start_time : undefined}
+                end_time={props.showGameTimings ? goban.engine.config.end_time : undefined}
+                free_handicap_placement={
+                    props.showGameTimings ? goban.engine.config.free_handicap_placement : undefined
+                }
+                handicap={props.showGameTimings ? goban.engine.config.handicap : undefined}
+                simul_black={props.showGameTimings ? props.simul_black : undefined}
+                simul_white={props.showGameTimings ? props.simul_white : undefined}
             />
         );
     }

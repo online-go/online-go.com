@@ -406,8 +406,10 @@ export function useAutoScoring(goban: Goban): { in_progress: boolean; taking_too
  *     still in progress, or for a moderator;
  *   - paused by a player → "resume" for participants and moderators;
  *   - paused by a moderator → "resume" for moderators only;
- *   - any other pause (weekend, vacation, server, stone removal) is not
- *     user-resumable, so `action` is null.
+ *   - paused for any other reason (weekend, vacation, server, stone
+ *     removal) → "pause" for the same users as when unpaused. Those
+ *     pauses are not user-resumable, but a player pause stacks on top of
+ *     them and outlives them, so the affordance stays available.
  *
  * Moderators bypass the vacation / participant gating that applies to
  * players — `disable_vacation` only constrains player-side pauses, and
@@ -446,12 +448,13 @@ export function usePauseControl(goban: GobanRenderer | null): {
     }, [goban]);
 
     const paused = !!pause_state;
+    const user_paused = !!pause_state?.player || !!pause_state?.moderator;
     const can_resume = pause_state?.player
         ? user_is_player || !!user?.is_moderator
         : pause_state?.moderator
           ? !!user?.is_moderator
           : false;
-    const action: "pause" | "resume" | null = paused
+    const action: "pause" | "resume" | null = user_paused
         ? can_resume
             ? "resume"
             : null
@@ -463,7 +466,7 @@ export function usePauseControl(goban: GobanRenderer | null): {
         if (!goban) {
             return;
         }
-        if (paused) {
+        if (action === "resume") {
             goban.resumeGame();
         } else {
             goban.pauseGame();
@@ -561,9 +564,12 @@ export function useSelectedChatLog(controller: GobanController): ChatMode {
     return selected_chat_log;
 }
 
-export function useAnnulled(controller: GobanController): boolean {
-    const [annulled, set_annulled] = React.useState(controller.annulled);
+export function useAnnulled(controller: GobanController | null): boolean {
+    const [annulled, set_annulled] = React.useState(controller?.annulled ?? false);
     React.useEffect(() => {
+        if (!controller) {
+            return undefined;
+        }
         controller.on("annulled", set_annulled);
         return () => {
             controller.off("annulled", set_annulled);

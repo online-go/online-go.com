@@ -63,7 +63,6 @@ interface GobanControllerEvents {
     stop_estimating_score: () => void; // emitted when we want to stop estimating the score
     selected_chat_log: (selected_chat_log: ChatMode) => void;
     selected_ai_review_uuid: (selected_ai_review_uuid: string | null) => void;
-    ai_review_presentation_active: (ai_review_presentation_active: boolean) => void;
     branch_copied: (copied_node: MoveTree | undefined) => void;
     in_pushed_analysis: (in_pushed_analysis: boolean) => void;
     annulled: (annulled: boolean) => void;
@@ -279,7 +278,6 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     public _selected_chat_log: ChatMode;
     private _stashed_conditional_moves: ConditionalMoveTree | null = null;
     private _selected_ai_review_uuid: string | null = null;
-    private _ai_review_presentation_active: boolean = false;
     private _copied_node?: MoveTree;
     private _view_mode: ViewMode = "wide"; // Default to wide, will be updated on resize if needed
     private _annulled: boolean = false;
@@ -488,57 +486,6 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         this.emit("selected_ai_review_uuid", selected_ai_review_uuid);
     }
 
-    public get ai_review_presentation_active(): boolean {
-        return this._ai_review_presentation_active;
-    }
-    /**
-     * While active, the AI review presents moves instead of positions:
-     * presenting move N means the engine sits on position N-1 and move N is
-     * shown as a translucent stone on the board. All user-facing surfaces
-     * then speak in presented move numbers: displays derive their number
-     * from presentedMoveNumber(), gotoMove(n) navigates so that move n is
-     * presented, and the goban's move tree highlights and resolves clicks in
-     * the same space. Set by the AIReview component while a review with
-     * analysis data is shown.
-     */
-    public setAIReviewPresentationActive(active: boolean) {
-        if (this._ai_review_presentation_active === active) {
-            return;
-        }
-        this._ai_review_presentation_active = active;
-        this.goban.setPresentNextMove(active);
-        this.emit("ai_review_presentation_active", active);
-    }
-
-    /**
-     * The move number the user is shown for the current engine state: the
-     * next trunk move while the AI review presentation is active, otherwise
-     * the engine's current move number. At the end of the trunk this is one
-     * past the last move: the position where the engine's prediction for the
-     * never-played next move can be explored.
-     */
-    public presentedMoveNumber(): number {
-        const cur = this.goban.engine.cur_move;
-        if (this._ai_review_presentation_active && cur.trunk) {
-            return cur.move_number + 1;
-        }
-        return cur.move_number;
-    }
-
-    /**
-     * True when the presentation is on the last trunk move, where natural
-     * forward navigation stops. The position past it (the engine's prediction
-     * for the never-played next move) is reached deliberately, by clicking
-     * the presented stone.
-     */
-    private atPresentationEnd(): boolean {
-        if (!this._ai_review_presentation_active) {
-            return false;
-        }
-        const cur = this.goban.engine.cur_move;
-        return cur.trunk && !!cur.trunk_next && !cur.trunk_next.trunk_next;
-    }
-
     public get zen_mode(): boolean {
         return this._zen_mode;
     }
@@ -620,9 +567,6 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             this.stopAutoplay();
         }
         this.checkAndEnterAnalysis(last_estimate_move);
-        if (this.atPresentationEnd()) {
-            return;
-        }
         this.goban.showNext();
         this.goban.syncReviewMove();
     };
@@ -631,9 +575,6 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
         for (let i = 0; i < 10; ++i) {
-            if (this.atPresentationEnd()) {
-                break;
-            }
             this.goban.showNext();
         }
         this.goban.syncReviewMove();
@@ -648,17 +589,6 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             while (this.goban.engine.showNext()) {
                 // show next if there is one
             }
-        }
-        /* In presented move space the end of the game is the last move
-         * presented, not the position after it */
-        const cur = this.goban.engine.cur_move;
-        if (
-            this._ai_review_presentation_active &&
-            cur.trunk &&
-            !cur.trunk_next &&
-            cur.move_number > 0
-        ) {
-            this.goban.showPrevious();
         }
         this.goban.syncReviewMove();
     };
@@ -676,13 +606,6 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     public gotoMove = (move_number?: number) => {
         if (typeof move_number !== "number") {
             return;
-        }
-
-        /* While the AI review presentation is active, move numbers are
-         * presented move numbers: presenting move N means the engine sits on
-         * position N-1. */
-        if (this._ai_review_presentation_active) {
-            move_number = Math.max(0, move_number - 1);
         }
 
         const last_estimate_move = this.stopEstimatingScore();

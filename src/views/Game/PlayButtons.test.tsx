@@ -214,7 +214,7 @@ describe("PlayButtons", () => {
         expect(screen.queryByText("Cancel Undo")).toBeNull();
     });
 
-    test("renders no undo response to the player who requested the undo", () => {
+    test('shows "Cancel Undo" to the player who requested the undo', () => {
         const controller = new GobanController({
             moves: [
                 [16, 3, 9136.12], // B
@@ -233,14 +233,13 @@ describe("PlayButtons", () => {
             controller.goban.engine.undo_requested = 4;
         });
 
-        // The requester withdraws from the action bar's undo button, so
-        // there is no undo response for them here — only resign.
         const { container } = render(
             <WrapTest controller={controller}>
                 <PlayButtons />
             </WrapTest>,
         );
 
+        expect(screen.getByText("Cancel Undo")).toBeDefined();
         expect(screen.queryByText("Accept Undo")).toBeNull();
         expect(screen.queryByText("Reject Undo")).toBeNull();
         expect(container.querySelector(".resign-button")).not.toBeNull();

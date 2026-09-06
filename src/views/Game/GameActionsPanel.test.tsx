@@ -23,10 +23,15 @@ import { BrowserRouter as Router } from "react-router-dom";
 import * as data from "@/lib/data";
 import { GobanController } from "@/lib/GobanController";
 import { openSGFCollectionModal } from "@/components/SGFCollectionModal";
+import { openGameKeyboardShortcutsModal } from "./GameKeyboardShortcutsModal";
 
 // Mock the SGF Collection Modal
 jest.mock("@/components/SGFCollectionModal", () => ({
     openSGFCollectionModal: jest.fn(),
+}));
+
+jest.mock("./GameKeyboardShortcutsModal", () => ({
+    openGameKeyboardShortcutsModal: jest.fn(),
 }));
 
 const TEST_USER = {
@@ -173,6 +178,38 @@ test("'Add to library' button is disabled for anonymous users", () => {
     expect(addToLibraryButton).toBeInTheDocument();
     expect(addToLibraryButton).toBeDisabled();
     expect(addToLibraryButton).toHaveClass("disabled");
+});
+
+test("clicking 'Keyboard shortcuts' opens the shortcuts modal and closes the menu", () => {
+    data.set("user", TEST_USER);
+    const gameController = new GobanController({ game_id: 456789 });
+    const onClose = jest.fn();
+
+    renderPanel(gameController, { onClose });
+
+    fireEvent.click(screen.getByText("Keyboard shortcuts"));
+
+    expect(openGameKeyboardShortcutsModal).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledTimes(1);
+});
+
+test("'Keyboard shortcuts' is hidden on touch-only devices", () => {
+    data.set("user", TEST_USER);
+    const gameController = new GobanController({ game_id: 456789 });
+
+    const matchMedia = jest.fn().mockImplementation((query: string) => ({
+        matches: query === "(any-hover: none) and (any-pointer: coarse)",
+        media: query,
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+    }));
+    Object.defineProperty(window, "matchMedia", { configurable: true, value: matchMedia });
+    try {
+        renderPanel(gameController);
+        expect(screen.queryByText("Keyboard shortcuts")).toBeNull();
+    } finally {
+        delete (window as { matchMedia?: unknown }).matchMedia;
+    }
 });
 
 const OPPONENT = { id: 456, username: "test_user2" };

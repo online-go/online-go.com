@@ -16,7 +16,7 @@
 import "@/lib/data";
 import "@/lib/sockets";
 
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import * as React from "react";
 import { PlayerCard } from "./PlayerCards";
@@ -24,6 +24,11 @@ import { GobanControllerContext } from "./goban_context";
 import { BrowserRouter as Router } from "react-router-dom";
 import * as data from "@/lib/data";
 import { GobanController } from "../../lib/GobanController";
+import { openRengoTeamModal } from "@/components/RengoTeamModal";
+
+jest.mock("@/components/RengoTeamModal", () => ({
+    openRengoTeamModal: jest.fn(),
+}));
 
 const TEST_USER = {
     anonymous: false,
@@ -106,4 +111,57 @@ test("make sure komi is not displayed for black", () => {
     if (divElement) {
         expect(divElement).toBeEmptyDOMElement();
     }
+});
+
+const RENGO_PLAYERS = {
+    alice: { id: 1, username: "alice", rank: 10 },
+    bob: { id: 2, username: "bob", rank: 11 },
+    carol: { id: 3, username: "carol", rank: 12 },
+    dave: { id: 4, username: "dave", rank: 13 },
+};
+
+function renderRengoCard(color: "black" | "white") {
+    data.set("user", TEST_USER);
+    data.set("preferences.moderator.hide-flags", false);
+    data.set("preferences.moderator.hide-player-card-mod-controls", false);
+
+    const { alice, bob, carol, dave } = RENGO_PLAYERS;
+    const gameController = new GobanController({
+        game_id: 123456,
+        rengo: true,
+        players: { black: alice, white: dave },
+        rengo_teams: { black: [alice, bob, carol], white: [dave] },
+    });
+    const goban = gameController.goban;
+    const props = { goban, ...BASE_PROPS, color };
+
+    return render(
+        <Router>
+            <GobanControllerContext.Provider value={gameController}>
+                <PlayerCard {...props} />
+            </GobanControllerContext.Provider>
+        </Router>,
+    );
+}
+
+test("rengo card shows the number of other team members instead of the full list", () => {
+    const { container } = renderRengoCard("black");
+
+    expect(container.querySelector(".rengo-team-count")).toHaveTextContent("+ 2");
+    expect(container.querySelector(".rengo-team-members")).toBeNull();
+});
+
+test("rengo card hides the team count when the team has one player", () => {
+    const { container } = renderRengoCard("white");
+
+    expect(container.querySelector(".rengo-team-count")).toBeNull();
+});
+
+test("clicking the rengo team count opens the team modal with the current player first", () => {
+    const { container } = renderRengoCard("black");
+    const { alice, bob, carol } = RENGO_PLAYERS;
+
+    fireEvent.click(container.querySelector(".rengo-team-count")!);
+
+    expect(openRengoTeamModal).toHaveBeenCalledWith("black", [alice, bob, carol]);
 });

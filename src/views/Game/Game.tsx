@@ -37,19 +37,20 @@ import { PlayControls, ReviewControls } from "./PlayControls";
 import { GameActionArea } from "./GameActionArea";
 import { alert } from "@/lib/swal_config";
 import {
-    useCanRequestUndo,
+    useAnnulled,
+    useCurrentMoveNumber,
     useMode,
+    useOfficialMoveNumber,
     usePauseControl,
     usePhase,
     useScorePopup,
-    useUndoRequestIsMine,
     useUserIsLivePlayerToMove,
     useUserIsParticipant,
     useViewMode,
     useZenMode,
 } from "./GameHooks";
-import { requestUndo } from "./game_actions";
-import { UndoIcon } from "./UndoIcon";
+import { openGameInfo } from "./game_actions";
+import { openGameLinkModal } from "./GameLinkModal";
 import {
     GobanControllerContext,
     GobanView,
@@ -136,10 +137,11 @@ export function Game(): React.ReactElement | null {
     const user = useUser();
     const user_is_player = useUserIsParticipant(goban);
     const mode = useMode(goban);
+    const cur_move_number = useCurrentMoveNumber(goban);
+    const official_move_number = useOfficialMoveNumber(goban);
     const user_is_live_player_to_move = useUserIsLivePlayerToMove(goban);
-    const can_request_undo = useCanRequestUndo(goban);
-    const undo_request_is_mine = useUndoRequestIsMine(goban);
     const pause_control = usePauseControl(goban);
+    const annulled = useAnnulled(goban_controller.current);
     const modal_context = React.useContext(ModalContext);
     const more_actions_popover_ref = React.useRef<PopOver | null>(null);
     const settings_popover_ref = React.useRef<PopOver | null>(null);
@@ -841,10 +843,12 @@ export function Game(): React.ReactElement | null {
 
     const analysis_disabled = goban.isAnalysisDisabled();
     const is_analyzing = mode === "analyze";
-
-    // Undo applies only while the user is actually playing a game that is
-    // still in progress.
-    const show_play_action_tabs = user_is_player && mode === "play" && phase === "play";
+    // With analysis disabled, stepping back in play mode only shows earlier
+    // positions. While the user is behind the live position this way, the
+    // move slider is shown so they can move around; "Back to Game" in
+    // PlayButtons returns them to the live position.
+    const is_browsing_history =
+        analysis_disabled && mode === "play" && cur_move_number < official_move_number;
 
     // Toggle behavior: if the mode is already on, clicking exits back to play.
     // Reading the live `mode`/`estimating_score` for the `active` prop also
@@ -865,18 +869,35 @@ export function Game(): React.ReactElement | null {
     // The analyze / chat / review / conditional tabs are defined once here
     // and rendered twice: as icons in the action bar and as labeled items at
     // the top of the More-actions menu.
-    const analyze_tab: GobanViewTabProps | null = game
-        ? {
-              id: "game-analyze",
-              type: "action",
-              align: "left",
-              icon: "sitemap",
-              title: _("Analyze game"),
-              disabled: analysis_disabled,
-              active: is_analyzing,
-              onClick: onAnalyzeClick,
-          }
-        : null;
+    //
+    // On a cramped mobile screen the move slider is hidden during play, so
+    // with analysis disabled the greyed-out analyze button would leave no
+    // way to look at earlier moves. Swap it for a "Previous move" button
+    // that steps back and thereby brings up the slider. Desktop keeps the
+    // disabled analyze button since its slider is always visible.
+    const swap_analyze_for_step_back = is_mobile && analysis_disabled;
+    const analyze_tab: GobanViewTabProps | null = !game
+        ? null
+        : swap_analyze_for_step_back
+          ? {
+                id: "game-step-back",
+                type: "action",
+                align: "left",
+                icon: "step-backward",
+                title: pgettext("Move navigation: previous move", "Previous move"),
+                disabled: cur_move_number <= 0,
+                onClick: () => goban_controller.current?.previousMove(),
+            }
+          : {
+                id: "game-analyze",
+                type: "action",
+                align: "left",
+                icon: "sitemap",
+                title: _("Analyze game"),
+                disabled: analysis_disabled,
+                active: is_analyzing,
+                onClick: onAnalyzeClick,
+            };
 
     // "Review this game" is for spectators reviewing a live game and for
     // anyone (including the players) once it's finished — never for an
@@ -940,7 +961,7 @@ export function Game(): React.ReactElement | null {
               id: "game-review",
               type: "action",
               align: "center",
-              icon: "refresh",
+              icon: "search-plus",
               title: _("Review this game"),
               onClick: goban_controller.current.startReview,
           }
@@ -959,17 +980,18 @@ export function Game(): React.ReactElement | null {
           }
         : null;
 
-    // Pause / resume the game clock. Rendered only for users allowed to
-    // change the pause state right now (participants in vacation-eligible
-    // games, moderators — see usePauseControl).
+    // Pause / resume the game clock. Listed only in the More-actions menu,
+    // and only for users allowed to change the pause state right now
+    // (participants in vacation-eligible games, moderators — see
+    // usePauseControl).
     const pause_tab: GobanViewTabProps | null =
         pause_control.action !== null
             ? {
                   id: "game-pause",
                   type: "action",
                   align: "center",
-                  icon: pause_control.paused ? "play" : "pause",
-                  title: pause_control.paused ? _("Resume game") : _("Pause game"),
+                  icon: pause_control.action === "resume" ? "play" : "pause",
+                  title: pause_control.action === "resume" ? _("Resume game") : _("Pause game"),
                   onClick: pause_control.togglePause,
               }
             : null;
@@ -977,6 +999,59 @@ export function Game(): React.ReactElement | null {
     const menu_action_tabs = [analyze_tab, chat_tab, review_tab, conditional_tab, pause_tab].filter(
         (tab): tab is GobanViewTabProps => tab !== null,
     );
+
+    // Optional tabs: shown only when the bar has room, dropped lowest
+    // priority first. The More-actions menu always lists these same
+    // actions, so nothing is lost when they are hidden.
+    const onEstimateScoreClick = () => {
+        const controller = goban_controller.current;
+        if (!controller) {
+            return;
+        }
+        if (estimating_score) {
+            controller.stopEstimatingScore();
+        } else {
+            controller.estimateScore();
+        }
+    };
+
+    const estimate_score_tab: GobanViewTabProps = {
+        id: "game-estimate-score",
+        type: "action",
+        align: "left",
+        priority: 3,
+        icon: "tachometer",
+        title: _("Estimate score"),
+        disabled: analysis_disabled,
+        active: estimating_score,
+        onClick: onEstimateScoreClick,
+    };
+
+    const link_tab: GobanViewTabProps = {
+        id: "game-link",
+        type: "action",
+        align: "right",
+        priority: 2,
+        icon: "share-alt",
+        title: review ? _("Link to review") : _("Link to game"),
+        onClick: () => openGameLinkModal(goban!),
+    };
+
+    const info_tab: GobanViewTabProps = {
+        id: "game-info",
+        type: "action",
+        align: "right",
+        priority: 1,
+        icon: "info",
+        title: _("Game information"),
+        onClick: () => {
+            const controller = goban_controller.current;
+            if (!controller) {
+                return;
+            }
+            openGameInfo(controller, historical_black, historical_white, annulled);
+        },
+    };
 
     const CONTROLS = review ? (
         <ReviewControls review_id={review_id} />
@@ -1113,10 +1188,21 @@ export function Game(): React.ReactElement | null {
                     </>
                 )
             }
-            /* On mobile the move slider only earns its row while analyzing;
-             * during play it is dropped to leave the board and the controls
-             * more room. */
-            hideSlider={is_mobile && !is_analyzing}
+            /* On mobile the move slider always gets its row while analyzing,
+             * or while stepping back through played moves in a game with
+             * analysis disabled. During play it only gets the row when the
+             * board at full width, the player cards and the play buttons
+             * still fit on screen beside it; on a cramped screen it is
+             * dropped to leave the board and the controls the room. Zen mode
+             * drops it everywhere: keyboard navigation still works, and the
+             * strip is not part of the focused view. */
+            hideSlider={
+                zen_mode
+                    ? true
+                    : is_mobile && !is_analyzing && !is_browsing_history
+                      ? "when-cramped"
+                      : false
+            }
         >
             {game_id > 0 && (
                 <UIPush
@@ -1126,6 +1212,18 @@ export function Game(): React.ReactElement | null {
                 />
             )}
             <GameKeyboardShortcuts />
+
+            {zen_mode && (
+                <button
+                    type="button"
+                    className="leave-zen-mode-button"
+                    title={_("Exit zen mode")}
+                    aria-label={_("Exit zen mode")}
+                    onClick={goban_controller.current.toggleZenMode}
+                >
+                    <i className="ogs-zen-mode" />
+                </button>
+            )}
 
             <GobanView.Tab id="game-main" type="always">
                 {/* Mobile renders the two player cards in GobanView's
@@ -1144,6 +1242,7 @@ export function Game(): React.ReactElement | null {
                     <FragAIReview
                         simul_black={simul_black}
                         simul_white={simul_white}
+                        showFairPlay={show_mod_tab && moderator_tab_visible}
                         showGameTimings={show_game_timing}
                     />
                 )}
@@ -1185,9 +1284,9 @@ export function Game(): React.ReactElement | null {
                 )}
             </GobanView.Tab>
 
-            {/* Left: settings + the two analysis tools that used to live in
-             *  the More-actions takeover. Move navigation comes from
-             *  GobanView's built-in MoveNumberControl above the tab bar. */}
+            {/* Left: settings + the analysis tools that used to live in the
+             *  More-actions takeover. Move navigation comes from GobanView's
+             *  built-in MoveNumberControl above the tab bar. */}
             <GobanView.Tab
                 id="game-settings"
                 type="action"
@@ -1223,6 +1322,8 @@ export function Game(): React.ReactElement | null {
 
             {analyze_tab && <GobanView.Tab {...analyze_tab} />}
 
+            <GobanView.Tab {...estimate_score_tab} />
+
             {chat_tab && <GobanView.Tab {...chat_tab} />}
 
             {/* Center: contextual single-purpose actions. Review here is
@@ -1231,39 +1332,17 @@ export function Game(): React.ReactElement | null {
 
             {conditional_tab && <GobanView.Tab {...conditional_tab} />}
 
-            {/* Ask the opponent to take back the last move. The button stays
-             *  lit while your own request is pending, and pressing it again
-             *  withdraws that request. It greys out when an undo can't be
-             *  asked for right now (rengo, the opening move, the opponent's
-             *  request pending, a staged move). */}
-            {show_play_action_tabs && (
-                <GobanView.Tab
-                    id="game-undo"
-                    type="action"
-                    align="center"
-                    icon={<UndoIcon badge="question" />}
-                    title={
-                        undo_request_is_mine
-                            ? pgettext("Withdraw your own undo request", "Cancel undo request")
-                            : pgettext("Ask the opponent to undo the last move", "Request undo")
-                    }
-                    active={undo_request_is_mine}
-                    disabled={!undo_request_is_mine && !can_request_undo}
-                    onClick={() =>
-                        undo_request_is_mine ? goban!.cancelUndo() : requestUndo(goban!, user.id)
-                    }
-                />
-            )}
-
-            {pause_tab && <GobanView.Tab {...pause_tab} />}
-
             {/* Right group, in source order (visually left → right):
              *  1. Moderator toggle (gavel) — per-player controls + decide /
              *     annul / inspect / AI-review tools. Sticky between
              *     reloads via the `moderator.game-moderator-tab-visible`
              *     preference, gated on user role.
              *  2. More actions (ellipsis) — popover with the
-             *     non-moderator game actions. */}
+             *     non-moderator game actions.
+             *  Link and game information come first; they are optional and
+             *  give way when the bar is short of room. */}
+            <GobanView.Tab {...link_tab} />
+            <GobanView.Tab {...info_tab} />
             {show_mod_tab && (
                 <GobanView.Tab
                     id="game-moderator"

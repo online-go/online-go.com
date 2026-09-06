@@ -23,11 +23,13 @@ import { DataSchema } from "./data_schema";
 import { FollowedChannel } from "@/views/GoTV";
 import { getWindowWidth } from "./device";
 import { createGobanThemePreferenceDefaults } from "./goban_theme_defaults";
+import type { GobanViewBoardAlignment } from "@/components/GobanView/util";
 
 export const defaults = {
     "ai-review-enabled": true,
     "ai-review-use-score": true,
-    "ai-review-show-visit-counts": true,
+    "ai-review-show-visit-counts": false,
+    "ai-review-show-on-board": true,
     "ai-summary-table-show": true,
     "always-disable-analysis": false,
     "animate-turn-clock": true,
@@ -83,6 +85,8 @@ export const defaults = {
     //"goban-theme-white_stone_url": null as null | string,
     "goban-theme-removal-graphic": "square" as "square" | "x",
     "goban-theme-removal-scale": 0.9,
+    "goban-view-sidebar-width": null as number | null,
+    "goban-view-board-alignment": "container" as GobanViewBoardAlignment,
     "hide-ranks": false,
     "label-positioning": "all" as LabelPosition,
     "label-positioning-puzzles": "all" as LabelPosition,

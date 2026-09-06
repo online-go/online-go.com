@@ -23,16 +23,17 @@ import type { LabelPosition } from "goban";
 import { Toggle } from "@/components/Toggle";
 import { GobanThemePicker } from "@/components/GobanThemePicker/GobanThemePicker";
 import { openACLModal } from "@/components/ACLModal";
+import { boardAlignmentOptions, GobanViewBoardAlignment } from "@/components/GobanView/util";
 import { useAIReviewEnabled, useZenMode } from "./GameHooks";
 import { useGobanController } from "./goban_context";
 import "./GameSidebarPanels.css";
 
 interface GameSettingsPanelProps {
     /** Called by actions that commit to a final state the user wants to see
-     *  applied (full screen). Toggles that the user is likely to flip
+     *  applied (zen mode). Toggles that the user is likely to flip
      *  multiple times (coordinates, AI review, volume) don't fire this. */
     onClose?: () => void;
-    /** Hide the Full screen toggle. The mobile (portrait) layout doesn't
+    /** Hide the Zen Mode toggle. The mobile (portrait) layout doesn't
      *  expose it — the viewport is already the full screen. */
     compact?: boolean;
     /** When provided, a "More options" item renders under the theme quick
@@ -102,6 +103,7 @@ export function GameSettingsPanel({
     const zen_mode = useZenMode(goban_controller);
 
     const [label_position, setLabelPositionPref] = usePreference("label-positioning");
+    const [board_alignment, setBoardAlignment] = usePreference("goban-view-board-alignment");
     // The preference is the source of truth; the goban needs an explicit
     // sync call since it doesn't subscribe to this specific preference.
     const setCoordinates = (pos: LabelPosition) => {
@@ -142,12 +144,12 @@ export function GameSettingsPanel({
 
             {!compact && (
                 <div className="GameSidebarPanel-labeled-row">
-                    <label htmlFor="game-settings-full-screen">
+                    <label htmlFor="game-settings-zen-mode">
                         <i className="fa fa-expand" />
-                        <span>{_("Full screen")}</span>
+                        <span>{_("Zen Mode")}</span>
                     </label>
                     <Toggle
-                        id="game-settings-full-screen"
+                        id="game-settings-zen-mode"
                         checked={zen_mode}
                         onChange={() => {
                             goban_controller.toggleZenMode();
@@ -219,6 +221,32 @@ export function GameSettingsPanel({
                         {pgettext("Control who can access the game or review", "Access settings")}
                     </span>
                 </button>
+            )}
+
+            {/* Board alignment only applies to the landscape layout, so the
+                portrait (compact) panel leaves it out. */}
+            {!compact && (
+                <div className="GameSidebarPanel-labeled-row">
+                    <label htmlFor="game-settings-board-alignment">
+                        <i className="fa fa-arrows-h" />
+                        <span>
+                            {pgettext("Board alignment on the game page", "Board alignment")}
+                        </span>
+                    </label>
+                    <select
+                        id="game-settings-board-alignment"
+                        value={board_alignment}
+                        onChange={(e) =>
+                            setBoardAlignment(e.target.value as GobanViewBoardAlignment)
+                        }
+                    >
+                        {boardAlignmentOptions().map((option) => (
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
+                    </select>
+                </div>
             )}
 
             <div className="GameSidebarPanel-section-header">

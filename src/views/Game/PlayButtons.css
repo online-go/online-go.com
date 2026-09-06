@@ -93,7 +93,8 @@
         white-space: nowrap;
     }
 
-    .reject-undo-button {
+    .reject-undo-button,
+    .cancel-undo-button {
         white-space: nowrap;
     }
 

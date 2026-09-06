@@ -91,29 +91,8 @@ export function MoveNumberControl(): React.ReactElement {
         setHwm((prev) => (prev < current ? current : prev));
     }, [current]);
 
-    // While the AI review presentation is active the engine sits on the
-    // position before the presented move, so the knob label shows the
-    // presented move number instead of the raw position.
-    const [presentation_active, set_presentation_active] = React.useState(
-        controller.ai_review_presentation_active,
-    );
-    React.useEffect(() => {
-        set_presentation_active(controller.ai_review_presentation_active);
-        controller.on("ai_review_presentation_active", set_presentation_active);
-        return () => {
-            controller.off("ai_review_presentation_active", set_presentation_active);
-        };
-    }, [controller]);
-    const knob_number = presentation_active ? controller.presentedMoveNumber() : current;
-
     const restrict_forward = initial_mode_ref.current === "puzzle";
-    // In presented move space, natural navigation stops on the last trunk
-    // move; the position past it (the engine's prediction for the next,
-    // never-played move) is only reached deliberately.
-    const on_trunk = goban?.engine.cur_move.trunk ?? false;
-    const natural_reachable =
-        presentation_active && on_trunk ? Math.max(0, reachable - 1) : reachable;
-    const max = restrict_forward ? Math.max(current, hwm) : natural_reachable;
+    const max = restrict_forward ? Math.max(current, hwm) : reachable;
 
     const at_start = current <= 0;
     const at_end = current >= max;
@@ -291,7 +270,7 @@ export function MoveNumberControl(): React.ReactElement {
                 )}
                 <span className="MoveNumberControl-move-number">
                     {interpolate(pgettext("Current move number", "Move {{move_number}}"), {
-                        move_number: knob_number,
+                        move_number: current,
                     })}
                 </span>
             </div>
@@ -322,7 +301,7 @@ export function MoveNumberControl(): React.ReactElement {
                     aria-label={pgettext("Move navigation slider", "Move number")}
                 />
                 <div className="MoveNumberControl-knob" aria-hidden="true">
-                    <span className="MoveNumberControl-knob-text">{knob_number}</span>
+                    <span className="MoveNumberControl-knob-text">{current}</span>
                 </div>
             </div>
             {next_button}

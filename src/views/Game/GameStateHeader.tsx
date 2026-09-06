@@ -31,6 +31,7 @@ import {
     useTitle,
     useViewMode,
     useWinner,
+    useZenMode,
 } from "./GameHooks";
 import "./GameStateHeader.css";
 
@@ -109,9 +110,13 @@ export function GameStateHeader(): React.ReactElement | null {
     // Mode", "Stone Removal Phase", ...) to save vertical space for the
     // board; the clocks and the lit action bar icons already say as much.
     // The undo request message stays since it needs a response, and the
-    // final result stays since nothing else on screen shows it.
+    // final result stays since nothing else on screen shows it. Zen mode
+    // drops the labels and the result too, so only the undo request can
+    // make the header appear.
     const is_portrait = useViewMode(goban_controller) === "portrait";
-    const show_labels = !is_portrait;
+    const zen_mode = useZenMode(goban_controller);
+    const show_labels = !is_portrait && !zen_mode;
+    const show_result = isFinished && !zen_mode;
     const show_play_title = show_title && !engine.rengo && show_labels;
     const has_play_content = isPlayPlay && (show_play_title || show_undo_requested);
     const has_analyze_content = isAnalyze && (show_labels || show_undo_requested);
@@ -119,7 +124,7 @@ export function GameStateHeader(): React.ReactElement | null {
         has_play_content ||
         has_analyze_content ||
         (show_labels && (isStoneRemoval || isConditional)) ||
-        isFinished;
+        show_result;
 
     if (!has_any_content) {
         return null;
@@ -166,7 +171,7 @@ export function GameStateHeader(): React.ReactElement | null {
 
             {isConditional && show_labels && <span>{_("Conditional Move Planner")}</span>}
 
-            {isFinished && (
+            {show_result && (
                 <>
                     <span style={{ textDecoration: annulled ? "line-through" : "none" }}>
                         {winner

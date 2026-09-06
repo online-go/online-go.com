@@ -19,7 +19,7 @@ import * as React from "react";
 import { _, pgettext } from "@/lib/translate";
 import { browserHistory } from "@/lib/ogsHistory";
 import { api1 } from "@/lib/requests";
-import { useUser } from "@/lib/hooks";
+import { useIsTouchOnlyDevice, useUser } from "@/lib/hooks";
 import { alert } from "@/lib/swal_config";
 import { toast } from "@/lib/toast";
 import { openReport } from "@/components/Report";
@@ -38,9 +38,9 @@ import {
     useUserIsParticipant,
 } from "./GameHooks";
 import { useGobanController } from "./goban_context";
-import { openGameInfoModal } from "./GameInfoModal";
 import { openGameLinkModal } from "./GameLinkModal";
-import { cancelOrResignGame, requestUndo } from "./game_actions";
+import { openGameKeyboardShortcutsModal } from "./GameKeyboardShortcutsModal";
+import { cancelOrResignGame, openGameInfo, requestUndo } from "./game_actions";
 import { UndoIcon } from "./UndoIcon";
 import "./GameSidebarPanels.css";
 
@@ -87,6 +87,9 @@ export function GameActionsPanel({
     const phase = usePhase(goban);
     const mode = useMode(goban);
     const user = useUser();
+    // Phones and tablets have no keyboard to speak of, so the shortcut list
+    // is only offered where a mouse or trackpad suggests one is present.
+    const touch_only_device = useIsTouchOnlyDevice();
     const { showModal } = React.useContext(ModalContext);
 
     const annulled = useAnnulled(goban_controller);
@@ -141,26 +144,11 @@ export function GameActionsPanel({
     };
 
     const showLinkModal = wrap(() => openGameLinkModal(goban));
+    const showKeyboardShortcuts = wrap(openGameKeyboardShortcutsModal);
 
-    const showGameInfo = wrap(() => {
-        const ec = goban.engine.config;
-        Object.assign(goban.config, {
-            komi: ec.komi,
-            rules: ec.rules,
-            handicap: ec.handicap,
-            handicap_rank_difference: ec.handicap_rank_difference,
-            rengo: ec.rengo,
-            rengo_teams: ec.rengo_teams,
-            disable_vacation: ec.disable_vacation,
-        });
-        openGameInfoModal(
-            goban.config,
-            historical_black || goban.engine.players.black,
-            historical_white || goban.engine.players.white,
-            annulled,
-            goban_controller.creator_id || goban.review_owner_id || 0,
-        );
-    });
+    const showGameInfo = wrap(() =>
+        openGameInfo(goban_controller, historical_black, historical_white, annulled),
+    );
 
     const alertModerator = wrap(() => {
         if (!user || user.anonymous) {
@@ -262,6 +250,7 @@ export function GameActionsPanel({
                     className="GameSidebarPanel-item"
                     href={`/tournament/${tournament_id}`}
                     onClick={navigateTo(`/tournament/${tournament_id}`)}
+                    title={tournament_name}
                 >
                     <i className="fa fa-trophy" />
                     <span>{tournament_name || _("Tournament")}</span>
@@ -418,6 +407,13 @@ export function GameActionsPanel({
                     <i className="fa fa-download" />
                     <span>{_("SGF with comments")}</span>
                 </a>
+            )}
+
+            {!touch_only_device && (
+                <button className="GameSidebarPanel-item" onClick={showKeyboardShortcuts}>
+                    <i className="fa fa-keyboard-o" />
+                    <span>{_("Keyboard shortcuts")}</span>
+                </button>
             )}
         </div>
     );
