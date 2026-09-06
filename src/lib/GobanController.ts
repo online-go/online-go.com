@@ -52,7 +52,6 @@ import { isLiveGame } from "@/components/TimeControl";
 interface GobanControllerEvents {
     autoplaying: (autoplaying: boolean) => void;
     variation_name: (variation_name: string) => void;
-    show_game_timing: (show_game_timing: boolean) => void;
     show_bot_detection_results: (show_bot_detection_results: boolean) => void;
     zen_mode: (zen_mode: boolean) => void;
     copied_node: (copied_node: MoveTree | undefined) => void;
@@ -262,7 +261,6 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     public readonly goban: GobanRenderer;
     private _autoplaying: boolean = false;
     public analyze_pencil_color: string = preferences.get("analysis.pencil-color");
-    private show_game_timing: boolean = false;
     private show_bot_detection_results: boolean = false;
     private _zen_mode: boolean = preferences.get("start-in-zen-mode");
     private _ai_review_enabled: boolean = preferences.get("ai-review-enabled");
@@ -856,11 +854,6 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         preferences.set("label-positioning", label_position);
 
         this.goban.setLabelPosition(label_position);
-    };
-
-    toggleShowTiming = () => {
-        this.show_game_timing = !this.show_game_timing;
-        this.emit("show_game_timing", this.show_game_timing);
     };
 
     toggleShowBotDetectionResults = () => {

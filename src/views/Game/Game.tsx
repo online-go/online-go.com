@@ -124,7 +124,6 @@ export function Game(): React.ReactElement | null {
         React.useState<rest_api.AnnulmentReason | null>(null);
     const [scroll_to_navigate] = React.useState(preferences.get("scroll-to-navigate"));
     const phase = usePhase(goban);
-    const [show_game_timing, set_show_game_timing] = React.useState(false);
     const [tournament, set_tournament] = React.useState<ActiveTournament>();
     const [, set_undo_requested] = React.useState<number | undefined>();
     const [bot_detection_results, set_bot_detection_results] = React.useState<any>(null);
@@ -316,16 +315,14 @@ export function Game(): React.ReactElement | null {
         }
         const controller = goban_controller.current;
 
-        controller.on("show_game_timing", set_show_game_timing);
         controller.on("show_bot_detection_results", set_show_bot_detection_results);
         controller.on("estimating_score", set_estimating_score);
 
         return () => {
-            controller.off("show_game_timing", set_show_game_timing);
             controller.off("show_bot_detection_results", set_show_bot_detection_results);
             controller.off("estimating_score", set_estimating_score);
         };
-    }, [goban_controller.current, set_show_game_timing, set_show_bot_detection_results]);
+    }, [goban_controller.current, set_show_bot_detection_results]);
 
     const onWheel: React.WheelEventHandler<HTMLDivElement> = React.useCallback(
         (event) => {
@@ -962,7 +959,7 @@ export function Game(): React.ReactElement | null {
               id: "game-review",
               type: "action",
               align: "center",
-              icon: "refresh",
+              icon: "search-plus",
               title: _("Review this game"),
               onClick: goban_controller.current.startReview,
           }
@@ -981,17 +978,18 @@ export function Game(): React.ReactElement | null {
           }
         : null;
 
-    // Pause / resume the game clock. Rendered only for users allowed to
-    // change the pause state right now (participants in vacation-eligible
-    // games, moderators — see usePauseControl).
+    // Pause / resume the game clock. Listed only in the More-actions menu,
+    // and only for users allowed to change the pause state right now
+    // (participants in vacation-eligible games, moderators — see
+    // usePauseControl).
     const pause_tab: GobanViewTabProps | null =
         pause_control.action !== null
             ? {
                   id: "game-pause",
                   type: "action",
                   align: "center",
-                  icon: pause_control.paused ? "play" : "pause",
-                  title: pause_control.paused ? _("Resume game") : _("Pause game"),
+                  icon: pause_control.action === "resume" ? "play" : "pause",
+                  title: pause_control.action === "resume" ? _("Resume game") : _("Pause game"),
                   onClick: pause_control.togglePause,
               }
             : null;
@@ -1243,7 +1241,6 @@ export function Game(): React.ReactElement | null {
                         simul_black={simul_black}
                         simul_white={simul_white}
                         showFairPlay={show_mod_tab && moderator_tab_visible}
-                        showGameTimings={show_game_timing}
                     />
                 )}
 
@@ -1331,8 +1328,6 @@ export function Game(): React.ReactElement | null {
             {review_tab && <GobanView.Tab {...review_tab} />}
 
             {conditional_tab && <GobanView.Tab {...conditional_tab} />}
-
-            {pause_tab && <GobanView.Tab {...pause_tab} />}
 
             {/* Right group, in source order (visually left → right):
              *  1. Moderator toggle (gavel) — per-player controls + decide /

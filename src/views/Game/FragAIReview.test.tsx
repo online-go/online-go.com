@@ -21,6 +21,7 @@ import { FragAIReview } from "./fragments";
 import { GobanControllerContext } from "./goban_context";
 import * as data from "@/lib/data";
 import { GobanController } from "@/lib/GobanController";
+import { GobanMovesArray } from "goban";
 
 jest.mock("@/lib/requests", () => ({
     get: jest.fn(() => Promise.resolve([])),
@@ -30,9 +31,19 @@ jest.mock("@/lib/requests", () => ({
     patch: jest.fn(() => Promise.resolve({})),
 }));
 
+const fair_play_props = jest.fn();
+
 jest.mock("@moderator-ui/FairPlay", () => ({
-    FairPlayGameSummary: () => <div data-testid="fair-play-summary" />,
+    FairPlayGameSummary: (props: Record<string, unknown>) => {
+        fair_play_props(props);
+        return <div data-testid="fair-play-summary" />;
+    },
 }));
+
+const MOVES: GobanMovesArray = [
+    [3, 3, 1000],
+    [15, 15, 2000],
+];
 
 const MODERATOR = {
     anonymous: false,
@@ -70,6 +81,9 @@ function makeController(phase: "play" | "finished"): GobanController {
         phase,
         black_player_id: 987,
         white_player_id: 456,
+        start_time: 1000,
+        end_time: 5000,
+        moves: MOVES,
         players: {
             black: { id: 987, username: "someone" },
             white: { id: 456, username: "someone_else" },
@@ -87,6 +101,7 @@ function renderFragment(controller: GobanController, showFairPlay: boolean) {
 
 beforeEach(() => {
     data.set("user", MODERATOR);
+    fair_play_props.mockClear();
 });
 
 describe("fair play summary follows the moderator tools", () => {
@@ -95,9 +110,13 @@ describe("fair play summary follows the moderator tools", () => {
         expect(screen.queryByTestId("fair-play-summary")).toBeNull();
     });
 
-    test("ongoing game: shown while the moderator tools are on", () => {
+    test("ongoing game: shown with the move timings while the moderator tools are on", () => {
         renderFragment(makeController("play"), true);
         expect(screen.getByTestId("fair-play-summary")).toBeDefined();
+        const props = fair_play_props.mock.calls[0][0];
+        expect(props.moves).toBe(MOVES);
+        expect(props.start_time).toBe(1000);
+        expect(props.end_time).toBe(5000);
     });
 
     test("finished game: hidden while the moderator tools are off", async () => {
@@ -107,9 +126,13 @@ describe("fair play summary follows the moderator tools", () => {
         expect(screen.queryByTestId("fair-play-summary")).toBeNull();
     });
 
-    test("finished game: shown while the moderator tools are on", async () => {
+    test("finished game: shown with the move timings while the moderator tools are on", async () => {
         const controller = makeController("finished");
         renderFragment(controller, true);
         await screen.findByTestId("fair-play-summary");
+        const props = fair_play_props.mock.calls[0][0];
+        expect(props.moves).toBe(MOVES);
+        expect(props.start_time).toBe(1000);
+        expect(props.end_time).toBe(5000);
     });
 });

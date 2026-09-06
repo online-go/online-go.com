@@ -79,11 +79,10 @@ interface AIReviewProperties {
     onAIReviewSelected: (ai_review: JGOFAIReview) => void;
     simul_black?: boolean | null;
     simul_white?: boolean | null;
-    /** When true, shows the FairPlayGameSummary (bound to the moderator tools being open) */
+    /** When true, shows the FairPlayGameSummary with the per-move timings
+     *  (bound to the moderator tools being open) */
     showFairPlay?: boolean;
-    /** When true, shows GameTimings within FairPlayGameSummary */
-    showGameTimings?: boolean;
-    /** GameTimings props - required when showGameTimings is true */
+    /** GameTimings props, shown with the FairPlayGameSummary */
     moves?: GobanMovesArray;
     start_time?: number;
     end_time?: number;
@@ -107,7 +106,6 @@ export function AIReview({
     simul_black,
     simul_white,
     showFairPlay,
-    showGameTimings,
     moves,
     start_time,
     end_time,
@@ -621,18 +619,14 @@ export function AIReview({
                         white_player_id={gobanController.goban!.engine.config.white_player_id!}
                         board_size={gobanController.goban!.engine.width}
                         currentMoveNumber={move.move_number - 1}
-                        moves={showGameTimings ? moves : undefined}
-                        start_time={showGameTimings ? start_time : undefined}
-                        end_time={showGameTimings ? end_time : undefined}
-                        free_handicap_placement={
-                            showGameTimings ? free_handicap_placement : undefined
-                        }
-                        handicap={showGameTimings ? handicap : undefined}
-                        simul_black={showGameTimings ? simul_black : undefined}
-                        simul_white={showGameTimings ? simul_white : undefined}
-                        onFinalActionCalculated={
-                            showGameTimings ? onFinalActionCalculated : undefined
-                        }
+                        moves={moves}
+                        start_time={start_time}
+                        end_time={end_time}
+                        free_handicap_placement={free_handicap_placement}
+                        handicap={handicap}
+                        simul_black={simul_black}
+                        simul_white={simul_white}
+                        onFinalActionCalculated={onFinalActionCalculated}
                     />
                 )}
             </div>
@@ -751,19 +745,15 @@ export function AIReview({
                                         }
                                         board_size={gobanController.goban!.engine.width}
                                         currentMoveNumber={move.move_number - 1}
-                                        moves={showGameTimings ? moves : undefined}
-                                        start_time={showGameTimings ? start_time : undefined}
-                                        end_time={showGameTimings ? end_time : undefined}
-                                        free_handicap_placement={
-                                            showGameTimings ? free_handicap_placement : undefined
-                                        }
-                                        handicap={showGameTimings ? handicap : undefined}
-                                        simul_black={showGameTimings ? simul_black : undefined}
-                                        simul_white={showGameTimings ? simul_white : undefined}
+                                        moves={moves}
+                                        start_time={start_time}
+                                        end_time={end_time}
+                                        free_handicap_placement={free_handicap_placement}
+                                        handicap={handicap}
+                                        simul_black={simul_black}
+                                        simul_white={simul_white}
                                         ai_review_uuid={selectedAiReview?.uuid}
-                                        onFinalActionCalculated={
-                                            showGameTimings ? onFinalActionCalculated : undefined
-                                        }
+                                        onFinalActionCalculated={onFinalActionCalculated}
                                     />
                                 )}
                         </React.Fragment>
