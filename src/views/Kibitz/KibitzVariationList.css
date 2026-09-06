@@ -9,18 +9,19 @@
         display: block;
         width: 100%;
         height: auto;
-        margin: 0.4rem 0 0;
-        padding: 0.3rem 0.5rem;
+        margin: 0.15rem 0 0;
+        padding: 0.25rem 0.5rem;
         border: 0;
         border-radius: 0;
         box-shadow: none;
-        background: var(--shade4);
-        color: var(--fg);
-        text-align: center;
+        background: transparent;
+        color: var(--shade1);
+        text-align: left;
         cursor: pointer;
 
         &:hover {
-            background: var(--shade3);
+            color: var(--fg);
+            text-decoration: none;
         }
     }
 

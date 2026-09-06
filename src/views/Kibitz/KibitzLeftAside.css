@@ -30,22 +30,24 @@
     .KibitzLeftAside-sectionHeader {
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        gap: 0.4rem;
         text-transform: uppercase;
         font-weight: bold;
         font-size: var(--font-size-smaller);
         margin-bottom: 0.3rem;
-        padding: 0 0.5rem;
+        padding: 0.2rem 0.5rem;
+        cursor: pointer;
         user-select: none;
 
-        .KibitzLeftAside-sectionToggle {
-            padding: 0.2rem;
-            cursor: pointer;
-            color: var(--shade1);
+        &:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: -2px;
+        }
 
-            &:hover {
-                color: var(--fg);
-            }
+        .KibitzLeftAside-sectionToggle {
+            width: 0.8rem;
+            font-size: 0.7rem;
+            color: var(--shade1);
         }
     }
 

@@ -81,29 +81,27 @@ export function KibitzLeftAside(props: KibitzLeftAsideProps): React.ReactElement
     };
 
     const renderHeader = (section: SectionId, label: string) => (
-        <div className="KibitzLeftAside-sectionHeader">
-            <span>{label}</span>
-            <i
-                role="button"
-                tabIndex={0}
-                aria-expanded={!collapsed[section]}
-                aria-label={
-                    collapsed[section]
-                        ? pgettext("Expand a collapsed section of the Kibitz left aside", "Expand")
-                        : pgettext("Collapse a section of the Kibitz left aside", "Collapse")
+        <div
+            className="KibitzLeftAside-sectionHeader"
+            role="button"
+            tabIndex={0}
+            aria-expanded={!collapsed[section]}
+            onClick={() => toggle(section)}
+            onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    toggle(section);
                 }
+            }}
+        >
+            <i
                 className={
                     "KibitzLeftAside-sectionToggle fa " +
-                    (collapsed[section] ? "fa-plus" : "fa-minus")
+                    (collapsed[section] ? "fa-chevron-right" : "fa-chevron-down")
                 }
-                onClick={() => toggle(section)}
-                onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        toggle(section);
-                    }
-                }}
+                aria-hidden="true"
             />
+            <span>{label}</span>
         </div>
     );
 
