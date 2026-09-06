@@ -83,6 +83,7 @@
         box-shadow: none;
         background: transparent;
         color: var(--shade1);
+        font-size: 0.85rem;
         text-align: left;
         cursor: pointer;
 

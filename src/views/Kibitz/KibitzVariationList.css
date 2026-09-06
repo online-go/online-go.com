@@ -16,6 +16,7 @@
         box-shadow: none;
         background: transparent;
         color: var(--shade1);
+        font-size: 0.85rem;
         text-align: left;
         cursor: pointer;
 
@@ -129,221 +130,155 @@
         gap: 0.35rem;
     }
 
+    /* Rows follow the room list: one line, primary fill when selected,
+       the branch colour as a thin marker on the left and the remove button
+       at the right edge. */
     .variation-item {
-        align-items: flex-start;
-        background: transparent;
-        box-sizing: border-box;
         display: flex;
-        flex-direction: row;
-        gap: 0.14rem;
-        justify-content: center;
-        min-height: 3rem;
+        align-items: center;
         min-width: 0;
-        position: relative;
-        text-align: left;
-        transition: background-color 120ms ease;
-        width: 100%;
-    }
+        transition:
+            background-color 0.2s ease,
+            color 0.2s ease;
 
-    .variation-item.limit-flash .variation-recall,
-    .variation-item.limit-flash .variation-toggle {
-        animation: variation-limit-flash 900ms ease;
+        &:hover {
+            background-color: var(--primary-shade2-blend);
+            color: var(--colored-background-fg);
+        }
+
+        &.selected {
+            background-color: var(--primary);
+            color: var(--colored-background-fg);
+        }
+
+        &:hover .variation-name,
+        &:hover .variation-branch,
+        &:hover .variation-length,
+        &:hover .Player,
+        &:hover .variation-toggle,
+        &.selected .variation-name,
+        &.selected .variation-branch,
+        &.selected .variation-length,
+        &.selected .Player,
+        &.selected .variation-toggle {
+            color: var(--colored-background-fg);
+        }
+
+        &.limit-flash {
+            animation: variation-limit-flash 900ms ease;
+        }
     }
 
     .variation-recall {
-        align-items: flex-start;
-        background: transparent;
-        border: 0;
-        cursor: pointer;
-        display: flex;
         flex: 1 1 auto;
-        gap: 0.35rem;
-        min-height: 3rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
         min-width: 0;
-        padding: 0.36rem 0.2rem 0.36rem 0.1rem;
-        text-align: left;
-        transition:
-            background-color 120ms ease,
-            box-shadow 120ms ease;
-        touch-action: pan-y;
-        -webkit-touch-callout: none;
-    }
-
-    @media (hover: hover) and (pointer: fine) {
-        .variation-recall:hover,
-        .variation-recall:focus-visible {
-            background: var(--shade4);
-            border-radius: 4px;
-            outline: none;
-        }
-    }
-
-    /* Selected row: the chat page's active-channel fill. */
-    .variation-item.selected .variation-recall {
-        background: var(--primary);
+        height: auto;
+        margin: 0;
+        padding: 0.25rem 0.5rem;
+        border: 0;
         border-radius: 0;
-    }
-
-    .variation-item.selected .variation-recall .variation-name,
-    .variation-item.selected .variation-recall .variation-branch,
-    .variation-item.selected .variation-recall .variation-length,
-    .variation-item.selected .variation-recall .Player {
-        color: var(--colored-background-fg);
+        box-shadow: none;
+        background: transparent;
+        color: inherit;
+        cursor: pointer;
+        text-align: left;
+        touch-action: pan-y;
     }
 
     .variation-color-chip {
-        background: var(--shade3);
-        align-self: stretch;
         flex: 0 0 auto;
-        height: auto;
-        margin-top: 0;
         width: 0.28rem;
+        height: 1.1em;
+        background: var(--shade3);
     }
 
     .variation-main {
-        display: flex;
         flex: 1 1 auto;
-        flex-direction: column;
-        gap: 0.14rem;
+        display: flex;
+        align-items: baseline;
+        gap: 0.4rem;
         min-width: 0;
     }
 
-    .variation-toggle {
-        align-items: center;
-        background: transparent;
-        border: 0;
-        box-sizing: border-box;
-        color: var(--text-color-faded);
-        cursor: pointer;
-        display: inline-flex;
-        flex: 0 0 auto;
-        align-self: stretch;
-        aspect-ratio: 1 / 1;
-        height: auto;
-        min-height: 3rem;
-        justify-content: center;
-        margin: 0.15em;
-        padding: 0.36rem 0.2rem 0.36rem 0.1rem;
-        transition:
-            background-color 120ms ease,
-            box-shadow 120ms ease,
-            color 120ms ease;
-        touch-action: pan-y;
-        -webkit-touch-callout: none;
-        width: auto;
-    }
-
-    @media (hover: hover) and (pointer: fine) {
-        .variation-toggle:hover,
-        .variation-toggle:focus-visible {
-            color: var(--fg);
-            outline: none;
-        }
-    }
-
-    @media (hover: none) and (pointer: coarse) {
-        .variation-scroll,
-        .variation-recall,
-        .variation-toggle {
-            -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-            user-select: none;
-        }
-
-        .variation-recall:active,
-        .variation-recall:focus,
-        .variation-toggle:active,
-        .variation-toggle:focus {
-            background: transparent;
-            box-shadow: none;
-            color: inherit;
-            outline: none;
-            transition: none;
-        }
-    }
-
-    .variation-item.selected .variation-toggle {
-        background: var(--primary);
-        border-radius: 0;
-        color: var(--colored-background-fg);
-    }
-
-    @keyframes variation-limit-flash {
-        0% {
-            background: color-mix(in srgb, var(--shade4) 72%, var(--reject) 28%);
-            box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--reject) 40%, transparent);
-        }
-
-        55% {
-            background: color-mix(in srgb, var(--shade4) 62%, var(--reject) 38%);
-            box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--reject) 52%, transparent);
-        }
-
-        100% {
-            background: color-mix(in srgb, var(--shade2) 55%, transparent);
-            box-shadow: none;
-        }
-    }
-
-    /* The row reads like a variation link in the game chat. */
     .variation-name {
         color: var(--variation);
-        display: block;
-        font-size: 0.88rem;
         font-weight: bold;
-        line-height: 1.1;
-        min-width: 0;
+        white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap;
-        width: 100%;
     }
 
     .variation-recall:hover .variation-name {
-        color: var(--variation-hover);
         text-decoration: underline;
     }
 
-    .variation-author-row .Player {
-        font-size: 0.76rem;
-    }
-
     .variation-meta-row {
-        align-items: center;
-        display: grid;
-        gap: 0.35rem;
-        grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto;
+        flex: 1 1 auto;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.4rem;
         min-width: 0;
     }
 
     .variation-meta-labels {
-        align-items: center;
         display: inline-flex;
-        flex: 0 0 auto;
         gap: 0.35rem;
-        min-width: 0;
+        flex: 0 0 auto;
     }
 
     .variation-branch,
     .variation-length {
         color: var(--text-color-faded);
-        font-size: 0.76rem;
-        line-height: 1.1;
-        min-width: 0;
+        font-size: 0.8rem;
         white-space: nowrap;
     }
 
     .variation-meta-spacer {
-        min-width: 0;
+        display: none;
     }
 
     .variation-author-row {
-        align-items: center;
-        display: inline-flex;
-        flex: 0 0 auto;
-        gap: 0.35rem;
-        justify-content: flex-end;
+        flex: 0 1 auto;
         min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        font-size: 0.8rem;
+    }
+
+    .variation-toggle {
+        flex: 0 0 auto;
+        height: auto;
+        margin: 0;
+        padding: 0.25rem 0.5rem;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        background: transparent;
+        color: var(--shade1);
+        cursor: pointer;
+        font-size: 0.8rem;
+
+        &:hover {
+            color: var(--fg);
+        }
+    }
+
+    @keyframes variation-limit-flash {
+        0% {
+            background: color-mix(in srgb, var(--shade4) 72%, var(--reject) 28%);
+        }
+
+        55% {
+            background: color-mix(in srgb, var(--shade4) 62%, var(--reject) 38%);
+        }
+
+        100% {
+            background: transparent;
+        }
     }
 
     .variation-preview {
