@@ -254,12 +254,21 @@ export const tournamentDisableVacationTest = async ({
     const goban = player1Page.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible", timeout: 30000 });
 
-    // The pause button should NOT be visible for a player in a disable-vacation game.
-    // It would render as a GobanView action tab: <button class="GobanView-tab-button"
-    // title="Pause game"> when pausing is allowed.
-    const pauseLink = player1Page.locator('button.GobanView-tab-button[title="Pause game"]');
-    await expect(pauseLink).not.toBeVisible();
-    log("Confirmed: Pause game button is NOT visible for player in disable-vacation game");
+    // Pause lives in the "More actions" (ellipsis) popover. For a player in
+    // a disable-vacation game, the "Pause game" item must not be offered
+    // there (usePauseControl gates on disable_vacation). Anchoring on a
+    // visible sibling item first proves the popover is populated, so the
+    // absence check cannot pass vacuously against an unopened menu.
+    const moreActions = player1Page.locator('button.GobanView-tab-button[title="More actions"]');
+    await expect(moreActions).toBeVisible();
+    await moreActions.click();
+    const menuItems = player1Page.locator("button.GameSidebarPanel-item");
+    await expect(menuItems.filter({ hasText: "Game information" })).toBeVisible();
+    await expect(menuItems.filter({ hasText: "Pause game" })).not.toBeVisible();
+    // The popover has no Escape handling; clicking its backdrop dismisses
+    // it. Click a corner so the click cannot land on the panel itself.
+    await player1Page.locator(".popover-backdrop").click({ position: { x: 5, y: 5 } });
+    log("Confirmed: Pause game is NOT offered to a player in a disable-vacation game");
 
     log("Checking player 1 vacation settings for disable-vacation warning...");
     await player1Page.goto("/user/settings");
