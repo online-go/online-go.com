@@ -276,6 +276,8 @@ describe("useKibitzGobans", () => {
         });
         expect(latest!.centerMode).toBe("variation");
         expect(latest!.center).toBe(latest!.secondary);
+        // The variation is of the live game, so the bars stay with the live one.
+        expect(latest!.playerBars).toBe(latest!.main);
         expect(restoreMainBoardToOfficialTail).toHaveBeenCalledWith(latest!.main);
         expect(applyKibitzVariationToController).toHaveBeenNthCalledWith(
             1,
@@ -292,8 +294,12 @@ describe("useKibitzGobans", () => {
         );
     });
 
-    test("a draft controller is interactive and enters analyze mode", () => {
-        readyMainTrunk();
+    test("a draft is interactive, in analyze mode, and in the play phase", () => {
+        // Whatever phase the live game is in, an analysis board must be playable.
+        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => ({
+            ...MAIN_TRUNK_SNAPSHOT,
+            config: { ...MAIN_TRUNK_SNAPSHOT.config, phase: "stone removal", removed: "aa" },
+        }));
         const { rerender } = render(<Harness options={baseOptions()} onResult={() => undefined} />);
         emit(instances[0], "load");
         rerender(
@@ -308,7 +314,12 @@ describe("useKibitzGobans", () => {
                 onResult={() => undefined}
             />,
         );
-        expect(instances[1].config).toMatchObject({ interactive: true, game_id: undefined });
+        expect(instances[1].config).toMatchObject({
+            interactive: true,
+            game_id: undefined,
+            phase: "play",
+            removed: undefined,
+        });
         expect((instances[1] as { setAnalyzeTool: jest.Mock }).setAnalyzeTool).toHaveBeenCalledWith(
             "stone",
             "alternate",
@@ -387,29 +398,6 @@ describe("useKibitzGobans", () => {
         expect((instances[1] as { destroy: jest.Mock }).destroy).toHaveBeenCalled();
     });
 
-    test("player bars follow the live game for a same-game variation", () => {
-        readyMainTrunk();
-        let latest: KibitzGobans | null = null;
-        const { rerender } = render(
-            <Harness options={baseOptions()} onResult={(r) => (latest = r)} />,
-        );
-        emit(instances[0], "load");
-        expect(latest!.playerBars).toBe(latest!.main);
-
-        rerender(
-            <Harness
-                options={baseOptions({
-                    secondaryPane: { collapsed: false, variation_id: "v1" },
-                    variations: [makeVariation("v1")],
-                    visibleVariationIds: ["v1"],
-                })}
-                onResult={(r) => (latest = r)}
-            />,
-        );
-        expect(latest!.center).toBe(latest!.secondary);
-        expect(latest!.playerBars).toBe(latest!.main);
-    });
-
     test("isDraftDirty reports moves added to a draft", () => {
         readyMainTrunk();
         let latest: KibitzGobans | null = null;
@@ -437,29 +425,6 @@ describe("useKibitzGobans", () => {
         const engine = (instances[1] as { goban: { engine: { move_tree: unknown } } }).goban.engine;
         engine.move_tree = { branches: [{ branches: [] }] };
         expect(latest!.isDraftDirty()).toBe(true);
-    });
-
-    test("a same-game draft starts in the play phase whatever the live game is in", () => {
-        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => ({
-            gameId: 100,
-            trunkTailMoveNumber: 3,
-            config: { move_tree: { x: 1 }, phase: "stone removal", removed: "aa" },
-        }));
-        const { rerender } = render(<Harness options={baseOptions()} onResult={() => undefined} />);
-        emit(instances[0], "load");
-        rerender(
-            <Harness
-                options={baseOptions({
-                    secondaryPane: {
-                        collapsed: false,
-                        variation_source_game_id: 100,
-                        variation_source_move_path: "aa",
-                    },
-                })}
-                onResult={() => undefined}
-            />,
-        );
-        expect(instances[1].config).toMatchObject({ phase: "play", removed: undefined });
     });
 
     test("a new draft from the same position rebuilds the board", () => {
