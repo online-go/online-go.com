@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { GobanEvents, GobanRenderer } from "goban";
+import { GobanEnginePlayerEntry, GobanEvents, GobanRenderer } from "goban";
 import { _, interpolate, ngettext } from "@/lib/translate";
 import { Clock } from "@/components/Clock";
 import { PlayerIcon } from "@/components/PlayerIcon";
@@ -32,6 +32,7 @@ interface PlayerBarProps {
 interface PlayerBarState {
     player_id: number;
     username: string;
+    player: GobanEnginePlayerEntry;
     their_turn: boolean;
     score_line: string;
 }
@@ -67,6 +68,7 @@ function deriveState(goban: GobanRenderer, color: "black" | "white"): PlayerBarS
     return {
         player_id: player.id,
         username: player.username,
+        player,
         their_turn: engine.phase === "play" && engine.playerToMoveOnOfficialBranch() === player.id,
         score_line,
     };
@@ -115,7 +117,11 @@ export function PlayerBar({ color }: PlayerBarProps): React.ReactElement {
             <div className="PlayerBar-text">
                 <div className="PlayerBar-name">
                     {state.player_id ? (
-                        <Player user={state.player_id} disableCacheUpdate />
+                        <Player
+                            user={state.player_id}
+                            historical={state.player}
+                            gameId={goban.game_id}
+                        />
                     ) : (
                         <span className="PlayerBar-name-plain">{state.username}</span>
                     )}
