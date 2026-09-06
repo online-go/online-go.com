@@ -38,8 +38,6 @@ export interface KibitzViewProps {
     room: KibitzRoomSummary;
     gobans: KibitzGobans;
     isPortrait: boolean;
-    streamerMode: boolean;
-    onStreamerModeChange: (enabled: boolean) => void;
     leftAside: Omit<KibitzLeftAsideProps, "miniBoardController" | "onExitVariation">;
     chat: Omit<KibitzChatPanelProps, "gameController">;
     proposals: KibitzProposalPanelProps;
@@ -79,7 +77,7 @@ const useBehindLive = generateGobanHook(
  * and chat on the right.
  */
 export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
-    const { room, gobans, isPortrait, streamerMode } = props;
+    const { room, gobans, isPortrait } = props;
     const gobanViewRef = React.useRef<GobanViewRef>(null);
     const settingsPopoverRef = React.useRef<PopOver | null>(null);
     const moreActionsPopoverRef = React.useRef<PopOver | null>(null);
@@ -88,7 +86,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
         gobans.centerMode === "main" ? (gobans.main?.goban ?? null) : null,
     );
 
-    const { onExitVariation, onStreamerModeChange, roomSettings } = props;
+    const { onExitVariation, roomSettings } = props;
 
     React.useEffect(
         () => () => {
@@ -117,9 +115,6 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         canEditRoom={roomSettings.canEditRoom}
                         canDeleteRoom={roomSettings.canDeleteRoom}
                         canChangeBoard={!!roomSettings.onChangeBoard}
-                        isMobileLayout={isPortrait}
-                        streamerMode={streamerMode}
-                        onStreamerModeChange={onStreamerModeChange}
                         onClose={close}
                         onRequestChangeBoard={() => {
                             close();
@@ -133,7 +128,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 minWidth: 280,
             });
         },
-        [room, roomSettings, isPortrait, streamerMode, onStreamerModeChange],
+        [room, roomSettings],
     );
 
     const exitVariation = React.useCallback(() => {
@@ -241,7 +236,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
         <GobanView
             ref={gobanViewRef}
             controller={gobans.center}
-            className={"Kibitz" + (streamerMode ? " is-streamer-mode" : "")}
+            className="Kibitz"
             header={
                 <span
                     className="Kibitz-room-title"

@@ -234,11 +234,19 @@ export async function createKibitzRoomForLiveGame(
         .or(overlayFooter.getByRole("link", { name: /^Create room$/ }));
     await expect(submitCreateButton).toBeVisible({ timeout: 15000 });
     await expect(submitCreateButton).toBeEnabled();
+    // /kibitz redirects to the first room of the directory, which may already
+    // be a "user-<pk>" room somebody else owns, so the new room is the one the
+    // URL moves to after this click -- not merely any user-room URL.
+    const pathBeforeCreate = new URL(watcherPage.url()).pathname;
     await submitCreateButton.click();
 
     // After create, KibitzInner navigates to /kibitz/<roomId>; the id is
     // shaped like "user-<pk>" per the Kibitz backend.
-    await watcherPage.waitForURL(/\/kibitz\/user-[a-zA-Z0-9-]+/, { timeout: 15000 });
+    await watcherPage.waitForURL(
+        (url) =>
+            /\/kibitz\/user-[a-zA-Z0-9-]+$/.test(url.pathname) && url.pathname !== pathBeforeCreate,
+        { timeout: 15000 },
+    );
     await waitForKibitzReady(watcherPage);
     await waitForKibitzLayoutStable(watcherPage);
 

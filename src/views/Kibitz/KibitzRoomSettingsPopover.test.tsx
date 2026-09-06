@@ -5,7 +5,7 @@
  */
 
 import * as React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import type { KibitzRoomSummary } from "@/models/kibitz";
 import { KibitzRoomSettingsPopover } from "./KibitzRoomSettingsPopover";
 
@@ -42,16 +42,13 @@ function makeRoom(overrides?: Partial<KibitzRoomSummary>): KibitzRoomSummary {
 }
 
 describe("KibitzRoomSettingsPopover", () => {
-    it("renders the streamer mode toggle on desktop", () => {
+    it("shows no room management actions for a viewer without permissions", () => {
         render(
             <KibitzRoomSettingsPopover
                 room={makeRoom()}
                 canEditRoom={false}
                 canDeleteRoom={false}
                 canChangeBoard={false}
-                isMobileLayout={false}
-                streamerMode={false}
-                onStreamerModeChange={jest.fn()}
                 onClose={jest.fn()}
                 onRequestChangeBoard={jest.fn()}
                 onDeleteRoom={async () => false}
@@ -59,94 +56,28 @@ describe("KibitzRoomSettingsPopover", () => {
             />,
         );
 
-        expect(screen.getByText("Display")).toBeInTheDocument();
-        expect(screen.getByText("Streamer mode")).toBeInTheDocument();
-    });
-
-    it("calls onStreamerModeChange when the checkbox is toggled on and off", () => {
-        const onStreamerModeChange = jest.fn();
-
-        const { rerender } = render(
-            <KibitzRoomSettingsPopover
-                room={makeRoom()}
-                canEditRoom={false}
-                canDeleteRoom={false}
-                canChangeBoard={false}
-                isMobileLayout={false}
-                streamerMode={false}
-                onStreamerModeChange={onStreamerModeChange}
-                onClose={jest.fn()}
-                onRequestChangeBoard={jest.fn()}
-                onDeleteRoom={async () => false}
-                onSaveRoomDetails={async () => false}
-            />,
-        );
-
-        fireEvent.click(screen.getByRole("checkbox"));
-        expect(onStreamerModeChange).toHaveBeenCalledWith(true);
-
-        rerender(
-            <KibitzRoomSettingsPopover
-                room={makeRoom()}
-                canEditRoom={false}
-                canDeleteRoom={false}
-                canChangeBoard={false}
-                isMobileLayout={false}
-                streamerMode={true}
-                onStreamerModeChange={onStreamerModeChange}
-                onClose={jest.fn()}
-                onRequestChangeBoard={jest.fn()}
-                onDeleteRoom={async () => false}
-                onSaveRoomDetails={async () => false}
-            />,
-        );
-
-        fireEvent.click(screen.getByRole("checkbox"));
-        expect(onStreamerModeChange).toHaveBeenCalledWith(false);
-    });
-
-    it("hides the streamer mode toggle on mobile", () => {
-        render(
-            <KibitzRoomSettingsPopover
-                room={makeRoom()}
-                canEditRoom={false}
-                canDeleteRoom={false}
-                canChangeBoard={false}
-                isMobileLayout={true}
-                streamerMode={false}
-                onStreamerModeChange={jest.fn()}
-                onClose={jest.fn()}
-                onRequestChangeBoard={jest.fn()}
-                onDeleteRoom={async () => false}
-                onSaveRoomDetails={async () => false}
-            />,
-        );
-
-        expect(screen.queryByText("Display")).toBeNull();
-        expect(screen.queryByText("Streamer mode")).toBeNull();
-    });
-
-    it("shows display settings for viewers but not room management actions", () => {
-        render(
-            <KibitzRoomSettingsPopover
-                room={makeRoom()}
-                canEditRoom={false}
-                canDeleteRoom={false}
-                canChangeBoard={false}
-                isMobileLayout={false}
-                streamerMode={false}
-                onStreamerModeChange={jest.fn()}
-                onClose={jest.fn()}
-                onRequestChangeBoard={jest.fn()}
-                onDeleteRoom={async () => false}
-                onSaveRoomDetails={async () => false}
-            />,
-        );
-
-        expect(screen.getByText("Display")).toBeInTheDocument();
-        expect(screen.getByText("Streamer mode")).toBeInTheDocument();
+        expect(screen.getByText("You do not have room management access yet.")).toBeInTheDocument();
         expect(screen.queryByText("Edit room details")).toBeNull();
         expect(screen.queryByText("Change live game")).toBeNull();
         expect(screen.queryByText("Delete")).toBeNull();
+    });
+
+    it("offers the management actions the permissions allow", () => {
+        render(
+            <KibitzRoomSettingsPopover
+                room={makeRoom()}
+                canEditRoom={true}
+                canDeleteRoom={true}
+                canChangeBoard={true}
+                onClose={jest.fn()}
+                onRequestChangeBoard={jest.fn()}
+                onDeleteRoom={async () => false}
+                onSaveRoomDetails={async () => false}
+            />,
+        );
+
+        expect(screen.getByText("Edit room details")).toBeInTheDocument();
+        expect(screen.getByText("Change live game")).toBeInTheDocument();
+        expect(screen.queryByText("You do not have room management access yet.")).toBeNull();
     });
 });

@@ -51,8 +51,6 @@ export const kibitzEditRoomDetailsTest = async ({
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
     const { watcherPage, roomId } = await createKibitzRoomForLiveGame(createContext);
-    await load(watcherPage, `/kibitz/${roomId}`);
-    await waitForKibitzReady(watcherPage);
 
     // Capture the auto-generated original title (derived from the watcher's
     // username by KibitzGamePickerOverlay) so we can verify the non-owner's

@@ -96,8 +96,6 @@ function baseProps(overrides: Partial<KibitzViewProps> = {}): KibitzViewProps {
             isDraftDirty: () => false,
         },
         isPortrait: false,
-        streamerMode: false,
-        onStreamerModeChange: jest.fn(),
         leftAside: {} as KibitzViewProps["leftAside"],
         chat: {} as KibitzViewProps["chat"],
         proposals: { activeProposal: undefined, queuedProposals: [], onVote: jest.fn() },
@@ -126,6 +124,7 @@ describe("KibitzView", () => {
         expect(screen.getByTestId("chat")).toBeInTheDocument();
         expect(screen.queryByTestId(/variation-panel/)).toBeNull();
         expect(screen.getByTestId("left-aside")).toHaveAttribute("data-mini", "no");
+        expect(screen.getByTitle("Settings")).toBeInTheDocument();
         expect(screen.queryByTitle("Return to game")).toBeNull();
     });
 
@@ -161,13 +160,6 @@ describe("KibitzView", () => {
         });
         render(<KibitzView {...props} />);
         expect(screen.getByTitle("Return to live")).toBeInTheDocument();
-    });
-
-    test("streamer mode keeps the left aside mounted for CSS to hide", () => {
-        const { container } = render(<KibitzView {...baseProps({ streamerMode: true })} />);
-        expect(container.querySelector(".Kibitz.is-streamer-mode")).not.toBeNull();
-        expect(screen.getByTestId("left-aside")).toBeInTheDocument();
-        expect(screen.getByTitle("Settings")).toBeInTheDocument();
     });
 
     test("a variation opening before its controller exists mounts one board", () => {

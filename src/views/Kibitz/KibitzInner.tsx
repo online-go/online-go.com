@@ -105,7 +105,6 @@ interface KibitzInnerProps {
     controller: KibitzController;
 }
 
-const STREAMER_MODE_STORAGE_KEY = "kibitz.desktop.streamer_mode";
 const MAX_VISIBLE_VARIATIONS = KIBITZ_VARIATION_COLORS.length;
 const VARIATION_LIMIT_TOAST_MS = 1800;
 const VARIATION_LIMIT_FLASH_MS = 900;
@@ -404,13 +403,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const [gameVariations, setGameVariations] = React.useState<KibitzVariationSummary[]>([]);
     const [viewMode, setViewMode] = React.useState(() => goban_view_mode());
     const isPortrait = viewMode === "portrait";
-    const [streamerMode, setStreamerMode] = React.useState(() => {
-        if (goban_view_mode() === "portrait") {
-            return false;
-        }
-
-        return window.sessionStorage.getItem(STREAMER_MODE_STORAGE_KEY) === "true";
-    });
     const [visibleVariationIds, setVisibleVariationIds] = React.useState<string[]>([]);
     const [variationColorIndexes, setVariationColorIndexes] = React.useState<
         Record<string, number>
@@ -939,7 +931,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         );
     }, []);
     const helpTargetsReady = Boolean(gobans.center);
-    const desktopHelpTargetsReady = helpTargetsReady && !isPortrait && !streamerMode;
+    const desktopHelpTargetsReady = helpTargetsReady && !isPortrait;
     const kibitzHelpTriggers = useKibitzHelpTriggers({
         room: resolvedRoom,
         flowReadiness: {
@@ -1126,31 +1118,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             onCreateVariationFromPostedVariation(variation);
         }
     }, [displayedVariations, onCreateVariationFromPostedVariation, secondaryPane.variation_id]);
-
-    React.useEffect(() => {
-        window.sessionStorage.setItem(STREAMER_MODE_STORAGE_KEY, streamerMode ? "true" : "false");
-    }, [streamerMode]);
-
-    // Streamer mode only takes effect while a room is on screen; the
-    // blocked, empty and loading screens have no settings gear to turn it
-    // off, so they must keep the site chrome.
-    const streamerModeActive = streamerMode && Boolean(resolvedRoom) && !isBlockedRoom;
-
-    // NavBar, announcements, private chat and toasts all hide themselves for
-    // streamer mode through this class.
-    React.useEffect(() => {
-        document.body.classList.toggle("kibitz-streamer-mode", streamerModeActive);
-
-        return () => {
-            document.body.classList.remove("kibitz-streamer-mode");
-        };
-    }, [streamerModeActive]);
-
-    React.useEffect(() => {
-        if (isPortrait && streamerMode) {
-            setStreamerMode(false);
-        }
-    }, [isPortrait, streamerMode]);
 
     const onOpenCreateRoom = React.useCallback(() => {
         setPickerMode("create-room");
@@ -1456,8 +1423,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 room={resolvedRoom}
                 gobans={gobans}
                 isPortrait={isPortrait}
-                streamerMode={streamerModeActive}
-                onStreamerModeChange={setStreamerMode}
                 banner={
                     resolvedRoom.preset?.selection_status === "change_pending" &&
                     resolvedRoom.preset.change_effective_at ? (
