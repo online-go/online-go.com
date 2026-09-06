@@ -150,7 +150,6 @@ interface FragAIReviewProps {
     simul_black?: boolean | null;
     simul_white?: boolean | null;
     showFairPlay?: boolean;
-    showGameTimings?: boolean;
 }
 
 export function FragAIReview(props: FragAIReviewProps): React.ReactElement | null {
@@ -188,7 +187,6 @@ export function FragAIReview(props: FragAIReviewProps): React.ReactElement | nul
                 simul_black={props.simul_black}
                 simul_white={props.simul_white}
                 showFairPlay={props.showFairPlay}
-                showGameTimings={props.showGameTimings}
                 moves={goban.engine.config.moves}
                 start_time={goban.engine.config.start_time}
                 end_time={goban.engine.config.end_time}
@@ -220,15 +218,13 @@ export function FragAIReview(props: FragAIReviewProps): React.ReactElement | nul
                 white_player_id={goban.engine.config.white_player_id}
                 board_size={goban.engine.width}
                 currentMoveNumber={cur_move.move_number - 1}
-                moves={props.showGameTimings ? goban.engine.config.moves : undefined}
-                start_time={props.showGameTimings ? goban.engine.config.start_time : undefined}
-                end_time={props.showGameTimings ? goban.engine.config.end_time : undefined}
-                free_handicap_placement={
-                    props.showGameTimings ? goban.engine.config.free_handicap_placement : undefined
-                }
-                handicap={props.showGameTimings ? goban.engine.config.handicap : undefined}
-                simul_black={props.showGameTimings ? props.simul_black : undefined}
-                simul_white={props.showGameTimings ? props.simul_white : undefined}
+                moves={goban.engine.config.moves}
+                start_time={goban.engine.config.start_time}
+                end_time={goban.engine.config.end_time}
+                free_handicap_placement={goban.engine.config.free_handicap_placement}
+                handicap={goban.engine.config.handicap}
+                simul_black={props.simul_black}
+                simul_white={props.simul_white}
             />
         );
     }

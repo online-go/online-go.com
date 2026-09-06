@@ -68,7 +68,8 @@ export function GameModToolsPanel({
     const annulable = !annulled && engine.config.ranked;
     const unannulable = annulled && engine.config.ranked;
     const can_inspect_full = user_can_intervene || user_can_annul;
-    const show_icons = user_can_intervene || user_can_annul || user_detects_ai;
+    const show_bot_detection = (can_inspect_full || user_detects_ai) && ai_suspected;
+    const show_icons = can_inspect_full || show_bot_detection;
 
     const decide = (winner: string): void => {
         if (!game_id) {
@@ -188,7 +189,7 @@ export function GameModToolsPanel({
             .catch(errorAlerter);
     };
 
-    if (!user_can_intervene && !user_can_annul && !user_detects_ai && !superuser_ai_review_ready) {
+    if (!user_can_intervene && !user_can_annul && !show_icons && !superuser_ai_review_ready) {
         return null;
     }
 
@@ -267,15 +268,6 @@ export function GameModToolsPanel({
 
             {show_icons && (
                 <div className="GameModToolsPanel-icons" role="group" aria-label={_("Inspect")}>
-                    <button
-                        type="button"
-                        className="GameModToolsPanel-icon"
-                        onClick={goban_controller.toggleShowTiming}
-                        title={_("Timing")}
-                        aria-label={_("Timing")}
-                    >
-                        <i className="fa fa-clock-o" />
-                    </button>
                     {can_inspect_full && (
                         <>
                             <button
@@ -298,7 +290,7 @@ export function GameModToolsPanel({
                             </button>
                         </>
                     )}
-                    {ai_suspected && (
+                    {show_bot_detection && (
                         <button
                             type="button"
                             className="GameModToolsPanel-icon"
