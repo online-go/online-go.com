@@ -3,23 +3,25 @@
     flex-direction: column;
     min-height: 0;
     overflow: hidden;
-    padding: 0.4rem 0.75rem;
-    border-top: 1px solid var(--shade4);
+    padding: 0;
 
-    .KibitzVariationList-titleRow {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
-        margin-bottom: 0.25rem;
-    }
+    .KibitzVariationList-footerAction {
+        display: block;
+        width: 100%;
+        height: auto;
+        margin: 0.4rem 0 0;
+        padding: 0.3rem 0.5rem;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        background: var(--shade4);
+        color: var(--fg);
+        text-align: center;
+        cursor: pointer;
 
-    .variation-title {
-        flex: 0 0 auto;
-    }
-
-    .KibitzVariationList-createButton {
-        flex: 0 0 auto;
+        &:hover {
+            background: var(--shade3);
+        }
     }
 
     .variation-scroll {
@@ -175,12 +177,17 @@
         }
     }
 
-    /* Selected row: the sidebar-item convention, a shade4 fill with a
-       primary outline. */
+    /* Selected row: the chat page's active-channel fill. */
     .variation-item.selected .variation-recall {
-        background: var(--shade4);
-        border-radius: 4px;
-        box-shadow: inset 0 0 0 1px var(--primary);
+        background: var(--primary);
+        border-radius: 0;
+    }
+
+    .variation-item.selected .variation-recall .variation-name,
+    .variation-item.selected .variation-recall .variation-branch,
+    .variation-item.selected .variation-recall .variation-length,
+    .variation-item.selected .variation-recall .Player {
+        color: var(--colored-background-fg);
     }
 
     .variation-color-chip {
@@ -255,8 +262,9 @@
     }
 
     .variation-item.selected .variation-toggle {
-        background: var(--shade4);
-        border-radius: 4px;
+        background: var(--primary);
+        border-radius: 0;
+        color: var(--colored-background-fg);
     }
 
     @keyframes variation-limit-flash {

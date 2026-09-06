@@ -18,7 +18,7 @@
 import * as React from "react";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { KibitzRoomSummary } from "@/models/kibitz";
-import { getKibitzRoomLockedLabel, getKibitzRoomLockedTooltip } from "./kibitzAnalysisPolicyText";
+import { getKibitzRoomLockedTooltip } from "./kibitzAnalysisPolicyText";
 import { KIBITZ_HELP_TARGETS } from "./HelpFlows/KibitzHelpTargets";
 import { useKibitzHelpTarget } from "./HelpFlows/useKibitzHelpTarget";
 import "./KibitzRoomList.css";
@@ -34,6 +34,11 @@ interface KibitzRoomListProps {
     helpTargetId?: (typeof KIBITZ_HELP_TARGETS)[keyof typeof KIBITZ_HELP_TARGETS];
 }
 
+/**
+ * The rooms of the Kibitz left aside, laid out like the chat page's channel
+ * list: one line per room with the viewer count on the right, the active
+ * room filled with the primary colour, and a "+ Room" row at the bottom.
+ */
 export function KibitzRoomList({
     rooms,
     activeRoomId,
@@ -47,124 +52,84 @@ export function KibitzRoomList({
     const roomListTarget = useKibitzHelpTarget(helpTargetId);
 
     return (
-        <div className="KibitzRoomList">
-            <div className="KibitzRoomList-titleRow" ref={roomListTarget?.ref}>
-                <div className="KibitzRoomList-titleBlock">
-                    <div className="KibitzRoomList-title">
-                        {pgettext("Title for the kibitz left rail", "Kibitz")}
-                    </div>
-                    <div className="KibitzRoomList-subtitle">
-                        {interpolate(
-                            pgettext(
-                                "Subtitle for the kibitz left rail showing room count",
-                                "{{count}} live rooms",
-                            ),
-                            { count: rooms.length },
-                        )}
-                    </div>
-                </div>
-                {onCreateRoom ? (
-                    <div className="KibitzRoomList-actions">
-                        {canOpenCreateRoomFlow ? (
-                            <button
-                                type="button"
-                                className="xs primary KibitzRoomList-createButton"
-                                onClick={onCreateRoom}
-                            >
-                                {pgettext(
-                                    "Button label for opening the Kibitz create room picker",
-                                    "Create room",
-                                )}
-                            </button>
-                        ) : (
-                            <a className="xs primary KibitzRoomList-createButton" href={signInHref}>
-                                {pgettext(
-                                    "Button label for signing in before creating a Kibitz room",
-                                    "Sign in to create room",
-                                )}
-                            </a>
-                        )}
-                    </div>
-                ) : null}
-            </div>
+        <div className="KibitzRoomList" ref={roomListTarget?.ref}>
             <div className="KibitzRoomList-items">
                 {rooms.map((room) => {
                     const isActive = room.id === activeRoomId;
                     const isBlocked = blockedRoomIds?.has(room.id) ?? false;
-                    const roomDescription =
+                    const description =
                         room.description ??
                         pgettext(
                             "Fallback subtitle shown in the kibitz room list when no room description exists",
                             "No room description",
                         );
+                    const tooltip = isBlocked
+                        ? getKibitzRoomLockedTooltip()
+                        : room.kind === "preset"
+                          ? `${pgettext(
+                                "Label shown before a kibitz room description for preset rooms",
+                                "Preset",
+                            )} · ${description}`
+                          : description;
 
                     return (
                         <button
                             key={room.id}
-                            className={"KibitzRoomList-item" + (isActive ? " active" : "")}
+                            type="button"
+                            className={
+                                "KibitzRoomList-item" +
+                                (isActive ? " active" : "") +
+                                (isBlocked ? " blocked" : "")
+                            }
                             disabled={isBlocked}
-                            title={isBlocked ? getKibitzRoomLockedTooltip() : undefined}
+                            title={tooltip}
                             onClick={() => onSelectRoom(room.id)}
                         >
-                            <div className="room-main">
-                                <div className="room-top-row">
-                                    <span className="room-title">{room.title}</span>
-                                </div>
-                                <div className="room-bottom-row">
-                                    <span className="room-subtitle" title={roomDescription}>
-                                        {room.kind === "preset" ? (
-                                            <>
-                                                <span className="preset-label">
-                                                    {pgettext(
-                                                        "Label shown before a kibitz room description for preset rooms",
-                                                        "Preset",
-                                                    )}
-                                                </span>
-                                                <span
-                                                    className="room-kind-separator"
-                                                    aria-hidden="true"
-                                                >
-                                                    {" · "}
-                                                </span>
-                                            </>
-                                        ) : null}
-                                        <span className="room-description">{roomDescription}</span>
-                                    </span>
-                                    <span
-                                        className="room-viewer-count"
-                                        title={interpolate(
-                                            pgettext(
-                                                "Tooltip for the viewer count shown in the kibitz room list",
-                                                "{{count}} people here",
-                                            ),
-                                            { count: room.viewer_count },
-                                        )}
-                                    >
-                                        <span className="room-viewer-number">
-                                            {room.viewer_count}
-                                        </span>
-                                        <span className="room-viewer-icon" aria-hidden="true">
-                                            <svg
-                                                viewBox="0 0 16 16"
-                                                focusable="false"
-                                                aria-hidden="true"
-                                            >
-                                                <path
-                                                    d="M8 8a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm0 1c-2.7 0-5 1.4-5 3.2V14h10v-1.8C13 10.4 10.7 9 8 9Z"
-                                                    fill="currentColor"
-                                                />
-                                            </svg>
-                                        </span>
-                                    </span>
-                                </div>
-                                {isBlocked ? (
-                                    <div className="room-status">{getKibitzRoomLockedLabel()}</div>
-                                ) : null}
-                            </div>
+                            <span className="room-title">
+                                {isBlocked ? <i className="fa fa-lock" aria-hidden="true" /> : null}
+                                {room.title}
+                            </span>
+                            <span
+                                className="room-viewer-count"
+                                title={interpolate(
+                                    pgettext(
+                                        "Tooltip for the viewer count shown in the kibitz room list",
+                                        "{{count}} people here",
+                                    ),
+                                    { count: room.viewer_count },
+                                )}
+                            >
+                                {room.viewer_count}
+                            </span>
                         </button>
                     );
                 })}
             </div>
+            {onCreateRoom ? (
+                canOpenCreateRoomFlow ? (
+                    <button
+                        type="button"
+                        className="KibitzRoomList-footerAction KibitzRoomList-createButton"
+                        onClick={onCreateRoom}
+                    >
+                        <i className="fa fa-plus" aria-hidden="true" />{" "}
+                        {pgettext(
+                            "Row at the bottom of the Kibitz room list that creates a room",
+                            "Room",
+                        )}
+                    </button>
+                ) : (
+                    <a
+                        className="KibitzRoomList-footerAction KibitzRoomList-createButton"
+                        href={signInHref}
+                    >
+                        {pgettext(
+                            "Button label for signing in before creating a Kibitz room",
+                            "Sign in to create room",
+                        )}
+                    </a>
+                )
+            ) : null}
         </div>
     );
 }

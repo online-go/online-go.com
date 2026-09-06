@@ -55,8 +55,8 @@ describe("KibitzRoomList", () => {
             />,
         );
 
-        expect(screen.getByText("Preset")).toHaveClass("preset-label");
-        expect(container.querySelector(".room-subtitle")).toHaveTextContent(
+        expect(container.querySelector(".KibitzRoomList-item")).toHaveAttribute(
+            "title",
             "Preset · Room description",
         );
     });
@@ -106,7 +106,7 @@ describe("KibitzRoomList", () => {
             />,
         );
 
-        expect(screen.getByRole("button", { name: "Create room" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Room" })).toBeInTheDocument();
         expect(screen.queryByRole("link", { name: "Sign in to create room" })).toBeNull();
     });
 });

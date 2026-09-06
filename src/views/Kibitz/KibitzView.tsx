@@ -43,6 +43,9 @@ export interface KibitzViewProps {
     chat: Omit<KibitzChatPanelProps, "gameController">;
     proposals: KibitzProposalPanelProps;
     onPostVariation: (controller: GobanController) => void;
+    /** Starts a new draft from the live board; renders as the analysis
+     *  action in the tab bar, as on the Game page. */
+    onCreateVariation?: () => void;
     /** Starts a draft from the posted variation in the center. */
     onBranchFromVariation?: () => void;
     onExitVariation: () => void;
@@ -247,6 +250,19 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 title={_("Settings")}
                 onClick={openSettings}
             />
+
+            {props.onCreateVariation && (
+                <GobanView.Tab
+                    id="kibitz-new-variation"
+                    type="action"
+                    align="left"
+                    icon="sitemap"
+                    title={pgettext("Action that starts a new Kibitz variation", "New variation")}
+                    active={gobans.centerMode === "draft"}
+                    disabled={!gobans.main}
+                    onClick={props.onCreateVariation}
+                />
+            )}
 
             {isPortrait && (
                 <GobanView.Tab

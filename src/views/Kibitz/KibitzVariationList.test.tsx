@@ -109,7 +109,6 @@ describe("KibitzVariationList", () => {
             />,
         );
 
-        expect(screen.getByText("Active variations")).toBeInTheDocument();
         expect(screen.getByText("Variation: A1")).toBeInTheDocument();
         expect(screen.getByText("Variation: A2")).toBeInTheDocument();
         expect(screen.getByText("Variation: B1")).toBeInTheDocument();

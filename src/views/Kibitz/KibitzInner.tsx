@@ -1050,6 +1050,13 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             }
         };
     }, []);
+    const onClearVariations = React.useCallback(() => {
+        setVisibleVariationIds([]);
+        setVariationColorIndexes((previous) => assignVisibleVariationColorIndexes(previous, []));
+        if (secondaryPane.variation_id) {
+            controller.closeSecondaryPane();
+        }
+    }, [controller, secondaryPane.variation_id]);
     const onCreateVariation = React.useCallback(() => {
         const snapshot = getCurrentGameBaseSnapshotForVariation("new-variation");
         if (!snapshot) {
@@ -1429,7 +1436,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 blockedVariationFlashId,
                 onRecallVariation: (variationId) => onOpenVariation(variationId, true),
                 onHideVariation: onToggleVariation,
-                onCreateVariation,
+                onClearVariations,
                 roomListHelpTargetId: KIBITZ_HELP_TARGETS.desktopRoomList,
                 variationListHelpTargetId: KIBITZ_HELP_TARGETS.desktopVariationList,
             }}
@@ -1444,6 +1451,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 queuedProposals: queuedRoomProposals,
                 onVote: onVoteProposal,
             }}
+            onCreateVariation={onCreateVariation}
             onPostVariation={(boardController) =>
                 onPostVariation(boardController, secondaryPane.variation_source_game_id)
             }

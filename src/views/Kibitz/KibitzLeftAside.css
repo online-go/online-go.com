@@ -25,6 +25,36 @@
         flex-shrink: 0;
     }
 
+    /* Section headers follow the chat page's channel group headers: small
+       uppercase text with a plus/minus toggle on the right. */
+    .KibitzLeftAside-sectionHeader {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        text-transform: uppercase;
+        font-weight: bold;
+        font-size: var(--font-size-smaller);
+        margin-bottom: 0.3rem;
+        padding: 0 0.5rem;
+        user-select: none;
+
+        .KibitzLeftAside-sectionToggle {
+            padding: 0.2rem;
+            cursor: pointer;
+            color: var(--shade1);
+
+            &:hover {
+                color: var(--fg);
+            }
+        }
+    }
+
+    .KibitzLeftAside-section {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
     .KibitzLeftAside-miniBoard {
         flex-shrink: 0;
         display: flex;
