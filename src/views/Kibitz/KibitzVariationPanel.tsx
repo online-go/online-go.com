@@ -70,17 +70,6 @@ export function KibitzVariationPanel({
                               "Variation",
                           )}
                 </span>
-                <button
-                    type="button"
-                    className="KibitzVariationPanel-back xs"
-                    onClick={onBackToGame}
-                >
-                    <i className="fa fa-arrow-left" />{" "}
-                    {pgettext(
-                        "Button that closes a Kibitz variation and shows the live game",
-                        "Back to game",
-                    )}
-                </button>
             </div>
             {mode === "draft" && (
                 <GobanAnalyzeButtonBar
@@ -96,18 +85,38 @@ export function KibitzVariationPanel({
                 ref={setMoveTree}
             />
             <KibitzNodeText controller={controller} editable={mode === "draft"} />
-            {mode === "variation" && onBranch && (
+            {mode === "variation" && (
                 <div className="KibitzVariationPanel-actions" ref={branchActionsTarget?.ref}>
-                    <button type="button" className="primary sm" onClick={onBranch}>
+                    <button
+                        type="button"
+                        className="KibitzVariationPanel-back xs"
+                        onClick={onBackToGame}
+                    >
+                        <i className="fa fa-arrow-left" />{" "}
                         {pgettext(
-                            "Button that starts a new Kibitz variation draft from the posted variation being viewed",
-                            "New variation from here",
+                            "Button that closes a Kibitz variation and shows the live game",
+                            "Back to game",
                         )}
                     </button>
+                    {onBranch && (
+                        <button type="button" className="primary sm" onClick={onBranch}>
+                            {pgettext(
+                                "Button that starts a new Kibitz variation draft from the posted variation being viewed",
+                                "New variation from here",
+                            )}
+                        </button>
+                    )}
                 </div>
             )}
             {mode === "draft" && (
                 <div className="KibitzVariationPanel-actions">
+                    <button
+                        type="button"
+                        className="KibitzVariationPanel-back xs"
+                        onClick={onBackToGame}
+                    >
+                        {pgettext("Button that abandons a Kibitz variation draft", "Cancel")}
+                    </button>
                     <KibitzVariationComposer controller={controller} onSubmit={onPost} />
                 </div>
             )}

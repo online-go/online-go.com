@@ -1016,21 +1016,10 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 assignVisibleVariationColorIndexes(previous, nextVisibleVariationIds),
             );
 
+            // Removing the variation on the board returns the center to the
+            // live game rather than jumping to another variation.
             if (secondaryPane.variation_id === variationId) {
-                const nextVisibleVariations = nextVisibleVariationIds
-                    .map((id) => displayedVariations.find((variation) => variation.id === id))
-                    .filter((variation): variation is KibitzVariationSummary => variation != null);
-                const nextActiveVariation =
-                    nextVisibleVariations.find(
-                        (variation) => variation.game_id === toggledVariation.game_id,
-                    ) ?? nextVisibleVariations[0];
-
-                if (nextActiveVariation) {
-                    setVariationFocusRequestId((previous) => previous + 1);
-                    controller.openVariation(nextActiveVariation.id);
-                } else {
-                    controller.clearPreviewGame();
-                }
+                controller.closeSecondaryPane();
             }
         },
         [controller, displayedVariations, secondaryPane.variation_id, visibleVariationIds],
