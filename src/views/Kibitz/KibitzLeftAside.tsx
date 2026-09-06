@@ -42,6 +42,7 @@ export interface KibitzLeftAsideProps {
     blockedVariationFlashId: string | null;
     onRecallVariation: (variationId: string) => void;
     onHideVariation: (variationId: string) => void;
+    onCreateVariation?: () => void;
     onClearVariations?: () => void;
     /** The live game controller, shown as a thumbnail only while the
      *  center displays something else. Pass null to hide it. */
@@ -142,6 +143,7 @@ export function KibitzLeftAside(props: KibitzLeftAsideProps): React.ReactElement
                             blockedVariationFlashId={props.blockedVariationFlashId}
                             onRecallVariation={props.onRecallVariation}
                             onHideVariation={props.onHideVariation}
+                            onCreateVariation={props.onCreateVariation}
                             onClearAll={props.onClearVariations}
                             helpTargetId={props.variationListHelpTargetId}
                         />

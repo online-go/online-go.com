@@ -1436,6 +1436,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 blockedVariationFlashId,
                 onRecallVariation: (variationId) => onOpenVariation(variationId, true),
                 onHideVariation: onToggleVariation,
+                onCreateVariation,
                 onClearVariations,
                 roomListHelpTargetId: KIBITZ_HELP_TARGETS.desktopRoomList,
                 variationListHelpTargetId: KIBITZ_HELP_TARGETS.desktopVariationList,

@@ -19,7 +19,6 @@ import * as React from "react";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
 import { Player } from "@/components/Player";
-import { getKibitzVariationColor } from "./kibitzVariationTree";
 import { KIBITZ_HELP_TARGETS } from "./HelpFlows/KibitzHelpTargets";
 import { useKibitzHelpTarget } from "./HelpFlows/useKibitzHelpTarget";
 import { formatVariationBranchLabel, formatVariationLengthLabel } from "./kibitzVariationQuickList";
@@ -35,7 +34,9 @@ interface KibitzVariationListProps {
     blockedVariationFlashId?: string | null;
     onRecallVariation: (variationId: string) => void;
     onHideVariation?: (variationId: string) => void;
-    /** Removes every variation from the board. Shown as a row at the bottom. */
+    /** Starts a new draft; shown as "+ Variation" at the bottom. */
+    onCreateVariation?: () => void;
+    /** Removes every variation from the board; shown as "Clear all" at the bottom. */
     onClearAll?: () => void;
     helpTargetId?: (typeof KIBITZ_HELP_TARGETS)[keyof typeof KIBITZ_HELP_TARGETS];
 }
@@ -46,10 +47,10 @@ export function KibitzVariationList({
     gameById,
     selectedVariationId = null,
     variationFocusRequestId = 0,
-    variationColorIndexes = {},
     blockedVariationFlashId = null,
     onRecallVariation,
     onHideVariation,
+    onCreateVariation,
     onClearAll,
     helpTargetId,
 }: KibitzVariationListProps): React.ReactElement {
@@ -230,9 +231,6 @@ export function KibitzVariationList({
                                         const isSelected = selectedVariationId === variation.id;
                                         const isBlockedFlash =
                                             blockedVariationFlashId === variation.id;
-                                        const variationColor = getKibitzVariationColor(
-                                            variationColorIndexes[variation.id] ?? 0,
-                                        );
                                         const lengthLabel = formatVariationLengthLabel(variation);
                                         const branchLabel = formatVariationBranchLabel(variation);
 
@@ -258,13 +256,8 @@ export function KibitzVariationList({
                                                     }
                                                     onClick={() => onRecallVariation(variation.id)}
                                                 >
-                                                    <span
-                                                        className="variation-color-chip"
-                                                        style={{ backgroundColor: variationColor }}
-                                                        aria-hidden="true"
-                                                    />
                                                     <span className="variation-main">
-                                                        <span className="variation-name variation">
+                                                        <span className="variation-name">
                                                             {interpolate(
                                                                 pgettext(
                                                                     "Posted analysis variation label",
@@ -342,17 +335,34 @@ export function KibitzVariationList({
                     </div>
                 )}
             </div>
-            {onClearAll && variations.length > 0 ? (
-                <button
-                    type="button"
-                    className="KibitzVariationList-footerAction"
-                    onClick={onClearAll}
-                >
-                    {pgettext(
-                        "Row at the bottom of the Kibitz variation list that removes every variation from the board",
-                        "Clear all",
-                    )}
-                </button>
+            {onCreateVariation || (onClearAll && variations.length > 0) ? (
+                <div className="KibitzVariationList-footer">
+                    {onCreateVariation ? (
+                        <button
+                            type="button"
+                            className="KibitzVariationList-footerAction"
+                            onClick={onCreateVariation}
+                        >
+                            <i className="fa fa-plus" aria-hidden="true" />{" "}
+                            {pgettext(
+                                "Row at the bottom of the Kibitz variation list that starts a new variation",
+                                "Variation",
+                            )}
+                        </button>
+                    ) : null}
+                    {onClearAll && variations.length > 0 ? (
+                        <button
+                            type="button"
+                            className="KibitzVariationList-footerAction KibitzVariationList-clearAll"
+                            onClick={onClearAll}
+                        >
+                            {pgettext(
+                                "Row at the bottom of the Kibitz variation list that removes every variation from the board",
+                                "Clear all",
+                            )}
+                        </button>
+                    ) : null}
+                </div>
             ) : null}
         </div>
     );

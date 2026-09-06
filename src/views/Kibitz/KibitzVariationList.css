@@ -5,9 +5,19 @@
     overflow: hidden;
     padding: 0;
 
+    .KibitzVariationList-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .KibitzVariationList-clearAll {
+        margin-left: auto;
+    }
+
     .KibitzVariationList-footerAction {
         display: block;
-        width: 100%;
+        width: auto;
         height: auto;
         margin: 0.15rem 0 0;
         padding: 0.25rem 0.5rem;
@@ -131,8 +141,7 @@
     }
 
     /* Rows follow the room list: one line, primary fill when selected,
-       the branch colour as a thin marker on the left and the remove button
-       at the right edge. */
+       and the remove button at the right edge. */
     .variation-item {
         display: flex;
         align-items: center;
@@ -188,13 +197,6 @@
         touch-action: pan-y;
     }
 
-    .variation-color-chip {
-        flex: 0 0 auto;
-        width: 0.28rem;
-        height: 1.1em;
-        background: var(--shade3);
-    }
-
     .variation-main {
         flex: 1 1 auto;
         display: flex;
@@ -204,15 +206,10 @@
     }
 
     .variation-name {
-        color: var(--variation);
-        font-weight: bold;
+        color: var(--fg);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-    }
-
-    .variation-recall:hover .variation-name {
-        text-decoration: underline;
     }
 
     .variation-meta-row {
