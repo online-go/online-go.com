@@ -123,7 +123,6 @@ export function Game(): React.ReactElement | null {
         React.useState<rest_api.AnnulmentReason | null>(null);
     const [scroll_to_navigate] = React.useState(preferences.get("scroll-to-navigate"));
     const phase = usePhase(goban);
-    const [show_game_timing, set_show_game_timing] = React.useState(false);
     const [tournament, set_tournament] = React.useState<ActiveTournament>();
     const [, set_undo_requested] = React.useState<number | undefined>();
     const [bot_detection_results, set_bot_detection_results] = React.useState<any>(null);
@@ -315,16 +314,14 @@ export function Game(): React.ReactElement | null {
         }
         const controller = goban_controller.current;
 
-        controller.on("show_game_timing", set_show_game_timing);
         controller.on("show_bot_detection_results", set_show_bot_detection_results);
         controller.on("estimating_score", set_estimating_score);
 
         return () => {
-            controller.off("show_game_timing", set_show_game_timing);
             controller.off("show_bot_detection_results", set_show_bot_detection_results);
             controller.off("estimating_score", set_estimating_score);
         };
-    }, [goban_controller.current, set_show_game_timing, set_show_bot_detection_results]);
+    }, [goban_controller.current, set_show_bot_detection_results]);
 
     const onWheel: React.WheelEventHandler<HTMLDivElement> = React.useCallback(
         (event) => {
@@ -1243,7 +1240,6 @@ export function Game(): React.ReactElement | null {
                         simul_black={simul_black}
                         simul_white={simul_white}
                         showFairPlay={show_mod_tab && moderator_tab_visible}
-                        showGameTimings={show_game_timing}
                     />
                 )}
 

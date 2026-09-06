@@ -73,6 +73,20 @@ export function GameModeratorAreaPanel({
         historical_white?.id != null &&
         !!bot_detection_results?.ai_suspected?.includes(historical_white.id);
 
+    const show_controls = !hide_controls && user.is_moderator;
+    const has_flags =
+        !hide_flags &&
+        (black_ai_suspected ||
+            white_ai_suspected ||
+            Object.keys(black_flags ?? {}).length > 0 ||
+            Object.keys(white_flags ?? {}).length > 0);
+
+    // Community moderators get no per-player controls, so without a flag to
+    // show the rows would be bare player names.
+    if (!show_controls && !has_flags) {
+        return null;
+    }
+
     return (
         <div className="GameModeratorAreaPanel">
             <PlayerModSection
@@ -82,7 +96,7 @@ export function GameModeratorAreaPanel({
                 ai_suspected={black_ai_suspected}
                 flags={black_flags}
                 hide_flags={hide_flags}
-                hide_controls={hide_controls || !user.is_moderator}
+                hide_controls={!show_controls}
                 phase={phase}
                 game_id={game_id}
             />
@@ -93,7 +107,7 @@ export function GameModeratorAreaPanel({
                 ai_suspected={white_ai_suspected}
                 flags={white_flags}
                 hide_flags={hide_flags}
-                hide_controls={hide_controls || !user.is_moderator}
+                hide_controls={!show_controls}
                 phase={phase}
                 game_id={game_id}
             />
