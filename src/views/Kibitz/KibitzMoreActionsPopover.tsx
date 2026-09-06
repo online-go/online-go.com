@@ -20,6 +20,7 @@ import { _ } from "@/lib/translate";
 import { api1 } from "@/lib/requests";
 import { popover, PopOver } from "@/lib/popover";
 import { GobanController } from "@/lib/GobanController";
+import { useUser } from "@/lib/hooks";
 import { openReport } from "@/components/Report";
 import { openGameInfoModal } from "@/views/Game/GameInfoModal";
 import { openGameLinkModal } from "@/views/Game/GameLinkModal";
@@ -35,16 +36,26 @@ export function KibitzMoreActionsPopover({
     controller,
     onClose,
 }: KibitzMoreActionsPopoverProps): React.ReactElement {
+    const user = useUser();
     const goban = controller.goban;
     const engine = goban.engine;
     const game_id = Number(goban.config.game_id);
     const sgf_url = api1(`games/${game_id}/sgf`);
-    let sgf_disabled = false;
+    let analysis_disabled = false;
     try {
-        sgf_disabled = goban.isAnalysisDisabled(true);
+        analysis_disabled = goban.isAnalysisDisabled(true);
     } catch {
-        sgf_disabled = false;
+        analysis_disabled = false;
     }
+    // Same rule as the Game page's actions panel: the server refuses the
+    // SGF of a game in progress to anonymous users and to its players.
+    const sgf_disabled =
+        analysis_disabled ||
+        (engine.phase !== "finished" &&
+            (user.anonymous ||
+                user.id === engine.config.black_player_id ||
+                user.id === engine.config.white_player_id));
+    const report_disabled = user.anonymous;
 
     const wrap = (fn: () => void) => () => {
         fn();
@@ -97,6 +108,7 @@ export function KibitzMoreActionsPopover({
                 <button
                     type="button"
                     className="GameSidebarPanel-item"
+                    disabled={report_disabled}
                     onClick={wrap(() => openReport({ reported_game_id: game_id }))}
                 >
                     <i className="fa fa-exclamation-triangle" />

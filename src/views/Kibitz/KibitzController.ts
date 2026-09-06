@@ -458,6 +458,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     private _variations: KibitzVariationSummary[] = [];
     private _secondary_pane: KibitzSecondaryPaneState = { collapsed: true };
     private _draft_nonce = 0;
+    private _room_updates_during_refresh = new Map<string, KibitzRoomSummary>();
     private _permissions: KibitzPermissions = DEFAULT_PERMISSIONS;
     private _access_blocked: KibitzAccessBlock | null = null;
     private _debug: KibitzDebugState = {
@@ -661,10 +662,18 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         });
 
         try {
+            this._room_updates_during_refresh.clear();
             const payload = (await get("kibitz/directory")) as BackendKibitzRoom[];
+            // A room-updated push that arrived while this fetch was in flight
+            // is newer than the fetched entry for that room, so it wins.
             const rooms = sortRoomSummariesByPopulation(
-                (payload ?? []).map((r) => mapBackendRoomToSummary(r)),
+                (payload ?? []).map((r) => {
+                    const summary = mapBackendRoomToSummary(r);
+                    const pushed = this._room_updates_during_refresh.get(r.id);
+                    return pushed ? { ...summary, ...pushed } : summary;
+                }),
             );
+            this._room_updates_during_refresh.clear();
             this.setRooms(rooms);
             const roomIds = new Set(rooms.map((room) => room.id));
             for (const roomId of Array.from(this._room_card_game_requests.keys())) {
@@ -771,6 +780,9 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     private applyBackendRoomUpdate(incoming: BackendKibitzRoom): void {
         const existing = this._rooms.find((r) => r.id === incoming.id);
         const summary = mapBackendRoomToSummary(incoming, existing);
+        if (this._refresh_rooms_promise) {
+            this._room_updates_during_refresh.set(incoming.id, summary);
+        }
         this.setRooms(
             this._rooms.map((room) => (room.id === incoming.id ? { ...room, ...summary } : room)),
         );
@@ -1044,6 +1056,15 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             return;
         }
 
+        // The pane and proposals belong to the room being left, so they are
+        // reset when the switch starts. Resetting after the fetch instead
+        // would wipe a draft the user opened in the new room while its
+        // details were still loading.
+        this.setProposals([]);
+        this.setSecondaryPane({
+            collapsed: true,
+        });
+
         try {
             const payload = (await get(`kibitz/rooms/${roomId}`)) as BackendRoomDetailResponse;
             if (token !== this._select_room_token || this._destroyed) {
@@ -1089,10 +1110,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             // placeholder from before 1C-b wired chat-derived state and would
             // wipe whatever syncMessagesFromChat had just produced.
             this.subscribeActiveRoom(full.channel);
-            this.setProposals([]);
-            this.setSecondaryPane({
-                collapsed: true,
-            });
         } catch (error) {
             if (token !== this._select_room_token || this._destroyed) {
                 return;
@@ -1310,21 +1327,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         // Phase 2
     }
 
-    public previewGame(gameId: number): void {
-        this.setSecondaryPane({
-            ...this._secondary_pane,
-            collapsed: false,
-            preview_game_id: gameId,
-            variation_id: undefined,
-            variation_source_game_id: undefined,
-            variation_source_game: undefined,
-            variation_source_move_tree: undefined,
-            variation_source_move_tree_id: undefined,
-            variation_source_move_path: undefined,
-            variation_draft_base_id: undefined,
-        });
-    }
-
     public startVariationFromCurrentBoard(
         variation_source_move_tree?: KibitzVariationLineTree,
         variation_source_move_path?: string,
@@ -1338,7 +1340,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.setSecondaryPane({
             ...this._secondary_pane,
             collapsed: false,
-            preview_game_id: currentGameId,
             variation_id: undefined,
             variation_source_game_id: currentGameId,
             variation_source_game: this._active_room?.current_game
@@ -1366,7 +1367,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.setSecondaryPane({
             ...this._secondary_pane,
             collapsed: false,
-            preview_game_id: variation.game_id,
             variation_id: undefined,
             variation_source_game_id: variation.game_id,
             variation_source_game: sourceGame ? { ...sourceGame } : undefined,
@@ -1382,7 +1382,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.setSecondaryPane({
             ...this._secondary_pane,
             collapsed: false,
-            preview_game_id: undefined,
             variation_id: variationId,
             variation_source_game_id: undefined,
             variation_source_game: undefined,

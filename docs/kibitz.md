@@ -28,8 +28,8 @@ unposted moves asks for confirmation first, as does starting another
 variation or opening a posted one while such a draft is open.
 
 The player bars show the live game's players and clocks whenever the center
-shows the live game or a draft or variation of it; a preview of another game
-shows that game's players. `KibitzKeyboardShortcuts` binds the Game page's
+shows the live game or a draft or variation of it; a variation of another
+game shows that game's players. `KibitzKeyboardShortcuts` binds the Game page's
 move navigation keys (arrows, Home, End, Page Up, Page Down) to whichever
 board the center shows.
 
@@ -49,8 +49,8 @@ room chat.
 with `game_id` set and lives until the room changes game. It is always
 mounted, in the center or in the thumbnail; in streamer mode the thumbnail
 column is hidden with CSS but stays in the DOM, so the main board keeps a
-connected parent. The secondary controller is built for a draft, a posted
-variation or a game preview and destroyed on exit. For the current game its
+connected parent. The secondary controller is built for a draft or a posted
+variation and destroyed on exit. For the current game its
 trunk is a snapshot of the main controller, so no second socket is opened
 for the same game; other games connect read-only. GobanView receives
 whichever controller the center shows.
@@ -58,9 +58,11 @@ whichever controller the center shows.
 Only a same-game secondary board — a draft or a variation of the room's
 current game — waits for the main controller to produce its first trunk
 snapshot (`mainReady`), and it then composes synchronously from that
-snapshot. A board for another game, and every preview, connects with its own
-`game_id` instead and composes once its own `load` event fires, so it never
-waits on the main board.
+snapshot. A board for another game connects with its own `game_id` instead and
+composes on every `load` event of its own, so it never waits on the main
+board and lays the variation back onto a fresh tree after a reconnect. A
+draft is not rebuilt when the room moves on to another game: it keeps the
+game it was started from and can still be posted as a variation of it.
 
 `useKibitzCurrentGameConnectionKeeper` re-sends `game/connect` for the main
 game after the game picker closes, because the picker's game lists render
@@ -73,17 +75,19 @@ board that never connects to a game.
 
 `KibitzController` holds rooms, the active room, stream items, proposals,
 variations and the secondary pane. The secondary pane (`collapsed`,
-`variation_id`, `preview_game_id`, `variation_source_*`) fully determines
-what the center shows; `deriveKibitzCenterMode` maps it to
-`main | draft | variation | preview`. The panel for a posted variation
+`variation_id`, `variation_source_*`, `variation_draft_nonce`) fully
+determines what the center shows; `deriveKibitzCenterMode` maps it to
+`main | draft | variation`. The panel for a posted variation
 offers "New variation from here", which starts a new draft using that
 variation as its source.
 
 ## Streamer mode
 
 Streamer mode hides the left aside (with CSS; the node stays mounted so the
-main goban keeps a parent), the sidebar header, panels and slider,
-leaving the board and the action bar (so the settings gear stays reachable).
-It sets the `kibitz-streamer-mode` class on `document.body` so site chrome
-outside the page — the nav bar, announcements, private chat, toasts — can
-hide itself while it is active.
+main goban keeps a parent) and collapses the sidebar to its action bar,
+which floats in the top-right corner so the settings gear stays reachable to
+leave the mode. The board is centered in the full width. It sets the
+`kibitz-streamer-mode` class on `document.body` so site chrome outside the
+page — the nav bar, announcements, private chat, toasts — can hide itself
+while it is active. It only applies while a room is on screen; the blocked,
+empty and loading screens keep the site chrome.

@@ -105,6 +105,7 @@ function baseProps(overrides: Partial<KibitzViewProps> = {}): KibitzViewProps {
         onExitVariation: jest.fn(),
         onReturnToLive: jest.fn(),
         roomSettings: {
+            ready: true,
             canEditRoom: false,
             canDeleteRoom: false,
             onSaveRoomDetails: jest.fn(),
@@ -144,15 +145,6 @@ describe("KibitzView", () => {
         props.gobans = { ...props.gobans, secondary, center: secondary, centerMode: "variation" };
         render(<KibitzView {...props} />);
         expect(screen.getByTestId("variation-panel-variation")).toBeInTheDocument();
-    });
-
-    test("preview mode shows no variation panel but keeps the return action", () => {
-        const props = baseProps();
-        const secondary = fakeController();
-        props.gobans = { ...props.gobans, secondary, center: secondary, centerMode: "preview" };
-        render(<KibitzView {...props} />);
-        expect(screen.queryByTestId(/variation-panel/)).toBeNull();
-        expect(screen.getByTitle("Return to game")).toBeInTheDocument();
     });
 
     test("a main board behind the official tail offers Return to live", () => {

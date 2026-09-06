@@ -35,7 +35,11 @@ export interface GameKeyboardShortcut {
     when?: (controller: GobanController) => boolean;
 }
 
+export type GameKeyboardShortcutGroupId = "navigation" | "modes" | "variations" | "analysis";
+
 export interface GameKeyboardShortcutGroup {
+    /** Stable id so other views can bind a group of their own. */
+    id: GameKeyboardShortcutGroupId;
     /** Translated group heading shown in the modal. */
     title: () => string;
     /** Optional translated note shown under the group heading. */
@@ -45,6 +49,7 @@ export interface GameKeyboardShortcutGroup {
 
 export const GAME_KEYBOARD_SHORTCUT_GROUPS: GameKeyboardShortcutGroup[] = [
     {
+        id: "navigation",
         title: () => pgettext("Keyboard shortcut group", "Navigation"),
         shortcuts: [
             {
@@ -98,6 +103,7 @@ export const GAME_KEYBOARD_SHORTCUT_GROUPS: GameKeyboardShortcutGroup[] = [
         ],
     },
     {
+        id: "modes",
         title: () => pgettext("Keyboard shortcut group", "Modes and display"),
         shortcuts: [
             {
@@ -149,6 +155,7 @@ export const GAME_KEYBOARD_SHORTCUT_GROUPS: GameKeyboardShortcutGroup[] = [
         ],
     },
     {
+        id: "variations",
         title: () => pgettext("Keyboard shortcut group", "Variations"),
         shortcuts: [
             {
@@ -172,6 +179,7 @@ export const GAME_KEYBOARD_SHORTCUT_GROUPS: GameKeyboardShortcutGroup[] = [
         ],
     },
     {
+        id: "analysis",
         title: () => pgettext("Keyboard shortcut group", "Analysis tools"),
         note: () =>
             pgettext(
@@ -268,4 +276,14 @@ export function shortcutKeyNames(shortcut: string): string[] {
         }
         return token.toUpperCase();
     });
+}
+
+export function getGameKeyboardShortcutGroup(
+    id: GameKeyboardShortcutGroupId,
+): GameKeyboardShortcutGroup {
+    const group = GAME_KEYBOARD_SHORTCUT_GROUPS.find((candidate) => candidate.id === id);
+    if (!group) {
+        throw new Error(`Unknown keyboard shortcut group: ${id}`);
+    }
+    return group;
 }

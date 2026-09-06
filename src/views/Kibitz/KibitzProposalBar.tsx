@@ -339,7 +339,9 @@ export function KibitzProposalBar({
                     <div className="proposal-timer-track" aria-hidden="true">
                         <div
                             className="proposal-timer-fill"
-                            style={{ transform: `scaleY(${progressRatio})` }}
+                            style={
+                                { "--proposal-timer-ratio": progressRatio } as React.CSSProperties
+                            }
                         />
                     </div>
                 </div>

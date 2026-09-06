@@ -54,6 +54,9 @@ export interface KibitzViewProps {
     /** Portrait only: the Rooms takeover was opened. */
     onRoomsOpened?: () => void;
     roomSettings: {
+        /** False while the room's details and permissions are still
+         *  loading; the settings gear waits for them. */
+        ready: boolean;
         canEditRoom: boolean;
         canDeleteRoom: boolean;
         onChangeBoard?: () => void;
@@ -62,8 +65,6 @@ export interface KibitzViewProps {
     };
     /** Rendered above the sidebar panels, e.g. the preset change banner. */
     banner?: React.ReactNode;
-    /** Non-tab children passed through to GobanView (overlays, debug panel). */
-    children?: React.ReactNode;
 }
 
 const useBehindLive = generateGobanHook(
@@ -140,6 +141,22 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
         onExitVariation();
     }, [onExitVariation]);
 
+    // KBShortcut lets Escape through from inputs so dialogs can close; here
+    // Escape in the chat or the variation name field must not close the
+    // variation under the user.
+    const onEscape = React.useCallback(() => {
+        const active = document.activeElement as HTMLElement | null;
+        if (
+            active &&
+            (active.tagName === "INPUT" ||
+                active.tagName === "TEXTAREA" ||
+                active.isContentEditable)
+        ) {
+            return;
+        }
+        exitVariation();
+    }, [exitVariation]);
+
     if (!gobans.center) {
         if (room.current_game?.game_id) {
             // The live controller is created after the first commit. Render
@@ -174,6 +191,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         type="button"
                         className="KibitzView-waiting-settings"
                         title={_("Settings")}
+                        disabled={!roomSettings.ready}
                         onClick={openSettings}
                     >
                         <i className="fa fa-gear" />
@@ -191,7 +209,6 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                     {waitingMessage}
                     {waitingAside}
                     {waitingSidebar}
-                    {props.children}
                 </div>
             );
         }
@@ -201,7 +218,6 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 <div className="KibitzView-waiting-aside">{waitingAside}</div>
                 <div className="KibitzView-waiting-center">{waitingMessage}</div>
                 {waitingSidebar}
-                {props.children}
             </div>
         );
     }
@@ -226,17 +242,25 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             ref={gobanViewRef}
             controller={gobans.center}
             className={"Kibitz" + (streamerMode ? " is-streamer-mode" : "")}
-            header={<span ref={roomTitleTarget?.ref}>{room.title}</span>}
-            leftAside={!isPortrait ? leftAside : undefined}
+            header={
+                <span
+                    className="Kibitz-room-title"
+                    data-game-id={room.current_game?.game_id}
+                    ref={roomTitleTarget?.ref}
+                >
+                    {room.title}
+                </span>
+            }
+            leftAside={leftAside}
             playerBars={gobans.playerBars ?? true}
         >
             <KibitzKeyboardShortcuts />
-            {viewingOther && <KBShortcut shortcut="esc" action={exitVariation} />}
+            {viewingOther && <KBShortcut shortcut="esc" action={onEscape} />}
 
             <GobanView.Tab id="kibitz-main" type="always">
                 {props.banner}
                 <KibitzProposalPanel {...props.proposals} />
-                {viewingOther && gobans.secondary && gobans.centerMode !== "preview" && (
+                {viewingOther && gobans.secondary && (
                     <KibitzVariationPanel
                         controller={gobans.secondary}
                         mode={gobans.centerMode === "draft" ? "draft" : "variation"}
@@ -258,6 +282,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 align="left"
                 icon="gear"
                 title={_("Settings")}
+                disabled={!roomSettings.ready}
                 onClick={openSettings}
             />
 
@@ -335,8 +360,6 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                     }
                 }}
             />
-
-            {props.children}
         </GobanView>
     );
 }

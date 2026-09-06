@@ -495,19 +495,21 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         }
         return blockedIds;
     }, [currentUser, rooms]);
-    const selectedRoom =
-        activeRoom ??
-        (roomId ? (rooms.find((room) => room.id === roomId) ?? null) : (rooms[0] ?? null));
+    // While the URL points at a room other than the hydrated one (a switch
+    // in progress), show the directory's entry for the target room rather
+    // than the room being left.
+    const roomFromDirectory = roomId
+        ? (rooms.find((room) => room.id === roomId) ?? null)
+        : (rooms[0] ?? null);
+    const selectedRoom: KibitzRoomSummary | null =
+        activeRoom && (!roomId || activeRoom.id === roomId) ? activeRoom : roomFromDirectory;
     const selectedRoomPolicy = React.useMemo(
         () => getKibitzAccessPolicyForUser(currentUser, selectedRoom?.current_game),
         [currentUser, selectedRoom?.current_game],
     );
     const isSelectedRoomBlocked = !selectedRoomPolicy.allowed;
     const isBlockedRoom = Boolean(accessBlocked?.room_id === roomId || isSelectedRoomBlocked);
-    const resolvedRoom = isBlockedRoom
-        ? null
-        : (activeRoom ??
-          (roomId ? (rooms.find((room) => room.id === roomId) ?? null) : (rooms[0] ?? null)));
+    const resolvedRoom = isBlockedRoom ? null : selectedRoom;
 
     React.useEffect(() => {
         if (roomId || !defaultRoomId) {
@@ -546,13 +548,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         roomId,
         selectedRoom?.title,
     ]);
-
-    const onSelectRoom = React.useCallback(
-        (nextRoomId: string) => {
-            void navigate(`/kibitz/${nextRoomId}`);
-        },
-        [navigate],
-    );
 
     const displayedVariations = React.useMemo(() => {
         const merged = [...variations, ...gameVariations];
@@ -716,6 +711,17 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         });
         return Boolean(value);
     }, [centerMode, isDraftDirty]);
+
+    const onSelectRoom = React.useCallback(
+        (nextRoomId: string) => {
+            void confirmDiscardDraft().then((confirmed) => {
+                if (confirmed) {
+                    void navigate(`/kibitz/${nextRoomId}`);
+                }
+            });
+        },
+        [confirmDiscardDraft, navigate],
+    );
 
     const roomLiveMoveNumber = resolvedRoom?.current_game?.move_number ?? 0;
     const currentGameIsLive = Boolean(resolvedRoom?.current_game?.live);
@@ -947,12 +953,17 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     });
 
     const onOpenVariation = React.useCallback(
-        (variationId: string, focusVariation: boolean = false) => {
+        (variationId: string, focusVariation: boolean = false, makeRoom: boolean = false) => {
             const isAlreadyVisibleInState = visibleVariationIds.includes(variationId);
             const isAlreadyVisibleInQuickList = activePostedVariationIds.has(variationId);
-            const shouldLimitOpening =
+            const atLimit =
                 !isAlreadyVisibleInQuickList &&
                 activePostedVariations.length >= MAX_VISIBLE_VARIATIONS;
+            // The user's own post must open even at the limit; the oldest
+            // visible variation gives way.
+            const shouldLimitOpening = atLimit && !makeRoom;
+            const baseVisibleIds =
+                atLimit && makeRoom ? visibleVariationIds.slice(1) : visibleVariationIds;
 
             if (shouldLimitOpening) {
                 if (blockedVariationFlashTimerRef.current) {
@@ -977,13 +988,10 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
             const nextVisibleVariationIds = isAlreadyVisibleInState
                 ? visibleVariationIds
-                : [...visibleVariationIds, variationId];
+                : [...baseVisibleIds, variationId];
 
             if (nextVisibleVariationIds !== visibleVariationIds) {
                 setVisibleVariationIds(nextVisibleVariationIds);
-                setVariationColorIndexes((previous) =>
-                    assignVisibleVariationColorIndexes(previous, nextVisibleVariationIds),
-                );
             }
             if (focusVariation) {
                 setVariationFocusRequestId((previous) => previous + 1);
@@ -1017,9 +1025,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             }
 
             setVisibleVariationIds(nextVisibleVariationIds);
-            setVariationColorIndexes((previous) =>
-                assignVisibleVariationColorIndexes(previous, nextVisibleVariationIds),
-            );
 
             // Removing the variation on the board returns the center to the
             // live game rather than jumping to another variation.
@@ -1046,7 +1051,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     }, []);
     const onClearVariations = React.useCallback(() => {
         setVisibleVariationIds([]);
-        setVariationColorIndexes((previous) => assignVisibleVariationColorIndexes(previous, []));
         if (secondaryPane.variation_id) {
             controller.closeSecondaryPane();
         }
@@ -1309,7 +1313,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         }
 
         setPendingPostedVariation(null);
-        onOpenVariation(matchedVariation.id, true);
+        onOpenVariation(matchedVariation.id, true, true);
     }, [displayedVariations, onOpenVariation, pendingPostedVariation]);
 
     const handleDeleteRoom = React.useCallback(async (): Promise<boolean> => {
@@ -1358,7 +1362,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             }}
             onJoinRoom={(nextRoomId) => {
                 setPickerMode(null);
-                void navigate(`/kibitz/${nextRoomId}`);
+                onSelectRoom(nextRoomId);
             }}
             currentGameBaseSnapshot={currentGameBaseSnapshot}
         />
@@ -1400,105 +1404,119 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         />
     );
 
+    // The picker overlay and the debug panel are siblings of whichever
+    // screen is showing, so they keep their state when the page moves
+    // between the empty state and the room view (e.g. /kibitz resolving to
+    // its first room while the create-room picker is open).
+    const overlays = (
+        <>
+            {showDebug ? <KibitzDebugPanel debug={debug} /> : null}
+            {pickerOverlay}
+        </>
+    );
+
     if (isBlockedRoom) {
         const blockedTitle = accessBlocked?.room_title ?? selectedRoom?.title ?? roomId ?? "";
         return (
-            <div className="Kibitz-empty">
-                {showDebug ? <KibitzDebugPanel debug={debug} /> : null}
-                <div className="Kibitz-empty-message">
-                    <p>{getKibitzBlockedRoomMessage(blockedTitle)}</p>
-                    <p>{getKibitzBlockedRoomFollowupMessage()}</p>
+            <>
+                <div className="Kibitz-empty">
+                    <div className="Kibitz-empty-message">
+                        <p>{getKibitzBlockedRoomMessage(blockedTitle)}</p>
+                        <p>{getKibitzBlockedRoomFollowupMessage()}</p>
+                    </div>
+                    <div className="Kibitz-empty-rooms">{roomList}</div>
                 </div>
-                <div className="Kibitz-empty-rooms">{roomList}</div>
-                {pickerOverlay}
-            </div>
+                {overlays}
+            </>
         );
     }
 
     if (!resolvedRoom) {
         return (
-            <div className="Kibitz-empty">
-                {showDebug ? <KibitzDebugPanel debug={debug} /> : null}
-                <div className="Kibitz-empty-message">
-                    {rooms.length === 0
-                        ? pgettext(
-                              "Kibitz placeholder shown when no rooms exist",
-                              "Create a Kibitz room to start watching a game with friends.",
-                          )
-                        : pgettext("Kibitz loading state", "Loading Kibitz...")}
+            <>
+                <div className="Kibitz-empty">
+                    <div className="Kibitz-empty-message">
+                        {rooms.length === 0
+                            ? pgettext(
+                                  "Kibitz placeholder shown when no rooms exist",
+                                  "Create a Kibitz room to start watching a game with friends.",
+                              )
+                            : pgettext("Kibitz loading state", "Loading Kibitz...")}
+                    </div>
+                    <div className="Kibitz-empty-rooms">{roomList}</div>
                 </div>
-                <div className="Kibitz-empty-rooms">{roomList}</div>
-                {pickerOverlay}
-            </div>
+                {overlays}
+            </>
         );
     }
 
     return (
-        <KibitzView
-            room={resolvedRoom}
-            gobans={gobans}
-            isPortrait={isPortrait}
-            streamerMode={streamerModeActive}
-            onStreamerModeChange={setStreamerMode}
-            banner={
-                resolvedRoom.preset?.selection_status === "change_pending" &&
-                resolvedRoom.preset.change_effective_at ? (
-                    <KibitzPresetChangePendingBanner
-                        changeEffectiveAt={resolvedRoom.preset.change_effective_at}
-                    />
-                ) : undefined
-            }
-            leftAside={{
-                rooms,
-                activeRoomId: resolvedRoom.id,
-                blockedRoomIds,
-                onSelectRoom,
-                onCreateRoom: onOpenCreateRoom,
-                canOpenCreateRoomFlow,
-                signInHref: createRoomSignInHref,
-                variations: activePostedVariations,
-                currentGameId: resolvedRoom.current_game?.game_id ?? null,
-                variationGameById,
-                selectedVariationId: secondaryPane.variation_id ?? null,
-                variationFocusRequestId,
-                blockedVariationFlashId,
-                onRecallVariation: (variationId) => onOpenVariationFromUser(variationId, true),
-                onHideVariation: onToggleVariation,
-                onCreateVariation,
-                onClearVariations,
-                roomListHelpTargetId: KIBITZ_HELP_TARGETS.desktopRoomList,
-                variationListHelpTargetId: KIBITZ_HELP_TARGETS.desktopVariationList,
-            }}
-            chat={{
-                room: resolvedRoom,
-                items: stream,
-                variations: displayedVariations,
-                onOpenVariation: onOpenVariationFromUser,
-            }}
-            proposals={{
-                activeProposal,
-                queuedProposals: queuedRoomProposals,
-                onVote: onVoteProposal,
-            }}
-            onCreateVariation={onCreateVariation}
-            onPostVariation={(boardController) =>
-                onPostVariation(boardController, secondaryPane.variation_source_game_id)
-            }
-            onBranchFromVariation={onBranchFromVariation}
-            onExitVariation={onExitVariation}
-            onReturnToLive={onReturnToLive}
-            onRoomsOpened={onRoomsOpened}
-            roomSettings={{
-                canEditRoom: canManageRoom,
-                canDeleteRoom: permissions.can_delete_room,
-                onChangeBoard: handleOpenChangeBoard,
-                onSaveRoomDetails: async (title, description) =>
-                    controller.updateRoomDetails(resolvedRoom.id, title, description),
-                onDeleteRoom: handleDeleteRoom,
-            }}
-        >
-            {showDebug ? <KibitzDebugPanel debug={debug} /> : null}
-            {pickerOverlay}
-        </KibitzView>
+        <>
+            <KibitzView
+                room={resolvedRoom}
+                gobans={gobans}
+                isPortrait={isPortrait}
+                streamerMode={streamerModeActive}
+                onStreamerModeChange={setStreamerMode}
+                banner={
+                    resolvedRoom.preset?.selection_status === "change_pending" &&
+                    resolvedRoom.preset.change_effective_at ? (
+                        <KibitzPresetChangePendingBanner
+                            changeEffectiveAt={resolvedRoom.preset.change_effective_at}
+                        />
+                    ) : undefined
+                }
+                leftAside={{
+                    rooms,
+                    activeRoomId: resolvedRoom.id,
+                    blockedRoomIds,
+                    onSelectRoom,
+                    onCreateRoom: onOpenCreateRoom,
+                    canOpenCreateRoomFlow,
+                    signInHref: createRoomSignInHref,
+                    variations: activePostedVariations,
+                    currentGameId: resolvedRoom.current_game?.game_id ?? null,
+                    variationGameById,
+                    selectedVariationId: secondaryPane.variation_id ?? null,
+                    variationFocusRequestId,
+                    blockedVariationFlashId,
+                    onRecallVariation: (variationId) => onOpenVariationFromUser(variationId, true),
+                    onHideVariation: onToggleVariation,
+                    onCreateVariation,
+                    onClearVariations,
+                    roomListHelpTargetId: KIBITZ_HELP_TARGETS.desktopRoomList,
+                    variationListHelpTargetId: KIBITZ_HELP_TARGETS.desktopVariationList,
+                }}
+                chat={{
+                    room: resolvedRoom,
+                    items: stream,
+                    variations: displayedVariations,
+                    onOpenVariation: onOpenVariationFromUser,
+                }}
+                proposals={{
+                    activeProposal,
+                    queuedProposals: queuedRoomProposals,
+                    onVote: onVoteProposal,
+                }}
+                onCreateVariation={onCreateVariation}
+                onPostVariation={(boardController) =>
+                    onPostVariation(boardController, secondaryPane.variation_source_game_id)
+                }
+                onBranchFromVariation={onBranchFromVariation}
+                onExitVariation={onExitVariation}
+                onReturnToLive={onReturnToLive}
+                onRoomsOpened={onRoomsOpened}
+                roomSettings={{
+                    ready: activeRoom?.id === resolvedRoom.id,
+                    canEditRoom: canManageRoom,
+                    canDeleteRoom: permissions.can_delete_room,
+                    onChangeBoard: handleOpenChangeBoard,
+                    onSaveRoomDetails: async (title, description) =>
+                        controller.updateRoomDetails(resolvedRoom.id, title, description),
+                    onDeleteRoom: handleDeleteRoom,
+                }}
+            />
+            {overlays}
+        </>
     );
 }

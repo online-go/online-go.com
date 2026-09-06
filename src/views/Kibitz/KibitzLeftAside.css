@@ -26,7 +26,7 @@
     }
 
     /* Section headers follow the chat page's channel group headers: small
-       uppercase text with a plus/minus toggle on the right. */
+       uppercase text with a chevron toggle on the left. */
     .KibitzLeftAside-sectionHeader {
         display: flex;
         align-items: center;

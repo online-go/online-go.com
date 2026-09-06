@@ -328,4 +328,28 @@ describe("KibitzController room ordering", () => {
         expect(controller.secondary_pane).toEqual({ collapsed: true });
         controller.destroy();
     });
+
+    test("selectRoom collapses the pane when the switch starts, not when details arrive", async () => {
+        const controller = new KibitzController();
+        controller.setSecondaryPane({ collapsed: false, variation_id: "v1" });
+
+        let resolveRoom: (value: unknown) => void = () => undefined;
+        mockedGet.mockReturnValueOnce(
+            new Promise((resolve) => {
+                resolveRoom = resolve;
+            }),
+        );
+        const pending = controller.selectRoom("room-2");
+        expect(controller.secondary_pane).toEqual({ collapsed: true });
+
+        // A draft opened while the room details load must survive their arrival.
+        controller.setSecondaryPane({
+            collapsed: false,
+            variation_source_game_id: 5,
+        });
+        resolveRoom({});
+        await pending;
+        expect(controller.secondary_pane.collapsed).toBe(false);
+        controller.destroy();
+    });
 });

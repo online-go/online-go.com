@@ -17,34 +17,36 @@
 
 import * as React from "react";
 import { KBShortcut } from "@/components/KBShortcut";
-import { useGobanController } from "@/components/GobanView";
-import type { GobanController } from "@/lib/GobanController";
+import { generateGobanHook, useGobanController } from "@/components/GobanView";
+import { getGameKeyboardShortcutGroup } from "@/views/Game/game_keyboard_shortcuts";
 
-const NAVIGATION_SHORTCUTS: ReadonlyArray<{
-    shortcut: string;
-    action: (controller: GobanController) => void;
-}> = [
-    { shortcut: "left", action: (c) => c.previousMove() },
-    { shortcut: "right", action: (c) => c.nextMove() },
-    { shortcut: "page-up", action: (c) => c.previous10Moves() },
-    { shortcut: "page-down", action: (c) => c.forwardTenMoves() },
-    { shortcut: "home", action: (c) => c.gotoFirstMove() },
-    { shortcut: "end", action: (c) => c.gotoLastMove() },
-    { shortcut: "up", action: (c) => c.nextBranchUp() },
-    { shortcut: "down", action: (c) => c.nextBranchDown() },
-];
+const NAVIGATION = getGameKeyboardShortcutGroup("navigation");
+
+const useMode = generateGobanHook((goban) => goban?.mode ?? "play", ["mode"]);
 
 /**
- * Move navigation keys for the board in the center, the same bindings the
- * Game page uses. Rendered inside GobanView so it binds to whichever
- * controller the center shows.
+ * Move navigation keys for the board in the center: the Game page's
+ * Navigation group, bound to whichever controller the center shows. Rendered
+ * inside GobanView so it can read that controller from context.
  */
 export function KibitzKeyboardShortcuts(): React.ReactElement {
     const controller = useGobanController();
+    // Rebuilt when the mode changes so `when` guards are re-evaluated.
+    const mode = useMode(controller.goban);
+    const bindings = React.useMemo(
+        () =>
+            NAVIGATION.shortcuts
+                .filter((entry) => !entry.when || entry.when(controller))
+                .map((entry) => ({
+                    shortcut: entry.shortcut,
+                    action: () => entry.action(controller),
+                })),
+        [controller, mode],
+    );
     return (
         <>
-            {NAVIGATION_SHORTCUTS.map(({ shortcut, action }) => (
-                <KBShortcut key={shortcut} shortcut={shortcut} action={() => action(controller)} />
+            {bindings.map(({ shortcut, action }) => (
+                <KBShortcut key={shortcut} shortcut={shortcut} action={action} />
             ))}
         </>
     );

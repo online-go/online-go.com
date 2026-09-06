@@ -18,12 +18,13 @@
 import * as React from "react";
 import { GobanEnginePlayerEntry, GobanEvents, GobanRenderer } from "goban";
 import type { GobanController } from "@/lib/GobanController";
-import { _, interpolate, ngettext } from "@/lib/translate";
+import { _, interpolate, ngettext, pgettext } from "@/lib/translate";
 import { Clock } from "@/components/Clock";
 import { PlayerIcon } from "@/components/PlayerIcon";
 import { Player } from "@/components/Player";
 import { useGobanController } from "./GobanViewContext";
 import { subscribeAllEvents } from "./hooks";
+import { outcomeHasScore } from "./util";
 import "./PlayerBar.css";
 
 interface PlayerBarProps {
@@ -38,26 +39,16 @@ interface PlayerBarState {
     player: GobanEnginePlayerEntry;
     their_turn: boolean;
     score_line: string;
+    /** "Won by ..." on the winner's bar once the game has ended. */
+    result_line: string | null;
 }
-
-const NO_SCORE_OUTCOMES = [
-    "Timeout",
-    "Disconnection",
-    "Resignation",
-    "Abandonment",
-    "Cancellation",
-];
 
 function deriveState(goban: GobanRenderer, color: "black" | "white"): PlayerBarState {
     const engine = goban.engine;
     const player = engine.players[color];
     const finished = engine.phase === "finished" || engine.phase === "stone removal";
     const outcome = engine.outcome ?? "";
-    const show_points =
-        finished &&
-        goban.mode !== "analyze" &&
-        !NO_SCORE_OUTCOMES.includes(outcome) &&
-        !outcome.startsWith("Server Decision");
+    const show_points = finished && goban.mode !== "analyze" && outcomeHasScore(outcome);
     const score = engine.computeScore(!show_points)[color];
     const score_line = show_points
         ? interpolate(_("{{total}} {{unit}}"), {
@@ -68,12 +59,25 @@ function deriveState(goban: GobanRenderer, color: "black" | "white"): PlayerBarS
               count: score.prisoners,
               unit: ngettext("capture", "captures", score.prisoners),
           });
+    const winner_id =
+        engine.phase === "finished" && engine.winner != null ? Number(engine.winner) : null;
+    const result_line =
+        winner_id === player.id && outcome
+            ? interpolate(
+                  pgettext(
+                      "Shown under the winning player's name once a game ends",
+                      "Won by {{outcome}}",
+                  ),
+                  { outcome },
+              )
+            : null;
     return {
         player_id: player.id,
         username: player.username,
         player,
         their_turn: engine.phase === "play" && engine.playerToMoveOnOfficialBranch() === player.id,
         score_line,
+        result_line,
     };
 }
 
@@ -86,6 +90,7 @@ const PLAYER_BAR_EVENTS: Array<keyof Omit<GobanEvents, "load">> = [
     "cur_move",
     "last_official_move",
     "gamedata",
+    "winner",
 ];
 
 function usePlayerBarState(goban: GobanRenderer, color: "black" | "white"): PlayerBarState {
@@ -132,7 +137,12 @@ export function PlayerBar({
                         <span className="PlayerBar-name-plain">{state.username}</span>
                     )}
                 </div>
-                <div className="PlayerBar-score">{state.score_line}</div>
+                <div className="PlayerBar-score">
+                    {state.score_line}
+                    {state.result_line ? (
+                        <span className="PlayerBar-result"> · {state.result_line}</span>
+                    ) : null}
+                </div>
             </div>
             <div className="PlayerBar-clock">
                 <Clock goban={goban} color={color} compact />

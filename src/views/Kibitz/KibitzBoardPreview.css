@@ -11,14 +11,14 @@
         aspect-ratio: auto;
         display: flex;
         flex: 1 1 auto;
-        height: 100% !important;
+        height: 100%;
         justify-content: center;
         max-height: none;
         max-width: none;
         min-height: 0;
         min-width: 0;
         position: relative;
-        width: 100% !important;
+        width: 100%;
 
         .Goban {
             left: 0;

@@ -75,6 +75,13 @@
         .PlayerBar-score {
             font-size: 0.85rem;
             color: var(--shade1);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .PlayerBar-result {
+            color: var(--fg);
         }
     }
 

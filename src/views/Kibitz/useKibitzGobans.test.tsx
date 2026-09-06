@@ -69,6 +69,8 @@ jest.mock("./kibitzCurrentGameBaseSnapshot", () => ({
 }));
 jest.mock("@/lib/preferences", () => ({
     get: jest.fn((key: string) => (key === "label-positioning" ? "all" : 1)),
+    watch: jest.fn(),
+    unwatch: jest.fn(),
 }));
 
 import {
@@ -140,6 +142,15 @@ function baseOptions(overrides: Partial<UseKibitzGobansOptions> = {}): UseKibitz
     };
 }
 
+/** Pane and variation list that open a posted variation of another game. */
+function otherGameVariation(): Partial<UseKibitzGobansOptions> {
+    return {
+        secondaryPane: { collapsed: false, variation_id: "v7" },
+        variations: [makeVariation("v7", { game_id: 7 })],
+        visibleVariationIds: ["v7"],
+    };
+}
+
 function emit(instance: Record<string, unknown>, event: string) {
     act(() => {
         (instance as { emitGoban: (e: string) => void }).emitGoban(event);
@@ -169,15 +180,14 @@ describe("deriveKibitzCenterMode", () => {
             deriveKibitzCenterMode({
                 collapsed: false,
                 variation_source_game_id: 100,
-                preview_game_id: 100,
             }),
         ).toBe("draft");
     });
     test("variation when a variation id is set", () => {
         expect(deriveKibitzCenterMode({ collapsed: false, variation_id: "v1" })).toBe("variation");
     });
-    test("preview when only a preview game is set", () => {
-        expect(deriveKibitzCenterMode({ collapsed: false, preview_game_id: 7 })).toBe("preview");
+    test("main when nothing is selected", () => {
+        expect(deriveKibitzCenterMode({ collapsed: false })).toBe("main");
     });
 });
 
@@ -308,7 +318,6 @@ describe("useKibitzGobans", () => {
                 options={baseOptions({
                     secondaryPane: {
                         collapsed: false,
-                        preview_game_id: 100,
                         variation_source_game_id: 100,
                         variation_source_move_path: "aa",
                     },
@@ -323,13 +332,10 @@ describe("useKibitzGobans", () => {
         );
     });
 
-    test("previewing another game connects and defers composition until load", () => {
+    test("a variation of another game connects and defers composition until load", () => {
         const { rerender } = render(<Harness options={baseOptions()} onResult={() => undefined} />);
         rerender(
-            <Harness
-                options={baseOptions({ secondaryPane: { collapsed: false, preview_game_id: 7 } })}
-                onResult={() => undefined}
-            />,
+            <Harness options={baseOptions(otherGameVariation())} onResult={() => undefined} />,
         );
         expect(instances).toHaveLength(2);
         expect(instances[1].config).toMatchObject({ game_id: 7 });
@@ -340,16 +346,13 @@ describe("useKibitzGobans", () => {
         emit(instances[1], "load");
 
         expect(secondaryGoban.redraw).toHaveBeenCalledWith(true);
-        expect(applyKibitzVariationToController).not.toHaveBeenCalled();
+        expect(applyKibitzVariationToController).toHaveBeenCalledTimes(1);
     });
 
     test("main becoming ready does not tear down an already-connected secondary board", () => {
         const { rerender } = render(<Harness options={baseOptions()} onResult={() => undefined} />);
         rerender(
-            <Harness
-                options={baseOptions({ secondaryPane: { collapsed: false, preview_game_id: 7 } })}
-                onResult={() => undefined}
-            />,
+            <Harness options={baseOptions(otherGameVariation())} onResult={() => undefined} />,
         );
         expect(instances).toHaveLength(2);
         const secondaryDestroy = (instances[1] as { destroy: jest.Mock }).destroy;
@@ -367,10 +370,7 @@ describe("useKibitzGobans", () => {
 
     test("closing the pane destroys the secondary controller", () => {
         const { rerender } = render(
-            <Harness
-                options={baseOptions({ secondaryPane: { collapsed: false, preview_game_id: 7 } })}
-                onResult={() => undefined}
-            />,
+            <Harness options={baseOptions(otherGameVariation())} onResult={() => undefined} />,
         );
         expect(instances).toHaveLength(2);
         rerender(<Harness options={baseOptions()} onResult={() => undefined} />);
@@ -394,10 +394,7 @@ describe("useKibitzGobans", () => {
             <Harness options={baseOptions()} onResult={() => undefined} />,
         );
         rerender(
-            <Harness
-                options={baseOptions({ secondaryPane: { collapsed: false, preview_game_id: 7 } })}
-                onResult={() => undefined}
-            />,
+            <Harness options={baseOptions(otherGameVariation())} onResult={() => undefined} />,
         );
         expect(instances).toHaveLength(2);
         unmount();
@@ -441,16 +438,13 @@ describe("useKibitzGobans", () => {
         expect(latest!.playerBars).toBe(latest!.main);
     });
 
-    test("player bars follow the center board for a preview of another game", () => {
+    test("player bars follow the center board for a variation of another game", () => {
         let latest: KibitzGobans | null = null;
         const { rerender } = render(
             <Harness options={baseOptions()} onResult={(r) => (latest = r)} />,
         );
         rerender(
-            <Harness
-                options={baseOptions({ secondaryPane: { collapsed: false, preview_game_id: 7 } })}
-                onResult={(r) => (latest = r)}
-            />,
+            <Harness options={baseOptions(otherGameVariation())} onResult={(r) => (latest = r)} />,
         );
         expect(latest!.center).toBe(latest!.secondary);
         expect(latest!.playerBars).toBe(latest!.secondary);
@@ -474,7 +468,6 @@ describe("useKibitzGobans", () => {
                 options={baseOptions({
                     secondaryPane: {
                         collapsed: false,
-                        preview_game_id: 100,
                         variation_source_game_id: 100,
                         variation_source_move_path: "aa",
                     },
@@ -503,7 +496,6 @@ describe("useKibitzGobans", () => {
                 options={baseOptions({
                     secondaryPane: {
                         collapsed: false,
-                        preview_game_id: 100,
                         variation_source_game_id: 100,
                         variation_source_move_path: "aa",
                     },
@@ -524,7 +516,6 @@ describe("useKibitzGobans", () => {
         emit(instances[0], "load");
         const draft = (nonce: number): KibitzSecondaryPaneState => ({
             collapsed: false,
-            preview_game_id: 100,
             variation_source_game_id: 100,
             variation_source_move_path: "aa",
             variation_draft_nonce: nonce,
@@ -569,5 +560,79 @@ describe("useKibitzGobans", () => {
         expect(instances).toHaveLength(2);
         rerender(<Harness options={open(["v1", "v2", "v3"])} onResult={() => undefined} />);
         expect(instances).toHaveLength(3);
+    });
+
+    test("the room moving to another game leaves an open draft alone", () => {
+        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => ({
+            gameId: 100,
+            trunkTailMoveNumber: 3,
+            config: { move_tree: { x: 1 } },
+        }));
+        let latest: KibitzGobans | null = null;
+        const draft: KibitzSecondaryPaneState = {
+            collapsed: false,
+            variation_source_game_id: 100,
+            variation_source_move_path: "aa",
+            variation_draft_nonce: 1,
+        };
+        const { rerender } = render(
+            <Harness options={baseOptions()} onResult={(r) => (latest = r)} />,
+        );
+        emit(instances[0], "load");
+        rerender(
+            <Harness
+                options={baseOptions({ secondaryPane: draft })}
+                onResult={(r) => (latest = r)}
+            />,
+        );
+        expect(instances).toHaveLength(2);
+        const draftController = latest!.secondary;
+
+        const nextGame: KibitzWatchedGame = { ...game, game_id: 200 };
+        rerender(
+            <Harness
+                options={baseOptions({ currentGame: nextGame, secondaryPane: draft })}
+                onResult={(r) => (latest = r)}
+            />,
+        );
+        // The main controller was rebuilt for game 200; the draft was not.
+        expect(instances).toHaveLength(3);
+        expect(instances[2].config).toMatchObject({ game_id: 200 });
+        expect(latest!.secondary).toBe(draftController);
+        expect((instances[1] as { destroy: jest.Mock }).destroy).not.toHaveBeenCalled();
+        expect(latest!.playerBars).toBe(latest!.secondary);
+    });
+
+    test("a connected board recomposes on every load", () => {
+        const { rerender } = render(<Harness options={baseOptions()} onResult={() => undefined} />);
+        rerender(
+            <Harness options={baseOptions(otherGameVariation())} onResult={() => undefined} />,
+        );
+        expect(applyKibitzVariationToController).not.toHaveBeenCalled();
+        emit(instances[1], "load");
+        expect(applyKibitzVariationToController).toHaveBeenCalledTimes(1);
+        emit(instances[1], "load");
+        expect(applyKibitzVariationToController).toHaveBeenCalledTimes(2);
+    });
+
+    test("main snapshots are only taken when the trunk moves on", () => {
+        const { getMoveTreeTrunkTail } = jest.requireMock("@/lib/GobanController") as {
+            getMoveTreeTrunkTail: jest.Mock;
+        };
+        getMoveTreeTrunkTail.mockReturnValue({ move_number: 3 });
+        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => ({
+            gameId: 100,
+            trunkTailMoveNumber: 3,
+            config: { move_tree: { x: 1 } },
+        }));
+        const onMainSnapshot = jest.fn();
+        render(<Harness options={baseOptions({ onMainSnapshot })} onResult={() => undefined} />);
+        emit(instances[0], "load");
+        emit(instances[0], "move-made");
+        expect(onMainSnapshot).toHaveBeenCalledTimes(1);
+        getMoveTreeTrunkTail.mockReturnValue({ move_number: 4 });
+        emit(instances[0], "move-made");
+        expect(onMainSnapshot).toHaveBeenCalledTimes(2);
+        getMoveTreeTrunkTail.mockReturnValue(null);
     });
 });

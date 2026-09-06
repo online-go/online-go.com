@@ -246,11 +246,9 @@
         width: 100%;
     }
 
-    /* Goban sets min-height/flex-basis as an inline style on this element
-     * at runtime; !important is required to override that inline sizing. */
     .proposal-preview-thumb .KibitzBoardPreview .goban-container {
-        height: 100% !important;
-        width: 100% !important;
+        height: 100%;
+        width: 100%;
     }
 
     .proposal-timer-spine {
@@ -290,9 +288,12 @@
         width: 0.22rem;
     }
 
+    /* The component writes the remaining share of the vote window to
+       --proposal-timer-ratio; each layout scales the fill along its own axis. */
     .proposal-timer-fill {
         background: var(--primary);
         flex: 1 1 auto;
+        transform: scaleY(var(--proposal-timer-ratio, 0));
         transform-origin: bottom center;
         transition: transform 180ms linear;
         width: 100%;
@@ -361,11 +362,9 @@
         width: min(17rem, 58vw);
     }
 
-    /* Goban sets min-height/flex-basis as an inline style on this element
-     * at runtime; !important is required to override that inline sizing. */
     .proposal-expanded-board-wrap .KibitzBoardPreview .goban-container {
-        height: 100% !important;
-        width: 100% !important;
+        height: 100%;
+        width: 100%;
     }
 }
 
@@ -441,10 +440,7 @@
 
         .proposal-timer-fill {
             height: 100%;
-            /* The component sets transform: scaleY(...) as an inline style
-             * for the vertical timer bar; !important is required to cancel
-             * it out on the horizontal mobile layout. */
-            transform: none !important;
+            transform: scaleX(var(--proposal-timer-ratio, 0));
             transform-origin: left center;
             width: 100%;
         }

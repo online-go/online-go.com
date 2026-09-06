@@ -21,49 +21,49 @@
 - Before each commit: `yarn type-check`, `yarn lint`, `yarn prettier:file <modified files>`. Run `yarn build` once at the end.
 - Every source file starts with the AGPL header block copied from any existing `.tsx` file in `src/components/GobanView/`.
 - Commit messages end with:
-  ```
-  Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
-  Claude-Session: https://claude.ai/code/session_017JhzMHkqtu6hG23fWGxQQ3
-  ```
+    ```
+    Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_017JhzMHkqtu6hG23fWGxQQ3
+    ```
 - Test command for a single file: `yarn test <path>`.
 
 ## File structure
 
 **GobanView (Phase 1)**
 
-| File | Responsibility |
-| --- | --- |
-| `src/components/GobanView/util.ts` | Gains `user_color`. |
-| `src/components/GobanView/util.test.ts` | New. Tests `user_color`. |
-| `src/components/GobanView/PlayerBar.tsx` / `.css` | New. One player's icon, name, score line, clock. |
-| `src/components/GobanView/PlayerBar.test.tsx` | New. |
-| `src/components/GobanView/GobanView.tsx` / `.css` | Gains `leftAside` and `playerBars` props. |
-| `src/components/GobanView/index.ts` | Exports `PlayerBar`, `user_color`. |
-| `src/global_styl/01_variables.css` | `--goban-view-left-aside-width`. |
-| `src/views/Game/util.ts`, `src/views/Game/Game.tsx` | Import `user_color` from GobanView. |
+| File                                                | Responsibility                                   |
+| --------------------------------------------------- | ------------------------------------------------ |
+| `src/components/GobanView/util.ts`                  | Gains `user_color`.                              |
+| `src/components/GobanView/util.test.ts`             | New. Tests `user_color`.                         |
+| `src/components/GobanView/PlayerBar.tsx` / `.css`   | New. One player's icon, name, score line, clock. |
+| `src/components/GobanView/PlayerBar.test.tsx`       | New.                                             |
+| `src/components/GobanView/GobanView.tsx` / `.css`   | Gains `leftAside` and `playerBars` props.        |
+| `src/components/GobanView/index.ts`                 | Exports `PlayerBar`, `user_color`.               |
+| `src/global_styl/01_variables.css`                  | `--goban-view-left-aside-width`.                 |
+| `src/views/Game/util.ts`, `src/views/Game/Game.tsx` | Import `user_color` from GobanView.              |
 
 **Kibitz (Phase 2)**
 
-| File | Responsibility |
-| --- | --- |
-| `src/models/kibitz.d.ts`, `src/views/Kibitz/KibitzController.ts` | Drop the pane `size` mode. |
-| `src/views/Kibitz/useKibitzGobans.ts` / `.test.ts` | New. Controller ownership. |
-| `src/views/Kibitz/KibitzMiniMainBoard.tsx` / `.css` | New. Non-interactive main board thumbnail. |
-| `src/views/Kibitz/KibitzLeftAside.tsx` / `.css` | New. Rooms, variations, mini board column. |
+| File                                                                              | Responsibility                                                        |
+| --------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `src/models/kibitz.d.ts`, `src/views/Kibitz/KibitzController.ts`                  | Drop the pane `size` mode.                                            |
+| `src/views/Kibitz/useKibitzGobans.ts` / `.test.ts`                                | New. Controller ownership.                                            |
+| `src/views/Kibitz/KibitzMiniMainBoard.tsx` / `.css`                               | New. Non-interactive main board thumbnail.                            |
+| `src/views/Kibitz/KibitzLeftAside.tsx` / `.css`                                   | New. Rooms, variations, mini board column.                            |
 | `src/views/Kibitz/KibitzChatPanel.tsx` / `.css` / `.render.test.tsx` / `.test.ts` | Renamed from `KibitzSharedStreamPanel`; two tabs plus room user list. |
-| `src/views/Kibitz/KibitzVariationPanel.tsx` / `.css` | New. Draft and posted variation controls. |
-| `src/views/Kibitz/KibitzProposalPanel.tsx` / `.css` | New. Proposal bar and queue wrapper. |
-| `src/views/Kibitz/KibitzMoreActionsPopover.tsx` / `.css` | New. Game info, link, SGF, call moderator. |
-| `src/views/Kibitz/KibitzView.tsx` / `.css` / `.test.tsx` | New. The GobanView consumer. |
-| `src/views/Kibitz/KibitzInner.tsx` | Keeps state, renders `KibitzView`. |
-| `src/views/Kibitz/KibitzVariationList.tsx` | Gains the New variation button. |
-| `src/views/Kibitz/KibitzRoomList.tsx` | Loses `onCreateVariation`. |
-| `src/views/Kibitz/Kibitz.css` | Reduced to root and streamer mode rules. |
+| `src/views/Kibitz/KibitzVariationPanel.tsx` / `.css`                              | New. Draft and posted variation controls.                             |
+| `src/views/Kibitz/KibitzProposalPanel.tsx` / `.css`                               | New. Proposal bar and queue wrapper.                                  |
+| `src/views/Kibitz/KibitzMoreActionsPopover.tsx` / `.css`                          | New. Game info, link, SGF, call moderator.                            |
+| `src/views/Kibitz/KibitzView.tsx` / `.css` / `.test.tsx`                          | New. The GobanView consumer.                                          |
+| `src/views/Kibitz/KibitzInner.tsx`                                                | Keeps state, renders `KibitzView`.                                    |
+| `src/views/Kibitz/KibitzVariationList.tsx`                                        | Gains the New variation button.                                       |
+| `src/views/Kibitz/KibitzRoomList.tsx`                                             | Loses `onCreateVariation`.                                            |
+| `src/views/Kibitz/Kibitz.css`                                                     | Reduced to root and streamer mode rules.                              |
 
 **Docs (Phase 3)**
 
-| File | Responsibility |
-| --- | --- |
+| File             | Responsibility                                                     |
+| ---------------- | ------------------------------------------------------------------ |
 | `docs/kibitz.md` | Durable description of the Kibitz layout and controller ownership. |
 
 ---
@@ -73,6 +73,7 @@
 ### Task 1: Move `user_color` into GobanView util
 
 **Files:**
+
 - Modify: `src/components/GobanView/util.ts`
 - Create: `src/components/GobanView/util.test.ts`
 - Modify: `src/components/GobanView/index.ts`
@@ -80,6 +81,7 @@
 - Modify: `src/views/Game/Game.tsx:34` (import path)
 
 **Interfaces:**
+
 - Produces: `user_color(goban: Goban, player_id: number): "black" | "white" | null` exported from `@/components/GobanView`.
 
 - [x] **Step 1: Write the failing test**
@@ -193,12 +195,14 @@ git commit -m "refactor: move user_color into GobanView util"
 ### Task 2: PlayerBar component
 
 **Files:**
+
 - Create: `src/components/GobanView/PlayerBar.tsx`
 - Create: `src/components/GobanView/PlayerBar.css`
 - Create: `src/components/GobanView/PlayerBar.test.tsx`
 - Modify: `src/components/GobanView/index.ts`
 
 **Interfaces:**
+
 - Consumes: `useGobanController` from `./GobanViewContext`, `generateGobanHook` from `./hooks`.
 - Produces: `export function PlayerBar({ color }: { color: "black" | "white" }): React.ReactElement`.
 
@@ -318,7 +322,13 @@ interface PlayerBarState {
     score_line: string;
 }
 
-const NO_SCORE_OUTCOMES = ["Timeout", "Disconnection", "Resignation", "Abandonment", "Cancellation"];
+const NO_SCORE_OUTCOMES = [
+    "Timeout",
+    "Disconnection",
+    "Resignation",
+    "Abandonment",
+    "Cancellation",
+];
 
 function deriveState(goban: GobanRenderer, color: "black" | "white"): PlayerBarState {
     const engine = goban.engine;
@@ -498,10 +508,12 @@ git commit -m "feat(GobanView): add PlayerBar component"
 ### Task 3: GobanView `playerBars` prop
 
 **Files:**
+
 - Modify: `src/components/GobanView/GobanView.tsx`
 - Modify: `src/components/GobanView/GobanView.css`
 
 **Interfaces:**
+
 - Produces: `playerBars?: boolean` on `GobanViewProps`. When true, a `PlayerBar` for the top color renders above the board and one for the bottom color renders below it, in both view modes.
 
 - [x] **Step 1: Add the prop and color hook**
@@ -566,14 +578,14 @@ Landscape branch: inside `.GobanView-center`, render `{topBar}` before `<GobanCo
 In `GobanView.css`, inside `.GobanView`:
 
 ```css
-    .GobanView-player-bar {
-        flex-shrink: 0;
-        padding: 0.3rem 0;
-    }
+.GobanView-player-bar {
+    flex-shrink: 0;
+    padding: 0.3rem 0;
+}
 
-    .GobanView-center .GobanView-player-bar {
-        padding: 0.3rem 1.25rem 0.3rem 0.3rem;
-    }
+.GobanView-center .GobanView-player-bar {
+    padding: 0.3rem 1.25rem 0.3rem 0.3rem;
+}
 ```
 
 - [x] **Step 4: Verify**
@@ -594,11 +606,13 @@ git commit -m "feat(GobanView): optional player bars around the board"
 ### Task 4: GobanView `leftAside` prop
 
 **Files:**
+
 - Modify: `src/components/GobanView/GobanView.tsx`
 - Modify: `src/components/GobanView/GobanView.css`
 - Modify: `src/global_styl/01_variables.css:34`
 
 **Interfaces:**
+
 - Produces: `leftAside?: React.ReactNode` on `GobanViewProps`. Landscape only.
 
 - [x] **Step 1: Add the prop**
@@ -615,7 +629,9 @@ In `GobanViewProps`:
 Destructure it. In the landscape return, before `<div className="GobanView-center">`:
 
 ```tsx
-                    {leftAside && <div className="GobanView-left-aside">{leftAside}</div>}
+{
+    leftAside && <div className="GobanView-left-aside">{leftAside}</div>;
+}
 ```
 
 Add `(leftAside ? " has-left-aside" : "")` to the landscape root className expression.
@@ -625,25 +641,25 @@ Add `(leftAside ? " has-left-aside" : "")` to the landscape root className expre
 In `src/global_styl/01_variables.css` after line 34 (`--goban-view-sidebar-width: 400px;`):
 
 ```css
-    --goban-view-left-aside-width: 280px;
+--goban-view-left-aside-width: 280px;
 ```
 
 In `GobanView.css` inside `.GobanView`, after the `.GobanView-sidebar` block:
 
 ```css
-    .GobanView-left-aside {
-        display: flex;
-        flex-direction: column;
-        width: var(--goban-view-left-aside-width);
-        flex-shrink: 0;
-        z-index: 2;
-        background: var(--shade5);
-        border-radius: 8px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-        margin: 0 1.25rem var(--goban-view-bottom-margin) 0.3rem;
-        overflow-y: auto;
-        overflow-x: hidden;
-    }
+.GobanView-left-aside {
+    display: flex;
+    flex-direction: column;
+    width: var(--goban-view-left-aside-width);
+    flex-shrink: 0;
+    z-index: 2;
+    background: var(--shade5);
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    margin: 0 1.25rem var(--goban-view-bottom-margin) 0.3rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
 ```
 
 - [x] **Step 3: Verify**
@@ -666,11 +682,13 @@ git commit -m "feat(GobanView): optional left aside column"
 ### Task 5: Remove the secondary pane size mode
 
 **Files:**
+
 - Modify: `src/models/kibitz.d.ts:143`
 - Modify: `src/views/Kibitz/KibitzController.ts` (lines 459, 644, 1095, 1318, 1343, 1371, 1386, 1402, 1414-1467)
 - Modify: `src/views/Kibitz/KibitzController.test.ts`
 
 **Interfaces:**
+
 - Produces: `KibitzSecondaryPaneState` without `size`; `KibitzController.closeSecondaryPane(): void` replaces `setSecondaryPaneMode`, `increaseSecondaryPaneSize`, `decreaseSecondaryPaneSize`.
 
 - [x] **Step 1: Write the failing test**
@@ -678,13 +696,13 @@ git commit -m "feat(GobanView): optional left aside column"
 Add to `src/views/Kibitz/KibitzController.test.ts` inside the existing top-level `describe`:
 
 ```ts
-    test("closeSecondaryPane collapses without a size field", () => {
-        const controller = new KibitzController();
-        controller.setSecondaryPane({ collapsed: false, variation_id: "v1" });
-        controller.closeSecondaryPane();
-        expect(controller.secondary_pane).toEqual({ collapsed: true });
-        controller.destroy();
-    });
+test("closeSecondaryPane collapses without a size field", () => {
+    const controller = new KibitzController();
+    controller.setSecondaryPane({ collapsed: false, variation_id: "v1" });
+    controller.closeSecondaryPane();
+    expect(controller.secondary_pane).toEqual({ collapsed: true });
+    controller.destroy();
+});
 ```
 
 Check how other tests in that file construct a `KibitzController` (some mock sockets) and mirror the setup.
@@ -699,6 +717,7 @@ Expected: FAIL, `closeSecondaryPane` is not a function.
 In `src/models/kibitz.d.ts` delete the line `size?: "small" | "equal";`.
 
 In `KibitzController.ts`:
+
 - Line 459: `private _secondary_pane: KibitzSecondaryPaneState = { collapsed: true };`
 - Line 644 and 1095: replace `{ collapsed: true, size: "small" }` with `{ collapsed: true }`.
 - In `previewGame`, `startVariationFromCurrentBoard`, `startVariationFromPostedVariation`, `clearPreviewGame`, `openVariation`: delete the `size:` line.
@@ -733,17 +752,22 @@ git commit -m "refactor(kibitz): drop the secondary pane size mode"
 ### Task 6: `useKibitzGobans` hook
 
 **Files:**
+
 - Create: `src/views/Kibitz/useKibitzGobans.ts`
 - Create: `src/views/Kibitz/useKibitzGobans.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `GobanController` (`@/lib/GobanController`), `captureCurrentGameBaseSnapshotFromController` and `restoreMainBoardToOfficialTail` (`./kibitzCurrentGameBaseSnapshot`), `applyKibitzVariationToController` (`./kibitzVariationTree`), `getMoveTreeTrunkTail` (`@/lib/GobanController`).
 - Produces:
 
 ```ts
 export type KibitzCenterMode = "main" | "draft" | "variation" | "preview";
 export function deriveKibitzCenterMode(pane: KibitzSecondaryPaneState): KibitzCenterMode;
-export function parseKibitzBoardDimensions(game: KibitzWatchedGame | null | undefined): { width: number; height: number };
+export function parseKibitzBoardDimensions(game: KibitzWatchedGame | null | undefined): {
+    width: number;
+    height: number;
+};
 export interface KibitzGobans {
     main: GobanController | null;
     secondary: GobanController | null;
@@ -825,9 +849,16 @@ jest.mock("@/lib/preferences", () => ({
     get: jest.fn((key: string) => (key === "label-positioning" ? "all" : 1)),
 }));
 
-import { deriveKibitzCenterMode, useKibitzGobans, UseKibitzGobansOptions, KibitzGobans } from "./useKibitzGobans";
+import {
+    deriveKibitzCenterMode,
+    useKibitzGobans,
+    UseKibitzGobansOptions,
+    KibitzGobans,
+} from "./useKibitzGobans";
 
-const instances = (jest.requireMock("@/lib/GobanController") as { __instances: Array<Record<string, unknown>> }).__instances;
+const instances = (
+    jest.requireMock("@/lib/GobanController") as { __instances: Array<Record<string, unknown>> }
+).__instances;
 
 const game: KibitzWatchedGame = {
     game_id: 100,
@@ -869,7 +900,13 @@ describe("deriveKibitzCenterMode", () => {
         expect(deriveKibitzCenterMode({ collapsed: true })).toBe("main");
     });
     test("draft when a source game is set", () => {
-        expect(deriveKibitzCenterMode({ collapsed: false, variation_source_game_id: 100, preview_game_id: 100 })).toBe("draft");
+        expect(
+            deriveKibitzCenterMode({
+                collapsed: false,
+                variation_source_game_id: 100,
+                preview_game_id: 100,
+            }),
+        ).toBe("draft");
     });
     test("variation when a variation id is set", () => {
         expect(deriveKibitzCenterMode({ collapsed: false, variation_id: "v1" })).toBe("variation");
@@ -884,17 +921,34 @@ describe("useKibitzGobans", () => {
         let latest: KibitzGobans | null = null;
         render(<Harness options={baseOptions()} onResult={(r) => (latest = r)} />);
         expect(instances).toHaveLength(1);
-        expect(instances[0].config).toMatchObject({ game_id: 100, width: 9, height: 9, interactive: false });
+        expect(instances[0].config).toMatchObject({
+            game_id: 100,
+            width: 9,
+            height: 9,
+            interactive: false,
+        });
         expect(latest!.centerMode).toBe("main");
         expect(latest!.center).toBe(latest!.main);
         expect(latest!.secondary).toBeNull();
     });
 
     test("opening a variation creates a secondary controller and restores main to the tail", () => {
-        const { restoreMainBoardToOfficialTail } = jest.requireMock("./kibitzCurrentGameBaseSnapshot");
+        const { restoreMainBoardToOfficialTail } = jest.requireMock(
+            "./kibitzCurrentGameBaseSnapshot",
+        );
         let latest: KibitzGobans | null = null;
-        const { rerender } = render(<Harness options={baseOptions()} onResult={(r) => (latest = r)} />);
-        const variation = { id: "v1", room_id: "room-1", game_id: 100, creator: { id: 1, username: "b" }, created_at: 0, viewer_count: 0, current_viewers: [] };
+        const { rerender } = render(
+            <Harness options={baseOptions()} onResult={(r) => (latest = r)} />,
+        );
+        const variation = {
+            id: "v1",
+            room_id: "room-1",
+            game_id: 100,
+            creator: { id: 1, username: "b" },
+            created_at: 0,
+            viewer_count: 0,
+            current_viewers: [],
+        };
         rerender(
             <Harness
                 options={baseOptions({
@@ -928,12 +982,18 @@ describe("useKibitzGobans", () => {
             />,
         );
         expect(instances[1].config).toMatchObject({ interactive: true });
-        expect((instances[1] as { setAnalyzeTool: jest.Mock }).setAnalyzeTool).toHaveBeenCalledWith("stone", "alternate");
+        expect((instances[1] as { setAnalyzeTool: jest.Mock }).setAnalyzeTool).toHaveBeenCalledWith(
+            "stone",
+            "alternate",
+        );
     });
 
     test("closing the pane destroys the secondary controller", () => {
         const { rerender } = render(
-            <Harness options={baseOptions({ secondaryPane: { collapsed: false, preview_game_id: 7 } })} onResult={() => undefined} />,
+            <Harness
+                options={baseOptions({ secondaryPane: { collapsed: false, preview_game_id: 7 } })}
+                onResult={() => undefined}
+            />,
         );
         expect(instances).toHaveLength(2);
         rerender(<Harness options={baseOptions()} onResult={() => undefined} />);
@@ -942,7 +1002,12 @@ describe("useKibitzGobans", () => {
 
     test("changing the game destroys and recreates the main controller", () => {
         const { rerender } = render(<Harness options={baseOptions()} onResult={() => undefined} />);
-        rerender(<Harness options={baseOptions({ currentGame: { ...game, game_id: 200 } })} onResult={() => undefined} />);
+        rerender(
+            <Harness
+                options={baseOptions({ currentGame: { ...game, game_id: 200 } })}
+                onResult={() => undefined}
+            />,
+        );
         expect((instances[0] as { destroy: jest.Mock }).destroy).toHaveBeenCalled();
         expect(instances[1].config).toMatchObject({ game_id: 200 });
     });
@@ -954,7 +1019,9 @@ describe("useKibitzGobans", () => {
     });
 
     test("main snapshots are reported on goban load", () => {
-        const { captureCurrentGameBaseSnapshotFromController } = jest.requireMock("./kibitzCurrentGameBaseSnapshot");
+        const { captureCurrentGameBaseSnapshotFromController } = jest.requireMock(
+            "./kibitzCurrentGameBaseSnapshot",
+        );
         const snapshot = { gameId: 100, trunkTailMoveNumber: 3 };
         captureCurrentGameBaseSnapshotFromController.mockReturnValueOnce(snapshot);
         const onMainSnapshot = jest.fn();
@@ -1194,19 +1261,19 @@ export function useKibitzGobans({
 
         const selectedVariation =
             mode === "variation"
-                ? variationsRef.current.find((v) => v.id === pane.variation_id) ?? null
+                ? (variationsRef.current.find((v) => v.id === pane.variation_id) ?? null)
                 : null;
         const draftBase =
             mode === "draft" && pane.variation_draft_base_id
-                ? variationsRef.current.find((v) => v.id === pane.variation_draft_base_id) ?? null
+                ? (variationsRef.current.find((v) => v.id === pane.variation_draft_base_id) ?? null)
                 : null;
 
         const targetGameId =
             mode === "preview"
-                ? pane.preview_game_id ?? null
+                ? (pane.preview_game_id ?? null)
                 : mode === "variation"
-                  ? selectedVariation?.game_id ?? null
-                  : pane.variation_source_game_id ?? null;
+                  ? (selectedVariation?.game_id ?? null)
+                  : (pane.variation_source_game_id ?? null);
         const targetGame =
             (targetGameId != null ? gameByIdRef.current.get(targetGameId) : undefined) ??
             pane.variation_source_game ??
@@ -1226,7 +1293,7 @@ export function useKibitzGobans({
             board_div: document.createElement("div"),
             interactive: mode === "draft",
             connect_to_chat: false,
-            game_id: useMainTrunk ? undefined : targetGameId ?? undefined,
+            game_id: useMainTrunk ? undefined : (targetGameId ?? undefined),
             move_tree:
                 mode === "draft" && pane.variation_source_move_tree
                     ? pane.variation_source_move_tree
@@ -1247,7 +1314,12 @@ export function useKibitzGobans({
                         v.game_id === selectedVariation.game_id &&
                         visibleIdsRef.current.includes(v.id)
                     ) {
-                        applyKibitzVariationToController(controller, v, colorsRef.current[v.id] ?? 0, false);
+                        applyKibitzVariationToController(
+                            controller,
+                            v,
+                            colorsRef.current[v.id] ?? 0,
+                            false,
+                        );
                     }
                 }
                 const applied = applyKibitzVariationToController(
@@ -1294,7 +1366,7 @@ export function useKibitzGobans({
         };
     }, [secondaryKey, main, roomId]);
 
-    const center = centerMode === "main" ? main : secondary ?? main;
+    const center = centerMode === "main" ? main : (secondary ?? main);
 
     return { main, secondary, center, centerMode };
 }
@@ -1318,18 +1390,23 @@ git commit -m "feat(kibitz): useKibitzGobans owns the main and secondary control
 ### Task 7: Mini main board and left aside
 
 **Files:**
+
 - Create: `src/views/Kibitz/KibitzMiniMainBoard.tsx` / `.css`
 - Create: `src/views/Kibitz/KibitzLeftAside.tsx` / `.css`
 - Modify: `src/views/Kibitz/KibitzVariationList.tsx` (add `onCreateVariation` button)
 - Modify: `src/views/Kibitz/KibitzRoomList.tsx:33,45,68-105` (remove `onCreateVariation`)
 
 **Interfaces:**
+
 - Consumes: `GobanContainer` from `@/components/GobanContainer`; `KibitzRoomList`, `KibitzVariationList` props as they exist.
 - Produces:
 
 ```ts
 // KibitzMiniMainBoard
-interface KibitzMiniMainBoardProps { controller: GobanController; onClick: () => void; }
+interface KibitzMiniMainBoardProps {
+    controller: GobanController;
+    onClick: () => void;
+}
 // KibitzLeftAside
 export interface KibitzLeftAsideProps {
     rooms: KibitzRoomSummary[];
@@ -1374,13 +1451,19 @@ interface KibitzMiniMainBoardProps {
 
 /** Thumbnail of the live game shown while the center displays something
  *  else. Clicking it returns the center to the live game. */
-export function KibitzMiniMainBoard({ controller, onClick }: KibitzMiniMainBoardProps): React.ReactElement {
+export function KibitzMiniMainBoard({
+    controller,
+    onClick,
+}: KibitzMiniMainBoardProps): React.ReactElement {
     return (
         <button
             type="button"
             className="KibitzMiniMainBoard"
             onClick={onClick}
-            title={pgettext("Tooltip on the small live game board in Kibitz", "Return to the live game")}
+            title={pgettext(
+                "Tooltip on the small live game board in Kibitz",
+                "Return to the live game",
+            )}
         >
             <GobanContainer goban={controller.goban} respectContainerBounds />
         </button>
@@ -1427,26 +1510,28 @@ Create `src/views/Kibitz/KibitzMiniMainBoard.css`:
 In `KibitzVariationList.tsx` add `onCreateVariation?: () => void;` to `KibitzVariationListProps` and destructure it. Find where `title` is rendered (the list header) and render, next to the title:
 
 ```tsx
-                {onCreateVariation ? (
-                    <button
-                        type="button"
-                        className="xs primary KibitzVariationList-createButton"
-                        onClick={onCreateVariation}
-                    >
-                        {pgettext("Button label for opening Kibitz variation creation", "New variation")}
-                    </button>
-                ) : null}
+{
+    onCreateVariation ? (
+        <button
+            type="button"
+            className="xs primary KibitzVariationList-createButton"
+            onClick={onCreateVariation}
+        >
+            {pgettext("Button label for opening Kibitz variation creation", "New variation")}
+        </button>
+    ) : null;
+}
 ```
 
 If the header is not a flex row, wrap the title and button in `<div className="KibitzVariationList-titleRow">` and add to `KibitzVariationList.css`:
 
 ```css
-    .KibitzVariationList-titleRow {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
-    }
+.KibitzVariationList-titleRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
 ```
 
 In `KibitzRoomList.tsx` remove the `onCreateVariation` prop, its destructuring, and the `{onCreateVariation ? (...) : null}` block. Change the surrounding condition `onCreateRoom || onCreateVariation` to `onCreateRoom`. Update `KibitzRoomList.test.tsx` if it references the variation button.
@@ -1581,9 +1666,11 @@ git commit -m "feat(kibitz): left aside with rooms, variations and mini main boa
 ### Task 8: KibitzChatPanel (two tabs, room user list)
 
 **Files:**
+
 - Rename: `src/views/Kibitz/KibitzSharedStreamPanel.tsx` to `KibitzChatPanel.tsx`; `.css`, `.test.ts`, `.render.test.tsx` likewise.
 
 **Interfaces:**
+
 - Produces:
 
 ```ts
@@ -1596,7 +1683,11 @@ export interface KibitzChatPanelProps {
     gameController: GobanController | null;
 }
 export function KibitzChatPanel(props: KibitzChatPanelProps): React.ReactElement;
-export function createChatLineFromGobanLine(roomChannel: string, line: protocol.GameChatLine, includeMalkovich: boolean): PaneEntry | null;  // unchanged
+export function createChatLineFromGobanLine(
+    roomChannel: string,
+    line: protocol.GameChatLine,
+    includeMalkovich: boolean,
+): PaneEntry | null; // unchanged
 ```
 
 - [x] **Step 1: Rename**
@@ -1613,30 +1704,34 @@ Replace every `KibitzSharedStreamPanel` identifier and CSS class prefix in those
 - [x] **Step 2: Update the render test to the tab layout**
 
 In `KibitzChatPanel.render.test.tsx`:
+
 - Add a mock for `@/components/ChatUserList`:
 
 ```tsx
 jest.mock("@/components/ChatUserList", () => ({
     __esModule: true,
-    ChatUserList: ({ channel }: { channel: string }) => <div data-testid="user-list">{channel}</div>,
+    ChatUserList: ({ channel }: { channel: string }) => (
+        <div data-testid="user-list">{channel}</div>
+    ),
     ChatUserCount: ({ onClick, active }: { onClick: () => void; active: boolean }) => (
         <button type="button" data-testid="user-toggle" data-active={active} onClick={onClick} />
     ),
 }));
 ```
+
 - Remove the `@/components/GobanView` mock; the panel now takes `gameController` as a prop. Render with `gameController={null}`.
 - Remove `mode`, `isMobileLayout`, `onSendMessage`, `compact` from the rendered props.
 - Keep the `"Game chat"` and `"Kibitz chat"` label assertions: those become the tab labels.
 - Replace the second test (mobile mode) with:
 
 ```tsx
-    test("room tab toggles the user list", () => {
-        render(<KibitzChatPanel {...baseProps()} />);
-        fireEvent.click(screen.getByText("Kibitz chat"));
-        expect(screen.queryByTestId("user-list")).toBeNull();
-        fireEvent.click(screen.getByTestId("user-toggle"));
-        expect(screen.getByTestId("user-list")).toHaveTextContent("kibitz-room-1");
-    });
+test("room tab toggles the user list", () => {
+    render(<KibitzChatPanel {...baseProps()} />);
+    fireEvent.click(screen.getByText("Kibitz chat"));
+    expect(screen.queryByTestId("user-list")).toBeNull();
+    fireEvent.click(screen.getByTestId("user-toggle"));
+    expect(screen.getByTestId("user-list")).toHaveTextContent("kibitz-room-1");
+});
 ```
 
 where `baseProps()` returns the existing room (`channel: "kibitz-room-1"`), items, variations, `onOpenVariation: jest.fn()`, `gameController: null`. Import `fireEvent` from `@testing-library/react`.
@@ -1658,56 +1753,62 @@ In `KibitzChatPanel.tsx`:
 6. Replace the mobile switcher JSX and the two-pane layout with:
 
 ```tsx
-    return (
-        <div className="KibitzChatPanel" ref={streamHelpTarget?.ref}>
-            <div className="KibitzChatPanel-tabs" role="tablist">
-                <button
-                    type="button"
-                    role="tab"
-                    aria-selected={tab === "game"}
-                    className={"KibitzChatPanel-tab" + (tab === "game" ? " active" : "")}
-                    onClick={() => setTab("game")}
-                >
-                    {pgettext("Kibitz chat tab for the watched game's chat", "Game chat")}
-                    {gameUnread && tab !== "game" ? <span className="KibitzChatPanel-unread" /> : null}
-                </button>
-                <button
-                    type="button"
-                    role="tab"
-                    aria-selected={tab === "room"}
-                    className={"KibitzChatPanel-tab" + (tab === "room" ? " active" : "")}
-                    onClick={() => setTab("room")}
-                >
-                    {pgettext("Kibitz chat tab for the kibitz room's chat", "Kibitz chat")}
-                    {roomUnread && tab !== "room" ? <span className="KibitzChatPanel-unread" /> : null}
-                </button>
-            </div>
-            <div className={"KibitzChatPanel-body" + (showUserList && tab === "room" ? " show-user-list" : "")}>
-                <div className="KibitzChatPanel-log">
-                    {tab === "game" ? renderEntries(gameEntries, "game") : renderEntries(roomEntries, "room")}
-                </div>
-                {tab === "room" && showUserList ? <ChatUserList channel={room.channel} /> : null}
-            </div>
-            {tab === "room" ? (
-                <div className="KibitzChatPanel-composer chat-input-container input-group">
-                    <TabCompleteInput
-                        id={"kibitz-chat-input-" + room.id}
-                        className="chat-input"
-                        placeholder={chatDisabled ? disabledPlaceholder : roomPlaceholder}
-                        disabled={chatDisabled}
-                        onKeyPress={onRoomKeyPress}
-                    />
-                    <ChatUserCount
-                        channel={room.channel}
-                        active={showUserList}
-                        onClick={() => setShowUserList((v) => !v)}
-                    />
-                </div>
-            ) : (
-                disabledComposer
-            )}
+return (
+    <div className="KibitzChatPanel" ref={streamHelpTarget?.ref}>
+        <div className="KibitzChatPanel-tabs" role="tablist">
+            <button
+                type="button"
+                role="tab"
+                aria-selected={tab === "game"}
+                className={"KibitzChatPanel-tab" + (tab === "game" ? " active" : "")}
+                onClick={() => setTab("game")}
+            >
+                {pgettext("Kibitz chat tab for the watched game's chat", "Game chat")}
+                {gameUnread && tab !== "game" ? <span className="KibitzChatPanel-unread" /> : null}
+            </button>
+            <button
+                type="button"
+                role="tab"
+                aria-selected={tab === "room"}
+                className={"KibitzChatPanel-tab" + (tab === "room" ? " active" : "")}
+                onClick={() => setTab("room")}
+            >
+                {pgettext("Kibitz chat tab for the kibitz room's chat", "Kibitz chat")}
+                {roomUnread && tab !== "room" ? <span className="KibitzChatPanel-unread" /> : null}
+            </button>
         </div>
-    );
+        <div
+            className={
+                "KibitzChatPanel-body" + (showUserList && tab === "room" ? " show-user-list" : "")
+            }
+        >
+            <div className="KibitzChatPanel-log">
+                {tab === "game"
+                    ? renderEntries(gameEntries, "game")
+                    : renderEntries(roomEntries, "room")}
+            </div>
+            {tab === "room" && showUserList ? <ChatUserList channel={room.channel} /> : null}
+        </div>
+        {tab === "room" ? (
+            <div className="KibitzChatPanel-composer chat-input-container input-group">
+                <TabCompleteInput
+                    id={"kibitz-chat-input-" + room.id}
+                    className="chat-input"
+                    placeholder={chatDisabled ? disabledPlaceholder : roomPlaceholder}
+                    disabled={chatDisabled}
+                    onKeyPress={onRoomKeyPress}
+                />
+                <ChatUserCount
+                    channel={room.channel}
+                    active={showUserList}
+                    onClick={() => setShowUserList((v) => !v)}
+                />
+            </div>
+        ) : (
+            disabledComposer
+        )}
+    </div>
+);
 ```
 
 Keep the existing `renderEntries`, `roomEntries`, `gameEntries`, `onRoomKeyPress`, `disabledComposer`, the room proxy effect, the game chat effect, and the `useKibitzHelpTarget(KIBITZ_HELP_TARGETS.desktopStream)` call (name its result `streamHelpTarget`). Keep the unread flags (`gameUnread`, `roomUnread`) if they exist as booleans; otherwise derive them from the existing unread bookkeeping or drop the dots. Import `ChatUserList, ChatUserCount` from `@/components/ChatUserList`. Keep the exact strings `"Game chat"` and `"Kibitz chat"` (they are asserted by the tests).
@@ -1800,10 +1901,12 @@ git commit -m "refactor(kibitz): two-tab chat panel with room user list"
 ### Task 9: Variation panel and proposal panel
 
 **Files:**
+
 - Create: `src/views/Kibitz/KibitzVariationPanel.tsx` / `.css`
 - Create: `src/views/Kibitz/KibitzProposalPanel.tsx` / `.css`
 
 **Interfaces:**
+
 - Consumes: `GobanAnalyzeButtonBar` (`@/components/GobanAnalyzeButtonBar`, props `controller`, `showBackToGame`, `showConditionalPlannerButton`), `Resizable` (`@/components/Resizable`), `KibitzNodeText` (`{controller, editable, disabled?}`), `KibitzVariationComposer` (`{controller, onSubmit, showSubmitButton?}`), `KibitzProposalBar` (`{proposal?, onVote}`), `KibitzProposalQueue` (`{proposals}`).
 - Produces:
 
@@ -1847,7 +1950,12 @@ export interface KibitzVariationPanelProps {
  * A draft gets the analysis tools and the composer; a posted variation only
  * gets the move tree and its node text.
  */
-export function KibitzVariationPanel({ controller, mode, onPost, onDiscard }: KibitzVariationPanelProps): React.ReactElement {
+export function KibitzVariationPanel({
+    controller,
+    mode,
+    onPost,
+    onDiscard,
+}: KibitzVariationPanelProps): React.ReactElement {
     const setMoveTree = React.useCallback(
         (resizable: Resizable | null) => controller.setMoveTreeContainer(resizable),
         [controller],
@@ -1923,7 +2031,11 @@ export interface KibitzProposalPanelProps {
     onVote: (proposalId: string, choice: "change" | "keep") => void;
 }
 
-export function KibitzProposalPanel({ activeProposal, queuedProposals, onVote }: KibitzProposalPanelProps): React.ReactElement | null {
+export function KibitzProposalPanel({
+    activeProposal,
+    queuedProposals,
+    onVote,
+}: KibitzProposalPanelProps): React.ReactElement | null {
     if (!activeProposal && queuedProposals.length === 0) {
         return null;
     }
@@ -1964,15 +2076,17 @@ git commit -m "feat(kibitz): sidebar variation and proposal panels"
 ### Task 10: More actions popover
 
 **Files:**
+
 - Create: `src/views/Kibitz/KibitzMoreActionsPopover.tsx` / `.css`
 
 **Interfaces:**
+
 - Consumes: `openGameInfoModal(config, black, white, annulled, creator_id)` from `@/views/Game/GameInfoModal`; `openGameLinkModal(goban)` from `@/views/Game/GameLinkModal`; `openReport({reported_game_id})` from `@/components/Report`; `api1` from `@/lib/requests`.
 - Produces:
 
 ```ts
 export interface KibitzMoreActionsPopoverProps {
-    controller: GobanController;  // the main game controller
+    controller: GobanController; // the main game controller
     onClose: () => void;
 }
 export function KibitzMoreActionsPopover(props: KibitzMoreActionsPopoverProps): React.ReactElement;
@@ -2000,7 +2114,10 @@ export interface KibitzMoreActionsPopoverProps {
     onClose: () => void;
 }
 
-export function KibitzMoreActionsPopover({ controller, onClose }: KibitzMoreActionsPopoverProps): React.ReactElement {
+export function KibitzMoreActionsPopover({
+    controller,
+    onClose,
+}: KibitzMoreActionsPopoverProps): React.ReactElement {
     const goban = controller.goban;
     const engine = goban.engine;
     const game_id = Number(goban.config.game_id);
@@ -2036,7 +2153,11 @@ export function KibitzMoreActionsPopover({ controller, onClose }: KibitzMoreActi
                     <i className="fa fa-info-circle" />
                     <span>{_("Game information")}</span>
                 </button>
-                <button type="button" className="GameSidebarPanel-item" onClick={wrap(() => openGameLinkModal(goban))}>
+                <button
+                    type="button"
+                    className="GameSidebarPanel-item"
+                    onClick={wrap(() => openGameLinkModal(goban))}
+                >
                     <i className="fa fa-share-alt" />
                     <span>{_("Link to game")}</span>
                 </button>
@@ -2110,10 +2231,12 @@ git commit -m "feat(kibitz): more actions popover"
 ### Task 11: KibitzView
 
 **Files:**
+
 - Create: `src/views/Kibitz/KibitzView.tsx` / `.css`
 - Create: `src/views/Kibitz/KibitzView.test.tsx`
 
 **Interfaces:**
+
 - Consumes: everything produced in Tasks 6 to 10, `GobanView` with `leftAside` and `playerBars`, `KibitzRoomSettingsPopover` (read its props at `KibitzRoomSettingsPopover.tsx` and the way `KibitzRoomStage.tsx:2140` opened it with `popover()`), `KibitzPresetChangePendingBanner` (props at its file), `useKibitzHelpTarget`, `KIBITZ_HELP_TARGETS`.
 - Produces:
 
@@ -2172,14 +2295,28 @@ jest.mock("./KibitzLeftAside", () => ({
         <div data-testid="left-aside" data-mini={miniBoardController ? "yes" : "no"} />
     ),
 }));
-jest.mock("./KibitzChatPanel", () => ({ __esModule: true, KibitzChatPanel: () => <div data-testid="chat" /> }));
+jest.mock("./KibitzChatPanel", () => ({
+    __esModule: true,
+    KibitzChatPanel: () => <div data-testid="chat" />,
+}));
 jest.mock("./KibitzVariationPanel", () => ({
     __esModule: true,
-    KibitzVariationPanel: ({ mode }: { mode: string }) => <div data-testid={`variation-panel-${mode}`} />,
+    KibitzVariationPanel: ({ mode }: { mode: string }) => (
+        <div data-testid={`variation-panel-${mode}`} />
+    ),
 }));
-jest.mock("./KibitzProposalPanel", () => ({ __esModule: true, KibitzProposalPanel: () => <div data-testid="proposals" /> }));
-jest.mock("./KibitzRoomSettingsPopover", () => ({ __esModule: true, KibitzRoomSettingsPopover: () => null }));
-jest.mock("./KibitzMoreActionsPopover", () => ({ __esModule: true, openKibitzMoreActions: jest.fn() }));
+jest.mock("./KibitzProposalPanel", () => ({
+    __esModule: true,
+    KibitzProposalPanel: () => <div data-testid="proposals" />,
+}));
+jest.mock("./KibitzRoomSettingsPopover", () => ({
+    __esModule: true,
+    KibitzRoomSettingsPopover: () => null,
+}));
+jest.mock("./KibitzMoreActionsPopover", () => ({
+    __esModule: true,
+    openKibitzMoreActions: jest.fn(),
+}));
 jest.mock("./HelpFlows/useKibitzHelpTarget", () => ({ useKibitzHelpTarget: () => null }));
 jest.mock("@/lib/hooks", () => ({ useUser: () => ({ id: 1, anonymous: false }) }));
 
@@ -2334,7 +2471,9 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const gobanViewRef = React.useRef<GobanViewRef>(null);
     const settingsPopoverRef = React.useRef<PopOver | null>(null);
     const roomTitleTarget = useKibitzHelpTarget(KIBITZ_HELP_TARGETS.desktopRoomTitle);
-    const behindLive = useBehindLive(gobans.centerMode === "main" ? gobans.main?.goban ?? null : null);
+    const behindLive = useBehindLive(
+        gobans.centerMode === "main" ? (gobans.main?.goban ?? null) : null,
+    );
 
     if (!gobans.center) {
         return null;
@@ -2437,7 +2576,10 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                     type="action"
                     align="center"
                     icon="arrow-left"
-                    title={pgettext("Action that leaves a Kibitz variation and shows the live game", "Return to game")}
+                    title={pgettext(
+                        "Action that leaves a Kibitz variation and shows the live game",
+                        "Return to game",
+                    )}
                     onClick={exitVariation}
                 />
             )}
@@ -2448,7 +2590,10 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                     type="action"
                     align="center"
                     icon="forward"
-                    title={pgettext("Action that jumps a Kibitz board to the latest move", "Return to live")}
+                    title={pgettext(
+                        "Action that jumps a Kibitz board to the latest move",
+                        "Return to live",
+                    )}
                     onClick={props.onReturnToLive}
                 />
             )}
@@ -2515,10 +2660,12 @@ git commit -m "feat(kibitz): KibitzView lays the room out on GobanView"
 ### Task 12: Wire KibitzInner to KibitzView
 
 **Files:**
+
 - Modify: `src/views/Kibitz/KibitzInner.tsx` (large reduction)
 - Delete: `src/views/Kibitz/KibitzInner.snapshot.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `useKibitzGobans`, `KibitzView`, `useKibitzCurrentGameConnectionKeeper` (unchanged), `KibitzGamePickerOverlay`, `KibitzDebugPanel`, `KibitzPresetChangePendingBanner`.
 
 This task keeps every non-layout item listed below and deletes the rest. Work in the order given so the type-checker guides each step.
@@ -2534,6 +2681,7 @@ It asserts the old DOM. Coverage moves to `KibitzView.test.tsx` and `KibitzInner
 - [x] **Step 2: Remove layout state and effects from KibitzInner**
 
 Delete these, with any helper only they used:
+
 - `MOBILE_SPLIT_STORAGE_KEY`, `DESKTOP_SIDEBAR_WIDTH_STORAGE_KEY` (lines 325, 329) and every `desktopSidebarWidthPx`, `isDesktopSidebarDragging`, `mobileSplitRatio`, `mobileDividerDragging` state, ref, handler, and effect.
 - `mobileCompanionPanel`, `mobileOverlayMode`, `onSelectMobileCompanionPanel`, `onOpenMobileRooms`, `handleMobileBoardTransientDragControllerChange`, `handleMobileBoardSizeChange`, and the `isMobileLayout` branches inside `onSelectRoom`, `onOpenCreateRoom`, `onOpenChangeBoard`, `onCreateVariation`, `onClearPreview`. Replace `isMobileLayout` with `isPortrait` from `useViewMode` below where the picker needs it (`pickerOpen` becomes `Boolean(pickerMode)`).
 - `pendingSecondaryPaneMode`, `onSetSecondaryPaneMode`, `currentSecondaryPaneMode`, and the flush effect (lines 108, 688-689, 1986-1988, 2971, 3143-3155, 3358, 3369).
@@ -2547,19 +2695,19 @@ Delete these, with any helper only they used:
 Near the other hooks in `KibitzInner`:
 
 ```ts
-    const view_mode = useViewMode(null);
-    const isPortrait = view_mode === "portrait";
+const view_mode = useViewMode(null);
+const isPortrait = view_mode === "portrait";
 
-    const gobans = useKibitzGobans({
-        roomId: resolvedRoom?.id ?? null,
-        currentGame: resolvedRoom?.current_game,
-        secondaryPane,
-        variations: displayedVariations,
-        visibleVariationIds,
-        variationColorIndexes,
-        variationGameById,
-        onMainSnapshot: acceptCurrentGameBaseSnapshot,
-    });
+const gobans = useKibitzGobans({
+    roomId: resolvedRoom?.id ?? null,
+    currentGame: resolvedRoom?.current_game,
+    secondaryPane,
+    variations: displayedVariations,
+    visibleVariationIds,
+    variationColorIndexes,
+    variationGameById,
+    onMainSnapshot: acceptCurrentGameBaseSnapshot,
+});
 ```
 
 with `import { useViewMode } from "@/components/GobanView";` and `import { useKibitzGobans } from "./useKibitzGobans";`. `useViewMode(null)` falls back to the window-based mode; check its implementation in `src/components/GobanView/hooks.ts:60` and, if it does not listen for resizes when given null, replace with a small `React.useState(goban_view_mode())` plus a `window` resize listener.
@@ -2573,20 +2721,20 @@ The game-chat variation effect (line 3168, `goban.on("chat" ...)`) subscribed to
 - [x] **Step 4: Add exit and return handlers**
 
 ```ts
-    const onExitVariation = React.useCallback(() => {
-        controller.closeSecondaryPane();
-    }, [controller]);
+const onExitVariation = React.useCallback(() => {
+    controller.closeSecondaryPane();
+}, [controller]);
 
-    const onReturnToLive = React.useCallback(() => {
-        const main = gobans.main;
-        if (!main) {
-            return;
-        }
-        main.gotoLastMove();
-        if (main.goban.mode === "analyze") {
-            main.goban.setMode("play");
-        }
-    }, [gobans.main]);
+const onReturnToLive = React.useCallback(() => {
+    const main = gobans.main;
+    if (!main) {
+        return;
+    }
+    main.gotoLastMove();
+    if (main.goban.mode === "analyze") {
+        main.goban.setMode("play");
+    }
+}, [gobans.main]);
 ```
 
 `onClearPreview` (line 2744) keeps its "open the next visible variation, else clear" behaviour; the `KibitzVariationList` hide path already calls it.
@@ -2596,91 +2744,94 @@ The game-chat variation effect (line 3168, `goban.on("chat" ...)`) subscribed to
 Replace everything from the first `if (rooms.length === 0)` return branch (line 3679) to the end of the component with:
 
 ```tsx
-    if (isBlockedRoom) {
-        return blockedRoomView;   // the existing early-return element from line 3674, unchanged
-    }
+if (isBlockedRoom) {
+    return blockedRoomView; // the existing early-return element from line 3674, unchanged
+}
 
-    if (!resolvedRoom) {
-        return (
-            <div className="Kibitz Kibitz-empty">
-                {rooms.length === 0
-                    ? pgettext("Kibitz placeholder shown when no rooms exist", "No Kibitz rooms yet")
-                    : pgettext("Kibitz loading state", "Loading Kibitz...")}
-                {canOpenCreateRoomFlow && (
-                    <button type="button" className="primary" onClick={onOpenCreateRoom}>
-                        {pgettext("Button label for opening the Kibitz create room picker", "Create room")}
-                    </button>
-                )}
-                {pickerOverlay}
-            </div>
-        );
-    }
-
+if (!resolvedRoom) {
     return (
-        <KibitzView
-            room={resolvedRoom}
-            gobans={gobans}
-            isPortrait={isPortrait}
-            streamerMode={streamerMode}
-            onStreamerModeChange={setStreamerMode}
-            banner={
-                <KibitzPresetChangePendingBanner
-                    room={resolvedRoom}
-                    // copy the remaining props from the current banner render site
-                />
-            }
-            leftAside={{
-                rooms,
-                activeRoomId: resolvedRoom.id,
-                blockedRoomIds,
-                onSelectRoom,
-                onCreateRoom: onOpenCreateRoom,
-                canOpenCreateRoomFlow,
-                signInHref: createRoomSignInHref,
-                variations: displayedVariations,
-                currentGameId: resolvedRoom.current_game?.game_id ?? null,
-                variationGameById,
-                selectedVariationId: secondaryPane.variation_id ?? null,
-                variationFocusRequestId,
-                variationColorIndexes,
-                blockedVariationFlashId,
-                onRecallVariation: (id) => onOpenVariation(id, true),
-                onHideVariation: onToggleVariation,
-                onCreateVariation,
-                miniBoardController: null,
-                onExitVariation,
-                roomListHelpTargetId: KIBITZ_HELP_TARGETS.desktopRoomList,
-                variationListHelpTargetId: KIBITZ_HELP_TARGETS.desktopVariationList,
-            }}
-            chat={{
-                room: resolvedRoom,
-                items: stream,
-                variations: displayedVariations,
-                onOpenVariation,
-            }}
-            proposals={{
-                activeProposal,
-                queuedProposals: queuedRoomProposals,
-                onVote: (proposalId, choice) => controller.voteOnProposal(proposalId, choice),
-            }}
-            onPostVariation={(boardController) =>
-                onPostVariation(boardController, secondaryPane.variation_source_game_id)
-            }
-            onExitVariation={onExitVariation}
-            onReturnToLive={onReturnToLive}
-            roomSettings={{
-                canEditRoom: canManageRoom,
-                canDeleteRoom: permissions.can_delete_room,
-                onChangeBoard: handleOpenChangeBoard,
-                onSaveRoomDetails: (title, description) =>
-                    controller.updateRoomDetails(resolvedRoom.id, title, description),
-                onDeleteRoom: handleDeleteRoom,
-            }}
-        >
-            {showDebug && <KibitzDebugPanel debug={debug} /* copy remaining props */ />}
+        <div className="Kibitz Kibitz-empty">
+            {rooms.length === 0
+                ? pgettext("Kibitz placeholder shown when no rooms exist", "No Kibitz rooms yet")
+                : pgettext("Kibitz loading state", "Loading Kibitz...")}
+            {canOpenCreateRoomFlow && (
+                <button type="button" className="primary" onClick={onOpenCreateRoom}>
+                    {pgettext(
+                        "Button label for opening the Kibitz create room picker",
+                        "Create room",
+                    )}
+                </button>
+            )}
             {pickerOverlay}
-        </KibitzView>
+        </div>
     );
+}
+
+return (
+    <KibitzView
+        room={resolvedRoom}
+        gobans={gobans}
+        isPortrait={isPortrait}
+        streamerMode={streamerMode}
+        onStreamerModeChange={setStreamerMode}
+        banner={
+            <KibitzPresetChangePendingBanner
+                room={resolvedRoom}
+                // copy the remaining props from the current banner render site
+            />
+        }
+        leftAside={{
+            rooms,
+            activeRoomId: resolvedRoom.id,
+            blockedRoomIds,
+            onSelectRoom,
+            onCreateRoom: onOpenCreateRoom,
+            canOpenCreateRoomFlow,
+            signInHref: createRoomSignInHref,
+            variations: displayedVariations,
+            currentGameId: resolvedRoom.current_game?.game_id ?? null,
+            variationGameById,
+            selectedVariationId: secondaryPane.variation_id ?? null,
+            variationFocusRequestId,
+            variationColorIndexes,
+            blockedVariationFlashId,
+            onRecallVariation: (id) => onOpenVariation(id, true),
+            onHideVariation: onToggleVariation,
+            onCreateVariation,
+            miniBoardController: null,
+            onExitVariation,
+            roomListHelpTargetId: KIBITZ_HELP_TARGETS.desktopRoomList,
+            variationListHelpTargetId: KIBITZ_HELP_TARGETS.desktopVariationList,
+        }}
+        chat={{
+            room: resolvedRoom,
+            items: stream,
+            variations: displayedVariations,
+            onOpenVariation,
+        }}
+        proposals={{
+            activeProposal,
+            queuedProposals: queuedRoomProposals,
+            onVote: (proposalId, choice) => controller.voteOnProposal(proposalId, choice),
+        }}
+        onPostVariation={(boardController) =>
+            onPostVariation(boardController, secondaryPane.variation_source_game_id)
+        }
+        onExitVariation={onExitVariation}
+        onReturnToLive={onReturnToLive}
+        roomSettings={{
+            canEditRoom: canManageRoom,
+            canDeleteRoom: permissions.can_delete_room,
+            onChangeBoard: handleOpenChangeBoard,
+            onSaveRoomDetails: (title, description) =>
+                controller.updateRoomDetails(resolvedRoom.id, title, description),
+            onDeleteRoom: handleDeleteRoom,
+        }}
+    >
+        {showDebug && <KibitzDebugPanel debug={debug} /* copy remaining props */ />}
+        {pickerOverlay}
+    </KibitzView>
+);
 ```
 
 `KibitzView` overrides `miniBoardController` and `onExitVariation` inside `leftAside`, so the `null` placeholder here is only to satisfy the type. `activeProposal` and `queuedRoomProposals` already exist in `KibitzInner` (the inventory shows `mobileHasActiveVote={Boolean(activeProposal)}` and `<KibitzProposalQueue proposals={queuedRoomProposals} />`). Copy the banner and debug panel props from their existing render sites before deleting those sites.
@@ -2709,6 +2860,7 @@ git commit -m "feat(kibitz): render the room through KibitzView"
 ### Task 13: Delete the old layout modules
 
 **Files:**
+
 - Delete (each with its `.css` and test files where they exist): `KibitzRoomStage`, `KibitzBoard`, `kibitzBoardSizing`, `kibitzBoardSizeDebug`, `KibitzDividerHandle`, `KibitzDesktopMainGameScoreboard`, `KibitzMobileMainGameScoreboard`, `kibitzScoreboardPlayerDisplay`, `KibitzMainGameStats`, `KibitzPresence`, `KibitzPresencePanel`, `KibitzMobileComparePanel`, `useKibitzCurrentGameBaseBroker`, `KibitzBoardControls`, `KibitzMoveTreeStrip`.
 - Modify: `src/views/Kibitz/Kibitz.css`, `src/views/Kibitz/index.ts`, `src/views/Kibitz/style-imports.d.ts` if it lists CSS files.
 
@@ -2737,6 +2889,7 @@ If any of these files does not exist, drop it from the command. If `kibitzBoardS
 - [x] **Step 2: Fix references**
 
 Run `yarn type-check`. Fix imports of the deleted modules in surviving files:
+
 - `kibitzCurrentGameBaseSnapshot.ts` may import `KibitzBoardLoadConfig` from its own types file (fine) or helpers from `KibitzBoard.tsx` (move them in).
 - `KibitzGamePickerOverlay.tsx` and `KibitzMobileGamePicker.tsx` may import `KibitzBoard` for previews. Replace each with a `GobanContainer` over a locally created read-only `GobanController` (`game_id` set, `interactive: false`), destroyed on unmount, or with the existing `MiniGoban` component from `@/components/MiniGoban` if it already fits. Check which one those files use today and prefer the smaller change.
 - Tests that mock deleted modules: delete the mock lines.
@@ -2765,6 +2918,7 @@ git commit -m "refactor(kibitz): remove the old stage, board host, sizing and sc
 ### Task 14: Durable doc, graph update, build
 
 **Files:**
+
 - Create: `docs/kibitz.md`
 - Modify: `docs/superpowers/plans/2026-09-03-kibitz-gobanview.md` (tick boxes, note deviations)
 
@@ -2850,3 +3004,5 @@ Remind the author to test manually in a desktop browser and a mobile browser: ro
 - Task 12: mobile help flows (`mobileFirstRun`, `mobileFirstVariations`, `mobilePostedVariation`, `desktopPostedVariation`) and their target ids were removed because their surfaces no longer exist; portrait has no onboarding flow (follow-up).
 - Spec: the mini main board cannot hide coordinate labels because it shares the main goban; labels follow the main board.
 - Final review: thumbnail derived from controller identity, not center mode; the left aside stays mounted (hidden with CSS) in streamer mode so the main board always has a connected parent.
+- Review round (2026-09-06): parity restored for keyboard move navigation (`KibitzKeyboardShortcuts`), draft-discard confirmation (`isDraftDirty` on `useKibitzGobans`), the last-move-opacity preference, and player bars that follow the live game for same-game drafts and variations (`playerBars` on `KibitzGobans`, a controller override on GobanView's `playerBars`). Same-game drafts no longer inherit the live phase; a draft nonce on the pane forces a rebuild for a repeated New variation; only same-game visible variations key the secondary board; streamer mode is gated on a room being on screen and drops the aside and sidebar from the centering math; a room with a game renders nothing for the commit before its controller exists; `--text-color-faded` replaced with `--text-dimmed`; Kibitz UI state moved to `data.ts`; dead helpers, CSS and the CSS module shim removed; `e2e-tests/kibitz/*` rewritten for the new layout and the old visual spec deleted.
+- Uncapped review round (2026-09-06): the unused preview center mode and `KibitzController.previewGame` removed; a draft survives the room moving to another game and stays postable as a variation of its own game; connected boards recompose on every `load`; draft dirtiness counts branch nodes only; board preferences are watched live; trunk snapshots are only taken when the trunk advances; the pane is reset when a room switch starts, not when its details arrive; the directory refresh keeps pushes that arrived during the fetch; room switches confirm a dirty draft; Escape in an input no longer closes a variation; a post at the visible-variation limit makes room for itself; player bars show "Won by" on the winner; the More actions SGF and report items follow the Game page's gates; `KibitzKeyboardShortcuts` binds the Game page's Navigation group; the outcome allowlist is shared by PlayerBar and PlayerCards; `KibitzBoardPreview` respects container bounds instead of `!important` sizing; the proposal timer uses a custom property; the picker overlay and debug panel render outside the branch trees; e2e flows updated and passing.

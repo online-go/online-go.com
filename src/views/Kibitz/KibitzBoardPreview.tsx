@@ -114,7 +114,9 @@ export function KibitzBoardPreview({
             data-game-id={gameId}
             style={style}
         >
-            {controller ? <GobanContainer goban={controller.goban} fitMode={fitMode} /> : null}
+            {controller ? (
+                <GobanContainer goban={controller.goban} fitMode={fitMode} respectContainerBounds />
+            ) : null}
         </div>
     );
 }

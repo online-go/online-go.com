@@ -234,10 +234,6 @@
         white-space: nowrap;
     }
 
-    .variation-meta-spacer {
-        display: none;
-    }
-
     .variation-author-row {
         flex: 0 1 auto;
         min-width: 0;
@@ -278,38 +274,14 @@
         }
     }
 
-    .variation-meta,
     .variation-empty {
         color: var(--text-dimmed);
         font-size: 0.76rem;
         line-height: 1.1;
-        padding: 0;
+        padding: 0.4rem 0 0;
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-    }
-
-    .variation-meta {
-        align-self: center;
-    }
-
-    .variation-empty {
-        padding: 0.4rem 0 0;
-    }
-}
-
-:root .KibitzVariationList,
-[data-theme="light"] .KibitzVariationList {
-    background: var(--card-background-color);
-}
-
-[data-theme="dark"] .KibitzVariationList {
-    background: var(--card-background-color);
-}
-
-@media (min-width: 1001px) {
-    [data-theme="light"] .KibitzVariationList {
-        background: var(--bg);
     }
 }

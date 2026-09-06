@@ -1,7 +1,17 @@
+/* Opened with ?debug-kibitz=1. Floats over the page so it is readable on
+   every Kibitz screen, including the absolutely positioned GobanView. */
 .KibitzDebugPanel {
+    position: fixed;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    z-index: 50;
+    width: min(28rem, 90vw);
+    max-height: 45vh;
+    overflow: auto;
     background: var(--card-background-color);
-    border-top: 1px solid transparent;
-    border-top-color: var(--shade3);
+    border: 1px solid var(--shade3);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     padding: 0.875rem;
     font-size: 0.875rem;
 

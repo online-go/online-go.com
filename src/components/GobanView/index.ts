@@ -26,6 +26,6 @@ export {
     useGobanController,
     useGobanControllerOrNull,
 } from "./GobanViewContext";
-export { goban_view_mode, goban_view_squashed, user_color } from "./util";
+export { goban_view_mode, goban_view_squashed, outcomeHasScore, user_color } from "./util";
 export type { ViewMode } from "./util";
 export { generateGobanHook, subscribeAllEvents, useViewMode, useZenMode } from "./hooks";

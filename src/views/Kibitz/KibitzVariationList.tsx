@@ -283,7 +283,6 @@ export function KibitzVariationList({
                                                                     </span>
                                                                 ) : null}
                                                             </span>
-                                                            <span className="variation-meta-spacer" />
                                                             <span className="variation-author-row">
                                                                 <Player
                                                                     user={variation.creator}

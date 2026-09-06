@@ -187,7 +187,13 @@
         .GobanView-center {
             flex-grow: 0;
             flex-basis: 50%;
-            flex-basis: var(--goban-view-board-size);
+
+            /* A var() declaration is never invalid at parse time, so it would
+             * replace the fallback above even where container units are
+             * unsupported; the @supports guard keeps the 50% there. */
+            @supports (width: 1cqw) {
+                flex-basis: var(--goban-view-board-size);
+            }
             padding-left: 0;
             margin-left: 0.3rem;
         }
@@ -236,7 +242,10 @@
         display: flex;
         flex-direction: column;
         width: var(--goban-view-sidebar-width);
-        width: var(--goban-view-sidebar-effective-width);
+
+        @supports (width: 1cqw) {
+            width: var(--goban-view-sidebar-effective-width);
+        }
         flex-shrink: 0;
         z-index: 2;
         background: var(--shade5);

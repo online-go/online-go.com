@@ -66,10 +66,13 @@ export function KibitzRoomList({
                     const tooltip = isBlocked
                         ? getKibitzRoomLockedTooltip()
                         : room.kind === "preset"
-                          ? `${pgettext(
-                                "Label shown before a kibitz room description for preset rooms",
-                                "Preset",
-                            )} · ${description}`
+                          ? interpolate(
+                                pgettext(
+                                    "Tooltip on a preset kibitz room: the Preset label and the room description",
+                                    "Preset · {{description}}",
+                                ),
+                                { description },
+                            )
                           : description;
 
                     return (

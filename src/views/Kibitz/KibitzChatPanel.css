@@ -266,12 +266,3 @@
     margin: 0;
     width: 100%;
 }
-
-@media (max-width: 1000px) {
-    .KibitzChatPanel-log .stream-empty,
-    .KibitzChatPanel-log .kibitz-chat-entry,
-    .KibitzChatPanel-log .variation-post-entry {
-        padding-left: 0.75rem;
-        padding-right: 0.75rem;
-    }
-}

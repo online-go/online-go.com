@@ -185,3 +185,20 @@ export function selectVisibleTabs<T extends TabBarSlot>(
 
     return tabs.filter((tab) => visible.has(tab));
 }
+
+/** Outcomes that end a game without a score, so the player cards and bars
+ *  keep showing captures instead of points. */
+const OUTCOMES_WITHOUT_SCORE = [
+    "Timeout",
+    "Disconnection",
+    "Resignation",
+    "Abandonment",
+    "Cancellation",
+];
+
+/** True when a finished or stone-removal game's outcome carries a score
+ *  (a points margin or an administrative result is not one). */
+export function outcomeHasScore(outcome: string | undefined | null): boolean {
+    const value = outcome ?? "";
+    return !OUTCOMES_WITHOUT_SCORE.includes(value) && !value.startsWith("Server Decision");
+}
