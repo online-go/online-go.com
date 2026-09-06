@@ -151,6 +151,17 @@ function otherGameVariation(): Partial<UseKibitzGobansOptions> {
     };
 }
 
+const MAIN_TRUNK_SNAPSHOT = {
+    gameId: 100,
+    trunkTailMoveNumber: 3,
+    config: { move_tree: { x: 1 } },
+};
+
+/** Give the main board a usable trunk, as if its gamedata had arrived. */
+function readyMainTrunk() {
+    captureCurrentGameBaseSnapshotFromController.mockImplementation(() => MAIN_TRUNK_SNAPSHOT);
+}
+
 function emit(instance: Record<string, unknown>, event: string) {
     act(() => {
         (instance as { emitGoban: (e: string) => void }).emitGoban(event);
@@ -171,40 +182,24 @@ beforeEach(() => {
     }));
 });
 
-describe("deriveKibitzCenterMode", () => {
-    test("collapsed is main", () => {
-        expect(deriveKibitzCenterMode({ collapsed: true })).toBe("main");
-    });
-    test("draft when a source game is set", () => {
-        expect(
-            deriveKibitzCenterMode({
-                collapsed: false,
-                variation_source_game_id: 100,
-            }),
-        ).toBe("draft");
-    });
-    test("variation when a variation id is set", () => {
-        expect(deriveKibitzCenterMode({ collapsed: false, variation_id: "v1" })).toBe("variation");
-    });
-    test("main when nothing is selected", () => {
-        expect(deriveKibitzCenterMode({ collapsed: false })).toBe("main");
-    });
+test("deriveKibitzCenterMode maps the pane to what the centre shows", () => {
+    expect(deriveKibitzCenterMode({ collapsed: true })).toBe("main");
+    expect(deriveKibitzCenterMode({ collapsed: false })).toBe("main");
+    expect(deriveKibitzCenterMode({ collapsed: false, variation_id: "v1" })).toBe("variation");
+    expect(deriveKibitzCenterMode({ collapsed: false, variation_source_game_id: 100 })).toBe(
+        "draft",
+    );
 });
 
-describe("parseKibitzBoardDimensions", () => {
-    test("parses a board_size string", () => {
-        expect(parseKibitzBoardDimensions({ ...game, board_size: "9x9" })).toEqual({
-            width: 9,
-            height: 9,
-        });
+test("parseKibitzBoardDimensions falls back to 19x19", () => {
+    expect(parseKibitzBoardDimensions({ ...game, board_size: "9x9" })).toEqual({
+        width: 9,
+        height: 9,
     });
-    test("defaults to 19x19 when no game is given", () => {
-        expect(parseKibitzBoardDimensions(undefined)).toEqual({ width: 19, height: 19 });
-    });
-    test("defaults to 19x19 for a malformed board_size", () => {
-        const malformed = { ...game, board_size: "abc" } as unknown as KibitzWatchedGame;
-        expect(parseKibitzBoardDimensions(malformed)).toEqual({ width: 19, height: 19 });
-    });
+    expect(parseKibitzBoardDimensions(undefined)).toEqual({ width: 19, height: 19 });
+    expect(
+        parseKibitzBoardDimensions({ ...game, board_size: "abc" } as unknown as KibitzWatchedGame),
+    ).toEqual({ width: 19, height: 19 });
 });
 
 describe("useKibitzGobans", () => {
@@ -245,11 +240,7 @@ describe("useKibitzGobans", () => {
         expect(latest!.center).toBe(latest!.main);
         expect(latest!.secondary).toBeNull();
 
-        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => ({
-            gameId: 100,
-            trunkTailMoveNumber: 3,
-            config: { move_tree: { x: 1 } },
-        }));
+        readyMainTrunk();
         emit(instances[0], "load");
 
         expect(instances).toHaveLength(2);
@@ -257,11 +248,7 @@ describe("useKibitzGobans", () => {
     });
 
     test("opening a same-game variation composes onto the main trunk once ready", () => {
-        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => ({
-            gameId: 100,
-            trunkTailMoveNumber: 3,
-            config: { move_tree: { x: 1 } },
-        }));
+        readyMainTrunk();
         let latest: KibitzGobans | null = null;
         const { rerender } = render(
             <Harness options={baseOptions()} onResult={(r) => (latest = r)} />,
@@ -306,11 +293,7 @@ describe("useKibitzGobans", () => {
     });
 
     test("a draft controller is interactive and enters analyze mode", () => {
-        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => ({
-            gameId: 100,
-            trunkTailMoveNumber: 3,
-            config: { move_tree: { x: 1 } },
-        }));
+        readyMainTrunk();
         const { rerender } = render(<Harness options={baseOptions()} onResult={() => undefined} />);
         emit(instances[0], "load");
         rerender(
@@ -333,9 +316,12 @@ describe("useKibitzGobans", () => {
     });
 
     test("a variation of another game connects and defers composition until load", () => {
-        const { rerender } = render(<Harness options={baseOptions()} onResult={() => undefined} />);
+        let latest: KibitzGobans | null = null;
+        const { rerender } = render(
+            <Harness options={baseOptions()} onResult={(r) => (latest = r)} />,
+        );
         rerender(
-            <Harness options={baseOptions(otherGameVariation())} onResult={() => undefined} />,
+            <Harness options={baseOptions(otherGameVariation())} onResult={(r) => (latest = r)} />,
         );
         expect(instances).toHaveLength(2);
         expect(instances[1].config).toMatchObject({ game_id: 7 });
@@ -347,6 +333,9 @@ describe("useKibitzGobans", () => {
 
         expect(secondaryGoban.redraw).toHaveBeenCalledWith(true);
         expect(applyKibitzVariationToController).toHaveBeenCalledTimes(1);
+        // Another game's board carries its own players, so the bars follow it.
+        expect(latest!.center).toBe(latest!.secondary);
+        expect(latest!.playerBars).toBe(latest!.secondary);
     });
 
     test("main becoming ready does not tear down an already-connected secondary board", () => {
@@ -357,11 +346,7 @@ describe("useKibitzGobans", () => {
         expect(instances).toHaveLength(2);
         const secondaryDestroy = (instances[1] as { destroy: jest.Mock }).destroy;
 
-        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => ({
-            gameId: 100,
-            trunkTailMoveNumber: 3,
-            config: { move_tree: { x: 1 } },
-        }));
+        readyMainTrunk();
         emit(instances[0], "load");
 
         expect(instances).toHaveLength(2);
@@ -402,21 +387,8 @@ describe("useKibitzGobans", () => {
         expect((instances[1] as { destroy: jest.Mock }).destroy).toHaveBeenCalled();
     });
 
-    test("main snapshots are reported on goban load", () => {
-        const snapshot = { gameId: 100, trunkTailMoveNumber: 3 };
-        captureCurrentGameBaseSnapshotFromController.mockReturnValueOnce(snapshot);
-        const onMainSnapshot = jest.fn();
-        render(<Harness options={baseOptions({ onMainSnapshot })} onResult={() => undefined} />);
-        emit(instances[0], "load");
-        expect(onMainSnapshot).toHaveBeenCalledWith(snapshot);
-    });
-
     test("player bars follow the live game for a same-game variation", () => {
-        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => ({
-            gameId: 100,
-            trunkTailMoveNumber: 3,
-            config: { move_tree: { x: 1 } },
-        }));
+        readyMainTrunk();
         let latest: KibitzGobans | null = null;
         const { rerender } = render(
             <Harness options={baseOptions()} onResult={(r) => (latest = r)} />,
@@ -438,24 +410,8 @@ describe("useKibitzGobans", () => {
         expect(latest!.playerBars).toBe(latest!.main);
     });
 
-    test("player bars follow the center board for a variation of another game", () => {
-        let latest: KibitzGobans | null = null;
-        const { rerender } = render(
-            <Harness options={baseOptions()} onResult={(r) => (latest = r)} />,
-        );
-        rerender(
-            <Harness options={baseOptions(otherGameVariation())} onResult={(r) => (latest = r)} />,
-        );
-        expect(latest!.center).toBe(latest!.secondary);
-        expect(latest!.playerBars).toBe(latest!.secondary);
-    });
-
     test("isDraftDirty reports moves added to a draft", () => {
-        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => ({
-            gameId: 100,
-            trunkTailMoveNumber: 3,
-            config: { move_tree: { x: 1 } },
-        }));
+        readyMainTrunk();
         let latest: KibitzGobans | null = null;
         const { rerender } = render(
             <Harness options={baseOptions()} onResult={(r) => (latest = r)} />,
@@ -507,11 +463,7 @@ describe("useKibitzGobans", () => {
     });
 
     test("a new draft from the same position rebuilds the board", () => {
-        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => ({
-            gameId: 100,
-            trunkTailMoveNumber: 3,
-            config: { move_tree: { x: 1 } },
-        }));
+        readyMainTrunk();
         const { rerender } = render(<Harness options={baseOptions()} onResult={() => undefined} />);
         emit(instances[0], "load");
         const draft = (nonce: number): KibitzSecondaryPaneState => ({
@@ -538,11 +490,7 @@ describe("useKibitzGobans", () => {
     });
 
     test("toggling a variation of another game leaves the shown variation's board alone", () => {
-        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => ({
-            gameId: 100,
-            trunkTailMoveNumber: 3,
-            config: { move_tree: { x: 1 } },
-        }));
+        readyMainTrunk();
         const { rerender } = render(<Harness options={baseOptions()} onResult={() => undefined} />);
         emit(instances[0], "load");
         const shown = makeVariation("v1");
@@ -563,11 +511,7 @@ describe("useKibitzGobans", () => {
     });
 
     test("the room moving to another game leaves an open draft alone", () => {
-        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => ({
-            gameId: 100,
-            trunkTailMoveNumber: 3,
-            config: { move_tree: { x: 1 } },
-        }));
+        readyMainTrunk();
         let latest: KibitzGobans | null = null;
         const draft: KibitzSecondaryPaneState = {
             collapsed: false,
@@ -615,20 +559,18 @@ describe("useKibitzGobans", () => {
         expect(applyKibitzVariationToController).toHaveBeenCalledTimes(2);
     });
 
-    test("main snapshots are only taken when the trunk moves on", () => {
+    test("main snapshots are reported, and only when the trunk moves on", () => {
         const { getMoveTreeTrunkTail } = jest.requireMock("@/lib/GobanController") as {
             getMoveTreeTrunkTail: jest.Mock;
         };
         getMoveTreeTrunkTail.mockReturnValue({ move_number: 3 });
-        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => ({
-            gameId: 100,
-            trunkTailMoveNumber: 3,
-            config: { move_tree: { x: 1 } },
-        }));
+        const snapshot = { gameId: 100, trunkTailMoveNumber: 3, config: { move_tree: { x: 1 } } };
+        captureCurrentGameBaseSnapshotFromController.mockImplementation(() => snapshot);
         const onMainSnapshot = jest.fn();
         render(<Harness options={baseOptions({ onMainSnapshot })} onResult={() => undefined} />);
         emit(instances[0], "load");
         emit(instances[0], "move-made");
+        expect(onMainSnapshot).toHaveBeenCalledWith(snapshot);
         expect(onMainSnapshot).toHaveBeenCalledTimes(1);
         getMoveTreeTrunkTail.mockReturnValue({ move_number: 4 });
         emit(instances[0], "move-made");

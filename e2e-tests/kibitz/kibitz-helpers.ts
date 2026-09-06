@@ -29,11 +29,8 @@ import { playMoves } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 
 export async function waitForKibitzReady(page: Page) {
-    // The room renders through GobanView with the "Kibitz" class on its
-    // root. The goban renders via SVG; the <svg> element under the center
-    // board is the unambiguous "board is painted" signal (the wrapping
-    // .Goban div has multiple matches and the first one can be a
-    // placeholder).
+    // The <svg> under the centre board is the unambiguous "board is painted"
+    // signal; the wrapping .Goban div matches more than once.
     await expect(page.locator(".GobanView.Kibitz")).toBeVisible({ timeout: 15000 });
     await expect(page.locator(".GobanView-center .goban-container")).toBeVisible({
         timeout: 15000,
@@ -236,12 +233,9 @@ export async function createKibitzRoomForLiveGame(
     await expect(submitCreateButton).toBeEnabled();
     // /kibitz redirects to the first room of the directory, which may already
     // be a "user-<pk>" room somebody else owns, so the new room is the one the
-    // URL moves to after this click -- not merely any user-room URL.
+    // URL moves to after this click, not merely any user-room URL.
     const pathBeforeCreate = new URL(watcherPage.url()).pathname;
     await submitCreateButton.click();
-
-    // After create, KibitzInner navigates to /kibitz/<roomId>; the id is
-    // shaped like "user-<pk>" per the Kibitz backend.
     await watcherPage.waitForURL(
         (url) =>
             /\/kibitz\/user-[a-zA-Z0-9-]+$/.test(url.pathname) && url.pathname !== pathBeforeCreate,

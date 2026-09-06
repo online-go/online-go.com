@@ -91,16 +91,20 @@ export function parseKibitzBoardDimensions(game: KibitzWatchedGame | null | unde
     return { width: 19, height: 19 };
 }
 
-function labelConfig(): Pick<
+type LabelConfig = Pick<
     GobanRendererConfig,
     "draw_top_labels" | "draw_left_labels" | "draw_right_labels" | "draw_bottom_labels"
-> {
+>;
+
+/** Which board edges get coordinates, from the label-positioning preference. */
+export function labelConfig(enabled: boolean = true): LabelConfig {
     const position = preferences.get("label-positioning");
+    const draw = (edge: string) => enabled && (position === "all" || position.includes(edge));
     return {
-        draw_top_labels: position === "all" || position.indexOf("top") >= 0,
-        draw_left_labels: position === "all" || position.indexOf("left") >= 0,
-        draw_right_labels: position === "all" || position.indexOf("right") >= 0,
-        draw_bottom_labels: position === "all" || position.indexOf("bottom") >= 0,
+        draw_top_labels: draw("top"),
+        draw_left_labels: draw("left"),
+        draw_right_labels: draw("right"),
+        draw_bottom_labels: draw("bottom"),
     };
 }
 
@@ -157,11 +161,11 @@ function countBranchNodes(root: MoveTree | null | undefined): number {
 /** Re-anchor the engine's last official move at the trunk tail without
  *  moving the current position. Needed before composing a variation onto a
  *  freshly loaded tree. */
-function refreshLastOfficialMoveFromTrunk(controller: GobanController): MoveTree | null {
+function refreshLastOfficialMoveFromTrunk(controller: GobanController): void {
     const { engine } = controller.goban;
     const tail = getMoveTreeTrunkTail(engine.move_tree);
     if (!tail) {
-        return null;
+        return;
     }
     const current = engine.cur_move;
     engine.jumpTo(tail);
@@ -169,7 +173,6 @@ function refreshLastOfficialMoveFromTrunk(controller: GobanController): MoveTree
     if (current.id !== tail.id) {
         engine.jumpTo(current);
     }
-    return tail;
 }
 
 /**
@@ -193,12 +196,30 @@ export function useKibitzGobans({
     const [mainReady, setMainReady] = React.useState(false);
     const centerMode = deriveKibitzCenterMode(secondaryPane);
 
-    const onMainSnapshotRef = React.useRef(onMainSnapshot);
-    onMainSnapshotRef.current = onMainSnapshot;
-    const currentGameRef = React.useRef(currentGame);
-    currentGameRef.current = currentGame;
-    const roomIdRef = React.useRef(roomId);
-    roomIdRef.current = roomId;
+    // The effects below are keyed on what the board shows, not on every value
+    // they read, so they read the rest through this.
+    const latest = React.useRef({
+        onMainSnapshot,
+        currentGame,
+        roomId,
+        secondaryPane,
+        variations,
+        visibleVariationIds,
+        variationColorIndexes,
+        variationGameById,
+        main,
+    });
+    latest.current = {
+        onMainSnapshot,
+        currentGame,
+        roomId,
+        secondaryPane,
+        variations,
+        visibleVariationIds,
+        variationColorIndexes,
+        variationGameById,
+        main,
+    };
 
     const gameId = currentGame?.game_id ?? null;
 
@@ -208,7 +229,7 @@ export function useKibitzGobans({
             return;
         }
         const controller = new GobanController({
-            ...baseConfig(currentGameRef.current),
+            ...baseConfig(latest.current.currentGame),
             board_div: document.createElement("div"),
             interactive: false,
             connect_to_chat: true,
@@ -226,14 +247,14 @@ export function useKibitzGobans({
             }
             const snapshot = captureCurrentGameBaseSnapshotFromController(
                 controller,
-                currentGameRef.current,
-                roomIdRef.current,
+                latest.current.currentGame,
+                latest.current.roomId,
                 "main-board",
             );
             if (snapshot) {
                 lastSnapshotKey = key;
                 setMainReady(true);
-                onMainSnapshotRef.current?.(snapshot);
+                latest.current.onMainSnapshot?.(snapshot);
             }
         };
         controller.goban.on("load", sync);
@@ -282,82 +303,61 @@ export function useKibitzGobans({
                   composedVariationIds.join(","),
               ].join(":");
 
-    // A same-game secondary board reuses the main controller's trunk, so it
-    // must wait for `mainReady`. A board for a different game connects on
-    // its own and never needs to wait -- gating the effect on `mainReady`
-    // regardless would tear down and rebuild an already-connected board
-    // (losing a socket connection or in-progress draft edits) every time
-    // the main board's readiness flips.
+    // A same-game board copies the main trunk, so it waits for `mainReady`. A
+    // board for another game connects on its own; gating it on `mainReady`
+    // too would rebuild it, and lose its socket, whenever readiness flips.
     const secondaryUsesMainTrunk = centerMode !== "main" && secondaryTargetGameId === gameId;
     const secondaryGate = secondaryUsesMainTrunk ? mainReady : true;
 
-    const paneRef = React.useRef(secondaryPane);
-    paneRef.current = secondaryPane;
-    const variationsRef = React.useRef(variations);
-    variationsRef.current = variations;
-    const visibleIdsRef = React.useRef(visibleVariationIds);
-    visibleIdsRef.current = visibleVariationIds;
-    const colorsRef = React.useRef(variationColorIndexes);
-    colorsRef.current = variationColorIndexes;
-    const gameByIdRef = React.useRef(variationGameById);
-    gameByIdRef.current = variationGameById;
     // Branch node count of a draft right after it was composed; more nodes
     // than this means the user has added moves that would be lost on exit.
     const draftBaselineRef = React.useRef<{
         controller: GobanController;
         nodeCount: number;
     } | null>(null);
-    // The secondary board only needs the main controller while it is being
-    // built (a same-game board copies its trunk). It must not be torn down
-    // when the room moves on to another game and `main` is replaced: a
-    // draft of the previous game stays as it is, to be posted as a
-    // variation of that game or discarded by the user.
-    const mainRef = React.useRef(main);
-    mainRef.current = main;
+
+    // Keyed on `hasMain`, not on `main`: the secondary board only needs the
+    // main controller while it is being built, and a draft must survive the
+    // room moving to another game so it can still be posted or discarded.
     const hasMain = main !== null;
 
     React.useEffect(() => {
-        const main = mainRef.current;
+        const { main, currentGame, roomId, secondaryPane: pane, variations } = latest.current;
         if (!secondaryKey || !main) {
             setSecondary(null);
             return;
         }
-        const pane = paneRef.current;
         const mode = deriveKibitzCenterMode(pane);
-        const currentGameId = currentGameRef.current?.game_id ?? null;
+        const currentGameId = currentGame?.game_id ?? null;
 
         const selectedVariation =
             mode === "variation"
-                ? (variationsRef.current.find((v) => v.id === pane.variation_id) ?? null)
+                ? (variations.find((v) => v.id === pane.variation_id) ?? null)
                 : null;
         const draftBase =
             mode === "draft" && pane.variation_draft_base_id
-                ? (variationsRef.current.find((v) => v.id === pane.variation_draft_base_id) ?? null)
+                ? (variations.find((v) => v.id === pane.variation_draft_base_id) ?? null)
                 : null;
 
-        const targetGameId = computeSecondaryTargetGameId(mode, pane, variationsRef.current);
+        const targetGameId = computeSecondaryTargetGameId(mode, pane, variations);
         const targetGame =
-            (targetGameId != null ? gameByIdRef.current.get(targetGameId) : undefined) ??
+            (targetGameId != null
+                ? latest.current.variationGameById.get(targetGameId)
+                : undefined) ??
             pane.variation_source_game ??
-            (targetGameId === currentGameId ? currentGameRef.current : undefined);
+            (targetGameId === currentGameId ? currentGame : undefined);
 
         // The current game's trunk comes from the main controller so the
         // secondary board never opens a second socket for the same game.
         // Other games connect read-only.
         const useMainTrunk = targetGameId === currentGameId;
         const mainSnapshot = useMainTrunk
-            ? captureCurrentGameBaseSnapshotFromController(
-                  main,
-                  currentGameRef.current,
-                  roomIdRef.current,
-              )
+            ? captureCurrentGameBaseSnapshotFromController(main, currentGame, roomId)
             : null;
 
         if (useMainTrunk && !mainSnapshot) {
-            // The main board hasn't produced a usable trunk snapshot yet
-            // (its div isn't in the DOM, or the engine has no move tree).
-            // Drop `mainReady` so the next snapshot the main board
-            // produces re-runs this effect.
+            // No usable trunk yet. Drop `mainReady` so the main board's next
+            // snapshot re-runs this effect.
             setMainReady(false);
             setSecondary(null);
             return;
@@ -368,9 +368,8 @@ export function useKibitzGobans({
             ...(useMainTrunk && mainSnapshot
                 ? (mainSnapshot.config as Partial<GobanRendererConfig>)
                 : {}),
-            // The trunk snapshot carries the live game's gamedata. A draft or
-            // variation is a plain analysis board, so it must not inherit the
-            // live phase (stone removal or finished blocks analysis) or the
+            // The snapshot carries the live game's gamedata, but an analysis
+            // board must not inherit a phase that blocks analysis, nor the
             // removed-stone and score state that goes with it.
             ...(useMainTrunk
                 ? { phase: "play" as const, removed: undefined, score: undefined }
@@ -388,39 +387,31 @@ export function useKibitzGobans({
         // Runs once for a copied trunk, and on every `load` of a connected
         // board: a reconnect replaces the engine, so the variation has to be
         // laid onto the fresh tree again.
+        const apply = (variation: KibitzVariationSummary, selected: boolean) =>
+            applyKibitzVariationToController(
+                controller,
+                variation,
+                latest.current.variationColorIndexes[variation.id] ?? 0,
+                selected,
+            );
+
         const compose = () => {
             refreshLastOfficialMoveFromTrunk(controller);
-            if (mode === "variation" && selectedVariation) {
-                for (const v of variationsRef.current) {
-                    if (
-                        v.id !== selectedVariation.id &&
-                        v.game_id === selectedVariation.game_id &&
-                        visibleIdsRef.current.includes(v.id)
-                    ) {
-                        applyKibitzVariationToController(
-                            controller,
-                            v,
-                            colorsRef.current[v.id] ?? 0,
-                            false,
-                        );
+            const focus = mode === "variation" ? selectedVariation : draftBase;
+            if (focus) {
+                if (mode === "variation") {
+                    // The other variations of the same game share the board.
+                    for (const v of variations) {
+                        if (
+                            v.id !== focus.id &&
+                            v.game_id === focus.game_id &&
+                            latest.current.visibleVariationIds.includes(v.id)
+                        ) {
+                            apply(v, false);
+                        }
                     }
                 }
-                const applied = applyKibitzVariationToController(
-                    controller,
-                    selectedVariation,
-                    colorsRef.current[selectedVariation.id] ?? 0,
-                    true,
-                );
-                if (applied.endpoint) {
-                    controller.goban.engine.jumpTo(applied.endpoint);
-                }
-            } else if (mode === "draft" && draftBase) {
-                const applied = applyKibitzVariationToController(
-                    controller,
-                    draftBase,
-                    colorsRef.current[draftBase.id] ?? 0,
-                    true,
-                );
+                const applied = apply(focus, true);
                 if (applied.endpoint) {
                     controller.goban.engine.jumpTo(applied.endpoint);
                 }

@@ -57,15 +57,6 @@
         display: flex;
         position: relative;
 
-        .KibitzChatPanel-log {
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-            min-height: 0;
-            min-width: 0;
-            overflow: hidden;
-        }
-
         .ChatUserList {
             width: 10rem;
             flex-shrink: 0;
@@ -81,149 +72,141 @@
     }
 }
 
-.KibitzChatPanel-log .chat-lines,
-.KibitzChatPanel-log .stream-empty {
-    min-width: 0;
-}
-
-.KibitzChatPanel-log .chat-lines {
-    box-sizing: border-box;
+/* The scrolling log. Selectors stay at this scope so they keep the same
+   specificity against the shared chat styles in ChatLog.css. */
+.KibitzChatPanel-log {
     display: flex;
-    flex: 1 1 auto;
     flex-direction: column;
+    flex-grow: 1;
     min-height: 0;
     min-width: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    scrollbar-gutter: stable;
-    width: 100%;
-}
+    overflow: hidden;
 
-.KibitzChatPanel-log .chat-lines .chat-line,
-.KibitzChatPanel-log .chat-lines .variation-post,
-.KibitzChatPanel-log .chat-lines .variation-post-entry {
-    max-width: 100%;
-    min-width: 0;
-}
+    .chat-lines {
+        box-sizing: border-box;
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        min-height: 0;
+        min-width: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+        scrollbar-gutter: stable;
+        width: 100%;
 
-.KibitzChatPanel-log .stream-empty {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow: auto;
-    padding: 0.25rem 0.75rem 0.5rem;
-}
+        .chat-line,
+        .variation-post,
+        .variation-post-entry {
+            max-width: 100%;
+            min-width: 0;
+        }
+    }
 
-.KibitzChatPanel-log .kibitz-chat-entry {
-    box-sizing: border-box;
-    display: flex;
-    align-items: flex-start;
-    gap: 0.35rem;
-    max-width: 100%;
-    min-width: 0;
-    margin: 0.25rem 0;
-    padding: 0 0.75rem;
-}
+    .stream-empty {
+        flex: 1 1 auto;
+        min-height: 0;
+        min-width: 0;
+        overflow: auto;
+        padding: 0.25rem 0.75rem 0.5rem;
+    }
 
-.KibitzChatPanel-log .kibitz-chat-entry-time {
-    flex: 0 0 auto;
-    color: var(--text-color);
-    opacity: 0.65;
-    font-size: 0.8rem;
-    line-height: 1.25;
-    padding-top: 0.45rem;
-    white-space: nowrap;
-}
+    /* One row per entry: the time, then the line itself. */
+    .kibitz-chat-entry,
+    .variation-post-entry {
+        box-sizing: border-box;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.35rem;
+        max-width: 100%;
+        min-width: 0;
+        margin: 0.25rem 0;
+        padding: 0 0.75rem;
+    }
 
-.KibitzChatPanel-log .kibitz-chat-entry.game-chat:not(.has-move-number) .kibitz-chat-entry-time {
-    padding-top: 0;
-}
+    .variation-post-entry {
+        align-items: baseline;
+    }
 
-.KibitzChatPanel-log .timestamp {
-    display: none;
-}
+    .kibitz-chat-entry-time,
+    .variation-post-time {
+        flex: 0 0 auto;
+        color: var(--text-dimmed);
+        font-size: 0.8rem;
+        line-height: 1.25;
+        white-space: nowrap;
+    }
 
-/* Game-chat lines flow tight in the game tab — no per-entry
-   padding/margin/background. The tab already separates game chat
-   from room chat, so the per-line wrapper styling that used to
-   distinguish them was producing roughly a blank line of vertical space
-   per chat line. */
+    .kibitz-chat-entry-time {
+        padding-top: 0.45rem;
+    }
 
-.KibitzChatPanel-log .kibitz-chat-entry.game-chat .chat-line {
-    margin-top: 0;
-}
+    /* Game-chat lines flow tight: the tab already separates them from room
+       chat, so per-line wrappers would only add a blank line of height. */
+    .kibitz-chat-entry.game-chat {
+        &:not(.has-move-number) .kibitz-chat-entry-time {
+            padding-top: 0;
+        }
 
-/* Player vs spectator coloration mirrors GameChat.css's
-   `.chat-line.spectator { color: var(--spectator-text-color) }`. The
-   class lives on the kibitz wrapper because <ChatLine> doesn't know
-   about goban channels. */
-.KibitzChatPanel-log .kibitz-chat-entry.spectator,
-.KibitzChatPanel-log .kibitz-chat-entry.spectator .chat-line {
-    color: var(--spectator-text-color);
-}
+        .chat-line {
+            margin-top: 0;
+        }
+    }
 
-.KibitzChatPanel-log .kibitz-chat-entry.room-stream .Player.provisional.with-flare:before {
-    content: none;
-    width: 0;
-    margin: 0;
-}
+    /* Mirrors GameChat.css's `.chat-line.spectator`. The class sits on the
+       kibitz wrapper because <ChatLine> does not know about goban channels. */
+    .kibitz-chat-entry.spectator,
+    .kibitz-chat-entry.spectator .chat-line {
+        color: var(--spectator-text-color);
+    }
 
-.KibitzChatPanel-log
-    .kibitz-chat-entry.room-stream
-    .Player.provisional.with-flare
-    .Player-username {
-    margin-left: 0;
-}
+    .kibitz-chat-entry.room-stream .Player.provisional.with-flare {
+        &:before {
+            content: none;
+            width: 0;
+            margin: 0;
+        }
 
-/* A posted variation reads like the game chat's variation lines: bold text
-   in the variation colour that underlines on hover, no box. */
-.KibitzChatPanel-log button[data-variation-post="true"] {
-    flex: 0 1 auto;
-    width: auto;
-    height: auto;
-    min-width: 0;
-    margin: 0 0.2em;
-    padding: 0 0.2em;
-    background: transparent;
-    border: 0;
-    border-radius: 2px;
-    box-shadow: none;
-    color: var(--variation);
-    cursor: pointer;
-    display: inline;
-    font-size: inherit;
-    font-weight: bold;
-    line-height: inherit;
-    text-align: left;
-    white-space: normal;
-    word-break: break-word;
-}
+        .Player-username {
+            margin-left: 0;
+        }
+    }
 
-.KibitzChatPanel-log button[data-variation-post="true"]:hover {
-    color: var(--variation-hover);
-    text-decoration: underline;
-}
+    .timestamp {
+        display: none;
+    }
 
-.KibitzChatPanel-log .variation-post-author {
-    flex: 0 0 auto;
-}
+    /* A posted variation reads like the game chat's variation links: bold
+       text in the variation colour, underlined on hover, no box. */
+    button[data-variation-post="true"] {
+        flex: 0 1 auto;
+        width: auto;
+        height: auto;
+        min-width: 0;
+        margin: 0 0.2em;
+        padding: 0 0.2em;
+        background: transparent;
+        border: 0;
+        border-radius: 2px;
+        box-shadow: none;
+        color: var(--variation);
+        cursor: pointer;
+        display: inline;
+        font-size: inherit;
+        font-weight: bold;
+        line-height: inherit;
+        text-align: left;
+        white-space: normal;
+        word-break: break-word;
 
-.KibitzChatPanel-log .variation-post-entry {
-    box-sizing: border-box;
-    display: flex;
-    align-items: baseline;
-    gap: 0.35rem;
-    max-width: 100%;
-    min-width: 0;
-    margin: 0.25rem 0;
-    padding: 0 0.75rem;
-}
+        &:hover {
+            color: var(--variation-hover);
+            text-decoration: underline;
+        }
+    }
 
-.KibitzChatPanel-log .variation-post-time {
-    flex: 0 0 auto;
-    color: var(--text-dimmed);
-    font-size: 0.8rem;
-    line-height: 1.25;
-    white-space: nowrap;
+    .variation-post-author {
+        flex: 0 0 auto;
+    }
 }
 
 .KibitzChatPanel-composer {
@@ -232,22 +215,22 @@
     width: 100%;
     padding: 0;
     border-top: 1px solid var(--shade4);
-}
 
-.KibitzChatPanel-composer .chat-input-wrapper {
-    flex: 1 1 auto;
-    min-width: 0;
-}
+    .chat-input-wrapper {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
 
-.KibitzChatPanel-composer .chat-input {
-    box-sizing: border-box;
-    display: block;
-    width: 100%;
-}
+    .chat-input {
+        box-sizing: border-box;
+        display: block;
+        width: 100%;
 
-.KibitzChatPanel-composer .chat-input:focus,
-.KibitzChatPanel-composer .chat-input:focus-visible {
-    outline: none;
+        &:focus,
+        &:focus-visible {
+            outline: none;
+        }
+    }
 }
 
 .KibitzChatPanel-disabledComposer {
@@ -261,6 +244,7 @@
     padding: 0 0.75rem 0.5rem;
 }
 
+/* Beats the shared .chat-input-container margins from ChatLog.css. */
 .KibitzChatPanel-disabledComposer.chat-input-container {
     box-sizing: border-box;
     margin: 0;

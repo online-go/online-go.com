@@ -27,7 +27,7 @@ import { openGameLinkModal } from "@/views/Game/GameLinkModal";
 import "@/views/Game/GameSidebarPanels.css";
 import "./KibitzMoreActionsPopover.css";
 
-export interface KibitzMoreActionsPopoverProps {
+interface KibitzMoreActionsPopoverProps {
     controller: GobanController;
     onClose: () => void;
 }

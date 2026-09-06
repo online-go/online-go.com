@@ -20,6 +20,7 @@ import type { GobanRendererConfig, MoveTreeJson } from "goban";
 import { GobanContainer } from "@/components/GobanContainer";
 import { GobanController } from "@/lib/GobanController";
 import * as preferences from "@/lib/preferences";
+import { labelConfig } from "./useKibitzGobans";
 import "./KibitzBoardPreview.css";
 
 interface KibitzBoardPreviewProps {
@@ -61,19 +62,11 @@ export function KibitzBoardPreview({
     const [controller, setController] = React.useState<GobanController | null>(null);
 
     React.useEffect(() => {
-        const labelPosition = preferences.get("label-positioning");
         const config: GobanRendererConfig = {
             board_div: document.createElement("div"),
             interactive: false,
             connect_to_chat: false,
-            draw_top_labels:
-                showLabels && (labelPosition === "all" || labelPosition.indexOf("top") >= 0),
-            draw_left_labels:
-                showLabels && (labelPosition === "all" || labelPosition.indexOf("left") >= 0),
-            draw_right_labels:
-                showLabels && (labelPosition === "all" || labelPosition.indexOf("right") >= 0),
-            draw_bottom_labels:
-                showLabels && (labelPosition === "all" || labelPosition.indexOf("bottom") >= 0),
+            ...labelConfig(showLabels),
             variation_stone_opacity: preferences.get("variation-stone-opacity"),
             last_move_opacity: preferences.get("last-move-opacity"),
             stone_font_scale: preferences.get("stone-font-scale"),

@@ -198,18 +198,9 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             </div>
         );
 
-        if (isPortrait) {
-            return (
-                <div className="KibitzView-waiting is-portrait">
-                    {waitingMessage}
-                    {waitingAside}
-                    {waitingSidebar}
-                </div>
-            );
-        }
-
+        // Portrait stacks these in CSS, with the message moved to the top.
         return (
-            <div className="KibitzView-waiting">
+            <div className={"KibitzView-waiting" + (isPortrait ? " is-portrait" : "")}>
                 <div className="KibitzView-waiting-aside">{waitingAside}</div>
                 <div className="KibitzView-waiting-center">{waitingMessage}</div>
                 {waitingSidebar}
@@ -218,10 +209,9 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     }
 
     const viewingOther = gobans.centerMode !== "main";
-    // Derived from identity, not mode: while a variation opens there is one
-    // commit where the mode has changed but the secondary controller does not
-    // exist yet, so `center` still is `main`. Mounting the same board div in
-    // the center and in the thumbnail at once breaks the next unmount.
+    // By identity, not mode: as a variation opens there is one commit where
+    // the mode has changed but the secondary controller does not exist yet.
+    // Mounting one board div in both places breaks the next unmount.
     const miniBoardController = gobans.center !== gobans.main ? gobans.main : null;
 
     const leftAside = (

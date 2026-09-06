@@ -26,7 +26,7 @@ import { KIBITZ_HELP_TARGETS } from "./HelpFlows/KibitzHelpTargets";
 import { KibitzVariationComposer } from "./KibitzVariationComposer";
 import "./KibitzVariationPanel.css";
 
-export interface KibitzVariationPanelProps {
+interface KibitzVariationPanelProps {
     controller: GobanController;
     mode: "draft" | "variation";
     onPost: (controller: GobanController) => void;
