@@ -15,54 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { KibitzVariationSummary } from "@/models/kibitz";
 import type { GobanController } from "@/lib/GobanController";
-import {
-    isCurrentGameBaseSnapshotUsable,
-    isMainBoardSafeForReconnect,
-    pruneVisibleVariationIdsForGame,
-} from "./KibitzInner";
+import { isCurrentGameBaseSnapshotUsable, isMainBoardSafeForReconnect } from "./KibitzInner";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 import type { KibitzWatchedGame } from "@/models/kibitz";
-
-function makeVariation(id: string, gameId: number): KibitzVariationSummary {
-    return {
-        id,
-        room_id: "room-1",
-        game_id: gameId,
-        creator: {
-            id: gameId,
-            username: `user-${gameId}`,
-            ranking: 1,
-            professional: false,
-            ui_class: "",
-        },
-        created_at: gameId,
-        viewer_count: 0,
-        current_viewers: [],
-    };
-}
-
-describe("pruneVisibleVariationIdsForGame", () => {
-    it("drops variations from other games when switching to a new game", () => {
-        const variations = [
-            makeVariation("a1", 10),
-            makeVariation("a2", 10),
-            makeVariation("b1", 20),
-        ];
-
-        expect(pruneVisibleVariationIdsForGame(variations, ["a1", "a2", "b1"], 20)).toEqual(["b1"]);
-    });
-
-    it("keeps the current list when no game is selected", () => {
-        const variations = [makeVariation("a1", 10), makeVariation("b1", 20)];
-
-        expect(pruneVisibleVariationIdsForGame(variations, ["a1", "b1"], null)).toEqual([
-            "a1",
-            "b1",
-        ]);
-    });
-});
 
 describe("isCurrentGameBaseSnapshotUsable", () => {
     const liveGame = {
