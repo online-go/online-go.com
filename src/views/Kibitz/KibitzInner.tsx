@@ -263,24 +263,6 @@ export async function fetchCurrentGameBaseSnapshot(
     }
 }
 
-export function pruneVisibleVariationIdsForGame(
-    variations: KibitzVariationSummary[],
-    visibleVariationIds: string[],
-    gameId: number | null,
-): string[] {
-    if (gameId == null) {
-        return visibleVariationIds;
-    }
-
-    const variationGameIds = new Map(
-        variations.map((variation) => [variation.id, variation.game_id]),
-    );
-
-    return visibleVariationIds.filter(
-        (variationId) => variationGameIds.get(variationId) === gameId,
-    );
-}
-
 function mapGameChatLineToVariation(
     roomId: string,
     line: protocol.GameChatLine,

@@ -57,13 +57,6 @@ export function getKibitzRoomLockedTooltip(): string {
     );
 }
 
-export function getKibitzRoomLockedLabel(): string {
-    return pgettext(
-        "Status shown in the kibitz room list when a room is blocked for the current player",
-        "Locked for players",
-    );
-}
-
 export function getKibitzPickerFailedCreateMessage(): string {
     return pgettext(
         "Error shown when Kibitz room creation fails",

@@ -122,8 +122,17 @@
         flex-direction: column;
         overflow-y: auto;
 
+        .KibitzView-waiting-center {
+            order: -1;
+            flex-grow: 0;
+        }
+
+        .KibitzView-waiting-aside,
         .KibitzView-waiting-sidebar {
             width: auto;
+        }
+
+        .KibitzView-waiting-sidebar {
             flex-grow: 1;
             overflow: hidden;
         }

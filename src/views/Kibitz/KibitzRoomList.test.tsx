@@ -27,7 +27,6 @@ jest.mock("@/lib/translate", () => ({
 
 jest.mock("./kibitzAnalysisPolicyText", () => ({
     __esModule: true,
-    getKibitzRoomLockedLabel: jest.fn(() => "Locked for players"),
     getKibitzRoomLockedTooltip: jest.fn(() => "Locked for players while the game is live."),
 }));
 

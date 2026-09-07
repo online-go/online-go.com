@@ -22,12 +22,10 @@ import {
 } from "@/lib/GobanController";
 import type { KibitzWatchedGame } from "@/models/kibitz";
 import {
-    canHydrateMainBoardFromRoomBaseSnapshot,
     buildCurrentGameBaseSnapshotFromGameDetails,
     captureCurrentGameBaseSnapshotFromController,
     chooseFresherCurrentGameBaseSnapshot,
     createCurrentGameMiniGobanSnapshotOverrides,
-    hydrateMainBoardFromRoomBaseSnapshot,
 } from "./kibitzCurrentGameBaseSnapshot";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 
@@ -226,7 +224,7 @@ describe("buildCurrentGameBaseSnapshotFromGameDetails", () => {
     });
 });
 
-describe("main board broker hydration", () => {
+describe("restoreGobanToOfficialTail", () => {
     it("positions a snapshot renderer at the official trunk tail", () => {
         const controller = new GobanController({
             width: 9,
@@ -261,187 +259,7 @@ describe("main board broker hydration", () => {
         expect(observedMoveNumber).toBe(2);
         expect(redraw).toHaveBeenCalledWith(true);
     });
-
-    it("accepts a fresh current-room snapshot for a root-only main board", () => {
-        const controller = makeController(makeMoveTree(0));
-        const roomBaseSnapshot = {
-            gameId: 87165523,
-            trunkTailMoveNumber: 126,
-            config: {
-                game_id: 87165523,
-                move_tree: makeMoveTreeJson(126),
-            },
-        } as unknown as Parameters<
-            typeof canHydrateMainBoardFromRoomBaseSnapshot
-        >[0]["roomBaseSnapshot"];
-
-        expect(
-            canHydrateMainBoardFromRoomBaseSnapshot({
-                mainBoardController: controller,
-                currentGame: makeGame(87165523, 126),
-                currentRoomGameId: 87165523,
-                requiredMoveNumber: 126,
-                roomBaseSnapshot,
-            }),
-        ).toBe(true);
-    });
-
-    it("hydrates the visible main board from the room-base snapshot", () => {
-        const controller = makeController(makeMoveTree(0));
-        const load = controller.goban.load as jest.Mock;
-        const roomBaseSnapshot = {
-            gameId: 87165523,
-            trunkTailMoveNumber: 126,
-            config: {
-                game_id: 87165523,
-                move_tree: makeMoveTreeJson(126),
-            },
-        } as unknown as Parameters<
-            typeof hydrateMainBoardFromRoomBaseSnapshot
-        >[0]["roomBaseSnapshot"];
-
-        expect(
-            hydrateMainBoardFromRoomBaseSnapshot({
-                mainBoardController: controller,
-                currentGame: makeGame(87165523, 126),
-                currentRoomGameId: 87165523,
-                requiredMoveNumber: 126,
-                roomBaseSnapshot,
-            }),
-        ).toEqual(expect.objectContaining({ move_number: 126 }));
-
-        expect(load).toHaveBeenCalledTimes(1);
-        expect(load).toHaveBeenCalledWith(
-            expect.objectContaining({
-                game_id: 87165523,
-                move_tree: expect.objectContaining({
-                    move_number: 126,
-                }),
-            }),
-        );
-        expect(controller.goban.engine.jumpTo).toHaveBeenCalled();
-        expect(controller.goban.engine.setLastOfficialMove).toHaveBeenCalled();
-        expect(controller.goban.jumpToLastOfficialMove).toHaveBeenCalled();
-        expect(controller.goban.redraw).toHaveBeenCalledWith(true);
-    });
-
-    it("rejects a snapshot for the wrong game", () => {
-        const controller = makeController(makeMoveTree(0));
-        const load = controller.goban.load as jest.Mock;
-        const roomBaseSnapshot = {
-            gameId: 87164848,
-            trunkTailMoveNumber: 126,
-            config: {
-                game_id: 87164848,
-                move_tree: makeMoveTreeJson(126),
-            },
-        } as unknown as Parameters<
-            typeof hydrateMainBoardFromRoomBaseSnapshot
-        >[0]["roomBaseSnapshot"];
-
-        expect(
-            canHydrateMainBoardFromRoomBaseSnapshot({
-                mainBoardController: controller,
-                currentGame: makeGame(87165523, 126),
-                currentRoomGameId: 87165523,
-                requiredMoveNumber: 126,
-                roomBaseSnapshot,
-            }),
-        ).toBe(false);
-
-        expect(
-            hydrateMainBoardFromRoomBaseSnapshot({
-                mainBoardController: controller,
-                currentGame: makeGame(87165523, 126),
-                currentRoomGameId: 87165523,
-                requiredMoveNumber: 126,
-                roomBaseSnapshot,
-            }),
-        ).toBeNull();
-        expect(load).not.toHaveBeenCalled();
-    });
-
-    it("rejects a snapshot that is not fresh enough", () => {
-        const controller = makeController(makeMoveTree(0));
-        const load = controller.goban.load as jest.Mock;
-        const roomBaseSnapshot = {
-            gameId: 87165523,
-            trunkTailMoveNumber: 80,
-            config: {
-                game_id: 87165523,
-                move_tree: makeMoveTreeJson(80),
-            },
-        } as unknown as Parameters<
-            typeof hydrateMainBoardFromRoomBaseSnapshot
-        >[0]["roomBaseSnapshot"];
-
-        expect(
-            canHydrateMainBoardFromRoomBaseSnapshot({
-                mainBoardController: controller,
-                currentGame: makeGame(87165523, 126),
-                currentRoomGameId: 87165523,
-                requiredMoveNumber: 126,
-                roomBaseSnapshot,
-            }),
-        ).toBe(false);
-
-        expect(
-            hydrateMainBoardFromRoomBaseSnapshot({
-                mainBoardController: controller,
-                currentGame: makeGame(87165523, 126),
-                currentRoomGameId: 87165523,
-                requiredMoveNumber: 126,
-                roomBaseSnapshot,
-            }),
-        ).toBeNull();
-        expect(load).not.toHaveBeenCalled();
-    });
-
-    it("rejects a main board that is already ready", () => {
-        const controller = makeController(makeMoveTree(126));
-        const load = controller.goban.load as jest.Mock;
-        const roomBaseSnapshot = {
-            gameId: 87165523,
-            trunkTailMoveNumber: 126,
-            config: {
-                game_id: 87165523,
-                move_tree: makeMoveTreeJson(126),
-            },
-        } as unknown as Parameters<
-            typeof hydrateMainBoardFromRoomBaseSnapshot
-        >[0]["roomBaseSnapshot"];
-
-        expect(
-            canHydrateMainBoardFromRoomBaseSnapshot({
-                mainBoardController: controller,
-                currentGame: makeGame(87165523, 126),
-                currentRoomGameId: 87165523,
-                requiredMoveNumber: 126,
-                roomBaseSnapshot,
-            }),
-        ).toBe(false);
-
-        expect(
-            hydrateMainBoardFromRoomBaseSnapshot({
-                mainBoardController: controller,
-                currentGame: makeGame(87165523, 126),
-                currentRoomGameId: 87165523,
-                requiredMoveNumber: 126,
-                roomBaseSnapshot,
-            }),
-        ).toBeNull();
-        expect(load).not.toHaveBeenCalled();
-    });
 });
-
-function makeMoveTreeJson(moveNumber: number) {
-    return {
-        id: moveNumber,
-        move_number: moveNumber,
-        branches: [],
-        trunk_next: undefined,
-    };
-}
 
 describe("captureCurrentGameBaseSnapshotFromController", () => {
     beforeEach(() => {

@@ -143,11 +143,10 @@ export const kibitzEditRoomDetailsTest = async ({
     });
     console.log("[kibitz edit-room-details] owner save reflected in header");
 
-    // The rename is broadcast on the directory channel, and the non-owner's
-    // list applies it when it arrives (KibitzController.onRoomUpdated). In
-    // this harness the push is not delivered reliably to a socket opened
-    // moments earlier, so the live update is only observed here, and the
-    // assertion is made on the directory the non-owner loads afresh.
+    // The rename is broadcast on the directory channel and the non-owner's
+    // list applies it on arrival. This harness does not deliver that push
+    // reliably to a socket opened moments earlier, so the live update is
+    // only reported, and the assertion is made after a reload.
     const railEntryWithNewTitle = railEntries.filter({
         has: nonOwnerPage.locator(".room-title", { hasText: newTitle }),
     });

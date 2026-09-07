@@ -45,15 +45,9 @@ export const kibitzShareVariationTest = async ({
     await expect(variationList).toBeVisible({ timeout: 15000 });
     await expect(variationList.locator(".variation-item")).toHaveCount(0);
 
-    // Start a draft with the "New variation" action in the action bar
-    // (KibitzView.tsx, the "kibitz-new-variation" tab).
-    //
-    // The click can be a no-op if `getCurrentGameBaseSnapshotForVariation`
-    // (KibitzInner.tsx) returns null because the watcher's main board
-    // controller hasn't fully synced the live game state yet -- in that case
-    // the handler shows a transient toast and bails. The button is not
-    // visibly disabled while this is true. Retry the click until the draft
-    // panel appears in the sidebar.
+    // The New variation action is a no-op, with a transient toast, until the
+    // watcher's main board has a usable trunk, and it is not disabled while
+    // that is true. Retry until the draft panel appears.
     const newVariationButton = watcherPage.locator('.GobanView-tab-button[title="New variation"]');
     await expect(newVariationButton).toBeVisible({ timeout: 15000 });
     console.log("[kibitz share-variation] starting a draft");
@@ -66,13 +60,9 @@ export const kibitzShareVariationTest = async ({
 
     await waitForVariationLayoutStable(watcherPage);
 
-    // Pre-flight: the draft board should load with the live game's current
-    // state as the variation base -- the four prelude moves E5/G5/E7/G7.
-    // Without this check, a broken base could still produce a
-    // misleading-but-passing assertion later (e.g. an empty base + C3 click
-    // would land at move 1 not 5, which fails the Move-5 check but masks
-    // "base was wrong" as "variation didn't load"). cur_move should sit at
-    // move 4 and the move tree should contain a node labeled "4".
+    // The draft must start from the live game's current position, the four
+    // prelude moves. Checking that here keeps a wrong base from being read
+    // later as "the variation did not load".
     const moveNumber = watcherPage.locator(".MoveNumberControl");
     await expect(moveNumber).toHaveText(/Move 4/, { timeout: 15000 });
     await expect(
@@ -80,55 +70,38 @@ export const kibitzShareVariationTest = async ({
     ).toHaveCount(1, { timeout: 15000 });
     console.log("[kibitz share-variation] variation base loaded at Move 4");
 
-    // Place a single move on the draft goban in the center. The source game
-    // is 9x9 with stones at E5/G5/E7/G7 from the prelude; C3 is empty. The
-    // live game's board sits in the left aside thumbnail and is not
-    // interactive, so the center board holds the only pointer-bound layer
-    // (the goban marks its event layer with data-pointers-bound).
+    // C3 is empty on this 9x9. The thumbnail board is not interactive, so the
+    // centre holds the only pointer-bound layer.
     const draftGoban = watcherPage.locator(".GobanView-center [data-pointers-bound]");
     await expect(draftGoban).toBeVisible({ timeout: 15000 });
     console.log("[kibitz share-variation] placing analysis stone at C3");
     await clickOnGobanIntersection(watcherPage, "C3", "9x9", draftGoban);
     await expect(moveNumber).toHaveText(/Move 5/, { timeout: 15000 });
 
-    // Post the variation. The composer renders in the draft panel with a
-    // "Variation name..." input and a "Post variation" button
-    // (KibitzVariationComposer.tsx). The name field is optional.
+    // Post it. The name field is optional.
     const postVariationButton = await expectOGSClickableByName(watcherPage, /^Post variation$/);
     await expect(postVariationButton).toBeEnabled();
     console.log("[kibitz share-variation] posting variation");
     await postVariationButton.click();
 
-    // Variation appears in the list. Each visible posted variation renders
-    // as a wrapping `.variation-item` div (KibitzVariationList.tsx)
-    // containing a `.variation-recall` button; counting wrappers gives a
-    // clean 1:1 mapping with variations.
+    // One `.variation-item` per visible variation.
     await expect(variationList.locator(".variation-item")).toHaveCount(1, {
         timeout: 15000,
     });
     console.log("[kibitz share-variation] variation appeared in list");
 
-    // Wait for the center to move from the draft to the posted variation.
-    // This happens asynchronously after the chat round-trip surfaces the new
-    // variation in displayedVariations: KibitzInner.tsx then calls
-    // onOpenVariation, which rebuilds the center board for it and swaps the
-    // sidebar panel to the "variation" mode.
+    // The centre swaps from the draft to the posted variation once the chat
+    // round-trip surfaces it.
     await expect(watcherPage.locator(".KibitzVariationPanel.variation")).toBeVisible({
         timeout: 15000,
     });
 
-    // Signal A: the move-number control should read "Move 5" -- four prelude
-    // moves (E5/G5/E7/G7) plus the C3 variation stone. If the board resets
-    // to the variation's base instead of showing the variation, this reads
-    // "Move 4" or "Move 0".
+    // Four prelude moves plus the C3 stone. A board that reset to the base
+    // would read Move 4 or Move 0.
     await expect(moveNumber).toHaveText(/Move 5/, { timeout: 15000 });
     console.log("[kibitz share-variation] posted variation shows Move 5");
 
-    // Signal B: the move tree should contain a node labeled "5".
-    // SVGRenderer.move_tree_drawStone writes String(node.move_number) into
-    // each node's <text> under the default "move-number" numbering mode. If
-    // the variation move is missing from the tree, no "5" node exists. The
-    // /^5$/ anchor prevents accidental matches against higher move numbers.
+    // And the move tree carries the node, anchored so 15 cannot match.
     await expect(
         watcherPage.locator("#kibitz-move-tree-container svg text", { hasText: /^5$/ }),
     ).toHaveCount(1, { timeout: 15000 });
