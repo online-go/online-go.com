@@ -6,10 +6,6 @@ game together, chat, and share variations. It renders through the shared
 
 ## Layout
 
-![The Kibitz room: rooms and variations on the left, the board with a player
-bar above and below it in the centre, and the room chat on the
-right](images/kibitz-room.jpg)
-
 Landscape: a left aside with the room list, the variation list and, while
 the center is not showing the live game, a small live-game thumbnail; the
 board with a player bar above and below it in the center; the room title,
@@ -41,13 +37,6 @@ board the center shows.
 Help flows exist for landscape only (desktop first run, desktop variations,
 and the draft started from a posted variation); portrait has no onboarding
 flow.
-
-While the centre shows a variation, the live game moves to the thumbnail at
-the bottom of the left aside and the sidebar carries the variation's move
-tree and its actions:
-
-![A posted variation on the centre board, the live game as a thumbnail under
-"Main board", and the variation panel in the sidebar](images/kibitz-variation.jpg)
 
 When a room has no current game (a preset room sitting between games),
 `KibitzView` renders a waiting layout instead of the board: the left aside,
