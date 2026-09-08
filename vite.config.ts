@@ -403,6 +403,7 @@ export default defineConfig({
                 return null;
             },
         },
+        admin_host_proxy(),
         ogs_vite_middleware(),
         react(),
         //circularDependency(),
@@ -503,6 +504,55 @@ export default defineConfig({
         },
     },
 });
+
+/**
+ * Hands requests for an `admin.*` hostname to the local OGS stack.
+ *
+ * On a development instance every public hostname lands on this dev server,
+ * but the unified admin interface (ogs/apps/admin) is served by the stack's
+ * termination-server for `admin.*` hosts, not by this client. So a request
+ * whose Host starts with `admin.` is relayed to the local load balancer,
+ * headers intact (the stack routes by Host), and never reaches Vite. Only
+ * meaningful against the local stack; against beta or production the admin
+ * host is its own site.
+ */
+function admin_host_proxy(): Plugin {
+    const target = new URL(backend_url);
+    return {
+        name: "admin-host-proxy",
+        configureServer(server: ViteDevServer) {
+            if (OGS_BACKEND !== "LOCAL") {
+                return;
+            }
+            server.middlewares.use((req, res, next) => {
+                if (!/^admin[.-]/i.test(req.headers.host ?? "")) {
+                    next();
+                    return;
+                }
+                const upstream = http.request(
+                    {
+                        host: target.hostname,
+                        port: target.port || 80,
+                        method: req.method,
+                        path: req.url,
+                        headers: req.headers,
+                    },
+                    (answer) => {
+                        res.writeHead(answer.statusCode ?? 502, answer.headers);
+                        answer.pipe(res);
+                    },
+                );
+                upstream.on("error", (err) => {
+                    if (!res.headersSent) {
+                        res.writeHead(502, { "content-type": "text/plain" });
+                    }
+                    res.end(`admin host proxy: ${err.message}`);
+                });
+                req.pipe(upstream);
+            });
+        },
+    };
+}
 
 /*
  * For historical reasons, OGS uses a custom index.html template system
