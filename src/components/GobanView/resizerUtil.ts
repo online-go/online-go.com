@@ -43,11 +43,8 @@ export const MIN_PORTRAIT_PANEL_REM = 8;
  *  dragged to the top of its range has taken every pixel the panels had. The
  *  sum is therefore only trusted while both are above zero. Otherwise the
  *  column the two live in is measured instead, less everything in it that is
- *  neither of them — the drag handle, today. Reporting the whole view here
- *  instead would overstate the shared space by the header, the handle, the
- *  slider and the tab bar, and a maximum computed from that would keep
- *  giving the stage the height that emptied the panels in the first place.
- *  The view stays the last resort, for a stage that is not laid out yet. */
+ *  neither of them — the drag handle. The view is the last resort, for a
+ *  stage that is not laid out yet. */
 export function portraitAvailableHeightPx(
     stage: HTMLElement | null,
     panels: HTMLElement | null,

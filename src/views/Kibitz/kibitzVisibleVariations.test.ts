@@ -27,8 +27,8 @@ test("assigns the first free colour index to each new variation", () => {
 });
 
 test("a variation added later never takes an index already in use", () => {
-    // Regression: a newly visible variation used to fall back to index 0 --
-    // red -- while another variation already held red.
+    // A newly visible variation must not take colour 0 while another
+    // variation already holds it.
     const first = withVisibleVariationIds(EMPTY_VISIBLE_VARIATIONS, ["a"]);
     const second = withVisibleVariationIds(first, ["a", "b"]);
     expect(second.colors.a).toBe(0);

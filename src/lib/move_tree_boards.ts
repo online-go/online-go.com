@@ -25,9 +25,9 @@ interface MoveTreeBoard {
  * line palette, for one — can reach the trees that are already up. Nothing
  * else about such a change would prompt a repaint.
  *
- * This is deliberately a module of its own rather than part of
- * `GobanController`: the views that read the palette import the store beside
- * it, and they have no business pulling a controller's dependencies in.
+ * A module of its own rather than part of `GobanController`, so the views
+ * that read the palette can import the store without a controller's
+ * dependencies.
  */
 const boards = new Set<MoveTreeBoard>();
 

@@ -257,9 +257,9 @@ describe("with no controller", () => {
     });
 
     test("follows the viewport across orientations", () => {
-        // The GobanContainer is what normally reports resizes. Without one
-        // the view kept whatever orientation it mounted with, so a room
-        // between games rendered its portrait tree on a desktop.
+        // The GobanContainer is what normally reports resizes. Without one the
+        // view must listen itself, or a room between games keeps whatever
+        // orientation it mounted with.
         const { container } = render(
             <GobanView controller={null} centerPlaceholder={<div />} playerBars={false}>
                 <div />

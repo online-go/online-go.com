@@ -24,8 +24,7 @@ export const MAX_VISIBLE_VARIATIONS = KIBITZ_VARIATION_COLOR_COUNT;
 /**
  * The variations currently drawn on the board, and the move-tree line colour
  * each one was given. The two travel together so that a render which makes a
- * variation visible also carries its colour: a board composed from an id list
- * whose colours had not been assigned yet drew every new line in colour 0.
+ * variation visible also carries its colour.
  */
 export interface KibitzVisibleVariations {
     ids: string[];

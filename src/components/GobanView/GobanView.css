@@ -471,7 +471,7 @@
         /* The opt-in split. The extra class on the root outranks the portrait
            rules above, which scroll the whole column instead. */
         &.has-portrait-split {
-            /* The column no longer scrolls as a whole: the board is pinned and
+            /* The column does not scroll as a whole: the board is pinned and
                the panels below it scroll on their own. */
             .GobanView-mobile-scroll {
                 overflow: hidden;
@@ -508,10 +508,7 @@
              * `.GobanView-center` itself: giving it up its own stretch
              * turns its height indefinite too and collapses it to its
              * minimum, since aspect-ratio can no longer anchor to a
-             * stretched width. The split is the only portrait layout that
-             * takes height off the board; the scrolling portrait column
-             * used by the game, joseki and puzzle pages keeps the board
-             * placement it already had. */
+             * stretched width. */
             .GobanView-center .goban-container {
                 align-self: center;
                 aspect-ratio: 1;

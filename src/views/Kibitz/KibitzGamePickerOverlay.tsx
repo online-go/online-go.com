@@ -457,11 +457,10 @@ export function KibitzGamePickerOverlay({
         return () => document.removeEventListener("keydown", onKeyDown);
     }, [onClose]);
 
-    // The site's modal chrome — backdrop, centred card, and a buttons row —
-    // rather than a bespoke full-screen panel, so this dialog closes the way
-    // every other one does. It stays in the app's React tree: the game lists
-    // render MiniGobans, which link through react-router, and a modal root
-    // mounted on document.body would have no router above it.
+    // The site's modal chrome — backdrop, centred card, buttons row — so this
+    // dialog closes the way every other one does. It stays in the app's React
+    // tree: the game lists render MiniGobans, which link through react-router,
+    // and a modal root mounted on document.body would have no router above it.
     const renderChrome = (options: {
         title: React.ReactNode;
         subtitle?: React.ReactNode;
@@ -911,8 +910,7 @@ export function KibitzGamePickerOverlay({
         </>
     );
 
-    // One primary action for both layouts, in the modal's buttons row. It was
-    // duplicated in the desktop footer and the mobile preview header.
+    // One primary action for both layouts, in the modal's buttons row.
     const primaryAction =
         mode === "create-room" ? (
             <button

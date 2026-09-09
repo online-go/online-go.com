@@ -83,8 +83,8 @@
    sits directly above its input instead of leaving the panel's leftover
    height between them. */
 .GobanView.Kibitz.portrait {
-    /* The header carries two lines now, so it drops the banner treatment the
-       landscape sidebar heading uses and sits on one compact block. */
+    /* A compact block, not the banner treatment the landscape sidebar heading
+       uses. */
     .GobanView-header {
         padding: 0.35rem 0.75rem;
         font-size: 1rem;

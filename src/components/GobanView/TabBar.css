@@ -100,19 +100,15 @@
      * chat, conditional, undo, resign, more), and Kibitz has nine with a
      * variation open. Tighten the buttons and gaps so the full set fits: nine
      * need 356px (9 x 2.25rem buttons, six 0.25rem gaps inside the left group
-     * and the bar's 0.25rem padding), which fits a 360px viewport and no
-     * longer fits a 320px one. Keeping 320px would mean going below the
-     * 2.25rem touch target, so it was given up. The space comes from the
-     * global button margin, which the gap between them replaces here.
+     * and the bar's 0.25rem padding), which fits a 360px viewport. The space
+     * comes from the global button margin, which the gap between them
+     * replaces here.
      *
-     * The breakpoint is 480px, not the width the compacted bar needs: at the
-     * full size nine buttons need about 471.5px — 9 x (40px button + 5.28px
-     * of the global 0.15em button margin at this 1.1rem font size), six 8px
-     * gaps inside the left group, and the bar's 16px of padding. So every
-     * phone between 400px and about 471px — Pixel 7/8 Pro and Galaxy S23 at
-     * 412px, iPhone 11/XR/14 Plus at 414px, iPhone 14/15 Pro Max at 430px —
-     * pushed the right-hand group off screen. The groups keep their content
-     * width, so nothing shrinks on its own. */
+     * The breakpoint is where the full-size bar stops fitting, not the width
+     * the compacted bar needs: nine full-size buttons take about 472px (9 x
+     * 40px plus the global 0.15em margin at this 1.1rem font size, six 8px
+     * gaps in the left group and 16px of bar padding), and the groups keep
+     * their content width rather than shrinking. */
     @media (max-width: 480px) {
         padding-left: calc(0.25rem + env(safe-area-inset-left));
         padding-right: calc(0.25rem + env(safe-area-inset-right));

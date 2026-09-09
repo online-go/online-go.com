@@ -578,11 +578,10 @@ export function KibitzChatPanel({
         [roomProxy],
     );
 
-    // Both line components show a date separator whenever the previous line
+    // Both line components draw a date separator whenever the previous line
     // fell on another day, and unconditionally when there is no previous
-    // line — so the log always opened with today's date, which says nothing.
-    // Seeding the "previous line" with now suppresses that separator for a
-    // first message sent today and keeps it for an older one.
+    // line. Seeding the "previous line" with now keeps the log from opening
+    // with today's date while an older first message still gets one.
     const nowSeconds = Math.floor(Date.now() / 1000);
     let roomLastLine: ChatMessage | undefined = {
         message: { t: nowSeconds },

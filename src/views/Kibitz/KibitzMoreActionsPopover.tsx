@@ -30,9 +30,6 @@ import { openGameLinkModal } from "@/views/Game/GameLinkModal";
 import "@/views/Game/GameSidebarPanels.css";
 import "./KibitzMoreActionsPopover.css";
 
-/** The room-management entries this menu offers, gated the same way the
- *  settings menu gated them. `onRoomInformation` is the entry for a viewer
- *  who manages nothing: it still names the room's owner. */
 /** The time control as this menu shows it. Fischer drops the maximum that
  *  `shortShortTimeControl` spells out — "5m+7s" is what a spectator needs,
  *  and the exact cap is still in Game information. */
@@ -49,6 +46,9 @@ function timeControlText(time_control: JGOFTimeControl | undefined): string {
     return shortShortTimeControl(time_control);
 }
 
+/** The room-management entries this menu offers, each shown only to a
+ *  viewer allowed to use it. `onRoomInformation` is the entry for a viewer
+ *  who manages nothing: it still names the room's owner. */
 export interface KibitzMoreActionsRoomActions {
     canEditRoom: boolean;
     canChangeBoard: boolean;

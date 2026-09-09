@@ -574,11 +574,9 @@ function GobanViewComponent({
                                     splitActive && stageHeight !== null
                                         ? ({
                                               height: `${stageHeight}px`,
-                                              // A dragged height is the user's
-                                              // decision, so the panels give up
-                                              // the space instead of the stage.
-                                              // The height is already clamped to
-                                              // leave them their minimum.
+                                              // A dragged height is the user's decision: the
+                                              // panels give up the space, not the stage. It is
+                                              // already clamped to leave them their minimum.
                                               flexShrink: 0,
                                           } as React.CSSProperties)
                                         : undefined

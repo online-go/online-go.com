@@ -578,8 +578,7 @@
     }
 }
 
-/* The dialog's title lives in the modal's own header slot now, so the
-   header reads like every other modal's. */
+/* The title sits in the modal's own header slot, as in every other modal. */
 .Modal.KibitzGamePickerOverlay > .header {
     padding: 0.75rem 1rem 0.85rem;
     display: block;

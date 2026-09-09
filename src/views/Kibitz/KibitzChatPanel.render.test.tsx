@@ -396,13 +396,11 @@ describe("KibitzChatPanel variation posts", () => {
 });
 
 describe("opening date separator", () => {
-    // ChatLine decides whether to draw a date by comparing the line with the
-    // one before it, and draws one unconditionally when there is none — so
-    // the log always opened with today's date. The panel now seeds that
-    // "previous line" with the current time, which suppresses the separator
-    // for a first message sent today and keeps it for an older one. The
-    // rendering itself is ChatLine's, and it is mocked here, so what this
-    // pins is the seed the panel hands it.
+    // ChatLine draws a date by comparing the line with the one before it,
+    // and unconditionally when there is none. The panel seeds that "previous
+    // line" with the current time, so a first message sent today opens the
+    // log without a date and an older one keeps it. ChatLine is mocked here,
+    // so what this pins is the seed the panel hands it.
     test("the first line is given a previous line dated now", () => {
         const before = Math.floor(Date.now() / 1000);
         const { container } = render(
