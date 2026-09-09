@@ -512,12 +512,22 @@ export default defineConfig({
  * but the unified admin interface (ogs/apps/admin) is served by the stack's
  * termination-server for `admin.*` hosts, not by this client. So a request
  * whose Host starts with `admin.` is relayed to the local load balancer,
- * headers intact (the stack routes by Host), and never reaches Vite. Only
+ * Host intact (the stack routes by it), and never reaches Vite. Only
  * meaningful against the local stack; against beta or production the admin
  * host is its own site.
+ *
+ * `Origin` and `Referer` are replaced with this dev server's own, because the
+ * browser's names a host *with a port* — and Django's wildcard
+ * `CSRF_TRUSTED_ORIGINS` entries cannot match one, so `admin.example.org:8080`
+ * is refused with "Origin checking failed" on every POST while the same host
+ * without the port is accepted. In production the interface and the API are
+ * one origin and none of this arises. The apps/admin dev server presents a
+ * trusted origin for the same reason.
  */
 function admin_host_proxy(): Plugin {
     const target = new URL(backend_url);
+    // In CSRF_TRUSTED_ORIGINS for every port this server runs on.
+    const dev_origin = `http://localhost:${PORT}`;
     return {
         name: "admin-host-proxy",
         configureServer(server: ViteDevServer) {
@@ -535,7 +545,11 @@ function admin_host_proxy(): Plugin {
                         port: target.port || 80,
                         method: req.method,
                         path: req.url,
-                        headers: req.headers,
+                        headers: {
+                            ...req.headers,
+                            origin: dev_origin,
+                            referer: `${dev_origin}/`,
+                        },
                     },
                     (answer) => {
                         res.writeHead(answer.statusCode ?? 502, answer.headers);
