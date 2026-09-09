@@ -15,8 +15,4 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Everything else under /admin moved to the unified admin interface at
-// admin.online-go.com. Online leagues stayed here because it is reached by
-// moderators and by league operators holding an X-OGS-LEAGUE-AUTH key, and
-// that interface is superusers only.
 export { OnlineLeaguesAdmin } from "@moderator-ui/Admin";

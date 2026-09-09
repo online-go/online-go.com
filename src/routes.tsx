@@ -411,12 +411,6 @@ export const routes = (
                 <Route path="/moderator/fair-play-search" element={<FairPlaySearch />} />
                 <Route path="/moderator/fair-play-actions" element={<FairPlayActions />} />
                 <Route path="/moderator/fair-play-logic-dump" element={<FairPlayLogicDump />} />
-                {/* The rest of /admin moved to the unified admin interface at
-                    admin.online-go.com. These two stayed: despite the prefix
-                    they are not superuser pages, and the admin interface is
-                    superusers only. Firewall is IsModerator, and online
-                    leagues is deliberately ungated so league operators
-                    holding an X-OGS-LEAGUE-AUTH key can reach it. */}
                 <Route path="/admin/firewall" element={<Firewall />} />
                 <Route path="/admin/online_leagues" element={<OnlineLeaguesAdmin />} />
                 <Route path="/whats-new" element={<WhatsNew />} />
