@@ -38,16 +38,7 @@ import { SignIn } from "@/views/SignIn";
 import { Register } from "@/views/Register";
 import { ChallengeLinkLanding } from "@/views/ChallengeLinkLanding";
 import { Home } from "@/views/Home";
-import {
-    Admin,
-    MerchantLog,
-    FlaggedGames,
-    OnlineLeaguesAdmin,
-    AnnulmentCriteriaSettings,
-    AIReviewStatus,
-    AIReviewRequestStats,
-    WhatsNewAdmin,
-} from "@/views/Admin";
+import { OnlineLeaguesAdmin } from "@/views/Admin";
 import { WhatsNew } from "@/views/WhatsNew";
 import { ChatView } from "@/views/ChatView";
 import { Developer } from "@/views/Developer";
@@ -420,15 +411,14 @@ export const routes = (
                 <Route path="/moderator/fair-play-search" element={<FairPlaySearch />} />
                 <Route path="/moderator/fair-play-actions" element={<FairPlayActions />} />
                 <Route path="/moderator/fair-play-logic-dump" element={<FairPlayLogicDump />} />
-                <Route path="/admin/merchant_log" element={<MerchantLog />} />
+                {/* The rest of /admin moved to the unified admin interface at
+                    admin.online-go.com. These two stayed: despite the prefix
+                    they are not superuser pages, and the admin interface is
+                    superusers only. Firewall is IsModerator, and online
+                    leagues is deliberately ungated so league operators
+                    holding an X-OGS-LEAGUE-AUTH key can reach it. */}
                 <Route path="/admin/firewall" element={<Firewall />} />
-                <Route path="/admin/flagged_games" element={<FlaggedGames />} />
                 <Route path="/admin/online_leagues" element={<OnlineLeaguesAdmin />} />
-                <Route path="/admin/annulment_criteria" element={<AnnulmentCriteriaSettings />} />
-                <Route path="/admin/ai_review_status" element={<AIReviewStatus />} />
-                <Route path="/admin/ai_review_request_stats" element={<AIReviewRequestStats />} />
-                <Route path="/admin/whats_new" element={<WhatsNewAdmin />} />
-                <Route path="/admin" element={<Admin />} />
                 <Route path="/whats-new" element={<WhatsNew />} />
                 <Route path="/whats-new/:postId" element={<WhatsNew />} />
                 <Route path="/announcement-center" element={<AnnouncementCenter />} />
