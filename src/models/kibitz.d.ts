@@ -147,6 +147,10 @@ export interface KibitzSecondaryPaneState {
     variation_source_move_tree_id?: number;
     variation_source_move_path?: string;
     variation_draft_base_id?: string;
+    /** Where in the base variation the draft starts: the encoded path the
+     *  reader was looking at when they branched, rather than the end of the
+     *  line. Absent for a draft that starts at the variation's last move. */
+    variation_draft_base_path?: string;
     /** Changes on every new draft so a draft started from the same
      *  position as the previous one still rebuilds the board. */
     variation_draft_nonce?: number;

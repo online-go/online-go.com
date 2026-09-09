@@ -34,6 +34,10 @@ interface KibitzPortraitPanesProps {
      *  posted variation. Null when it shows the live game, and the analysis
      *  pane then says so rather than sitting empty. */
     analysis: React.ReactNode;
+    /** True while the centre has left the live game but the board for it is
+     *  not built yet, which is a wait rather than an invitation to start
+     *  something. */
+    analysisPending?: boolean;
 }
 
 /**
@@ -48,6 +52,7 @@ export function KibitzPortraitPanes({
     leftAside,
     roomChannel,
     analysis,
+    analysisPending = false,
 }: KibitzPortraitPanesProps): React.ReactElement {
     // Each panel reports both chats, but only knows whether its own is on
     // screen: the game panel never shows the room chat, so it calls every
@@ -120,10 +125,15 @@ export function KibitzPortraitPanes({
             <div className="KibitzPortraitPanes-pane" hidden={active !== "analysis"}>
                 {analysis ?? (
                     <div className="KibitzPortraitPanes-empty">
-                        {pgettext(
-                            "Shown in the Kibitz analysis pane while the board shows the live game",
-                            "Start a variation to analyse this game.",
-                        )}
+                        {analysisPending
+                            ? pgettext(
+                                  "Shown in the Kibitz analysis pane while the variation's board is still being built",
+                                  "Preparing the board.",
+                              )
+                            : pgettext(
+                                  "Shown in the Kibitz analysis pane while the board shows the live game",
+                                  "Start a variation to analyze this game.",
+                              )}
                     </div>
                 )}
             </div>

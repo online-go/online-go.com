@@ -1349,15 +1349,20 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             variation_source_move_tree_id,
             variation_source_move_path,
             variation_draft_base_id: undefined,
+            variation_draft_base_path: undefined,
             variation_draft_nonce: ++this._draft_nonce,
         });
     }
 
+    /** `variation_draft_base_path` is where in the posted variation the
+     *  draft starts — the move the reader was looking at. Without it the
+     *  draft opens at the end of the line. */
     public startVariationFromPostedVariation(
         variation: KibitzVariationSummary,
         variation_source_move_tree?: KibitzVariationLineTree,
         variation_source_move_path?: string,
         variation_source_move_tree_id?: number,
+        variation_draft_base_path?: string,
     ): void {
         const sourceGame =
             this._active_room?.current_game?.game_id === variation.game_id
@@ -1374,6 +1379,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             variation_source_move_tree_id,
             variation_source_move_path,
             variation_draft_base_id: variation.id,
+            variation_draft_base_path,
             variation_draft_nonce: ++this._draft_nonce,
         });
     }
@@ -1389,6 +1395,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             variation_source_move_tree_id: undefined,
             variation_source_move_path: undefined,
             variation_draft_base_id: undefined,
+            variation_draft_base_path: undefined,
         });
     }
 

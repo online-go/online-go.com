@@ -426,7 +426,12 @@ export function useKibitzGobans({
                 } else {
                     focusEndpoint = apply(focus, true).endpoint;
                 }
-                if (focusEndpoint) {
+                // A draft branched from a posted variation opens where the
+                // reader was standing in it, which is only the end of the
+                // line when they never stepped back.
+                if (mode === "draft" && pane.variation_draft_base_path) {
+                    controller.goban.engine.followPath(0, pane.variation_draft_base_path);
+                } else if (focusEndpoint) {
                     controller.goban.engine.jumpTo(focusEndpoint);
                 }
             } else if (mode === "draft" && pane.variation_source_move_path) {

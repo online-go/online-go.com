@@ -38,7 +38,7 @@ const DEFAULT_PANE: KibitzPortraitPane = "room-chat";
 
 /** The analysis pane only has content while the centre shows a draft or a
  *  variation, so it is never restored on load — a reader who left while
- *  analysing comes back to a pane that has something in it. */
+ *  analyzing comes back to a pane that has something in it. */
 const TRANSIENT_PANES: readonly KibitzPortraitPane[] = ["analysis"];
 
 function isPane(value: unknown): value is KibitzPortraitPane {

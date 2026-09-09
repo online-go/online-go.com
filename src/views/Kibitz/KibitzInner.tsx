@@ -1000,7 +1000,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         [confirmDiscardDraft, onOpenVariation],
     );
     const onCreateVariationFromPostedVariation = React.useCallback(
-        (variation: KibitzVariationSummary) => {
+        (variation: KibitzVariationSummary, fromPath?: string) => {
             const snapshot =
                 variation.game_id === currentGameId
                     ? getCurrentGameBaseSnapshotForVariation("new-variation-from-posted")
@@ -1016,6 +1016,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 snapshot?.config.move_tree,
                 snapshot?.movePath,
                 moveTreeIdAsNumber(snapshot?.moveTreeId ?? null),
+                fromPath,
             );
         },
         [
@@ -1030,9 +1031,20 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             (candidate) => candidate.id === secondaryPane.variation_id,
         );
         if (variation) {
-            onCreateVariationFromPostedVariation(variation);
+            // "From here" is the move on screen, which is not always the end
+            // of the line: the reader can step back through the variation
+            // before branching off it.
+            onCreateVariationFromPostedVariation(
+                variation,
+                gobans.secondary?.goban.engine.cur_move.getMoveStringToThisPoint(),
+            );
         }
-    }, [displayedVariations, onCreateVariationFromPostedVariation, secondaryPane.variation_id]);
+    }, [
+        displayedVariations,
+        gobans.secondary,
+        onCreateVariationFromPostedVariation,
+        secondaryPane.variation_id,
+    ]);
 
     const onOpenCreateRoom = React.useCallback(() => {
         setPickerMode("create-room");

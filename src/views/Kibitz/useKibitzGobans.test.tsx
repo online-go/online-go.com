@@ -454,6 +454,39 @@ describe("useKibitzGobans", () => {
         expect((instances[1] as { destroy: jest.Mock }).destroy).toHaveBeenCalled();
     });
 
+    test("a draft branched from a variation opens where the reader was", () => {
+        readyMainTrunk();
+        applyKibitzVariationToController.mockReturnValue({
+            variationId: "v1",
+            endpoint: { id: 42 },
+        });
+        const { rerender } = render(<Harness options={baseOptions()} onResult={() => undefined} />);
+        emit(instances[0], "load");
+        rerender(
+            <Harness
+                options={baseOptions({
+                    secondaryPane: {
+                        collapsed: false,
+                        variation_source_game_id: 100,
+                        variation_draft_base_id: "v1",
+                        variation_draft_base_path: "aabb",
+                        variation_draft_nonce: 1,
+                    },
+                    variations: [makeVariation("v1")],
+                })}
+                onResult={() => undefined}
+            />,
+        );
+        const engine = (
+            instances[1] as {
+                goban: { engine: { followPath: jest.Mock; jumpTo: jest.Mock } };
+            }
+        ).goban.engine;
+        expect(engine.followPath).toHaveBeenCalledWith(0, "aabb");
+        // Not the end of the line the draft was branched from.
+        expect(engine.jumpTo).not.toHaveBeenCalled();
+    });
+
     test("toggling a variation of another game leaves the shown variation's board alone", () => {
         readyMainTrunk();
         const { rerender } = render(<Harness options={baseOptions()} onResult={() => undefined} />);
