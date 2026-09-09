@@ -2,11 +2,7 @@
  * Copyright (C)  Online-Go.com
  */
 
-export * from "./Admin";
-export * from "./MerchantLog";
-export * from "./FlaggedGames";
+// The rest of these moved to the unified admin interface at
+// admin.online-go.com. Online leagues stayed, because moderators and league
+// operators reach it and neither is a superuser.
 export * from "./OnlineLeaguesAdmin";
-export * from "./AnnulmentCriteriaSettings";
-export * from "./AIReviewStatus";
-export * from "./AIReviewRequestStats";
-export * from "./WhatsNewAdmin";
