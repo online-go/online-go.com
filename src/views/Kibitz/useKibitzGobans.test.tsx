@@ -454,6 +454,40 @@ describe("useKibitzGobans", () => {
         expect((instances[1] as { destroy: jest.Mock }).destroy).toHaveBeenCalled();
     });
 
+    test("a draft branched from a variation composes every variation on the board", () => {
+        // The reader can be standing in a line the base variation does not
+        // hold. A node that is not on this board is replayed as a fresh move
+        // instead of navigated to, so every visible variation is laid down.
+        readyMainTrunk();
+        applyKibitzVariationToController.mockReturnValue({
+            variationId: "v1",
+            endpoint: { id: 42 },
+        });
+        const { rerender } = render(<Harness options={baseOptions()} onResult={() => undefined} />);
+        emit(instances[0], "load");
+        applyKibitzVariationToController.mockClear();
+        rerender(
+            <Harness
+                options={baseOptions({
+                    secondaryPane: {
+                        collapsed: false,
+                        variation_source_game_id: 100,
+                        variation_draft_base_id: "v1",
+                        variation_draft_base_path: "aabb",
+                        variation_draft_nonce: 1,
+                    },
+                    variations: [makeVariation("v1"), makeVariation("v2"), makeVariation("v3")],
+                    visibleVariationIds: ["v1", "v2"],
+                })}
+                onResult={() => undefined}
+            />,
+        );
+        const applied = applyKibitzVariationToController.mock.calls.map(
+            (call) => (call[1] as { id: string }).id,
+        );
+        expect(applied).toEqual(["v1", "v2"]);
+    });
+
     test("a draft branched from a variation opens where the reader was", () => {
         readyMainTrunk();
         applyKibitzVariationToController.mockReturnValue({

@@ -403,28 +403,25 @@ export function useKibitzGobans({
             const focus = mode === "variation" ? selectedVariation : draftBase;
             if (focus) {
                 // Compose in the order the variations appear in the list, whatever is
-                // selected. Applying the selected one last made the order that nodes
-                // enter parent.branches depend on the selection, so the move tree
-                // re-ordered its branches as the user clicked between variations.
+                // selected, so the order nodes enter parent.branches — and with it the
+                // move tree's branch order — does not depend on the selection.
+                //
+                // A draft branched from a variation composes the same set as the board
+                // it was branched from, not the base variation alone: the reader may
+                // have been standing anywhere in what was on screen, and a node that is
+                // not on this board is not navigated to but replayed as a fresh move.
                 let focusEndpoint: AppliedKibitzVariation["endpoint"] = null;
-                if (mode === "variation") {
-                    for (const v of variations) {
-                        if (v.game_id !== focus.game_id) {
-                            continue;
-                        }
-                        if (
-                            v.id !== focus.id &&
-                            !latest.current.visibleVariationIds.includes(v.id)
-                        ) {
-                            continue;
-                        }
-                        const applied = apply(v, v.id === focus.id);
-                        if (v.id === focus.id) {
-                            focusEndpoint = applied.endpoint;
-                        }
+                for (const v of variations) {
+                    if (v.game_id !== focus.game_id) {
+                        continue;
                     }
-                } else {
-                    focusEndpoint = apply(focus, true).endpoint;
+                    if (v.id !== focus.id && !latest.current.visibleVariationIds.includes(v.id)) {
+                        continue;
+                    }
+                    const applied = apply(v, v.id === focus.id);
+                    if (v.id === focus.id) {
+                        focusEndpoint = applied.endpoint;
+                    }
                 }
                 // A draft branched from a posted variation opens where the
                 // reader was standing in it, which is only the end of the
