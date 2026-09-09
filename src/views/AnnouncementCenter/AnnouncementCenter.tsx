@@ -27,7 +27,6 @@ import { Player } from "@/components/Player";
 import { useUser } from "@/lib/hooks";
 import { alert } from "@/lib/swal_config";
 import { languages, current_language } from "@/lib/translate";
-import { SYSTEM_TEMPLATES } from "@/lib/announcement_templates";
 import { LoadingButton } from "@/components/LoadingButton";
 import {
     AnnouncementEntry as SharedAnnouncementEntry,
@@ -93,14 +92,13 @@ if (process.env.NODE_ENV === "development") {
 export function AnnouncementCenter(): React.ReactElement {
     const user = useUser();
     const [announcementType, setAnnouncementType] = React.useState(
-        user.is_superuser ? "system" : data.get("announcement.last-type", "stream"),
+        data.get("announcement.last-type", "stream"),
     );
     // Using entries system for all content
     const [entries, setEntries] = React.useState<AnnouncementEntry[]>([
         { link: "", [current_language || DEFAULT_ANNOUNCEMENT_LANG]: "" },
     ]);
     const [editingId, setEditingId] = React.useState<number | null>(null);
-    const [selectedTemplate, setSelectedTemplate] = React.useState<string>("");
     const [duration_idx, setDurationIdx] = React.useState(
         data.get("announcement.last-duration", 4),
     );
@@ -132,43 +130,6 @@ export function AnnouncementCenter(): React.ReactElement {
         window.document.title = _("Announcement Center");
         refresh();
     }, []);
-
-    // Handle system template selection
-    React.useEffect(() => {
-        if (selectedTemplate && announcementType === "system") {
-            const template = SYSTEM_TEMPLATES.find((t) => t.id === selectedTemplate);
-            if (template) {
-                // Create an entry with only supported language translations
-                const entry: AnnouncementEntry = { link: "" };
-
-                // Only add translations for languages we actually support
-                Object.keys(template.translations).forEach((lang) => {
-                    // Check if this language is in our supported languages list
-                    if (lang in languages) {
-                        entry[lang] = template.translations[lang];
-                    }
-                });
-
-                // Ensure we have at least the current language or English
-                if (Object.keys(entry).length === 1) {
-                    // Only 'link' key exists, add English as fallback
-                    entry.en = template.translations.en || "";
-                }
-
-                setEntries([entry]);
-
-                // Find the closest duration index
-                const targetDuration = template.duration;
-                const closestIdx = duration_options.reduce((prev, curr, idx) => {
-                    return Math.abs(curr - targetDuration) <
-                        Math.abs(duration_options[prev] - targetDuration)
-                        ? idx
-                        : prev;
-                }, 0);
-                setDurationIdx(closestIdx);
-            }
-        }
-    }, [selectedTemplate, announcementType]);
 
     const addEntry = React.useCallback((): void => {
         const lang = current_language || DEFAULT_ANNOUNCEMENT_LANG;
@@ -361,7 +322,6 @@ export function AnnouncementCenter(): React.ReactElement {
                 .then(() => {
                     setEditingId(null);
                     setEntries([{ link: "", [current_language || DEFAULT_ANNOUNCEMENT_LANG]: "" }]);
-                    setSelectedTemplate("");
                     refresh();
                 })
                 .catch(errorAlerter);
@@ -369,7 +329,6 @@ export function AnnouncementCenter(): React.ReactElement {
             post("announcements", payload)
                 .then(() => {
                     setEntries([{ link: "", [current_language || DEFAULT_ANNOUNCEMENT_LANG]: "" }]);
-                    setSelectedTemplate("");
                     refresh();
                 })
                 .catch(errorAlerter);
@@ -429,7 +388,6 @@ export function AnnouncementCenter(): React.ReactElement {
     const cancelEdit = (): void => {
         setEditingId(null);
         setEntries([{ link: "", [current_language || DEFAULT_ANNOUNCEMENT_LANG]: "" }]);
-        setSelectedTemplate("");
     };
 
     let can_create = true;
@@ -455,12 +413,8 @@ export function AnnouncementCenter(): React.ReactElement {
                         <dd>
                             <select
                                 value={announcementType}
-                                onChange={(e) => {
-                                    setAnnouncementType(e.target.value);
-                                    setSelectedTemplate("");
-                                }}
+                                onChange={(e) => setAnnouncementType(e.target.value)}
                             >
-                                <option value="system">System</option>
                                 <option value="stream">Stream</option>
                                 <option value="event">Event</option>
                                 <option value="advertisement">Advertisement</option>
@@ -473,12 +427,8 @@ export function AnnouncementCenter(): React.ReactElement {
                         <dd>
                             <select
                                 value={announcementType}
-                                onChange={(e) => {
-                                    setAnnouncementType(e.target.value);
-                                    setSelectedTemplate("");
-                                }}
+                                onChange={(e) => setAnnouncementType(e.target.value)}
                             >
-                                <option value="system">System</option>
                                 <option value="stream">Stream</option>
                                 <option value="event">Event</option>
                                 <option value="advertisement">Advertisement</option>
@@ -488,34 +438,12 @@ export function AnnouncementCenter(): React.ReactElement {
                         <dd>
                             <select
                                 value={announcementType}
-                                onChange={(e) => {
-                                    setAnnouncementType(e.target.value);
-                                    setSelectedTemplate("");
-                                }}
+                                onChange={(e) => setAnnouncementType(e.target.value)}
                             >
                                 <option value="stream">Stream</option>
                                 <option value="event">Event</option>
                             </select>
                         </dd>
-                    )}
-
-                    {announcementType === "system" && user.is_moderator && (
-                        <>
-                            <dt>{_("Template")}</dt>
-                            <dd>
-                                <select
-                                    value={selectedTemplate}
-                                    onChange={(e) => setSelectedTemplate(e.target.value)}
-                                >
-                                    <option value="">-- Select Template --</option>
-                                    {SYSTEM_TEMPLATES.map((template) => (
-                                        <option key={template.id} value={template.id}>
-                                            {template.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </dd>
-                        </>
                     )}
 
                     <dt>{_("Duration")}</dt>
