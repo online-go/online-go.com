@@ -63,6 +63,12 @@ the portrait pane (`kibitz.portrait_pane`, seeded once from the chat tab)
 and the people column (`kibitz.people_column`). The height the handle gives
 the board is the `goban-view-portrait-split` preference.
 
+Pressing the room list's or the variation list's action while it is the pane
+on screen puts back whatever the reader was on before it, the way pressing
+the analysis action again leaves the draft it opened. A list will not close
+back to an analysis pane the centre has left nothing in; it falls back to the
+Kibitz chat.
+
 Action bar: in portrait the room list and the variation list (left), then
 the two chats, the people list and Analysis (center); in landscape only
 the people list and New variation, since the panes are portrait-only, and
@@ -144,7 +150,11 @@ whichever controller the center shows.
 Only a same-game secondary board — a draft or a variation of the room's
 current game — waits for the main controller to produce its first trunk
 snapshot (`mainReady`), and it then composes synchronously from that
-snapshot. A board for another game connects with its own `game_id` instead and
+snapshot. The snapshot is taken from the main controller's engine whether or
+not its board is in the DOM: in portrait the main board is off screen
+whenever the center shows a variation or a draft, and every rebuild of the
+secondary board — a draft started from a variation, a change to which
+variations are visible — takes a fresh one. A board for another game connects with its own `game_id` instead and
 composes on every `load` event of its own, so it never waits on the main
 board and lays the variation back onto a fresh tree after a reconnect. A
 draft is not rebuilt when the room moves on to another game: it keeps the
@@ -166,4 +176,8 @@ determines what the center shows; `deriveKibitzCenterMode` maps it to
 `main | draft | variation`. The panel for a posted variation
 offers "New variation from here", which starts a new draft using that
 variation as its source, opening at the move the reader was looking at
-(`variation_draft_base_path`) rather than at the end of the line.
+(`variation_draft_base_path`) rather than at the end of the line. The draft
+board is composed with every variation that was visible on the board it came
+from, not the source variation alone: the reader can have been standing in
+any of them, and a node that is not on the board is replayed as a fresh move
+rather than navigated to.
