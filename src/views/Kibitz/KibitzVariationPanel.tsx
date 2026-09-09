@@ -51,10 +51,40 @@ export function KibitzVariationPanel({
     onBranch,
     colorIndex,
 }: KibitzVariationPanelProps): React.ReactElement {
+    const [moveTreeElement, setMoveTreeElement] = React.useState<HTMLDivElement | null>(null);
     const setMoveTree = React.useCallback(
-        (resizable: Resizable | null) => controller.setMoveTreeContainer(resizable),
+        (resizable: Resizable | null) => {
+            controller.setMoveTreeContainer(resizable);
+            setMoveTreeElement(resizable?.div ?? null);
+        },
         [controller],
     );
+
+    // A variation runs to the right, so its tree overflows the box sideways
+    // long before it overflows downwards — and a mouse wheel has no sideways
+    // axis, which leaves the scrollbar as the only way along it. Send the
+    // wheel to whichever axis still has somewhere to go.
+    React.useEffect(() => {
+        const container = moveTreeElement;
+        if (!container) {
+            return;
+        }
+        const onWheel = (event: WheelEvent) => {
+            if (event.deltaY === 0 || event.deltaX !== 0) {
+                return;
+            }
+            if (container.scrollHeight > container.clientHeight) {
+                return;
+            }
+            if (container.scrollWidth <= container.clientWidth) {
+                return;
+            }
+            container.scrollLeft += event.deltaY;
+            event.preventDefault();
+        };
+        container.addEventListener("wheel", onWheel, { passive: false });
+        return () => container.removeEventListener("wheel", onWheel);
+    }, [moveTreeElement]);
 
     return (
         <div className={`KibitzVariationPanel ${mode}`}>
