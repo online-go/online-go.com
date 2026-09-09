@@ -82,7 +82,6 @@
         padding: 0.5rem;
         flex-grow: 1;
         overflow: auto;
-        /* min-height: 20rem; */
     }
 
     .buttons {
@@ -96,10 +95,4 @@
         min-height: 3em;
         border-color: var(--shade3);
     }
-}
-
-/* Safari is stupid and isn't auto-growing the body like every other browser, so
-this hack targets safari only */
-_::-webkit-:not(:root:root), .Modal .body {
-    min-height: 20rem;
 }
