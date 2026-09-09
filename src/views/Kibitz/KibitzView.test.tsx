@@ -54,14 +54,22 @@ jest.mock("./KibitzChatPanel", () => ({
 }));
 jest.mock("./KibitzPortraitPanes", () => ({
     __esModule: true,
-    KibitzPortraitPanes: ({ active }: { active: string }) => (
-        <div data-testid="portrait-panes" data-active={active} />
+    // The analysis node is rendered so tests can reach the variation panel,
+    // which portrait puts inside this pane.
+    KibitzPortraitPanes: ({ active, analysis }: { active: string; analysis: React.ReactNode }) => (
+        <div data-testid="portrait-panes" data-active={active}>
+            {analysis}
+        </div>
     ),
 }));
 jest.mock("./KibitzVariationPanel", () => ({
     __esModule: true,
-    KibitzVariationPanel: ({ mode }: { mode: string }) => (
-        <div data-testid={`variation-panel-${mode}`} />
+    KibitzVariationPanel: ({ mode, onPost }: { mode: string; onPost: () => void }) => (
+        <div data-testid={`variation-panel-${mode}`}>
+            <button type="button" onClick={() => onPost()}>
+                mock post
+            </button>
+        </div>
     ),
 }));
 jest.mock("./KibitzProposalPanel", () => ({
@@ -392,6 +400,84 @@ describe("KibitzView", () => {
             fireEvent.click(screen.getByTitle("Rooms"));
             expect(onRoomsOpened).toHaveBeenCalledTimes(1);
             expect(screen.getByTestId("portrait-panes")).toHaveAttribute("data-active", "rooms");
+        });
+
+        test("a second variation brings the analysis pane forward again", () => {
+            // The reader can walk away from the analysis pane with a draft
+            // still open. Starting another one there leaves the centre
+            // showing a variation throughout, so only the new controller
+            // says anything happened.
+            const props = baseProps({ isPortrait: true });
+            const firstDraft = fakeController();
+            props.gobans = {
+                ...props.gobans,
+                secondary: firstDraft,
+                center: firstDraft,
+                centerMode: "draft",
+            };
+            const { rerender } = render(<KibitzView {...props} />);
+            expect(screen.getByTestId("portrait-panes")).toHaveAttribute("data-active", "analysis");
+
+            fireEvent.click(screen.getByTitle("Variations"));
+            expect(screen.getByTestId("portrait-panes")).toHaveAttribute(
+                "data-active",
+                "variations",
+            );
+
+            const secondDraft = fakeController();
+            rerender(
+                <KibitzView
+                    {...props}
+                    gobans={{
+                        ...props.gobans,
+                        secondary: secondDraft,
+                        center: secondDraft,
+                        centerMode: "draft",
+                    }}
+                />,
+            );
+            expect(screen.getByTestId("portrait-panes")).toHaveAttribute("data-active", "analysis");
+        });
+
+        test("posting a variation leaves the reader on the Kibitz chat", () => {
+            // The post lands in the chat, and the posted variation arrives a
+            // render after the draft goes, so the pane has to hold through a
+            // moment where the centre shows a variation with no controller.
+            const props = baseProps({ isPortrait: true });
+            const draft = fakeController();
+            props.gobans = {
+                ...props.gobans,
+                secondary: draft,
+                center: draft,
+                centerMode: "draft",
+            };
+            const { rerender } = render(<KibitzView {...props} />);
+            expect(screen.getByTestId("portrait-panes")).toHaveAttribute("data-active", "analysis");
+
+            fireEvent.click(screen.getByText("mock post"));
+            expect(screen.getByTestId("portrait-panes")).toHaveAttribute(
+                "data-active",
+                "room-chat",
+            );
+
+            const gap = { ...props.gobans, secondary: null, center: null, centerMode: "variation" };
+            rerender(<KibitzView {...props} gobans={gap as KibitzViewProps["gobans"]} />);
+            const posted = fakeController();
+            rerender(
+                <KibitzView
+                    {...props}
+                    gobans={{
+                        ...props.gobans,
+                        secondary: posted,
+                        center: posted,
+                        centerMode: "variation",
+                    }}
+                />,
+            );
+            expect(screen.getByTestId("portrait-panes")).toHaveAttribute(
+                "data-active",
+                "room-chat",
+            );
         });
 
         test("keeps the room title above the board", () => {

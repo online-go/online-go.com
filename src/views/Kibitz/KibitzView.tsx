@@ -132,21 +132,50 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     // and the unread state the two chat panes report for their tab dots.
     const [pane, setPane] = React.useState(readPortraitPane);
     const [chatUnread, setChatUnread] = React.useState({ room: false, game: false });
+    // Posting ends the composing session, and the post itself lands in the
+    // Kibitz chat, so that is where the reader is sent. The flag carries that
+    // through the render where the posted variation arrives as a controller
+    // of its own, which would otherwise pull the analysis pane forward again.
+    const chatAfterPost = React.useRef(false);
     const selectPane = React.useCallback((next: KibitzPortraitPane) => {
         setPane(next);
         writePortraitPane(next);
+        // The reader is steering again, so a post that never produced a
+        // variation to open leaves no intent behind.
+        chatAfterPost.current = false;
     }, []);
 
     // The analysis pane holds the variation panel, so it comes forward
     // whenever the centre stops showing the live game and steps back when it
     // returns — to whichever pane the reader was on, not to a default.
+    //
+    // The secondary controller is in the dependencies because each draft and
+    // each posted variation gets one of its own: starting a second variation
+    // while the first is still open never changes `centerShowsVariation`, and
+    // without this the pane would stay wherever the reader was.
     const paneBeforeAnalysis = React.useRef<KibitzPortraitPane | null>(null);
     const centerShowsVariation = gobans.centerMode !== "main";
+    const secondaryController = gobans.secondary;
     React.useEffect(() => {
         if (!isPortrait) {
             return;
         }
+        const posted = chatAfterPost.current;
+        // Posting tears the draft down a render before the posted variation
+        // arrives with a controller of its own. The intent has to outlive
+        // that gap, so it is spent on the controller that lands, not on the
+        // render that clears the old one.
+        if (posted && centerShowsVariation && !secondaryController) {
+            paneBeforeAnalysis.current = null;
+            return;
+        }
+        chatAfterPost.current = false;
         if (centerShowsVariation) {
+            if (posted) {
+                // The reader is on the chat and left no pane behind.
+                paneBeforeAnalysis.current = null;
+                return;
+            }
             setPane((current) => {
                 if (current === "analysis") {
                     return current;
@@ -164,7 +193,42 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             paneBeforeAnalysis.current = null;
             return previous ?? readPortraitPane();
         });
-    }, [isPortrait, centerShowsVariation]);
+    }, [isPortrait, centerShowsVariation, secondaryController]);
+
+    const propsOnPostVariation = props.onPostVariation;
+    const onPostVariation = React.useCallback(
+        (boardController: GobanController) => {
+            if (isPortrait) {
+                // After the pane call, which clears the flag as a reader's
+                // own navigation would.
+                selectPane("room-chat");
+                chatAfterPost.current = true;
+            }
+            propsOnPostVariation(boardController);
+        },
+        [isPortrait, propsOnPostVariation, selectPane],
+    );
+
+    // Opening a variation by hand is the reader steering, so the analysis
+    // pane comes forward as usual. Only the open the app performs itself
+    // after a post — which goes through neither of these — leaves the reader
+    // where the post put them.
+    const chatOnOpenVariation = props.chat.onOpenVariation;
+    const onOpenVariationByReader = React.useCallback(
+        (variationId: string, focusVariation?: boolean) => {
+            chatAfterPost.current = false;
+            chatOnOpenVariation(variationId, focusVariation);
+        },
+        [chatOnOpenVariation],
+    );
+    const asideOnRecallVariation = props.leftAside.onRecallVariation;
+    const onRecallVariationByReader = React.useCallback(
+        (variationId: string) => {
+            chatAfterPost.current = false;
+            asideOnRecallVariation(variationId);
+        },
+        [asideOnRecallVariation],
+    );
 
     // Refresh the room directory whenever the Rooms pane comes on screen,
     // including the first render, where a stored `rooms` pane is already
@@ -308,7 +372,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             <KibitzVariationPanel
                 controller={gobans.secondary}
                 mode={gobans.centerMode === "draft" ? "draft" : "variation"}
-                onPost={props.onPostVariation}
+                onPost={onPostVariation}
                 onBackToGame={onExitVariation}
                 onBranch={
                     gobans.centerMode === "variation" ? props.onBranchFromVariation : undefined
@@ -358,6 +422,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const leftAside = isPortrait ? null : (
         <KibitzLeftAside
             {...props.leftAside}
+            onRecallVariation={onRecallVariationByReader}
             miniBoardController={miniBoardController}
             createVariationDisabled={!gobans.main}
             onExitVariation={onExitVariation}
@@ -406,12 +471,14 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         active={pane}
                         chat={{
                             ...props.chat,
+                            onOpenVariation: onOpenVariationByReader,
                             gameController: gobans.main,
                             showPeople: false,
                             onUnreadChange: setChatUnread,
                         }}
                         leftAside={{
                             ...props.leftAside,
+                            onRecallVariation: onRecallVariationByReader,
                             miniBoardController: null,
                             // Same condition as the analysis action in the
                             // tab bar: nothing to make a variation of.
@@ -420,10 +487,12 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         }}
                         roomChannel={room.channel}
                         analysis={variationPanel}
+                        analysisPending={viewingOther && !gobans.secondary}
                     />
                 ) : (
                     <KibitzChatPanel
                         {...props.chat}
+                        onOpenVariation={onOpenVariationByReader}
                         gameController={gobans.main}
                         showPeople={showPeople}
                     />
