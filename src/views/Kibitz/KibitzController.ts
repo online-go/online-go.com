@@ -25,13 +25,11 @@ import {
     type TypedChatBody,
 } from "@/lib/chat_manager";
 import { del, get, post, put } from "@/lib/requests";
-import { socket } from "@/lib/sockets";
 import { push_manager } from "@/components/UIPush/UIPush";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { User } from "goban";
 import { getCurrentKibitzUser, isKibitzAccessBlockedForUser } from "./kibitzAnalysisPolicy";
 import type {
-    KibitzDebugState,
     KibitzPresetBlock,
     KibitzProposal,
     KibitzRoom,
@@ -44,7 +42,6 @@ import type {
     KibitzWatchedGame,
     KibitzVariationLineTree,
 } from "@/models/kibitz";
-import { isKibitzVariationDebugEnabled, logKibitzVariationDebug } from "./kibitzVariationDebug";
 
 interface KibitzControllerEvents {
     "rooms-changed": (rooms: KibitzRoomSummary[]) => void;
@@ -54,7 +51,6 @@ interface KibitzControllerEvents {
     "variations-changed": (variations: KibitzVariationSummary[]) => void;
     "cached-games-changed": () => void;
     "secondary-pane-changed": (state: KibitzSecondaryPaneState) => void;
-    "debug-changed": (state: KibitzDebugState) => void;
     "permissions-changed": (permissions: KibitzPermissions) => void;
     "access-changed": (block: KibitzAccessBlock | null) => void;
 }
@@ -363,21 +359,6 @@ function mapAnalysisToVariation(msg: ChatMessage, roomId: string): KibitzVariati
         analysis_pen_marks: body.pen_marks as KibitzVariationSummary["analysis_pen_marks"],
         analysis_line_tree: body.line_tree,
     };
-    if (isKibitzVariationDebugEnabled()) {
-        logKibitzVariationDebug("kibitz-post-variation:server-response", {
-            roomId,
-            chatMessageId: msg.message.i ?? null,
-            rawBody: msg.message.m,
-            normalizedVariation: {
-                id: variation.id,
-                game_id: variation.game_id,
-                analysis_from: variation.analysis_from ?? null,
-                analysis_moves: variation.analysis_moves ?? null,
-                move_count: variation.move_count ?? null,
-                client_pending_id: variation.client_pending_id ?? null,
-            },
-        });
-    }
     return variation;
 }
 
@@ -461,12 +442,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     private _room_updates_during_refresh = new Map<string, KibitzRoomSummary>();
     private _permissions: KibitzPermissions = DEFAULT_PERMISSIONS;
     private _access_blocked: KibitzAccessBlock | null = null;
-    private _debug: KibitzDebugState = {
-        socket_connected: socket.connected,
-        status: "idle",
-        rooms: [],
-    };
-
     private _directory_handlers: UIPushHandler[] = [];
     private _active_room_handlers: UIPushHandler[] = [];
     private _active_room_channel: string | null = null;
@@ -536,10 +511,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     public setAccessBlocked(block: KibitzAccessBlock | null): void {
         this._access_blocked = block;
         this.emit("access-changed", this._access_blocked);
-    }
-
-    public get debug(): KibitzDebugState {
-        return this._debug;
     }
 
     public get default_room_id(): string | null {
@@ -612,11 +583,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.emit("secondary-pane-changed", this._secondary_pane);
     }
 
-    public setDebug(state: KibitzDebugState): void {
-        this._debug = state;
-        this.emit("debug-changed", this._debug);
-    }
-
     public refreshRoomDirectory(): Promise<void> {
         if (this._refresh_rooms_promise) {
             return this._refresh_rooms_promise;
@@ -652,15 +618,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     }
 
     private async refreshRooms(): Promise<void> {
-        this.setDebug({
-            ...this._debug,
-            socket_connected: socket.connected,
-            status: "loading",
-            error: undefined,
-            last_hydration_started_at: Date.now(),
-            rooms: [],
-        });
-
         try {
             this._room_updates_during_refresh.clear();
             const payload = (await get("kibitz/directory")) as BackendKibitzRoom[];
@@ -681,12 +638,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                     this._room_card_game_requests.delete(roomId);
                 }
             }
-            this.setDebug({
-                ...this._debug,
-                status: "ready",
-                last_hydration_finished_at: Date.now(),
-            });
-
             // The destroyed-check skips the per-room game lookups after this
             // controller instance has been torn down. `setRooms` above still
             // needs to run so any mounted consumer gets the latest room list.
@@ -705,12 +656,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             if (this._destroyed) {
                 return;
             }
-            this.setDebug({
-                ...this._debug,
-                status: "error",
-                last_hydration_finished_at: Date.now(),
-                error: error instanceof Error ? error.message : String(error),
-            });
+            console.warn("kibitz:room-directory-refresh-failed", error);
         }
     }
 
@@ -1268,25 +1214,6 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             game_id: sourceGameId,
             kibitz_pending_id: pendingId,
         } as AnalysisChatBody;
-        if (isKibitzVariationDebugEnabled()) {
-            logKibitzVariationDebug("kibitz-post-variation", {
-                roomId,
-                sourceGameId,
-                officialTailMoveNumber,
-                analysis_from: prepared.analysis.from ?? null,
-                draft_end_move_number: prepared.move_count,
-                decodedAnalysisMoveCount: prepared.moves.length,
-            });
-            logKibitzVariationDebug("kibitz-post-variation:payload", {
-                roomId,
-                sourceGameId,
-                analysis_from: body.from ?? null,
-                decodedAnalysisMoveCount: prepared.moves.length,
-                encodedAnalysisMovesLength:
-                    typeof body.moves === "string" ? body.moves.length : null,
-                payload: body,
-            });
-        }
         if (
             typeof body.from !== "number" ||
             !Number.isFinite(body.from) ||

@@ -155,31 +155,3 @@ export interface KibitzSecondaryPaneState {
      *  position as the previous one still rebuilds the board. */
     variation_draft_nonce?: number;
 }
-
-export interface KibitzDebugCandidate {
-    id: number;
-    title: string;
-    width?: number;
-    height?: number;
-    move_count?: number;
-}
-
-export interface KibitzDebugRoomHydration {
-    room_id: string;
-    requested_size?: `${number}x${number}`;
-    query_count: number;
-    query_source?: "filtered" | "broad-fallback" | "active-games-fallback";
-    picked_game_id?: number;
-    picked_via?: "query" | "details";
-    error?: string;
-    candidates: KibitzDebugCandidate[];
-}
-
-export interface KibitzDebugState {
-    socket_connected: boolean;
-    status: "idle" | "loading" | "ready" | "error";
-    last_hydration_started_at?: number;
-    last_hydration_finished_at?: number;
-    error?: string;
-    rooms: KibitzDebugRoomHydration[];
-}
