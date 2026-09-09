@@ -531,12 +531,28 @@ function admin_host_proxy(): Plugin {
     return {
         name: "admin-host-proxy",
         configureServer(server: ViteDevServer) {
-            if (OGS_BACKEND !== "LOCAL") {
-                return;
-            }
             server.middlewares.use((req, res, next) => {
                 if (!/^admin[.-]/i.test(req.headers.host ?? "")) {
                     next();
+                    return;
+                }
+                // Say so rather than fall through. Falling through served
+                // this site's own index for an admin hostname, with a 200
+                // and no error anywhere: it looked like the admin interface
+                // was broken when the relay simply was not installed. The
+                // admin interface is only ever relayed to a local stack —
+                // it pauses live games and changes who is staff, and doing
+                // that against beta or production from a dev server is not
+                // something to reach by forgetting a variable.
+                if (OGS_BACKEND !== "LOCAL") {
+                    res.writeHead(503, { "content-type": "text/plain" });
+                    res.end(
+                        `This dev server is talking to ${OGS_BACKEND}, so it will not relay ` +
+                            `${req.headers.host}.\n\n` +
+                            `The admin interface is relayed to the local stack only. Restart ` +
+                            `with OGS_BACKEND=LOCAL, or open the stack's own admin host ` +
+                            `directly (admin.localhost:1080).\n`,
+                    );
                     return;
                 }
                 const upstream = http.request(
