@@ -34,7 +34,9 @@ export const KIBITZ_PORTRAIT_PANES: readonly KibitzPortraitPane[] = [
     "analysis",
 ];
 
-const DEFAULT_PANE: KibitzPortraitPane = "room-chat";
+/** Where a reader starts, and where a pane that closes falls back to when
+ *  there is nothing behind it. */
+export const KIBITZ_DEFAULT_PORTRAIT_PANE: KibitzPortraitPane = "room-chat";
 
 /** The analysis pane only has content while the centre shows a draft or a
  *  variation, so it is never restored on load — a reader who left while
@@ -49,9 +51,9 @@ function isRestorablePane(value: unknown): value is KibitzPortraitPane {
     return isPane(value) && !TRANSIENT_PANES.includes(value);
 }
 
-/** Which pane the portrait layout shows. Seeds itself once from the chat tab
- *  the two-tab portrait layout used. That key is left in place: the landscape
- *  chat panel still owns it, and this function runs in both orientations. */
+/** Which pane the portrait layout shows. Falls back to the landscape chat
+ *  tab (`kibitz.chat_tab`) when no pane has been stored, and then to the
+ *  default. */
 export function readPortraitPane(): KibitzPortraitPane {
     const stored = data.get("kibitz.portrait_pane");
     if (isRestorablePane(stored)) {
@@ -65,7 +67,7 @@ export function readPortraitPane(): KibitzPortraitPane {
         return migrated;
     }
 
-    return DEFAULT_PANE;
+    return KIBITZ_DEFAULT_PORTRAIT_PANE;
 }
 
 export function writePortraitPane(pane: KibitzPortraitPane): void {

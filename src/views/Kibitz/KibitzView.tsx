@@ -27,7 +27,12 @@ import type { KibitzGobans } from "./useKibitzGobans";
 import { KibitzLeftAside, KibitzLeftAsideProps } from "./KibitzLeftAside";
 import { KibitzChatPanel, KibitzChatPanelProps } from "./KibitzChatPanel";
 import { KibitzPortraitPanes } from "./KibitzPortraitPanes";
-import { KibitzPortraitPane, readPortraitPane, writePortraitPane } from "./kibitzPortraitPane";
+import {
+    KIBITZ_DEFAULT_PORTRAIT_PANE,
+    KibitzPortraitPane,
+    readPortraitPane,
+    writePortraitPane,
+} from "./kibitzPortraitPane";
 import { KibitzVariationPanel } from "./KibitzVariationPanel";
 import { KibitzVariationChip } from "./KibitzVariationChip";
 import { KibitzProposalPanel, KibitzProposalPanelProps } from "./KibitzProposalPanel";
@@ -61,7 +66,7 @@ export interface KibitzViewProps {
     onRoomsOpened?: () => void;
     roomSettings: {
         /** False while the room's details and permissions are still
-         *  loading; the settings gear waits for them. */
+         *  loading; the room actions wait for them. */
         ready: boolean;
         canEditRoom: boolean;
         canDeleteRoom: boolean;
@@ -137,8 +142,16 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     // through the render where the posted variation arrives as a controller
     // of its own, which would otherwise pull the analysis pane forward again.
     const chatAfterPost = React.useRef(false);
+    // What was on screen before the pane that is on it now, so a list that
+    // opens over the reader's reading can put it back.
+    const paneBefore = React.useRef<KibitzPortraitPane | null>(null);
     const selectPane = React.useCallback((next: KibitzPortraitPane) => {
-        setPane(next);
+        setPane((current) => {
+            if (current !== next) {
+                paneBefore.current = current;
+            }
+            return next;
+        });
         writePortraitPane(next);
         // The reader is steering again, so a post that never produced a
         // variation to open leaves no intent behind.
@@ -228,6 +241,25 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             asideOnRecallVariation(variationId);
         },
         [asideOnRecallVariation],
+    );
+
+    // The room and variation lists open over whatever the reader was reading,
+    // so pressing their action again puts that back rather than stranding
+    // them on a list — the way pressing the analysis action again leaves the
+    // draft it opened. Analysis is only worth returning to while the centre
+    // still holds something to analyze.
+    const centerHoldsVariation = gobans.centerMode !== "main";
+    const togglePane = React.useCallback(
+        (id: KibitzPortraitPane) => {
+            if (pane !== id) {
+                selectPane(id);
+                return;
+            }
+            const previous = paneBefore.current;
+            const usable = previous && (previous !== "analysis" || centerHoldsVariation);
+            selectPane(usable ? previous : KIBITZ_DEFAULT_PORTRAIT_PANE);
+        },
+        [centerHoldsVariation, pane, selectPane],
     );
 
     // Refresh the room directory whenever the Rooms pane comes on screen,
@@ -354,18 +386,16 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const panelVariationId =
         gobans.centerMode === "variation" ? props.leftAside.selectedVariationId : null;
     const panelColorIndex = panelVariationId
-        ? (props.leftAside.variationColorIndexes?.[panelVariationId] ?? null)
+        ? (props.leftAside.variationColorIndexes[panelVariationId] ?? null)
         : null;
 
-    // KibitzView.test.tsx passes `leftAside: {} as ...`, so every read here is
-    // written to survive a partially-populated aside.
     const selectedVariation = panelVariationId
-        ? ((props.leftAside.variations ?? []).find((v) => v.id === panelVariationId) ?? null)
+        ? (props.leftAside.variations.find((v) => v.id === panelVariationId) ?? null)
         : null;
     const chipGameId = selectedVariation?.game_id ?? null;
     const chipOtherGame =
         chipGameId != null && chipGameId !== room.current_game?.game_id
-            ? (props.leftAside.variationGameById?.get(chipGameId) ?? null)
+            ? (props.leftAside.variationGameById.get(chipGameId) ?? null)
             : null;
     const variationPanel =
         viewingOther && gobans.secondary ? (
@@ -381,8 +411,8 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             />
         ) : null;
 
-    // The game's result sits on the title's own line, pulled to the right.
-    // Everything else about the game moved into the More actions menu.
+    // The game's result sits on the title's own line, pulled to the right;
+    // the game's settings are in the More actions menu.
     const resultEngine = gobans.main?.goban.engine ?? null;
     const outcome =
         resultEngine && resultEngine.phase === "finished" ? (resultEngine.outcome ?? "") : "";
@@ -509,7 +539,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         icon={PANE_ICONS[id]}
                         title={PANE_TITLES[id]()}
                         active={pane === id}
-                        onClick={() => selectPane(id)}
+                        onClick={() => togglePane(id)}
                     />
                 ))}
 
@@ -558,10 +588,9 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                     active={isPortrait ? pane === "analysis" : gobans.centerMode === "draft"}
                     disabled={!gobans.main}
                     onClick={() => {
-                        // Pressing it again on the pane it opened leaves the
-                        // draft, the way it did before the panel became a
-                        // pane. Reaching the pane from elsewhere only
-                        // switches: a draft is not discarded by navigation.
+                        // Pressing it again on the pane it opened leaves the draft.
+                        // Reaching the pane from elsewhere only switches: a draft
+                        // is not discarded by navigation.
                         if (gobans.centerMode === "draft") {
                             if (!isPortrait || pane === "analysis") {
                                 onExitVariation();

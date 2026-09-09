@@ -118,7 +118,7 @@ function baseProps(overrides: Partial<KibitzViewProps> = {}): KibitzViewProps {
             isDraftDirty: () => false,
         },
         isPortrait: false,
-        leftAside: {} as KibitzViewProps["leftAside"],
+        leftAside: variationLeftAside(),
         chat: {} as KibitzViewProps["chat"],
         proposals: { activeProposal: undefined, queuedProposals: [], onVote: jest.fn() },
         onPostVariation: jest.fn(),
@@ -164,10 +164,7 @@ function makeWatchedGame(overrides: Partial<KibitzWatchedGame> = {}): KibitzWatc
     };
 }
 
-// A populated leftAside, standing in for the `{}` stub `baseProps()` uses,
-// for the tests below that need the chip's game-lookup derivation
-// (variations / variationGameById / selectedVariationId /
-// variationColorIndexes) to actually resolve rather than short-circuit.
+/** The left aside as KibitzInner supplies it, with nothing in it. */
 function variationLeftAside(
     overrides: Partial<KibitzViewProps["leftAside"]> = {},
 ): KibitzViewProps["leftAside"] {
@@ -203,7 +200,7 @@ describe("KibitzView", () => {
         expect(screen.queryByTestId(/variation-panel/)).toBeNull();
         expect(screen.getByTestId("left-aside")).toHaveAttribute("data-mini", "no");
         expect(screen.getByTitle("More actions")).toBeInTheDocument();
-        // The settings gear is gone; its entries live in the More menu.
+        // Room actions live in the More menu, not in a settings gear.
         expect(screen.queryByTitle("Settings")).toBeNull();
     });
 
@@ -480,6 +477,51 @@ describe("KibitzView", () => {
             );
         });
 
+        test("the room and variation lists close back to what was on screen", () => {
+            render(<KibitzView {...baseProps({ isPortrait: true })} />);
+            const active = () => screen.getByTestId("portrait-panes").getAttribute("data-active");
+
+            fireEvent.click(screen.getByTitle("Game chat"));
+            expect(active()).toBe("game-chat");
+
+            fireEvent.click(screen.getByTitle("Rooms"));
+            expect(active()).toBe("rooms");
+            fireEvent.click(screen.getByTitle("Rooms"));
+            expect(active()).toBe("game-chat");
+
+            fireEvent.click(screen.getByTitle("Variations"));
+            expect(active()).toBe("variations");
+            fireEvent.click(screen.getByTitle("Variations"));
+            expect(active()).toBe("game-chat");
+        });
+
+        test("a list does not close back to an analysis pane with nothing in it", () => {
+            // The centre is on the live game, so the pane the reader left
+            // behind holds no variation to come back to.
+            const props = baseProps({ isPortrait: true });
+            const draft = fakeController();
+            props.gobans = {
+                ...props.gobans,
+                secondary: draft,
+                center: draft,
+                centerMode: "draft",
+            };
+            const { rerender } = render(<KibitzView {...props} />);
+            const active = () => screen.getByTestId("portrait-panes").getAttribute("data-active");
+            expect(active()).toBe("analysis");
+
+            fireEvent.click(screen.getByTitle("Rooms"));
+            expect(active()).toBe("rooms");
+            // With the draft still open the reader gets it back.
+            fireEvent.click(screen.getByTitle("Rooms"));
+            expect(active()).toBe("analysis");
+
+            fireEvent.click(screen.getByTitle("Rooms"));
+            rerender(<KibitzView {...baseProps({ isPortrait: true })} />);
+            fireEvent.click(screen.getByTitle("Rooms"));
+            expect(active()).toBe("room-chat");
+        });
+
         test("keeps the room title above the board", () => {
             const { container } = render(<KibitzView {...baseProps({ isPortrait: true })} />);
             expect(container.querySelector(".Kibitz-room-title")).not.toBeNull();
@@ -549,9 +591,8 @@ describe("KibitzView", () => {
     });
 
     test("a room between games keeps the action bar and the panels", () => {
-        // The waiting state used to render its own tree with no GobanView,
-        // which meant no tab bar at all. It now renders the same tree as
-        // everything else, with a message where the board would be.
+        // The waiting state renders the same tree as everything else, with a
+        // message where the board would be, so the tab bar is still there.
         const props = baseProps();
         props.gobans = {
             ...props.gobans,
