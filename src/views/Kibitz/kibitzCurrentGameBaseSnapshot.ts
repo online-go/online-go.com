@@ -192,10 +192,9 @@ export function captureCurrentGameBaseSnapshotFromController(
         return null;
     }
 
-    if (!controller.goban.parent?.isConnected) {
-        return null;
-    }
-
+    // The trunk lives in the engine, not in the DOM: a main board that is
+    // off screen — which on a phone it is whenever the centre shows a
+    // variation or a draft — still has every move of the game.
     const { engine } = controller.goban;
     if (!engine?.move_tree) {
         return null;

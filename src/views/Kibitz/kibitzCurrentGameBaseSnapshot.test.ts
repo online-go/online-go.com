@@ -299,7 +299,9 @@ describe("captureCurrentGameBaseSnapshotFromController", () => {
         ).toBeNull();
     });
 
-    it("rejects detached controllers", () => {
+    it("captures a board that is off screen", () => {
+        // On a phone the main board leaves the DOM whenever the centre shows
+        // a variation or a draft, and a draft is built from this snapshot.
         const moveTree = makeMoveTree(0, makeMoveTree(1, makeMoveTree(2)));
         const parent = document.createElement("div");
         const controller = {
@@ -312,13 +314,14 @@ describe("captureCurrentGameBaseSnapshotFromController", () => {
             },
         } as unknown as GobanController;
 
+        expect(parent.isConnected).toBe(false);
         expect(
             captureCurrentGameBaseSnapshotFromController(
                 controller,
                 makeGame(4321, 2),
                 "room-base-broker",
-            ),
-        ).toBeNull();
+            )?.trunkTailMoveNumber,
+        ).toBe(2);
     });
 });
 
