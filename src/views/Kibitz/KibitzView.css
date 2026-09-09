@@ -1,0 +1,183 @@
+/* Small section heading used across the Kibitz panels; matches the game
+   sidebar's section headers. */
+.Kibitz-section-header {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--shade2);
+    letter-spacing: 0.05em;
+    margin: 0;
+}
+
+.GobanView.Kibitz {
+    .GobanView-header {
+        font-size: 1.1rem;
+    }
+
+    /* Title on the left, the game's result pulled right on the same line. */
+    .Kibitz-header-titleRow {
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+        min-width: 0;
+    }
+
+    .Kibitz-room-title {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .Kibitz-header-result {
+        flex: 0 0 auto;
+        margin-left: auto;
+        color: var(--shade1);
+        font-size: 0.8rem;
+        font-weight: normal;
+        white-space: nowrap;
+    }
+
+    .Kibitz-header {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        min-width: 0;
+    }
+
+    /* The chat sits flush with the sidebar edges like the game chat; the
+       panels above it carry their own horizontal padding. */
+    .GobanView-sidebar-content {
+        padding: 0;
+        gap: 0;
+    }
+
+    .GobanView-tab-panel {
+        padding: 0;
+    }
+
+    .KibitzProposalPanel,
+    .KibitzVariationPanel {
+        padding: 0.5rem 0.75rem;
+    }
+
+    /* The main panel fills the sidebar and the chat takes whatever height
+       the proposal and variation panels leave, so the sidebar itself does
+       not need to scroll. */
+    .GobanView-sidebar-content .GobanView-tab-panel.always {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .GobanView-sidebar-content .KibitzChatPanel {
+        flex: 1 1 auto;
+        min-height: 0;
+        height: auto;
+    }
+}
+
+/* Portrait: the panes fill the panel area below the board, so the chat log
+   sits directly above its input instead of leaving the panel's leftover
+   height between them. */
+.GobanView.Kibitz.portrait {
+    /* A compact block, not the banner treatment the landscape sidebar heading
+       uses. */
+    .GobanView-header {
+        padding: 0.35rem 0.75rem;
+        font-size: 1rem;
+        font-weight: 600;
+        text-align: left;
+    }
+
+    .Kibitz-room-title {
+        font-size: 1rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .GobanView-mobile-panels {
+        padding: 0;
+        gap: 0;
+
+        > .GobanView-tab-panel.always:not(.hidden) {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 auto;
+            min-height: 0;
+            padding: 0;
+        }
+    }
+
+    /* The analysis pane owns the whole panel area, so the move tree gets
+       most of it rather than the few rows it could spare when the panel
+       stacked above the panes. It still gives way to the heading and the
+       action row, which are fixed. */
+    .KibitzVariationPanel {
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
+    .KibitzVariationPanel-moveTree {
+        flex: 1 1 auto;
+        height: auto;
+        min-height: 6rem;
+    }
+
+    /* The banner and the proposal panel are short and keep their height. */
+    .KibitzPresetChangePendingBanner,
+    .KibitzProposalPanel {
+        flex-shrink: 0;
+    }
+
+    .KibitzPortraitPanes {
+        flex: 1 1 auto;
+        min-height: 8rem;
+    }
+
+    /* The people pane gives the list the whole panel. Its own rule sizes it
+       as the narrow column it is beside a landscape chat log. */
+    .KibitzPortraitPanes .ChatUserList {
+        width: auto;
+        flex: 1 1 auto;
+        min-height: 0;
+        padding: 0 0.5rem;
+    }
+}
+
+/* The unread dot on the tab-bar button of a chat pane that is off screen;
+   the same dot the chat panel's own tab strip uses in landscape. */
+.Kibitz-pane-icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    .Kibitz-pane-unread {
+        position: absolute;
+        top: -0.15rem;
+        right: -0.3rem;
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        background: var(--primary);
+    }
+}
+
+/* Shown while the room has no game to display: the same three columns as
+   GobanView, with a message where the board goes. */
+
+/* Stands in for the board while a preset room waits for a game. The rest of
+   the view — header, panels, action bar — renders as usual around it. */
+.KibitzView-waiting-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 1rem;
+    text-align: center;
+    color: var(--shade1);
+}

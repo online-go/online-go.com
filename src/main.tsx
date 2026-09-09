@@ -146,6 +146,7 @@ try {
 import * as data from "@/lib/data";
 
 import * as preferences from "@/lib/preferences";
+import { applyMoveTreeLineColors } from "@/lib/move_tree_line_colors";
 
 /* Deal with "system" theme */
 data.setDefault("theme", "system");
@@ -159,6 +160,10 @@ export function applyTheme() {
             theme = "light";
         }
     }
+
+    // Ahead of the early return: the palette has to be right on the first
+    // call too, and this is the one place that resolves "system".
+    applyMoveTreeLineColors(theme);
 
     if (document.documentElement.dataset.theme === theme) {
         return;

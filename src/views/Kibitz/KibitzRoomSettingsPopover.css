@@ -1,7 +1,8 @@
 .KibitzRoomSettingsPopover {
-    background: var(--card-background-color);
+    background: var(--shade5);
     border: 1px solid var(--shade3);
-    box-shadow: 0 12px 28px color-mix(in srgb, var(--shade1) 20%, transparent);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     color: var(--fg);
     display: flex;
     flex-direction: column;
@@ -17,7 +18,7 @@
     }
 
     .KibitzRoomSettingsPopover-fieldLabel {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 0.78rem;
         font-weight: 700;
         text-transform: uppercase;
@@ -27,45 +28,6 @@
     .KibitzRoomSettingsPopover-error {
         font-size: 0.84rem;
         line-height: 1.35;
-    }
-
-    .KibitzRoomSettingsPopover-section {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-        min-width: 0;
-    }
-
-    .KibitzRoomSettingsPopover-toggleRow {
-        align-items: flex-start;
-        display: flex;
-        gap: 0.65rem;
-        justify-content: space-between;
-        min-width: 0;
-    }
-
-    .KibitzRoomSettingsPopover-toggleCopy {
-        display: flex;
-        flex-direction: column;
-        gap: 0.1rem;
-        min-width: 0;
-    }
-
-    .KibitzRoomSettingsPopover-toggleTitle {
-        font-size: 0.88rem;
-        font-weight: 700;
-        line-height: 1.25;
-    }
-
-    .KibitzRoomSettingsPopover-toggleDescription {
-        color: var(--text-color-faded);
-        font-size: 0.8rem;
-        line-height: 1.3;
-    }
-
-    .KibitzRoomSettingsPopover-toggleRow input[type="checkbox"] {
-        flex: 0 0 auto;
-        margin-top: 0.15rem;
     }
 
     .KibitzRoomSettingsPopover-owner {
@@ -109,11 +71,11 @@
     }
 
     .KibitzRoomSettingsPopover-note {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
     }
 
     .KibitzRoomSettingsPopover-error {
-        color: var(--danger-fg, #ff8b8b);
+        color: var(--danger);
     }
 
     .KibitzRoomSettingsPopover-actions {
@@ -122,51 +84,5 @@
         gap: 0.5rem;
         justify-content: flex-end;
         flex-wrap: nowrap;
-    }
-
-    .KibitzRoomSettingsPopover-action,
-    .KibitzRoomSettingsPopover-secondaryAction,
-    .KibitzRoomSettingsPopover-deleteAction {
-        appearance: none;
-        border-radius: 0.35rem;
-        cursor: pointer;
-        font-size: 0.88rem;
-        font-weight: 700;
-        line-height: 1.2;
-        min-width: 0;
-        padding: 0.35rem 0.55rem;
-    }
-
-    .KibitzRoomSettingsPopover-action {
-        background: var(--primary);
-        border: 1px solid var(--primary);
-        color: var(--colored-background-fg);
-    }
-
-    .KibitzRoomSettingsPopover-action:hover,
-    .KibitzRoomSettingsPopover-action:focus-visible {
-        filter: brightness(1.05);
-    }
-
-    .KibitzRoomSettingsPopover-secondaryAction {
-        background: var(--shade2);
-        border: 1px solid var(--border-color);
-        color: var(--fg);
-    }
-
-    .KibitzRoomSettingsPopover-secondaryAction:hover,
-    .KibitzRoomSettingsPopover-secondaryAction:focus-visible {
-        background: var(--shade3);
-    }
-
-    .KibitzRoomSettingsPopover-deleteAction {
-        background: var(--reject);
-        border: 1px solid var(--reject);
-        color: var(--colored-background-fg);
-    }
-
-    .KibitzRoomSettingsPopover-deleteAction:hover,
-    .KibitzRoomSettingsPopover-deleteAction:focus-visible {
-        filter: brightness(1.04);
     }
 }

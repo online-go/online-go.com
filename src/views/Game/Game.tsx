@@ -31,7 +31,7 @@ import { setExtraActionCallback, PlayerDetails } from "@/components/Player";
 import * as player_cache from "@/lib/player_cache";
 import { notification_manager } from "@/components/Notifications";
 import { GameChat } from "./GameChat";
-import { goban_view_mode, user_color } from "./util";
+import { goban_view_mode } from "./util";
 import { PlayerCard, PlayerCards } from "./PlayerCards";
 import { PlayControls, ReviewControls } from "./PlayControls";
 import { GameActionArea } from "./GameActionArea";
@@ -55,6 +55,7 @@ import {
     GobanControllerContext,
     GobanView,
     GobanViewRef,
+    user_color,
     GobanViewTabProps,
 } from "@/components/GobanView";
 import { ModalContext } from "@/components/ModalProvider";

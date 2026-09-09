@@ -1,0 +1,70 @@
+.KibitzLeftAside {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    gap: 0.75rem;
+    padding: 0.75rem;
+
+    /* Rooms and variations share the space above the board and scroll
+       together; the board below keeps its full size and never scrolls. */
+    .KibitzLeftAside-scroll {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .KibitzRoomList,
+    .KibitzVariationList {
+        flex-shrink: 0;
+    }
+
+    /* Section headers follow the chat page's channel group headers: small
+       uppercase text with a chevron toggle on the left. */
+    .KibitzLeftAside-sectionHeader {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        text-transform: uppercase;
+        font-weight: bold;
+        font-size: var(--font-size-smaller);
+        margin-bottom: 0.3rem;
+        padding: 0.2rem 0.5rem;
+        cursor: pointer;
+        user-select: none;
+
+        &:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: -2px;
+        }
+
+        .KibitzLeftAside-sectionToggle {
+            width: 0.8rem;
+            font-size: 0.7rem;
+            color: var(--shade1);
+        }
+    }
+
+    .KibitzLeftAside-section {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .KibitzLeftAside-miniBoard {
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .KibitzLeftAside-miniBoardTitle {
+        padding: 0 0.75rem;
+    }
+}

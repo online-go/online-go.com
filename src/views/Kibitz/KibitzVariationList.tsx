@@ -19,11 +19,8 @@ import * as React from "react";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
 import { Player } from "@/components/Player";
-import { getKibitzVariationColor } from "./kibitzVariationTree";
-import { KibitzUserAvatar } from "./KibitzUserAvatar";
-import { KIBITZ_HELP_TARGETS } from "./HelpFlows/KibitzHelpTargets";
-import { useKibitzHelpTarget } from "./HelpFlows/useKibitzHelpTarget";
 import { formatVariationBranchLabel, formatVariationLengthLabel } from "./kibitzVariationQuickList";
+import { KibitzVariationSwatch } from "./KibitzVariationSwatch";
 import "./KibitzVariationList.css";
 
 interface KibitzVariationListProps {
@@ -32,12 +29,18 @@ interface KibitzVariationListProps {
     gameById?: ReadonlyMap<number, KibitzWatchedGame>;
     selectedVariationId?: string | null;
     variationFocusRequestId?: number;
-    variationColorIndexes?: Record<string, number>;
     blockedVariationFlashId?: string | null;
     onRecallVariation: (variationId: string) => void;
     onHideVariation?: (variationId: string) => void;
-    title?: string;
-    helpTargetId?: (typeof KIBITZ_HELP_TARGETS)[keyof typeof KIBITZ_HELP_TARGETS];
+    /** Starts a new draft; shown as "+ Variation" at the bottom. */
+    onCreateVariation?: () => void;
+    /** True while there is no game to make a variation of. The row stays
+     *  visible and goes dim, matching the analysis action in the tab bar. */
+    createVariationDisabled?: boolean;
+    /** Removes every variation from the board; shown as "Clear all" at the bottom. */
+    onClearAll?: () => void;
+    /** Move-tree line colour of each variation that is on the board, by id. */
+    colorIndexes?: Record<string, number>;
 }
 
 export function KibitzVariationList({
@@ -46,14 +49,14 @@ export function KibitzVariationList({
     gameById,
     selectedVariationId = null,
     variationFocusRequestId = 0,
-    variationColorIndexes = {},
     blockedVariationFlashId = null,
     onRecallVariation,
     onHideVariation,
-    title,
-    helpTargetId,
+    onCreateVariation,
+    createVariationDisabled = false,
+    onClearAll,
+    colorIndexes = {},
 }: KibitzVariationListProps): React.ReactElement {
-    const variationListTarget = useKibitzHelpTarget(helpTargetId);
     const selectedVariationElementRef = React.useRef<HTMLDivElement | null>(null);
     const previousFocusRequestIdRef = React.useRef<number>(variationFocusRequestId);
     const groupedVariations = React.useMemo(() => {
@@ -114,13 +117,7 @@ export function KibitzVariationList({
     }, [selectedVariationId, variationFocusRequestId]);
 
     return (
-        <div className="KibitzVariationList" ref={variationListTarget?.ref}>
-            {title === "" ? null : (
-                <div className="variation-title">
-                    {title ??
-                        pgettext("Heading for the variations list in kibitz", "Active variations")}
-                </div>
-            )}
+        <div className="KibitzVariationList">
             <div className="variation-scroll">
                 {groupedVariations.length > 0 ? (
                     <div className="variation-items">
@@ -236,9 +233,6 @@ export function KibitzVariationList({
                                         const isSelected = selectedVariationId === variation.id;
                                         const isBlockedFlash =
                                             blockedVariationFlashId === variation.id;
-                                        const variationColor = getKibitzVariationColor(
-                                            variationColorIndexes[variation.id] ?? 0,
-                                        );
                                         const lengthLabel = formatVariationLengthLabel(variation);
                                         const branchLabel = formatVariationBranchLabel(variation);
 
@@ -255,14 +249,6 @@ export function KibitzVariationList({
                                                     (isSelected ? " selected" : "") +
                                                     (isBlockedFlash ? " limit-flash" : "")
                                                 }
-                                                style={
-                                                    isSelected
-                                                        ? ({
-                                                              "--variation-selected-color":
-                                                                  variationColor,
-                                                          } as React.CSSProperties)
-                                                        : undefined
-                                                }
                                             >
                                                 <button
                                                     type="button"
@@ -272,18 +258,28 @@ export function KibitzVariationList({
                                                     }
                                                     onClick={() => onRecallVariation(variation.id)}
                                                 >
-                                                    <span
-                                                        className="variation-color-chip"
-                                                        style={{ backgroundColor: variationColor }}
-                                                        aria-hidden="true"
-                                                    />
                                                     <span className="variation-main">
                                                         <span className="variation-name">
-                                                            {variation.title ||
+                                                            <KibitzVariationSwatch
+                                                                colorIndex={
+                                                                    colorIndexes[variation.id] ??
+                                                                    null
+                                                                }
+                                                            />
+                                                            {interpolate(
                                                                 pgettext(
-                                                                    "Fallback title for an untitled variation in kibitz",
-                                                                    "Untitled variation",
-                                                                )}
+                                                                    "Posted analysis variation label",
+                                                                    "Variation: {{name}}",
+                                                                ),
+                                                                {
+                                                                    name:
+                                                                        variation.title ||
+                                                                        pgettext(
+                                                                            "Fallback title for an untitled variation in kibitz",
+                                                                            "Untitled variation",
+                                                                        ),
+                                                                },
+                                                            )}
                                                         </span>
                                                         <span className="variation-meta-row">
                                                             <span className="variation-meta-labels">
@@ -296,17 +292,11 @@ export function KibitzVariationList({
                                                                     </span>
                                                                 ) : null}
                                                             </span>
-                                                            <span className="variation-meta-spacer" />
                                                             <span className="variation-author-row">
-                                                                <KibitzUserAvatar
+                                                                <Player
                                                                     user={variation.creator}
-                                                                    size={16}
-                                                                    className="variation-avatar"
-                                                                    iconClassName="variation-avatar-image"
+                                                                    disableCacheUpdate
                                                                 />
-                                                                <span className="variation-meta">
-                                                                    {variation.creator.username}
-                                                                </span>
                                                             </span>
                                                         </span>
                                                     </span>
@@ -319,19 +309,19 @@ export function KibitzVariationList({
                                                             (isBlockedFlash ? " limit-flash" : "")
                                                         }
                                                         aria-label={pgettext(
-                                                            "Tooltip for hiding a Kibitz variation in the tree",
-                                                            "Hide from board",
+                                                            "Tooltip for removing a Kibitz variation from the board",
+                                                            "Remove from board",
                                                         )}
                                                         title={pgettext(
-                                                            "Tooltip for hiding a Kibitz variation in the tree",
-                                                            "Hide from board",
+                                                            "Tooltip for removing a Kibitz variation from the board",
+                                                            "Remove from board",
                                                         )}
                                                         onClick={() =>
                                                             onHideVariation(variation.id)
                                                         }
                                                     >
                                                         <i
-                                                            className="fa fa-eye-slash"
+                                                            className="fa fa-times"
                                                             aria-hidden="true"
                                                         />
                                                     </button>
@@ -352,6 +342,36 @@ export function KibitzVariationList({
                     </div>
                 )}
             </div>
+            {onCreateVariation || (onClearAll && variations.length > 0) ? (
+                <div className="KibitzVariationList-footer">
+                    {onCreateVariation ? (
+                        <button
+                            type="button"
+                            className="KibitzVariationList-footerAction"
+                            disabled={createVariationDisabled}
+                            onClick={onCreateVariation}
+                        >
+                            <i className="fa fa-plus" aria-hidden="true" />{" "}
+                            {pgettext(
+                                "Row at the bottom of the Kibitz variation list that starts a new variation",
+                                "Variation",
+                            )}
+                        </button>
+                    ) : null}
+                    {onClearAll && variations.length > 0 ? (
+                        <button
+                            type="button"
+                            className="KibitzVariationList-footerAction KibitzVariationList-clearAll"
+                            onClick={onClearAll}
+                        >
+                            {pgettext(
+                                "Row at the bottom of the Kibitz variation list that removes every variation from the board",
+                                "Clear all",
+                            )}
+                        </button>
+                    ) : null}
+                </div>
+            ) : null}
         </div>
     );
 }

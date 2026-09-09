@@ -19,7 +19,7 @@ import * as React from "react";
 import * as data from "@/lib/data";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { KibitzProposal } from "@/models/kibitz";
-import { KibitzBoard } from "./KibitzBoard";
+import { KibitzBoardPreview } from "./KibitzBoardPreview";
 import "./KibitzProposalBar.css";
 
 // cspell:ignore cooldown
@@ -276,7 +276,7 @@ export function KibitzProposalBar({
                         }
                     >
                         <span className="proposal-preview-thumb">
-                            <KibitzBoard
+                            <KibitzBoardPreview
                                 gameId={proposal.proposed_game.game_id}
                                 className="proposal-preview-board-surface"
                                 size={PROPOSAL_PREVIEW_SIZE}
@@ -321,10 +321,7 @@ export function KibitzProposalBar({
                         />
                         <button
                             type="button"
-                            className={
-                                "proposal-action " +
-                                (hasVotedChange || changeLeading ? "primary" : "secondary")
-                            }
+                            className="proposal-action primary xs"
                             onClick={() => onVote(proposal.id, "change")}
                         >
                             {hasVotedChange
@@ -342,7 +339,9 @@ export function KibitzProposalBar({
                     <div className="proposal-timer-track" aria-hidden="true">
                         <div
                             className="proposal-timer-fill"
-                            style={{ transform: `scaleY(${progressRatio})` }}
+                            style={
+                                { "--proposal-timer-ratio": progressRatio } as React.CSSProperties
+                            }
                         />
                     </div>
                 </div>
@@ -379,10 +378,7 @@ export function KibitzProposalBar({
                         />
                         <button
                             type="button"
-                            className={
-                                "proposal-action " +
-                                (hasVotedKeep || keepLeading ? "primary" : "secondary")
-                            }
+                            className="proposal-action xs"
                             onClick={() => onVote(proposal.id, "keep")}
                         >
                             {hasVotedKeep
@@ -430,7 +426,7 @@ export function KibitzProposalBar({
                         </button>
                     </div>
                     <div className="proposal-expanded-board-wrap">
-                        <KibitzBoard
+                        <KibitzBoardPreview
                             gameId={proposal.proposed_game.game_id}
                             className="proposal-expanded-board-surface"
                         />

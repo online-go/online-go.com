@@ -226,6 +226,17 @@ type Prefixed<T, P extends string> = {
  * and prefix it using the Prefixed type.  If typing is not desired (for instance,
  * during prototyping), one can use a key that starts with an underscore.
  */
+export interface KibitzSchema {
+    /** Which chat the Kibitz sidebar shows. */
+    chat_tab: "room" | "game";
+    /** Which panel the portrait Kibitz layout shows below the board. */
+    portrait_pane: "game-chat" | "room-chat" | "people" | "variations" | "rooms" | "analysis";
+    /** Collapsed sections of the Kibitz left aside. */
+    "left_aside.collapsed": { rooms: boolean; variations: boolean };
+    /** Show the people column beside the landscape Kibitz chat. */
+    people_column: boolean;
+}
+
 export interface DataSchema
     extends
         Prefixed<CachedSchema, "cached">,
@@ -240,7 +251,8 @@ export interface DataSchema
         Prefixed<ObservedGamesSchema, "observed-games">,
         Prefixed<AnnouncementsSchema, "announcements">,
         Prefixed<ChallengeSchema, "challenge">,
-        Prefixed<DebugSchema, "debug"> {
+        Prefixed<DebugSchema, "debug">,
+        Prefixed<KibitzSchema, "kibitz"> {
     user: rest_api.UserConfig;
     bid: string; // deprecated in favor of device_id
     device_id: string;

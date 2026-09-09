@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import { outcomeHasScore } from "@/components/GobanView";
 
 import { GobanRenderer, Goban, PlayerScore, JGOFPlayerSummary } from "goban";
 import { user_uploads_url } from "@/lib/cdn";
@@ -125,11 +126,7 @@ const useScore = generateGobanHook(
         // boolean argument.
         if (
             (engine.phase === "stone removal" || engine.phase === "finished") &&
-            engine.outcome !== "Timeout" &&
-            engine.outcome !== "Disconnection" &&
-            engine.outcome !== "Resignation" &&
-            engine.outcome !== "Abandonment" &&
-            engine.outcome !== "Cancellation" &&
+            outcomeHasScore(engine.outcome) &&
             goban.mode === "play"
         ) {
             return engine.computeScore(false);
@@ -202,12 +199,7 @@ export function PlayerCard({
     const show_points =
         (engine.phase === "finished" || engine.phase === "stone removal") &&
         goban.mode !== "analyze" &&
-        engine.outcome !== "Timeout" &&
-        engine.outcome !== "Disconnection" &&
-        engine.outcome !== "Resignation" &&
-        engine.outcome !== "Abandonment" &&
-        engine.outcome !== "Cancellation" &&
-        !engine.outcome.startsWith("Server Decision");
+        outcomeHasScore(engine.outcome);
 
     return (
         <div className={`${color} ${highlight_their_turn} player-container`}>

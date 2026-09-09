@@ -22,28 +22,22 @@ import { KibitzGamePickerOverlay } from "./KibitzGamePickerOverlay";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 import { get } from "@/lib/requests";
 
-jest.mock("./KibitzBoard", () => ({
+jest.mock("./KibitzBoardPreview", () => ({
     __esModule: true,
-    KibitzBoard: (props: {
-        role?: string;
+    KibitzBoardPreview: (props: {
         gameId?: number;
         width?: number;
         height?: number;
         moveTree?: unknown;
         movePath?: string;
-        restoreToOfficialTailOnLoad?: boolean;
-        connectToGame?: boolean;
     }) => (
         <div
-            data-testid="KibitzBoard"
-            data-role={props.role}
+            data-testid="KibitzBoardPreview"
             data-game-id={props.gameId}
             data-width={props.width}
             data-height={props.height}
             data-move-tree-present={String(Boolean(props.moveTree))}
             data-move-path={props.movePath}
-            data-restore-to-official-tail={String(props.restoreToOfficialTailOnLoad)}
-            data-connect-to-game={String(props.connectToGame)}
         />
     ),
 }));
@@ -357,14 +351,11 @@ describe("KibitzGamePickerOverlay", () => {
         fireEvent.change(screen.getByLabelText("Game ID"), { target: { value: "1234" } });
         fireEvent.click(screen.getByRole("button", { name: "Load" }));
 
-        const board = await screen.findByTestId("KibitzBoard");
-        expect(board).toHaveAttribute("data-role", "preview");
+        const board = await screen.findByTestId("KibitzBoardPreview");
         expect(board).toHaveAttribute("data-game-id", "1234");
         expect(board).toHaveAttribute("data-width", "19");
         expect(board).toHaveAttribute("data-height", "19");
         expect(board).toHaveAttribute("data-move-tree-present", "true");
-        expect(board).toHaveAttribute("data-restore-to-official-tail", "true");
-        expect(board).toHaveAttribute("data-connect-to-game", "undefined");
         expect(mockedGet).toHaveBeenCalledTimes(1);
         expect(mockedGet).toHaveBeenCalledWith("games/1234");
     });
@@ -394,7 +385,7 @@ describe("KibitzGamePickerOverlay", () => {
 
         fireEvent.change(screen.getByLabelText("Game ID"), { target: { value: "1234" } });
         fireEvent.click(screen.getByRole("button", { name: "Load" }));
-        const firstBoard = await screen.findByTestId("KibitzBoard");
+        const firstBoard = await screen.findByTestId("KibitzBoardPreview");
         expect(firstBoard).toHaveAttribute("data-game-id", "1234");
         const firstMovePath = firstBoard.getAttribute("data-move-path");
         expect(firstMovePath).not.toBeNull();
@@ -402,10 +393,10 @@ describe("KibitzGamePickerOverlay", () => {
         fireEvent.change(screen.getByLabelText("Game ID"), { target: { value: "456" } });
         fireEvent.click(screen.getByRole("button", { name: "Load" }));
         await waitFor(() => {
-            expect(screen.getByTestId("KibitzBoard")).toHaveAttribute("data-game-id", "456");
+            expect(screen.getByTestId("KibitzBoardPreview")).toHaveAttribute("data-game-id", "456");
         });
         expect(mockedGet).toHaveBeenCalledTimes(2);
-        const secondBoard = screen.getByTestId("KibitzBoard");
+        const secondBoard = screen.getByTestId("KibitzBoardPreview");
         expect(secondBoard).toHaveAttribute("data-move-tree-present", "true");
         expect(secondBoard.getAttribute("data-move-path")).not.toBe(firstMovePath);
     });
@@ -518,8 +509,10 @@ describe("KibitzGamePickerOverlay", () => {
             expect(onChangeBoard).toHaveBeenCalledTimes(1);
         });
 
+        // getByText throws on more than one match: the message belongs in one
+        // place, under the game ID field.
         await waitFor(() => {
-            expect(screen.getAllByText("change failed")).toHaveLength(2);
+            expect(screen.getByText("change failed")).toBeInTheDocument();
         });
     });
 

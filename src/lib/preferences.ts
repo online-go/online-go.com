@@ -87,6 +87,7 @@ export const defaults = {
     "goban-theme-removal-scale": 0.9,
     "goban-view-sidebar-width": null as number | null,
     "goban-view-board-alignment": "container" as GobanViewBoardAlignment,
+    "goban-view-portrait-split": null as number | null,
     "hide-ranks": false,
     "label-positioning": "all" as LabelPosition,
     "label-positioning-puzzles": "all" as LabelPosition,

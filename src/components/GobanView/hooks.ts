@@ -104,6 +104,8 @@ export interface SliderFitRefs {
     /** The board column; its width is the board's full size. */
     center: React.RefObject<HTMLDivElement | null>;
     below: React.RefObject<HTMLDivElement | null>;
+    /** Other stage rows that take height from the board, e.g. player bars. */
+    extra?: React.RefObject<HTMLDivElement | null>[];
 }
 
 /** Height of the MoveNumberControl strip in rem, used until the strip has
@@ -158,7 +160,11 @@ export function useSliderFits(refs: SliderFitRefs, enabled: boolean): boolean {
                 slider: slider_height,
                 slots:
                     (refs.above.current?.offsetHeight ?? 0) +
-                    (refs.below.current?.offsetHeight ?? 0),
+                    (refs.below.current?.offsetHeight ?? 0) +
+                    (refs.extra ?? []).reduce(
+                        (sum, ref) => sum + (ref.current?.offsetHeight ?? 0),
+                        0,
+                    ),
                 board: center.offsetWidth,
             });
             set_fits((prev) => (prev === next ? prev : next));
@@ -170,7 +176,14 @@ export function useSliderFits(refs: SliderFitRefs, enabled: boolean): boolean {
         }
 
         const observer = new ResizeObserver(measure);
-        for (const ref of [refs.root, refs.scroll, refs.above, refs.center, refs.below]) {
+        for (const ref of [
+            refs.root,
+            refs.scroll,
+            refs.above,
+            refs.center,
+            refs.below,
+            ...(refs.extra ?? []),
+        ]) {
             if (ref.current) {
                 observer.observe(ref.current);
             }
