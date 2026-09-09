@@ -24,7 +24,9 @@ import {
     warnKibitzVariationDebug,
 } from "./kibitzVariationDebug";
 
-export const KIBITZ_VARIATION_COLORS = GobanMoveTree.line_colors;
+/** How many variations can be on the board at once: one per line colour.
+ *  Both of goban's palettes hold the same seven. */
+export const KIBITZ_VARIATION_COLOR_COUNT = GobanMoveTree.LINE_COLORS_DARK.length;
 
 type KibitzVariationColorIndex = number;
 

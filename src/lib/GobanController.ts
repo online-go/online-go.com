@@ -38,6 +38,7 @@ import { _, current_language } from "@/lib/translate";
 import { disableTouchAction, enableTouchAction } from "@/views/Game/touch_actions";
 import { browserHistory } from "@/lib/ogsHistory";
 import { errorAlerter, ignore } from "@/lib/misc";
+import { registerMoveTreeBoard } from "@/lib/move_tree_boards";
 import { post } from "@/lib/requests";
 import { alert } from "@/lib/swal_config";
 import * as data from "@/lib/data";
@@ -285,10 +286,12 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     private enable_sounds: boolean = true;
     private _estimating_score: boolean = false;
     private _stashed_submit_move?: () => void;
+    private readonly unregisterMoveTreeBoard: () => void;
 
     constructor(opts: GobanRendererConfig & { enable_sounds?: boolean }) {
         super();
         this.goban = createGoban(opts);
+        this.unregisterMoveTreeBoard = registerMoveTreeBoard(this.goban);
         this.enable_sounds = opts.enable_sounds !== false; // Default to true if not specified
         if (this.enable_sounds) {
             this.bindAudioEvents();
@@ -356,6 +359,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             return;
         }
         this.goban.setMoveTreeContainer(null);
+        this.unregisterMoveTreeBoard();
         this.destroyed = true;
         if (this.chat_proxy?.part) {
             this.chat_proxy.part();

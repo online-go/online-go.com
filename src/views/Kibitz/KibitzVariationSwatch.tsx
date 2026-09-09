@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { KIBITZ_VARIATION_COLORS } from "./kibitzVariationTree";
+import { useMoveTreeLineColors } from "@/lib/move_tree_line_colors";
 import "./KibitzVariationSwatch.css";
 
 interface KibitzVariationSwatchProps {
@@ -36,11 +36,11 @@ export function KibitzVariationSwatch({
     colorIndex,
     className,
 }: KibitzVariationSwatchProps): React.ReactElement | null {
-    if (
-        typeof colorIndex !== "number" ||
-        colorIndex < 0 ||
-        colorIndex >= KIBITZ_VARIATION_COLORS.length
-    ) {
+    // The site theme swaps the palette, so the colour is read per render
+    // rather than captured once.
+    const colors = useMoveTreeLineColors();
+
+    if (typeof colorIndex !== "number" || colorIndex < 0 || colorIndex >= colors.length) {
         return null;
     }
 
@@ -48,7 +48,7 @@ export function KibitzVariationSwatch({
         <span
             className={"KibitzVariationSwatch" + (className ? ` ${className}` : "")}
             data-color-index={colorIndex}
-            style={{ backgroundColor: KIBITZ_VARIATION_COLORS[colorIndex] }}
+            style={{ backgroundColor: colors[colorIndex] }}
             aria-hidden="true"
         />
     );

@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { KIBITZ_VARIATION_COLORS } from "./kibitzVariationTree";
+import { KIBITZ_VARIATION_COLOR_COUNT } from "./kibitzVariationTree";
 
 /** How many posted variations can be on the board at once: one per line
  *  colour the move tree can draw. */
-export const MAX_VISIBLE_VARIATIONS = KIBITZ_VARIATION_COLORS.length;
+export const MAX_VISIBLE_VARIATIONS = KIBITZ_VARIATION_COLOR_COUNT;
 
 /**
  * The variations currently drawn on the board, and the move-tree line colour
@@ -54,7 +54,9 @@ function assignColorIndexes(
             continue;
         }
 
-        const freeIndex = KIBITZ_VARIATION_COLORS.findIndex((_, index) => !taken.has(index));
+        const freeIndex = Array.from({ length: KIBITZ_VARIATION_COLOR_COUNT }).findIndex(
+            (_, index) => !taken.has(index),
+        );
         const colorIndex = freeIndex >= 0 ? freeIndex : 0;
         next[id] = colorIndex;
         taken.add(colorIndex);

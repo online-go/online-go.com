@@ -22,8 +22,15 @@ share the panel area — Game chat (read-only, so it carries no composer),
 Kibitz chat, People, Variations, Rooms
 (the room list alone, with no thumbnail) and Analysis, which holds the
 variation panel — and the action bar switches between them. Analysis comes
-forward on its own whenever the center stops showing the live game, and steps
-back to the pane the reader was on when it returns. It is the one pane that is
+forward on its own whenever the center stops showing the live game, and again
+for each variation after that — a draft and a posted variation each get a
+controller of their own, so starting a second one while the first is open
+still brings it forward — and steps back to the pane the reader was on when
+the live game returns. Posting is the exception: it ends the composing
+session and the post lands in the Kibitz chat, so the reader is left there,
+including through the center's own switch to the variation that was just
+posted. Opening a variation by hand afterwards brings analysis forward as
+usual. It is the one pane that is
 not remembered across a visit: it has nothing to show without a draft or a
 variation. Its button switches to it like any other, except when it is already
 the pane on screen, where it leaves the draft instead. All six stay mounted,
@@ -79,7 +86,11 @@ visible is composed in its own colour instead of the first one. The
 variations are composed in list order, whichever one is selected, so the
 branch order under a move stays where it was. A swatch in that colour marks
 the variation in the list, on its chat post, in the variation panel and in
-the chip.
+the chip. The palette is goban's `MoveTree.line_colors`, which the site
+theme swaps: `applyMoveTreeLineColors` (`src/lib/move_tree_line_colors.ts`)
+puts the light set in front of the renderers for the light theme, repaints
+the trees that are on screen through `move_tree_boards`, and tells the
+swatches through `useMoveTreeLineColors`.
 
 The player bars show the live game's players and clocks whenever the center
 shows the live game or a draft or variation of it; a variation of another
@@ -154,4 +165,5 @@ variations and the secondary pane. The secondary pane (`collapsed`,
 determines what the center shows; `deriveKibitzCenterMode` maps it to
 `main | draft | variation`. The panel for a posted variation
 offers "New variation from here", which starts a new draft using that
-variation as its source.
+variation as its source, opening at the move the reader was looking at
+(`variation_draft_base_path`) rather than at the end of the line.
