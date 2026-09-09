@@ -16,7 +16,10 @@
  */
 
 import * as React from "react";
-import { _ } from "@/lib/translate";
+import { _, interpolate, pgettext } from "@/lib/translate";
+import { rulesText } from "@/lib/misc";
+import { shortDurationString, shortShortTimeControl } from "@/components/TimeControl/util";
+import type { JGOFTimeControl } from "goban";
 import { api1 } from "@/lib/requests";
 import { popover, PopOver } from "@/lib/popover";
 import { GobanController } from "@/lib/GobanController";
@@ -27,23 +30,55 @@ import { openGameLinkModal } from "@/views/Game/GameLinkModal";
 import "@/views/Game/GameSidebarPanels.css";
 import "./KibitzMoreActionsPopover.css";
 
+/** The room-management entries this menu offers, gated the same way the
+ *  settings menu gated them. `onRoomInformation` is the entry for a viewer
+ *  who manages nothing: it still names the room's owner. */
+/** The time control as this menu shows it. Fischer drops the maximum that
+ *  `shortShortTimeControl` spells out — "5m+7s" is what a spectator needs,
+ *  and the exact cap is still in Game information. */
+function timeControlText(time_control: JGOFTimeControl | undefined): string {
+    if (!time_control) {
+        return "";
+    }
+    if (time_control.system === "fischer") {
+        return interpolate(pgettext("Fischer time, without the maximum", "%s+%s"), [
+            shortDurationString(time_control.initial_time),
+            shortDurationString(time_control.time_increment),
+        ]);
+    }
+    return shortShortTimeControl(time_control);
+}
+
+export interface KibitzMoreActionsRoomActions {
+    canEditRoom: boolean;
+    canChangeBoard: boolean;
+    canDeleteRoom: boolean;
+    onEditDetails: () => void;
+    onChangeBoard: () => void;
+    onRoomInformation: () => void;
+}
+
 interface KibitzMoreActionsPopoverProps {
-    controller: GobanController;
+    /** Null while the room has no live game; the game entries are then
+     *  left out and only the room entries remain. */
+    controller: GobanController | null;
+    roomActions?: KibitzMoreActionsRoomActions;
     onClose: () => void;
 }
 
 export function KibitzMoreActionsPopover({
     controller,
+    roomActions,
     onClose,
 }: KibitzMoreActionsPopoverProps): React.ReactElement {
     const user = useUser();
-    const goban = controller.goban;
-    const engine = goban.engine;
-    const game_id = Number(goban.config.game_id);
+    const goban = controller?.goban ?? null;
+    const engine = goban?.engine ?? null;
+    const game_id = goban ? Number(goban.config.game_id) : 0;
     const sgf_url = api1(`games/${game_id}/sgf`);
     let analysis_disabled = false;
     try {
-        analysis_disabled = goban.isAnalysisDisabled(true);
+        analysis_disabled = goban?.isAnalysisDisabled(true) ?? false;
     } catch {
         analysis_disabled = false;
     }
@@ -51,6 +86,7 @@ export function KibitzMoreActionsPopover({
     // SGF of a game in progress to anonymous users and to its players.
     const sgf_disabled =
         analysis_disabled ||
+        !engine ||
         (engine.phase !== "finished" &&
             (user.anonymous ||
                 user.id === engine.config.black_player_id ||
@@ -62,69 +98,163 @@ export function KibitzMoreActionsPopover({
         onClose();
     };
 
+    const manages_room =
+        !!roomActions &&
+        (roomActions.canEditRoom || roomActions.canChangeBoard || roomActions.canDeleteRoom);
+
+    // The game's fixed settings head the menu: they are reference, not
+    // actions, and the room title only has room for the time control.
+    const settings: string[] = [];
+    if (engine) {
+        settings.push(rulesText(engine.rules));
+        if (engine.handicap) {
+            settings.push(
+                interpolate(
+                    pgettext(
+                        "Handicap shown in the Kibitz More actions menu",
+                        "Handicap {{count}}",
+                    ),
+                    { count: engine.handicap },
+                ),
+            );
+        }
+        const time_control = timeControlText(goban?.config?.time_control);
+        if (time_control) {
+            settings.push(time_control);
+        }
+    }
+
     return (
         <div className="GamePopover KibitzMoreActionsPopover">
             <div className="GameSidebarPanel">
-                <button
-                    type="button"
-                    className="GameSidebarPanel-item"
-                    onClick={wrap(() =>
-                        openGameInfoModal(
-                            goban.config,
-                            engine.players.black,
-                            engine.players.white,
-                            controller.annulled,
-                            controller.creator_id || goban.review_owner_id || 0,
-                        ),
-                    )}
-                >
-                    <i className="fa fa-info-circle" />
-                    <span>{_("Game information")}</span>
-                </button>
-                <button
-                    type="button"
-                    className="GameSidebarPanel-item"
-                    onClick={wrap(() => openGameLinkModal(goban))}
-                >
-                    <i className="fa fa-share-alt" />
-                    <span>{_("Link to game")}</span>
-                </button>
-                <a
-                    className={"GameSidebarPanel-item" + (sgf_disabled ? " disabled" : "")}
-                    href={sgf_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={(ev) => {
-                        if (sgf_disabled) {
-                            ev.preventDefault();
-                            return;
-                        }
-                        onClose();
-                    }}
-                >
-                    <i className="fa fa-download" />
-                    <span>{_("Download SGF")}</span>
-                </a>
-                <button
-                    type="button"
-                    className="GameSidebarPanel-item"
-                    disabled={report_disabled}
-                    onClick={wrap(() => openReport({ reported_game_id: game_id }))}
-                >
-                    <i className="fa fa-exclamation-triangle" />
-                    <span>{_("Call moderator")}</span>
-                </button>
+                {settings.length > 0 && (
+                    <div className="KibitzMoreActionsPopover-settings">
+                        {settings.map((setting) => setting.trim()).join(" \u00b7 ")}
+                    </div>
+                )}
+                {goban && engine && controller && (
+                    <>
+                        <button
+                            type="button"
+                            className="GameSidebarPanel-item"
+                            onClick={wrap(() =>
+                                openGameInfoModal(
+                                    goban.config,
+                                    engine.players.black,
+                                    engine.players.white,
+                                    controller.annulled,
+                                    controller.creator_id || goban.review_owner_id || 0,
+                                ),
+                            )}
+                        >
+                            <i className="fa fa-info-circle" />
+                            <span>{_("Game information")}</span>
+                        </button>
+                        <button
+                            type="button"
+                            className="GameSidebarPanel-item"
+                            onClick={wrap(() => openGameLinkModal(goban))}
+                        >
+                            <i className="fa fa-share-alt" />
+                            <span>{_("Link to game")}</span>
+                        </button>
+                        <a
+                            className={"GameSidebarPanel-item" + (sgf_disabled ? " disabled" : "")}
+                            href={sgf_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(ev) => {
+                                if (sgf_disabled) {
+                                    ev.preventDefault();
+                                    return;
+                                }
+                                onClose();
+                            }}
+                        >
+                            <i className="fa fa-download" />
+                            <span>{_("Download SGF")}</span>
+                        </a>
+                        <button
+                            type="button"
+                            className="GameSidebarPanel-item"
+                            disabled={report_disabled}
+                            onClick={wrap(() => openReport({ reported_game_id: game_id }))}
+                        >
+                            <i className="fa fa-exclamation-triangle" />
+                            <span>{_("Call moderator")}</span>
+                        </button>
+                    </>
+                )}
+                {roomActions && (
+                    <>
+                        {roomActions.canEditRoom || roomActions.canDeleteRoom ? (
+                            <button
+                                type="button"
+                                className="GameSidebarPanel-item"
+                                onClick={wrap(roomActions.onEditDetails)}
+                            >
+                                <i className="fa fa-pencil" />
+                                <span>
+                                    {pgettext(
+                                        "Button label for editing Kibitz room details",
+                                        "Edit room details",
+                                    )}
+                                </span>
+                            </button>
+                        ) : null}
+                        {roomActions.canChangeBoard ? (
+                            <button
+                                type="button"
+                                className="GameSidebarPanel-item"
+                                onClick={wrap(roomActions.onChangeBoard)}
+                            >
+                                <i className="fa fa-exchange" />
+                                <span>
+                                    {pgettext(
+                                        "Button label for changing the live Kibitz game",
+                                        "Change live game",
+                                    )}
+                                </span>
+                            </button>
+                        ) : null}
+                        {!manages_room ? (
+                            <button
+                                type="button"
+                                className="GameSidebarPanel-item"
+                                onClick={wrap(roomActions.onRoomInformation)}
+                            >
+                                <i className="fa fa-users" />
+                                <span>
+                                    {pgettext(
+                                        "Button that shows who owns a Kibitz room, for a viewer who cannot manage it",
+                                        "Room information",
+                                    )}
+                                </span>
+                            </button>
+                        ) : null}
+                    </>
+                )}
             </div>
         </div>
     );
 }
 
 /** Opens the popover under `button`, right edge aligned to the button. */
-export function openKibitzMoreActions(button: HTMLElement, controller: GobanController): PopOver {
+export function openKibitzMoreActions(
+    button: HTMLElement,
+    controller: GobanController | null,
+    roomActions?: KibitzMoreActionsRoomActions,
+): PopOver {
     let instance: PopOver | null = null;
     const close = () => instance?.close();
     instance = popover({
-        elt: <KibitzMoreActionsPopover controller={controller} onClose={close} />,
+        elt: (
+            <KibitzMoreActionsPopover
+                controller={controller}
+                roomActions={roomActions}
+                onClose={close}
+            />
+        ),
         below: button,
         minWidth: 220,
     });

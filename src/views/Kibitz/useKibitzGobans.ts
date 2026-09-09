@@ -29,7 +29,10 @@ import {
     captureCurrentGameBaseSnapshotFromController,
     restoreMainBoardToOfficialTail,
 } from "./kibitzCurrentGameBaseSnapshot";
-import { applyKibitzVariationToController } from "./kibitzVariationTree";
+import {
+    applyKibitzVariationToController,
+    type AppliedKibitzVariation,
+} from "./kibitzVariationTree";
 
 export type KibitzCenterMode = "main" | "draft" | "variation";
 
@@ -399,21 +402,32 @@ export function useKibitzGobans({
             refreshLastOfficialMoveFromTrunk(controller);
             const focus = mode === "variation" ? selectedVariation : draftBase;
             if (focus) {
+                // Compose in the order the variations appear in the list, whatever is
+                // selected. Applying the selected one last made the order that nodes
+                // enter parent.branches depend on the selection, so the move tree
+                // re-ordered its branches as the user clicked between variations.
+                let focusEndpoint: AppliedKibitzVariation["endpoint"] = null;
                 if (mode === "variation") {
-                    // The other variations of the same game share the board.
                     for (const v of variations) {
+                        if (v.game_id !== focus.game_id) {
+                            continue;
+                        }
                         if (
                             v.id !== focus.id &&
-                            v.game_id === focus.game_id &&
-                            latest.current.visibleVariationIds.includes(v.id)
+                            !latest.current.visibleVariationIds.includes(v.id)
                         ) {
-                            apply(v, false);
+                            continue;
+                        }
+                        const applied = apply(v, v.id === focus.id);
+                        if (v.id === focus.id) {
+                            focusEndpoint = applied.endpoint;
                         }
                     }
+                } else {
+                    focusEndpoint = apply(focus, true).endpoint;
                 }
-                const applied = apply(focus, true);
-                if (applied.endpoint) {
-                    controller.goban.engine.jumpTo(applied.endpoint);
+                if (focusEndpoint) {
+                    controller.goban.engine.jumpTo(focusEndpoint);
                 }
             } else if (mode === "draft" && pane.variation_source_move_path) {
                 controller.goban.engine.followPath(0, pane.variation_source_move_path);

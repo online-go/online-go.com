@@ -21,9 +21,8 @@ import { GobanController } from "@/lib/GobanController";
 import { Resizable } from "@/components/Resizable";
 import { GobanAnalyzeButtonBar } from "@/components/GobanAnalyzeButtonBar/GobanAnalyzeButtonBar";
 import { KibitzNodeText } from "./KibitzNodeText";
-import { useKibitzHelpTarget } from "./HelpFlows/useKibitzHelpTarget";
-import { KIBITZ_HELP_TARGETS } from "./HelpFlows/KibitzHelpTargets";
 import { KibitzVariationComposer } from "./KibitzVariationComposer";
+import { KibitzVariationSwatch } from "./KibitzVariationSwatch";
 import "./KibitzVariationPanel.css";
 
 interface KibitzVariationPanelProps {
@@ -34,6 +33,9 @@ interface KibitzVariationPanelProps {
     onBackToGame: () => void;
     /** Starts a new draft from the posted variation being viewed. */
     onBranch?: () => void;
+    /** Move-tree line colour of the variation being viewed, or null/undefined
+     *  when it is not currently drawn on the board. */
+    colorIndex?: number | null;
 }
 
 /**
@@ -47,10 +49,8 @@ export function KibitzVariationPanel({
     onPost,
     onBackToGame,
     onBranch,
+    colorIndex,
 }: KibitzVariationPanelProps): React.ReactElement {
-    const branchActionsTarget = useKibitzHelpTarget(
-        mode === "variation" ? KIBITZ_HELP_TARGETS.desktopVariationActions : null,
-    );
     const setMoveTree = React.useCallback(
         (resizable: Resizable | null) => controller.setMoveTreeContainer(resizable),
         [controller],
@@ -60,6 +60,7 @@ export function KibitzVariationPanel({
         <div className={`KibitzVariationPanel ${mode}`}>
             <div className="KibitzVariationPanel-header">
                 <span className="KibitzVariationPanel-title Kibitz-section-header">
+                    <KibitzVariationSwatch colorIndex={colorIndex ?? null} />
                     {mode === "draft"
                         ? pgettext(
                               "Heading of the Kibitz sidebar panel while drafting a variation",
@@ -86,7 +87,7 @@ export function KibitzVariationPanel({
             />
             <KibitzNodeText controller={controller} editable={mode === "draft"} />
             {mode === "variation" && (
-                <div className="KibitzVariationPanel-actions" ref={branchActionsTarget?.ref}>
+                <div className="KibitzVariationPanel-actions">
                     <button
                         type="button"
                         className="KibitzVariationPanel-back xs"

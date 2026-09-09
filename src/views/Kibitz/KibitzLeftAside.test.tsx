@@ -53,6 +53,7 @@ function baseProps(overrides: Partial<KibitzLeftAsideProps> = {}): KibitzLeftAsi
         onHideVariation: jest.fn(),
         miniBoardController: null,
         onExitVariation: jest.fn(),
+        variationColorIndexes: {},
         ...overrides,
     };
 }

@@ -21,6 +21,24 @@ import type { ChatMessage } from "@/lib/chat_manager";
 import type { KibitzRoomSummary, KibitzStreamItem, KibitzVariationSummary } from "@/models/kibitz";
 import { KibitzChatPanel } from "./KibitzChatPanel";
 
+let observedWidth = 600;
+beforeAll(() => {
+    Object.defineProperty(HTMLElement.prototype, "clientWidth", {
+        configurable: true,
+        get() {
+            return observedWidth;
+        },
+    });
+    global.ResizeObserver = class {
+        constructor(private cb: () => void) {}
+        observe() {
+            this.cb();
+        }
+        unobserve() {}
+        disconnect() {}
+    } as unknown as typeof ResizeObserver;
+});
+
 const mockRoomProxy = {
     channel: {
         markAsRead: jest.fn(),
@@ -33,8 +51,8 @@ const mockRoomProxy = {
 
 jest.mock("@/components/Chat", () => ({
     __esModule: true,
-    ChatLine: ({ line }: { line: ChatMessage }) => (
-        <div data-testid="chat-line">
+    ChatLine: ({ line, lastLine }: { line: ChatMessage; lastLine?: ChatMessage }) => (
+        <div data-testid="chat-line" data-last-line-t={lastLine ? String(lastLine.message.t) : ""}>
             {typeof line.message.m === "string" ? line.message.m : line.message.m.type}
         </div>
     ),
@@ -58,10 +76,18 @@ jest.mock("@/components/Player", () => ({
 jest.mock("@/components/ChatUserList", () => ({
     __esModule: true,
     ChatUserList: ({ channel }: { channel: string }) => (
-        <div data-testid="user-list">{channel}</div>
+        <div className="ChatUserList" data-testid="user-list">
+            {channel}
+        </div>
     ),
     ChatUserCount: ({ onClick, active }: { onClick: () => void; active: boolean }) => (
-        <button type="button" data-testid="user-toggle" data-active={active} onClick={onClick} />
+        <button
+            type="button"
+            className="ChatUserCount"
+            data-testid="user-toggle"
+            data-active={active}
+            onClick={onClick}
+        />
     ),
 }));
 
@@ -110,11 +136,6 @@ jest.mock("@/lib/translate", () => ({
         },
     }),
     pgettext: (_context: string, text: string) => text,
-}));
-
-jest.mock("./HelpFlows/useKibitzHelpTarget", () => ({
-    __esModule: true,
-    useKibitzHelpTarget: () => null,
 }));
 
 jest.mock("./kibitzVariationQuickList", () => ({
@@ -204,6 +225,8 @@ function baseProps() {
         variations: [] as KibitzVariationSummary[],
         onOpenVariation: jest.fn(),
         gameController: null,
+        variationColorIndexes: {} as Record<string, number>,
+        showPeople: false,
     };
 }
 
@@ -230,6 +253,8 @@ describe("KibitzChatPanel variation posts", () => {
                 variations={[makeVariation()]}
                 onOpenVariation={onOpenVariation}
                 gameController={null}
+                variationColorIndexes={{}}
+                showPeople={false}
             />,
         );
 
@@ -254,12 +279,97 @@ describe("KibitzChatPanel variation posts", () => {
         expect(onOpenVariation).toHaveBeenCalledWith("variation-1", true);
     });
 
-    test("room tab toggles the user list", () => {
-        render(<KibitzChatPanel {...baseProps()} />);
-        fireEvent.click(screen.getByText("Kibitz chat"));
-        expect(screen.queryByTestId("user-list")).toBeNull();
-        fireEvent.click(screen.getByTestId("user-toggle"));
-        expect(screen.getByTestId("user-list")).toHaveTextContent("kibitz-room-1");
+    test("shows the people column when the panel is wide enough and it is enabled", () => {
+        observedWidth = 600;
+        const { container } = render(<KibitzChatPanel {...baseProps()} showPeople={true} />);
+        expect(container.querySelector(".KibitzChatPanel-body .ChatUserList")).not.toBeNull();
+    });
+
+    test("hides the people column when it is switched off", () => {
+        observedWidth = 600;
+        const { container } = render(<KibitzChatPanel {...baseProps()} showPeople={false} />);
+        expect(container.querySelector(".KibitzChatPanel-body .ChatUserList")).toBeNull();
+    });
+
+    test("keeps the column at the sidebar width a common laptop gives it", () => {
+        // 400px is the automatic Kibitz sidebar on a 1366px screen, and 409px
+        // on a 1600px one. The action tab is the only route to the people
+        // list, so the threshold has to sit below that.
+        observedWidth = 400;
+        const { container } = render(<KibitzChatPanel {...baseProps()} showPeople={true} />);
+        expect(container.querySelector(".KibitzChatPanel-body .ChatUserList")).not.toBeNull();
+    });
+
+    test("drops the column when the panel is too narrow to share", () => {
+        observedWidth = 200;
+        const { container } = render(<KibitzChatPanel {...baseProps()} showPeople={true} />);
+        expect(container.querySelector(".KibitzChatPanel-body .ChatUserList")).toBeNull();
+    });
+
+    test("does not show the user count button in the composer any more", () => {
+        observedWidth = 600;
+        const { container } = render(<KibitzChatPanel {...baseProps()} showPeople={true} />);
+        expect(container.querySelector(".KibitzChatPanel-composer .ChatUserCount")).toBeNull();
+    });
+
+    test("an external mode picks the chat and drops the tab strip", () => {
+        const { container, rerender } = render(
+            <KibitzChatPanel
+                {...baseProps()}
+                mode="game"
+                items={[
+                    makeChatItem("room-chat-1", "room-stream", "Room hello"),
+                    makeChatItem("game-chat-1", "game-chat", "Game hello"),
+                ]}
+            />,
+        );
+
+        expect(container.querySelector(".KibitzChatPanel-tabs")).toBeNull();
+        expect(screen.getByText("Game hello")).toBeInTheDocument();
+        expect(screen.queryByText("Room hello")).toBeNull();
+
+        rerender(
+            <KibitzChatPanel
+                {...baseProps()}
+                mode="room"
+                items={[
+                    makeChatItem("room-chat-1", "room-stream", "Room hello"),
+                    makeChatItem("game-chat-1", "game-chat", "Game hello"),
+                ]}
+            />,
+        );
+
+        expect(screen.getByText("Room hello")).toBeInTheDocument();
+        expect(screen.queryByText("Game hello")).toBeNull();
+    });
+
+    test("reports the unread state of the chat the mode leaves off screen", () => {
+        const onUnreadChange = jest.fn();
+        render(
+            <KibitzChatPanel
+                {...baseProps()}
+                mode="game"
+                onUnreadChange={onUnreadChange}
+                items={[makeChatItem("room-chat-1", "room-stream", "Room hello")]}
+            />,
+        );
+
+        expect(onUnreadChange).toHaveBeenLastCalledWith({ room: true, game: false });
+    });
+
+    test("a hidden pane leaves its own chat unread until it is shown", () => {
+        const onUnreadChange = jest.fn();
+        const props = {
+            ...baseProps(),
+            mode: "room" as const,
+            onUnreadChange,
+            items: [makeChatItem("room-chat-1", "room-stream", "Room hello")],
+        };
+        const { rerender } = render(<KibitzChatPanel {...props} visible={false} />);
+        expect(onUnreadChange).toHaveBeenLastCalledWith({ room: true, game: false });
+
+        rerender(<KibitzChatPanel {...props} visible={true} />);
+        expect(onUnreadChange).toHaveBeenLastCalledWith({ room: false, game: false });
     });
 
     test("renders room and game chat entries under their respective tabs", () => {
@@ -282,5 +392,32 @@ describe("KibitzChatPanel variation posts", () => {
         const gameEntry = screen.getByText("Game hello").closest(".kibitz-chat-entry");
         expect(gameEntry).not.toBeNull();
         expect(gameEntry?.querySelector("time")).not.toBeNull();
+    });
+});
+
+describe("opening date separator", () => {
+    // ChatLine decides whether to draw a date by comparing the line with the
+    // one before it, and draws one unconditionally when there is none — so
+    // the log always opened with today's date. The panel now seeds that
+    // "previous line" with the current time, which suppresses the separator
+    // for a first message sent today and keeps it for an older one. The
+    // rendering itself is ChatLine's, and it is mocked here, so what this
+    // pins is the seed the panel hands it.
+    test("the first line is given a previous line dated now", () => {
+        const before = Math.floor(Date.now() / 1000);
+        const { container } = render(
+            <KibitzChatPanel
+                {...baseProps()}
+                mode="room"
+                visible={true}
+                items={[makeChatItem("only", "room-stream", "hello")]}
+            />,
+        );
+        const after = Math.floor(Date.now() / 1000);
+        const seeded = container.querySelector("[data-testid='chat-line']");
+        const t = Number(seeded?.getAttribute("data-last-line-t"));
+        expect(Number.isFinite(t)).toBe(true);
+        expect(t).toBeGreaterThanOrEqual(before);
+        expect(t).toBeLessThanOrEqual(after);
     });
 });

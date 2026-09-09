@@ -18,7 +18,7 @@
 import * as React from "react";
 import { GobanEnginePlayerEntry, GobanEvents, GobanRenderer } from "goban";
 import type { GobanController } from "@/lib/GobanController";
-import { _, interpolate, ngettext, pgettext } from "@/lib/translate";
+import { _, interpolate, ngettext } from "@/lib/translate";
 import { Clock } from "@/components/Clock";
 import { PlayerIcon } from "@/components/PlayerIcon";
 import { Player } from "@/components/Player";
@@ -39,8 +39,12 @@ interface PlayerBarState {
     player: GobanEnginePlayerEntry;
     their_turn: boolean;
     score_line: string;
-    /** "Won by ..." on the winner's bar once the game has ended. */
-    result_line: string | null;
+}
+
+/** " + 6.5" / " - 6.5", matching the game page's komi display. */
+function komiString(komi: number): string {
+    const abs_komi = Math.abs(komi).toFixed(1);
+    return komi > 0 ? ` + ${abs_komi}` : ` - ${abs_komi}`;
 }
 
 function deriveState(goban: GobanRenderer, color: "black" | "white"): PlayerBarState {
@@ -50,6 +54,10 @@ function deriveState(goban: GobanRenderer, color: "black" | "white"): PlayerBarS
     const outcome = engine.outcome ?? "";
     const show_points = finished && goban.mode !== "analyze" && outcomeHasScore(outcome);
     const score = engine.computeScore(!show_points)[color];
+    // Komi rides on the capture line, as it does on the game page: "0 + 6.5"
+    // is no captures and 6.5 komi. Points already include it, so it is only
+    // spelled out while captures are what is shown.
+    const komi_line = !show_points && score.komi ? komiString(score.komi) : "";
     const score_line = show_points
         ? interpolate(_("{{total}} {{unit}}"), {
               total: score.total,
@@ -58,26 +66,13 @@ function deriveState(goban: GobanRenderer, color: "black" | "white"): PlayerBarS
         : interpolate(_("{{count}} {{unit}}"), {
               count: score.prisoners,
               unit: ngettext("capture", "captures", score.prisoners),
-          });
-    const winner_id =
-        engine.phase === "finished" && engine.winner != null ? Number(engine.winner) : null;
-    const result_line =
-        winner_id === player.id && outcome
-            ? interpolate(
-                  pgettext(
-                      "Shown under the winning player's name once a game ends",
-                      "Won by {{outcome}}",
-                  ),
-                  { outcome },
-              )
-            : null;
+          }) + komi_line;
     return {
         player_id: player.id,
         username: player.username,
         player,
         their_turn: engine.phase === "play" && engine.playerToMoveOnOfficialBranch() === player.id,
         score_line,
-        result_line,
     };
 }
 
@@ -137,12 +132,7 @@ export function PlayerBar({
                         <span className="PlayerBar-name-plain">{state.username}</span>
                     )}
                 </div>
-                <div className="PlayerBar-score">
-                    {state.score_line}
-                    {state.result_line ? (
-                        <span className="PlayerBar-result"> · {state.result_line}</span>
-                    ) : null}
-                </div>
+                <div className="PlayerBar-score">{state.score_line}</div>
             </div>
             <div className="PlayerBar-clock">
                 <Clock goban={goban} color={color} compact />

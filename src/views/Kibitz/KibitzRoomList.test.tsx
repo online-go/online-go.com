@@ -9,11 +9,6 @@ import { render, screen } from "@testing-library/react";
 import type { KibitzRoomSummary } from "@/models/kibitz";
 import { KibitzRoomList } from "./KibitzRoomList";
 
-jest.mock("./HelpFlows/useKibitzHelpTarget", () => ({
-    __esModule: true,
-    useKibitzHelpTarget: jest.fn(() => null),
-}));
-
 jest.mock("@/lib/translate", () => ({
     __esModule: true,
     interpolate: jest.fn((template: string, values: Record<string, string | number>) =>

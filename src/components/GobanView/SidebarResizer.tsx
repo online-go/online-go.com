@@ -17,14 +17,17 @@
 
 import * as React from "react";
 import { pgettext } from "@/lib/translate";
+import { remToPx } from "./resizerUtil";
 
-/** Largest width the user can drag the sidebar to, as a fraction of the view. */
-const MAX_SIDEBAR_WIDTH_FRACTION = 0.75;
+/** The narrowest the board pane may become. Below this a 19x19 board stops
+ *  being legible, so the sidebar is not allowed to take the width. */
+const MIN_BOARD_PANE_REM = 24;
 const KEYBOARD_STEP_REM = 1;
 const KEYBOARD_LARGE_STEP_REM = 5;
 
 interface SidebarResizerProps {
-    /** The GobanView root, used to bound the width to a fraction of the view. */
+    /** The GobanView root, used to bound the width so the board pane keeps
+     *  its minimum width. */
     rootRef: React.RefObject<HTMLDivElement | null>;
     /** The sidebar element, measured when a drag or key press starts. */
     sidebarRef: React.RefObject<HTMLDivElement | null>;
@@ -33,11 +36,6 @@ interface SidebarResizerProps {
     /** Called when the drag ends or a key changes the width. Null resets the
      *  sidebar to its automatic width. */
     onCommit: (width: number | null) => void;
-}
-
-function remToPx(rem: number): number {
-    const root_font_size = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-    return rem * root_font_size;
 }
 
 /** The smallest width the user can drag the sidebar to: the fixed width the
@@ -52,12 +50,33 @@ function minSidebarWidthPx(root: HTMLElement | null): number {
     return value.trim().endsWith("rem") ? remToPx(parsed) : parsed;
 }
 
-/** The range the sidebar width can be set to, in pixels. */
-function sidebarWidthBoundsPx(root: HTMLElement | null): { min: number; max: number } {
+/** Maximum sidebar width before layout has run, when the board pane and
+ *  sidebar cannot yet be measured: reserves the left aside's measured width
+ *  (zero if there is none) out of the view instead. */
+function fallbackMaxSidebarWidthPx(root: HTMLElement | null): number {
     const view_width = root?.offsetWidth ?? window.innerWidth;
+    const aside_width = root?.querySelector<HTMLElement>(".GobanView-left-aside")?.offsetWidth ?? 0;
+    return view_width - aside_width - remToPx(MIN_BOARD_PANE_REM);
+}
+
+/** The range the sidebar width can be set to, in pixels. The maximum always
+ *  keeps the board pane at least its minimum width: the board pane and the
+ *  sidebar's combined current width is exactly the space the two share,
+ *  with every fixed margin and gap around them already excluded by measuring
+ *  rather than modelling, and that sum stays constant while dragging, since
+ *  the sidebar only ever grows by what the board pane gives up. Before
+ *  layout has run either can measure zero, so it falls back to reserving
+ *  the left aside's width out of the view instead. */
+export function sidebarWidthBoundsPx(root: HTMLElement | null): { min: number; max: number } {
     const min = minSidebarWidthPx(root);
-    const max = Math.max(min, view_width * MAX_SIDEBAR_WIDTH_FRACTION);
-    return { min: Math.round(min), max: Math.round(max) };
+    const center_width = root?.querySelector<HTMLElement>(".GobanView-center")?.offsetWidth ?? 0;
+    const sidebar_width = root?.querySelector<HTMLElement>(".GobanView-sidebar")?.offsetWidth ?? 0;
+    const shared_width = center_width + sidebar_width;
+    const max =
+        shared_width > 0
+            ? shared_width - remToPx(MIN_BOARD_PANE_REM)
+            : fallbackMaxSidebarWidthPx(root);
+    return { min: Math.round(min), max: Math.round(Math.max(min, max)) };
 }
 
 interface SidebarWidthValues {

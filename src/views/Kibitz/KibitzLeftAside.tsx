@@ -23,7 +23,6 @@ import type { KibitzRoomSummary, KibitzVariationSummary, KibitzWatchedGame } fro
 import { KibitzRoomList } from "./KibitzRoomList";
 import { KibitzVariationList } from "./KibitzVariationList";
 import { KibitzMiniMainBoard } from "./KibitzMiniMainBoard";
-import type { KibitzHelpTargetId } from "./HelpFlows/KibitzHelpTargets";
 import "./KibitzLeftAside.css";
 
 export interface KibitzLeftAsideProps {
@@ -43,13 +42,15 @@ export interface KibitzLeftAsideProps {
     onRecallVariation: (variationId: string) => void;
     onHideVariation: (variationId: string) => void;
     onCreateVariation?: () => void;
+    /** True while there is no game to make a variation of. */
+    createVariationDisabled?: boolean;
     onClearVariations?: () => void;
+    /** Move-tree line colour of each variation that is on the board, by id. */
+    variationColorIndexes: Record<string, number>;
     /** The live game controller, shown as a thumbnail only while the
      *  center displays something else. Pass null to hide it. */
     miniBoardController: GobanController | null;
     onExitVariation: () => void;
-    roomListHelpTargetId?: KibitzHelpTargetId;
-    variationListHelpTargetId?: KibitzHelpTargetId;
 }
 
 type SectionId = "rooms" | "variations";
@@ -112,7 +113,6 @@ export function KibitzLeftAside(props: KibitzLeftAsideProps): React.ReactElement
                             canOpenCreateRoomFlow={props.canOpenCreateRoomFlow}
                             signInHref={props.signInHref}
                             blockedRoomIds={props.blockedRoomIds}
-                            helpTargetId={props.roomListHelpTargetId}
                         />
                     )}
                 </div>
@@ -132,8 +132,9 @@ export function KibitzLeftAside(props: KibitzLeftAsideProps): React.ReactElement
                             onRecallVariation={props.onRecallVariation}
                             onHideVariation={props.onHideVariation}
                             onCreateVariation={props.onCreateVariation}
+                            createVariationDisabled={props.createVariationDisabled}
                             onClearAll={props.onClearVariations}
-                            helpTargetId={props.variationListHelpTargetId}
+                            colorIndexes={props.variationColorIndexes}
                         />
                     )}
                 </div>

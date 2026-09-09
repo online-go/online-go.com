@@ -19,8 +19,6 @@ import * as React from "react";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { KibitzRoomSummary } from "@/models/kibitz";
 import { getKibitzRoomLockedTooltip } from "./kibitzAnalysisPolicyText";
-import { KIBITZ_HELP_TARGETS } from "./HelpFlows/KibitzHelpTargets";
-import { useKibitzHelpTarget } from "./HelpFlows/useKibitzHelpTarget";
 import "./KibitzRoomList.css";
 
 interface KibitzRoomListProps {
@@ -31,7 +29,6 @@ interface KibitzRoomListProps {
     canOpenCreateRoomFlow: boolean;
     signInHref: string;
     blockedRoomIds?: Set<string>;
-    helpTargetId?: (typeof KIBITZ_HELP_TARGETS)[keyof typeof KIBITZ_HELP_TARGETS];
 }
 
 /**
@@ -47,12 +44,9 @@ export function KibitzRoomList({
     canOpenCreateRoomFlow,
     signInHref,
     blockedRoomIds,
-    helpTargetId,
 }: KibitzRoomListProps): React.ReactElement {
-    const roomListTarget = useKibitzHelpTarget(helpTargetId);
-
     return (
-        <div className="KibitzRoomList" ref={roomListTarget?.ref}>
+        <div className="KibitzRoomList">
             <div className="KibitzRoomList-items">
                 {rooms.map((room) => {
                     const isActive = room.id === activeRoomId;

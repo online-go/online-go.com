@@ -18,8 +18,10 @@
 import * as React from "react";
 import { ChatLine } from "@/components/Chat";
 import { GameChatLine } from "@/components/Chat/GameChatLine";
+import { ChatDateLine } from "@/components/Chat/ChatDateLine";
+import { GameChatMoveNumber } from "@/components/Chat/GameChatMoveNumber";
 import { TabCompleteInput } from "@/components/TabCompleteInput";
-import { ChatUserList, ChatUserCount } from "@/components/ChatUserList";
+import { ChatUserList } from "@/components/ChatUserList";
 import { Player } from "@/components/Player";
 import {
     cachedChannelInformation,
@@ -38,9 +40,8 @@ import type {
     KibitzStreamItemSource,
     KibitzVariationSummary,
 } from "@/models/kibitz";
-import { KIBITZ_HELP_TARGETS } from "./HelpFlows/KibitzHelpTargets";
-import { useKibitzHelpTarget } from "./HelpFlows/useKibitzHelpTarget";
 import { formatVariationBranchLabel, formatVariationLengthLabel } from "./kibitzVariationQuickList";
+import { KibitzVariationSwatch } from "./KibitzVariationSwatch";
 import "./KibitzChatPanel.css";
 import "@/components/Chat/ChatLog.css";
 
@@ -74,7 +75,28 @@ export interface KibitzChatPanelProps {
     onOpenVariation: (variationId: string, focusVariation?: boolean) => void;
     /** Live game controller whose chat_log feeds the Game tab. */
     gameController: GobanController | null;
+    /** Move-tree line colour of each variation that is on the board, by id. */
+    variationColorIndexes: Record<string, number>;
+    /** Whether the people column is switched on, from the action bar. */
+    showPeople: boolean;
+    /** Portrait only: which chat to show. The panel renders no tab strip when
+     *  this is set, because the tab bar switches between the two instead. */
+    mode?: ChatTab;
+    /** False while the pane holding this panel is hidden. A hidden pane
+     *  measures as zero, so the log cannot be scrolled to the latest line
+     *  until it is shown again. */
+    visible?: boolean;
+    /** Reports the unread state of both chats so the tab bar can show a dot
+     *  on the chat that is not on screen. */
+    onUnreadChange?: (unread: { room: boolean; game: boolean }) => void;
 }
+
+/** Below this the log has no room to share, so the people list is not shown
+ *  as a column even when it is switched on. A Kibitz sidebar is about 400px
+ *  wide on a 1366px screen and 409px on a 1600px one, so the threshold has to
+ *  sit below that: the People action is the only route to the room's people
+ *  list, and above 22rem the 10rem list still leaves the log about 240px. */
+const PEOPLE_COLUMN_MIN_REM = 22;
 
 const DEFAULT_TAB: ChatTab = "room";
 
@@ -224,6 +246,11 @@ export function KibitzChatPanel({
     variations,
     onOpenVariation,
     gameController,
+    variationColorIndexes,
+    showPeople,
+    mode,
+    visible,
+    onUnreadChange,
 }: KibitzChatPanelProps): React.ReactElement {
     const user = useUser();
     const chatDisabled = user.anonymous || !user.email_validated;
@@ -238,19 +265,25 @@ export function KibitzChatPanel({
     const [, refresh] = React.useState(0);
     const [gobanGameEntries, setGobanGameEntries] = React.useState<PaneEntry[]>([]);
     const gobanGameEntryKeysRef = React.useRef<Set<string>>(new Set());
-    const [tab, setTab] = React.useState<ChatTab>(readTab);
-    const [showUserList, setShowUserList] = React.useState(false);
+    const [internalTab, setTab] = React.useState<ChatTab>(readTab);
+    const tab: ChatTab = mode ?? internalTab;
+    const bodyRef = React.useRef<HTMLDivElement | null>(null);
+    const [hasRoomForPeople, setHasRoomForPeople] = React.useState(false);
     const [roomFollowLatest, setRoomFollowLatest] = React.useState(true);
     const [gameFollowLatest, setGameFollowLatest] = React.useState(true);
     const [roomUnread, setRoomUnread] = React.useState(false);
     const [gameUnread, setGameUnread] = React.useState(false);
-    const streamHelpTarget = useKibitzHelpTarget(KIBITZ_HELP_TARGETS.desktopStream);
     const roomChannel = room.channel;
     const includeMalkovich = room.current_game?.live === false;
     const roomPreviousEntryCountRef = React.useRef(0);
     const gamePreviousEntryCountRef = React.useRef(0);
-    const roomVisible = tab === "room";
-    const gameVisible = tab === "game";
+    // Read by the resize observer, which must not re-subscribe on every
+    // change of the two flags.
+    const followLatestRef = React.useRef({ room: roomFollowLatest, game: gameFollowLatest });
+    followLatestRef.current = { room: roomFollowLatest, game: gameFollowLatest };
+    const paneVisible = visible ?? true;
+    const roomVisible = paneVisible && tab === "room";
+    const gameVisible = paneVisible && tab === "game";
     const channelName = cachedChannelInformation(room.channel)?.name ?? room.title;
     const roomEntries = React.useMemo<PaneEntry[]>(() => {
         const entries: PaneEntry[] = [];
@@ -298,6 +331,32 @@ export function KibitzChatPanel({
 
         return entries.sort(sortEntries);
     }, [gobanGameEntries, items, room]);
+
+    React.useEffect(() => {
+        const body = bodyRef.current;
+        if (!body || typeof ResizeObserver === "undefined") {
+            return;
+        }
+        const root_font_size =
+            parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+        const measure = () => {
+            setHasRoomForPeople(body.clientWidth >= PEOPLE_COLUMN_MIN_REM * root_font_size);
+            // A shorter log leaves the last line off screen, and the browser
+            // reports that as a scroll, which would stop the log following.
+            // Pin it again for whichever log is still following.
+            const follow = followLatestRef.current;
+            if (follow.room && roomScrollRef.current) {
+                roomScrollRef.current.scrollTop = roomScrollRef.current.scrollHeight;
+            }
+            if (follow.game && gameScrollRef.current) {
+                gameScrollRef.current.scrollTop = gameScrollRef.current.scrollHeight;
+            }
+        };
+        measure();
+        const observer = new ResizeObserver(measure);
+        observer.observe(body);
+        return () => observer.disconnect();
+    }, []);
 
     React.useEffect(() => {
         const nextRoomProxy = chat_manager.join(room.channel);
@@ -443,8 +502,14 @@ export function KibitzChatPanel({
     }, [gameFollowLatest, gameVisible]);
 
     React.useEffect(() => {
-        data.set("kibitz.chat_tab", tab);
-    }, [tab]);
+        if (!mode) {
+            data.set("kibitz.chat_tab", internalTab);
+        }
+    }, [internalTab, mode]);
+
+    React.useEffect(() => {
+        onUnreadChange?.({ room: roomUnread, game: gameUnread });
+    }, [roomUnread, gameUnread, onUnreadChange]);
 
     const onRoomScroll = React.useCallback(() => {
         const container = roomScrollRef.current;
@@ -513,8 +578,18 @@ export function KibitzChatPanel({
         [roomProxy],
     );
 
-    let roomLastLine: ChatMessage | undefined;
-    let gameLastLine: protocol.GameChatLine | undefined;
+    // Both line components show a date separator whenever the previous line
+    // fell on another day, and unconditionally when there is no previous
+    // line — so the log always opened with today's date, which says nothing.
+    // Seeding the "previous line" with now suppresses that separator for a
+    // first message sent today and keeps it for an older one.
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    let roomLastLine: ChatMessage | undefined = {
+        message: { t: nowSeconds },
+    } as ChatMessage;
+    let gameLastLine: protocol.GameChatLine | undefined = {
+        date: nowSeconds,
+    } as protocol.GameChatLine;
 
     const renderEntries = (entries: PaneEntry[], source: "room" | "game") => {
         if (entries.length === 0) {
@@ -571,24 +646,40 @@ export function KibitzChatPanel({
                                 >
                                     {timeLabel}
                                 </time>
-                                {entry.item.author && (
-                                    <span className="variation-post-author">
-                                        <Player user={entry.item.author} disableCacheUpdate />
-                                        {": "}
-                                    </span>
-                                )}
-                                <button
-                                    type="button"
-                                    className="variation-post variation"
-                                    data-variation-post="true"
-                                    data-variation-id={entry.item.variation_id}
-                                    onClick={() =>
-                                        entry.item.variation_id &&
-                                        onOpenVariation(entry.item.variation_id, true)
-                                    }
-                                >
-                                    {label}
-                                </button>
+                                <div className="variation-post-line">
+                                    {entry.item.author && (
+                                        <>
+                                            <span className="variation-post-author">
+                                                <Player
+                                                    user={entry.item.author}
+                                                    disableCacheUpdate
+                                                />
+                                            </span>
+                                            {": "}
+                                        </>
+                                    )}
+                                    <button
+                                        type="button"
+                                        className="variation-post variation"
+                                        data-variation-post="true"
+                                        data-variation-id={entry.item.variation_id}
+                                        onClick={() =>
+                                            entry.item.variation_id &&
+                                            onOpenVariation(entry.item.variation_id, true)
+                                        }
+                                    >
+                                        <KibitzVariationSwatch
+                                            colorIndex={
+                                                entry.item.variation_id
+                                                    ? (variationColorIndexes[
+                                                          entry.item.variation_id
+                                                      ] ?? null)
+                                                    : null
+                                            }
+                                        />
+                                        {label}
+                                    </button>
+                                </div>
                             </div>
                         );
                     }
@@ -601,33 +692,61 @@ export function KibitzChatPanel({
                         gameLastLine = entry.gobanLine;
                     }
 
+                    // The date and the move number head a run of lines, so
+                    // they stand outside the row the line shares with its
+                    // time. Inside it they would push the time down to the
+                    // separator instead of the name beside it.
                     return (
-                        <div
-                            key={entry.key}
-                            className={
-                                "kibitz-chat-entry " +
-                                entry.source +
-                                (entry.gobanChannel ? " " + entry.gobanChannel : "") +
-                                (entry.gobanLine?.move_number != null ? " has-move-number" : "")
-                            }
-                        >
-                            <time
-                                className="kibitz-chat-entry-time"
-                                dateTime={new Date(entry.createdAt).toISOString()}
-                            >
-                                {moment(entry.createdAt).format("HH:mm")}
-                            </time>
-
+                        <React.Fragment key={entry.key}>
                             {entry.gobanLine ? (
-                                <GameChatLine
-                                    line={entry.gobanLine}
-                                    lastLine={previousGameLine}
-                                    gameId={watchedController?.goban.game_id}
-                                />
+                                <>
+                                    <ChatDateLine
+                                        timestamp={entry.gobanLine.date}
+                                        previousTimestamp={previousGameLine?.date}
+                                        hasPreviousLine={Boolean(previousGameLine)}
+                                    />
+                                    <GameChatMoveNumber
+                                        line={entry.gobanLine}
+                                        lastLine={previousGameLine}
+                                    />
+                                </>
                             ) : (
-                                <ChatLine line={entry.line} lastLine={previousRoomLine} />
+                                <ChatDateLine
+                                    timestamp={entry.line.message.t}
+                                    previousTimestamp={previousRoomLine?.message.t}
+                                    hasPreviousLine={Boolean(previousRoomLine)}
+                                />
                             )}
-                        </div>
+                            <div
+                                className={
+                                    "kibitz-chat-entry " +
+                                    entry.source +
+                                    (entry.gobanChannel ? " " + entry.gobanChannel : "")
+                                }
+                            >
+                                <time
+                                    className="kibitz-chat-entry-time"
+                                    dateTime={new Date(entry.createdAt).toISOString()}
+                                >
+                                    {moment(entry.createdAt).format("HH:mm")}
+                                </time>
+
+                                {entry.gobanLine ? (
+                                    <GameChatLine
+                                        line={entry.gobanLine}
+                                        lastLine={previousGameLine}
+                                        gameId={watchedController?.goban.game_id}
+                                        separators={false}
+                                    />
+                                ) : (
+                                    <ChatLine
+                                        line={entry.line}
+                                        lastLine={previousRoomLine}
+                                        showDate={false}
+                                    />
+                                )}
+                            </div>
+                        </React.Fragment>
                     );
                 })}
             </div>
@@ -639,66 +758,50 @@ export function KibitzChatPanel({
         { who: channelName },
     );
 
-    const disabledPlaceholder = pgettext(
-        "Placeholder text shown when the kibitz game chat composer is disabled",
-        "Can't send messages to game chat",
-    );
-
     const roomDisabledPlaceholder = pgettext(
         "Placeholder shown in the Kibitz room chat input when the user cannot chat",
         "Sign in with a validated email to chat",
     );
 
-    const disabledComposer = (
-        <div className="KibitzChatPanel-disabledComposer chat-input-container input-group">
-            <TabCompleteInput
-                id={`kibitz-chat-disabled-${room.id}`}
-                className="TabCompleteInput chat-input"
-                autoComplete="off"
-                placeholder={disabledPlaceholder}
-                disabled={true}
-                onKeyPress={() => false}
-            />
-        </div>
-    );
-
     return (
-        <div className="KibitzChatPanel" ref={streamHelpTarget?.ref}>
-            <div className="KibitzChatPanel-tabs" role="tablist">
-                <button
-                    type="button"
-                    role="tab"
-                    aria-selected={tab === "game"}
-                    className={"KibitzChatPanel-tab" + (tab === "game" ? " active" : "")}
-                    onClick={() => setTab("game")}
-                >
-                    <i className="fa fa-comment" />{" "}
-                    {pgettext("Kibitz chat tab for the watched game's chat", "Game chat")}
-                    {gameUnread && tab !== "game" ? (
-                        <span className="KibitzChatPanel-unread" />
-                    ) : null}
-                </button>
-                <button
-                    type="button"
-                    role="tab"
-                    aria-selected={tab === "room"}
-                    className={"KibitzChatPanel-tab" + (tab === "room" ? " active" : "")}
-                    onClick={() => setTab("room")}
-                >
-                    <i className="fa fa-comments" />{" "}
-                    {pgettext("Kibitz chat tab for the kibitz room's chat", "Kibitz chat")}
-                    {roomUnread && tab !== "room" ? (
-                        <span className="KibitzChatPanel-unread" />
-                    ) : null}
-                </button>
-            </div>
-            <div className="KibitzChatPanel-body">
+        <div className="KibitzChatPanel">
+            {!mode && (
+                <div className="KibitzChatPanel-tabs" role="tablist">
+                    <button
+                        type="button"
+                        role="tab"
+                        aria-selected={tab === "game"}
+                        className={"KibitzChatPanel-tab" + (tab === "game" ? " active" : "")}
+                        onClick={() => setTab("game")}
+                    >
+                        <i className="fa fa-comment" />{" "}
+                        {pgettext("Kibitz chat tab for the watched game's chat", "Game chat")}
+                        {gameUnread && tab !== "game" ? (
+                            <span className="KibitzChatPanel-unread" />
+                        ) : null}
+                    </button>
+                    <button
+                        type="button"
+                        role="tab"
+                        aria-selected={tab === "room"}
+                        className={"KibitzChatPanel-tab" + (tab === "room" ? " active" : "")}
+                        onClick={() => setTab("room")}
+                    >
+                        <i className="fa fa-comments" />{" "}
+                        {pgettext("Kibitz chat tab for the kibitz room's chat", "Kibitz chat")}
+                        {roomUnread && tab !== "room" ? (
+                            <span className="KibitzChatPanel-unread" />
+                        ) : null}
+                    </button>
+                </div>
+            )}
+            <div className="KibitzChatPanel-body" ref={bodyRef}>
                 <div className="KibitzChatPanel-log">
                     {tab === "game"
                         ? renderEntries(gameEntries, "game")
                         : renderEntries(roomEntries, "room")}
                 </div>
-                {tab === "room" && showUserList ? <ChatUserList channel={room.channel} /> : null}
+                {showPeople && hasRoomForPeople ? <ChatUserList channel={room.channel} /> : null}
             </div>
             {tab === "room" ? (
                 <div className="KibitzChatPanel-composer chat-input-container input-group">
@@ -709,15 +812,8 @@ export function KibitzChatPanel({
                         disabled={chatDisabled}
                         onKeyPress={onRoomKeyPress}
                     />
-                    <ChatUserCount
-                        channel={room.channel}
-                        active={showUserList}
-                        onClick={() => setShowUserList((v) => !v)}
-                    />
                 </div>
-            ) : (
-                disabledComposer
-            )}
+            ) : null}
         </div>
     );
 }

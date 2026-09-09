@@ -58,9 +58,13 @@
         }
     }
 
+    /* The name sits on the top edge and the score on the bottom, so the two
+       bars frame the board with their text nearest to it. */
     .PlayerBar-text {
         display: flex;
         flex-direction: column;
+        justify-content: space-between;
+        align-self: stretch;
         min-width: 0;
         flex-grow: 1;
         line-height: 1.2;
@@ -70,6 +74,12 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+
+            /* The Player component indents its username away from an icon it
+               is not showing here. */
+            .Player-username {
+                margin-left: 0;
+            }
         }
 
         .PlayerBar-score {
@@ -79,14 +89,11 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-
-        .PlayerBar-result {
-            color: var(--fg);
-        }
     }
 
     .PlayerBar-clock {
         flex-shrink: 0;
+        align-self: center;
         margin-left: auto;
         font-size: 1.1rem;
     }

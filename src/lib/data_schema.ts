@@ -229,8 +229,12 @@ type Prefixed<T, P extends string> = {
 export interface KibitzSchema {
     /** Which chat the Kibitz sidebar shows. */
     chat_tab: "room" | "game";
+    /** Which panel the portrait Kibitz layout shows below the board. */
+    portrait_pane: "game-chat" | "room-chat" | "people" | "variations" | "rooms" | "analysis";
     /** Collapsed sections of the Kibitz left aside. */
     "left_aside.collapsed": { rooms: boolean; variations: boolean };
+    /** Show the people column beside the landscape Kibitz chat. */
+    people_column: boolean;
 }
 
 export interface DataSchema

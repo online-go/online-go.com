@@ -41,10 +41,11 @@ import type { KibitzController } from "./KibitzController";
 import { KibitzView } from "./KibitzView";
 import { useKibitzGobans } from "./useKibitzGobans";
 import { goban_view_mode } from "@/components/GobanView";
-import { KIBITZ_VARIATION_COLORS } from "./kibitzVariationTree";
-import { KIBITZ_HELP_FLOW_IDS } from "./HelpFlows/KibitzHelpFlows";
-import { KIBITZ_HELP_TARGETS } from "./HelpFlows/KibitzHelpTargets";
-import { useKibitzHelpTriggers } from "./HelpFlows/useKibitzHelpTriggers";
+import {
+    EMPTY_VISIBLE_VARIATIONS,
+    MAX_VISIBLE_VARIATIONS,
+    withVisibleVariationIds,
+} from "./kibitzVisibleVariations";
 import { KibitzGamePickerOverlay } from "./KibitzGamePickerOverlay";
 import { useKibitzCurrentGameConnectionKeeper } from "./useKibitzCurrentGameConnectionKeeper";
 import {
@@ -105,7 +106,6 @@ interface KibitzInnerProps {
     controller: KibitzController;
 }
 
-const MAX_VISIBLE_VARIATIONS = KIBITZ_VARIATION_COLORS.length;
 const VARIATION_LIMIT_TOAST_MS = 1800;
 const VARIATION_LIMIT_FLASH_MS = 900;
 const CURRENT_GAME_BASE_SNAPSHOT_TOAST_MS = 1800;
@@ -317,44 +317,6 @@ function mapGameChatLineToVariation(
     };
 }
 
-function assignVisibleVariationColorIndexes(
-    previous: Record<string, number>,
-    visibleVariationIds: string[],
-): Record<string, number> {
-    const next: Record<string, number> = {};
-    const taken = new Set<number>();
-
-    for (const variationId of visibleVariationIds) {
-        const previousIndex = previous[variationId];
-        if (
-            typeof previousIndex === "number" &&
-            previousIndex >= 0 &&
-            previousIndex < MAX_VISIBLE_VARIATIONS &&
-            !taken.has(previousIndex)
-        ) {
-            next[variationId] = previousIndex;
-            taken.add(previousIndex);
-            continue;
-        }
-
-        const freeIndex = KIBITZ_VARIATION_COLORS.findIndex((_, index) => !taken.has(index));
-        const colorIndex = freeIndex >= 0 ? freeIndex : 0;
-        next[variationId] = colorIndex;
-        taken.add(colorIndex);
-    }
-
-    const previousKeys = Object.keys(previous);
-    const nextKeys = Object.keys(next);
-    if (
-        previousKeys.length === nextKeys.length &&
-        previousKeys.every((key) => next[key] === previous[key])
-    ) {
-        return previous;
-    }
-
-    return next;
-}
-
 export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElement {
     const location = useLocation();
     const navigate = useNavigate();
@@ -385,10 +347,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const [gameVariations, setGameVariations] = React.useState<KibitzVariationSummary[]>([]);
     const [viewMode, setViewMode] = React.useState(() => goban_view_mode());
     const isPortrait = viewMode === "portrait";
-    const [visibleVariationIds, setVisibleVariationIds] = React.useState<string[]>([]);
-    const [variationColorIndexes, setVariationColorIndexes] = React.useState<
-        Record<string, number>
-    >({});
+    const [visibleVariations, setVisibleVariations] = React.useState(EMPTY_VISIBLE_VARIATIONS);
+    const visibleVariationIds = visibleVariations.ids;
+    const variationColorIndexes = visibleVariations.colors;
     const [variationFocusRequestId, setVariationFocusRequestId] = React.useState(0);
     const [cachedGamesVersion, setCachedGamesVersion] = React.useState(0);
     const [blockedVariationFlashId, setBlockedVariationFlashId] = React.useState<string | null>(
@@ -912,20 +873,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             CURRENT_GAME_BASE_SNAPSHOT_TOAST_MS,
         );
     }, []);
-    const helpTargetsReady = Boolean(gobans.center);
-    const desktopHelpTargetsReady = helpTargetsReady && !isPortrait;
-    const kibitzHelpTriggers = useKibitzHelpTriggers({
-        room: resolvedRoom,
-        flowReadiness: {
-            [KIBITZ_HELP_FLOW_IDS.desktopFirstRun]: desktopHelpTargetsReady,
-            [KIBITZ_HELP_FLOW_IDS.desktopFirstVariations]: desktopHelpTargetsReady,
-            [KIBITZ_HELP_FLOW_IDS.roomBoardChange]: helpTargetsReady,
-            [KIBITZ_HELP_FLOW_IDS.draftFromPostedVariation]:
-                gobans.centerMode === "variation" && Boolean(gobans.secondary),
-        },
-        pickerOpen: Boolean(pickerMode),
-    });
-
     const onOpenVariation = React.useCallback(
         (variationId: string, focusVariation: boolean = false, makeRoom: boolean = false) => {
             const isAlreadyVisibleInState = visibleVariationIds.includes(variationId);
@@ -965,24 +912,16 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 : [...baseVisibleIds, variationId];
 
             if (nextVisibleVariationIds !== visibleVariationIds) {
-                setVisibleVariationIds(nextVisibleVariationIds);
+                setVisibleVariations((previous) =>
+                    withVisibleVariationIds(previous, nextVisibleVariationIds),
+                );
             }
             if (focusVariation) {
                 setVariationFocusRequestId((previous) => previous + 1);
             }
             controller.openVariation(variationId);
-            if (!isAlreadyVisibleInState && !isPortrait) {
-                kibitzHelpTriggers.noteDesktopVariationMadeVisible();
-            }
         },
-        [
-            activePostedVariations.length,
-            activePostedVariationIds,
-            controller,
-            isPortrait,
-            kibitzHelpTriggers,
-            visibleVariationIds,
-        ],
+        [activePostedVariations.length, activePostedVariationIds, controller, visibleVariationIds],
     );
     const onToggleVariation = React.useCallback(
         (variationId: string) => {
@@ -998,7 +937,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 return;
             }
 
-            setVisibleVariationIds(nextVisibleVariationIds);
+            setVisibleVariations((previous) =>
+                withVisibleVariationIds(previous, nextVisibleVariationIds),
+            );
 
             // Removing the variation on the board returns the center to the
             // live game rather than jumping to another variation.
@@ -1009,12 +950,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         [controller, displayedVariations, secondaryPane.variation_id, visibleVariationIds],
     );
 
-    React.useLayoutEffect(() => {
-        setVariationColorIndexes((previous) => {
-            return assignVisibleVariationColorIndexes(previous, visibleVariationIds);
-        });
-    }, [visibleVariationIds]);
-
     React.useEffect(() => {
         return () => {
             if (blockedVariationFlashTimerRef.current) {
@@ -1024,7 +959,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         };
     }, []);
     const onClearVariations = React.useCallback(() => {
-        setVisibleVariationIds([]);
+        setVisibleVariations((previous) => withVisibleVariationIds(previous, []));
         if (secondaryPane.variation_id) {
             controller.closeSecondaryPane();
         }
@@ -1082,13 +1017,11 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 snapshot?.movePath,
                 moveTreeIdAsNumber(snapshot?.moveTreeId ?? null),
             );
-            kibitzHelpTriggers.noteDraftStartedFromPostedVariation();
         },
         [
             controller,
             currentGameId,
             getCurrentGameBaseSnapshotForVariation,
-            kibitzHelpTriggers,
             showCurrentGameBaseNotReadyToast,
         ],
     );
@@ -1191,9 +1124,12 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     }, [gobans.main, resolvedRoom]);
 
     React.useEffect(() => {
-        setVisibleVariationIds((previous) =>
-            previous.filter((variationId) =>
-                displayedVariations.some((variation) => variation.id === variationId),
+        setVisibleVariations((previous) =>
+            withVisibleVariationIds(
+                previous,
+                previous.ids.filter((variationId) =>
+                    displayedVariations.some((variation) => variation.id === variationId),
+                ),
             ),
         );
     }, [displayedVariations]);
@@ -1431,14 +1367,14 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                     onHideVariation: onToggleVariation,
                     onCreateVariation,
                     onClearVariations,
-                    roomListHelpTargetId: KIBITZ_HELP_TARGETS.desktopRoomList,
-                    variationListHelpTargetId: KIBITZ_HELP_TARGETS.desktopVariationList,
+                    variationColorIndexes,
                 }}
                 chat={{
                     room: resolvedRoom,
                     items: stream,
                     variations: displayedVariations,
                     onOpenVariation: onOpenVariationFromUser,
+                    variationColorIndexes,
                 }}
                 proposals={{
                     activeProposal,

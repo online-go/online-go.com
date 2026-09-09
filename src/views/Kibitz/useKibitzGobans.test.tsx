@@ -542,4 +542,61 @@ describe("useKibitzGobans", () => {
         expect(onMainSnapshot).toHaveBeenCalledTimes(2);
         getMoveTreeTrunkTail.mockReturnValue(null);
     });
+
+    test("composes visible variations in list order whatever is selected", () => {
+        readyMainTrunk();
+        const variations = [makeVariation("v1"), makeVariation("v2"), makeVariation("v3")];
+        const visibleVariationIds = ["v1", "v2", "v3"];
+
+        const composedOrderWhenSelecting = (selected: string): string[] => {
+            instances.length = 0;
+            applyKibitzVariationToController.mockClear();
+            const { rerender, unmount } = render(
+                <Harness options={baseOptions()} onResult={() => undefined} />,
+            );
+            emit(instances[0], "load");
+            applyKibitzVariationToController.mockClear();
+            rerender(
+                <Harness
+                    options={baseOptions({
+                        secondaryPane: { collapsed: false, variation_id: selected },
+                        variations,
+                        visibleVariationIds,
+                    })}
+                    onResult={() => undefined}
+                />,
+            );
+            const order = applyKibitzVariationToController.mock.calls.map(
+                (call) => (call[1] as { id: string }).id,
+            );
+            unmount();
+            return order;
+        };
+
+        expect(composedOrderWhenSelecting("v1")).toEqual(["v1", "v2", "v3"]);
+        expect(composedOrderWhenSelecting("v3")).toEqual(["v1", "v2", "v3"]);
+    });
+
+    test("marks are applied only to the selected variation", () => {
+        readyMainTrunk();
+        render(
+            <Harness
+                options={baseOptions({
+                    secondaryPane: { collapsed: false, variation_id: "v2" },
+                    variations: [makeVariation("v1"), makeVariation("v2")],
+                    visibleVariationIds: ["v1", "v2"],
+                })}
+                onResult={() => undefined}
+            />,
+        );
+        emit(instances[0], "load");
+        const includeMarksById = new Map(
+            applyKibitzVariationToController.mock.calls.map((call) => [
+                (call[1] as { id: string }).id,
+                call[3] as boolean,
+            ]),
+        );
+        expect(includeMarksById.get("v2")).toBe(true);
+        expect(includeMarksById.get("v1")).toBe(false);
+    });
 });

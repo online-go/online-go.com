@@ -1,0 +1,28 @@
+.KibitzPortraitPanes {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+
+    .KibitzPortraitPanes-pane {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+
+        /* Beats the `display: flex` above, which would otherwise keep the
+           inactive panes on screen. */
+        &[hidden] {
+            display: none;
+        }
+    }
+}
+
+/* The analysis pane before a variation exists. Same quiet register as the
+   chat panel's own empty state. */
+.KibitzPortraitPanes .KibitzPortraitPanes-empty {
+    padding: 0.75rem;
+    color: var(--shade1);
+}

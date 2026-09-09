@@ -32,11 +32,6 @@ jest.mock("./KibitzUserAvatar", () => ({
     KibitzUserAvatar: () => <span data-testid="KibitzUserAvatar" />,
 }));
 
-jest.mock("./HelpFlows/useKibitzHelpTarget", () => ({
-    __esModule: true,
-    useKibitzHelpTarget: () => null,
-}));
-
 jest.mock("@/lib/translate", () => ({
     __esModule: true,
     pgettext: (_context: string, text: string) => text,
@@ -150,4 +145,30 @@ describe("KibitzVariationList", () => {
         expect(screen.getByText("Delta")).toBeInTheDocument();
         expect(screen.getAllByLabelText("Remove from board")).toHaveLength(2);
     });
+});
+
+test("the new-variation row is disabled when there is no game to branch from", () => {
+    const { container } = render(
+        <KibitzVariationList
+            variations={[]}
+            onRecallVariation={jest.fn()}
+            onCreateVariation={jest.fn()}
+            createVariationDisabled={true}
+        />,
+    );
+    const button = container.querySelector(".KibitzVariationList-footerAction");
+    expect(button).not.toBeNull();
+    expect((button as HTMLButtonElement).disabled).toBe(true);
+});
+
+test("the new-variation row is live when there is a game", () => {
+    const { container } = render(
+        <KibitzVariationList
+            variations={[]}
+            onRecallVariation={jest.fn()}
+            onCreateVariation={jest.fn()}
+        />,
+    );
+    const button = container.querySelector(".KibitzVariationList-footerAction");
+    expect((button as HTMLButtonElement).disabled).toBe(false);
 });

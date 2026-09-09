@@ -8,6 +8,12 @@
         align-items: center;
         justify-content: space-between;
         gap: 0.5rem;
+
+        .KibitzVariationPanel-title {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
     }
 
     .KibitzVariationPanel-moveTree {

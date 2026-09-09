@@ -16,22 +16,27 @@
  */
 
 import * as React from "react";
-import { _, pgettext } from "@/lib/translate";
+import { _, interpolate, pgettext } from "@/lib/translate";
+import * as data from "@/lib/data";
 import { GobanController } from "@/lib/GobanController";
 import { popover, PopOver } from "@/lib/popover";
-import { GobanView, GobanViewRef, generateGobanHook } from "@/components/GobanView";
+import { GobanView, generateGobanHook } from "@/components/GobanView";
 import { KBShortcut } from "@/components/KBShortcut";
 import type { KibitzRoomSummary } from "@/models/kibitz";
 import type { KibitzGobans } from "./useKibitzGobans";
 import { KibitzLeftAside, KibitzLeftAsideProps } from "./KibitzLeftAside";
 import { KibitzChatPanel, KibitzChatPanelProps } from "./KibitzChatPanel";
+import { KibitzPortraitPanes } from "./KibitzPortraitPanes";
+import { KibitzPortraitPane, readPortraitPane, writePortraitPane } from "./kibitzPortraitPane";
 import { KibitzVariationPanel } from "./KibitzVariationPanel";
+import { KibitzVariationChip } from "./KibitzVariationChip";
 import { KibitzProposalPanel, KibitzProposalPanelProps } from "./KibitzProposalPanel";
-import { KibitzRoomSettingsPopover } from "./KibitzRoomSettingsPopover";
+import {
+    KibitzRoomSettingsPopover,
+    KibitzRoomSettingsPopoverView,
+} from "./KibitzRoomSettingsPopover";
 import { KibitzKeyboardShortcuts } from "./KibitzKeyboardShortcuts";
-import { openKibitzMoreActions } from "./KibitzMoreActionsPopover";
-import { useKibitzHelpTarget } from "./HelpFlows/useKibitzHelpTarget";
-import { KIBITZ_HELP_TARGETS } from "./HelpFlows/KibitzHelpTargets";
+import { KibitzMoreActionsRoomActions, openKibitzMoreActions } from "./KibitzMoreActionsPopover";
 import "./KibitzView.css";
 
 export interface KibitzViewProps {
@@ -39,7 +44,10 @@ export interface KibitzViewProps {
     gobans: KibitzGobans;
     isPortrait: boolean;
     leftAside: Omit<KibitzLeftAsideProps, "miniBoardController" | "onExitVariation">;
-    chat: Omit<KibitzChatPanelProps, "gameController">;
+    chat: Omit<
+        KibitzChatPanelProps,
+        "gameController" | "showPeople" | "mode" | "visible" | "onUnreadChange"
+    >;
     proposals: KibitzProposalPanelProps;
     onPostVariation: (controller: GobanController) => void;
     /** Starts a new draft from the live board; renders as the analysis
@@ -49,7 +57,7 @@ export interface KibitzViewProps {
     onBranchFromVariation?: () => void;
     onExitVariation: () => void;
     onReturnToLive: () => void;
-    /** Portrait only: the Rooms takeover was opened. */
+    /** Portrait only: the Rooms pane was selected. */
     onRoomsOpened?: () => void;
     roomSettings: {
         /** False while the room's details and permissions are still
@@ -65,6 +73,40 @@ export interface KibitzViewProps {
     banner?: React.ReactNode;
 }
 
+// The branch icon, not the tree: the tree is the New variation action, which
+// shares this bar, and tooltips do not appear on touch.
+const PANE_ICONS: Record<KibitzPortraitPane, string> = {
+    "game-chat": "comment",
+    "room-chat": "comments",
+    people: "users",
+    variations: "code-fork",
+    rooms: "list",
+    analysis: "sitemap",
+};
+
+// The bar's two portrait groups, in the order they are shown. Rooms and
+// Variations navigate; the three on the right of the split switch what the
+// pane area shows, and the analysis action follows them.
+const PORTRAIT_LEFT_PANES: readonly KibitzPortraitPane[] = ["rooms", "variations"];
+const PORTRAIT_CENTER_PANES: readonly KibitzPortraitPane[] = ["game-chat", "room-chat", "people"];
+
+// The people label names the same list in both orientations: the pane in
+// portrait, the column the action tab switches on in landscape.
+const peopleLabel = () =>
+    pgettext("Kibitz people list, as a panel heading and as the action that shows it", "People");
+
+// Functions, not values: the strings are read after the language is set. The
+// two chat contexts match the chat panel's own tab strip, so both share one
+// translation.
+const PANE_TITLES: Record<KibitzPortraitPane, () => string> = {
+    "game-chat": () => pgettext("Kibitz chat tab for the watched game's chat", "Game chat"),
+    "room-chat": () => pgettext("Kibitz chat tab for the kibitz room's chat", "Kibitz chat"),
+    people: peopleLabel,
+    variations: () => pgettext("Heading for the Kibitz variation list", "Variations"),
+    rooms: () => pgettext("Heading of the room list in the Kibitz left aside", "Rooms"),
+    analysis: () => pgettext("Action that starts a new Kibitz variation", "New variation"),
+};
+
 const useBehindLive = generateGobanHook(
     (goban: GobanController["goban"] | null) =>
         !!goban && goban.engine.cur_move.move_number < goban.engine.last_official_move.move_number,
@@ -78,15 +120,71 @@ const useBehindLive = generateGobanHook(
  */
 export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const { room, gobans, isPortrait } = props;
-    const gobanViewRef = React.useRef<GobanViewRef>(null);
     const settingsPopoverRef = React.useRef<PopOver | null>(null);
     const moreActionsPopoverRef = React.useRef<PopOver | null>(null);
-    const roomTitleTarget = useKibitzHelpTarget(KIBITZ_HELP_TARGETS.desktopRoomTitle);
     const behindLive = useBehindLive(
         gobans.centerMode === "main" ? (gobans.main?.goban ?? null) : null,
     );
 
-    const { onExitVariation, roomSettings } = props;
+    const { onExitVariation, onRoomsOpened, roomSettings } = props;
+
+    // Portrait only: which of the five panels below the board is on screen,
+    // and the unread state the two chat panes report for their tab dots.
+    const [pane, setPane] = React.useState(readPortraitPane);
+    const [chatUnread, setChatUnread] = React.useState({ room: false, game: false });
+    const selectPane = React.useCallback((next: KibitzPortraitPane) => {
+        setPane(next);
+        writePortraitPane(next);
+    }, []);
+
+    // The analysis pane holds the variation panel, so it comes forward
+    // whenever the centre stops showing the live game and steps back when it
+    // returns — to whichever pane the reader was on, not to a default.
+    const paneBeforeAnalysis = React.useRef<KibitzPortraitPane | null>(null);
+    const centerShowsVariation = gobans.centerMode !== "main";
+    React.useEffect(() => {
+        if (!isPortrait) {
+            return;
+        }
+        if (centerShowsVariation) {
+            setPane((current) => {
+                if (current === "analysis") {
+                    return current;
+                }
+                paneBeforeAnalysis.current = current;
+                return "analysis";
+            });
+            return;
+        }
+        setPane((current) => {
+            if (current !== "analysis") {
+                return current;
+            }
+            const previous = paneBeforeAnalysis.current;
+            paneBeforeAnalysis.current = null;
+            return previous ?? readPortraitPane();
+        });
+    }, [isPortrait, centerShowsVariation]);
+
+    // Refresh the room directory whenever the Rooms pane comes on screen,
+    // including the first render, where a stored `rooms` pane is already
+    // active and never goes through selectPane.
+    React.useEffect(() => {
+        if (isPortrait && pane === "rooms") {
+            onRoomsOpened?.();
+        }
+    }, [isPortrait, pane, onRoomsOpened]);
+
+    const [showPeople, setShowPeople] = React.useState(() =>
+        data.get("kibitz.people_column", true),
+    );
+    const togglePeople = React.useCallback(() => {
+        setShowPeople((previous) => {
+            const next = !previous;
+            data.set("kibitz.people_column", next);
+            return next;
+        });
+    }, []);
 
     React.useEffect(
         () => () => {
@@ -99,10 +197,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     );
 
     const openSettings = React.useCallback(
-        (event?: React.MouseEvent<HTMLButtonElement>) => {
-            if (!event) {
-                return;
-            }
+        (anchor: HTMLElement, initialView: KibitzRoomSettingsPopoverView = "menu") => {
             settingsPopoverRef.current?.close();
             const close = () => {
                 settingsPopoverRef.current?.close();
@@ -122,19 +217,32 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         }}
                         onDeleteRoom={roomSettings.onDeleteRoom}
                         onSaveRoomDetails={roomSettings.onSaveRoomDetails}
+                        initialView={initialView}
                     />
                 ),
-                below: event.currentTarget,
+                below: anchor,
                 minWidth: 280,
             });
         },
         [room, roomSettings],
     );
 
-    const exitVariation = React.useCallback(() => {
-        gobanViewRef.current?.setActiveTakeover(null);
-        onExitVariation();
-    }, [onExitVariation]);
+    // The room-management entries the More menu shows. They are anchored to
+    // the More button, because that is what the user pressed to reach them.
+    const roomActions = React.useCallback(
+        (anchor: HTMLElement): KibitzMoreActionsRoomActions | undefined =>
+            roomSettings.ready
+                ? {
+                      canEditRoom: roomSettings.canEditRoom,
+                      canChangeBoard: !!roomSettings.onChangeBoard,
+                      canDeleteRoom: roomSettings.canDeleteRoom,
+                      onEditDetails: () => openSettings(anchor, "edit-details"),
+                      onChangeBoard: () => roomSettings.onChangeBoard?.(),
+                      onRoomInformation: () => openSettings(anchor, "menu"),
+                  }
+                : undefined,
+        [openSettings, roomSettings],
+    );
 
     // KBShortcut lets Escape through from inputs so dialogs can close; here
     // Escape in the chat or the variation name field must not close the
@@ -149,169 +257,256 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
         ) {
             return;
         }
-        exitVariation();
-    }, [exitVariation]);
+        onExitVariation();
+    }, [onExitVariation]);
 
-    if (!gobans.center) {
-        if (room.current_game?.game_id) {
-            // The live controller is created after the first commit. Render
-            // nothing for that one commit rather than the waiting layout, so
-            // the chat and panels mount once, inside GobanView.
-            return null;
-        }
-        // The room has no live game, usually a preset room between games.
-        // Keep the room's people and chat reachable while it waits.
-        const waitingAside = (
-            <KibitzLeftAside
-                {...props.leftAside}
-                miniBoardController={null}
-                onExitVariation={exitVariation}
-            />
-        );
-        const waitingMessage = (
-            <div className="KibitzView-waiting-message">
-                {pgettext(
-                    "Shown in a kibitz preset room when no eligible live game is currently being watched",
-                    "Looking for a suitable live game.",
-                )}
-            </div>
-        );
-        const waitingSidebar = (
-            <div className="KibitzView-waiting-sidebar">
-                <div className="KibitzView-waiting-header">
-                    <span className="KibitzView-waiting-title" ref={roomTitleTarget?.ref}>
-                        {room.title}
-                    </span>
-                    <button
-                        type="button"
-                        className="KibitzView-waiting-settings"
-                        title={_("Settings")}
-                        disabled={!roomSettings.ready}
-                        onClick={openSettings}
-                    >
-                        <i className="fa fa-gear" />
-                    </button>
-                </div>
-                {props.banner}
-                <KibitzProposalPanel {...props.proposals} />
-                <KibitzChatPanel {...props.chat} gameController={null} />
-            </div>
-        );
-
-        // Portrait stacks these in CSS, with the message moved to the top.
-        return (
-            <div className={"KibitzView-waiting" + (isPortrait ? " is-portrait" : "")}>
-                <div className="KibitzView-waiting-aside">{waitingAside}</div>
-                <div className="KibitzView-waiting-center">{waitingMessage}</div>
-                {waitingSidebar}
-            </div>
-        );
+    if (!gobans.center && room.current_game?.game_id) {
+        // The live controller is created after the first commit. Render
+        // nothing for that one commit, so the chat and panels mount once.
+        return null;
     }
 
+    // A room between games has no controller at all. It renders the same tree
+    // as everything else — the action bar included — with this message where
+    // the board would be.
+    const waitingMessage = (
+        <div className="KibitzView-waiting-message">
+            {pgettext(
+                "Shown in a kibitz preset room when no eligible live game is currently being watched",
+                "Looking for a suitable live game.",
+            )}
+        </div>
+    );
+
     const viewingOther = gobans.centerMode !== "main";
+    // Landscape only: the thumbnail keeps the live game in view beside a
+    // variation, and portrait has no width to spare for it — the analysis
+    // pane's Back to game button is the way back there.
+    //
     // By identity, not mode: as a variation opens there is one commit where
     // the mode has changed but the secondary controller does not exist yet.
     // Mounting one board div in both places breaks the next unmount.
-    const miniBoardController = gobans.center !== gobans.main ? gobans.main : null;
+    const miniBoardController = !isPortrait && gobans.center !== gobans.main ? gobans.main : null;
+    const panelVariationId =
+        gobans.centerMode === "variation" ? props.leftAside.selectedVariationId : null;
+    const panelColorIndex = panelVariationId
+        ? (props.leftAside.variationColorIndexes?.[panelVariationId] ?? null)
+        : null;
 
-    const leftAside = (
+    // KibitzView.test.tsx passes `leftAside: {} as ...`, so every read here is
+    // written to survive a partially-populated aside.
+    const selectedVariation = panelVariationId
+        ? ((props.leftAside.variations ?? []).find((v) => v.id === panelVariationId) ?? null)
+        : null;
+    const chipGameId = selectedVariation?.game_id ?? null;
+    const chipOtherGame =
+        chipGameId != null && chipGameId !== room.current_game?.game_id
+            ? (props.leftAside.variationGameById?.get(chipGameId) ?? null)
+            : null;
+    const variationPanel =
+        viewingOther && gobans.secondary ? (
+            <KibitzVariationPanel
+                controller={gobans.secondary}
+                mode={gobans.centerMode === "draft" ? "draft" : "variation"}
+                onPost={props.onPostVariation}
+                onBackToGame={onExitVariation}
+                onBranch={
+                    gobans.centerMode === "variation" ? props.onBranchFromVariation : undefined
+                }
+                colorIndex={panelColorIndex}
+            />
+        ) : null;
+
+    // The game's result sits on the title's own line, pulled to the right.
+    // Everything else about the game moved into the More actions menu.
+    const resultEngine = gobans.main?.goban.engine ?? null;
+    const outcome =
+        resultEngine && resultEngine.phase === "finished" ? (resultEngine.outcome ?? "") : "";
+    const resultWinner =
+        resultEngine && resultEngine.winner != null
+            ? resultEngine.players.black.id === Number(resultEngine.winner)
+                ? resultEngine.players.black
+                : resultEngine.players.white.id === Number(resultEngine.winner)
+                  ? resultEngine.players.white
+                  : null
+            : null;
+    const resultLine = outcome
+        ? resultWinner
+            ? interpolate(
+                  pgettext(
+                      "Result of the watched game, shown beside the Kibitz room title",
+                      "{{winner}} won by {{outcome}}",
+                  ),
+                  { winner: resultWinner.username, outcome },
+              )
+            : outcome
+        : null;
+
+    const variationChip =
+        gobans.centerMode === "main" ? null : (
+            <KibitzVariationChip
+                mode={gobans.centerMode === "draft" ? "draft" : "variation"}
+                variation={selectedVariation}
+                colorIndex={panelColorIndex}
+                otherGame={chipOtherGame}
+                onClose={onExitVariation}
+            />
+        );
+
+    // Landscape only. Portrait reaches the same lists through the panes, and
+    // the mini board must be mounted in one place at a time.
+    const leftAside = isPortrait ? null : (
         <KibitzLeftAside
             {...props.leftAside}
             miniBoardController={miniBoardController}
-            onExitVariation={exitVariation}
+            createVariationDisabled={!gobans.main}
+            onExitVariation={onExitVariation}
         />
     );
 
     return (
         <GobanView
-            ref={gobanViewRef}
             controller={gobans.center}
             className="Kibitz"
             header={
-                <span
-                    className="Kibitz-room-title"
-                    data-game-id={room.current_game?.game_id}
-                    ref={roomTitleTarget?.ref}
-                >
-                    {room.title}
-                </span>
+                // The header says what the centre is showing. Watching the
+                // game that is the room and its result; showing a variation,
+                // the variation alone, since the room is what the reader
+                // closes back to rather than what they are looking at.
+                <div className="Kibitz-header">
+                    {variationChip ?? (
+                        <div className="Kibitz-header-titleRow">
+                            <span
+                                className="Kibitz-room-title"
+                                data-game-id={room.current_game?.game_id}
+                            >
+                                {room.title}
+                            </span>
+                            {resultLine ? (
+                                <span className="Kibitz-header-result">{resultLine}</span>
+                            ) : null}
+                        </div>
+                    )}
+                </div>
             }
             leftAside={leftAside}
-            playerBars={gobans.playerBars ?? true}
+            centerPlaceholder={waitingMessage}
+            playerBars={gobans.playerBars ?? !!gobans.center}
+            portraitSplit
         >
-            <KibitzKeyboardShortcuts />
+            {gobans.center && <KibitzKeyboardShortcuts />}
             {viewingOther && <KBShortcut shortcut="esc" action={onEscape} />}
 
             <GobanView.Tab id="kibitz-main" type="always">
                 {props.banner}
                 <KibitzProposalPanel {...props.proposals} />
-                {viewingOther && gobans.secondary && (
-                    <KibitzVariationPanel
-                        controller={gobans.secondary}
-                        mode={gobans.centerMode === "draft" ? "draft" : "variation"}
-                        onPost={props.onPostVariation}
-                        onBackToGame={exitVariation}
-                        onBranch={
-                            gobans.centerMode === "variation"
-                                ? props.onBranchFromVariation
-                                : undefined
-                        }
+                {!isPortrait && variationPanel}
+                {isPortrait ? (
+                    <KibitzPortraitPanes
+                        active={pane}
+                        chat={{
+                            ...props.chat,
+                            gameController: gobans.main,
+                            showPeople: false,
+                            onUnreadChange: setChatUnread,
+                        }}
+                        leftAside={{
+                            ...props.leftAside,
+                            miniBoardController: null,
+                            // Same condition as the analysis action in the
+                            // tab bar: nothing to make a variation of.
+                            createVariationDisabled: !gobans.main,
+                            onExitVariation,
+                        }}
+                        roomChannel={room.channel}
+                        analysis={variationPanel}
+                    />
+                ) : (
+                    <KibitzChatPanel
+                        {...props.chat}
+                        gameController={gobans.main}
+                        showPeople={showPeople}
                     />
                 )}
-                <KibitzChatPanel {...props.chat} gameController={gobans.main} />
             </GobanView.Tab>
 
-            <GobanView.Tab
-                id="kibitz-settings"
-                type="action"
-                align="left"
-                icon="gear"
-                title={_("Settings")}
-                disabled={!roomSettings.ready}
-                onClick={openSettings}
-            />
+            {isPortrait &&
+                PORTRAIT_LEFT_PANES.map((id) => (
+                    <GobanView.Tab
+                        key={id}
+                        id={`kibitz-pane-${id}`}
+                        type="action"
+                        align="left"
+                        icon={PANE_ICONS[id]}
+                        title={PANE_TITLES[id]()}
+                        active={pane === id}
+                        onClick={() => selectPane(id)}
+                    />
+                ))}
+
+            {isPortrait &&
+                PORTRAIT_CENTER_PANES.map((id) => (
+                    <GobanView.Tab
+                        key={id}
+                        id={`kibitz-pane-${id}`}
+                        type="action"
+                        align="center"
+                        icon={
+                            <span className="Kibitz-pane-icon">
+                                <i className={`fa fa-${PANE_ICONS[id]}`} />
+                                {((id === "game-chat" && chatUnread.game) ||
+                                    (id === "room-chat" && chatUnread.room)) &&
+                                pane !== id ? (
+                                    <span className="Kibitz-pane-unread" />
+                                ) : null}
+                            </span>
+                        }
+                        title={PANE_TITLES[id]()}
+                        active={pane === id}
+                        onClick={() => selectPane(id)}
+                    />
+                ))}
+
+            {!isPortrait && (
+                <GobanView.Tab
+                    id="kibitz-people"
+                    type="action"
+                    align="center"
+                    icon="users"
+                    title={peopleLabel()}
+                    active={showPeople}
+                    onClick={togglePeople}
+                />
+            )}
 
             {props.onCreateVariation && (
                 <GobanView.Tab
                     id="kibitz-new-variation"
                     type="action"
-                    align="left"
+                    align="center"
                     icon="sitemap"
                     title={pgettext("Action that starts a new Kibitz variation", "New variation")}
-                    active={gobans.centerMode === "draft"}
+                    active={isPortrait ? pane === "analysis" : gobans.centerMode === "draft"}
                     disabled={!gobans.main}
-                    onClick={props.onCreateVariation}
-                />
-            )}
-
-            {isPortrait && (
-                <GobanView.Tab
-                    id="kibitz-rooms"
-                    type="takeover"
-                    align="left"
-                    icon="list"
-                    title={pgettext("Tab that lists Kibitz rooms", "Rooms")}
-                    onToggle={(active) => {
-                        if (active) {
-                            props.onRoomsOpened?.();
+                    onClick={() => {
+                        // Pressing it again on the pane it opened leaves the
+                        // draft, the way it did before the panel became a
+                        // pane. Reaching the pane from elsewhere only
+                        // switches: a draft is not discarded by navigation.
+                        if (gobans.centerMode === "draft") {
+                            if (!isPortrait || pane === "analysis") {
+                                onExitVariation();
+                            } else {
+                                selectPane("analysis");
+                            }
+                            return;
                         }
+                        if (isPortrait && viewingOther) {
+                            selectPane("analysis");
+                            return;
+                        }
+                        props.onCreateVariation?.();
                     }}
-                >
-                    {leftAside}
-                </GobanView.Tab>
-            )}
-
-            {viewingOther && (
-                <GobanView.Tab
-                    id="kibitz-return-to-game"
-                    type="action"
-                    align="center"
-                    icon="arrow-left"
-                    title={pgettext(
-                        "Action that leaves a Kibitz variation and shows the live game",
-                        "Return to game",
-                    )}
-                    onClick={exitVariation}
                 />
             )}
 
@@ -319,7 +514,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 <GobanView.Tab
                     id="kibitz-return-to-live"
                     type="action"
-                    align="center"
+                    align="right"
                     icon="forward"
                     title={pgettext(
                         "Action that jumps a Kibitz board to the latest move",
@@ -336,13 +531,16 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 icon="ellipsis-h"
                 title={_("More actions")}
                 onClick={(event) => {
-                    if (event && gobans.main) {
-                        moreActionsPopoverRef.current?.close();
-                        moreActionsPopoverRef.current = openKibitzMoreActions(
-                            event.currentTarget,
-                            gobans.main,
-                        );
+                    if (!event) {
+                        return;
                     }
+                    const anchor = event.currentTarget;
+                    moreActionsPopoverRef.current?.close();
+                    moreActionsPopoverRef.current = openKibitzMoreActions(
+                        anchor,
+                        gobans.main,
+                        roomActions(anchor),
+                    );
                 }}
             />
         </GobanView>

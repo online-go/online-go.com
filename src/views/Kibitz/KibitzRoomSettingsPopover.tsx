@@ -23,7 +23,7 @@ import type { KibitzRoomSummary, KibitzRoomUser } from "@/models/kibitz";
 import { KibitzUserAvatar } from "./KibitzUserAvatar";
 import "./KibitzRoomSettingsPopover.css";
 
-type KibitzRoomSettingsPopoverView = "menu" | "edit-details";
+export type KibitzRoomSettingsPopoverView = "menu" | "edit-details";
 
 interface KibitzRoomSettingsPopoverProps {
     room: KibitzRoomSummary;
@@ -34,6 +34,9 @@ interface KibitzRoomSettingsPopoverProps {
     onRequestChangeBoard: () => void;
     onDeleteRoom: () => Promise<boolean>;
     onSaveRoomDetails: (title: string, description: string) => Promise<boolean>;
+    /** Which view to open on. The More actions menu opens straight into
+     *  "edit-details", having already offered the choice itself. */
+    initialView?: KibitzRoomSettingsPopoverView;
 }
 
 export function KibitzRoomSettingsPopover({
@@ -45,8 +48,9 @@ export function KibitzRoomSettingsPopover({
     onDeleteRoom,
     onRequestChangeBoard,
     onSaveRoomDetails,
+    initialView = "menu",
 }: KibitzRoomSettingsPopoverProps): React.ReactElement {
-    const [view, setView] = React.useState<KibitzRoomSettingsPopoverView>("menu");
+    const [view, setView] = React.useState<KibitzRoomSettingsPopoverView>(initialView);
     const [roomTitle, setRoomTitle] = React.useState(room.title);
     const [roomDescription, setRoomDescription] = React.useState(room.description ?? "");
     const [saving, setSaving] = React.useState(false);
@@ -55,13 +59,13 @@ export function KibitzRoomSettingsPopover({
     const [owner, setOwner] = React.useState<KibitzRoomUser | null>(null);
 
     React.useEffect(() => {
-        setView("menu");
+        setView(initialView);
         setRoomTitle(room.title);
         setRoomDescription(room.description ?? "");
         setSaving(false);
         setDeleting(false);
         setErrorMessage(null);
-    }, [room.description, room.title, room.id]);
+    }, [initialView, room.description, room.title, room.id]);
 
     React.useEffect(() => {
         let cancelled = false;

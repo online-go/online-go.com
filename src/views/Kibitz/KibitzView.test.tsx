@@ -16,10 +16,19 @@
  */
 
 import * as React from "react";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import * as data from "@/lib/data";
 import type { GobanController } from "@/lib/GobanController";
+import type { KibitzRoomUser, KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
 import { KibitzView, KibitzViewProps } from "./KibitzView";
 
+jest.mock("@/components/Player", () => ({
+    __esModule: true,
+    Player: ({ user }: { user?: { username?: string } }) => (
+        <span data-testid="Player">{user?.username ?? ""}</span>
+    ),
+}));
 jest.mock("@/components/KBShortcut", () => ({ __esModule: true, KBShortcut: () => null }));
 jest.mock("@/components/GobanContainer", () => ({
     __esModule: true,
@@ -43,6 +52,12 @@ jest.mock("./KibitzChatPanel", () => ({
     __esModule: true,
     KibitzChatPanel: () => <div data-testid="chat" />,
 }));
+jest.mock("./KibitzPortraitPanes", () => ({
+    __esModule: true,
+    KibitzPortraitPanes: ({ active }: { active: string }) => (
+        <div data-testid="portrait-panes" data-active={active} />
+    ),
+}));
 jest.mock("./KibitzVariationPanel", () => ({
     __esModule: true,
     KibitzVariationPanel: ({ mode }: { mode: string }) => (
@@ -61,7 +76,6 @@ jest.mock("./KibitzMoreActionsPopover", () => ({
     __esModule: true,
     openKibitzMoreActions: jest.fn(),
 }));
-jest.mock("./HelpFlows/useKibitzHelpTarget", () => ({ useKibitzHelpTarget: () => null }));
 jest.mock("@/lib/hooks", () => ({ useUser: () => ({ id: 1, anonymous: false }) }));
 
 function fakeController(curMove = 5, lastOfficialMove = 5): GobanController {
@@ -113,6 +127,62 @@ function baseProps(overrides: Partial<KibitzViewProps> = {}): KibitzViewProps {
     };
 }
 
+function makeRoomUser(id: number, username: string): KibitzRoomUser {
+    return { id, username, ranking: 0, professional: false, ui_class: "" };
+}
+
+function makeVariation(overrides: Partial<KibitzVariationSummary> = {}): KibitzVariationSummary {
+    return {
+        id: "v1",
+        room_id: "r1",
+        game_id: 100,
+        creator: makeRoomUser(1, "alice"),
+        created_at: 0,
+        viewer_count: 0,
+        current_viewers: [],
+        title: "Tenuki instead",
+        ...overrides,
+    };
+}
+
+function makeWatchedGame(overrides: Partial<KibitzWatchedGame> = {}): KibitzWatchedGame {
+    return {
+        game_id: 42,
+        board_size: "19x19",
+        title: "Round 3",
+        black: makeRoomUser(1, "b"),
+        white: makeRoomUser(2, "w"),
+        ...overrides,
+    };
+}
+
+// A populated leftAside, standing in for the `{}` stub `baseProps()` uses,
+// for the tests below that need the chip's game-lookup derivation
+// (variations / variationGameById / selectedVariationId /
+// variationColorIndexes) to actually resolve rather than short-circuit.
+function variationLeftAside(
+    overrides: Partial<KibitzViewProps["leftAside"]> = {},
+): KibitzViewProps["leftAside"] {
+    return {
+        rooms: [],
+        activeRoomId: "r1",
+        blockedRoomIds: new Set(),
+        onSelectRoom: jest.fn(),
+        canOpenCreateRoomFlow: false,
+        signInHref: "/login",
+        variations: [],
+        currentGameId: 100,
+        variationGameById: new Map(),
+        selectedVariationId: null,
+        variationFocusRequestId: 0,
+        blockedVariationFlashId: null,
+        onRecallVariation: jest.fn(),
+        onHideVariation: jest.fn(),
+        variationColorIndexes: {},
+        ...overrides,
+    };
+}
+
 // jsdom reports a 1024x768 window, which goban_view_mode classifies as
 // "wide", so these tests exercise the landscape layout.
 describe("KibitzView", () => {
@@ -124,18 +194,21 @@ describe("KibitzView", () => {
         expect(screen.getByTestId("chat")).toBeInTheDocument();
         expect(screen.queryByTestId(/variation-panel/)).toBeNull();
         expect(screen.getByTestId("left-aside")).toHaveAttribute("data-mini", "no");
-        expect(screen.getByTitle("Settings")).toBeInTheDocument();
-        expect(screen.queryByTitle("Return to game")).toBeNull();
+        expect(screen.getByTitle("More actions")).toBeInTheDocument();
+        // The settings gear is gone; its entries live in the More menu.
+        expect(screen.queryByTitle("Settings")).toBeNull();
     });
 
-    test("draft mode shows the draft panel, mini board and return action", () => {
+    test("draft mode shows the draft panel and the mini board", () => {
         const props = baseProps();
         const secondary = fakeController();
         props.gobans = { ...props.gobans, secondary, center: secondary, centerMode: "draft" };
         render(<KibitzView {...props} />);
         expect(screen.getByTestId("variation-panel-draft")).toBeInTheDocument();
         expect(screen.getByTestId("left-aside")).toHaveAttribute("data-mini", "yes");
-        expect(screen.getByTitle("Return to game")).toBeInTheDocument();
+        // No Return to game tab: the variation panel's own Back to game
+        // button, the mini board and Escape are the ways out.
+        expect(screen.queryByTitle("Return to game")).toBeNull();
     });
 
     test("variation mode shows the read-only panel", () => {
@@ -144,6 +217,78 @@ describe("KibitzView", () => {
         props.gobans = { ...props.gobans, secondary, center: secondary, centerMode: "variation" };
         render(<KibitzView {...props} />);
         expect(screen.getByTestId("variation-panel-variation")).toBeInTheDocument();
+    });
+
+    test("a variation of a different game names that game in the header chip", () => {
+        const otherGame = makeWatchedGame({ game_id: 42, title: "Round 3" });
+        const variation = makeVariation({ id: "v1", game_id: 42, title: "Tenuki instead" });
+        const props = baseProps({
+            room: {
+                id: "r1",
+                title: "Room",
+                channel: "kibitz-r1",
+                current_game: { game_id: 100 },
+            } as unknown as KibitzViewProps["room"],
+            leftAside: variationLeftAside({
+                variations: [variation],
+                selectedVariationId: "v1",
+                variationGameById: new Map([[42, otherGame]]),
+            }),
+        });
+        const secondary = fakeController();
+        props.gobans = { ...props.gobans, secondary, center: secondary, centerMode: "variation" };
+        render(<KibitzView {...props} />);
+        // Assert the variation itself resolved (not just that some text
+        // matched), so a fixture that leaves `selectedVariation` null can't
+        // pass this test for the wrong reason.
+        expect(screen.getByText("Tenuki instead")).toBeInTheDocument();
+        expect(screen.getByText(/Round 3/)).toBeInTheDocument();
+    });
+
+    test("a variation of the room's current game shows no other-game label", () => {
+        const variation = makeVariation({ id: "v1", game_id: 100, title: "Tenuki instead" });
+        const props = baseProps({
+            room: {
+                id: "r1",
+                title: "Room",
+                channel: "kibitz-r1",
+                current_game: { game_id: 100 },
+            } as unknown as KibitzViewProps["room"],
+            leftAside: variationLeftAside({
+                variations: [variation],
+                selectedVariationId: "v1",
+                variationGameById: new Map([
+                    [100, makeWatchedGame({ game_id: 100, title: "Should not appear" })],
+                ]),
+            }),
+        });
+        const secondary = fakeController();
+        props.gobans = { ...props.gobans, secondary, center: secondary, centerMode: "variation" };
+        const { container } = render(<KibitzView {...props} />);
+        expect(screen.getByText("Tenuki instead")).toBeInTheDocument();
+        expect(container.querySelector(".KibitzVariationChip-game")).toBeNull();
+    });
+
+    test("a variation of an untracked older game renders without the label", () => {
+        const variation = makeVariation({ id: "v1", game_id: 42, title: "Tenuki instead" });
+        const props = baseProps({
+            room: {
+                id: "r1",
+                title: "Room",
+                channel: "kibitz-r1",
+                current_game: { game_id: 100 },
+            } as unknown as KibitzViewProps["room"],
+            leftAside: variationLeftAside({
+                variations: [variation],
+                selectedVariationId: "v1",
+                variationGameById: new Map(),
+            }),
+        });
+        const secondary = fakeController();
+        props.gobans = { ...props.gobans, secondary, center: secondary, centerMode: "variation" };
+        const { container } = render(<KibitzView {...props} />);
+        expect(screen.getByText("Tenuki instead")).toBeInTheDocument();
+        expect(container.querySelector(".KibitzVariationChip-game")).toBeNull();
     });
 
     test("a main board behind the official tail offers Return to live", () => {
@@ -197,9 +342,80 @@ describe("KibitzView", () => {
         expect(screen.queryByTestId("goban-container")).toBeNull();
     });
 
-    test("portrait offers the Rooms takeover", () => {
-        render(<KibitzView {...baseProps({ isPortrait: true })} />);
-        expect(screen.getByTitle("Rooms")).toBeInTheDocument();
+    describe("portrait", () => {
+        beforeEach(() => {
+            data.remove("kibitz.portrait_pane");
+            data.remove("kibitz.chat_tab");
+        });
+
+        test("shows the panes instead of the chat and the left aside", () => {
+            render(<KibitzView {...baseProps({ isPortrait: true })} />);
+            for (const title of ["Game chat", "Kibitz chat", "People", "Variations", "Rooms"]) {
+                expect(screen.getByTitle(title)).toBeInTheDocument();
+            }
+            expect(screen.getByTestId("portrait-panes")).toHaveAttribute(
+                "data-active",
+                "room-chat",
+            );
+            expect(screen.queryByTestId("chat")).toBeNull();
+            expect(screen.queryByTestId("left-aside")).toBeNull();
+        });
+
+        test("the action bar switches the pane and remembers the choice", () => {
+            render(<KibitzView {...baseProps({ isPortrait: true })} />);
+            fireEvent.click(screen.getByTitle("Variations"));
+            expect(screen.getByTestId("portrait-panes")).toHaveAttribute(
+                "data-active",
+                "variations",
+            );
+            expect(data.get("kibitz.portrait_pane")).toBe("variations");
+        });
+
+        test("a stored Rooms pane refreshes the room directory on the first render", () => {
+            data.set("kibitz.portrait_pane", "rooms");
+            const onRoomsOpened = jest.fn();
+            render(<KibitzView {...baseProps({ isPortrait: true, onRoomsOpened })} />);
+            expect(onRoomsOpened).toHaveBeenCalledTimes(1);
+        });
+
+        test("landscape does not refresh the directory for a stored Rooms pane", () => {
+            data.set("kibitz.portrait_pane", "rooms");
+            const onRoomsOpened = jest.fn();
+            render(<KibitzView {...baseProps({ isPortrait: false, onRoomsOpened })} />);
+            expect(onRoomsOpened).not.toHaveBeenCalled();
+        });
+
+        test("selecting the Rooms pane refreshes the room directory", () => {
+            const onRoomsOpened = jest.fn();
+            render(<KibitzView {...baseProps({ isPortrait: true, onRoomsOpened })} />);
+            expect(onRoomsOpened).not.toHaveBeenCalled();
+            fireEvent.click(screen.getByTitle("Rooms"));
+            expect(onRoomsOpened).toHaveBeenCalledTimes(1);
+            expect(screen.getByTestId("portrait-panes")).toHaveAttribute("data-active", "rooms");
+        });
+
+        test("keeps the room title above the board", () => {
+            const { container } = render(<KibitzView {...baseProps({ isPortrait: true })} />);
+            expect(container.querySelector(".Kibitz-room-title")).not.toBeNull();
+        });
+
+        test("the variation chip takes the header over from the room title", () => {
+            // The header names what the centre shows: the room, or the
+            // variation on its own. The game's settings live in the More
+            // actions menu, so there is no second line either way.
+            const live = render(<KibitzView {...baseProps({ isPortrait: true })} />);
+            expect(live.container.querySelector(".KibitzVariationChip")).toBeNull();
+            expect(live.container.querySelector(".Kibitz-room-title")).not.toBeNull();
+            live.unmount();
+
+            const props = baseProps({ isPortrait: true });
+            const secondary = fakeController();
+            props.gobans = { ...props.gobans, secondary, center: secondary, centerMode: "draft" };
+            const variation = render(<KibitzView {...props} />);
+            expect(variation.container.querySelector(".KibitzVariationChip")).not.toBeNull();
+            expect(variation.container.querySelector(".Kibitz-room-title")).toBeNull();
+            expect(variation.container.querySelector(".Kibitz-header-result")).toBeNull();
+        });
     });
 
     test("a room with a game but no controller yet renders nothing", () => {
@@ -222,5 +438,52 @@ describe("KibitzView", () => {
         const { container } = render(<KibitzView {...props} />);
         expect(container).toBeEmptyDOMElement();
         expect(screen.queryByText("Looking for a suitable live game.")).toBeNull();
+    });
+
+    test("the analysis action leaves the draft when it is already active", async () => {
+        const props = baseProps();
+        const secondary = fakeController();
+        props.gobans = { ...props.gobans, secondary, center: secondary, centerMode: "draft" };
+        props.onCreateVariation = jest.fn();
+        props.onExitVariation = jest.fn();
+        render(<KibitzView {...props} />);
+        await userEvent.click(screen.getByTitle("New variation"));
+        expect(props.onExitVariation).toHaveBeenCalledTimes(1);
+        expect(props.onCreateVariation).not.toHaveBeenCalled();
+    });
+
+    test("the analysis action starts a draft when it is not active", async () => {
+        const props = baseProps();
+        props.onCreateVariation = jest.fn();
+        props.onExitVariation = jest.fn();
+        render(<KibitzView {...props} />);
+        await userEvent.click(screen.getByTitle("New variation"));
+        expect(props.onCreateVariation).toHaveBeenCalledTimes(1);
+        expect(props.onExitVariation).not.toHaveBeenCalled();
+    });
+
+    test("a room between games keeps the action bar and the panels", () => {
+        // The waiting state used to render its own tree with no GobanView,
+        // which meant no tab bar at all. It now renders the same tree as
+        // everything else, with a message where the board would be.
+        const props = baseProps();
+        props.gobans = {
+            ...props.gobans,
+            main: null,
+            center: null,
+            playerBars: null,
+            centerMode: "main",
+        };
+        props.room = { ...props.room, current_game: undefined };
+        const { container } = render(<KibitzView {...props} />);
+
+        expect(container.querySelector(".KibitzView-waiting-message")).not.toBeNull();
+        expect(container.querySelector(".GobanView-tab-bar")).not.toBeNull();
+        expect(screen.getByTitle("More actions")).toBeInTheDocument();
+        expect(screen.getByTestId("chat")).toBeInTheDocument();
+        // No board means no bars and no move-number strip to drive.
+        expect(screen.queryByTestId("bar-black")).toBeNull();
+        expect(screen.queryByTestId("move-number-control")).toBeNull();
+        expect(container.querySelector(".GobanView.has-no-board")).not.toBeNull();
     });
 });

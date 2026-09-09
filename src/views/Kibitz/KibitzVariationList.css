@@ -34,6 +34,18 @@
             color: var(--fg);
             text-decoration: none;
         }
+
+        /* Nothing to branch from. Reads the way the disabled analysis action
+           in the tab bar does, rather than staying indistinguishable from a
+           live row. */
+        &:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+
+            &:hover {
+                color: var(--shade1);
+            }
+        }
     }
 
     .variation-scroll {
@@ -206,6 +218,9 @@
     }
 
     .variation-name {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
         color: var(--fg);
         white-space: nowrap;
         overflow: hidden;

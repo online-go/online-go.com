@@ -19,9 +19,8 @@ import * as React from "react";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
 import { Player } from "@/components/Player";
-import { KIBITZ_HELP_TARGETS } from "./HelpFlows/KibitzHelpTargets";
-import { useKibitzHelpTarget } from "./HelpFlows/useKibitzHelpTarget";
 import { formatVariationBranchLabel, formatVariationLengthLabel } from "./kibitzVariationQuickList";
+import { KibitzVariationSwatch } from "./KibitzVariationSwatch";
 import "./KibitzVariationList.css";
 
 interface KibitzVariationListProps {
@@ -35,9 +34,13 @@ interface KibitzVariationListProps {
     onHideVariation?: (variationId: string) => void;
     /** Starts a new draft; shown as "+ Variation" at the bottom. */
     onCreateVariation?: () => void;
+    /** True while there is no game to make a variation of. The row stays
+     *  visible and goes dim, matching the analysis action in the tab bar. */
+    createVariationDisabled?: boolean;
     /** Removes every variation from the board; shown as "Clear all" at the bottom. */
     onClearAll?: () => void;
-    helpTargetId?: (typeof KIBITZ_HELP_TARGETS)[keyof typeof KIBITZ_HELP_TARGETS];
+    /** Move-tree line colour of each variation that is on the board, by id. */
+    colorIndexes?: Record<string, number>;
 }
 
 export function KibitzVariationList({
@@ -50,10 +53,10 @@ export function KibitzVariationList({
     onRecallVariation,
     onHideVariation,
     onCreateVariation,
+    createVariationDisabled = false,
     onClearAll,
-    helpTargetId,
+    colorIndexes = {},
 }: KibitzVariationListProps): React.ReactElement {
-    const variationListTarget = useKibitzHelpTarget(helpTargetId);
     const selectedVariationElementRef = React.useRef<HTMLDivElement | null>(null);
     const previousFocusRequestIdRef = React.useRef<number>(variationFocusRequestId);
     const groupedVariations = React.useMemo(() => {
@@ -114,7 +117,7 @@ export function KibitzVariationList({
     }, [selectedVariationId, variationFocusRequestId]);
 
     return (
-        <div className="KibitzVariationList" ref={variationListTarget?.ref}>
+        <div className="KibitzVariationList">
             <div className="variation-scroll">
                 {groupedVariations.length > 0 ? (
                     <div className="variation-items">
@@ -257,6 +260,12 @@ export function KibitzVariationList({
                                                 >
                                                     <span className="variation-main">
                                                         <span className="variation-name">
+                                                            <KibitzVariationSwatch
+                                                                colorIndex={
+                                                                    colorIndexes[variation.id] ??
+                                                                    null
+                                                                }
+                                                            />
                                                             {interpolate(
                                                                 pgettext(
                                                                     "Posted analysis variation label",
@@ -339,6 +348,7 @@ export function KibitzVariationList({
                         <button
                             type="button"
                             className="KibitzVariationList-footerAction"
+                            disabled={createVariationDisabled}
                             onClick={onCreateVariation}
                         >
                             <i className="fa fa-plus" aria-hidden="true" />{" "}

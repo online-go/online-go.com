@@ -509,8 +509,10 @@ describe("KibitzGamePickerOverlay", () => {
             expect(onChangeBoard).toHaveBeenCalledTimes(1);
         });
 
+        // getByText throws on more than one match: the message belongs in one
+        // place, under the game ID field.
         await waitFor(() => {
-            expect(screen.getAllByText("change failed")).toHaveLength(2);
+            expect(screen.getByText("change failed")).toBeInTheDocument();
         });
     });
 

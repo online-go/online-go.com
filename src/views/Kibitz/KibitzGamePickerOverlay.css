@@ -1,17 +1,33 @@
-.KibitzGamePickerOverlay {
-    background: var(--bg);
-    inset: 0;
-    display: flex;
-    flex-direction: column;
+/* The site's modal chrome positions and frames this dialog; what is left
+   here is how the picker fills the card it is given. */
+.KibitzGamePickerOverlay-container {
+    align-items: center;
+    padding: 0.5rem;
+}
+
+.Modal.KibitzGamePickerOverlay {
+    width: min(72rem, 100%);
+    height: min(52rem, 100%);
     min-height: 0;
-    overflow: hidden;
-    padding: 0.5rem 0.75rem 0.75rem;
-    position: fixed;
-    z-index: 60;
+
+    > .body {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+        padding: 0;
+    }
+
+    .KibitzGamePickerOverlay-signedOut {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 1rem;
+    }
 
     .KibitzGamePickerOverlay-shell {
-        background: var(--card-background-color);
-        border: 1px solid var(--shade3);
+        background: transparent;
+        border: 0;
         box-shadow: none;
         display: flex;
         flex-direction: column;
@@ -20,28 +36,14 @@
         overflow: hidden;
     }
 
-    .KibitzGamePickerOverlay-header {
-        align-items: start;
-        border-bottom: 1px solid var(--shade3);
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 1rem;
-        padding: 1rem 1.1rem 0.9rem;
-    }
-
-    .KibitzGamePickerOverlay-headerMain {
-        grid-column: 1;
-        min-width: 0;
-    }
-
-    .KibitzGamePickerOverlay-headerControls {
-        grid-column: 2;
-        justify-self: center;
+    /* The game ID entry sits under the selection card's text, separated
+       from it by a rule rather than by a header row of its own. */
+    .KibitzGamePickerOverlay-manualEntry {
+        border-top: 1px solid var(--shade3);
         display: flex;
         flex-direction: column;
         gap: 0.35rem;
-        width: min(24rem, 100%);
-        min-width: min(24rem, 100%);
+        padding-top: 0.65rem;
     }
 
     .ObserveGamesComponent .header > .right > button.xs.primary {
@@ -49,12 +51,6 @@
         line-height: 1.2;
         height: 3rem;
         padding: 0 1rem;
-    }
-
-    .KibitzGamePickerOverlay-closeButton {
-        align-self: end;
-        grid-column: 3;
-        justify-self: end;
     }
 
     .KibitzGamePickerOverlay-boardWrap {
@@ -298,12 +294,15 @@
         font-size: 0.9rem;
     }
 
+    /* Keeps a little of the height the selected game will take, so the
+       pane does not jump, without pushing the game ID field away from the
+       text that names it. */
     .KibitzGamePickerOverlay-emptyState {
         align-items: center;
         color: var(--text-dimmed);
         display: flex;
         justify-content: center;
-        min-height: 16rem;
+        min-height: 6rem;
         text-align: center;
     }
 
@@ -508,6 +507,10 @@
         padding: 0.85rem 1rem 1rem;
     }
 
+    .KibitzGamePickerOverlay-mobilePreviewStep {
+        overflow-y: auto;
+    }
+
     .KibitzGamePickerOverlay-mobileObservePane {
         flex: 1;
         min-height: 0;
@@ -561,7 +564,6 @@
 
     .KibitzGamePickerOverlay-shell-mobile {
         border: 0;
-        background: var(--bg);
     }
 }
 
@@ -571,8 +573,26 @@
     [data-theme="light"] .KibitzGamePickerOverlay-roomFields,
     [data-theme="light"] .KibitzGamePickerOverlay-confirmation,
     [data-theme="light"] .KibitzGamePickerOverlay-mobileRoomFields,
-    [data-theme="light"] .KibitzGamePickerOverlay-suggestion,
-    [data-theme="light"] .KibitzGamePickerOverlay-header {
+    [data-theme="light"] .KibitzGamePickerOverlay-suggestion {
         background: var(--bg);
     }
+}
+
+/* The dialog's title lives in the modal's own header slot now, so the
+   header reads like every other modal's. */
+.Modal.KibitzGamePickerOverlay > .header {
+    padding: 0.75rem 1rem 0.85rem;
+    display: block;
+}
+
+.Modal.KibitzGamePickerOverlay .KibitzGamePickerOverlay-titleBlock h2 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.Modal.KibitzGamePickerOverlay
+    .KibitzGamePickerOverlay-titleBlock
+    .KibitzGamePickerOverlay-subtitle {
+    color: var(--text-dimmed);
+    font-size: 0.85rem;
 }
