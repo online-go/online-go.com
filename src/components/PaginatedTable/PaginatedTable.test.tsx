@@ -118,4 +118,54 @@ describe("PaginatedTable", () => {
         expect(screen.getByText("Bob history")).toBeInTheDocument();
         expect(screen.queryByText("Alice history")).not.toBeInTheDocument();
     });
+
+    test("fetches the new source when it changes mid-flight with page > 1", async () => {
+        const tableElement = (source: string) => (
+            <PaginatedTable
+                className="test-table"
+                name="stale-source-table"
+                source={source}
+                startingPage={2}
+                hidePageControls={true}
+                columns={[
+                    {
+                        header: "Name",
+                        render: (row: { name: string }) => row.name,
+                    },
+                ]}
+            />
+        );
+
+        const { rerender } = render(tableElement("moderation?player_id=1"));
+        await waitFor(() => {
+            expect(pendingByUrl.has("moderation?player_id=1")).toBe(true);
+        });
+
+        rerender(tableElement("moderation?player_id=2"));
+
+        await act(async () => {
+            pendingByUrl.get("moderation?player_id=1")?.resolve({
+                count: 30,
+                results: [{ id: 1, name: "Alice history" }],
+            });
+        });
+
+        // The new source must still get fetched when the old fetch resolves
+        // after the source change: the source-change bump and the
+        // fetch-completion bump of load_again_refresh must compound rather
+        // than collide (stale-closure livelock regression).
+        await waitFor(() => {
+            expect(pendingByUrl.has("moderation?player_id=2")).toBe(true);
+        });
+
+        await act(async () => {
+            pendingByUrl.get("moderation?player_id=2")?.resolve({
+                count: 1,
+                results: [{ id: 2, name: "Bob history" }],
+            });
+        });
+
+        expect(screen.getByText("Bob history")).toBeInTheDocument();
+        expect(screen.queryByText("Alice history")).not.toBeInTheDocument();
+    });
 });

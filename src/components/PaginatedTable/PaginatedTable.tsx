@@ -98,8 +98,10 @@ function PaginatedTableImpl<RawEntryT = any, GroomedEntryT = RawEntryT>(
         props.orderBy || [],
     );
     const [loading, setLoading]: [boolean, (x: boolean) => void] = React.useState(false as boolean);
-    const [load_again_refresh, setLoadAgainRefresh]: [number, (x: number) => void] =
-        React.useState(0);
+    const [load_again_refresh, setLoadAgainRefresh]: [
+        number,
+        React.Dispatch<React.SetStateAction<number>>,
+    ] = React.useState(0);
     const mounted = React.useRef(false);
 
     const load_again = React.useRef(false as boolean);
@@ -138,7 +140,7 @@ function PaginatedTableImpl<RawEntryT = any, GroomedEntryT = RawEntryT>(
             if (page !== 1) {
                 setPage(1);
                 load_again.current = true;
-                setLoadAgainRefresh(load_again_refresh + 1);
+                setLoadAgainRefresh((r) => r + 1);
                 return;
             }
         }
@@ -151,7 +153,7 @@ function PaginatedTableImpl<RawEntryT = any, GroomedEntryT = RawEntryT>(
         if (last_filter && !softEquals(last_filter, filter)) {
             setPage(1);
             load_again.current = true;
-            setLoadAgainRefresh(load_again_refresh + 1);
+            setLoadAgainRefresh((r) => r + 1);
             return;
         }
 
@@ -169,7 +171,7 @@ function PaginatedTableImpl<RawEntryT = any, GroomedEntryT = RawEntryT>(
                 setLoading(false);
                 if (load_again.current) {
                     load_again.current = false;
-                    setLoadAgainRefresh(load_again_refresh + 1);
+                    setLoadAgainRefresh((r) => r + 1);
                 }
                 if (source_ref.current !== requested_source) {
                     return;
@@ -204,7 +206,7 @@ function PaginatedTableImpl<RawEntryT = any, GroomedEntryT = RawEntryT>(
                 setLoading(false);
                 if (load_again.current) {
                     load_again.current = false;
-                    setLoadAgainRefresh(load_again_refresh + 1);
+                    setLoadAgainRefresh((r) => r + 1);
                 }
             });
 
