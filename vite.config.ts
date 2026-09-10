@@ -403,6 +403,7 @@ export default defineConfig({
                 return null;
             },
         },
+        admin_host_proxy(),
         ogs_vite_middleware(),
         react(),
         //circularDependency(),
@@ -503,6 +504,85 @@ export default defineConfig({
         },
     },
 });
+
+/**
+ * Hands requests for an `admin.*` hostname to the local OGS stack.
+ *
+ * On a development instance every public hostname lands on this dev server,
+ * but the unified admin interface (ogs/apps/admin) is served by the stack's
+ * termination-server for `admin.*` hosts, not by this client. So a request
+ * whose Host starts with `admin.` is relayed to the local load balancer,
+ * Host intact (the stack routes by it), and never reaches Vite. Only
+ * meaningful against the local stack; against beta or production the admin
+ * host is its own site.
+ *
+ * `Origin` and `Referer` are replaced with this dev server's own, because the
+ * browser's names a host *with a port* — and Django's wildcard
+ * `CSRF_TRUSTED_ORIGINS` entries cannot match one, so `admin.example.org:8080`
+ * is refused with "Origin checking failed" on every POST while the same host
+ * without the port is accepted. In production the interface and the API are
+ * one origin and none of this arises. The apps/admin dev server presents a
+ * trusted origin for the same reason.
+ */
+function admin_host_proxy(): Plugin {
+    const target = new URL(backend_url);
+    // In CSRF_TRUSTED_ORIGINS for every port this server runs on.
+    const dev_origin = `http://localhost:${PORT}`;
+    return {
+        name: "admin-host-proxy",
+        configureServer(server: ViteDevServer) {
+            server.middlewares.use((req, res, next) => {
+                if (!/^admin[.-]/i.test(req.headers.host ?? "")) {
+                    next();
+                    return;
+                }
+                // Say so rather than fall through. Falling through served
+                // this site's own index for an admin hostname, with a 200
+                // and no error anywhere: it looked like the admin interface
+                // was broken when the relay simply was not installed. The
+                // admin interface is only ever relayed to a local stack —
+                // it pauses live games and changes who is staff, and doing
+                // that against beta or production from a dev server is not
+                // something to reach by forgetting a variable.
+                if (OGS_BACKEND !== "LOCAL") {
+                    res.writeHead(503, { "content-type": "text/plain" });
+                    res.end(
+                        `This dev server is talking to ${OGS_BACKEND}, so it will not relay ` +
+                            `${req.headers.host}.\n\n` +
+                            `The admin interface is relayed to the local stack only. Restart ` +
+                            `with OGS_BACKEND=LOCAL, or open the stack's own admin host ` +
+                            `directly (admin.localhost:1080).\n`,
+                    );
+                    return;
+                }
+                const upstream = http.request(
+                    {
+                        host: target.hostname,
+                        port: target.port || 80,
+                        method: req.method,
+                        path: req.url,
+                        headers: {
+                            ...req.headers,
+                            origin: dev_origin,
+                            referer: `${dev_origin}/`,
+                        },
+                    },
+                    (answer) => {
+                        res.writeHead(answer.statusCode ?? 502, answer.headers);
+                        answer.pipe(res);
+                    },
+                );
+                upstream.on("error", (err) => {
+                    if (!res.headersSent) {
+                        res.writeHead(502, { "content-type": "text/plain" });
+                    }
+                    res.end(`admin host proxy: ${err.message}`);
+                });
+                req.pipe(upstream);
+            });
+        },
+    };
+}
 
 /*
  * For historical reasons, OGS uses a custom index.html template system
