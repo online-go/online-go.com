@@ -32,6 +32,7 @@
     --below-navbar: 3.3rem;
     --goban-view-bottom-margin: 0.3rem;
     --goban-view-sidebar-width: 400px;
+    --goban-view-left-aside-width: 24rem;
     --goban-view-tab-bar-height: 3rem;
 
     /* Bottom safe area to actually reserve. Defaults to what the browser

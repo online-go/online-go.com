@@ -76,7 +76,7 @@ function cloneMiniGobanSnapshotConfig(
     };
 }
 
-export function cloneOfficialTrunkMoveTreeJson(moveTree: MoveTree): MoveTreeJson {
+function cloneOfficialTrunkMoveTreeJson(moveTree: MoveTree): MoveTreeJson {
     const { branches: _branches, ...json } = moveTree.toJson();
 
     if (moveTree.trunk_next) {
@@ -86,7 +86,7 @@ export function cloneOfficialTrunkMoveTreeJson(moveTree: MoveTree): MoveTreeJson
     return json;
 }
 
-export interface KibitzGameDetailsForSnapshot {
+interface KibitzGameDetailsForSnapshot {
     width: number;
     height: number;
     gamedata?: {
@@ -94,7 +94,7 @@ export interface KibitzGameDetailsForSnapshot {
     };
 }
 
-export function buildSnapshotFromEngine({
+function buildSnapshotFromEngine({
     engine,
     gameId,
     roomId,
@@ -181,112 +181,6 @@ export function restoreMainBoardToOfficialTail(controller: GobanController): Mov
     return restoreGobanToOfficialTail(controller.goban);
 }
 
-export function canHydrateMainBoardFromRoomBaseSnapshot({
-    mainBoardController,
-    currentGame,
-    currentRoomGameId,
-    requiredMoveNumber,
-    roomBaseSnapshot,
-}: {
-    mainBoardController: GobanController | null | undefined;
-    currentGame: KibitzWatchedGame | null | undefined;
-    currentRoomGameId: number | null | undefined;
-    requiredMoveNumber: number;
-    roomBaseSnapshot: KibitzCurrentGameBaseSnapshot | null | undefined;
-}): boolean {
-    if (!mainBoardController || currentRoomGameId == null || requiredMoveNumber <= 0) {
-        return false;
-    }
-
-    if (!roomBaseSnapshot) {
-        return false;
-    }
-
-    const controllerGameId =
-        mainBoardController.goban?.config?.game_id != null
-            ? Number(mainBoardController.goban.config.game_id)
-            : null;
-    if (controllerGameId !== currentRoomGameId) {
-        return false;
-    }
-
-    if (roomBaseSnapshot.gameId !== currentRoomGameId) {
-        return false;
-    }
-
-    if (
-        currentGame?.live &&
-        requiredMoveNumber === 0 &&
-        roomBaseSnapshot.trunkTailMoveNumber === 0 &&
-        !(
-            roomBaseSnapshot.source === "game-details" ||
-            roomBaseSnapshot.source === "selected-game-details"
-        )
-    ) {
-        return false;
-    }
-
-    if (roomBaseSnapshot.trunkTailMoveNumber < requiredMoveNumber) {
-        return false;
-    }
-
-    if (!roomBaseSnapshot.config?.move_tree) {
-        return false;
-    }
-
-    const currentTail =
-        getMoveTreeTrunkTail(mainBoardController.goban.engine?.move_tree)?.move_number ?? 0;
-    return currentTail < requiredMoveNumber;
-}
-
-export function hydrateMainBoardFromRoomBaseSnapshot({
-    mainBoardController,
-    currentGame,
-    currentRoomGameId,
-    requiredMoveNumber,
-    roomBaseSnapshot,
-}: {
-    mainBoardController: GobanController;
-    currentGame: KibitzWatchedGame | null | undefined;
-    currentRoomGameId: number;
-    requiredMoveNumber: number;
-    roomBaseSnapshot: KibitzCurrentGameBaseSnapshot;
-}): MoveTree | null {
-    if (
-        !canHydrateMainBoardFromRoomBaseSnapshot({
-            mainBoardController,
-            currentGame,
-            currentRoomGameId,
-            requiredMoveNumber,
-            roomBaseSnapshot,
-        })
-    ) {
-        return null;
-    }
-
-    const goban = mainBoardController.goban;
-    const previousMode = goban.mode;
-
-    if (goban.mode === "analyze") {
-        goban.mode = "play";
-    }
-
-    try {
-        goban.load({
-            ...roomBaseSnapshot.config,
-            game_id: currentRoomGameId,
-            moves: undefined,
-            move_tree: roomBaseSnapshot.config.move_tree
-                ? cloneMoveTreeJson(roomBaseSnapshot.config.move_tree)
-                : undefined,
-        });
-    } finally {
-        goban.mode = previousMode;
-    }
-
-    return restoreMainBoardToOfficialTail(mainBoardController);
-}
-
 export function captureCurrentGameBaseSnapshotFromController(
     controller: GobanController | null,
     game: KibitzWatchedGame | null | undefined,
@@ -298,10 +192,9 @@ export function captureCurrentGameBaseSnapshotFromController(
         return null;
     }
 
-    if (!controller.goban.parent?.isConnected) {
-        return null;
-    }
-
+    // The trunk lives in the engine, not in the DOM: a main board that is
+    // off screen — which on a phone it is whenever the centre shows a
+    // variation or a draft — still has every move of the game.
     const { engine } = controller.goban;
     if (!engine?.move_tree) {
         return null;

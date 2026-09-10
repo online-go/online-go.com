@@ -124,13 +124,25 @@ export function GobanContainer({
         const scaledWidth = m.width * scale;
         const scaledHeight = m.height * scale;
 
+        // The offsets have to land on whichever element the stylesheet
+        // positions. Consumers that put `.Goban` on the div they pass here
+        // position that div themselves; consumers that pass a bare div leave
+        // it static inside PersistentElement's positioned wrapper, and
+        // writing top/left on a static element does nothing — the board then
+        // sits against the container's top-left corner with the whole
+        // rounding remainder on its right and bottom.
+        const positioned_div =
+            window.getComputedStyle(goban_div).position === "static"
+                ? (goban_div.parentElement ?? goban_div)
+                : goban_div;
+
         goban_div.style.transformOrigin = "top left";
         goban_div.style.transform = scale === 1 ? "" : `scale(${scale})`;
-        goban_div.style.top =
+        positioned_div.style.top =
             verticalAlign === "top"
                 ? "0px"
                 : `${Math.ceil((containerHeight - scaledHeight) / 2)}px`;
-        goban_div.style.left = `${Math.ceil((containerWidth - scaledWidth) / 2)}px`;
+        positioned_div.style.left = `${Math.ceil((containerWidth - scaledWidth) / 2)}px`;
     };
     const onResize = React.useCallback(
         (no_debounce: boolean = false, do_cb: boolean = true) => {

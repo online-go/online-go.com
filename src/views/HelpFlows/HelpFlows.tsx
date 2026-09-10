@@ -32,7 +32,6 @@ import { GameLogHelp } from "./GameLogHelp";
 import { AIDetectionAppealHelp } from "./AIDetectionAppealHelp";
 import { EscapingAppealHelp } from "./EscapingAppealHelp";
 import { EscapingJudgementToolIntro } from "./EscapingJudgementToolIntro";
-import { KibitzHelpFlows } from "@/views/Kibitz/HelpFlows/KibitzHelpFlows";
 import "./HelpFlows.css";
 
 /**
@@ -99,7 +98,6 @@ export function HelpFlows(): React.ReactElement {
             <EscapingJudgementToolIntro />
 
             <OJEIntro />
-            <KibitzHelpFlows />
         </>
     );
 }

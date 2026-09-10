@@ -38,6 +38,7 @@ import { _, current_language } from "@/lib/translate";
 import { disableTouchAction, enableTouchAction } from "@/views/Game/touch_actions";
 import { browserHistory } from "@/lib/ogsHistory";
 import { errorAlerter, ignore } from "@/lib/misc";
+import { registerMoveTreeBoard } from "@/lib/move_tree_boards";
 import { post } from "@/lib/requests";
 import { alert } from "@/lib/swal_config";
 import * as data from "@/lib/data";
@@ -52,7 +53,6 @@ import { isLiveGame } from "@/components/TimeControl";
 interface GobanControllerEvents {
     autoplaying: (autoplaying: boolean) => void;
     variation_name: (variation_name: string) => void;
-    show_game_timing: (show_game_timing: boolean) => void;
     show_bot_detection_results: (show_bot_detection_results: boolean) => void;
     zen_mode: (zen_mode: boolean) => void;
     copied_node: (copied_node: MoveTree | undefined) => void;
@@ -262,7 +262,6 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     public readonly goban: GobanRenderer;
     private _autoplaying: boolean = false;
     public analyze_pencil_color: string = preferences.get("analysis.pencil-color");
-    private show_game_timing: boolean = false;
     private show_bot_detection_results: boolean = false;
     private _zen_mode: boolean = preferences.get("start-in-zen-mode");
     private _ai_review_enabled: boolean = preferences.get("ai-review-enabled");
@@ -287,10 +286,12 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     private enable_sounds: boolean = true;
     private _estimating_score: boolean = false;
     private _stashed_submit_move?: () => void;
+    private readonly unregisterMoveTreeBoard: () => void;
 
     constructor(opts: GobanRendererConfig & { enable_sounds?: boolean }) {
         super();
         this.goban = createGoban(opts);
+        this.unregisterMoveTreeBoard = registerMoveTreeBoard(this.goban);
         this.enable_sounds = opts.enable_sounds !== false; // Default to true if not specified
         if (this.enable_sounds) {
             this.bindAudioEvents();
@@ -358,6 +359,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             return;
         }
         this.goban.setMoveTreeContainer(null);
+        this.unregisterMoveTreeBoard();
         this.destroyed = true;
         if (this.chat_proxy?.part) {
             this.chat_proxy.part();
@@ -856,11 +858,6 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         preferences.set("label-positioning", label_position);
 
         this.goban.setLabelPosition(label_position);
-    };
-
-    toggleShowTiming = () => {
-        this.show_game_timing = !this.show_game_timing;
-        this.emit("show_game_timing", this.show_game_timing);
     };
 
     toggleShowBotDetectionResults = () => {

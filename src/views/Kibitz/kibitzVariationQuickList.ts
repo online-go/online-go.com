@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { interpolate, pgettext } from "@/lib/translate";
-import type { KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
+import type { KibitzVariationSummary } from "@/models/kibitz";
 
 export function getVisiblePostedVariations(
     variations: KibitzVariationSummary[],
@@ -40,35 +39,4 @@ export function formatVariationLengthLabel(variation: KibitzVariationSummary): s
     }
 
     return "";
-}
-
-export function formatVariationGameSummary(
-    game: KibitzWatchedGame | null | undefined,
-    gameId: number,
-): string {
-    const title = game?.title?.trim();
-    const gameLabel = title?.length
-        ? title
-        : interpolate(
-              pgettext("Fallback game label for a Kibitz variation divider", "Game #{{game_id}}"),
-              {
-                  game_id: gameId,
-              },
-          );
-
-    if (!game) {
-        return gameLabel;
-    }
-
-    return interpolate(
-        pgettext(
-            "Summary label for a Kibitz variation divider with game title and matchup",
-            "{{game}} - {{black}} vs. {{white}}",
-        ),
-        {
-            game: gameLabel,
-            black: game.black.username,
-            white: game.white.username,
-        },
-    );
 }

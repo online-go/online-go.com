@@ -141,10 +141,6 @@
     display: inline-block;
 }
 
-&.kibitz-streamer-mode .private-chat-window {
-    display: none;
-}
-
 .private-chat-window.open {
     /* background-color: @ogs-private-chat-bg; */
     height: 26rem;

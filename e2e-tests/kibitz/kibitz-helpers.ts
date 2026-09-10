@@ -29,21 +29,15 @@ import { playMoves } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 
 export async function waitForKibitzReady(page: Page) {
-    await expect(page.locator(".Kibitz")).toBeVisible({ timeout: 15000 });
-    await expect(page.locator(".KibitzRoomStage")).toBeVisible({ timeout: 15000 });
-    await expect(page.locator(".KibitzRoomStage-boards")).toBeVisible({ timeout: 15000 });
-    await expect(page.locator(".board-panel.main-board")).toBeVisible({ timeout: 15000 });
-    await expect(
-        page.locator(".board-panel.main-board .KibitzBoard.main-board-surface"),
-    ).toBeVisible({ timeout: 15000 });
-    // The inner `.Goban` div selector resolves to multiple elements (the library
-    // creates a nested .Goban .Goban structure) and the first match is not the
-    // painted one, so `toBeVisible` can wrongly report "hidden" even when the
-    // board is fully rendered. The goban renders via SVG -- the <svg> element
-    // is the unambiguous "board is painted" signal.
-    await expect(
-        page.locator(".board-panel.main-board .KibitzBoard.main-board-surface svg").first(),
-    ).toBeVisible({ timeout: 15000 });
+    // The <svg> under the centre board is the unambiguous "board is painted"
+    // signal; the wrapping .Goban div matches more than once.
+    await expect(page.locator(".GobanView.Kibitz")).toBeVisible({ timeout: 15000 });
+    await expect(page.locator(".GobanView-center .goban-container")).toBeVisible({
+        timeout: 15000,
+    });
+    await expect(page.locator(".GobanView-center .goban-container svg").first()).toBeVisible({
+        timeout: 15000,
+    });
 }
 
 export async function waitForStableRect(page: Page, selector: string, timeout = 5000) {
@@ -95,13 +89,17 @@ export async function waitForStableRect(page: Page, selector: string, timeout = 
 }
 
 export async function waitForKibitzLayoutStable(page: Page) {
-    await waitForStableRect(page, ".KibitzRoomStage-boards");
-    await waitForStableRect(page, ".board-panel.main-board .board-fit-slot");
+    // The stage holds the player bars and the board in the center column.
+    await waitForStableRect(page, ".GobanView-stage");
+    await waitForStableRect(page, ".GobanView-center .goban-container");
 }
 
-export async function waitForCompareLayoutStable(page: Page) {
+/** Waits for the layout while the center shows a draft or a posted
+ *  variation: the variation panel is in the sidebar and the live game has
+ *  moved to the thumbnail in the left aside. */
+export async function waitForVariationLayoutStable(page: Page) {
     await waitForKibitzLayoutStable(page);
-    await waitForStableRect(page, ".board-panel.secondary-board .board-fit-slot");
+    await waitForStableRect(page, ".KibitzMiniMainBoard");
 }
 
 export interface KibitzPreludeResult {
@@ -199,11 +197,11 @@ export async function createKibitzRoomForLiveGame(
     //    viewport so layout-driven flake is one less thing to worry about.
     await watcherPage.setViewportSize({ width: 1920, height: 1080 });
     await load(watcherPage, "/kibitz");
-    await expect(watcherPage.locator(".Kibitz")).toBeVisible({ timeout: 15000 });
-
-    // Open the create-room overlay (KibitzRoomList.tsx, button class
-    // "KibitzRoomList-createButton" + text "Create room").
-    const createRoomButton = await expectOGSClickableByName(watcherPage, /^Create room$/);
+    // /kibitz redirects to the first room in the directory; the room list is
+    // rendered either in the left aside of the room view or on the empty
+    // state, and both carry the "+ Room" row.
+    const createRoomButton = watcherPage.locator(".KibitzRoomList-createButton");
+    await expect(createRoomButton).toBeVisible({ timeout: 15000 });
     await createRoomButton.click();
 
     // Game ID input on the desktop layout (KibitzGamePickerOverlay.tsx,
@@ -224,8 +222,8 @@ export async function createKibitzRoomForLiveGame(
     await expect(roomNameInput).toBeVisible({ timeout: 15000 });
     await expect(roomNameInput).not.toHaveValue("");
 
-    // Confirm create. Scope to the overlay footer so we don't match the
-    // rail "Create room" button (which is also present at this point).
+    // Confirm create. Scope to the overlay footer so nothing outside the
+    // overlay can match.
     const overlayFooter = watcherPage.locator(".KibitzGamePickerOverlay-footer");
     await expect(overlayFooter).toBeVisible({ timeout: 15000 });
     const submitCreateButton = overlayFooter
@@ -233,11 +231,16 @@ export async function createKibitzRoomForLiveGame(
         .or(overlayFooter.getByRole("link", { name: /^Create room$/ }));
     await expect(submitCreateButton).toBeVisible({ timeout: 15000 });
     await expect(submitCreateButton).toBeEnabled();
+    // /kibitz redirects to the first room of the directory, which may already
+    // be a "user-<pk>" room somebody else owns, so the new room is the one the
+    // URL moves to after this click, not merely any user-room URL.
+    const pathBeforeCreate = new URL(watcherPage.url()).pathname;
     await submitCreateButton.click();
-
-    // After create, KibitzInner navigates to /kibitz/<roomId>; the id is
-    // shaped like "user-<pk>" per the Kibitz backend.
-    await watcherPage.waitForURL(/\/kibitz\/user-[a-zA-Z0-9-]+/, { timeout: 15000 });
+    await watcherPage.waitForURL(
+        (url) =>
+            /\/kibitz\/user-[a-zA-Z0-9-]+$/.test(url.pathname) && url.pathname !== pathBeforeCreate,
+        { timeout: 15000 },
+    );
     await waitForKibitzReady(watcherPage);
     await waitForKibitzLayoutStable(watcherPage);
 

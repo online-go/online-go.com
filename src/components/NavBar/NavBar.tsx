@@ -446,7 +446,8 @@ export function NavBar(): React.ReactElement {
                                 <MenuLink
                                     title="Admin"
                                     icon={<i className="fa fa-wrench" />}
-                                    to="/admin"
+                                    to={adminInterfaceUrl()}
+                                    external={true}
                                 />
                             )}
                         </Menu>
@@ -595,6 +596,14 @@ export function NavBar(): React.ReactElement {
             </header>
         </MenuContext.Provider>
     );
+}
+
+/** The unified admin interface, which is a separate site on an `admin.`
+ * hostname rather than a route here. Derived from wherever this page is
+ * being served so that production, beta and a development stack each reach
+ * their own, without a build-time constant to keep in step. */
+function adminInterfaceUrl(): string {
+    return `${window.location.protocol}//admin.${window.location.host}`;
 }
 
 interface MenuLinkProps {

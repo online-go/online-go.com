@@ -1,0 +1,100 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.PlayerBar {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    height: var(--goban-view-player-bar-height, 3rem);
+    flex-shrink: 0;
+    padding: 0 0.5rem;
+    border-radius: 6px;
+    background: var(--shade5);
+    color: var(--fg);
+
+    &.their-turn {
+        box-shadow: inset 0 0 0 2px var(--primary);
+    }
+
+    .PlayerBar-icon {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+
+        /* PlayerIcon asks the CDN for a 64px asset and puts a .PlayerIcon-64
+           size class on its own root element, so the root is what has to
+           shrink to the 40px slot. */
+        .PlayerIcon {
+            width: 100%;
+            height: 100%;
+        }
+
+        .PlayerBar-stone {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+
+            &.black {
+                background: #222;
+            }
+            &.white {
+                background: #eee;
+                border: 1px solid #999;
+            }
+        }
+    }
+
+    /* The name sits on the top edge and the score on the bottom, so the two
+       bars frame the board with their text nearest to it. */
+    .PlayerBar-text {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-self: stretch;
+        min-width: 0;
+        flex-grow: 1;
+        line-height: 1.2;
+
+        .PlayerBar-name {
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            /* The Player component indents its username away from an icon it
+               is not showing here. */
+            .Player-username {
+                margin-left: 0;
+            }
+        }
+
+        .PlayerBar-score {
+            font-size: 0.85rem;
+            color: var(--shade1);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+
+    .PlayerBar-clock {
+        flex-shrink: 0;
+        align-self: center;
+        margin-left: auto;
+        font-size: 1.1rem;
+    }
+}
