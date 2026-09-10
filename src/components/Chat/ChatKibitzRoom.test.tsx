@@ -5,10 +5,11 @@
  */
 
 import * as React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { ChatKibitzRoom } from "./ChatKibitzRoom";
 import { get } from "@/lib/requests";
 import { browserHistory } from "@/lib/ogsHistory";
+import { push_manager } from "@/components/UIPush/UIPush";
 
 jest.mock("@/lib/requests", () => ({
     __esModule: true,
@@ -19,6 +20,42 @@ jest.mock("@/lib/ogsHistory", () => ({
     __esModule: true,
     browserHistory: { push: jest.fn() },
 }));
+
+jest.mock("@/lib/sockets", () => ({
+    __esModule: true,
+    socket: { on: jest.fn(), off: jest.fn(), send: jest.fn(), connected: false },
+}));
+
+jest.mock("@/components/UIPush/UIPush", () => {
+    const handlers: { [event: string]: Array<(data: unknown) => void> } = {};
+    return {
+        __esModule: true,
+        push_manager: {
+            on: jest.fn((event: string, cb: (data: unknown) => void) => {
+                (handlers[event] = handlers[event] ?? []).push(cb);
+                return { event, cb };
+            }),
+            off: jest.fn((handler: { event: string; cb: (data: unknown) => void }) => {
+                handlers[handler.event] = (handlers[handler.event] ?? []).filter(
+                    (cb) => cb !== handler.cb,
+                );
+            }),
+            subscribe: jest.fn(),
+            unsubscribe: jest.fn(),
+            fire: (event: string, data: unknown) => {
+                for (const cb of handlers[event] ?? []) {
+                    cb(data);
+                }
+            },
+        },
+    };
+});
+
+const mock_push_manager = push_manager as unknown as {
+    subscribe: jest.Mock;
+    unsubscribe: jest.Mock;
+    fire: (event: string, data: unknown) => void;
+};
 
 jest.mock("@/lib/translate", () => ({
     __esModule: true,
@@ -40,6 +77,7 @@ const mock_get = get as jest.Mock;
 
 const english_room = {
     id: "preset-english-chat-live",
+    channel: "kibitz-preset-english-chat-live",
     title: "English chat game",
     description: "A top live game, preferring games played by members of the English chat.",
     viewer_count: 7,
@@ -111,5 +149,70 @@ describe("ChatKibitzRoom", () => {
         const card = await screen.findByRole("button");
         card.click();
         expect(browserHistory.push).toHaveBeenCalledWith("/kibitz/preset-english-chat-live");
+    });
+
+    it("subscribes to the directory and room push channels", async () => {
+        mockBackend();
+        render(<ChatKibitzRoom channel="global-english" />);
+        await screen.findByText("English chat game");
+        expect(mock_push_manager.subscribe).toHaveBeenCalledWith("kibitz-rooms");
+        expect(mock_push_manager.subscribe).toHaveBeenCalledWith("kibitz-preset-english-chat-live");
+    });
+
+    it("updates the matchup from a board-changed push", async () => {
+        mockBackend();
+        render(<ChatKibitzRoom channel="global-english" />);
+        await screen.findByText("English chat game");
+        act(() => {
+            mock_push_manager.fire("board-changed", {
+                ...english_room,
+                current_game: {
+                    black: { username: "carol", ranking: 20, professional: false },
+                    white: { username: "dave", ranking: 21, professional: false },
+                },
+            });
+        });
+        expect(document.querySelector(".room-matchup")).toHaveTextContent("carol[20r]vsdave[21r]");
+    });
+
+    it("ignores board-changed pushes for other rooms", async () => {
+        mockBackend();
+        render(<ChatKibitzRoom channel="global-english" />);
+        await screen.findByText("English chat game");
+        act(() => {
+            mock_push_manager.fire("board-changed", {
+                ...english_room,
+                id: "preset-fast-live",
+                current_game: {
+                    black: { username: "carol", ranking: 20, professional: false },
+                    white: { username: "dave", ranking: 21, professional: false },
+                },
+            });
+        });
+        expect(document.querySelector(".room-matchup")).toHaveTextContent("alice[35r]vsbob[33r]");
+    });
+
+    it("updates the viewer count from a viewer-count-changed push", async () => {
+        mockBackend();
+        render(<ChatKibitzRoom channel="global-english" />);
+        await screen.findByText("English chat game");
+        act(() => {
+            mock_push_manager.fire("viewer-count-changed", {
+                channel: "kibitz-preset-english-chat-live",
+                viewer_count: 12,
+            });
+        });
+        expect(screen.getByText("12")).toBeInTheDocument();
+    });
+
+    it("unsubscribes from both push channels on unmount", async () => {
+        mockBackend();
+        const { unmount } = render(<ChatKibitzRoom channel="global-english" />);
+        await screen.findByText("English chat game");
+        unmount();
+        expect(mock_push_manager.unsubscribe).toHaveBeenCalledWith("kibitz-rooms");
+        expect(mock_push_manager.unsubscribe).toHaveBeenCalledWith(
+            "kibitz-preset-english-chat-live",
+        );
     });
 });
