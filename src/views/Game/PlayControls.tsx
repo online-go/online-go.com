@@ -508,7 +508,7 @@ export function ReviewControls({ review_id }: ReviewControlsProps) {
                         ref={goban_controller.setMoveTreeContainer}
                     />
 
-                    <div style={{ paddingLeft: "0.5em", paddingRight: "0.5em" }}>
+                    <div className="move-comments">
                         <textarea
                             id="game-move-node-text"
                             placeholder={_("Move comments...")}
