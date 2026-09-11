@@ -124,7 +124,7 @@ export function AccountWarningMessage(props: {
 
     const MessageRenderer = Renderers[props.message.severity];
 
-    return <MessageRenderer warning={props.message} accept={ack} />;
+    return <MessageRenderer key={props.message.id} warning={props.message} accept={ack} />;
 }
 
 // Support warnings that carry messages either as a reference to a a canned message, or explicit text...
@@ -192,13 +192,15 @@ function AckModal(props: WarningModalProps): React.ReactElement {
 }
 
 function WarningModal(props: WarningModalProps): React.ReactElement {
-    const [acceptTime, setAcceptTime] = React.useState<number>(0);
+    const [acceptTime, setAcceptTime] = React.useState<number>(
+        props.warning.acknowledged === null ? BUTTON_COUNTDOWN_TIME : 0,
+    );
     const [boxChecked, setBoxChecked] = React.useState<boolean>(false);
 
     React.useEffect(() => {
         let interval: NodeJS.Timeout | undefined;
         // a force-them-to-read-it delay, unless they already acknowledged it
-        if (props.warning && props.warning.acknowledged === null) {
+        if (props.warning.acknowledged === null) {
             const now = Date.now();
             interval = setInterval(() => {
                 setAcceptTime(BUTTON_COUNTDOWN_TIME - (Date.now() - now));
@@ -210,7 +212,7 @@ function WarningModal(props: WarningModalProps): React.ReactElement {
         return () => {
             clearInterval(interval);
         };
-    }, [props.warning]);
+    }, [props.warning.id, props.warning.acknowledged]);
 
     return (
         <>
