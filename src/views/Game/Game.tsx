@@ -20,36 +20,58 @@ import { useParams, useLocation, useSearchParams } from "react-router-dom";
 
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
+import { usePreference } from "@/lib/preferences";
 import { _, interpolate, pgettext } from "@/lib/translate";
-import { popover } from "@/lib/popover";
+import { popover, PopOver } from "@/lib/popover";
 import { get, abort_requests_in_flight } from "@/lib/requests";
 import { UIPush } from "@/components/UIPush";
-import { GobanRendererConfig, JGOFNumericPlayerColor } from "goban";
+import { GobanRendererConfig, JGOFNumericPlayerColor, LabelPosition } from "goban";
 import { isLiveGame } from "@/components/TimeControl";
 import { setExtraActionCallback, PlayerDetails } from "@/components/Player";
 import * as player_cache from "@/lib/player_cache";
 import { notification_manager } from "@/components/Notifications";
 import { GameChat } from "./GameChat";
-import { goban_view_mode, goban_view_squashed } from "./util";
-import { PlayerCards } from "./PlayerCards";
+import { goban_view_mode } from "./util";
+import { PlayerCard, PlayerCards } from "./PlayerCards";
 import { PlayControls, ReviewControls } from "./PlayControls";
-import { CancelButton } from "./PlayButtons";
-import { GameDock } from "./GameDock";
+import { GameActionArea } from "./GameActionArea";
 import { alert } from "@/lib/swal_config";
-import { useMode, usePhase, useUserIsParticipant, useViewMode, useZenMode } from "./GameHooks";
-import { GobanContainer } from "@/components/GobanContainer";
-import { GobanControllerContext } from "./goban_context";
+import {
+    useAnnulled,
+    useCurrentMoveNumber,
+    useMode,
+    useOfficialMoveNumber,
+    usePauseControl,
+    usePhase,
+    useScorePopup,
+    useUserIsLivePlayerToMove,
+    useUserIsParticipant,
+    useViewMode,
+    useZenMode,
+} from "./GameHooks";
+import { openGameInfo } from "./game_actions";
+import { openGameLinkModal } from "./GameLinkModal";
+import {
+    GobanControllerContext,
+    GobanView,
+    GobanViewRef,
+    user_color,
+    GobanViewTabProps,
+} from "@/components/GobanView";
+import { ModalContext } from "@/components/ModalProvider";
+import { useUser } from "@/lib/hooks";
+import { MODERATOR_POWERS } from "@/lib/moderation";
 import { is_valid_url } from "@/lib/url_validation";
 import { BotDetectionResults } from "./BotDetectionResults";
 import { ActiveTournament } from "@/lib/types";
 import { GobanController } from "@/lib/GobanController";
-import {
-    FragAIReview,
-    FragBelowBoardControls,
-    GameInformation,
-    GameKeyboardShortcuts,
-    RengoHeader,
-} from "./fragments";
+import { FragAIReview, GameInformation, GameKeyboardShortcuts, RengoHeader } from "./fragments";
+import { GameSettingsPanel } from "./GameSettingsPanel";
+import { GameMoreSettingsPanel } from "./GameMoreSettingsPanel";
+import { GameActionsPanel } from "./GameActionsPanel";
+import { GameModToolsPanel } from "./GameModToolsPanel";
+import { GameModeratorAreaPanel } from "./GameModeratorAreaPanel";
+import { GameStateHeader } from "./GameStateHeader";
 import { toast } from "@/lib/toast";
 import { ignore } from "@/lib/misc";
 import { updateAntiGriefGameState } from "./AntiGrief";
@@ -88,10 +110,8 @@ export function Game(): React.ReactElement | null {
     let goban = goban_controller.current?.goban ?? null;
 
     /* State */
-    const [squashed, set_squashed] = React.useState<boolean>(goban_view_squashed());
     const [estimating_score, _set_estimating_score] = React.useState<boolean>(false);
     const estimating_score_ref = React.useRef(estimating_score);
-    const user_is_player = useUserIsParticipant(goban);
     const [historical_black, set_historical_black] = React.useState<rest_api.games.Player | null>(
         null,
     );
@@ -102,20 +122,119 @@ export function Game(): React.ReactElement | null {
     const [white_flags, set_white_flags] = React.useState<null | rest_api.GamePlayerFlags>(null);
     const [annulment_reason, set_annulment_reason] =
         React.useState<rest_api.AnnulmentReason | null>(null);
-    const [scroll_to_navigate, _setScrollToNavigate] = React.useState(
-        preferences.get("scroll-to-navigate"),
-    );
+    const [scroll_to_navigate] = React.useState(preferences.get("scroll-to-navigate"));
     const phase = usePhase(goban);
-    const [show_game_timing, set_show_game_timing] = React.useState(false);
     const [tournament, set_tournament] = React.useState<ActiveTournament>();
     const [, set_undo_requested] = React.useState<number | undefined>();
     const [bot_detection_results, set_bot_detection_results] = React.useState<any>(null);
     const [show_bot_detection_results, set_show_bot_detection_results] = React.useState(false);
     const [simul_black, set_simul_black] = React.useState<boolean | null>(null);
     const [simul_white, set_simul_white] = React.useState<boolean | null>(null);
-    const view_mode = useViewMode(goban_controller.current);
-    const mode = useMode(goban);
     const zen_mode = useZenMode(goban_controller.current);
+    // Score-details popup for the mobile player cards (the desktop
+    // layout's PlayerCards wrapper manages its own instance).
+    const { show_score_breakdown, toggleScorePopup } = useScorePopup(goban);
+    const user = useUser();
+    const user_is_player = useUserIsParticipant(goban);
+    const mode = useMode(goban);
+    const cur_move_number = useCurrentMoveNumber(goban);
+    const official_move_number = useOfficialMoveNumber(goban);
+    const user_is_live_player_to_move = useUserIsLivePlayerToMove(goban);
+    const pause_control = usePauseControl(goban);
+    const annulled = useAnnulled(goban_controller.current);
+    const modal_context = React.useContext(ModalContext);
+    const more_actions_popover_ref = React.useRef<PopOver | null>(null);
+    const settings_popover_ref = React.useRef<PopOver | null>(null);
+    const goban_view_ref = React.useRef<GobanViewRef>(null);
+    const [moderator_tab_visible, set_moderator_tab_visible] = usePreference(
+        "moderator.game-moderator-tab-visible",
+    );
+    // Mobile (portrait) gets a dedicated, non-configurable layout: the
+    // player cards straddle the board, chat hidden behind a toggle in the
+    // action bar.
+    const view_mode = useViewMode(goban_controller.current);
+    const is_mobile = view_mode === "portrait";
+    // Two-level chat gating:
+    //   • `chat_enabled` (preference, Settings toggle, default true) —
+    //     master switch for the chat feature. When false, no chat
+    //     renders anywhere and the mobile action-bar tab is hidden.
+    //   • `mobile_chat_visible` (local state, default false) — session-
+    //     level show/hide for the mobile chat. Toggled via the mobile
+    //     action-bar tab. Has no effect when `chat_enabled` is false or
+    //     on desktop (chat is always visible there if the feature is on).
+    const [chat_enabled] = usePreference("game.chat-enabled");
+    const [mobile_chat_visible, set_mobile_chat_visible] = React.useState(false);
+    // Whether the full settings takeover is showing. Synced from the
+    // takeover tab's onToggle (the authoritative open/close signal), and
+    // used to light up the settings gear while it's open.
+    const [more_settings_open, set_more_settings_open] = React.useState(false);
+    // Bumped when the goban must be rebuilt from scratch (switching
+    // between the SVG and canvas renderers); the constructor effect below
+    // lists it as a dependency.
+    const [goban_generation, bump_goban_generation] = React.useReducer((x: number) => x + 1, 0);
+    // Unread marker for the mobile chat tab: the chat is hidden by default
+    // there, so without this a message from the opponent would arrive
+    // invisibly. Set on chat lines that arrive after page load (the
+    // initial backlog replayed on connect carries older timestamps) from
+    // someone other than the user; cleared when the chat is opened.
+    const [chat_unread, set_chat_unread] = React.useState(false);
+    React.useEffect(() => {
+        const chat_goban = goban;
+        if (!chat_goban || !is_mobile || !chat_enabled || mobile_chat_visible) {
+            set_chat_unread(false);
+            return undefined;
+        }
+        const onChat = (line: { player_id?: number; date?: number }) => {
+            if (line.player_id === user.id) {
+                return;
+            }
+            if (line.date && line.date * 1000 < page_loaded_time.current) {
+                return;
+            }
+            set_chat_unread(true);
+        };
+        chat_goban.on("chat", onChat);
+        return () => {
+            chat_goban.off("chat", onChat);
+        };
+    }, [goban, is_mobile, chat_enabled, mobile_chat_visible, user.id]);
+
+    // Entering zen mode while a takeover (e.g. Settings) is open leaves the
+    // user stuck: the tab bar that would normally toggle the takeover off
+    // is hidden by zen styling, so the only way out is Esc — which exits
+    // zen instead of the takeover. Close any active takeover when zen
+    // activates so the in-zen view stays clean.
+    React.useEffect(() => {
+        if (zen_mode) {
+            goban_view_ref.current?.setActiveTakeover(null);
+        }
+    }, [zen_mode]);
+
+    // The mobile chat renders at the bottom of the scroll area, usually well
+    // below the fold, so toggling it on would otherwise appear to do
+    // nothing. Bring it into view when it appears.
+    React.useEffect(() => {
+        if (!is_mobile || !mobile_chat_visible || !chat_enabled) {
+            return undefined;
+        }
+        const raf = requestAnimationFrame(() => {
+            goban_view_ref.current
+                ?.getRootElement()
+                ?.querySelector(".GameChat")
+                ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        });
+        return () => cancelAnimationFrame(raf);
+    }, [is_mobile, mobile_chat_visible, chat_enabled]);
+
+    // popover() appends its container + backdrop to document.body, outside
+    // the React tree, so they survive Game unmounting. Close any open
+    // popovers on unmount to keep them from leaking as orphaned nodes.
+    React.useEffect(() => {
+        return () => {
+            more_actions_popover_ref.current?.close();
+            settings_popover_ref.current?.close();
+        };
+    }, []);
 
     /* Functions */
     const getLocation = (): string => {
@@ -172,23 +291,23 @@ export function Game(): React.ReactElement | null {
         window.document.title = on_refocus_title.current;
     };
 
-    /*** Common stuff ***/
-    const onResize = React.useCallback(
-        (_no_debounce: boolean = false, skip_state_update: boolean = false) => {
-            if (!skip_state_update) {
-                if (
-                    goban_view_mode() !== goban_controller.current?.view_mode ||
-                    goban_view_squashed() !== squashed
-                ) {
-                    set_squashed(goban_view_squashed());
-                    if (goban_controller.current) {
-                        goban_controller.current.setViewMode(goban_view_mode());
-                    }
-                }
+    /* Keep goban_controller.view_mode in sync on viewport changes for any
+     * downstream consumer that still subscribes via useViewMode. GobanView
+     * tracks its own layout independently. */
+    React.useEffect(() => {
+        const onResize = () => {
+            const controller = goban_controller.current;
+            if (!controller) {
+                return;
             }
-        },
-        [set_squashed, squashed, goban_controller.current?.view_mode],
-    );
+            const new_mode = goban_view_mode();
+            if (new_mode !== controller.view_mode) {
+                controller.setViewMode(new_mode);
+            }
+        };
+        window.addEventListener("resize", onResize);
+        return () => window.removeEventListener("resize", onResize);
+    }, []);
 
     React.useEffect(() => {
         if (!goban_controller.current) {
@@ -196,18 +315,14 @@ export function Game(): React.ReactElement | null {
         }
         const controller = goban_controller.current;
 
-        controller.on("show_game_timing", set_show_game_timing);
         controller.on("show_bot_detection_results", set_show_bot_detection_results);
-        controller.on("resize", onResize);
         controller.on("estimating_score", set_estimating_score);
 
         return () => {
-            controller.off("show_game_timing", set_show_game_timing);
             controller.off("show_bot_detection_results", set_show_bot_detection_results);
-            controller.off("resize", onResize);
             controller.off("estimating_score", set_estimating_score);
         };
-    }, [goban_controller.current, set_show_game_timing, set_show_bot_detection_results, onResize]);
+    }, [goban_controller.current, set_show_bot_detection_results]);
 
     const onWheel: React.WheelEventHandler<HTMLDivElement> = React.useCallback(
         (event) => {
@@ -295,7 +410,8 @@ export function Game(): React.ReactElement | null {
         const setLabelHandler = goban_controller.current.setLabelHandler;
         document.addEventListener("keypress", setLabelHandler);
 
-        onResize(true);
+        // Seed goban_controller.view_mode now that the controller exists.
+        goban_controller.current.setViewMode(goban_view_mode());
         if (review_id) {
             goban.setMode("analyze");
         }
@@ -373,7 +489,6 @@ export function Game(): React.ReactElement | null {
         onLoad();
 
         goban.on("move-made", auto_advance);
-        goban.on("gamedata", onResize);
 
         goban.on("played-by-click", (event) => {
             const target = ref_move_tree_container.current?.getBoundingClientRect();
@@ -610,7 +725,70 @@ export function Game(): React.ReactElement | null {
 
             goban_div.current?.childNodes.forEach((node) => node.remove());
         };
-    }, [game_id, review_id]);
+    }, [game_id, review_id, goban_generation]);
+
+    // Keep the live goban in sync with visual preferences set from the
+    // Themes & Visuals panel that the goban's own theme watcher doesn't
+    // cover: values it caches or reads imperatively need an explicit poke,
+    // and switching renderers needs a full rebuild (goban_generation).
+    React.useEffect(() => {
+        const current_goban = () => goban_controller.current?.goban;
+
+        // Covers values cached at construction (variation move numbers,
+        // stone font scale) and values read live at draw time (fuzzy
+        // placement, undo request indicator, A1/1-1 labeling).
+        const refresh = () => current_goban()?.refreshVisualPreferences();
+        const refresh_keys = [
+            "fuzzy-stone-placement",
+            "visual-undo-request-indicator",
+            "board-labeling",
+            "show-variation-move-numbers",
+            "stone-font-scale",
+        ] as const;
+
+        const onVariationStoneOpacity = (v: number) => {
+            const g = current_goban();
+            if (g) {
+                g.variation_stone_opacity = v;
+                g.redraw(true);
+            }
+        };
+        const onLastMoveOpacity = (v: number) => {
+            const g = current_goban();
+            if (g) {
+                g.setLastMoveOpacity(v);
+                g.redraw(true);
+            }
+        };
+        const onLabelPosition = (v: LabelPosition) => current_goban()?.setLabelPosition(v);
+        // useData() re-emits its key with an unchanged value whenever a
+        // component using it mounts (e.g. opening the Settings popover),
+        // so only rebuild when the renderer selection actually changed.
+        let last_renderer = data.get("experiments.canvas");
+        const onRendererChange = (v?: string) => {
+            if (v !== last_renderer) {
+                last_renderer = v;
+                bump_goban_generation();
+            }
+        };
+
+        for (const key of refresh_keys) {
+            preferences.watch(key, refresh, false, true);
+        }
+        preferences.watch("variation-stone-opacity", onVariationStoneOpacity, false, true);
+        preferences.watch("last-move-opacity", onLastMoveOpacity, false, true);
+        preferences.watch("label-positioning", onLabelPosition, false, true);
+        data.watch("experiments.canvas", onRendererChange, false, true);
+        return () => {
+            for (const key of refresh_keys) {
+                preferences.unwatch(key, refresh);
+            }
+            preferences.unwatch("variation-stone-opacity", onVariationStoneOpacity);
+            preferences.unwatch("last-move-opacity", onLastMoveOpacity);
+            preferences.unwatch("label-positioning", onLabelPosition);
+            data.unwatch("experiments.canvas", onRendererChange);
+        };
+    }, []);
 
     /* Handle return urls */
     React.useEffect(() => {
@@ -645,20 +823,233 @@ export function Game(): React.ReactElement | null {
     /* RENDER */
     /**********/
 
-    if (goban === null) {
+    if (goban === null || goban_controller.current === null) {
         return null;
     }
 
     const review = !!review_id;
-    const experimental: boolean = data.get("experiments.v6") === "enabled";
+    const game = !!game_id;
 
-    const CHAT = zen_mode ? null : (
-        <GameChat
-            channel={game_id ? `game-${game_id}` : `review-${review_id}`}
-            game_id={game_id}
-            review_id={review_id}
-        />
+    const ai_suspected = (bot_detection_results?.ai_suspected?.length ?? 0) > 0;
+    const user_detects_ai = ((user?.moderator_powers ?? 0) & MODERATOR_POWERS.AI_DETECTOR) !== 0;
+    // Superusers only get content in the gavel tab once the game is finished
+    // (GameModToolsPanel's AI-review tools); gate the tab the same way so a
+    // non-moderator superuser doesn't see an empty panel on live games.
+    const show_mod_tab =
+        !review &&
+        (!!user?.is_moderator || user_detects_ai || (!!user?.is_superuser && phase === "finished"));
+
+    const analysis_disabled = goban.isAnalysisDisabled();
+    const is_analyzing = mode === "analyze";
+    // With analysis disabled, stepping back in play mode only shows earlier
+    // positions. While the user is behind the live position this way, the
+    // move slider is shown so they can move around; "Back to Game" in
+    // PlayButtons returns them to the live position.
+    const is_browsing_history =
+        analysis_disabled && mode === "play" && cur_move_number < official_move_number;
+
+    // Toggle behavior: if the mode is already on, clicking exits back to play.
+    // Reading the live `mode`/`estimating_score` for the `active` prop also
+    // means anything else that exits the mode (Escape key, navigation,
+    // estimator finishing, etc.) flips the button off automatically.
+    const onAnalyzeClick = () => {
+        const controller = goban_controller.current;
+        if (!controller) {
+            return;
+        }
+        if (is_analyzing) {
+            controller.goban.setMode("play");
+        } else {
+            controller.gameAnalyze();
+        }
+    };
+
+    // The analyze / chat / review / conditional tabs are defined once here
+    // and rendered twice: as icons in the action bar and as labeled items at
+    // the top of the More-actions menu.
+    //
+    // On a cramped mobile screen the move slider is hidden during play, so
+    // with analysis disabled the greyed-out analyze button would leave no
+    // way to look at earlier moves. Swap it for a "Previous move" button
+    // that steps back and thereby brings up the slider. Desktop keeps the
+    // disabled analyze button since its slider is always visible.
+    const swap_analyze_for_step_back = is_mobile && analysis_disabled;
+    const analyze_tab: GobanViewTabProps | null = !game
+        ? null
+        : swap_analyze_for_step_back
+          ? {
+                id: "game-step-back",
+                type: "action",
+                align: "left",
+                icon: "step-backward",
+                title: pgettext("Move navigation: previous move", "Previous move"),
+                disabled: cur_move_number <= 0,
+                onClick: () => goban_controller.current?.previousMove(),
+            }
+          : {
+                id: "game-analyze",
+                type: "action",
+                align: "left",
+                icon: "sitemap",
+                title: _("Analyze game"),
+                disabled: analysis_disabled,
+                active: is_analyzing,
+                onClick: onAnalyzeClick,
+            };
+
+    // "Review this game" is for spectators reviewing a live game and for
+    // anyone (including the players) once it's finished — never for an
+    // active player mid-game.
+    const show_review_tab =
+        game && !analysis_disabled && !user.anonymous && (phase === "finished" || !user_is_player);
+
+    // "Plan conditional moves" is for an active player on a live game while
+    // it's the opponent's turn — non-rengo, non-review. The tab stays
+    // visible across analyze / score-estimation / conditional modes (same
+    // UX shape as the Analyze tab) so clicking it always switches *into*
+    // the planner; clicking it again while in the planner exits to play.
+    //
+    // useUserIsLivePlayerToMove follows the official branch, so walking
+    // through the game in analyze mode does not toggle the tab, and a
+    // staged (not yet submitted) stone still counts as the user's turn —
+    // entering the planner would silently discard the staged move.
+    const is_planning_conditional = mode === "conditional";
+    const show_conditional_tab =
+        !review &&
+        user_is_player &&
+        phase !== "finished" &&
+        !goban.engine.rengo &&
+        (is_planning_conditional || !user_is_live_player_to_move);
+    const onConditionalClick = () => {
+        const controller = goban_controller.current;
+        if (!controller) {
+            return;
+        }
+        if (is_planning_conditional) {
+            controller.goban.setMode("play");
+        } else {
+            controller.enterConditionalMovePlanner();
+        }
+    };
+
+    // Mobile-only chat toggle. The tab itself is hidden when the chat
+    // feature is disabled in Settings (chat_enabled false) — re-enable from
+    // Settings to bring it back. Otherwise it toggles the chat's session
+    // visibility.
+    const chat_tab: GobanViewTabProps | null =
+        is_mobile && chat_enabled
+            ? {
+                  id: "game-chat-toggle",
+                  type: "action",
+                  align: "left",
+                  icon: (
+                      <span className="game-chat-tab-icon">
+                          <i className="fa fa-comment" />
+                          {chat_unread && <span className="game-chat-unread-dot" />}
+                      </span>
+                  ),
+                  title: _("Chat"),
+                  active: mobile_chat_visible,
+                  onClick: () => set_mobile_chat_visible((v) => !v),
+              }
+            : null;
+
+    const review_tab: GobanViewTabProps | null = show_review_tab
+        ? {
+              id: "game-review",
+              type: "action",
+              align: "center",
+              icon: "search-plus",
+              title: _("Review this game"),
+              onClick: goban_controller.current.startReview,
+          }
+        : null;
+
+    const conditional_tab: GobanViewTabProps | null = show_conditional_tab
+        ? {
+              id: "game-conditional",
+              type: "action",
+              align: "center",
+              icon: "exchange",
+              title: _("Plan conditional moves"),
+              disabled: analysis_disabled,
+              active: is_planning_conditional,
+              onClick: onConditionalClick,
+          }
+        : null;
+
+    // Pause / resume the game clock. Listed only in the More-actions menu,
+    // and only for users allowed to change the pause state right now
+    // (participants in vacation-eligible games, moderators — see
+    // usePauseControl).
+    const pause_tab: GobanViewTabProps | null =
+        pause_control.action !== null
+            ? {
+                  id: "game-pause",
+                  type: "action",
+                  align: "center",
+                  icon: pause_control.action === "resume" ? "play" : "pause",
+                  title: pause_control.action === "resume" ? _("Resume game") : _("Pause game"),
+                  onClick: pause_control.togglePause,
+              }
+            : null;
+
+    const menu_action_tabs = [analyze_tab, chat_tab, review_tab, conditional_tab, pause_tab].filter(
+        (tab): tab is GobanViewTabProps => tab !== null,
     );
+
+    // Optional tabs: shown only when the bar has room, dropped lowest
+    // priority first. The More-actions menu always lists these same
+    // actions, so nothing is lost when they are hidden.
+    const onEstimateScoreClick = () => {
+        const controller = goban_controller.current;
+        if (!controller) {
+            return;
+        }
+        if (estimating_score) {
+            controller.stopEstimatingScore();
+        } else {
+            controller.estimateScore();
+        }
+    };
+
+    const estimate_score_tab: GobanViewTabProps = {
+        id: "game-estimate-score",
+        type: "action",
+        align: "left",
+        priority: 3,
+        icon: "tachometer",
+        title: _("Estimate score"),
+        disabled: analysis_disabled,
+        active: estimating_score,
+        onClick: onEstimateScoreClick,
+    };
+
+    const link_tab: GobanViewTabProps = {
+        id: "game-link",
+        type: "action",
+        align: "right",
+        priority: 2,
+        icon: "share-alt",
+        title: review ? _("Link to review") : _("Link to game"),
+        onClick: () => openGameLinkModal(goban!),
+    };
+
+    const info_tab: GobanViewTabProps = {
+        id: "game-info",
+        type: "action",
+        align: "right",
+        priority: 1,
+        icon: "info",
+        title: _("Game information"),
+        onClick: () => {
+            const controller = goban_controller.current;
+            if (!controller) {
+                return;
+            }
+            openGameInfo(controller, historical_black, historical_white, annulled);
+        },
+    };
 
     const CONTROLS = review ? (
         <ReviewControls review_id={review_id} />
@@ -666,161 +1057,321 @@ export function Game(): React.ReactElement | null {
         <PlayControls annulment_reason={annulment_reason} />
     );
 
-    const renderGameDock = (inline: boolean) => (
-        <GameDock
-            tournament_id={tournament_id.current}
-            tournament_name={tournament?.name}
-            ladder_id={ladder_id.current}
-            historical_black={historical_black}
-            historical_white={historical_white}
-            ai_suspected={bot_detection_results?.ai_suspected.length > 0}
-            className={inline ? "inline" : undefined}
-        />
-    );
+    const openSettings = (event?: React.MouseEvent<HTMLButtonElement>) => {
+        if (!event || !goban_controller.current) {
+            return;
+        }
+        const controller = goban_controller.current;
+        const close = () => {
+            settings_popover_ref.current?.close();
+            settings_popover_ref.current = null;
+        };
+        const button = event.currentTarget;
+        const instance = popover({
+            elt: (
+                <GobanControllerContext.Provider value={controller}>
+                    <ModalContext.Provider value={modal_context}>
+                        <div className="GamePopover GameSettingsPopover">
+                            <GameSettingsPanel
+                                onClose={close}
+                                compact={is_mobile}
+                                onShowThemeSettings={() =>
+                                    goban_view_ref.current?.setActiveTakeover("game-more-settings")
+                                }
+                            />
+                        </div>
+                    </ModalContext.Provider>
+                </GobanControllerContext.Provider>
+            ),
+            below: button,
+            // Wide enough for the 7-column board theme grid (7 * 38px swatch
+            // + padding) plus the white / black stone rows. The popover
+            // library will flip above the button when there's no room below.
+            minWidth: 320,
+        });
+        instance.on("close", () => {
+            if (settings_popover_ref.current === instance) {
+                settings_popover_ref.current = null;
+            }
+        });
+        settings_popover_ref.current = instance;
+    };
+
+    const openMoreActions = (event?: React.MouseEvent<HTMLButtonElement>) => {
+        if (!event || !goban_controller.current) {
+            return;
+        }
+        const controller = goban_controller.current;
+        const close = () => {
+            more_actions_popover_ref.current?.close();
+            more_actions_popover_ref.current = null;
+        };
+        // popover() spins up a fresh React root, so the providers from the
+        // main tree (goban controller, modal manager) don't reach the panel.
+        // Re-establish them inline.
+        const button = event.currentTarget;
+        const instance = popover({
+            elt: (
+                <GobanControllerContext.Provider value={controller}>
+                    <ModalContext.Provider value={modal_context}>
+                        <div className="GamePopover GameMoreActionsPopover">
+                            <GameActionsPanel
+                                tournament_id={tournament_id.current}
+                                tournament_name={tournament?.name}
+                                ladder_id={ladder_id.current}
+                                historical_black={historical_black}
+                                historical_white={historical_white}
+                                action_tabs={menu_action_tabs}
+                                onClose={close}
+                            />
+                        </div>
+                    </ModalContext.Provider>
+                </GobanControllerContext.Provider>
+            ),
+            below: button,
+            minWidth: 220,
+        });
+        instance.on("close", () => {
+            if (more_actions_popover_ref.current === instance) {
+                more_actions_popover_ref.current = null;
+            }
+        });
+        more_actions_popover_ref.current = instance;
+    };
 
     (window as any)["goban_controller"] = goban_controller.current;
 
+    const renderPlayerCard = (color: "black" | "white") => (
+        <PlayerCard
+            color={color}
+            goban={goban!}
+            historical={color === "black" ? historical_black : historical_white}
+            estimating_score={estimating_score}
+            show_score_breakdown={show_score_breakdown}
+            onScoreClick={toggleScorePopup}
+            zen_mode={zen_mode}
+        />
+    );
+
+    /* Mobile straddles the board with the two cards: the opponent above it
+     * and the user below it, so each player sits on the side of the board
+     * they face. Spectators, reviews and game records have no "user"
+     * colour, so they fall back to black above and white below. */
+    const bottom_color = user_color(goban!, user.id) ?? "white";
+    const top_color: "black" | "white" = bottom_color === "black" ? "white" : "black";
+    const renderMobilePlayerCard = (color: "black" | "white") => (
+        <div className="GameMobilePlayers">
+            <div className="player-icons">{renderPlayerCard(color)}</div>
+        </div>
+    );
+
     return (
-        <div>
-            <div
-                className={
-                    "Game MainGobanView " +
-                    (zen_mode ? "zen " : "") +
-                    view_mode +
-                    " " +
-                    (squashed ? "squashed" : "")
-                }
-            >
-                <GobanControllerContext.Provider value={goban_controller.current}>
-                    {game_id > 0 && (
-                        <UIPush
-                            event="review-added"
-                            channel={`game-${game_id}`}
-                            action={goban_controller.current?.addReview}
-                        />
-                    )}
-                    <GameKeyboardShortcuts />
-                    <i
-                        onClick={goban_controller.current?.toggleZenMode}
-                        className="leave-zen-mode-button ogs-zen-mode"
-                    ></i>
+        <GobanView
+            ref={goban_view_ref}
+            controller={goban_controller.current}
+            className={
+                "Game MainGobanView" + (is_mobile ? " mobile" : "") + (zen_mode ? " zen" : "")
+            }
+            onWheel={onWheel}
+            header={<GameStateHeader />}
+            aboveBoard={is_mobile && renderMobilePlayerCard(top_color)}
+            /* The action area sits in the stage with the player cards, so
+             * the board gives up room for it instead of pushing it below
+             * the fold. */
+            belowBoard={
+                is_mobile && (
+                    <>
+                        {renderMobilePlayerCard(bottom_color)}
+                        <GameActionArea />
+                    </>
+                )
+            }
+            /* On mobile the move slider always gets its row while analyzing,
+             * or while stepping back through played moves in a game with
+             * analysis disabled. During play it only gets the row when the
+             * board at full width, the player cards and the play buttons
+             * still fit on screen beside it; on a cramped screen it is
+             * dropped to leave the board and the controls the room. Zen mode
+             * drops it everywhere: keyboard navigation still works, and the
+             * strip is not part of the focused view. */
+            hideSlider={
+                zen_mode
+                    ? true
+                    : is_mobile && !is_analyzing && !is_browsing_history
+                      ? "when-cramped"
+                      : false
+            }
+        >
+            {game_id > 0 && (
+                <UIPush
+                    event="review-added"
+                    channel={`game-${game_id}`}
+                    action={goban_controller.current.addReview}
+                />
+            )}
+            <GameKeyboardShortcuts />
 
-                    <div className="align-row-start"></div>
-                    <div className="left-col"></div>
+            {zen_mode && (
+                <button
+                    type="button"
+                    className="leave-zen-mode-button"
+                    title={_("Exit zen mode")}
+                    aria-label={_("Exit zen mode")}
+                    onClick={goban_controller.current.toggleZenMode}
+                >
+                    <i className="ogs-zen-mode" />
+                </button>
+            )}
 
-                    <div className="center-col">
-                        {view_mode === "portrait" && (
-                            <div>
-                                <PlayerCards
-                                    historical_black={historical_black}
-                                    historical_white={historical_white}
-                                    estimating_score={estimating_score}
-                                    black_flags={black_flags}
-                                    white_flags={white_flags}
-                                    black_ai_suspected={bot_detection_results?.ai_suspected.includes(
-                                        historical_black?.id,
-                                    )}
-                                    white_ai_suspected={bot_detection_results?.ai_suspected.includes(
-                                        historical_white?.id,
-                                    )}
-                                />
-                                <GameInformation />
-                                <RengoHeader />
+            <GobanView.Tab id="game-main" type="always">
+                {/* Mobile renders the two player cards in GobanView's
+                    aboveBoard / belowBoard slots, not here. */}
+                {!is_mobile && (
+                    <PlayerCards
+                        historical_black={historical_black}
+                        historical_white={historical_white}
+                        estimating_score={estimating_score}
+                    />
+                )}
+                {!is_mobile && <GameInformation />}
+                <RengoHeader />
+
+                {!zen_mode && (
+                    <FragAIReview
+                        simul_black={simul_black}
+                        simul_white={simul_white}
+                        showFairPlay={show_mod_tab && moderator_tab_visible}
+                    />
+                )}
+
+                {show_bot_detection_results && ai_suspected && (
+                    <>
+                        {(simul_black || simul_white) && (
+                            <div className="simul-warning">
+                                {pgettext(
+                                    "A label that means the game is played at the same time as another game",
+                                    "Simul",
+                                )}{" "}
+                                {simul_black && simul_white
+                                    ? pgettext(
+                                          "Both players played simultaneous games",
+                                          "(both players)",
+                                      )
+                                    : simul_black
+                                      ? pgettext("Black played simultaneous games", "(black)")
+                                      : pgettext("White played simultaneous games", "(white)")}
                             </div>
                         )}
-                        <GobanContainer onResize={onResize} onWheel={onWheel} />
+                        <BotDetectionResults
+                            bot_detection_results={bot_detection_results}
+                            game_id={game_id}
+                            updateBotDetectionResults={set_bot_detection_results}
+                        />
+                    </>
+                )}
 
-                        <FragBelowBoardControls />
+                {CONTROLS}
 
-                        {view_mode === "square" && !squashed && CHAT}
+                {!zen_mode && chat_enabled && (!is_mobile || mobile_chat_visible) && (
+                    <GameChat
+                        channel={game_id ? `game-${game_id}` : `review-${review_id}`}
+                        game_id={game_id}
+                        review_id={review_id}
+                    />
+                )}
+            </GobanView.Tab>
 
-                        {view_mode === "portrait" && !zen_mode && (
-                            <FragAIReview simul_black={simul_black} simul_white={simul_white} />
-                        )}
+            {/* Left: settings + the analysis tools that used to live in the
+             *  More-actions takeover. Move navigation comes from GobanView's
+             *  built-in MoveNumberControl above the tab bar. */}
+            <GobanView.Tab
+                id="game-settings"
+                type="action"
+                align="left"
+                icon="gear"
+                title={_("Settings")}
+                active={more_settings_open}
+                onClick={(event) => {
+                    if (more_settings_open) {
+                        goban_view_ref.current?.setActiveTakeover(null);
+                    } else {
+                        openSettings(event);
+                    }
+                }}
+            />
 
-                        {view_mode === "portrait" && CONTROLS}
+            {/* Full Themes & Visuals and Game Preferences settings, opened
+             *  from the Settings popover's "More options" item. Hidden from
+             *  the tab bar — the gear icon doubles as its lit-up toggle, and
+             *  the panel has a Done button, so it needs no close button. */}
+            <GobanView.Tab
+                id="game-more-settings"
+                type="takeover"
+                hideFromBar
+                hideCloseButton
+                title={_("Settings")}
+                onToggle={set_more_settings_open}
+            >
+                <GameMoreSettingsPanel
+                    onClose={() => goban_view_ref.current?.setActiveTakeover(null)}
+                />
+            </GobanView.Tab>
 
-                        {view_mode === "portrait" && !zen_mode && CHAT}
+            {analyze_tab && <GobanView.Tab {...analyze_tab} />}
 
-                        {view_mode === "portrait" &&
-                            !zen_mode &&
-                            user_is_player &&
-                            mode === "play" &&
-                            phase === "play" && <CancelButton className="bold reject" />}
+            <GobanView.Tab {...estimate_score_tab} />
 
-                        {view_mode === "portrait" && !zen_mode && renderGameDock(true)}
-                    </div>
+            {chat_tab && <GobanView.Tab {...chat_tab} />}
 
-                    {view_mode !== "portrait" && (
-                        <div className={"right-col" + (experimental ? " experimental" : "")}>
-                            {zen_mode && <div className="align-col-start"></div>}
-                            {(view_mode === "square" || view_mode === "wide") && (
-                                <div>
-                                    <PlayerCards
-                                        historical_black={historical_black}
-                                        historical_white={historical_white}
-                                        estimating_score={estimating_score}
-                                        black_flags={black_flags}
-                                        white_flags={white_flags}
-                                        black_ai_suspected={bot_detection_results?.ai_suspected.includes(
-                                            historical_black?.id,
-                                        )}
-                                        white_ai_suspected={bot_detection_results?.ai_suspected.includes(
-                                            historical_white?.id,
-                                        )}
-                                    />
-                                    <GameInformation />
-                                    <RengoHeader />
-                                </div>
-                            )}
+            {/* Center: contextual single-purpose actions. Review here is
+             *  for spectators or once the game is finished. */}
+            {review_tab && <GobanView.Tab {...review_tab} />}
 
-                            {(view_mode === "square" || view_mode === "wide") && !zen_mode && (
-                                <FragAIReview
-                                    simul_black={simul_black}
-                                    simul_white={simul_white}
-                                    showGameTimings={show_game_timing}
-                                />
-                            )}
+            {conditional_tab && <GobanView.Tab {...conditional_tab} />}
 
-                            {(view_mode === "square" || view_mode === "wide") &&
-                                show_bot_detection_results &&
-                                bot_detection_results?.ai_suspected.length > 0 && (
-                                    <>
-                                        {(simul_black || simul_white) && (
-                                            <div className="simul-warning">
-                                                {pgettext(
-                                                    "A label that means the game is played at the same time as another game",
-                                                    "Simul",
-                                                )}
-                                                {simul_black && simul_white
-                                                    ? " (both players)"
-                                                    : simul_black
-                                                      ? " (black)"
-                                                      : " (white)"}
-                                            </div>
-                                        )}
-                                        <BotDetectionResults
-                                            bot_detection_results={bot_detection_results}
-                                            game_id={game_id}
-                                            updateBotDetectionResults={set_bot_detection_results}
-                                        />
-                                    </>
-                                )}
-
-                            {CONTROLS}
-
-                            {view_mode === "wide" && CHAT}
-                            {view_mode === "square" && squashed && CHAT}
-                            {view_mode === "square" && squashed && CHAT}
-
-                            {renderGameDock(false)}
-                            {zen_mode && <div className="align-col-end"></div>}
-                        </div>
-                    )}
-
-                    <div className="align-row-end"></div>
-                </GobanControllerContext.Provider>
-            </div>
-        </div>
+            {/* Right group, in source order (visually left → right):
+             *  1. Moderator toggle (gavel) — per-player controls + decide /
+             *     annul / inspect / AI-review tools. Sticky between
+             *     reloads via the `moderator.game-moderator-tab-visible`
+             *     preference, gated on user role.
+             *  2. More actions (ellipsis) — popover with the
+             *     non-moderator game actions.
+             *  Link and game information come first; they are optional and
+             *  give way when the bar is short of room. */}
+            <GobanView.Tab {...link_tab} />
+            <GobanView.Tab {...info_tab} />
+            {show_mod_tab && (
+                <GobanView.Tab
+                    id="game-moderator"
+                    type="toggle"
+                    align="right"
+                    icon="gavel"
+                    title={_("Moderator")}
+                    defaultVisible={moderator_tab_visible}
+                    onToggle={set_moderator_tab_visible}
+                >
+                    <GameModeratorAreaPanel
+                        historical_black={historical_black}
+                        historical_white={historical_white}
+                        black_flags={black_flags}
+                        white_flags={white_flags}
+                        bot_detection_results={bot_detection_results}
+                    />
+                    <GameModToolsPanel
+                        historical_black={historical_black}
+                        historical_white={historical_white}
+                        ai_suspected={ai_suspected}
+                    />
+                </GobanView.Tab>
+            )}
+            <GobanView.Tab
+                id="game-actions"
+                type="action"
+                align="right"
+                icon="ellipsis-h"
+                title={_("More actions")}
+                onClick={openMoreActions}
+            />
+        </GobanView>
     );
 }

@@ -16,7 +16,6 @@
  */
 
 import { RuleSet } from "@/lib/types";
-import { standard_board_sizes } from "./DemoBoardModal.config";
 
 export function isRuleSet(v: string): v is RuleSet {
     return ["japanese", "chinese", "aga", "korean", "nz", "ing"].includes(v);
@@ -29,8 +28,4 @@ export function isKomiOption(v: string): v is rest_api.KomiOption {
 export function parseNumberInput(input: string): number | null {
     const num = Number(input);
     return input === "" || !Number.isFinite(num) ? null : num;
-}
-
-export function isStandardBoardSize(board_size: string): boolean {
-    return standard_board_sizes.includes(board_size);
 }

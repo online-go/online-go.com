@@ -140,8 +140,6 @@ export interface KibitzStreamItem {
 
 export interface KibitzSecondaryPaneState {
     collapsed: boolean;
-    size?: "small" | "equal";
-    preview_game_id?: number;
     variation_id?: string;
     variation_source_game_id?: number;
     variation_source_game?: KibitzWatchedGame;
@@ -149,32 +147,11 @@ export interface KibitzSecondaryPaneState {
     variation_source_move_tree_id?: number;
     variation_source_move_path?: string;
     variation_draft_base_id?: string;
-}
-
-export interface KibitzDebugCandidate {
-    id: number;
-    title: string;
-    width?: number;
-    height?: number;
-    move_count?: number;
-}
-
-export interface KibitzDebugRoomHydration {
-    room_id: string;
-    requested_size?: `${number}x${number}`;
-    query_count: number;
-    query_source?: "filtered" | "broad-fallback" | "active-games-fallback";
-    picked_game_id?: number;
-    picked_via?: "query" | "details";
-    error?: string;
-    candidates: KibitzDebugCandidate[];
-}
-
-export interface KibitzDebugState {
-    socket_connected: boolean;
-    status: "idle" | "loading" | "ready" | "error";
-    last_hydration_started_at?: number;
-    last_hydration_finished_at?: number;
-    error?: string;
-    rooms: KibitzDebugRoomHydration[];
+    /** Where in the base variation the draft starts: the encoded path the
+     *  reader was looking at when they branched, rather than the end of the
+     *  line. Absent for a draft that starts at the variation's last move. */
+    variation_draft_base_path?: string;
+    /** Changes on every new draft so a draft started from the same
+     *  position as the previous one still rebuilds the board. */
+    variation_draft_nonce?: number;
 }

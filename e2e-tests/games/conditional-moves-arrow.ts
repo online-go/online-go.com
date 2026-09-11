@@ -84,11 +84,11 @@ export const conditionalMovesArrowBugTest = async ({
     const challengerYourMove = challengerPage.getByText("Your move", { exact: true });
     await expect(challengerYourMove).toBeVisible();
 
-    // Now the "Plan conditional moves" link should be visible on acceptor's page
-    // (it's only visible when it's NOT your turn)
-    // The link is an <a> tag (not with href, so not a true "link" role) with an exchange icon
+    // Now the "Plan conditional moves" action tab should be visible on acceptor's page
+    // (it's only visible when it's NOT your turn). It renders as a GobanView action
+    // tab: <button class="GobanView-tab-button" title="Plan conditional moves">.
     const planConditionalMovesLink = acceptorPage.locator(
-        'a:has(i.fa-exchange):has-text("Plan conditional moves")',
+        'button.GobanView-tab-button[title="Plan conditional moves"]',
     );
     await expect(planConditionalMovesLink).toBeVisible();
     await planConditionalMovesLink.click();

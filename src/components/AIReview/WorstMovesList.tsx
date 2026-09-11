@@ -65,7 +65,7 @@ export function WorstMovesList({
                                     ? "move black-background"
                                     : "move white-background"
                             }
-                            onClick={() => onMoveClick(de.move_number - 1)}
+                            onClick={() => onMoveClick(de.move_number)}
                         >
                             {pretty_coords}
                         </span>

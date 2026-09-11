@@ -1,0 +1,13 @@
+.KibitzMoreActionsPopover {
+    min-width: 220px;
+}
+
+/* The watched game's fixed settings, above the actions. Reference rather
+   than a control, so it is quiet and not clickable. */
+.KibitzMoreActionsPopover .KibitzMoreActionsPopover-settings {
+    padding: 0.4rem 0.75rem;
+    border-bottom: 1px solid var(--shade3);
+    color: var(--shade1);
+    font-size: 0.85rem;
+    white-space: nowrap;
+}

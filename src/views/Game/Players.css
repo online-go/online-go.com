@@ -43,26 +43,6 @@
     background-color: var(--shade4);
 }
 
-.MainGobanView .players {
-    .rengo-team-members {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        flex-grow: 1;
-        margin: 0.3rem;
-
-        .rengo-team-member {
-            border-radius: 0.4em;
-            padding: 0.3rem;
-            padding-bottom: 0.1rem;
-            width: 100%;
-            box-sizing: border-box;
-            text-align: left;
-            background-color: var(--other-player-background);
-        }
-    }
-}
-
 .MainGobanView .player-icons {
     flex-shrink: 0;
     flex-grow: 0;
@@ -72,21 +52,16 @@
     min-height: 2.7rem;
     flex-direction: row;
     box-sizing: border-box;
-    padding: 0.1rem;
-    justify-content: space-around;
 
     .player-container {
         position: relative;
         display: flex;
         flex-direction: column;
-        width: 49%;
+        width: 50%;
         box-sizing: border-box;
-        border-radius: 0.3em;
         text-align: center;
-        padding: 0.2em;
-        margin-top: 0.2em;
+        padding: 0.3em;
 
-        /* border: 1px solid transparent; */
         .komi {
             flex-grow: 0;
             text-align: right;
@@ -99,7 +74,8 @@
             font-weight: bold;
         }
 
-        .captures, .points {
+        .captures,
+        .points {
             font-weight: bold;
             position: relative;
             background-image: none;
@@ -150,6 +126,7 @@
         background-size: contain;
         min-height: 4rem;
         min-width: 4rem;
+        border-radius: 0.4rem;
     }
 
     /* .MainGobanView.squashed was previously a Stylus parent reference, commenting out */
@@ -166,9 +143,11 @@
     */
 
     .white.player-container {
-        box-shadow: 0 2px 5px rgba(50, 50, 50, 0.51);
         background: var(--player-white-background);
         color: var(--player-white-fg);
+        border: 1px solid var(--player-white-border);
+        border-top: none;
+        border-right: none;
 
         .paused-correspondence {
             color: var(--player-white-paused-clock);
@@ -207,8 +186,9 @@
     .black.player-container {
         background: var(--player-black-background);
         color: var(--player-black-fg);
-        border-top: 1px solid #202020;
-        box-shadow: 0 2px 5px rgba(20, 20, 20, 0.71);
+        border: 1px solid var(--player-black-border);
+        border-top: none;
+        border-left: none;
 
         .paused-correspondence {
             color: var(--player-black-paused-clock);
@@ -244,6 +224,9 @@
         }
     }
 
+    /* The player to move is marked by the TurnClock face in their clock,
+     * so the card itself needs no marker. */
+
     .player-container.shortgame.offline {
         border: 1px solid #f66 !important;
     }
@@ -266,15 +249,49 @@
         }
     }
 
-    .black.player-container .flag, .white.player-container .flag {
+    .black.player-container .flag,
+    .white.player-container .flag {
         margin-top: 0.1em;
         margin-right: 0.4em;
         margin-left: 0.4em;
     }
 
+    .stone-removal-accepted {
+        margin-right: 0.3rem;
+        color: var(--danger);
+
+        &.accepted {
+            color: var(--success);
+        }
+    }
+
     .player-name-container {
+        display: flex;
+        align-items: center;
         overflow: hidden;
         text-align: left;
+
+        /* The Player component wraps its link in a plain span. Let that
+         * span shrink so the username ellipsizes instead of pushing the
+         * team-count button out of the clipped row. */
+        > * {
+            min-width: 0;
+        }
+
+        .rengo-team-count {
+            flex-shrink: 0;
+            height: auto;
+            margin: 0 0 0 0.4rem;
+            padding: 0 0.4rem;
+            border: 0;
+            border-radius: 0.4em;
+            box-shadow: none;
+            font-size: 0.85em;
+            line-height: 1.4;
+            color: inherit;
+            background-color: var(--other-player-background);
+            cursor: pointer;
+        }
     }
 
     .player-name {
@@ -287,8 +304,8 @@
     .ChatPresenceIndicator {
         position: absolute;
         display: inline-block;
-        left: 0.25em;
-        top: 0.25em;
+        left: 0.35rem;
+        top: 0.35rem;
         font-size: 0.5em !important;
         vertical-align: text-top;
 
@@ -315,11 +332,13 @@
         color: var(--player-white-clock);
     }
 
-    #game-black-clock .out_of_time, #game-white-clock .out_of_time {
+    #game-black-clock .out_of_time,
+    #game-white-clock .out_of_time {
         color: #f44;
     }
 
-    #game-black-clock .plenty_of_time, #game-white-clock .plenty_of_time {
+    #game-black-clock .plenty_of_time,
+    #game-white-clock .plenty_of_time {
         color: #000;
     }
 
@@ -333,12 +352,15 @@
         font-size: 0.7em;
     }
 
-    #game-black-clock .low_time, #game-white-clock .low_time {
+    #game-black-clock .low_time,
+    #game-white-clock .low_time {
         color: #f44 !important;
         font-weight: bold;
     }
 
-    #black_score, #white_score, .clock-container {
+    #black_score,
+    #white_score,
+    .clock-container {
         font-weight: bold;
     }
 
@@ -432,7 +454,10 @@
     }
 
     .player-container {
-        .captures, .points, .komi, .rules {
+        .captures,
+        .points,
+        .komi,
+        .rules {
             font-size: var(--font-size-small);
         }
 
@@ -452,71 +477,41 @@
             }
         }
 
-        .byo-yomi-container, .canadian-container {
+        .byo-yomi-container,
+        .canadian-container {
             font-size: 0.96em;
         }
     }
 }
 
-[data-theme="dark"] .MainGobanView.zen .player-icons {
-    .white {
-        &.player-container {
-            background: linear-gradient(#2C2C2C 0%, #383838 100%);
-            border: 1px solid #181818;
-            color: #DDD;
-        }
-    }
-
-    #game-white-clock, .white .score-container {
-        color: #DDD;
-    }
-
-    .black {
-        &.player-container {
-            background: linear-gradient(#111111 0%, #1A1A1A 100%);
-            /* background: none; */
-            background-color: #111111;
-            border: 1px solid #181818;
-            color: #BBB;
-        }
-    }
-
-    #game-black-clock, .black .score-container {
-        color: #BBB;
-    }
-}
-
+/* Zen mode (dark themes): mute both cards to quiet flat slates so the
+ * board is the only bright surface on screen. */
+[data-theme="dark"] .MainGobanView.zen .player-icons,
 [data-theme="accessible"] .MainGobanView.zen .player-icons {
     .white {
         &.player-container {
-            background: linear-gradient(#2C2C2C 0%, #383838 100%);
-            border: 1px solid #181818;
-            color: #DDD;
+            background: #2e3137;
+            border: 1px solid #3c4047;
+            color: #ddd;
         }
     }
 
-    #game-white-clock, .white .score-container {
-        color: #DDD;
+    #game-white-clock,
+    .white .score-container {
+        color: #ddd;
     }
 
     .black {
         &.player-container {
-            background: linear-gradient(#111111 0%, #1A1A1A 100%);
-            /* background: none; */
-            background-color: #111111;
-            border: 1px solid #181818;
-            color: #BBB;
+            background: #121418;
+            border: 1px solid #26292f;
+            color: #bbb;
         }
     }
 
-    #game-black-clock, .black .score-container {
-        color: #BBB;
-    }
-}
-
-[data-theme="light"] .MainGobanView.zen .player-icons {
-    .black.player-container {
-        background: linear-gradient(#666 0%, #181818 100%);
+    #game-black-clock,
+    .black .score-container {
+        color: #bbb;
     }
 }
 
@@ -527,14 +522,14 @@
 }
 
 .MainGobanView.zen {
-    .rengo-header, .rengo-teams-header, .rengo-team-members-container {
+    .rengo-header,
+    .rengo-teams-header,
+    .rengo-team-members-container {
         display: none;
     }
 
     .player-icons {
-        .black.player-container {
-            border-top: none;
-        }
+        gap: 0.5rem;
 
         .player-container {
             justify-content: center;
@@ -548,18 +543,21 @@
 
         .Clock {
             min-height: 80px;
+            justify-content: center;
 
             .pause-text {
                 display: none;
             }
 
-            .main-time, .period-time {
+            .main-time,
+            .period-time {
                 line-height: 50px;
                 font-size: 26pt;
                 text-align: center;
             }
 
-            .byo-yomi-container, .canadian-clock-container {
+            .byo-yomi-container,
+            .canadian-clock-container {
                 display: block;
                 font-size: var(--font-size-mid);
                 flex-grow: 1;
@@ -567,29 +565,33 @@
         }
 
         .Clock:not(.in-overtime) {
-            .byo-yomi-container, .canadian-clock-container {
+            .byo-yomi-container,
+            .canadian-clock-container {
                 display: none;
             }
         }
 
+        /* The score row sits in the lower left corner of the card, out of
+         * the way of the centered clock. */
         .captures {
             display: flex;
-            justify-content: center;
-            flex-basis: 70%;
+            justify-content: flex-start;
+            flex-basis: auto;
         }
 
         .score-container {
             margin: 0px;
-            justify-content: center;
+            padding: 0 0.4rem 0.1rem;
+            justify-content: flex-start;
             flex-grow: 0;
         }
 
         .num-captures-container {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             flex-direction: row;
-            flex-grow: 1;
+            flex-grow: 0;
 
             .stone-image {
                 width: 14px;
@@ -602,7 +604,12 @@
             }
         }
 
-        .player-icon-container, .player-name-container, .player-name-plain, .score-details, .rules, .komi {
+        .player-icon-container,
+        .player-name-container,
+        .player-name-plain,
+        .score-details,
+        .rules,
+        .komi {
             display: none;
         }
     }

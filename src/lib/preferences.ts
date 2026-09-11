@@ -23,20 +23,16 @@ import { DataSchema } from "./data_schema";
 import { FollowedChannel } from "@/views/GoTV";
 import { getWindowWidth } from "./device";
 import { createGobanThemePreferenceDefaults } from "./goban_theme_defaults";
+import type { GobanViewBoardAlignment } from "@/components/GobanView/util";
 
 export const defaults = {
     "ai-review-enabled": true,
     "ai-review-use-score": true,
-    "ai-review-categorization-method": "old" as "old" | "new",
-    "ai-review-score-diff-thresholds": {
-        Excellent: 0.2,
-        Great: 0.6,
-        Good: 1.0,
-        Inaccuracy: 2.0,
-        Mistake: 5.0,
-    },
+    "ai-review-show-visit-counts": false,
+    "ai-review-show-on-board": true,
     "ai-summary-table-show": true,
     "always-disable-analysis": false,
+    "animate-turn-clock": true,
     "asked-to-enable-desktop-notifications": false,
     "auto-advance-after-submit": true,
     "autofocus-submit-button": false,
@@ -77,7 +73,6 @@ export const defaults = {
     "dynamic-title": true,
     "function-keys-enabled": false,
     "game-list-threshold": 10,
-    "dock-delay": 0, // seconds.
     "double-click-submit-correspondence": false,
     "double-click-submit-live": false,
     "last-move-opacity": 1.0,
@@ -90,9 +85,14 @@ export const defaults = {
     //"goban-theme-white_stone_url": null as null | string,
     "goban-theme-removal-graphic": "square" as "square" | "x",
     "goban-theme-removal-scale": 0.9,
+    "goban-view-sidebar-width": null as number | null,
+    "goban-view-board-alignment": "container" as GobanViewBoardAlignment,
+    "goban-view-portrait-split": null as number | null,
     "hide-ranks": false,
     "label-positioning": "all" as LabelPosition,
     "label-positioning-puzzles": "all" as LabelPosition,
+    "game.chat-enabled": true,
+    "moderator.game-moderator-tab-visible": true,
     language: "auto",
     "move-tree-numbering": "move-number" as "none" | "move-coordinates" | "move-number",
     "new-game-board-size": 19,
@@ -163,6 +163,7 @@ export const defaults = {
     "variations-in-chat-enabled": true,
     "start-in-zen-mode": false,
     "scroll-to-navigate": false,
+    "move-number-control-mode": "buttons" as "slider" | "buttons",
     "show-empty-chat-notification": true,
     "chat-subscribe-group-chat-unread": true,
     "chat-subscribe-group-mentions": true,

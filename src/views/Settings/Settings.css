@@ -95,6 +95,12 @@
             padding-left: 0.5rem;
             padding-right: 0.5rem;
         }
+
+        /* The open menu must paint above the sample MiniGobans below it,
+         * whose inner container sits at z-index 1. */
+        .ogs-react-select__menu {
+            z-index: 2;
+        }
     }
 
     .ProfanityDropdown {

@@ -15,11 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { interpolate, moment, pgettext } from "@/lib/translate";
+import { interpolate, pgettext } from "@/lib/translate";
 import * as React from "react";
 import * as data from "@/lib/data";
 import { Player } from "@/components/Player";
 import { chat_markup } from "./chat_markup";
+import { ChatDateLine } from "./ChatDateLine";
 import { ChatMessage, TypedChatBody } from "@/lib/chat_manager";
 import { profanity_filter } from "@/lib/profanity_filter";
 
@@ -43,6 +44,9 @@ data.watch("config.user", (user) => {
 interface ChatLineInterface {
     line: ChatMessage;
     lastLine?: ChatMessage;
+    /** False where the caller renders the date itself, outside the line. It
+     *  separates a run of lines rather than belongs to one. */
+    showDate?: boolean;
 }
 
 export function ChatLine(props: ChatLineInterface): React.ReactElement {
@@ -63,22 +67,9 @@ export function ChatLine(props: ChatLineInterface): React.ReactElement {
     }
 
     const message = line.message;
-    const ts_ll = last_line ? new Date(last_line.message.t * 1000) : null;
     const ts = message.t ? new Date(message.t * 1000) : null;
     let third_person = false;
     let body = message.m;
-    let show_date: React.ReactElement | null = null;
-
-    if (!last_line || (ts && ts_ll)) {
-        if (ts) {
-            if (
-                !last_line ||
-                moment(ts).format("YYYY-MM-DD") !== moment(ts_ll).format("YYYY-MM-DD")
-            ) {
-                show_date = <div className="date">{moment(ts).format("LL")}</div>;
-            }
-        }
-    }
 
     let body_rendered: React.ReactNode;
     if (typeof body === "string") {
@@ -126,7 +117,13 @@ export function ChatLine(props: ChatLineInterface): React.ReactElement {
             }
             data-chat-id={message.i}
         >
-            {show_date}
+            {props.showDate !== false && (
+                <ChatDateLine
+                    timestamp={message.t}
+                    previousTimestamp={last_line?.message.t}
+                    hasPreviousLine={Boolean(last_line)}
+                />
+            )}
             {ts && <span className="timestamp">[{timestamp_str}]</span>}
             {(user.id || null) && (
                 <Player user={user} flare rank={false} noextracontrols disableCacheUpdate />

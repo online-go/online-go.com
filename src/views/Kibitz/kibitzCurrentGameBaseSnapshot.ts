@@ -15,12 +15,68 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { type MoveTree, type MoveTreeJson } from "goban";
-import { getMoveTreeTrunkTail, type GobanController } from "@/lib/GobanController";
+import { GobanEngine, type GobanEngineConfig, type MoveTree, type MoveTreeJson } from "goban";
+import {
+    getMoveTreeTrunkTail,
+    restoreGobanToOfficialTail,
+    type GobanController,
+} from "@/lib/GobanController";
 import type { KibitzWatchedGame } from "@/models/kibitz";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 
-export function cloneOfficialTrunkMoveTreeJson(moveTree: MoveTree): MoveTreeJson {
+export function createCurrentGameMiniGobanSnapshotOverrides(
+    snapshot: KibitzCurrentGameBaseSnapshot | null | undefined,
+    currentGameId: number | null | undefined,
+): ReadonlyMap<number, KibitzCurrentGameBaseSnapshot["config"] | null> | undefined {
+    if (currentGameId == null) {
+        return undefined;
+    }
+
+    if (!snapshot || snapshot.gameId !== currentGameId) {
+        return new Map([[currentGameId, null]]);
+    }
+
+    return new Map([[currentGameId, cloneMiniGobanSnapshotConfig(snapshot.config)]]);
+}
+
+function cloneMiniGobanSnapshotConfig(
+    source: KibitzCurrentGameBaseSnapshot["config"],
+): KibitzCurrentGameBaseSnapshot["config"] {
+    const {
+        board_div: _boardDiv,
+        title_div: _titleDiv,
+        move_tree_container: _moveTreeContainer,
+        move_tree: moveTree,
+        server_socket: _serverSocket,
+        ...serializableSource
+    } = source;
+    const seen = new WeakSet<object>();
+    const config = JSON.parse(
+        JSON.stringify(serializableSource, (_key, value: unknown) => {
+            if (typeof value === "function") {
+                return undefined;
+            }
+            if (value && typeof value === "object") {
+                if (seen.has(value)) {
+                    return undefined;
+                }
+                seen.add(value);
+            }
+            return value;
+        }),
+    ) as KibitzCurrentGameBaseSnapshot["config"];
+
+    return {
+        ...config,
+        connect_to_chat: false,
+        game_id: undefined,
+        moves: undefined,
+        move_tree: moveTree ? cloneMoveTreeJson(moveTree) : undefined,
+        server_socket: undefined,
+    };
+}
+
+function cloneOfficialTrunkMoveTreeJson(moveTree: MoveTree): MoveTreeJson {
     const { branches: _branches, ...json } = moveTree.toJson();
 
     if (moveTree.trunk_next) {
@@ -30,129 +86,99 @@ export function cloneOfficialTrunkMoveTreeJson(moveTree: MoveTree): MoveTreeJson
     return json;
 }
 
+interface KibitzGameDetailsForSnapshot {
+    width: number;
+    height: number;
+    gamedata?: {
+        moves?: unknown;
+    };
+}
+
+function buildSnapshotFromEngine({
+    engine,
+    gameId,
+    roomId,
+    source,
+    requiredSnapshotMoveNumber,
+}: {
+    engine: GobanEngine;
+    gameId: number;
+    roomId: string | null | undefined;
+    source: KibitzCurrentGameBaseSnapshot["source"];
+    requiredSnapshotMoveNumber: number;
+}): KibitzCurrentGameBaseSnapshot | null {
+    const officialTail = getMoveTreeTrunkTail(engine.move_tree);
+    if (!officialTail || officialTail.move_number < requiredSnapshotMoveNumber) {
+        return null;
+    }
+
+    return {
+        gameId,
+        roomId: roomId ?? null,
+        trunkTailMoveNumber: officialTail.move_number,
+        moveTreeId: engine.move_tree?.id ?? null,
+        movePath: officialTail.getMoveStringToThisPoint(),
+        source,
+        fetchedMoveCount: null,
+        config: {
+            ...(engine.config as Record<string, unknown>),
+            game_id: gameId,
+            moves: undefined,
+            move_tree: cloneOfficialTrunkMoveTreeJson(engine.move_tree),
+        },
+    };
+}
+
+export function buildCurrentGameBaseSnapshotFromGameDetails({
+    details,
+    gameId,
+    roomId,
+    requiredSnapshotMoveNumber,
+    source = "selected-game-details",
+}: {
+    details: KibitzGameDetailsForSnapshot;
+    gameId: number;
+    roomId?: string | null;
+    requiredSnapshotMoveNumber?: number;
+    source?: KibitzCurrentGameBaseSnapshot["source"];
+}): KibitzCurrentGameBaseSnapshot | null {
+    const moves = details?.gamedata?.moves;
+    if (!Array.isArray(moves)) {
+        return null;
+    }
+
+    if (
+        !Number.isFinite(details.width) ||
+        !Number.isFinite(details.height) ||
+        details.width <= 0 ||
+        details.height <= 0
+    ) {
+        return null;
+    }
+
+    const engine = new GobanEngine({
+        ...details.gamedata,
+        game_id: gameId,
+        width: details.width,
+        height: details.height,
+        moves,
+    } as unknown as GobanEngineConfig);
+
+    return buildSnapshotFromEngine({
+        engine,
+        gameId,
+        roomId,
+        source,
+        requiredSnapshotMoveNumber: requiredSnapshotMoveNumber ?? moves.length,
+    });
+}
+
 function cloneMoveTreeJson(moveTree: MoveTreeJson): MoveTreeJson {
     return JSON.parse(JSON.stringify(moveTree)) as MoveTreeJson;
 }
 
 export function restoreMainBoardToOfficialTail(controller: GobanController): MoveTree | null {
-    const { engine } = controller.goban;
-    const officialTail = getMoveTreeTrunkTail(engine.move_tree);
-
-    if (!officialTail || officialTail.move_number <= 0) {
-        return null;
-    }
-
-    engine.jumpTo(officialTail);
-    engine.setLastOfficialMove();
-    controller.goban.redraw(true);
-
-    return officialTail;
-}
-
-export function canHydrateMainBoardFromRoomBaseSnapshot({
-    mainBoardController,
-    currentGame,
-    currentRoomGameId,
-    requiredMoveNumber,
-    roomBaseSnapshot,
-}: {
-    mainBoardController: GobanController | null | undefined;
-    currentGame: KibitzWatchedGame | null | undefined;
-    currentRoomGameId: number | null | undefined;
-    requiredMoveNumber: number;
-    roomBaseSnapshot: KibitzCurrentGameBaseSnapshot | null | undefined;
-}): boolean {
-    if (!mainBoardController || currentRoomGameId == null || requiredMoveNumber <= 0) {
-        return false;
-    }
-
-    if (!roomBaseSnapshot) {
-        return false;
-    }
-
-    const controllerGameId =
-        mainBoardController.goban?.config?.game_id != null
-            ? Number(mainBoardController.goban.config.game_id)
-            : null;
-    if (controllerGameId !== currentRoomGameId) {
-        return false;
-    }
-
-    if (roomBaseSnapshot.gameId !== currentRoomGameId) {
-        return false;
-    }
-
-    if (
-        currentGame?.live &&
-        requiredMoveNumber === 0 &&
-        roomBaseSnapshot.trunkTailMoveNumber === 0 &&
-        !(
-            roomBaseSnapshot.source === "game-details" ||
-            roomBaseSnapshot.source === "selected-game-details"
-        )
-    ) {
-        return false;
-    }
-
-    if (roomBaseSnapshot.trunkTailMoveNumber < requiredMoveNumber) {
-        return false;
-    }
-
-    if (!roomBaseSnapshot.config?.move_tree) {
-        return false;
-    }
-
-    const currentTail =
-        getMoveTreeTrunkTail(mainBoardController.goban.engine?.move_tree)?.move_number ?? 0;
-    return currentTail < requiredMoveNumber;
-}
-
-export function hydrateMainBoardFromRoomBaseSnapshot({
-    mainBoardController,
-    currentGame,
-    currentRoomGameId,
-    requiredMoveNumber,
-    roomBaseSnapshot,
-}: {
-    mainBoardController: GobanController;
-    currentGame: KibitzWatchedGame | null | undefined;
-    currentRoomGameId: number;
-    requiredMoveNumber: number;
-    roomBaseSnapshot: KibitzCurrentGameBaseSnapshot;
-}): MoveTree | null {
-    if (
-        !canHydrateMainBoardFromRoomBaseSnapshot({
-            mainBoardController,
-            currentGame,
-            currentRoomGameId,
-            requiredMoveNumber,
-            roomBaseSnapshot,
-        })
-    ) {
-        return null;
-    }
-
-    const goban = mainBoardController.goban;
-    const previousMode = goban.mode;
-
-    if (goban.mode === "analyze") {
-        goban.mode = "play";
-    }
-
-    try {
-        goban.load({
-            ...roomBaseSnapshot.config,
-            game_id: currentRoomGameId,
-            moves: undefined,
-            move_tree: roomBaseSnapshot.config.move_tree
-                ? cloneMoveTreeJson(roomBaseSnapshot.config.move_tree)
-                : undefined,
-        });
-    } finally {
-        goban.mode = previousMode;
-    }
-
-    return restoreMainBoardToOfficialTail(mainBoardController);
+    return restoreGobanToOfficialTail(controller.goban);
 }
 
 export function captureCurrentGameBaseSnapshotFromController(
@@ -166,10 +192,9 @@ export function captureCurrentGameBaseSnapshotFromController(
         return null;
     }
 
-    if (!controller.goban.parent?.isConnected) {
-        return null;
-    }
-
+    // The trunk lives in the engine, not in the DOM: a main board that is
+    // off screen — which on a phone it is whenever the centre shows a
+    // variation or a draft — still has every move of the game.
     const { engine } = controller.goban;
     if (!engine?.move_tree) {
         return null;

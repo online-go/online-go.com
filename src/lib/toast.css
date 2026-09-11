@@ -27,10 +27,6 @@
     display: none;
 }
 
-&.kibitz-streamer-mode #toast-meta-container {
-    display: none;
-}
-
 .toast-container {
     background-color: var(--toast-bg);
     color: var(--toast-fg);

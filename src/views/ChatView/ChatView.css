@@ -16,8 +16,10 @@
  */
 .ChatView {
     position: fixed;
-    top: calc(var(--navbar-height) + 0.2rem);
-    bottom: 0;
+    /* Pinned to the visible region so the on-screen keyboard cannot cover
+       the input or pan the header away; see lib/visual_viewport.ts. */
+    top: max(calc(var(--navbar-height) + 0.2rem), var(--visual-viewport-top));
+    bottom: var(--visual-viewport-bottom);
     left: 0;
     right: 0;
     display: flex;
@@ -25,7 +27,8 @@
     max-width: 100dvw;
     flex-direction: row;
 
-    .ChatChannelList, .ChatUsersList {
+    .ChatChannelList,
+    .ChatUsersList {
         flex-basis: 20%;
         flex-shrink: 0;
         flex-grow: 0;
@@ -68,7 +71,8 @@
 }
 
 .ChatHeader {
-    .fa-list, .fa-users {
+    .fa-list,
+    .fa-users {
         display: none;
     }
 }
@@ -95,7 +99,8 @@
     }
 
     .ChatHeader {
-        .fa-list, .fa-users {
+        .fa-list,
+        .fa-users {
             display: inline-flex;
         }
     }

@@ -17,13 +17,14 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { LineText } from "@/components/misc-ui";
 import { Player } from "@/components/Player";
 import { useGobanControllerOrNull } from "@/components/GobanView";
 import * as preferences from "@/lib/preferences";
-import { current_language, pgettext, interpolate, moment, _ } from "@/lib/translate";
+import { current_language, pgettext, interpolate, _ } from "@/lib/translate";
 import { profanity_filter } from "@/lib/profanity_filter";
 import { chat_markup } from "./chat_markup";
+import { ChatDateLine } from "./ChatDateLine";
+import { GameChatMoveNumber } from "./GameChatMoveNumber";
 import { protocol } from "goban";
 import type { MoveTree } from "goban";
 import type { Goban } from "goban";
@@ -35,6 +36,11 @@ interface GameChatLineProps {
     lastLine?: GameChatLineWithTranslatedBody;
     gameId?: number;
     reviewId?: number;
+    /** False where the caller renders the date and the move number itself,
+     *  outside the line. They separate a run of lines rather than belong to
+     *  one, so a caller that lays its lines out in a row of its own needs
+     *  them as elements of its own. */
+    separators?: boolean;
 }
 
 type GameChatLineBody = protocol.GameChatLine["body"] | protocol.GameChatTranslatedMessage;
@@ -166,73 +172,21 @@ export function GameChatLine(props: GameChatLineProps): React.ReactElement {
     const body = line.body;
     const isMe = typeof body === "string" && body.startsWith("/me ");
     const bodyText = isMe ? body.substring(4) : body;
-    let show_date: React.ReactElement | null = null;
-    let move_number: React.ReactElement | null = null;
-
-    if (!lastLine || (line.date && lastLine.date)) {
-        if (line.date) {
-            if (
-                !lastLine ||
-                moment(new Date(line.date * 1000)).format("YYYY-MM-DD") !==
-                    moment(new Date(lastLine.date * 1000)).format("YYYY-MM-DD")
-            ) {
-                show_date = (
-                    <div className="date">{moment(new Date(line.date * 1000)).format("LL")}</div>
-                );
-            }
-        }
-    }
-
-    if (
-        !lastLine ||
-        line.move_number !== lastLine.move_number ||
-        line.from !== lastLine.from ||
-        line.moves !== lastLine.moves
-    ) {
-        const jumpToMove = () => {
-            if (!goban_controller) {
-                return;
-            }
-
-            const goban = goban_controller.goban;
-            goban_controller.stopEstimatingScore();
-
-            if ((line.from ?? -1) >= 0 && "moves" in line) {
-                goban.engine.followPath(line.from as number, line.moves as string);
-                goban.syncReviewMove();
-                goban.drawPenMarks(goban.engine.cur_move.pen_marks);
-                goban.redraw();
-            } else if ("move_number" in line) {
-                if (!goban.isAnalysisDisabled()) {
-                    goban.setMode("analyze");
-                }
-
-                goban.engine.followPath(line.move_number as number, "");
-                goban.redraw();
-
-                if (goban.isAnalysisDisabled()) {
-                    goban.updatePlayerToMoveTitle();
-                }
-
-                goban.emit("update");
-            }
-        };
-
-        move_number = (
-            <LineText className="move-number" onClick={jumpToMove}>
-                {pgettext("Label for a jump-to-move control in game chat", "Move")}{" "}
-                {line.move_number}
-            </LineText>
-        );
-    }
-
     const chatId = `${getChatIdPrefix(props.gameId, props.reviewId)}.${line.channel}.${line.chat_id}`;
 
     return (
         <div className="GameChatLine">
             <div className="chat-line-container" data-chat-id={chatId}>
-                {move_number}
-                {show_date}
+                {props.separators !== false && (
+                    <>
+                        <GameChatMoveNumber line={line} lastLine={lastLine} />
+                        <ChatDateLine
+                            timestamp={line.date}
+                            previousTimestamp={lastLine?.date}
+                            hasPreviousLine={Boolean(lastLine)}
+                        />
+                    </>
+                )}
                 <div
                     className={`chat-line ${line.channel} ${isMe ? "third-person" : ""} chat-user-${line.player_id}`}
                 >

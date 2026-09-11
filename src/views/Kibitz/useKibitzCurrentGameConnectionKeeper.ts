@@ -18,7 +18,6 @@
 import * as React from "react";
 import type { GobanController } from "@/lib/GobanController";
 import { socket } from "@/lib/sockets";
-import { logKibitzVariationDebug } from "./kibitzVariationDebug";
 
 const PICKER_CLOSE_RECONNECT_DELAYS_MS = [0, 50, 250, 1000] as const;
 const KEEPALIVE_INTERVAL_MS = 20000;
@@ -31,23 +30,10 @@ interface UseKibitzCurrentGameConnectionKeeperOptions {
     pickerOpen: boolean;
     enabled?: boolean;
     allowReconnect?: boolean;
-    debugSource?: string;
     boardController?: GobanController | null;
 }
 
-function sendGameConnect(
-    gameId: number,
-    reason: string,
-    debugSource: string,
-    roomId: string | null | undefined,
-): void {
-    logKibitzVariationDebug("kibitz-current-game-keeper:connect", {
-        reason,
-        debugSource,
-        roomId,
-        gameId,
-    });
-
+function sendGameConnect(gameId: number): void {
     socket.send("game/connect", {
         game_id: gameId,
         chat: true,
@@ -74,7 +60,6 @@ export function useKibitzCurrentGameConnectionKeeper({
     pickerOpen,
     enabled = true,
     allowReconnect = true,
-    debugSource = "kibitz-room",
     boardController,
 }: UseKibitzCurrentGameConnectionKeeperOptions): void {
     const activeGameId = enabled && isLive && currentGameId != null ? currentGameId : null;
@@ -136,59 +121,44 @@ export function useKibitzCurrentGameConnectionKeeper({
         scheduledRafIdsRef.current = [];
     }, []);
 
-    const connect = React.useCallback(
-        (reason: string) => {
-            if (!allowReconnect) {
-                return;
-            }
+    const connect = React.useCallback(() => {
+        if (!allowReconnect) {
+            return;
+        }
 
-            if (activeGameId == null) {
-                return;
-            }
+        if (activeGameId == null) {
+            return;
+        }
 
-            const controllerGameId = boardController?.goban?.config?.game_id ?? null;
-            const controllerMatchesActiveGame =
-                boardController != null && controllerGameId === activeGameId;
-            const shouldBypassReconnectGuard =
-                controllerMatchesActiveGame &&
-                activeGameKey != null &&
-                bootstrapConnectKeyRef.current !== activeGameKey;
+        const controllerGameId = boardController?.goban?.config?.game_id ?? null;
+        const controllerMatchesActiveGame =
+            boardController != null && controllerGameId === activeGameId;
+        const shouldBypassReconnectGuard =
+            controllerMatchesActiveGame &&
+            activeGameKey != null &&
+            bootstrapConnectKeyRef.current !== activeGameKey;
 
-            if (
-                controllerMatchesActiveGame &&
-                !shouldBypassReconnectGuard &&
-                !canReconnectController(boardController)
-            ) {
-                logKibitzVariationDebug("kibitz-current-game-keeper:connect-skipped", {
-                    reason,
-                    debugSource,
-                    roomId,
-                    gameId: activeGameId,
-                    currentLiveTailMoveNumber: currentLiveTailMoveNumberRef.current,
-                    controllerCurrentMoveNumber:
-                        boardController.goban?.engine?.cur_move?.move_number ?? null,
-                    controllerOfficialTailMoveNumber:
-                        boardController.goban?.engine?.last_official_move?.move_number ?? null,
-                });
-                return;
-            }
+        if (
+            controllerMatchesActiveGame &&
+            !shouldBypassReconnectGuard &&
+            !canReconnectController(boardController)
+        ) {
+            return;
+        }
 
-            sendGameConnect(activeGameId, reason, debugSource, roomId);
+        sendGameConnect(activeGameId);
 
-            if (shouldBypassReconnectGuard) {
-                bootstrapConnectKeyRef.current = activeGameKey;
-            }
-        },
-        [
-            activeGameId,
-            activeGameKey,
-            allowReconnect,
-            boardController,
-            canReconnectController,
-            debugSource,
-            roomId,
-        ],
-    );
+        if (shouldBypassReconnectGuard) {
+            bootstrapConnectKeyRef.current = activeGameKey;
+        }
+    }, [
+        activeGameId,
+        activeGameKey,
+        allowReconnect,
+        boardController,
+        canReconnectController,
+        roomId,
+    ]);
 
     const scheduleAnimationFrame = React.useCallback((callback: FrameRequestCallback): number => {
         if (typeof window.requestAnimationFrame === "function") {
@@ -200,37 +170,34 @@ export function useKibitzCurrentGameConnectionKeeper({
         }, 16);
     }, []);
 
-    const scheduleReconnectBurst = React.useCallback(
-        (reason: string) => {
-            if (!allowReconnect) {
-                return;
-            }
+    const scheduleReconnectBurst = React.useCallback(() => {
+        if (!allowReconnect) {
+            return;
+        }
 
-            if (activeGameId == null) {
-                return;
-            }
+        if (activeGameId == null) {
+            return;
+        }
 
-            clearScheduledReconnects();
+        clearScheduledReconnects();
 
-            for (const delay of PICKER_CLOSE_RECONNECT_DELAYS_MS) {
-                const timeoutId = window.setTimeout(() => {
-                    connect(`${reason}:${delay}ms`);
-                }, delay);
-                scheduledTimeoutIdsRef.current.push(timeoutId);
-            }
+        for (const delay of PICKER_CLOSE_RECONNECT_DELAYS_MS) {
+            const timeoutId = window.setTimeout(() => {
+                connect();
+            }, delay);
+            scheduledTimeoutIdsRef.current.push(timeoutId);
+        }
 
-            const firstRafId = scheduleAnimationFrame(() => {
-                connect(`${reason}:raf1`);
+        const firstRafId = scheduleAnimationFrame(() => {
+            connect();
 
-                const secondRafId = scheduleAnimationFrame(() => {
-                    connect(`${reason}:raf2`);
-                });
-                scheduledRafIdsRef.current.push(secondRafId);
+            const secondRafId = scheduleAnimationFrame(() => {
+                connect();
             });
-            scheduledRafIdsRef.current.push(firstRafId);
-        },
-        [activeGameId, allowReconnect, clearScheduledReconnects, connect, scheduleAnimationFrame],
-    );
+            scheduledRafIdsRef.current.push(secondRafId);
+        });
+        scheduledRafIdsRef.current.push(firstRafId);
+    }, [activeGameId, allowReconnect, clearScheduledReconnects, connect, scheduleAnimationFrame]);
 
     React.useEffect(() => {
         if (activeGameId == null) {
@@ -240,40 +207,19 @@ export function useKibitzCurrentGameConnectionKeeper({
         }
 
         if (!allowReconnect) {
-            logKibitzVariationDebug("kibitz-current-game-keeper:skip-root-live-board", {
-                debugSource,
-                roomId,
-                gameId: activeGameId,
-                currentLiveTailMoveNumber: currentLiveTailMoveNumberRef.current,
-                boardOfficialTailMoveNumber:
-                    boardController?.goban?.engine?.last_official_move?.move_number ?? 0,
-            });
             clearScheduledReconnects();
             return;
         }
 
-        connect("mount-or-game-change");
+        connect();
 
         return () => {
             clearScheduledReconnects();
-            logKibitzVariationDebug("kibitz-current-game-keeper:release-without-disconnect", {
-                debugSource,
-                roomId,
-                gameId: activeGameId,
-            });
 
             // Do not send game/disconnect here.
             // Future improvement: shared Goban/socket-level ref-counting.
         };
-    }, [
-        activeGameId,
-        allowReconnect,
-        boardController,
-        clearScheduledReconnects,
-        connect,
-        debugSource,
-        roomId,
-    ]);
+    }, [activeGameId, allowReconnect, boardController, clearScheduledReconnects, connect, roomId]);
 
     React.useEffect(() => {
         if (activeGameId == null) {
@@ -291,12 +237,12 @@ export function useKibitzCurrentGameConnectionKeeper({
 
         if (!previousPickerOpen && pickerOpen) {
             clearScheduledReconnects();
-            connect("picker-open");
+            connect();
             return;
         }
 
         if (previousPickerOpen && !pickerOpen) {
-            scheduleReconnectBurst("picker-close");
+            scheduleReconnectBurst();
         }
     }, [activeGameId, allowReconnect, connect, pickerOpen, scheduleReconnectBurst]);
 
@@ -315,7 +261,7 @@ export function useKibitzCurrentGameConnectionKeeper({
         previousBoardControllerRef.current = boardController;
 
         if (previousBoardController !== boardController) {
-            scheduleReconnectBurst("main-board-controller-change");
+            scheduleReconnectBurst();
         }
     }, [activeGameId, allowReconnect, boardController, scheduleReconnectBurst]);
 
@@ -329,12 +275,12 @@ export function useKibitzCurrentGameConnectionKeeper({
         }
 
         const onFocus = () => {
-            connect("window-focus");
+            connect();
         };
 
         const onVisibilityChange = () => {
             if (document.visibilityState === "visible") {
-                connect("document-visible");
+                connect();
             }
         };
 
@@ -357,7 +303,7 @@ export function useKibitzCurrentGameConnectionKeeper({
         }
 
         const intervalId = window.setInterval(() => {
-            connect("interval-keepalive");
+            connect();
         }, KEEPALIVE_INTERVAL_MS);
 
         return () => {

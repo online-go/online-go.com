@@ -26,6 +26,28 @@
         padding-top: 0;
     }
 
+    /* Portrait puts the inline panels inside .GobanView-mobile-scroll, which is
+       already the scroll container for everything below the goban. Panels there
+       must size to their content and let that container do the scrolling. If
+       they keep the sidebar's "fill the available height and scroll inside"
+       rules, they shrink to the remaining space and trap the description and
+       the comments in inner scroll boxes only a few lines tall. */
+    &.portrait .GobanView-mobile-scroll > .GobanView-tab-panel {
+        flex-grow: 0;
+        flex-shrink: 0;
+
+        .explore-pane,
+        .discussion-lines,
+        .play-dashboard {
+            flex-shrink: 0;
+            overflow-y: visible;
+        }
+
+        .joseki-inline-comments {
+            max-height: none;
+        }
+    }
+
     /* ---- Move bar (reset / back / [knob] / forward / tenuki / throbber) ---- */
 
     .Joseki-move-bar {

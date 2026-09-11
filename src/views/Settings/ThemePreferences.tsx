@@ -36,6 +36,7 @@ import { MiniGoban } from "@/components/MiniGoban";
 import { GobanEngineConfig, setGobanRenderer } from "goban";
 import { Toggle } from "@/components/Toggle";
 import { GobanThemeImportExport } from "./GobanThemeImportExport";
+import { boardAlignmentOptions } from "@/components/GobanView/util";
 import "./ThemePreferences.css";
 
 const sample_board_data: GobanEngineConfig = {
@@ -56,6 +57,7 @@ const sample_board_data: GobanEngineConfig = {
 };
 
 export function ThemePreferences(): React.ReactElement | null {
+    const [board_alignment, setBoardAlignment] = usePreference("goban-view-board-alignment");
     const [stone_removal_graphic, _setStoneRemovalGraphic] = usePreference(
         "goban-theme-removal-graphic",
     );
@@ -102,6 +104,12 @@ export function ThemePreferences(): React.ReactElement | null {
 
     const [variation_stone_opacity, _setVariationStoneOpacity] =
         usePreference("variation-stone-opacity");
+    const [show_visit_counts, setShowVisitCounts] = usePreference("ai-review-show-visit-counts");
+    const [show_on_board, setShowOnBoard] = usePreference("ai-review-show-on-board");
+    const [animate_turn_clock, setAnimateTurnClock] = usePreference("animate-turn-clock");
+    const [move_number_control_mode, _setMoveNumberControlMode] = usePreference(
+        "move-number-control-mode",
+    );
 
     //const [show_move_numbers, _setShowMoveNumbers] = usePreference("show-move-numbers");
     const [show_variation_move_numbers, _setShowVariationMoveNumbers] = usePreference(
@@ -247,6 +255,13 @@ export function ThemePreferences(): React.ReactElement | null {
                 <GobanThemeImportExport />
             </PreferenceLine>
 
+            <PreferenceLine title={pgettext("Board alignment on the game page", "Board alignment")}>
+                <PreferenceDropdown
+                    value={board_alignment}
+                    options={boardAlignmentOptions()}
+                    onChange={setBoardAlignment}
+                />
+            </PreferenceLine>
             <PreferenceLine title={_("Board label positioning")}>
                 <PreferenceDropdown
                     value={label_positioning}
@@ -640,6 +655,74 @@ export function ThemePreferences(): React.ReactElement | null {
                         sampleOptions={{ undo: true }}
                     />
                 </div>
+            </PreferenceLine>
+
+            <PreferenceLine
+                title={pgettext(
+                    "Theme preference: move the hands of the small clock next to the player to move",
+                    "Animate the turn clock",
+                )}
+                description={pgettext(
+                    "Theme preference description: the small clock marks the player to move",
+                    "Turn the hand of the small clock beside the player to move once a second, while they have less than an hour left. Turn this off to hold the hand still.",
+                )}
+            >
+                <Toggle checked={animate_turn_clock} onChange={setAnimateTurnClock} />
+            </PreferenceLine>
+
+            <PreferenceLine
+                title={pgettext("Theme preference title", "Move navigation control")}
+                description={pgettext(
+                    "Theme preference description",
+                    "Navigate moves with a slider, or with first, back 10, back, forward, forward 10, and last buttons.",
+                )}
+            >
+                <PreferenceDropdown
+                    value={move_number_control_mode}
+                    options={[
+                        {
+                            value: "buttons",
+                            label: pgettext("Move navigation control mode", "Buttons"),
+                        },
+                        {
+                            value: "slider",
+                            label: pgettext("Move navigation control mode", "Slider"),
+                        },
+                    ]}
+                    onChange={(value: string) => {
+                        if (value === "slider" || value === "buttons") {
+                            _setMoveNumberControlMode(value);
+                        }
+                    }}
+                />
+            </PreferenceLine>
+
+            <PreferenceLine
+                title={_("Show AI visit counts")}
+                description={_(
+                    "In AI reviews, show how many times the AI considered each suggested move underneath its score difference.",
+                )}
+            >
+                <Toggle
+                    checked={show_visit_counts}
+                    onChange={(tf) => {
+                        setShowVisitCounts(tf);
+                    }}
+                />
+            </PreferenceLine>
+
+            <PreferenceLine
+                title={_("Show AI review on the board")}
+                description={_(
+                    "Draw the AI's suggested moves, their score differences and the move quality on the board. The chart and summary stay in the review panel.",
+                )}
+            >
+                <Toggle
+                    checked={show_on_board}
+                    onChange={(tf) => {
+                        setShowOnBoard(tf);
+                    }}
+                />
             </PreferenceLine>
 
             <PreferenceLine

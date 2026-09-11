@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { get } from "@/lib/requests";
+import { outcomeHasScore } from "@/components/GobanView";
 
 import { GobanRenderer, Goban, PlayerScore, JGOFPlayerSummary } from "goban";
 import { user_uploads_url } from "@/lib/cdn";
@@ -24,19 +24,22 @@ import { CountDown } from "./CountDown";
 import { Flag } from "@/components/Flag";
 import { ChatPresenceIndicator } from "@/components/ChatPresenceIndicator";
 import { Clock, SGFClock } from "@/components/Clock";
-import { useUser } from "@/lib/hooks";
 import { Player } from "@/components/Player";
 import { lookup, fetch } from "@/lib/player_cache";
-import { _, interpolate, ngettext, moment } from "@/lib/translate";
+import { _, interpolate, ngettext, pgettext } from "@/lib/translate";
 import * as data from "@/lib/data";
-import { generateGobanHook, usePlayerToMove, useZenMode } from "./GameHooks";
+import {
+    generateGobanHook,
+    usePhase,
+    usePlayerToMoveOnOfficialBranch,
+    useScorePopup,
+    useStoneRemovalAccepted,
+    useZenMode,
+} from "./GameHooks";
 import { get_network_latency, get_clock_drift } from "@/lib/sockets";
 import { useGobanController } from "./goban_context";
-import { usePreference } from "@/lib/preferences";
-import { browserHistory } from "@/lib/ogsHistory";
 import { player_is_ignored } from "@/components/BlockPlayer";
-import { doAnnul } from "@/lib/moderation";
-import "./PlayerCards.css";
+import { openRengoTeamModal } from "@/components/RengoTeamModal";
 
 type PlayerType = rest_api.games.Player;
 
@@ -44,57 +47,18 @@ interface PlayerCardsProps {
     historical_black: PlayerType | null;
     historical_white: PlayerType | null;
     estimating_score: boolean;
-    black_flags: null | rest_api.GamePlayerFlags;
-    white_flags: null | rest_api.GamePlayerFlags;
-    black_ai_suspected: boolean;
-    white_ai_suspected: boolean;
 }
 
 export function PlayerCards({
     historical_black,
     historical_white,
     estimating_score,
-    black_flags,
-    white_flags,
-    black_ai_suspected,
-    white_ai_suspected,
 }: PlayerCardsProps): React.ReactElement {
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
 
-    const orig_marks = React.useRef<string | null>(null);
-    const showing_scores = React.useRef<boolean>(false);
     const zen_mode = useZenMode(goban_controller);
-
-    const [show_score_breakdown, set_show_score_breakdown] = React.useState(false);
-
-    const popupScores = () => {
-        if (goban.engine.cur_move) {
-            orig_marks.current = JSON.stringify(goban.engine.cur_move.getAllMarks());
-            goban.engine.cur_move.clearMarks();
-        } else {
-            orig_marks.current = null;
-        }
-
-        const scores = goban.engine.computeScore(false);
-        showing_scores.current = goban.showing_scores;
-        goban.showScores(scores);
-
-        set_show_score_breakdown(true);
-    };
-    const hideScores = () => {
-        if (!showing_scores.current) {
-            goban.hideScores();
-        }
-        if (goban.engine.cur_move && orig_marks.current) {
-            goban.engine.cur_move.setAllMarks(JSON.parse(orig_marks.current));
-        }
-        goban.redraw();
-
-        set_show_score_breakdown(false);
-    };
-
-    const toggleScorePopup = () => (show_score_breakdown ? hideScores() : popupScores());
+    const { show_score_breakdown, toggleScorePopup } = useScorePopup(goban);
 
     return (
         <div className="players">
@@ -107,8 +71,6 @@ export function PlayerCards({
                     show_score_breakdown={show_score_breakdown}
                     onScoreClick={toggleScorePopup}
                     zen_mode={zen_mode}
-                    flags={black_flags}
-                    ai_suspected={black_ai_suspected}
                 />
                 <PlayerCard
                     historical={historical_white}
@@ -118,8 +80,6 @@ export function PlayerCards({
                     show_score_breakdown={show_score_breakdown}
                     onScoreClick={toggleScorePopup}
                     zen_mode={zen_mode}
-                    flags={white_flags}
-                    ai_suspected={white_ai_suspected}
                 />
             </div>
         </div>
@@ -166,11 +126,7 @@ const useScore = generateGobanHook(
         // boolean argument.
         if (
             (engine.phase === "stone removal" || engine.phase === "finished") &&
-            engine.outcome !== "Timeout" &&
-            engine.outcome !== "Disconnection" &&
-            engine.outcome !== "Resignation" &&
-            engine.outcome !== "Abandonment" &&
-            engine.outcome !== "Cancellation" &&
+            outcomeHasScore(engine.outcome) &&
             goban.mode === "play"
         ) {
             return engine.computeScore(false);
@@ -188,8 +144,6 @@ interface PlayerCardProps {
     show_score_breakdown: boolean;
     onScoreClick: () => void;
     zen_mode: boolean;
-    flags: null | rest_api.GamePlayerFlags;
-    ai_suspected: boolean;
 }
 
 export function PlayerCard({
@@ -200,57 +154,22 @@ export function PlayerCard({
     show_score_breakdown,
     onScoreClick,
     zen_mode,
-    flags,
-    ai_suspected,
 }: PlayerCardProps) {
     const engine = goban.engine;
     const player = { ...engine.players[color] };
-    const player_to_move = usePlayerToMove(goban);
-    const [hide_flags] = usePreference("moderator.hide-flags");
+    const player_to_move = usePlayerToMoveOnOfficialBranch(goban);
+    const phase = usePhase(goban);
 
     const auto_resign_expiration = useAutoResignExpiration(goban, color);
     const score = useScore(goban)[color];
+    const stone_removal_accepted = useStoneRemovalAccepted(goban, color);
     const { game_id, review_id } = goban;
     const chat_channel = game_id ? `game-${game_id}` : `review-${review_id}`;
-    const [hide_player_card_mod_controls] = usePreference(
-        "moderator.hide-player-card-mod-controls",
-    );
-
-    const user = useUser();
 
     if (goban.is_game_record) {
         player.id = 0;
         historical = null;
     }
-
-    const show_player_card_mod_controls =
-        user.is_moderator && game_id && !hide_player_card_mod_controls && !!player.id;
-
-    const jumpToPrevGame = () => {
-        get(`games/${game_id}/prev/${player.id}`)
-            .then((body) => {
-                const prev_game = body.id;
-                browserHistory.push(`/game/${prev_game}`);
-            })
-            .catch((e) => {
-                console.debug("No previous game", e);
-            });
-    };
-
-    const jumpToNextGame = () => {
-        get(`games/${game_id}/next/${player.id}`)
-            .then((body) => {
-                const next_game = body.id;
-                browserHistory.push(`/game/${next_game}`);
-            })
-            .catch((e) => {
-                console.debug("No next game", e);
-            });
-    };
-
-    const annulWithBlame = () => {
-        doAnnul(engine.config, true, null, ` ${color} `); // spaces make it easy for the user to put the cursor before or after, they are trimmed later
-    };
 
     // In rengo we always will have a player icon to show (after initialization).
     // In other cases, we only have one if `historical` is set
@@ -268,18 +187,19 @@ export function PlayerCard({
         player_bg.backgroundImage = ``;
     }
 
-    const their_turn = player_to_move === player.id;
+    /* The engine always reports a player-to-move, even once the game is
+     * over — only treat it as "their turn" while moves can still be made.
+     * The player to move comes from the official branch so the turn clock
+     * stays on the player the server clock is running for while the user
+     * views an earlier move or stages (but has not yet submitted) a stone. */
+    const their_turn = phase === "play" && player_to_move === player.id;
+    const rengo_team = engine.rengo && engine.rengo_teams ? engine.rengo_teams[color] : null;
     const highlight_their_turn = their_turn ? `their-turn` : "";
 
     const show_points =
         (engine.phase === "finished" || engine.phase === "stone removal") &&
         goban.mode !== "analyze" &&
-        engine.outcome !== "Timeout" &&
-        engine.outcome !== "Disconnection" &&
-        engine.outcome !== "Resignation" &&
-        engine.outcome !== "Abandonment" &&
-        engine.outcome !== "Cancellation" &&
-        !engine.outcome.startsWith("Server Decision");
+        outcomeHasScore(engine.outcome);
 
     return (
         <div className={`${color} ${highlight_their_turn} player-container`}>
@@ -303,7 +223,12 @@ export function PlayerCard({
                 )}
 
                 {engine.phase !== "finished" && !goban.review_id ? (
-                    <Clock goban={goban} color={color} className="in-game-clock" />
+                    <Clock
+                        goban={goban}
+                        color={color}
+                        className="in-game-clock"
+                        show_turn_clock={their_turn}
+                    />
                 ) : (
                     goban.engine.sgf_time_settings && (
                         <SGFClock goban={goban} color={color} className="in-game-clock" />
@@ -313,11 +238,42 @@ export function PlayerCard({
 
             {player && player.rank !== -1 && (
                 <div className={`${color} player-name-container`}>
+                    {stone_removal_accepted !== undefined && (
+                        <i
+                            className={
+                                "stone-removal-accepted fa " +
+                                (stone_removal_accepted ? "fa-check accepted" : "fa-times")
+                            }
+                            title={
+                                stone_removal_accepted
+                                    ? pgettext(
+                                          "Player card badge during the stone removal phase",
+                                          "Accepted the removed stones",
+                                      )
+                                    : pgettext(
+                                          "Player card badge during the stone removal phase",
+                                          "Has not accepted the removed stones yet",
+                                      )
+                            }
+                        />
+                    )}
                     <Player
                         user={player.id}
                         historical={(!engine.rengo && historical) || player}
                         gameId={goban.game_id}
                     />
+                    {rengo_team && rengo_team.length > 1 && (
+                        <button
+                            className="rengo-team-count"
+                            title={pgettext(
+                                "Button on a rengo player card that opens the team list",
+                                "Show the other team members",
+                            )}
+                            onClick={() => openRengoTeamModal(color, rengo_team)}
+                        >
+                            {"+ " + (rengo_team.length - 1)}
+                        </button>
+                    )}
                 </div>
             )}
 
@@ -325,18 +281,6 @@ export function PlayerCard({
                 <span className="player-name-plain">
                     {color === "black" ? _("Black") : _("White")}
                 </span>
-            )}
-
-            {show_player_card_mod_controls && (
-                <div className="player-card-mod-controls">
-                    <i className="fa fa-2x fa-angle-left" onClick={jumpToPrevGame} />
-                    <div className="middle-mod-controls">
-                        {engine.phase === "finished" && (
-                            <i className="fa fa-gavel" onClick={annulWithBlame} />
-                        )}
-                    </div>
-                    <i className="fa fa-2x fa-angle-right" onClick={jumpToNextGame} />
-                </div>
             )}
 
             <div
@@ -368,36 +312,7 @@ export function PlayerCard({
                 <div id={`${color}-score-details`} className="score-details">
                     <ScorePopup goban={goban} color={color} show={show_score_breakdown} />
                 </div>
-                {!hide_flags && ai_suspected && (
-                    <div className="player-flags">
-                        <i className="fa fa-flag" />
-                        {" AI Suspected"}
-                    </div>
-                )}
-                {!hide_flags && flags && (
-                    <div className="player-flags">
-                        {Object.keys(flags).map((flag) => (
-                            <div key={flag}>
-                                <i className="fa fa-flag" /> {flag}:{" "}
-                                {flag === "blur_rate"
-                                    ? `${Math.round((flags[flag] as number) * 100.0)}%`
-                                    : flag === "slow_moving"
-                                      ? moment.duration(flags[flag] as number).humanize()
-                                      : flags[flag]}
-                            </div>
-                        ))}
-                    </div>
-                )}
             </div>
-            {!!(engine.rengo && engine.rengo_teams) && (
-                <div className={"rengo-team-members player-name-container " + color}>
-                    {engine.rengo_teams[color].slice(1).map((player) => (
-                        <div className={"rengo-team-member"} key={player.id}>
-                            {<Player user={player} icon rank />}
-                        </div>
-                    ))}
-                </div>
-            )}
         </div>
     );
 }

@@ -26,6 +26,16 @@ import {
 } from "@/components/ChallengeModal/ChallengeModal.types";
 import { rankSelectorIndexToText } from "@/lib/rank_utils";
 import { RuleSet } from "@/lib/types";
+export const standard_board_sizes: { [k: string]: string | undefined } = {
+    "19x19": "19x19",
+    "13x13": "13x13",
+    "9x9": "9x9",
+    "25x25": "25x25",
+    "21x21": "21x21",
+    "5x5": "5x5",
+    "19x9": "19x9",
+    "5x13": "5x13",
+};
 
 export function preferred_setting_label(setting: ChallengeDetails): string {
     const description = challenge_text_description(setting);
@@ -281,4 +291,7 @@ export function isRuleSet(v: string): v is RuleSet {
 
 export function isColorSelectionOption(v: string): v is rest_api.ColorSelectionOptions {
     return ["black", "white", "automatic", "random"].includes(v);
+}
+export function isStandardBoardSize(board_size: string): boolean {
+    return board_size in standard_board_sizes;
 }

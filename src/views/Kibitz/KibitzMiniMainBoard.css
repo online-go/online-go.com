@@ -1,0 +1,34 @@
+.KibitzMiniMainBoard {
+    display: block;
+    width: 100%;
+    /* Global button rules set a fixed height; aspect-ratio needs height
+       to stay auto so the board renders square. */
+    height: auto;
+    min-height: 0;
+    line-height: 0;
+    aspect-ratio: 1;
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+
+    .goban-container {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+
+        .Goban {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--primary);
+    }
+}

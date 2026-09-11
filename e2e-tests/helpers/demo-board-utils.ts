@@ -132,16 +132,29 @@ export const createDemoBoard = async (page: Page, settings: DemoBoardModalFields
 
 export const verifyDemoBoardBasicInfo = async (page: Page, expected: DemoBoardExpectedFields) => {
     await expect(page.locator(".game-state")).toContainText("Review by");
-    await expect(page.locator(".Goban")).toHaveCount(2);
+    // Assert the main interactive board rendered. Avoid counting bare `.Goban`
+    // nodes: the goban renderer nests `.Goban` divs and the count is an internal
+    // detail (it changed with the renderer). `data-pointers-bound` marks the one
+    // main interactive board — the suite-wide "the board is up" signal.
+    await expect(page.locator(".Goban[data-pointers-bound]")).toBeVisible();
     await expect(page.locator(".condensed-game-ranked")).toHaveText("Unranked");
     await expect(page.locator(".condensed-game-rules")).toHaveText(`Rules: ${expected.rules}`);
 };
 
 export const verifyDemoBoardGameModalInfo = async (page: Page, boardSize: string) => {
-    await page
-        .locator("a")
-        .filter({ has: page.locator("i.fa.fa-info") })
-        .click();
+    // The game-info action moved into the "More actions" popover (GameActionsPanel)
+    // during the GobanView revamp. Open that popover, then click "Game information".
+    // The GobanView action tabs are icon-only buttons whose label is exposed via the
+    // `title` attribute (not an accessible name), so they must be selected by title.
+    const moreActions = page.locator('button.GobanView-tab-button[title="More actions"]');
+    await expect(moreActions).toBeVisible();
+    await moreActions.click();
+
+    const gameInfo = page
+        .locator("button.GameSidebarPanel-item")
+        .filter({ hasText: "Game information" });
+    await expect(gameInfo).toBeVisible();
+    await gameInfo.click();
     await page.waitForSelector(".Modal.GameInfoModal", { state: "visible" });
 
     await page.waitForSelector(

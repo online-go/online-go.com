@@ -1,0 +1,46 @@
+.KibitzVariationChip {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+
+    .KibitzVariationChip-name {
+        font-weight: bold;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .KibitzVariationChip-author,
+    .KibitzVariationChip-game {
+        color: var(--shade1);
+        font-size: 0.85rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+/* The close button ends the chip, flush with the header's right edge. It is
+   the primary way out of a variation on a touch screen, so it carries a
+   full-height target rather than the icon's own bounds. */
+.KibitzVariationChip .KibitzVariationChip-close {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: 0.2rem;
+    color: var(--fg);
+    cursor: pointer;
+
+    &:hover {
+        background: var(--shade4);
+    }
+}

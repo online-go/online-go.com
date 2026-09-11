@@ -8,11 +8,16 @@
     flex-direction: column;
     justify-content: center;
     padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
     max-width: 100dvw;
-    min-height: 5rem;
 
-    /* height: 23rem; */
-    /* min-height: 5rem; */
+    /* Every child here is conditional, so the whole block can end up with
+     * nothing to show. Drop the padding then, otherwise the empty control
+     * area leaves a visible gap between the player cards and the chat. */
+    &:empty {
+        padding: 0;
+    }
+
     > div {
         width: 100%;
     }
@@ -52,11 +57,6 @@
         }
     }
 
-    .game-action-buttons {
-        position: relative;
-        text-align: center;
-    }
-
     .analyze-mode-buttons {
         display: flex;
         flex-direction: column;
@@ -80,81 +80,6 @@
         text-align: center;
     }
 
-    .play-buttons {
-        height: 2.6rem;
-        min-height: 2.6rem;
-        display: flex;
-        width: 100%;
-        justify-content: space-between;
-
-        > span {
-            flex-grow: 1;
-            flex-basis: 33%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        > span:first-child {
-            justify-content: flex-start;
-        }
-
-        > span:last-child {
-            justify-content: flex-end;
-        }
-
-        .keyboard-coordinate-input {
-            display: inline-flex;
-            align-items: center;
-            margin-right: 0.5rem;
-
-            input {
-                width: 4rem;
-                padding: 0.3rem 0.5rem;
-                border: 1px solid;
-                border-color: var(--shade3);
-                border-radius: 0.25rem;
-                font-size: 0.9rem;
-                text-align: center;
-                text-transform: uppercase;
-                background-color: var(--shade5);
-                color: var(--fg);
-                transition:
-                    border-color 0.2s ease,
-                    background-color 0.2s ease;
-
-                &::placeholder {
-                    text-transform: none;
-                    color: var(--shade2);
-                }
-
-                &:focus {
-                    outline: 2px solid;
-                    outline-color: var(--primary);
-                    outline-offset: 1px;
-                }
-
-                &:disabled {
-                    opacity: 0.5;
-                    cursor: not-allowed;
-                }
-            }
-        }
-
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border-width: 0;
-        }
-    }
-
     .stone-removal-controls {
         text-align: center;
 
@@ -162,27 +87,6 @@
             padding: 1rem;
             font-style: italic;
         }
-    }
-
-    .cancel-button {
-        /*
-        position: absolute;
-        right: 0.5em;
-        bottom: 0.5em;
-        */
-    }
-
-    .undo-button {
-        /* position: absolute; */
-        /* left: 0.5em; */
-    }
-
-    .accept-undo-button {
-        white-space: nowrap;
-    }
-
-    .reject-undo-button {
-        white-space: nowrap;
     }
 
     .undo-requested-message {
@@ -233,11 +137,6 @@
         }
     }
 
-    .autoscoring-in-progress {
-        margin-top: 0.5rem;
-        font-size: 1.2rem;
-    }
-
     .score-square {
         display: inline-block;
         width: 0.7rem;
@@ -252,6 +151,18 @@
         &.white {
             background-color: white;
             border-color: #aaa;
+        }
+    }
+
+    /* Match the move tree container's 0.5em margin so the comments box lines
+     * up with it and fills the remaining width of the sidebar. */
+    .move-comments {
+        margin: 0 0.5em;
+
+        textarea {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
         }
     }
 

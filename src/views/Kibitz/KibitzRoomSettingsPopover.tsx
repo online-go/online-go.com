@@ -23,20 +23,20 @@ import type { KibitzRoomSummary, KibitzRoomUser } from "@/models/kibitz";
 import { KibitzUserAvatar } from "./KibitzUserAvatar";
 import "./KibitzRoomSettingsPopover.css";
 
-type KibitzRoomSettingsPopoverView = "menu" | "edit-details";
+export type KibitzRoomSettingsPopoverView = "menu" | "edit-details";
 
 interface KibitzRoomSettingsPopoverProps {
     room: KibitzRoomSummary;
     canEditRoom: boolean;
     canDeleteRoom: boolean;
     canChangeBoard: boolean;
-    isMobileLayout: boolean;
-    streamerMode?: boolean;
-    onStreamerModeChange?: (enabled: boolean) => void;
     onClose: () => void;
     onRequestChangeBoard: () => void;
     onDeleteRoom: () => Promise<boolean>;
     onSaveRoomDetails: (title: string, description: string) => Promise<boolean>;
+    /** Which view to open on. The More actions menu opens straight into
+     *  "edit-details", having already offered the choice itself. */
+    initialView?: KibitzRoomSettingsPopoverView;
 }
 
 export function KibitzRoomSettingsPopover({
@@ -44,35 +44,28 @@ export function KibitzRoomSettingsPopover({
     canEditRoom,
     canDeleteRoom,
     canChangeBoard,
-    isMobileLayout,
-    streamerMode,
-    onStreamerModeChange,
     onClose,
     onDeleteRoom,
     onRequestChangeBoard,
     onSaveRoomDetails,
+    initialView = "menu",
 }: KibitzRoomSettingsPopoverProps): React.ReactElement {
-    const [view, setView] = React.useState<KibitzRoomSettingsPopoverView>("menu");
+    const [view, setView] = React.useState<KibitzRoomSettingsPopoverView>(initialView);
     const [roomTitle, setRoomTitle] = React.useState(room.title);
     const [roomDescription, setRoomDescription] = React.useState(room.description ?? "");
     const [saving, setSaving] = React.useState(false);
     const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
     const [deleting, setDeleting] = React.useState(false);
     const [owner, setOwner] = React.useState<KibitzRoomUser | null>(null);
-    const [localStreamerMode, setLocalStreamerMode] = React.useState(Boolean(streamerMode));
 
     React.useEffect(() => {
-        setView("menu");
+        setView(initialView);
         setRoomTitle(room.title);
         setRoomDescription(room.description ?? "");
         setSaving(false);
         setDeleting(false);
         setErrorMessage(null);
-    }, [room.description, room.title, room.id]);
-
-    React.useEffect(() => {
-        setLocalStreamerMode(Boolean(streamerMode));
-    }, [streamerMode, room.id]);
+    }, [initialView, room.description, room.title, room.id]);
 
     React.useEffect(() => {
         let cancelled = false;
@@ -188,7 +181,7 @@ export function KibitzRoomSettingsPopover({
                     {canEditRoom || canDeleteRoom ? (
                         <button
                             type="button"
-                            className="KibitzRoomSettingsPopover-action"
+                            className="xs"
                             onClick={() => {
                                 setView("edit-details");
                             }}
@@ -202,7 +195,7 @@ export function KibitzRoomSettingsPopover({
                     {canChangeBoard ? (
                         <button
                             type="button"
-                            className="KibitzRoomSettingsPopover-action"
+                            className="xs"
                             onClick={() => {
                                 onClose();
                                 onRequestChangeBoard();
@@ -213,40 +206,6 @@ export function KibitzRoomSettingsPopover({
                                 "Change live game",
                             )}
                         </button>
-                    ) : null}
-                    {!isMobileLayout && onStreamerModeChange ? (
-                        <div className="KibitzRoomSettingsPopover-section">
-                            <div className="KibitzRoomSettingsPopover-fieldLabel">
-                                {pgettext(
-                                    "Label for display settings in Kibitz room settings",
-                                    "Display",
-                                )}
-                            </div>
-                            <label className="KibitzRoomSettingsPopover-toggleRow">
-                                <span className="KibitzRoomSettingsPopover-toggleCopy">
-                                    <span className="KibitzRoomSettingsPopover-toggleTitle">
-                                        {pgettext(
-                                            "Streamer mode toggle label in Kibitz",
-                                            "Streamer mode",
-                                        )}
-                                    </span>
-                                    <span className="KibitzRoomSettingsPopover-toggleDescription">
-                                        {pgettext(
-                                            "Streamer mode explanation in Kibitz",
-                                            "Hide the OGS menu, room list, chat, and variations.",
-                                        )}
-                                    </span>
-                                </span>
-                                <input
-                                    type="checkbox"
-                                    checked={localStreamerMode}
-                                    onChange={(event) => {
-                                        setLocalStreamerMode(event.currentTarget.checked);
-                                        onStreamerModeChange(event.currentTarget.checked);
-                                    }}
-                                />
-                            </label>
-                        </div>
                     ) : null}
                     {!canEditRoom && owner ? (
                         <div className="KibitzRoomSettingsPopover-owner">
@@ -275,11 +234,7 @@ export function KibitzRoomSettingsPopover({
                             )}
                         </div>
                     ) : null}
-                    <button
-                        type="button"
-                        className="KibitzRoomSettingsPopover-secondaryAction"
-                        onClick={onClose}
-                    >
+                    <button type="button" className="xs" onClick={onClose}>
                         {pgettext(
                             "Button label for closing the Kibitz room settings popover",
                             "Close",
@@ -332,7 +287,7 @@ export function KibitzRoomSettingsPopover({
                     <div className="KibitzRoomSettingsPopover-actions">
                         <button
                             type="button"
-                            className="KibitzRoomSettingsPopover-secondaryAction"
+                            className="xs"
                             onClick={() => {
                                 setView("menu");
                                 setRoomTitle(room.title);
@@ -348,7 +303,7 @@ export function KibitzRoomSettingsPopover({
                         </button>
                         <button
                             type="button"
-                            className="KibitzRoomSettingsPopover-action"
+                            className="primary xs"
                             onClick={() => {
                                 void onSave();
                             }}
@@ -363,7 +318,7 @@ export function KibitzRoomSettingsPopover({
                         </button>
                         <button
                             type="button"
-                            className="KibitzRoomSettingsPopover-deleteAction"
+                            className="danger xs"
                             onClick={() => {
                                 void onDelete();
                             }}

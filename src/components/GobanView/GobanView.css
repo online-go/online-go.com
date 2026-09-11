@@ -25,6 +25,101 @@
     left: 0;
     right: 0;
 
+    /* PlayerBar reads these so the board inset below stays in step with
+     * the bars' real height. */
+    --goban-view-player-bar-height: 3rem;
+    --goban-view-player-bar-padding: 0.3rem;
+
+    .GobanView-player-bar {
+        flex-shrink: 0;
+        padding: var(--goban-view-player-bar-padding) 0;
+    }
+
+    /* Landscape with player bars: the bars and the board form a stage that
+     * is as wide as the board. The board is height limited, so the stage
+     * width is the board size; when the column is narrower than that the
+     * stage shrinks to the column and the board follows its width. The
+     * stage is centered in the column both ways, so on a narrow column the
+     * bars still hug the board and the group floats in the middle. */
+    &.has-player-bars .GobanView-center {
+        align-items: center;
+        justify-content: center;
+
+        .GobanView-stage {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            width: min(100%, var(--goban-view-board-size));
+            max-height: 100%;
+        }
+
+        .GobanView-stage .goban-container {
+            flex: 0 1 auto;
+            flex-basis: auto;
+            width: 100%;
+            aspect-ratio: 1;
+            min-height: 0;
+        }
+    }
+
+    /* The root is a size container so the sidebar width and the board
+     * offset below can be written in terms of the view's own width (100cqw)
+     * and height (100cqh). On a landscape screen the board is height
+     * limited, so 100cqh is the board's size. */
+    container-type: size;
+
+    /* Landscape sidebar width.
+     *
+     * Auto: the sidebar reaches from the right edge of the view to the
+     * right edge of a viewport-centered board, i.e. half of the space the
+     * board does not use, minus the gap and margin around the sidebar. It
+     * never drops below the fixed fallback width and never exceeds 80rem.
+     *
+     * The user can override this by dragging the gap between the board and
+     * the sidebar; the override is bounded to the fallback width and to
+     * whatever keeps the board pane at least its minimum width. */
+    --goban-view-sidebar-gap: 1.25rem;
+
+    /* Height the board cannot use: the player bars above and below it
+     * (each 3rem plus 0.3rem of padding on both sides). Zero without bars,
+     * so the board is the full view height and 100cqh is its size. */
+    --goban-view-board-inset: 0px;
+    --goban-view-board-size: calc(100cqh - var(--goban-view-board-inset));
+
+    &.has-player-bars {
+        --goban-view-board-inset: calc(
+            2 * (var(--goban-view-player-bar-height) + 2 * var(--goban-view-player-bar-padding))
+        );
+    }
+
+    --goban-view-sidebar-effective-width: clamp(
+        var(--goban-view-sidebar-width),
+        calc((100cqw - var(--goban-view-board-size)) / 2 - var(--goban-view-sidebar-gap) - 0.3rem),
+        80rem
+    );
+    --goban-view-sidebar-outer-width: calc(
+        var(--goban-view-sidebar-effective-width) + var(--goban-view-sidebar-gap) + 0.3rem
+    );
+
+    &.has-custom-sidebar-width {
+        --goban-view-sidebar-effective-width: clamp(
+            var(--goban-view-sidebar-width),
+            var(--goban-view-sidebar-user-width),
+            75cqw
+        );
+    }
+
+    /* Outer width of the optional left aside (its width plus its margins).
+     * Zero when no aside is rendered, so the centering math below holds
+     * for every consumer. */
+    --goban-view-left-aside-outer-width: 0px;
+
+    &.has-left-aside {
+        --goban-view-left-aside-outer-width: calc(
+            var(--goban-view-left-aside-width) + 1.25rem + 0.3rem
+        );
+    }
+
     /* Desktop: goban on left, sidebar on right */
     .GobanView-center {
         flex-grow: 1;
@@ -35,6 +130,27 @@
         align-items: stretch;
         overflow: hidden;
         z-index: 1;
+
+        /* Keep the board centered in the viewport for as long as it fits:
+         * mirror the sidebar's outer width as left padding so the board
+         * centers in the space between. Once the sidebar is too wide for
+         * that, the padding shrinks so the board sits against the sidebar
+         * gap, and once it hits zero the board itself starts to shrink.
+         * Browsers without container query units skip this declaration and
+         * center the board in the remaining space instead. */
+        padding-left: clamp(
+            0px,
+            calc(
+                100cqw - var(--goban-view-sidebar-outer-width) - var(--goban-view-board-size) -
+                    var(--goban-view-left-aside-outer-width)
+            ),
+            max(
+                0px,
+                calc(
+                    var(--goban-view-sidebar-outer-width) - var(--goban-view-left-aside-outer-width)
+                )
+            )
+        );
 
         .goban-container {
             flex-grow: 1;
@@ -52,19 +168,131 @@
         }
     }
 
+    /* Board alignment preference (landscape only). `board-align-window` is
+     * the default described above and needs no extra rules. */
+
+    /* Center the board in the space beside the sidebar. */
+    &.board-align-container .GobanView-center {
+        padding-left: 0;
+    }
+
+    /* Center the board and the sidebar together: the center column hugs
+     * the square board (100cqh wide, shrinking when the sidebar is too
+     * wide) and the row is centered, so the empty space splits evenly
+     * between the far left and the far right. The left margin mirrors the
+     * sidebar's right margin. */
+    &.board-align-group {
+        justify-content: center;
+
+        .GobanView-center {
+            flex-grow: 0;
+            flex-basis: 50%;
+
+            /* A var() declaration is never invalid at parse time, so it would
+             * replace the fallback above even where container units are
+             * unsupported; the @supports guard keeps the 50% there. */
+            @supports (width: 1cqw) {
+                flex-basis: var(--goban-view-board-size);
+            }
+            padding-left: 0;
+            margin-left: 0.3rem;
+        }
+    }
+
+    /* The gap between the goban area and the sidebar, shared by all
+     * GobanView consumers (game, puzzle, joseki). It doubles as the drag
+     * handle for resizing the sidebar: a thin bar appears in the middle of
+     * the gap on hover, focus and while dragging. */
+    .GobanView-sidebar-resizer {
+        position: relative;
+        flex-shrink: 0;
+        width: var(--goban-view-sidebar-gap);
+        cursor: ew-resize;
+        touch-action: none;
+        user-select: none;
+        z-index: 3;
+
+        &::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: var(--goban-view-bottom-margin);
+            left: 50%;
+            width: 3px;
+            margin-left: -1.5px;
+            border-radius: 999px;
+            background: var(--shade3);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 120ms ease;
+        }
+
+        &:hover::before,
+        &:focus-visible::before,
+        &.is-dragging::before {
+            opacity: 0.7;
+        }
+
+        &:focus {
+            outline: none;
+        }
+    }
+
     .GobanView-sidebar {
         display: flex;
         flex-direction: column;
         width: var(--goban-view-sidebar-width);
+
+        @supports (width: 1cqw) {
+            width: var(--goban-view-sidebar-effective-width);
+        }
         flex-shrink: 0;
         z-index: 2;
         background: var(--shade5);
         border-radius: 8px;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-        margin: 1rem 1rem 1rem 0;
+        /* The gap on the left is the .GobanView-sidebar-resizer element.
+         *
+         * Top is 0 because --below-navbar already provides a small (~0.3rem)
+         * spacer below the navbar — adding more margin doubles up. Bottom
+         * mirrors that natural top gap via --goban-view-bottom-margin
+         * (0.3rem normally, 0 below 700px viewport height) so the framing
+         * stays symmetric and the sidebar fills the available height on
+         * short viewports. */
+        /* The right margin matches the 0.3rem the sidebar sits below the
+         * navbar (--below-navbar minus the navbar height) and the 0.3rem
+         * bottom margin, so the framing reads evenly on all three edges. */
+        margin: 0 0.3rem var(--goban-view-bottom-margin) 0;
         overflow: hidden;
     }
 
+    .GobanView-left-aside {
+        display: flex;
+        flex-direction: column;
+        width: var(--goban-view-left-aside-width);
+        flex-shrink: 0;
+        z-index: 2;
+        background: var(--shade5);
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        margin: 0 1.25rem var(--goban-view-bottom-margin) 0.3rem;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    &.is-resizing-sidebar {
+        cursor: ew-resize;
+        user-select: none;
+    }
+
+    &.is-resizing-stage {
+        cursor: row-resize;
+        user-select: none;
+    }
+
+    /* Header pinned above the scrollable sidebar content. Hidden via
+     * :empty when the `header` prop's component renders nothing, so we
+     * don't leave a stray bordered band at the top. */
     .GobanView-header {
         flex-shrink: 0;
         padding: 0.6rem 0.875rem;
@@ -74,6 +302,12 @@
         color: var(--fg);
         background: var(--shade4);
         border-bottom: 1px solid var(--shade3);
+        border-top-left-radius: inherit;
+        border-top-right-radius: inherit;
+
+        &:empty {
+            display: none;
+        }
     }
 
     .GobanView-sidebar-content {
@@ -93,6 +327,16 @@
 
         &.hidden {
             display: none;
+        }
+
+        /* Non-takeover panels (always + toggle) render at their natural
+         * content height; the sidebar scrolls when their combined height
+         * exceeds the viewport. Without this, flex-shrink would squash
+         * them so the chat (which has a fixed inner height) overflows
+         * visibly into the panel below. */
+        &.always,
+        &.toggle {
+            flex-shrink: 0;
         }
 
         &.takeover {
@@ -143,6 +387,12 @@
     &.portrait {
         flex-direction: column;
 
+        /* --below-navbar carries a small spacer under the navbar, which
+           frames the floating sidebar on desktop. Portrait has no frame to
+           draw: the sidebar runs edge to edge, so the spacer reads as a gap
+           above its header. Sit straight under the navbar instead. */
+        top: var(--navbar-height);
+
         .GobanView-sidebar {
             border-radius: 0;
             box-shadow: none;
@@ -155,21 +405,38 @@
             gap: 0.5rem;
         }
 
-        .GobanView-center {
-            /* The goban area is square on portrait, so its height follows the
-               viewport width. Cap at the remaining viewport height (minus the
-               navbar and the tab bar) so the scroll area below always fits. */
-            --goban-view-portrait-max-height: calc(
-                100dvh - var(--below-navbar) - var(--goban-view-tab-bar-height) -
-                    var(--safe-area-inset-bottom)
-            );
-            flex-basis: auto;
+        /* The stage holds the goban and the two board-adjacent slots. It is
+           capped to the visible height of the scroll area, and the goban is
+           the only part of it allowed to shrink, so the slots (player cards,
+           play buttons) always fit on screen together with the board — on a
+           squat viewport the board simply gets smaller. Percent heights
+           resolve here because the scroll container is a flexed item of a
+           definite-height column. */
+        .GobanView-stage {
+            display: flex;
+            flex-direction: column;
             flex-shrink: 0;
-            height: min(100dvw, var(--goban-view-portrait-max-height));
-            min-height: min(100dvw, var(--goban-view-portrait-max-height));
-            max-height: min(100dvw, var(--goban-view-portrait-max-height));
+            max-height: 100%;
         }
 
+        .GobanView-center {
+            /* Square by default, following its own width. It must not follow
+               100dvw: that counts a scrollbar the element itself does not
+               have, and every pixel of the difference shows up as a band of
+               background above and below the board. Shrinks (never below
+               8rem) when the stage runs out of height; the GobanContainer
+               then fits the board to the shorter side. */
+            flex-basis: auto;
+            flex-shrink: 1;
+            aspect-ratio: 1;
+            height: auto;
+            min-height: 8rem;
+            background: var(--bg);
+        }
+
+        /* The single portrait scroll container. It holds the board and the
+           two board-adjacent slots as well as the tab panels, so the user
+           can scroll the board off-screen to reach the content below it. */
         .GobanView-mobile-scroll {
             flex-grow: 1;
             flex-basis: 0;
@@ -178,12 +445,122 @@
             overflow-x: hidden;
             display: flex;
             flex-direction: column;
+            background: var(--bg);
+        }
+
+        .GobanView-above-board,
+        .GobanView-below-board {
+            flex-shrink: 0;
+        }
+
+        /* Tab panels keep the padded, shaded slab they had when they were
+           the whole of the scroll area. */
+        .GobanView-mobile-panels {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
             gap: 0.5rem;
             padding: 0.5rem;
             background: var(--shade5);
 
             .GobanView-tab-panel {
                 padding: 0.75rem 0;
+            }
+        }
+
+        /* The opt-in split. The extra class on the root outranks the portrait
+           rules above, which scroll the whole column instead. */
+        &.has-portrait-split {
+            /* The column does not scroll as a whole: the board is pinned and
+               the panels below it scroll on their own. */
+            .GobanView-mobile-scroll {
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+
+            /* Without a dragged height the stage asks for the board's natural
+               size and shares the shortfall with the panels below it, so both
+               are on screen before the user touches the handle. A dragged
+               height is set inline together with `flex-shrink: 0`, which makes
+               it authoritative: it is already clamped to leave the panels
+               their minimum, and letting it shrink here would put the top of
+               its range out of reach. The `min-height` is the last resort for
+               a column too short even for the board's minimum, where the stage
+               clips rather than pushing the panels off screen. */
+            .GobanView-stage {
+                flex-shrink: 1;
+                max-height: none;
+                min-height: 8rem;
+                overflow: hidden;
+            }
+
+            /* .goban-container fills the center box's full width by default
+             * (the parent's cross-axis stretch). That is fine while the box
+             * is square, but once it has given up height to stay on screen
+             * it is no longer square and the full-width container stops
+             * matching the board's shape, leaving the rendered board —
+             * which does stay square, since it fits itself to whichever
+             * side is shorter — stranded against the column's left edge.
+             * Letting the container follow its own height instead of
+             * stretching keeps it square, and centering it here places the
+             * board in the middle of the column. This must stay off
+             * `.GobanView-center` itself: giving it up its own stretch
+             * turns its height indefinite too and collapses it to its
+             * minimum, since aspect-ratio can no longer anchor to a
+             * stretched width. */
+            .GobanView-center .goban-container {
+                align-self: center;
+                aspect-ratio: 1;
+
+                /* A stage dragged taller than the column is wide would make
+                   the square container wider than the column and hang it over
+                   both edges. The board is already width-limited there, so
+                   the container gives up its square shape instead. */
+                max-width: 100%;
+            }
+
+            .GobanView-portrait-splitter {
+                flex-shrink: 0;
+                height: 0.375rem;
+                cursor: row-resize;
+                touch-action: none;
+                background: var(--shade4);
+                border-top: 1px solid var(--shade3);
+                border-bottom: 1px solid var(--shade3);
+
+                /* A thin bar is easy to read and hard to hit. Reach out over
+                   its neighbours for the 24px a finger needs, without moving
+                   the boundary the user sees. Positioning it also puts the
+                   handle above the panels, which follow it in the document. */
+                position: relative;
+
+                &::after {
+                    content: "";
+                    position: absolute;
+                    left: 0;
+                    right: 0;
+                    top: -0.5rem;
+                    bottom: -0.5rem;
+                }
+
+                &.is-dragging {
+                    background: var(--shade3);
+                }
+            }
+
+            /* The panels start from the minimum they are entitled to, so the
+               automatic split leaves them room without waiting for the user to
+               drag. It is a soft default, not the guarantee the handle
+               enforces: when the board's natural height and this basis do not
+               both fit, the two give up height in proportion. The value holds
+               a chat log of about five lines with its input below it. */
+            .GobanView-mobile-panels {
+                flex-grow: 1;
+                flex-basis: 12rem;
+                min-height: 0;
+                overflow-y: auto;
+                overflow-x: hidden;
             }
         }
 
@@ -218,4 +595,14 @@
     &.has-custom-slider.portrait .GobanView-tab-panel.takeover.active:not(.keep-goban-visible) {
         bottom: calc(var(--goban-view-tab-bar-height) + 2.6rem + var(--safe-area-inset-bottom));
     }
+}
+
+/* With no controller the centre still claims the board's space, so the view
+   does not resize under the reader when a game arrives. The placeholder
+   fills it. */
+.GobanView.has-no-board .GobanView-center > * {
+    box-sizing: border-box;
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
 }

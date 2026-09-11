@@ -39,6 +39,9 @@ interface PopoverConfig {
     container_class?: string;
 }
 
+// Minimum gap between a popover and the edge of the viewport.
+const VIEWPORT_MARGIN = 16;
+
 let last_id = 0;
 const open_popovers: { [id: number]: PopOver } = {};
 
@@ -47,13 +50,20 @@ export class PopOver extends TypedEventEmitter<Events> {
     config: PopoverConfig;
     container: HTMLElement;
     backdrop: HTMLElement;
+    private root: ReactDOM.Root | null;
 
-    constructor(config: PopoverConfig, backdrop: HTMLElement, container: HTMLElement) {
+    constructor(
+        config: PopoverConfig,
+        backdrop: HTMLElement,
+        container: HTMLElement,
+        root: ReactDOM.Root | null = null,
+    ) {
         super();
         this.id = ++last_id;
         this.config = config;
         this.container = container;
         this.backdrop = backdrop;
+        this.root = root;
         this.backdrop.addEventListener("click", this.close);
         this.container.addEventListener("click", this.close);
         open_popovers[this.id] = this;
@@ -72,6 +82,17 @@ export class PopOver extends TypedEventEmitter<Events> {
             this.container.remove();
             this.backdrop.remove();
             delete open_popovers[this.id];
+
+            // Unmount the React root so effect cleanups run (event
+            // listener subscriptions in the popover content would
+            // otherwise leak). Deferred because close() is often called
+            // from an event handler inside the root's own tree, and React
+            // forbids synchronously unmounting a root while it renders.
+            const root = this.root;
+            this.root = null;
+            if (root) {
+                setTimeout(() => root.unmount(), 0);
+            }
 
             this.emit("close");
         }
@@ -95,52 +116,52 @@ export function popover(config: PopoverConfig): PopOver {
 
     const minWidth: number = config.minWidth || 150;
     const minHeight: number = config.minHeight || 25;
-    let x = 0;
-    let y = 0;
+    container.style.minWidth = `${minWidth}px`;
+    container.style.maxWidth = `${window.innerWidth - 2 * VIEWPORT_MARGIN}px`;
+
     const scrollLeft =
         window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0;
     const scrollTop =
         window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    const bounds = {
-        x: scrollLeft + window.innerWidth - 16,
-        y: scrollTop + window.innerHeight - 16,
-    };
 
+    // Anchor point in document coordinates: the popover's top-left corner
+    // goes here when it fits. For `below`, `flip_bottom` is where the
+    // popover's bottom edge goes when it has to sit above the element
+    // instead so it never covers what it was opened from.
+    let anchor_x = 0;
+    let anchor_y = 0;
+    let flip_bottom = 0;
     if (config.at) {
-        x = config.at.x;
-        y = config.at.y;
-
-        x = Math.min(x, bounds.x - minWidth);
-
-        if (y < bounds.y - minHeight) {
-            container.style.minWidth = `${minWidth}px`;
-            container.style.top = `${y}px`;
-            container.style.left = `${x}px`;
-        } else {
-            container.style.minWidth = `${minWidth}px`;
-            container.style.bottom = `${window.innerHeight - y}px`;
-            container.style.left = `${x}px`;
-        }
+        anchor_x = config.at.x;
+        anchor_y = config.at.y;
+        flip_bottom = config.at.y;
     } else if (config.below) {
         const rectangle = config.below.getBoundingClientRect();
-        x = rectangle.left + window.scrollX;
-        x = Math.min(x, bounds.x - minWidth);
-        console.log(bounds.x, x, minWidth);
-
-        y = rectangle.bottom + window.scrollY;
-
-        if (y < bounds.y - minHeight) {
-            container.style.minWidth = `${minWidth}px`;
-            container.style.top = `${y}px`;
-            container.style.left = `${x}px`;
-        } else {
-            // Don't overlap the element we were supposed to be below.
-            // If there is no space below, just go above it instead.
-            container.style.minWidth = `${minWidth}px`;
-            container.style.bottom = `${window.innerHeight - rectangle.top - window.scrollY}px`;
-            container.style.left = `${x}px`;
-        }
+        anchor_x = rectangle.left + scrollLeft;
+        anchor_y = rectangle.bottom + scrollTop;
+        flip_bottom = rectangle.top + scrollTop;
     }
+
+    // Place the container so that a popover of the given size stays inside
+    // the viewport (with a small margin). The caller's minWidth / minHeight
+    // are only a lower bound on the eventual rendered size, so this runs
+    // once up front and again whenever the rendered size changes.
+    const place = (width: number, height: number) => {
+        const max_x = scrollLeft + window.innerWidth - VIEWPORT_MARGIN - width;
+        const max_y = scrollTop + window.innerHeight - VIEWPORT_MARGIN;
+        const x = Math.max(scrollLeft, Math.min(anchor_x, max_x));
+        container.style.left = `${x}px`;
+
+        if (anchor_y + height <= max_y) {
+            container.style.top = `${anchor_y}px`;
+            container.style.bottom = "";
+        } else {
+            container.style.top = "";
+            container.style.bottom = `${window.innerHeight - flip_bottom}px`;
+        }
+    };
+
+    place(minWidth, minHeight);
 
     document.body.appendChild(backdrop);
     document.body.appendChild(container);
@@ -148,5 +169,15 @@ export function popover(config: PopoverConfig): PopOver {
     const root = ReactDOM.createRoot(container);
     root.render(<React.StrictMode>{config.elt}</React.StrictMode>);
 
-    return new PopOver(config, backdrop, container);
+    const observer = new ResizeObserver(() => {
+        place(
+            Math.max(container.offsetWidth, minWidth),
+            Math.max(container.offsetHeight, minHeight),
+        );
+    });
+    observer.observe(container);
+
+    const instance = new PopOver(config, backdrop, container, root);
+    instance.on("close", () => observer.disconnect());
+    return instance;
 }

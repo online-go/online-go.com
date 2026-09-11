@@ -1,0 +1,29 @@
+.AIReviewBoardToggle {
+    display: inline-flex;
+    align-items: center;
+    padding: 0;
+
+    svg {
+        display: block;
+        width: 1rem;
+        height: 1rem;
+        flex: 0 0 1rem;
+        margin-right: 0.25rem;
+    }
+
+    .grid {
+        fill: none;
+        stroke: var(--shade2);
+        stroke-width: 1;
+    }
+
+    .stone {
+        fill: var(--shade1);
+    }
+
+    .ring {
+        fill: var(--bg);
+        stroke: var(--shade1);
+        stroke-width: 1;
+    }
+}

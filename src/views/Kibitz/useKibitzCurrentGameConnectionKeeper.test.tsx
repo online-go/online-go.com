@@ -29,11 +29,6 @@ jest.mock("@/lib/sockets", () => ({
     },
 }));
 
-jest.mock("./kibitzVariationDebug", () => ({
-    __esModule: true,
-    logKibitzVariationDebug: jest.fn(),
-}));
-
 const mockedSocket = socket as unknown as { send: jest.Mock };
 
 function installAnimationFrame(): void {

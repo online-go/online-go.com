@@ -16,7 +16,9 @@
  */
 
 import * as React from "react";
+import { GobanRenderer } from "goban";
 import { _ } from "@/lib/translate";
+import { useUser } from "@/lib/hooks";
 import { GobanController } from "@/lib/GobanController";
 import { GobanContainer } from "@/components/GobanContainer";
 import {
@@ -26,8 +28,25 @@ import {
 } from "./GobanViewContext";
 import { GobanViewTab, GobanViewTabProps } from "./GobanViewTab";
 import { TabBar } from "./TabBar";
-import { MoveNumberSlider } from "./MoveNumberSlider";
-import { goban_view_mode, goban_view_squashed, ViewMode } from "./util";
+import { MoveNumberControl } from "./MoveNumberControl";
+import { SidebarResizer } from "./SidebarResizer";
+import { PortraitSplitter } from "./PortraitSplitter";
+import {
+    clampPortraitStage,
+    portraitAvailableHeightPx,
+    portraitStageExtraHeightPx,
+} from "./resizerUtil";
+import { PlayerBar } from "./PlayerBar";
+import { generateGobanHook } from "./hooks";
+import {
+    boardAlignmentClass,
+    goban_view_mode,
+    goban_view_squashed,
+    user_color,
+    ViewMode,
+} from "./util";
+import { usePreference } from "@/lib/preferences";
+import { useSliderFits } from "./hooks";
 import "./GobanView.css";
 
 export interface TabDefinition {
@@ -41,6 +60,8 @@ export interface TabDefinition {
     active?: boolean;
     disabled?: boolean;
     hideFromBar?: boolean;
+    hideCloseButton?: boolean;
+    priority?: number;
     keepGobanVisible?: boolean;
     onClick?: (event?: React.MouseEvent<HTMLButtonElement>) => void;
     onToggle?: (active: boolean) => void;
@@ -51,28 +72,82 @@ export interface GobanViewRef {
     /** Open or close a takeover programmatically. Pass null to close any
      *  currently-active takeover. */
     setActiveTakeover: (id: string | null) => void;
+    /** The current root DOM element of this GobanView. Returns null between
+     *  unmount and remount. Lets consumers scope DOM queries to this
+     *  instance instead of querying document globally. */
+    getRootElement: () => HTMLDivElement | null;
 }
 
 interface GobanViewProps {
-    controller: GobanController;
+    /** Null when there is no game to show — a Kibitz room between games, say.
+     *  The board is then replaced by `centerPlaceholder`, and the player bars
+     *  and the move-number slider are left out. Everything else — the header,
+     *  the panels and the tab bar — renders as usual. */
+    controller: GobanController | null;
+    /** Rendered where the board would be while `controller` is null. */
+    centerPlaceholder?: React.ReactNode;
     className?: string;
     children: React.ReactNode;
     /** Open this takeover on initial mount. Only read once; subsequent
      *  renders ignore changes. Use the ref API for mid-lifetime control. */
     defaultActiveTakeover?: string;
-    /** Replace the built-in MoveNumberSlider. Renders unconditionally —
+    /** Replace the built-in MoveNumberControl. Renders unconditionally —
      *  including during takeovers — so consumers whose navigation model
      *  needs to remain visible across modes (e.g. joseki) keep a single
      *  control strip in the standard location. The "has-custom-slider"
      *  class is added to the GobanView root so portrait CSS can leave room
      *  for it above the tab bar. */
     customSlider?: React.ReactNode;
+    /** Leave out the built-in MoveNumberControl. Has no effect when a
+     *  `customSlider` is given. Consumers use this to drop the strip when
+     *  move navigation is not relevant, e.g. on mobile during live play.
+     *
+     *  "when-cramped" drops the strip only in portrait and only when the
+     *  board stage (the `aboveBoard` and `belowBoard` slots and the board at
+     *  its full width) would no longer fit on screen with the strip's row
+     *  taken out; in landscape the strip is always shown. */
+    hideSlider?: boolean | "when-cramped";
     /** Optional title bar rendered at the top of the sidebar (landscape) or
      *  above the goban (portrait). Stays visible across takeovers so
      *  consumers can use it to label the current view. */
     header?: React.ReactNode;
+    /** Portrait-only slot rendered directly above the goban, inside the
+     *  scroll flow. Ignored in landscape. Used by the Game view for the
+     *  opponent's player card.
+     *
+     *  The two slots and the goban form a "stage" that is capped to the
+     *  visible height of the scroll area: the goban shrinks so that both
+     *  slots stay on screen without scrolling, whatever the device size. */
+    aboveBoard?: React.ReactNode;
+    /** Portrait-only slot rendered directly below the goban, inside the
+     *  scroll flow and above the tab panels. Ignored in landscape. Used by
+     *  the Game view for the local player's card and the play buttons. */
+    belowBoard?: React.ReactNode;
+    /** Render a PlayerBar above and below the board. The current user's
+     *  seat (or black for spectators) is on the bottom. Pass a controller
+     *  to show that game's players and clocks instead of the center
+     *  board's, e.g. the live game while the center shows a variation. */
+    playerBars?: boolean | GobanController;
+    /** Portrait only: split the view between the board stage and the tab
+     *  panels, with a drag handle between them, instead of scrolling both as
+     *  one column. The panel area then scrolls on its own and the board is
+     *  always on screen. Ignored in landscape. */
+    portraitSplit?: boolean;
+    /** Landscape-only column rendered before the board, styled like the
+     *  sidebar. Ignored in portrait; consumers provide takeover tabs for
+     *  the same content there. */
+    leftAside?: React.ReactNode;
+    /** Forwarded to the GobanContainer — fires when the user scrolls the wheel
+     *  over the board. Used by the Game view for scroll-to-navigate. */
+    onWheel?: React.WheelEventHandler<HTMLDivElement>;
     ref?: React.Ref<GobanViewRef>;
 }
+
+const usePlayerIds = generateGobanHook(
+    (goban: GobanRenderer | null) =>
+        goban ? `${goban.engine.players.black.id}:${goban.engine.players.white.id}` : "",
+    ["gamedata"],
+);
 
 function partitionChildren(children: React.ReactNode): {
     tabs: TabDefinition[];
@@ -94,6 +169,8 @@ function partitionChildren(children: React.ReactNode): {
                 active: props.active,
                 disabled: props.disabled,
                 hideFromBar: props.hideFromBar,
+                hideCloseButton: props.hideCloseButton,
+                priority: props.priority,
                 keepGobanVisible: props.keepGobanVisible,
                 onClick: props.onClick,
                 onToggle: props.onToggle,
@@ -108,11 +185,19 @@ function partitionChildren(children: React.ReactNode): {
 
 function GobanViewComponent({
     controller,
+    centerPlaceholder,
     className,
     children,
     defaultActiveTakeover,
     customSlider,
+    hideSlider,
     header,
+    aboveBoard,
+    belowBoard,
+    playerBars,
+    portraitSplit,
+    leftAside,
+    onWheel,
     ref,
 }: GobanViewProps): React.ReactElement {
     const { tabs, others } = React.useMemo(() => partitionChildren(children), [children]);
@@ -185,6 +270,48 @@ function GobanViewComponent({
     tabsRef.current = tabs;
     const activeTakeoverRef = React.useRef(activeTakeover);
     activeTakeoverRef.current = activeTakeover;
+    const rootRef = React.useRef<HTMLDivElement>(null);
+    const sidebarRef = React.useRef<HTMLDivElement>(null);
+    const scrollRef = React.useRef<HTMLDivElement>(null);
+    const aboveRef = React.useRef<HTMLDivElement>(null);
+    const centerRef = React.useRef<HTMLDivElement>(null);
+    const belowRef = React.useRef<HTMLDivElement>(null);
+    const stageRef = React.useRef<HTMLDivElement>(null);
+    const panelsRef = React.useRef<HTMLDivElement>(null);
+
+    // Landscape sidebar width chosen by the user, in px; null means the
+    // automatic width computed in CSS. While a drag is in progress the live
+    // width is held in state so the preference is only written once, on
+    // release.
+    const [savedSidebarWidth, setSavedSidebarWidth] = usePreference("goban-view-sidebar-width");
+    const [dragSidebarWidth, setDragSidebarWidth] = React.useState<number | null>(null);
+    const [boardAlignment] = usePreference("goban-view-board-alignment");
+    const sidebarWidth = dragSidebarWidth ?? savedSidebarWidth;
+    const commitSidebarWidth = React.useCallback(
+        (width: number | null) => {
+            setSavedSidebarWidth(width);
+            setDragSidebarWidth(null);
+        },
+        [setSavedSidebarWidth],
+    );
+
+    // Portrait split: the height of the board stage in px, null for the
+    // automatic height. As with the sidebar width, the live value is held in
+    // state while a drag is in progress so the preference is only written
+    // once, on release.
+    const [savedStageHeight, setSavedStageHeight] = usePreference("goban-view-portrait-split");
+    const [dragStageHeight, setDragStageHeight] = React.useState<number | null>(null);
+    const commitStageHeight = React.useCallback(
+        (height: number | null) => {
+            setSavedStageHeight(height);
+            setDragStageHeight(null);
+        },
+        [setSavedStageHeight],
+    );
+    /** A drag that ends on the height it started at leaves the preference
+     *  alone, but the preview still has to go: it holds the stage's inline
+     *  height and the view's resize cursor. */
+    const cancelStageDrag = React.useCallback(() => setDragStageHeight(null), []);
 
     React.useImperativeHandle(
         ref,
@@ -208,6 +335,7 @@ function GobanViewComponent({
                     opened?.onToggle?.(true);
                 }
             },
+            getRootElement: () => rootRef.current,
         }),
         [],
     );
@@ -218,6 +346,19 @@ function GobanViewComponent({
         setViewMode((prev) => (prev !== newMode ? newMode : prev));
         setSquashed((prev) => (prev !== newSquashed ? newSquashed : prev));
     }, []);
+
+    // The GobanContainer normally reports resizes, and it is what keeps
+    // `viewMode` current. Without a controller there is no container, so the
+    // view would keep whatever orientation it mounted with — listen directly
+    // for as long as that is the case.
+    React.useEffect(() => {
+        if (controller) {
+            return;
+        }
+        onResize();
+        window.addEventListener("resize", onResize);
+        return () => window.removeEventListener("resize", onResize);
+    }, [controller, onResize]);
 
     const tabState: GobanViewTabState = React.useMemo(
         () => ({
@@ -230,7 +371,105 @@ function GobanViewComponent({
     );
 
     const isPortrait = viewMode === "portrait";
+    const splitActive = isPortrait && !!portraitSplit;
+
+    // The stage and the panels are the only parts of the split column that
+    // flex, so measuring the two of them gives the height they have to share;
+    // measuring what the stage holds besides the board gives the height the
+    // board cannot take from the player bars and the two slots. The stored
+    // height is shared across devices, so it is clamped to what this viewport
+    // allows every time it is applied, not only while it is dragged.
+    const [splitMetrics, setSplitMetrics] = React.useState<{
+        available: number;
+        stageExtra: number;
+    } | null>(null);
+    React.useLayoutEffect(() => {
+        if (!splitActive) {
+            setSplitMetrics(null);
+            return;
+        }
+        const measure = () => {
+            const next = {
+                available: portraitAvailableHeightPx(
+                    stageRef.current,
+                    panelsRef.current,
+                    rootRef.current,
+                ),
+                stageExtra: portraitStageExtraHeightPx(stageRef.current),
+            };
+            setSplitMetrics((prev) =>
+                prev && prev.available === next.available && prev.stageExtra === next.stageExtra
+                    ? prev
+                    : next,
+            );
+        };
+        measure();
+        if (typeof window.ResizeObserver !== "function") {
+            window.addEventListener("resize", measure);
+            return () => window.removeEventListener("resize", measure);
+        }
+        const observer = new ResizeObserver(measure);
+        for (const element of [stageRef.current, panelsRef.current, rootRef.current]) {
+            if (element) {
+                observer.observe(element);
+            }
+        }
+        return () => observer.disconnect();
+    }, [splitActive]);
+
+    const requestedStageHeight = dragStageHeight ?? savedStageHeight;
+    const stageHeight =
+        requestedStageHeight === null || splitMetrics === null
+            ? requestedStageHeight
+            : clampPortraitStage(
+                  requestedStageHeight,
+                  splitMetrics.available,
+                  splitMetrics.stageExtra,
+              );
+
+    const user = useUser();
+    const barsController: GobanController | null =
+        playerBars && typeof playerBars === "object" ? playerBars : playerBars ? controller : null;
+    const barsGoban = (barsController ?? controller)?.goban ?? null;
+    usePlayerIds(barsGoban);
+    // Only meaningful when there are bars to label; without a goban the
+    // default seat stands in and nothing reads it.
+    const bottom_color: "black" | "white" = barsGoban
+        ? (user_color(barsGoban, user.id) ?? "black")
+        : "black";
+    const top_color: "black" | "white" = bottom_color === "black" ? "white" : "black";
+    const topBarRef = React.useRef<HTMLDivElement>(null);
+    const bottomBarRef = React.useRef<HTMLDivElement>(null);
+    const topBar = barsController ? (
+        <div className="GobanView-player-bar top" ref={topBarRef}>
+            <PlayerBar color={top_color} controller={barsController} />
+        </div>
+    ) : null;
+    const bottomBar = barsController ? (
+        <div className="GobanView-player-bar bottom" ref={bottomBarRef}>
+            <PlayerBar color={bottom_color} controller={barsController} />
+        </div>
+    ) : null;
     const hasTakeover = activeTakeover !== null;
+    const landscapeGobanContainer = controller ? (
+        <GobanContainer onResize={onResize} onWheel={onWheel} respectContainerBounds />
+    ) : (
+        centerPlaceholder
+    );
+
+    const sliderFits = useSliderFits(
+        {
+            root: rootRef,
+            scroll: scrollRef,
+            above: aboveRef,
+            center: centerRef,
+            below: belowRef,
+            extra: [topBarRef, bottomBarRef],
+        },
+        isPortrait && hideSlider === "when-cramped",
+    );
+    const sliderHidden =
+        hideSlider === "when-cramped" ? isPortrait && !sliderFits : hideSlider === true;
 
     const { inlinePanels, takeoverPanels } = React.useMemo(
         () => ({
@@ -257,8 +496,8 @@ function GobanViewComponent({
 
     const renderPanel = (tab: TabDefinition, visible: boolean) => {
         // hideFromBar takeovers have no tab-bar button to click again, so
-        // they need an in-panel close button.
-        const showCloseButton = tab.type === "takeover" && tab.hideFromBar;
+        // they need an in-panel close button unless the panel opts out.
+        const showCloseButton = tab.type === "takeover" && tab.hideFromBar && !tab.hideCloseButton;
         return (
             <div
                 key={tab.id}
@@ -289,7 +528,7 @@ function GobanViewComponent({
     // keeps its existing "hide during takeover" rule.
     const sliderSlot: React.ReactNode = customSlider
         ? customSlider
-        : !hasTakeover && <MoveNumberSlider />;
+        : controller && !hasTakeover && !sliderHidden && <MoveNumberControl />;
 
     const customSliderClass = customSlider ? " has-custom-slider" : "";
 
@@ -307,21 +546,82 @@ function GobanViewComponent({
             <GobanControllerContext.Provider value={controller}>
                 <GobanViewStateContext.Provider value={tabState}>
                     <div
+                        ref={rootRef}
                         className={
                             `GobanView portrait` +
+                            (controller ? "" : " has-no-board") +
                             (squashed ? " squashed" : "") +
                             (hasTakeover ? " has-takeover" : "") +
+                            (splitActive ? " has-portrait-split" : "") +
+                            (dragStageHeight !== null ? " is-resizing-stage" : "") +
                             customSliderClass +
                             (className ? ` ${className}` : "")
                         }
                     >
-                        {header && <div className="GobanView-header">{header}</div>}
-                        <div className="GobanView-center">
-                            <GobanContainer onResize={onResize} />
-                        </div>
-                        <div className="GobanView-mobile-scroll">
-                            {orderedPanels.map((t) => renderPanel(t, isInlineVisible(t)))}
-                            {scrollingTakeovers.map((t) => renderPanel(t, activeTakeover === t.id))}
+                        <div className="GobanView-header">{header}</div>
+                        {/* The goban lives inside the scroll area on portrait
+                            so the whole column — board included — scrolls as
+                            one. Only the header, slider and tab bar stay
+                            pinned. With `portraitSplit` the column stops
+                            scrolling instead: the board keeps the height the
+                            handle below it was dragged to and the panels
+                            scroll on their own. */}
+                        <div className="GobanView-mobile-scroll" ref={scrollRef}>
+                            <div
+                                className="GobanView-stage"
+                                ref={stageRef}
+                                style={
+                                    splitActive && stageHeight !== null
+                                        ? ({
+                                              height: `${stageHeight}px`,
+                                              // A dragged height is the user's decision: the
+                                              // panels give up the space, not the stage. It is
+                                              // already clamped to leave them their minimum.
+                                              flexShrink: 0,
+                                          } as React.CSSProperties)
+                                        : undefined
+                                }
+                            >
+                                {aboveBoard && (
+                                    <div className="GobanView-above-board" ref={aboveRef}>
+                                        {aboveBoard}
+                                    </div>
+                                )}
+                                {topBar}
+                                <div className="GobanView-center" ref={centerRef}>
+                                    {controller ? (
+                                        <GobanContainer
+                                            onResize={onResize}
+                                            onWheel={onWheel}
+                                            respectContainerBounds
+                                        />
+                                    ) : (
+                                        centerPlaceholder
+                                    )}
+                                </div>
+                                {bottomBar}
+                                {belowBoard && (
+                                    <div className="GobanView-below-board" ref={belowRef}>
+                                        {belowBoard}
+                                    </div>
+                                )}
+                            </div>
+                            {splitActive && (
+                                <PortraitSplitter
+                                    rootRef={rootRef}
+                                    stageRef={stageRef}
+                                    panelsRef={panelsRef}
+                                    onPreview={setDragStageHeight}
+                                    onCommit={commitStageHeight}
+                                    onCancel={cancelStageDrag}
+                                />
+                            )}
+                            <div className="GobanView-mobile-panels" ref={panelsRef}>
+                                {orderedPanels.map((t) => renderPanel(t, isInlineVisible(t)))}
+                                {scrollingTakeovers.map((t) =>
+                                    renderPanel(t, activeTakeover === t.id),
+                                )}
+                            </div>
                         </div>
                         {overlayTakeovers.map((t) => renderPanel(t, activeTakeover === t.id))}
                         {sliderSlot}
@@ -337,19 +637,47 @@ function GobanViewComponent({
         <GobanControllerContext.Provider value={controller}>
             <GobanViewStateContext.Provider value={tabState}>
                 <div
+                    ref={rootRef}
                     className={
-                        `GobanView ${viewMode}` +
+                        `GobanView ${viewMode} ${boardAlignmentClass(boardAlignment)}` +
+                        (controller ? "" : " has-no-board") +
                         (squashed ? " squashed" : "") +
                         (hasTakeover ? " has-takeover" : "") +
+                        (sidebarWidth !== null ? " has-custom-sidebar-width" : "") +
+                        (dragSidebarWidth !== null ? " is-resizing-sidebar" : "") +
                         customSliderClass +
+                        (leftAside ? " has-left-aside" : "") +
+                        (playerBars ? " has-player-bars" : "") +
                         (className ? ` ${className}` : "")
                     }
+                    style={
+                        sidebarWidth !== null
+                            ? ({
+                                  "--goban-view-sidebar-user-width": `${sidebarWidth}px`,
+                              } as React.CSSProperties)
+                            : undefined
+                    }
                 >
+                    {leftAside && <div className="GobanView-left-aside">{leftAside}</div>}
                     <div className="GobanView-center">
-                        <GobanContainer onResize={onResize} />
+                        {barsController ? (
+                            <div className="GobanView-stage">
+                                {topBar}
+                                {landscapeGobanContainer}
+                                {bottomBar}
+                            </div>
+                        ) : (
+                            landscapeGobanContainer
+                        )}
                     </div>
-                    <div className="GobanView-sidebar">
-                        {header && <div className="GobanView-header">{header}</div>}
+                    <SidebarResizer
+                        rootRef={rootRef}
+                        sidebarRef={sidebarRef}
+                        onPreview={setDragSidebarWidth}
+                        onCommit={commitSidebarWidth}
+                    />
+                    <div className="GobanView-sidebar" ref={sidebarRef}>
+                        <div className="GobanView-header">{header}</div>
                         <div className="GobanView-sidebar-content">
                             {inlinePanels.map((t) => renderPanel(t, isInlineVisible(t)))}
                             {takeoverPanels.map((t) => renderPanel(t, activeTakeover === t.id))}

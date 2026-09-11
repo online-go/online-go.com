@@ -146,6 +146,7 @@ try {
 import * as data from "@/lib/data";
 
 import * as preferences from "@/lib/preferences";
+import { applyMoveTreeLineColors } from "@/lib/move_tree_line_colors";
 
 /* Deal with "system" theme */
 data.setDefault("theme", "system");
@@ -159,6 +160,10 @@ export function applyTheme() {
             theme = "light";
         }
     }
+
+    // Ahead of the early return: the palette has to be right on the first
+    // call too, and this is the one place that resolves "system".
+    applyMoveTreeLineColors(theme);
 
     if (document.documentElement.dataset.theme === theme) {
         return;
@@ -208,6 +213,7 @@ import { routes } from "./routes";
 import { errorAlerter } from "@/lib/misc";
 import { close_all_popovers } from "@/lib/popover";
 import { init_safe_area_variables } from "@/lib/safe_area";
+import { init_visual_viewport_variables } from "@/lib/visual_viewport";
 import * as sockets from "@/lib/sockets";
 import { _, setCurrentLanguage } from "@/lib/translate";
 
@@ -378,6 +384,7 @@ if (user.anonymous) {
 }
 
 init_safe_area_variables();
+init_visual_viewport_variables();
 
 /* Initialization done, render!! */
 const svg_loader = document.getElementById("loading-svg-container");

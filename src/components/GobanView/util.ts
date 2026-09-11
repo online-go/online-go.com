@@ -15,7 +15,56 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { Goban } from "goban";
+import { pgettext } from "@/lib/translate";
+
 export type ViewMode = "portrait" | "wide" | "square";
+
+/**
+ * Where the board sits in the landscape layout.
+ *
+ * - `window`: the board is centered in the window; the sidebar sits in
+ *   the space to its right.
+ * - `container`: the board is centered in the space beside the sidebar.
+ * - `group`: the board and the sidebar are centered together, as one
+ *   block, with equal empty space on both sides.
+ */
+export type GobanViewBoardAlignment = "window" | "container" | "group";
+
+export const GOBAN_VIEW_BOARD_ALIGNMENTS: readonly GobanViewBoardAlignment[] = [
+    "window",
+    "container",
+    "group",
+];
+
+export interface BoardAlignmentOption {
+    value: GobanViewBoardAlignment;
+    label: string;
+}
+
+/** Translated labels for the board alignment preference, in display order. */
+export function boardAlignmentOptions(): BoardAlignmentOption[] {
+    return [
+        {
+            value: "window",
+            label: pgettext("Board alignment on the game page", "Center in window"),
+        },
+        {
+            value: "container",
+            label: pgettext("Board alignment on the game page", "Center beside sidebar"),
+        },
+        {
+            value: "group",
+            label: pgettext("Board alignment on the game page", "Center with sidebar"),
+        },
+    ];
+}
+
+/** Root class for the alignment; unknown stored values fall back to `container`. */
+export function boardAlignmentClass(alignment: GobanViewBoardAlignment): string {
+    const valid = GOBAN_VIEW_BOARD_ALIGNMENTS.includes(alignment) ? alignment : "container";
+    return `board-align-${valid}`;
+}
 
 export function goban_view_mode(bar_width?: number): ViewMode {
     if (!bar_width) {
@@ -33,7 +82,123 @@ export function goban_view_mode(bar_width?: number): ViewMode {
     return "wide";
 }
 
+export interface StageMeasurements {
+    /** Height of the portrait scroll area with no slider row taken out. */
+    available: number;
+    /** Height of the move slider row. */
+    slider: number;
+    /** Combined height of the above-board and below-board slots. */
+    slots: number;
+    /** Height of the board at its full width. */
+    board: number;
+}
+
+/**
+ * Whether the portrait stage (the two board-adjacent slots and the board at
+ * full width) fits in the scroll area together with the move slider, so the
+ * slider can take its row without the board having to shrink.
+ */
+export function stageFitsWithSlider(m: StageMeasurements): boolean {
+    return m.slots + m.board + m.slider <= m.available;
+}
+
 export function goban_view_squashed(): boolean {
     /* This value needs to match the "dock-inline-height" found in Dock.css */
     return window.innerHeight <= 500;
+}
+
+/** Which seat the given player occupies, including rengo team membership.
+ *  Returns null for spectators. Unlike `GobanEngine.playerColor`, this also
+ *  resolves rengo team members who are not the current seat holders. */
+export function user_color(goban: Goban, player_id: number): "black" | "white" | null {
+    const engine = goban.engine;
+    const color = engine.playerColor(player_id);
+    if (color !== "invalid") {
+        return color;
+    }
+    if (engine.rengo && engine.rengo_teams) {
+        for (const team of ["black", "white"] as const) {
+            if (engine.rengo_teams[team].some((player) => player.id === player_id)) {
+                return team;
+            }
+        }
+    }
+    return null;
+}
+
+export interface TabBarSlot {
+    align: "left" | "center" | "right";
+    priority?: number;
+}
+
+/**
+ * Pick the tabs the tab bar can show in `available_width` pixels.
+ *
+ * Tabs without a `priority` are required and are always returned. Tabs with
+ * a `priority` are optional: they are added highest priority first, for as
+ * long as the three groups (left, center, right) still fit side by side.
+ * Each group is `n` buttons of `button_width` with `gap` between them.
+ *
+ * When the bar cannot be measured (`button_width` is not positive) every
+ * tab is returned, so an unmeasured bar never hides anything.
+ *
+ * The result keeps the order of `tabs`.
+ */
+export function selectVisibleTabs<T extends TabBarSlot>(
+    tabs: T[],
+    available_width: number,
+    button_width: number,
+    gap: number,
+): T[] {
+    if (button_width <= 0) {
+        return tabs;
+    }
+
+    const visible = new Set<T>(tabs.filter((tab) => tab.priority === undefined));
+    const optional = tabs
+        .filter((tab) => tab.priority !== undefined)
+        .sort((a, b) => b.priority! - a.priority!);
+
+    const fits = (): boolean => {
+        let width = 0;
+        for (const align of ["left", "center", "right"] as const) {
+            let count = 0;
+            for (const tab of visible) {
+                if (tab.align === align) {
+                    count++;
+                }
+            }
+            if (count > 0) {
+                width += count * button_width + (count - 1) * gap;
+            }
+        }
+        return width <= available_width;
+    };
+
+    for (const tab of optional) {
+        visible.add(tab);
+        if (!fits()) {
+            visible.delete(tab);
+            break;
+        }
+    }
+
+    return tabs.filter((tab) => visible.has(tab));
+}
+
+/** Outcomes that end a game without a score, so the player cards and bars
+ *  keep showing captures instead of points. */
+const OUTCOMES_WITHOUT_SCORE = [
+    "Timeout",
+    "Disconnection",
+    "Resignation",
+    "Abandonment",
+    "Cancellation",
+];
+
+/** True when a finished or stone-removal game's outcome carries a score
+ *  (a points margin or an administrative result is not one). */
+export function outcomeHasScore(outcome: string | undefined | null): boolean {
+    const value = outcome ?? "";
+    return !OUTCOMES_WITHOUT_SCORE.includes(value) && !value.startsWith("Server Decision");
 }

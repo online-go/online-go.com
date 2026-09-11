@@ -6,9 +6,12 @@
     padding: 0.4rem 0.75rem;
 
     .queue-title {
-        font-size: 0.85rem;
-        font-weight: bold;
+        color: var(--shade2);
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
         margin-bottom: 0.3rem;
+        text-transform: uppercase;
     }
 
     .queue-items {
@@ -49,7 +52,7 @@
 
     .queue-status-pill {
         background: var(--shade1);
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         display: inline-flex;
         font-size: 0.68rem;
         font-weight: bold;
@@ -61,13 +64,13 @@
     }
 
     .queue-status-pill.active {
-        background: rgba(38, 108, 215, 0.16);
+        background: color-mix(in srgb, var(--primary) 16%, transparent);
         color: var(--primary);
     }
 
     .queue-proposer {
         align-items: center;
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         display: inline-flex;
         gap: 0.3rem;
         min-width: 0;
@@ -102,7 +105,7 @@
 
     .queue-meta,
     .queue-vote-summary {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 0.76rem;
         line-height: 1.15;
         overflow-wrap: anywhere;
@@ -117,7 +120,7 @@
     }
 
     .queue-vote-summary.queued-label {
-        color: var(--shade1);
+        color: var(--text-dimmed);
         font-weight: bold;
         text-transform: uppercase;
     }

@@ -127,6 +127,14 @@ export function powerToSeeTable(moderator_powers: number | undefined): boolean {
 }
 
 /**
+ * The position a move is reviewed from: the one it was played from, where
+ * the board shows the move among the AI's suggestions for it.
+ */
+export function reviewPositionOfMove(move_number: number): number {
+    return Math.max(0, move_number - 1);
+}
+
+/**
  * Determines if a user has permission to start a full AI review
  * @param user Current user object
  * @param goban_controller Controller for the goban

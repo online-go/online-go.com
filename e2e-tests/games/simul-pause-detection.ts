@@ -152,10 +152,20 @@ export const simulPauseDetectionTest = async (
 
     // === Challenger pauses game 1 BEFORE game 2 ends ===
     log("Challenger pausing game 1 BEFORE game 2 ends...");
-    // Click on "Pause game" link in the game dock (not the tooltip title)
-    const pauseLink = challengerGame1Page.locator("a").filter({ hasText: "Pause game" });
-    await expect(pauseLink).toBeVisible();
-    await pauseLink.click();
+    // Pause lives in the "More actions" (ellipsis) popover, not the action
+    // bar. The GobanView action tabs are icon-only buttons labelled via the
+    // `title` attribute, so the trigger is selected by title; the popover
+    // items are labelled buttons (GameActionsPanel).
+    const moreActions1 = challengerGame1Page.locator(
+        'button.GobanView-tab-button[title="More actions"]',
+    );
+    await expect(moreActions1).toBeVisible();
+    await moreActions1.click();
+    const pauseItem = challengerGame1Page
+        .locator("button.GameSidebarPanel-item")
+        .filter({ hasText: "Pause game" });
+    await expect(pauseItem).toBeVisible();
+    await pauseItem.click();
     log("Pause game clicked");
 
     // Verify the pause took effect by checking for "Game Paused" indicator and "Resume" button

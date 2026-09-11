@@ -224,11 +224,7 @@ export function SummaryTable({
                                                                     setShowMoveList(true);
                                                                     setSelectedCategory(catKey);
                                                                     setSelectedColor(color);
-                                                                    onPopupMovesChange?.(
-                                                                        moves.map(
-                                                                            (move) => move - 1,
-                                                                        ),
-                                                                    );
+                                                                    onPopupMovesChange?.(moves);
                                                                 }
                                                             }
                                                         }}

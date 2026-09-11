@@ -18,7 +18,7 @@
 // (No seeded data in use)
 
 import type { CreateContextOptions } from "@helpers";
-import { BrowserContext, expect } from "@playwright/test";
+import { BrowserContext, expect, test } from "@playwright/test";
 import {
     acceptDirectChallenge,
     createDirectChallenge,
@@ -27,7 +27,7 @@ import {
 import { playMoves, resignActiveGame } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 
-import { createKibitzRoomForLiveGame } from "./kibitz-helpers";
+import { createKibitzRoomForLiveGame, waitForKibitzReady } from "./kibitz-helpers";
 
 /*
  * Verify the basic room flow end-to-end:
@@ -49,35 +49,42 @@ export const kibitzBasicRoomTest = async ({
 }: {
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
+    // Two live games are played end to end (signup, challenge, moves, resign,
+    // second challenge) before the board change is verified, which is longer
+    // than the default test timeout allows.
+    test.setTimeout(6 * 60 * 1000);
     const { watcherPage, blackPlayerPage, whitePlayerPage, whiteUsername, roomId } =
         await createKibitzRoomForLiveGame(createContext);
 
     // URL ends up at /kibitz/<roomId>.
     expect(watcherPage.url()).toMatch(new RegExp(`/kibitz/${roomId}$`));
 
-    // Positive functional assertions on what the watcher sees. The goban
-    // renders as SVG; the <svg> element under the main-board surface is the
-    // unambiguous "board is painted" signal (the wrapping .Goban div has
-    // multiple matches and the first one is an empty placeholder).
-    await expect(watcherPage.locator(".KibitzRoomStage")).toBeVisible();
+    // Positive functional assertions on what the watcher sees: the room is
+    // laid out on GobanView with the board painted in the center, a player
+    // bar above and below it, and the two-tab chat in the sidebar.
+    await expect(watcherPage.locator(".GobanView.Kibitz")).toBeVisible();
     await expect(
-        watcherPage.locator(".board-panel.main-board .KibitzBoard.main-board-surface svg").first(),
+        watcherPage.locator(".GobanView-center .goban-container svg").first(),
     ).toBeVisible();
-    await expect(watcherPage.locator(".KibitzPresence")).toBeVisible();
+    await expect(watcherPage.locator(".GobanView-player-bar.top .PlayerBar")).toBeVisible();
+    await expect(watcherPage.locator(".GobanView-player-bar.bottom .PlayerBar")).toBeVisible();
+    await expect(watcherPage.locator(".KibitzChatPanel")).toBeVisible();
 
-    // The active room is highlighted in the rail (KibitzRoomList.tsx adds
-    // the "active" class to the item matching the active room id).
+    // The active room is highlighted in the left aside (KibitzRoomList.tsx
+    // adds the "active" class to the item matching the active room id).
     await expect(watcherPage.locator(".KibitzRoomList-item.active")).toHaveCount(1);
 
-    // Post a chat message and verify it renders in the room stream.
+    // Post a chat message and verify it renders in the room chat.
     const message = `e2e kibitz chat ${Date.now()}`;
     console.log(`[kibitz basic-room] sending chat: "${message}"`);
 
-    // Composer lives inside the room pane of KibitzSharedStreamPanel.
-    // The input id is `kibitz-chat-input-<roomId>` (KibitzSharedStreamPanel.tsx
-    // line 873) and submission is via Enter -- the onKeyPress handler trims
-    // the value and emits onSendMessage on Enter without Shift, then clears
-    // the input (lines 704-721).
+    // The composer belongs to the "Kibitz chat" tab of KibitzChatPanel, the
+    // default tab. The input id is `kibitz-chat-input-<roomId>` and Enter
+    // sends: the onKeyPress handler trims the value, sends it on the room
+    // channel, then clears the input.
+    const kibitzChatTab = watcherPage.getByRole("tab", { name: /Kibitz chat/ });
+    await expect(kibitzChatTab).toBeVisible({ timeout: 15000 });
+    await kibitzChatTab.click();
     const chatInput = watcherPage.locator(`#kibitz-chat-input-${roomId}`);
     await expect(chatInput).toBeVisible({ timeout: 15000 });
     await expect(chatInput).toBeEnabled();
@@ -90,26 +97,22 @@ export const kibitzBasicRoomTest = async ({
     // After send the composer clears (input.value = "" on send).
     await expect(chatInput).toHaveValue("");
 
-    // The message appears in the room stream feed
-    // (KibitzSharedStreamPanel-roomPane > KibitzSharedStreamPanel-paneFeed).
-    const roomFeed = watcherPage.locator(
-        ".KibitzSharedStreamPanel-roomPane .KibitzSharedStreamPanel-paneFeed",
-    );
+    // The message appears in the chat log.
+    const roomFeed = watcherPage.locator(".KibitzChatPanel-log");
     await expect(roomFeed.getByText(message)).toBeVisible({ timeout: 10000 });
-    console.log("[kibitz basic-room] chat message rendered in room stream");
+    console.log("[kibitz basic-room] chat message rendered in room chat");
 
     // Phase 2: change the room's watched game. The players end their current
     // game, start a fresh one, and the watcher (room owner) switches the
     // board via the settings popover.
 
-    // The prelude only played 4 moves; OGS gates "resign" behind a 6-move
-    // threshold (before that the action is "cancel game", which has a
-    // different confirmation dialog that resignActiveGame doesn't match).
-    // Play two more moves so the next turn (move 7) is resign-eligible for
-    // blackPlayerPage. Coordinates are non-conflicting with the prelude's
-    // E5/G5/E7/G7.
-    console.log("[kibitz basic-room] playing two more moves so resign is available");
-    await playMoves(blackPlayerPage, whitePlayerPage, ["C3", "G3"], "9x9");
+    // The prelude only played 4 moves; OGS keeps "cancel game" (a different
+    // confirmation dialog from the one resignActiveGame expects) available
+    // while the game is within its first moves. Play four more so the game
+    // is well past that window before blackPlayerPage resigns. Coordinates
+    // are non-conflicting with the prelude's E5/G5/E7/G7.
+    console.log("[kibitz basic-room] playing four more moves so resign is available");
+    await playMoves(blackPlayerPage, whitePlayerPage, ["C3", "G3", "D2", "F2"], "9x9");
 
     console.log("[kibitz basic-room] black resigning the first game");
     await resignActiveGame(blackPlayerPage);
@@ -135,11 +138,16 @@ export const kibitzBasicRoomTest = async ({
         periods: "5",
         ranked: false,
     });
-    await acceptDirectChallenge(whitePlayerPage);
+    // The white page is still on the finished first game; accepting loads
+    // the home page and clicks Accept there. The challenge can land after
+    // the home page's first render, so retry until the accept navigates.
+    await expect(async () => {
+        await acceptDirectChallenge(whitePlayerPage);
+        await whitePlayerPage.waitForURL(/\/(game|play)\/\d+/, { timeout: 10000 });
+    }).toPass({ timeout: 60000, intervals: [1000, 2000] });
 
     // Capture the second game's id from the white player URL, same approach
     // as the prelude.
-    await whitePlayerPage.waitForURL(/\/(game|play)\/\d+/, { timeout: 30000 });
     const secondGameUrl = new URL(whitePlayerPage.url());
     const secondGameMatch = secondGameUrl.pathname.match(/\/(game|play)\/(\d+)/);
     if (!secondGameMatch) {
@@ -154,7 +162,7 @@ export const kibitzBasicRoomTest = async ({
     // gated on canChangeBoard, which is owner-or-moderator
     // (kibitz/permissions.py:42-50). The watcher created the room, so they
     // have it.
-    const gearButton = watcherPage.locator(".board-settings-button");
+    const gearButton = watcherPage.locator('.GobanView-tab-button[title="Settings"]');
     await expect(gearButton).toBeVisible({ timeout: 15000 });
     await expect(gearButton).toBeOGSClickable();
     await gearButton.click();
@@ -168,8 +176,7 @@ export const kibitzBasicRoomTest = async ({
     console.log("[kibitz basic-room] owner clicking Change live game");
     await changeBoardMenuButton.click();
     // Clicking Change live game closes the popover and opens the game-picker
-    // overlay (KibitzRoomStage.tsx:1735-1738 -- close_all_popovers ->
-    // onChangeBoard).
+    // overlay (KibitzView.tsx onRequestChangeBoard -> close -> onChangeBoard).
     await expect(popover).toBeHidden({ timeout: 15000 });
 
     // The game-picker overlay is the same component as the create-room flow,
@@ -197,20 +204,37 @@ export const kibitzBasicRoomTest = async ({
     await confirmChangeButton.click();
 
     // After the POST /change-board round-trip and the board-changed UIPush
-    // (KibitzRoomChangeBoard.post:329) propagate, the header's
-    // .board-subtitle-link href should reference the new game id
-    // (KibitzRoomStage.tsx:5281: href={`/game/${mainGame.game_id}`}). Two
-    // assertions on the same element: the structural href attribute (proves
-    // the room is bound to the new game's id) and the content-level text
-    // (proves the new game's metadata, not just its id, made it through).
-    // The text assertion uses a head-anchored regex so a future visual or
-    // JS truncation of the title would not silently weaken the check.
-    const boardSubtitleLink = watcherPage.locator(".board-subtitle-link");
-    await expect(boardSubtitleLink).toHaveAttribute("href", `/game/${secondGameId}`, {
-        timeout: 15000,
-    });
-    await expect(boardSubtitleLink).toHaveText(new RegExp(`^${secondGameTitleHead}`), {
-        timeout: 15000,
-    });
+    // propagate, the room header carries the new game id (KibitzView.tsx
+    // puts data-game-id on the room title), the More actions menu links to
+    // the new game's SGF, and Game information shows the new game's name.
+    // Three assertions: the structural id on the header (proves the room is
+    // bound to the new game), the SGF href (proves the live controller was
+    // rebuilt for it), and the game name (proves the new game's metadata,
+    // not just its id, made it through). The text assertion uses a
+    // head-anchored regex so a future truncation of the title would not
+    // silently weaken the check.
+    await expect(watcherPage.locator(".Kibitz-room-title")).toHaveAttribute(
+        "data-game-id",
+        String(secondGameId),
+        { timeout: 15000 },
+    );
+    await waitForKibitzReady(watcherPage);
+
+    const moreActionsButton = watcherPage.locator('.GobanView-tab-button[title="More actions"]');
+    await expect(moreActionsButton).toBeOGSClickable();
+    await moreActionsButton.click();
+    const moreActions = watcherPage.locator(".popover-container .KibitzMoreActionsPopover");
+    await expect(moreActions).toBeVisible({ timeout: 15000 });
+    await expect(moreActions.locator("a", { hasText: "Download SGF" })).toHaveAttribute(
+        "href",
+        new RegExp(`/games/${secondGameId}/sgf$`),
+    );
+    // The menu items carry an icon before their label, so match by text.
+    await moreActions.locator("button", { hasText: "Game information" }).click();
+    const gameInfo = watcherPage.locator(".GameInfoModal");
+    await expect(gameInfo).toBeVisible({ timeout: 15000 });
+    await expect(gameInfo.locator("h2")).toHaveText(new RegExp(`^${secondGameTitleHead}`));
+    await gameInfo.locator(".buttons button", { hasText: "Close" }).click();
+    await expect(gameInfo).toBeHidden({ timeout: 15000 });
     console.log(`[kibitz basic-room] room now watching game ${secondGameId}`);
 };

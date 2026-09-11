@@ -20,7 +20,7 @@
     }
 
     .KibitzVariationComposer-disabled-note {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 0.72rem;
         line-height: 1.25;
     }

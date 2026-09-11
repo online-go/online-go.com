@@ -16,52 +16,35 @@
  */
 import * as React from "react";
 import { useSearchParams } from "react-router-dom";
-import { _, interpolate, pgettext, moment } from "@/lib/translate";
-import * as DynamicHelp from "react-dynamic-help";
+import { _, interpolate, pgettext } from "@/lib/translate";
 import * as data from "@/lib/data";
-import {
-    Goban,
-    ConditionalMoveTree,
-    PlayerColor,
-    JGOFSealingIntersection,
-    GobanEngine,
-} from "goban";
-import { alert } from "@/lib/swal_config";
+import { Goban, ConditionalMoveTree } from "goban";
 import { challengeRematch } from "@/components/ChallengeModal";
-import { Clock } from "@/components/Clock";
-import { getOutcomeTranslation } from "@/lib/misc";
 import { Link } from "react-router-dom";
 import { Resizable } from "@/components/Resizable";
 import { ChatMode } from "./GameChat";
 import { close_all_popovers } from "@/lib/popover";
 import { setExtraActionCallback, Player } from "@/components/Player";
-import { PlayButtons } from "./PlayButtons";
+import { GameActionArea } from "./GameActionArea";
 import {
     generateGobanHook,
-    subscribeAllEvents,
-    useCurrentMoveNumber,
-    useShowUndoRequested,
     useUserIsParticipant,
-    usePlayerToMove,
-    useShowTitle,
-    useViewMode,
     useVariationName,
     useSelectedChatLog,
     useAnnulled,
     useMode,
     usePhase,
-    useTitle,
     useZenMode,
     useStashedConditionalMoves,
+    useNeedsSealing,
+    useViewMode,
 } from "./GameHooks";
 import { useGobanController } from "./goban_context";
 import { is_valid_url } from "@/lib/url_validation";
-import { enableTouchAction } from "./touch_actions";
 import { ConditionalMoveTreeDisplay } from "./ConditionalMoveTreeDisplay";
 import { useUser } from "@/lib/hooks";
 import { AntiGrief } from "./AntiGrief";
 import { GobanAnalyzeButtonBar } from "@/components/GobanAnalyzeButtonBar/GobanAnalyzeButtonBar";
-
 import { EstimateScore } from "./fragments";
 import "./PlayControls.css";
 
@@ -81,162 +64,24 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
     const engine = goban.engine;
-    const { registerTargetItem, triggerFlow, signalUsed } = React.useContext(DynamicHelp.Api);
-    const { ref: game_state_pane, active: gameStatePaneActive } =
-        registerTargetItem("undo-requested-message");
     const [searchParams] = useSearchParams();
     const return_param = searchParams.get("return");
     const return_url = return_param && is_valid_url(return_param) ? return_param : null;
-    const [stone_removal_accept_disabled, setStoneRemovalAcceptDisabled] = React.useState(false);
-    const [needs_sealing, setNeedsSealing] = React.useState<JGOFSealingIntersection[] | undefined>(
-        engine?.needs_sealing,
-    );
+    const needs_sealing = useNeedsSealing(goban);
     const need_to_seal = needs_sealing && needs_sealing.length > 0;
-    const [autoscoring_in_progress, setAutoScoringInProgress] = React.useState(false);
-    const [autoscoring_taking_too_long, setAutoscoringTakingTooLong] = React.useState(false);
+    const is_portrait = useViewMode(goban_controller) === "portrait";
     const annulled = useAnnulled(goban_controller);
     const onVariationKeyPress = useOnVariationKeyPress();
-    const show_title = useShowTitle(goban);
-    const view_mode = useViewMode(goban_controller);
     const zen_mode = useZenMode(goban_controller);
-    const show_cancel = view_mode !== "portrait" ? true : zen_mode;
     const variation_name = useVariationName(goban_controller);
     const selected_chat_log = useSelectedChatLog(goban_controller);
     const phase = usePhase(goban);
-    const title = useTitle(goban);
     const stashed_conditional_moves = useStashedConditionalMoves(goban_controller);
 
-    const user_is_active_player = [engine.players.black.id, engine.players.white.id].includes(
-        user.id,
-    );
-
-    const [black_accepted, set_black_accepted] = React.useState(
-        stoneRemovalAccepted(goban, "black"),
-    );
-    const [white_accepted, set_white_accepted] = React.useState(
-        stoneRemovalAccepted(goban, "white"),
-    );
-
-    // Setup: when there's a new goban in play, we need to make sure we have the current
-    // state of acceptance captured
-    React.useEffect(() => {
-        const syncStoneRemovalAcceptance = () => {
-            if (goban.engine.phase === "stone removal") {
-                set_black_accepted(stoneRemovalAccepted(goban, "black"));
-                set_white_accepted(stoneRemovalAccepted(goban, "white"));
-            }
-        };
-        syncStoneRemovalAcceptance();
-
-        return subscribeAllEvents(
-            goban,
-            ["phase", "mode", "outcome", "stone-removal.accepted", "stone-removal.updated"],
-            syncStoneRemovalAcceptance,
-        );
-    }, [goban]);
-
-    React.useEffect(() => {
-        const syncNeedsSealing = (locs?: JGOFSealingIntersection[]) => {
-            setNeedsSealing(locs);
-        };
-        const engineUpdated = (engine: GobanEngine) => {
-            syncNeedsSealing(engine.needs_sealing);
-        };
-
-        let autoscoring_timeout: any;
-        const onAutoScoringStarted = () => {
-            console.log("Auto-scoring started");
-            setAutoScoringInProgress(true);
-            if (autoscoring_timeout) {
-                clearTimeout(autoscoring_timeout);
-            }
-            autoscoring_timeout = setTimeout(() => {
-                setAutoscoringTakingTooLong(true);
-                autoscoring_timeout = null;
-            }, 2000);
-        };
-        const onAutoScoringComplete = () => {
-            console.log("Auto-scoring complete");
-            setAutoScoringInProgress(false);
-            if (autoscoring_timeout) {
-                clearTimeout(autoscoring_timeout);
-                autoscoring_timeout = null;
-            }
-        };
-
-        if (goban?.engine) {
-            engineUpdated(goban.engine);
-        } else {
-            console.error("No engine in PlayControls");
-        }
-        goban.on("stone-removal.needs-sealing", syncNeedsSealing);
-        goban.on("engine.updated", engineUpdated);
-        goban.on("stone-removal.auto-scoring-started", onAutoScoringStarted);
-        goban.on("stone-removal.auto-scoring-complete", onAutoScoringComplete);
-
-        return () => {
-            goban.off("engine.updated", engineUpdated);
-            goban.off("stone-removal.needs-sealing", syncNeedsSealing);
-            goban.off("stone-removal.auto-scoring-started", onAutoScoringStarted);
-            goban.off("stone-removal.auto-scoring-complete", onAutoScoringComplete);
-        };
-    }, [goban]);
-
-    /*
-    React.useEffect(() => {
-        setStoneRemovalAcceptDisabled(true);
-        const timeout = setTimeout(() => {
-            console.log("setting false");
-            setStoneRemovalAcceptDisabled(false);
-        }, 1500);
-
-        return () => clearTimeout(timeout);
-    }, [stone_removal_string]);
-    */
-
-    React.useEffect(() => {
-        const player_accepted =
-            goban.engine?.playerColor(user.id) === "black" ? black_accepted : white_accepted;
-
-        setStoneRemovalAcceptDisabled(player_accepted ?? false);
-    }, [black_accepted, white_accepted]);
-
     const paused = usePaused(goban);
-    const show_undo_requested = useShowUndoRequested(goban);
-    const undo_requester_name = React.useMemo(() => {
-        const requested_by = engine.undo_requested_by;
-        if (requested_by === engine.players.black.id) {
-            return engine.players.black.username;
-        }
-        if (requested_by === engine.players.white.id) {
-            return engine.players.white.username;
-        }
-        return _("A player");
-    }, [show_undo_requested, engine.undo_requested_by]);
-    const winner = useWinner(goban);
-    const official_move_number = useOfficialMoveNumber(goban);
     const conditional_moves = useConditionalMoveTree(goban);
     const user_is_player = useUserIsParticipant(goban);
-    const cur_move_number = useCurrentMoveNumber(goban);
-    const this_users_turn = usePlayerToMove(goban) === user.id;
     const mode = useMode(goban);
-
-    React.useEffect(() => {
-        if (show_undo_requested && moment(user.registration_date).isBefore(moment("2023-06-14"))) {
-            // This condition protects against established users seeing this message introduced 2023-6-14
-            // Could be removed once all the "regulars" have done this
-            signalUsed("undo-requested-message"); // stops the following "triggerFlow" from doing anything.
-            signalUsed("accept-undo-button");
-        }
-
-        if (show_undo_requested && gameStatePaneActive()) {
-            if (this_users_turn) {
-                triggerFlow("undo-request-received-intro");
-            } else {
-                triggerFlow("undo-requested-intro");
-            }
-        }
-    }, [show_undo_requested, game_state_pane, user_is_player]);
 
     const goban_setMode_play = () => {
         goban.setMode("play");
@@ -272,134 +117,14 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
             goban.engine.config,
         );
     };
-    const onStoneRemovalCancel = () => {
-        void alert
-            .fire({
-                text: _("Are you sure you want to resume the game?"),
-                showCancelButton: true,
-            })
-            .then(({ value: accept }) => {
-                if (accept) {
-                    goban.rejectRemovedStones();
-                }
-            });
-        return false;
-    };
-    const onStoneRemovalAccept = (): void => {
-        goban.acceptRemovedStones();
-    };
-    const onStoneRemovalAutoScore = (): void => {
-        goban.performStoneRemovalAutoScoring();
-    };
-
-    const sse = engine.stalling_score_estimate;
 
     return (
         <div className="PlayControls">
-            <div className="game-action-buttons">
-                {mode === "play" && phase === "play" && user_is_player && (
-                    <PlayButtons show_cancel={show_cancel} />
-                )}
-            </div>
-            <div className="game-state" ref={game_state_pane}>
-                {((mode === "play" && phase === "play") || null) && (
-                    <span>
-                        {((show_title && !goban?.engine?.rengo) || null) && <span>{title}</span>}
-                        {show_undo_requested && (
-                            <span className="undo-requested-message">
-                                {interpolate(
-                                    pgettext(
-                                        "Notification that a player has requested to undo their last move",
-                                        "{{player_name}} has requested an undo",
-                                    ),
-                                    {
-                                        player_name: undo_requester_name,
-                                    },
-                                )}
-                            </span>
-                        )}
-                    </span>
-                )}
-
-                {((mode === "play" && phase === "stone removal") || null) && (
-                    <span>{_("Stone Removal Phase")}</span>
-                )}
-
-                {(mode === "analyze" || null) && (
-                    <span>
-                        {show_undo_requested ? (
-                            <span>
-                                {interpolate(
-                                    pgettext(
-                                        "Notification that a player has requested to undo their last move",
-                                        "{{player_name}} has requested an undo",
-                                    ),
-                                    {
-                                        player_name: undo_requester_name,
-                                    },
-                                )}
-                            </span>
-                        ) : (
-                            <span>{_("Analyze Mode")}</span>
-                        )}
-                    </span>
-                )}
-
-                {(mode === "conditional" || null) && <span>{_("Conditional Move Planner")}</span>}
-
-                {(mode === "score estimation" || null) && <EstimateScore />}
-
-                {((mode === "play" && phase === "finished") || null) && (
-                    <>
-                        <span style={{ textDecoration: annulled ? "line-through" : "none" }}>
-                            {winner
-                                ? interpolate(
-                                      pgettext("Game winner", "{{color}} wins by {{outcome}}"),
-                                      {
-                                          // When is winner an id?
-                                          color:
-                                              (winner as any) === engine.players.black.id ||
-                                              winner === "black"
-                                                  ? _("Black")
-                                                  : _("White"),
-                                          outcome: getOutcomeTranslation(engine.outcome),
-                                      },
-                                  )
-                                : interpolate(pgettext("Game winner", "Tie by {{outcome}}"), {
-                                      outcome: pgettext("Game outcome", engine.outcome),
-                                  })}
-                        </span>
-                        {engine.stalling_score_estimate && sse && (
-                            <div className="stalling-score-estimate">
-                                <span>
-                                    {interpolate(
-                                        _(
-                                            "The AI has concluded {{color}} will win with {{certainty}}% certainty. This result has been accepted by one or more players",
-                                        ),
-                                        {
-                                            color:
-                                                sse.predicted_winner === "black"
-                                                    ? _("Black")
-                                                    : _("White"),
-                                            certainty: (
-                                                (sse.predicted_winner === "black"
-                                                    ? sse.win_rate
-                                                    : 1.0 - sse.win_rate) * 100.0
-                                            ).toFixed(2),
-                                        },
-                                    )}
-                                </span>
-                            </div>
-                        )}
-                    </>
-                )}
-            </div>
-            <div className="annulled-indicator">
-                {annulled &&
-                    pgettext("Displayed to the user when the game is annulled", "Game Annulled")}
-                {annulled && <i className="fa fa-question-circle" />}
-
-                {annulled && (
+            {!is_portrait && <GameActionArea />}
+            {annulled && (
+                <div className="annulled-indicator">
+                    {pgettext("Displayed to the user when the game is annulled", "Game Annulled")}
+                    <i className="fa fa-question-circle" />
                     <AnnulmentReason
                         reason={
                             annulment_reason ||
@@ -410,8 +135,8 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
                                 : null)
                         }
                     />
-                )}
-            </div>
+                </div>
+            )}
             {((phase === "play" &&
                 mode === "play" &&
                 paused &&
@@ -461,7 +186,7 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
                             {_("Rematch")}
                         </button>
                     )}
-                    {(goban_controller.review_list.length > 0 || null) && (
+                    {((!zen_mode && goban_controller.review_list.length > 0) || null) && (
                         <div className="review-list">
                             <h3>{_("Reviews")}</h3>
                             {goban_controller.review_list.map((review, idx) => (
@@ -506,106 +231,6 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
                                     <span>...</span>
                                 )}
                             </div>
-
-                            <div style={{ textAlign: "center" }}>
-                                {(user_is_player || null) && (
-                                    <button
-                                        id="game-stone-removal-cancel"
-                                        onClick={onStoneRemovalCancel}
-                                        className={need_to_seal ? "primary" : ""}
-                                    >
-                                        {_("Cancel and resume game")}
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                    <div>
-                        {(user_is_active_player || user.is_moderator || null) && ( // moderators see the button, with its timer, but can't press it
-                            <button
-                                className={
-                                    (user.is_moderator && !user_is_active_player) ||
-                                    need_to_seal ||
-                                    autoscoring_in_progress
-                                        ? ""
-                                        : "primary"
-                                }
-                                disabled={
-                                    (user.is_moderator && !user_is_active_player) ||
-                                    stone_removal_accept_disabled ||
-                                    (autoscoring_in_progress && !autoscoring_taking_too_long)
-                                }
-                                onClick={onStoneRemovalAccept}
-                            >
-                                {_("Accept removed stones")}
-                                <Clock goban={goban} color="stone-removal" />
-                            </button>
-                        )}
-
-                        {autoscoring_in_progress && (
-                            <div className="autoscoring-in-progress">
-                                <i className="fa fa-circle-o-notch rotating" /> {_("Scoring game")}
-                            </div>
-                        )}
-                    </div>
-                    <br />
-                    <div style={{ textAlign: "center" }}>
-                        <div style={{ textAlign: "left", display: "inline-block" }}>
-                            <div>
-                                {(black_accepted || null) && (
-                                    <i
-                                        className="fa fa-check"
-                                        style={{ color: "green", width: "1.5em" }}
-                                    ></i>
-                                )}
-                                {(!black_accepted || null) && (
-                                    <i
-                                        className="fa fa-times"
-                                        style={{ color: "red", width: "1.5em" }}
-                                    ></i>
-                                )}
-                                {engine.players.black.username}
-                            </div>
-                            <div>
-                                {(white_accepted || null) && (
-                                    <i
-                                        className="fa fa-check"
-                                        style={{ color: "green", width: "1.5em" }}
-                                    ></i>
-                                )}
-                                {(!white_accepted || null) && (
-                                    <i
-                                        className="fa fa-times"
-                                        style={{ color: "red", width: "1.5em" }}
-                                    ></i>
-                                )}
-                                {engine.players.white.username}
-                            </div>
-                        </div>
-                    </div>
-                    <br />
-
-                    <div style={{ textAlign: "center" }}>
-                        {(user_is_player || null) && (
-                            <button
-                                id="game-stone-removal-auto-score"
-                                onClick={onStoneRemovalAutoScore}
-                            >
-                                {_("Auto-score")}
-                            </button>
-                        )}
-                    </div>
-                    {!need_to_seal && (
-                        <div style={{ textAlign: "center" }}>
-                            {(user_is_player || null) && (
-                                <button
-                                    id="game-stone-removal-cancel"
-                                    onClick={onStoneRemovalCancel}
-                                    className={need_to_seal ? "primary" : ""}
-                                >
-                                    {_("Cancel and resume game")}
-                                </button>
-                            )}
                         </div>
                     )}
 
@@ -670,37 +295,6 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
                             </div>
                         </div>
                     )}
-                </div>
-            )}
-            {((mode === "play" &&
-                phase === "play" &&
-                goban.isAnalysisDisabled() &&
-                cur_move_number < official_move_number) ||
-                null) && (
-                <div className="analyze-mode-buttons">
-                    <span>
-                        <button
-                            className="sm primary bold"
-                            onClick={() => {
-                                enableTouchAction();
-                                goban.setModeDeferred("play");
-                            }}
-                        >
-                            {_("Back to Game")}
-                        </button>
-                    </span>
-                </div>
-            )}
-            {(mode === "score estimation" || null) && (
-                <div className="analyze-mode-buttons">
-                    <span>
-                        <button
-                            className="sm primary bold"
-                            onClick={goban_controller.stopEstimatingScore}
-                        >
-                            {_("Back to Board")}
-                        </button>
-                    </span>
                 </div>
             )}
         </div>
@@ -914,7 +508,7 @@ export function ReviewControls({ review_id }: ReviewControlsProps) {
                         ref={goban_controller.setMoveTreeContainer}
                     />
 
-                    <div style={{ paddingLeft: "0.5em", paddingRight: "0.5em" }}>
+                    <div className="move-comments">
                         <textarea
                             id="game-move-node-text"
                             placeholder={_("Move comments...")}
@@ -1000,20 +594,6 @@ function ShareAnalysisButton(props: ShareAnalysisButtonProperties): React.ReactE
     }
 }
 
-function stoneRemovalAccepted(goban: Goban, color: PlayerColor) {
-    const engine = goban.engine;
-
-    if (engine.phase !== "stone removal") {
-        return undefined;
-    }
-    return engine.players[color].accepted_stones === engine.getStoneRemovalString();
-}
-
-const useOfficialMoveNumber = generateGobanHook(
-    (goban) => goban!.engine.last_official_move?.move_number || -1,
-    ["last_official_move"],
-);
-const useWinner = generateGobanHook((goban) => goban!.engine.winner, ["winner"]);
 const usePaused = generateGobanHook(
     (goban) => goban!.pause_control && !!goban!.pause_control.paused,
     ["paused"],

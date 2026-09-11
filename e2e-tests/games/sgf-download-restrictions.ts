@@ -37,12 +37,28 @@ import { playMoves, resignActiveGame } from "../helpers/game-utils";
 import { log } from "@helpers/logger";
 
 /**
- * Helper to find the "Download SGF" link in the dock.
+ * Open the "More actions" popover if it is not already open, and return its
+ * locator. The SGF actions moved from the (removed) .Dock into this popover
+ * (GameActionsPanel) during the GobanView revamp. Opening is idempotent: the
+ * popover has a full-page backdrop, so blindly re-clicking the trigger would
+ * land on the backdrop and close it. Callers scope their queries within the
+ * returned popover.
+ */
+const openMoreActionsPanel = async (page: import("@playwright/test").Page) => {
+    const popover = page.locator(".GameMoreActionsPopover");
+    if (!(await popover.isVisible().catch(() => false))) {
+        await page.locator('button.GobanView-tab-button[title="More actions"]').click();
+        await expect(popover).toBeVisible();
+    }
+    return popover;
+};
+
+/**
+ * Helper to find the "Download SGF" link in the More-actions popover.
  */
 const getSgfDownloadLink = async (page: import("@playwright/test").Page) => {
-    const dock = page.locator(".Dock");
-    await dock.hover();
-    return dock.locator("a", { hasText: "Download SGF" });
+    const popover = await openMoreActionsPanel(page);
+    return popover.locator("a.GameSidebarPanel-item").filter({ hasText: "Download SGF" });
 };
 
 /**
@@ -66,12 +82,11 @@ const expectSgfDownloadDisabled = async (page: import("@playwright/test").Page) 
 };
 
 /**
- * Helper to find the "Add to library" link in the dock.
+ * Helper to find the "Add to library" link in the More-actions popover.
  */
 const getAddToLibraryLink = async (page: import("@playwright/test").Page) => {
-    const dock = page.locator(".Dock");
-    await dock.hover();
-    return dock.locator("a", { hasText: "Add to library" });
+    const popover = await openMoreActionsPanel(page);
+    return popover.locator("button.GameSidebarPanel-item").filter({ hasText: "Add to library" });
 };
 
 /**
@@ -176,9 +191,10 @@ export const sgfDownloadRestrictionsTest = async ({
 
     // --- Finish the game by resignation ---
     log("Finishing game by resignation...");
-    // Dismiss the Dock (still expanded from hovering during Test 2)
-    // so it doesn't intercept the resign button click
-    await blackPage.mouse.move(0, 0);
+    // Close the More-actions popover (left open by Test 2's checks) so its
+    // backdrop doesn't intercept the resign button click.
+    await blackPage.locator(".popover-backdrop").click({ position: { x: 5, y: 5 } });
+    await expect(blackPage.locator(".GameMoreActionsPopover")).not.toBeVisible();
     await resignActiveGame(blackPage);
     log("Game finished");
 

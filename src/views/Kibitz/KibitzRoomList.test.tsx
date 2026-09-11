@@ -9,11 +9,6 @@ import { render, screen } from "@testing-library/react";
 import type { KibitzRoomSummary } from "@/models/kibitz";
 import { KibitzRoomList } from "./KibitzRoomList";
 
-jest.mock("./HelpFlows/useKibitzHelpTarget", () => ({
-    __esModule: true,
-    useKibitzHelpTarget: jest.fn(() => null),
-}));
-
 jest.mock("@/lib/translate", () => ({
     __esModule: true,
     interpolate: jest.fn((template: string, values: Record<string, string | number>) =>
@@ -27,7 +22,6 @@ jest.mock("@/lib/translate", () => ({
 
 jest.mock("./kibitzAnalysisPolicyText", () => ({
     __esModule: true,
-    getKibitzRoomLockedLabel: jest.fn(() => "Locked for players"),
     getKibitzRoomLockedTooltip: jest.fn(() => "Locked for players while the game is live."),
 }));
 
@@ -55,8 +49,8 @@ describe("KibitzRoomList", () => {
             />,
         );
 
-        expect(screen.getByText("Preset")).toHaveClass("preset-label");
-        expect(container.querySelector(".room-subtitle")).toHaveTextContent(
+        expect(container.querySelector(".KibitzRoomList-item")).toHaveAttribute(
+            "title",
             "Preset · Room description",
         );
     });
@@ -106,7 +100,7 @@ describe("KibitzRoomList", () => {
             />,
         );
 
-        expect(screen.getByRole("button", { name: "Create room" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Room" })).toBeInTheDocument();
         expect(screen.queryByRole("link", { name: "Sign in to create room" })).toBeNull();
     });
 });

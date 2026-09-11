@@ -32,11 +32,6 @@ jest.mock("./KibitzUserAvatar", () => ({
     KibitzUserAvatar: () => <span data-testid="KibitzUserAvatar" />,
 }));
 
-jest.mock("./HelpFlows/useKibitzHelpTarget", () => ({
-    __esModule: true,
-    useKibitzHelpTarget: () => null,
-}));
-
 jest.mock("@/lib/translate", () => ({
     __esModule: true,
     pgettext: (_context: string, text: string) => text,
@@ -103,17 +98,15 @@ describe("KibitzVariationList", () => {
                 currentGameId={10}
                 gameById={gameById}
                 selectedVariationId="a2"
-                variationColorIndexes={{ a1: 0, a2: 1, b1: 2, c1: 3 }}
                 onRecallVariation={onRecallVariation}
                 onHideVariation={onHideVariation}
             />,
         );
 
-        expect(screen.getByText("Active variations")).toBeInTheDocument();
-        expect(screen.getByText("A1")).toBeInTheDocument();
-        expect(screen.getByText("A2")).toBeInTheDocument();
-        expect(screen.getByText("B1")).toBeInTheDocument();
-        expect(screen.getByText("C1")).toBeInTheDocument();
+        expect(screen.getByText("Variation: A1")).toBeInTheDocument();
+        expect(screen.getByText("Variation: A2")).toBeInTheDocument();
+        expect(screen.getByText("Variation: B1")).toBeInTheDocument();
+        expect(screen.getByText("Variation: C1")).toBeInTheDocument();
         expect(screen.getByText("Current Game")).toBeInTheDocument();
         expect(screen.getAllByRole("link", { name: "Open original game" })).toHaveLength(2);
         expect(screen.getByText("Previous game: Older board")).toBeInTheDocument();
@@ -124,8 +117,8 @@ describe("KibitzVariationList", () => {
         expect(screen.getByText("Zeta")).toBeInTheDocument();
         expect(screen.getAllByText("M87")).toHaveLength(4);
         expect(screen.getAllByText("+5")).toHaveLength(4);
-        expect(screen.getAllByLabelText("Hide from board")).toHaveLength(4);
-        expect(screen.getAllByTestId("Player")).toHaveLength(4);
+        expect(screen.getAllByLabelText("Remove from board")).toHaveLength(4);
+        expect(screen.getAllByTestId("Player")).toHaveLength(8);
     });
 
     it("shows previous game separators without a current game separator when only older games are visible", () => {
@@ -141,7 +134,6 @@ describe("KibitzVariationList", () => {
                 currentGameId={10}
                 gameById={gameById}
                 selectedVariationId={null}
-                variationColorIndexes={{ c1: 0, c2: 1 }}
                 onRecallVariation={onRecallVariation}
                 onHideVariation={onHideVariation}
             />,
@@ -151,6 +143,32 @@ describe("KibitzVariationList", () => {
         expect(screen.getByText("Previous game: Older board")).toBeInTheDocument();
         expect(screen.getByText("Gamma")).toBeInTheDocument();
         expect(screen.getByText("Delta")).toBeInTheDocument();
-        expect(screen.getAllByLabelText("Hide from board")).toHaveLength(2);
+        expect(screen.getAllByLabelText("Remove from board")).toHaveLength(2);
     });
+});
+
+test("the new-variation row is disabled when there is no game to branch from", () => {
+    const { container } = render(
+        <KibitzVariationList
+            variations={[]}
+            onRecallVariation={jest.fn()}
+            onCreateVariation={jest.fn()}
+            createVariationDisabled={true}
+        />,
+    );
+    const button = container.querySelector(".KibitzVariationList-footerAction");
+    expect(button).not.toBeNull();
+    expect((button as HTMLButtonElement).disabled).toBe(true);
+});
+
+test("the new-variation row is live when there is a game", () => {
+    const { container } = render(
+        <KibitzVariationList
+            variations={[]}
+            onRecallVariation={jest.fn()}
+            onCreateVariation={jest.fn()}
+        />,
+    );
+    const button = container.querySelector(".KibitzVariationList-footerAction");
+    expect((button as HTMLButtonElement).disabled).toBe(false);
 });

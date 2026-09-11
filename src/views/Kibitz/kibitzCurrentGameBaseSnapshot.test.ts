@@ -15,14 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { GobanController } from "@/lib/GobanController";
+import {
+    GobanController,
+    getMoveTreeTrunkTail,
+    restoreGobanToOfficialTail,
+} from "@/lib/GobanController";
 import type { KibitzWatchedGame } from "@/models/kibitz";
 import {
-    canHydrateMainBoardFromRoomBaseSnapshot,
+    buildCurrentGameBaseSnapshotFromGameDetails,
     captureCurrentGameBaseSnapshotFromController,
     chooseFresherCurrentGameBaseSnapshot,
-    hydrateMainBoardFromRoomBaseSnapshot,
+    createCurrentGameMiniGobanSnapshotOverrides,
 } from "./kibitzCurrentGameBaseSnapshot";
+import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 
 function makeGame(gameId: number, moveNumber: number): KibitzWatchedGame {
     return {
@@ -116,6 +121,7 @@ function makeController(moveTree: TestMoveTree): GobanController {
                 controller.goban.engine.config = config;
             }),
             redraw: jest.fn(),
+            jumpToLastOfficialMove: jest.fn(),
             engine: {
                 config: {},
                 move_tree: moveTree,
@@ -171,186 +177,89 @@ describe("chooseFresherCurrentGameBaseSnapshot", () => {
     });
 });
 
-describe("main board broker hydration", () => {
-    it("accepts a fresh current-room snapshot for a root-only main board", () => {
-        const controller = makeController(makeMoveTree(0));
-        const roomBaseSnapshot = {
-            gameId: 87165523,
-            trunkTailMoveNumber: 126,
-            config: {
-                game_id: 87165523,
-                move_tree: makeMoveTreeJson(126),
+describe("buildCurrentGameBaseSnapshotFromGameDetails", () => {
+    it("builds an official detached trunk from REST game details", () => {
+        const moves = [
+            { x: 3, y: 4 },
+            { x: 15, y: 14 },
+        ];
+        const snapshot = buildCurrentGameBaseSnapshotFromGameDetails({
+            details: {
+                width: 19,
+                height: 19,
+                gamedata: {
+                    moves,
+                },
             },
-        } as unknown as Parameters<
-            typeof canHydrateMainBoardFromRoomBaseSnapshot
-        >[0]["roomBaseSnapshot"];
+            gameId: 4321,
+        });
 
-        expect(
-            canHydrateMainBoardFromRoomBaseSnapshot({
-                mainBoardController: controller,
-                currentGame: makeGame(87165523, 126),
-                currentRoomGameId: 87165523,
-                requiredMoveNumber: 126,
-                roomBaseSnapshot,
-            }),
-        ).toBe(true);
+        expect(snapshot?.gameId).toBe(4321);
+        expect(snapshot?.trunkTailMoveNumber).toBe(2);
+        expect(snapshot?.config.move_tree).toBeDefined();
+        expect(snapshot?.config.move_tree?.trunk_next?.trunk_next).toBeDefined();
     });
 
-    it("hydrates the visible main board from the room-base snapshot", () => {
-        const controller = makeController(makeMoveTree(0));
-        const load = controller.goban.load as jest.Mock;
-        const roomBaseSnapshot = {
-            gameId: 87165523,
-            trunkTailMoveNumber: 126,
-            config: {
-                game_id: 87165523,
-                move_tree: makeMoveTreeJson(126),
+    it("creates a valid root snapshot for a zero-move game", () => {
+        const snapshot = buildCurrentGameBaseSnapshotFromGameDetails({
+            details: {
+                width: 13,
+                height: 9,
+                gamedata: { moves: [] },
             },
-        } as unknown as Parameters<
-            typeof hydrateMainBoardFromRoomBaseSnapshot
-        >[0]["roomBaseSnapshot"];
+            gameId: 4321,
+        });
 
-        expect(
-            hydrateMainBoardFromRoomBaseSnapshot({
-                mainBoardController: controller,
-                currentGame: makeGame(87165523, 126),
-                currentRoomGameId: 87165523,
-                requiredMoveNumber: 126,
-                roomBaseSnapshot,
-            }),
-        ).toEqual(expect.objectContaining({ move_number: 126 }));
-
-        expect(load).toHaveBeenCalledTimes(1);
-        expect(load).toHaveBeenCalledWith(
+        expect(snapshot).toEqual(
             expect.objectContaining({
-                game_id: 87165523,
-                move_tree: expect.objectContaining({
-                    move_number: 126,
+                gameId: 4321,
+                trunkTailMoveNumber: 0,
+                config: expect.objectContaining({
+                    width: 13,
+                    height: 9,
+                    move_tree: expect.any(Object),
                 }),
             }),
         );
-        expect(controller.goban.engine.jumpTo).toHaveBeenCalled();
-        expect(controller.goban.engine.setLastOfficialMove).toHaveBeenCalled();
-        expect(controller.goban.redraw).toHaveBeenCalledWith(true);
-    });
-
-    it("rejects a snapshot for the wrong game", () => {
-        const controller = makeController(makeMoveTree(0));
-        const load = controller.goban.load as jest.Mock;
-        const roomBaseSnapshot = {
-            gameId: 87164848,
-            trunkTailMoveNumber: 126,
-            config: {
-                game_id: 87164848,
-                move_tree: makeMoveTreeJson(126),
-            },
-        } as unknown as Parameters<
-            typeof hydrateMainBoardFromRoomBaseSnapshot
-        >[0]["roomBaseSnapshot"];
-
-        expect(
-            canHydrateMainBoardFromRoomBaseSnapshot({
-                mainBoardController: controller,
-                currentGame: makeGame(87165523, 126),
-                currentRoomGameId: 87165523,
-                requiredMoveNumber: 126,
-                roomBaseSnapshot,
-            }),
-        ).toBe(false);
-
-        expect(
-            hydrateMainBoardFromRoomBaseSnapshot({
-                mainBoardController: controller,
-                currentGame: makeGame(87165523, 126),
-                currentRoomGameId: 87165523,
-                requiredMoveNumber: 126,
-                roomBaseSnapshot,
-            }),
-        ).toBeNull();
-        expect(load).not.toHaveBeenCalled();
-    });
-
-    it("rejects a snapshot that is not fresh enough", () => {
-        const controller = makeController(makeMoveTree(0));
-        const load = controller.goban.load as jest.Mock;
-        const roomBaseSnapshot = {
-            gameId: 87165523,
-            trunkTailMoveNumber: 80,
-            config: {
-                game_id: 87165523,
-                move_tree: makeMoveTreeJson(80),
-            },
-        } as unknown as Parameters<
-            typeof hydrateMainBoardFromRoomBaseSnapshot
-        >[0]["roomBaseSnapshot"];
-
-        expect(
-            canHydrateMainBoardFromRoomBaseSnapshot({
-                mainBoardController: controller,
-                currentGame: makeGame(87165523, 126),
-                currentRoomGameId: 87165523,
-                requiredMoveNumber: 126,
-                roomBaseSnapshot,
-            }),
-        ).toBe(false);
-
-        expect(
-            hydrateMainBoardFromRoomBaseSnapshot({
-                mainBoardController: controller,
-                currentGame: makeGame(87165523, 126),
-                currentRoomGameId: 87165523,
-                requiredMoveNumber: 126,
-                roomBaseSnapshot,
-            }),
-        ).toBeNull();
-        expect(load).not.toHaveBeenCalled();
-    });
-
-    it("rejects a main board that is already ready", () => {
-        const controller = makeController(makeMoveTree(126));
-        const load = controller.goban.load as jest.Mock;
-        const roomBaseSnapshot = {
-            gameId: 87165523,
-            trunkTailMoveNumber: 126,
-            config: {
-                game_id: 87165523,
-                move_tree: makeMoveTreeJson(126),
-            },
-        } as unknown as Parameters<
-            typeof hydrateMainBoardFromRoomBaseSnapshot
-        >[0]["roomBaseSnapshot"];
-
-        expect(
-            canHydrateMainBoardFromRoomBaseSnapshot({
-                mainBoardController: controller,
-                currentGame: makeGame(87165523, 126),
-                currentRoomGameId: 87165523,
-                requiredMoveNumber: 126,
-                roomBaseSnapshot,
-            }),
-        ).toBe(false);
-
-        expect(
-            hydrateMainBoardFromRoomBaseSnapshot({
-                mainBoardController: controller,
-                currentGame: makeGame(87165523, 126),
-                currentRoomGameId: 87165523,
-                requiredMoveNumber: 126,
-                roomBaseSnapshot,
-            }),
-        ).toBeNull();
-        expect(load).not.toHaveBeenCalled();
     });
 });
 
-function makeMoveTreeJson(moveNumber: number) {
-    return {
-        id: moveNumber,
-        move_number: moveNumber,
-        branches: [],
-        trunk_next: undefined,
-    };
-}
+describe("restoreGobanToOfficialTail", () => {
+    it("positions a snapshot renderer at the official trunk tail", () => {
+        const controller = new GobanController({
+            width: 9,
+            height: 9,
+            move_tree: {
+                x: -1,
+                y: -1,
+                trunk_next: {
+                    x: 3,
+                    y: 3,
+                    trunk_next: {
+                        x: 4,
+                        y: 3,
+                    },
+                },
+            },
+        });
+        const { engine } = controller.goban;
+        const redraw = jest.spyOn(controller.goban, "redraw");
+        let observedMoveNumber = 0;
+        controller.goban.on("update", () => {
+            observedMoveNumber = controller.goban.engine.cur_move.move_number;
+        });
+
+        expect(getMoveTreeTrunkTail(engine.move_tree)?.move_number).toBe(2);
+        expect(engine.cur_move.move_number).toBe(0);
+        expect(engine.last_official_move.move_number).toBe(0);
+
+        expect(restoreGobanToOfficialTail(controller.goban)?.move_number).toBe(2);
+        expect(engine.cur_move.move_number).toBe(2);
+        expect(engine.last_official_move.move_number).toBe(2);
+        expect(observedMoveNumber).toBe(2);
+        expect(redraw).toHaveBeenCalledWith(true);
+    });
+});
 
 describe("captureCurrentGameBaseSnapshotFromController", () => {
     beforeEach(() => {
@@ -390,7 +299,9 @@ describe("captureCurrentGameBaseSnapshotFromController", () => {
         ).toBeNull();
     });
 
-    it("rejects detached controllers", () => {
+    it("captures a board that is off screen", () => {
+        // On a phone the main board leaves the DOM whenever the centre shows
+        // a variation or a draft, and a draft is built from this snapshot.
         const moveTree = makeMoveTree(0, makeMoveTree(1, makeMoveTree(2)));
         const parent = document.createElement("div");
         const controller = {
@@ -403,12 +314,89 @@ describe("captureCurrentGameBaseSnapshotFromController", () => {
             },
         } as unknown as GobanController;
 
+        expect(parent.isConnected).toBe(false);
         expect(
             captureCurrentGameBaseSnapshotFromController(
                 controller,
                 makeGame(4321, 2),
                 "room-base-broker",
-            ),
-        ).toBeNull();
+            )?.trunkTailMoveNumber,
+        ).toBe(2);
+    });
+});
+
+describe("createCurrentGameMiniGobanSnapshotOverrides", () => {
+    it("keeps the current game detached while its snapshot is pending", () => {
+        expect(createCurrentGameMiniGobanSnapshotOverrides(null, 123)).toEqual(
+            new Map([[123, null]]),
+        );
+    });
+
+    it("clones the matching snapshot and suppresses only its internal game id", () => {
+        const snapshot = {
+            gameId: 123,
+            roomId: "room-1",
+            trunkTailMoveNumber: 2,
+            moveTreeId: "tree-1",
+            movePath: "ab",
+            source: "main-board",
+            config: {
+                game_id: 123,
+                move_tree: { id: "tree-1" },
+            },
+        } as unknown as KibitzCurrentGameBaseSnapshot;
+
+        const overrides = createCurrentGameMiniGobanSnapshotOverrides(snapshot, 123);
+        const config = overrides?.get(123);
+
+        expect(config?.game_id).toBeUndefined();
+        expect(config?.move_tree).toEqual({ id: "tree-1" });
+        expect(config?.move_tree).not.toBe(snapshot.config.move_tree);
+        expect(snapshot.config.game_id).toBe(123);
+    });
+
+    it("does not serialize live renderer references in the snapshot config", () => {
+        const circularSocket: Record<string, unknown> = {};
+        circularSocket.events = { context: circularSocket };
+        const boardDiv = document.createElement("div");
+        const snapshot = {
+            gameId: 123,
+            config: {
+                game_id: 123,
+                board_div: boardDiv,
+                connect_to_chat: true,
+                server_socket: circularSocket,
+                move_tree: {
+                    id: "tree-1",
+                    move_number: 2,
+                    trunk_next: undefined,
+                },
+            },
+        } as unknown as KibitzCurrentGameBaseSnapshot;
+
+        const config = createCurrentGameMiniGobanSnapshotOverrides(snapshot, 123)?.get(123);
+
+        expect(config).toEqual(
+            expect.objectContaining({
+                connect_to_chat: false,
+                game_id: undefined,
+                move_tree: expect.objectContaining({ id: "tree-1" }),
+                server_socket: undefined,
+            }),
+        );
+        expect(config).not.toHaveProperty("board_div");
+        expect(snapshot.config.server_socket).toBe(circularSocket);
+        expect(snapshot.config.board_div).toBe(boardDiv);
+    });
+
+    it("does not create an override for a different game", () => {
+        const snapshot = {
+            gameId: 123,
+            config: {},
+        } as unknown as KibitzCurrentGameBaseSnapshot;
+
+        expect(createCurrentGameMiniGobanSnapshotOverrides(snapshot, 456)).toEqual(
+            new Map([[456, null]]),
+        );
     });
 });

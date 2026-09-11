@@ -111,9 +111,17 @@ const backend_url =
         ? "https://beta.online-go.com"
         : OGS_BACKEND === "PRODUCTION"
           ? "https://online-go.com"
-          : "http://127.0.0.1:1080"; // LOCAL
+          : process.env.OGS_CONTAINER
+            ? "http://loadbalancer"
+            : "http://127.0.0.1:1080";
 
 const PORT = process.env.OGS_PORT ? parseInt(process.env.OGS_PORT) : 8080;
+
+// Django trusts this origin for requests forwarded by the local dev server.
+const local_dev_headers = {
+    origin: "http://localhost:8080",
+    referer: "http://localhost:8080/",
+};
 
 const proxy: Record<string, ProxyOptions> = {};
 
@@ -138,6 +146,7 @@ for (const base_path of [
     proxy[base_path] = {
         target: backend_url,
         changeOrigin: true,
+        headers: OGS_BACKEND === "LOCAL" ? local_dev_headers : undefined,
         rewrite: (path: string) => {
             return backend_url + path;
         },
@@ -366,7 +375,6 @@ export default defineConfig({
     },
     define: {
         "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
-        "process.env.OGS_BACKEND": JSON.stringify(OGS_BACKEND),
         GOBAN_SOCKET_WORKER_VERSION: JSON.stringify(GOBAN_SOCKET_WORKER_VERSION),
 
         /* This is for goban to let it know we are building for a front end, as opposed to server usage */
@@ -404,6 +412,7 @@ export default defineConfig({
                 return null;
             },
         },
+        admin_host_proxy(),
         ogs_vite_middleware(),
         react(),
         //circularDependency(),
@@ -505,6 +514,76 @@ export default defineConfig({
     },
 });
 
+/**
+ * Hands requests for an `admin.*` hostname to the local OGS stack.
+ *
+ * On a development instance every public hostname lands on this dev server,
+ * but the unified admin interface (ogs/apps/admin) is served by the stack's
+ * termination-server for `admin.*` hosts, not by this client. So a request
+ * whose Host starts with `admin.` is relayed to the local load balancer,
+ * Host intact (the stack routes by it), and never reaches Vite. Only
+ * meaningful against the local stack; against beta or production the admin
+ * host is its own site.
+ *
+ * `Origin` and `Referer` use the origin Django trusts for local development.
+ */
+function admin_host_proxy(): Plugin {
+    const target = new URL(backend_url);
+    return {
+        name: "admin-host-proxy",
+        configureServer(server: ViteDevServer) {
+            server.middlewares.use((req, res, next) => {
+                if (!/^admin[.-]/i.test(req.headers.host ?? "")) {
+                    next();
+                    return;
+                }
+                // Say so rather than fall through. Falling through served
+                // this site's own index for an admin hostname, with a 200
+                // and no error anywhere: it looked like the admin interface
+                // was broken when the relay simply was not installed. The
+                // admin interface is only ever relayed to a local stack —
+                // it pauses live games and changes who is staff, and doing
+                // that against beta or production from a dev server is not
+                // something to reach by forgetting a variable.
+                if (OGS_BACKEND !== "LOCAL") {
+                    res.writeHead(503, { "content-type": "text/plain" });
+                    res.end(
+                        `This dev server is talking to ${OGS_BACKEND}, so it will not relay ` +
+                            `${req.headers.host}.\n\n` +
+                            `The admin interface is relayed to the local stack only. Restart ` +
+                            `with OGS_BACKEND=LOCAL, or open the stack's own admin host ` +
+                            `directly (admin.localhost:1080).\n`,
+                    );
+                    return;
+                }
+                const upstream = http.request(
+                    {
+                        host: target.hostname,
+                        port: target.port || 80,
+                        method: req.method,
+                        path: req.url,
+                        headers: {
+                            ...req.headers,
+                            ...local_dev_headers,
+                        },
+                    },
+                    (answer) => {
+                        res.writeHead(answer.statusCode ?? 502, answer.headers);
+                        answer.pipe(res);
+                    },
+                );
+                upstream.on("error", (err) => {
+                    if (!res.headersSent) {
+                        res.writeHead(502, { "content-type": "text/plain" });
+                    }
+                    res.end(`admin host proxy: ${err.message}`);
+                });
+                req.pipe(upstream);
+            });
+        },
+    };
+}
+
 /*
  * For historical reasons, OGS uses a custom index.html template system
  */
@@ -528,6 +607,25 @@ function ogs_vite_middleware(): Plugin {
          * if MPA, check pageName(default is index) and write /${pagesDir}/{pageName}/${entry}.html
          */
         configureServer(server: ViteDevServer) {
+            /* The index template's deferred stylesheet link points at the
+             * built ogs.css, which only exists in production; in dev the same
+             * styles are injected by Vite through the main.tsx module import.
+             * This must run as a pre middleware: the post middlewares below
+             * run after Vite's transform middleware, which would otherwise
+             * compile the linked URL into a second, stale copy of every rule
+             * that wins the cascade and masks HMR updates. Stylesheet
+             * requests carry Accept: text/css; the module import fetches with
+             * Accept: star-slash-star, so it still gets the real styles. */
+            server.middlewares.use((req, res, next) => {
+                const url = (req.originalUrl || "").split("?")[0];
+                if (url.endsWith("ogs.css") && (req.headers.accept || "").includes("text/css")) {
+                    res.setHeader("Content-Type", "text/css; charset=utf-8");
+                    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+                    res.end("");
+                    return;
+                }
+                next();
+            });
             return () => {
                 /* Serve /img/* from the repo's asset directories so board/stone textures
                  * referenced via the CDN-rewritten base URL resolve against local disk in dev.
@@ -657,12 +755,6 @@ function ogs_vite_middleware(): Plugin {
                         send_response(JSON.stringify(manifest), "application/json");
                         return;
                     }
-                    if (url?.endsWith("ogs.css")) {
-                        // blank, vite deals with css stuff until production
-                        send_response("", "text/css");
-                        return;
-                    }
-
                     if (url?.endsWith("vendor.js")) {
                         console.info(`GET ${url} -> node_modules/vendor.js`);
                         send_response("");
@@ -799,9 +891,18 @@ async function ogs_process_template(content: string, req: IncomingMessage): Prom
                 const ip = req.socket.remoteAddress;
                 const location = undefined;
                 //return `<script>window['websocket_host'] = "${server_url}";</script>`;
+
+                /* OGS_DEV_BACKEND tells the client which backend the dev
+                 * server was started with. It cannot be a compile-time
+                 * `define` constant: in dev, rolldown-vite does not replace
+                 * bare identifiers, and vite-plugin-node-polyfills turns
+                 * `process` into an imported shim binding with an empty `env`,
+                 * so `process.env.*` defines are not replaced either. Deployed
+                 * builds never set it, and select servers by hostname. */
                 return `<script>
                     window.ip_location = ${JSON.stringify(location)};
                     window.ip_address = "${ip}";
+                    window.OGS_DEV_BACKEND = ${JSON.stringify(OGS_BACKEND)};
                 </script>`;
             }
         }

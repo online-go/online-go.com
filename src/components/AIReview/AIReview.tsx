@@ -18,6 +18,7 @@
 import * as React from "react";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import * as data from "@/lib/data";
+import { useData } from "@/lib/hooks";
 import * as preferences from "@/lib/preferences";
 import { UIPush } from "@/components/UIPush";
 import { openBecomeASiteSupporterModal } from "@/views/Supporter";
@@ -29,7 +30,15 @@ import { _, pgettext, moment } from "@/lib/translate";
 import { ReviewChart } from "./ReviewChart";
 import { SummaryTable } from "./SummaryTable";
 import { FairPlayGameSummary } from "@moderator-ui/FairPlay";
-import { MoveTree, JGOFAIReview, JGOFAIReviewMove, ColoredCircle, GobanMovesArray } from "goban";
+import {
+    MoveTree,
+    JGOFAIReview,
+    JGOFAIReviewMove,
+    JGOFNumericPlayerColor,
+    ColoredCircle,
+    GobanMovesArray,
+    AIQualityMark,
+} from "goban";
 import { alert } from "@/lib/swal_config";
 import { useGobanControllerOrNull } from "@/views/Game/goban_context";
 import { MODERATOR_POWERS } from "@/lib/moderation";
@@ -39,7 +48,12 @@ import { ReviewSelector } from "./ReviewSelector";
 import { WorstMovesList } from "./WorstMovesList";
 import { ScoreWinRateToggle } from "./ScoreWinRateToggle";
 import { FullReviewButton } from "./FullReviewButton";
-import { canStartFullReview, trimMaxMoves, fillAIMarksBacktracking } from "./utils";
+import {
+    canStartFullReview,
+    trimMaxMoves,
+    fillAIMarksBacktracking,
+    reviewPositionOfMove,
+} from "./utils";
 import { useAIReviewData, useAIReviewList, useWorstMoves } from "./hooks";
 
 // Constants
@@ -65,9 +79,10 @@ interface AIReviewProperties {
     onAIReviewSelected: (ai_review: JGOFAIReview) => void;
     simul_black?: boolean | null;
     simul_white?: boolean | null;
-    /** When true, shows GameTimings within FairPlayGameSummary */
-    showGameTimings?: boolean;
-    /** GameTimings props - required when showGameTimings is true */
+    /** When true, shows the FairPlayGameSummary with the per-move timings
+     *  (bound to the moderator tools being open) */
+    showFairPlay?: boolean;
+    /** GameTimings props, shown with the FairPlayGameSummary */
     moves?: GobanMovesArray;
     start_time?: number;
     end_time?: number;
@@ -90,7 +105,7 @@ export function AIReview({
     onAIReviewSelected,
     simul_black,
     simul_white,
-    showGameTimings,
+    showFairPlay,
     moves,
     start_time,
     end_time,
@@ -102,6 +117,11 @@ export function AIReview({
 
     // State management
     const [useScore, setUseScore] = useState(preferences.get("ai-review-use-score"));
+    /* The quality colors come from theme CSS variables, so the board marks
+     * are regenerated when the theme changes */
+    const [theme] = useData("theme", "system");
+    const [showVisitCounts] = preferences.usePreference("ai-review-show-visit-counts");
+    const [showOnBoard] = preferences.usePreference("ai-review-show-on-board");
     const [tableHidden, setTableHidden] = useState(!preferences.get("ai-summary-table-show"));
     const [currentPopupMoves, setCurrentPopupMoves] = useState<number[]>([]);
 
@@ -229,17 +249,41 @@ export function AIReview({
         [refresh],
     );
 
-    // Calculate table data
-    const calculateAndUpdateTableData = useCallback(() => {
-        if (!gobanController?.goban || !reviewData) {
-            return;
-        }
-
-        reviewData.categorize(gobanController.goban.engine);
-    }, [gobanController, reviewData]);
-
     // State for win rate and score from highlights update
     const [winRateScore, setWinRateScore] = useState<[number, number]>([0, 0]);
+
+    /**
+     * Single categorization pass per review update, shared by the played-move
+     * badge map and the summary table. categorize() walks the whole game, so
+     * it must not run once per render during a streaming review.
+     */
+    const categorization = useMemo(() => {
+        const engine = gobanController?.goban?.engine;
+        if (!reviewData || !engine) {
+            return null;
+        }
+        return reviewData.categorize(engine);
+    }, [reviewData, gobanController, updateCount]);
+
+    /**
+     * Map of trunk move number to its AI review quality classification,
+     * used to badge the played move on the board.
+     */
+    const moveCategoryMap = useMemo((): Map<number, AIQualityMark> | null => {
+        if (!categorization) {
+            return null;
+        }
+        const map = new Map<number, AIQualityMark>();
+        for (const player of ["black", "white"] as const) {
+            const categorized = categorization.categorized_moves[player];
+            for (const category of Object.keys(categorized) as (keyof typeof categorized)[]) {
+                for (const move_number of categorized[category]) {
+                    map.set(move_number, category.toLowerCase() as AIQualityMark);
+                }
+            }
+        }
+        return map;
+    }, [categorization]);
 
     /**
      * Retrieves AI review entries for the current variation branch
@@ -280,7 +324,7 @@ export function AIReview({
     }, [reviewData, move, updateCount]);
 
     /**
-     * Updates the board visualization with AI analysis marks, heatmaps, and colored circles
+     * Updates the board visualization with AI analysis marks and colored circles
      * @returns Tuple of [win_rate, score] for current position
      */
     const updateHighlightsMarksAndHeatmaps = useCallback((): [number, number] => {
@@ -292,7 +336,6 @@ export function AIReview({
         let ai_review_move: JGOFAIReviewMove | undefined;
         let win_rate: number;
         let score: number;
-        let next_move: MoveTree | null = null;
         const cur_move = move;
         const trunk_move = cur_move.getBranchPoint();
         const move_number = trunk_move.move_number;
@@ -335,27 +378,83 @@ export function AIReview({
             }
         }
 
+        // Marks are written to the engine's current move. When the engine has
+        // already navigated away from the move this render is for (rapid
+        // navigation, or an update landing mid-jump), writing would smear this
+        // move's marks onto another node; skip, the effect for the new move
+        // will redraw.
+        if (goban.engine.cur_move.id !== cur_move.id) {
+            return [win_rate, score];
+        }
+
+        // Clear this move's previous AI marks so marks from earlier updates
+        // (a different branch set, toggled options, stray writes) don't
+        // accumulate under the fresh ones
+        cur_move.clearAIMarks();
+
+        // The board display of the review is off: the panel keeps its win
+        // rate, chart and table, but nothing is drawn on the board
+        if (!showOnBoard) {
+            goban.setHeatmap(undefined, true);
+            goban.setColoredCircles([], true);
+            goban.redraw(true);
+            return [win_rate, score];
+        }
+
         let marks: { [mark: string]: string } = {};
-        let heatmap: Array<Array<number>> | null = null;
         let colored_circles: ColoredCircle[] = [];
 
         try {
             if ((cur_move.trunk || have_variation_results) && ai_review_move) {
-                next_move = cur_move.trunk_next || null;
+                // The move played from this position, shown as an outlined
+                // circle. Clicking it follows the trunk to the next move.
+                const played_move = cur_move.trunk_next || null;
 
-                // Use the extracted heatmap generator
+                // Positional fallback delta shown on the played move when it
+                // is not among the analyzed branches
+                let played_move_delta: number | null = null;
+                if (played_move) {
+                    const next_review_move = reviewData.moves[played_move.move_number];
+                    const next_win_rate =
+                        next_review_move?.win_rate ?? win_rates[played_move.move_number];
+                    const next_score = next_review_move?.score ?? scores[played_move.move_number];
+
+                    if (
+                        useScore &&
+                        !!reviewData.scores &&
+                        ai_review_move.score !== undefined &&
+                        next_score !== undefined
+                    ) {
+                        played_move_delta =
+                            played_move.player === JGOFNumericPlayerColor.WHITE
+                                ? ai_review_move.score - next_score
+                                : next_score - ai_review_move.score;
+                    } else if (next_win_rate !== undefined) {
+                        played_move_delta =
+                            100 *
+                            (played_move.player === JGOFNumericPlayerColor.WHITE
+                                ? ai_review_move.win_rate - next_win_rate
+                                : next_win_rate - ai_review_move.win_rate);
+                    }
+                }
+
+                // Use the extracted marks generator
                 const result = generateHeatmapAndMarks({
                     ai_review_move,
-                    next_move,
+                    played_move,
                     cur_move,
+                    played_move_category: played_move
+                        ? (moveCategoryMap?.get(played_move.move_number) ?? null)
+                        : null,
+                    played_move_delta,
                     goban,
                     strength: reviewData.strength,
                     useScore,
                     hasScores: !!reviewData.scores,
+                    show_visit_counts: showVisitCounts,
                 });
 
                 marks = result.marks;
-                heatmap = result.heatmap;
                 colored_circles = result.colored_circles;
             } else {
                 if (!cur_move.trunk) {
@@ -377,14 +476,24 @@ export function AIReview({
 
         try {
             goban.setMarks(marks, true, true);
-            goban.setHeatmap(heatmap || undefined, true);
+            goban.setHeatmap(undefined, true);
             goban.setColoredCircles(colored_circles, false);
         } catch (e) {
             errorLogger(e);
         }
 
         return [win_rate, score];
-    }, [reviewData, gobanController, move, useScore, updateCount]);
+    }, [
+        reviewData,
+        gobanController,
+        move,
+        useScore,
+        showVisitCounts,
+        showOnBoard,
+        updateCount,
+        moveCategoryMap,
+        theme,
+    ]);
 
     /**
      * Requests AI analysis for a specific variation branch
@@ -436,11 +545,6 @@ export function AIReview({
         }
     }, [reviewData, hidden, move, updateHighlightsMarksAndHeatmaps, updateCount]);
 
-    // Update table data when dependencies change
-    useEffect(() => {
-        calculateAndUpdateTableData();
-    }, [calculateAndUpdateTableData]);
-
     // Prepare data for rendering
     const [win_rate, score] = winRateScore;
 
@@ -453,6 +557,13 @@ export function AIReview({
         })) || [];
 
     const ai_review_chart_variation_entries = getVariationReviewEntries();
+
+    // Chart dots sit on the positions the highlighted moves are reviewed from
+    const highlighted_moves =
+        currentPopupMoves.length > 0
+            ? currentPopupMoves
+            : worst_move_list.slice(0, WORST_MOVES_SHOWN).map((m) => m.move_number);
+    const highlighted_positions = highlighted_moves.map(reviewPositionOfMove);
 
     const cur_move = move;
     const trunk_move = cur_move.getBranchPoint();
@@ -478,11 +589,12 @@ export function AIReview({
 
     // Handle hidden or no review data states
     if (!reviewData || hidden) {
-        // Still render GameTimings via FairPlayGameSummary if showGameTimings is true
-        // All CMs (anyone with moderator_powers) can see GameTimings
-        const canShowTimings =
-            !hidden &&
-            showGameTimings &&
+        // The fair play summary follows the moderator tools alone: it shows
+        // while they are open whether or not the AI review is enabled, and
+        // the Timing toggle adds the per-move timings to it. All CMs (anyone
+        // with moderator_powers) can see it.
+        const canShowFairPlay =
+            showFairPlay &&
             (user.is_moderator || (user.moderator_powers ?? 0) !== 0) &&
             gobanController?.goban?.engine?.config?.black_player_id &&
             gobanController?.goban?.engine?.config?.white_player_id;
@@ -500,7 +612,7 @@ export function AIReview({
                         <i className="fa fa-desktop slowstrobe"></i>
                     </div>
                 )}
-                {canShowTimings && (
+                {canShowFairPlay && (
                     <FairPlayGameSummary
                         game_id={game_id}
                         black_player_id={gobanController.goban!.engine.config.black_player_id!}
@@ -557,20 +669,14 @@ export function AIReview({
                                 variation_move_number={variation_move_number}
                                 set_move={(num: number) => gobanController.gotoMove(num)}
                                 use_score={useScore}
-                                highlighted_moves={
-                                    currentPopupMoves.length > 0
-                                        ? currentPopupMoves
-                                        : worst_move_list
-                                              .slice(0, WORST_MOVES_SHOWN)
-                                              .map((m) => m.move_number - 1)
-                                }
+                                highlighted_moves={highlighted_positions}
                             />
 
                             <div className="worst-moves-container">
                                 <WorstMovesList
                                     moves={worst_move_list}
                                     onMoveClick={(moveNumber) =>
-                                        gobanController.gotoMove(moveNumber)
+                                        gobanController.gotoMove(reviewPositionOfMove(moveNumber))
                                     }
                                     maxMovesShown={WORST_MOVES_SHOWN}
                                 />
@@ -589,9 +695,7 @@ export function AIReview({
                             {reviewData?.engine.includes("katago") &&
                                 gobanController?.goban?.engine && (
                                     <SummaryTable
-                                        categorization={reviewData?.categorize(
-                                            gobanController.goban.engine,
-                                        )}
+                                        categorization={categorization}
                                         table_hidden={tableHidden}
                                         onPopupMovesChange={(moves) => {
                                             setCurrentPopupMoves(moves);
@@ -624,8 +728,10 @@ export function AIReview({
                                 />
                             )}
 
-                            {/* All CMs (anyone with moderator_powers) can see GameTimings via FairPlayGameSummary */}
-                            {(!tableHidden || showGameTimings) &&
+                            {/* The fair play summary follows the moderator tools alone;
+                                the Timing toggle adds the per-move timings. All CMs
+                                (anyone with moderator_powers) can see it. */}
+                            {showFairPlay &&
                                 (user.is_moderator || (user.moderator_powers ?? 0) !== 0) &&
                                 gobanController?.goban?.engine?.config?.black_player_id &&
                                 gobanController?.goban?.engine?.config?.white_player_id && (
@@ -639,19 +745,15 @@ export function AIReview({
                                         }
                                         board_size={gobanController.goban!.engine.width}
                                         currentMoveNumber={move.move_number - 1}
-                                        moves={showGameTimings ? moves : undefined}
-                                        start_time={showGameTimings ? start_time : undefined}
-                                        end_time={showGameTimings ? end_time : undefined}
-                                        free_handicap_placement={
-                                            showGameTimings ? free_handicap_placement : undefined
-                                        }
-                                        handicap={showGameTimings ? handicap : undefined}
-                                        simul_black={showGameTimings ? simul_black : undefined}
-                                        simul_white={showGameTimings ? simul_white : undefined}
+                                        moves={moves}
+                                        start_time={start_time}
+                                        end_time={end_time}
+                                        free_handicap_placement={free_handicap_placement}
+                                        handicap={handicap}
+                                        simul_black={simul_black}
+                                        simul_white={simul_white}
                                         ai_review_uuid={selectedAiReview?.uuid}
-                                        onFinalActionCalculated={
-                                            showGameTimings ? onFinalActionCalculated : undefined
-                                        }
+                                        onFinalActionCalculated={onFinalActionCalculated}
                                     />
                                 )}
                         </React.Fragment>

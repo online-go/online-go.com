@@ -1,0 +1,8 @@
+.KibitzVariationSwatch {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 0.15rem;
+    border: 1px solid var(--shade3);
+}

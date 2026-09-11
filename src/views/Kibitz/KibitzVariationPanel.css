@@ -1,0 +1,36 @@
+.KibitzVariationPanel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .KibitzVariationPanel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+
+        .KibitzVariationPanel-title {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+    }
+
+    .KibitzVariationPanel-moveTree {
+        height: 10em;
+        background-color: #888888;
+        border-radius: 0.2em;
+    }
+
+    .KibitzVariationPanel-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+
+        .KibitzVariationComposer {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+    }
+}

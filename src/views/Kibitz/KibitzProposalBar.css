@@ -41,7 +41,7 @@
     .proposal-proposer-avatar,
     .proposal-voter-avatar {
         align-items: center;
-        background: rgba(0, 0, 0, 0.18);
+        background: color-mix(in srgb, var(--colored-background-fg) 18%, transparent);
         border: 0;
         color: var(--colored-background-fg);
         display: inline-flex;
@@ -72,7 +72,7 @@
     }
 
     .proposal-summary-prefix {
-        color: rgba(255, 255, 255, 0.88);
+        color: color-mix(in srgb, var(--colored-background-fg) 88%, transparent);
         font-size: 0.78rem;
         line-height: 1.1;
         min-width: 0;
@@ -93,7 +93,7 @@
     }
 
     .proposal-game-meta {
-        color: rgba(255, 255, 255, 0.84);
+        color: color-mix(in srgb, var(--colored-background-fg) 84%, transparent);
         font-size: 0.76rem;
         line-height: 1.1;
     }
@@ -138,7 +138,7 @@
     }
 
     .proposal-choice-label {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 0.74rem;
         font-weight: bold;
         letter-spacing: 0.03em;
@@ -155,7 +155,7 @@
     .proposal-vote-count {
         align-items: center;
         background: var(--shade1);
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         display: inline-flex;
         flex: 0 0 auto;
         font-size: 0.76rem;
@@ -196,42 +196,23 @@
 
     .proposal-voter-avatar-overflow {
         background: var(--shade1);
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         min-width: 1.45rem;
     }
 
     .proposal-vote-empty {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 0.72rem;
         line-height: 1.1;
         min-height: 1.25rem;
     }
 
     .proposal-action {
-        background: var(--shade2);
-        border: 0;
-        box-shadow: none;
-        color: var(--fg);
-        cursor: pointer;
-        font-size: 0.82rem;
-        font-weight: bold;
-        line-height: 1;
         margin-top: auto;
         min-height: 2.1rem;
         min-width: 0;
-        padding: 0.5rem 0.7rem;
         white-space: nowrap;
         width: 100%;
-    }
-
-    .proposal-action.primary {
-        background: var(--primary);
-        color: var(--colored-background-fg);
-    }
-
-    .proposal-action.secondary {
-        background: var(--shade2);
-        color: var(--fg);
     }
 
     .proposal-preview-toggle {
@@ -260,14 +241,14 @@
         width: var(--proposal-preview-size);
     }
 
-    .proposal-preview-thumb .KibitzBoard {
+    .proposal-preview-thumb .KibitzBoardPreview {
         height: 100%;
         width: 100%;
     }
 
-    .proposal-preview-thumb .KibitzBoard .goban-container {
-        height: 100% !important;
-        width: 100% !important;
+    .proposal-preview-thumb .KibitzBoardPreview .goban-container {
+        height: 100%;
+        width: 100%;
     }
 
     .proposal-timer-spine {
@@ -289,7 +270,7 @@
     }
 
     .proposal-timer-label {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 0.66rem;
         font-weight: bold;
         letter-spacing: 0.04em;
@@ -307,9 +288,12 @@
         width: 0.22rem;
     }
 
+    /* The component writes the remaining share of the vote window to
+       --proposal-timer-ratio; each layout scales the fill along its own axis. */
     .proposal-timer-fill {
         background: var(--primary);
         flex: 1 1 auto;
+        transform: scaleY(var(--proposal-timer-ratio, 0));
         transform-origin: bottom center;
         transition: transform 180ms linear;
         width: 100%;
@@ -348,7 +332,7 @@
     }
 
     .proposal-expanded-preview-meta {
-        color: var(--text-color-faded);
+        color: var(--text-dimmed);
         font-size: 0.74rem;
         line-height: 1.2;
     }
@@ -373,14 +357,14 @@
         min-width: 0;
     }
 
-    .proposal-expanded-board-wrap .KibitzBoard {
+    .proposal-expanded-board-wrap .KibitzBoardPreview {
         height: min(17rem, 58vw);
         width: min(17rem, 58vw);
     }
 
-    .proposal-expanded-board-wrap .KibitzBoard .goban-container {
-        height: 100% !important;
-        width: 100% !important;
+    .proposal-expanded-board-wrap .KibitzBoardPreview .goban-container {
+        height: 100%;
+        width: 100%;
     }
 }
 
@@ -444,7 +428,7 @@
             width: 2.8rem;
         }
 
-        .proposal-preview-thumb .KibitzBoard {
+        .proposal-preview-thumb .KibitzBoardPreview {
             height: 2.8rem;
             width: 2.8rem;
         }
@@ -456,7 +440,7 @@
 
         .proposal-timer-fill {
             height: 100%;
-            transform: none !important;
+            transform: scaleX(var(--proposal-timer-ratio, 0));
             transform-origin: left center;
             width: 100%;
         }
@@ -473,7 +457,7 @@
             align-self: flex-start;
         }
 
-        .proposal-expanded-board-wrap .KibitzBoard {
+        .proposal-expanded-board-wrap .KibitzBoardPreview {
             height: min(15rem, 74vw);
             width: min(15rem, 74vw);
         }
