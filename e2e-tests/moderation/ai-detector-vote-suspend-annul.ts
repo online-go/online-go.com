@@ -52,8 +52,7 @@ import {
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
 import { playMoves, waitForGameViewReady } from "@helpers/game-utils";
-import { expectOGSClickableByName } from "@helpers/matchers";
-import { withIncidentIndicatorLock } from "@helpers/report-utils";
+import { submitReportVote, withIncidentIndicatorLock } from "@helpers/report-utils";
 import { log } from "@helpers/logger";
 
 export const aiDetectorVoteSuspendAndAnnulTest = async (
@@ -101,6 +100,7 @@ export const aiDetectorVoteSuspendAndAnnulTest = async (
 
         await createDirectChallenge(reporterPage, reportedUsername, {
             ...defaultChallengeSettings,
+            ranked: false,
             gameName: "E2E AI Detector Test Game",
             boardSize: boardSize,
             speed: "live",
@@ -219,18 +219,8 @@ export const aiDetectorVoteSuspendAndAnnulTest = async (
         log("Selected 'Suspend AI user, annul cheated games' action ✓");
 
         // Click the Vote button to submit the vote
-        const voteButton = await expectOGSClickableByName(aiDetectorPage, /^Vote$/);
-        await expect(voteButton).toBeVisible();
-        await expect(voteButton).toBeEnabled();
-        await voteButton.click();
+        await submitReportVote(aiDetectorPage);
         log("Vote submitted ✓");
-
-        // Wait for vote to be processed - check that Vote button is disabled or hidden
-        await expect(voteButton)
-            .toBeDisabled({ timeout: 5000 })
-            .catch(() => {
-                // Button might be hidden instead of disabled
-            });
 
         // 7. Set up moderator to verify suspension
         log("Setting up E2E_MODERATOR to verify suspension...");

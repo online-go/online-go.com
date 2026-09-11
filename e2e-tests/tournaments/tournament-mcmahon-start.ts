@@ -168,7 +168,14 @@ export const tournamentMcMahonStartTest = async ({
         await expect(playerPages[i].getByText("E2E McMahon Test").first()).toBeVisible();
 
         const joinButton = await expectOGSClickableByName(playerPages[i], /Join this tournament!/);
-        await joinButton.click();
+        const joined = playerPages[i].waitForResponse(
+            (response) =>
+                new URL(response.url()).pathname.match(/\/api\/v1\/tournaments\/\d+\/players$/) !==
+                    null && response.request().method() === "POST",
+        );
+        const [response] = await Promise.all([joined, joinButton.click()]);
+        expect(response.ok()).toBe(true);
+        await playerPages[i].reload();
 
         // Verify player joined - the "Drop out" button should now be visible
         await expect(

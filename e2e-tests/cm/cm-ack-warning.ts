@@ -43,10 +43,9 @@ import {
     setupSeededCM,
 } from "@helpers/user-utils";
 
-import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
 
-import { withReportCountTracking } from "@helpers/report-utils";
+import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
 
 export const cmAckWarningTest = async (
     {
@@ -94,8 +93,7 @@ export const cmAckWarningTest = async (
         // Select the "no AI use, educate reporter" option...
         await aiCMPage.locator('input[value="no_ai_use_bad_report"]').click();
 
-        const voteButton = await expectOGSClickableByName(aiCMPage, /Vote$/);
-        await voteButton.click();
+        await submitReportVote(aiCMPage);
 
         // The reporter should be warned about their crummy report
         await reporterPage.goto("/");

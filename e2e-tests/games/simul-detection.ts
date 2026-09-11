@@ -180,7 +180,7 @@ export const simulDetectionTest = async (
 
     // Check that simul indicator IS visible (because game 1 was running when game 2 ended)
     log("Checking that simul indicator IS visible...");
-    const simulWarning = aiDetectorPage.locator(".simul-warning");
+    const simulWarning = aiDetectorPage.locator(".simul-warning:visible").first();
     await expect(simulWarning).toBeVisible({ timeout: 15000 });
     await expect(simulWarning).toContainText("Simul");
     log("Simul indicator is visible as expected!");

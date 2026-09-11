@@ -9,7 +9,9 @@ When creating e2e tests, note that:
 
 - When entering inputs, include a check to make sure the input was accepted before proceeding to the next action.
 
-- Any actions involving looking at reports should be wrapped in `withIncidentIndicatorLock`, and should check that there are no open reports at the start, so that debug of "already open reports" is easy.
+- Submit moderation votes with `submitReportVote`. It waits for the server response before navigation or context cleanup can cancel the request.
+
+- Wrap report scenarios in `withReportCountTracking` or `withIncidentIndicatorLock` for their timeout and logging. These wrappers do not serialize tests. Select reports by their full ID and count only reports owned by the test's reporter. Other workers can have open reports.
 
 (The problem is that tests can fail if the wrong number of reports is open, due to previously failed tests)
 
@@ -23,7 +25,7 @@ When creating e2e tests, note that:
 
 - The string argument of `newTestUsername` is length-checked at call time against a limit derived from the server's 30-char username cap (currently 18 chars, after subtracting the `e2e` prefix, the underscore, the suffix, and worker-index space). The exact value is computed in `helpers/user-utils.ts`; keep the role short and descriptive (e.g. `ERPBAcc`, `LWARNOth`) so the generated username is readable in logs
 
-- Avoid direct API calls - the intent of e2e testing is to test by driving the system as a user does.
+- Drive the behavior under test through the UI. Account fixture setup may use the API; `registerNewUser` and `loginAsUser` retain UI coverage of registration and login. Read-only API checks may wait for persisted state, such as a finished game, instead of fixed sleeps. Do not use the API to perform the action being tested.
 
 - We do all our testing in English, we don't have to worry about pgettext
 

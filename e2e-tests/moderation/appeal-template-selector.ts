@@ -55,7 +55,7 @@ import {
 } from "@helpers/challenge-utils";
 import { playMoves, waitForGameViewReady } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
-import { withIncidentIndicatorLock } from "@helpers/report-utils";
+import { submitReportVote, withIncidentIndicatorLock } from "@helpers/report-utils";
 import { log } from "@helpers/logger";
 
 export const appealTemplateSelectorTest = async (
@@ -102,6 +102,7 @@ export const appealTemplateSelectorTest = async (
 
         await createDirectChallenge(reporterPage, reportedUsername, {
             ...defaultChallengeSettings,
+            ranked: false,
             gameName: "E2E Appeal Template Test Game",
             boardSize: boardSize,
             speed: "live",
@@ -199,16 +200,8 @@ export const appealTemplateSelectorTest = async (
         await expect(suspendRadio).toBeChecked();
         log("Selected suspend action ✓");
 
-        const voteButton = await expectOGSClickableByName(aiDetectorPage, /^Vote$/);
-        await voteButton.click();
+        await submitReportVote(aiDetectorPage);
         log("Vote submitted ✓");
-
-        // Wait for vote to be processed - check that Vote button is disabled or hidden
-        await expect(voteButton)
-            .toBeDisabled({ timeout: 5000 })
-            .catch(() => {
-                // Button might be hidden instead of disabled
-            });
 
         // Wait for the reporter to receive the suspension notification via websocket push.
         // This confirms the suspension has been fully processed before we check the

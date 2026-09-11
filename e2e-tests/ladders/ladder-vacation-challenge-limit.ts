@@ -43,15 +43,6 @@ import { setupSeededUser } from "@helpers/user-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { log } from "@helpers/logger";
 
-const LADDER_PLAYERS = [
-    "E2E_LADDER_P1",
-    "E2E_LADDER_P2",
-    "E2E_LADDER_P3",
-    "E2E_LADDER_P4",
-    "E2E_LADDER_P5",
-    "E2E_LADDER_P6",
-];
-
 /** Open a ladder row's popover by the player's username. */
 const openRowPopover = async (page: Page, username: string) => {
     const row = page.locator(".LadderRow").filter({ hasText: username });
@@ -165,9 +156,14 @@ export const ladderVacationChallengeLimitTest = async (
 
     log("=== Ladder Vacation Challenge Limit Test ===");
 
+    const ladderPlayers = Array.from(
+        { length: 6 },
+        (_, index) => `E2E_LADDER_${testInfo.parallelIndex}_P${index + 1}`,
+    );
+
     // 1. Sign in all six seeded players.
     const pages: Page[] = [];
-    for (const username of LADDER_PLAYERS) {
+    for (const username of ladderPlayers) {
         const { userPage } = await setupSeededUser(createContext, username);
         pages.push(userPage);
     }
@@ -211,6 +207,7 @@ export const ladderVacationChallengeLimitTest = async (
         // Find the 9x9 ladder URL from the group page.
         const ladderLink = p1Page.getByRole("link", { name: "9x9 Ladder" });
         await expect(ladderLink).toBeVisible();
+        await expect(ladderLink).toHaveAttribute("href", /\/ladder\/\d+$/);
         const ladderHref = await ladderLink.getAttribute("href");
         ladderUrl = ladderHref as string;
         log(`9x9 ladder at: ${ladderUrl}`);
@@ -219,13 +216,14 @@ export const ladderVacationChallengeLimitTest = async (
         //    ladder rank, so P6 ends up at the bottom.
         for (let i = 0; i < pages.length; i++) {
             const page = pages[i];
-            const username = LADDER_PLAYERS[i];
+            const username = ladderPlayers[i];
 
             if (i > 0) {
                 // P1 created the group and is already a member.
                 await page.goto(groupUrl);
                 const joinGroup = await expectOGSClickableByName(page, /Join Group/);
                 await joinGroup.click();
+                await expect(page.getByRole("button", { name: /Leave Group/ })).toBeVisible();
             }
 
             await page.goto(ladderUrl);
@@ -240,14 +238,14 @@ export const ladderVacationChallengeLimitTest = async (
         // 4. P6 challenges P1, P2 and P3 - three open games, at the cap.
         //    challengePlayer navigates first, so each challenge starts from a fresh
         //    page: creating one invalidates the ladder list behind the popover.
-        for (const username of ["E2E_LADDER_P1", "E2E_LADDER_P2", "E2E_LADDER_P3"]) {
+        for (const username of ladderPlayers.slice(0, 3)) {
             await challengePlayer(p6Page, ladderUrl, username);
             log(`P6 challenged ${username}`);
         }
 
         // P4 is now blocked by the cap.
         await p6Page.goto(ladderUrl);
-        await openRowPopover(p6Page, "E2E_LADDER_P4");
+        await openRowPopover(p6Page, ladderPlayers[3]);
         await expect(p6Page.getByText("Already playing 3 games you've initiated")).toBeVisible({
             timeout: 15000,
         });
@@ -258,7 +256,7 @@ export const ladderVacationChallengeLimitTest = async (
         log("P5 is on vacation");
 
         await p6Page.goto(ladderUrl);
-        await openRowPopover(p6Page, "E2E_LADDER_P5");
+        await openRowPopover(p6Page, ladderPlayers[4]);
         await expect(p6Page.getByText("Player is on vacation")).toBeVisible({ timeout: 15000 });
         log("P5 reports 0x009 - a player on vacation cannot be challenged");
 
@@ -267,20 +265,20 @@ export const ladderVacationChallengeLimitTest = async (
         log("P1 is on vacation");
 
         await p6Page.goto(ladderUrl);
-        await openRowPopover(p6Page, "E2E_LADDER_P4");
+        await openRowPopover(p6Page, ladderPlayers[3]);
         const challengeP4 = await expectOGSClickableByName(p6Page, /^Challenge$/);
         await expect(challengeP4).toBeVisible();
         log("P4 is challengeable again - the vacation discount applied");
 
         // 7. P6 challenges P4 - four open games, three counting.
-        await challengePlayer(p6Page, ladderUrl, "E2E_LADDER_P4");
+        await challengePlayer(p6Page, ladderUrl, ladderPlayers[3]);
         log("P6 challenged P4");
 
         // 8. P5 comes back: the vacation reason gives way to the cap reason. P6
         //    holds four open games and P1 is still away, so three of them count.
         await setVacation(p5Page, false);
         await p6Page.goto(ladderUrl);
-        await openRowPopover(p6Page, "E2E_LADDER_P5");
+        await openRowPopover(p6Page, ladderPlayers[4]);
         await expect(p6Page.getByText("Already playing 3 games you've initiated")).toBeVisible({
             timeout: 15000,
         });
@@ -292,7 +290,7 @@ export const ladderVacationChallengeLimitTest = async (
         //    is the row that must now report the cap.
         await setVacation(p1Page, false);
         await p6Page.goto(ladderUrl);
-        await openRowPopover(p6Page, "E2E_LADDER_P5");
+        await openRowPopover(p6Page, ladderPlayers[4]);
         await expect(p6Page.getByText("Already playing 4 games you've initiated")).toBeVisible({
             timeout: 15000,
         });
@@ -300,7 +298,7 @@ export const ladderVacationChallengeLimitTest = async (
 
         log("=== Ladder Vacation Challenge Limit Test Complete ===");
     } finally {
-        // 10. P1 and P5 are shared seeded accounts reused by every run of this test.
+        // 10. P1 and P5 are reused by this worker. Restore their vacation state.
         //     If an assertion above failed before steps 8/9 turned their vacation
         //     back off, leaving either on vacation would break every subsequent run
         //     (a player already on vacation cannot be challenged at all - the very

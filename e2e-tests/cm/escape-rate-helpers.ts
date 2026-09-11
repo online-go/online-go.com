@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { submitReportVote } from "@helpers/report-utils";
 import { Page } from "@playwright/test";
 import { expect } from "@playwright/test";
-import { log } from "@helpers/logger";
 import {
     acceptDirectChallenge,
     createDirectChallenge,
@@ -25,7 +25,6 @@ import {
 } from "@helpers/challenge-utils";
 import { playMoves, waitForGameViewReady } from "@helpers/game-utils";
 import { captureReportNumber, navigateToReport, reportPlayerByColor } from "@helpers/user-utils";
-import { expectOGSClickableByName } from "@helpers/matchers";
 
 /**
  * Play a 9x9 game between reporter (black) and accused (white),
@@ -75,14 +74,19 @@ export async function playAndFinishGame(
 
     await expect(reporterPage.getByText("wins by")).toBeVisible();
 
-    // Five sequential games + reports overload the dev stack: the server's
-    // Game.ended write trails behind the WS phase-finished event the goban
-    // already rendered, so the next escaping report on this game gets
-    // rejected by moderate.py:714-725 (HTTP 400). A deliberate 30 s pause
-    // lets the post-game pipeline (WS → DB write, queue drain) quiesce
-    // before we move on. Heavy but reliable; see e2e-tests/AGENTS.md.
-    log(`[cm-escape-rate-display] Game ${gameIndex} ended — pausing 30 s to quiesce`);
-    await reporterPage.waitForTimeout(30000);
+    const gameId = new URL(reporterPage.url()).pathname.match(/\/game\/(\d+)/)?.[1];
+    expect(gameId).toBeDefined();
+    await expect
+        .poll(
+            async () => {
+                const response = await reporterPage.request.get(`/api/v1/games/${gameId}`);
+                await expect(response).toBeOK();
+                const game: { ended: string | null } = await response.json();
+                return game.ended;
+            },
+            { message: "Game completion is persisted before reporting", timeout: 30000 },
+        )
+        .toBeTruthy();
 }
 
 /**
@@ -113,8 +117,7 @@ export async function reportAndVote(
     for (const cmPage of cmPages) {
         await navigateToReport(cmPage, reportNumber);
         await cmPage.locator(`input[value="${voteAction}"]`).click();
-        const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
-        await voteButton.click();
+        await submitReportVote(cmPage);
     }
 
     return reportNumber;

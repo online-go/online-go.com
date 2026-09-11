@@ -1,211 +1,79 @@
-# Table of Contents
-
-- [Overview](#overview)
-    - [Default tests to run](#default-tests-to-run)
-
-- [Smoke Tests](#smoke-tests)
-    - [Debugging failed CI e2e tests](#debugging-failed-ci-e2e-tests)
-    - [Updating the screenshots](#updating-the-screenshots)
-
-- [Writing Tests](#writing-tests)
-    - [Multi-user tests](#multi-user-tests)
-    - [Seeded Data](#seeded-data)
-
-- [yarn targets](#yarn-targets)
-    - `test:e2e`
-    - `test:e2e:quick`
-    - `test:e2e:smoke`
-    - `test:e2e:ui`
-    - `test:e2e:debug`
-    - `test:ci`
-    - `test:e2e:docker`
-    - `test:e2e:docker:smoke`
-
-# Overview
-
-In this folder we have Playwright-based End to End testing (PW: Playwright)
-
-There are two main "kinds" of tests:
-
-- "Smoke tests", which we run in the CI on every PR
-    - These are intended to be quick to run, and just make sure things are not totally broken
-    - They block a PR
-
-- "Full Tests", which are run on the e2e testing server on each merge to main.
-    - These are intended to grow to cover as much as possible
-    - They are non-blocking
-
-Some individual "Full Tests" are particularly slow: these are marked by the @Slow PW tag.
-
-Slow tests are skipped by the yarn "test:e2e:quick" target.
-
-- Note that it's still not especially quick, what do you expect? 😝
-
-## Default tests to run
-
-Our PW config is set up so that if the environment variable `CI` is set, then Smoke Tests run,
-otherwise "all the non smoke tests" are run.
-
-# Smoke Tests
-
-The "Smoke Tests" have to be run in a docker, because they contain screenshot-based tests, which need an identical OS & Browser in order to pass.
-
-## Debugging failed CI e2e tests
-
-Playwright writes useful stuff when tests fail - screenshots and an activity log.
-
-If the e2e test fails in the CI, it stores this stuff - a link is provided in the CI build log.
-
-You find this by:
-
-- clicking on the `Test/playwright` link in the Github test report,
-- then finding the "Upload e2e results" section, click that open
-- click on the "Download results" link.
-
-## Updating the screenshots
-
-If you need to update the screenshots, the easiest thing to do is
-
-- Delete the reference screenshots from the folder in e2e-tests/smoke/smoketests.spec.ts-snapshots
-
-- Run `yarn test:e2e:smoke`
-
-It will say it failed - and it will have generated new screenshots for you.
-
-If you run it again, it should pass. You can commit the screenshots and that's it.
-
-# Writing and Running Tests
-
-## Install Playwright
-
-You'll need to install Playwright.
-
-`yarn create playwright`
-
-Tell it that the folder is e2e-tests, you do want the browsers installed but you do _not_ want to reset the config.
-
-## Running Tests
-
-We have yarn targets for running tests.
-
-In development, the best is `yarn test:e2e:ui` , which opens the PW UI and lets you choose tests to run and watch them running.
-
-Other yarn targets are listed below.
-
-You need the dev server running - the playwright tests run against that (except where noted)
-
-## Writing Tests
-
-It's probably best to find a test that is like the one you want to write and see how it's done.
-
-Many of our e2e tests are written by Claude (AI). It does a very good job, with a bit of oversight and "steering".
-
-You're welcome to submit AI-written tests, as long as you have validated that they do what we expect.
-
-It's worth checking the [AGENTS file](AGENTS.md) for the advice we give Claude - it may help you also.
-
-Things of note:
-
-- Playwright has a "search path" that picks up \*\*_/\*_.spec.ts
-- The \*\* are used by us to group tests into "functional things under test"
-- Each "functional set" has single spec.ts file in the folder called
-
-    `func`/`function.spec.ts`
-
-- This includes the individual tests, each of which is in its own file: NOT a .spec.ts file.
-- Each .spec.ts file provides Playwright `@tag` for the set of tests, which is useful for selecting those tests only on the command line.
-- Individual tests that have to wait a long time have a `@Slow` tag
-- Which should not be taken to mean that the other tests are quick 😝
-
-- Playwright tests use a "test fixture" typically called `test`.
-    - We have a subclassed version of this `ogsTest`
-        - it adds checking at the end of each test that no `ErrorBoundary` appeared
-
-A suitable "regression test" for any change you make is
-
-`yarn test:e2e:quick`
-
-If an unrelated test fails, it's worth running it again on its own, because if the Beta server gets overpowered by e2e testing,
-some fragility in the tests can cause failure. This typically is resolved by running it on its own.
-
-`yarn test:e2e:quick --grep "target test description"`
-
-(The e2e testing server has retries and other strategies for dealing with this)
-
-<details>
-<summary> What? Fragile?</summary>
-
-Yes, it's hard to accept that some tests are fragile. It turns out that the way React hydrates and refreshes is actually
-susceptible to this, it's proved hard to eliminate. Any assistance with that more than welcome!
-
-</details>
-
-## Multi-user tests
-
-- user-utils.ts provides helper functions for doing multi-user tests.
-    - `prepareNewUser` creates a new browser context with the named new user logged in.
-    - Tests must create their users from fresh each time (except see below)
-    - `newTestUsername` provides a means of creating a unique new username.
-    - It takes as an argument a user-identifier, which is intended to help understand what test
-      and what role this user plays in it.
-    - \*\* _This can be at most 21 characters_
-      unfortunately a run-time failure because typing can't specify this
-        - The reason is because it uses time to generate the uniquifier, and we only have a total
-          of 30 characters to play with in an OGS username! 9 characters gives us unique names at about 1.3 second intervals.
-
-## Seeded Data
-
-- The backend has a function (called init_e2e) that seeds (and re-seeds, to fix broken seeded data) data
-- Tests that use seeded data say so, in comments at the top.
-- Seeded data should not be shared between tests (it creates maintenance nightmares)
-- There is a naming convention for seeded data entities - hopefully obvious.
-
-Why do we need seeded data?
-
-- We can't test "moderator level" features because we can't create moderators via an API
-    - This means that any "test data" that a moderator would put in place has to be seeded in the target DB.
-    - Notably: this is "Community Moderators" - users with CM powers have to be seeded.
-
-# yarn targets
-
-There are various yarn targets that support e2e. See package.json 😝
-
-Worthy of mention are:
-
-    "test:e2e"
-
-Just fires up Playwright to do whatever it does by default. Most useful if you want to add arguments about which individual test to run.
-
-The default will be as described above - based on `CI` environment variable.
-
-    "test:e2e:quick"
-
-Filters out Smoke and Slow tests.
-
-    "test:e2e:smoke"
-
-Runs the Smoke Tests _using a playwright docker to get standard OS and browsers_.
-
-    "test:e2e:ui"
-
-Fires up the PW UI (which will present all the tests as options to run manually)
-
-    "test:e2e:debug"
-
-Fires up the PW UI in debug mode.
-
-    "test:ci"
-
-This is the command run by the CI.
-
-It runs the PW Smoke Test (with PW in a docker) _and_ the jest unit tests.
-
-    "test:e2e:docker": "scripts/run-playwright-in-docker.sh",
-
-This fires up PW to run in the standard docker.
-
-It does NOT set `CI` to be true, so it is a way that you can run non-Smoke tests in the PW docker, if you want to do that for some reason.
-
-    "test:e2e:docker:smoke"
-
-This runs the Smoke Tests from the PW docker.
+# End-to-end tests
+
+Playwright tests exercise user journeys against a running OGS frontend and
+backend. See [the testing guide](../docs/e2e-testing.md) for coverage ownership
+and the runtime target, and [AGENTS.md](AGENTS.md) for test-writing rules.
+
+## Run tests
+
+Install the project dependencies with `yarn`, then install the browser with
+`yarn playwright install --with-deps chromium`. Start the local OGS services and
+seed their test data with the backend's `init_e2e` command. Tests that need a full
+moderator also need `E2E_MODERATOR_PASSWORD`.
+
+| Command                | Selection                                                     |
+| ---------------------- | ------------------------------------------------------------- |
+| `yarn test:e2e`        | Automated browser tests, including `@Slow`                    |
+| `yarn test:e2e:built`  | Same tests against the existing production build              |
+| `yarn test:e2e:quick`  | Excludes `@Slow` as well as manual, visual, and utility tests |
+| `yarn test:e2e:ui`     | Playwright UI                                                 |
+| `yarn test:e2e:debug`  | Playwright debugger                                           |
+| `yarn test:e2e:smoke`  | CI smoke tests in the standard Playwright Docker image        |
+| `yarn test:e2e:docker` | Playwright in the standard Docker image                       |
+| `yarn test:ci`         | Docker smoke tests and Jest tests                             |
+
+Append Playwright arguments, for example:
+
+```sh
+yarn test:e2e --grep 'Acknowledge warnings'
+yarn test:e2e:built --workers=4 --repeat-each=3
+```
+
+`FRONTEND_URL` defaults to `http://localhost:8080`. Full tests run in parallel
+with four workers against the development server, or six with the built runner. Set `E2E_WORKERS` or pass `--workers` to change this. Retries
+are disabled so failures remain visible. `@Manual`, `@Visual`, and `@E2EUtils`
+tests are excluded from automatic runs.
+
+When `CI` is set, the configuration selects only smoke tests and defaults to one
+worker. Smoke screenshots require the standard Docker image.
+
+For the built runner, first run `yarn build`. The development server must still
+be available: the runner uses its resolved HTML template and backend proxy
+configuration. The runner serves the built assets on port 8081 and closes that
+server when Playwright exits. Set `E2E_PREVIEW_PORT` to use another port.
+Development-server checks continue to use the development server. Build time
+and service startup time are separate from browser-suite timing.
+
+## Write tests
+
+Use Jest for component behavior, form permutations, and client logic. Keep
+browser tests for user journeys that need real server integration. Use backend
+normal tests for server policy and time-dependent rules.
+
+Each feature directory has a `.spec.ts` file that registers its scenarios. Use
+the `ogsTest` fixture so browser contexts are closed and rendered error
+boundaries fail the test. Create additional contexts through `createContext`.
+Close a context early when its user has no further work.
+
+`prepareNewUser` creates a unique account and its initial preferences through
+the API. Drive the feature under test through the UI. Registration and login
+forms have separate smoke coverage. Use `newTestUsername` with a short role
+name; the helper checks the role length against the server's username limit.
+
+Seeded accounts supply privileges that ordinary users cannot grant. Do not
+share mutable scenario data. Report tests must navigate by their full report
+ID and count their reporter's own reports. A moderator's global queue can
+change while another worker runs.
+
+Wait for observable state or request completion. Avoid fixed sleeps, shared
+state files, and process-wide browser cleanup. Do not use retries to hide a
+failure. Inspect the failure trace and reproduce the cause.
+
+## Failure artifacts and screenshots
+
+Playwright retains failure screenshots, traces, and videos when available.
+CI uploads these under the test job's **Upload e2e results** step.
+
+To update smoke screenshots, run the smoke tests with
+`--update-snapshots`, review each changed image, and rerun the smoke tests.
+Commit only the intended reference changes.

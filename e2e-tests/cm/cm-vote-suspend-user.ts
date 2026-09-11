@@ -49,8 +49,7 @@ import {
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
 import { playMoves } from "@helpers/game-utils";
-import { expectOGSClickableByName } from "@helpers/matchers";
-import { withReportCountTracking } from "@helpers/report-utils";
+import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
 import { log } from "@helpers/logger";
 
 export const cmVoteSuspendUserTest = async (
@@ -78,6 +77,7 @@ export const cmVoteSuspendUserTest = async (
     await createDirectChallenge(accusedPage, opponentUsername, {
         ...defaultChallengeSettings,
         gameName: "E2E CM Suspend Test Game",
+        ranked: false,
         boardSize: "9x9",
         speed: "live",
         timeControl: "byoyomi",
@@ -156,9 +156,8 @@ export const cmVoteSuspendUserTest = async (
         await escalatorPage.click('input[value="escalate"]');
         await escalatorPage.fill("#escalation-note", "Repeat offender - needs moderator attention");
 
-        const escalateVoteButton = await expectOGSClickableByName(escalatorPage, /Vote/);
-        await escalateVoteButton.click();
-        await expect(escalateVoteButton).toBeDisabled({ timeout: 10000 });
+        await submitReportVote(escalatorPage);
+        await escalatorPage.context().close();
 
         log("E2E_CM_VSU_V1 escalated the report");
 
@@ -180,9 +179,8 @@ export const cmVoteSuspendUserTest = async (
 
             await voterPage.click('input[value="suspend_user"]');
 
-            const suspendVoteButton = await expectOGSClickableByName(voterPage, /Vote/);
-            await suspendVoteButton.click();
-            await expect(suspendVoteButton).toBeDisabled({ timeout: 10000 });
+            await submitReportVote(voterPage);
+            await voterPage.context().close();
 
             log(`${voter} voted to suspend`);
         }

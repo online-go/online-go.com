@@ -58,7 +58,7 @@ import { playMoves, resignActiveGame } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
 
-import { withReportCountTracking } from "@helpers/report-utils";
+import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
 
 export const cmVoteEscalateSandbaggingTest = async (
     {
@@ -79,10 +79,10 @@ export const cmVoteEscalateSandbaggingTest = async (
         ...defaultChallengeSettings,
         gameName: "E2E SBES Game",
         boardSize: "9x9",
-        speed: "blitz",
+        speed: "live",
         timeControl: "byoyomi",
-        mainTime: "2",
-        timePerPeriod: "2",
+        mainTime: "120",
+        timePerPeriod: "30",
         periods: "1",
     });
 
@@ -156,8 +156,7 @@ export const cmVoteEscalateSandbaggingTest = async (
         // Fill in the escalation note (required for escalation)
         await cmPage.locator("#escalation-note").fill("E2E test escalation note");
 
-        const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
-        await voteButton.click();
+        await submitReportVote(cmPage);
 
         // After the CM votes to escalate, the report should be escalated immediately (unilateral)
         // Unlike other outcomes, escalation does NOT close the report or send an acknowledgement

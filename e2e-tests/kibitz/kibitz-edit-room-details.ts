@@ -20,6 +20,7 @@
 import type { CreateContextOptions } from "@helpers";
 import { BrowserContext, expect } from "@playwright/test";
 import { load } from "@helpers";
+import { expectOGSClickableByName } from "@helpers/matchers";
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
 
 import {
@@ -92,7 +93,7 @@ export const kibitzEditRoomDetailsTest = async ({
 
     // Owner opens the settings popover from the gear in the action bar
     // (KibitzView.tsx, the "kibitz-settings" tab).
-    const gearButton = watcherPage.locator('.GobanView-tab-button[title="Settings"]');
+    const gearButton = watcherPage.locator('.GobanView-tab-button[title="More actions"]');
     await expect(gearButton).toBeVisible({ timeout: 15000 });
     await expect(gearButton).toBeOGSClickable();
     console.log("[kibitz edit-room-details] opening room settings popover as owner");
@@ -103,12 +104,13 @@ export const kibitzEditRoomDetailsTest = async ({
     // further assertions to the popover avoids matching the page header
     // elements (which also contain the room title).
     const popover = watcherPage.locator(".popover-container .KibitzRoomSettingsPopover");
-    await expect(popover).toBeVisible({ timeout: 15000 });
+    const moreMenu = watcherPage.locator(".KibitzMoreActionsPopover");
+    await expect(moreMenu).toBeVisible();
 
     // "Edit room details" is gated on canEditRoom || canDeleteRoom
     // (KibitzRoomSettingsPopover.tsx:179). The room owner has both, so the
     // button must be present.
-    const editDetailsButton = popover.getByRole("button", { name: /^Edit room details$/ });
+    const editDetailsButton = moreMenu.getByRole("button", { name: /Edit room details$/ });
     await expect(editDetailsButton).toBeVisible({ timeout: 15000 });
     await expect(editDetailsButton).toBeOGSClickable();
     await editDetailsButton.click();
@@ -166,8 +168,8 @@ export const kibitzEditRoomDetailsTest = async ({
     // to room.description on open (KibitzRoomSettingsPopover.tsx:53), so the
     // description field will show the saved value if the round-trip worked.
     await gearButton.click();
-    await expect(popover).toBeVisible({ timeout: 15000 });
-    await popover.getByRole("button", { name: /^Edit room details$/ }).click();
+    await expect(moreMenu).toBeVisible();
+    await moreMenu.getByRole("button", { name: /Edit room details$/ }).click();
     await expect(popover.locator("#kibitz-room-description")).toHaveValue(newDescription, {
         timeout: 15000,
     });
@@ -191,11 +193,14 @@ export const kibitzEditRoomDetailsTest = async ({
     await waitForKibitzReady(nonOwnerPage);
     await waitForKibitzLayoutStable(nonOwnerPage);
 
-    const nonOwnerGear = nonOwnerPage.locator('.GobanView-tab-button[title="Settings"]');
+    const nonOwnerGear = nonOwnerPage.locator('.GobanView-tab-button[title="More actions"]');
     await expect(nonOwnerGear).toBeVisible({ timeout: 15000 });
     await expect(nonOwnerGear).toBeOGSClickable();
     await nonOwnerGear.click();
 
+    const nonOwnerMenu = nonOwnerPage.locator(".KibitzMoreActionsPopover");
+    await expect(nonOwnerMenu.getByRole("button", { name: /Edit room details$/ })).toHaveCount(0);
+    await (await expectOGSClickableByName(nonOwnerMenu, /Room information$/)).click();
     const nonOwnerPopover = nonOwnerPage.locator(".popover-container .KibitzRoomSettingsPopover");
     await expect(nonOwnerPopover).toBeVisible({ timeout: 15000 });
 
@@ -203,7 +208,7 @@ export const kibitzEditRoomDetailsTest = async ({
     // toHaveCount(0) is the unambiguous "not present" assertion in Playwright
     // (a bare .not.toBeVisible() also passes when the element is detached,
     // but the count form makes the intent explicit).
-    await expect(nonOwnerPopover.getByRole("button", { name: /^Edit room details$/ })).toHaveCount(
+    await expect(nonOwnerPopover.getByRole("button", { name: /Edit room details$/ })).toHaveCount(
         0,
     );
 

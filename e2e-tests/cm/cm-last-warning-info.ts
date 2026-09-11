@@ -67,19 +67,18 @@ import {
 
 import { playMoves, resignActiveGame } from "@helpers/game-utils";
 
-import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
 
-import { withReportCountTracking } from "@helpers/report-utils";
+import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
 
 const BLITZ_9X9_SETTINGS = {
     ...defaultChallengeSettings,
     gameName: "E2E LWARN Game",
     boardSize: "9x9" as const,
-    speed: "blitz" as const,
+    speed: "live" as const,
     timeControl: "byoyomi" as const,
-    mainTime: "2",
-    timePerPeriod: "2",
+    mainTime: "120",
+    timePerPeriod: "30",
     periods: "1",
 };
 
@@ -201,8 +200,7 @@ export const cmLastWarningInfoTest = async (
                 ).toBeVisible();
 
                 await cmPage.locator('input[value="warn_thrown_game"]').click();
-                const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
-                await voteButton.click();
+                await submitReportVote(cmPage);
                 await cmContext.close();
             }
 
@@ -325,8 +323,7 @@ export const cmLastWarningInfoTest = async (
 
             // V1 is already on the report as verifierPage — vote
             await verifierPage.locator('input[value="warn_thrown_game"]').click();
-            const v1VoteButton = await expectOGSClickableByName(verifierPage, /Vote$/);
-            await v1VoteButton.click();
+            await submitReportVote(verifierPage);
             await verifierContext.close();
 
             // V2 and V3 vote
@@ -337,8 +334,7 @@ export const cmLastWarningInfoTest = async (
                 );
                 await navigateToReport(cmPage, reportBNumber);
                 await cmPage.locator('input[value="warn_thrown_game"]').click();
-                const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
-                await voteButton.click();
+                await submitReportVote(cmPage);
                 await cmContext.close();
             }
 

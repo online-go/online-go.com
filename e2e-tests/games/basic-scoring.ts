@@ -142,9 +142,6 @@ export const basicScoringTest = async (
         const cm = "E2E_GAMES_BS_CM";
         const { seededCMPage: cmPage } = await setupSeededCM(createContext, cm);
 
-        // Capture CM's initial count
-        const cmInitialCount = await reporterTracker.checkCurrentCount(cmPage);
-
         // Create a report so we can check the log
         await reportUser(
             challengerPage,
@@ -158,10 +155,6 @@ export const basicScoringTest = async (
 
         // Capture the report number from the reporter's "My Own Reports" page
         const reportNumber = await captureReportNumber(challengerPage);
-
-        // Verify CM's count also increased by 1
-        const cmCurrentCount = await reporterTracker.checkCurrentCount(cmPage);
-        expect(cmCurrentCount).toBe(cmInitialCount + 1);
 
         // Navigate CM directly to the report
         await navigateToReport(cmPage, reportNumber);

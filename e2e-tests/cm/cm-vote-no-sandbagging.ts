@@ -54,10 +54,9 @@ import {
 
 import { playMoves, resignActiveGame } from "@helpers/game-utils";
 
-import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
 
-import { withReportCountTracking } from "@helpers/report-utils";
+import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
 
 export const cmVoteNoSandbaggingTest = async (
     {
@@ -78,10 +77,10 @@ export const cmVoteNoSandbaggingTest = async (
         ...defaultChallengeSettings,
         gameName: "E2E NOSB Game",
         boardSize: "9x9",
-        speed: "blitz",
+        speed: "live",
         timeControl: "byoyomi",
-        mainTime: "2",
-        timePerPeriod: "2",
+        mainTime: "120",
+        timePerPeriod: "30",
         periods: "1",
     });
 
@@ -133,14 +132,11 @@ export const cmVoteNoSandbaggingTest = async (
         // All 3 CMs vote that there's no thrown game evident
         const cmVoters = ["E2E_CM_NOSB_V1", "E2E_CM_NOSB_V2", "E2E_CM_NOSB_V3"];
 
-        const cmContexts = [];
         for (const cmUser of cmVoters) {
             const { seededCMPage: cmPage, seededCMContext: cmContext } = await setupSeededCM(
                 createContext,
                 cmUser,
             );
-
-            cmContexts.push({ cmPage, cmContext }); // keep them alive for the duration of the test
 
             // Navigate directly to the report using the captured report number
             await navigateToReport(cmPage, reportNumber);
@@ -157,8 +153,8 @@ export const cmVoteNoSandbaggingTest = async (
             // Select the "no thrown game evident - inform the reporter" option
             await cmPage.locator('input[value="no_thrown_game"]').click();
 
-            const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
-            await voteButton.click();
+            await submitReportVote(cmPage);
+            await cmContext.close();
         }
 
         // After all 3 CMs vote, the reporter should receive an acknowledgement

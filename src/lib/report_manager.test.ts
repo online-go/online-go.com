@@ -32,7 +32,7 @@ jest.mock("@/lib/sockets", () => ({
     socket: { on: jest.fn(), connected: false },
 }));
 jest.mock("@/lib/preferences", () => ({
-    get: jest.fn(() => undefined),
+    get: jest.fn((key: string) => (key === "moderator.report-settings" ? {} : undefined)),
     watch: jest.fn(),
 }));
 // @/lib/report_util is deliberately NOT mocked: getVisibleReports() relies on
@@ -68,17 +68,22 @@ jest.mock("@/lib/data", () => ({
 }));
 
 import { report_manager } from "./report_manager";
+import type { ReportNotification } from "./report_util";
 
-function escapingReport(id: number, reportedUserId: number, votedByCM: boolean) {
+function escapingReport(
+    id: number,
+    reportedUserId: number,
+    votedByCM: boolean,
+): ReportNotification {
     return {
         id,
         report_type: "escaping",
-        reported_user: { id: reportedUserId },
-        reporting_user: { id: 2000 }, // not the CM, so it is not "our own" report
+        reported_user: { id: reportedUserId, username: `accused-${reportedUserId}` },
+        reporting_user: { id: 2000, username: "reporter" }, // not the CM, so it is not "our own" report
         moderator: undefined, // unclaimed
         escalated: false,
         voters: votedByCM ? [{ voter_id: CM_ID, updated: "2026-07-16T00:00:00Z" }] : [],
-    } as any;
+    } as ReportNotification;
 }
 
 describe("moderationQueue escaping serialization", () => {
@@ -105,5 +110,50 @@ describe("moderationQueue escaping serialization", () => {
         const ids = report_manager.moderationQueue().map((r) => r.id);
         expect(ids).toContain(10);
         expect(ids).not.toContain(11);
+    });
+});
+
+describe("report queue updates", () => {
+    beforeEach(() => {
+        report_manager.active_incident_reports = {};
+        report_manager.sorted_active_incident_reports = [];
+        report_manager.this_user_reported_games = [];
+    });
+
+    it("holds the next report until consensus resolves the first", () => {
+        const first = escapingReport(20, 502, false);
+        const next = escapingReport(21, 502, false);
+        report_manager.updateIncidentReport(next);
+        report_manager.updateIncidentReport(first);
+        expect(report_manager.moderationQueue().map((report) => report.id)).toEqual([20]);
+
+        report_manager.updateIncidentReport(escapingReport(20, 502, true));
+        expect(report_manager.moderationQueue()).toEqual([]);
+
+        report_manager.updateIncidentReport({ ...first, state: "resolved" });
+        expect(report_manager.moderationQueue().map((report) => report.id)).toEqual([21]);
+
+        report_manager.updateIncidentReport({ ...next, state: "resolved" });
+        expect(report_manager.moderationQueue()).toEqual([]);
+    });
+
+    it("keeps queues for different accused players independent", () => {
+        report_manager.updateIncidentReport(escapingReport(30, 503, true));
+        report_manager.updateIncidentReport(escapingReport(31, 503, false));
+        report_manager.updateIncidentReport(escapingReport(32, 504, false));
+        expect(report_manager.moderationQueue().map((report) => report.id)).toEqual([32]);
+    });
+
+    it("counts only this reporter's reports when another user files one", () => {
+        const own = {
+            ...escapingReport(40, 505, false),
+            reporting_user: { id: CM_ID, username: "reporter" },
+        };
+        report_manager.updateIncidentReport(own);
+        report_manager.updateIncidentReport(escapingReport(41, 506, false));
+        expect(report_manager.getMyReports().map((report) => report.id)).toEqual([40]);
+
+        report_manager.updateIncidentReport({ ...own, state: "resolved" });
+        expect(report_manager.getMyReports()).toEqual([]);
     });
 });

@@ -55,10 +55,9 @@ import {
 
 import { cancelActiveGame, playMoves } from "@helpers/game-utils";
 
-import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
 
-import { withReportCountTracking } from "@helpers/report-utils";
+import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
 
 export const cmVoteNotThrownCancelledTest = async (
     {
@@ -134,14 +133,11 @@ export const cmVoteNotThrownCancelledTest = async (
         // All 3 CMs vote that this was a cancellation, not a thrown game
         const cmVoters = ["E2E_CM_NTC_V1", "E2E_CM_NTC_V2", "E2E_CM_NTC_V3"];
 
-        const cmContexts = [];
         for (const cmUser of cmVoters) {
             const { seededCMPage: cmPage, seededCMContext: cmContext } = await setupSeededCM(
                 createContext,
                 cmUser,
             );
-
-            cmContexts.push({ cmPage, cmContext }); // keep them alive for the duration of the test
 
             await navigateToReport(cmPage, reportNumber);
 
@@ -159,8 +155,8 @@ export const cmVoteNotThrownCancelledTest = async (
             // Select "Not a thrown game - they used 'cancel'."
             await cmPage.locator('input[value="not_thrown_game_cancel"]').click();
 
-            const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
-            await voteButton.click();
+            await submitReportVote(cmPage);
+            await cmContext.close();
         }
 
         // After all 3 CMs vote, the reporter should receive an acknowledgement

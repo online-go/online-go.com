@@ -54,6 +54,14 @@ export const puzzleEditMobileTest = async ({
     // The editor is up ...
     const setupStepButton = userPage.locator("button", { hasText: "Setup" });
     await expect(setupStepButton).toBeVisible({ timeout: 15000 });
+    await userPage.waitForFunction(() => {
+        const goban = (
+            window as unknown as {
+                global_goban?: { getPuzzlePlacementSetting?: () => { mode: string } };
+            }
+        ).global_goban;
+        return goban?.getPuzzlePlacementSetting?.().mode === "setup";
+    });
 
     // ... and the board is still both visible and reachable: whatever is on
     // top at the middle of the board has to be the board itself.
@@ -144,7 +152,8 @@ async function expectGobanNotCovered(page: Page) {
 
 async function countStones(page: Page): Promise<number> {
     return await page.evaluate(() => {
-        const goban = (window as any).global_goban;
+        const goban = (window as unknown as { global_goban?: { engine: { board: number[][] } } })
+            .global_goban;
         return goban ? goban.engine.board.flat().filter((c: number) => c !== 0).length : -1;
     });
 }

@@ -43,9 +43,8 @@ import { BrowserContext, TestInfo } from "@playwright/test";
 import { expect } from "@playwright/test";
 
 import { navigateToReport, setupSeededCM } from "@helpers/user-utils";
-import { expectOGSClickableByName } from "@helpers/matchers";
 import { log } from "@helpers/logger";
-import { withReportCountTracking } from "@helpers/report-utils";
+import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
 import { setupMaliciousReport } from "@helpers/malicious-report-utils";
 
 const SUSPEND_VOTERS = ["E2E_CM_MR_SUSPEND_V1", "E2E_CM_MR_SUSPEND_V2", "E2E_CM_MR_SUSPEND_V3"];
@@ -106,8 +105,7 @@ export const cmMaliciousReportEscalationTest = async (
                 "E2E test: escalating malicious_report for review",
             );
 
-            const cmAVoteButton = await expectOGSClickableByName(cmAPage, /Vote$/);
-            await cmAVoteButton.click();
+            await submitReportVote(cmAPage);
             log(`[MR/escalate] CM A voted escalate; report should be escalated`);
 
             await cmAContext.close();
@@ -149,11 +147,7 @@ export const cmMaliciousReportEscalationTest = async (
             await expect(
                 firstSuspendPage.locator('input[value="final_warning_malicious_reporter"]'),
             ).toBeChecked();
-            const firstSuspendVoteButton = await expectOGSClickableByName(
-                firstSuspendPage,
-                /Vote$/,
-            );
-            await firstSuspendVoteButton.click();
+            await submitReportVote(firstSuspendPage);
 
             await firstSuspendContext.close();
 
@@ -174,8 +168,7 @@ export const cmMaliciousReportEscalationTest = async (
                 await radio.click();
                 await expect(radio).toBeChecked();
 
-                const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
-                await voteButton.click();
+                await submitReportVote(cmPage);
                 log(`[MR/escalate] ${cmUser} voted final_warning_malicious_reporter`);
 
                 await cmContext.close();

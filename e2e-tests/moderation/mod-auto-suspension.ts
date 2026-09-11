@@ -167,6 +167,7 @@ export const autoSuspensionTest = async ({
         log("New user creating a game challenge...");
         await createDirectChallenge(testPage, opponentUsername, {
             ...defaultChallengeSettings,
+            ranked: false,
             gameName: "E2E Browser ID Suspension Test Game",
             boardSize: "9x9",
             speed: "live",

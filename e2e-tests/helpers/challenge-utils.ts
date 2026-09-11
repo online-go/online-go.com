@@ -253,11 +253,23 @@ export const createDirectChallenge = async (
 };
 
 export const acceptDirectChallenge = async (page: Page) => {
+    const response = await page.request.get("/api/v1/me/challenges", { params: { page_size: 30 } });
+    await expect(response).toBeOK();
+    const list: { results: { id: number }[] } = await response.json();
+    expect(list.results, "The fixture must have one pending direct challenge").toHaveLength(1);
+    const challengeId = list.results[0].id;
     await page.goto("/");
+    const challenge = page.locator(`.ChallengesList[data-challenge-id="${challengeId}"]`);
 
     // The Home screen shows incoming challenges inline with Accept/Decline buttons
-    const acceptButton = await expectOGSClickableByName(page, /Accept/);
-    await acceptButton.click();
+    const acceptButton = await expectOGSClickableByName(challenge, /Accept/);
+    const accepted = page.waitForResponse(
+        (result) =>
+            new URL(result.url()).pathname === `/api/v1/me/challenges/${challengeId}/accept` &&
+            result.request().method() === "POST",
+    );
+    const [result] = await Promise.all([accepted, acceptButton.click()]);
+    expect(result.ok(), `Accept challenge response: ${result.status()}`).toBe(true);
 };
 
 // Fill out the challenge form with the given settings.

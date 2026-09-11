@@ -8,13 +8,13 @@ This guide provides step-by-step instructions for creating end-to-end (E2E) test
 
 The inputs are provided in prose/text by the user:
 
--   A description of the test scenario: what function or use case is to be tested
--   Optionally (if required in the test) the E2E_MODERATOR user password
+- A description of the test scenario: what function or use case is to be tested
+- Optionally (if required in the test) the E2E_MODERATOR user password
 
 ## Outputs
 
--   A new e2e test file, `.ts`, in a suitable directory of the e2e folder structure, that implements the test
--   Updated Playwright spec file, `.spec.ts`, to include the test in the test suite
+- A new e2e test file, `.ts`, in a suitable directory of the e2e folder structure, that implements the test
+- Updated Playwright spec file, `.spec.ts`, to include the test in the test suite
 
 ## Process
 
@@ -23,7 +23,6 @@ The inputs are provided in prose/text by the user:
 Before writing any code, thoroughly understand what you're testing:
 
 1. **Read the UI implementation code** - DO NOT guess how the UI works. Check the actual component files to understand:
-
     - What class names are used (e.g., `.private-chat-window.open` not `.PrivateChat`)
     - What button types exist (buttons vs links that look like buttons)
     - What state changes occur
@@ -40,44 +39,43 @@ Before writing any code, thoroughly understand what you're testing:
 
 **When to use `prepareNewUser()` (Created Users)**:
 
--   For most test scenarios where you need regular users
--   When testing regular user functionality (registration, profiles, games, etc.)
--   When you need guaranteed unique usernames and clean state
--   When privileges aren't needed (just regular players)
+- For most test scenarios where you need regular users
+- When testing regular user functionality (registration, profiles, games, etc.)
+- When you need guaranteed unique usernames and clean state
+- When privileges aren't needed (just regular players)
 
 **When to use Seeded Users**:
 Seeded users are pre-created by the backend's `init_e2e` function and should ONLY be used when:
 
--   You need privileges that CANNOT be granted via API (full moderator powers, Community Moderator powers)
--   The test requires specific pre-existing data (games, reports, etc.) that would be complex to set up
+- You need privileges that CANNOT be granted via API (full moderator powers, Community Moderator powers)
+- The test requires specific pre-existing data (games, reports, etc.) that would be complex to set up
 
 **Available Seeded Users**:
 
--   `E2E_MODERATOR` - Full moderator with all moderator powers. Use this when you need:
+- `E2E_MODERATOR` - Full moderator with all moderator powers. Use this when you need:
+    - To suspend/restore user accounts
+    - To grant Community Moderator powers to other users
+    - Full moderator-level functionality
+    - Password: `process.env.E2E_MODERATOR_PASSWORD` (must be set as environment variable)
 
-    -   To suspend/restore user accounts
-    -   To grant Community Moderator powers to other users
-    -   Full moderator-level functionality
-    -   Password: `process.env.E2E_MODERATOR_PASSWORD` (must be set as environment variable)
-
--   `E2E_CM_*` - Pre-seeded Community Moderators with specific powers. Each test that needs CMs should have its own set:
-    -   Named with test-specific prefix (e.g., `E2E_CM_AA_V1` for "Ack Acknowledgement" test, voter 1)
-    -   Used when testing Community Moderation voting/escalation workflows
-    -   Password: `"test"` (standard for seeded CM accounts)
+- `E2E_CM_*` - Pre-seeded Community Moderators with specific powers. Each test that needs CMs should have its own set:
+    - Named with test-specific prefix (e.g., `E2E_CM_AA_V1` for "Ack Acknowledgement" test, voter 1)
+    - Used when testing Community Moderation voting/escalation workflows
+    - Password: `"test"` (standard for seeded CM accounts)
 
 **Naming Convention for Seeded Users**:
 
--   Prefix identifies the test: `E2E_CM_[TEST_ABBREV]_[ROLE]`
--   Example: `E2E_CM_VSU_V1` = "Vote Suspend User" test, Voter 1
--   Each test should have its own seeded users (not shared between tests)
+- Prefix identifies the test: `E2E_CM_[TEST_ABBREV]_[ROLE]`
+- Example: `E2E_CM_VSU_V1` = "Vote Suspend User" test, Voter 1
+- Each test should have its own seeded users (not shared between tests)
 
 **Important Notes**:
 
--   Seeded users must be listed in test file header comments
--   Seeded CMs need unique IPv6 addresses like any other user
--   Use `setupSeededCM()` helper for Community Moderators
--   Use `loginAsUser(page, "E2E_MODERATOR", process.env.E2E_MODERATOR_PASSWORD)` for full moderator
--   Avoid seeding when `prepareNewUser()` + E2E_MODERATOR can achieve the same result
+- Seeded users must be listed in test file header comments
+- Seeded CMs need unique IPv6 addresses like any other user
+- Use `setupSeededCM()` helper for Community Moderators
+- Use `loginAsUser(page, "E2E_MODERATOR", process.env.E2E_MODERATOR_PASSWORD)` for full moderator
+- Avoid seeding when `prepareNewUser()` + E2E_MODERATOR can achieve the same result
 
 ### Step 2: Research Existing Tests
 
@@ -86,7 +84,6 @@ Look at similar existing tests to understand patterns:
 1. **Find similar tests** - Look in the appropriate directory (e.g., `moderation/`, `game/`, etc.)
 
 2. **Review helper utilities** available in `helpers/`:
-
     - `user-utils.ts`: User creation, authentication, navigation, reporting
     - `matchers.ts`: Custom assertions like `expectOGSClickableByName`
 
@@ -265,7 +262,6 @@ console.log("✓ [Summary of what was tested]");
 These are mandatory requirements:
 
 1. **Check UI Code** - NEVER guess how UI elements work. Read the actual component code to find:
-
     - Correct class names
     - Element structure
     - State transitions
@@ -273,7 +269,6 @@ These are mandatory requirements:
 2. **Validate Inputs** - Always verify input was accepted before continuing
 
 3. **Use Helper Functions**:
-
     - `expectOGSClickableByName()` for ALL buttons/links
     - `prepareNewUser()` for creating test users
     - `newTestUsername()` for unique usernames (max 20 characters!)
@@ -286,7 +281,6 @@ These are mandatory requirements:
 6. **Reports Testing** - Wrap report actions in `withIncidentIndicatorLock` and check no reports are open at start
 
 7. **User Privileges**:
-
     - Use seeded users ONLY when you need privileges that cannot be granted via API:
         - `E2E_MODERATOR`: For full moderator powers (suspension, restoration, granting CM powers)
         - `E2E_CM_*`: For Community Moderator powers (voting on reports, escalation)
@@ -391,10 +385,10 @@ yarn test:e2e:debug e2e-tests/moderation/mod-system-pm-button.ts
 
 **Solution**:
 
--   Ensure dev server is running (`yarn dev`)
--   Check network connectivity
--   Increase timeout values if needed
--   Verify page navigation by waiting for specific elements to be visible
+- Ensure dev server is running (`yarn dev`)
+- Check network connectivity
+- Increase timeout values if needed
+- Verify page navigation by waiting for specific elements to be visible
 
 ---
 
@@ -402,10 +396,10 @@ yarn test:e2e:debug e2e-tests/moderation/mod-system-pm-button.ts
 
 **Solution**:
 
--   Double-check you read the UI component code for correct selectors
--   Verify the element should exist at that point in the test flow
--   Add waits before looking for elements
--   Check if element is conditionally rendered based on state
+- Double-check you read the UI component code for correct selectors
+- Verify the element should exist at that point in the test flow
+- Add waits before looking for elements
+- Check if element is conditionally rendered based on state
 
 ---
 
@@ -413,9 +407,9 @@ yarn test:e2e:debug e2e-tests/moderation/mod-system-pm-button.ts
 
 **Solution**:
 
--   Verify input was entered first (buttons often disabled without input)
--   Check button text exactly matches (case-sensitive, regex patterns)
--   Ensure page has fully loaded before clicking
+- Verify input was entered first (buttons often disabled without input)
+- Check button text exactly matches (case-sensitive, regex patterns)
+- Ensure page has fully loaded before clicking
 
 #### After Successful Test Run
 
@@ -432,7 +426,8 @@ Once your test passes locally:
 
 3. **Document any special requirements** - Note in your test comments if it requires specific environment setup
 
-**Note**: You don't need to verify it doesn't interfere with other tests. The CI system will handle running the full test suite. Other tests may fail locally for unrelated reasons (missing data, environment differences, etc.).
+Run new tests with other tests in parallel. Use separate mutable fixtures and
+check failures before submitting the change.
 
 ## Common Patterns
 
@@ -449,6 +444,7 @@ const { userPage: reporterPage } = await prepareNewUser(
 // Report a seeded user who has pre-existing game data
 await goToUsersFinishedGame(reporterPage, "E2E_CM_TEST_ACCUSED", "E2E CM TEST Game");
 await reportUser(reporterPage, "E2E_CM_TEST_ACCUSED", "ai_use", "Detailed reason here");
+const reportNumber = await captureReportNumber(reporterPage);
 
 // Set up multiple seeded CMs to vote
 const cmVoters = ["E2E_CM_TEST_V1", "E2E_CM_TEST_V2", "E2E_CM_TEST_V3"];
@@ -458,14 +454,11 @@ for (const cmUser of cmVoters) {
     const { seededCMPage, seededCMContext } = await setupSeededCM(browser, cmUser);
     cmContexts.push({ cmPage: seededCMPage, cmContext: seededCMContext });
 
-    // Navigate to Reports Center and vote
-    const indicator = await assertIncidentReportIndicatorActive(seededCMPage, 1);
-    await indicator.click();
+    await navigateToReport(seededCMPage, reportNumber);
 
     // Perform voting action...
     await seededCMPage.locator('.action-selector input[type="radio"]').nth(1).click();
-    const voteButton = await expectOGSClickableByName(seededCMPage, /Vote$/);
-    await voteButton.click();
+    await submitReportVote(seededCMPage);
 }
 
 // Clean up
@@ -576,7 +569,7 @@ See `e2e-tests/moderation/mod-system-pm-button.ts` for a complete example follow
 
 ## Resources
 
--   `CLAUDE.md`: Additional important notes for AI agents
--   `README.md`: General E2E testing documentation
--   `helpers/user-utils.ts`: User management utilities
--   `helpers/matchers.ts`: Custom matchers and assertions
+- `CLAUDE.md`: Additional important notes for AI agents
+- `README.md`: General E2E testing documentation
+- `helpers/user-utils.ts`: User management utilities
+- `helpers/matchers.ts`: Custom matchers and assertions
