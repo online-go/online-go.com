@@ -205,12 +205,15 @@ export async function withReportCountTracking<T>(
 
 /** Dismiss queued messages through the UI, waiting for each acknowledgement to reach the server. */
 export async function dismissWarningDialogs(page: Page): Promise<void> {
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i <= 10; i++) {
         const pending = await page.request.get("/api/v1/me/warning");
         await expect(pending).toBeOK();
         const warning: { id?: number; severity?: string } = await pending.json();
         if (warning.id === undefined) {
             return;
+        }
+        if (i === 10) {
+            throw new Error("Warning messages remain queued after ten dismissals");
         }
         const dialog = page.locator(".AccountWarning, .AccountWarningInfo, .AccountWarningAck");
         await expect(dialog).toBeVisible();
@@ -227,5 +230,4 @@ export async function dismissWarningDialogs(page: Page): Promise<void> {
         const [response] = await Promise.all([accepted, ok.click()]);
         expect(response.ok(), `Acknowledge response: ${response.status()}`).toBe(true);
     }
-    throw new Error("More than ten warning messages remain queued");
 }

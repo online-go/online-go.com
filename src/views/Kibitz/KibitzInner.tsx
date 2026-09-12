@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { GobanController, getMoveTreeTrunkTail } from "@/lib/GobanController";
 import { toast } from "@/lib/toast";
 import { alert } from "@/lib/swal_config";
@@ -57,6 +57,7 @@ import {
     getKibitzBlockedRoomMessage,
 } from "./kibitzAnalysisPolicyText";
 import { useCurrentKibitzUser } from "./useCurrentKibitzUser";
+import { useKibitzRoomNavigation } from "./useKibitzRoomNavigation";
 import {
     captureCurrentGameBaseSnapshotFromController,
     chooseFresherCurrentGameBaseSnapshot,
@@ -297,7 +298,6 @@ function mapGameChatLineToVariation(
 
 export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElement {
     const location = useLocation();
-    const navigate = useNavigate();
     const { roomId } = useParams<"roomId">();
     const [rooms, setRooms] = React.useState<KibitzRoomSummary[]>(controller.rooms);
     const [activeRoom, setActiveRoom] = React.useState<KibitzRoom | null>(controller.active_room);
@@ -339,7 +339,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         setCachedGamesVersion((previous) => previous + 1);
     }, []);
     const [pickerMode, setPickerMode] = React.useState<KibitzGamePickerMode>(null);
-    const pendingRoomNavigation = React.useRef<string | null>(null);
 
     React.useEffect(() => {
         const syncViewMode = () => {
@@ -388,6 +387,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     }, [controller, handleCachedGamesChanged]);
 
     const defaultRoomId = rooms[0]?.id ?? null;
+    const navigateToRoom = useKibitzRoomNavigation(defaultRoomId, pickerMode === "create-room");
     const blockedRoomIds = React.useMemo(() => {
         if (!currentUser) {
             return new Set<string>();
@@ -416,22 +416,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const isSelectedRoomBlocked = !selectedRoomPolicy.allowed;
     const isBlockedRoom = Boolean(accessBlocked?.room_id === roomId || isSelectedRoomBlocked);
     const resolvedRoom = isBlockedRoom ? null : selectedRoom;
-
-    React.useEffect(() => {
-        if (roomId === pendingRoomNavigation.current) {
-            pendingRoomNavigation.current = null;
-        }
-        if (
-            roomId ||
-            !defaultRoomId ||
-            pickerMode === "create-room" ||
-            pendingRoomNavigation.current
-        ) {
-            return;
-        }
-
-        void navigate(`/kibitz/${defaultRoomId}`, { replace: true });
-    }, [defaultRoomId, navigate, roomId, pickerMode]);
 
     React.useEffect(() => {
         if (!roomId) {
@@ -623,12 +607,11 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         (nextRoomId: string) => {
             void confirmDiscardDraft().then((confirmed) => {
                 if (confirmed) {
-                    pendingRoomNavigation.current = nextRoomId === roomId ? null : nextRoomId;
-                    void navigate(`/kibitz/${nextRoomId}`);
+                    navigateToRoom(nextRoomId);
                 }
             });
         },
-        [confirmDiscardDraft, navigate, roomId],
+        [confirmDiscardDraft, navigateToRoom],
     );
 
     const roomLiveMoveNumber = resolvedRoom?.current_game?.move_number ?? 0;
@@ -1134,9 +1117,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         }
 
         setPickerMode(null);
-        void navigate("/kibitz");
+        navigateToRoom(null);
         return true;
-    }, [controller, navigate, resolvedRoom]);
+    }, [controller, navigateToRoom, resolvedRoom]);
 
     const pickerOverlay = pickerMode ? (
         <KibitzGamePickerOverlay
@@ -1149,11 +1132,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             onCreateRoom={async (game, roomName, description) => {
                 const nextRoomId = await controller.createRoom(game, roomName, description);
                 if (nextRoomId) {
-                    // Closing the picker can render before the route transition.
-                    // Keep the default-room redirect from replacing this navigation.
-                    pendingRoomNavigation.current = nextRoomId;
+                    navigateToRoom(nextRoomId);
                     setPickerMode(null);
-                    void navigate(`/kibitz/${nextRoomId}`);
                 }
                 return nextRoomId;
             }}

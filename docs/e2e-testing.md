@@ -58,6 +58,9 @@ response before a test navigates away or closes a voter's context. Close voters 
 work instead of retaining their pages for debugging.
 Vote tests check the resulting report, warning, or suspension. They do not
 require the brief disabled-button state that can disappear when a report closes.
+Warning cleanup dismisses at most ten queued messages and then checks whether
+the queue is empty. Exactly ten messages succeed; remaining messages cause a
+failure. Normal tests cover both sides of this limit.
 
 Coverage moved or combined:
 
@@ -97,6 +100,9 @@ Moderation vote fixtures that do not test ranking use unranked games. This keeps
 external AI analysis and asynchronous rating updates outside those scenarios.
 Kibitz room creation guards its route transition so concurrent directory updates
 cannot close the picker or redirect a newly created room to the default room.
+The guard clears on any committed URL change, including a navigation that
+supersedes the requested room or returns to the directory after deletion. Normal
+hook tests cover interrupted navigation and preserve the picker-closing guard.
 Snapshot copies preserve shared player records while removing circular
 references, so game-picker thumbnails receive both players.
 
@@ -165,11 +171,16 @@ rejects a randomly generated fixture username. There are no new out-of-memory
 kills. Total system memory use peaks at 22.5 GiB, sampled every two seconds
 using `MemTotal - MemAvailable`. Eight-worker memory use is not measured.
 
+The warning-cleanup and Kibitz-navigation review fixes pass 13 new normal
+regression cases and seven affected browser journeys. The browser checks use
+six workers, no retries, and no skips, and complete in 89.6 seconds with no new
+out-of-memory kills.
+
 An earlier run lost its game-server process during scoring and report loading,
 which caused two failures. The tests are not expected to pass through a service
 outage; the final measurements require running services.
 
-Validation also includes 552 frontend tests, 336 backend tests with five existing
+Validation also includes 565 frontend tests, 336 backend tests with five existing
 skips, TypeScript, frontend lint, the production build, Python lint and formatting,
 and shell syntax checks for the CI runner. The built-runner tests check argument
 forwarding, backend proxy selection, server shutdown, and success/failure exit
