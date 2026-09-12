@@ -27,6 +27,12 @@ or more. Account for OS overhead in reported host capacity and respect lower
 container limits. Use one selector for local and self-hosted CI runs. Preserve
 explicit overrides and the single-worker development and smoke defaults.
 
+Keep WebSocket proxy reset logs readable during parallel browser cleanup.
+Report `ECONNRESET` as a warning, count bursts in five-second windows, and avoid
+counting the same error twice. Flush pending counts at shutdown. Preserve all
+other proxy failures and test failure behavior; a reset warning is not proof
+that the disconnect was harmless.
+
 Validate with focused tests, repeated parallel runs, the normal test suite,
 TypeScript, lint, formatting, and one final build. Report measured limits and
 environment failures explicitly if the runtime target cannot yet be verified.
