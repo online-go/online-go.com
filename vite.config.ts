@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { defineConfig } from "vite";
+import { createLogger, defineConfig } from "vite";
 import type { Plugin, ResolvedConfig, ViteDevServer, ProxyOptions } from "vite";
 import react from "@vitejs/plugin-react";
 //import circularDependency from "vite-plugin-circular-dependency";
@@ -40,6 +40,7 @@ import Color from "color";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import cssSourcemap from "vite-plugin-css-sourcemap";
 import { execSync } from "child_process";
+import { createProxyWarningLogger } from "./scripts/vite-proxy-logger.ts";
 
 const _workerVersionMatch = readFileSync(
     path.resolve(import.meta.dirname, "Makefile"),
@@ -381,6 +382,7 @@ export default defineConfig({
         CLIENT: true,
     },
     plugins: [
+        proxyWarningLoggerPlugin(),
         {
             name: "moderator-ui-resolver",
             resolveId(id: string) {
@@ -513,6 +515,28 @@ export default defineConfig({
         },
     },
 });
+
+function proxyWarningLoggerPlugin(): Plugin {
+    let flush = () => {};
+    return {
+        name: "proxy-warning-logger",
+        config(config) {
+            const logger = createProxyWarningLogger(
+                config.customLogger ??
+                    createLogger(config.logLevel, { allowClearScreen: config.clearScreen }),
+            );
+            flush = logger.flushProxyWarnings;
+            // Keep the live logger state getter through Vite's config hook.
+            config.customLogger = logger;
+        },
+        configureServer(server) {
+            server.httpServer?.once("close", () => flush());
+        },
+        configurePreviewServer(server) {
+            server.httpServer.once("close", () => flush());
+        },
+    };
+}
 
 /**
  * Hands requests for an `admin.*` hostname to the local OGS stack.

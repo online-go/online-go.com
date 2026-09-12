@@ -62,7 +62,9 @@ test.each([
                  writeFileSync("proxy.json", JSON.stringify(config.preview.proxy));
                  const httpServer = createServer();
                  await new Promise(resolve => httpServer.listen(0, "127.0.0.1", resolve));
-                 return { httpServer };
+                 return { httpServer, config: { logger: {
+                     flushProxyWarnings() { writeFileSync("warnings-flushed", ""); }
+                 } } };
              }`,
         );
         writeFileSync(
@@ -124,6 +126,7 @@ test.each([
             if (buildStatus) {
                 expect(existsSync(join(cwd, "playwright-started"))).toBe(false);
                 expect(existsSync(join(cwd, "proxy.json"))).toBe(false);
+                expect(existsSync(join(cwd, "warnings-flushed"))).toBe(false);
                 return;
             }
             expect(JSON.parse(stdout)).toEqual({
@@ -141,6 +144,7 @@ test.each([
                 "/api": { target: frontendURL, changeOrigin: true },
                 "^/$": { target: frontendURL, changeOrigin: true, ws: true },
             });
+            expect(existsSync(join(cwd, "warnings-flushed"))).toBe(true);
             const html = readFileSync(join(cwd, "dist/index.html"), "utf8");
             expect(html).toContain('src="/ogs.js"');
             expect(html).toContain('href="/ogs.min.css"');

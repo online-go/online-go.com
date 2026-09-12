@@ -120,6 +120,7 @@ try {
         E2E_DEV_SERVER_URL: frontend.origin,
     });
 } finally {
+    server.config.logger.flushProxyWarnings?.();
     server.httpServer.close();
     for (const socket of connections) {
         socket.destroy();

@@ -71,6 +71,16 @@ On the 24 GiB development machine, do not overlap another frontend build with
 the browser suite: the combined memory use can cause browser processes to be
 killed.
 
+Vite reports WebSocket proxy `ECONNRESET` events as concise warnings in both
+its development server and the built preview. The first reset is reported
+immediately; additional resets in the next five seconds are summarized with a
+count. The same error reported by Vite's proxy and socket handlers counts once.
+Server shutdown flushes a pending count, including when Playwright fails.
+These warnings do not establish why a connection closed. HTTP proxy errors,
+other error codes, and unrelated Vite errors keep their existing reporting and
+failure behavior. This changes logging only; test assertions and retries do not
+change.
+
 `IncidentReportCountTracker` counts the reporter's own active reports. Moderator
 queue totals can change in other workers. `submitReportVote` waits for the vote
 response before a test navigates away or closes a voter's context. Close voters that have no further
@@ -211,7 +221,7 @@ An earlier run lost its game-server process during scoring and report loading,
 which caused two failures. The tests are not expected to pass through a service
 outage; the final measurements require running services.
 
-Validation also includes 596 frontend tests, 337 backend tests with five existing
+Validation also includes 611 frontend tests, 337 backend tests with five existing
 skips, TypeScript, frontend lint, the production build, Python lint and formatting,
 and shell syntax checks for the CI runner. The built-runner tests check argument
 forwarding, backend proxy selection, server shutdown, and success/failure exit
@@ -219,6 +229,14 @@ codes. They also check automatic builds, build failures before browser startup,
 the missing-password error, and listing/help/smoke behavior without a build.
 RAM-selection tests cover tier boundaries, host OS overhead, container limits,
 valid and invalid overrides, and use of the automatic default by the built runner.
+Proxy-warning tests cover colored log prefixes, duplicate callbacks, burst
+counts, continuous resets, shutdown flushing, and preservation of other errors
+and logger methods. The real Vite configuration is also checked for log-level
+settings and live logger state. A controlled upstream produces real TCP resets through both
+Vite server modes: four WebSocket resets produce one warning and one count
+summary; an HTTP reset still logs an error and returns HTTP 502. Three browser
+journeys (SGF download, early escape reporting, and suspended-user login) pass
+in 13.1 seconds with no retries or skips after the logger change.
 The CI orchestration script itself is not executed locally because it
 updates repositories and sends notifications.
 
