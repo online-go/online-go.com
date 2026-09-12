@@ -36,3 +36,13 @@ that the disconnect was harmless.
 Validate with focused tests, repeated parallel runs, the normal test suite,
 TypeScript, lint, formatting, and one final build. Report measured limits and
 environment failures explicitly if the runtime target cannot yet be verified.
+
+Investigate intermittent failures with preserved traces and matching backend
+logs. Distinguish service interruptions from test timing assumptions. Exercise
+parallel browsers with restricted CPU capacity as well as the normal host.
+The built preview must serve translations and remove development-only scripts.
+Game fixtures must allow time for browser work unless the clock is under test;
+scoring checks must wait for scoring and persisted log entries. Generated
+fixture names must not introduce random words that the username filter rejects.
+Keep the requested RAM tiers and zero retries. Do not retry moderation writes to
+conceal backend failures.
