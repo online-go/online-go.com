@@ -95,12 +95,12 @@ export const cmInformalWarnEscaperAndAnnulTest = async (
                 gameName: "E2E CM IWEA Report Game",
                 boardSize: "9x9",
                 speed: "live",
-                mainTime: "120",
+                mainTime: "300",
                 timePerPeriod: "30",
                 color: "black",
             });
 
-            await acceptDirectChallenge(accusedPage);
+            await acceptDirectChallenge(accusedPage, reporterPage);
 
             const goban = reporterPage.locator(".Goban[data-pointers-bound]");
             await goban.waitFor({ state: "visible" });

@@ -33,6 +33,7 @@
  * they used cancel", and that the reporter is told what actually happened.
  */
 
+import { expectNoAccountWarning } from "@helpers/report-utils";
 import type { CreateContextOptions } from "@helpers";
 
 import { BrowserContext, TestInfo } from "@playwright/test";
@@ -81,13 +82,13 @@ export const cmVoteNotThrownCancelledTest = async (
         boardSize: "9x9",
         speed: "live",
         timeControl: "byoyomi",
-        mainTime: "120",
+        mainTime: "300",
         timePerPeriod: "30",
         periods: "5",
     });
 
     // Other player accepts
-    await acceptDirectChallenge(otherPage);
+    await acceptDirectChallenge(otherPage, accusedPage);
 
     // Wait for the game to start
     const goban = accusedPage.locator(".Goban[data-pointers-bound]");
@@ -160,7 +161,6 @@ export const cmVoteNotThrownCancelledTest = async (
         }
 
         // After all 3 CMs vote, the reporter should receive an acknowledgement
-        await reporterPage.waitForTimeout(3000);
 
         await reporterPage.goto("/");
 
@@ -185,15 +185,6 @@ export const cmVoteNotThrownCancelledTest = async (
         // After clicking OK on the acknowledgement, the count should return to initial
         await tracker.assertCountReturnedToInitial(reporterPage);
 
-        // The whole point of "not a thrown game - they used cancel" is that the
-        // accused gets no warning: cancelling in the opening is permitted, not
-        // sanctioned. Reload so any warning issued after consensus has a chance
-        // to appear, then confirm none did. The wait gives the AccountWarning
-        // fetch/render cycle time to complete before the negative assertion
-        // checks, since `not.toBeVisible()` only proves absence at the instant
-        // it runs, not that the element never appears.
-        await accusedPage.goto("/");
-        await accusedPage.waitForTimeout(2000);
-        await expect(accusedPage.locator("div.AccountWarning")).not.toBeVisible();
+        await expectNoAccountWarning(accusedPage);
     });
 };

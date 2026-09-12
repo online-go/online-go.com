@@ -48,7 +48,7 @@ export const modBlockEarlyStallingReportTest = async ({
 
     await createDirectChallenge(reporterPage, reportedUsername);
 
-    await acceptDirectChallenge(reportedPage);
+    await acceptDirectChallenge(reportedPage, reporterPage);
 
     await clickInTheMiddle(reporterPage);
 

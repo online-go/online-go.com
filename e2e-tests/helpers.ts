@@ -16,6 +16,12 @@
  */
 
 import { test as base, type Page, type Browser, BrowserContext } from "@playwright/test";
+import { setTimeout as delay } from "node:timers/promises";
+
+const apiDelay = Number(process.env.E2E_API_DELAY_MS || 0);
+if (!Number.isInteger(apiDelay) || apiDelay < 0) {
+    throw new Error("E2E_API_DELAY_MS must be a non-negative integer");
+}
 
 // Export logger utilities
 export { createTestLogger, log, setWorkerIndex } from "./helpers/logger";
@@ -55,6 +61,29 @@ export const ogsTest = base.extend<MultiContextFixtures>({
         const factory = async (options?: CreateContextOptions) => {
             const context = await browser.newContext(options);
             contexts.push(context);
+            if (apiDelay) {
+                await context.route("**/api/**", async (route) => {
+                    const page = route.request().frame().page();
+                    await delay(apiDelay);
+                    if (!page.isClosed()) {
+                        try {
+                            await route.continue();
+                        } catch (error) {
+                            // Navigation or teardown can cancel a request during the injected delay.
+                            if (
+                                !(
+                                    error instanceof Error &&
+                                    error.message.includes(
+                                        "Target page, context or browser has been closed",
+                                    )
+                                )
+                            ) {
+                                throw error;
+                            }
+                        }
+                    }
+                });
+            }
             return context;
         };
 

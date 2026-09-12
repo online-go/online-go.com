@@ -92,13 +92,13 @@ export const cmEscalatedEscapingAllOptionsTest = async (
         boardSize: "9x9",
         speed: "live",
         timeControl: "byoyomi",
-        mainTime: "120",
+        mainTime: "300",
         timePerPeriod: "30",
-        periods: "1",
+        periods: "5",
     });
 
     // Other player accepts
-    await acceptDirectChallenge(otherPage);
+    await acceptDirectChallenge(otherPage, accusedPage);
 
     // Wait for the game to start
     const goban = accusedPage.locator(".Goban[data-pointers-bound]");

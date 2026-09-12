@@ -61,14 +61,12 @@ export const modWarnFirstTurnEscapersTest = async (
     });
 
     // escaper accepts
-    await acceptDirectChallenge(escaperPage);
+    await acceptDirectChallenge(escaperPage, challengerPage);
 
     // Challenger is black, plays a turn (to get past slow first-move-timer)
     // Wait for the Goban to be visible & definitely ready
     const goban = challengerPage.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });
-
-    await challengerPage.waitForTimeout(3000);
 
     await clickInTheMiddle(challengerPage);
 

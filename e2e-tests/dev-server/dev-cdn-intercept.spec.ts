@@ -131,6 +131,7 @@ ogsTest.describe("@DevServer dev-server /img middleware + cdn_release pin", () =
                         cdn: "https://cdn.online-go.com/",
                         cdn_host: "cdn.online-go.com",
                         user: { anonymous: true, id: 0, username: "Guest" },
+                        e2e_rehydrate_pending: true,
                     }),
                 );
             });
@@ -138,13 +139,29 @@ ogsTest.describe("@DevServer dev-server /img middleware + cdn_release pin", () =
             // Wait deterministically for the async ui/config refresh to complete —
             // proves the test exercised the full config rehydrate cycle rather than
             // reading a transient value set synchronously by main.tsx.
-            const [_configResponse] = await Promise.all([
+            const [configResponse] = await Promise.all([
                 page.waitForResponse(
-                    (r) => /\/api\/v\d+\/ui\/config/.test(r.url()) && r.status() === 200,
-                    { timeout: 15_000 },
+                    (r) =>
+                        r.request().method() === "GET" &&
+                        /^\/api\/v\d+\/ui\/config$/.test(new URL(r.url()).pathname),
+                    { timeout: 45_000 },
                 ),
                 page.goto("/"),
             ]);
+            expect(configResponse.ok(), `Config response: HTTP ${configResponse.status()}`).toBe(
+                true,
+            );
+            expect(await configResponse.finished()).toBeNull();
+            await page.waitForFunction(() => {
+                const config = (
+                    window as unknown as { data?: { get: (key: string) => unknown } }
+                ).data?.get("cached.config");
+                return (
+                    typeof config === "object" &&
+                    config !== null &&
+                    !("e2e_rehydrate_pending" in config)
+                );
+            });
 
             const { cdnRelease, cdn } = await page.evaluate(() => ({
                 cdnRelease: (

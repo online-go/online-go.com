@@ -75,7 +75,7 @@ export const basicScoringTest = async (
     });
 
     // escaper accepts
-    await acceptDirectChallenge(acceptorPage);
+    await acceptDirectChallenge(acceptorPage, challengerPage);
 
     const moves = [
         "D9",

@@ -9,6 +9,7 @@
  * This program is distributed in the hope that it will be useful,
  */
 
+import { actAndWaitForResponse } from "@helpers/requests";
 import { expect } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import { Page, BrowserContext, Locator } from "@playwright/test";
@@ -16,6 +17,7 @@ import { Page, BrowserContext, Locator } from "@playwright/test";
 import { expectOGSClickableByName } from "./matchers";
 import { load, CreateContextOptions } from "@helpers";
 import { log } from "./logger";
+import { dismissWarningDialogs } from "./report-utils";
 import { waitForGameViewReady } from "./game-utils";
 
 /**
@@ -129,8 +131,8 @@ export const prepareNewUser = async (
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     username: string,
     password: string,
+    deviceId: string = randomUUID(),
 ) => {
-    const deviceId = randomUUID();
     const userContext = await createContext({
         extraHTTPHeaders: { "X-Forwarded-For": generateUniqueTestIPv6() },
     });
@@ -264,31 +266,6 @@ export const setupSeededUser = async (
     return { userPage, userContext };
 };
 
-// A failed prior test can leave acknowledgement/info AccountWarning
-// messages queued on a seeded account; on next login they auto-display
-// as a modal that blocks every subsequent click. Ack-and-info modals
-// are safe to drain (a single primary-button click each); the genuine
-// "warning" variant is deliberately left alone — it carries a forced
-// read-delay and an "I understand" checkbox, and bypassing those in
-// tests would defeat the point of the warning.
-//
-// Cost: ~500ms per setupSeededCM call when the queue is empty (the
-// time it takes one poll to time out). Cheap enough to run on every
-// seeded-CM setup as defense against leaks from earlier tests.
-const dismissPendingAccountAcks = async (page: Page): Promise<void> => {
-    const ackSelector = ".AccountWarningInfo, .AccountWarningAck";
-    while (true) {
-        const ackModal = page.locator(ackSelector).first();
-        try {
-            await ackModal.waitFor({ state: "visible", timeout: 500 });
-        } catch {
-            return;
-        }
-        await ackModal.locator(".buttons button.primary").first().click();
-        await expect(ackModal).toBeHidden({ timeout: 5000 });
-    }
-};
-
 export const setupSeededCM = async (
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     username: string,
@@ -297,7 +274,7 @@ export const setupSeededCM = async (
         createContext,
         username,
     );
-    await dismissPendingAccountAcks(seededCMPage);
+    await dismissWarningDialogs(seededCMPage);
     return { seededCMPage, seededCMContext };
 };
 
@@ -474,13 +451,9 @@ const submitReportForm = async (page: Page, type: string, notes: string) => {
     await notesBox.fill(notes);
 
     const submitButton = await expectOGSClickableByName(page, /Report User$/);
-    const submitted = page.waitForResponse(
-        (response) =>
-            new URL(response.url()).pathname === "/api/v1/moderation/incident" &&
-            response.request().method() === "POST",
+    await actAndWaitForResponse(page, { method: "POST", path: "/api/v1/moderation/incident" }, () =>
+        submitButton.click(),
     );
-    const [response] = await Promise.all([submitted, submitButton.click()]);
-    expect(response.ok(), `Report response: ${response.status()}`).toBe(true);
     await expect(page.getByText("Thanks for the report!")).toBeVisible();
     // /^OK$/ rather than "OK": Playwright's getByRole({name}) does
     // case-insensitive *substring* matching, which collides with
@@ -498,51 +471,8 @@ const submitReportForm = async (page: Page, type: string, notes: string) => {
 export const reportUser = async (page: Page, username: string, type: string, notes: string) => {
     const playerLink = page.locator(`a.Player[data-ready="true"]:has-text("${username}")`);
 
-    // Retry the entire open-popover-and-submit flow if the popover closes between steps
-    let attempts = 0;
-    const maxAttempts = 3;
-    let lastError: Error | null = null;
-
-    while (attempts < maxAttempts) {
-        attempts++;
-        await openPlayerDetailsPopover(page, playerLink);
-
-        // Check if popover is still open before proceeding
-        const isPopoverOpen = await page
-            .locator('.PlayerDetails[data-ready="true"]')
-            .isVisible()
-            .catch(() => false);
-
-        if (isPopoverOpen) {
-            try {
-                await submitReportForm(page, type, notes);
-                return; // Success
-            } catch (e) {
-                // If the popover closed during submitReportForm, retry
-                const isPopoverError =
-                    e instanceof Error &&
-                    (e.message.includes("PlayerDetails") ||
-                        e.message.includes("not attached") ||
-                        e.message.includes("not visible"));
-                if (isPopoverError && attempts < maxAttempts) {
-                    lastError = e;
-                    // Close any partial state before retrying
-                    await page.keyboard.press("Escape");
-                    continue;
-                }
-                throw e;
-            }
-        }
-
-        if (attempts >= maxAttempts) {
-            throw (
-                lastError ||
-                new Error(
-                    `PlayerDetails popover closed before Report button could be clicked after ${maxAttempts} attempts`,
-                )
-            );
-        }
-    }
+    await openPlayerDetailsPopover(page, playerLink);
+    await submitReportForm(page, type, notes);
 };
 
 /**
@@ -616,30 +546,8 @@ export const reportPlayerByColor = async (
 ) => {
     const playerLink = page.locator(`${color}.player-name-container a.Player[data-ready="true"]`);
 
-    // Retry the entire open-popover-and-submit flow if the popover closes between steps
-    let attempts = 0;
-    const maxAttempts = 3;
-    while (attempts < maxAttempts) {
-        attempts++;
-        await openPlayerDetailsPopover(page, playerLink);
-
-        // Check if popover is still open before proceeding
-        const isPopoverOpen = await page
-            .locator('.PlayerDetails[data-ready="true"]')
-            .isVisible()
-            .catch(() => false);
-
-        if (isPopoverOpen) {
-            await submitReportForm(page, type, notes);
-            return; // Success
-        }
-
-        if (attempts >= maxAttempts) {
-            throw new Error(
-                `PlayerDetails popover closed before Report button could be clicked after ${maxAttempts} attempts`,
-            );
-        }
-    }
+    await openPlayerDetailsPopover(page, playerLink);
+    await submitReportForm(page, type, notes);
 };
 
 export const assertIncidentReportIndicatorActive = async (page: Page, count: number) => {
@@ -771,14 +679,15 @@ export const banUserAsModerator = async (
 
     // Click the Suspend button in the modal
     const confirmSuspendButton = await expectOGSClickableByName(modPage, /^Suspend$/);
-    await confirmSuspendButton.click();
+    await actAndWaitForResponse(
+        modPage,
+        { method: "PUT", path: /^\/api\/v1\/players\/\d+\/moderate$/ },
+        () => confirmSuspendButton.click(),
+    );
 
-    // Wait for the modal to close as confirmation the suspension was successful
+    // The response confirms the suspension; the dialog must also close.
     await expect(modPage.locator(".BanModal")).toBeHidden();
     log("Suspend modal closed - suspension request completed");
-
-    // Give the server a moment to process the suspension
-    await modPage.waitForTimeout(500);
 
     await modPage.close();
     await modContext.close();

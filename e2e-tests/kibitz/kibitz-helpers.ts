@@ -163,7 +163,7 @@ export async function createKibitzRoomForLiveGame(
         periods: "5",
         ranked: false,
     });
-    await acceptDirectChallenge(whitePlayerPage);
+    await acceptDirectChallenge(whitePlayerPage, blackPlayerPage);
 
     // After accepting, the white player page navigates to /game/<id> or /play/<id>.
     // Capture the game id from the white player URL before continuing.

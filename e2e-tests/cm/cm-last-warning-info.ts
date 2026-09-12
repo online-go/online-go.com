@@ -77,9 +77,9 @@ const BLITZ_9X9_SETTINGS = {
     boardSize: "9x9" as const,
     speed: "live" as const,
     timeControl: "byoyomi" as const,
-    mainTime: "120",
+    mainTime: "300",
     timePerPeriod: "30",
-    periods: "1",
+    periods: "5",
 };
 
 const MOVES_9X9 = ["D5", "E5", "D6", "E6", "D7", "E7", "D8", "E8"];
@@ -95,7 +95,7 @@ async function playAndResignGame(
     opponentUsername: string,
 ): Promise<string> {
     await createDirectChallenge(challengerPage, opponentUsername, BLITZ_9X9_SETTINGS);
-    await acceptDirectChallenge(acceptorPage);
+    await acceptDirectChallenge(acceptorPage, challengerPage);
 
     // Wait for the game to start
     const goban = challengerPage.locator(".Goban[data-pointers-bound]");
@@ -257,7 +257,7 @@ export const cmLastWarningInfoTest = async (
 
             // Game 2: opponent challenges accused, opponent resigns
             await createDirectChallenge(opponentPage, accusedUsername, BLITZ_9X9_SETTINGS);
-            await acceptDirectChallenge(accusedPage);
+            await acceptDirectChallenge(accusedPage, opponentPage);
 
             const goban2 = opponentPage.locator(".Goban[data-pointers-bound]");
             await goban2.waitFor({ state: "visible" });
@@ -267,7 +267,7 @@ export const cmLastWarningInfoTest = async (
 
             // Game 3: opponent challenges accused again, opponent resigns
             await createDirectChallenge(opponentPage, accusedUsername, BLITZ_9X9_SETTINGS);
-            await acceptDirectChallenge(accusedPage);
+            await acceptDirectChallenge(accusedPage, opponentPage);
 
             const goban3 = opponentPage.locator(".Goban[data-pointers-bound]");
             await goban3.waitFor({ state: "visible" });

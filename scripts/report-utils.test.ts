@@ -1,5 +1,9 @@
-import type { APIResponse, Locator, Page, Response } from "@playwright/test";
-import { dismissWarningDialogs } from "../e2e-tests/helpers/report-utils";
+import type { APIResponse, Locator, Page, Response, TestInfo } from "@playwright/test";
+import {
+    dismissWarningDialogs,
+    IncidentReportCountTracker,
+    withReportCountTracking,
+} from "../e2e-tests/helpers/report-utils";
 import { expectOGSClickableByName } from "../e2e-tests/helpers/matchers";
 
 jest.mock("@playwright/test", () => ({
@@ -33,6 +37,7 @@ function warningQueue(count: number) {
                 request: () => ({ method: () => "PATCH" }),
                 ok: () => true,
                 status: () => 200,
+                finished: async () => null,
             } as Response);
         }),
     };
@@ -77,4 +82,33 @@ test("stops after ten dismissals when another warning remains", async () => {
     expect(warnings).toEqual([{ id: 10, severity: "warning" }]);
     expect(click).toHaveBeenCalledTimes(10);
     expect(get).toHaveBeenCalledTimes(11);
+});
+
+test("report-count diagnostics preserve a failed journey's original error", async () => {
+    const initial = jest
+        .spyOn(IncidentReportCountTracker.prototype, "captureInitialCount")
+        .mockResolvedValue();
+    const final = jest
+        .spyOn(IncidentReportCountTracker.prototype, "checkCurrentCount")
+        .mockRejectedValue(new Error("page closed during teardown"));
+    const failure = new Error("report action failed");
+    try {
+        await expect(
+            withReportCountTracking(
+                {} as Page,
+                {
+                    setTimeout: jest.fn(),
+                    parallelIndex: 0,
+                    config: { workers: 1 },
+                } as unknown as TestInfo,
+                async () => {
+                    throw failure;
+                },
+            ),
+        ).rejects.toBe(failure);
+        expect(final).not.toHaveBeenCalled();
+    } finally {
+        initial.mockRestore();
+        final.mockRestore();
+    }
 });

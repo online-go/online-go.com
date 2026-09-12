@@ -98,7 +98,7 @@ export const cmInformalWarnEscaperTest = async (
                 color: "black",
             });
 
-            await acceptDirectChallenge(accusedPage);
+            await acceptDirectChallenge(accusedPage, reporterPage);
 
             const goban = reporterPage.locator(".Goban[data-pointers-bound]");
             await goban.waitFor({ state: "visible" });

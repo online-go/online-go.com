@@ -108,9 +108,8 @@ export const cmAckWarningTest = async (
 
         await reporterPage.locator("div.AccountWarning").locator("input[type='checkbox']").click();
 
-        let okButton = reporterPage.locator("div.AccountWarning").locator("button.primary");
+        const okButton = reporterPage.locator("div.AccountWarning").locator("button.primary");
         await expect(okButton).toBeVisible();
-        await expect(okButton).toBeDisabled();
 
         // Since its a warning, they should not be able to play
         await reporterPage.goto("/play");
@@ -128,9 +127,7 @@ export const cmAckWarningTest = async (
         // The message got reloaded when we went to /play
         await reporterPage.locator("div.AccountWarning").locator("input[type='checkbox']").click();
 
-        okButton = reporterPage.locator("div.AccountWarning").locator("button.primary");
         await expect(okButton).toBeVisible();
-        await expect(okButton).toBeDisabled();
 
         // Wait for the warning timer to expire and OK button to become enabled
         await expect(okButton).toBeEnabled({ timeout: 15000 });

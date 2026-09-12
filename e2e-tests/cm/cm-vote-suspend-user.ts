@@ -86,7 +86,7 @@ export const cmVoteSuspendUserTest = async (
         periods: "5",
     });
 
-    await acceptDirectChallenge(opponentPage);
+    await acceptDirectChallenge(opponentPage, accusedPage);
 
     // Wait for the Goban to be visible
     const goban = accusedPage.locator(".Goban[data-pointers-bound]");
@@ -97,6 +97,7 @@ export const cmVoteSuspendUserTest = async (
     await playMoves(accusedPage, opponentPage, moves, "9x9");
 
     await passAndScoreGame(accusedPage, opponentPage);
+    await opponentPage.context().close();
     log("Game completed ✓");
 
     // Create a reporter and report the accused user for escaping
@@ -137,14 +138,12 @@ export const cmVoteSuspendUserTest = async (
         await escalatorPage.fill("#escalation-note", "Repeat offender - needs moderator attention");
 
         await submitReportVote(escalatorPage);
-        await escalatorPage.context().close();
 
         log("E2E_CM_VSU_V1 escalated the report");
 
         // Keep the accused user logged in and browsing while suspension happens
         log("Accused user staying logged in...");
         await accusedPage.goto("/");
-        await accusedPage.waitForLoadState("domcontentloaded");
         log("Accused user is browsing ✓");
 
         // Have three CMs vote to suspend the escalated report
@@ -152,9 +151,10 @@ export const cmVoteSuspendUserTest = async (
 
         for (const voter of suspensionVoters) {
             log(`${voter} voting to suspend escaper...`);
-            const { seededCMPage: voterPage } = await setupSeededCM(createContext, voter);
-
-            // Navigate directly to the report using the captured report number
+            const voterPage =
+                voter === suspensionVoters[0]
+                    ? escalatorPage
+                    : (await setupSeededCM(createContext, voter)).seededCMPage;
             await navigateToReport(voterPage, reportNumber);
 
             await voterPage.click('input[value="suspend_user"]');
@@ -165,17 +165,11 @@ export const cmVoteSuspendUserTest = async (
             log(`${voter} voted to suspend`);
         }
 
-        // Wait for suspension processing
-        log("Waiting for suspension processing...");
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-
         // Verify suspended user sees human-readable ban reason
         log("=== Verifying suspended user sees human-readable ban reason ===");
 
-        // Navigate to home page - should see a banner with appeal link
+        // CM suspension persists the ban without the direct-moderation reload signal.
         await accusedPage.goto("/");
-
-        // Should see a banner with "appeal here" link
         const appealLink = accusedPage.getByRole("link", { name: /appeal here/i });
         await expect(appealLink).toBeVisible({ timeout: 15000 });
         log("Appeal banner visible with 'appeal here' link ✓");

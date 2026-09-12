@@ -32,6 +32,7 @@ import {
 } from "./challenge-utils";
 import { playMoves, resignActiveGame, waitForGameViewReady } from "./game-utils";
 import { log } from "./logger";
+import { actAndWaitForResponse } from "./requests";
 import type { CreateContextOptions } from "../helpers";
 
 /**
@@ -48,35 +49,22 @@ import type { CreateContextOptions } from "../helpers";
  * report id via the `data-report-id` attribute — the displayed report number
  * is truncated to its three least-significant digits, so matching by text
  * would mis-target older reports that share those digits.
- *
- * Idempotent: returns silently if no row with that report id is present
- * (e.g. the report was already resolved by voting).
+ * Both callers leave this report unresolved and require cancellation to finish.
  */
 export async function cancelOwnReport(page: Page, reportNumber: string): Promise<void> {
     const reportId = reportNumber.replace(/^R/, "");
 
     await page.goto("/reports-center/my_reports");
 
-    // Wait for the specific row we want to cancel to appear. If it never
-    // does within a short bound, the report has already been resolved (or
-    // was never present) — nothing to cancel.
     const reportButton = page.locator(`button[data-report-id="${reportId}"]`);
-    const present = await reportButton
-        .waitFor({ state: "visible", timeout: 3000 })
-        .then(() => true)
-        .catch(() => false);
-    if (!present) {
-        log(`[MR] cancelOwnReport(${reportNumber}): already gone (resolved or never present)`);
-        return;
-    }
-
+    await expect(reportButton).toBeVisible();
     const reportContainer = page.locator("div.incident").filter({ has: reportButton });
     const cancelButton = reportContainer.locator("button.reject.xs", { hasText: "Cancel" });
-    if ((await cancelButton.count()) === 0) {
-        log(`[MR] cancelOwnReport(${reportNumber}): no Cancel button (already resolved)`);
-        return;
-    }
-    await cancelButton.click();
+    await actAndWaitForResponse(
+        page,
+        { method: "POST", path: `/api/v1/moderation/incident/${reportId}` },
+        () => cancelButton.click(),
+    );
     // Wait for the row to disappear so the next nav sees a stable list.
     await expect(reportButton).toHaveCount(0, { timeout: 10000 });
     log(`[MR] Cancelled own report ${reportNumber}`);
@@ -149,7 +137,7 @@ export async function setupEscapingSourceGame(
         timePerPeriod: "30",
         periods: "1",
     });
-    await acceptDirectChallenge(opponentPage);
+    await acceptDirectChallenge(opponentPage, victimPage);
 
     const goban = victimPage.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });

@@ -10,6 +10,7 @@
  */
 
 import { expect, type Page, type Locator, type TestInfo } from "@playwright/test";
+import { actAndWaitForResponse } from "./requests";
 import { log, setWorkerIndex } from "./logger";
 import { expectOGSClickableByName } from "./matchers";
 
@@ -28,6 +29,7 @@ export async function submitReportVote(page: Page): Promise<void> {
     );
     const [response] = await Promise.all([responsePromise, voteButton.click()]);
     expect(response.ok(), `Vote response: ${response.status()}`).toBe(true);
+    expect(await response.finished()).toBeNull();
 }
 
 /** Apply report-test timeouts. Report selection and counts are scoped to the reporter. */
@@ -185,19 +187,15 @@ export async function withReportCountTracking<T>(
             const tracker = new IncidentReportCountTracker();
             await tracker.captureInitialCount(page);
 
-            try {
-                return await fn(tracker);
-            } finally {
-                // Log if count didn't return to initial (useful for debugging)
-                // Use public accessor methods for type safety
-                const initialCount = tracker.getInitialCount();
-                const finalCount = await tracker.checkCurrentCount(page);
-                if (initialCount !== null && finalCount !== initialCount) {
-                    log(
-                        `[ReportCountTracker] Warning: Count did not return to initial baseline. Initial: ${initialCount}, Final: ${finalCount}`,
-                    );
-                }
+            const result = await fn(tracker);
+            const initialCount = tracker.getInitialCount();
+            const finalCount = await tracker.checkCurrentCount(page);
+            if (initialCount !== null && finalCount !== initialCount) {
+                log(
+                    `[ReportCountTracker] Warning: Count did not return to initial baseline. Initial: ${initialCount}, Final: ${finalCount}`,
+                );
             }
+            return result;
         },
         timeoutMs,
     );
@@ -222,12 +220,48 @@ export async function dismissWarningDialogs(page: Page): Promise<void> {
         }
         const ok = await expectOGSClickableByName(dialog, /^OK/);
         await expect(ok).toBeEnabled({ timeout: 15000 });
-        const accepted = page.waitForResponse(
-            (response) =>
-                new URL(response.url()).pathname === `/api/v1/me/warning/${warning.id}` &&
-                response.request().method() === "PATCH",
+        await actAndWaitForResponse(
+            page,
+            { method: "PATCH", path: `/api/v1/me/warning/${warning.id}` },
+            () => ok.click(),
         );
-        const [response] = await Promise.all([accepted, ok.click()]);
-        expect(response.ok(), `Acknowledge response: ${response.status()}`).toBe(true);
     }
+}
+
+/** Wait for the server's access decision before asserting that report controls are absent. */
+export async function expectReportAccessDenied(page: Page, reportNumber: string): Promise<void> {
+    const id = reportNumber.replace(/^R/, "");
+    const [response] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.request().method() === "GET" &&
+                new URL(response.url()).pathname === `/api/v1/moderation/incident/${id}`,
+            { timeout: 45000 },
+        ),
+        page.goto(`/reports-center/all/${id}`),
+    ]);
+    expect(response.status()).toBe(403);
+    expect(await response.finished()).toBeNull();
+    await expect(page.locator(".report-type-selector")).toHaveCount(0);
+    await expect(page.locator(".action-selector input[type='radio']")).toHaveCount(0);
+}
+
+/** Claim and close once each; claiming changes the local UI before the server responds. */
+export async function closeReportAsModerator(page: Page): Promise<void> {
+    const id = new URL(page.url()).pathname.match(/\/reports-center\/[^/]+\/(\d+)$/)?.[1];
+    expect(id).toBeDefined();
+    const path = `/api/v1/moderation/incident/${id}`;
+    const claim = await expectOGSClickableByName(page, /^Claim$/);
+    await actAndWaitForResponse(page, { method: "POST", path }, () => claim.click());
+    const close = await expectOGSClickableByName(page, /Close as good report/i);
+    await actAndWaitForResponse(page, { method: "POST", path }, () => close.click());
+}
+
+/** Check persisted warnings after the vote response, before checking the empty UI. */
+export async function expectNoAccountWarning(page: Page): Promise<void> {
+    const response = await page.request.get("/api/v1/me/warning");
+    await expect(response).toBeOK();
+    expect(await response.json()).toEqual({});
+    await page.goto("/");
+    await expect(page.locator("div.AccountWarning")).toBeHidden();
 }

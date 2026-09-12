@@ -115,13 +115,13 @@ export const aiDetectorVoteCancelTicketTest = async (
             boardSize: boardSize,
             speed: "live",
             timeControl: "byoyomi",
-            mainTime: "45",
-            timePerPeriod: "10",
-            periods: "1",
+            mainTime: "300",
+            timePerPeriod: "30",
+            periods: "5",
             handicap: handicap.toString(),
         });
 
-        await acceptDirectChallenge(reportedPage);
+        await acceptDirectChallenge(reportedPage, reporterPage);
         log("Game created and accepted ✓");
 
         // Wait for the Goban to be visible & ready

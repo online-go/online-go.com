@@ -54,7 +54,8 @@ export const suspendedUserCanLoginToAppealTest = async ({
     // 1. Create a new user
     const username = newTestUsername("LoginAppeal");
     log(`Creating test user: ${username}`);
-    await prepareNewUser(createContext, username, password);
+    const { userPage } = await prepareNewUser(createContext, username, password);
+    await userPage.close();
     log(`User created: ${username}`);
 
     // 2. Suspend the user via moderator
@@ -90,7 +91,9 @@ export const suspendedUserCanLoginToAppealTest = async ({
     log("Redirected to appeal page");
 
     // 6. Verify the appeal page shows the suspension reason
-    await expect(page.getByText(/Your account has been suspended/i)).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(/Your account has been suspended/i)).toBeVisible({
+        timeout: 10000,
+    });
     await expect(page.getByText(banReason)).toBeVisible();
     log("Suspension reason displayed");
 

@@ -32,6 +32,7 @@
  * the standard "escalate" action (which sets the escalated flag, like other CM reports).
  */
 
+import { closeReportAsModerator } from "@helpers/report-utils";
 import type { CreateContextOptions } from "@helpers";
 
 import { BrowserContext, TestInfo } from "@playwright/test";
@@ -55,7 +56,6 @@ import {
 
 import { playMoves, resignActiveGame } from "@helpers/game-utils";
 
-import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
 
 import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
@@ -81,13 +81,13 @@ export const cmVoteEscalateSandbaggingTest = async (
         boardSize: "9x9",
         speed: "live",
         timeControl: "byoyomi",
-        mainTime: "120",
+        mainTime: "300",
         timePerPeriod: "30",
-        periods: "1",
+        periods: "5",
     });
 
     // Other player accepts
-    await acceptDirectChallenge(otherPage);
+    await acceptDirectChallenge(otherPage, accusedPage);
 
     // Wait for the game to start
     const goban = accusedPage.locator(".Goban[data-pointers-bound]");
@@ -104,6 +104,7 @@ export const cmVoteEscalateSandbaggingTest = async (
 
     // Capture the game URL for the reporter to navigate to
     const gameUrl = accusedPage.url();
+    await Promise.all([accusedPage.context().close(), otherPage.context().close()]);
 
     // Create the reporter
     const { userPage: reporterPage } = await prepareNewUser(
@@ -161,7 +162,6 @@ export const cmVoteEscalateSandbaggingTest = async (
         // After the CM votes to escalate, the report should be escalated immediately (unilateral)
         // Unlike other outcomes, escalation does NOT close the report or send an acknowledgement
         // The reporter's count should remain at 1 (report still open, just in moderator queue)
-        await reporterPage.waitForTimeout(3000);
 
         // Verify the reporter's count has NOT decreased (report is still open)
         await tracker.assertCountIncreasedBy(reporterPage, 1);
@@ -189,18 +189,8 @@ export const cmVoteEscalateSandbaggingTest = async (
 
         // Clean up: moderator closes the report
         // First claim it
-        const claimButton = await expectOGSClickableByName(modPage, /Claim/i);
-        await claimButton.click();
-        await modPage.waitForTimeout(1000);
+        await closeReportAsModerator(modPage);
 
-        // Then close it
-        const closeButton = await expectOGSClickableByName(modPage, /Close as good report/i);
-        await closeButton.click();
-
-        // Wait for the report to be processed and count to return to 0
-        await modPage.waitForTimeout(2000);
-
-        // Verify the reporter's count has returned to initial (report is now closed)
         await tracker.assertCountReturnedToInitial(reporterPage);
 
         // Clean up: close contexts

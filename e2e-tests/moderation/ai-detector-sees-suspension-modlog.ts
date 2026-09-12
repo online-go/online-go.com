@@ -113,14 +113,14 @@ export const aiDetectorSeesSuspensionModlogTest = async (
             boardSize: "9x9",
             speed: "live",
             timeControl: "byoyomi",
-            mainTime: "45",
-            timePerPeriod: "10",
-            periods: "1",
+            mainTime: "300",
+            timePerPeriod: "30",
+            periods: "5",
             handicap: "0",
         });
         log("Challenge sent");
 
-        await acceptDirectChallenge(opponentPage);
+        await acceptDirectChallenge(opponentPage, suspendedUserPage);
         log("Game created and accepted");
 
         // Wait for the Goban to be ready

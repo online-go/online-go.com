@@ -29,7 +29,7 @@ import {
     assertNotificationIndicatorInactive,
     dismissNotification,
 } from "@helpers/user-utils";
-import {} from "@helpers/challenge-utils";
+import { actAndWaitForResponse } from "@helpers/requests";
 
 export const declineFriendRequestNotificationTest = async ({
     createContext,
@@ -46,14 +46,13 @@ export const declineFriendRequestNotificationTest = async ({
     const declinerUsername = newTestUsername("frDFRNDec"); // cspell:disable-line
     const { userPage: decliner } = await prepareNewUser(createContext, declinerUsername, "test");
 
-    await requestor.waitForTimeout(1000);
     // Requestor sends friend request
     await openUserDropdownFromOmniSearch(requestor, declinerUsername);
 
-    await requestor.waitForTimeout(1000);
-
     await expect(requestor.getByRole("button", { name: /Add friend$/ })).toBeVisible();
-    await requestor.getByRole("button", { name: /Add friend$/ }).click();
+    await actAndWaitForResponse(requestor, { method: "POST", path: "/api/v1/me/friends" }, () =>
+        requestor.getByRole("button", { name: /Add friend$/ }).click(),
+    );
 
     await expect(requestor.getByText("Sent friend request").first()).toBeVisible();
 
@@ -67,10 +66,15 @@ export const declineFriendRequestNotificationTest = async ({
     await expect(decliner.locator('input[id="notify-on-decline"]')).not.toBeChecked();
 
     // Decliner clicks the X to decline the friend request (target specific invitation by username)
-    await decliner
-        .locator(".friend-invitation", { has: decliner.getByText(requestorUsername) })
-        .locator(".fa-times")
-        .click();
+    await actAndWaitForResponse(
+        decliner,
+        { method: "POST", path: "/api/v1/me/friends/invitations/" },
+        () =>
+            decliner
+                .locator(".friend-invitation", { has: decliner.getByText(requestorUsername) })
+                .locator(".fa-times")
+                .click(),
+    );
 
     await assertNotificationIndicatorInactive(decliner);
 
@@ -81,7 +85,9 @@ export const declineFriendRequestNotificationTest = async ({
     await openUserDropdownFromOmniSearch(requestor, declinerUsername);
 
     await expect(requestor.getByRole("button", { name: /Add friend$/ })).toBeVisible();
-    await requestor.getByRole("button", { name: /Add friend$/ }).click();
+    await actAndWaitForResponse(requestor, { method: "POST", path: "/api/v1/me/friends" }, () =>
+        requestor.getByRole("button", { name: /Add friend$/ }).click(),
+    );
 
     await expect(requestor.getByText("Sent friend request").first()).toBeVisible();
 
@@ -94,10 +100,15 @@ export const declineFriendRequestNotificationTest = async ({
 
     await expect(notifyCheckbox).toBeChecked();
 
-    await decliner
-        .locator(".friend-invitation", { has: decliner.getByText(requestorUsername) })
-        .locator(".fa-times")
-        .click();
+    await actAndWaitForResponse(
+        decliner,
+        { method: "POST", path: "/api/v1/me/friends/invitations/" },
+        () =>
+            decliner
+                .locator(".friend-invitation", { has: decliner.getByText(requestorUsername) })
+                .locator(".fa-times")
+                .click(),
+    );
 
     await assertNotificationIndicatorInactive(decliner);
 

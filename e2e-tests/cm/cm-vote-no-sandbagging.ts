@@ -79,13 +79,13 @@ export const cmVoteNoSandbaggingTest = async (
         boardSize: "9x9",
         speed: "live",
         timeControl: "byoyomi",
-        mainTime: "120",
+        mainTime: "300",
         timePerPeriod: "30",
-        periods: "1",
+        periods: "5",
     });
 
     // Other player accepts
-    await acceptDirectChallenge(otherPage);
+    await acceptDirectChallenge(otherPage, accusedPage);
 
     // Wait for the game to start
     const goban = accusedPage.locator(".Goban[data-pointers-bound]");
@@ -102,6 +102,7 @@ export const cmVoteNoSandbaggingTest = async (
 
     // Capture the game URL for the reporter to navigate to
     const gameUrl = accusedPage.url();
+    await Promise.all([accusedPage.context().close(), otherPage.context().close()]);
 
     // Create the reporter
     const { userPage: reporterPage } = await prepareNewUser(
@@ -158,8 +159,6 @@ export const cmVoteNoSandbaggingTest = async (
         }
 
         // After all 3 CMs vote, the reporter should receive an acknowledgement
-        // Wait a moment for the acknowledgement to be generated
-        await reporterPage.waitForTimeout(3000);
 
         // The reporter should see the "no thrown game evident" acknowledgement
         await reporterPage.goto("/");

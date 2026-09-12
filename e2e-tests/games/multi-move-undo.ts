@@ -126,7 +126,7 @@ export const multiMoveUndoTest = async ({
         timePerPeriod: "30",
         periods: "5",
     });
-    await acceptDirectChallenge(acceptorPage);
+    await acceptDirectChallenge(acceptorPage, challengerPage);
 
     // Challenger is black. Black plays, white answers — black's turn again.
     await playMoves(challengerPage, acceptorPage, ["D4", "E5"], "9x9");
@@ -165,7 +165,7 @@ export const multiMoveUndoWhiteRequesterTest = async ({
         timePerPeriod: "30",
         periods: "5",
     });
-    await acceptDirectChallenge(acceptorPage);
+    await acceptDirectChallenge(acceptorPage, challengerPage);
 
     // Three moves: B D4, W E5, B C3 — now it is white's turn.
     await playMoves(challengerPage, acceptorPage, ["D4", "E5", "C3"], "9x9");

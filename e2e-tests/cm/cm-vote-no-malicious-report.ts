@@ -28,6 +28,7 @@
  * - E2E_CM_MR_CM_V1, V2, V3 : CMs who vote
  */
 
+import { expectNoAccountWarning } from "@helpers/report-utils";
 import type { CreateContextOptions } from "@helpers";
 import { BrowserContext, TestInfo } from "@playwright/test";
 import { expect } from "@playwright/test";
@@ -97,9 +98,7 @@ export const cmVoteNoMaliciousReportTest = async (
             log(`[MR/vote-no] Phase 3: verify source reporter sees NO warning`);
             // Source reporter (the accused) should NOT see any warning, since
             // the vote was "no malicious report".
-            await setup.sourceReporterPage.goto("/");
-            await setup.sourceReporterPage.waitForTimeout(2000);
-            await expect(setup.sourceReporterPage.locator("div.AccountWarning")).not.toBeVisible();
+            await expectNoAccountWarning(setup.sourceReporterPage);
             await expect(
                 setup.sourceReporterPage.locator("div.AccountWarningInfo"),
             ).not.toBeVisible();

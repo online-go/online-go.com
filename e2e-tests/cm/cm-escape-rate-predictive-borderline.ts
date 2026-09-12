@@ -78,23 +78,18 @@ async function playAndFinishGame(
     gameIndex: number,
 ): Promise<void> {
     const gameName = `E2E ERPB Game ${gameIndex}`;
-    // Override defaultChallengeSettings' 2s/2s blitz timing — under a loaded
-    // dev stack the 4-move play sequence can exhaust either player's time
-    // and end the game by timeout rather than pass+accept, leaving the test
-    // waiting forever on the "Pass"/"Accept" buttons. 60s main + 1×10s
-    // byoyomi gives ample headroom while still being "live" speed.
     await createDirectChallenge(reporterPage, accusedUsername, {
         ...defaultChallengeSettings,
         gameName,
         boardSize: "9x9",
         speed: "live",
-        mainTime: "60",
-        timePerPeriod: "10",
-        periods: "1",
+        mainTime: "300",
+        timePerPeriod: "30",
+        periods: "5",
         color: "black",
     });
 
-    await acceptDirectChallenge(accusedPage);
+    await acceptDirectChallenge(accusedPage, reporterPage);
 
     const goban = reporterPage.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });

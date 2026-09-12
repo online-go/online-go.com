@@ -131,7 +131,7 @@ export const sgfDownloadRestrictionsTest = async ({
         timePerPeriod: "30",
         periods: "5",
     });
-    await acceptDirectChallenge(whitePage);
+    await acceptDirectChallenge(whitePage, blackPage);
 
     // Wait for game board to be ready on both sides
     const blackGoban = blackPage.locator(".Goban[data-pointers-bound]");

@@ -22,3 +22,25 @@ Use them to establish why the synchronization works. Repeated whole-suite runs
 are supplementary evidence, not a replacement for these checks. Keep all 72
 automated journeys, the requested RAM tiers, and zero whole-test retries.
 Record the audit, changes, and measured limits in the durable testing guide.
+
+Two additional fixture contracts follow from the audit. Browser-ID suspension
+uses a fresh historical/current device relationship per execution; the subject
+page closes before the opponent completes the game because automatic suspension
+reloads that account. Real countdowns have no guaranteed disabled observation
+window on a loaded browser; normal tests with controlled timers own that boundary.
+Live tournament entrants must remain registered in chat through start, as well
+as having a saved tournament entry. Cleanup for unresolved malicious reports
+must load the owned row and complete cancellation, with no timed silent skip.
+
+Native backend exits need separate evidence. SIGSEGV is observed during a full
+run and must remain a failure; neither write retries nor longer locator waits
+repair a crashed service. Capture a backtrace before attributing the fault to
+memory capacity, Node version, or profiling flags.
+
+A CPU-constrained browser run exposes a frontend store race: the suspension
+response includes the banned account ID, but mounted readers erase that value.
+`useData` writes its initial render snapshot back in a passive effect, after a
+newer value may have arrived. A deterministic real-store/React test reproduces
+this without a browser delay. Use React's external-store subscription contract
+and write only through the returned setter. This is a product correctness fix,
+separate from the test synchronization changes; do not hide it with a reload.

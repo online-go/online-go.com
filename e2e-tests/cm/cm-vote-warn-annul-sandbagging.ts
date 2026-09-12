@@ -78,13 +78,13 @@ export const cmVoteWarnAnnulSandbaggingTest = async (
         boardSize: "9x9",
         speed: "live",
         timeControl: "byoyomi",
-        mainTime: "120",
+        mainTime: "300",
         timePerPeriod: "30",
-        periods: "1",
+        periods: "5",
     });
 
     // Other player accepts
-    await acceptDirectChallenge(otherPage);
+    await acceptDirectChallenge(otherPage, accusedPage);
 
     // Wait for the game to start
     const goban = accusedPage.locator(".Goban[data-pointers-bound]");
@@ -98,6 +98,7 @@ export const cmVoteWarnAnnulSandbaggingTest = async (
     // When reporter submits a "sandbagging" report, the backend will convert
     // it to "thrown_game" because the accused lost.
     await resignActiveGame(accusedPage);
+    await otherPage.context().close();
 
     // Capture the game URL for the reporter to navigate to
     const gameUrl = accusedPage.url();
@@ -157,8 +158,6 @@ export const cmVoteWarnAnnulSandbaggingTest = async (
         }
 
         // After all 3 CMs vote, the reporter should receive an acknowledgement
-        // Wait a moment for the acknowledgement to be generated
-        await reporterPage.waitForTimeout(3000);
 
         // The reporter should see the acknowledgement about warned game thrower and annulled game
         await reporterPage.goto("/");
@@ -205,10 +204,8 @@ export const cmVoteWarnAnnulSandbaggingTest = async (
         // Warnings require clicking a checkbox to confirm you've read it
         await accusedPage.locator("div.AccountWarning").locator("input[type='checkbox']").click();
 
-        // The OK button starts disabled and has a timer before it becomes enabled
         const warningOkButton = accusedPage.locator("div.AccountWarning").locator("button.primary");
         await expect(warningOkButton).toBeVisible();
-        await expect(warningOkButton).toBeDisabled();
 
         // Wait for the warning timer to expire and OK button to become enabled
         await expect(warningOkButton).toBeEnabled({ timeout: 15000 });

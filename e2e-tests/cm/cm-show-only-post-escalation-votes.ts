@@ -125,14 +125,17 @@ export const cmShowOnlyPostEscalationVotesTest = async (
 
         // Make sure the all the escalated voting options are loaded
         const radioButtons = escalatorPage.locator('.action-selector input[type="radio"]');
-        await expect(await radioButtons.count()).toBeGreaterThanOrEqual(7);
+        await expect(radioButtons.nth(6)).toBeVisible();
 
         // Make sure there are no votes showing
         const voteCounts = escalatorPage.locator(".vote-count");
-        for (let i = 0; i < (await voteCounts.count()); i++) {
-            const text = await voteCounts.nth(i).textContent();
-            expect(text).toBe("(0)");
-        }
+        await expect(voteCounts.first()).toBeVisible();
+        await expect
+            .poll(async () => {
+                const counts = await voteCounts.allTextContents();
+                return counts.length >= 7 && counts.every((count) => count === "(0)");
+            })
+            .toBe(true);
 
         //  (we probably should make sure that the report is not acted on with pre-escalation votes,
         //   but that's for another day)

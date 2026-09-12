@@ -142,7 +142,7 @@ export const kibitzBasicRoomTest = async ({
     // the home page and clicks Accept there. The challenge can land after
     // the home page's first render, so retry until the accept navigates.
     await expect(async () => {
-        await acceptDirectChallenge(whitePlayerPage);
+        await acceptDirectChallenge(whitePlayerPage, blackPlayerPage);
         await whitePlayerPage.waitForURL(/\/(game|play)\/\d+/, { timeout: 10000 });
     }).toPass({ timeout: 60000, intervals: [1000, 2000] });
 

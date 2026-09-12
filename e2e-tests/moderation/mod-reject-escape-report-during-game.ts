@@ -57,20 +57,18 @@ export const modRejectEscapeReportDuringGameTest = async ({
         boardSize: "9x9",
         speed: "live",
         timeControl: "byoyomi",
-        mainTime: "180",
+        mainTime: "300",
         timePerPeriod: "30",
-        periods: "3",
+        periods: "5",
     });
 
     // Reported user accepts
-    await acceptDirectChallenge(reportedPage);
+    await acceptDirectChallenge(reportedPage, reporterPage);
 
     // Reporter is black
     // Wait for the Goban to be visible & definitely ready
     const goban = reporterPage.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });
-
-    await reporterPage.waitForTimeout(1000);
 
     // Wait for the game state to indicate it's the reporter's move
     const reportersMove = reporterPage.getByText("Your move", { exact: true });

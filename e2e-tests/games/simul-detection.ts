@@ -109,7 +109,7 @@ export const simulDetectionTest = async (
         periods: "5",
     });
 
-    await acceptDirectChallenge(opponent1Page);
+    await acceptDirectChallenge(opponent1Page, challengerGame1Page);
 
     // Wait for game 1 to be ready
     const goban1 = challengerGame1Page.locator(".Goban[data-pointers-bound]");
@@ -136,7 +136,7 @@ export const simulDetectionTest = async (
         periods: "5",
     });
 
-    await acceptDirectChallenge(opponent2Page);
+    await acceptDirectChallenge(opponent2Page, challengerGame2Page);
 
     // Wait for game 2 to be ready
     const goban2 = challengerGame2Page.locator(".Goban[data-pointers-bound]");

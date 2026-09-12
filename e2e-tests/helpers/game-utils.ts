@@ -170,8 +170,16 @@ export const playMoves = async (
         await expect(page.getByText("Your move", { exact: true })).toBeVisible();
         const moveNumber = page.locator(".MoveNumberControl-move-number");
         const previousMove = await moveNumber.innerText();
+        const nextMove = Number(previousMove.match(/\d+$/)?.[0]) + 1;
+        expect(Number.isInteger(nextMove)).toBe(true);
         await clickOnGobanIntersection(page, moves[i], boardSize);
-        await expect(moveNumber).not.toHaveText(previousMove);
+        await Promise.all(
+            [black, white].map((player) =>
+                expect(player.locator(".MoveNumberControl-move-number")).toHaveText(
+                    `Move ${nextMove}`,
+                ),
+            ),
+        );
         if (delay > 0) {
             await page.waitForTimeout(delay);
         }
