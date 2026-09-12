@@ -11,8 +11,31 @@
 
 import { Locator, Page } from "@playwright/test";
 import { expect } from "@playwright/test";
+import { expectOGSClickableByName } from "./matchers";
 
 type BoardSize = "19x19" | "13x13" | "9x9";
+
+/** Finish a game through passing and scoring, starting on black's turn. */
+export async function passAndScoreGame(blackPage: Page, whitePage: Page): Promise<void> {
+    for (const page of [blackPage, whitePage]) {
+        await expect(page.getByText(/^Your move(?: - opponent passed)?$/)).toBeVisible();
+        await (await expectOGSClickableByName(page, /^Pass$/)).click();
+    }
+
+    await Promise.all(
+        [blackPage, whitePage].map(async (page) => {
+            await expect(page.locator(".stone-removal-buttons")).toBeVisible();
+            // Accept becomes enabled after two seconds even if scoring is still running.
+            await expect(page.locator(".autoscoring-in-progress")).toBeHidden({ timeout: 35000 });
+        }),
+    );
+    await (await expectOGSClickableByName(whitePage, /^Accept removed stones/)).click();
+    await expect(blackPage.locator(".white .stone-removal-accepted.accepted")).toBeVisible();
+    await (await expectOGSClickableByName(blackPage, /^Accept removed stones/)).click();
+    await Promise.all(
+        [blackPage, whitePage].map((page) => expect(page.getByText("wins by")).toBeVisible()),
+    );
+}
 
 /**
  * Wait for the board and seated player controls. AI review is optional and can

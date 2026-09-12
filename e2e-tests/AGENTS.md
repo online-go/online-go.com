@@ -23,7 +23,7 @@ When creating e2e tests, note that:
 
 - `prepareNewUser` creates a new user with suitable settings and guaranteed unique name.
 
-- The string argument of `newTestUsername` is length-checked at call time against a limit derived from the server's 30-char username cap (currently 18 chars, after subtracting the `e2e` prefix, the underscore, the suffix, and worker-index space). The exact value is computed in `helpers/user-utils.ts`; keep the role short and descriptive (e.g. `ERPBAcc`, `LWARNOth`) so the generated username is readable in logs
+- The string argument of `newTestUsername` is length-checked against the server's 30-character username cap. Roles can contain up to 16 characters; a cryptographically random ten-digit suffix keeps names distinct without generating words that the username filter rejects. The limit is computed in `helpers/test-username.ts`. Keep roles short and descriptive (e.g. `ERPBAcc`, `LWARNOth`).
 
 - Drive the behavior under test through the UI. Account fixture setup may use the API; `registerNewUser` and `loginAsUser` retain UI coverage of registration and login. Read-only API checks may wait for persisted state, such as a finished game, instead of fixed sleeps. Do not use the API to perform the action being tested.
 

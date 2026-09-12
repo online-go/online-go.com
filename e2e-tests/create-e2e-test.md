@@ -271,10 +271,10 @@ These are mandatory requirements:
 3. **Use Helper Functions**:
     - `expectOGSClickableByName()` for ALL buttons/links
     - `prepareNewUser()` for creating test users
-    - `newTestUsername()` for unique usernames (max 20 characters!)
+    - `newTestUsername()` for distinct usernames (roles up to 16 characters)
     - `generateUniqueTestIPv6()` for unique IP addresses
 
-4. **Username Constraints** - The argument to `newTestUsername()` MUST be 20 characters or less (10 chars are used for uniquification: e2e prefix, underscore, timestamp, worker ID)
+4. **Username Constraints** - The argument to `newTestUsername()` MUST be 16 characters or less (14 characters are used for the e2e prefix, underscore, and random numeric suffix)
 
 5. **Avoid Direct API Calls** - Drive the system as a user does through the UI
 

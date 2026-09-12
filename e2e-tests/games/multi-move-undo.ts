@@ -76,9 +76,9 @@ export const multiMoveUndoTest = async ({
         boardSize: "9x9",
         speed: "live",
         timeControl: "byoyomi",
-        mainTime: "45",
-        timePerPeriod: "10",
-        periods: "1",
+        mainTime: "300",
+        timePerPeriod: "30",
+        periods: "5",
     });
     await acceptDirectChallenge(acceptorPage);
 
@@ -141,9 +141,9 @@ export const multiMoveUndoWhiteRequesterTest = async ({
         boardSize: "9x9",
         speed: "live",
         timeControl: "byoyomi",
-        mainTime: "45",
-        timePerPeriod: "10",
-        periods: "1",
+        mainTime: "300",
+        timePerPeriod: "30",
+        periods: "5",
     });
     await acceptDirectChallenge(acceptorPage);
 

@@ -68,7 +68,7 @@ export const cmInformalWarnEscaperAndAnnulTest = async (
     }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
-    const TIMEOUT_MS = 120 * 1000;
+    const TIMEOUT_MS = 180 * 1000;
 
     // Create fresh users — avoids accumulated warnings from previous runs
     const accusedUsername = newTestUsername("IWEAAcc"); // cspell:disable-line

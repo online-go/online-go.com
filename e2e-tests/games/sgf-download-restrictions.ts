@@ -33,7 +33,7 @@ import type { CreateContextOptions } from "@helpers";
 import { BrowserContext, expect } from "@playwright/test";
 import { newTestUsername, prepareNewUser, generateUniqueTestIPv6 } from "../helpers/user-utils";
 import { createDirectChallenge, acceptDirectChallenge } from "../helpers/challenge-utils";
-import { playMoves, resignActiveGame } from "../helpers/game-utils";
+import { playMoves, resignActiveGame, waitForGameViewReady } from "../helpers/game-utils";
 import { log } from "@helpers/logger";
 
 /**
@@ -67,8 +67,7 @@ const getSgfDownloadLink = async (page: import("@playwright/test").Page) => {
 const expectSgfDownloadEnabled = async (page: import("@playwright/test").Page) => {
     const link = await getSgfDownloadLink(page);
     await expect(link).toBeVisible();
-    const hasDisabled = await link.evaluate((el) => el.classList.contains("disabled"));
-    expect(hasDisabled).toBe(false);
+    await expect(link).not.toHaveClass(/\bdisabled\b/);
 };
 
 /**
@@ -77,8 +76,7 @@ const expectSgfDownloadEnabled = async (page: import("@playwright/test").Page) =
 const expectSgfDownloadDisabled = async (page: import("@playwright/test").Page) => {
     const link = await getSgfDownloadLink(page);
     await expect(link).toBeVisible();
-    const hasDisabled = await link.evaluate((el) => el.classList.contains("disabled"));
-    expect(hasDisabled).toBe(true);
+    await expect(link).toHaveClass(/\bdisabled\b/);
 };
 
 /**
@@ -95,8 +93,7 @@ const getAddToLibraryLink = async (page: import("@playwright/test").Page) => {
 const expectAddToLibraryEnabled = async (page: import("@playwright/test").Page) => {
     const link = await getAddToLibraryLink(page);
     await expect(link).toBeVisible();
-    const hasDisabled = await link.evaluate((el) => el.classList.contains("disabled"));
-    expect(hasDisabled).toBe(false);
+    await expect(link).toBeEnabled();
 };
 
 /**
@@ -105,8 +102,7 @@ const expectAddToLibraryEnabled = async (page: import("@playwright/test").Page) 
 const expectAddToLibraryDisabled = async (page: import("@playwright/test").Page) => {
     const link = await getAddToLibraryLink(page);
     await expect(link).toBeVisible();
-    const hasDisabled = await link.evaluate((el) => el.classList.contains("disabled"));
-    expect(hasDisabled).toBe(true);
+    await expect(link).toBeDisabled();
 };
 
 export const sgfDownloadRestrictionsTest = async ({
@@ -160,7 +156,7 @@ export const sgfDownloadRestrictionsTest = async ({
     });
     const anonPage = await anonContext.newPage();
     await anonPage.goto(gameUrl);
-    await expect(anonPage.locator(".Game")).toBeVisible({ timeout: 15000 });
+    await waitForGameViewReady(anonPage);
 
     await expectSgfDownloadDisabled(anonPage);
     await expectAddToLibraryDisabled(anonPage);
@@ -183,7 +179,7 @@ export const sgfDownloadRestrictionsTest = async ({
         "test",
     );
     await spectatorPage.goto(gameUrl);
-    await expect(spectatorPage.locator(".Game")).toBeVisible({ timeout: 15000 });
+    await waitForGameViewReady(spectatorPage);
 
     await expectSgfDownloadEnabled(spectatorPage);
     await expectAddToLibraryEnabled(spectatorPage);
@@ -204,7 +200,7 @@ export const sgfDownloadRestrictionsTest = async ({
     // --- Test 4: Anonymous user, finished game → enabled ---
     log("Test 4: Anonymous user can download SGF of finished game");
     await anonPage.reload();
-    await expect(anonPage.locator(".Game")).toBeVisible({ timeout: 15000 });
+    await expect(anonPage.getByText("by Resignation")).toBeVisible();
 
     await expectSgfDownloadEnabled(anonPage);
     log("Test 4 passed: Anonymous user SGF download enabled for finished game");

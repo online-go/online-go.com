@@ -23,7 +23,7 @@ import {
     createDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
-import { playMoves, waitForGameViewReady } from "@helpers/game-utils";
+import { passAndScoreGame, playMoves, waitForGameViewReady } from "@helpers/game-utils";
 import { captureReportNumber, navigateToReport, reportPlayerByColor } from "@helpers/user-utils";
 
 /**
@@ -36,19 +36,15 @@ export async function playAndFinishGame(
     accusedUsername: string,
     gameIndex: number,
 ): Promise<void> {
-    // Override defaultChallengeSettings' 2s/2s blitz timing — under a loaded
-    // dev stack the 4-move play sequence can exhaust either player's time
-    // and end the game by timeout rather than pass+accept, leaving the test
-    // waiting forever on the "Pass"/"Accept" buttons. 60s main + 1×10s
-    // byoyomi gives ample headroom while still being "live" speed.
+    // This fixture tests report history; browser speed must not decide the outcome.
     await createDirectChallenge(reporterPage, accusedUsername, {
         ...defaultChallengeSettings,
         gameName: `E2E ERH Game ${gameIndex}`,
         boardSize: "9x9",
         speed: "live",
-        mainTime: "60",
-        timePerPeriod: "10",
-        periods: "1",
+        mainTime: "300",
+        timePerPeriod: "30",
+        periods: "5",
         color: "black",
     });
 
@@ -60,19 +56,7 @@ export async function playAndFinishGame(
     // Play a few moves (need >= 2 for escaping report applicability)
     await playMoves(reporterPage, accusedPage, ["D5", "E5", "D6", "E6"], "9x9");
 
-    // End the game: both pass, both accept scoring
-    await reporterPage.getByText("Pass", { exact: true }).click();
-    await accusedPage.getByText("Pass", { exact: true }).click();
-
-    const accusedAccept = accusedPage.getByText("Accept");
-    await expect(accusedAccept).toBeVisible();
-    await accusedAccept.click();
-
-    const reporterAccept = reporterPage.getByText("Accept");
-    await expect(reporterAccept).toBeVisible();
-    await reporterAccept.click();
-
-    await expect(reporterPage.getByText("wins by")).toBeVisible();
+    await passAndScoreGame(reporterPage, accusedPage);
 
     const gameId = new URL(reporterPage.url()).pathname.match(/\/game\/(\d+)/)?.[1];
     expect(gameId).toBeDefined();
