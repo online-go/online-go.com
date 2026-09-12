@@ -46,3 +46,7 @@ scoring checks must wait for scoring and persisted log entries. Generated
 fixture names must not introduce random words that the username filter rejects.
 Keep the requested RAM tiers and zero retries. Do not retry moderation writes to
 conceal backend failures.
+
+Fix product readiness defects exposed by the full run. Cached ladder rows must
+populate after React mounts them, regardless of whether data arrives before or
+after ladder metadata. Normal component tests must cover both timings.
