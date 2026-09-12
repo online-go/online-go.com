@@ -73,9 +73,8 @@ the local test database. Export `E2E_MODERATOR_PASSWORD` to override this for a
 database seeded with a different password. `E2E_WORKERS=4 make e2e` passes an
 explicit worker override into the container. Local services, seeded data,
 dependencies, and Chromium must already be available.
-On the 24 GiB development machine, do not overlap another frontend build with
-the browser suite: the combined memory use can cause browser processes to be
-killed.
+Do not overlap another frontend build with the browser suite when measuring
+runtime or memory use.
 
 The built preview forwards `/locale/` requests to the development server and
 removes Vite's client, React refresh, and checker scripts from the resolved
@@ -115,10 +114,10 @@ Ladder rows load after mounting so synchronous cache hits can update their
 state. Component regressions cover cached data, delayed responses, and StrictMode
 remounting. A populated API response alone does not prove that the rows rendered.
 
-The McMahon journey keeps the director's live connection while players join.
-It checks that all five players appear before starting, waits for the start
-response, and requires the results to appear without a reload. Each joining
-player waits for its join response before reloading to check membership.
+All three tournament journeys keep the director's live connection while players
+join. They check the full player count and names before starting, wait for the
+start response, and require results without a reload. Each joining player waits
+for its completed join response, then reloads to check persisted membership and its own server-confirmed chat presence. Players stay connected until the tournament starts: live starts remove entrants who are absent from tournament chat.
 
 Vite reports WebSocket proxy `ECONNRESET` events as concise warnings in both
 its development server and the built preview. The first reset is reported
@@ -136,7 +135,7 @@ response before a test navigates away or closes a voter's context. Close voters 
 work instead of retaining their pages for debugging.
 Vote tests check the resulting report, warning, or suspension. They do not
 require the brief disabled-button state that can disappear when a report closes.
-Warning cleanup dismisses at most ten queued messages and then checks whether
+Warning cleanup waits for each complete acknowledgement response, dismisses at most ten queued messages and then checks whether
 the queue is empty. Exactly ten messages succeed; remaining messages cause a
 failure. Normal tests cover both sides of this limit.
 
@@ -165,14 +164,20 @@ through `E2E_CM_MR_FILER_31`). Ladder tests use six vacation-enabled accounts
 per worker (`E2E_LADDER_0_P1` through `E2E_LADDER_31_P6`). This keeps vacation
 changes separate when tests repeat concurrently. Run the updated backend
 `init_e2e` command before these tests. Each report is captured from its submission response, and cleanup
-only cancels reports created by that test.
+only cancels reports created by that test. The two cancellation journeys require their unresolved row to load and the cancellation response to finish; an absent row cannot silently count as successful cleanup.
 
 The one-at-a-time escaping queue browser test is replaced by
 `report_manager.test.ts`: real report updates hold the next report until its
 predecessor resolves, keep different accused users independent, and scope a
 reporter's own count. Backend `browser_id_suspension_test.py` covers first-game
 eligibility, historical browser IDs, suspension persistence, and client signals.
-The browser still checks suspension after a real game.
+The browser still checks suspension after a real game. Each execution creates
+its own account and device-ID relationship: the old account logs in with a new
+current ID, then is suspended. UI registration uses its historical ID and plays
+eight moves. The subject page closes before the opponent resigns, avoiding a
+race between a finished-game assertion and the automatic suspension reload. A
+fresh page verifies suspension; the moderator checks the matched-account dropdown. No fixed
+browser ID or cleanup login is shared across runs.
 
 Moderation vote fixtures that do not test ranking use unranked games. This keeps
 external AI analysis and asynchronous rating updates outside those scenarios.
@@ -190,6 +195,11 @@ empty-data return previously counted as a pass. `player-check-ai-button.ts`
 retains the current player-filter navigation journey and requires both the
 exact player ID and the populated player name.
 
+Browser warning journeys verify delivery, play restrictions, acknowledgement,
+and dismissal. They do not require a short-lived disabled OK button after
+checking the box: a slow browser can arrive after the countdown expires.
+`AccountWarning.test.tsx` checks that boundary with controlled timers.
+
 Warning countdowns follow the message ID and acknowledgement state. Refreshing
 an unchanged message does not restart the reading delay. A new message resets
 both the checkbox and the countdown. Component tests cover both cases without
@@ -197,62 +207,117 @@ waiting on real time. Backend account updates are published after the database
 transaction commits, so the browser can fetch newly announced warnings. Normal
 backend tests exercise commit, rollback, and autocommit delivery.
 
+The shared `useData` hook subscribes through React's external-store contract.
+Readers do not write render snapshots back to the store. A mounting reader
+previously could erase a newly received suspension ID between render and effect
+subscription, leaving account settings in the normal-user state. Eight normal
+regressions cover that ordering, shared setters, removal, defaults, key changes
+and StrictMode; six fail before the fix. See [React data subscriptions](data-hooks.md).
+
+## Synchronization contracts
+
+A click proves that an action was dispatched. A closed modal, changed local
+label, or response headers alone do not prove that the server finished a write.
+`actAndWaitForResponse` registers the expected HTTP method and path before one
+UI action, rejects unsuccessful responses, and waits for the response to finish.
+It does not retry writes. Report-count diagnostics run only after a successful journey, so teardown cannot replace an original failure with a closed-page error. Initial-response waits that span navigation allow the navigation and data-load budgets. The development CDN test also waits for the application to replace its seeded cached-config marker, so response headers cannot make that check pass before refresh is applied. Report submission retries only opening the player
+popover; it never repeats a submission after an assertion fails.
+
+The automated selection is audited by dependency:
+
+| Dependency                                                                               | Completion required before the next step                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Reused ladder accounts                                                                   | Load either vacation-state button before inspecting state. Normalize P1 and P5 before setup, restore both in cleanup, and verify persisted vacation changes. Attempt each cleanup independently; cleanup errors fail an otherwise successful test. A fresh group isolates ladder games but does not reset account-wide vacation.                                                                                                                                      |
+| Group, ladder, direct-game and invite writes                                             | Complete the exact join/create/accept/delete response before navigation or another write. Invite deletion also waits for the card count to decrease.                                                                                                                                                                                                                                                                                                                  |
+| Multiplayer games                                                                        | Acceptance must navigate both players to the returned game ID and load both boards. Every played move must reach both displays. Scoring and undo additionally verify their own engine state and peer acknowledgements. Non-clock tests use long fixture clocks; the first-turn warning journey keeps its real timeout.                                                                                                                                                |
+| Tournament membership and start                                                          | Persist each join, load membership, and receive the player's chat-join confirmation. Keep entrants connected, observe all joins on the director's live page, then complete the start response and observe results.                                                                                                                                                                                                                                                    |
+| Account updates, suspension, restoration and appeals                                     | Complete the write before leaving the page. Normal account saves wait for an actual new navigation. Suspended saves wait for the config refresh, then load settings again to prove the ignored update was not persisted. Suspension fixtures disconnect the subject page before moderation to avoid racing its reload signal. Appeal-message writes finish before another client loads the appeal list: Submit disables when input clears, before the POST completes. |
+| Reports and votes                                                                        | Complete writes before closing voters or claiming/closing reports. Wait for populated voting options before checking counts. Access-denial checks require the HTTP 403, and empty queues require the initial report synchronization. No-warning checks inspect the persisted queue after voting completes.                                                                                                                                                            |
+| Friends and notifications                                                                | Complete friend request and decline writes before checking notification outcomes or sending another request. Positive message assertions establish delivery before dismissal.                                                                                                                                                                                                                                                                                         |
+| Remaining navigation, board tools, puzzles, profile, accessibility and dev-server checks | Use loaded content, board mode, persisted preferences, exact request contents, or responses specific to each scenario. Keep intentional clock tests and controlled browser interactions; do not substitute a delay for a state check.                                                                                                                                                                                                                                 |
+
+For a latency check, run the built command with `E2E_API_DELAY_MS=500`, for example:
+
+```sh
+docker exec -e E2E_MODERATOR_PASSWORD=xyzzy -e E2E_API_DELAY_MS=500 ogs_ui_1 yarn test:e2e:built --workers=8
+```
+
+This delays real browser API requests in the multi-user context fixture before
+dispatch. It does not mock responses or delay API fixture setup. The default is
+zero. Playwright routing also disables the browser context's HTTP cache, so
+this mode adds asset-loading work on reloads as well as API latency. Use it to
+expose navigation and optimistic-UI races; measure normal runtime without it.
+See [Playwright's routing documentation](https://playwright.dev/docs/api/class-browsercontext#browser-context-route). To test recovery, put only the dedicated worker's P1 and P5
+ladder accounts on vacation first, then run the ladder repeatedly without
+resetting the database and verify both accounts finish off vacation.
+
 ## Verification
 
-The 2026-09-12 stability changes pass all 619 normal frontend tests, TypeScript,
-lint, and modified-file formatting. Five new tests cover numeric usernames;
-three cover cached, delayed, and StrictMode ladder-row mounting. The two cached
-row cases fail before the product fix and pass afterward. Launcher regressions
-also cover current development scripts and translation routing. Graphify is not
-installed in the development environment.
+All 635 normal frontend tests pass, as do TypeScript, lint, modified-file
+formatting and the production build. Eight data-hook regressions cover store
+ordering and subscriptions; six fail before the fix. Seven request-helper tests
+control header/body completion and failures. A report-count regression ensures
+diagnostics preserve the original journey failure. Graphify is not installed
+in this development environment, so `graphify update .` cannot run.
 
-The latest full run uses Chromium in `ogs_ui_1`, eight workers, 32 logical CPUs,
-and 32 GiB installed RAM (31.3 GiB reported). It includes `@Slow` and uses zero
-retries. Services, dependencies, Chromium, and seeded data are already available.
-The database is not reset between checks.
+The final full batches use Chromium in `ogs_ui_1` on a host with 32 logical CPUs
+and 32 GiB installed RAM (31.3 GiB reported). They include `@Slow`, with zero
+retries, no skips, and no database reset between batches. Services, dependencies,
+Chromium and seeded data are already available. Times include built-runner
+startup and shutdown; builds are measured separately.
 
-| Full run       | Passed | Failed | Skipped | Complete built-runner command |
-| -------------- | ------ | ------ | ------- | ----------------------------- |
-| After undo fix | 72     | 0      | 0       | 233.3 seconds                 |
+| Batch     | Workers | Injected delay              | Passed / failed | Built command |
+| --------- | ------- | --------------------------- | --------------- | ------------- |
+| normal-16 | 16      | None                        | 72 / 0          | 295.8s        |
+| latency   | 8       | 500 ms; HTTP cache disabled | 72 / 0          | 310.1s        |
+| normal-1  | 8       | None                        | 72 / 0          | 251.5s        |
+| normal-2  | 8       | None                        | 72 / 0          | 256.2s        |
 
-The undo follow-up passes 24 executions (twelve per requester colour) with eight
-workers and the frontend/browsers restricted to two CPU cores, in 152.1 seconds
-including startup/shutdown. All pass with zero retries. TypeScript, lint,
-modified-file formatting, and the 35.9-second build also pass.
+A fifth full run through the ordinary `make e2e` command passes all 72 tests
+with the automatically selected eight workers, no retries and no database
+reset. Its total wall time is 369.4 seconds (6m 9s), including a Vite build
+reported as 1m 7s. The browser summary reports 5.0 minutes. The normal prebuilt
+batches above are below five minutes; the full command with a fresh build does
+not meet that target. API-delay mode also disables HTTP caching and is a stress
+check, not the runtime benchmark. Only documentation changed after this final
+build and test run.
 
-The measured build and complete browser command total 269.2 seconds (4m 29s).
-Dependency installation and service startup are outside this measurement.
+Four ladder executions pass with two workers and 500 ms API delay after each
+worker's P1/P5 accounts are deliberately put on vacation; all four accounts
+finish off vacation. Eight focused tournament/CM-suspension executions pass
+with eight workers on four CPU cores in 61.3 seconds. Live tournament entrants
+remain connected and confirm chat registration before start. Ten repeated appeal
+journeys pass with eight workers and 500 ms API delay in 53.9 seconds after
+correcting optimistic Submit-button checks. The ModLog trace previously showed
+the moderator fetching the appeals list before the user's POST completed.
 
-Two earlier full runs pass all 72 tests in 240.3 and 240.2 seconds. A subsequent
-run exposes the undo race: an unchanged turn label releases the assertion before
-the board receives the undo. The latest run includes the state-based checks.
-Earlier full checks also expose a cached ladder-row failure and a McMahon reload
-that misses the start update; both are fixed before the undo follow-up.
-The McMahon change passes four parallel repetitions with browsers restricted to
-two CPU cores in 66.7 seconds including runner startup/shutdown.
+The full sixteen-worker/four-core CPU stress audit takes 529.9 seconds: 70 pass,
+and two CM journeys reach their existing 180-second whole-test deadlines. The
+suspension journey is still processing its third vote when teardown starts;
+the sandbagging warning journey has not completed its ten-second countdown.
+The traces show continuing progress, not a missed state notification. These
+are real failed runs. No timeouts or RAM tiers are changed to conceal them.
+The restriction applies to the frontend/browsers, not the backend. RAM capacity
+alone cannot guarantee efficient concurrency or a five-minute runtime on a
+CPU-constrained machine. This audit predates the final appeal synchronization and allocation-profiler
+changes. The final batches above include those fixes; the full four-core
+stress case has not been repeated since them.
 
-A separate load check restricts the frontend runner and its browsers to two CPU
-cores while keeping eight workers. All twelve selected game and moderation
-journeys pass in 4.1 minutes (249 seconds including startup and shutdown), with
-zero retries or skips. Earlier load checks reproduce an immediate SGF permission
-assertion, a fixture game timing out after two moves, and a two-minute scenario
-timeout. This is a test of CPU pressure on the frontend, not a benchmark of the
-entire stack on a two-core machine.
+The scoring failure recurs under a debugger. The game-server2 native stack on
+Node 22.13.1 enters `SharedFunctionInfo::DebugNameCStr` through
+`AllocationTracker::AddFunctionInfo` and `AllocationTracker::AllocationEvent`
+while materializing deoptimized heap objects. The failing services were started with
+unconditional `--track-heap-objects` in their development launchers. The backend companion makes
+allocation tracking opt-in through `NODE_DEBUG_FLAGS`; ordinary heap snapshots
+and exposed GC remain available. This avoids the captured profiler path without
+changing game rules or Node versions. It is a workaround for the V8 profiling
+fault, not a V8 patch. Eight repeated scoring/stalled-game checks pass in 49.1s
+with the new defaults. All final full batches above run after restarting the
+Node services with tracking disabled. Restart existing Node service containers
+to pick up changed launch flags; a bundle rebuild preserves supervisor arguments.
 
-The earlier 24 GiB host passes all 72 tests twice with six workers in 253.9 and
-252.1 seconds of browser execution. An earlier eight-worker measurement on the
-32 GiB host peaks at 22.0 GiB system memory use, with at least 9.3 GiB available
-and no OOM kills. The sixteen-worker tier has selector-test coverage, but no
-browser benchmark on a 48 GiB machine.
-
-The automated selection is reduced from 86 to 72 journeys through fourteen
-removals or merges. The old unfiltered count of 92 also included four utilities
-and two visual checks. Those six remain in the repository outside the automated
-selection. Smoke screenshots use their separate command.
-
-The reported scoring and stalled-game failures coincide with gameserver1
-exiting at 14:27:09 UTC on 2026-09-12. Gameserver2 also exits during an earlier
-load check at 14:59:32 UTC. The supervisor omits the exit signal; container OOM
-counters remain zero. The reason for these service interruptions is unconfirmed.
-The tests continue to fail on backend HTTP errors. Manual testing in mobile and
-desktop browsers remains pending.
+Backend `make lint` passes the Node checks, then fails on existing baduk.com
+Node-type errors. All nine service launch recipes pass dry-run checks with
+tracking disabled by default and explicitly enabled; running arguments confirm
+the new defaults in all eleven Node service containers. Python source and its
+recorded 337 passes/five existing skips are unchanged in this follow-up.
