@@ -72,7 +72,7 @@ await access(resolve("dist/ogs.min.css"));
 
 html = html
     .replace(/<script type="module">[\s\S]*?<\/script>/g, (tag) =>
-        tag.includes("RefreshRuntime") ? "" : tag,
+        /RefreshRuntime|\/@react-refresh|\/@vite-plugin-checker-runtime/.test(tag) ? "" : tag,
     )
     .replace(/<script type="module" src="\/@vite\/client"><\/script>/g, "")
     .replaceAll("/main.tsx", "/ogs.js")
@@ -102,6 +102,8 @@ const proxy = Object.fromEntries(
         },
     ]),
 );
+// Translations are served by development middleware, outside server.proxy.
+proxy["/locale/"] = { target: frontend.origin, changeOrigin: true };
 const server = await preview({
     ...loaded.config,
     configFile: false,

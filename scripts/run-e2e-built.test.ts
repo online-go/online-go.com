@@ -24,6 +24,10 @@ test.each([
     const frontend = createServer((_request, response) => {
         response.end(
             '<script type="module" src="/@vite/client"></script>' +
+                '<script type="module">import RefreshRuntime from "/@react-refresh";</script>' +
+                '<script type="module">import { injectIntoGlobalHook } from "/@react-refresh";</script>' +
+                '<script type="module">import { inject } from "/@vite-plugin-checker-runtime";</script>' +
+                '<script type="module">window.keepConfiguration = true;</script>' +
                 '<script type="module" src="/main.tsx"></script><link href="/ogs.css">',
         );
     });
@@ -143,12 +147,16 @@ test.each([
             expect(JSON.parse(readFileSync(join(cwd, "proxy.json"), "utf8"))).toEqual({
                 "/api": { target: frontendURL, changeOrigin: true },
                 "^/$": { target: frontendURL, changeOrigin: true, ws: true },
+                "/locale/": { target: frontendURL, changeOrigin: true },
             });
             expect(existsSync(join(cwd, "warnings-flushed"))).toBe(true);
             const html = readFileSync(join(cwd, "dist/index.html"), "utf8");
             expect(html).toContain('src="/ogs.js"');
             expect(html).toContain('href="/ogs.min.css"');
             expect(html).not.toContain("/@vite/client");
+            expect(html).not.toContain("/@react-refresh");
+            expect(html).not.toContain("/@vite-plugin-checker-runtime");
+            expect(html).toContain("window.keepConfiguration = true;");
         } finally {
             clearTimeout(timeout);
             if (child.exitCode === null) child.kill("SIGKILL");
