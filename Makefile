@@ -43,10 +43,13 @@ analyze visualizer bundle-visualizer:
 test:
 	npm run test
 
+e2e:
+	docker exec -e E2E_MODERATOR_PASSWORD="$${E2E_MODERATOR_PASSWORD:-xyzzy}" ogs_ui_1 yarn test:e2e
+
 GOBAN_SOCKET_WORKER_VERSION=0.2
 update-worker: build
 	cp dist/modules/GobanSocketWorkerScript.js ../ogs-node/src/GobanSocketWorker/GobanSocketWorkerScript-$(GOBAN_SOCKET_WORKER_VERSION).js
 
-.PHONY: dev build test analyze pretty prettier lint-fix .husky visualizer bundle-visualizer update-worker
+.PHONY: dev build test e2e analyze pretty prettier lint-fix .husky visualizer bundle-visualizer update-worker
 
 -include Makefile.production

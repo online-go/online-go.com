@@ -40,8 +40,17 @@ separately from browser runtime.
 
 The explicit `test:e2e:dev`, UI, and debug commands use the development frontend
 and default to one worker. Listing, help, and CI smoke selection bypass the
-build and moderator-password requirement. Missing credentials stop a full run
-before any browser starts; credentials are never supplied by a default password.
+build and moderator-password requirement. The Yarn runner stops before building
+or starting browsers if credentials are missing.
+
+From the host, `make e2e` runs `yarn test:e2e` inside `ogs_ui_1`, including the
+automatic build and all 72 tests. It supplies `xyzzy`, the password used to seed
+the local test database. Export `E2E_MODERATOR_PASSWORD` to override this for a
+database seeded with a different password. Local services, seeded data,
+dependencies, and Chromium must already be available.
+On the 24 GiB development machine, do not overlap another frontend build with
+the browser suite: the combined memory use can cause browser processes to be
+killed.
 
 `IncidentReportCountTracker` counts the reporter's own active reports. Moderator
 queue totals can change in other workers. `submitReportVote` waits for the vote
@@ -149,6 +158,12 @@ workers, zero retries, and zero skips. Its automatic build takes 33 seconds,
 the browser suite takes 250.5 seconds, and the complete command takes
 285.4 seconds (4m 45s). The container's out-of-memory kill count does not
 increase during this run.
+
+The later `make e2e` verification takes 295.7 seconds including its automatic
+build: 71 tests pass and one fails because the backend's offensive-name check
+rejects a randomly generated fixture username. There are no new out-of-memory
+kills. Total system memory use peaks at 22.5 GiB, sampled every two seconds
+using `MemTotal - MemAvailable`. Eight-worker memory use is not measured.
 
 An earlier run lost its game-server process during scoring and report loading,
 which caused two failures. The tests are not expected to pass through a service
