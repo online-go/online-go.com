@@ -44,6 +44,19 @@ server when Playwright exits. Set `E2E_PREVIEW_PORT` to use another port.
 Development-server checks continue to use the development server. Build time
 and service startup time are separate from browser-suite timing.
 
+In the local Docker stack, dependencies and Chromium can be installed only in
+`ogs_ui_1`. In that case, run the commands inside that container. Export
+`E2E_MODERATOR_PASSWORD` in the host shell first, using the seeded moderator's
+password:
+
+```sh
+docker exec ogs_ui_1 yarn build
+docker exec -e E2E_MODERATOR_PASSWORD ogs_ui_1 yarn test:e2e:built
+```
+
+The reported sub-five-minute runs use this built command. Plain `test:e2e` uses
+the development frontend.
+
 ## Write tests
 
 Use Jest for component behavior, form permutations, and client logic. Keep

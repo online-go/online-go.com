@@ -105,6 +105,25 @@ The default built runner selects all 72 automated tests, including `@Slow`,
 with six workers and zero retries. Manual, visual, utility, and smoke tests are
 outside this selection. Smoke tests retain their separate Docker command.
 
+Fourteen automated browser journeys are removed or merged, reducing that
+selection from 86 to 72. The old unfiltered command listed 92 entries because it
+also selected four utility scripts and two visual checks. Those six remain in
+the repository and are excluded from the automated run; the runtime improvement
+does not represent removal of 20 automated journeys.
+
+The measured runs execute inside `ogs_ui_1`, where dependencies and Chromium are
+installed. With the local services running, the updated `init_e2e` fixtures
+seeded, and `E2E_MODERATOR_PASSWORD` exported in the host shell, run:
+
+```sh
+docker exec ogs_ui_1 yarn build
+docker exec -e E2E_MODERATOR_PASSWORD ogs_ui_1 yarn test:e2e:built
+```
+
+Plain `yarn test:e2e` uses the development frontend with four workers; it is not
+the command used for these timings. Running either Yarn command directly on the
+host requires dependencies and Chromium to be installed there too.
+
 | Complete run | Passed | Failed | Skipped | Browser duration |
 | ------------ | ------ | ------ | ------- | ---------------- |
 | First        | 72     | 0      | 0       | 4m 14s           |
