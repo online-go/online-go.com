@@ -21,7 +21,10 @@
    Preserve the outcomes each browser test owns.
 6. Capture native exit signals and a backtrace for the independent backend
    service exits observed during stress checks. Do not infer an OOM or hide a
-   service failure with test retries.
+   service failure with test retries. The captured allocation-tracker crash
+   requires disabling unconditional heap tracking in development launchers.
+   Keep it opt-in, retain snapshots/GC, verify all service recipes and running
+   arguments, and document the default in backend `docs/node-development.md`.
 7. Reproduce the shared `useData` mount/commit race with the real data store and
    React layout effects. Replace render-effect writeback with external-store
    subscriptions and explicit setters; verify consumers, defaults, removals,

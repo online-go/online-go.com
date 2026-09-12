@@ -34,8 +34,13 @@ must load the owned row and complete cancellation, with no timed silent skip.
 
 Native backend exits need separate evidence. SIGSEGV is observed during a full
 run and must remain a failure; neither write retries nor longer locator waits
-repair a crashed service. Capture a backtrace before attributing the fault to
-memory capacity, Node version, or profiling flags.
+repair a crashed service. The captured Node 22.13.1 backtrace enters
+`SharedFunctionInfo::DebugNameCStr` through the allocation tracker while
+materializing deoptimized objects. Development services enable that profiler
+unconditionally. Share `NODE_DEBUG_FLAGS` with allocation tracking off by
+default, retain heap snapshots and exposed GC, and allow deliberate profiling
+as an override. Restart the service containers to apply the launcher change;
+a watched bundle reload preserves the old supervisor arguments.
 
 A CPU-constrained browser run exposes a frontend store race: the suspension
 response includes the banned account ID, but mounted readers erase that value.
