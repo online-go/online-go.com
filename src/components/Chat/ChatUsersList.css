@@ -1,10 +1,17 @@
-
 .ChatUsersList {
+    display: flex;
     flex-basis: 12rem;
+    flex-direction: column;
     flex-shrink: 0;
     flex-grow: 0;
-    overflow-y: auto;
+    min-height: 0;
     user-select: none;
+
+    .user-list-entries {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+    }
 
     .user-header {
         margin-top: 0.5rem;
@@ -14,7 +21,8 @@
         margin-bottom: 0.2rem;
         cursor: pointer;
 
-        .fa-sort-numeric-asc, .fa-sort-alpha-asc {
+        .fa-sort-numeric-asc,
+        .fa-sort-alpha-asc {
             margin-left: 0.2rem;
             width: 0.8rem;
         }

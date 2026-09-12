@@ -25,6 +25,7 @@ import { Timeout } from "@/lib/misc";
 import { chat_manager, users_by_rank, ChatChannelProxy } from "@/lib/chat_manager";
 import { User } from "goban";
 import { getBlocks } from "../BlockPlayer";
+import { ChatKibitzRoom } from "./ChatKibitzRoom";
 import "./ChatUsersList.css";
 
 interface ChatUsersListProperties {
@@ -109,11 +110,15 @@ export function ChatUsersList({ channel }: ChatUsersListProperties): React.React
                 })}
             </div>
 
-            {sorted_user_list.map((user) => (
-                <div key={user.id}>
-                    <Player user={user} flag rank noextracontrols />
-                </div>
-            ))}
+            <div className="user-list-entries">
+                {sorted_user_list.map((user) => (
+                    <div key={user.id}>
+                        <Player user={user} flag rank noextracontrols />
+                    </div>
+                ))}
+            </div>
+
+            <ChatKibitzRoom channel={channel} />
         </div>
     );
 
