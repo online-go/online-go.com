@@ -50,3 +50,7 @@ conceal backend failures.
 Fix product readiness defects exposed by the full run. Cached ladder rows must
 populate after React mounts them, regardless of whether data arrives before or
 after ladder metadata. Normal component tests must cover both timings.
+
+Undo assertions must observe each client's updated move number and rendered
+markers. A two-move undo preserves the player to move, so the turn label cannot
+establish that the undo completed. Keep coverage for both requester colours.
