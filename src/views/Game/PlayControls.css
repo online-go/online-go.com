@@ -154,6 +154,18 @@
         }
     }
 
+    /* Match the move tree container's 0.5em margin so the comments box lines
+     * up with it and fills the remaining width of the sidebar. */
+    .move-comments {
+        margin: 0 0.5em;
+
+        textarea {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+        }
+    }
+
     .btn-group {
         vertical-align: middle;
         display: inline-flex;

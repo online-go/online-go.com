@@ -291,33 +291,12 @@
     }
 }
 
-/* Desktop (landscape) sidebar: the chat inherits the root 1rem while the
- * surrounding chrome (player names, toggle buttons, condensed info) sits on
- * the small/metadata scale, so messages read louder than the title. Step
- * the log and input down to the sidebar's body scale and the timestamps to
- * the metadata scale. Portrait keeps the defaults — 16px is the right
- * reading size on phones and anything smaller makes iOS zoom the viewport
- * when the input is focused. */
+/* Center the single-line text and placeholder inside the 30px input box:
+ * 30px box - 1px bottom border - 19.2px line leaves ~10px of slack, split
+ * evenly (the default 3px top padding left the text riding high). */
 .GobanView:not(.portrait) .GameChat {
-    .chat-log {
-        font-size: 0.875rem;
-    }
-
-    .chat-line .Player {
-        font-size: inherit;
-    }
-
-    .timestamp {
-        font-size: 0.75rem;
-    }
-
     .chat-input-container textarea {
-        font-size: 0.875rem;
-        /* Center the single-line text and placeholder inside the 30px
-         * input box: 30px box − 1px bottom border − 16.8px line leaves
-         * ~11px of slack, split evenly (the default 3px top padding left
-         * the text riding ~3px high). */
-        padding-top: 6px;
+        padding-top: 5px;
         padding-bottom: 5px;
     }
 }

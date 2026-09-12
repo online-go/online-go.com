@@ -33,8 +33,7 @@ interface GameSettingsPanelProps {
      *  applied (zen mode). Toggles that the user is likely to flip
      *  multiple times (coordinates, AI review, volume) don't fire this. */
     onClose?: () => void;
-    /** Hide the Zen Mode toggle. The mobile (portrait) layout doesn't
-     *  expose it — the viewport is already the full screen. */
+    /** Mobile (portrait) layout: leave out the landscape-only options. */
     compact?: boolean;
     /** When provided, a "More options" item renders under the theme quick
      *  select; clicking it fires this (the Game view opens the full
@@ -142,22 +141,20 @@ export function GameSettingsPanel({
                 />
             </div>
 
-            {!compact && (
-                <div className="GameSidebarPanel-labeled-row">
-                    <label htmlFor="game-settings-zen-mode">
-                        <i className="fa fa-expand" />
-                        <span>{_("Zen Mode")}</span>
-                    </label>
-                    <Toggle
-                        id="game-settings-zen-mode"
-                        checked={zen_mode}
-                        onChange={() => {
-                            goban_controller.toggleZenMode();
-                            onClose?.();
-                        }}
-                    />
-                </div>
-            )}
+            <div className="GameSidebarPanel-labeled-row">
+                <label htmlFor="game-settings-zen-mode">
+                    <i className="fa fa-expand" />
+                    <span>{_("Zen Mode")}</span>
+                </label>
+                <Toggle
+                    id="game-settings-zen-mode"
+                    checked={zen_mode}
+                    onChange={() => {
+                        goban_controller.toggleZenMode();
+                        onClose?.();
+                    }}
+                />
+            </div>
 
             <div className="GameSidebarPanel-labeled-row">
                 <label htmlFor="game-settings-coords">

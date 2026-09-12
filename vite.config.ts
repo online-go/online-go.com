@@ -111,9 +111,17 @@ const backend_url =
         ? "https://beta.online-go.com"
         : OGS_BACKEND === "PRODUCTION"
           ? "https://online-go.com"
-          : "http://127.0.0.1:1080"; // LOCAL
+          : process.env.OGS_CONTAINER
+            ? "http://loadbalancer"
+            : "http://127.0.0.1:1080";
 
 const PORT = process.env.OGS_PORT ? parseInt(process.env.OGS_PORT) : 8080;
+
+// Django trusts this origin for requests forwarded by the local dev server.
+const local_dev_headers = {
+    origin: "http://localhost:8080",
+    referer: "http://localhost:8080/",
+};
 
 const proxy: Record<string, ProxyOptions> = {};
 
@@ -138,6 +146,7 @@ for (const base_path of [
     proxy[base_path] = {
         target: backend_url,
         changeOrigin: true,
+        headers: OGS_BACKEND === "LOCAL" ? local_dev_headers : undefined,
         rewrite: (path: string) => {
             return backend_url + path;
         },
@@ -516,18 +525,10 @@ export default defineConfig({
  * meaningful against the local stack; against beta or production the admin
  * host is its own site.
  *
- * `Origin` and `Referer` are replaced with this dev server's own, because the
- * browser's names a host *with a port* — and Django's wildcard
- * `CSRF_TRUSTED_ORIGINS` entries cannot match one, so `admin.example.org:8080`
- * is refused with "Origin checking failed" on every POST while the same host
- * without the port is accepted. In production the interface and the API are
- * one origin and none of this arises. The apps/admin dev server presents a
- * trusted origin for the same reason.
+ * `Origin` and `Referer` use the origin Django trusts for local development.
  */
 function admin_host_proxy(): Plugin {
     const target = new URL(backend_url);
-    // In CSRF_TRUSTED_ORIGINS for every port this server runs on.
-    const dev_origin = `http://localhost:${PORT}`;
     return {
         name: "admin-host-proxy",
         configureServer(server: ViteDevServer) {
@@ -563,8 +564,7 @@ function admin_host_proxy(): Plugin {
                         path: req.url,
                         headers: {
                             ...req.headers,
-                            origin: dev_origin,
-                            referer: `${dev_origin}/`,
+                            ...local_dev_headers,
                         },
                     },
                     (answer) => {
