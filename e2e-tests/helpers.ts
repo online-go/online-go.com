@@ -16,7 +16,6 @@
  */
 
 import { test as base, type Page, type Browser, BrowserContext } from "@playwright/test";
-import { createTestLogger } from "./helpers/logger";
 
 // Export logger utilities
 export { createTestLogger, log, setWorkerIndex } from "./helpers/logger";
@@ -44,18 +43,14 @@ type MultiContextFixtures = {
 // Our customisation is to make sure that no ErrorBoundary is rendered in all tests (that use this fixture)
 // Also provides createContext fixture for automatic cleanup of multi-user test contexts
 export const ogsTest = base.extend<MultiContextFixtures>({
-    browser: async ({ browser }, use) => {
-        await use(browser); // eslint-disable-line react-hooks/rules-of-hooks
-    },
-    context: async ({ context }, use) => {
-        await use(context); // eslint-disable-line react-hooks/rules-of-hooks
-    },
     page: async ({ page }, use) => {
         await use(page); // eslint-disable-line react-hooks/rules-of-hooks
+        if (!page.isClosed()) {
+            await checkNoErrorBoundaries(page);
+        }
     },
-    createContext: async ({ browser }, use, testInfo) => {
+    createContext: async ({ browser }, use) => {
         const contexts: BrowserContext[] = [];
-        const log = createTestLogger(testInfo);
 
         const factory = async (options?: CreateContextOptions) => {
             const context = await browser.newContext(options);
@@ -63,28 +58,15 @@ export const ogsTest = base.extend<MultiContextFixtures>({
             return context;
         };
 
-        await use(factory); // eslint-disable-line react-hooks/rules-of-hooks
-
-        // Auto-cleanup after test
-        log(`🧹 Cleaning up ${contexts.length} context(s)`);
-        for (const context of contexts) {
-            try {
-                await context.close();
-                log(`  ✓ Closed context`);
-            } catch (error: any) {
-                log(`  ⚠ Error closing context: ${error.message}`);
+        try {
+            await use(factory); // eslint-disable-line react-hooks/rules-of-hooks
+            for (const context of contexts) {
+                for (const page of context.pages()) {
+                    await checkNoErrorBoundaries(page);
+                }
             }
+        } finally {
+            await Promise.all(contexts.map((context) => context.close()));
         }
     },
 });
-
-// Per-test settle delay (ms). Runs after each test so a single local run
-// reports its result immediately and the wait is buried in the time spent
-// looking at the result. Override or disable (set 0) via the env var.
-const PER_TEST_DELAY_MS = Number(process.env.E2E_PER_TEST_DELAY_MS ?? 5000);
-if (PER_TEST_DELAY_MS > 0) {
-    ogsTest.afterEach(async () => {
-        console.log(`Per-test settle: waiting ${PER_TEST_DELAY_MS / 1000}s...`);
-        await new Promise((resolve) => setTimeout(resolve, PER_TEST_DELAY_MS));
-    });
-}

@@ -43,10 +43,9 @@ import {
     setupSeededCM,
 } from "@helpers/user-utils";
 
-import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
 
-import { withReportCountTracking } from "@helpers/report-utils";
+import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
 
 export const cmAiAssessDismissTest = async (
     {
@@ -96,20 +95,16 @@ export const cmAiAssessDismissTest = async (
         await aiDetectorCMPage.locator('input[value="assess_ai_play"]').click();
 
         // ... then we should be allowed to vote.
-        const voteButton = await expectOGSClickableByName(aiDetectorCMPage, /Vote$/);
-        await voteButton.click();
+        await submitReportVote(aiDetectorCMPage);
 
         // Now the CM AI assessors should see it and have to vote
         const aiAssessors = ["E2E_CM_DNEA_AI_V1", "E2E_CM_DNEA_AI_V2", "E2E_CM_DNEA_AI_V3"];
 
-        const aiAssessorContexts = [];
         for (const aiUser of aiAssessors) {
             const { seededCMPage: aiCMPage, seededCMContext: aiContext } = await setupSeededCM(
                 createContext,
                 aiUser,
             );
-
-            aiAssessorContexts.push({ aiCMPage, aiContext }); // keep them alive for the duration of the test, for debugging
 
             // Navigate directly to the report using the captured report number
             await navigateToReport(aiCMPage, reportNumber);
@@ -124,8 +119,8 @@ export const cmAiAssessDismissTest = async (
 
             // ... then we should be allowed to vote.
 
-            const voteButton = await expectOGSClickableByName(aiCMPage, /Vote$/);
-            await voteButton.click();
+            await submitReportVote(aiCMPage);
+            await aiContext.close();
         }
 
         // and the reporter should see it still
@@ -145,8 +140,7 @@ export const cmAiAssessDismissTest = async (
         await aiDetectorCMPage.locator('input[value="no_ai_use_evident"]').click();
 
         // Click the vote button (find it fresh on this page)
-        const dismissVoteButton = await expectOGSClickableByName(aiDetectorCMPage, /Vote$/);
-        await dismissVoteButton.click();
+        await submitReportVote(aiDetectorCMPage);
 
         // After dismissal, the reporter's count should return to initial
         await tracker.assertCountReturnedToInitial(reporterPage);

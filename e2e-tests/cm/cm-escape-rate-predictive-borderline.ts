@@ -63,7 +63,11 @@ import { playMoves } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
 
-import { dismissWarningDialogs, withReportCountTracking } from "@helpers/report-utils";
+import {
+    submitReportVote,
+    dismissWarningDialogs,
+    withReportCountTracking,
+} from "@helpers/report-utils";
 
 const CM_VOTERS = ["E2E_CM_ERH_V1", "E2E_CM_ERH_V2", "E2E_CM_ERH_V3"];
 
@@ -136,8 +140,7 @@ async function reportAndVote(
     for (const cmPage of cmPages) {
         await navigateToReport(cmPage, reportNumber);
         await cmPage.locator(`input[value="${voteAction}"]`).click();
-        const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
-        await voteButton.click();
+        await submitReportVote(cmPage);
     }
 }
 
@@ -231,12 +234,14 @@ export const cmEscapeRatePredictiveBorderlineTest = async (
             }
 
             // Clean up: cancel the open report so we leave a tidy state.
-            await reporterPage.goto("/reports-center");
-            const myReports = reporterPage.getByText("My Own Reports");
-            await expect(myReports).toBeVisible();
-            await myReports.click();
-
-            const cancelButton = await expectOGSClickableByName(reporterPage, /Cancel$/);
+            await reporterPage.goto("/reports-center/my_reports");
+            const report = reporterPage.locator("div.incident").filter({
+                has: reporterPage.locator(
+                    `button[data-report-id="${reportNumber.replace(/^R/, "")}"]`,
+                ),
+            });
+            await expect(report).toBeVisible();
+            const cancelButton = await expectOGSClickableByName(report, /Cancel$/);
             await cancelButton.click();
 
             await tracker.assertCountReturnedToInitial(reporterPage);

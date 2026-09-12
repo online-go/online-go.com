@@ -50,8 +50,11 @@ import {
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
 import { playMoves, waitForGameViewReady } from "@helpers/game-utils";
-import { expectOGSClickableByName } from "@helpers/matchers";
-import { IncidentReportCountTracker, withIncidentIndicatorLock } from "@helpers/report-utils";
+import {
+    submitReportVote,
+    IncidentReportCountTracker,
+    withIncidentIndicatorLock,
+} from "@helpers/report-utils";
 import { log } from "@helpers/logger";
 
 export const aiDetectorVoteCancelTicketTest = async (
@@ -107,6 +110,7 @@ export const aiDetectorVoteCancelTicketTest = async (
 
         await createDirectChallenge(reporterPage, reportedUsername, {
             ...defaultChallengeSettings,
+            ranked: false,
             gameName: "E2E AI Detector Cancel Ticket Test Game",
             boardSize: boardSize,
             speed: "live",
@@ -225,18 +229,8 @@ export const aiDetectorVoteCancelTicketTest = async (
         log("Selected 'Cancel ticket' action ✓");
 
         // Click the Vote button to submit the vote
-        const voteButton = await expectOGSClickableByName(aiDetectorPage, /^Vote$/);
-        await expect(voteButton).toBeVisible();
-        await expect(voteButton).toBeEnabled();
-        await voteButton.click();
+        await submitReportVote(aiDetectorPage);
         log("Vote submitted ✓");
-
-        // Wait for vote to be processed - check that Vote button is disabled or hidden
-        await expect(voteButton)
-            .toBeDisabled({ timeout: 5000 })
-            .catch(() => {
-                // Button might be hidden instead of disabled
-            });
 
         // Check that no error modal appeared
         const errorModal = aiDetectorPage.getByText(/Error during vote submission/);

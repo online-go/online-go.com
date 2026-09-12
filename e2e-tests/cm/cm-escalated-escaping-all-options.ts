@@ -69,7 +69,7 @@ import { playMoves, resignActiveGame } from "@helpers/game-utils";
 
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
-import { withReportCountTracking } from "@helpers/report-utils";
+import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
 
 export const cmEscalatedEscapingAllOptionsTest = async (
     {
@@ -90,10 +90,10 @@ export const cmEscalatedEscapingAllOptionsTest = async (
         ...defaultChallengeSettings,
         gameName: "E2E EAEE Game",
         boardSize: "9x9",
-        speed: "blitz",
+        speed: "live",
         timeControl: "byoyomi",
-        mainTime: "2",
-        timePerPeriod: "2",
+        mainTime: "120",
+        timePerPeriod: "30",
         periods: "1",
     });
 
@@ -155,8 +155,7 @@ export const cmEscalatedEscapingAllOptionsTest = async (
 
         // Vote for the first available option (doesn't matter which)
         await v1Page.locator('.action-selector input[type="radio"]').first().click();
-        let voteButton = await expectOGSClickableByName(v1Page, /Vote$/);
-        await voteButton.click();
+        await submitReportVote(v1Page);
 
         await v1Context.close();
 
@@ -175,8 +174,7 @@ export const cmEscalatedEscapingAllOptionsTest = async (
         await escalatorPage.locator('.action-selector input[type="radio"]').last().click();
         await escalatorPage.locator("#escalation-note").fill("E2E test - EAEE escalation note");
 
-        voteButton = await expectOGSClickableByName(escalatorPage, /Vote$/);
-        await voteButton.click();
+        await submitReportVote(escalatorPage);
 
         await escalatorContext.close();
 

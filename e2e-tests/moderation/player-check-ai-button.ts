@@ -62,6 +62,7 @@ export const playerCheckAIButtonTest = async ({
     const profileHref = await profileLink.getAttribute("href");
     const targetUserIdMatch = profileHref?.match(/\/user\/view\/(\d+)/);
     const targetUserId = targetUserIdMatch ? targetUserIdMatch[1] : null;
+    expect(targetUserId).toBeTruthy();
     log(`Target user ID: ${targetUserId} ✓`);
 
     // 2. Create a regular user to verify the button does NOT appear
@@ -140,7 +141,9 @@ export const playerCheckAIButtonTest = async ({
 
     // 11. Verify navigation to Fair Play Search page
     log("Verifying navigation to Fair Play Search page...");
-    await expect(modPage.getByRole("heading", { name: /Fair Play Search/i })).toBeVisible({ timeout: 15000 });
+    await expect(modPage.getByRole("heading", { name: /Fair Play Search/i })).toBeVisible({
+        timeout: 15000,
+    });
     log("Fair Play Search page loaded ✓");
 
     // 12. Verify the URL contains the player parameter and basic mode
@@ -148,25 +151,14 @@ export const playerCheckAIButtonTest = async ({
     const currentUrl = modPage.url();
     expect(currentUrl).toContain("/moderator/fair-play-search");
     expect(currentUrl).toContain("mode=basic");
-    if (targetUserId) {
-        expect(currentUrl).toContain(`player=${targetUserId}`);
-        log(`URL contains player parameter: player=${targetUserId} ✓`);
-    } else {
-        log("⚠ Could not verify player ID in URL (ID not found)");
-    }
+    expect(new URL(currentUrl).searchParams.get("player")).toBe(targetUserId);
 
     // 13. Verify the player autocomplete shows the filtered player
     log("Verifying player autocomplete shows filtered player...");
     const playerAutocomplete = modPage.locator(".PlayerAutocomplete input");
     await expect(playerAutocomplete).toBeVisible();
 
-    // Wait a moment for the autocomplete to populate
-    await modPage.waitForTimeout(1000);
-    const autocompleteValue = await playerAutocomplete.inputValue();
-    log(`Autocomplete value: "${autocompleteValue}"`);
-
-    // The autocomplete should contain the target username
-    expect(autocompleteValue).toContain(targetUsername);
+    await expect(playerAutocomplete).toHaveValue(targetUsername);
     log("Player filter correctly pre-populated ✓");
 
     log("=== Player Check AI Button Test Complete ===");

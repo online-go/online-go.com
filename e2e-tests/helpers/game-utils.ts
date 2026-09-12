@@ -11,35 +11,42 @@
 
 import { Locator, Page } from "@playwright/test";
 import { expect } from "@playwright/test";
+import { expectOGSClickableByName } from "./matchers";
 
 type BoardSize = "19x19" | "13x13" | "9x9";
 
+/** Finish a game through passing and scoring, starting on black's turn. */
+export async function passAndScoreGame(blackPage: Page, whitePage: Page): Promise<void> {
+    for (const page of [blackPage, whitePage]) {
+        await expect(page.getByText(/^Your move(?: - opponent passed)?$/)).toBeVisible();
+        await (await expectOGSClickableByName(page, /^Pass$/)).click();
+    }
+
+    await Promise.all(
+        [blackPage, whitePage].map(async (page) => {
+            await expect(page.locator(".stone-removal-buttons")).toBeVisible();
+            // Accept becomes enabled after two seconds even if scoring is still running.
+            await expect(page.locator(".autoscoring-in-progress")).toBeHidden({ timeout: 35000 });
+        }),
+    );
+    await (await expectOGSClickableByName(whitePage, /^Accept removed stones/)).click();
+    await expect(blackPage.locator(".white .stone-removal-accepted.accepted")).toBeVisible();
+    await (await expectOGSClickableByName(blackPage, /^Accept removed stones/)).click();
+    await Promise.all(
+        [blackPage, whitePage].map((page) => expect(page.getByText("wins by")).toBeVisible()),
+    );
+}
+
 /**
- * Wait for the Game view to be fully painted and stable.
- *
- * The Game view renders progressively: the Goban becomes interactive
- * (`.Goban[data-pointers-bound]`) and `a.Player` links flip
- * `data-ready=true` early, but `.player-icon-container` content (avatar,
- * flag, chat presence) and the `.AIReview` div mount later as their data
- * arrives. Either of those late mounts can shift the layout while a
- * PlayerDetails popover is in the middle of opening, dismissing it and
- * causing the Report button never to be found.
- *
- * Call this before any interaction that opens a popover or dialog from the
- * Game side-panel, so the layout is stable by the time the click lands.
- *
- * Defaults to expecting two seated players (which is what every CM e2e
- * test produces). `aiReviewExpected` defaults to true — on finished 9x9 /
- * 13x13 / 19x19 games the FragAIReview component mounts; if you're calling
- * this in a context where AI Review won't render (e.g. an in-progress game
- * or an exotic board size), pass `aiReviewExpected: false`.
+ * Wait for the board and seated player controls. AI review is optional and can
+ * stay empty when no review exists; tests of AI review must request it explicitly.
  */
 export const waitForGameViewReady = async (
     page: Page,
     options: { expectedPlayerCount?: number; aiReviewExpected?: boolean } = {},
 ): Promise<void> => {
     const expectedPlayers = options.expectedPlayerCount ?? 2;
-    const aiReviewExpected = options.aiReviewExpected ?? true;
+    const aiReviewExpected = options.aiReviewExpected ?? false;
 
     // Goban is interactive
     await page.locator(".Goban[data-pointers-bound]").waitFor({ state: "visible" });
@@ -140,10 +147,10 @@ export const clickOnGobanIntersection = async (
     // Calculate margin and cell size
     const margin = (box.width * marginFactor[boardSize]) / (sizeNumber + 1);
     const cellSize = (box.width - 2 * margin) / (sizeNumber - 1);
-    const x = box.x + margin + col * cellSize;
-    const y = box.y + margin + row * cellSize;
+    const x = margin + col * cellSize;
+    const y = margin + row * cellSize;
 
-    await page.mouse.click(x, y);
+    await goban.click({ position: { x, y } });
 };
 
 // This expects the board to be ready for the first player to move
@@ -157,26 +164,17 @@ export const playMoves = async (
     handicap: number = 0, // Japanese
 ) => {
     for (let i = 0; i < moves.length; i++) {
-        // Determine which player should move based on handicap
-        let page;
-        let expectedColor;
-        if (handicap > 1) {
-            // White moves first after handicap stones are placed automatically
-            page = i % 2 === 0 ? white : black;
-            expectedColor = i % 2 === 0 ? "White" : "Black";
-        } else {
-            // Black moves first (no handicap or handicap = 1)
-            page = i % 2 === 0 ? black : white;
-            expectedColor = i % 2 === 0 ? "Black" : "White";
-        }
-        // Wait for either "Your move" or "{Color} to move" to appear
-        // "Your move" appears when player_id is set correctly
-        // "{Color} to move" appears when player_id isn't set or during initialization
-        const yourMoveText = page.getByText("Your move", { exact: true });
-        const colorMoveText = page.getByText(`${expectedColor} to move`, { exact: true });
-        await expect(yourMoveText.or(colorMoveText)).toBeVisible();
+        const firstPlayer = handicap > 1 ? white : black;
+        const secondPlayer = handicap > 1 ? black : white;
+        const page = i % 2 === 0 ? firstPlayer : secondPlayer;
+        await expect(page.getByText("Your move", { exact: true })).toBeVisible();
+        const moveNumber = page.locator(".MoveNumberControl-move-number");
+        const previousMove = await moveNumber.innerText();
         await clickOnGobanIntersection(page, moves[i], boardSize);
-        await page.waitForTimeout(delay);
+        await expect(moveNumber).not.toHaveText(previousMove);
+        if (delay > 0) {
+            await page.waitForTimeout(delay);
+        }
     }
 };
 

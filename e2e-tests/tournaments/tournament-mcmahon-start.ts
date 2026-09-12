@@ -168,7 +168,14 @@ export const tournamentMcMahonStartTest = async ({
         await expect(playerPages[i].getByText("E2E McMahon Test").first()).toBeVisible();
 
         const joinButton = await expectOGSClickableByName(playerPages[i], /Join this tournament!/);
-        await joinButton.click();
+        const joined = playerPages[i].waitForResponse(
+            (response) =>
+                new URL(response.url()).pathname.match(/\/api\/v1\/tournaments\/\d+\/players$/) !==
+                    null && response.request().method() === "POST",
+        );
+        const [response] = await Promise.all([joined, joinButton.click()]);
+        expect(response.ok()).toBe(true);
+        await playerPages[i].reload();
 
         // Verify player joined - the "Drop out" button should now be visible
         await expect(
@@ -177,10 +184,11 @@ export const tournamentMcMahonStartTest = async ({
         log(`Player ${i + 1} joined successfully`);
     }
 
-    // 5. Director starts the tournament
-    // Refresh the director's page to see updated player list
-    await directorPage.reload();
-    await expect(directorPage.getByText("E2E McMahon Test").first()).toBeVisible();
+    // Keep the director's live subscription and verify that it received the joins.
+    await expect(directorPage.locator(".player-count")).toHaveText("Number of players: 5");
+    for (const username of playerUsernames) {
+        await expect(directorPage.getByText(username, { exact: true })).toBeVisible();
+    }
 
     log("Director starting tournament...");
     const startBtn = await expectOGSClickableByName(directorPage, /Start Tournament Now/);
@@ -193,7 +201,13 @@ export const tournamentMcMahonStartTest = async ({
 
     const okButton = confirmDialog.getByRole("button", { name: "OK" });
     await expect(okButton).toBeVisible();
-    await okButton.click();
+    const started = directorPage.waitForResponse(
+        (response) =>
+            new URL(response.url()).pathname.match(/\/api\/v1\/tournaments\/\d+\/start$/) !==
+                null && response.request().method() === "POST",
+    );
+    const [startResponse] = await Promise.all([started, okButton.click()]);
+    expect(startResponse.ok()).toBe(true);
 
     // 6. Verify the tournament has started
     // Wait for the results section to appear (indicates tournament started and rounds loaded)

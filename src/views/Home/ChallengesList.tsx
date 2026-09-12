@@ -126,7 +126,7 @@ export function ChallengesList({ onAccept }: ChallengeListProps): React.ReactEle
     const opponentColor = ourColor === "auto" ? "auto" : ourColor === "black" ? "white" : "black";
 
     return (
-        <div className="ChallengesList">
+        <div className="ChallengesList" data-challenge-id={challenge.id}>
             <GameCard
                 key={challenge.id}
                 cardTitle={

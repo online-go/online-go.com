@@ -79,10 +79,10 @@ export const cmSandbaggingAssessmentConversionTest = async (
         ...defaultChallengeSettings,
         gameName: "E2E SBAS Game",
         boardSize: "9x9",
-        speed: "blitz",
+        speed: "live",
         timeControl: "byoyomi",
-        mainTime: "2",
-        timePerPeriod: "2",
+        mainTime: "120",
+        timePerPeriod: "30",
         periods: "1",
     });
 

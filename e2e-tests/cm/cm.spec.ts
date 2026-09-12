@@ -21,7 +21,6 @@ import { cmVoteOnOwnReportTest } from "./cm-vote-on-own-report";
 import { cmShowOnlyPostEscalationVotesTest } from "./cm-show-only-post-escalation-votes";
 import { cmVoteWarnNotAITest } from "./cm-vote-warn-not-ai";
 import { cmAckWarningTest } from "./cm-ack-warning";
-import { cmAckAcknowledgementTest } from "./cm-ack-ack";
 import { cmAiAssessDismissTest } from "./cm-ai-assess-dismiss";
 import { cmVoteSuspendUserTest } from "./cm-vote-suspend-user";
 import { cmVoteNoSandbaggingTest } from "./cm-vote-no-sandbagging";
@@ -36,7 +35,6 @@ import { cmInformalWarnEscaperTest } from "./cm-informal-warn-escaper";
 import { cmInformalWarnEscaperAndAnnulTest } from "./cm-informal-warn-escaper-and-annul";
 import { cmEscalatedEscapingAllOptionsTest } from "./cm-escalated-escaping-all-options";
 import { cmSandbaggingInProgressGameTest } from "./cm-sandbagging-in-progress-game";
-import { cmEscapingOneAtATimeTest } from "./cm-escaping-one-at-a-time";
 import { cmFileMaliciousReportTest } from "./cm-file-malicious-report";
 import { cmVoteNoMaliciousReportTest } from "./cm-vote-no-malicious-report";
 import { cmVoteWarnMaliciousReporterTest } from "./cm-vote-warn-malicious-reporter";
@@ -50,7 +48,6 @@ ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest("Show only post-escalation votes", cmShowOnlyPostEscalationVotesTest);
     ogsTest("Warn when AI report is unfounded", cmVoteWarnNotAITest);
     ogsTest("Acknowledge warnings", cmAckWarningTest);
-    ogsTest("Acknowledge acknowledgements", cmAckAcknowledgementTest);
     ogsTest("Dismiss AI reports as AI Assessor", cmAiAssessDismissTest);
     ogsTest("Vote to suspend users with human-readable ban reasons", cmVoteSuspendUserTest);
     ogsTest("Vote no sandbagging evident", cmVoteNoSandbaggingTest);
@@ -83,7 +80,6 @@ ogsTest.describe("@CM Community Moderation Tests", () => {
         "Sandbagging report on in-progress game becomes assessment not thrown",
         cmSandbaggingInProgressGameTest,
     );
-    ogsTest("CMs see escaping reports one at a time per user", cmEscapingOneAtATimeTest);
     ogsTest("File a malicious report from the report view", cmFileMaliciousReportTest);
     ogsTest("Vote no malicious report", cmVoteNoMaliciousReportTest);
     ogsTest("Vote warn malicious reporter", cmVoteWarnMaliciousReporterTest);

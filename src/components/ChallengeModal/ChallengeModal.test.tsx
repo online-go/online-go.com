@@ -20,6 +20,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ChallengeModalBody } from "./ChallengeModal";
 import { post } from "@/lib/requests";
+import * as data from "@/lib/data";
 import {
     ChallengeDetails,
     ChallengeModalProperties,
@@ -28,6 +29,7 @@ import { sanitizeChallengeDetails } from "./ChallengeModal.utils";
 import { bots_list, Bot } from "@/lib/bots";
 
 let mockPreferredSettings: unknown[] = [];
+const mockDataValues = new Map<string, unknown>();
 
 // Mock data module
 jest.mock("@/lib/data", () => ({
@@ -38,6 +40,9 @@ jest.mock("@/lib/data", () => ({
         REMOTE_ONLY: 0x4,
     },
     get: (key: string, default_value: unknown) => {
+        if (mockDataValues.has(key)) {
+            return mockDataValues.get(key);
+        }
         if (key === "user") {
             return { id: 123, ranking: 10 };
         }
@@ -80,7 +85,7 @@ jest.mock("@/lib/data", () => ({
 
         return default_value;
     },
-    set: jest.fn(),
+    set: jest.fn((key: string, value: unknown) => mockDataValues.set(key, value)),
     remove: jest.fn(),
     setDefault: jest.fn(),
     watch: jest.fn(),
@@ -91,6 +96,14 @@ jest.mock("@/lib/requests", () => ({
     post: jest.fn(),
     del: jest.fn(),
     get: jest.fn(() => Promise.resolve({})),
+}));
+
+jest.mock("@/components/ChallengeLinkButton", () => ({
+    copyChallengeLinkURL: jest.fn(),
+}));
+
+jest.mock("@/lib/swal_config", () => ({
+    alert: { fire: jest.fn(() => Promise.resolve({})), getConfirmButton: jest.fn() },
 }));
 
 jest.mock("@/lib/bots", () => ({
@@ -127,7 +140,11 @@ jest.mock("@/lib/translate", () => ({
 
 jest.mock("@/lib/rank_utils", () => ({
     rankString: (r: number) => `Rank ${r}`,
-    amateurRanks: () => [],
+    rankSelectorIndexToText: (rank: number) => String(rank),
+    amateurRanks: () => [
+        { rank: 5, label: "25 Kyu" },
+        { rank: 36, label: "9 Dan+" },
+    ],
 }));
 
 jest.mock("@/components/PlayerIcon", () => ({
@@ -179,6 +196,18 @@ const defaultProps: ChallengeModalProperties = {
     },
 };
 
+const openProps = {
+    ...defaultProps,
+    mode: "open" as const,
+    config: {
+        ...defaultProps.config!,
+        challenge: {
+            ...defaultProps.config!.challenge,
+            game: { ...defaultProps.config!.challenge.game, rengo: false, rengo_casual_mode: true },
+        },
+    },
+};
+
 const mockModal = {
     close: jest.fn(),
     on: jest.fn(),
@@ -189,6 +218,167 @@ describe("ChallengeModalBody", () => {
     beforeEach(() => {
         jest.clearAllMocks();
         mockPreferredSettings = [];
+        mockDataValues.clear();
+    });
+
+    it.each([false, true])("submits disable analysis = %s", async (disabled) => {
+        const user = userEvent.setup();
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+        render(<ChallengeModalBody {...openProps} modal={mockModal} />);
+        const analysis = screen.getByLabelText(/disable analysis/i);
+        if (disabled) {
+            await user.click(analysis);
+        }
+        expect(analysis).toHaveProperty("checked", disabled);
+        await user.selectOptions(screen.getByLabelText(/board size/i), "9x9");
+        expect(screen.getByLabelText(/board size/i)).toHaveValue("9x9");
+        await user.click(screen.getByRole("button", { name: /create game/i }));
+        expect(post).toHaveBeenCalledWith(
+            "challenges",
+            expect.objectContaining({
+                game: expect.objectContaining({ width: 9, height: 9, disable_analysis: disabled }),
+            }),
+        );
+    });
+
+    it.each(["-1", "2", "0"])("submits and restores handicap %s", async (handicap) => {
+        const user = userEvent.setup();
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+        const view = render(<ChallengeModalBody {...openProps} modal={mockModal} />);
+        await user.selectOptions(
+            document.querySelector<HTMLSelectElement>("#challenge-handicap")!,
+            handicap,
+        );
+        expect(document.querySelector<HTMLSelectElement>("#challenge-handicap")!).toHaveValue(
+            handicap,
+        );
+        await user.click(screen.getByRole("button", { name: /create game/i }));
+        expect(post).toHaveBeenCalledWith(
+            "challenges",
+            expect.objectContaining({
+                game: expect.objectContaining({
+                    handicap: Number(handicap),
+                    komi_auto: "automatic",
+                    komi: undefined,
+                }),
+            }),
+        );
+        view.unmount();
+        render(<ChallengeModalBody mode="open" modal={mockModal} />);
+        expect(document.querySelector<HTMLSelectElement>("#challenge-handicap")!).toHaveValue(
+            handicap,
+        );
+    });
+
+    it.each([false, true])(
+        "submits private invite = %s with compatible options",
+        async (privateInvite) => {
+            const user = userEvent.setup();
+            jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+            render(<ChallengeModalBody {...openProps} modal={mockModal} />);
+            expect(screen.queryByLabelText("Private")).not.toBeInTheDocument();
+            await user.click(screen.getByLabelText("Invite-only"));
+            await user.click(screen.getByLabelText("Private"));
+            expect(screen.getByLabelText("Private")).toBeChecked();
+            expect(screen.getByLabelText("Ranked")).toBeDisabled();
+            expect(screen.getByLabelText("Ranked")).not.toBeChecked();
+            expect(screen.getByLabelText("Rengo")).toBeDisabled();
+            if (!privateInvite) {
+                await user.click(screen.getByLabelText("Invite-only"));
+                expect(screen.queryByLabelText("Private")).not.toBeInTheDocument();
+                expect(screen.getByLabelText("Ranked")).toBeEnabled();
+                expect(screen.getByLabelText("Rengo")).toBeEnabled();
+            }
+            await user.click(screen.getByRole("button", { name: /create game/i }));
+            expect(post).toHaveBeenCalledWith(
+                "challenges",
+                expect.objectContaining({
+                    invite_only: privateInvite,
+                    game: expect.objectContaining({
+                        private: privateInvite,
+                        ranked: false,
+                        rengo: false,
+                    }),
+                }),
+            );
+        },
+    );
+
+    it("validates rengo auto-start and submits casual rengo with simple time", async () => {
+        const user = userEvent.setup();
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+        render(<ChallengeModalBody {...openProps} modal={mockModal} />);
+        await user.click(screen.getByLabelText("Rengo"));
+        expect(screen.getByLabelText("Rengo")).toBeChecked();
+        expect(screen.getByLabelText("Casual")).toBeChecked();
+        expect(screen.getByLabelText("Ranked")).toBeDisabled();
+        expect(screen.getByLabelText("Ranked")).not.toBeChecked();
+        const threshold = screen.getByLabelText("Auto-start");
+        const create = screen.getByRole("button", { name: /create game/i });
+        expect(threshold.closest(".form-group")).not.toHaveClass("hide");
+        await user.click(screen.getByLabelText("Casual"));
+        expect(threshold.closest(".form-group")).toHaveClass("hide");
+        await user.click(screen.getByLabelText("Casual"));
+        for (const value of ["1", "2", "3", "0"]) {
+            await user.clear(threshold);
+            await user.type(threshold, value);
+            expect(threshold).toHaveValue(value === "0" ? null : Number(value));
+            expect(create).toHaveProperty("disabled", value === "1" || value === "2");
+        }
+        await user.click(create);
+        expect(post).toHaveBeenCalledWith(
+            "challenges",
+            expect.objectContaining({
+                rengo_auto_start: 0,
+                game: expect.objectContaining({
+                    rengo: true,
+                    rengo_casual_mode: true,
+                    ranked: false,
+                    handicap: 0,
+                    time_control: "simple",
+                }),
+            }),
+        );
+        await user.click(screen.getByLabelText("Rengo"));
+        expect(screen.getByLabelText("Ranked")).toBeEnabled();
+        await user.click(screen.getByLabelText("Ranked"));
+        expect(screen.getByLabelText("Rengo")).toBeDisabled();
+    });
+
+    it("saves distinct rank preferences and restores the unrestricted request", async () => {
+        const user = userEvent.setup();
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+        const view = render(<ChallengeModalBody {...openProps} modal={mockModal} />);
+        await user.click(screen.getByRole("button", { name: "Add current setting" }));
+        await user.click(screen.getByLabelText(/restrict rank/i));
+        await user.selectOptions(screen.getByLabelText(/minimum ranking/i), "5");
+        await user.selectOptions(screen.getByLabelText(/maximum ranking/i), "36");
+        expect(screen.getByLabelText(/minimum ranking/i)).toHaveValue("5");
+        expect(screen.getByLabelText(/maximum ranking/i)).toHaveValue("36");
+        await user.click(screen.getByRole("button", { name: "Add current setting" }));
+        expect(data.set).toHaveBeenLastCalledWith(
+            "preferred-game-settings",
+            [
+                expect.objectContaining({ min_ranking: -1000, max_ranking: 1000 }),
+                expect.objectContaining({ min_ranking: 5, max_ranking: 36 }),
+            ],
+            data.Replication.REMOTE_OVERWRITES_LOCAL,
+        );
+        view.unmount();
+        render(<ChallengeModalBody {...openProps} modal={mockModal} />);
+        const preferred = document.querySelector(".preferred-settings-container input");
+        expect(preferred).not.toBeNull();
+        await user.click(preferred as HTMLInputElement);
+        await user.click(screen.getAllByRole("option")[0]);
+        expect(screen.getByLabelText(/restrict rank/i)).not.toBeChecked();
+        await user.click(screen.getByRole("button", { name: /create game/i }));
+        expect(post).toHaveBeenCalledWith(
+            "challenges",
+            expect.objectContaining({
+                min_ranking: -1000,
+                max_ranking: 1000,
+            }),
+        );
     });
 
     it("renders game name input", () => {

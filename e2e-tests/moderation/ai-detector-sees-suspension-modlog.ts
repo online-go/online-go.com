@@ -54,7 +54,11 @@ import {
 } from "@helpers/challenge-utils";
 import { waitForGameViewReady } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
-import { IncidentReportCountTracker, withIncidentIndicatorLock } from "@helpers/report-utils";
+import {
+    submitReportVote,
+    IncidentReportCountTracker,
+    withIncidentIndicatorLock,
+} from "@helpers/report-utils";
 import { log } from "@helpers/logger";
 
 export const aiDetectorSeesSuspensionModlogTest = async (
@@ -293,10 +297,12 @@ export const aiDetectorSeesSuspensionModlogTest = async (
         await notesBox.fill("E2E test - Reporting for AI use to test ModLog visibility");
 
         const submitReportButton = await expectOGSClickableByName(opponentPage, /Report User$/);
+        await reportTracker.captureInitialCount(opponentPage);
         await submitReportButton.click();
         log("AI use report submitted");
 
         // Capture the report number
+        await reportTracker.assertCountIncreasedBy(opponentPage, 1);
         const reportNumber = await captureReportNumber(opponentPage);
         log(`Report number captured: ${reportNumber}`);
 
@@ -312,10 +318,6 @@ export const aiDetectorSeesSuspensionModlogTest = async (
         await loginAsUser(aiDetectorPage, "E2E_AI_DETECTOR", password);
         await turnOffDynamicHelp(aiDetectorPage);
         log("E2E_AI_DETECTOR logged in");
-
-        // Capture initial report count
-        await reportTracker.captureInitialCount(aiDetectorPage);
-        log("Initial report count captured");
 
         // 9. AI Detector navigates to the report
         log(`AI Detector navigating to report ${reportNumber}...`);
@@ -365,18 +367,13 @@ export const aiDetectorSeesSuspensionModlogTest = async (
         log("Selected 'Cancel ticket' action");
 
         // Click the Vote button to submit the vote
-        const voteButton = await expectOGSClickableByName(aiDetectorPage, /^Vote$/);
-        await expect(voteButton).toBeVisible();
-        await expect(voteButton).toBeEnabled();
-        await voteButton.click();
+        await submitReportVote(aiDetectorPage);
         log("Vote submitted");
 
-        // Wait for vote to be processed - Vote button becomes disabled
-        await expect(voteButton).toBeDisabled({ timeout: 5000 });
         log("Report closed via cancel ticket vote");
 
         // Verify report count returned to initial
-        await reportTracker.assertCountReturnedToInitial(aiDetectorPage);
+        await reportTracker.assertCountReturnedToInitial(opponentPage);
         log("Report count returned to initial - report was properly closed");
 
         log("=== AI Detector Sees SUSPENSION ModLog Test Complete ===");

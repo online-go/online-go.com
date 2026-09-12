@@ -224,7 +224,7 @@ export async function createKibitzRoomForLiveGame(
 
     // Confirm create. Scope to the overlay footer so nothing outside the
     // overlay can match.
-    const overlayFooter = watcherPage.locator(".KibitzGamePickerOverlay-footer");
+    const overlayFooter = watcherPage.locator(".KibitzGamePickerOverlay .buttons");
     await expect(overlayFooter).toBeVisible({ timeout: 15000 });
     const submitCreateButton = overlayFooter
         .getByRole("button", { name: /^Create room$/ })

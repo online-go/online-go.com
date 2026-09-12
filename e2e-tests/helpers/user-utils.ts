@@ -10,6 +10,7 @@
  */
 
 import { expect } from "@playwright/test";
+import { randomUUID } from "node:crypto";
 import { Page, BrowserContext, Locator } from "@playwright/test";
 
 import { expectOGSClickableByName } from "./matchers";
@@ -23,7 +24,7 @@ import { waitForGameViewReady } from "./game-utils";
  * This file provides utility functions for managing users in end-to-end tests:
  *
  * User Creation & Registration:
- * - newTestUsername(): Generate unique test usernames with timestamp
+ * - newTestUsername(): Generate distinct test usernames with numeric suffixes
  * - generateUniqueTestIPv6(): Generate unique IPv6 addresses for test users
  * - registerNewUser(): Register a new user account
  * - prepareNewUser(): Register and set up a new user with basic preferences
@@ -60,54 +61,7 @@ import { waitForGameViewReady } from "./game-utils";
  * - selectNavMenuItem(): Clicks a specified Nav Menu item & subitem
  */
 
-// Alphabet for the random suffix that uniquifies each test username.
-// Excludes vowels (a, e, i, o, u) so randomly-generated usernames cannot
-// accidentally contain English-word substrings (e.g. "ok") that would
-// collide with Playwright's case-insensitive substring matching in
-// getByRole({ name }) — the bug that caused submitReportForm's OK-button
-// locator to match a player link whose suffix happened to spell "qsok90".
-// 31-char alphabet × 6 positions = 887M combinations, so collision
-// probability against ~1k accumulated test users on a dev stack is
-// ~0.001% per draw — comfortable headroom for realistic stack lifetimes.
-const USERNAME_SUFFIX_ALPHABET = "0123456789bcdfghjklmnpqrstvwxyz";
-const USERNAME_SUFFIX_LEN = 6;
-
-// OGS rejects registration when len(username) > 30 (see Django backend
-// api/views/login.py). Derive the role-length limit from that so the
-// validation can't drift out of sync with the actual server constraint.
-// Worker index is up to 2 digits (TEST_WORKER_INDEX values up to 99);
-// allow for that even though parallel runs are typically 1-2 workers.
-const OGS_USERNAME_MAX_LEN = 30;
-const USERNAME_PREFIX = "e2e";
-const MAX_WORKER_INDEX_DIGITS = 2;
-const MAX_USER_ROLE_LEN =
-    OGS_USERNAME_MAX_LEN -
-    USERNAME_PREFIX.length -
-    1 /* underscore separator */ -
-    USERNAME_SUFFIX_LEN -
-    MAX_WORKER_INDEX_DIGITS;
-
-// This is tweaked to provide us with lots of unique usernames but also
-// a decent number of readable user-role characters, within the OGS username 30 character limit
-// on registration.
-export const newTestUsername = (user_role: string) => {
-    if (user_role.length > MAX_USER_ROLE_LEN) {
-        throw new Error(
-            `user_role must be ${MAX_USER_ROLE_LEN} characters or less ` +
-                `to keep the generated username within the OGS ${OGS_USERNAME_MAX_LEN}-char limit`,
-        );
-    }
-    let suffix = "";
-    for (let i = 0; i < USERNAME_SUFFIX_LEN; i++) {
-        suffix +=
-            USERNAME_SUFFIX_ALPHABET[Math.floor(Math.random() * USERNAME_SUFFIX_ALPHABET.length)];
-    }
-    // Include worker index to keep collisions impossible across parallel workers
-    // (Math.random would already make them vanishingly unlikely, but this is
-    // free and removes the need for a parallel-execution caveat in the math.)
-    const workerIndex = process.env.TEST_WORKER_INDEX || "0";
-    return `${USERNAME_PREFIX}${user_role}_${suffix}${workerIndex}`;
-};
+export { newTestUsername } from "./test-username";
 
 // Counter for same-millisecond IPv6 generation
 let ipv6Counter = 0;
@@ -176,36 +130,53 @@ export const prepareNewUser = async (
     username: string,
     password: string,
 ) => {
-    const { userPage, userContext } = await registerNewUser(createContext, username, password);
-
-    // Wait for the rank chooser component to be fully rendered after page load
-    // This ensures React has finished initial rendering before we try to interact with buttons
-    await expect(userPage.getByText("What is your Go skill level?")).toBeVisible({
-        timeout: 10000,
+    const deviceId = randomUUID();
+    const userContext = await createContext({
+        extraHTTPHeaders: { "X-Forwarded-For": generateUniqueTestIPv6() },
     });
-
-    // We need to choose _something_ to get rid of this on the Profile page:
-    // typically, we don't want to see that.
-    // (Quirky regex due to variable text on the button for A/B/C testing)
-    const chooseButton = await expectOGSClickableByName(userPage, /^Basic/);
-    await chooseButton.click();
-
-    await expect(userPage.locator("#Home")).toBeVisible();
-
-    await turnOffDynamicHelp(userPage); // the popups can get in the way.
-
-    // Prevent desktop notification prompts from appearing during tests
-    await userPage.evaluate(() => {
-        localStorage.setItem("ogs.preferences.asked-to-enable-desktop-notifications", "true");
+    const registration = await userContext.request.post("/api/v0/register", {
+        data: { username, password, email: "", ebi: deviceId, timezone: "UTC" },
     });
-
-    await load(userPage, "/");
-
-    return {
-        userPage,
-        userContext,
-    };
+    await expect(registration, `Create test account ${username}`).toBeOK();
+    const csrf = (await userContext.cookies()).find((cookie) => cookie.name === "csrftoken");
+    expect(csrf, "Registration must set the CSRF cookie").toBeDefined();
+    const rank = await userContext.request.put("/api/v1/me/starting_rank", {
+        headers: { "X-CSRFToken": csrf!.value },
+        data: { choice: "basic" },
+    });
+    await expect(rank, "Set the fixture account's starting rank").toBeOK();
+    const userPage = await openFixturePage(userContext, username, deviceId);
+    return { userPage, userContext };
 };
+
+async function openFixturePage(userContext: BrowserContext, username: string, deviceId: string) {
+    const config = await userContext.request.get("/api/v1/ui/config");
+    await expect(config).toBeOK();
+    await userContext.addInitScript(
+        ({ id, cachedConfig }) => {
+            if (!localStorage.getItem("ogs.device.uuid")) {
+                localStorage.setItem("ogs.device.uuid", JSON.stringify(id));
+                localStorage.setItem("ogs.cached.config", cachedConfig);
+                localStorage.setItem(
+                    "ogs.rdh-system-state",
+                    JSON.stringify(JSON.stringify({ systemEnabled: false })),
+                );
+                localStorage.setItem("ogs.preferences.moderator.report-quota", "0");
+                localStorage.setItem(
+                    "ogs.preferences.asked-to-enable-desktop-notifications",
+                    "true",
+                );
+            }
+        },
+        { id: deviceId, cachedConfig: await config.text() },
+    );
+    const userPage = await userContext.newPage();
+    await load(userPage, "/");
+    await expect(userPage.locator(".username").getByText(username, { exact: true })).toBeVisible();
+    await expect(userPage.locator("#Home-Container")).toBeVisible();
+
+    return userPage;
+}
 
 export const goToProfile = async (userPage: Page) => {
     const menuLink = userPage.locator('nav[aria-label="Profile"] .Menu-title');
@@ -256,9 +227,6 @@ export const loginAsUser = async (page: Page, username: string, password: string
 
     // Wait for login to complete by checking for username in header (backend can be slow)
     await expect(page.locator(".username").getByText(username)).toBeVisible({ timeout: 30000 });
-
-    // Save the authenticated state for Playwright
-    await page.context().storageState({ path: "playwright/.auth/user.json" });
 };
 
 export const turnOffDynamicHelp = async (page: Page) => {
@@ -284,20 +252,16 @@ export const setupSeededUser = async (
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     username: string,
 ) => {
-    const uniqueIPv6 = generateUniqueTestIPv6();
+    const deviceId = randomUUID();
     const userContext = await createContext({
-        extraHTTPHeaders: {
-            "X-Forwarded-For": uniqueIPv6,
-        },
+        extraHTTPHeaders: { "X-Forwarded-For": generateUniqueTestIPv6() },
     });
-    const userPage = await userContext.newPage();
-    await loginAsUser(userPage, username, "test");
-    await turnOffDynamicHelp(userPage); // the popups can get in the way.
-
-    return {
-        userPage,
-        userContext,
-    };
+    const login = await userContext.request.post("/api/v0/login", {
+        data: { username, password: "test", ebi: deviceId, timezone: "UTC" },
+    });
+    await expect(login, `Log in fixture account ${username}`).toBeOK();
+    const userPage = await openFixturePage(userContext, username, deviceId);
+    return { userPage, userContext };
 };
 
 // A failed prior test can leave acknowledgement/info AccountWarning
@@ -329,23 +293,12 @@ export const setupSeededCM = async (
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     username: string,
 ) => {
-    const uniqueIPv6 = generateUniqueTestIPv6();
-    const seededCMContext = await createContext({
-        extraHTTPHeaders: {
-            "X-Forwarded-For": uniqueIPv6,
-        },
-    });
-    const seededCMPage = await seededCMContext.newPage();
-    await loginAsUser(seededCMPage, username, "test");
+    const { userPage: seededCMPage, userContext: seededCMContext } = await setupSeededUser(
+        createContext,
+        username,
+    );
     await dismissPendingAccountAcks(seededCMPage);
-    await turnOffDynamicHelp(seededCMPage); // the popups can get in the way.
-
-    await turnOffModerationQuota(seededCMPage); // need them to be able to keep voting!
-
-    return {
-        seededCMPage,
-        seededCMContext,
-    };
+    return { seededCMPage, seededCMContext };
 };
 
 export const setupSeededModerator = async (
@@ -440,8 +393,7 @@ export const goToUsersFinishedGame = async (page: Page, username: string, gameNa
  * the bare goban wait misses late-arriving renders (PlayerCard avatar,
  * AIReview) that can dismiss popovers mid-open.
  *
- * `aiReviewExpected` defaults to true (matches finished 9x9 / 13x13 / 19x19
- * games); set false for in-progress games or non-standard board sizes.
+ * `aiReviewExpected` defaults to false; set it for tests that inspect AI review.
  */
 export const goToFinishedGameUrl = async (
     page: Page,
@@ -522,8 +474,13 @@ const submitReportForm = async (page: Page, type: string, notes: string) => {
     await notesBox.fill(notes);
 
     const submitButton = await expectOGSClickableByName(page, /Report User$/);
-    await submitButton.click();
-
+    const submitted = page.waitForResponse(
+        (response) =>
+            new URL(response.url()).pathname === "/api/v1/moderation/incident" &&
+            response.request().method() === "POST",
+    );
+    const [response] = await Promise.all([submitted, submitButton.click()]);
+    expect(response.ok(), `Report response: ${response.status()}`).toBe(true);
     await expect(page.getByText("Thanks for the report!")).toBeVisible();
     // /^OK$/ rather than "OK": Playwright's getByRole({name}) does
     // case-insensitive *substring* matching, which collides with

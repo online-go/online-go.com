@@ -50,17 +50,22 @@ function cloneMiniGobanSnapshotConfig(
         server_socket: _serverSocket,
         ...serializableSource
     } = source;
-    const seen = new WeakSet<object>();
+    const ancestors: object[] = [];
     const config = JSON.parse(
-        JSON.stringify(serializableSource, (_key, value: unknown) => {
+        JSON.stringify(serializableSource, function (this: unknown, _key, value: unknown) {
             if (typeof value === "function") {
                 return undefined;
             }
             if (value && typeof value === "object") {
-                if (seen.has(value)) {
+                // Shared player records are valid. Omit only references to an
+                // ancestor, which would form a cycle in the serialized data.
+                while (ancestors.length > 0 && ancestors[ancestors.length - 1] !== this) {
+                    ancestors.pop();
+                }
+                if (ancestors.includes(value)) {
                     return undefined;
                 }
-                seen.add(value);
+                ancestors.push(value);
             }
             return value;
         }),

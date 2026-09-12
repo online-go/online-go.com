@@ -48,9 +48,8 @@ import {
     acceptDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
-import { playMoves } from "@helpers/game-utils";
-import { expectOGSClickableByName } from "@helpers/matchers";
-import { withReportCountTracking } from "@helpers/report-utils";
+import { passAndScoreGame, playMoves } from "@helpers/game-utils";
+import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
 import { log } from "@helpers/logger";
 
 export const cmVoteSuspendUserTest = async (
@@ -78,12 +77,13 @@ export const cmVoteSuspendUserTest = async (
     await createDirectChallenge(accusedPage, opponentUsername, {
         ...defaultChallengeSettings,
         gameName: "E2E CM Suspend Test Game",
+        ranked: false,
         boardSize: "9x9",
         speed: "live",
         timeControl: "byoyomi",
-        mainTime: "45",
-        timePerPeriod: "10",
-        periods: "1",
+        mainTime: "300",
+        timePerPeriod: "30",
+        periods: "5",
     });
 
     await acceptDirectChallenge(opponentPage);
@@ -91,32 +91,12 @@ export const cmVoteSuspendUserTest = async (
     // Wait for the Goban to be visible
     const goban = accusedPage.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });
-    await accusedPage.waitForTimeout(1000);
 
     // Play a few moves
     const moves = ["D9", "E9", "D8", "E8", "D7", "E7"];
     await playMoves(accusedPage, opponentPage, moves, "9x9");
 
-    // Both players pass to end the game
-    const accusedPass = accusedPage.getByText("Pass", { exact: true });
-    await expect(accusedPass).toBeVisible();
-    await accusedPass.click();
-
-    const opponentPass = opponentPage.getByText("Pass", { exact: true });
-    await expect(opponentPass).toBeVisible();
-    await opponentPass.click();
-
-    // Accept scores
-    const opponentAccept = opponentPage.getByText("Accept");
-    await expect(opponentAccept).toBeVisible();
-    await opponentAccept.click();
-
-    const accusedAccept = accusedPage.getByText("Accept");
-    await expect(accusedAccept).toBeVisible();
-    await accusedAccept.click();
-
-    // Wait for game to finish
-    await expect(accusedPage.getByText("wins by")).toBeVisible();
+    await passAndScoreGame(accusedPage, opponentPage);
     log("Game completed ✓");
 
     // Create a reporter and report the accused user for escaping
@@ -156,9 +136,8 @@ export const cmVoteSuspendUserTest = async (
         await escalatorPage.click('input[value="escalate"]');
         await escalatorPage.fill("#escalation-note", "Repeat offender - needs moderator attention");
 
-        const escalateVoteButton = await expectOGSClickableByName(escalatorPage, /Vote/);
-        await escalateVoteButton.click();
-        await expect(escalateVoteButton).toBeDisabled({ timeout: 10000 });
+        await submitReportVote(escalatorPage);
+        await escalatorPage.context().close();
 
         log("E2E_CM_VSU_V1 escalated the report");
 
@@ -180,9 +159,8 @@ export const cmVoteSuspendUserTest = async (
 
             await voterPage.click('input[value="suspend_user"]');
 
-            const suspendVoteButton = await expectOGSClickableByName(voterPage, /Vote/);
-            await suspendVoteButton.click();
-            await expect(suspendVoteButton).toBeDisabled({ timeout: 10000 });
+            await submitReportVote(voterPage);
+            await voterPage.context().close();
 
             log(`${voter} voted to suspend`);
         }

@@ -42,7 +42,7 @@ import {
 
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
-import { withReportCountTracking } from "@helpers/report-utils";
+import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
 
 export const cmShowOnlyPostEscalationVotesTest = async (
     {
@@ -90,9 +90,8 @@ export const cmShowOnlyPostEscalationVotesTest = async (
 
         // Doesn't matter what option we vote for actually, first is handy
         await initialVoterPage.locator('.action-selector input[type="radio"]').first().click();
-        let voteButton = await expectOGSClickableByName(initialVoterPage, /Vote$/);
 
-        await voteButton.click();
+        await submitReportVote(initialVoterPage);
 
         // Now escalate the report
         const { seededCMPage: escalatorPage } = await setupSeededCM(
@@ -112,9 +111,7 @@ export const cmShowOnlyPostEscalationVotesTest = async (
         await escalatorPage.locator('.action-selector input[type="radio"]').last().click();
         await escalatorPage.locator("#escalation-note").fill("E2E test - SOPEV escalation note");
 
-        voteButton = await expectOGSClickableByName(escalatorPage, /Vote$/);
-
-        await voteButton.click();
+        await submitReportVote(escalatorPage);
 
         // After voting, the system navigates to the next report
         // Navigate back to our specific report to verify escalation

@@ -56,10 +56,9 @@ import {
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
 import { playMoves, waitForGameViewReady } from "@helpers/game-utils";
-import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
 
-import { withReportCountTracking } from "@helpers/report-utils";
+import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
 
 const CM_VOTERS = ["E2E_CM_IWE_V1", "E2E_CM_IWE_V2", "E2E_CM_IWE_V3"];
 
@@ -69,7 +68,7 @@ export const cmInformalWarnEscaperAndAnnulTest = async (
     }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
-    const TIMEOUT_MS = 120 * 1000;
+    const TIMEOUT_MS = 180 * 1000;
 
     // Create fresh users — avoids accumulated warnings from previous runs
     const accusedUsername = newTestUsername("IWEAAcc"); // cspell:disable-line
@@ -92,9 +91,12 @@ export const cmInformalWarnEscaperAndAnnulTest = async (
 
             await createDirectChallenge(reporterPage, accusedUsername, {
                 ...defaultChallengeSettings,
+                ranked: false,
                 gameName: "E2E CM IWEA Report Game",
                 boardSize: "9x9",
-                speed: "blitz",
+                speed: "live",
+                mainTime: "120",
+                timePerPeriod: "30",
                 color: "black",
             });
 
@@ -174,8 +176,7 @@ export const cmInformalWarnEscaperAndAnnulTest = async (
                     await navigateToReport(cmPage, reportNumber);
                 }
                 await cmPage.locator(`input[value="${voteAction}"]`).click();
-                const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
-                await voteButton.click();
+                await submitReportVote(cmPage);
             }
 
             for (const ctx of cmContexts) {

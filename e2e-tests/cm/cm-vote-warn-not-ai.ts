@@ -41,7 +41,7 @@ import {
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
 
-import { withReportCountTracking } from "@helpers/report-utils";
+import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
 
 export const cmVoteWarnNotAITest = async (
     {
@@ -92,18 +92,16 @@ export const cmVoteWarnNotAITest = async (
 
         const voteButton = await expectOGSClickableByName(aiCMPage, /Vote$/);
         await expect(voteButton).toBeEnabled();
-        await voteButton.click();
+        await submitReportVote(aiCMPage);
 
-        // Wait for vote to be processed - check that Vote button is disabled or hidden
-        await expect(voteButton)
-            .toBeDisabled({ timeout: 5000 })
-            .catch(() => {
-                // Button might be hidden instead of disabled
-            });
-
-        // After voting, the count should return to initial (acknowledgement sent to reporter, report closed)
         await tracker.assertCountReturnedToInitial(reporterPage);
-
-        // checking the warning is delivered is in cm-ack-warning.ts
+        await reporterPage.goto("/play");
+        const acknowledgement = reporterPage.locator(".AccountWarningAck");
+        await expect(acknowledgement.locator(".canned-message.no_ai_use_evident")).toBeVisible();
+        const okButton = await expectOGSClickableByName(acknowledgement, "OK");
+        await expectOGSClickableByName(reporterPage, "Play Computer");
+        await expectOGSClickableByName(reporterPage, "Play Human");
+        await okButton.click();
+        await expect(acknowledgement).toBeHidden();
     });
 };

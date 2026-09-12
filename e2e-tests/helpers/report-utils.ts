@@ -11,16 +11,30 @@
 
 import { expect, type Page, type Locator, type TestInfo } from "@playwright/test";
 import { log, setWorkerIndex } from "./logger";
+import { expectOGSClickableByName } from "./matchers";
 
-// Currently a no-op wrapper. Originally this serialized tests that read or
-// mutated the incident-report indicator so they could share that global
-// server state across parallel Playwright workers. Playwright now runs with
-// workers: 1, so no serialization is needed. If parallel execution is ever
-// re-enabled, this wrapper will need to acquire a cross-worker lock again.
+/** Wait for the server to accept a vote before navigating away or closing its page. */
+export async function submitReportVote(page: Page): Promise<void> {
+    const reportId = new URL(page.url()).pathname.match(/\/reports-center\/[^/]+\/(\d+)$/)?.[1];
+    if (!reportId) {
+        throw new Error(`Expected a report detail page, got ${page.url()}`);
+    }
+    const voteButton = await expectOGSClickableByName(page, /^Vote$/);
+    const responsePromise = page.waitForResponse(
+        (response) =>
+            new URL(response.url()).pathname === `/api/v1/moderation/incident/${reportId}` &&
+            response.request().method() === "POST" &&
+            (response.request().postDataJSON() as { action?: string }).action === "vote",
+    );
+    const [response] = await Promise.all([responsePromise, voteButton.click()]);
+    expect(response.ok(), `Vote response: ${response.status()}`).toBe(true);
+}
+
+/** Apply report-test timeouts. Report selection and counts are scoped to the reporter. */
 export async function withIncidentIndicatorLock<T>(
     testInfo: TestInfo,
     fn: () => Promise<T>,
-    timeoutMs: number = 180042, // default matches playwright.config.ts; 42 makes it identifiable
+    timeoutMs: number = 180_000,
 ): Promise<T> {
     setWorkerIndex(testInfo);
     testInfo.setTimeout(timeoutMs);
@@ -104,20 +118,13 @@ export class IncidentReportCountTracker {
         }
 
         const expectedCount = this.initialCount + delta;
+        await expect
+            .poll(() => this.getCurrentCount(page), {
+                message: `Expected ${expectedCount} reports owned by this reporter`,
+            })
+            .toBe(expectedCount);
         const indicator = page.locator(".IncidentReportIndicator");
-        const icon = indicator.locator(".fa-exclamation-triangle.active");
-        const countDisplay = indicator.locator(".count.active");
-
-        await expect(indicator).toBeVisible();
-        await expect(icon).toBeVisible();
-        await expect(
-            countDisplay,
-            `Expected count to increase by ${delta} from baseline ${this.initialCount} (=${expectedCount})`,
-        ).toHaveText(`${expectedCount}`);
-
-        log(
-            `[ReportCountTracker] Verified count increased by ${delta}: ${this.initialCount} -> ${expectedCount}`,
-        );
+        await expect(indicator.locator(".fa-exclamation-triangle.active")).toBeVisible();
 
         return indicator;
     }
@@ -130,18 +137,7 @@ export class IncidentReportCountTracker {
             throw new Error("Must call captureInitialCount() before asserting count changes");
         }
 
-        const expectedCount = this.initialCount - delta;
-        const currentCount = await this.getCurrentCount(page);
-
-        if (currentCount !== expectedCount) {
-            throw new Error(
-                `Expected count to decrease by ${delta} from baseline ${this.initialCount} (=${expectedCount}), but got ${currentCount}`,
-            );
-        }
-
-        log(
-            `[ReportCountTracker] Verified count decreased by ${delta}: ${this.initialCount} -> ${expectedCount}`,
-        );
+        await expect.poll(() => this.getCurrentCount(page)).toBe(this.initialCount - delta);
     }
 
     /**
@@ -152,25 +148,7 @@ export class IncidentReportCountTracker {
             throw new Error("Must call captureInitialCount() before asserting count changes");
         }
 
-        // Use Playwright expectations which wait/retry for the condition
-        if (this.initialCount === 0) {
-            // Should be inactive - wait for indicator to be empty
-            const indicator = page.locator(".IncidentReportIndicator");
-            await expect(indicator).toBeEmpty();
-        } else {
-            // Should show initial count - wait for it to appear
-            const countDisplay = page.locator(".IncidentReportIndicator .count.active");
-            await expect(
-                countDisplay,
-                `Expected count to return to initial baseline ${this.initialCount}`,
-            ).toHaveText(`${this.initialCount}`);
-        }
-
-        // Get final count for logging
-        const currentCount = await this.getCurrentCount(page);
-        log(
-            `[ReportCountTracker] Verified count returned to initial: ${currentCount} === ${this.initialCount}`,
-        );
+        await expect.poll(() => this.getCurrentCount(page)).toBe(this.initialCount);
     }
 
     /**
@@ -179,28 +157,14 @@ export class IncidentReportCountTracker {
      * Protected so it can be accessed by helper functions while still being testable.
      */
     protected async getCurrentCount(page: Page): Promise<number> {
-        const indicator = page.locator(".IncidentReportIndicator");
-        const countDisplay = indicator.locator(".count.active");
-
-        // Check if indicator is active - matching original logic exactly
-        // Original: (await indicator.count()) > 0 && !(await indicator.evaluate((el) => el.textContent?.trim() === ""))
-        const isActive =
-            (await indicator.count()) > 0 &&
-            !(await indicator.evaluate((el) => el.textContent?.trim() === ""));
-
-        if (!isActive) {
-            return 0;
-        }
-
-        // Indicator is active, try to get the count value from .count.active
-        try {
-            const countText = await countDisplay.textContent();
-            const count = parseInt(countText?.trim() || "0", 10);
-            return isNaN(count) ? 0 : count;
-        } catch {
-            // .count.active doesn't exist or failed to read - return 0
-            return 0;
-        }
+        return page.evaluate(() => {
+            const manager = (
+                window as unknown as {
+                    report_manager: { getMyReports(): unknown[] };
+                }
+            ).report_manager;
+            return manager.getMyReports().length;
+        });
     }
 }
 
@@ -239,56 +203,31 @@ export async function withReportCountTracking<T>(
     );
 }
 
-/**
- * Dismiss any warning/ack dialogs that have accumulated on a user's page.
- *
- * After a CM vote that issues a warning the affected player sees a modal
- * (`.AccountWarning` for formal, `.AccountWarningInfo` for informal); the
- * reporter sees an acknowledgement modal (`.AccountWarningAck`). These
- * stack across multiple resolved reports and block subsequent interactions
- * (e.g. accepting the next challenge), so tests that resolve several
- * reports in sequence need to drain them between iterations.
- *
- * The loop bound of 10 is a defensive cap: in practice there is at most
- * one dialog per resolved report, but we keep iterating until `waitFor`
- * times out so the helper is robust to whatever stack depth exists.
- */
+/** Dismiss queued messages through the UI, waiting for each acknowledgement to reach the server. */
 export async function dismissWarningDialogs(page: Page): Promise<void> {
-    // Dismiss formal warnings (require checking "I understand" checkbox)
-    const formalWarning = page.locator("div.AccountWarning");
-    for (let i = 0; i < 10; i++) {
-        try {
-            await formalWarning.waitFor({ state: "visible", timeout: 3000 });
-            const checkbox = formalWarning.locator('input[type="checkbox"]');
-            await checkbox.check();
-            await formalWarning.locator("button.primary").click();
-            await expect(formalWarning).not.toBeVisible();
-        } catch {
-            break;
+    for (let i = 0; i <= 10; i++) {
+        const pending = await page.request.get("/api/v1/me/warning");
+        await expect(pending).toBeOK();
+        const warning: { id?: number; severity?: string } = await pending.json();
+        if (warning.id === undefined) {
+            return;
         }
-    }
-
-    // Dismiss informal warnings
-    const infoOk = page.locator(".AccountWarningInfo button.primary");
-    for (let i = 0; i < 10; i++) {
-        try {
-            await infoOk.waitFor({ state: "visible", timeout: 3000 });
-            await infoOk.click();
-            await expect(infoOk).not.toBeVisible();
-        } catch {
-            break;
+        if (i === 10) {
+            throw new Error("Warning messages remain queued after ten dismissals");
         }
-    }
-
-    // Dismiss ack dialogs (reporter gets these)
-    const ackOk = page.locator("div.AccountWarningAck button.primary");
-    for (let i = 0; i < 10; i++) {
-        try {
-            await ackOk.waitFor({ state: "visible", timeout: 3000 });
-            await ackOk.click();
-            await expect(ackOk).not.toBeVisible();
-        } catch {
-            break;
+        const dialog = page.locator(".AccountWarning, .AccountWarningInfo, .AccountWarningAck");
+        await expect(dialog).toBeVisible();
+        if (warning.severity === "warning") {
+            await dialog.getByRole("checkbox").check();
         }
+        const ok = await expectOGSClickableByName(dialog, /^OK/);
+        await expect(ok).toBeEnabled({ timeout: 15000 });
+        const accepted = page.waitForResponse(
+            (response) =>
+                new URL(response.url()).pathname === `/api/v1/me/warning/${warning.id}` &&
+                response.request().method() === "PATCH",
+        );
+        const [response] = await Promise.all([accepted, ok.click()]);
+        expect(response.ok(), `Acknowledge response: ${response.status()}`).toBe(true);
     }
 }

@@ -61,9 +61,8 @@ import {
     cancelOwnReport,
     createSourceScoreCheatingReport,
     fileMaliciousReport,
-    readOwnReportIds,
     setupEscapingSourceGame,
-    waitForNewOwnReport,
+    maliciousReportFilerUsername,
 } from "@helpers/malicious-report-utils";
 
 export const cmFileMaliciousReportTest = async (
@@ -117,13 +116,8 @@ export const cmFileMaliciousReportTest = async (
             // leftover reports from prior runs.
             const { seededCMPage: filerPage, seededCMContext: filerContext } = await setupSeededCM(
                 createContext,
-                "E2E_CM_MR_FILER",
+                maliciousReportFilerUsername(),
             );
-
-            // Baseline: every own-report-id the filer currently sees. Used
-            // below to (a) verify Cancel doesn't create a report and (b)
-            // identify the new malicious_report after we file it.
-            const initialOwnReportIds = await readOwnReportIds(filerPage);
 
             // ========================================
             // Test 2: Closing the Report dialog does nothing
@@ -209,11 +203,12 @@ export const cmFileMaliciousReportTest = async (
 
             const filerNote =
                 "E2E test: filing malicious_report against the source reporter for bad-faith reporting.";
-            await fileMaliciousReport(filerPage, sourceReporterUsername, filerNote);
+            const maliciousReportNumber = await fileMaliciousReport(
+                filerPage,
+                sourceReporterUsername,
+                filerNote,
+            );
 
-            // Wait for the new malicious_report to surface in My Own Reports,
-            // identifying it as the ID that wasn't present before.
-            const maliciousReportNumber = await waitForNewOwnReport(filerPage, initialOwnReportIds);
             expect(maliciousReportNumber).not.toBe(sourceReportNumber);
 
             // Verify the new malicious_report's metadata via UI

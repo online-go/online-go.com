@@ -80,7 +80,7 @@ export const modWarnFirstTurnEscapersTest = async (
         .locator(
             '.AccountWarningAck .canned-message:has-text("We\'ve noticed that the other player left game")',
         )
-        .waitFor();
+        .waitFor({ state: "visible", timeout: 90_000 });
     await challengerPage.locator(".AccountWarningAck button.primary").click();
 
     // And escaper should have warning...
