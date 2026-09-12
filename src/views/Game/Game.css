@@ -408,6 +408,33 @@
             padding-bottom: 0;
         }
     }
+
+    /* Zen mode. Pinned to the top right corner, the exit button would
+     * cover the top player's clock, so it takes the place of the hidden
+     * tab bar as the last row of the column instead. The panels drop
+     * their slab, as the zen sidebar does in landscape. */
+    &.zen {
+        /* The free space goes above the board, which pushes the board and
+         * the player cards down near the thumb. When the column is too
+         * short, the auto margin becomes zero and the top stays in reach
+         * of the scroll. */
+        .GobanView-stage {
+            margin-top: auto;
+        }
+
+        .GobanView-mobile-panels {
+            flex-grow: 0;
+            background: transparent;
+        }
+
+        .leave-zen-mode-button {
+            position: static;
+            align-self: flex-end;
+            flex-shrink: 0;
+            margin: 0 calc(0.5rem + env(safe-area-inset-right))
+                calc(0.5rem + var(--safe-area-inset-bottom)) 0;
+        }
+    }
 }
 
 .chat-container {

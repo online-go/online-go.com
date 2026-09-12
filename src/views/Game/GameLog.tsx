@@ -57,7 +57,13 @@ export function GameLog({
     let firstAutoscoringEntryRendered = false;
 
     React.useEffect(() => {
+        let cancelled = false;
+        setLog([]);
+        setShouldDisplayFullLog(false);
         socket.send(`game/log`, { game_id }, (log) => {
+            if (cancelled) {
+                return;
+            }
             setLog(log);
             onContainsTimeout?.(null);
             onContainsAbandonment?.(false);
@@ -73,6 +79,9 @@ export function GameLog({
                 onContainsAbandonment(true);
             }
         });
+        return () => {
+            cancelled = true;
+        };
     }, [game_id]);
 
     const markCoords = React.useCallback(

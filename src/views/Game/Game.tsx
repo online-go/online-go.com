@@ -210,6 +210,15 @@ export function Game(): React.ReactElement | null {
         }
     }, [zen_mode]);
 
+    // `body.zen` hides the navbar, announcements and private chats. It
+    // follows the zen state here and not in GobanController, so a game that
+    // starts in zen mode gets it too, and the other views that make a
+    // controller do not.
+    React.useEffect(() => {
+        document.body.classList.toggle("zen", zen_mode);
+        return () => document.body.classList.remove("zen");
+    }, [zen_mode]);
+
     // The mobile chat renders at the bottom of the scroll area, usually well
     // below the fold, so toggling it on would otherwise appear to do
     // nothing. Bring it into view when it appears.
@@ -633,8 +642,11 @@ export function Game(): React.ReactElement | null {
                             game.height,
                         );
 
-                    if (!live) {
-                        goban_controller.current?.setZenMode(false);
+                    // Only live games start in zen mode. The controller starts
+                    // out of zen mode, so a correspondence game does not show
+                    // zen while this data loads.
+                    if (live && preferences.get("start-in-zen-mode")) {
+                        goban_controller.current?.setZenMode(true);
                     }
 
                     if (ladder_id.current) {
@@ -720,8 +732,6 @@ export function Game(): React.ReactElement | null {
             setExtraActionCallback(null as any);
             window.removeEventListener("focus", onFocus);
             window.document.title = "OGS";
-            const body = document.getElementsByTagName("body")[0];
-            body.classList.remove("zen"); //remove the class
 
             goban_div.current?.childNodes.forEach((node) => node.remove());
         };

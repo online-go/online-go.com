@@ -18,7 +18,6 @@
 import * as React from "react";
 import { Goban, GobanEvents } from "goban";
 import { GobanController } from "@/lib/GobanController";
-import * as preferences from "@/lib/preferences";
 import { ViewMode, goban_view_mode, stageFitsWithSlider } from "./util";
 
 /**
@@ -79,14 +78,15 @@ export function useViewMode(controller: GobanController | null): ViewMode {
 }
 
 export function useZenMode(controller: GobanController | null): boolean {
-    const [zen_mode, set_zen_mode] = React.useState(
-        controller?.zen_mode ?? preferences.get("start-in-zen-mode"),
-    );
+    const [zen_mode, set_zen_mode] = React.useState(controller?.zen_mode ?? false);
     React.useEffect(() => {
         if (!controller) {
             return;
         }
 
+        // The Game view stays mounted when it moves to another game, so the
+        // new controller's state replaces the state of the one before it.
+        set_zen_mode(controller.zen_mode);
         controller.on("zen_mode", set_zen_mode);
         return () => {
             controller.off("zen_mode", set_zen_mode);

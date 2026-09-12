@@ -209,8 +209,11 @@ export const cmVoteSuspendUserTest = async (
         await expect(accusedPage).toHaveURL(/\/appeal/, { timeout: 15000 });
         log("Navigated to appeal page via banner link ✓");
 
-        // Verify suspension message is visible
-        await expect(accusedPage.getByText(/suspended/i)).toBeVisible();
+        // Verify suspension message is visible. Match the heading role:
+        // bare getByText also matches the escaping-appeal dynamic-help
+        // bubble that Appeal.tsx force-triggers for this ban reason, which
+        // is a strict-mode violation when it mounts before the first poll.
+        await expect(accusedPage.getByRole("heading", { name: /suspended/i })).toBeVisible();
         log("Suspension message visible ✓");
 
         // Verify human-readable ban reason is shown in the "Reason for suspension:" heading

@@ -46,6 +46,8 @@ Before submitting a PR, remind the author to perform manual testing in both mobi
 ## Pull Requests
 
 - Follow the repository PR template at `.github/pull_request_template.md` when creating pull requests.
+- When appropriate include screenshot(s) of what changed
+- Be concise and professional with your pull request text
 
 ## OGS-Wide Development Policy
 

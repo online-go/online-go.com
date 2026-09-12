@@ -17,7 +17,14 @@
 
 import * as React from "react";
 import { useGobanController } from "./goban_context";
-import { useShowTitle, useTitle, useCurrentMove, useAIReviewEnabled, useMode } from "./GameHooks";
+import {
+    useShowTitle,
+    useTitle,
+    useCurrentMove,
+    useAIReviewEnabled,
+    useMode,
+    useZenMode,
+} from "./GameHooks";
 import { GAME_KEYBOARD_SHORTCUT_GROUPS } from "./game_keyboard_shortcuts";
 import { _, interpolate } from "@/lib/translate";
 import { rulesText } from "@/lib/misc";
@@ -81,19 +88,17 @@ export function GameInformation(): React.ReactElement | null {
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
     const [config, setConfig] = React.useState(goban?.engine?.config);
-    const [zen_mode, set_zen_mode] = React.useState(goban_controller.zen_mode);
+    const zen_mode = useZenMode(goban_controller);
 
     React.useEffect(() => {
         const handleUpdate = () => {
             setConfig(goban?.engine?.config);
         };
         goban?.on("load", handleUpdate);
-        goban_controller.on("zen_mode", set_zen_mode);
         return () => {
             goban?.off("load", handleUpdate);
-            goban_controller.off("zen_mode", set_zen_mode);
         };
-    }, [goban, goban_controller]);
+    }, [goban]);
 
     if (zen_mode) {
         return null;
