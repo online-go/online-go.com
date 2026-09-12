@@ -56,6 +56,12 @@ override the selection. The CLI option takes precedence. To print the selected
 default without starting tests, run `node scripts/e2e-workers.js` in the same
 environment as the tests.
 
+RAM capacity does not measure CPU capacity or current backend load. Each worker
+can open several browser contexts. A machine with 48 GiB can have enough memory
+for sixteen workers but insufficient CPU time to run them efficiently. Use an
+explicit lower count, for example `E2E_WORKERS=4 make e2e`, when testing on a
+slower CPU or a busy development stack.
+
 The explicit `test:e2e:dev`, UI, and debug commands use the development frontend
 and default to one worker. Listing, help, and CI smoke selection bypass the
 build and moderator-password requirement. The Yarn runner stops before building
@@ -70,6 +76,41 @@ dependencies, and Chromium must already be available.
 On the 24 GiB development machine, do not overlap another frontend build with
 the browser suite: the combined memory use can cause browser processes to be
 killed.
+
+The built preview forwards `/locale/` requests to the development server and
+removes Vite's client, React refresh, and checker scripts from the resolved
+template. Translations therefore load with the same configuration as the local
+frontend, without development scripts that do not exist in the production build.
+
+Generated usernames use a readable role of up to sixteen characters and a
+cryptographically random ten-digit suffix. Numeric suffixes avoid random words
+and acronyms rejected by the backend's username filter. The server's registration
+checks still apply, and registration errors fail the test.
+
+Game scoring waits for both clients to complete auto-scoring, then confirms the
+first acceptance on the opponent's page before submitting the second acceptance.
+An enabled Accept button alone is insufficient: the UI enables it after two
+seconds even if auto-scoring continues. The scoring test waits for the actual
+game-log entries. SGF permission checks wait for loaded game state and use
+retrying assertions on link classes or button state. Click helpers use the
+suite's readiness timeout and Playwright's scrolling during the click instead
+of an earlier five-second scrolling timeout.
+
+Scoring, conditional-move, undo, simultaneous-game, suspend-vote, and escape-rate
+history fixtures use five-minute main time and five thirty-second periods so
+browser work does not exhaust their game clocks. The informal-warning fixture
+uses live timing instead of a two-second blitz clock. Both informal-warning
+scenarios use the normal three-minute test timeout instead of reducing it to
+two minutes. The retained first-turn warning test keeps its clock settings.
+
+Ladder rows load after mounting so synchronous cache hits can update their
+state. Component regressions cover cached data, delayed responses, and StrictMode
+remounting. A populated API response alone does not prove that the rows rendered.
+
+The McMahon journey keeps the director's live connection while players join.
+It checks that all five players appear before starting, waits for the start
+response, and requires the results to appear without a reload. Each joining
+player waits for its join response before reloading to check membership.
 
 Vite reports WebSocket proxy `ECONNRESET` events as concise warnings in both
 its development server and the built preview. The first reset is reported
@@ -150,97 +191,55 @@ backend tests exercise commit, rollback, and autocommit delivery.
 
 ## Verification
 
-The earlier measurements use Chromium on a local Docker OGS stack with 32 logical
-CPUs and 24 GiB RAM. Services and seeded data remain in place between complete runs.
-On that machine the built runner selects all 72 automated tests, including `@Slow`,
-with six workers and zero retries. Manual, visual, utility, and smoke tests are
-outside this selection. Smoke tests retain their separate Docker command.
+The 2026-09-12 stability changes pass all 619 normal frontend tests, TypeScript,
+lint, and modified-file formatting. Five new tests cover numeric usernames;
+three cover cached, delayed, and StrictMode ladder-row mounting. The two cached
+row cases fail before the product fix and pass afterward. Launcher regressions
+also cover current development scripts and translation routing. Graphify is not
+installed in the development environment.
 
-Fourteen automated browser journeys are removed or merged, reducing that
-selection from 86 to 72. The old unfiltered command listed 92 entries because it
-also selected four utility scripts and two visual checks. Those six remain in
-the repository and are excluded from the automated run; the runtime improvement
-does not represent removal of 20 automated journeys.
+The final full runs use Chromium in `ogs_ui_1`, eight workers, 32 logical CPUs,
+and 32 GiB installed RAM (31.3 GiB reported). They use the same build and database
+without reseeding, include `@Slow`, and use zero retries. Services, dependencies,
+Chromium, and seeded data are already available. Game-server signal tracing is
+active during these checks; service CPU limits are unchanged.
 
-The measured runs execute inside `ogs_ui_1`, where dependencies and Chromium are
-installed. With the local services running, the updated `init_e2e` fixtures
-seeded, and `E2E_MODERATOR_PASSWORD` exported in the host shell, run:
+| Final run | Passed | Failed | Skipped | Complete built-runner command |
+| --------- | ------ | ------ | ------- | ----------------------------- |
+| First     | 72     | 0      | 0       | 240.3 seconds                 |
+| Repeat    | 72     | 0      | 0       | 240.2 seconds                 |
 
-```sh
-docker exec -e E2E_MODERATOR_PASSWORD ogs_ui_1 yarn test:e2e
-```
+Earlier full checks expose a cached ladder-row failure and a McMahon reload
+that misses the start update. Both receive fixes before these final runs.
+The McMahon change also passes four parallel repetitions with browsers
+restricted to two CPU cores in 66.7 seconds including runner startup/shutdown.
 
-`docker exec` needs `-e` to receive the exported password. Running Yarn directly
-on the host requires dependencies and Chromium to be installed there too. The
-2026-09-11 measurements below use `test:e2e:built` after a separate build; the
-standard command now performs those same phases in sequence.
+The refreshed build takes 35.6 seconds including Yarn startup, so the build and
+complete browser commands take 275.9 and 275.8 seconds (about 4m 36s each).
+Dependency installation is separate from these measurements.
 
-| Complete run | Passed | Failed | Skipped | Browser duration |
-| ------------ | ------ | ------ | ------- | ---------------- |
-| First        | 72     | 0      | 0       | 4m 14s           |
-| Repeat       | 72     | 0      | 0       | 4m 12s           |
+A separate load check restricts the frontend runner and its browsers to two CPU
+cores while keeping eight workers. All twelve selected game and moderation
+journeys pass in 4.1 minutes (249 seconds including startup and shutdown), with
+zero retries or skips. Earlier load checks reproduce an immediate SGF permission
+assertion, a fixture game timing out after two moves, and a two-minute scenario
+timeout. This is a test of CPU pressure on the frontend, not a benchmark of the
+entire stack on a two-core machine.
 
-These consecutive runs start at 20:32:35 and 20:37:00 UTC on 2026-09-11.
-Both use the same final build and database, without a reset between runs.
+The earlier 24 GiB host passes all 72 tests twice with six workers in 253.9 and
+252.1 seconds of browser execution. An earlier eight-worker measurement on the
+32 GiB host peaks at 22.0 GiB system memory use, with at least 9.3 GiB available
+and no OOM kills. The sixteen-worker tier has selector-test coverage, but no
+browser benchmark on a 48 GiB machine.
 
-The complete browser commands take 255 and 253 seconds including preview startup
-and shutdown. The final frontend build takes 35 seconds, so that build plus the
-first browser run takes 290 seconds. Dependency installation and service
-startup are separate from these measurements.
+The automated selection is reduced from 86 to 72 journeys through fourteen
+removals or merges. The old unfiltered count of 92 also included four utilities
+and two visual checks. Those six remain in the repository outside the automated
+selection. Smoke screenshots use their separate command.
 
-On 2026-09-12, the standard `test:e2e` command passes all 72 tests with six
-workers, zero retries, and zero skips. Its automatic build takes 33 seconds,
-the browser suite takes 250.5 seconds, and the complete command takes
-285.4 seconds (4m 45s). The container's out-of-memory kill count does not
-increase during this run.
-
-The later `make e2e` verification takes 295.7 seconds including its automatic
-build: 71 tests pass and one fails because the backend's offensive-name check
-rejects a randomly generated fixture username. There are no new out-of-memory
-kills. Total system memory use peaks at 22.5 GiB, sampled every two seconds
-using `MemTotal - MemAvailable`.
-
-The warning-cleanup and Kibitz-navigation review fixes pass 13 new normal
-regression cases and seven affected browser journeys. The browser checks use
-six workers, no retries, and no skips, and complete in 89.6 seconds with no new
-out-of-memory kills.
-
-After increasing the host to 32 GiB (31.3 GiB reported by the OS), the automatic
-selector chooses eight workers. The 2026-09-12 run takes 238.5 seconds in the
-browser suite and about 240 seconds for the complete reuse command. It has
-71 passes, no retries or skips, and one failure: the username filter rejects
-`e2ekibBlk_fmlvdy2` during setup of the variation-sharing test. This is the same
-unresolved generated-username fixture issue. Peak system memory use is 22.0 GiB,
-with at least 9.3 GiB available, sampled every two seconds. There are no
-out-of-memory kills. The preceding automatic build takes 30.9 seconds. The
-first launch found no Chromium installation in the current container; installing
-Chromium and its system dependencies allowed the browser run above. The 16-worker
-tier is covered by normal selector tests, not a full browser benchmark.
-
-An earlier run lost its game-server process during scoring and report loading,
-which caused two failures. The tests are not expected to pass through a service
-outage; the final measurements require running services.
-
-Validation also includes 611 frontend tests, 337 backend tests with five existing
-skips, TypeScript, frontend lint, the production build, Python lint and formatting,
-and shell syntax checks for the CI runner. The built-runner tests check argument
-forwarding, backend proxy selection, server shutdown, and success/failure exit
-codes. They also check automatic builds, build failures before browser startup,
-the missing-password error, and listing/help/smoke behavior without a build.
-RAM-selection tests cover tier boundaries, host OS overhead, container limits,
-valid and invalid overrides, and use of the automatic default by the built runner.
-Proxy-warning tests cover colored log prefixes, duplicate callbacks, burst
-counts, continuous resets, shutdown flushing, and preservation of other errors
-and logger methods. The real Vite configuration is also checked for log-level
-settings and live logger state. A controlled upstream produces real TCP resets through both
-Vite server modes: four WebSocket resets produce one warning and one count
-summary; an HTTP reset still logs an error and returns HTTP 502. Three browser
-journeys (SGF download, early escape reporting, and suspended-user login) pass
-in 13.1 seconds with no retries or skips after the logger change.
-The CI orchestration script itself is not executed locally because it
-updates repositories and sends notifications.
-
-The backend aggregate `make lint` stops in the separate baduk.com app because
-its Vite configuration cannot resolve Node types. Graphify is not installed in
-this workspace, so `graphify update .` cannot run. Manual mobile and desktop
-browser testing is required before submitting a PR.
+The reported scoring and stalled-game failures coincide with gameserver1
+exiting at 14:27:09 UTC on 2026-09-12. Gameserver2 also exits during an earlier
+load check at 14:59:32 UTC. The supervisor omits the exit signal; container OOM
+counters remain zero. The reason for these service interruptions is unconfirmed.
+The tests continue to fail on backend HTTP errors. Manual testing in mobile and
+desktop browsers remains pending.
