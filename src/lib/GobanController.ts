@@ -263,7 +263,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     private _autoplaying: boolean = false;
     public analyze_pencil_color: string = preferences.get("analysis.pencil-color");
     private show_bot_detection_results: boolean = false;
-    private _zen_mode: boolean = preferences.get("start-in-zen-mode");
+    private _zen_mode: boolean = false;
     private _ai_review_enabled: boolean = preferences.get("ai-review-enabled");
     private autoplay_timer: ReturnType<typeof setTimeout> | null = null;
     private _variation_name: string = "";
@@ -896,14 +896,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         }
     };
     toggleZenMode = () => {
-        const body = document.getElementsByTagName("body")[0];
-        if (this.zen_mode) {
-            body.classList.remove("zen"); //remove the class
-            this.setZenMode(false);
-        } else {
-            body.classList.add("zen"); //add the class
-            this.setZenMode(true);
-        }
+        this.setZenMode(!this.zen_mode);
         this.emit("view_mode", goban_view_mode());
         this.emit("resize");
     };

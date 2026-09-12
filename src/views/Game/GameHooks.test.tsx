@@ -27,6 +27,7 @@ import {
     usePlayerToMoveOnOfficialBranch,
     useResignMode,
     useUndoRequestIsMine,
+    useZenMode,
 } from "./GameHooks";
 
 const LOGGED_IN_USER = {
@@ -418,5 +419,26 @@ describe("usePlayerToMoveOnOfficialBranch", () => {
         });
 
         expect(officialPlayerToMove()).toBe(OPPONENT.id);
+    });
+});
+
+describe("useZenMode", () => {
+    function ZenProbe({ controller }: { controller: GobanController }): React.ReactElement {
+        return <span data-testid="zen-mode">{useZenMode(controller) ? "on" : "off"}</span>;
+    }
+    const zenMode = () => screen.getByTestId("zen-mode").textContent;
+
+    test("follows the new controller when the Game view moves to another game", () => {
+        const correspondence_game = new GobanController(GAME_IN_PROGRESS);
+        correspondence_game.setZenMode(false);
+        const { rerender } = render(<ZenProbe controller={correspondence_game} />);
+
+        expect(zenMode()).toBe("off");
+
+        const live_game = new GobanController(GAME_IN_PROGRESS);
+        live_game.setZenMode(true);
+        rerender(<ZenProbe controller={live_game} />);
+
+        expect(zenMode()).toBe("on");
     });
 });
