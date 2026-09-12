@@ -28,25 +28,71 @@ import {
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
 import { playMoves } from "@helpers/game-utils";
+import { expectOGSClickableByName } from "@helpers/matchers";
 
 const undoEngineState = (page: Page) =>
     page.evaluate(() => {
-        const engine = (window as any).goban_controller?.goban?.engine;
+        const engine = window.global_goban?.engine;
         return {
-            undo_requested: engine?.undo_requested,
-            undo_requested_by: engine?.undo_requested_by,
             undo_requested_move_count: engine?.undo_requested_move_count,
-            stones: engine?.getUndoRequestStones?.(),
+            stone_count: engine?.getUndoRequestStones().length,
             cur_move_number: engine?.cur_move?.move_number,
         };
     });
 
-/* The goban renders into a shadow root, so count marks with a Playwright
- * locator (which pierces shadow DOM), not document.querySelectorAll.
- * Count only *visible* marks — what the user actually sees — rather than all
- * matching DOM nodes, which can include non-rendered/stale <text> elements. */
-const renderedUndoMarkCount = (page: Page) =>
-    page.locator("svg text", { hasText: "↶" }).filter({ visible: true }).count();
+/** Locate visible undo marks, including those inside the board's shadow root. */
+const renderedUndoMarks = (page: Page) =>
+    page.locator("svg text", { hasText: "↶" }).filter({ visible: true });
+
+async function requestAndAcceptTwoMoveUndo(
+    requester: Page,
+    opponent: Page,
+    expectedMoveNumber: number,
+) {
+    await Promise.all(
+        [requester, opponent].map((page) =>
+            expect(page.locator(".MoveNumberControl-move-number")).toHaveText(
+                `Move ${expectedMoveNumber + 2}`,
+            ),
+        ),
+    );
+    await expect(requester.getByText("Your move", { exact: true })).toBeVisible();
+    const moreActions = requester.locator('button.GobanView-tab-button[title="More actions"]');
+    await expect(moreActions).toBeOGSClickable();
+    await moreActions.click();
+    await (await expectOGSClickableByName(requester, "Request undo")).click();
+    const acceptUndo = await expectOGSClickableByName(opponent, "Accept Undo");
+
+    await Promise.all(
+        [requester, opponent].map(async (page) => {
+            await expect
+                .poll(() => undoEngineState(page))
+                .toMatchObject({
+                    undo_requested_move_count: 2,
+                    stone_count: 2,
+                    cur_move_number: expectedMoveNumber + 2,
+                });
+            await expect(renderedUndoMarks(page)).toHaveCount(2);
+        }),
+    );
+
+    await acceptUndo.click();
+    await Promise.all(
+        [requester, opponent].map(async (page) => {
+            // A two-move undo preserves the turn, so its label cannot confirm completion.
+            await expect(page.locator(".MoveNumberControl-move-number")).toHaveText(
+                `Move ${expectedMoveNumber}`,
+            );
+            await expect
+                .poll(() => undoEngineState(page))
+                .toMatchObject({
+                    cur_move_number: expectedMoveNumber,
+                    stone_count: 0,
+                });
+            await expect(renderedUndoMarks(page)).toHaveCount(0);
+        }),
+    );
+}
 
 /**
  * Requesting an undo while it is the requester's own turn must cover the
@@ -85,33 +131,7 @@ export const multiMoveUndoTest = async ({
     // Challenger is black. Black plays, white answers — black's turn again.
     await playMoves(challengerPage, acceptorPage, ["D4", "E5"], "9x9");
 
-    // Black requests an undo while it is black's turn. The undo request
-    // lives in the "More actions" (ellipsis) popover as a labeled item;
-    // the trigger is an icon-only tab labeled via its `title` attribute.
-    await challengerPage.locator('button.GobanView-tab-button[title="More actions"]').click();
-    const undoItem = challengerPage
-        .locator("button.GameSidebarPanel-item")
-        .filter({ hasText: "Request undo" });
-    await expect(undoItem).toBeEnabled();
-    await undoItem.click();
-
-    // The opponent sees a request covering both moves...
-    await expect(acceptorPage.getByText("Accept Undo")).toBeVisible({ timeout: 10000 });
-    const seen_by_white = await undoEngineState(acceptorPage);
-    expect(seen_by_white.undo_requested_move_count).toBe(2);
-    expect(seen_by_white.stones).toHaveLength(2);
-
-    // ...and both boards mark both stones.
-    expect(await renderedUndoMarkCount(acceptorPage)).toBe(2);
-    expect(await renderedUndoMarkCount(challengerPage)).toBe(2);
-
-    // White accepts — both boards roll back both moves (to move 0).
-    await acceptorPage.getByText("Accept Undo").click();
-    await expect(challengerPage.getByText("Your move", { exact: true })).toBeVisible({
-        timeout: 10000,
-    });
-    expect((await undoEngineState(challengerPage)).cur_move_number).toBe(0);
-    expect((await undoEngineState(acceptorPage)).cur_move_number).toBe(0);
+    await requestAndAcceptTwoMoveUndo(challengerPage, acceptorPage, 0);
 };
 
 /**
@@ -150,16 +170,5 @@ export const multiMoveUndoWhiteRequesterTest = async ({
     // Three moves: B D4, W E5, B C3 — now it is white's turn.
     await playMoves(challengerPage, acceptorPage, ["D4", "E5", "C3"], "9x9");
 
-    // White requests the undo via the "More actions" popover item.
-    await acceptorPage.locator('button.GobanView-tab-button[title="More actions"]').click();
-    const undoItem = acceptorPage
-        .locator("button.GameSidebarPanel-item")
-        .filter({ hasText: "Request undo" });
-    await expect(undoItem).toBeEnabled();
-    await undoItem.click();
-
-    await expect(challengerPage.getByText("Accept Undo")).toBeVisible({ timeout: 10000 });
-    const seen_by_black = await undoEngineState(challengerPage);
-    expect(seen_by_black.undo_requested_move_count).toBe(2);
-    expect(seen_by_black.stones).toHaveLength(2);
+    await requestAndAcceptTwoMoveUndo(acceptorPage, challengerPage, 1);
 };
