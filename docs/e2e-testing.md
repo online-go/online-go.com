@@ -30,11 +30,18 @@ first-turn warning test uses an explicit 90-second wait for the real game timer
 and warning delivery. The mobile puzzle test waits for setup mode to finish
 loading before it places a stone.
 
-`yarn test:e2e:built` defaults to six workers and serves the existing production
-bundles with the local backend proxy. It keeps development-server checks on their own Playwright
+`yarn test:e2e` checks that `E2E_MODERATOR_PASSWORD` is set, builds once, and runs
+the full suite against production assets. `yarn test:e2e:built` reuses an existing
+build. Both default to six workers and serve the production
+bundles with the local backend proxy. They keep development-server checks on their own Playwright
 project. This reduces browser memory use from development modules. Build the
-frontend before this command; build and service startup time are recorded
+frontend before using the reuse command; build and service startup time are recorded
 separately from browser runtime.
+
+The explicit `test:e2e:dev`, UI, and debug commands use the development frontend
+and default to one worker. Listing, help, and CI smoke selection bypass the
+build and moderator-password requirement. Missing credentials stop a full run
+before any browser starts; credentials are never supplied by a default password.
 
 `IncidentReportCountTracker` counts the reporter's own active reports. Moderator
 queue totals can change in other workers. `submitReportVote` waits for the vote
@@ -116,13 +123,13 @@ installed. With the local services running, the updated `init_e2e` fixtures
 seeded, and `E2E_MODERATOR_PASSWORD` exported in the host shell, run:
 
 ```sh
-docker exec ogs_ui_1 yarn build
-docker exec -e E2E_MODERATOR_PASSWORD ogs_ui_1 yarn test:e2e:built
+docker exec -e E2E_MODERATOR_PASSWORD ogs_ui_1 yarn test:e2e
 ```
 
-Plain `yarn test:e2e` uses the development frontend with four workers; it is not
-the command used for these timings. Running either Yarn command directly on the
-host requires dependencies and Chromium to be installed there too.
+`docker exec` needs `-e` to receive the exported password. Running Yarn directly
+on the host requires dependencies and Chromium to be installed there too. The
+2026-09-11 measurements below use `test:e2e:built` after a separate build; the
+standard command now performs those same phases in sequence.
 
 | Complete run | Passed | Failed | Skipped | Browser duration |
 | ------------ | ------ | ------ | ------- | ---------------- |
@@ -137,15 +144,23 @@ and shutdown. The final frontend build takes 35 seconds, so that build plus the
 first browser run takes 290 seconds. Dependency installation and service
 startup are separate from these measurements.
 
+On 2026-09-12, the standard `test:e2e` command passes all 72 tests with six
+workers, zero retries, and zero skips. Its automatic build takes 33 seconds,
+the browser suite takes 250.5 seconds, and the complete command takes
+285.4 seconds (4m 45s). The container's out-of-memory kill count does not
+increase during this run.
+
 An earlier run lost its game-server process during scoring and report loading,
 which caused two failures. The tests are not expected to pass through a service
 outage; the final measurements require running services.
 
-Validation also includes 546 frontend tests, 336 backend tests with five existing
+Validation also includes 552 frontend tests, 336 backend tests with five existing
 skips, TypeScript, frontend lint, the production build, Python lint and formatting,
 and shell syntax checks for the CI runner. The built-runner tests check argument
 forwarding, backend proxy selection, server shutdown, and success/failure exit
-codes. The CI orchestration script itself is not executed locally because it
+codes. They also check automatic builds, build failures before browser startup,
+the missing-password error, and listing/help/smoke behavior without a build.
+The CI orchestration script itself is not executed locally because it
 updates repositories and sends notifications.
 
 The backend aggregate `make lint` stops in the separate baduk.com app because

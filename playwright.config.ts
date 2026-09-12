@@ -18,7 +18,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const smoke = !!process.env.CI;
-const workers = process.env.E2E_WORKERS ? Number(process.env.E2E_WORKERS) : smoke ? 1 : 4;
+const workers = process.env.E2E_WORKERS ? Number(process.env.E2E_WORKERS) : 1;
 if (!Number.isInteger(workers) || workers < 1) {
     throw new Error("E2E_WORKERS must be a positive integer");
 }
