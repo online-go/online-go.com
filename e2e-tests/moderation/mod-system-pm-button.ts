@@ -143,7 +143,9 @@ export const systemPMButtonTest = async ({
     await expect(appealTextarea).toHaveValue("I apologize and would like to return to OGS.");
 
     const userSubmitButton = await expectOGSClickableByName(userPage, /^Submit$/);
-    await userSubmitButton.click();
+    await actAndWaitForResponse(userPage, { method: "POST", path: "/api/v1/appeal/messages" }, () =>
+        userSubmitButton.click(),
+    );
     log("Appeal submitted ✓");
 
     // Verify the message appears in the UI

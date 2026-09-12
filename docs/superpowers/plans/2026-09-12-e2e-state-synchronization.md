@@ -15,7 +15,10 @@
    identified by the audit. Live tournament starts require chat registration as well
    as saved membership; retain entrants until start. CM-vote suspensions require
    a new navigation to read the persisted ban, unlike direct moderator reload
-   signals. Preserve the outcomes each browser test owns.
+   signals. Appeal-message POSTs must complete before another client queries the
+   appeals list; disabled Submit is only optimistic input clearing. Replace the
+   ModLog fixture's duplicate empty-board scoring with a short resignation game.
+   Preserve the outcomes each browser test owns.
 6. Capture native exit signals and a backtrace for the independent backend
    service exits observed during stress checks. Do not infer an OOM or hide a
    service failure with test retries.

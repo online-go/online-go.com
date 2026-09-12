@@ -33,6 +33,7 @@
  * - E2E_MODERATOR_PASSWORD: Password for both E2E_MODERATOR and E2E_AI_DETECTOR
  */
 
+import { actAndWaitForResponse } from "@helpers/requests";
 import type { CreateContextOptions } from "@helpers";
 
 import { BrowserContext, expect } from "@playwright/test";
@@ -52,7 +53,7 @@ import {
     createDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
-import { waitForGameViewReady } from "@helpers/game-utils";
+import { waitForGameViewReady, playMoves, resignActiveGame } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 import {
     submitReportVote,
@@ -110,6 +111,7 @@ export const aiDetectorSeesSuspensionModlogTest = async (
         await createDirectChallenge(suspendedUserPage, opponentUsername, {
             ...defaultChallengeSettings,
             gameName: "E2E Suspension ModLog Test Game",
+            ranked: false,
             boardSize: "9x9",
             speed: "live",
             timeControl: "byoyomi",
@@ -127,48 +129,13 @@ export const aiDetectorSeesSuspensionModlogTest = async (
         const goban = suspendedUserPage.locator(".Goban[data-pointers-bound]");
         await goban.waitFor({ state: "visible" });
 
-        // End the game with passes (more reliable than resignation)
-        log("Ending game with passes...");
-
-        // Wait for black (suspended user) to have their turn first
-        await expect(suspendedUserPage.getByText("Your move")).toBeVisible({ timeout: 10000 });
-        log("Black's turn confirmed");
-
-        // Black passes
-        const blackPass = suspendedUserPage.getByText("Pass", { exact: true });
-        await expect(blackPass).toBeVisible();
-        await blackPass.click();
-        log("Black passed");
-
-        // Wait for white (opponent) to see it's their turn
-        await expect(opponentPage.getByText("Your move")).toBeVisible({ timeout: 10000 });
-        log("White's turn confirmed");
-
-        // White passes
-        const whitePass = opponentPage.getByText("Pass", { exact: true });
-        await expect(whitePass).toBeVisible();
-        await whitePass.click();
-        log("White passed");
-
-        // Weird OGS behaviour - black has to pass twice if no moves are played!
-        const blackPass2 = suspendedUserPage.getByText("Pass", { exact: true });
-        await expect(blackPass2).toBeVisible();
-        await blackPass2.click();
-        log("Black passed again");
-
-        // Wait for scoring phase - Accept buttons should appear on both sides
-        const whiteAccept = opponentPage.getByText("Accept");
-        await expect(whiteAccept).toBeVisible({ timeout: 10000 });
-        await whiteAccept.click();
-        log("White accepted score");
-
-        const blackAccept = suspendedUserPage.getByText("Accept");
-        await expect(blackAccept).toBeVisible({ timeout: 10000 });
-        await blackAccept.click();
-        log("Black accepted score");
-
-        // Verify game is finished
-        await expect(suspendedUserPage.getByText("wins by")).toBeVisible({ timeout: 10000 });
+        await playMoves(
+            suspendedUserPage,
+            opponentPage,
+            ["D9", "E9", "D8", "E8", "D7", "E7", "D6", "E6"],
+            "9x9",
+        );
+        await resignActiveGame(suspendedUserPage);
         log("Game finished");
 
         // 4. Set up moderator to suspend the user
@@ -208,7 +175,12 @@ export const aiDetectorSeesSuspensionModlogTest = async (
 
         // Confirm suspension
         const confirmSuspendButton = await expectOGSClickableByName(modPage, /^Suspend$/);
-        await confirmSuspendButton.click();
+        await suspendedUserPage.goto("about:blank");
+        await actAndWaitForResponse(
+            modPage,
+            { method: "PUT", path: /^\/api\/v1\/players\/\d+\/moderate$/ },
+            () => confirmSuspendButton.click(),
+        );
         await expect(modPage.locator(".BanModal")).toBeHidden();
         log("User suspended");
 
@@ -228,7 +200,11 @@ export const aiDetectorSeesSuspensionModlogTest = async (
         await expect(appealTextarea).toHaveValue("E2E test appeal message");
 
         const submitAppealButton = await expectOGSClickableByName(suspendedUserPage, /^Submit$/);
-        await submitAppealButton.click();
+        await actAndWaitForResponse(
+            suspendedUserPage,
+            { method: "POST", path: "/api/v1/appeal/messages" },
+            () => submitAppealButton.click(),
+        );
         await expect(submitAppealButton).toBeDisabled();
         log("Appeal submitted");
 
@@ -242,6 +218,7 @@ export const aiDetectorSeesSuspensionModlogTest = async (
         await expect(appealRow).toBeVisible();
         const stateCell = appealRow.locator("td.state").last();
         await stateCell.click();
+        await modPage.waitForURL(/\/appeal\/\d+$/, { waitUntil: "load" });
 
         // Wait for the appeal to load
         await expect(modPage.getByText(/E2E test appeal message/i)).toBeVisible();
@@ -254,7 +231,12 @@ export const aiDetectorSeesSuspensionModlogTest = async (
 
         const restoreButton = await expectOGSClickableByName(modPage, /Restore Account/);
         await expect(restoreButton).toBeVisible();
-        await restoreButton.click();
+        await suspendedUserPage.goto("about:blank");
+        await actAndWaitForResponse(
+            modPage,
+            { method: "PUT", path: /^\/api\/v1\/players\/\d+\/moderate$/ },
+            () => restoreButton.click(),
+        );
         log("User restored");
 
         // 7. Create an AI use report about the suspended user's game
@@ -298,7 +280,11 @@ export const aiDetectorSeesSuspensionModlogTest = async (
 
         const submitReportButton = await expectOGSClickableByName(opponentPage, /Report User$/);
         await reportTracker.captureInitialCount(opponentPage);
-        await submitReportButton.click();
+        await actAndWaitForResponse(
+            opponentPage,
+            { method: "POST", path: "/api/v1/moderation/incident" },
+            () => submitReportButton.click(),
+        );
         log("AI use report submitted");
 
         // Capture the report number

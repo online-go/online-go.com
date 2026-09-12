@@ -156,9 +156,11 @@ export const suspendAppealRestoreTest = async ({
     );
 
     const userSubmitButton = await expectOGSClickableByName(userPage, /^Submit$/);
-    await userSubmitButton.click();
+    await actAndWaitForResponse(userPage, { method: "POST", path: "/api/v1/appeal/messages" }, () =>
+        userSubmitButton.click(),
+    );
 
-    // Wait for submission to process - the Submit button becomes disabled
+    // The completed write precedes the thread refresh.
     await expect(userSubmitButton).toBeDisabled();
     log("Appeal submitted ✓");
 
@@ -209,7 +211,9 @@ export const suspendAppealRestoreTest = async ({
 
     const leaveSuspendedButton = await expectOGSClickableByName(modPage, /Leave Suspended/);
     await expect(leaveSuspendedButton).toBeVisible();
-    await leaveSuspendedButton.click();
+    await actAndWaitForResponse(modPage, { method: "POST", path: "/api/v1/appeal/messages" }, () =>
+        leaveSuspendedButton.click(),
+    );
     log("Moderator response sent (user still suspended) ✓");
 
     // Verify the message appears in the UI
@@ -239,7 +243,9 @@ export const suspendAppealRestoreTest = async ({
     );
 
     const userReplyButton = await expectOGSClickableByName(userPage, /^Submit$/);
-    await userReplyButton.click();
+    await actAndWaitForResponse(userPage, { method: "POST", path: "/api/v1/appeal/messages" }, () =>
+        userReplyButton.click(),
+    );
     log("User reply sent ✓");
 
     // Verify the message appears in the UI

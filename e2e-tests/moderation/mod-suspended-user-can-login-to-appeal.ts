@@ -29,6 +29,7 @@
  * where a suspended user returns later and needs to log in fresh.
  */
 
+import { actAndWaitForResponse } from "@helpers/requests";
 import type { CreateContextOptions } from "@helpers";
 
 import { BrowserContext, expect } from "@playwright/test";
@@ -106,7 +107,9 @@ export const suspendedUserCanLoginToAppealTest = async ({
     await expect(appealTextarea).toHaveValue(appealMessage);
 
     const submitButton = await expectOGSClickableByName(page, /^Submit$/);
-    await submitButton.click();
+    await actAndWaitForResponse(page, { method: "POST", path: "/api/v1/appeal/messages" }, () =>
+        submitButton.click(),
+    );
 
     // Wait for the message to appear in the appeal thread
     await expect(page.getByText(appealMessage)).toBeVisible({ timeout: 10000 });

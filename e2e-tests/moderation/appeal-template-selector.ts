@@ -35,6 +35,7 @@
  * - E2E_MODERATOR_PASSWORD: Password for both E2E_MODERATOR and E2E_AI_DETECTOR
  */
 
+import { actAndWaitForResponse } from "@helpers/requests";
 import type { CreateContextOptions } from "@helpers";
 
 import { BrowserContext, expect } from "@playwright/test";
@@ -232,7 +233,11 @@ export const appealTemplateSelectorTest = async (
         await expect(appealTextarea).toHaveValue("I did not use AI. Please review my case.");
 
         const userSubmitButton = await expectOGSClickableByName(reportedPage, /^Submit$/);
-        await userSubmitButton.click();
+        await actAndWaitForResponse(
+            reportedPage,
+            { method: "POST", path: "/api/v1/appeal/messages" },
+            () => userSubmitButton.click(),
+        );
         await expect(userSubmitButton).toBeDisabled();
         log("Appeal submitted ✓");
 
@@ -271,6 +276,7 @@ export const appealTemplateSelectorTest = async (
         // Click on the state cell to open the appeal
         const stateCell = appealRow.locator("td.state").last();
         await stateCell.click();
+        await modPage.waitForURL(/\/appeal\/\d+$/, { waitUntil: "load" });
 
         // Verify the appeal detail page loaded with the user's message
         await expect(modPage.getByText(/I did not use AI/i)).toBeVisible();

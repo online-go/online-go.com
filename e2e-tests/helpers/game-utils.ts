@@ -189,6 +189,7 @@ export const playMoves = async (
 export const resignActiveGame = async (page: Page) => {
     const resign = page.locator(".play-buttons .resign-button");
     await expect(resign).toBeVisible();
+    await expect(resign).toHaveText("Resign");
     await resign.click();
 
     // Handle the confirmation dialog
