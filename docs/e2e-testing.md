@@ -32,11 +32,29 @@ loading before it places a stone.
 
 `yarn test:e2e` checks that `E2E_MODERATOR_PASSWORD` is set, builds once, and runs
 the full suite against production assets. `yarn test:e2e:built` reuses an existing
-build. Both default to six workers and serve the production
+build. Both select workers from RAM capacity and serve the production
 bundles with the local backend proxy. They keep development-server checks on their own Playwright
 project. This reduces browser memory use from development modules. Build the
 frontend before using the reuse command; build and service startup time are recorded
 separately from browser runtime.
+
+The built runner and self-hosted CI use the same worker selector:
+
+| RAM capacity                   | Workers |
+| ------------------------------ | ------- |
+| Up to 16 GiB                   | 2       |
+| More than 16 GiB, below 32 GiB | 6       |
+| 32 GiB to below 48 GiB         | 8       |
+| 48 GiB or more                 | 16      |
+
+The selector uses total RAM capacity, capped by the process/container memory
+limit reported by Node. It does not use momentary free RAM or include swap.
+Host RAM rounds up to whole GiB to account for OS overhead (for example,
+31.3 GiB selects the 32 GiB tier). An explicit container limit is not rounded.
+Set `E2E_WORKERS` to a positive integer or pass Playwright's `--workers` to
+override the selection. The CLI option takes precedence. To print the selected
+default without starting tests, run `node scripts/e2e-workers.js` in the same
+environment as the tests.
 
 The explicit `test:e2e:dev`, UI, and debug commands use the development frontend
 and default to one worker. Listing, help, and CI smoke selection bypass the
@@ -46,7 +64,8 @@ or starting browsers if credentials are missing.
 From the host, `make e2e` runs `yarn test:e2e` inside `ogs_ui_1`, including the
 automatic build and all 72 tests. It supplies `xyzzy`, the password used to seed
 the local test database. Export `E2E_MODERATOR_PASSWORD` to override this for a
-database seeded with a different password. Local services, seeded data,
+database seeded with a different password. `E2E_WORKERS=4 make e2e` passes an
+explicit worker override into the container. Local services, seeded data,
 dependencies, and Chromium must already be available.
 On the 24 GiB development machine, do not overlap another frontend build with
 the browser suite: the combined memory use can cause browser processes to be
@@ -121,9 +140,9 @@ backend tests exercise commit, rollback, and autocommit delivery.
 
 ## Verification
 
-Measurements use Chromium on a local Docker OGS stack with 32 logical CPUs and
-24 GiB RAM. Services and seeded data remain in place between complete runs.
-The default built runner selects all 72 automated tests, including `@Slow`,
+The earlier measurements use Chromium on a local Docker OGS stack with 32 logical
+CPUs and 24 GiB RAM. Services and seeded data remain in place between complete runs.
+On that machine the built runner selects all 72 automated tests, including `@Slow`,
 with six workers and zero retries. Manual, visual, utility, and smoke tests are
 outside this selection. Smoke tests retain their separate Docker command.
 
@@ -169,23 +188,37 @@ The later `make e2e` verification takes 295.7 seconds including its automatic
 build: 71 tests pass and one fails because the backend's offensive-name check
 rejects a randomly generated fixture username. There are no new out-of-memory
 kills. Total system memory use peaks at 22.5 GiB, sampled every two seconds
-using `MemTotal - MemAvailable`. Eight-worker memory use is not measured.
+using `MemTotal - MemAvailable`.
 
 The warning-cleanup and Kibitz-navigation review fixes pass 13 new normal
 regression cases and seven affected browser journeys. The browser checks use
 six workers, no retries, and no skips, and complete in 89.6 seconds with no new
 out-of-memory kills.
 
+After increasing the host to 32 GiB (31.3 GiB reported by the OS), the automatic
+selector chooses eight workers. The 2026-09-12 run takes 238.5 seconds in the
+browser suite and about 240 seconds for the complete reuse command. It has
+71 passes, no retries or skips, and one failure: the username filter rejects
+`e2ekibBlk_fmlvdy2` during setup of the variation-sharing test. This is the same
+unresolved generated-username fixture issue. Peak system memory use is 22.0 GiB,
+with at least 9.3 GiB available, sampled every two seconds. There are no
+out-of-memory kills. The preceding automatic build takes 30.9 seconds. The
+first launch found no Chromium installation in the current container; installing
+Chromium and its system dependencies allowed the browser run above. The 16-worker
+tier is covered by normal selector tests, not a full browser benchmark.
+
 An earlier run lost its game-server process during scoring and report loading,
 which caused two failures. The tests are not expected to pass through a service
 outage; the final measurements require running services.
 
-Validation also includes 565 frontend tests, 336 backend tests with five existing
+Validation also includes 596 frontend tests, 337 backend tests with five existing
 skips, TypeScript, frontend lint, the production build, Python lint and formatting,
 and shell syntax checks for the CI runner. The built-runner tests check argument
 forwarding, backend proxy selection, server shutdown, and success/failure exit
 codes. They also check automatic builds, build failures before browser startup,
 the missing-password error, and listing/help/smoke behavior without a build.
+RAM-selection tests cover tier boundaries, host OS overhead, container limits,
+valid and invalid overrides, and use of the automatic default by the built runner.
 The CI orchestration script itself is not executed locally because it
 updates repositories and sends notifications.
 

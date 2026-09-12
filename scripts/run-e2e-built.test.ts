@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import {
     copyFileSync,
     existsSync,
@@ -17,7 +17,9 @@ test.each([
     { build: false, buildStatus: 0, status: 7 },
     { build: true, buildStatus: 0, status: 0 },
     { build: true, buildStatus: 9, status: 0 },
-])("built runner handles build and test status: %j", async ({ build, buildStatus, status }) => {
+    { build: false, buildStatus: 0, status: 0, workers: "" },
+])("built runner handles build and test status: %j", async (options) => {
+    const { build, buildStatus, status, workers = "3" } = options;
     const cwd = mkdtempSync(join(tmpdir(), "ogs-built-e2e-"));
     const frontend = createServer((_request, response) => {
         response.end(
@@ -41,6 +43,7 @@ test.each([
             writeFileSync(join(cwd, "dist/ogs.min.css"), "");
         }
         copyFileSync(join(__dirname, "run-e2e-built.js"), join(cwd, "runner.js"));
+        copyFileSync(join(__dirname, "e2e-workers.js"), join(cwd, "e2e-workers.js"));
         writeFileSync(
             join(cwd, "node_modules/vite/package.json"),
             '{"type":"module","exports":"./index.js"}',
@@ -93,7 +96,7 @@ test.each([
                 E2E_MODERATOR_PASSWORD: "fixture-password",
                 FRONTEND_URL: frontendURL,
                 E2E_PREVIEW_PORT: "18081",
-                E2E_WORKERS: "3",
+                E2E_WORKERS: workers,
             },
             stdio: ["ignore", "pipe", "pipe"],
         });
@@ -127,7 +130,12 @@ test.each([
                 args: ["test", "--grep", "one|two words"],
                 frontend: "http://localhost:18081",
                 dev: frontendURL,
-                workers: "3",
+                workers:
+                    workers ||
+                    spawnSync(process.execPath, [join(cwd, "e2e-workers.js")], {
+                        encoding: "utf8",
+                        env: { ...process.env, E2E_WORKERS: "" },
+                    }).stdout.trim(),
             });
             expect(JSON.parse(readFileSync(join(cwd, "proxy.json"), "utf8"))).toEqual({
                 "/api": { target: frontendURL, changeOrigin: true },
@@ -160,6 +168,7 @@ test.each([
         mkdirSync(join(cwd, "node_modules/playwright"), { recursive: true });
         writeFileSync(join(cwd, "package.json"), '{"type":"module"}');
         copyFileSync(join(__dirname, "run-e2e-built.js"), join(cwd, "runner.js"));
+        copyFileSync(join(__dirname, "e2e-workers.js"), join(cwd, "e2e-workers.js"));
         writeFileSync(
             join(cwd, "node_modules/vite/package.json"),
             '{"type":"module","exports":"./index.js"}',

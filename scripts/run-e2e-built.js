@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { access, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { loadConfigFromFile, preview } from "vite";
+import { getE2EWorkers } from "./e2e-workers.js";
 
 async function runNode(args, env = process.env) {
     const child = spawn(process.execPath, args, { stdio: "inherit", env });
@@ -38,6 +39,7 @@ if (!process.env.E2E_MODERATOR_PASSWORD) {
     process.exit(1);
 }
 
+const workers = getE2EWorkers();
 const frontend = new URL(process.env.FRONTEND_URL || "http://localhost:8080");
 const port = Number(process.env.E2E_PREVIEW_PORT || 8081);
 if (!Number.isInteger(port) || port < 1 || port > 65535) {
@@ -113,7 +115,7 @@ server.httpServer.on("connection", (socket) => {
 try {
     process.exitCode = await runNode(playwrightArgs, {
         ...process.env,
-        E2E_WORKERS: process.env.E2E_WORKERS || "6",
+        E2E_WORKERS: String(workers),
         FRONTEND_URL: builtURL.origin,
         E2E_DEV_SERVER_URL: frontend.origin,
     });

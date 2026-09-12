@@ -44,7 +44,7 @@ test:
 	npm run test
 
 e2e:
-	docker exec -e E2E_MODERATOR_PASSWORD="$${E2E_MODERATOR_PASSWORD:-xyzzy}" ogs_ui_1 yarn test:e2e
+	docker exec -e E2E_MODERATOR_PASSWORD="$${E2E_MODERATOR_PASSWORD:-xyzzy}" $${E2E_WORKERS:+-e E2E_WORKERS} ogs_ui_1 yarn test:e2e
 
 GOBAN_SOCKET_WORKER_VERSION=0.2
 update-worker: build

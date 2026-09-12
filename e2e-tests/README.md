@@ -31,9 +31,13 @@ yarn test:e2e:built --workers=4 --repeat-each=3
 ```
 
 `FRONTEND_URL` defaults to `http://localhost:8080`. Full tests run in parallel
-with six workers against built assets. Development commands default to one worker
-because development modules use more browser memory. Set `E2E_WORKERS` or pass `--workers` to change this. Retries
-are disabled so failures remain visible. `@Manual`, `@Visual`, and `@E2EUtils`
+against built assets. Workers are selected from RAM capacity: **2** up to 16 GiB,
+**6** above 16 and below 32 GiB, **8** from 32 to below 48 GiB, and **16** at
+48 GiB or more. Host capacity rounds up to whole GiB for OS overhead; any lower
+container memory limit applies without rounding. This uses total capacity, not
+momentary free RAM. Development commands default to one worker
+because development modules use more browser memory. Set `E2E_WORKERS` or pass
+`--workers` to change this; the CLI option takes precedence. Retries are disabled so failures remain visible. `@Manual`, `@Visual`, and `@E2EUtils`
 tests are excluded from automatic runs.
 
 When `CI` is set, the configuration selects only smoke tests and defaults to one
@@ -55,6 +59,11 @@ password:
 ```sh
 docker exec -e E2E_MODERATOR_PASSWORD ogs_ui_1 yarn test:e2e
 ```
+
+From the host, `make e2e` runs the same command with the local fixture password.
+Use `E2E_WORKERS=4 make e2e` to set an explicit worker count. For a direct Docker
+command, add `-e E2E_WORKERS` to pass an exported override. Run
+`docker exec ogs_ui_1 node scripts/e2e-workers.js` to print the selected default.
 
 `docker exec` does not inherit host shell variables unless `-e` passes them in.
 The built runner stops before building or starting browsers when the moderator
