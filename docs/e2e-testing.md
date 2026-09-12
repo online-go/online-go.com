@@ -103,6 +103,14 @@ uses live timing instead of a two-second blitz clock. Both informal-warning
 scenarios use the normal three-minute test timeout instead of reducing it to
 two minutes. The retained first-turn warning test keeps its clock settings.
 
+Both two-move undo scenarios wait for the played moves on each board before
+requesting the undo. They wait for the request state and two visible markers
+on both clients, then accept through the UI. Completion requires the expected
+move number in each board's display and engine, with no remaining undo markers.
+The expected result is move zero for a black requester and move one for a white
+requester. The turn label stays the same after a two-move undo and cannot serve
+as a completion check.
+
 Ladder rows load after mounting so synchronous cache hits can update their
 state. Component regressions cover cached data, delayed responses, and StrictMode
 remounting. A populated API response alone does not prove that the rows rendered.
@@ -198,25 +206,30 @@ row cases fail before the product fix and pass afterward. Launcher regressions
 also cover current development scripts and translation routing. Graphify is not
 installed in the development environment.
 
-The final full runs use Chromium in `ogs_ui_1`, eight workers, 32 logical CPUs,
-and 32 GiB installed RAM (31.3 GiB reported). They use the same build and database
-without reseeding, include `@Slow`, and use zero retries. Services, dependencies,
-Chromium, and seeded data are already available. Game-server signal tracing is
-active during these checks; service CPU limits are unchanged.
+The latest full run uses Chromium in `ogs_ui_1`, eight workers, 32 logical CPUs,
+and 32 GiB installed RAM (31.3 GiB reported). It includes `@Slow` and uses zero
+retries. Services, dependencies, Chromium, and seeded data are already available.
+The database is not reset between checks.
 
-| Final run | Passed | Failed | Skipped | Complete built-runner command |
-| --------- | ------ | ------ | ------- | ----------------------------- |
-| First     | 72     | 0      | 0       | 240.3 seconds                 |
-| Repeat    | 72     | 0      | 0       | 240.2 seconds                 |
+| Full run       | Passed | Failed | Skipped | Complete built-runner command |
+| -------------- | ------ | ------ | ------- | ----------------------------- |
+| After undo fix | 72     | 0      | 0       | 233.3 seconds                 |
 
-Earlier full checks expose a cached ladder-row failure and a McMahon reload
-that misses the start update. Both receive fixes before these final runs.
-The McMahon change also passes four parallel repetitions with browsers
-restricted to two CPU cores in 66.7 seconds including runner startup/shutdown.
+The undo follow-up passes 24 executions (twelve per requester colour) with eight
+workers and the frontend/browsers restricted to two CPU cores, in 152.1 seconds
+including startup/shutdown. All pass with zero retries. TypeScript, lint,
+modified-file formatting, and the 35.9-second build also pass.
 
-The refreshed build takes 35.6 seconds including Yarn startup, so the build and
-complete browser commands take 275.9 and 275.8 seconds (about 4m 36s each).
-Dependency installation is separate from these measurements.
+The measured build and complete browser command total 269.2 seconds (4m 29s).
+Dependency installation and service startup are outside this measurement.
+
+Two earlier full runs pass all 72 tests in 240.3 and 240.2 seconds. A subsequent
+run exposes the undo race: an unchanged turn label releases the assertion before
+the board receives the undo. The latest run includes the state-based checks.
+Earlier full checks also expose a cached ladder-row failure and a McMahon reload
+that misses the start update; both are fixed before the undo follow-up.
+The McMahon change passes four parallel repetitions with browsers restricted to
+two CPU cores in 66.7 seconds including runner startup/shutdown.
 
 A separate load check restricts the frontend runner and its browsers to two CPU
 cores while keeping eight workers. All twelve selected game and moderation
