@@ -98,12 +98,16 @@ function PaginatedTableImpl<RawEntryT = any, GroomedEntryT = RawEntryT>(
         props.orderBy || [],
     );
     const [loading, setLoading]: [boolean, (x: boolean) => void] = React.useState(false as boolean);
-    const [load_again_refresh, setLoadAgainRefresh]: [number, (x: number) => void] =
-        React.useState(0);
+    const [load_again_refresh, setLoadAgainRefresh]: [
+        number,
+        React.Dispatch<React.SetStateAction<number>>,
+    ] = React.useState(0);
     const mounted = React.useRef(false);
 
     const load_again = React.useRef(false as boolean);
     const last_loaded = React.useRef([] as any[]);
+    const source_ref = React.useRef(props.source);
+    source_ref.current = props.source;
     const filter: any = props.filter;
 
     React.useImperativeHandle(ref, () => ({
@@ -128,7 +132,18 @@ function PaginatedTableImpl<RawEntryT = any, GroomedEntryT = RawEntryT>(
             return;
         }
         const last_filter = last[3];
+        const last_source = last[5];
         last_loaded.current = cur;
+
+        if (last.length && last_source !== props.source) {
+            setRows([]);
+            if (page !== 1) {
+                setPage(1);
+                load_again.current = true;
+                setLoadAgainRefresh((r) => r + 1);
+                return;
+            }
+        }
 
         if (loading) {
             load_again.current = true;
@@ -138,12 +153,13 @@ function PaginatedTableImpl<RawEntryT = any, GroomedEntryT = RawEntryT>(
         if (last_filter && !softEquals(last_filter, filter)) {
             setPage(1);
             load_again.current = true;
-            setLoadAgainRefresh(load_again_refresh + 1);
+            setLoadAgainRefresh((r) => r + 1);
             return;
         }
 
         setLoading(true);
         load_again.current = false;
+        const requested_source = props.source;
         const [promise, cancel] = ajax_loader();
 
         promise
@@ -151,6 +167,16 @@ function PaginatedTableImpl<RawEntryT = any, GroomedEntryT = RawEntryT>(
                 if (!mounted.current) {
                     return;
                 }
+
+                setLoading(false);
+                if (load_again.current) {
+                    load_again.current = false;
+                    setLoadAgainRefresh((r) => r + 1);
+                }
+                if (source_ref.current !== requested_source) {
+                    return;
+                }
+
                 let new_rows;
                 if (props.groom) {
                     try {
@@ -167,11 +193,6 @@ function PaginatedTableImpl<RawEntryT = any, GroomedEntryT = RawEntryT>(
                     console.debug("PaginatedTable groomed rows: ", new_rows);
                 }
 
-                setLoading(false);
-                if (load_again.current) {
-                    load_again.current = false;
-                    setLoadAgainRefresh(load_again_refresh + 1);
-                }
                 setRows(new_rows);
                 setNumPages(Math.ceil(res.count / page_size) || 1);
                 if (page > Math.ceil(res.count / page_size)) {
@@ -185,7 +206,7 @@ function PaginatedTableImpl<RawEntryT = any, GroomedEntryT = RawEntryT>(
                 setLoading(false);
                 if (load_again.current) {
                     load_again.current = false;
-                    setLoadAgainRefresh(load_again_refresh + 1);
+                    setLoadAgainRefresh((r) => r + 1);
                 }
             });
 
