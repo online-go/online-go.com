@@ -62,6 +62,7 @@ import { ModalContext } from "@/components/ModalProvider";
 import { useUser } from "@/lib/hooks";
 import { MODERATOR_POWERS } from "@/lib/moderation";
 import { is_valid_url } from "@/lib/url_validation";
+import { sanitizeGameSearchParams } from "@/lib/url_display_params";
 import { BotDetectionResults } from "./BotDetectionResults";
 import { ActiveTournament } from "@/lib/types";
 import { GobanController } from "@/lib/GobanController";
@@ -82,7 +83,14 @@ import "./MoveTree.css";
 export function Game(): React.ReactElement | null {
     const params = useParams<"game_id" | "review_id" | "move_number">();
     const location = useLocation();
-    const [searchParams] = useSearchParams();
+    const [raw_search_params] = useSearchParams();
+    // A live match room's URL is not a trusted source of display/layout
+    // config: a malicious challenge/room creator must not be able to force
+    // a theme, zen mode, or hidden UI onto the other player just by
+    // crafting a link. Only the small allowlist of non-presentational
+    // params below is ever read from it; anything else (theme=, zen=,
+    // coords=, layout=, ...) is silently dropped. See url_display_params.ts.
+    const searchParams = sanitizeGameSearchParams(raw_search_params);
 
     const game_id = params.game_id ? parseInt(params.game_id) : 0;
     const review_id = params.review_id ? parseInt(params.review_id) : 0;
