@@ -41,6 +41,7 @@ import {
 } from "./GameHooks";
 import { useGobanController } from "./goban_context";
 import { is_valid_url } from "@/lib/url_validation";
+import { sanitizeGameSearchParams } from "@/lib/url_display_params";
 import { ConditionalMoveTreeDisplay } from "./ConditionalMoveTreeDisplay";
 import { useUser } from "@/lib/hooks";
 import { AntiGrief } from "./AntiGrief";
@@ -64,7 +65,11 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
     const engine = goban.engine;
-    const [searchParams] = useSearchParams();
+    const [raw_search_params] = useSearchParams();
+    // See url_display_params.ts: the game room URL is not a trusted source
+    // of display/layout config, so only the non-presentational allowlist
+    // is read from it here too.
+    const searchParams = sanitizeGameSearchParams(raw_search_params);
     const return_param = searchParams.get("return");
     const return_url = return_param && is_valid_url(return_param) ? return_param : null;
     const needs_sealing = useNeedsSealing(goban);
