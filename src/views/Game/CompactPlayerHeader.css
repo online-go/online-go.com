@@ -1,0 +1,288 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* Compact mobile header: both players on one row above the board, black on
+ * the left and white on the right, mirrored around the turn stones.
+ *
+ *   ┌───────┬──────────┬────────┬──────────┬───────┐
+ *   │       │ name     │        │     name │       │
+ *   │ icon  ├──────────│ stones │──────────┤  icon │  ← icon spans rows 1-2
+ *   │       │ captures │  move# │ captures │       │
+ *   ├───────┴──────────┤        ├──────────┴───────┤
+ *   │ clock            │        │            clock │  ← clock spans the half
+ *   └──────────────────┴────────┴──────────────────┘
+ *
+ * The card colours are dropped here: with the two players side by side the
+ * stones in the middle say who is who, and the halves read as one strip.
+ *
+ */
+.MainGobanView .CompactPlayerHeader {
+    flex-shrink: 0;
+}
+
+/* Everything below hangs off `.portrait ... .player-icons`, one class
+ * deeper than the `.MainGobanView.portrait .player-icons ...` defaults each
+ * rule replaces, so the overrides win on specificity rather than on
+ * stylesheet order. The header is only ever rendered in portrait. */
+.MainGobanView.portrait .CompactPlayerHeader .player-icons {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    width: 100%;
+    min-height: 0;
+
+    .player-container {
+        display: grid;
+        grid-template-rows: auto auto auto;
+        flex: 1 1 0;
+        width: auto;
+        min-width: 0;
+        column-gap: 0.4rem;
+        row-gap: 0.05rem;
+        padding: 0.25rem 0.4rem;
+        text-align: left;
+    }
+
+    /* The colour of the card is carried by the stones in the middle now, so
+     * the fills and the edges that divided the two cards come off. Both
+     * selectors name the colour, to outrank the `.black.player-container`
+     * rules they undo. */
+    .black.player-container,
+    .white.player-container {
+        background: none;
+        border: none;
+        color: var(--fg);
+    }
+
+    /* Flatten the icon-clock row so the icon and the clock reach their own
+     * grid cells. */
+    .player-icon-clock-row {
+        display: contents;
+    }
+
+    .player-icon-container {
+        grid-row: 1 / span 2;
+        align-self: center;
+        flex-basis: 2.6rem;
+        width: 2.6rem;
+        height: 2.6rem;
+        min-width: 2.6rem;
+        min-height: 2.6rem;
+        position: relative;
+
+        /* The overlay covers a 4rem avatar elsewhere; at this size the
+         * bolt and the countdown only fit on one small line. */
+        .auto-resign-overlay {
+            flex-direction: row;
+            font-size: 0.55rem;
+            gap: 0.1rem;
+        }
+
+        .player-flag {
+            left: unset;
+            top: unset;
+            right: 0;
+            bottom: 0;
+            transform: scale(0.45);
+            transform-origin: right bottom;
+        }
+
+        .ChatPresenceIndicator {
+            left: 0.15rem;
+            top: 0.15rem;
+        }
+    }
+
+    .player-name-container,
+    .player-name-plain {
+        grid-row: 1;
+        align-self: end;
+        font-size: 0.8rem;
+        line-height: 1.15;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0;
+    }
+
+    /* The Player component's leading margin would set the name in from the
+     * column edge, out of line with the captures below it. */
+    .Player-username {
+        margin-left: 0;
+    }
+
+    .score-container {
+        grid-row: 2;
+        align-self: start;
+        display: flex;
+        align-items: center;
+        margin-top: 0;
+        gap: 0.3rem;
+        font-size: 0.75rem;
+        line-height: 1.15;
+    }
+
+    .captures,
+    .points,
+    .komi,
+    .handicap-stones {
+        font-size: 0.75rem;
+    }
+
+    /* The count becomes a stone-coloured disc: a player's captures are the
+     * opponent's stones, so black's sit in a white disc and white's in a
+     * black one. The "captures" word and the zen-mode stone image are the
+     * label everywhere else, and the disc replaces both. */
+    .num-captures-units,
+    .num-captures-stone {
+        display: none;
+    }
+
+    .num-captures-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        min-width: 1.3rem;
+        height: 1.3rem;
+        padding: 0 0.3rem;
+        border-radius: 0.65rem;
+        font-size: 0.7rem;
+        font-weight: bold;
+    }
+
+    .black.player-container .num-captures-count {
+        background: #f0f0f0;
+        color: #1a1a1a;
+        border: 1px solid #999;
+    }
+
+    .white.player-container .num-captures-count {
+        background: #1a1a1a;
+        color: #f0f0f0;
+        border: 1px solid #000;
+    }
+
+    .in-game-clock {
+        grid-row: 3;
+        align-self: center;
+        font-size: 0.85rem;
+        line-height: 1.2;
+        padding: 0.05rem 0.25rem;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    /* The side to move already carries the raised stone in the middle; the
+     * outlined clock is the same answer where the eye is reading the time. */
+    .player-container.their-turn .in-game-clock {
+        border-color: var(--primary);
+    }
+
+    .Clock .main-time {
+        font-size: inherit;
+    }
+
+    /* Black's half runs icon-first from the left edge; white's mirrors it,
+     * so each player's avatar sits on the outside of the strip and their
+     * text faces the middle. */
+    .black.player-container {
+        grid-template-columns: auto minmax(0, 1fr);
+
+        .player-icon-container {
+            grid-column: 1;
+        }
+
+        .player-name-container,
+        .player-name-plain,
+        .score-container {
+            grid-column: 2;
+            justify-content: flex-start;
+        }
+
+        .in-game-clock {
+            grid-column: 1 / span 2;
+            justify-self: start;
+        }
+    }
+
+    .white.player-container {
+        grid-template-columns: minmax(0, 1fr) auto;
+        text-align: right;
+
+        .player-icon-container {
+            grid-column: 2;
+
+            .player-flag {
+                right: unset;
+                left: 0;
+                transform-origin: left bottom;
+            }
+
+            .ChatPresenceIndicator {
+                left: unset;
+                right: 0.15rem;
+            }
+        }
+
+        .player-name-container,
+        .player-name-plain,
+        .score-container {
+            grid-column: 1;
+            justify-content: flex-end;
+        }
+
+        .in-game-clock {
+            grid-column: 1 / span 2;
+            justify-self: end;
+        }
+    }
+
+    /* Players.css forces the light/dark username palettes onto the coloured
+     * cards. Without those backgrounds the names go back to the theme's own
+     * colours. */
+    .black.player-container,
+    .white.player-container {
+        .Player {
+            color: var(--user);
+        }
+        .Player.supporter {
+            color: var(--supporter) !important;
+        }
+        .Player.professional {
+            color: var(--professional) !important;
+        }
+        .Player.ambassador {
+            color: var(--ambassador) !important;
+        }
+        .Player.teacher {
+            color: var(--teacher) !important;
+        }
+        .Player.bot {
+            color: var(--bot) !important;
+        }
+        .Player.moderator {
+            color: var(--moderator) !important;
+        }
+        .Player.aga {
+            color: var(--aga-official) !important;
+        }
+        .Player.admin {
+            color: var(--admin) !important;
+        }
+    }
+}
