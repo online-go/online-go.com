@@ -42,7 +42,6 @@ import { expect } from "@playwright/test";
 
 import {
     captureReportNumber,
-    navigateToReport,
     newTestUsername,
     prepareNewUser,
     reportPlayerByColor,
@@ -125,8 +124,8 @@ export const cmCallStalledGameWarnsStallerTest = async (
                 const { seededCMPage, seededCMContext } = await setupSeededCM(
                     createContext,
                     cmUser,
+                    reportNumber,
                 );
-                await navigateToReport(seededCMPage, reportNumber);
                 await seededCMPage.locator(`input[value="call_stalled_game_for_black"]`).click();
                 await submitReportVote(seededCMPage);
                 await seededCMContext.close();

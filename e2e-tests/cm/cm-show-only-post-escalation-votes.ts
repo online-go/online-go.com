@@ -78,10 +78,8 @@ export const cmShowOnlyPostEscalationVotesTest = async (
         const { seededCMPage: initialVoterPage } = await setupSeededCM(
             createContext,
             "E2E_CM_SOPEV_INITIAL_VOTER",
+            reportNumber,
         );
-
-        // Navigate directly to the report using the captured report number
-        await navigateToReport(initialVoterPage, reportNumber);
 
         // Verify we can see the report with the message
         await expect(
@@ -97,10 +95,8 @@ export const cmShowOnlyPostEscalationVotesTest = async (
         const { seededCMPage: escalatorPage } = await setupSeededCM(
             createContext,
             "E2E_CM_SOPEV_ESCALATOR",
+            reportNumber,
         );
-
-        // Navigate directly to the report using the captured report number
-        await navigateToReport(escalatorPage, reportNumber);
 
         // Verify we can see the report with the message
         await expect(

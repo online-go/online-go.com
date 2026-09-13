@@ -52,7 +52,6 @@ import { BrowserContext, TestInfo } from "@playwright/test";
 import {
     captureReportNumber,
     goToFinishedGameUrl,
-    navigateToReport,
     newTestUsername,
     prepareNewUser,
     reportUser,
@@ -147,9 +146,8 @@ export const cmEscalatedEscapingAllOptionsTest = async (
         const { seededCMPage: v1Page, seededCMContext: v1Context } = await setupSeededCM(
             createContext,
             "E2E_CM_EAEE_V1",
+            reportNumber,
         );
-
-        await navigateToReport(v1Page, reportNumber);
 
         await expect(v1Page.getByText("E2E test - EAEE reporting escaping!")).toBeVisible();
 
@@ -164,9 +162,7 @@ export const cmEscalatedEscapingAllOptionsTest = async (
         // ========================================
 
         const { seededCMPage: escalatorPage, seededCMContext: escalatorContext } =
-            await setupSeededCM(createContext, "E2E_CM_EAEE_V1");
-
-        await navigateToReport(escalatorPage, reportNumber);
+            await setupSeededCM(createContext, "E2E_CM_EAEE_V1", reportNumber);
 
         await expect(escalatorPage.getByText("E2E test - EAEE reporting escaping!")).toBeVisible();
 
@@ -185,9 +181,8 @@ export const cmEscalatedEscapingAllOptionsTest = async (
         const { seededCMPage: v2Page, seededCMContext: v2Context } = await setupSeededCM(
             createContext,
             "E2E_CM_EAEE_V2",
+            reportNumber,
         );
-
-        await navigateToReport(v2Page, reportNumber);
 
         // Confirm escalation happened
         await expect(

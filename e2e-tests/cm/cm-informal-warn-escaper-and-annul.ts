@@ -55,7 +55,7 @@ import {
     acceptDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
-import { playMoves, waitForGameViewReady } from "@helpers/game-utils";
+import { passAndScoreGame, playMoves, waitForGameViewReady } from "@helpers/game-utils";
 import { expect } from "@playwright/test";
 
 import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
@@ -109,18 +109,7 @@ export const cmInformalWarnEscaperAndAnnulTest = async (
             await playMoves(reporterPage, accusedPage, ["D5", "E5", "D6", "E6"], "9x9");
 
             // End the game: both pass, both accept scoring
-            await reporterPage.getByText("Pass", { exact: true }).click();
-            await accusedPage.getByText("Pass", { exact: true }).click();
-
-            const accusedAccept = accusedPage.getByText("Accept");
-            await expect(accusedAccept).toBeVisible();
-            await accusedAccept.click();
-
-            const reporterAccept = reporterPage.getByText("Accept");
-            await expect(reporterAccept).toBeVisible();
-            await reporterAccept.click();
-
-            await expect(reporterPage.getByText("wins by")).toBeVisible();
+            await passAndScoreGame(reporterPage, accusedPage);
 
             // Capture the game URL before navigating away — we'll verify annulment later
             const gameUrl = reporterPage.url();

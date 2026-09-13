@@ -80,11 +80,8 @@ export const cmAiAssessDismissTest = async (
         const { seededCMPage: aiDetectorCMPage } = await setupSeededCM(
             createContext,
             aiDetectorUser,
+            reportNumber,
         );
-
-        // The Detector has to vote it for assessment
-        // Navigate directly to the report using the captured report number
-        await navigateToReport(aiDetectorCMPage, reportNumber);
 
         // Verify we can see the full report with the message
         await expect(
@@ -104,10 +101,8 @@ export const cmAiAssessDismissTest = async (
             const { seededCMPage: aiCMPage, seededCMContext: aiContext } = await setupSeededCM(
                 createContext,
                 aiUser,
+                reportNumber,
             );
-
-            // Navigate directly to the report using the captured report number
-            await navigateToReport(aiCMPage, reportNumber);
 
             // Verify we can see the full report with the message
             await expect(

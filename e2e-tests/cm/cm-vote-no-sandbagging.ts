@@ -39,7 +39,6 @@ import { BrowserContext, TestInfo } from "@playwright/test";
 import {
     captureReportNumber,
     goToFinishedGameUrl,
-    navigateToReport,
     newTestUsername,
     prepareNewUser,
     reportUser,
@@ -137,10 +136,8 @@ export const cmVoteNoSandbaggingTest = async (
             const { seededCMPage: cmPage, seededCMContext: cmContext } = await setupSeededCM(
                 createContext,
                 cmUser,
+                reportNumber,
             );
-
-            // Navigate directly to the report using the captured report number
-            await navigateToReport(cmPage, reportNumber);
 
             // Verify the report type is shown as "Thrown Game" (converted from sandbagging)
             const reportTypeSelector = cmPage.locator(".report-type-selector");

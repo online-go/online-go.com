@@ -132,6 +132,7 @@ export const prepareNewUser = async (
     username: string,
     password: string,
     deviceId: string = randomUUID(),
+    initialPath: string = "/",
 ) => {
     const userContext = await createContext({
         extraHTTPHeaders: { "X-Forwarded-For": generateUniqueTestIPv6() },
@@ -147,11 +148,16 @@ export const prepareNewUser = async (
         data: { choice: "basic" },
     });
     await expect(rank, "Set the fixture account's starting rank").toBeOK();
-    const userPage = await openFixturePage(userContext, username, deviceId);
+    const userPage = await openFixturePage(userContext, username, deviceId, initialPath);
     return { userPage, userContext };
 };
 
-async function openFixturePage(userContext: BrowserContext, username: string, deviceId: string) {
+async function openFixturePage(
+    userContext: BrowserContext,
+    username: string,
+    deviceId: string,
+    initialPath: string = "/",
+) {
     const config = await userContext.request.get("/api/v1/ui/config");
     await expect(config).toBeOK();
     await userContext.addInitScript(
@@ -173,9 +179,11 @@ async function openFixturePage(userContext: BrowserContext, username: string, de
         { id: deviceId, cachedConfig: await config.text() },
     );
     const userPage = await userContext.newPage();
-    await load(userPage, "/");
+    await load(userPage, initialPath);
     await expect(userPage.locator(".username").getByText(username, { exact: true })).toBeVisible();
-    await expect(userPage.locator("#Home-Container")).toBeVisible();
+    if (initialPath === "/") {
+        await expect(userPage.locator("#Home-Container")).toBeVisible();
+    }
 
     return userPage;
 }
@@ -253,6 +261,7 @@ export const turnOffDynamicHelp = async (page: Page) => {
 export const setupSeededUser = async (
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     username: string,
+    initialPath: string = "/",
 ) => {
     const deviceId = randomUUID();
     const userContext = await createContext({
@@ -262,19 +271,24 @@ export const setupSeededUser = async (
         data: { username, password: "test", ebi: deviceId, timezone: "UTC" },
     });
     await expect(login, `Log in fixture account ${username}`).toBeOK();
-    const userPage = await openFixturePage(userContext, username, deviceId);
+    const userPage = await openFixturePage(userContext, username, deviceId, initialPath);
     return { userPage, userContext };
 };
 
 export const setupSeededCM = async (
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     username: string,
+    reportNumber?: string,
 ) => {
     const { userPage: seededCMPage, userContext: seededCMContext } = await setupSeededUser(
         createContext,
         username,
+        reportNumber ? reportPath(reportNumber) : "/",
     );
     await dismissWarningDialogs(seededCMPage);
+    if (reportNumber) {
+        await expectReportLoaded(seededCMPage, reportNumber);
+    }
     return { seededCMPage, seededCMContext };
 };
 
@@ -525,18 +539,23 @@ export const captureReportNumber = async (reporterPage: Page): Promise<string> =
  * This works for any user who has permission to view the report.
  */
 export const navigateToReport = async (page: Page, reportNumber: string) => {
-    // Extract the numeric ID from the report number (e.g., "R123" -> "123")
+    await page.goto(reportPath(reportNumber));
+    await expectReportLoaded(page, reportNumber);
+};
+
+function reportPath(reportNumber: string): string {
     const reportId = reportNumber.replace(/^R/, "");
+    if (!/^\d+$/.test(reportId)) {
+        throw new Error(`Invalid report number: ${reportNumber}`);
+    }
+    return `/reports-center/all/${reportId}`;
+}
 
-    // Use /reports-center/all/{id} format which works for all permission levels
-    await page.goto(`/reports-center/all/${reportId}`);
-
-    // Verify we're on the correct page by checking URL and waiting for ViewReport content to load
-    await expect(page).toHaveURL(new RegExp(`/reports-center/all/${reportId}`), { timeout: 15000 });
-    // Wait for the ViewReport component to render (it has id="ViewReport")
+async function expectReportLoaded(page: Page, reportNumber: string): Promise<void> {
+    await expect(page).toHaveURL((url) => url.pathname === reportPath(reportNumber));
     await expect(page.locator("#ViewReport")).toBeVisible({ timeout: 15000 });
     log(`Navigated to report ${reportNumber}`);
-};
+}
 
 export const reportPlayerByColor = async (
     page: Page,

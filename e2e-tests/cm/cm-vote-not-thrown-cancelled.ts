@@ -41,7 +41,6 @@ import { BrowserContext, TestInfo } from "@playwright/test";
 import {
     captureReportNumber,
     goToFinishedGameUrl,
-    navigateToReport,
     newTestUsername,
     prepareNewUser,
     reportUser,
@@ -138,9 +137,8 @@ export const cmVoteNotThrownCancelledTest = async (
             const { seededCMPage: cmPage, seededCMContext: cmContext } = await setupSeededCM(
                 createContext,
                 cmUser,
+                reportNumber,
             );
-
-            await navigateToReport(cmPage, reportNumber);
 
             // The cancellation path must produce a Thrown Game report - if this
             // assertion fails the conversion in moderate.py did not fire.

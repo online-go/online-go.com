@@ -136,10 +136,8 @@ export const cmVoteEscalateSandbaggingTest = async (
         const { seededCMPage: cmPage, seededCMContext: cmContext } = await setupSeededCM(
             createContext,
             "E2E_CM_SBES_V1",
+            reportNumber,
         );
-
-        // Navigate directly to the report using the captured report number
-        await navigateToReport(cmPage, reportNumber);
 
         // Verify the report type is shown as "Thrown Game" (converted from sandbagging)
         const reportTypeSelector = cmPage.locator(".report-type-selector");

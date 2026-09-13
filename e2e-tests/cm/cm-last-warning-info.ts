@@ -52,7 +52,6 @@ import { BrowserContext, TestInfo } from "@playwright/test";
 import {
     captureReportNumber,
     goToFinishedGameUrl,
-    navigateToReport,
     newTestUsername,
     prepareNewUser,
     reportUser,
@@ -165,8 +164,7 @@ export const cmLastWarningInfoTest = async (
 
             // First CM checks that "no previous warnings" is shown on Report A
             const { seededCMPage: firstCMPage, seededCMContext: firstCMContext } =
-                await setupSeededCM(createContext, "E2E_CM_LWARN_V1");
-            await navigateToReport(firstCMPage, reportANumber);
+                await setupSeededCM(createContext, "E2E_CM_LWARN_V1", reportANumber);
 
             const noWarningsInfo = firstCMPage.locator(".last-warning-info");
             await expect(noWarningsInfo).toBeVisible({ timeout: 15000 });
@@ -185,8 +183,8 @@ export const cmLastWarningInfoTest = async (
                     ({ seededCMPage: cmPage, seededCMContext: cmContext } = await setupSeededCM(
                         createContext,
                         cmUser,
+                        reportANumber,
                     ));
-                    await navigateToReport(cmPage, reportANumber);
                 }
 
                 // Verify the report type was converted to "Thrown Game"
@@ -299,9 +297,7 @@ export const cmLastWarningInfoTest = async (
 
             // A CM navigates to the new report and checks for warning info
             const { seededCMPage: verifierPage, seededCMContext: verifierContext } =
-                await setupSeededCM(createContext, "E2E_CM_LWARN_V1");
-
-            await navigateToReport(verifierPage, reportBNumber);
+                await setupSeededCM(createContext, "E2E_CM_LWARN_V1", reportBNumber);
 
             // The "Last warned" info should be visible
             const lastWarningInfo = verifierPage.locator(".last-warning-info");
@@ -331,8 +327,8 @@ export const cmLastWarningInfoTest = async (
                 const { seededCMPage: cmPage, seededCMContext: cmContext } = await setupSeededCM(
                     createContext,
                     cmUser,
+                    reportBNumber,
                 );
-                await navigateToReport(cmPage, reportBNumber);
                 await cmPage.locator('input[value="warn_thrown_game"]').click();
                 await submitReportVote(cmPage);
                 await cmContext.close();

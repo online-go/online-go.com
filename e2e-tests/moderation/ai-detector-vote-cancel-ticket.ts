@@ -33,7 +33,7 @@
 
 import type { CreateContextOptions } from "@helpers";
 
-import { BrowserContext, expect } from "@playwright/test";
+import { BrowserContext, expect, TestInfo } from "@playwright/test";
 import {
     captureReportNumber,
     generateUniqueTestIPv6,
@@ -49,7 +49,7 @@ import {
     createDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
-import { playMoves, waitForGameViewReady } from "@helpers/game-utils";
+import { playMoves, resignActiveGame, waitForGameViewReady } from "@helpers/game-utils";
 import {
     submitReportVote,
     IncidentReportCountTracker,
@@ -63,7 +63,7 @@ export const aiDetectorVoteCancelTicketTest = async (
     }: {
         createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
     },
-    testInfo: any,
+    testInfo: TestInfo,
 ) => {
     return withIncidentIndicatorLock(testInfo, async () => {
         log("=== AI Detector Vote to Cancel Ticket Test ===");
@@ -145,31 +145,11 @@ export const aiDetectorVoteCancelTicketTest = async (
             "O16",
         ];
 
-        await playMoves(reporterPage, reportedPage, moves, boardSize, handicap);
+        await playMoves(reporterPage, reportedPage, moves, boardSize, 0, handicap);
         log("Moves played ✓");
 
-        // Finish the game with passes
-        log("Finishing game with passes...");
-        const reporterPass = reporterPage.getByText("Pass", { exact: true });
-        await expect(reporterPass).toBeVisible();
-        await reporterPass.click();
-
-        const reportedPass = reportedPage.getByText("Pass", { exact: true });
-        await expect(reportedPass).toBeVisible();
-        await reportedPass.click();
-
-        // Accept scoring
-        const reportedAccept = reportedPage.getByText("Accept");
-        await expect(reportedAccept).toBeVisible();
-        await reportedAccept.click();
-
-        const reporterAccept = reporterPage.getByText("Accept");
-        await expect(reporterAccept).toBeVisible();
-        await reporterAccept.click();
-
-        // Verify game is finished
-        const reporterFinished = reporterPage.getByText("wins by");
-        await expect(reporterFinished).toBeVisible();
+        await resignActiveGame(reportedPage);
+        await expect(reporterPage.getByText("by Resignation")).toBeVisible();
         log("Game finished ✓");
 
         // 3. Reporter reports the other player for AI use

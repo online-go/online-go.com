@@ -36,7 +36,6 @@ import { BrowserContext, TestInfo } from "@playwright/test";
 import {
     captureReportNumber,
     goToUsersFinishedGame,
-    navigateToReport,
     newTestUsername,
     prepareNewUser,
     reportUser,
@@ -80,10 +79,11 @@ export const cmAckWarningTest = async (
 
         const aiAssessor = "E2E_CM_VWNAI_AI_V1";
 
-        const { seededCMPage: aiCMPage } = await setupSeededCM(createContext, aiAssessor);
-
-        // Navigate directly to the report using the captured report number
-        await navigateToReport(aiCMPage, reportNumber);
+        const { seededCMPage: aiCMPage } = await setupSeededCM(
+            createContext,
+            aiAssessor,
+            reportNumber,
+        );
 
         // Verify we can see the report with the message
         await expect(

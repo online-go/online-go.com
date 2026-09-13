@@ -49,13 +49,13 @@ type MultiContextFixtures = {
 // Our customisation is to make sure that no ErrorBoundary is rendered in all tests (that use this fixture)
 // Also provides createContext fixture for automatic cleanup of multi-user test contexts
 export const ogsTest = base.extend<MultiContextFixtures>({
-    page: async ({ page }, use) => {
+    page: async ({ page }, use, testInfo) => {
         await use(page); // eslint-disable-line react-hooks/rules-of-hooks
-        if (!page.isClosed()) {
+        if (testInfo.status === "passed" && !page.isClosed()) {
             await checkNoErrorBoundaries(page);
         }
     },
-    createContext: async ({ browser }, use) => {
+    createContext: async ({ browser }, use, testInfo) => {
         const contexts: BrowserContext[] = [];
 
         const factory = async (options?: CreateContextOptions) => {
@@ -89,9 +89,11 @@ export const ogsTest = base.extend<MultiContextFixtures>({
 
         try {
             await use(factory); // eslint-disable-line react-hooks/rules-of-hooks
-            for (const context of contexts) {
-                for (const page of context.pages()) {
-                    await checkNoErrorBoundaries(page);
+            if (testInfo.status === "passed") {
+                for (const context of contexts) {
+                    for (const page of context.pages()) {
+                        await checkNoErrorBoundaries(page);
+                    }
                 }
             }
         } finally {

@@ -17,7 +17,6 @@
 
 import { submitReportVote } from "@helpers/report-utils";
 import { Page } from "@playwright/test";
-import { expect } from "@playwright/test";
 import {
     acceptDirectChallenge,
     createDirectChallenge,
@@ -57,20 +56,6 @@ export async function playAndFinishGame(
     await playMoves(reporterPage, accusedPage, ["D5", "E5", "D6", "E6"], "9x9");
 
     await passAndScoreGame(reporterPage, accusedPage);
-
-    const gameId = new URL(reporterPage.url()).pathname.match(/\/game\/(\d+)/)?.[1];
-    expect(gameId).toBeDefined();
-    await expect
-        .poll(
-            async () => {
-                const response = await reporterPage.request.get(`/api/v1/games/${gameId}`);
-                await expect(response).toBeOK();
-                const game: { ended: string | null } = await response.json();
-                return game.ended;
-            },
-            { message: "Game completion is persisted before reporting", timeout: 30000 },
-        )
-        .toBeTruthy();
 }
 
 /**

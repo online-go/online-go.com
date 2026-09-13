@@ -37,8 +37,6 @@ import { BrowserContext, TestInfo } from "@playwright/test";
 
 import {
     captureReportNumber,
-    goToFinishedGameUrl,
-    navigateToReport,
     newTestUsername,
     prepareNewUser,
     reportUser,
@@ -51,7 +49,7 @@ import {
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
 
-import { playMoves, resignActiveGame } from "@helpers/game-utils";
+import { playMoves, resignActiveGame, waitForGameViewReady } from "@helpers/game-utils";
 
 import { expect } from "@playwright/test";
 
@@ -108,11 +106,13 @@ export const cmVoteWarnAnnulSandbaggingTest = async (
         createContext,
         newTestUsername("SBWARep"), // cspell:disable-line
         "test",
+        undefined,
+        gameUrl,
     );
 
     await withReportCountTracking(reporterPage, testInfo, async (tracker) => {
         // Reporter navigates to the game
-        await goToFinishedGameUrl(reporterPage, gameUrl);
+        await waitForGameViewReady(reporterPage);
 
         // Reporter submits a "sandbagging" report - but since the accused lost,
         // the backend will convert this to a "thrown_game" report
@@ -136,10 +136,8 @@ export const cmVoteWarnAnnulSandbaggingTest = async (
             const { seededCMPage: cmPage, seededCMContext: cmContext } = await setupSeededCM(
                 createContext,
                 cmUser,
+                reportNumber,
             );
-
-            // Navigate directly to the report using the captured report number
-            await navigateToReport(cmPage, reportNumber);
 
             // Verify the report type is shown as "Thrown Game" (converted from sandbagging)
             const reportTypeSelector = cmPage.locator(".report-type-selector");

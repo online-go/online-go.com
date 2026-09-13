@@ -16,9 +16,12 @@
  */
 
 import { defineConfig, devices } from "@playwright/test";
+import { arch, availableParallelism, cpus, platform, totalmem } from "node:os";
 
 const smoke = !!process.env.CI;
 const workers = process.env.E2E_WORKERS ? Number(process.env.E2E_WORKERS) : 1;
+const hostMemory = totalmem();
+const memoryLimit = process.constrainedMemory?.() || 0;
 if (!Number.isInteger(workers) || workers < 1) {
     throw new Error("E2E_WORKERS must be a positive integer");
 }
@@ -34,7 +37,21 @@ export default defineConfig({
     forbidOnly: !!process.env.CI || !!process.env.E2E,
     retries: 0,
     workers,
-    reporter: [["list"]],
+    metadata: {
+        runtime: {
+            node: process.version,
+            platform: platform(),
+            architecture: arch(),
+            cpu: cpus()[0]?.model,
+            hostLogicalCpus: cpus().length,
+            availableLogicalCpus: availableParallelism(),
+            hostMemoryGiB: hostMemory / 1024 ** 3,
+            constrainedMemoryGiB:
+                memoryLimit > 0 && memoryLimit < hostMemory ? memoryLimit / 1024 ** 3 : null,
+            apiDelayMs: Number(process.env.E2E_API_DELAY_MS || 0),
+        },
+    },
+    reporter: [["list"], ["json", { outputFile: "test-results/e2e-results.json" }]],
     use: {
         baseURL: process.env.FRONTEND_URL || "http://localhost:8080",
         actionTimeout: 15_000,

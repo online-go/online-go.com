@@ -15,6 +15,23 @@ import { expectOGSClickableByName } from "./matchers";
 
 type BoardSize = "19x19" | "13x13" | "9x9";
 
+/** The live finish event precedes the background task that saves game metadata. */
+export async function waitForGameFinished(page: Page): Promise<void> {
+    const gameId = new URL(page.url()).pathname.match(/^\/game\/(\d+)/)?.[1];
+    expect(gameId, "Expected a game page when waiting for its saved result").toBeDefined();
+    await expect
+        .poll(
+            async () => {
+                const response = await page.request.get(`/api/v1/games/${gameId}`);
+                await expect(response).toBeOK();
+                const game: { ended: string | null } = await response.json();
+                return game.ended;
+            },
+            { message: `Game ${gameId} must be saved before reading its result`, timeout: 30_000 },
+        )
+        .toBeTruthy();
+}
+
 /** Finish a game through passing and scoring, starting on black's turn. */
 export async function passAndScoreGame(blackPage: Page, whitePage: Page): Promise<void> {
     for (const page of [blackPage, whitePage]) {
@@ -35,6 +52,7 @@ export async function passAndScoreGame(blackPage: Page, whitePage: Page): Promis
     await Promise.all(
         [blackPage, whitePage].map((page) => expect(page.getByText("wins by")).toBeVisible()),
     );
+    await waitForGameFinished(blackPage);
 }
 
 /**
@@ -72,22 +90,8 @@ export const waitForGameViewReady = async (
 };
 
 export const clickInTheMiddle = async (page: Page) => {
-    // Wait for the Goban to be visible
     const goban = page.locator(".Goban[data-pointers-bound]");
-    await goban.waitFor({ state: "visible" });
-
-    // Get the bounding box of the Goban
-    const box = await goban.boundingBox();
-    if (!box) {
-        throw new Error("Could not get Goban dimensions");
-    }
-
-    // Calculate center point
-    const centerX = box.x + box.width / 2;
-    const centerY = box.y + box.height / 2;
-
-    // Click in the center of the Goban
-    await page.mouse.click(centerX, centerY);
+    await goban.click();
 };
 
 export const clickOnGobanIntersection = async (
@@ -138,7 +142,9 @@ export const clickOnGobanIntersection = async (
     const row = sizeNumber - rowNumber;
 
     const goban = gobanLocator ?? page.locator(".Goban[data-pointers-bound]");
-    await goban.waitFor({ state: "visible" });
+    // A click waits for layout stability; measure only after that wait, or its
+    // fixed pixel offset can land on another intersection after a resize.
+    await goban.click({ trial: true });
     const box = await goban.boundingBox();
     if (!box) {
         throw new Error("Could not get Goban dimensions");
@@ -203,6 +209,7 @@ export const resignActiveGame = async (page: Page) => {
     // Verify the resignation was successful
     const resignationText = page.getByText("by Resignation");
     await expect(resignationText).toBeVisible();
+    await waitForGameFinished(page);
 };
 
 // Cancels a game that is still within its first moves. The same button becomes
@@ -230,6 +237,7 @@ export const cancelActiveGame = async (page: Page) => {
     // wait for the outcome text instead, which does update live.
     await expect(page.getByText(/wins by Cancellation/)).toBeVisible({ timeout: 15000 });
     await expect(cancel).not.toBeVisible();
+    await waitForGameFinished(page);
 };
 
 // Navigates the page to the user's currently-active game via the home page's

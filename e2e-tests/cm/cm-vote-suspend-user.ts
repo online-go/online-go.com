@@ -36,7 +36,6 @@ import type { CreateContextOptions } from "@helpers";
 import { BrowserContext, TestInfo, expect } from "@playwright/test";
 import {
     captureReportNumber,
-    goToFinishedGameUrl,
     navigateToReport,
     reportUser,
     setupSeededCM,
@@ -48,7 +47,7 @@ import {
     acceptDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
-import { passAndScoreGame, playMoves } from "@helpers/game-utils";
+import { playMoves, resignActiveGame, waitForGameViewReady } from "@helpers/game-utils";
 import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
 import { log } from "@helpers/logger";
 
@@ -96,7 +95,8 @@ export const cmVoteSuspendUserTest = async (
     const moves = ["D9", "E9", "D8", "E8", "D7", "E7"];
     await playMoves(accusedPage, opponentPage, moves, "9x9");
 
-    await passAndScoreGame(accusedPage, opponentPage);
+    await resignActiveGame(opponentPage);
+    await expect(accusedPage.getByText("by Resignation")).toBeVisible();
     await opponentPage.context().close();
     log("Game completed ✓");
 
@@ -107,11 +107,13 @@ export const cmVoteSuspendUserTest = async (
         createContext,
         reporterUsername,
         "test",
+        undefined,
+        accusedPage.url(),
     );
 
     await withReportCountTracking(reporterPage, testInfo, async (tracker) => {
         // Navigate to the finished game and report
-        await goToFinishedGameUrl(reporterPage, accusedPage.url());
+        await waitForGameViewReady(reporterPage);
 
         await reportUser(
             reporterPage,
@@ -129,10 +131,11 @@ export const cmVoteSuspendUserTest = async (
 
         // Have one CM escalate the report
         log("E2E_CM_VSU_V1 escalating escaping report...");
-        const { seededCMPage: escalatorPage } = await setupSeededCM(createContext, "E2E_CM_VSU_V1");
-
-        // Navigate directly to the report using the captured report number
-        await navigateToReport(escalatorPage, reportNumber);
+        const { seededCMPage: escalatorPage } = await setupSeededCM(
+            createContext,
+            "E2E_CM_VSU_V1",
+            reportNumber,
+        );
 
         await escalatorPage.click('input[value="escalate"]');
         await escalatorPage.fill("#escalation-note", "Repeat offender - needs moderator attention");
@@ -143,7 +146,6 @@ export const cmVoteSuspendUserTest = async (
 
         // Keep the accused user logged in and browsing while suspension happens
         log("Accused user staying logged in...");
-        await accusedPage.goto("/");
         log("Accused user is browsing ✓");
 
         // Have three CMs vote to suspend the escalated report
@@ -154,8 +156,10 @@ export const cmVoteSuspendUserTest = async (
             const voterPage =
                 voter === suspensionVoters[0]
                     ? escalatorPage
-                    : (await setupSeededCM(createContext, voter)).seededCMPage;
-            await navigateToReport(voterPage, reportNumber);
+                    : (await setupSeededCM(createContext, voter, reportNumber)).seededCMPage;
+            if (voter === suspensionVoters[0]) {
+                await navigateToReport(voterPage, reportNumber);
+            }
 
             await voterPage.click('input[value="suspend_user"]');
 

@@ -44,7 +44,6 @@ import { BrowserContext, Page, TestInfo } from "@playwright/test";
 
 import {
     captureReportNumber,
-    goToUsersFinishedGame,
     navigateToReport,
     newTestUsername,
     prepareNewUser,
@@ -58,7 +57,7 @@ import {
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
 
-import { playMoves } from "@helpers/game-utils";
+import { passAndScoreGame, playMoves } from "@helpers/game-utils";
 
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
@@ -96,26 +95,7 @@ async function playAndFinishGame(
 
     await playMoves(reporterPage, accusedPage, ["D5", "E5", "D6", "E6"], "9x9");
 
-    await reporterPage.getByText("Pass", { exact: true }).click();
-    await accusedPage.getByText("Pass", { exact: true }).click();
-
-    const accusedAccept = accusedPage.getByText("Accept");
-    await expect(accusedAccept).toBeVisible();
-    await accusedAccept.click();
-
-    const reporterAccept = reporterPage.getByText("Accept");
-    await expect(reporterAccept).toBeVisible();
-    await reporterAccept.click();
-
-    await expect(reporterPage.getByText("wins by")).toBeVisible();
-
-    // The reporter UI has the goban in "finished" phase, but the server's
-    // Game.ended write may not be committed yet. Filing an escaping report
-    // before that lands gets rejected by moderate.py:714-725 (HTTP 400).
-    // Navigate via the accused's finished-game list — the game only appears
-    // there once the DB has Game.ended set — then load the game page fresh.
-    await goToUsersFinishedGame(reporterPage, accusedUsername, gameName);
-    await expect(reporterPage.locator(".game-state-header")).toContainText("wins by");
+    await passAndScoreGame(reporterPage, accusedPage);
 }
 
 async function reportAndVote(
