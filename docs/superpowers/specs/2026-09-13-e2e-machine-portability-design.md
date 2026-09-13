@@ -30,3 +30,31 @@ races with controlled delays or layout changes before assigning a cause.
 Preserve all existing feature assertions. Keep application changes separate
 from test corrections, and make an application change only for a reproduced
 application defect. Record remote uncertainties and measured limits explicitly.
+
+## Confirmed causes
+
+- The unchanged full sixteen-worker/four-core run takes 522.1 seconds, with
+  70 passes and two CM whole-test deadline failures. Both match the reported
+  suspension/warning names. Each trace has about 400 local HTTP requests and
+  repeated unrelated Home loads. The processes remain alive. Opening CM
+  fixtures directly at their report and removing redundant scoring lets both
+  journeys pass the same CPU restriction within their unchanged deadlines.
+- A controlled 400-to-700-pixel board resize makes the old helper click D6
+  when asked for H2. It measures before Playwright waits for layout stability.
+  The trial-action wait before measurement passes the same browser check;
+  normal regressions also cover a scoped board and a centre click.
+- Pausing the background worker reproduces the missing simultaneous-game
+  indicator. Node broadcasts the finished game after Django queues the task;
+  the task has not saved `ended` or `simul_games` yet. Waiting for the saved
+  result passes with the worker held for twenty seconds after the live event.
+- Seven moderation fixtures do not need automatic scoring. They finish their
+  existing moves through resignation. Escaping reports target the player who
+  did not resign; the UI deliberately disallows reporting the resigner.
+- HTTP asset tests take 16–24 seconds when they load the application first
+  under the CPU restriction. The HTTP fixture keeps all byte/status checks
+  while removing that unrelated browser dependency. The remote asset failure
+  itself is not diagnosed without its assertion.
+
+No application, backend, game-rule, retry-count or worker-tier changes are
+required for these fixes. The mobile coverage assertion also polls live geometry
+in one browser call; its remote failure has not been independently attributed.

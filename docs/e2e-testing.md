@@ -22,13 +22,21 @@ account and backend. Keep browser checks for persistence and server integration.
 rank, and opens an authenticated browser context. It supplies the same cached
 configuration as the registration UI so initial routing sees the logged-in user.
 The registration smoke test uses `registerNewUser` and `loginAsUser` to test the
-forms. Feature tests continue to perform their actions through the UI. Challenge
+forms. Account fixtures can open their first page at the required destination.
+`setupSeededCM` accepts an optional report number and checks that report after
+login and warning cleanup, avoiding an unrelated Home load followed by a reload.
+Feature tests continue to perform their actions through the UI. Challenge
 acceptance waits for the current challenge ID to render, so a cached challenge
 from an earlier game cannot be accepted by mistake. Browser actions have a
 15-second default timeout, and navigation has a 30-second timeout. The retained
 first-turn warning test uses an explicit 90-second wait for the real game timer
 and warning delivery. The mobile puzzle test waits for setup mode to finish
-loading before it places a stone.
+loading before it places a stone. Board clicks also wait for Playwright
+actionability before measuring pixel offsets. Measuring first can aim at a
+different intersection after Playwright waits for a resize. Centre clicks use
+the locator directly.
+The puzzle editor also waits for move-placement mode; its coverage check measures
+and hit-tests the board in the same browser call and polls through layout changes.
 
 `yarn test:e2e` checks that `E2E_MODERATOR_PASSWORD` is set, builds once, and runs
 the full suite against production assets. `yarn test:e2e:built` reuses an existing
@@ -85,6 +93,28 @@ Generated usernames use a readable role of up to sixteen characters and a
 cryptographically random ten-digit suffix. Numeric suffixes avoid random words
 and acronyms rejected by the backend's username filter. The server's registration
 checks still apply, and registration errors fail the test.
+
+The finish helpers for scoring, resignation and cancellation wait for the live
+outcome and then poll the real game API until `ended` is saved. The game server
+publishes its finish event after Django accepts the background job, before that
+job saves results and simultaneous-game metadata. A live banner alone is not a
+safe boundary before reporting a result or opening another result-dependent view.
+The read-only wait does not replay an action or alter the game.
+
+CM suspension, the four AI vote journeys, the appeal-template journey, and the
+active-game escape-report journey finish their existing fixture moves by
+resignation. The escaping-report fixtures have the other player resign, since
+reporting a resigner for escaping is intentionally disallowed. Their assertions
+concern moderation and saved outcomes. Dedicated scoring journeys, the smoke scoring test, and short escape-rate fixtures use the
+shared synchronized scoring helper. The predictive escape-rate fixture no longer
+visits profile history to infer completion; the shared helper checks the saved
+result directly. Feature coverage remains in all 72 tests.
+
+The three development image-middleware tests use Playwright's HTTP request
+fixture. They retain fresh-byte hashing, a strict missing-file 404/content-type
+check, and the goban submodule fallback. Only the fresh-byte test writes a probe;
+it removes that file in `finally`. These checks do not need a browser, app startup,
+external fonts, or Vite HMR. Cached-config/CDN rehydration still uses a browser.
 
 Game scoring waits for both clients to complete auto-scoring, then confirms the
 first acceptance on the opponent's page before submitting the second acceptance.
@@ -251,73 +281,85 @@ See [Playwright's routing documentation](https://playwright.dev/docs/api/class-b
 ladder accounts on vacation first, then run the ladder repeatedly without
 resetting the database and verify both accounts finish off vacation.
 
+## Failure evidence
+
+Each run writes `test-results/e2e-results.json` as well as the console report.
+It includes the actual configured worker count, complete assertions and call
+logs, test durations, and trace paths. `config.metadata.runtime` records Node,
+OS/architecture, CPU model, logical CPU counts, host RAM and the Node-reported
+memory limit, plus the injected API delay. The available CPU count describes
+process affinity, not CPU quota or current competing load. A null constrained
+memory value means Node did not report a limit below host capacity. No
+environment-variable or credential dump is added.
+
+Keep the first failing assertion and its trace when comparing machines. Test
+names alone cannot distinguish a request failure, wrong state, a browser crash,
+or an exhausted whole-test deadline. Error-boundary checks run after successful
+journeys; failed journeys keep their original error and still close owned
+contexts.
+
 ## Verification
 
-All 635 normal frontend tests pass, as do TypeScript, lint, modified-file
-formatting and the production build. Eight data-hook regressions cover store
-ordering and subscriptions; six fail before the fix. Seven request-helper tests
-control header/body completion and failures. A report-count regression ensures
-diagnostics preserve the original journey failure. Graphify is not installed
-in this development environment, so `graphify update .` cannot run.
+All 638 normal frontend tests pass, as do TypeScript, lint, modified-file
+formatting and the production build. Three board-input regressions check the
+requested intersection through a resize, including a scoped board and centre
+click. Graphify is not installed in this environment, so `graphify update .`
+cannot run.
+
+Two controlled browser experiments establish the shared timing dependencies:
+
+| Experiment                                                  | Before                                     | After                                                                                            |
+| ----------------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| Animate a 400-pixel board to 700 pixels while requesting H2 | The click lands on D6                      | The requested H2 receives the click                                                              |
+| Delay background game-result processing                     | The simultaneous-game indicator is missing | The saved-result wait passes with processing held for twenty seconds after the live finish event |
+
+Five focused journeys pass with 500 ms API delay: CM suspension, rejecting
+escaping reports during play, scoring, black-requester undo, and mobile puzzle
+editing. The separate CI smoke gameplay/scoring journey also passes against
+the development frontend.
 
 The final full batches use Chromium in `ogs_ui_1` on a host with 32 logical CPUs
-and 32 GiB installed RAM (31.3 GiB reported). They include `@Slow`, with zero
-retries, no skips, and no database reset between batches. Services, dependencies,
-Chromium and seeded data are already available. Times include built-runner
-startup and shutdown; builds are measured separately.
+and 32 GiB installed RAM (31.3 GiB reported). Each includes all 72 automated
+journeys, including `@Slow`, with zero retries/skips and no database reset between
+batches. Services, dependencies, Chromium and seeded data are already available.
 
-| Batch     | Workers | Injected delay              | Passed / failed | Built command |
-| --------- | ------- | --------------------------- | --------------- | ------------- |
-| normal-16 | 16      | None                        | 72 / 0          | 295.8s        |
-| latency   | 8       | 500 ms; HTTP cache disabled | 72 / 0          | 310.1s        |
-| normal-1  | 8       | None                        | 72 / 0          | 251.5s        |
-| normal-2  | 8       | None                        | 72 / 0          | 256.2s        |
+| Command                             | Workers       | Frontend/browser CPU affinity | Passed / failed | Total command time |
+| ----------------------------------- | ------------- | ----------------------------- | --------------- | ------------------ |
+| `make e2e`, including a fresh build | 8 (automatic) | 32 logical CPUs               | 72 / 0          | 293.4s             |
+| Built command, CPU stress           | 16            | 4 logical CPUs                | 72 / 0          | 506.1s             |
+| Built command, normal repeat        | 16            | 32 logical CPUs               | 72 / 0          | 259.9s             |
 
-A fifth full run through the ordinary `make e2e` command passes all 72 tests
-with the automatically selected eight workers, no retries and no database
-reset. Its total wall time is 369.4 seconds (6m 9s), including a Vite build
-reported as 1m 7s. The browser summary reports 5.0 minutes. The normal prebuilt
-batches above are below five minutes; the full command with a fresh build does
-not meet that target. API-delay mode also disables HTTP caching and is a stress
-check, not the runtime benchmark. Only documentation changed after this final
-build and test run.
+The fresh build reports 50.87 seconds; its browser batch takes
+240.6 seconds. The full `make e2e` measurement is below five minutes
+on this host. These are measured results, not a runtime guarantee for other
+hardware or competing workloads.
 
-Four ladder executions pass with two workers and 500 ms API delay after each
-worker's P1/P5 accounts are deliberately put on vacation; all four accounts
-finish off vacation. Eight focused tournament/CM-suspension executions pass
-with eight workers on four CPU cores in 61.3 seconds. Live tournament entrants
-remain connected and confirm chat registration before start. Ten repeated appeal
-journeys pass with eight workers and 500 ms API delay in 53.9 seconds after
-correcting optimistic Submit-button checks. The ModLog trace previously showed
-the moderator fetching the appeals list before the user's POST completed.
+The unchanged sixteen-worker/four-core baseline takes 522.1 seconds with
+70 passes and two CM whole-test deadline failures. Both suspension and
+sandbagging warning/annulment still make progress when their 180-second budget
+expires. The final CPU-stress batch passes both within the same deadlines after
+removing redundant initial page loads and fixture scoring. The CPU restriction
+applies to the runner, built preview and browsers; backend services and the
+existing development server retain host CPU access.
+RAM capacity alone cannot guarantee efficient concurrency or a five-minute
+runtime on a CPU-constrained machine.
 
-The full sixteen-worker/four-core CPU stress audit takes 529.9 seconds: 70 pass,
-and two CM journeys reach their existing 180-second whole-test deadlines. The
-suspension journey is still processing its third vote when teardown starts;
-the sandbagging warning journey has not completed its ten-second countdown.
-The traces show continuing progress, not a missed state notification. These
-are real failed runs. No timeouts or RAM tiers are changed to conceal them.
-The restriction applies to the frontend/browsers, not the backend. RAM capacity
-alone cannot guarantee efficient concurrency or a five-minute runtime on a
-CPU-constrained machine. This audit predates the final appeal synchronization and allocation-profiler
-changes. The final batches above include those fixes; the full four-core
-stress case has not been repeated since them.
+The game-server1, game-server2 and termination-server processes remain alive
+through the final batches. The background worker is resumed after the controlled
+experiment. No application code, game rules, test deadlines, retries or RAM tiers
+change in this portability follow-up. Remote failure names without assertions
+remain insufficient to assign every failure to one of the reproduced causes.
 
-The scoring failure recurs under a debugger. The game-server2 native stack on
-Node 22.13.1 enters `SharedFunctionInfo::DebugNameCStr` through
-`AllocationTracker::AddFunctionInfo` and `AllocationTracker::AllocationEvent`
-while materializing deoptimized heap objects. The failing services were started with
-unconditional `--track-heap-objects` in their development launchers. The backend companion makes
-allocation tracking opt-in through `NODE_DEBUG_FLAGS`; ordinary heap snapshots
-and exposed GC remain available. This avoids the captured profiler path without
-changing game rules or Node versions. It is a workaround for the V8 profiling
-fault, not a V8 patch. Eight repeated scoring/stalled-game checks pass in 49.1s
-with the new defaults. All final full batches above run after restarting the
-Node services with tracking disabled. Restart existing Node service containers
-to pick up changed launch flags; a bundle rebuild preserves supervisor arguments.
+The backend companion makes development allocation tracking opt-in through
+`NODE_DEBUG_FLAGS`. A prior scoring failure produced a native Node 22.13.1 stack
+inside V8 allocation tracking during deoptimization. Disabling unconditional
+`--track-heap-objects` avoids that captured path without changing game rules or
+Node versions; it is not a V8 patch. The final batches use these defaults.
+Restart existing Node service containers after updating the backend launchers;
+a bundle rebuild preserves supervisor arguments.
 
-Backend `make lint` passes the Node checks, then fails on existing baduk.com
-Node-type errors. All nine service launch recipes pass dry-run checks with
-tracking disabled by default and explicitly enabled; running arguments confirm
-the new defaults in all eleven Node service containers. Python source and its
-recorded 337 passes/five existing skips are unchanged in this follow-up.
+Earlier companion validation records 337 Python passes and five existing skips,
+launch-default/override checks for all nine service recipes, and running-argument
+checks for all eleven Node containers. Backend `make lint` passes Node checks
+then stops at existing baduk.com Node-type errors. This follow-up changes no
+backend source.
