@@ -566,18 +566,6 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                     />
                 ))}
 
-            {!isPortrait && (
-                <GobanView.Tab
-                    id="kibitz-people"
-                    type="action"
-                    align="center"
-                    icon="users"
-                    title={peopleLabel()}
-                    active={showPeople}
-                    onClick={togglePeople}
-                />
-            )}
-
             {props.onCreateVariation && (
                 <GobanView.Tab
                     id="kibitz-new-variation"
@@ -605,6 +593,18 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         }
                         props.onCreateVariation?.();
                     }}
+                />
+            )}
+
+            {!isPortrait && (
+                <GobanView.Tab
+                    id="kibitz-people"
+                    type="action"
+                    align="center"
+                    icon="users"
+                    title={peopleLabel()}
+                    active={showPeople}
+                    onClick={togglePeople}
                 />
             )}
 
