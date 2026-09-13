@@ -110,8 +110,9 @@ export interface SliderFitRefs {
 
 /** Height of the MoveNumberControl strip in rem, used until the strip has
  *  been rendered and measured. Matches the tallest portrait strip in
- *  MoveNumberControl.css (a 2.75rem button and 0.4rem of padding above and
- *  below it); a slight overestimate only errs towards hiding the strip. */
+ *  MoveNumberControl.css (the buttons layout with a 2.75rem button and 0.4rem
+ *  of padding above and below it); a slight overestimate only errs towards
+ *  hiding the strip. */
 const SLIDER_FALLBACK_HEIGHT_REM = 3.6;
 
 /**
