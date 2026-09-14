@@ -38,7 +38,10 @@ export default defineConfig({
     expect: { timeout: smoke ? 30_000 : 15_000 },
     fullyParallel: !smoke,
     forbidOnly: !!process.env.CI || !!process.env.E2E,
-    retries: 0,
+    // The automated e2e runner (E2E=1) retries a failing test so the overall
+    // run stays green when it passes on a retry; run-tests.sh then records it
+    // as flaky. Smoke (CI) and dev keep 0 retries to fail fast.
+    retries: process.env.E2E ? 2 : 0,
     workers,
     metadata: {
         runtime: {
