@@ -500,6 +500,20 @@ export const usePlayerToMoveOnOfficialBranch = generateGobanHook(
     ["cur_move", "last_official_move"],
 );
 
+/** React hook that returns the colour to move in the live game, or null
+ *  when no one is waiting to play (the game is over, or being reviewed).
+ *  Follows the official branch, so browsing the move tree does not change
+ *  the answer. */
+export const useColorToMoveOnOfficialBranch = generateGobanHook(
+    (goban: Goban | null): "black" | "white" | null => {
+        if (!goban || goban.engine.phase !== "play") {
+            return null;
+        }
+        return goban.engine.last_official_move?.state.player === 2 ? "white" : "black";
+    },
+    ["cur_move", "last_official_move", "phase"],
+);
+
 /** React hook that returns true while it is the user's live turn to move.
  *  It follows the official branch, so navigating the move tree in analyze
  *  mode does not change the answer, and a staged (not yet submitted) move

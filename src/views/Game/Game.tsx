@@ -33,6 +33,7 @@ import { notification_manager } from "@/components/Notifications";
 import { GameChat } from "./GameChat";
 import { goban_view_mode } from "./util";
 import { PlayerCard, PlayerCards } from "./PlayerCards";
+import { CompactPlayerHeader } from "./CompactPlayerHeader";
 import { PlayControls, ReviewControls } from "./PlayControls";
 import { GameActionArea } from "./GameActionArea";
 import { alert } from "@/lib/swal_config";
@@ -163,6 +164,7 @@ export function Game(): React.ReactElement | null {
     //     action-bar tab. Has no effect when `chat_enabled` is false or
     //     on desktop (chat is always visible there if the feature is on).
     const [chat_enabled] = usePreference("game.chat-enabled");
+    const [compact_mode] = usePreference("game.compact-mode");
     const [mobile_chat_visible, set_mobile_chat_visible] = React.useState(false);
     // Whether the full settings takeover is showing. Synced from the
     // takeover tab's onToggle (the authoritative open/close signal), and
@@ -1173,6 +1175,10 @@ export function Game(): React.ReactElement | null {
         </div>
     );
 
+    /* Compact mode gathers both players into one strip above the board, so
+     * the row the lower card would have taken goes back to the board. */
+    const compact_players = is_mobile && compact_mode;
+
     return (
         <GobanView
             ref={goban_view_ref}
@@ -1182,14 +1188,25 @@ export function Game(): React.ReactElement | null {
             }
             onWheel={onWheel}
             header={<GameStateHeader />}
-            aboveBoard={is_mobile && renderMobilePlayerCard(top_color)}
+            aboveBoard={
+                is_mobile &&
+                (compact_players ? (
+                    <CompactPlayerHeader
+                        historical_black={historical_black}
+                        historical_white={historical_white}
+                        estimating_score={estimating_score}
+                    />
+                ) : (
+                    renderMobilePlayerCard(top_color)
+                ))
+            }
             /* The action area sits in the stage with the player cards, so
              * the board gives up room for it instead of pushing it below
              * the fold. */
             belowBoard={
                 is_mobile && (
                     <>
-                        {renderMobilePlayerCard(bottom_color)}
+                        {!compact_players && renderMobilePlayerCard(bottom_color)}
                         <GameActionArea />
                     </>
                 )
