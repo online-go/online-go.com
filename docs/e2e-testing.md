@@ -62,16 +62,21 @@ The selector uses total RAM capacity, capped by the process/container memory
 limit reported by Node. It does not use momentary free RAM or include swap.
 Host RAM rounds up to whole GiB to account for OS overhead (for example,
 31.3 GiB selects the 32 GiB tier). An explicit container limit is not rounded.
-Set `E2E_WORKERS` to a positive integer or pass Playwright's `--workers` to
-override the selection. The CLI option takes precedence. To print the selected
-default without starting tests, run `node scripts/e2e-workers.js` in the same
-environment as the tests.
+The RAM tier is then capped by CPU count: one worker per three available
+cores, with a floor of two. A 10-core machine therefore selects 3 even in
+the 32 GiB tier, and a 32-core machine selects 10. Set `E2E_WORKERS` to a
+positive integer or pass Playwright's `--workers` to override the selection.
+The CLI option takes precedence. To print the selected default without
+starting tests, run `node scripts/e2e-workers.js` in the same environment as
+the tests.
 
-RAM capacity does not measure CPU capacity or current backend load. Each worker
-can open several browser contexts. A machine with 48 GiB can have enough memory
-for sixteen workers but insufficient CPU time to run them efficiently. Use an
-explicit lower count, for example `E2E_WORKERS=4 make e2e`, when testing on a
-slower CPU or a busy development stack.
+The CPU cap comes from measurement on a 10-core, 32 GiB host running the
+full local Docker stack: the RAM tier of 8 workers collapsed the suite with
+backend timeouts, 4 workers passed 68 of 72 with a 1-minute load average of
+59, and 3 workers ran 72 of 72 in 11.5 minutes. Each worker can open several
+browser contexts, and the backend stack competes for the same cores. The cap
+still does not measure current backend load; use an explicit lower count,
+for example `E2E_WORKERS=2 make e2e`, on a busy machine.
 
 The UI, debug, and quick commands also use the development frontend and
 default to one worker; `yarn test:e2e:quick:parallel` runs the quick selection

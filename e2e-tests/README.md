@@ -35,7 +35,9 @@ yarn test:e2e:built --workers=4 --repeat-each=3
 `FRONTEND_URL` defaults to `http://localhost:8080`. The full suite runs in
 parallel against built assets. Workers are selected from RAM capacity: **2** up to 16 GiB,
 **6** above 16 and below 32 GiB, **8** from 32 to below 48 GiB, and **16** at
-48 GiB or more. Host capacity rounds up to whole GiB for OS overhead; any lower
+48 GiB or more — then capped at one worker per three available cores (at
+least two), since the backend stack usually shares the machine. Host capacity
+rounds up to whole GiB for OS overhead; any lower
 container memory limit applies without rounding. This uses total capacity, not
 momentary free RAM. Development commands default to one worker
 because development modules use more browser memory. Set `E2E_WORKERS` or pass

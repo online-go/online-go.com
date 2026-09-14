@@ -6,45 +6,61 @@ const selector = join(__dirname, "e2e-workers.js");
 const gib = 1024 ** 3;
 
 test.each([
-    { host: 8, expected: 2 },
-    { host: 15.4, expected: 2 },
-    { host: 16, expected: 2 },
-    { host: 16.1, expected: 6 },
-    { host: 24, expected: 6 },
-    { host: 31, expected: 6 },
-    { host: 31.3, expected: 8 },
-    { host: 32, expected: 8 },
-    { host: 40, expected: 8 },
-    { host: 47, expected: 8 },
-    { host: 47.3, expected: 16 },
-    { host: 48, expected: 16 },
-    { host: 64, expected: 16 },
-    { host: 64, limit: 16, expected: 2 },
-    { host: 64, limit: 24, expected: 6 },
-    { host: 64, limit: 32 - 1 / gib, expected: 6 },
-    { host: 64, limit: 32, expected: 8 },
-    { host: 64, limit: 48 - 1 / gib, expected: 8 },
-    { host: 64, limit: 48, expected: 16 },
-    { host: 16, limit: 32, expected: 2 },
-    { host: 24, limit: 2 ** 34, expected: 6 },
-])("selects workers from RAM capacity and OS limits: %j", ({ host, limit = 0, expected }) => {
-    const result = spawnSync(
-        process.execPath,
-        [
-            "--input-type=module",
-            "-e",
-            `import { getE2EWorkers } from ${JSON.stringify(pathToFileURL(selector).href)};
+    // RAM tiers, with enough cores that the CPU cap does not bind.
+    { host: 8, cpus: 48, expected: 2 },
+    { host: 15.4, cpus: 48, expected: 2 },
+    { host: 16, cpus: 48, expected: 2 },
+    { host: 16.1, cpus: 48, expected: 6 },
+    { host: 24, cpus: 48, expected: 6 },
+    { host: 31, cpus: 48, expected: 6 },
+    { host: 31.3, cpus: 48, expected: 8 },
+    { host: 32, cpus: 48, expected: 8 },
+    { host: 40, cpus: 48, expected: 8 },
+    { host: 47, cpus: 48, expected: 8 },
+    { host: 47.3, cpus: 48, expected: 16 },
+    { host: 48, cpus: 48, expected: 16 },
+    { host: 64, cpus: 48, expected: 16 },
+    { host: 64, cpus: 48, limit: 16, expected: 2 },
+    { host: 64, cpus: 48, limit: 24, expected: 6 },
+    { host: 64, cpus: 48, limit: 32 - 1 / gib, expected: 6 },
+    { host: 64, cpus: 48, limit: 32, expected: 8 },
+    { host: 64, cpus: 48, limit: 48 - 1 / gib, expected: 8 },
+    { host: 64, cpus: 48, limit: 48, expected: 16 },
+    { host: 16, cpus: 48, limit: 32, expected: 2 },
+    { host: 24, cpus: 48, limit: 2 ** 34, expected: 6 },
+    // The CPU cap (cores / 3, floor, at least 2) binds below the RAM tier.
+    { host: 32, cpus: 10, expected: 3 },
+    { host: 64, cpus: 10, expected: 3 },
+    { host: 64, cpus: 32, expected: 10 },
+    { host: 64, cpus: 30, expected: 10 },
+    { host: 32, cpus: 4, expected: 2 },
+    { host: 8, cpus: 2, expected: 2 },
+    { host: 24, cpus: 12, expected: 4 },
+])(
+    "selects workers from RAM capacity, OS limits and CPU count: %j",
+    ({ host, cpus, limit = 0, expected }) => {
+        const result = spawnSync(
+            process.execPath,
+            [
+                "--input-type=module",
+                "-e",
+                `import { getE2EWorkers } from ${JSON.stringify(pathToFileURL(selector).href)};
              console.log(getE2EWorkers(JSON.parse(process.argv[1])));`,
-            JSON.stringify({ totalMemory: host * gib, memoryLimit: limit * gib }),
-        ],
-        { encoding: "utf8", env: { ...process.env, E2E_WORKERS: "" } },
-    );
-    expect({ status: result.status, stderr: result.stderr, stdout: result.stdout }).toEqual({
-        status: 0,
-        stderr: "",
-        stdout: `${expected}\n`,
-    });
-});
+                JSON.stringify({
+                    totalMemory: host * gib,
+                    memoryLimit: limit * gib,
+                    cpuCount: cpus,
+                }),
+            ],
+            { encoding: "utf8", env: { ...process.env, E2E_WORKERS: "" } },
+        );
+        expect({ status: result.status, stderr: result.stderr, stdout: result.stdout }).toEqual({
+            status: 0,
+            stderr: "",
+            stdout: `${expected}\n`,
+        });
+    },
+);
 
 test.each(["1", "3", "16"])("the CLI preserves E2E_WORKERS=%s", (override) => {
     const result = spawnSync(process.execPath, [selector], {
