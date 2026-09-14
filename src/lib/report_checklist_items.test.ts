@@ -328,4 +328,16 @@ describe("stalling data checks", () => {
         expect(results).toHaveLength(1);
         expect(results[0].id).toBe("stalling.enough_moves");
     });
+
+    test("enough_moves is unavailable when moves is missing from the payload", async () => {
+        const items = getChecklist("stalling");
+        const ctx = ctxFor(
+            gamedata({ moves: undefined as unknown as Array<unknown> }),
+            "a".repeat(20),
+        );
+        const outcomes = await evaluateAsyncChecks(items, ctx);
+        const results = buildResults(items, ctx, outcomes, {});
+        const states = Object.fromEntries(results.map((r) => [r.id, r.state]));
+        expect(states["stalling.enough_moves"]).toBe("unavailable");
+    });
 });

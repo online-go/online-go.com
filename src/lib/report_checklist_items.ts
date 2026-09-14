@@ -223,6 +223,11 @@ const stallingEnoughMoves: AsyncDataCheckItem = {
     blocking: true,
     evaluate: async (ctx) => {
         const gamedata = await ctx.fetchGamedata();
+        // As above: guard the specific field this check reads, rather than relying on
+        // a missing `moves` array to throw its way to "unavailable".
+        if (!Array.isArray(gamedata.moves)) {
+            return "unavailable";
+        }
         return gamedata.moves.length >= 2
             ? { met: true }
             : {
