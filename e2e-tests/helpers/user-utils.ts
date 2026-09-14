@@ -483,7 +483,12 @@ const submitReportForm = async (page: Page, type: string, notes: string) => {
 };
 
 export const reportUser = async (page: Page, username: string, type: string, notes: string) => {
-    const playerLink = page.locator(`a.Player[data-ready="true"]:has-text("${username}")`);
+    // A page can render the same player twice; the `nodetails` variant
+    // navigates to the player page on click instead of opening the
+    // PlayerDetails popover, so it must never be the click target.
+    const playerLink = page
+        .locator(`a.Player[data-ready="true"]:not(.nodetails):has-text("${username}")`)
+        .first();
 
     await openPlayerDetailsPopover(page, playerLink);
     await submitReportForm(page, type, notes);

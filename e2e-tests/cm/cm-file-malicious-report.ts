@@ -138,7 +138,9 @@ export const cmFileMaliciousReportTest = async (
 
             // Open PlayerDetails on the source report's reporter, click Report.
             const reporterLink = filerPage
-                .locator(`a.Player[data-ready="true"]:has-text("${sourceReporterUsername}")`)
+                .locator(
+                    `a.Player[data-ready="true"]:not(.nodetails):has-text("${sourceReporterUsername}")`,
+                )
                 .first();
             await openPlayerDetailsPopover(filerPage, reporterLink);
 
@@ -187,7 +189,9 @@ export const cmFileMaliciousReportTest = async (
 
             await navigateToReport(filerPage, escReportNumber);
             const escReporterLink = filerPage
-                .locator(`a.Player[data-ready="true"]:has-text("${escReporterUsername}")`)
+                .locator(
+                    `a.Player[data-ready="true"]:not(.nodetails):has-text("${escReporterUsername}")`,
+                )
                 .first();
             await openPlayerDetailsPopover(filerPage, escReporterLink);
             await (await expectOGSClickableByName(filerPage, /Report$/)).click();
