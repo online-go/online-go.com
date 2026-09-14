@@ -94,7 +94,7 @@ export const gameLogThumbnailMarksTest = async (
     log("Challenge created ✓");
 
     log("Accepting challenge...");
-    await acceptDirectChallenge(acceptorPage);
+    await acceptDirectChallenge(acceptorPage, challengerPage);
     log("Challenge accepted ✓");
 
     // 3. Wait for game to be ready

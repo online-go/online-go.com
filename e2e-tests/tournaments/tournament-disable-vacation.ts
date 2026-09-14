@@ -32,6 +32,8 @@
  *    disable-vacation game warning is displayed
  */
 
+import { joinTournament, expectTournamentPlayers } from "@helpers/tournament-utils";
+import { actAndWaitForResponse } from "@helpers/requests";
 import type { CreateContextOptions } from "@helpers";
 
 import { BrowserContext } from "@playwright/test";
@@ -118,7 +120,6 @@ export const tournamentDisableVacationTest = async ({
     // This is required for the vacation settings warning to appear (time_per_move >= 3600).
     await directorPage.selectOption("#challenge-speed", "correspondence");
     await expect(directorPage.locator("#challenge-speed")).toHaveValue("correspondence");
-    await directorPage.waitForTimeout(100); // let React re-render before changing time control system
     await directorPage.selectOption("#challenge-time-control", "fischer");
     await expect(directorPage.locator("#challenge-time-control")).toHaveValue("fischer");
     await expect(directorPage.locator("#challenge-speed")).toHaveValue("correspondence");
@@ -183,27 +184,17 @@ export const tournamentDisableVacationTest = async ({
         timeout: 10000,
     });
 
-    const joinButton1 = await expectOGSClickableByName(player1Page, /Join this tournament!/);
-    await joinButton1.click();
-    await expect(player1Page.getByRole("button", { name: /Drop out from tournament/ })).toBeVisible(
-        { timeout: 10000 },
-    );
+    await joinTournament(player1Page, player1Username);
     log("Player 1 joined successfully");
 
     log(`Player 2 (${player2Username}) joining tournament...`);
     await player2Page.goto(tournamentUrl);
     await expect(player2Page.getByText(tournamentName).first()).toBeVisible();
 
-    const joinButton2 = await expectOGSClickableByName(player2Page, /Join this tournament!/);
-    await joinButton2.click();
-    await expect(player2Page.getByRole("button", { name: /Drop out from tournament/ })).toBeVisible(
-        { timeout: 10000 },
-    );
+    await joinTournament(player2Page, player2Username);
     log("Player 2 joined successfully");
 
-    // 6. Director starts the tournament
-    await directorPage.reload();
-    await expect(directorPage.getByText(tournamentName).first()).toBeVisible();
+    await expectTournamentPlayers(directorPage, [player1Username, player2Username]);
 
     log("Director starting tournament...");
     const startBtn = await expectOGSClickableByName(directorPage, /Start Tournament Now/);
@@ -215,7 +206,14 @@ export const tournamentDisableVacationTest = async ({
 
     const okButton = confirmDialog.getByRole("button", { name: "OK" });
     await expect(okButton).toBeVisible();
-    await okButton.click();
+    await actAndWaitForResponse(
+        directorPage,
+        {
+            method: "POST",
+            path: /^\/api\/v1\/tournaments\/\d+\/start$/,
+        },
+        () => okButton.click(),
+    );
 
     // Wait for tournament to start and games to be created
     await expect(directorPage.locator(".results")).toBeVisible({ timeout: 30000 });

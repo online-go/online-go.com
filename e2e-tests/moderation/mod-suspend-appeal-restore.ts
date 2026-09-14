@@ -33,6 +33,7 @@
  * Requires E2E_MODERATOR_PASSWORD environment variable to be set.
  */
 
+import { actAndWaitForResponse } from "@helpers/requests";
 import type { CreateContextOptions } from "@helpers";
 
 import { BrowserContext, expect } from "@playwright/test";
@@ -109,17 +110,21 @@ export const suspendAppealRestoreTest = async ({
     await expect(publicReasonTextarea).toHaveValue("Test suspension for e2e testing");
     log("Filled suspension reason ✓");
 
+    // Suspension reloads connected browsers; reopen the user page after the write.
+    await userPage.goto("about:blank");
+
     // Click the Suspend button in the modal
     const confirmSuspendButton = await expectOGSClickableByName(modPage, /^Suspend$/);
-    await confirmSuspendButton.click();
+    await actAndWaitForResponse(
+        modPage,
+        { method: "PUT", path: /^\/api\/v1\/players\/\d+\/moderate$/ },
+        () => confirmSuspendButton.click(),
+    );
     log("Confirmed suspension ✓");
 
-    // Wait for the modal to close as confirmation
+    // The response confirms the suspension; the dialog must also close.
     await expect(modPage.locator(".BanModal")).toBeHidden();
     log("User suspended successfully ✓");
-
-    // Give the server a moment to process
-    await modPage.waitForTimeout(500);
 
     // 4. User sees suspension banner
     log("Checking for suspension banner on user page...");
@@ -151,9 +156,11 @@ export const suspendAppealRestoreTest = async ({
     );
 
     const userSubmitButton = await expectOGSClickableByName(userPage, /^Submit$/);
-    await userSubmitButton.click();
+    await actAndWaitForResponse(userPage, { method: "POST", path: "/api/v1/appeal/messages" }, () =>
+        userSubmitButton.click(),
+    );
 
-    // Wait for submission to process - the Submit button becomes disabled
+    // The completed write precedes the thread refresh.
     await expect(userSubmitButton).toBeDisabled();
     log("Appeal submitted ✓");
 
@@ -186,6 +193,7 @@ export const suspendAppealRestoreTest = async ({
     // Click on the "State" column cell (not the Player cell)
     const stateCell = appealRow.locator("td.state").last();
     await stateCell.click();
+    await modPage.waitForURL(/\/appeal\/\d+$/, { waitUntil: "load" });
 
     // 9. Verify moderator sees the appeal message (wait for appeal details to load)
     log("Verifying appeal message is visible...");
@@ -203,7 +211,9 @@ export const suspendAppealRestoreTest = async ({
 
     const leaveSuspendedButton = await expectOGSClickableByName(modPage, /Leave Suspended/);
     await expect(leaveSuspendedButton).toBeVisible();
-    await leaveSuspendedButton.click();
+    await actAndWaitForResponse(modPage, { method: "POST", path: "/api/v1/appeal/messages" }, () =>
+        leaveSuspendedButton.click(),
+    );
     log("Moderator response sent (user still suspended) ✓");
 
     // Verify the message appears in the UI
@@ -233,7 +243,9 @@ export const suspendAppealRestoreTest = async ({
     );
 
     const userReplyButton = await expectOGSClickableByName(userPage, /^Submit$/);
-    await userReplyButton.click();
+    await actAndWaitForResponse(userPage, { method: "POST", path: "/api/v1/appeal/messages" }, () =>
+        userReplyButton.click(),
+    );
     log("User reply sent ✓");
 
     // Verify the message appears in the UI
@@ -260,15 +272,17 @@ export const suspendAppealRestoreTest = async ({
 
     const restoreButton = await expectOGSClickableByName(modPage, /Restore Account/);
     await expect(restoreButton).toBeVisible();
-    await restoreButton.click();
+    await userPage.goto("about:blank");
+    await actAndWaitForResponse(
+        modPage,
+        { method: "PUT", path: /^\/api\/v1\/players\/\d+\/moderate$/ },
+        () => restoreButton.click(),
+    );
     log("Restore Account button clicked ✓");
 
     // Verify the message appears and account is restored
     await expect(modPage.getByText(/Account restored. Welcome back to OGS!/i)).toBeVisible();
     log("Final message visible ✓");
-
-    // Wait a moment for backend to process restoration
-    await modPage.waitForTimeout(1000);
 
     // 15. Verify user no longer sees suspension banner
     log("Verifying suspension banner is removed...");

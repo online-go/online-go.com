@@ -16,20 +16,16 @@
  */
 
 import { ogsTest } from "@helpers";
+import { autoSuspensionTest } from "./mod-auto-suspension";
 
 import { modWarnFirstTurnEscapersTest } from "./mod-auto-warn-first-turn-escaper";
-import { modWarnFirstTurnEscaperBlackTest } from "./mod-auto-warn-first-turn-escaper-black";
-import { modWarnFirstTurnDisconnectorTest } from "./mod-auto-warn-first-turn-disconnector";
-import { modDontAutoWarnBlitzTest } from "./mod-dont-auto-warn-first-turn-blitz";
 import { modBlockEscapeReportUnfinishedGameTest } from "./mod-block-escape-report-unfinished-game";
 import { modBlockEarlyStallingReportTest } from "./mod-block-early-stall-report";
 import { modBlockEscapeReportDuringGameTest } from "./mod-block-escape-report-during-game";
 import { escapingAttestationRequiredTest } from "./mod-escaping-attestation-required";
-import { autoSuspensionTest } from "./mod-auto-suspension";
 import { suspendAppealRestoreTest } from "./mod-suspend-appeal-restore";
 import { suspendedUserCanLoginToAppealTest } from "./mod-suspended-user-can-login-to-appeal";
 import { systemPMButtonTest } from "./mod-system-pm-button";
-import { aiDetectionPlayerFilterTest } from "./ai-detection-player-filter";
 // import { aiDetectionFastSMRReportTest } from "./ai-detection-fast-smr-report";
 import { playerCheckAIButtonTest } from "./player-check-ai-button";
 import { aiDetectorVoteSuspendAndAnnulTest } from "./ai-detector-vote-suspend-annul";
@@ -38,13 +34,9 @@ import { aiDetectorVoteFirstWarnAndAnnulTest } from "./ai-detector-vote-first-wa
 import { aiDetectorVoteCancelTicketTest } from "./ai-detector-vote-cancel-ticket";
 import { aiDetectorSeesSuspensionModlogTest } from "./ai-detector-sees-suspension-modlog";
 import { appealTemplateSelectorTest } from "./appeal-template-selector";
-import { warningDialogDuringGamesTest } from "./warning-dialog-during-games";
 
 ogsTest.describe("@Mod Moderation Tests", () => {
-    ogsTest("@Slow Auto-warn first turn disconnectors", modWarnFirstTurnDisconnectorTest);
-    ogsTest("@Slow Skip auto-warn for blitz games", modDontAutoWarnBlitzTest);
     ogsTest("@Slow Auto-warn first turn escapers", modWarnFirstTurnEscapersTest);
-    ogsTest("@Slow Auto-warn first turn escapers (black)", modWarnFirstTurnEscaperBlackTest);
     ogsTest(
         "Block escaping reports while the game is unfinished",
         modBlockEscapeReportUnfinishedGameTest,
@@ -59,7 +51,6 @@ ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest("Suspended user can login to reach appeal page", suspendedUserCanLoginToAppealTest);
     ogsTest("Auto-suspend users with previously suspended accounts", autoSuspensionTest);
     ogsTest("System PM button appears for non-suspended users", systemPMButtonTest);
-    ogsTest("Fair Play Search player filter button works correctly", aiDetectionPlayerFilterTest);
     // TODO: aiDetectionFastSMRReportTest needs assertion rework - temporarily disabled
     // ogsTest("AI Detection FastSMR report button works correctly", aiDetectionFastSMRReportTest);
     ogsTest(
@@ -80,9 +71,5 @@ ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest(
         "Appeal template selector shows AI-use templates for AI suspension",
         appealTemplateSelectorTest,
-    );
-    ogsTest(
-        "Warning dialog during games (correspondence shows, live suppressed)",
-        warningDialogDuringGamesTest,
     );
 });

@@ -126,3 +126,9 @@
         }
     }
 }
+
+/* Portrait: the glyphs fill more of each button. Only the glyph grows, not
+ * the button, so the bar keeps room for the optional tabs. */
+.GobanView.portrait > .GobanView-tab-bar .GobanView-tab-button {
+    font-size: 1.4rem;
+}

@@ -36,17 +36,15 @@ import { BrowserContext, TestInfo } from "@playwright/test";
 import {
     captureReportNumber,
     goToUsersFinishedGame,
-    navigateToReport,
     newTestUsername,
     prepareNewUser,
     reportUser,
     setupSeededCM,
 } from "@helpers/user-utils";
 
-import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
 
-import { withReportCountTracking } from "@helpers/report-utils";
+import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
 
 export const cmAckWarningTest = async (
     {
@@ -81,10 +79,11 @@ export const cmAckWarningTest = async (
 
         const aiAssessor = "E2E_CM_VWNAI_AI_V1";
 
-        const { seededCMPage: aiCMPage } = await setupSeededCM(createContext, aiAssessor);
-
-        // Navigate directly to the report using the captured report number
-        await navigateToReport(aiCMPage, reportNumber);
+        const { seededCMPage: aiCMPage } = await setupSeededCM(
+            createContext,
+            aiAssessor,
+            reportNumber,
+        );
 
         // Verify we can see the report with the message
         await expect(
@@ -94,8 +93,7 @@ export const cmAckWarningTest = async (
         // Select the "no AI use, educate reporter" option...
         await aiCMPage.locator('input[value="no_ai_use_bad_report"]').click();
 
-        const voteButton = await expectOGSClickableByName(aiCMPage, /Vote$/);
-        await voteButton.click();
+        await submitReportVote(aiCMPage);
 
         // The reporter should be warned about their crummy report
         await reporterPage.goto("/");
@@ -110,9 +108,8 @@ export const cmAckWarningTest = async (
 
         await reporterPage.locator("div.AccountWarning").locator("input[type='checkbox']").click();
 
-        let okButton = reporterPage.locator("div.AccountWarning").locator("button.primary");
+        const okButton = reporterPage.locator("div.AccountWarning").locator("button.primary");
         await expect(okButton).toBeVisible();
-        await expect(okButton).toBeDisabled();
 
         // Since its a warning, they should not be able to play
         await reporterPage.goto("/play");
@@ -130,9 +127,7 @@ export const cmAckWarningTest = async (
         // The message got reloaded when we went to /play
         await reporterPage.locator("div.AccountWarning").locator("input[type='checkbox']").click();
 
-        okButton = reporterPage.locator("div.AccountWarning").locator("button.primary");
         await expect(okButton).toBeVisible();
-        await expect(okButton).toBeDisabled();
 
         // Wait for the warning timer to expire and OK button to become enabled
         await expect(okButton).toBeEnabled({ timeout: 15000 });

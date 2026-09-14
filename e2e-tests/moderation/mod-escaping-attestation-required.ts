@@ -34,7 +34,7 @@ import {
     acceptDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
-import { playMoves, waitForGameViewReady } from "@helpers/game-utils";
+import { passAndScoreGame, playMoves, waitForGameViewReady } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 
 /*
@@ -63,8 +63,8 @@ export const escapingAttestationRequiredTest = async ({
     const accusedUsername = newTestUsername("EAttAcc");
     const { userPage: accusedPage } = await prepareNewUser(createContext, accusedUsername, "test");
 
-    // 60s main time: the default 2s blitz can time the game out mid-sequence on a loaded
-    // dev stack, ending the game the wrong way for this test.
+    // Generous clocks: this test is about the checklist, so browser speed must not
+    // decide the game's outcome.
     //
     // Reporter plays white deliberately: ranked challenges (the default here) disable
     // custom komi entirely, so automatic komi's default advantage to white is
@@ -78,13 +78,13 @@ export const escapingAttestationRequiredTest = async ({
         gameName: "E2E escaping attestation",
         boardSize: "9x9",
         speed: "live",
-        mainTime: "60",
-        timePerPeriod: "10",
-        periods: "1",
+        mainTime: "300",
+        timePerPeriod: "30",
+        periods: "5",
         color: "white",
     });
 
-    await acceptDirectChallenge(accusedPage);
+    await acceptDirectChallenge(accusedPage, reporterPage);
 
     const goban = reporterPage.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });
@@ -94,21 +94,8 @@ export const escapingAttestationRequiredTest = async ({
     await playMoves(accusedPage, reporterPage, ["D5", "E5", "D6", "E6"], "9x9");
 
     // End by passing and scoring: escaping.game_ended passes and nobody resigned.
-    // 4 moves were played (black, white alternating), so it is black's (accused's)
-    // turn again — pass out of order and the click just waits on a button that is
-    // not yet actionable, burning the clock.
-    await accusedPage.getByText("Pass", { exact: true }).click();
-    await reporterPage.getByText("Pass", { exact: true }).click();
-
-    const accusedAccept = accusedPage.getByText("Accept");
-    await expect(accusedAccept).toBeVisible();
-    await accusedAccept.click();
-
-    const reporterAccept = reporterPage.getByText("Accept");
-    await expect(reporterAccept).toBeVisible();
-    await reporterAccept.click();
-
-    await expect(reporterPage.getByText("wins by")).toBeVisible();
+    // The accused is black, so their page passes first.
+    await passAndScoreGame(accusedPage, reporterPage);
 
     await waitForGameViewReady(reporterPage);
 

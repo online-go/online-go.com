@@ -55,11 +55,10 @@ import {
     acceptDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
-import { playMoves, waitForGameViewReady } from "@helpers/game-utils";
-import { expectOGSClickableByName } from "@helpers/matchers";
+import { passAndScoreGame, playMoves, waitForGameViewReady } from "@helpers/game-utils";
 import { expect } from "@playwright/test";
 
-import { withReportCountTracking } from "@helpers/report-utils";
+import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
 
 const CM_VOTERS = ["E2E_CM_IWE_V1", "E2E_CM_IWE_V2", "E2E_CM_IWE_V3"];
 
@@ -69,7 +68,7 @@ export const cmInformalWarnEscaperAndAnnulTest = async (
     }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
-    const TIMEOUT_MS = 120 * 1000;
+    const TIMEOUT_MS = 180 * 1000;
 
     // Create fresh users — avoids accumulated warnings from previous runs
     const accusedUsername = newTestUsername("IWEAAcc"); // cspell:disable-line
@@ -90,22 +89,24 @@ export const cmInformalWarnEscaperAndAnnulTest = async (
             // Phase 0: Play a real game, then file escaping report
             // ========================================
 
-            // Reporter plays white deliberately: ranked challenges (the default here)
-            // disable custom komi entirely, so automatic komi's default advantage to
-            // white is unavoidable. With only a handful of symmetric center stones and
-            // no captures, that advantage decides the game — putting the accused on
+            // Reporter plays white deliberately: this challenge uses automatic komi,
+            // whose default advantage to white decides a game of only a handful of
+            // symmetric center stones with no captures — putting the accused on
             // black instead of white means the accused loses on komi rather than
             // winning, which escaping.not_winner now requires for the report below to
             // be filed at all.
             await createDirectChallenge(reporterPage, accusedUsername, {
                 ...defaultChallengeSettings,
+                ranked: false,
                 gameName: "E2E CM IWEA Report Game",
                 boardSize: "9x9",
-                speed: "blitz",
+                speed: "live",
+                mainTime: "300",
+                timePerPeriod: "30",
                 color: "white",
             });
 
-            await acceptDirectChallenge(accusedPage);
+            await acceptDirectChallenge(accusedPage, reporterPage);
 
             const goban = reporterPage.locator(".Goban[data-pointers-bound]");
             await goban.waitFor({ state: "visible" });
@@ -115,22 +116,8 @@ export const cmInformalWarnEscaperAndAnnulTest = async (
             // reporter is white.
             await playMoves(accusedPage, reporterPage, ["D5", "E5", "D6", "E6"], "9x9");
 
-            // End the game: both pass, both accept scoring. 4 moves were played
-            // (black, white alternating), so it is black's (accused's) turn again —
-            // pass out of order and the click just waits on a button that is not yet
-            // actionable, burning the clock.
-            await accusedPage.getByText("Pass", { exact: true }).click();
-            await reporterPage.getByText("Pass", { exact: true }).click();
-
-            const accusedAccept = accusedPage.getByText("Accept");
-            await expect(accusedAccept).toBeVisible();
-            await accusedAccept.click();
-
-            const reporterAccept = reporterPage.getByText("Accept");
-            await expect(reporterAccept).toBeVisible();
-            await reporterAccept.click();
-
-            await expect(reporterPage.getByText("wins by")).toBeVisible();
+            // End the game: both pass, both accept scoring
+            await passAndScoreGame(accusedPage, reporterPage);
 
             // Capture the game URL before navigating away — we'll verify annulment later
             const gameUrl = reporterPage.url();
@@ -186,8 +173,7 @@ export const cmInformalWarnEscaperAndAnnulTest = async (
                     await navigateToReport(cmPage, reportNumber);
                 }
                 await cmPage.locator(`input[value="${voteAction}"]`).click();
-                const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
-                await voteButton.click();
+                await submitReportVote(cmPage);
             }
 
             for (const ctx of cmContexts) {

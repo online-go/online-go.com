@@ -77,16 +77,14 @@ export const suspendedUserDeletionRequestTest = async ({
 
     // 6. Suspend the user
     log(`Suspending user ${username}...`);
+    // Suspension reloads connected browsers; retain the session without a live page.
+    await userPage.goto("about:blank");
     await suspendUserAsModerator(
         createContext,
         username,
         "E2E test: Testing deletion request button for suspended users",
     );
     log("User suspended ✓");
-
-    // 7. Wait for suspension to take effect
-    await userPage.waitForTimeout(1000);
-    log("Waited for suspension to take effect");
 
     // 8. Navigate back to account settings
     log("Navigating to account settings as suspended user...");

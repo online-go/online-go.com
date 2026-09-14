@@ -33,7 +33,7 @@
 
 import type { CreateContextOptions } from "@helpers";
 
-import { BrowserContext, expect } from "@playwright/test";
+import { BrowserContext, expect, TestInfo } from "@playwright/test";
 import {
     captureReportNumber,
     generateUniqueTestIPv6,
@@ -49,9 +49,12 @@ import {
     createDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
-import { playMoves, waitForGameViewReady } from "@helpers/game-utils";
-import { expectOGSClickableByName } from "@helpers/matchers";
-import { IncidentReportCountTracker, withIncidentIndicatorLock } from "@helpers/report-utils";
+import { playMoves, resignActiveGame, waitForGameViewReady } from "@helpers/game-utils";
+import {
+    submitReportVote,
+    IncidentReportCountTracker,
+    withIncidentIndicatorLock,
+} from "@helpers/report-utils";
 import { log } from "@helpers/logger";
 
 export const aiDetectorVoteCancelTicketTest = async (
@@ -60,7 +63,7 @@ export const aiDetectorVoteCancelTicketTest = async (
     }: {
         createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
     },
-    testInfo: any,
+    testInfo: TestInfo,
 ) => {
     return withIncidentIndicatorLock(testInfo, async () => {
         log("=== AI Detector Vote to Cancel Ticket Test ===");
@@ -107,17 +110,18 @@ export const aiDetectorVoteCancelTicketTest = async (
 
         await createDirectChallenge(reporterPage, reportedUsername, {
             ...defaultChallengeSettings,
+            ranked: false,
             gameName: "E2E AI Detector Cancel Ticket Test Game",
             boardSize: boardSize,
             speed: "live",
             timeControl: "byoyomi",
-            mainTime: "45",
-            timePerPeriod: "10",
-            periods: "1",
+            mainTime: "300",
+            timePerPeriod: "30",
+            periods: "5",
             handicap: handicap.toString(),
         });
 
-        await acceptDirectChallenge(reportedPage);
+        await acceptDirectChallenge(reportedPage, reporterPage);
         log("Game created and accepted ✓");
 
         // Wait for the Goban to be visible & ready
@@ -141,31 +145,11 @@ export const aiDetectorVoteCancelTicketTest = async (
             "O16",
         ];
 
-        await playMoves(reporterPage, reportedPage, moves, boardSize, handicap);
+        await playMoves(reporterPage, reportedPage, moves, boardSize, 0, handicap);
         log("Moves played ✓");
 
-        // Finish the game with passes
-        log("Finishing game with passes...");
-        const reporterPass = reporterPage.getByText("Pass", { exact: true });
-        await expect(reporterPass).toBeVisible();
-        await reporterPass.click();
-
-        const reportedPass = reportedPage.getByText("Pass", { exact: true });
-        await expect(reportedPass).toBeVisible();
-        await reportedPass.click();
-
-        // Accept scoring
-        const reportedAccept = reportedPage.getByText("Accept");
-        await expect(reportedAccept).toBeVisible();
-        await reportedAccept.click();
-
-        const reporterAccept = reporterPage.getByText("Accept");
-        await expect(reporterAccept).toBeVisible();
-        await reporterAccept.click();
-
-        // Verify game is finished
-        const reporterFinished = reporterPage.getByText("wins by");
-        await expect(reporterFinished).toBeVisible();
+        await resignActiveGame(reportedPage);
+        await expect(reporterPage.getByText("by Resignation")).toBeVisible();
         log("Game finished ✓");
 
         // 3. Reporter reports the other player for AI use
@@ -225,18 +209,8 @@ export const aiDetectorVoteCancelTicketTest = async (
         log("Selected 'Cancel ticket' action ✓");
 
         // Click the Vote button to submit the vote
-        const voteButton = await expectOGSClickableByName(aiDetectorPage, /^Vote$/);
-        await expect(voteButton).toBeVisible();
-        await expect(voteButton).toBeEnabled();
-        await voteButton.click();
+        await submitReportVote(aiDetectorPage);
         log("Vote submitted ✓");
-
-        // Wait for vote to be processed - check that Vote button is disabled or hidden
-        await expect(voteButton)
-            .toBeDisabled({ timeout: 5000 })
-            .catch(() => {
-                // Button might be hidden instead of disabled
-            });
 
         // Check that no error modal appeared
         const errorModal = aiDetectorPage.getByText(/Error during vote submission/);

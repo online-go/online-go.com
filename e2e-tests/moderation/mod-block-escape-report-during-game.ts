@@ -29,7 +29,7 @@ import {
     acceptDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
-import { playMoves } from "@helpers/game-utils";
+import { passAndScoreGame, playMoves } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 
 export const modBlockEscapeReportDuringGameTest = async ({
@@ -63,28 +63,26 @@ export const modBlockEscapeReportDuringGameTest = async ({
         boardSize: "9x9",
         speed: "live",
         timeControl: "byoyomi",
-        mainTime: "180",
+        mainTime: "300",
         timePerPeriod: "30",
-        periods: "3",
+        periods: "5",
         color: "white",
     });
 
     // Reported user accepts
-    await acceptDirectChallenge(reportedPage);
+    await acceptDirectChallenge(reportedPage, reporterPage);
 
     // Reporter is white; the reported user is black and moves first.
     // Wait for the Goban to be visible & definitely ready
     const goban = reporterPage.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });
 
-    await reporterPage.waitForTimeout(1000);
-
-    // Wait for the game state to indicate it's the reported user's move
+    // Wait for the game state to indicate it's the reported user's (black's) move
     const reportedUsersMove = reportedPage.getByText("Your move", { exact: true });
     await expect(reportedUsersMove).toBeVisible();
 
-    // Play a few moves to establish the game is underway
-    // Need at least 6 moves to allow resignation. playMoves takes (black, white)
+    // Play a few moves to establish the game is underway (>= 2 are needed for
+    // escaping report applicability). playMoves takes (black, white)
     // positionally — the reported user is black here, reporter is white.
     const moves = ["D5", "E5", "D6", "E6", "D7", "E7"];
 
@@ -117,30 +115,8 @@ export const modBlockEscapeReportDuringGameTest = async ({
     const closeButton = await expectOGSClickableByName(reporterPage, /^Close$/);
     await closeButton.click();
 
-    // Now finish the game by passing and scoring. Both players pass, the reported
-    // user (black) first: 6 moves were played (black, white alternating), so it is
-    // black's turn again — passing out of turn just waits on a button that is not
-    // yet actionable, burning the clock.
-    const reportedPass = reportedPage.getByText("Pass", { exact: true });
-    await expect(reportedPass).toBeVisible();
-    await reportedPass.click();
-
-    const reporterPass = reporterPage.getByText("Pass", { exact: true });
-    await expect(reporterPass).toBeVisible();
-    await reporterPass.click();
-
-    // Both players accept the score
-    const reportedAccept = reportedPage.getByText("Accept");
-    await expect(reportedAccept).toBeVisible();
-    await reportedAccept.click();
-
-    const reporterAccept = reporterPage.getByText("Accept");
-    await expect(reporterAccept).toBeVisible();
-    await reporterAccept.click();
-
-    // Verify game is finished
-    const reporterFinished = reporterPage.getByText("wins by");
-    await expect(reporterFinished).toBeVisible();
+    // Finish the game by passing and scoring; the reported user is black.
+    await passAndScoreGame(reportedPage, reporterPage);
 
     // Now try to report escaping after the game - this should be allowed
     const playerLinkAfterGame = reporterPage.locator(`.black.player-name-container a.Player`);

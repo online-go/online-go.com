@@ -29,6 +29,7 @@
  * where a suspended user returns later and needs to log in fresh.
  */
 
+import { actAndWaitForResponse } from "@helpers/requests";
 import type { CreateContextOptions } from "@helpers";
 
 import { BrowserContext, expect } from "@playwright/test";
@@ -54,7 +55,8 @@ export const suspendedUserCanLoginToAppealTest = async ({
     // 1. Create a new user
     const username = newTestUsername("LoginAppeal");
     log(`Creating test user: ${username}`);
-    await prepareNewUser(createContext, username, password);
+    const { userPage } = await prepareNewUser(createContext, username, password);
+    await userPage.close();
     log(`User created: ${username}`);
 
     // 2. Suspend the user via moderator
@@ -90,7 +92,9 @@ export const suspendedUserCanLoginToAppealTest = async ({
     log("Redirected to appeal page");
 
     // 6. Verify the appeal page shows the suspension reason
-    await expect(page.getByText(/Your account has been suspended/i)).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(/Your account has been suspended/i)).toBeVisible({
+        timeout: 10000,
+    });
     await expect(page.getByText(banReason)).toBeVisible();
     log("Suspension reason displayed");
 
@@ -103,7 +107,9 @@ export const suspendedUserCanLoginToAppealTest = async ({
     await expect(appealTextarea).toHaveValue(appealMessage);
 
     const submitButton = await expectOGSClickableByName(page, /^Submit$/);
-    await submitButton.click();
+    await actAndWaitForResponse(page, { method: "POST", path: "/api/v1/appeal/messages" }, () =>
+        submitButton.click(),
+    );
 
     // Wait for the message to appear in the appeal thread
     await expect(page.getByText(appealMessage)).toBeVisible({ timeout: 10000 });

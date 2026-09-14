@@ -109,10 +109,11 @@ export interface SliderFitRefs {
 }
 
 /** Height of the MoveNumberControl strip in rem, used until the strip has
- *  been rendered and measured. Matches the room GobanView.css reserves for
- *  the strip above a takeover; a slight overestimate only errs towards
+ *  been rendered and measured. Matches the tallest portrait strip in
+ *  MoveNumberControl.css (the buttons layout with a 2.75rem button and 0.4rem
+ *  of padding above and below it); a slight overestimate only errs towards
  *  hiding the strip. */
-const SLIDER_FALLBACK_HEIGHT_REM = 2.6;
+const SLIDER_FALLBACK_HEIGHT_REM = 3.6;
 
 /**
  * Portrait only: whether the board stage (the above/below slots and the

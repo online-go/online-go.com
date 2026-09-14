@@ -32,6 +32,7 @@
  * This test verifies that conversion and access control work correctly.
  */
 
+import { closeReportAsModerator, expectReportAccessDenied } from "@helpers/report-utils";
 import type { CreateContextOptions } from "@helpers";
 
 import { BrowserContext, TestInfo } from "@playwright/test";
@@ -55,7 +56,6 @@ import {
 
 import { playMoves, resignActiveGame } from "@helpers/game-utils";
 
-import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
 
 import { withReportCountTracking } from "@helpers/report-utils";
@@ -79,15 +79,15 @@ export const cmSandbaggingAssessmentConversionTest = async (
         ...defaultChallengeSettings,
         gameName: "E2E SBAS Game",
         boardSize: "9x9",
-        speed: "blitz",
+        speed: "live",
         timeControl: "byoyomi",
-        mainTime: "2",
-        timePerPeriod: "2",
-        periods: "1",
+        mainTime: "300",
+        timePerPeriod: "30",
+        periods: "5",
     });
 
     // Other player accepts
-    await acceptDirectChallenge(otherPage);
+    await acceptDirectChallenge(otherPage, accusedPage);
 
     // Wait for the game to start
     const goban = accusedPage.locator(".Goban[data-pointers-bound]");
@@ -104,6 +104,7 @@ export const cmSandbaggingAssessmentConversionTest = async (
 
     // Capture the game URL for the reporter to navigate to
     const gameUrl = accusedPage.url();
+    await Promise.all([accusedPage.context().close(), otherPage.context().close()]);
 
     // Create the reporter
     const { userPage: reporterPage } = await prepareNewUser(
@@ -139,23 +140,13 @@ export const cmSandbaggingAssessmentConversionTest = async (
 
         // CM navigates to the report - they should NOT be able to see it
         // because sandbagging_assessment is moderator-only
-        await navigateToReport(cmPage, reportNumber);
+        await expectReportAccessDenied(cmPage, reportNumber);
 
         // The CM should see a message indicating they don't have access or the report isn't available
         // Check that the report content is NOT visible to the CM
         await expect(
             cmPage.getByText("E2E test reporting sandbagging: suspicious win pattern."),
         ).not.toBeVisible({ timeout: 5000 });
-
-        // Verify the CM sees some indication they can't access this report
-        // (the exact message depends on the UI, but they shouldn't see the report details)
-        const reportTypeSelector = cmPage.locator(".report-type-selector");
-        const selectorVisible = await reportTypeSelector.isVisible().catch(() => false);
-        if (selectorVisible) {
-            // If selector is visible, it should NOT show Sandbagging Assessment to CMs
-            // (they shouldn't even get this far, but double-check)
-            await expect(reportTypeSelector).not.toContainText("Sandbagging Assessment");
-        }
 
         // Clean up CM context
         await cmContext.close();
@@ -177,18 +168,8 @@ export const cmSandbaggingAssessmentConversionTest = async (
         ).toBeVisible({ timeout: 15000 });
 
         // Moderator claims and closes the report
-        const claimButton = await expectOGSClickableByName(modPage, /Claim/i);
-        await claimButton.click();
-        await modPage.waitForTimeout(1000);
+        await closeReportAsModerator(modPage);
 
-        // Close the report
-        const closeButton = await expectOGSClickableByName(modPage, /Close as good report/i);
-        await closeButton.click();
-
-        // Wait for the report to be processed
-        await modPage.waitForTimeout(2000);
-
-        // Verify the reporter's count has returned to initial (report is now closed)
         await tracker.assertCountReturnedToInitial(reporterPage);
 
         // Clean up moderator context
