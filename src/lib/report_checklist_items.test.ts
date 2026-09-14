@@ -46,7 +46,8 @@ describe("REPORT_CHECKLISTS resolved lists", () => {
                 "escaping.not_winner",
                 "escaping.not_resigned",
                 "escaping.enough_moves",
-                "escaping.waited_reasonable_time",
+                // escaping.waited_reasonable_time is parked pending more thought —
+                // see the commented-out item in report_checklist_items.ts.
             ],
         ],
         [

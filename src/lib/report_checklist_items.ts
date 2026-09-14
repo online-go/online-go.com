@@ -19,7 +19,7 @@ import { _, interpolate, pgettext } from "@/lib/translate";
 
 import type {
     AsyncDataCheckItem,
-    AttestationItem,
+    // AttestationItem,
     ChecklistItem,
     SyncDataCheckItem,
 } from "@/lib/report_checklist";
@@ -201,6 +201,9 @@ Please choose a different type of report, if there is a different problem.`,
     },
 };
 
+/*  We might want a check like this but it needs more thought.
+    It's here as an example of an attestation item.
+
 const escapingWaitedReasonableTime: AttestationItem = {
     kind: "attestation",
     id: "escaping.waited_reasonable_time",
@@ -209,6 +212,8 @@ const escapingWaitedReasonableTime: AttestationItem = {
         "I waited a reasonable time for this player to play",
     ),
 };
+
+*/
 
 const stallingEnoughMoves: AsyncDataCheckItem = {
     kind: "data_check",
@@ -272,7 +277,7 @@ export const REPORT_CHECKLISTS: Record<string, ChecklistItem[]> = {
         escapingNotWinner,
         escapingNotResigned,
         escapingEnoughMoves,
-        escapingWaitedReasonableTime,
+        // escapingWaitedReasonableTime,
     ],
     stalling: [gameIdentifiedItem, stallingEnoughMoves, descriptionLengthItem(20)],
     score_cheating: [gameIdentifiedItem],
