@@ -326,6 +326,41 @@ describe("captureCurrentGameBaseSnapshotFromController", () => {
 });
 
 describe("createCurrentGameMiniGobanSnapshotOverrides", () => {
+    it.each([true, false])(
+        "preserves shared player data when the pool comes first: %s",
+        (poolFirst) => {
+            const black = { id: 1, username: "black" };
+            const white = { id: 2, username: "white" };
+            const players = { black, white };
+            const player_pool = { 1: black, 2: white };
+            const snapshot = {
+                gameId: 123,
+                config: poolFirst ? { player_pool, players } : { players, player_pool },
+            } as unknown as KibitzCurrentGameBaseSnapshot;
+
+            const config = createCurrentGameMiniGobanSnapshotOverrides(snapshot, 123)?.get(123);
+
+            expect(config?.players).toEqual(players);
+            expect(config?.player_pool).toEqual(player_pool);
+            expect(config?.players).not.toBe(players);
+            expect(config?.player_pool).not.toBe(player_pool);
+        },
+    );
+
+    it("omits circular references while preserving serializable data", () => {
+        const metadata: Record<string, unknown> = { name: "preview" };
+        metadata.parent = metadata;
+        const snapshot = {
+            gameId: 123,
+            config: { metadata },
+        } as unknown as KibitzCurrentGameBaseSnapshot;
+
+        const config = createCurrentGameMiniGobanSnapshotOverrides(snapshot, 123)?.get(123);
+
+        expect(config).toHaveProperty("metadata", { name: "preview" });
+        expect(metadata.parent).toBe(metadata);
+    });
+
     it("keeps the current game detached while its snapshot is pending", () => {
         expect(createCurrentGameMiniGobanSnapshotOverrides(null, 123)).toEqual(
             new Map([[123, null]]),

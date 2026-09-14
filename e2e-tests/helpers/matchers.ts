@@ -10,7 +10,7 @@
  */
 
 import { expect } from "@playwright/test";
-import { Page } from "@playwright/test";
+import { Page, Locator } from "@playwright/test";
 
 /**
  * We need this because we have both "buttons" and "links" that look like buttons, but are not necessarily DOM buttons
@@ -27,31 +27,11 @@ declare global {
     }
 }
 
-export async function expectOGSClickableByName(page: Page, name: string | RegExp) {
+export async function expectOGSClickableByName(page: Page | Locator, name: string | RegExp) {
     const element = page
         .getByRole("button", { name })
         .or(page.getByRole("link", { name }))
         .or(page.getByRole("navigation", { name }));
-
-    // Retry scrollIntoViewIfNeeded if element becomes detached during React re-renders
-    // This can happen when React hydrates or updates state after initial page load.
-    // The explicit timeout matters: playwright.config.ts sets no actionTimeout, so an
-    // unbounded scroll on an element that never appears blocks until the whole test
-    // times out, which also starves the retries below of their remaining attempts.
-    for (let attempt = 0; attempt < 3; attempt++) {
-        try {
-            await element.scrollIntoViewIfNeeded({ timeout: 5000 });
-            break;
-        } catch (e) {
-            const isDetachmentError = e instanceof Error && e.message?.includes("not attached");
-            if (isDetachmentError && attempt < 2) {
-                // Wait briefly for React to finish re-rendering, then retry
-                await page.waitForTimeout(100);
-            } else {
-                throw e;
-            }
-        }
-    }
 
     await expect(element).toBeVisible();
     await expect(element).toBeOGSClickable();
@@ -63,7 +43,7 @@ expect.extend({
      * Verifies element looks like a clickable button
      * We have both "buttons" and "links" that look like buttons, but are not necessarily DOM buttons
      */
-    async toBeOGSClickable(element: any) {
+    async toBeOGSClickable(element: Locator) {
         try {
             await expect(element).toBeEnabled();
             await expect(element).toBeVisible();

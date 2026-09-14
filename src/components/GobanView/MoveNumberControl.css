@@ -193,3 +193,47 @@
         }
     }
 }
+
+/* Portrait buttons layout: the strip runs the full width of the screen, which
+   on most phones leaves room for bigger buttons than the compact sidebar
+   sizes. The strip is the container, so each step follows the width its
+   content can use. A step starts where the layout fits at that size: seven
+   buttons, a "Move 123" label of about 4rem and a 0.25rem gap between each of
+   the eight items. The slider layout and custom sliders (e.g. joseki) keep
+   their size, so their buttons stay in proportion with the knob and they fit
+   the room GobanView.css reserves for a custom slider above a takeover. */
+.GobanView.portrait > .MoveNumberControl.MoveNumberControl-buttons {
+    container-type: inline-size;
+
+    .MoveNumberControl-button {
+        margin: 0;
+        padding: 0;
+    }
+
+    /* 7 x 2.25rem + 4rem + 7 x 0.25rem */
+    @container (min-width: 21.5rem) {
+        .MoveNumberControl-button {
+            width: 2.25rem;
+            height: 2.25rem;
+            font-size: 1.4rem;
+        }
+    }
+
+    /* 7 x 2.5rem + 4rem + 7 x 0.25rem */
+    @container (min-width: 23.25rem) {
+        .MoveNumberControl-button {
+            width: 2.5rem;
+            height: 2.5rem;
+            font-size: 1.55rem;
+        }
+    }
+
+    /* 7 x 2.75rem + 4rem + 7 x 0.25rem */
+    @container (min-width: 25rem) {
+        .MoveNumberControl-button {
+            width: 2.75rem;
+            height: 2.75rem;
+            font-size: 1.7rem;
+        }
+    }
+}

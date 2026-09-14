@@ -35,9 +35,10 @@
  * - E2E_MODERATOR_PASSWORD: Password for both E2E_MODERATOR and E2E_AI_DETECTOR
  */
 
+import { actAndWaitForResponse } from "@helpers/requests";
 import type { CreateContextOptions } from "@helpers";
 
-import { BrowserContext, expect } from "@playwright/test";
+import { BrowserContext, expect, TestInfo } from "@playwright/test";
 import {
     captureReportNumber,
     generateUniqueTestIPv6,
@@ -53,9 +54,9 @@ import {
     createDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
-import { playMoves, waitForGameViewReady } from "@helpers/game-utils";
+import { playMoves, resignActiveGame, waitForGameViewReady } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
-import { withIncidentIndicatorLock } from "@helpers/report-utils";
+import { submitReportVote, withIncidentIndicatorLock } from "@helpers/report-utils";
 import { log } from "@helpers/logger";
 
 export const appealTemplateSelectorTest = async (
@@ -64,7 +65,7 @@ export const appealTemplateSelectorTest = async (
     }: {
         createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
     },
-    testInfo: any,
+    testInfo: TestInfo,
 ) => {
     return withIncidentIndicatorLock(testInfo, async () => {
         log("=== Appeal Template Selector Test ===");
@@ -102,17 +103,18 @@ export const appealTemplateSelectorTest = async (
 
         await createDirectChallenge(reporterPage, reportedUsername, {
             ...defaultChallengeSettings,
+            ranked: false,
             gameName: "E2E Appeal Template Test Game",
             boardSize: boardSize,
             speed: "live",
             timeControl: "byoyomi",
-            mainTime: "45",
-            timePerPeriod: "10",
-            periods: "1",
+            mainTime: "300",
+            timePerPeriod: "30",
+            periods: "5",
             handicap: handicap.toString(),
         });
 
-        await acceptDirectChallenge(reportedPage);
+        await acceptDirectChallenge(reportedPage, reporterPage);
         log("Game created and accepted ✓");
 
         const goban = reporterPage.locator(".Goban[data-pointers-bound]");
@@ -133,29 +135,11 @@ export const appealTemplateSelectorTest = async (
             "P17",
             "O16",
         ];
-        await playMoves(reporterPage, reportedPage, moves, boardSize, handicap);
+        await playMoves(reporterPage, reportedPage, moves, boardSize, 0, handicap);
         log("Moves played ✓");
 
-        // Finish the game with passes
-        log("Finishing game with passes...");
-        const reporterPass = reporterPage.getByText("Pass", { exact: true });
-        await expect(reporterPass).toBeVisible();
-        await reporterPass.click();
-
-        const reportedPass = reportedPage.getByText("Pass", { exact: true });
-        await expect(reportedPass).toBeVisible();
-        await reportedPass.click();
-
-        const reportedAccept = reportedPage.getByText("Accept");
-        await expect(reportedAccept).toBeVisible();
-        await reportedAccept.click();
-
-        const reporterAccept = reporterPage.getByText("Accept");
-        await expect(reporterAccept).toBeVisible();
-        await reporterAccept.click();
-
-        const reporterFinished = reporterPage.getByText("wins by");
-        await expect(reporterFinished).toBeVisible();
+        await resignActiveGame(reportedPage);
+        await expect(reporterPage.getByText("by Resignation")).toBeVisible();
         log("Game finished ✓");
 
         // 3. Reporter reports the other player for AI use
@@ -199,16 +183,8 @@ export const appealTemplateSelectorTest = async (
         await expect(suspendRadio).toBeChecked();
         log("Selected suspend action ✓");
 
-        const voteButton = await expectOGSClickableByName(aiDetectorPage, /^Vote$/);
-        await voteButton.click();
+        await submitReportVote(aiDetectorPage);
         log("Vote submitted ✓");
-
-        // Wait for vote to be processed - check that Vote button is disabled or hidden
-        await expect(voteButton)
-            .toBeDisabled({ timeout: 5000 })
-            .catch(() => {
-                // Button might be hidden instead of disabled
-            });
 
         // Wait for the reporter to receive the suspension notification via websocket push.
         // This confirms the suspension has been fully processed before we check the
@@ -239,7 +215,11 @@ export const appealTemplateSelectorTest = async (
         await expect(appealTextarea).toHaveValue("I did not use AI. Please review my case.");
 
         const userSubmitButton = await expectOGSClickableByName(reportedPage, /^Submit$/);
-        await userSubmitButton.click();
+        await actAndWaitForResponse(
+            reportedPage,
+            { method: "POST", path: "/api/v1/appeal/messages" },
+            () => userSubmitButton.click(),
+        );
         await expect(userSubmitButton).toBeDisabled();
         log("Appeal submitted ✓");
 
@@ -278,6 +258,7 @@ export const appealTemplateSelectorTest = async (
         // Click on the state cell to open the appeal
         const stateCell = appealRow.locator("td.state").last();
         await stateCell.click();
+        await modPage.waitForURL(/\/appeal\/\d+$/, { waitUntil: "load" });
 
         // Verify the appeal detail page loaded with the user's message
         await expect(modPage.getByText(/I did not use AI/i)).toBeVisible();

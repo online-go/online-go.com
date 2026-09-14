@@ -9,12 +9,15 @@
  * This program is distributed in the hope that it will be useful,
  */
 
+import { actAndWaitForResponse } from "@helpers/requests";
 import { expect } from "@playwright/test";
+import { randomUUID } from "node:crypto";
 import { Page, BrowserContext, Locator } from "@playwright/test";
 
 import { expectOGSClickableByName } from "./matchers";
 import { load, CreateContextOptions } from "@helpers";
 import { log } from "./logger";
+import { dismissWarningDialogs } from "./report-utils";
 import { waitForGameViewReady } from "./game-utils";
 
 /**
@@ -23,7 +26,7 @@ import { waitForGameViewReady } from "./game-utils";
  * This file provides utility functions for managing users in end-to-end tests:
  *
  * User Creation & Registration:
- * - newTestUsername(): Generate unique test usernames with timestamp
+ * - newTestUsername(): Generate distinct test usernames with numeric suffixes
  * - generateUniqueTestIPv6(): Generate unique IPv6 addresses for test users
  * - registerNewUser(): Register a new user account
  * - prepareNewUser(): Register and set up a new user with basic preferences
@@ -60,54 +63,7 @@ import { waitForGameViewReady } from "./game-utils";
  * - selectNavMenuItem(): Clicks a specified Nav Menu item & subitem
  */
 
-// Alphabet for the random suffix that uniquifies each test username.
-// Excludes vowels (a, e, i, o, u) so randomly-generated usernames cannot
-// accidentally contain English-word substrings (e.g. "ok") that would
-// collide with Playwright's case-insensitive substring matching in
-// getByRole({ name }) — the bug that caused submitReportForm's OK-button
-// locator to match a player link whose suffix happened to spell "qsok90".
-// 31-char alphabet × 6 positions = 887M combinations, so collision
-// probability against ~1k accumulated test users on a dev stack is
-// ~0.001% per draw — comfortable headroom for realistic stack lifetimes.
-const USERNAME_SUFFIX_ALPHABET = "0123456789bcdfghjklmnpqrstvwxyz";
-const USERNAME_SUFFIX_LEN = 6;
-
-// OGS rejects registration when len(username) > 30 (see Django backend
-// api/views/login.py). Derive the role-length limit from that so the
-// validation can't drift out of sync with the actual server constraint.
-// Worker index is up to 2 digits (TEST_WORKER_INDEX values up to 99);
-// allow for that even though parallel runs are typically 1-2 workers.
-const OGS_USERNAME_MAX_LEN = 30;
-const USERNAME_PREFIX = "e2e";
-const MAX_WORKER_INDEX_DIGITS = 2;
-const MAX_USER_ROLE_LEN =
-    OGS_USERNAME_MAX_LEN -
-    USERNAME_PREFIX.length -
-    1 /* underscore separator */ -
-    USERNAME_SUFFIX_LEN -
-    MAX_WORKER_INDEX_DIGITS;
-
-// This is tweaked to provide us with lots of unique usernames but also
-// a decent number of readable user-role characters, within the OGS username 30 character limit
-// on registration.
-export const newTestUsername = (user_role: string) => {
-    if (user_role.length > MAX_USER_ROLE_LEN) {
-        throw new Error(
-            `user_role must be ${MAX_USER_ROLE_LEN} characters or less ` +
-                `to keep the generated username within the OGS ${OGS_USERNAME_MAX_LEN}-char limit`,
-        );
-    }
-    let suffix = "";
-    for (let i = 0; i < USERNAME_SUFFIX_LEN; i++) {
-        suffix +=
-            USERNAME_SUFFIX_ALPHABET[Math.floor(Math.random() * USERNAME_SUFFIX_ALPHABET.length)];
-    }
-    // Include worker index to keep collisions impossible across parallel workers
-    // (Math.random would already make them vanishingly unlikely, but this is
-    // free and removes the need for a parallel-execution caveat in the math.)
-    const workerIndex = process.env.TEST_WORKER_INDEX || "0";
-    return `${USERNAME_PREFIX}${user_role}_${suffix}${workerIndex}`;
-};
+export { newTestUsername } from "./test-username";
 
 // Counter for same-millisecond IPv6 generation
 let ipv6Counter = 0;
@@ -175,37 +131,62 @@ export const prepareNewUser = async (
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     username: string,
     password: string,
+    deviceId: string = randomUUID(),
+    initialPath: string = "/",
 ) => {
-    const { userPage, userContext } = await registerNewUser(createContext, username, password);
-
-    // Wait for the rank chooser component to be fully rendered after page load
-    // This ensures React has finished initial rendering before we try to interact with buttons
-    await expect(userPage.getByText("What is your Go skill level?")).toBeVisible({
-        timeout: 10000,
+    const userContext = await createContext({
+        extraHTTPHeaders: { "X-Forwarded-For": generateUniqueTestIPv6() },
     });
-
-    // We need to choose _something_ to get rid of this on the Profile page:
-    // typically, we don't want to see that.
-    // (Quirky regex due to variable text on the button for A/B/C testing)
-    const chooseButton = await expectOGSClickableByName(userPage, /^Basic/);
-    await chooseButton.click();
-
-    await expect(userPage.locator("#Home")).toBeVisible();
-
-    await turnOffDynamicHelp(userPage); // the popups can get in the way.
-
-    // Prevent desktop notification prompts from appearing during tests
-    await userPage.evaluate(() => {
-        localStorage.setItem("ogs.preferences.asked-to-enable-desktop-notifications", "true");
+    const registration = await userContext.request.post("/api/v0/register", {
+        data: { username, password, email: "", ebi: deviceId, timezone: "UTC" },
     });
-
-    await load(userPage, "/");
-
-    return {
-        userPage,
-        userContext,
-    };
+    await expect(registration, `Create test account ${username}`).toBeOK();
+    const csrf = (await userContext.cookies()).find((cookie) => cookie.name === "csrftoken");
+    expect(csrf, "Registration must set the CSRF cookie").toBeDefined();
+    const rank = await userContext.request.put("/api/v1/me/starting_rank", {
+        headers: { "X-CSRFToken": csrf!.value },
+        data: { choice: "basic" },
+    });
+    await expect(rank, "Set the fixture account's starting rank").toBeOK();
+    const userPage = await openFixturePage(userContext, username, deviceId, initialPath);
+    return { userPage, userContext };
 };
+
+async function openFixturePage(
+    userContext: BrowserContext,
+    username: string,
+    deviceId: string,
+    initialPath: string = "/",
+) {
+    const config = await userContext.request.get("/api/v1/ui/config");
+    await expect(config).toBeOK();
+    await userContext.addInitScript(
+        ({ id, cachedConfig }) => {
+            if (!localStorage.getItem("ogs.device.uuid")) {
+                localStorage.setItem("ogs.device.uuid", JSON.stringify(id));
+                localStorage.setItem("ogs.cached.config", cachedConfig);
+                localStorage.setItem(
+                    "ogs.rdh-system-state",
+                    JSON.stringify(JSON.stringify({ systemEnabled: false })),
+                );
+                localStorage.setItem("ogs.preferences.moderator.report-quota", "0");
+                localStorage.setItem(
+                    "ogs.preferences.asked-to-enable-desktop-notifications",
+                    "true",
+                );
+            }
+        },
+        { id: deviceId, cachedConfig: await config.text() },
+    );
+    const userPage = await userContext.newPage();
+    await load(userPage, initialPath);
+    await expect(userPage.locator(".username").getByText(username, { exact: true })).toBeVisible();
+    if (initialPath === "/") {
+        await expect(userPage.locator("#Home-Container")).toBeVisible();
+    }
+
+    return userPage;
+}
 
 export const goToProfile = async (userPage: Page) => {
     const menuLink = userPage.locator('nav[aria-label="Profile"] .Menu-title');
@@ -256,9 +237,6 @@ export const loginAsUser = async (page: Page, username: string, password: string
 
     // Wait for login to complete by checking for username in header (backend can be slow)
     await expect(page.locator(".username").getByText(username)).toBeVisible({ timeout: 30000 });
-
-    // Save the authenticated state for Playwright
-    await page.context().storageState({ path: "playwright/.auth/user.json" });
 };
 
 export const turnOffDynamicHelp = async (page: Page) => {
@@ -283,69 +261,35 @@ export const turnOffDynamicHelp = async (page: Page) => {
 export const setupSeededUser = async (
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     username: string,
+    initialPath: string = "/",
 ) => {
-    const uniqueIPv6 = generateUniqueTestIPv6();
+    const deviceId = randomUUID();
     const userContext = await createContext({
-        extraHTTPHeaders: {
-            "X-Forwarded-For": uniqueIPv6,
-        },
+        extraHTTPHeaders: { "X-Forwarded-For": generateUniqueTestIPv6() },
     });
-    const userPage = await userContext.newPage();
-    await loginAsUser(userPage, username, "test");
-    await turnOffDynamicHelp(userPage); // the popups can get in the way.
-
-    return {
-        userPage,
-        userContext,
-    };
-};
-
-// A failed prior test can leave acknowledgement/info AccountWarning
-// messages queued on a seeded account; on next login they auto-display
-// as a modal that blocks every subsequent click. Ack-and-info modals
-// are safe to drain (a single primary-button click each); the genuine
-// "warning" variant is deliberately left alone — it carries a forced
-// read-delay and an "I understand" checkbox, and bypassing those in
-// tests would defeat the point of the warning.
-//
-// Cost: ~500ms per setupSeededCM call when the queue is empty (the
-// time it takes one poll to time out). Cheap enough to run on every
-// seeded-CM setup as defense against leaks from earlier tests.
-const dismissPendingAccountAcks = async (page: Page): Promise<void> => {
-    const ackSelector = ".AccountWarningInfo, .AccountWarningAck";
-    while (true) {
-        const ackModal = page.locator(ackSelector).first();
-        try {
-            await ackModal.waitFor({ state: "visible", timeout: 500 });
-        } catch {
-            return;
-        }
-        await ackModal.locator(".buttons button.primary").first().click();
-        await expect(ackModal).toBeHidden({ timeout: 5000 });
-    }
+    const login = await userContext.request.post("/api/v0/login", {
+        data: { username, password: "test", ebi: deviceId, timezone: "UTC" },
+    });
+    await expect(login, `Log in fixture account ${username}`).toBeOK();
+    const userPage = await openFixturePage(userContext, username, deviceId, initialPath);
+    return { userPage, userContext };
 };
 
 export const setupSeededCM = async (
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     username: string,
+    reportNumber?: string,
 ) => {
-    const uniqueIPv6 = generateUniqueTestIPv6();
-    const seededCMContext = await createContext({
-        extraHTTPHeaders: {
-            "X-Forwarded-For": uniqueIPv6,
-        },
-    });
-    const seededCMPage = await seededCMContext.newPage();
-    await loginAsUser(seededCMPage, username, "test");
-    await dismissPendingAccountAcks(seededCMPage);
-    await turnOffDynamicHelp(seededCMPage); // the popups can get in the way.
-
-    await turnOffModerationQuota(seededCMPage); // need them to be able to keep voting!
-
-    return {
-        seededCMPage,
-        seededCMContext,
-    };
+    const { userPage: seededCMPage, userContext: seededCMContext } = await setupSeededUser(
+        createContext,
+        username,
+        reportNumber ? reportPath(reportNumber) : "/",
+    );
+    await dismissWarningDialogs(seededCMPage);
+    if (reportNumber) {
+        await expectReportLoaded(seededCMPage, reportNumber);
+    }
+    return { seededCMPage, seededCMContext };
 };
 
 export const setupSeededModerator = async (
@@ -440,8 +384,7 @@ export const goToUsersFinishedGame = async (page: Page, username: string, gameNa
  * the bare goban wait misses late-arriving renders (PlayerCard avatar,
  * AIReview) that can dismiss popovers mid-open.
  *
- * `aiReviewExpected` defaults to true (matches finished 9x9 / 13x13 / 19x19
- * games); set false for in-progress games or non-standard board sizes.
+ * `aiReviewExpected` defaults to false; set it for tests that inspect AI review.
  */
 export const goToFinishedGameUrl = async (
     page: Page,
@@ -522,8 +465,9 @@ const submitReportForm = async (page: Page, type: string, notes: string) => {
     await notesBox.fill(notes);
 
     const submitButton = await expectOGSClickableByName(page, /Report User$/);
-    await submitButton.click();
-
+    await actAndWaitForResponse(page, { method: "POST", path: "/api/v1/moderation/incident" }, () =>
+        submitButton.click(),
+    );
     await expect(page.getByText("Thanks for the report!")).toBeVisible();
     // /^OK$/ rather than "OK": Playwright's getByRole({name}) does
     // case-insensitive *substring* matching, which collides with
@@ -539,53 +483,15 @@ const submitReportForm = async (page: Page, type: string, notes: string) => {
 };
 
 export const reportUser = async (page: Page, username: string, type: string, notes: string) => {
-    const playerLink = page.locator(`a.Player[data-ready="true"]:has-text("${username}")`);
+    // A page can render the same player twice; the `nodetails` variant
+    // navigates to the player page on click instead of opening the
+    // PlayerDetails popover, so it must never be the click target.
+    const playerLink = page
+        .locator(`a.Player[data-ready="true"]:not(.nodetails):has-text("${username}")`)
+        .first();
 
-    // Retry the entire open-popover-and-submit flow if the popover closes between steps
-    let attempts = 0;
-    const maxAttempts = 3;
-    let lastError: Error | null = null;
-
-    while (attempts < maxAttempts) {
-        attempts++;
-        await openPlayerDetailsPopover(page, playerLink);
-
-        // Check if popover is still open before proceeding
-        const isPopoverOpen = await page
-            .locator('.PlayerDetails[data-ready="true"]')
-            .isVisible()
-            .catch(() => false);
-
-        if (isPopoverOpen) {
-            try {
-                await submitReportForm(page, type, notes);
-                return; // Success
-            } catch (e) {
-                // If the popover closed during submitReportForm, retry
-                const isPopoverError =
-                    e instanceof Error &&
-                    (e.message.includes("PlayerDetails") ||
-                        e.message.includes("not attached") ||
-                        e.message.includes("not visible"));
-                if (isPopoverError && attempts < maxAttempts) {
-                    lastError = e;
-                    // Close any partial state before retrying
-                    await page.keyboard.press("Escape");
-                    continue;
-                }
-                throw e;
-            }
-        }
-
-        if (attempts >= maxAttempts) {
-            throw (
-                lastError ||
-                new Error(
-                    `PlayerDetails popover closed before Report button could be clicked after ${maxAttempts} attempts`,
-                )
-            );
-        }
-    }
+    await openPlayerDetailsPopover(page, playerLink);
+    await submitReportForm(page, type, notes);
 };
 
 /**
@@ -638,18 +544,23 @@ export const captureReportNumber = async (reporterPage: Page): Promise<string> =
  * This works for any user who has permission to view the report.
  */
 export const navigateToReport = async (page: Page, reportNumber: string) => {
-    // Extract the numeric ID from the report number (e.g., "R123" -> "123")
+    await page.goto(reportPath(reportNumber));
+    await expectReportLoaded(page, reportNumber);
+};
+
+function reportPath(reportNumber: string): string {
     const reportId = reportNumber.replace(/^R/, "");
+    if (!/^\d+$/.test(reportId)) {
+        throw new Error(`Invalid report number: ${reportNumber}`);
+    }
+    return `/reports-center/all/${reportId}`;
+}
 
-    // Use /reports-center/all/{id} format which works for all permission levels
-    await page.goto(`/reports-center/all/${reportId}`);
-
-    // Verify we're on the correct page by checking URL and waiting for ViewReport content to load
-    await expect(page).toHaveURL(new RegExp(`/reports-center/all/${reportId}`), { timeout: 15000 });
-    // Wait for the ViewReport component to render (it has id="ViewReport")
+async function expectReportLoaded(page: Page, reportNumber: string): Promise<void> {
+    await expect(page).toHaveURL((url) => url.pathname === reportPath(reportNumber));
     await expect(page.locator("#ViewReport")).toBeVisible({ timeout: 15000 });
     log(`Navigated to report ${reportNumber}`);
-};
+}
 
 export const reportPlayerByColor = async (
     page: Page,
@@ -659,30 +570,8 @@ export const reportPlayerByColor = async (
 ) => {
     const playerLink = page.locator(`${color}.player-name-container a.Player[data-ready="true"]`);
 
-    // Retry the entire open-popover-and-submit flow if the popover closes between steps
-    let attempts = 0;
-    const maxAttempts = 3;
-    while (attempts < maxAttempts) {
-        attempts++;
-        await openPlayerDetailsPopover(page, playerLink);
-
-        // Check if popover is still open before proceeding
-        const isPopoverOpen = await page
-            .locator('.PlayerDetails[data-ready="true"]')
-            .isVisible()
-            .catch(() => false);
-
-        if (isPopoverOpen) {
-            await submitReportForm(page, type, notes);
-            return; // Success
-        }
-
-        if (attempts >= maxAttempts) {
-            throw new Error(
-                `PlayerDetails popover closed before Report button could be clicked after ${maxAttempts} attempts`,
-            );
-        }
-    }
+    await openPlayerDetailsPopover(page, playerLink);
+    await submitReportForm(page, type, notes);
 };
 
 export const assertIncidentReportIndicatorActive = async (page: Page, count: number) => {
@@ -814,14 +703,15 @@ export const banUserAsModerator = async (
 
     // Click the Suspend button in the modal
     const confirmSuspendButton = await expectOGSClickableByName(modPage, /^Suspend$/);
-    await confirmSuspendButton.click();
+    await actAndWaitForResponse(
+        modPage,
+        { method: "PUT", path: /^\/api\/v1\/players\/\d+\/moderate$/ },
+        () => confirmSuspendButton.click(),
+    );
 
-    // Wait for the modal to close as confirmation the suspension was successful
+    // The response confirms the suspension; the dialog must also close.
     await expect(modPage.locator(".BanModal")).toBeHidden();
     log("Suspend modal closed - suspension request completed");
-
-    // Give the server a moment to process the suspension
-    await modPage.waitForTimeout(500);
 
     await modPage.close();
     await modContext.close();

@@ -142,7 +142,7 @@ export const kibitzBasicRoomTest = async ({
     // the home page and clicks Accept there. The challenge can land after
     // the home page's first render, so retry until the accept navigates.
     await expect(async () => {
-        await acceptDirectChallenge(whitePlayerPage);
+        await acceptDirectChallenge(whitePlayerPage, blackPlayerPage);
         await whitePlayerPage.waitForURL(/\/(game|play)\/\d+/, { timeout: 10000 });
     }).toPass({ timeout: 60000, intervals: [1000, 2000] });
 
@@ -162,15 +162,15 @@ export const kibitzBasicRoomTest = async ({
     // gated on canChangeBoard, which is owner-or-moderator
     // (kibitz/permissions.py:42-50). The watcher created the room, so they
     // have it.
-    const gearButton = watcherPage.locator('.GobanView-tab-button[title="Settings"]');
+    const gearButton = watcherPage.locator('.GobanView-tab-button[title="More actions"]');
     await expect(gearButton).toBeVisible({ timeout: 15000 });
     await expect(gearButton).toBeOGSClickable();
     await gearButton.click();
 
-    const popover = watcherPage.locator(".popover-container .KibitzRoomSettingsPopover");
+    const popover = watcherPage.locator(".KibitzMoreActionsPopover");
     await expect(popover).toBeVisible({ timeout: 15000 });
 
-    const changeBoardMenuButton = popover.getByRole("button", { name: /^Change live game$/ });
+    const changeBoardMenuButton = popover.getByRole("button", { name: /Change live game$/ });
     await expect(changeBoardMenuButton).toBeVisible({ timeout: 15000 });
     await expect(changeBoardMenuButton).toBeOGSClickable();
     console.log("[kibitz basic-room] owner clicking Change live game");
@@ -219,6 +219,9 @@ export const kibitzBasicRoomTest = async ({
         { timeout: 15000 },
     );
     await waitForKibitzReady(watcherPage);
+    await expect(watcherPage.locator(".PlayerBar.white .PlayerBar-name")).toContainText(
+        whiteUsername,
+    );
 
     const moreActionsButton = watcherPage.locator('.GobanView-tab-button[title="More actions"]');
     await expect(moreActionsButton).toBeOGSClickable();

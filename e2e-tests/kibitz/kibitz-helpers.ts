@@ -163,7 +163,7 @@ export async function createKibitzRoomForLiveGame(
         periods: "5",
         ranked: false,
     });
-    await acceptDirectChallenge(whitePlayerPage);
+    await acceptDirectChallenge(whitePlayerPage, blackPlayerPage);
 
     // After accepting, the white player page navigates to /game/<id> or /play/<id>.
     // Capture the game id from the white player URL before continuing.
@@ -224,7 +224,7 @@ export async function createKibitzRoomForLiveGame(
 
     // Confirm create. Scope to the overlay footer so nothing outside the
     // overlay can match.
-    const overlayFooter = watcherPage.locator(".KibitzGamePickerOverlay-footer");
+    const overlayFooter = watcherPage.locator(".KibitzGamePickerOverlay .buttons");
     await expect(overlayFooter).toBeVisible({ timeout: 15000 });
     const submitCreateButton = overlayFooter
         .getByRole("button", { name: /^Create room$/ })

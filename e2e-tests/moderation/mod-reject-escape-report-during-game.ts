@@ -29,7 +29,7 @@ import {
     acceptDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
-import { playMoves } from "@helpers/game-utils";
+import { playMoves, resignActiveGame } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 
 export const modRejectEscapeReportDuringGameTest = async ({
@@ -57,20 +57,18 @@ export const modRejectEscapeReportDuringGameTest = async ({
         boardSize: "9x9",
         speed: "live",
         timeControl: "byoyomi",
-        mainTime: "180",
+        mainTime: "300",
         timePerPeriod: "30",
-        periods: "3",
+        periods: "5",
     });
 
     // Reported user accepts
-    await acceptDirectChallenge(reportedPage);
+    await acceptDirectChallenge(reportedPage, reporterPage);
 
     // Reporter is black
     // Wait for the Goban to be visible & definitely ready
     const goban = reporterPage.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });
-
-    await reporterPage.waitForTimeout(1000);
 
     // Wait for the game state to indicate it's the reporter's move
     const reportersMove = reporterPage.getByText("Your move", { exact: true });
@@ -112,28 +110,7 @@ export const modRejectEscapeReportDuringGameTest = async ({
     const okButtonDuringGame = await expectOGSClickableByName(reporterPage, "OK");
     await okButtonDuringGame.click();
 
-    // Now finish the game by passing and scoring
-    // Both players pass
-    const reporterPass = reporterPage.getByText("Pass", { exact: true });
-    await expect(reporterPass).toBeVisible();
-    await reporterPass.click();
-
-    const reportedPass = reportedPage.getByText("Pass", { exact: true });
-    await expect(reportedPass).toBeVisible();
-    await reportedPass.click();
-
-    // Both players accept the score
-    const reportedAccept = reportedPage.getByText("Accept");
-    await expect(reportedAccept).toBeVisible();
-    await reportedAccept.click();
-
-    const reporterAccept = reporterPage.getByText("Accept");
-    await expect(reporterAccept).toBeVisible();
-    await reporterAccept.click();
-
-    // Verify game is finished
-    const reporterFinished = reporterPage.getByText("wins by");
-    await expect(reporterFinished).toBeVisible();
+    await resignActiveGame(reporterPage);
 
     // Now try to report escaping after the game - this should be allowed
     const playerLinkAfterGame = reporterPage.locator(`.white.player-name-container a.Player`);

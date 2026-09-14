@@ -17,16 +17,10 @@
 
 import { ogsTest } from "@helpers";
 import { profileRankDistributionGraphToggleTest } from "./profile-toggle-rank-dist";
-import { profileRankDistributionGraphToggleStickyTest } from "./profile-sticky-rank-dist-graph-toggle";
 
 ogsTest.describe("@Profile Tests", () => {
     ogsTest(
-        "We should be able to toggle the rank distribution graph",
+        "Rank distribution graph toggle persists after reload",
         profileRankDistributionGraphToggleTest,
-    );
-
-    ogsTest(
-        "The rank distribution graph toggle should be sticky",
-        profileRankDistributionGraphToggleStickyTest,
     );
 });

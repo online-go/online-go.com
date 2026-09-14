@@ -44,7 +44,6 @@ import { BrowserContext, Page, TestInfo } from "@playwright/test";
 
 import {
     captureReportNumber,
-    goToUsersFinishedGame,
     navigateToReport,
     newTestUsername,
     prepareNewUser,
@@ -58,12 +57,16 @@ import {
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
 
-import { playMoves } from "@helpers/game-utils";
+import { passAndScoreGame, playMoves } from "@helpers/game-utils";
 
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
 
-import { dismissWarningDialogs, withReportCountTracking } from "@helpers/report-utils";
+import {
+    submitReportVote,
+    dismissWarningDialogs,
+    withReportCountTracking,
+} from "@helpers/report-utils";
 
 const CM_VOTERS = ["E2E_CM_ERH_V1", "E2E_CM_ERH_V2", "E2E_CM_ERH_V3"];
 
@@ -74,49 +77,25 @@ async function playAndFinishGame(
     gameIndex: number,
 ): Promise<void> {
     const gameName = `E2E ERPB Game ${gameIndex}`;
-    // Override defaultChallengeSettings' 2s/2s blitz timing — under a loaded
-    // dev stack the 4-move play sequence can exhaust either player's time
-    // and end the game by timeout rather than pass+accept, leaving the test
-    // waiting forever on the "Pass"/"Accept" buttons. 60s main + 1×10s
-    // byoyomi gives ample headroom while still being "live" speed.
     await createDirectChallenge(reporterPage, accusedUsername, {
         ...defaultChallengeSettings,
         gameName,
         boardSize: "9x9",
         speed: "live",
-        mainTime: "60",
-        timePerPeriod: "10",
-        periods: "1",
+        mainTime: "300",
+        timePerPeriod: "30",
+        periods: "5",
         color: "black",
     });
 
-    await acceptDirectChallenge(accusedPage);
+    await acceptDirectChallenge(accusedPage, reporterPage);
 
     const goban = reporterPage.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });
 
     await playMoves(reporterPage, accusedPage, ["D5", "E5", "D6", "E6"], "9x9");
 
-    await reporterPage.getByText("Pass", { exact: true }).click();
-    await accusedPage.getByText("Pass", { exact: true }).click();
-
-    const accusedAccept = accusedPage.getByText("Accept");
-    await expect(accusedAccept).toBeVisible();
-    await accusedAccept.click();
-
-    const reporterAccept = reporterPage.getByText("Accept");
-    await expect(reporterAccept).toBeVisible();
-    await reporterAccept.click();
-
-    await expect(reporterPage.getByText("wins by")).toBeVisible();
-
-    // The reporter UI has the goban in "finished" phase, but the server's
-    // Game.ended write may not be committed yet. Filing an escaping report
-    // before that lands gets rejected by moderate.py:714-725 (HTTP 400).
-    // Navigate via the accused's finished-game list — the game only appears
-    // there once the DB has Game.ended set — then load the game page fresh.
-    await goToUsersFinishedGame(reporterPage, accusedUsername, gameName);
-    await expect(reporterPage.locator(".game-state-header")).toContainText("wins by");
+    await passAndScoreGame(reporterPage, accusedPage);
 }
 
 async function reportAndVote(
@@ -136,8 +115,7 @@ async function reportAndVote(
     for (const cmPage of cmPages) {
         await navigateToReport(cmPage, reportNumber);
         await cmPage.locator(`input[value="${voteAction}"]`).click();
-        const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
-        await voteButton.click();
+        await submitReportVote(cmPage);
     }
 }
 
@@ -231,12 +209,14 @@ export const cmEscapeRatePredictiveBorderlineTest = async (
             }
 
             // Clean up: cancel the open report so we leave a tidy state.
-            await reporterPage.goto("/reports-center");
-            const myReports = reporterPage.getByText("My Own Reports");
-            await expect(myReports).toBeVisible();
-            await myReports.click();
-
-            const cancelButton = await expectOGSClickableByName(reporterPage, /Cancel$/);
+            await reporterPage.goto("/reports-center/my_reports");
+            const report = reporterPage.locator("div.incident").filter({
+                has: reporterPage.locator(
+                    `button[data-report-id="${reportNumber.replace(/^R/, "")}"]`,
+                ),
+            });
+            await expect(report).toBeVisible();
+            const cancelButton = await expectOGSClickableByName(report, /Cancel$/);
             await cancelButton.click();
 
             await tracker.assertCountReturnedToInitial(reporterPage);

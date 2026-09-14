@@ -52,7 +52,6 @@ import { BrowserContext, TestInfo } from "@playwright/test";
 import {
     captureReportNumber,
     goToFinishedGameUrl,
-    navigateToReport,
     newTestUsername,
     prepareNewUser,
     reportUser,
@@ -69,7 +68,7 @@ import { playMoves, resignActiveGame } from "@helpers/game-utils";
 
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
-import { withReportCountTracking } from "@helpers/report-utils";
+import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
 
 export const cmEscalatedEscapingAllOptionsTest = async (
     {
@@ -90,15 +89,15 @@ export const cmEscalatedEscapingAllOptionsTest = async (
         ...defaultChallengeSettings,
         gameName: "E2E EAEE Game",
         boardSize: "9x9",
-        speed: "blitz",
+        speed: "live",
         timeControl: "byoyomi",
-        mainTime: "2",
-        timePerPeriod: "2",
-        periods: "1",
+        mainTime: "300",
+        timePerPeriod: "30",
+        periods: "5",
     });
 
     // Other player accepts
-    await acceptDirectChallenge(otherPage);
+    await acceptDirectChallenge(otherPage, accusedPage);
 
     // Wait for the game to start
     const goban = accusedPage.locator(".Goban[data-pointers-bound]");
@@ -147,16 +146,14 @@ export const cmEscalatedEscapingAllOptionsTest = async (
         const { seededCMPage: v1Page, seededCMContext: v1Context } = await setupSeededCM(
             createContext,
             "E2E_CM_EAEE_V1",
+            reportNumber,
         );
-
-        await navigateToReport(v1Page, reportNumber);
 
         await expect(v1Page.getByText("E2E test - EAEE reporting escaping!")).toBeVisible();
 
         // Vote for the first available option (doesn't matter which)
         await v1Page.locator('.action-selector input[type="radio"]').first().click();
-        let voteButton = await expectOGSClickableByName(v1Page, /Vote$/);
-        await voteButton.click();
+        await submitReportVote(v1Page);
 
         await v1Context.close();
 
@@ -165,9 +162,7 @@ export const cmEscalatedEscapingAllOptionsTest = async (
         // ========================================
 
         const { seededCMPage: escalatorPage, seededCMContext: escalatorContext } =
-            await setupSeededCM(createContext, "E2E_CM_EAEE_V1");
-
-        await navigateToReport(escalatorPage, reportNumber);
+            await setupSeededCM(createContext, "E2E_CM_EAEE_V1", reportNumber);
 
         await expect(escalatorPage.getByText("E2E test - EAEE reporting escaping!")).toBeVisible();
 
@@ -175,8 +170,7 @@ export const cmEscalatedEscapingAllOptionsTest = async (
         await escalatorPage.locator('.action-selector input[type="radio"]').last().click();
         await escalatorPage.locator("#escalation-note").fill("E2E test - EAEE escalation note");
 
-        voteButton = await expectOGSClickableByName(escalatorPage, /Vote$/);
-        await voteButton.click();
+        await submitReportVote(escalatorPage);
 
         await escalatorContext.close();
 
@@ -187,9 +181,8 @@ export const cmEscalatedEscapingAllOptionsTest = async (
         const { seededCMPage: v2Page, seededCMContext: v2Context } = await setupSeededCM(
             createContext,
             "E2E_CM_EAEE_V2",
+            reportNumber,
         );
-
-        await navigateToReport(v2Page, reportNumber);
 
         // Confirm escalation happened
         await expect(

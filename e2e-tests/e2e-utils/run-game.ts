@@ -65,7 +65,7 @@ export const runGame = async ({
     });
 
     // escaper accepts
-    await acceptDirectChallenge(acceptorPage);
+    await acceptDirectChallenge(acceptorPage, challengerPage);
 
     // Challenger is black
     // Wait for the Goban to be visible & definitely ready

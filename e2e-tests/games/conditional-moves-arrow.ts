@@ -57,20 +57,18 @@ export const conditionalMovesArrowBugTest = async ({
         boardSize: boardSize,
         speed: "live",
         timeControl: "byoyomi",
-        mainTime: "45",
-        timePerPeriod: "10",
-        periods: "1",
+        mainTime: "300",
+        timePerPeriod: "30",
+        periods: "5",
     });
 
     // escaper accepts
-    await acceptDirectChallenge(acceptorPage);
+    await acceptDirectChallenge(acceptorPage, challengerPage);
 
     // Challenger is black
     // Wait for the Goban to be visible & definitely ready
     const goban = challengerPage.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });
-
-    await challengerPage.waitForTimeout(1000);
 
     const moves = ["G7", "C3", "F4", "C7"];
 
