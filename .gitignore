@@ -29,6 +29,11 @@ yalc.lock
 # Specifically intended by claude for non-committed settings
 .claude/settings.local.json
 
+# Scratch space for agent workflows: brainstorming mockups, and per-plan
+# implementation briefs, reports and review diffs. Working notes, not history —
+# what survives is the spec and plan under docs/superpowers/, and the commits.
+.superpowers/
+
 # Coverage directory used by Jest (yarn test --coverage)
 coverage
 

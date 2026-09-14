@@ -19,9 +19,12 @@ import { ogsTest } from "@helpers";
 import { autoSuspensionTest } from "./mod-auto-suspension";
 
 import { modWarnFirstTurnEscapersTest } from "./mod-auto-warn-first-turn-escaper";
-import { modBlockEarlyEscapeReportTest } from "./mod-block-early-escape-report";
+import { modBlockEscapeReportUnfinishedGameTest } from "./mod-block-escape-report-unfinished-game";
 import { modBlockEarlyStallingReportTest } from "./mod-block-early-stall-report";
-import { modRejectEscapeReportDuringGameTest } from "./mod-reject-escape-report-during-game";
+import { modBlockEscapeReportDuringGameTest } from "./mod-block-escape-report-during-game";
+// The escaping attestation is parked pending more thought — see the commented-out
+// escapingWaitedReasonableTime item in src/lib/report_checklist_items.ts.
+// import { escapingAttestationRequiredTest } from "./mod-escaping-attestation-required";
 import { suspendAppealRestoreTest } from "./mod-suspend-appeal-restore";
 import { suspendedUserCanLoginToAppealTest } from "./mod-suspended-user-can-login-to-appeal";
 import { systemPMButtonTest } from "./mod-system-pm-button";
@@ -36,9 +39,13 @@ import { appealTemplateSelectorTest } from "./appeal-template-selector";
 
 ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest("@Slow Auto-warn first turn escapers", modWarnFirstTurnEscapersTest);
-    ogsTest("Block early escape reports", modBlockEarlyEscapeReportTest);
+    ogsTest(
+        "Block escaping reports while the game is unfinished",
+        modBlockEscapeReportUnfinishedGameTest,
+    );
     ogsTest("Block early stalling reports", modBlockEarlyStallingReportTest);
-    ogsTest("Reject escape reports during active game", modRejectEscapeReportDuringGameTest);
+    ogsTest("Block escape reports during an active game", modBlockEscapeReportDuringGameTest);
+    // ogsTest("Escaping report requires the attestation", escapingAttestationRequiredTest);
     ogsTest(
         "Complete suspend-appeal-restore flow with two-button functionality",
         suspendAppealRestoreTest,

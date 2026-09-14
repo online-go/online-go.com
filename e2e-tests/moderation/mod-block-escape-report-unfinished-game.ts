@@ -26,8 +26,19 @@ import { BrowserContext, expect } from "@playwright/test";
 import { prepareNewUser, newTestUsername, openPlayerDetailsPopover } from "@helpers/user-utils";
 import { createDirectChallenge, acceptDirectChallenge } from "@helpers/challenge-utils";
 import { clickInTheMiddle, waitForGameViewReady } from "@helpers/game-utils";
+import { expectOGSClickableByName } from "@helpers/matchers";
 
-export const modBlockEarlyEscapeReportTest = async ({
+// This is the fast smoke check that the "escaping" checklist blocks submission at all
+// while the reported game is still in progress: one move, no scoring, dialog open, assert
+// the blocker, done. It is not redundant with `mod-block-escape-report-during-game.ts`,
+// which plays a full game to completion and additionally proves a report succeeds once
+// the game has ended — a slower, end-to-end path this test does not cover.
+//
+// `escaping.enough_moves` has no e2e coverage. It only becomes the displayed blocker for
+// a game that has already finished with fewer than two moves played — e.g. a first-turn
+// timeout — and reaching that state here would require this test to wait out a timeout,
+// making it @Slow. It is covered by unit tests in `src/lib/report_checklist_items.test.ts`.
+export const modBlockEscapeReportUnfinishedGameTest = async ({
     createContext,
 }: {
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
@@ -61,17 +72,20 @@ export const modBlockEarlyEscapeReportTest = async ({
     );
     await openPlayerDetailsPopover(reporterPage, playerLink);
 
-    await expect(reporterPage.getByRole("button", { name: /Report$/ })).toBeVisible();
-    await reporterPage.getByRole("button", { name: /Report$/ }).click();
+    const reportButton = await expectOGSClickableByName(reporterPage, /Report$/);
+    await reportButton.click();
 
     await expect(reporterPage.getByText("Request Moderator Assistance")).toBeVisible();
 
     await reporterPage.selectOption(".type-picker select", { value: "escaping" }); // cspell:disable-line
 
-    const notesBox = reporterPage.locator(".notes");
+    // The blocking check collapses the form, so there is no textarea to inspect —
+    // the reason now appears in the blocker at the top of the dialog.
+    const blocker = reporterPage.locator('[data-checklist-blocker="escaping.game_ended"]');
+    await expect(blocker).toBeVisible();
+    await expect(blocker).toContainText("has not ended yet");
 
-    // Wait for the placeholder to change to include the expected text
-    await expect(notesBox).toHaveAttribute("placeholder", /leaves the game without playing/);
+    await expect(reporterPage.locator("textarea.notes")).toHaveCount(0);
 
     await expect(reporterPage.getByRole("button", { name: /Report User$/ })).not.toBeEnabled();
 };

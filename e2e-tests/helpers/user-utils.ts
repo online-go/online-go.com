@@ -441,6 +441,43 @@ export const openPlayerDetailsPopover = async (page: Page, playerLinkLocator: Lo
 };
 
 /**
+ * Tick every attestation the report checklist is still waiting on. Reports cannot be
+ * submitted until they are all ticked, so every helper that files a report calls this.
+ *
+ * The final assertion only proves no unticked attestation is left — it cannot tell
+ * "every attestation was ticked" apart from "no attestation ever rendered", since both
+ * leave zero boxes matching the locator. It is still a useful guard: an attestation
+ * checkbox that stopped responding to `.check()` would leave a box behind and fail
+ * here instead of the caller hanging on a submit button that never enables.
+ *
+ * Not every report-filing test goes through this helper.
+ * `moderation/ai-detector-sees-suspension-modlog.ts` drives the report dialog directly
+ * rather than through `submitReportForm`, so it never calls this function. That is
+ * safe only because it files an `ai_use` report and `ai_use` has no attestation item
+ * today — anyone adding an attestation to `ai_use` needs to find this note and update
+ * that test.
+ */
+export const tickReportAttestations = async (page: Page) => {
+    const boxes = page.locator(
+        '[data-checklist-item][data-state="actionable"] input[type=checkbox]',
+    );
+
+    // Ticking a box flips its row to data-state="satisfied", which drops it out of this
+    // locator's match set and renumbers whatever is left. Always take the first
+    // remaining match rather than indexing. The bound is a guard against a box that
+    // never changes state, so a UI regression fails here instead of hanging.
+    const MAX_ATTESTATIONS = 20;
+    for (let i = 0; i < MAX_ATTESTATIONS; i++) {
+        if ((await boxes.count()) === 0) {
+            break;
+        }
+        await boxes.first().check();
+    }
+
+    await expect(boxes, "every attestation should be ticked before submitting").toHaveCount(0);
+};
+
+/**
  * Internal helper to fill and submit the report form after PlayerDetails is open.
  * Verifies the PlayerDetails popover is still visible before attempting to click Report.
  */
@@ -463,6 +500,8 @@ const submitReportForm = async (page: Page, type: string, notes: string) => {
     // would otherwise satisfy a strict locator match.
     const notesBox = page.locator("textarea.notes");
     await notesBox.fill(notes);
+
+    await tickReportAttestations(page);
 
     const submitButton = await expectOGSClickableByName(page, /Report User$/);
     await actAndWaitForResponse(page, { method: "POST", path: "/api/v1/moderation/incident" }, () =>

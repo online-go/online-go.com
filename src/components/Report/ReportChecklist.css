@@ -1,0 +1,73 @@
+.ReportChecklist {
+    border: 1px solid var(--shade4);
+    border-radius: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    margin: 0.75rem 0 0;
+
+    .checklist-heading {
+        font-size: 0.7rem;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        opacity: 0.7;
+        margin-bottom: 0.4rem;
+    }
+
+    ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    li {
+        padding: 0.2rem 0;
+    }
+
+    label {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.4rem;
+        cursor: pointer;
+    }
+
+    .check-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.4rem;
+    }
+
+    .marker {
+        flex: none;
+        width: 1rem;
+        text-align: center;
+    }
+
+    /* A satisfied data check is never rendered as a row (see ReportChecklist.tsx), so
+     * this only ever styles a ticked attestation's own label — dimmed to show it is
+     * settled, the same treatment a satisfied data check would have gotten if one
+     * could still reach this state. */
+    li[data-state="satisfied"] .label-text {
+        opacity: 0.7;
+    }
+
+    li[data-state="actionable"] .marker::before {
+        content: "\2022";
+        color: var(--danger);
+    }
+
+    li[data-state="pending"] .marker::before {
+        content: "\22EF";
+        opacity: 0.6;
+    }
+
+    li[data-state="unavailable"] .marker::before {
+        content: "?";
+        opacity: 0.6;
+    }
+
+    .detail {
+        margin-left: 1.4rem;
+        font-size: 0.85rem;
+        opacity: 0.8;
+        white-space: pre-line;
+    }
+}
