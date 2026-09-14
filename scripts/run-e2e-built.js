@@ -34,7 +34,7 @@ if (!process.env.E2E_MODERATOR_PASSWORD) {
         "E2E_MODERATOR_PASSWORD is required for the automated suite. " +
             "Set it to the password used by init_e2e. " +
             "Docker exec does not inherit your shell variables; after exporting it, run:\n" +
-            "  docker exec -e E2E_MODERATOR_PASSWORD ogs_ui_1 yarn test:e2e",
+            "  docker exec -e E2E_MODERATOR_PASSWORD ogs_ui_1 yarn test:e2e:parallel",
     );
     process.exit(1);
 }

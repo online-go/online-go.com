@@ -30,7 +30,10 @@ export default defineConfig({
     testDir: "./e2e-tests",
     testMatch: smoke ? ["smoketests.spec.ts"] : ["**/*.spec.ts"],
     testIgnore: smoke ? [] : ["**/smoke/**"],
-    grepInvert: /@Manual|@Visual|@E2EUtils/,
+    // Utility tests (@E2EUtils) are operator tools, not checks; they never
+    // run by default. E2E_INCLUDE_UTILS=1 (set by `yarn test:e2e:util`)
+    // makes them selectable with --grep.
+    grepInvert: process.env.E2E_INCLUDE_UTILS ? /@Manual|@Visual/ : /@Manual|@Visual|@E2EUtils/,
     timeout: 180_000,
     expect: { timeout: smoke ? 30_000 : 15_000 },
     fullyParallel: !smoke,

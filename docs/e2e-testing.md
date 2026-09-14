@@ -38,13 +38,16 @@ the locator directly.
 The puzzle editor also waits for move-placement mode; its coverage check measures
 and hit-tests the board in the same browser call and polls through layout changes.
 
-`yarn test:e2e` checks that `E2E_MODERATOR_PASSWORD` is set, builds once, and runs
-the full suite against production assets. `yarn test:e2e:built` reuses an existing
-build. Both select workers from RAM capacity and serve the production
-bundles with the local backend proxy. They keep development-server checks on their own Playwright
+`yarn test:e2e` runs against the hot-loading development frontend with one
+worker by default; it is the day-to-day command for running and debugging
+individual tests. `yarn test:e2e:parallel` checks that `E2E_MODERATOR_PASSWORD`
+is set, builds once, and runs the full suite against production assets.
+`yarn test:e2e:built` reuses an existing build. The built commands select
+workers from RAM capacity and serve the production bundles with the local
+backend proxy. They keep development-server checks on their own Playwright
 project. This reduces browser memory use from development modules. Build the
-frontend before using the reuse command; build and service startup time are recorded
-separately from browser runtime.
+frontend before using the reuse command; build and service startup time are
+recorded separately from browser runtime.
 
 The built runner and self-hosted CI use the same worker selector:
 
@@ -70,12 +73,15 @@ for sixteen workers but insufficient CPU time to run them efficiently. Use an
 explicit lower count, for example `E2E_WORKERS=4 make e2e`, when testing on a
 slower CPU or a busy development stack.
 
-The explicit `test:e2e:dev`, UI, and debug commands use the development frontend
-and default to one worker. Listing, help, and CI smoke selection bypass the
-build and moderator-password requirement. The Yarn runner stops before building
-or starting browsers if credentials are missing.
+The UI, debug, and quick commands also use the development frontend and
+default to one worker; `yarn test:e2e:quick:parallel` runs the quick selection
+on the built runner with RAM-scaled workers instead. Utility tests (`@E2EUtils`) never run by default; `yarn
+test:e2e:util --grep <name>` includes them by setting `E2E_INCLUDE_UTILS`.
+Listing, help, and CI smoke selection bypass the build and
+moderator-password requirement. The built runner stops before building or
+starting browsers if credentials are missing.
 
-From the host, `make e2e` runs `yarn test:e2e` inside `ogs_ui_1`, including the
+From the host, `make e2e` runs `yarn test:e2e:parallel` inside `ogs_ui_1`, including the
 automatic build and all 72 tests. It supplies `xyzzy`, the password used to seed
 the local test database. Export `E2E_MODERATOR_PASSWORD` to override this for a
 database seeded with a different password. `E2E_WORKERS=4 make e2e` passes an
