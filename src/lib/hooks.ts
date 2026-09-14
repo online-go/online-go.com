@@ -43,18 +43,29 @@ export function useData<KeyT extends Extract<keyof DataSchema, string>>(
     DataSchema[KeyT] | undefined,
     React.Dispatch<React.SetStateAction<DataSchema[KeyT] | undefined>>,
 ] {
-    const [val, setVal] = React.useState<DataSchema[KeyT] | undefined>(
-        data.get(key, default_value as DataSchema[KeyT]),
+    type Value = DataSchema[KeyT] | undefined;
+    const subscribe = React.useCallback(
+        (notify: () => void) => {
+            data.watch(key, notify, true, true);
+            return () => data.unwatch(key, notify);
+        },
+        [key],
     );
-
-    React.useEffect(() => {
-        data.watch(key, setVal);
-        return () => data.unwatch(key, setVal);
-    }, []);
-
-    React.useEffect(() => {
-        data.set(key, val);
-    }, [val]);
+    const getSnapshot = React.useCallback(
+        () => data.get(key, default_value as DataSchema[KeyT]),
+        [key, default_value],
+    );
+    const val = React.useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+    const setVal = React.useCallback<React.Dispatch<React.SetStateAction<Value>>>(
+        (value) => {
+            const updated =
+                typeof value === "function"
+                    ? (value as (previous: Value) => Value)(getSnapshot())
+                    : value;
+            data.set(key, updated);
+        },
+        [key, getSnapshot],
+    );
 
     return [val, setVal];
 }

@@ -28,6 +28,8 @@ import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
 
 import { createInviteOnlyChallenge } from "@helpers/challenge-utils";
 
+import { actAndWaitForResponse } from "@helpers/requests";
+
 import { log } from "@helpers/logger";
 
 export const chInviteOnlyHomeTest = async ({
@@ -119,12 +121,14 @@ export const chInviteOnlyHomeTest = async ({
     // FabX component has class "fab reject raiser"
     log("Cleaning up: deleting challenges...");
     const deleteButtons = userPage.locator(".InviteList .Card .fab.reject");
-    const count = await deleteButtons.count();
-    log(`Found ${count} challenge(s) to delete`);
-    for (let i = 0; i < count; i++) {
-        await deleteButtons.first().click();
-        await userPage.waitForTimeout(500); // Wait for deletion to process
-        log(`Deleted challenge ${i + 1}/${count}`);
+    await expect(deleteButtons).toHaveCount(2);
+    for (let remaining = 2; remaining > 0; remaining--) {
+        await actAndWaitForResponse(
+            userPage,
+            { method: "DELETE", path: /^\/api\/v1\/challenges\/\d+$/ },
+            () => deleteButtons.first().click(),
+        );
+        await expect(deleteButtons).toHaveCount(remaining - 1);
     }
 
     // Verify challenges are gone

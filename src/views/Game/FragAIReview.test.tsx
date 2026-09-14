@@ -99,10 +99,16 @@ function renderFragment(controller: GobanController, showFairPlay: boolean) {
     );
 }
 
+const originalGet = data.get;
+
 beforeEach(() => {
     data.set("user", MODERATOR);
+    jest.spyOn(data, "get").mockImplementation(((...args: Parameters<typeof data.get>) =>
+        args[0] === "user" ? MODERATOR : originalGet(...args)) as typeof data.get);
     fair_play_props.mockClear();
 });
+
+afterEach(() => jest.restoreAllMocks());
 
 describe("fair play summary follows the moderator tools", () => {
     test("ongoing game: hidden while the moderator tools are off", () => {

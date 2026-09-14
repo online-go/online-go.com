@@ -14,6 +14,8 @@ import { Page } from "@playwright/test";
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { openUserDropdownFromOmniSearch } from "./user-utils";
 import { log } from "./logger";
+import { actAndWaitForResponse } from "./requests";
+import { waitForGameViewReady } from "./game-utils";
 
 type checkboxTest = boolean | "none"; // None means "not present at all"
 
@@ -63,11 +65,11 @@ export interface ChallengeModalFields {
 export const defaultChallengeSettings: ChallengeModalFields = {
     gameName: "E2E Test game",
     boardSize: "19x19",
-    speed: "blitz",
+    speed: "live",
     timeControl: "byoyomi",
-    mainTime: "2",
-    timePerPeriod: "2",
-    periods: "1",
+    mainTime: "300",
+    timePerPeriod: "30",
+    periods: "5",
     color: "black",
     private: false,
     ranked: true,
@@ -237,7 +239,11 @@ export const createDirectChallenge = async (
     await fillOutChallengeForm(page, settings);
 
     // Send the challenge
-    await page.getByRole("button", { name: "Send Challenge" }).click();
+    await actAndWaitForResponse(
+        page,
+        { method: "POST", path: /^\/api\/v1\/players\/\d+\/challenge$/ },
+        () => page.getByRole("button", { name: "Send Challenge" }).click(),
+    );
 
     if (settings.speed === "correspondence") {
         // Correspondence direct challenges show a "Challenge sent!" alert
@@ -252,12 +258,30 @@ export const createDirectChallenge = async (
     }
 };
 
-export const acceptDirectChallenge = async (page: Page) => {
+export const acceptDirectChallenge = async (page: Page, challenger: Page) => {
+    const response = await page.request.get("/api/v1/me/challenges", { params: { page_size: 30 } });
+    await expect(response).toBeOK();
+    const list: { results: { id: number }[] } = await response.json();
+    expect(list.results, "The fixture must have one pending direct challenge").toHaveLength(1);
+    const challengeId = list.results[0].id;
     await page.goto("/");
+    const challenge = page.locator(`.ChallengesList[data-challenge-id="${challengeId}"]`);
 
     // The Home screen shows incoming challenges inline with Accept/Decline buttons
-    const acceptButton = await expectOGSClickableByName(page, /Accept/);
-    await acceptButton.click();
+    const acceptButton = await expectOGSClickableByName(challenge, /Accept/);
+    const accepted = await actAndWaitForResponse(
+        page,
+        { method: "POST", path: `/api/v1/me/challenges/${challengeId}/accept` },
+        () => acceptButton.click(),
+    );
+    const result: { game: number } = await accepted.json();
+    expect(Number.isInteger(result.game)).toBe(true);
+    await Promise.all(
+        [page, challenger].map(async (player) => {
+            await player.waitForURL((url) => url.pathname === `/game/${result.game}`);
+            await waitForGameViewReady(player);
+        }),
+    );
 };
 
 // Fill out the challenge form with the given settings.
@@ -361,6 +385,13 @@ export const fillOutChallengeForm = async (
             await auto_start_input.fill(final_settings.rengo_auto_start);
         }
     }
+    await checkChallengeForm(page, {
+        speed: final_settings.speed,
+        timeControl: final_settings.timeControl,
+        mainTime: final_settings.mainTime,
+        timePerPeriod: final_settings.timePerPeriod,
+        periods: final_settings.periods,
+    });
 };
 
 // Verify that the challenge form fields match the expected values
@@ -657,7 +688,9 @@ export const createInviteOnlyChallenge = async (page: Page, settings: ChallengeM
         .getByRole("button", { name: "Create a custom game" })
         .or(page.getByRole("link", { name: "Create a custom game" }));
 
-    const isCreateVisible = await createGameButton.isVisible().catch(() => false);
+    const exploreButton = page.getByRole("button", { name: "Explore custom games" });
+    await expect(createGameButton.or(exploreButton)).toBeVisible();
+    const isCreateVisible = await createGameButton.isVisible();
 
     if (!isCreateVisible) {
         // Need to expand the custom games section first
@@ -682,7 +715,9 @@ export const createInviteOnlyChallenge = async (page: Page, settings: ChallengeM
 
     // Click the create button to actually submit
     const submitButton = await expectOGSClickableByName(page, "Create Game");
-    await submitButton.click();
+    await actAndWaitForResponse(page, { method: "POST", path: "/api/v1/challenges" }, () =>
+        submitButton.click(),
+    );
 
     // Wait for the modal to close and challenge to be created
     // The modal should disappear after successful creation

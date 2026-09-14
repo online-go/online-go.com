@@ -111,12 +111,11 @@ export const simulPauseDetectionTest = async (
         periods: "5",
     });
 
-    await acceptDirectChallenge(opponent1Page);
+    await acceptDirectChallenge(opponent1Page, challengerGame1Page);
 
     // Wait for game 1 to be ready
     const goban1 = challengerGame1Page.locator(".Goban[data-pointers-bound]");
     await goban1.waitFor({ state: "visible" });
-    await challengerGame1Page.waitForTimeout(1000);
 
     const challengerMove1 = challengerGame1Page.getByText("Your move", { exact: true });
     await expect(challengerMove1).toBeVisible();
@@ -134,17 +133,16 @@ export const simulPauseDetectionTest = async (
         boardSize: "9x9",
         speed: "live",
         timeControl: "byoyomi",
-        mainTime: "45",
-        timePerPeriod: "10",
-        periods: "1",
+        mainTime: "300",
+        timePerPeriod: "30",
+        periods: "5",
     });
 
-    await acceptDirectChallenge(opponent2Page);
+    await acceptDirectChallenge(opponent2Page, challengerGame2Page);
 
     // Wait for game 2 to be ready
     const goban2 = challengerGame2Page.locator(".Goban[data-pointers-bound]");
     await goban2.waitFor({ state: "visible" });
-    await challengerGame2Page.waitForTimeout(1000);
 
     const challengerMove2 = challengerGame2Page.getByText("Your move", { exact: true });
     await expect(challengerMove2).toBeVisible();

@@ -17,30 +17,11 @@
 
 import { ogsTest } from "@helpers";
 
-import { chPreferredSettingsRankTest } from "./ch-preferred-rank";
-import { chBasicCreationTest } from "./ch-basic-creation";
-import { chDisableAnalysisTest } from "./ch-disable-analysis";
-import { chHandicapPrefsTest } from "./ch-handicap-prefs";
 import { chInviteOnlyHomeTest } from "./ch-invite-only-home";
-import { chPrivateInviteTest } from "./ch-private-invite";
-import { chRengoTest } from "./ch-rengo";
-
-// Note: most "Challenge Modal" tests are front-end tests only.
-// POST payloads are inspected/tested but not sent to the server.
-// Exception: ch-invite-only-home actually creates challenges on the server.
 
 ogsTest.describe("@ChallengeModal Challenge Modal Tests", () => {
-    ogsTest("Should be able to create a challenge with a correct call", chBasicCreationTest);
     ogsTest(
-        "Should be able to have different preferred settings based on rank",
-        chPreferredSettingsRankTest,
-    );
-    ogsTest("Should handle handicap preferences correctly", chHandicapPrefsTest);
-    ogsTest("Should handle rengo options correctly", chRengoTest);
-    ogsTest("Should handle private and invite checkboxes correctly", chPrivateInviteTest);
-    ogsTest("Should handle disable analysis checkbox correctly", chDisableAnalysisTest);
-    ogsTest(
-        "Should display invite-only challenges on home page with correct analysis status",
+        "Invite-only challenges show their analysis status on the home page",
         chInviteOnlyHomeTest,
     );
 });

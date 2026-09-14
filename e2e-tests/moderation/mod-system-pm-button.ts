@@ -30,6 +30,7 @@
  * Requires E2E_MODERATOR_PASSWORD environment variable to be set.
  */
 
+import { actAndWaitForResponse } from "@helpers/requests";
 import type { CreateContextOptions } from "@helpers";
 
 import { BrowserContext, expect } from "@playwright/test";
@@ -105,23 +106,29 @@ export const systemPMButtonTest = async ({
     await expect(publicReasonTextarea).toHaveValue("Test suspension for System PM e2e testing");
     log("Filled suspension reason ✓");
 
+    // Suspension reloads connected browsers; reopen the user page after the write.
+    await userPage.goto("about:blank");
+
     // Click the Suspend button in the modal
     const confirmSuspendButton = await expectOGSClickableByName(modPage, /^Suspend$/);
-    await confirmSuspendButton.click();
+    await actAndWaitForResponse(
+        modPage,
+        { method: "PUT", path: /^\/api\/v1\/players\/\d+\/moderate$/ },
+        () => confirmSuspendButton.click(),
+    );
     log("Confirmed suspension ✓");
 
-    // Wait for the modal to close as confirmation
+    // The response confirms the suspension; the dialog must also close.
     await expect(modPage.locator(".BanModal")).toBeHidden();
     log("User suspended successfully ✓");
-
-    // Give the server a moment to process
-    await modPage.waitForTimeout(500);
 
     // 4. User submits a simple appeal
     log("User submitting appeal...");
     await userPage.goto("/");
 
-    await expect(userPage.getByText("Your account has been suspended")).toBeVisible({ timeout: 10000 });
+    await expect(userPage.getByText("Your account has been suspended")).toBeVisible({
+        timeout: 10000,
+    });
     log("Suspension banner visible ✓");
 
     // Click appeal link
@@ -136,7 +143,9 @@ export const systemPMButtonTest = async ({
     await expect(appealTextarea).toHaveValue("I apologize and would like to return to OGS.");
 
     const userSubmitButton = await expectOGSClickableByName(userPage, /^Submit$/);
-    await userSubmitButton.click();
+    await actAndWaitForResponse(userPage, { method: "POST", path: "/api/v1/appeal/messages" }, () =>
+        userSubmitButton.click(),
+    );
     log("Appeal submitted ✓");
 
     // Verify the message appears in the UI
@@ -147,7 +156,9 @@ export const systemPMButtonTest = async ({
     log("Moderator navigating to Appeals Centre...");
     await modPage.goto("/appeals-center");
 
-    await expect(modPage.getByRole("heading", { name: /Appeals Center/i })).toBeVisible({ timeout: 10000 });
+    await expect(modPage.getByRole("heading", { name: /Appeals Center/i })).toBeVisible({
+        timeout: 10000,
+    });
     log("Appeals Centre loaded ✓");
 
     // Find and click on the user's appeal
@@ -157,10 +168,13 @@ export const systemPMButtonTest = async ({
 
     const stateCell = appealRow.locator("td.state").last();
     await stateCell.click();
+    await modPage.waitForURL(/\/appeal\/\d+$/, { waitUntil: "load" });
     log("Appeal opened ✓");
 
     // 6. Verify moderator sees the appeal message
-    await expect(modPage.getByText(/I apologize and would like to return to OGS/i)).toBeVisible({ timeout: 10000 });
+    await expect(modPage.getByText(/I apologize and would like to return to OGS/i)).toBeVisible({
+        timeout: 10000,
+    });
     log("Appeal message visible to moderator ✓");
 
     // 7. Enter a message first to enable the buttons
@@ -184,11 +198,13 @@ export const systemPMButtonTest = async ({
 
     // 9. Restore the account
     log("Moderator restoring account...");
-    await restoreButton.click();
+    await userPage.goto("about:blank");
+    await actAndWaitForResponse(
+        modPage,
+        { method: "PUT", path: /^\/api\/v1\/players\/\d+\/moderate$/ },
+        () => restoreButton.click(),
+    );
     log("Restore Account button clicked ✓");
-
-    // Wait a moment for backend to process restoration
-    await modPage.waitForTimeout(1000);
 
     // 10. Verify the "System PM" button now appears instead of the other two buttons
     log("Verifying System PM button appears after restoration...");
@@ -208,6 +224,9 @@ export const systemPMButtonTest = async ({
     await expect(modPage.getByRole("button", { name: /Restore Account/i })).not.toBeVisible();
     log("'Restore Account' button hidden ✓");
 
+    await userPage.goto("/");
+    await expect(userPage.locator(".private-chat-window.open")).toBeVisible();
+
     // 12. Enter a message first, then verify the "System PM" button is visible and enabled
     log("Moderator entering message for System PM...");
     const systemPMTextarea = modPage.locator(".input-card textarea");
@@ -226,12 +245,8 @@ export const systemPMButtonTest = async ({
     await systemPMButton.click();
     log("System PM button clicked ✓");
 
-    // Wait for the message to be sent
-    await modPage.waitForTimeout(1000);
-
     // 14. Verify the System PM chat was opened for the user
     log("Verifying System PM chat opened for user...");
-    await userPage.goto("/");
 
     // The System PM should automatically open a private chat window for the user
     // Check if the private-chat-window component is visible

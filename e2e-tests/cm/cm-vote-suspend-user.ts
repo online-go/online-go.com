@@ -36,7 +36,6 @@ import type { CreateContextOptions } from "@helpers";
 import { BrowserContext, TestInfo, expect } from "@playwright/test";
 import {
     captureReportNumber,
-    goToFinishedGameUrl,
     navigateToReport,
     reportUser,
     setupSeededCM,
@@ -48,9 +47,8 @@ import {
     acceptDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
-import { playMoves } from "@helpers/game-utils";
-import { expectOGSClickableByName } from "@helpers/matchers";
-import { withReportCountTracking } from "@helpers/report-utils";
+import { playMoves, resignActiveGame, waitForGameViewReady } from "@helpers/game-utils";
+import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
 import { log } from "@helpers/logger";
 
 export const cmVoteSuspendUserTest = async (
@@ -78,45 +76,28 @@ export const cmVoteSuspendUserTest = async (
     await createDirectChallenge(accusedPage, opponentUsername, {
         ...defaultChallengeSettings,
         gameName: "E2E CM Suspend Test Game",
+        ranked: false,
         boardSize: "9x9",
         speed: "live",
         timeControl: "byoyomi",
-        mainTime: "45",
-        timePerPeriod: "10",
-        periods: "1",
+        mainTime: "300",
+        timePerPeriod: "30",
+        periods: "5",
     });
 
-    await acceptDirectChallenge(opponentPage);
+    await acceptDirectChallenge(opponentPage, accusedPage);
 
     // Wait for the Goban to be visible
     const goban = accusedPage.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });
-    await accusedPage.waitForTimeout(1000);
 
     // Play a few moves
     const moves = ["D9", "E9", "D8", "E8", "D7", "E7"];
     await playMoves(accusedPage, opponentPage, moves, "9x9");
 
-    // Both players pass to end the game
-    const accusedPass = accusedPage.getByText("Pass", { exact: true });
-    await expect(accusedPass).toBeVisible();
-    await accusedPass.click();
-
-    const opponentPass = opponentPage.getByText("Pass", { exact: true });
-    await expect(opponentPass).toBeVisible();
-    await opponentPass.click();
-
-    // Accept scores
-    const opponentAccept = opponentPage.getByText("Accept");
-    await expect(opponentAccept).toBeVisible();
-    await opponentAccept.click();
-
-    const accusedAccept = accusedPage.getByText("Accept");
-    await expect(accusedAccept).toBeVisible();
-    await accusedAccept.click();
-
-    // Wait for game to finish
-    await expect(accusedPage.getByText("wins by")).toBeVisible();
+    await resignActiveGame(opponentPage);
+    await expect(accusedPage.getByText("by Resignation")).toBeVisible();
+    await opponentPage.context().close();
     log("Game completed ✓");
 
     // Create a reporter and report the accused user for escaping
@@ -126,11 +107,13 @@ export const cmVoteSuspendUserTest = async (
         createContext,
         reporterUsername,
         "test",
+        undefined,
+        accusedPage.url(),
     );
 
     await withReportCountTracking(reporterPage, testInfo, async (tracker) => {
         // Navigate to the finished game and report
-        await goToFinishedGameUrl(reporterPage, accusedPage.url());
+        await waitForGameViewReady(reporterPage);
 
         await reportUser(
             reporterPage,
@@ -148,24 +131,21 @@ export const cmVoteSuspendUserTest = async (
 
         // Have one CM escalate the report
         log("E2E_CM_VSU_V1 escalating escaping report...");
-        const { seededCMPage: escalatorPage } = await setupSeededCM(createContext, "E2E_CM_VSU_V1");
-
-        // Navigate directly to the report using the captured report number
-        await navigateToReport(escalatorPage, reportNumber);
+        const { seededCMPage: escalatorPage } = await setupSeededCM(
+            createContext,
+            "E2E_CM_VSU_V1",
+            reportNumber,
+        );
 
         await escalatorPage.click('input[value="escalate"]');
         await escalatorPage.fill("#escalation-note", "Repeat offender - needs moderator attention");
 
-        const escalateVoteButton = await expectOGSClickableByName(escalatorPage, /Vote/);
-        await escalateVoteButton.click();
-        await expect(escalateVoteButton).toBeDisabled({ timeout: 10000 });
+        await submitReportVote(escalatorPage);
 
         log("E2E_CM_VSU_V1 escalated the report");
 
         // Keep the accused user logged in and browsing while suspension happens
         log("Accused user staying logged in...");
-        await accusedPage.goto("/");
-        await accusedPage.waitForLoadState("domcontentloaded");
         log("Accused user is browsing ✓");
 
         // Have three CMs vote to suspend the escalated report
@@ -173,31 +153,27 @@ export const cmVoteSuspendUserTest = async (
 
         for (const voter of suspensionVoters) {
             log(`${voter} voting to suspend escaper...`);
-            const { seededCMPage: voterPage } = await setupSeededCM(createContext, voter);
-
-            // Navigate directly to the report using the captured report number
-            await navigateToReport(voterPage, reportNumber);
+            const voterPage =
+                voter === suspensionVoters[0]
+                    ? escalatorPage
+                    : (await setupSeededCM(createContext, voter, reportNumber)).seededCMPage;
+            if (voter === suspensionVoters[0]) {
+                await navigateToReport(voterPage, reportNumber);
+            }
 
             await voterPage.click('input[value="suspend_user"]');
 
-            const suspendVoteButton = await expectOGSClickableByName(voterPage, /Vote/);
-            await suspendVoteButton.click();
-            await expect(suspendVoteButton).toBeDisabled({ timeout: 10000 });
+            await submitReportVote(voterPage);
+            await voterPage.context().close();
 
             log(`${voter} voted to suspend`);
         }
 
-        // Wait for suspension processing
-        log("Waiting for suspension processing...");
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-
         // Verify suspended user sees human-readable ban reason
         log("=== Verifying suspended user sees human-readable ban reason ===");
 
-        // Navigate to home page - should see a banner with appeal link
+        // CM suspension persists the ban without the direct-moderation reload signal.
         await accusedPage.goto("/");
-
-        // Should see a banner with "appeal here" link
         const appealLink = accusedPage.getByRole("link", { name: /appeal here/i });
         await expect(appealLink).toBeVisible({ timeout: 15000 });
         log("Appeal banner visible with 'appeal here' link ✓");
