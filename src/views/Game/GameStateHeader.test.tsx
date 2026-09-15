@@ -137,6 +137,18 @@ describe("GameStateHeader undo help flows", () => {
         expect(triggerFlow).not.toHaveBeenCalledWith("undo-requested-intro");
     });
 
+    test("a request that is already pending when the header mounts triggers only the 'received' flow", () => {
+        const controller = sixMoveGame({ black: ME, white: OPPONENT });
+        controller.goban.engine.undo_requested_by = OPPONENT.id;
+        controller.goban.engine.undo_requested = controller.goban.engine.cur_move.move_number;
+        const triggerFlow = jest.fn();
+        renderHeader(controller, triggerFlow);
+
+        expect(triggerFlow.mock.calls.map(([flow]) => flow)).toEqual([
+            "undo-request-received-intro",
+        ]);
+    });
+
     test("one-move undo: the opponent who just moved gets the 'received' flow on their own turn", () => {
         const controller = new GobanController({
             moves: [
