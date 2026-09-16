@@ -32,8 +32,25 @@
     .auto-score {
         background: var(--shade5);
 
-        a.Player, .game-log-player {
+        a.Player,
+        .game-log-player {
             color: var(--shade1);
         }
+    }
+}
+
+.game-log-pager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0.5rem 0;
+
+    button {
+        min-width: 2rem;
+    }
+
+    .page-indicator {
+        margin: 0 0.5rem;
     }
 }
