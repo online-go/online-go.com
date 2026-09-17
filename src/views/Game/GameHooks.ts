@@ -42,10 +42,9 @@ import {
 export { generateGobanHook, subscribeAllEvents, useViewMode, useZenMode };
 
 /**
- * Score-details popup state shared by the PlayerCards wrapper and the Game
- * view's mobile player cards. Opening the popup temporarily paints
- * the current score onto the board (stashing the move's marks); closing it
- * restores the previous marks and score visibility.
+ * Score-details popup state for the desktop PlayerCards wrapper. Opening the
+ * popup temporarily paints the current score onto the board (stashing the
+ * move's marks); closing it restores the previous marks and score visibility.
  */
 export function useScorePopup(goban: Goban | null): {
     show_score_breakdown: boolean;
