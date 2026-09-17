@@ -41,8 +41,6 @@ Only run the full build once before the final push, since it is slow and not nee
 
 - Run `yarn build` to verify the build succeeds.
 
-Before submitting a PR, remind the author to perform manual testing in both mobile and desktop browsers.
-
 ## Pull Requests
 
 - Follow the repository PR template at `.github/pull_request_template.md` when creating pull requests.
