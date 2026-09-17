@@ -27,6 +27,8 @@
  * 6. Games are created and visible in the round display
  */
 
+import { joinTournament, expectTournamentPlayers } from "@helpers/tournament-utils";
+import { actAndWaitForResponse } from "@helpers/requests";
 import type { CreateContextOptions } from "@helpers";
 
 import { BrowserContext } from "@playwright/test";
@@ -52,15 +54,7 @@ export const tournamentMcMahonStartTest = async ({
         "test",
     );
 
-    const playerUsernames: string[] = [];
-    const playerPages: Awaited<ReturnType<typeof prepareNewUser>>["userPage"][] = [];
-    for (let i = 1; i <= 5; i++) {
-        const username = newTestUsername(`McP${i}`);
-        log(`Creating player ${i}: ${username}`);
-        const { userPage } = await prepareNewUser(createContext, username, "test");
-        playerUsernames.push(username);
-        playerPages.push(userPage);
-    }
+    const playerUsernames = Array.from({ length: 5 }, (_, i) => newTestUsername(`McP${i + 1}`));
 
     // 2. Director creates a group (required for tournament creation)
     log("Director creating a group for the tournament...");
@@ -111,12 +105,8 @@ export const tournamentMcMahonStartTest = async ({
     await expect(boardSizeSelect).toHaveValue("9");
 
     // Set time control to blitz byoyomi so it's a live tournament.
-    // A delay between speed and system changes avoids a race condition in TimeControlPicker
-    // where the system change handler reads tc.speed from stale closure state if React
-    // hasn't re-rendered after the speed change.
     await directorPage.selectOption("#challenge-speed", "blitz");
     await expect(directorPage.locator("#challenge-speed")).toHaveValue("blitz");
-    await directorPage.waitForTimeout(100); // let React re-render before changing time control system
     await directorPage.selectOption("#challenge-time-control", "byoyomi");
     await expect(directorPage.locator("#challenge-time-control")).toHaveValue("byoyomi");
     await expect(directorPage.locator("#challenge-speed")).toHaveValue("blitz");
@@ -164,23 +154,15 @@ export const tournamentMcMahonStartTest = async ({
     // 4. Players join the tournament
     for (let i = 0; i < 5; i++) {
         log(`Player ${i + 1} (${playerUsernames[i]}) joining tournament...`);
-        await playerPages[i].goto(tournamentUrl);
-        await expect(playerPages[i].getByText("E2E McMahon Test").first()).toBeVisible();
+        const { userPage } = await prepareNewUser(createContext, playerUsernames[i], "test");
+        await userPage.goto(tournamentUrl);
+        await expect(userPage.getByText("E2E McMahon Test").first()).toBeVisible();
 
-        const joinButton = await expectOGSClickableByName(playerPages[i], /Join this tournament!/);
-        await joinButton.click();
-
-        // Verify player joined - the "Drop out" button should now be visible
-        await expect(
-            playerPages[i].getByRole("button", { name: /Drop out from tournament/ }),
-        ).toBeVisible({ timeout: 10000 });
+        await joinTournament(userPage, playerUsernames[i]);
         log(`Player ${i + 1} joined successfully`);
     }
 
-    // 5. Director starts the tournament
-    // Refresh the director's page to see updated player list
-    await directorPage.reload();
-    await expect(directorPage.getByText("E2E McMahon Test").first()).toBeVisible();
+    await expectTournamentPlayers(directorPage, playerUsernames);
 
     log("Director starting tournament...");
     const startBtn = await expectOGSClickableByName(directorPage, /Start Tournament Now/);
@@ -193,7 +175,14 @@ export const tournamentMcMahonStartTest = async ({
 
     const okButton = confirmDialog.getByRole("button", { name: "OK" });
     await expect(okButton).toBeVisible();
-    await okButton.click();
+    await actAndWaitForResponse(
+        directorPage,
+        {
+            method: "POST",
+            path: /^\/api\/v1\/tournaments\/\d+\/start$/,
+        },
+        () => okButton.click(),
+    );
 
     // 6. Verify the tournament has started
     // Wait for the results section to appear (indicates tournament started and rounds loaded)

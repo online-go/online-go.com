@@ -42,7 +42,6 @@ import { expect } from "@playwright/test";
 
 import {
     captureReportNumber,
-    navigateToReport,
     newTestUsername,
     prepareNewUser,
     reportPlayerByColor,
@@ -56,8 +55,11 @@ import {
 } from "@helpers/challenge-utils";
 
 import { playMoves, waitForGameViewReady } from "@helpers/game-utils";
-import { expectOGSClickableByName } from "@helpers/matchers";
-import { dismissWarningDialogs, withReportCountTracking } from "@helpers/report-utils";
+import {
+    submitReportVote,
+    dismissWarningDialogs,
+    withReportCountTracking,
+} from "@helpers/report-utils";
 
 const CM_VOTERS = ["E2E_CM_STALL_V1", "E2E_CM_STALL_V2", "E2E_CM_STALL_V3"];
 
@@ -95,7 +97,7 @@ export const cmCallStalledGameWarnsStallerTest = async (
                 periods: "5",
                 color: "black",
             });
-            await acceptDirectChallenge(accusedPage);
+            await acceptDirectChallenge(accusedPage, reporterPage);
 
             const goban = reporterPage.locator(".Goban[data-pointers-bound]");
             await goban.waitFor({ state: "visible" });
@@ -122,11 +124,10 @@ export const cmCallStalledGameWarnsStallerTest = async (
                 const { seededCMPage, seededCMContext } = await setupSeededCM(
                     createContext,
                     cmUser,
+                    reportNumber,
                 );
-                await navigateToReport(seededCMPage, reportNumber);
                 await seededCMPage.locator(`input[value="call_stalled_game_for_black"]`).click();
-                const voteButton = await expectOGSClickableByName(seededCMPage, /Vote$/);
-                await voteButton.click();
+                await submitReportVote(seededCMPage);
                 await seededCMContext.close();
             }
 

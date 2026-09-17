@@ -41,6 +41,7 @@
  * 4. Moderator closes the report to clean up
  */
 
+import { closeReportAsModerator, expectReportAccessDenied } from "@helpers/report-utils";
 import type { CreateContextOptions } from "@helpers";
 
 import { BrowserContext, TestInfo } from "@playwright/test";
@@ -64,7 +65,6 @@ import {
 
 import { playMoves } from "@helpers/game-utils";
 
-import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
 
 import { withReportCountTracking } from "@helpers/report-utils";
@@ -91,13 +91,13 @@ export const cmSandbaggingInProgressGameTest = async (
         boardSize: "9x9",
         speed: "live",
         timeControl: "byoyomi",
-        mainTime: "120",
+        mainTime: "300",
         timePerPeriod: "30",
         periods: "5",
     });
 
     // Other player accepts
-    await acceptDirectChallenge(otherPage);
+    await acceptDirectChallenge(otherPage, accusedPage);
 
     // Wait for the game to start
     const goban = accusedPage.locator(".Goban[data-pointers-bound]");
@@ -143,7 +143,7 @@ export const cmSandbaggingInProgressGameTest = async (
             "E2E_CM_SBES_V1",
         );
 
-        await navigateToReport(cmPage, reportNumber);
+        await expectReportAccessDenied(cmPage, reportNumber);
 
         await expect(
             cmPage.getByText("E2E test: sandbagging report on in-progress game"),
@@ -168,14 +168,7 @@ export const cmSandbaggingInProgressGameTest = async (
         ).toBeVisible({ timeout: 15000 });
 
         // Moderator claims and closes the report to clean up
-        const claimButton = await expectOGSClickableByName(modPage, /Claim/i);
-        await claimButton.click();
-        await modPage.waitForTimeout(1000);
-
-        const closeButton = await expectOGSClickableByName(modPage, /Close as good report/i);
-        await closeButton.click();
-
-        await modPage.waitForTimeout(2000);
+        await closeReportAsModerator(modPage);
 
         await tracker.assertCountReturnedToInitial(reporterPage);
 

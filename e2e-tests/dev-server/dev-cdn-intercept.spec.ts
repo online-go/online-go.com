@@ -27,15 +27,13 @@
  *      override in src/main.tsx / src/lib/cached.ts — textures start loading
  *      from the prod CDN, so local changes appear to do nothing.
  *
- * The first test fetches a fixture file we create at runtime (so no CDN or
- * cache can produce a false positive) and verifies the bytes round-trip.
- * The second seeds localStorage to trigger the cached-config rehydrate path
+ * The HTTP tests read a runtime fixture, a missing path, and a submodule
+ * asset without loading the application. The browser test seeds localStorage
+ * to trigger the cached-config rehydrate path
  * that previously clobbered cdn_release, then asserts the dev-server pin held.
  *
- * This spec is an intentional exception to the "avoid direct API calls" rule
- * in e2e-tests/CLAUDE.md — it is testing dev-server behavior, not user flows,
- * and the in-browser `fetch()` + fixture design is the only reliable way to
- * detect the failure modes above.
+ * Asset serving is tested through Playwright's uncached HTTP client. Only
+ * cached-config rehydration requires a browser and application startup.
  */
 
 import { BrowserContext, expect } from "@playwright/test";
@@ -49,69 +47,44 @@ const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const ASSETS_IMG_DIR = path.resolve(currentDir, "../../assets/img");
 
 ogsTest.describe("@DevServer dev-server /img middleware + cdn_release pin", () => {
-    let fixtureName: string;
-    let fixturePath: string;
-    let expectedSha: string;
-
-    ogsTest.beforeAll(async () => {
+    ogsTest("/img/* serves fresh bytes from assets/img on disk", async ({ request }) => {
         const token = crypto.randomUUID();
-        fixtureName = `__probe_${token}.bin`;
-        fixturePath = path.join(ASSETS_IMG_DIR, fixtureName);
+        const fixtureName = `__probe_${token}.bin`;
+        const fixturePath = path.join(ASSETS_IMG_DIR, fixtureName);
         const bytes = Buffer.from(`OGS-MIDDLEWARE-PROBE-${token}`);
-        expectedSha = crypto.createHash("sha256").update(bytes).digest("hex");
         await fs.writeFile(fixturePath, bytes);
+        try {
+            const response = await request.get(`/img/${fixtureName}`);
+            expect(
+                response.status(),
+                "The development server must read the fixture from this checkout",
+            ).toBe(200);
+            const actualSha = crypto
+                .createHash("sha256")
+                .update(await response.body())
+                .digest("hex");
+            const expectedSha = crypto.createHash("sha256").update(bytes).digest("hex");
+            expect(actualSha).toBe(expectedSha);
+        } finally {
+            await fs.rm(fixturePath, { force: true });
+        }
     });
 
-    ogsTest.afterAll(async () => {
-        await fs.unlink(fixturePath).catch(() => {});
+    ogsTest("/img/* returns 404 on miss (not the SPA fallback)", async ({ request }) => {
+        const response = await request.get(`/img/__does_not_exist_${crypto.randomUUID()}.jpg`);
+        expect(response.status()).toBe(404);
+        expect(response.headers()["content-type"]).toMatch(/text\/plain/);
     });
 
-    ogsTest("/img/* serves fresh bytes from assets/img on disk", async ({ page }) => {
-        await page.goto("/");
-        const result = await page.evaluate(async (name: string) => {
-            const res = await fetch(`/img/${name}`, { cache: "no-store" });
-            const buf = new Uint8Array(await res.arrayBuffer());
-            return { status: res.status, bytes: Array.from(buf) };
-        }, fixtureName);
-
-        expect(result.status).toBe(200);
-        const actualSha = crypto
-            .createHash("sha256")
-            .update(Buffer.from(result.bytes))
-            .digest("hex");
-        expect(actualSha).toBe(expectedSha);
-    });
-
-    ogsTest("/img/* returns 404 on miss (not the SPA fallback)", async ({ page }) => {
-        // If this starts returning 200, someone restored the `next()` path in the
-        // /img middleware and broken textures will silently show as index.html.
-        await page.goto("/");
-        const missed = await page.evaluate(async () => {
-            const res = await fetch(`/img/__does_not_exist_${Date.now()}.jpg`, {
-                cache: "no-store",
-            });
-            return { status: res.status, ct: res.headers.get("content-type") };
-        });
-        expect(missed.status).toBe(404);
-        expect(missed.ct).toMatch(/text\/plain/);
-    });
-
-    ogsTest("/img/* falls back to submodules/goban/assets/img (anime theme)", async ({ page }) => {
-        // anime_*.svg only live in the goban submodule, not in the main repo's
-        // assets/img/. Confirms the middleware searches multiple asset roots.
-        await page.goto("/");
-        const anime = await page.evaluate(async () => {
-            const res = await fetch("/img/anime_board.svg", { cache: "no-store" });
-            return {
-                status: res.status,
-                ct: res.headers.get("content-type"),
-                size: (await res.blob()).size,
-            };
-        });
-        expect(anime.status).toBe(200);
-        expect(anime.ct).toMatch(/svg/);
-        expect(anime.size).toBeGreaterThan(100);
-    });
+    ogsTest(
+        "/img/* falls back to submodules/goban/assets/img (anime theme)",
+        async ({ request }) => {
+            const response = await request.get("/img/anime_board.svg");
+            expect(response.status()).toBe(200);
+            expect(response.headers()["content-type"]).toMatch(/svg/);
+            expect((await response.body()).length).toBeGreaterThan(100);
+        },
+    );
 
     ogsTest(
         "cdn_release stays pinned to the dev server across the cached-config rehydrate path",
@@ -131,6 +104,7 @@ ogsTest.describe("@DevServer dev-server /img middleware + cdn_release pin", () =
                         cdn: "https://cdn.online-go.com/",
                         cdn_host: "cdn.online-go.com",
                         user: { anonymous: true, id: 0, username: "Guest" },
+                        e2e_rehydrate_pending: true,
                     }),
                 );
             });
@@ -138,13 +112,29 @@ ogsTest.describe("@DevServer dev-server /img middleware + cdn_release pin", () =
             // Wait deterministically for the async ui/config refresh to complete —
             // proves the test exercised the full config rehydrate cycle rather than
             // reading a transient value set synchronously by main.tsx.
-            const [_configResponse] = await Promise.all([
+            const [configResponse] = await Promise.all([
                 page.waitForResponse(
-                    (r) => /\/api\/v\d+\/ui\/config/.test(r.url()) && r.status() === 200,
-                    { timeout: 15_000 },
+                    (r) =>
+                        r.request().method() === "GET" &&
+                        /^\/api\/v\d+\/ui\/config$/.test(new URL(r.url()).pathname),
+                    { timeout: 45_000 },
                 ),
                 page.goto("/"),
             ]);
+            expect(configResponse.ok(), `Config response: HTTP ${configResponse.status()}`).toBe(
+                true,
+            );
+            expect(await configResponse.finished()).toBeNull();
+            await page.waitForFunction(() => {
+                const config = (
+                    window as unknown as { data?: { get: (key: string) => unknown } }
+                ).data?.get("cached.config");
+                return (
+                    typeof config === "object" &&
+                    config !== null &&
+                    !("e2e_rehydrate_pending" in config)
+                );
+            });
 
             const { cdnRelease, cdn } = await page.evaluate(() => ({
                 cdnRelease: (

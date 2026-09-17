@@ -61,14 +61,12 @@ export const modWarnFirstTurnEscapersTest = async (
     });
 
     // escaper accepts
-    await acceptDirectChallenge(escaperPage);
+    await acceptDirectChallenge(escaperPage, challengerPage);
 
     // Challenger is black, plays a turn (to get past slow first-move-timer)
     // Wait for the Goban to be visible & definitely ready
     const goban = challengerPage.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });
-
-    await challengerPage.waitForTimeout(3000);
 
     await clickInTheMiddle(challengerPage);
 
@@ -80,7 +78,7 @@ export const modWarnFirstTurnEscapersTest = async (
         .locator(
             '.AccountWarningAck .canned-message:has-text("We\'ve noticed that the other player left game")',
         )
-        .waitFor();
+        .waitFor({ state: "visible", timeout: 90_000 });
     await challengerPage.locator(".AccountWarningAck button.primary").click();
 
     // And escaper should have warning...

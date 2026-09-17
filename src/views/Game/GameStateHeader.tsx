@@ -23,9 +23,9 @@ import { useUser } from "@/lib/hooks";
 import { useGobanController } from "./goban_context";
 import {
     useAnnulled,
+    useCanAnswerUndoRequest,
     useMode,
     usePhase,
-    usePlayerToMove,
     useShowTitle,
     useShowUndoRequested,
     useTitle,
@@ -55,7 +55,7 @@ export function GameStateHeader(): React.ReactElement | null {
     const show_undo_requested = useShowUndoRequested(goban);
     const winner = useWinner(goban);
     const annulled = useAnnulled(goban_controller);
-    const this_users_turn = usePlayerToMove(goban) === user.id;
+    const can_answer_undo = useCanAnswerUndoRequest(goban);
 
     const { registerTargetItem, triggerFlow, signalUsed } = React.useContext(DynamicHelp.Api);
     const { ref: undo_message_ref, active: undoMessageActive } =
@@ -72,14 +72,16 @@ export function GameStateHeader(): React.ReactElement | null {
             signalUsed("accept-undo-button");
         }
 
+        // Pick the flow by who can answer the request, not by whose turn it
+        // is: a two-move undo is requested by the player to move.
         if (show_undo_requested && undoMessageActive()) {
-            if (this_users_turn) {
+            if (can_answer_undo) {
                 triggerFlow("undo-request-received-intro");
             } else {
                 triggerFlow("undo-requested-intro");
             }
         }
-    }, [show_undo_requested, undo_message_ref, this_users_turn]);
+    }, [show_undo_requested, undo_message_ref, can_answer_undo]);
 
     const undo_requester_name = React.useMemo(() => {
         if (!show_undo_requested) {

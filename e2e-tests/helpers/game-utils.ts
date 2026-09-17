@@ -11,35 +11,60 @@
 
 import { Locator, Page } from "@playwright/test";
 import { expect } from "@playwright/test";
+import { expectOGSClickableByName } from "./matchers";
 
 type BoardSize = "19x19" | "13x13" | "9x9";
 
+/** The live finish event precedes the background task that saves game metadata. */
+export async function waitForGameFinished(page: Page): Promise<void> {
+    const gameId = new URL(page.url()).pathname.match(/^\/game\/(\d+)/)?.[1];
+    expect(gameId, "Expected a game page when waiting for its saved result").toBeDefined();
+    await expect
+        .poll(
+            async () => {
+                const response = await page.request.get(`/api/v1/games/${gameId}`);
+                await expect(response).toBeOK();
+                const game: { ended: string | null } = await response.json();
+                return game.ended;
+            },
+            { message: `Game ${gameId} must be saved before reading its result`, timeout: 30_000 },
+        )
+        .toBeTruthy();
+}
+
+/** Finish a game through passing and scoring, starting on black's turn. */
+export async function passAndScoreGame(blackPage: Page, whitePage: Page): Promise<void> {
+    for (const page of [blackPage, whitePage]) {
+        await expect(page.getByText(/^Your move(?: - opponent passed)?$/)).toBeVisible();
+        await (await expectOGSClickableByName(page, /^Pass$/)).click();
+    }
+
+    await Promise.all(
+        [blackPage, whitePage].map(async (page) => {
+            await expect(page.locator(".stone-removal-buttons")).toBeVisible();
+            // Accept becomes enabled after two seconds even if scoring is still running.
+            await expect(page.locator(".autoscoring-in-progress")).toBeHidden({ timeout: 35000 });
+        }),
+    );
+    await (await expectOGSClickableByName(whitePage, /^Accept removed stones/)).click();
+    await expect(blackPage.locator(".white .stone-removal-accepted.accepted")).toBeVisible();
+    await (await expectOGSClickableByName(blackPage, /^Accept removed stones/)).click();
+    await Promise.all(
+        [blackPage, whitePage].map((page) => expect(page.getByText("wins by")).toBeVisible()),
+    );
+    await waitForGameFinished(blackPage);
+}
+
 /**
- * Wait for the Game view to be fully painted and stable.
- *
- * The Game view renders progressively: the Goban becomes interactive
- * (`.Goban[data-pointers-bound]`) and `a.Player` links flip
- * `data-ready=true` early, but `.player-icon-container` content (avatar,
- * flag, chat presence) and the `.AIReview` div mount later as their data
- * arrives. Either of those late mounts can shift the layout while a
- * PlayerDetails popover is in the middle of opening, dismissing it and
- * causing the Report button never to be found.
- *
- * Call this before any interaction that opens a popover or dialog from the
- * Game side-panel, so the layout is stable by the time the click lands.
- *
- * Defaults to expecting two seated players (which is what every CM e2e
- * test produces). `aiReviewExpected` defaults to true — on finished 9x9 /
- * 13x13 / 19x19 games the FragAIReview component mounts; if you're calling
- * this in a context where AI Review won't render (e.g. an in-progress game
- * or an exotic board size), pass `aiReviewExpected: false`.
+ * Wait for the board and seated player controls. AI review is optional and can
+ * stay empty when no review exists; tests of AI review must request it explicitly.
  */
 export const waitForGameViewReady = async (
     page: Page,
     options: { expectedPlayerCount?: number; aiReviewExpected?: boolean } = {},
 ): Promise<void> => {
     const expectedPlayers = options.expectedPlayerCount ?? 2;
-    const aiReviewExpected = options.aiReviewExpected ?? true;
+    const aiReviewExpected = options.aiReviewExpected ?? false;
 
     // Goban is interactive
     await page.locator(".Goban[data-pointers-bound]").waitFor({ state: "visible" });
@@ -65,22 +90,8 @@ export const waitForGameViewReady = async (
 };
 
 export const clickInTheMiddle = async (page: Page) => {
-    // Wait for the Goban to be visible
     const goban = page.locator(".Goban[data-pointers-bound]");
-    await goban.waitFor({ state: "visible" });
-
-    // Get the bounding box of the Goban
-    const box = await goban.boundingBox();
-    if (!box) {
-        throw new Error("Could not get Goban dimensions");
-    }
-
-    // Calculate center point
-    const centerX = box.x + box.width / 2;
-    const centerY = box.y + box.height / 2;
-
-    // Click in the center of the Goban
-    await page.mouse.click(centerX, centerY);
+    await goban.click();
 };
 
 export const clickOnGobanIntersection = async (
@@ -131,7 +142,9 @@ export const clickOnGobanIntersection = async (
     const row = sizeNumber - rowNumber;
 
     const goban = gobanLocator ?? page.locator(".Goban[data-pointers-bound]");
-    await goban.waitFor({ state: "visible" });
+    // A click waits for layout stability; measure only after that wait, or its
+    // fixed pixel offset can land on another intersection after a resize.
+    await goban.click({ trial: true });
     const box = await goban.boundingBox();
     if (!box) {
         throw new Error("Could not get Goban dimensions");
@@ -140,10 +153,10 @@ export const clickOnGobanIntersection = async (
     // Calculate margin and cell size
     const margin = (box.width * marginFactor[boardSize]) / (sizeNumber + 1);
     const cellSize = (box.width - 2 * margin) / (sizeNumber - 1);
-    const x = box.x + margin + col * cellSize;
-    const y = box.y + margin + row * cellSize;
+    const x = margin + col * cellSize;
+    const y = margin + row * cellSize;
 
-    await page.mouse.click(x, y);
+    await goban.click({ position: { x, y } });
 };
 
 // This expects the board to be ready for the first player to move
@@ -157,32 +170,32 @@ export const playMoves = async (
     handicap: number = 0, // Japanese
 ) => {
     for (let i = 0; i < moves.length; i++) {
-        // Determine which player should move based on handicap
-        let page;
-        let expectedColor;
-        if (handicap > 1) {
-            // White moves first after handicap stones are placed automatically
-            page = i % 2 === 0 ? white : black;
-            expectedColor = i % 2 === 0 ? "White" : "Black";
-        } else {
-            // Black moves first (no handicap or handicap = 1)
-            page = i % 2 === 0 ? black : white;
-            expectedColor = i % 2 === 0 ? "Black" : "White";
-        }
-        // Wait for either "Your move" or "{Color} to move" to appear
-        // "Your move" appears when player_id is set correctly
-        // "{Color} to move" appears when player_id isn't set or during initialization
-        const yourMoveText = page.getByText("Your move", { exact: true });
-        const colorMoveText = page.getByText(`${expectedColor} to move`, { exact: true });
-        await expect(yourMoveText.or(colorMoveText)).toBeVisible();
+        const firstPlayer = handicap > 1 ? white : black;
+        const secondPlayer = handicap > 1 ? black : white;
+        const page = i % 2 === 0 ? firstPlayer : secondPlayer;
+        await expect(page.getByText("Your move", { exact: true })).toBeVisible();
+        const moveNumber = page.locator(".MoveNumberControl-move-number");
+        const previousMove = await moveNumber.innerText();
+        const nextMove = Number(previousMove.match(/\d+$/)?.[0]) + 1;
+        expect(Number.isInteger(nextMove)).toBe(true);
         await clickOnGobanIntersection(page, moves[i], boardSize);
-        await page.waitForTimeout(delay);
+        await Promise.all(
+            [black, white].map((player) =>
+                expect(player.locator(".MoveNumberControl-move-number")).toHaveText(
+                    `Move ${nextMove}`,
+                ),
+            ),
+        );
+        if (delay > 0) {
+            await page.waitForTimeout(delay);
+        }
     }
 };
 
 export const resignActiveGame = async (page: Page) => {
     const resign = page.locator(".play-buttons .resign-button");
     await expect(resign).toBeVisible();
+    await expect(resign).toHaveText("Resign");
     await resign.click();
 
     // Handle the confirmation dialog
@@ -196,6 +209,7 @@ export const resignActiveGame = async (page: Page) => {
     // Verify the resignation was successful
     const resignationText = page.getByText("by Resignation");
     await expect(resignationText).toBeVisible();
+    await waitForGameFinished(page);
 };
 
 // Cancels a game that is still within its first moves. The same button becomes
@@ -223,6 +237,7 @@ export const cancelActiveGame = async (page: Page) => {
     // wait for the outcome text instead, which does update live.
     await expect(page.getByText(/wins by Cancellation/)).toBeVisible({ timeout: 15000 });
     await expect(cancel).not.toBeVisible();
+    await waitForGameFinished(page);
 };
 
 // Navigates the page to the user's currently-active game via the home page's

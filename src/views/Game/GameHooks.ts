@@ -42,10 +42,9 @@ import {
 export { generateGobanHook, subscribeAllEvents, useViewMode, useZenMode };
 
 /**
- * Score-details popup state shared by the PlayerCards wrapper and the Game
- * view's mobile player cards. Opening the popup temporarily paints
- * the current score onto the board (stashing the move's marks); closing it
- * restores the previous marks and score visibility.
+ * Score-details popup state for the desktop PlayerCards wrapper. Opening the
+ * popup temporarily paints the current score onto the board (stashing the
+ * move's marks); closing it restores the previous marks and score visibility.
  */
 export function useScorePopup(goban: Goban | null): {
     show_score_breakdown: boolean;
@@ -229,7 +228,31 @@ export function useCanAnswerUndoRequest(goban: Goban): boolean {
     const [in_pushed_analysis, set_in_pushed_analysis] = React.useState(
         goban_controller.in_pushed_analysis,
     );
-    const [can_answer, set_can_answer] = React.useState(false);
+    const readCanAnswer = React.useCallback((): boolean => {
+        if (in_pushed_analysis || user_id === undefined) {
+            return false;
+        }
+
+        if (!goban.engine.undo_requested || !goban.engine.isParticipant(user_id)) {
+            return false;
+        }
+
+        const requested_by = goban.engine.undo_requested_by;
+        if (requested_by !== undefined) {
+            return requested_by !== user_id;
+        }
+
+        // Older games don't record who asked, so fall back to "the side
+        // that would be undoing its own move can't be the requester".
+        return (
+            goban.engine.playerToMove() === user_id ||
+            (goban.submit_move != null && goban.engine.playerNotToMove() === user_id)
+        );
+    }, [goban, in_pushed_analysis, user_id]);
+
+    // Read the initial value synchronously so a header that mounts with a
+    // request already pending does not render one frame as "cannot answer".
+    const [can_answer, set_can_answer] = React.useState(readCanAnswer);
 
     React.useEffect(() => {
         goban_controller.on("in_pushed_analysis", set_in_pushed_analysis);
@@ -239,30 +262,7 @@ export function useCanAnswerUndoRequest(goban: Goban): boolean {
     }, [goban_controller]);
 
     React.useEffect(() => {
-        const syncCanAnswer = () => {
-            if (in_pushed_analysis || user_id === undefined) {
-                set_can_answer(false);
-                return;
-            }
-
-            if (!goban.engine.undo_requested || !goban.engine.isParticipant(user_id)) {
-                set_can_answer(false);
-                return;
-            }
-
-            const requested_by = goban.engine.undo_requested_by;
-            if (requested_by !== undefined) {
-                set_can_answer(requested_by !== user_id);
-                return;
-            }
-
-            // Older games don't record who asked, so fall back to "the side
-            // that would be undoing its own move can't be the requester".
-            set_can_answer(
-                goban.engine.playerToMove() === user_id ||
-                    (goban.submit_move != null && goban.engine.playerNotToMove() === user_id),
-            );
-        };
+        const syncCanAnswer = () => set_can_answer(readCanAnswer());
         syncCanAnswer();
 
         return subscribeAllEvents(
@@ -270,7 +270,7 @@ export function useCanAnswerUndoRequest(goban: Goban): boolean {
             ["cur_move", "submit_move", "undo_requested", "undo_canceled"],
             syncCanAnswer,
         );
-    }, [goban, in_pushed_analysis, user_id]);
+    }, [goban, readCanAnswer]);
 
     const show_undo_requested = useShowUndoRequested(goban);
 

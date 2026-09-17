@@ -39,7 +39,6 @@ import { BrowserContext, TestInfo } from "@playwright/test";
 import {
     captureReportNumber,
     goToFinishedGameUrl,
-    navigateToReport,
     newTestUsername,
     prepareNewUser,
     reportUser,
@@ -54,10 +53,9 @@ import {
 
 import { playMoves, resignActiveGame } from "@helpers/game-utils";
 
-import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
 
-import { withReportCountTracking } from "@helpers/report-utils";
+import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
 
 export const cmVoteNoSandbaggingTest = async (
     {
@@ -78,15 +76,15 @@ export const cmVoteNoSandbaggingTest = async (
         ...defaultChallengeSettings,
         gameName: "E2E NOSB Game",
         boardSize: "9x9",
-        speed: "blitz",
+        speed: "live",
         timeControl: "byoyomi",
-        mainTime: "2",
-        timePerPeriod: "2",
-        periods: "1",
+        mainTime: "300",
+        timePerPeriod: "30",
+        periods: "5",
     });
 
     // Other player accepts
-    await acceptDirectChallenge(otherPage);
+    await acceptDirectChallenge(otherPage, accusedPage);
 
     // Wait for the game to start
     const goban = accusedPage.locator(".Goban[data-pointers-bound]");
@@ -103,6 +101,7 @@ export const cmVoteNoSandbaggingTest = async (
 
     // Capture the game URL for the reporter to navigate to
     const gameUrl = accusedPage.url();
+    await Promise.all([accusedPage.context().close(), otherPage.context().close()]);
 
     // Create the reporter
     const { userPage: reporterPage } = await prepareNewUser(
@@ -133,17 +132,12 @@ export const cmVoteNoSandbaggingTest = async (
         // All 3 CMs vote that there's no thrown game evident
         const cmVoters = ["E2E_CM_NOSB_V1", "E2E_CM_NOSB_V2", "E2E_CM_NOSB_V3"];
 
-        const cmContexts = [];
         for (const cmUser of cmVoters) {
             const { seededCMPage: cmPage, seededCMContext: cmContext } = await setupSeededCM(
                 createContext,
                 cmUser,
+                reportNumber,
             );
-
-            cmContexts.push({ cmPage, cmContext }); // keep them alive for the duration of the test
-
-            // Navigate directly to the report using the captured report number
-            await navigateToReport(cmPage, reportNumber);
 
             // Verify the report type is shown as "Thrown Game" (converted from sandbagging)
             const reportTypeSelector = cmPage.locator(".report-type-selector");
@@ -157,13 +151,11 @@ export const cmVoteNoSandbaggingTest = async (
             // Select the "no thrown game evident - inform the reporter" option
             await cmPage.locator('input[value="no_thrown_game"]').click();
 
-            const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
-            await voteButton.click();
+            await submitReportVote(cmPage);
+            await cmContext.close();
         }
 
         // After all 3 CMs vote, the reporter should receive an acknowledgement
-        // Wait a moment for the acknowledgement to be generated
-        await reporterPage.waitForTimeout(3000);
 
         // The reporter should see the "no thrown game evident" acknowledgement
         await reporterPage.goto("/");

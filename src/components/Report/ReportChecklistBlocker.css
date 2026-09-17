@@ -1,0 +1,15 @@
+/* --reject is OGS's red in both themes (#ff410f light, #a62705 dark).
+ * Deliberately NOT --danger, which is orange in this codebase. */
+.ReportChecklistBlocker {
+    border: 1px solid var(--shade4);
+    border-left: 3px solid var(--reject);
+    border-radius: 0.25rem;
+    padding: 0.6rem 0.75rem;
+    margin: 0 0 0.75rem;
+
+    .reason {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        white-space: pre-line;
+    }
+}

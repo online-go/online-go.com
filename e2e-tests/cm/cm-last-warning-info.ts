@@ -52,7 +52,6 @@ import { BrowserContext, TestInfo } from "@playwright/test";
 import {
     captureReportNumber,
     goToFinishedGameUrl,
-    navigateToReport,
     newTestUsername,
     prepareNewUser,
     reportUser,
@@ -67,20 +66,19 @@ import {
 
 import { playMoves, resignActiveGame } from "@helpers/game-utils";
 
-import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
 
-import { withReportCountTracking } from "@helpers/report-utils";
+import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
 
 const BLITZ_9X9_SETTINGS = {
     ...defaultChallengeSettings,
     gameName: "E2E LWARN Game",
     boardSize: "9x9" as const,
-    speed: "blitz" as const,
+    speed: "live" as const,
     timeControl: "byoyomi" as const,
-    mainTime: "2",
-    timePerPeriod: "2",
-    periods: "1",
+    mainTime: "300",
+    timePerPeriod: "30",
+    periods: "5",
 };
 
 const MOVES_9X9 = ["D5", "E5", "D6", "E6", "D7", "E7", "D8", "E8"];
@@ -96,7 +94,7 @@ async function playAndResignGame(
     opponentUsername: string,
 ): Promise<string> {
     await createDirectChallenge(challengerPage, opponentUsername, BLITZ_9X9_SETTINGS);
-    await acceptDirectChallenge(acceptorPage);
+    await acceptDirectChallenge(acceptorPage, challengerPage);
 
     // Wait for the game to start
     const goban = challengerPage.locator(".Goban[data-pointers-bound]");
@@ -166,8 +164,7 @@ export const cmLastWarningInfoTest = async (
 
             // First CM checks that "no previous warnings" is shown on Report A
             const { seededCMPage: firstCMPage, seededCMContext: firstCMContext } =
-                await setupSeededCM(createContext, "E2E_CM_LWARN_V1");
-            await navigateToReport(firstCMPage, reportANumber);
+                await setupSeededCM(createContext, "E2E_CM_LWARN_V1", reportANumber);
 
             const noWarningsInfo = firstCMPage.locator(".last-warning-info");
             await expect(noWarningsInfo).toBeVisible({ timeout: 15000 });
@@ -186,8 +183,8 @@ export const cmLastWarningInfoTest = async (
                     ({ seededCMPage: cmPage, seededCMContext: cmContext } = await setupSeededCM(
                         createContext,
                         cmUser,
+                        reportANumber,
                     ));
-                    await navigateToReport(cmPage, reportANumber);
                 }
 
                 // Verify the report type was converted to "Thrown Game"
@@ -201,8 +198,7 @@ export const cmLastWarningInfoTest = async (
                 ).toBeVisible();
 
                 await cmPage.locator('input[value="warn_thrown_game"]').click();
-                const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
-                await voteButton.click();
+                await submitReportVote(cmPage);
                 await cmContext.close();
             }
 
@@ -259,7 +255,7 @@ export const cmLastWarningInfoTest = async (
 
             // Game 2: opponent challenges accused, opponent resigns
             await createDirectChallenge(opponentPage, accusedUsername, BLITZ_9X9_SETTINGS);
-            await acceptDirectChallenge(accusedPage);
+            await acceptDirectChallenge(accusedPage, opponentPage);
 
             const goban2 = opponentPage.locator(".Goban[data-pointers-bound]");
             await goban2.waitFor({ state: "visible" });
@@ -269,7 +265,7 @@ export const cmLastWarningInfoTest = async (
 
             // Game 3: opponent challenges accused again, opponent resigns
             await createDirectChallenge(opponentPage, accusedUsername, BLITZ_9X9_SETTINGS);
-            await acceptDirectChallenge(accusedPage);
+            await acceptDirectChallenge(accusedPage, opponentPage);
 
             const goban3 = opponentPage.locator(".Goban[data-pointers-bound]");
             await goban3.waitFor({ state: "visible" });
@@ -301,9 +297,7 @@ export const cmLastWarningInfoTest = async (
 
             // A CM navigates to the new report and checks for warning info
             const { seededCMPage: verifierPage, seededCMContext: verifierContext } =
-                await setupSeededCM(createContext, "E2E_CM_LWARN_V1");
-
-            await navigateToReport(verifierPage, reportBNumber);
+                await setupSeededCM(createContext, "E2E_CM_LWARN_V1", reportBNumber);
 
             // The "Last warned" info should be visible
             const lastWarningInfo = verifierPage.locator(".last-warning-info");
@@ -325,8 +319,7 @@ export const cmLastWarningInfoTest = async (
 
             // V1 is already on the report as verifierPage — vote
             await verifierPage.locator('input[value="warn_thrown_game"]').click();
-            const v1VoteButton = await expectOGSClickableByName(verifierPage, /Vote$/);
-            await v1VoteButton.click();
+            await submitReportVote(verifierPage);
             await verifierContext.close();
 
             // V2 and V3 vote
@@ -334,11 +327,10 @@ export const cmLastWarningInfoTest = async (
                 const { seededCMPage: cmPage, seededCMContext: cmContext } = await setupSeededCM(
                     createContext,
                     cmUser,
+                    reportBNumber,
                 );
-                await navigateToReport(cmPage, reportBNumber);
                 await cmPage.locator('input[value="warn_thrown_game"]').click();
-                const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
-                await voteButton.click();
+                await submitReportVote(cmPage);
                 await cmContext.close();
             }
 

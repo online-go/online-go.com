@@ -26,7 +26,7 @@ import {
     createDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
-import { playMoves } from "@helpers/game-utils";
+import { passAndScoreGame, playMoves } from "@helpers/game-utils";
 
 export const basicScoringTest = async ({
     createContext,
@@ -53,13 +53,13 @@ export const basicScoringTest = async ({
         boardSize: "9x9",
         speed: "live",
         timeControl: "byoyomi",
-        mainTime: "45",
-        timePerPeriod: "10",
-        periods: "1",
+        mainTime: "300",
+        timePerPeriod: "30",
+        periods: "5",
     });
 
     // escaper accepts
-    await acceptDirectChallenge(acceptorPage);
+    await acceptDirectChallenge(acceptorPage, challengerPage);
 
     // Challenger is black
     // Wait for the Goban to be visible & definitely ready
@@ -98,29 +98,5 @@ export const basicScoringTest = async ({
 
     await playMoves(challengerPage, acceptorPage, moves, "9x9");
 
-    const challengerPass = challengerPage.getByText("Pass", { exact: true });
-    await expect(challengerPass).toBeVisible();
-
-    await challengerPass.click();
-
-    const acceptorPass = acceptorPage.getByText("Pass", { exact: true });
-    await expect(acceptorPass).toBeVisible();
-
-    await acceptorPass.click();
-
-    const acceptorAccept = acceptorPage.getByText("Accept");
-    await expect(acceptorAccept).toBeVisible();
-
-    await acceptorAccept.click();
-
-    const challengerAccept = challengerPage.getByText("Accept");
-    await expect(challengerAccept).toBeVisible();
-
-    await challengerAccept.click();
-
-    const acceptorFinished = acceptorPage.getByText("wins by");
-    await expect(acceptorFinished).toBeVisible();
-
-    const challengerFinished = challengerPage.getByText("wins by");
-    await expect(challengerFinished).toBeVisible();
+    await passAndScoreGame(challengerPage, acceptorPage);
 };

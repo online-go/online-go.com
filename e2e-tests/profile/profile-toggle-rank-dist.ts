@@ -45,7 +45,15 @@ export const profileRankDistributionGraphToggleTest = async ({
 
     await expect(userPage.locator(".RatingsChartDistribution")).toBeVisible();
 
+    await userPage.reload();
+    await expect(userPage.locator(".ratings-container .toggle-container")).toContainText("▼");
+    await expect(userPage.locator(".RatingsChartDistribution")).toBeVisible();
+
     await userPage.locator(".ratings-container .toggle-container").click();
 
+    await expect(userPage.locator(".RatingsChartDistribution")).toBeHidden();
+
+    await userPage.reload();
+    await expect(userPage.locator(".ratings-container .toggle-container")).toContainText("▶");
     await expect(userPage.locator(".RatingsChartDistribution")).toBeHidden();
 };

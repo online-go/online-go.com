@@ -44,7 +44,6 @@ import {
     useOfficialMoveNumber,
     usePauseControl,
     usePhase,
-    useScorePopup,
     useUserIsLivePlayerToMove,
     useUserIsParticipant,
     useViewMode,
@@ -132,9 +131,6 @@ export function Game(): React.ReactElement | null {
     const [simul_black, set_simul_black] = React.useState<boolean | null>(null);
     const [simul_white, set_simul_white] = React.useState<boolean | null>(null);
     const zen_mode = useZenMode(goban_controller.current);
-    // Score-details popup for the mobile player cards (the desktop
-    // layout's PlayerCards wrapper manages its own instance).
-    const { show_score_breakdown, toggleScorePopup } = useScorePopup(goban);
     const user = useUser();
     const user_is_player = useUserIsParticipant(goban);
     const mode = useMode(goban);
@@ -773,9 +769,7 @@ export function Game(): React.ReactElement | null {
             }
         };
         const onLabelPosition = (v: LabelPosition) => current_goban()?.setLabelPosition(v);
-        // useData() re-emits its key with an unchanged value whenever a
-        // component using it mounts (e.g. opening the Settings popover),
-        // so only rebuild when the renderer selection actually changed.
+        // Repeated data notifications must not rebuild an unchanged renderer.
         let last_renderer = data.get("experiments.canvas");
         const onRendererChange = (v?: string) => {
             if (v !== last_renderer) {
@@ -1159,8 +1153,6 @@ export function Game(): React.ReactElement | null {
             goban={goban!}
             historical={color === "black" ? historical_black : historical_white}
             estimating_score={estimating_score}
-            show_score_breakdown={show_score_breakdown}
-            onScoreClick={toggleScorePopup}
             zen_mode={zen_mode}
         />
     );

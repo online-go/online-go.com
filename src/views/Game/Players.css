@@ -372,7 +372,10 @@
         justify-content: space-between;
         position: relative;
         user-select: none;
-        cursor: help;
+
+        &.has-score-details {
+            cursor: help;
+        }
 
         .score-details {
             position: absolute;
