@@ -46,7 +46,7 @@ test:
 e2e:
 	docker exec -e E2E_MODERATOR_PASSWORD="$${E2E_MODERATOR_PASSWORD:-xyzzy}" $${E2E_WORKERS:+-e E2E_WORKERS} ogs_ui_1 yarn test:e2e:parallel
 
-GOBAN_SOCKET_WORKER_VERSION=0.2
+GOBAN_SOCKET_WORKER_VERSION=0.3
 update-worker: build
 	cp dist/modules/GobanSocketWorkerScript.js ../ogs-node/src/GobanSocketWorker/GobanSocketWorkerScript-$(GOBAN_SOCKET_WORKER_VERSION).js
 
