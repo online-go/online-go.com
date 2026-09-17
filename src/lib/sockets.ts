@@ -405,13 +405,15 @@ if (typeof document !== "undefined") {
  * sleep or a return from the background. */
 function reportMessageParseError(
     socket_name: string,
+    route: string,
+    times_connected: number,
     details: GobanSocketMessageParseErrorDetails,
 ) {
     const now = Date.now();
     Sentry.captureException(new Error("Error parsing socket message"), {
         tags: {
             socket: socket_name,
-            route: route_name,
+            route,
         },
         extra: {
             ...details,
@@ -419,13 +421,22 @@ function reportMessageParseError(
             ms_since_hidden: last_hidden_at === null ? -1 : now - last_hidden_at,
             ms_since_visible: last_visible_at === null ? -1 : now - last_visible_at,
             ms_since_page_load: Math.round(performance.now()),
-            times_connected: connection_count,
+            times_connected,
         },
     });
 }
 
-socket.on("message_parse_error", (details) => reportMessageParseError("main", details));
-ai_socket.on("message_parse_error", (details) => reportMessageParseError("ai", details));
+let ai_connection_count = 0;
+ai_socket.on("connect", () => {
+    ai_connection_count++;
+});
+
+socket.on("message_parse_error", (details) =>
+    reportMessageParseError("main", route_name, connection_count, details),
+);
+ai_socket.on("message_parse_error", (details) =>
+    reportMessageParseError("ai", ai_host, ai_connection_count, details),
+);
 
 /* Returns the time in ms since the last time a connection was established to
  * the server.
