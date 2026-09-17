@@ -20,7 +20,7 @@ import { PlayerCard } from "./PlayerCards";
 import { CompactTurnStones } from "./CompactTurnStones";
 import {
     useColorToMoveOnOfficialBranch,
-    useCurrentMoveNumber,
+    useOfficialMoveNumber,
     useScorePopup,
     useZenMode,
 } from "./GameHooks";
@@ -52,7 +52,7 @@ export function CompactPlayerHeader({
     const zen_mode = useZenMode(goban_controller);
     const { show_score_breakdown, toggleScorePopup } = useScorePopup(goban);
     const to_move = useColorToMoveOnOfficialBranch(goban);
-    const move_number = useCurrentMoveNumber(goban);
+    const move_number = useOfficialMoveNumber(goban);
 
     const card = (color: "black" | "white") => (
         <PlayerCard

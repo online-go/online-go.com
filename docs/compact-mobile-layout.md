@@ -44,9 +44,11 @@ holds across games and devices.
   number in the middle.
 - `src/views/Game/Game.tsx` — picks the strip over the pair of cards for
   the `aboveBoard` slot, and drops the lower card from `belowBoard`.
-- `useColorToMoveOnOfficialBranch` in `src/views/Game/GameHooks.ts` — which
-  stone goes on top. It follows the official branch, so browsing the move
-  tree does not move the stones, and it answers null once the game is over.
+- `useColorToMoveOnOfficialBranch` and `useOfficialMoveNumber` in
+  `src/views/Game/GameHooks.ts` — which stone goes on top, and the move
+  number under the stones. Both follow the official branch, so browsing the
+  move tree changes neither. The colour hook answers null once the game is
+  over.
 
 `CompactPlayerHeader.css` overrides the player-card rules in
 `Players.css`. Its selectors are one class deeper than the rules they

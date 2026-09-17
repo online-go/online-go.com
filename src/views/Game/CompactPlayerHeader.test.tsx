@@ -21,7 +21,7 @@ import "@/lib/data";
 import "@/lib/sockets";
 
 import * as React from "react";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { BrowserRouter as Router } from "react-router-dom";
 import { GobanController } from "@/lib/GobanController";
@@ -38,7 +38,7 @@ function renderHeader(config: Record<string, unknown>) {
         ...config,
     } as ConstructorParameters<typeof GobanController>[0]);
 
-    return render(
+    const result = render(
         <Router>
             <GobanControllerContext.Provider value={controller}>
                 <CompactPlayerHeader
@@ -49,6 +49,7 @@ function renderHeader(config: Record<string, unknown>) {
             </GobanControllerContext.Provider>
         </Router>,
     );
+    return { ...result, controller };
 }
 
 describe("CompactPlayerHeader", () => {
@@ -76,7 +77,7 @@ describe("CompactPlayerHeader", () => {
         expect(screen.getByTestId("compact-stone-white")).not.toHaveClass("on-top");
     });
 
-    test("shows the current move number", () => {
+    test("shows the live move number", () => {
         renderHeader({
             moves: [
                 [3, 3],
@@ -84,5 +85,22 @@ describe("CompactPlayerHeader", () => {
             ],
         });
         expect(screen.getByText("2")).toBeInTheDocument();
+    });
+
+    test("keeps the live move number while the move tree is browsed", () => {
+        const { controller } = renderHeader({
+            moves: [
+                [3, 3],
+                [15, 15],
+                [3, 15],
+            ],
+        });
+        act(() => {
+            controller.goban.showPrevious();
+            controller.goban.showPrevious();
+        });
+        expect(controller.goban.engine.cur_move.move_number).toBe(1);
+        expect(screen.getByText("3")).toBeInTheDocument();
+        expect(screen.getByTestId("compact-stone-white")).toHaveClass("on-top");
     });
 });
