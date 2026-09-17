@@ -779,9 +779,7 @@ export function Game(): React.ReactElement | null {
             }
         };
         const onLabelPosition = (v: LabelPosition) => current_goban()?.setLabelPosition(v);
-        // useData() re-emits its key with an unchanged value whenever a
-        // component using it mounts (e.g. opening the Settings popover),
-        // so only rebuild when the renderer selection actually changed.
+        // Repeated data notifications must not rebuild an unchanged renderer.
         let last_renderer = data.get("experiments.canvas");
         const onRendererChange = (v?: string) => {
             if (v !== last_renderer) {

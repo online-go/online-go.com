@@ -47,6 +47,7 @@ import {
 } from "@helpers/challenge-utils";
 import { clickOnGobanIntersection, playMoves } from "@helpers/game-utils";
 import { log } from "@helpers/logger";
+import { expectOGSClickableByName } from "@helpers/matchers";
 
 export const gameLogScoringAreasTest = async (
     {
@@ -90,7 +91,7 @@ export const gameLogScoringAreasTest = async (
     log("Challenge created ✓");
 
     log("Accepting challenge...");
-    await acceptDirectChallenge(acceptorPage);
+    await acceptDirectChallenge(acceptorPage, challengerPage);
     log("Challenge accepted ✓");
 
     // 3. Wait for game to be ready
@@ -207,35 +208,16 @@ export const gameLogScoringAreasTest = async (
     await expect(modPage.locator(".Game")).toBeVisible({ timeout: 15000 });
     log("Game page loaded ✓");
 
-    // 10. Open GameLog modal via the dock
-    log("Opening GameLog modal via dock...");
-    const dock = modPage.locator(".Dock");
-    await dock.hover();
-    await modPage.waitForTimeout(500);
-
-    await modPage.evaluate(() => {
-        const logLink = Array.from(document.querySelectorAll(".Dock a")).find((el) =>
-            el.textContent?.includes("Log"),
-        ) as HTMLElement;
-        if (logLink) {
-            logLink.click();
-        } else {
-            throw new Error("Log dock link not found");
-        }
-    });
-    await modPage.waitForTimeout(1000);
+    // 10. Open GameLog modal via the mod tools panel
+    log("Opening GameLog modal...");
+    const gameLogButton = await expectOGSClickableByName(modPage, "Game log");
+    await gameLogButton.click();
+    await expect(modPage.locator("table.GameLog")).toBeVisible();
     log("GameLog modal opened ✓");
 
-    // 11. Expand the log to see all entries
-    const showAllButton = modPage.getByText(/Show all/);
-    const showAllExists = (await showAllButton.count()) > 0;
-    if (showAllExists) {
-        log("Expanding log to show all entries...");
-        await showAllButton.click();
-        await modPage.waitForTimeout(500);
-    }
-
-    // 12. Verify we have stone removal entries
+    // 11. Verify we have stone removal entries
+    // The log is paginated newest-first, so the stone removal entries from the
+    // end of the game are on the first page.
     log("Verifying stone removal entries exist...");
     const stoneRemovalEntries = modPage.locator(".GameLog tr").filter({
         hasText: /stone removal stones set|stones marked/,
@@ -243,7 +225,7 @@ export const gameLogScoringAreasTest = async (
     const entryCount = await stoneRemovalEntries.count();
     log(`Found ${entryCount} stone removal entries ✓`);
 
-    // 13. Verify thumbnails exist
+    // 12. Verify thumbnails exist
     const thumbnails = modPage.locator(".goban-thumbnail");
     const thumbnailCount = await thumbnails.count();
     log(`Found ${thumbnailCount} thumbnails ✓`);
@@ -252,7 +234,7 @@ export const gameLogScoringAreasTest = async (
         throw new Error("ERROR: No thumbnails found!");
     }
 
-    // 14. Take screenshot for visual inspection
+    // 13. Take screenshot for visual inspection
     log("Taking screenshot for visual inspection...");
     const screenshotPath = `test-results/game-log-scoring-areas-${testInfo.testId}.png`;
     await modPage.screenshot({
@@ -261,7 +243,7 @@ export const gameLogScoringAreasTest = async (
     });
     log(`Screenshot saved to ${screenshotPath} ✓`);
 
-    // 15. Print verification instructions
+    // 14. Print verification instructions
     log("\n=== VISUAL INSPECTION REQUIRED ===");
     log(`Screenshot: ${screenshotPath}`);
     log("\nWhat to verify:");

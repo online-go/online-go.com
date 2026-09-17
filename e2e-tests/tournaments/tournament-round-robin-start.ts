@@ -30,6 +30,8 @@
  * and creates all games in round 1, making it easy to verify.
  */
 
+import { joinTournament, expectTournamentPlayers } from "@helpers/tournament-utils";
+import { actAndWaitForResponse } from "@helpers/requests";
 import type { CreateContextOptions } from "@helpers";
 
 import { BrowserContext } from "@playwright/test";
@@ -117,12 +119,8 @@ export const tournamentRoundRobinStartTest = async ({
     await expect(boardSizeSelect).toHaveValue("9");
 
     // Set time control to blitz byoyomi so it's a live tournament.
-    // A delay between speed and system changes avoids a race condition in TimeControlPicker
-    // where the system change handler reads tc.speed from stale closure state if React
-    // hasn't re-rendered after the speed change.
     await directorPage.selectOption("#challenge-speed", "blitz");
     await expect(directorPage.locator("#challenge-speed")).toHaveValue("blitz");
-    await directorPage.waitForTimeout(100); // let React re-render before changing time control system
     await directorPage.selectOption("#challenge-time-control", "byoyomi");
     await expect(directorPage.locator("#challenge-time-control")).toHaveValue("byoyomi");
     await expect(directorPage.locator("#challenge-speed")).toHaveValue("blitz");
@@ -171,32 +169,17 @@ export const tournamentRoundRobinStartTest = async ({
     await player1Page.goto(tournamentUrl);
     await expect(player1Page.getByText("E2E Round Robin Test").first()).toBeVisible();
 
-    const joinButton1 = await expectOGSClickableByName(player1Page, /Join this tournament!/);
-    await joinButton1.click();
-
-    // Verify player 1 joined - the "Drop out" button should now be visible
-    await expect(player1Page.getByRole("button", { name: /Drop out from tournament/ })).toBeVisible(
-        { timeout: 10000 },
-    );
+    await joinTournament(player1Page, player1Username);
     log("Player 1 joined successfully");
 
     log(`Player 2 (${player2Username}) joining tournament...`);
     await player2Page.goto(tournamentUrl);
     await expect(player2Page.getByText("E2E Round Robin Test").first()).toBeVisible();
 
-    const joinButton2 = await expectOGSClickableByName(player2Page, /Join this tournament!/);
-    await joinButton2.click();
-
-    // Verify player 2 joined
-    await expect(player2Page.getByRole("button", { name: /Drop out from tournament/ })).toBeVisible(
-        { timeout: 10000 },
-    );
+    await joinTournament(player2Page, player2Username);
     log("Player 2 joined successfully");
 
-    // 5. Director starts the tournament
-    // Refresh the director's page to see updated player list
-    await directorPage.reload();
-    await expect(directorPage.getByText("E2E Round Robin Test").first()).toBeVisible();
+    await expectTournamentPlayers(directorPage, [player1Username, player2Username]);
 
     log("Director starting tournament...");
     const startBtn = await expectOGSClickableByName(directorPage, /Start Tournament Now/);
@@ -209,7 +192,14 @@ export const tournamentRoundRobinStartTest = async ({
 
     const okButton = confirmDialog.getByRole("button", { name: "OK" });
     await expect(okButton).toBeVisible();
-    await okButton.click();
+    await actAndWaitForResponse(
+        directorPage,
+        {
+            method: "POST",
+            path: /^\/api\/v1\/tournaments\/\d+\/start$/,
+        },
+        () => okButton.click(),
+    );
 
     // 6. Verify the tournament has started
     // The sign-up area should disappear and be replaced by results

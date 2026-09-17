@@ -15,21 +15,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { submitReportVote } from "@helpers/report-utils";
 import { Page } from "@playwright/test";
-import { expect } from "@playwright/test";
-import { log } from "@helpers/logger";
 import {
     acceptDirectChallenge,
     createDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
-import { playMoves, waitForGameViewReady } from "@helpers/game-utils";
+import { passAndScoreGame, playMoves, waitForGameViewReady } from "@helpers/game-utils";
 import { captureReportNumber, navigateToReport, reportPlayerByColor } from "@helpers/user-utils";
-import { expectOGSClickableByName } from "@helpers/matchers";
 
 /**
- * Play a 9x9 game between reporter (black) and accused (white),
+ * Play a 9x9 game between reporter (white) and accused (black),
  * ending by pass+accept. Returns the game URL.
+ *
+ * Reporter plays white deliberately: ranked challenges (the default here) disable
+ * custom komi entirely, so automatic komi's default advantage to white is
+ * unavoidable. With only a handful of symmetric center stones and no captures,
+ * that advantage decides the game — putting the accused on black instead of white
+ * means the accused loses on komi rather than winning, which escaping.not_winner
+ * now requires for the report below to be filed at all.
  */
 export async function playAndFinishGame(
     reporterPage: Page,
@@ -37,52 +42,28 @@ export async function playAndFinishGame(
     accusedUsername: string,
     gameIndex: number,
 ): Promise<void> {
-    // Override defaultChallengeSettings' 2s/2s blitz timing — under a loaded
-    // dev stack the 4-move play sequence can exhaust either player's time
-    // and end the game by timeout rather than pass+accept, leaving the test
-    // waiting forever on the "Pass"/"Accept" buttons. 60s main + 1×10s
-    // byoyomi gives ample headroom while still being "live" speed.
+    // This fixture tests report history; browser speed must not decide the outcome.
     await createDirectChallenge(reporterPage, accusedUsername, {
         ...defaultChallengeSettings,
         gameName: `E2E ERH Game ${gameIndex}`,
         boardSize: "9x9",
         speed: "live",
-        mainTime: "60",
-        timePerPeriod: "10",
-        periods: "1",
-        color: "black",
+        mainTime: "300",
+        timePerPeriod: "30",
+        periods: "5",
+        color: "white",
     });
 
-    await acceptDirectChallenge(accusedPage);
+    await acceptDirectChallenge(accusedPage, reporterPage);
 
     const goban = reporterPage.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });
 
-    // Play a few moves (need >= 2 for escaping report applicability)
-    await playMoves(reporterPage, accusedPage, ["D5", "E5", "D6", "E6"], "9x9");
+    // Play a few moves (need >= 2 for escaping report applicability). playMoves takes
+    // (black, white) positionally — accused is black here, reporter is white.
+    await playMoves(accusedPage, reporterPage, ["D5", "E5", "D6", "E6"], "9x9");
 
-    // End the game: both pass, both accept scoring
-    await reporterPage.getByText("Pass", { exact: true }).click();
-    await accusedPage.getByText("Pass", { exact: true }).click();
-
-    const accusedAccept = accusedPage.getByText("Accept");
-    await expect(accusedAccept).toBeVisible();
-    await accusedAccept.click();
-
-    const reporterAccept = reporterPage.getByText("Accept");
-    await expect(reporterAccept).toBeVisible();
-    await reporterAccept.click();
-
-    await expect(reporterPage.getByText("wins by")).toBeVisible();
-
-    // Five sequential games + reports overload the dev stack: the server's
-    // Game.ended write trails behind the WS phase-finished event the goban
-    // already rendered, so the next escaping report on this game gets
-    // rejected by moderate.py:714-725 (HTTP 400). A deliberate 30 s pause
-    // lets the post-game pipeline (WS → DB write, queue drain) quiesce
-    // before we move on. Heavy but reliable; see e2e-tests/AGENTS.md.
-    log(`[cm-escape-rate-display] Game ${gameIndex} ended — pausing 30 s to quiesce`);
-    await reporterPage.waitForTimeout(30000);
+    await passAndScoreGame(accusedPage, reporterPage);
 }
 
 /**
@@ -99,10 +80,10 @@ export async function reportAndVote(
     // before opening PlayerDetails.
     await waitForGameViewReady(reporterPage);
 
-    // Report the accused (white) for escaping
+    // Report the accused (black) for escaping
     await reportPlayerByColor(
         reporterPage,
-        ".white",
+        ".black",
         "escaping",
         "E2E test: player escaped this game",
     );
@@ -113,8 +94,7 @@ export async function reportAndVote(
     for (const cmPage of cmPages) {
         await navigateToReport(cmPage, reportNumber);
         await cmPage.locator(`input[value="${voteAction}"]`).click();
-        const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
-        await voteButton.click();
+        await submitReportVote(cmPage);
     }
 
     return reportNumber;

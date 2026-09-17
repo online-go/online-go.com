@@ -51,6 +51,7 @@ import {
 } from "@helpers/challenge-utils";
 import { clickOnGobanIntersection, playMoves } from "@helpers/game-utils";
 import { log } from "@helpers/logger";
+import { expectOGSClickableByName } from "@helpers/matchers";
 
 export const gameLogThumbnailMarksTest = async (
     {
@@ -94,7 +95,7 @@ export const gameLogThumbnailMarksTest = async (
     log("Challenge created ✓");
 
     log("Accepting challenge...");
-    await acceptDirectChallenge(acceptorPage);
+    await acceptDirectChallenge(acceptorPage, challengerPage);
     log("Challenge accepted ✓");
 
     // 3. Wait for game to be ready
@@ -220,41 +221,18 @@ export const gameLogThumbnailMarksTest = async (
     await expect(modPage.locator(".Game")).toBeVisible({ timeout: 15000 });
     log("Game page loaded ✓");
 
-    // 12. Open GameLog modal via the dock
-    log("Opening GameLog modal via dock...");
+    // 12. Open GameLog modal via the mod tools panel
+    log("Opening GameLog modal...");
 
-    // Hover over the dock to make it visible
-    const dock = modPage.locator(".Dock");
-    await dock.hover();
-    await modPage.waitForTimeout(500); // Wait for dock to slide out
-
-    // Find and click the "Log" link in the dock
-    // The dock has an <a> element with onClick handler that opens the modal
-    // Use JavaScript to click the link directly since it may have visibility/opacity issues
-    await modPage.evaluate(() => {
-        const logLink = Array.from(document.querySelectorAll(".Dock a")).find((el) =>
-            el.textContent?.includes("Log"),
-        ) as HTMLElement;
-        if (logLink) {
-            logLink.click();
-        } else {
-            throw new Error("Log dock link not found");
-        }
-    });
-    await modPage.waitForTimeout(1000);
+    const gameLogButton = await expectOGSClickableByName(modPage, "Game log");
+    await gameLogButton.click();
+    await expect(modPage.locator("table.GameLog")).toBeVisible();
     log("GameLog modal opened ✓");
 
     // 13. Verify GameLog entries
+    // The log is paginated newest-first, so the scoring entries from the end of
+    // the game are on the first page.
     log("Verifying GameLog entries...");
-
-    // Check if we need to click "Show all" to see all log entries
-    const showAllButton = modPage.getByText(/Show all/);
-    const showAllExists = (await showAllButton.count()) > 0;
-    if (showAllExists) {
-        log("Found 'Show all' button, clicking to expand log...");
-        await showAllButton.click();
-        await modPage.waitForTimeout(500);
-    }
 
     // Check for "stones marked dead" entries
     const markedDeadEntries = modPage.getByText("stones marked dead");

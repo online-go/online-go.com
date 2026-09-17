@@ -360,7 +360,6 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
     constructor(props: LadderRowProperties) {
         super(props);
         this.state = { row: undefined };
-        this.sync();
     }
 
     shouldComponentUpdate(nextProps: LadderRowProperties, nextState: LadderRowState) {
@@ -398,11 +397,9 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
     }
 
     componentDidMount() {
-        // The constructor starts a load whose result arrives after mount, and
-        // sync() drops that result when `unmounted` is set. React re-mounts the
-        // same instance in development, so the flag has to be cleared here or a
-        // remounted row discards its own data and renders empty forever.
         this.unmounted = false;
+        // Cached rows resolve synchronously, so state updates must start after mount.
+        this.sync();
     }
 
     componentWillUnmount() {

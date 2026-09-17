@@ -54,6 +54,7 @@ export const puzzleEditMobileTest = async ({
     // The editor is up ...
     const setupStepButton = userPage.locator("button", { hasText: "Setup" });
     await expect(setupStepButton).toBeVisible({ timeout: 15000 });
+    await waitForPuzzlePlacementMode(userPage, "setup");
 
     // ... and the board is still both visible and reachable: whatever is on
     // top at the middle of the board has to be the board itself.
@@ -100,6 +101,7 @@ async function createPuzzle(userPage: Page, username: string): Promise<string> {
     await expect(userPage.locator("button.active", { hasText: "Moves" })).toBeVisible({
         timeout: 5000,
     });
+    await waitForPuzzlePlacementMode(userPage, "place");
 
     await clickOnGobanIntersection(userPage, "Q16", "19x19");
     const correctAnswerButton = userPage.getByText("Correct answer");
@@ -116,35 +118,46 @@ async function createPuzzle(userPage: Page, username: string): Promise<string> {
     return id;
 }
 
+async function waitForPuzzlePlacementMode(page: Page, mode: "setup" | "place") {
+    await page.waitForFunction((expectedMode) => {
+        const goban = (
+            window as unknown as {
+                global_goban?: { getPuzzlePlacementSetting?: () => { mode: string } };
+            }
+        ).global_goban;
+        return goban?.getPuzzlePlacementSetting?.().mode === expectedMode;
+    }, mode);
+}
+
 /** Fails if anything is painted over the middle of the board. */
 async function expectGobanNotCovered(page: Page) {
-    const box = await page.locator(".Goban[data-pointers-bound]").boundingBox();
-    if (!box) {
-        throw new Error("Could not get Goban dimensions");
-    }
-
-    const covering = await page.evaluate(
-        ({ x, y }) => {
-            const element = document.elementFromPoint(x, y);
-            if (!element) {
-                return "nothing (the board is off screen)";
-            }
-            if (element.closest(".goban-container")) {
-                return null;
-            }
-            // Describe whatever is on top of the board for the failure message
-            const panel = element.closest(".GobanView-tab-panel");
-            return panel ? `.${panel.className.split(" ").join(".")}` : element.tagName;
-        },
-        { x: box.x + box.width / 2, y: box.y + box.height / 2 },
-    );
-
-    expect(covering, "the middle of the board should not be covered").toBe(null);
+    await expect
+        .poll(
+            () =>
+                page.locator(".Goban[data-pointers-bound]").evaluate((board) => {
+                    const box = board.getBoundingClientRect();
+                    const element = document.elementFromPoint(
+                        box.x + box.width / 2,
+                        box.y + box.height / 2,
+                    );
+                    if (!element) {
+                        return "nothing (the board is off screen)";
+                    }
+                    if (element === board || board.contains(element)) {
+                        return null;
+                    }
+                    const panel = element.closest(".GobanView-tab-panel");
+                    return panel ? `.${panel.className.split(" ").join(".")}` : element.tagName;
+                }),
+            { message: "the middle of the board should not be covered" },
+        )
+        .toBe(null);
 }
 
 async function countStones(page: Page): Promise<number> {
     return await page.evaluate(() => {
-        const goban = (window as any).global_goban;
+        const goban = (window as unknown as { global_goban?: { engine: { board: number[][] } } })
+            .global_goban;
         return goban ? goban.engine.board.flat().filter((c: number) => c !== 0).length : -1;
     });
 }

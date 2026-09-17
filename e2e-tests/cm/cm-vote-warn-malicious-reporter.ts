@@ -34,9 +34,8 @@ import { BrowserContext, TestInfo } from "@playwright/test";
 import { expect } from "@playwright/test";
 
 import { navigateToReport, setupSeededCM } from "@helpers/user-utils";
-import { expectOGSClickableByName } from "@helpers/matchers";
 import { log } from "@helpers/logger";
-import { withReportCountTracking } from "@helpers/report-utils";
+import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
 import { setupMaliciousReport } from "@helpers/malicious-report-utils";
 
 const CM_VOTERS = ["E2E_CM_MR_CM_V1", "E2E_CM_MR_CM_V2", "E2E_CM_MR_CM_V3"];
@@ -79,8 +78,7 @@ export const cmVoteWarnMaliciousReporterTest = async (
                 await radio.click();
                 await expect(radio).toBeChecked();
 
-                const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
-                await voteButton.click();
+                await submitReportVote(cmPage);
                 log(`[MR/vote-warn] ${cmUser} voted warn_malicious_reporter`);
             }
 

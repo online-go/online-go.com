@@ -42,7 +42,7 @@ import {
 
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
-import { withReportCountTracking } from "@helpers/report-utils";
+import { submitReportVote, withReportCountTracking } from "@helpers/report-utils";
 
 export const cmShowOnlyPostEscalationVotesTest = async (
     {
@@ -78,10 +78,8 @@ export const cmShowOnlyPostEscalationVotesTest = async (
         const { seededCMPage: initialVoterPage } = await setupSeededCM(
             createContext,
             "E2E_CM_SOPEV_INITIAL_VOTER",
+            reportNumber,
         );
-
-        // Navigate directly to the report using the captured report number
-        await navigateToReport(initialVoterPage, reportNumber);
 
         // Verify we can see the report with the message
         await expect(
@@ -90,18 +88,15 @@ export const cmShowOnlyPostEscalationVotesTest = async (
 
         // Doesn't matter what option we vote for actually, first is handy
         await initialVoterPage.locator('.action-selector input[type="radio"]').first().click();
-        let voteButton = await expectOGSClickableByName(initialVoterPage, /Vote$/);
 
-        await voteButton.click();
+        await submitReportVote(initialVoterPage);
 
         // Now escalate the report
         const { seededCMPage: escalatorPage } = await setupSeededCM(
             createContext,
             "E2E_CM_SOPEV_ESCALATOR",
+            reportNumber,
         );
-
-        // Navigate directly to the report using the captured report number
-        await navigateToReport(escalatorPage, reportNumber);
 
         // Verify we can see the report with the message
         await expect(
@@ -112,9 +107,7 @@ export const cmShowOnlyPostEscalationVotesTest = async (
         await escalatorPage.locator('.action-selector input[type="radio"]').last().click();
         await escalatorPage.locator("#escalation-note").fill("E2E test - SOPEV escalation note");
 
-        voteButton = await expectOGSClickableByName(escalatorPage, /Vote$/);
-
-        await voteButton.click();
+        await submitReportVote(escalatorPage);
 
         // After voting, the system navigates to the next report
         // Navigate back to our specific report to verify escalation
@@ -128,14 +121,17 @@ export const cmShowOnlyPostEscalationVotesTest = async (
 
         // Make sure the all the escalated voting options are loaded
         const radioButtons = escalatorPage.locator('.action-selector input[type="radio"]');
-        await expect(await radioButtons.count()).toBeGreaterThanOrEqual(7);
+        await expect(radioButtons.nth(6)).toBeVisible();
 
         // Make sure there are no votes showing
         const voteCounts = escalatorPage.locator(".vote-count");
-        for (let i = 0; i < (await voteCounts.count()); i++) {
-            const text = await voteCounts.nth(i).textContent();
-            expect(text).toBe("(0)");
-        }
+        await expect(voteCounts.first()).toBeVisible();
+        await expect
+            .poll(async () => {
+                const counts = await voteCounts.allTextContents();
+                return counts.length >= 7 && counts.every((count) => count === "(0)");
+            })
+            .toBe(true);
 
         //  (we probably should make sure that the report is not acted on with pre-escalation votes,
         //   but that's for another day)

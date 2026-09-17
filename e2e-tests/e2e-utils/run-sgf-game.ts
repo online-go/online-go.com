@@ -65,7 +65,7 @@ export const runSgfGame = async ({
     });
 
     // Acceptor accepts
-    await acceptDirectChallenge(acceptorPage);
+    await acceptDirectChallenge(acceptorPage, challengerPage);
 
     // Wait for the Goban to be visible & definitely ready
     const goban = challengerPage.locator(".Goban[data-pointers-bound]");

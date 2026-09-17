@@ -43,7 +43,11 @@ import { expect } from "@playwright/test";
 
 import { navigateToReport, setupSeededCM } from "@helpers/user-utils";
 import { log } from "@helpers/logger";
-import { withReportCountTracking } from "@helpers/report-utils";
+import {
+    withReportCountTracking,
+    IncidentReportCountTracker,
+    expectReportAccessDenied,
+} from "@helpers/report-utils";
 import { cancelOwnReport, setupMaliciousReport } from "@helpers/malicious-report-utils";
 
 export const cmMaliciousReportQueueVisibilityTest = async (
@@ -95,6 +99,7 @@ export const cmMaliciousReportQueueVisibilityTest = async (
 
             await noPowerPage.goto("/reports-center");
             await expect(noPowerPage.locator("#ReportsCenterCategoryList")).toBeVisible();
+            await new IncidentReportCountTracker().waitForReportsLoaded(noPowerPage);
 
             // Category sidebar should not list "Malicious report" (this is also
             // Test 9 negative — the sidebar uses the same community_mod_has_power
@@ -110,14 +115,7 @@ export const cmMaliciousReportQueueVisibilityTest = async (
             // Navigating directly to the report URL exposes no vote options.
             // The backend gate (user_can_moderate) returns 403 so the report
             // never loads and no vote radios render.
-            await noPowerPage.goto(`/reports-center/all/${mrId}`);
-            await noPowerPage.waitForTimeout(2000);
-            await expect(noPowerPage.locator(".action-selector input[type='radio']")).toHaveCount(
-                0,
-            );
-            await expect(noPowerPage.locator('input[value="warn_malicious_reporter"]')).toHaveCount(
-                0,
-            );
+            await expectReportAccessDenied(noPowerPage, setup.maliciousReportNumber);
 
             await noPowerContext.close();
 
