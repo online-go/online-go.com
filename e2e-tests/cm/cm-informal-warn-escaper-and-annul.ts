@@ -89,6 +89,12 @@ export const cmInformalWarnEscaperAndAnnulTest = async (
             // Phase 0: Play a real game, then file escaping report
             // ========================================
 
+            // Reporter plays white deliberately: this challenge uses automatic komi,
+            // whose default advantage to white decides a game of only a handful of
+            // symmetric center stones with no captures — putting the accused on
+            // black instead of white means the accused loses on komi rather than
+            // winning, which escaping.not_winner now requires for the report below to
+            // be filed at all.
             await createDirectChallenge(reporterPage, accusedUsername, {
                 ...defaultChallengeSettings,
                 ranked: false,
@@ -97,7 +103,7 @@ export const cmInformalWarnEscaperAndAnnulTest = async (
                 speed: "live",
                 mainTime: "300",
                 timePerPeriod: "30",
-                color: "black",
+                color: "white",
             });
 
             await acceptDirectChallenge(accusedPage, reporterPage);
@@ -105,11 +111,13 @@ export const cmInformalWarnEscaperAndAnnulTest = async (
             const goban = reporterPage.locator(".Goban[data-pointers-bound]");
             await goban.waitFor({ state: "visible" });
 
-            // Play a few moves (need >= 2 to pass the escaping report applicability check)
-            await playMoves(reporterPage, accusedPage, ["D5", "E5", "D6", "E6"], "9x9");
+            // Play a few moves (need >= 2 to pass the escaping report applicability check).
+            // playMoves takes (black, white) positionally — accused is black here,
+            // reporter is white.
+            await playMoves(accusedPage, reporterPage, ["D5", "E5", "D6", "E6"], "9x9");
 
             // End the game: both pass, both accept scoring
-            await passAndScoreGame(reporterPage, accusedPage);
+            await passAndScoreGame(accusedPage, reporterPage);
 
             // Capture the game URL before navigating away — we'll verify annulment later
             const gameUrl = reporterPage.url();
@@ -118,10 +126,10 @@ export const cmInformalWarnEscaperAndAnnulTest = async (
             // AIReview) before opening PlayerDetails.
             await waitForGameViewReady(reporterPage);
 
-            // Report the accused (white) for escaping
+            // Report the accused (black) for escaping
             await reportPlayerByColor(
                 reporterPage,
-                ".white",
+                ".black",
                 "escaping",
                 "E2E test: player escaped this game (annul test)",
             );

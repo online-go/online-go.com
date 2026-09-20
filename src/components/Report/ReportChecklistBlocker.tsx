@@ -14,43 +14,23 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-.GameLog {
-    td {
-        padding-right: 1rem;
-        border-bottom: 1px solid transparent;
-        border-bottom-color: var(--shade3);
-    }
 
-    .timestamp {
-        width: 12rem;
-    }
+import * as React from "react";
 
-    .field {
-        margin-right: 1rem;
-    }
+import type { ChecklistItemResult } from "@/lib/report_checklist";
 
-    .auto-score {
-        background: var(--shade5);
+import "./ReportChecklistBlocker.css";
 
-        a.Player,
-        .game-log-player {
-            color: var(--shade1);
-        }
-    }
+interface ReportChecklistBlockerProps {
+    result: ChecklistItemResult;
 }
 
-.game-log-pager {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    margin: 0.5rem 0;
-
-    button {
-        min-width: 2rem;
-    }
-
-    .page-indicator {
-        margin: 0 0.5rem;
-    }
+export function ReportChecklistBlocker({
+    result,
+}: ReportChecklistBlockerProps): React.ReactElement {
+    return (
+        <div className="ReportChecklistBlocker" data-checklist-blocker={result.id}>
+            <div className="reason">{result.message || result.label}</div>
+        </div>
+    );
 }

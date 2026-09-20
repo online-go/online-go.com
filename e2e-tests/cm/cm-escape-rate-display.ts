@@ -153,7 +153,7 @@ export const cmEscapeRateDisplayTest = async (
 
             await reportPlayerByColor(
                 reporterPage,
-                ".white",
+                ".black",
                 "escaping",
                 "E2E test: player escaped this game (report 5)",
             );

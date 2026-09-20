@@ -43,7 +43,6 @@ import {
     useOfficialMoveNumber,
     usePauseControl,
     usePhase,
-    useScorePopup,
     useUserIsLivePlayerToMove,
     useUserIsParticipant,
     useViewMode,
@@ -131,9 +130,6 @@ export function Game(): React.ReactElement | null {
     const [simul_black, set_simul_black] = React.useState<boolean | null>(null);
     const [simul_white, set_simul_white] = React.useState<boolean | null>(null);
     const zen_mode = useZenMode(goban_controller.current);
-    // Score-details popup for the mobile player cards (the desktop
-    // layout's PlayerCards wrapper manages its own instance).
-    const { show_score_breakdown, toggleScorePopup } = useScorePopup(goban);
     const user = useUser();
     const user_is_player = useUserIsParticipant(goban);
     const mode = useMode(goban);
@@ -1155,8 +1151,6 @@ export function Game(): React.ReactElement | null {
             goban={goban!}
             historical={color === "black" ? historical_black : historical_white}
             estimating_score={estimating_score}
-            show_score_breakdown={show_score_breakdown}
-            onScoreClick={toggleScorePopup}
             zen_mode={zen_mode}
         />
     );

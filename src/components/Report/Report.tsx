@@ -20,7 +20,12 @@ import * as data from "@/lib/data";
 import * as ReactDOM from "react-dom/client";
 import * as player_cache from "@/lib/player_cache";
 import { Card } from "@/components/material";
-import { _, pgettext, interpolate } from "@/lib/translate";
+import { _, pgettext } from "@/lib/translate";
+import { checklistSatisfied, type ChecklistItemId } from "@/lib/report_checklist";
+import { getChecklist } from "@/lib/report_checklist_items";
+import { useReportChecklist } from "@/lib/useReportChecklist";
+import { ReportChecklist } from "./ReportChecklist";
+import { ReportChecklistBlocker } from "./ReportChecklistBlocker";
 import { PlayerIcon } from "@/components/PlayerIcon";
 import { post } from "@/lib/requests";
 import { alert } from "@/lib/swal_config";
@@ -54,12 +59,9 @@ export interface ReportDescription {
     type: ReportType;
     title: string;
     description: string;
-    game_id_required?: boolean;
-    min_description_length?: number;
     moderator_only?: boolean;
     cm_only?: boolean; // visible only to CMs (any non-zero moderator_powers)
     not_reportable?: boolean;
-    check_applicability?: (game_id?: number, reported_user_id?: number) => Promise<string | null>; // string to indicate why its not applicable, null if applicable
 }
 
 export interface ReportedConversation {
@@ -77,60 +79,6 @@ interface ReportProperties {
     onClose?: () => void;
 }
 
-// see node PUBLIC_GAMEDATA_FIELDS in the backend
-type Gamedata = {
-    outcome: string;
-    winner: number;
-    moves: Array<any>; // It's actually and AdHocPackedMove[], but we only care about the length.
-};
-
-function checkGameForEscapingReportApplicability(
-    game_id?: number,
-    reported_user_id?: number,
-): Promise<string | null> {
-    console.log("checkGameForEscapingReportApplicability", game_id, reported_user_id);
-    return get(`/termination-api/game/${game_id}`).then((gamedata: Gamedata) => {
-        if (gamedata?.outcome?.includes("Resignation") && gamedata.winner !== reported_user_id) {
-            return pgettext(
-                "A message when trying to create a report that doesn't make sense",
-                `That player resigned, so 'stopped playing' is not applicable: resigning is normally an acceptable way to finish the game.
-
-Please choose a different type of report, if there is a different problem.`,
-            );
-        } else if (gamedata?.moves.length < 2) {
-            return pgettext(
-                "A message when the user is trying to report something that we don't want them to report yet",
-                `If the other player leaves the game without playing the first move we will automatically warn them about this.
-
-Please choose a different type of report, if there is a different problem.`,
-            );
-        } else {
-            console.log("checkGameForEscapingReportApplicability", gamedata);
-            return null;
-        }
-    });
-}
-
-function checkGameForStallingReportApplicability(
-    game_id?: number,
-    _reported_user_id?: number,
-): Promise<string | null> {
-    return get(`/termination-api/game/${game_id}`).then((gamedata: Gamedata) => {
-        if (gamedata?.moves.length < 2) {
-            return pgettext(
-                "A message when the user is trying to report something that we don't want them to report yet",
-                `There aren't enough moves played in this game to decide if someone is playing stalling moves.
-                
-If the other player leaves the game without playing, we will automatically warn them about that.
-
-Please choose a different type of report, if there is a different problem.`,
-            );
-        } else {
-            return null;
-        }
-    });
-}
-
 export const report_categories: ReportDescription[] = [
     {
         type: "escaping",
@@ -139,8 +87,6 @@ export const report_categories: ReportDescription[] = [
             "Report user for not finishing the game properly",
             "User left the game or stopped playing without concluding it properly.",
         ),
-        game_id_required: true,
-        check_applicability: checkGameForEscapingReportApplicability,
     },
     {
         type: "score_cheating",
@@ -149,7 +95,6 @@ export const report_categories: ReportDescription[] = [
             "Report user for score cheating",
             "User is attempting to cheat in the stone removal phase, or the game has been mis-scored.",
         ),
-        game_id_required: true,
     },
     {
         type: "stalling",
@@ -158,9 +103,6 @@ export const report_categories: ReportDescription[] = [
             "Report user for stalling in a game",
             "User is playing time wasting moves, or passing and resuming needlessly, delaying completion of the game.",
         ),
-        game_id_required: true,
-        min_description_length: 20,
-        check_applicability: checkGameForStallingReportApplicability,
     },
     {
         type: "thrown_game",
@@ -169,7 +111,6 @@ export const report_categories: ReportDescription[] = [
             "Report user for throwing a game",
             "User intentionally lost the game.",
         ),
-        game_id_required: true,
         not_reportable: true, // Reports of this type result from sandbagging reports where the accused lost
     },
     {
@@ -183,7 +124,6 @@ export const report_categories: ReportDescription[] = [
             "The accused player filed a report deemed to be malicious. File this from the source report's detail view.",
         ),
         cm_only: true,
-        min_description_length: 1,
     },
     {
         type: "sandbagging",
@@ -192,7 +132,6 @@ export const report_categories: ReportDescription[] = [
             "Report user for sandbagging",
             "User is resigning or timing out won games to purposefully lower their rank.",
         ),
-        game_id_required: true,
     },
     {
         type: "sandbagging_assessment",
@@ -201,7 +140,6 @@ export const report_categories: ReportDescription[] = [
             "Sandbagging assessment by moderators",
             "Escalated sandbagging reports for moderator review.",
         ),
-        game_id_required: true,
         moderator_only: true,
         not_reportable: true, // Reports of this type result from CM escalation, not from a player
     },
@@ -212,13 +150,11 @@ export const report_categories: ReportDescription[] = [
             "Report user for inappropriate content",
             "User is posting inappropriate content.",
         ),
-        min_description_length: 20,
     },
     {
         type: "harassment",
         title: pgettext("Report user for harassment", "Harassment"),
         description: pgettext("Report user for harassment", "User is harassing other users."),
-        min_description_length: 20,
     },
     {
         type: "ai_use",
@@ -227,14 +163,11 @@ export const report_categories: ReportDescription[] = [
             "Report user for AI use",
             "Use this if you are quite certain that AI is being used.  Please don't report unless you have convincing evidence.  Please make sure you provide the evidence in the report.",
         ),
-        min_description_length: 20,
-        game_id_required: true,
     },
     {
         type: "assess_ai_play",
         title: pgettext("Assess AI play", "Assess AI play"),
         description: pgettext("Assess AI play", "Assess AI play"),
-        game_id_required: true,
         not_reportable: true, // Reports of this type result from the AI detector process, not from a player
     },
     {
@@ -244,7 +177,6 @@ export const report_categories: ReportDescription[] = [
             "User is reporting something else",
             "Please describe in detail the issue in the text box below.",
         ),
-        min_description_length: 20,
     },
     {
         type: "warning",
@@ -286,8 +218,6 @@ export function Report(props: ReportProperties): React.ReactElement {
     const [review_id, _set_review_id] = React.useState(reported_review_id);
     const [note, set_note] = React.useState("");
     const [submitting, set_submitting] = React.useState(false);
-    const [validating, set_validating] = React.useState(false);
-    const [inapplicable_reason, set_inapplicable_reason] = React.useState<string | null>(null);
     const [source_report_type, set_source_report_type] = React.useState<string | null>(null);
     // Source-report URL snapshot for malicious_report's back-link, set in the
     // mount effect below from the report-detail path at dialog-open time so SPA
@@ -298,6 +228,32 @@ export function Report(props: ReportProperties): React.ReactElement {
     const user = useUser();
 
     const category = report_categories.find((x) => x.type === report_type);
+
+    const [attestations, set_attestations] = React.useState<Record<ChecklistItemId, boolean>>({});
+
+    // Memoised because useReportChecklist restarts its async evaluation whenever the
+    // items array identity changes. A fresh array each render would loop forever.
+    const checklist_items = React.useMemo(() => getChecklist(report_type), [report_type]);
+
+    const checklist = useReportChecklist({
+        items: checklist_items,
+        game_id,
+        review_id,
+        reported_user_id,
+        note,
+        attestations,
+    });
+
+    const blocker = checklist.find((r) => r.state === "blocked");
+
+    // Attestations belong to the report type, so a type change clears them.
+    React.useEffect(() => {
+        set_attestations({});
+    }, [report_type]);
+
+    function toggleAttestation(id: ChecklistItemId) {
+        set_attestations((prev) => ({ ...prev, [id]: !prev[id] }));
+    }
 
     React.useEffect(() => {
         const fetching_user_id = reported_user_id;
@@ -332,24 +288,6 @@ export function Report(props: ReportProperties): React.ReactElement {
             .catch(() => set_source_report_type(null));
     }, []);
 
-    React.useEffect(() => {
-        const needs_game_id_first = category?.game_id_required && !game_id;
-        if (category?.check_applicability && !needs_game_id_first) {
-            set_validating(true);
-            category
-                .check_applicability(game_id, reported_user_id)
-                .then((inapplicable_reason) => {
-                    set_inapplicable_reason(inapplicable_reason);
-                    set_validating(false);
-                })
-                .catch(() => {
-                    set_validating(false);
-                });
-        } else {
-            set_inapplicable_reason(null);
-        }
-    }, [category, game_id]);
-
     function close() {
         if (onClose) {
             onClose();
@@ -357,22 +295,13 @@ export function Report(props: ReportProperties): React.ReactElement {
     }
 
     function canSubmit() {
+        // The category guard must come first: checklistSatisfied is vacuously true for
+        // the empty list, so without it an unselected report type would enable the button.
         if (!category) {
             return false;
         }
 
-        if (submitting || validating) {
-            return false;
-        }
-
-        if (inapplicable_reason) {
-            return false;
-        }
-        if (category.game_id_required && !game_id) {
-            return false;
-        }
-
-        if (category.min_description_length && note.length < category.min_description_length) {
+        if (submitting) {
             return false;
         }
 
@@ -380,7 +309,7 @@ export function Report(props: ReportProperties): React.ReactElement {
             return false;
         }
 
-        return true;
+        return checklistSatisfied(checklist);
     }
 
     function createReport() {
@@ -456,8 +385,6 @@ export function Report(props: ReportProperties): React.ReactElement {
             });
     }
 
-    const show_game_id_required_text = category && category.game_id_required && !game_id;
-
     const has_moderator_powers = (user.moderator_powers ?? 0) > 0;
     const available_categories = report_categories
         .filter((x) => !x.not_reportable)
@@ -465,9 +392,6 @@ export function Report(props: ReportProperties): React.ReactElement {
         .filter((x) => has_moderator_powers || !x.cm_only)
         // malicious_report is offered only while viewing a score-cheating report
         .filter((x) => x.type !== "malicious_report" || source_report_type === "score_cheating");
-
-    const more_description_needed =
-        category?.min_description_length && note.length < category.min_description_length;
 
     return (
         <Card className="Report">
@@ -513,47 +437,26 @@ export function Report(props: ReportProperties): React.ReactElement {
                 </select>
                 <div className="report-category-description">{category?.description}</div>
             </div>
-            <div className="details">
-                {((category && !show_game_id_required_text) || null) && (
+            {blocker ? (
+                <ReportChecklistBlocker result={blocker} />
+            ) : category ? (
+                <div className="details">
                     <textarea
-                        className={
-                            "notes " +
-                            (category &&
-                            category.min_description_length &&
-                            note.length < category.min_description_length
-                                ? "required"
-                                : "")
-                        }
+                        className="notes"
                         value={note}
                         onChange={(ev) => set_note(ev.target.value)}
-                        placeholder={
-                            inapplicable_reason
-                                ? inapplicable_reason
-                                : _(
-                                      "Please provide any relevant details about the problem you are reporting.",
-                                  )
-                        }
+                        placeholder={_(
+                            "Please provide any relevant details about the problem you are reporting.",
+                        )}
                     />
-                )}
-                {show_game_id_required_text && (
-                    <div className="required-text">
-                        {_("Please report the user on the game page so we know where to look.")}
-                    </div>
-                )}
-            </div>
+                    <ReportChecklist results={checklist} onToggle={toggleAttestation} />
+                </div>
+            ) : null}
             {(reported_conversation || null) && (
                 <div className="reported-conversation">
                     {reported_conversation?.content.map((line, idx) => (
                         <div key={idx}>{line}</div>
                     ))}
-                </div>
-            )}
-            {more_description_needed && category?.min_description_length && (
-                <div className="characters-remaining-prompt">
-                    {interpolate(
-                        pgettext("Context of message", "{{required}} more characters needed"),
-                        { required: category.min_description_length - note.length },
-                    )}
                 </div>
             )}
             <div className="buttons">

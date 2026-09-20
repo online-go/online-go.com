@@ -16,7 +16,7 @@
  */
 import * as React from "react";
 
-import { _, llm_pgettext, pgettext, moment } from "@/lib/translate";
+import { _, interpolate, llm_pgettext, pgettext, moment } from "@/lib/translate";
 import * as DynamicHelp from "react-dynamic-help";
 
 import { GobanEngineConfig } from "goban";
@@ -27,7 +27,7 @@ import { Player } from "@/components/Player";
 import { ScoringEventThumbnail } from "./ScoringEventThumbnail";
 import "./GameLog.css";
 
-const TRUNCATED_GAME_LOG_LENGTH = 25;
+const GAME_LOG_PAGE_SIZE = 25;
 
 export interface LogEntry {
     timestamp: string;
@@ -47,7 +47,7 @@ export function GameLog({
     onContainsAbandonment,
 }: GameLogProps): React.ReactElement {
     const [log, setLog] = React.useState<LogEntry[]>([]);
-    const [shouldDisplayFullLog, setShouldDisplayFullLog] = React.useState(false);
+    const [page, setPage] = React.useState(0);
 
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
     const autoscoreRef = registerTargetItem("autoscore-game-log-entry").ref || null;
@@ -59,7 +59,7 @@ export function GameLog({
     React.useEffect(() => {
         let cancelled = false;
         setLog([]);
-        setShouldDisplayFullLog(false);
+        setPage(0);
         socket.send(`game/log`, { game_id }, (log) => {
             if (cancelled) {
                 return;
@@ -90,6 +90,8 @@ export function GameLog({
         },
         [goban_config],
     );
+
+    const num_pages = Math.ceil(log.length / GAME_LOG_PAGE_SIZE);
 
     function firstAutoScoreEntry(): boolean {
         if (firstAutoscoringEntryRendered) {
@@ -124,10 +126,7 @@ export function GameLog({
                         </thead>
                         <tbody>
                             {log
-                                .filter(
-                                    (_, idx) =>
-                                        shouldDisplayFullLog || idx < TRUNCATED_GAME_LOG_LENGTH,
-                                )
+                                .slice(page * GAME_LOG_PAGE_SIZE, (page + 1) * GAME_LOG_PAGE_SIZE)
                                 .map((entry, idx) => (
                                     <tr
                                         ref={
@@ -161,10 +160,58 @@ export function GameLog({
                                 ))}
                         </tbody>
                     </table>
-                    {!shouldDisplayFullLog && log.length > TRUNCATED_GAME_LOG_LENGTH && (
-                        <button onClick={() => setShouldDisplayFullLog(true)}>
-                            {`${_("Show all")} (${log.length})`}
-                        </button>
+                    {num_pages > 1 && (
+                        <div className="game-log-pager">
+                            <button
+                                aria-label={pgettext(
+                                    "Button to go to the first page of the game log",
+                                    "First page",
+                                )}
+                                disabled={page === 0}
+                                onClick={() => setPage(0)}
+                            >
+                                {"«"}
+                            </button>
+                            <button
+                                aria-label={pgettext(
+                                    "Button to go to the previous page of the game log",
+                                    "Previous page",
+                                )}
+                                disabled={page === 0}
+                                onClick={() => setPage(page - 1)}
+                            >
+                                {"‹"}
+                            </button>
+                            <span className="page-indicator">
+                                {interpolate(
+                                    pgettext(
+                                        "Which page of the game log is shown, e.g. 'Page 2 of 7'",
+                                        "Page {{page}} of {{total}}",
+                                    ),
+                                    { page: page + 1, total: num_pages },
+                                )}
+                            </span>
+                            <button
+                                aria-label={pgettext(
+                                    "Button to go to the next page of the game log",
+                                    "Next page",
+                                )}
+                                disabled={page === num_pages - 1}
+                                onClick={() => setPage(page + 1)}
+                            >
+                                {"›"}
+                            </button>
+                            <button
+                                aria-label={pgettext(
+                                    "Button to go to the last page of the game log",
+                                    "Last page",
+                                )}
+                                disabled={page === num_pages - 1}
+                                onClick={() => setPage(num_pages - 1)}
+                            >
+                                {"»"}
+                            </button>
+                        </div>
                     )}
                 </>
             ) : (

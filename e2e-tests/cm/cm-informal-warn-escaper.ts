@@ -87,6 +87,13 @@ export const cmInformalWarnEscaperTest = async (
             // Phase 0: Play a real game, then file escaping report
             // ========================================
 
+            // Reporter plays white deliberately: ranked challenges (the default here)
+            // disable custom komi entirely, so automatic komi's default advantage to
+            // white is unavoidable. With only a handful of symmetric center stones and
+            // no captures, that advantage decides the game — putting the accused on
+            // black instead of white means the accused loses on komi rather than
+            // winning, which escaping.not_winner now requires for the report below to
+            // be filed at all.
             await createDirectChallenge(reporterPage, accusedUsername, {
                 ...defaultChallengeSettings,
                 gameName: "E2E CM IWE Report Game",
@@ -95,7 +102,7 @@ export const cmInformalWarnEscaperTest = async (
                 mainTime: "300",
                 timePerPeriod: "30",
                 periods: "5",
-                color: "black",
+                color: "white",
             });
 
             await acceptDirectChallenge(accusedPage, reporterPage);
@@ -103,20 +110,22 @@ export const cmInformalWarnEscaperTest = async (
             const goban = reporterPage.locator(".Goban[data-pointers-bound]");
             await goban.waitFor({ state: "visible" });
 
-            // Play a few moves (need >= 2 to pass the escaping report applicability check)
-            await playMoves(reporterPage, accusedPage, ["D5", "E5", "D6", "E6"], "9x9");
+            // Play a few moves (need >= 2 to pass the escaping report applicability check).
+            // playMoves takes (black, white) positionally — accused is black here,
+            // reporter is white.
+            await playMoves(accusedPage, reporterPage, ["D5", "E5", "D6", "E6"], "9x9");
 
-            await passAndScoreGame(reporterPage, accusedPage);
+            await passAndScoreGame(accusedPage, reporterPage);
 
             // Wait for the post-game view to settle — PlayerCard avatars
             // and AIReview both mount after the game ends, and either can
             // shift layout while a PlayerDetails popover is opening.
             await waitForGameViewReady(reporterPage);
 
-            // Report the accused (white) for escaping
+            // Report the accused (black) for escaping
             await reportPlayerByColor(
                 reporterPage,
-                ".white",
+                ".black",
                 "escaping",
                 "E2E test: player escaped this game",
             );

@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { act, cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { GobanEngineConfig } from "goban";
 import * as data from "@/lib/data";
 import { GameLog, LogEntry } from "./GameLog";
@@ -83,6 +83,10 @@ function logEntry(event: string): LogEntry {
     return { timestamp: "2026-01-01T00:00:00Z", event, data: {} };
 }
 
+function logEntries(count: number): LogEntry[] {
+    return Array.from({ length: count }, (_, i) => logEntry(`event_${i}`));
+}
+
 function renderGameLog(game_id: number) {
     const goban_config = { game_id } as GobanEngineConfig;
     return render(
@@ -139,5 +143,99 @@ describe("GameLog", () => {
         );
 
         expect(screen.queryByText("old game event")).not.toBeInTheDocument();
+    });
+
+    test("shows no pager when the log fits on one page", () => {
+        const callbacks = captureGameLogCallbacks();
+
+        renderGameLog(111);
+        act(() => {
+            callbacks.get(111)?.(logEntries(25));
+        });
+
+        expect(screen.getByText("event 0")).toBeInTheDocument();
+        expect(screen.getByText("event 24")).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Next page" })).not.toBeInTheDocument();
+        expect(screen.queryByText(/Page 1/)).not.toBeInTheDocument();
+    });
+
+    test("renders only the first page of a long log", () => {
+        const callbacks = captureGameLogCallbacks();
+
+        renderGameLog(111);
+        act(() => {
+            callbacks.get(111)?.(logEntries(60));
+        });
+
+        expect(screen.getByText("event 0")).toBeInTheDocument();
+        expect(screen.getByText("event 24")).toBeInTheDocument();
+        expect(screen.queryByText("event 25")).not.toBeInTheDocument();
+        expect(screen.getByText("Page 1 of 3")).toBeInTheDocument();
+    });
+
+    test("next and previous buttons move through pages", () => {
+        const callbacks = captureGameLogCallbacks();
+
+        renderGameLog(111);
+        act(() => {
+            callbacks.get(111)?.(logEntries(60));
+        });
+
+        fireEvent.click(screen.getByRole("button", { name: "Next page" }));
+
+        expect(screen.getByText("Page 2 of 3")).toBeInTheDocument();
+        expect(screen.getByText("event 25")).toBeInTheDocument();
+        expect(screen.getByText("event 49")).toBeInTheDocument();
+        expect(screen.queryByText("event 24")).not.toBeInTheDocument();
+        expect(screen.queryByText("event 50")).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole("button", { name: "Previous page" }));
+
+        expect(screen.getByText("Page 1 of 3")).toBeInTheDocument();
+        expect(screen.getByText("event 0")).toBeInTheDocument();
+    });
+
+    test("last and first buttons jump to the ends", () => {
+        const callbacks = captureGameLogCallbacks();
+
+        renderGameLog(111);
+        act(() => {
+            callbacks.get(111)?.(logEntries(60));
+        });
+
+        fireEvent.click(screen.getByRole("button", { name: "Last page" }));
+
+        expect(screen.getByText("Page 3 of 3")).toBeInTheDocument();
+        expect(screen.getByText("event 50")).toBeInTheDocument();
+        expect(screen.getByText("event 59")).toBeInTheDocument();
+        expect(screen.queryByText("event 49")).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole("button", { name: "First page" }));
+
+        expect(screen.getByText("Page 1 of 3")).toBeInTheDocument();
+        expect(screen.getByText("event 0")).toBeInTheDocument();
+    });
+
+    test("pager resets to the first page when game_id changes", () => {
+        const callbacks = captureGameLogCallbacks();
+
+        const { rerender } = renderGameLog(111);
+        act(() => {
+            callbacks.get(111)?.(logEntries(60));
+        });
+        fireEvent.click(screen.getByRole("button", { name: "Next page" }));
+        expect(screen.getByText("Page 2 of 3")).toBeInTheDocument();
+
+        rerender(
+            <OgsHelpProvider>
+                <GameLog goban_config={{ game_id: 222 } as GobanEngineConfig} />
+            </OgsHelpProvider>,
+        );
+        act(() => {
+            callbacks.get(222)?.(logEntries(60));
+        });
+
+        expect(screen.getByText("Page 1 of 3")).toBeInTheDocument();
+        expect(screen.getByText("event 0")).toBeInTheDocument();
     });
 });

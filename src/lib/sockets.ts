@@ -15,8 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as Sentry from "@sentry/browser";
 import Debug from "@/lib/debug";
-import { protocol, GobanRenderer, JGOFTimeControl, DeviceInfo } from "goban";
+import {
+    protocol,
+    GobanRenderer,
+    JGOFTimeControl,
+    DeviceInfo,
+    GobanSocketMessageParseErrorDetails,
+} from "goban";
 import { GobanSocketProxy } from "@/lib/GobanSocketProxy";
 import { lookingAtOurLiveGame } from "@/components/TimeControl/util";
 
@@ -366,6 +373,9 @@ socket.on("timeout", () => {
     });
 });
 
+let last_hidden_at: number | null = null;
+let last_visible_at: number | null = null;
+
 // When the tab is hidden, browsers throttle timers (Chrome aggressively
 // after 5 min, Safari even in Web Workers). Instead of stopping pings
 // entirely, we switch to "background pinging": pings still go out at
@@ -377,8 +387,10 @@ socket.on("timeout", () => {
 if (typeof document !== "undefined") {
     document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "hidden") {
+            last_hidden_at = Date.now();
             socket.options.background_pinging = true;
         } else {
+            last_visible_at = Date.now();
             socket.options.ignore_pongs_before = Date.now();
             socket.options.background_pinging = false;
             if (socket.connected) {
@@ -387,6 +399,44 @@ if (typeof document !== "undefined") {
         }
     });
 }
+
+/* Reports unparseable socket messages to Sentry along with page visibility
+ * timing, which helps to find out if the corruption follows a wake from
+ * sleep or a return from the background. */
+function reportMessageParseError(
+    socket_name: string,
+    route: string,
+    times_connected: number,
+    details: GobanSocketMessageParseErrorDetails,
+) {
+    const now = Date.now();
+    Sentry.captureException(new Error("Error parsing socket message"), {
+        tags: {
+            socket: socket_name,
+            route,
+        },
+        extra: {
+            ...details,
+            visibility_state: typeof document !== "undefined" ? document.visibilityState : "",
+            ms_since_hidden: last_hidden_at === null ? -1 : now - last_hidden_at,
+            ms_since_visible: last_visible_at === null ? -1 : now - last_visible_at,
+            ms_since_page_load: Math.round(performance.now()),
+            times_connected,
+        },
+    });
+}
+
+let ai_connection_count = 0;
+ai_socket.on("connect", () => {
+    ai_connection_count++;
+});
+
+socket.on("message_parse_error", (details) =>
+    reportMessageParseError("main", route_name, connection_count, details),
+);
+ai_socket.on("message_parse_error", (details) =>
+    reportMessageParseError("ai", ai_host, ai_connection_count, details),
+);
 
 /* Returns the time in ms since the last time a connection was established to
  * the server.

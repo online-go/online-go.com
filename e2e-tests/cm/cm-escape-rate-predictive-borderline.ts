@@ -77,6 +77,12 @@ async function playAndFinishGame(
     gameIndex: number,
 ): Promise<void> {
     const gameName = `E2E ERPB Game ${gameIndex}`;
+    // Reporter plays white deliberately: ranked challenges (the default here)
+    // disable custom komi entirely, so automatic komi's default advantage to white
+    // is unavoidable. With only a handful of symmetric center stones and no
+    // captures, that advantage decides the game — putting the accused on black
+    // instead of white means the accused loses on komi rather than winning, which
+    // escaping.not_winner now requires for the report below to be filed at all.
     await createDirectChallenge(reporterPage, accusedUsername, {
         ...defaultChallengeSettings,
         gameName,
@@ -85,7 +91,7 @@ async function playAndFinishGame(
         mainTime: "300",
         timePerPeriod: "30",
         periods: "5",
-        color: "black",
+        color: "white",
     });
 
     await acceptDirectChallenge(accusedPage, reporterPage);
@@ -93,9 +99,11 @@ async function playAndFinishGame(
     const goban = reporterPage.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });
 
-    await playMoves(reporterPage, accusedPage, ["D5", "E5", "D6", "E6"], "9x9");
+    // playMoves takes (black, white) positionally — accused is black here, reporter
+    // is white.
+    await playMoves(accusedPage, reporterPage, ["D5", "E5", "D6", "E6"], "9x9");
 
-    await passAndScoreGame(reporterPage, accusedPage);
+    await passAndScoreGame(accusedPage, reporterPage);
 }
 
 async function reportAndVote(
@@ -105,7 +113,7 @@ async function reportAndVote(
 ): Promise<void> {
     await reportPlayerByColor(
         reporterPage,
-        ".white",
+        ".black",
         "escaping",
         "E2E test: player escaped this game",
     );
@@ -166,7 +174,7 @@ export const cmEscapeRatePredictiveBorderlineTest = async (
 
             await reportPlayerByColor(
                 reporterPage,
-                ".white",
+                ".black",
                 "escaping",
                 "E2E test: player escaped (report 3, borderline)",
             );

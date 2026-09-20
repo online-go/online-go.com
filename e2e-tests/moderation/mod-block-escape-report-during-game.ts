@@ -23,16 +23,16 @@ import type { CreateContextOptions } from "@helpers";
 
 import { BrowserContext, expect } from "@playwright/test";
 
-import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
+import { newTestUsername, prepareNewUser, tickReportAttestations } from "@helpers/user-utils";
 import {
     createDirectChallenge,
     acceptDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
-import { playMoves, resignActiveGame } from "@helpers/game-utils";
+import { passAndScoreGame, playMoves } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 
-export const modRejectEscapeReportDuringGameTest = async ({
+export const modBlockEscapeReportDuringGameTest = async ({
     createContext,
 }: {
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
@@ -50,7 +50,13 @@ export const modRejectEscapeReportDuringGameTest = async ({
         "test",
     );
 
-    // Reporter challenges the reported user
+    // Reporter challenges the reported user, taking white deliberately: ranked
+    // challenges (the default here) disable custom komi entirely, so automatic
+    // komi's default advantage to white is unavoidable. With only a handful of
+    // symmetric center stones and no captures, that advantage decides the game —
+    // putting the reported user on black instead of white means they lose on komi
+    // rather than winning, which escaping.not_winner now requires for the after-game
+    // report below to succeed.
     await createDirectChallenge(reporterPage, reportedUsername, {
         ...defaultChallengeSettings,
         gameName: "E2E Mod Escape Report Test Game",
@@ -60,28 +66,30 @@ export const modRejectEscapeReportDuringGameTest = async ({
         mainTime: "300",
         timePerPeriod: "30",
         periods: "5",
+        color: "white",
     });
 
     // Reported user accepts
     await acceptDirectChallenge(reportedPage, reporterPage);
 
-    // Reporter is black
+    // Reporter is white; the reported user is black and moves first.
     // Wait for the Goban to be visible & definitely ready
     const goban = reporterPage.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });
 
-    // Wait for the game state to indicate it's the reporter's move
-    const reportersMove = reporterPage.getByText("Your move", { exact: true });
-    await expect(reportersMove).toBeVisible();
+    // Wait for the game state to indicate it's the reported user's (black's) move
+    const reportedUsersMove = reportedPage.getByText("Your move", { exact: true });
+    await expect(reportedUsersMove).toBeVisible();
 
-    // Play a few moves to establish the game is underway
-    // Need at least 6 moves to allow resignation
+    // Play a few moves to establish the game is underway (>= 2 are needed for
+    // escaping report applicability). playMoves takes (black, white)
+    // positionally — the reported user is black here, reporter is white.
     const moves = ["D5", "E5", "D6", "E6", "D7", "E7"];
 
-    await playMoves(reporterPage, reportedPage, moves, "9x9");
+    await playMoves(reportedPage, reporterPage, moves, "9x9");
 
     // Try to report escaping during the game - this should be blocked
-    const playerLink = reporterPage.locator(`.white.player-name-container a.Player`);
+    const playerLink = reporterPage.locator(`.black.player-name-container a.Player`);
     await expect(playerLink).toBeVisible();
     await playerLink.hover(); // Stabilize popover before clicking
     await playerLink.click();
@@ -93,27 +101,25 @@ export const modRejectEscapeReportDuringGameTest = async ({
 
     await reporterPage.selectOption(".type-picker select", { value: "escaping" }); // cspell:disable-line
 
-    const notesBoxDuringGame = reporterPage.locator(".notes");
+    // The client now blocks this before any request is sent, so there is no server
+    // error to dismiss. The backend rule at moderate.py:758-769 still stands as
+    // defence in depth; nothing in the browser suite exercises it any more.
+    const blocker = reporterPage.locator('[data-checklist-blocker="escaping.game_ended"]');
+    await expect(blocker).toBeVisible();
+    await expect(blocker).toContainText("has not ended yet");
 
-    // Fill in the notes
-    await expect(notesBoxDuringGame).toBeVisible();
-    await notesBoxDuringGame.fill("E2E test - attempting to report during active game");
+    await expect(reporterPage.locator("textarea.notes")).toHaveCount(0);
+    await expect(reporterPage.getByRole("button", { name: /Report User$/ })).not.toBeEnabled();
 
-    // Try to submit the report during the game - this should fail
-    const reportButtonDuringGame = await expectOGSClickableByName(reporterPage, /Report User$/);
-    await reportButtonDuringGame.click();
+    // Close the dialog before playing the game out.
+    const closeButton = await expectOGSClickableByName(reporterPage, /^Close$/);
+    await closeButton.click();
 
-    // Should get an error message (backend blocks the report)
-    await expect(reporterPage.getByText(/There was an error submitting your report/)).toBeVisible();
-
-    // Close the error alert
-    const okButtonDuringGame = await expectOGSClickableByName(reporterPage, "OK");
-    await okButtonDuringGame.click();
-
-    await resignActiveGame(reporterPage);
+    // Finish the game by passing and scoring; the reported user is black.
+    await passAndScoreGame(reportedPage, reporterPage);
 
     // Now try to report escaping after the game - this should be allowed
-    const playerLinkAfterGame = reporterPage.locator(`.white.player-name-container a.Player`);
+    const playerLinkAfterGame = reporterPage.locator(`.black.player-name-container a.Player`);
     await expect(playerLinkAfterGame).toBeVisible();
     await playerLinkAfterGame.hover(); // Stabilize popover before clicking
     await playerLinkAfterGame.click();
@@ -130,6 +136,8 @@ export const modRejectEscapeReportDuringGameTest = async ({
     // Fill in the notes
     await expect(notesBoxAfterGame).toBeVisible();
     await notesBoxAfterGame.fill("E2E test - reporting after game ended");
+
+    await tickReportAttestations(reporterPage);
 
     // Try to submit the report after the game - this should succeed
     const reportButtonAfterGame = await expectOGSClickableByName(reporterPage, /Report User$/);

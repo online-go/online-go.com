@@ -141,8 +141,9 @@ interface PlayerCardProps {
     goban: GobanRenderer;
     historical: PlayerType | null;
     estimating_score: boolean;
-    show_score_breakdown: boolean;
-    onScoreClick: () => void;
+    /** Omit to disable the score-details popup. */
+    show_score_breakdown?: boolean;
+    onScoreClick?: () => void;
     zen_mode: boolean;
 }
 
@@ -151,7 +152,7 @@ export function PlayerCard({
     goban,
     historical,
     estimating_score,
-    show_score_breakdown,
+    show_score_breakdown = false,
     onScoreClick,
     zen_mode,
 }: PlayerCardProps) {
@@ -285,7 +286,9 @@ export function PlayerCard({
 
             <div
                 className={
-                    "score-container " + (show_score_breakdown ? "show-score-breakdown" : "")
+                    "score-container" +
+                    (onScoreClick ? " has-score-details" : "") +
+                    (show_score_breakdown ? " show-score-breakdown" : "")
                 }
                 onClick={onScoreClick}
             >
@@ -309,9 +312,11 @@ export function PlayerCard({
                 {!show_points && !!score.komi && (
                     <div className="komi">{komiString(score.komi)}</div>
                 )}
-                <div id={`${color}-score-details`} className="score-details">
-                    <ScorePopup goban={goban} color={color} show={show_score_breakdown} />
-                </div>
+                {onScoreClick && (
+                    <div id={`${color}-score-details`} className="score-details">
+                        <ScorePopup goban={goban} color={color} show={show_score_breakdown} />
+                    </div>
+                )}
             </div>
         </div>
     );
