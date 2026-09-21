@@ -31,6 +31,12 @@ export interface ChecklistContext {
     review_id?: number;
     reported_user_id?: number;
     note: string;
+    /**
+     * The stall kind the reporter has selected in the stalling report form
+     * (a StallingKind from stalling_kinds.ts), or undefined until they pick one.
+     * Live form state, like `note` — so only sync checks may read it.
+     */
+    stalling_kind?: string;
     /** Memoised by game id, so sibling checks share one request. */
     fetchGamedata: () => Promise<Gamedata>;
 }

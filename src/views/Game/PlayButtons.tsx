@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { _ } from "@/lib/translate";
+import { _, pgettext } from "@/lib/translate";
 import { isLiveGame } from "@/components/TimeControl";
 import * as preferences from "@/lib/preferences";
 import { alert } from "@/lib/swal_config";
@@ -33,6 +33,7 @@ import {
     useSubmittingMove,
     useUndoRequestIsMine,
     useUserIsParticipant,
+    useViewMode,
 } from "./GameHooks";
 import { cancelOrResignGame } from "./game_actions";
 import { enableTouchAction } from "./touch_actions";
@@ -291,6 +292,12 @@ export function PlayButtons(): React.ReactElement | null {
         cur_move_number === official_move_number;
     const show_submit_button = show_submit;
 
+    // Desktop shows "Your move - opponent passed" in the title. Portrait
+    // has no title, so the notice goes under the Pass button.
+    const is_portrait = useViewMode(goban_controller) === "portrait";
+    const show_opponent_passed =
+        is_portrait && show_pass && engine.cur_move.passed() && !!engine.cur_move.parent;
+
     // With analysis disabled, stepping back through the game only shows
     // earlier positions; this is the way back to the live position.
     const show_back_to_game =
@@ -347,9 +354,19 @@ export function PlayButtons(): React.ReactElement | null {
                 )}
                 <KeyboardCoordinateInput />
                 {show_pass && (
-                    <button className="sm primary bold pass-button" onClick={pass}>
-                        {_("Pass")}
-                    </button>
+                    <span className="pass-with-notice">
+                        <button className="sm primary bold pass-button" onClick={pass}>
+                            {_("Pass")}
+                        </button>
+                        {show_opponent_passed && (
+                            <span className="opponent-passed">
+                                {pgettext(
+                                    "Shown under the Pass button when the opponent passed their last move",
+                                    "Opponent passed",
+                                )}
+                            </span>
+                        )}
+                    </span>
                 )}
                 {show_submit_button && (
                     <button
