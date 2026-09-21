@@ -51,7 +51,22 @@ describe("CompactTurnStones", () => {
 
     test("shows the rule set above the stones", () => {
         render(<CompactTurnStones to_move="black" move_number={34} rules="japanese" />);
-        expect(screen.getByText("Japanese")).toHaveClass("CompactTurnStones-rules");
+        expect(screen.getByText("Japanese").closest(".CompactTurnStones-rules")).not.toBeNull();
+    });
+
+    test("shows the handicap next to the rule set", () => {
+        render(<CompactTurnStones to_move="white" move_number={0} rules="japanese" handicap={2} />);
+        expect(screen.getByTitle("Handicap: 2")).toHaveTextContent("\u2461");
+        expect(screen.getByTitle("Handicap: 2").parentElement).toBe(
+            screen.getByText("Japanese").parentElement,
+        );
+    });
+
+    test("omits the handicap in an even game", () => {
+        const { container } = render(
+            <CompactTurnStones to_move="black" move_number={0} rules="japanese" handicap={0} />,
+        );
+        expect(container.querySelector(".CompactTurnStones-handicap")).toBeNull();
     });
 
     test("omits the rule set when it is not known", () => {

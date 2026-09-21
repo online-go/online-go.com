@@ -28,6 +28,7 @@ import { Player } from "@/components/Player";
 import { lookup, fetch } from "@/lib/player_cache";
 import { _, interpolate, ngettext, pgettext } from "@/lib/translate";
 import * as data from "@/lib/data";
+import { handicapStonesString } from "@/lib/misc";
 import {
     generateGobanHook,
     usePhase,
@@ -146,7 +147,8 @@ interface PlayerCardProps {
     onScoreClick?: () => void;
     zen_mode: boolean;
     /** Abbreviates the komi to the first letter of "Komi" and the number,
-     *  for the compact player header. */
+     *  and leaves the handicap out, for the compact player header, which
+     *  shows it next to the rule set. */
     compact?: boolean;
 }
 
@@ -312,7 +314,7 @@ export function PlayerCard({
                         hidden={show_points && !estimating_score}
                     />
                 )}
-                {color === "black" && handicapStones(engine.config.handicap)}
+                {color === "black" && !compact && handicapStones(engine.config.handicap)}
                 {!show_points && !!score.komi && (
                     <div className="komi" title={compact ? _("Komi") : undefined}>
                         {compact ? compactKomiString(score.komi) : komiString(score.komi)}
@@ -370,31 +372,12 @@ function compactKomiString(komi: number) {
 }
 
 function handicapStones(handicap_stones: number | undefined) {
-    const stones = handicap_stones ? stonesString(handicap_stones) : "";
+    const stones = handicap_stones ? handicapStonesString(handicap_stones) : "";
     return (
         <div className="handicap-stones">
             {stones && <span title={_("Handicap") + ": " + handicap_stones}>{stones}</span>}
         </div>
     );
-}
-
-function stonesString(handicap_stones: number) {
-    if (handicap_stones <= 0) {
-        return "";
-    }
-    const one = 0x2460;
-    const twenty_one = 0x3251;
-    const thirty_six = 0x32b1;
-    if (handicap_stones <= 20) {
-        return String.fromCodePoint(one + handicap_stones - 1);
-    }
-    if (handicap_stones <= 35) {
-        return String.fromCodePoint(twenty_one + handicap_stones - 21);
-    }
-    if (handicap_stones <= 50) {
-        return String.fromCodePoint(thirty_six + handicap_stones - 36);
-    }
-    return "(" + handicap_stones + ")";
 }
 
 function useAutoResignExpiration(goban: Goban, color: "black" | "white") {

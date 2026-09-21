@@ -16,8 +16,8 @@
  */
 
 import * as React from "react";
-import { interpolate, pgettext } from "@/lib/translate";
-import { rulesText } from "@/lib/misc";
+import { _, interpolate, pgettext } from "@/lib/translate";
+import { handicapStonesString, rulesText } from "@/lib/misc";
 import "./CompactTurnStones.css";
 
 interface CompactTurnStonesProps {
@@ -28,32 +28,50 @@ interface CompactTurnStonesProps {
     move_number: number;
     /** Rule set shown above the stones. Omitted or unknown hides the line. */
     rules?: string;
+    /** Handicap stones, shown next to the rule set. 0 or omitted hides it. */
+    handicap?: number;
 }
 
 /**
  * The centrepiece of the compact player header: a black stone left of
  * centre and a white stone overlapping it to the right, with the side to
- * move drawn on top, the rule set above, and the move number underneath.
+ * move drawn on top, the rule set and the handicap above, and the move
+ * number underneath.
  */
 export function CompactTurnStones({
     to_move,
     move_number,
     rules,
+    handicap = 0,
 }: CompactTurnStonesProps): React.ReactElement {
     const stoneClass = (color: "black" | "white") =>
         `CompactTurnStones-stone ${color}` + (to_move === color ? " on-top" : "");
     const rules_label = rules ? rulesText(rules) : null;
+    const show_rules = !!rules_label && rules_label !== "[unknown]";
+    const show_handicap = handicap > 0;
 
     return (
         <div className="CompactTurnStones">
-            {rules_label && rules_label !== "[unknown]" && (
-                <div
-                    className="CompactTurnStones-rules"
-                    title={interpolate(pgettext("Rule set of the game", "Rules: {{rules}}"), {
-                        rules: rules_label,
-                    })}
-                >
-                    {rules_label}
+            {(show_rules || show_handicap) && (
+                <div className="CompactTurnStones-rules">
+                    {show_rules && (
+                        <span
+                            title={interpolate(
+                                pgettext("Rule set of the game", "Rules: {{rules}}"),
+                                { rules: rules_label },
+                            )}
+                        >
+                            {rules_label}
+                        </span>
+                    )}
+                    {show_handicap && (
+                        <span
+                            className="CompactTurnStones-handicap"
+                            title={_("Handicap") + ": " + handicap}
+                        >
+                            {handicapStonesString(handicap)}
+                        </span>
+                    )}
                 </div>
             )}
             <div className="CompactTurnStones-stones">

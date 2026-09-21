@@ -16,8 +16,9 @@ it, and white's time sits at the right edge with the icon before it.
 
 The middle holds a black stone left of centre and a white stone
 overlapping it to the right. The side to move is drawn on top of the
-other one. A small label above the stones names the rule set, and the
-move number sits under them. Because the move number is shown here, the
+other one. A small label above the stones names the rule set, followed by
+the handicap as a circled number in a handicap game, and the move number
+sits under the stones. Because the move number is shown here, the
 button-only move controls under the board drop their "Move #" label.
 
 The coloured card backgrounds are dropped in this layout: the stones in
@@ -30,7 +31,7 @@ and takes the first letter of the translated word "Komi" instead, so
 
 Everything else a player card carries stays: the country flag, the chat
 presence dot, the auto-resign countdown, the stone-removal accepted badge,
-the rengo team count, komi and handicap, the final points once the game
+the rengo team count, komi, the final points once the game
 ends, and the tappable score breakdown. While the breakdown is open, a
 transparent layer covers the screen, so a tap anywhere closes it without
 also reaching the board or a button under it.

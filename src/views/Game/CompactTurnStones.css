@@ -15,8 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Two overlapping stones marking whose turn it is, with the rule set
- * above them and the move number below them. Sits between the two halves of the compact player header. */
+/* Two overlapping stones marking whose turn it is, with the rule set and
+ * the handicap above them and the move number below them. Sits between the
+ * two halves of the compact player header. */
 .CompactTurnStones {
     display: flex;
     flex-direction: column;
@@ -69,6 +70,13 @@
         margin-bottom: 0.15rem;
         white-space: nowrap;
         color: var(--shade1);
+        display: flex;
+        align-items: center;
+        gap: 0.2rem;
+    }
+
+    .CompactTurnStones-handicap {
+        font-size: 0.7rem;
     }
 
     .CompactTurnStones-move-number {

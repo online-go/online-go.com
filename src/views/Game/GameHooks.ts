@@ -326,6 +326,12 @@ export const useGameRules = generateGobanHook(
     (goban: Goban | null) => goban?.engine?.config?.rules,
 );
 
+/** React hook that returns the number of handicap stones, 0 for an even
+ *  game. */
+export const useGameHandicap = generateGobanHook(
+    (goban: Goban | null) => goban?.engine?.config?.handicap ?? 0,
+);
+
 /**
  * Intersections the auto-scorer wants sealed before the stone removal
  * phase can be scored correctly. Undefined when nothing needs sealing.
