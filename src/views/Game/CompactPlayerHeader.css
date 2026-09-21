@@ -177,7 +177,7 @@
     .white.player-container .num-captures-count {
         background: #1a1a1a;
         color: #f0f0f0;
-        border: 1px solid #000;
+        border: 1px solid #666;
     }
 
     .in-game-clock {
