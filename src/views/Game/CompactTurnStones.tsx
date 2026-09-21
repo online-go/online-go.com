@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import { interpolate, pgettext } from "@/lib/translate";
+import { rulesText } from "@/lib/misc";
 import "./CompactTurnStones.css";
 
 interface CompactTurnStonesProps {
@@ -25,22 +26,36 @@ interface CompactTurnStonesProps {
     to_move: "black" | "white" | null;
     /** Move number shown under the stones. Negative hides the line. */
     move_number: number;
+    /** Rule set shown above the stones. Omitted or unknown hides the line. */
+    rules?: string;
 }
 
 /**
  * The centrepiece of the compact player header: a black stone left of
  * centre and a white stone overlapping it to the right, with the side to
- * move drawn on top, and the move number underneath.
+ * move drawn on top, the rule set above, and the move number underneath.
  */
 export function CompactTurnStones({
     to_move,
     move_number,
+    rules,
 }: CompactTurnStonesProps): React.ReactElement {
     const stoneClass = (color: "black" | "white") =>
         `CompactTurnStones-stone ${color}` + (to_move === color ? " on-top" : "");
+    const rules_label = rules ? rulesText(rules) : null;
 
     return (
         <div className="CompactTurnStones">
+            {rules_label && rules_label !== "[unknown]" && (
+                <div
+                    className="CompactTurnStones-rules"
+                    title={interpolate(pgettext("Rule set of the game", "Rules: {{rules}}"), {
+                        rules: rules_label,
+                    })}
+                >
+                    {rules_label}
+                </div>
+            )}
             <div className="CompactTurnStones-stones">
                 <span className={stoneClass("black")} data-testid="compact-stone-black" />
                 <span className={stoneClass("white")} data-testid="compact-stone-white" />

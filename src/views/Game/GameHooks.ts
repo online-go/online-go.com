@@ -320,6 +320,12 @@ export const useOfficialMoveNumber = generateGobanHook(
     ["last_official_move"],
 );
 
+/** React hook that returns the rule set the game is played under, or
+ *  undefined before the game config has loaded. */
+export const useGameRules = generateGobanHook(
+    (goban: Goban | null) => goban?.engine?.config?.rules,
+);
+
 /**
  * Intersections the auto-scorer wants sealed before the stone removal
  * phase can be scored correctly. Undefined when nothing needs sealing.

@@ -14,7 +14,8 @@ the two halves mirror each other around the middle.
 
 The middle holds a black stone left of centre and a white stone
 overlapping it to the right. The side to move is drawn on top of the
-other one. The move number sits under the stones.
+other one. A small label above the stones names the rule set, and the
+move number sits under them.
 
 The coloured card backgrounds are dropped in this layout: the stones in
 the middle say who is who, and the halves read as one strip rather than
@@ -40,8 +41,8 @@ holds across games and devices.
   same `PlayerCard` the other layouts use, so every badge and popup on a
   card works here without a second implementation; the layout is done in
   `CompactPlayerHeader.css`.
-- `src/views/Game/CompactTurnStones.tsx` — the two stones and the move
-  number in the middle.
+- `src/views/Game/CompactTurnStones.tsx` — the two stones, the rule set
+  label and the move number in the middle.
 - `src/views/Game/Game.tsx` — picks the strip over the pair of cards for
   the `aboveBoard` slot, and drops the lower card from `belowBoard`.
 - `useColorToMoveOnOfficialBranch` and `useOfficialMoveNumber` in

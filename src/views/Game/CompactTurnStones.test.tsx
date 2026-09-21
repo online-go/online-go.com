@@ -48,4 +48,16 @@ describe("CompactTurnStones", () => {
         const { container } = render(<CompactTurnStones to_move={null} move_number={-1} />);
         expect(container.querySelector(".CompactTurnStones-move-number")).toBeNull();
     });
+
+    test("shows the rule set above the stones", () => {
+        render(<CompactTurnStones to_move="black" move_number={34} rules="japanese" />);
+        expect(screen.getByText("Japanese")).toHaveClass("CompactTurnStones-rules");
+    });
+
+    test("omits the rule set when it is not known", () => {
+        const { container } = render(
+            <CompactTurnStones to_move="black" move_number={34} rules="bogus" />,
+        );
+        expect(container.querySelector(".CompactTurnStones-rules")).toBeNull();
+    });
 });

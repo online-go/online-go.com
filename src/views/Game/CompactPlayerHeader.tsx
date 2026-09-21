@@ -20,6 +20,7 @@ import { PlayerCard } from "./PlayerCards";
 import { CompactTurnStones } from "./CompactTurnStones";
 import {
     useColorToMoveOnOfficialBranch,
+    useGameRules,
     useOfficialMoveNumber,
     useScorePopup,
     useZenMode,
@@ -53,6 +54,7 @@ export function CompactPlayerHeader({
     const { show_score_breakdown, toggleScorePopup } = useScorePopup(goban);
     const to_move = useColorToMoveOnOfficialBranch(goban);
     const move_number = useOfficialMoveNumber(goban);
+    const rules = useGameRules(goban);
 
     const card = (color: "black" | "white") => (
         <PlayerCard
@@ -70,7 +72,7 @@ export function CompactPlayerHeader({
         <div className="CompactPlayerHeader">
             <div className="player-icons">
                 {card("black")}
-                <CompactTurnStones to_move={to_move} move_number={move_number} />
+                <CompactTurnStones to_move={to_move} move_number={move_number} rules={rules} />
                 {card("white")}
             </div>
         </div>
