@@ -38,9 +38,9 @@ ends, and the tappable score breakdown. While the breakdown is open, a
 transparent layer covers the screen, so a tap anywhere closes it without
 also reaching the board or a button under it.
 
-## Turning it on
+## Turning it on and off
 
-The in-game Settings panel has a **Compact Mode** toggle directly below
+Compact mode is on by default. The in-game Settings panel has a **Compact Mode** toggle directly below
 Zen Mode. The row only appears in portrait, because the layout only
 applies there. The choice is the `game.compact-mode` preference, so it
 holds across games and devices.

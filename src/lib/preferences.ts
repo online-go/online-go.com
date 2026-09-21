@@ -94,7 +94,7 @@ export const defaults = {
     "game.chat-enabled": true,
     /* Mobile: put both players in one strip above the board instead of
      * a card on either side of it. */
-    "game.compact-mode": false,
+    "game.compact-mode": true,
     "moderator.game-moderator-tab-visible": true,
     language: "auto",
     "move-tree-numbering": "move-number" as "none" | "move-coordinates" | "move-number",
