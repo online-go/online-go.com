@@ -28,7 +28,9 @@ and takes the first letter of the translated word "Komi" instead, so
 Everything else a player card carries stays: the country flag, the chat
 presence dot, the auto-resign countdown, the stone-removal accepted badge,
 the rengo team count, komi and handicap, the final points once the game
-ends, and the tappable score breakdown.
+ends, and the tappable score breakdown. While the breakdown is open, a
+transparent layer covers the screen, so a tap anywhere closes it without
+also reaching the board or a button under it.
 
 ## Turning it on
 

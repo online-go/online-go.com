@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { PlayerCard } from "./PlayerCards";
 import { CompactTurnStones } from "./CompactTurnStones";
 import {
@@ -76,6 +77,15 @@ export function CompactPlayerHeader({
                 <CompactTurnStones to_move={to_move} move_number={move_number} rules={rules} />
                 {card("white")}
             </div>
+            {show_score_breakdown &&
+                createPortal(
+                    <div
+                        className="CompactPlayerHeader-score-backdrop"
+                        data-testid="compact-score-backdrop"
+                        onClick={toggleScorePopup}
+                    />,
+                    document.body,
+                )}
         </div>
     );
 }

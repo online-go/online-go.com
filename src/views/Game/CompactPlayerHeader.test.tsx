@@ -21,7 +21,7 @@ import "@/lib/data";
 import "@/lib/sockets";
 
 import * as React from "react";
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { BrowserRouter as Router } from "react-router-dom";
 import { GobanController } from "@/lib/GobanController";
@@ -53,6 +53,34 @@ function renderHeader(config: Record<string, unknown>) {
 }
 
 describe("CompactPlayerHeader", () => {
+    test("closes the score breakdown on a tap anywhere on the screen", () => {
+        const { container, controller } = renderHeader({ komi: 6.5 });
+        const goban = controller.goban;
+        const player_score = {
+            total: 0,
+            stones: 0,
+            territory: 0,
+            prisoners: 0,
+            scoring_positions: "",
+            handicap: 0,
+            komi: 0,
+        };
+        jest.spyOn(goban.engine, "computeScore").mockReturnValue({
+            black: player_score,
+            white: { ...player_score, komi: 6.5 },
+        });
+        jest.spyOn(goban, "showScores").mockImplementation(() => undefined);
+        const score = container.querySelector(".white.player-container .has-score-details");
+        expect(screen.queryByTestId("compact-score-backdrop")).toBeNull();
+
+        fireEvent.click(score as Element);
+        expect(score).toHaveClass("show-score-breakdown");
+
+        fireEvent.click(screen.getByTestId("compact-score-backdrop"));
+        expect(score).not.toHaveClass("show-score-breakdown");
+        expect(screen.queryByTestId("compact-score-backdrop")).toBeNull();
+    });
+
     test("abbreviates the komi to the initial of Komi", () => {
         const { container } = renderHeader({ komi: 6.5 });
         expect(container.querySelector(".white.player-container .komi")).toHaveTextContent("K 6.5");

@@ -286,3 +286,12 @@
         }
     }
 }
+
+/* A transparent layer over the whole screen while the score breakdown is
+ * open. A tap anywhere closes the popup, and the layer takes the tap so it
+ * does not also reach the board or a button under it. */
+.CompactPlayerHeader-score-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-score-details-backdrop);
+}
