@@ -182,15 +182,6 @@
         align-self: center;
         font-size: 0.85rem;
         line-height: 1.2;
-        padding: 0.05rem 0.25rem;
-        border: 1px solid transparent;
-        border-radius: 0.25rem;
-    }
-
-    /* The side to move already carries the raised stone in the middle; the
-     * outlined clock is the same answer where the eye is reading the time. */
-    .player-container.their-turn .in-game-clock {
-        border-color: var(--primary);
     }
 
     .Clock .main-time {
