@@ -65,6 +65,7 @@ export function CompactPlayerHeader({
             show_score_breakdown={show_score_breakdown}
             onScoreClick={toggleScorePopup}
             zen_mode={zen_mode}
+            compact
         />
     );
 

@@ -145,6 +145,9 @@ interface PlayerCardProps {
     show_score_breakdown?: boolean;
     onScoreClick?: () => void;
     zen_mode: boolean;
+    /** Abbreviates the komi to the first letter of "Komi" and the number,
+     *  for the compact player header. */
+    compact?: boolean;
 }
 
 export function PlayerCard({
@@ -155,6 +158,7 @@ export function PlayerCard({
     show_score_breakdown = false,
     onScoreClick,
     zen_mode,
+    compact = false,
 }: PlayerCardProps) {
     const engine = goban.engine;
     const player = { ...engine.players[color] };
@@ -310,7 +314,9 @@ export function PlayerCard({
                 )}
                 {color === "black" && handicapStones(engine.config.handicap)}
                 {!show_points && !!score.komi && (
-                    <div className="komi">{komiString(score.komi)}</div>
+                    <div className="komi" title={compact ? _("Komi") : undefined}>
+                        {compact ? compactKomiString(score.komi) : komiString(score.komi)}
+                    </div>
                 )}
                 {onScoreClick && (
                     <div id={`${color}-score-details`} className="score-details">
@@ -354,6 +360,13 @@ function komiString(komi: number) {
     }
     const abs_komi = Math.abs(komi).toFixed(1);
     return komi > 0 ? `+ ${abs_komi}` : `- ${abs_komi}`;
+}
+
+/** The komi prefixed with the first letter of the translated "Komi", such
+ *  as "K 6.5". */
+function compactKomiString(komi: number) {
+    const initial = Array.from(_("Komi"))[0] ?? "";
+    return `${initial} ${komi.toFixed(1)}`;
 }
 
 function handicapStones(handicap_stones: number | undefined) {

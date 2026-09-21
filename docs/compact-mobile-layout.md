@@ -21,7 +21,9 @@ The coloured card backgrounds are dropped in this layout: the stones in
 the middle say who is who, and the halves read as one strip rather than
 two cards. The capture count becomes a disc in the colour of the stones
 captured — a player's captures are the opponent's stones, so black's count
-sits in a white disc and white's in a black one.
+sits in a white disc and white's in a black one. The komi drops its sign
+and takes the first letter of the translated word "Komi" instead, so
+"+ 6.5" becomes "K 6.5".
 
 Everything else a player card carries stays: the country flag, the chat
 presence dot, the auto-resign countdown, the stone-removal accepted badge,

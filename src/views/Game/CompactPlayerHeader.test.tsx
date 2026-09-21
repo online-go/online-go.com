@@ -53,6 +53,11 @@ function renderHeader(config: Record<string, unknown>) {
 }
 
 describe("CompactPlayerHeader", () => {
+    test("abbreviates the komi to the initial of Komi", () => {
+        const { container } = renderHeader({ komi: 6.5 });
+        expect(container.querySelector(".white.player-container .komi")).toHaveTextContent("K 6.5");
+    });
+
     test("shows a card for each player", () => {
         const { container } = renderHeader({});
         expect(container.querySelector(".black.player-container")).toBeInTheDocument();
