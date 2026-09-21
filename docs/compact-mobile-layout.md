@@ -10,7 +10,9 @@ back to the board.
 Both players sit on one row, black on the left and white on the right,
 whatever seat the user holds. Each half puts the avatar on the outside of
 the strip and the name, the capture count and the clock on the inside, so
-the two halves mirror each other around the middle.
+the two halves mirror each other around the middle. The clocks mirror
+too: black's time sits at the left edge with the turn clock icon after
+it, and white's time sits at the right edge with the icon before it.
 
 The middle holds a black stone left of centre and a white stone
 overlapping it to the right. The side to move is drawn on top of the
