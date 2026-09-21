@@ -284,13 +284,17 @@ const stallingExplanationItem: SyncDataCheckItem = {
             return { met: true };
         }
         const minimum = 20;
-        return ctx.note.length >= minimum
+        // Measured after trimming, because composeStallingNote trims the note
+        // before submission: whatever the trim would discard must not count
+        // toward the explanation the moderators will actually receive.
+        const explanation = ctx.note.trim();
+        return explanation.length >= minimum
             ? { met: true }
             : {
                   met: false,
                   message: interpolate(
                       pgettext("Context of message", "{{required}} more characters needed"),
-                      { required: minimum - ctx.note.length },
+                      { required: minimum - explanation.length },
                   ),
               };
     },

@@ -382,6 +382,18 @@ describe("stalling kind and explanation", () => {
         expect(at("a".repeat(20))).toBe("satisfied");
     });
 
+    test("whitespace does not count toward the 'something else' explanation", () => {
+        // composeStallingNote trims the note before submission, so anything the
+        // trim would discard must not satisfy this check — otherwise a
+        // whitespace-padded note passes here yet reaches moderators with no
+        // explanation at all.
+        const at = (note: string) =>
+            stateOf("stalling.explanation_length", ctx({ stalling_kind: "other", note }));
+        expect(at(" ".repeat(25))).toBe("actionable");
+        expect(at(`  ${"a".repeat(19)}  `)).toBe("actionable");
+        expect(at(`  ${"a".repeat(20)}  `)).toBe("satisfied");
+    });
+
     test("explanation is required at all only for 'something else'", () => {
         // No kind selected yet: kind_selected is the item asking for action, so the
         // explanation item must not simultaneously demand text the reporter may
