@@ -52,7 +52,12 @@ describe("REPORT_CHECKLISTS resolved lists", () => {
         ],
         [
             "stalling",
-            ["report.game_identified", "stalling.enough_moves", "report.description_length"],
+            [
+                "report.game_identified",
+                "stalling.enough_moves",
+                "stalling.kind_selected",
+                "stalling.explanation_length",
+            ],
         ],
         ["score_cheating", ["report.game_identified"]],
         ["sandbagging", ["report.game_identified"]],
@@ -128,7 +133,7 @@ describe("synthesised checks", () => {
     test("every other type needs exactly 20 characters", () => {
         const ctx = (note: string) => ({ note, fetchGamedata: () => Promise.reject(new Error()) });
 
-        for (const type of ["stalling", "ai_use", "inappropriate_content", "harassment", "other"]) {
+        for (const type of ["ai_use", "inappropriate_content", "harassment", "other"]) {
             const items = getChecklist(type).filter((i) => i.id === "report.description_length");
 
             expect({
@@ -339,5 +344,69 @@ describe("stalling data checks", () => {
         const results = buildResults(items, ctx, outcomes, {});
         const states = Object.fromEntries(results.map((r) => [r.id, r.state]));
         expect(states["stalling.enough_moves"]).toBe("unavailable");
+    });
+});
+
+describe("stalling kind and explanation", () => {
+    const ctx = (over: { stalling_kind?: string; note?: string } = {}) => ({
+        note: over.note ?? "",
+        stalling_kind: over.stalling_kind,
+        fetchGamedata: () => Promise.reject(new Error()),
+    });
+
+    const stateOf = (id: string, c: ReturnType<typeof ctx>) => {
+        const items = getChecklist("stalling").filter((i) => i.id === id);
+        return buildResults(items, c, {}, {})[0].state;
+    };
+
+    test("kind_selected is actionable until a stall kind is chosen", () => {
+        expect(stateOf("stalling.kind_selected", ctx())).toBe("actionable");
+    });
+
+    test("kind_selected is satisfied once a stall kind is chosen", () => {
+        expect(stateOf("stalling.kind_selected", ctx({ stalling_kind: "undo_spam" }))).toBe(
+            "satisfied",
+        );
+    });
+
+    test("a specific stall kind needs no written explanation", () => {
+        expect(stateOf("stalling.explanation_length", ctx({ stalling_kind: "undo_spam" }))).toBe(
+            "satisfied",
+        );
+    });
+
+    test("'something else' needs exactly 20 characters of explanation", () => {
+        const at = (note: string) =>
+            stateOf("stalling.explanation_length", ctx({ stalling_kind: "other", note }));
+        expect(at("a".repeat(19))).toBe("actionable");
+        expect(at("a".repeat(20))).toBe("satisfied");
+    });
+
+    test("whitespace does not count toward the 'something else' explanation", () => {
+        // composeStallingNote trims the note before submission, so anything the
+        // trim would discard must not satisfy this check — otherwise a
+        // whitespace-padded note passes here yet reaches moderators with no
+        // explanation at all.
+        const at = (note: string) =>
+            stateOf("stalling.explanation_length", ctx({ stalling_kind: "other", note }));
+        expect(at(" ".repeat(25))).toBe("actionable");
+        expect(at(`  ${"a".repeat(19)}  `)).toBe("actionable");
+        expect(at(`  ${"a".repeat(20)}  `)).toBe("satisfied");
+    });
+
+    test("explanation is required at all only for 'something else'", () => {
+        // No kind selected yet: kind_selected is the item asking for action, so the
+        // explanation item must not simultaneously demand text the reporter may
+        // never need.
+        expect(stateOf("stalling.explanation_length", ctx())).toBe("satisfied");
+    });
+
+    test("neither item blocks — the rest of the list survives them failing", () => {
+        const items = getChecklist("stalling").filter(
+            (i) => i.id === "stalling.kind_selected" || i.id === "stalling.explanation_length",
+        );
+        const results = buildResults(items, ctx({ stalling_kind: "other" }), {}, {});
+        expect(results).toHaveLength(2);
+        expect(results.map((r) => r.state)).toEqual(["satisfied", "actionable"]);
     });
 });
