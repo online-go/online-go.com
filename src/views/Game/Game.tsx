@@ -1178,7 +1178,10 @@ export function Game(): React.ReactElement | null {
             ref={goban_view_ref}
             controller={goban_controller.current}
             className={
-                "Game MainGobanView" + (is_mobile ? " mobile" : "") + (zen_mode ? " zen" : "")
+                "Game MainGobanView" +
+                (is_mobile ? " mobile" : "") +
+                (zen_mode ? " zen" : "") +
+                (compact_players ? " compact" : "")
             }
             onWheel={onWheel}
             header={<GameStateHeader />}
