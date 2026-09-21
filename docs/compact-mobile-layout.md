@@ -23,7 +23,9 @@ button-only move controls under the board drop their "Move #" label.
 
 The coloured card backgrounds are dropped in this layout: the stones in
 the middle say who is who, and the halves read as one strip rather than
-two cards. The capture count becomes a disc in the colour of the stones
+two cards. The strip takes the same `--shade5` background as the tab
+panels under the board, so the areas above and below the board match. The
+capture count becomes a disc in the colour of the stones
 captured — a player's captures are the opponent's stones, so black's count
 sits in a white disc and white's in a black one. The komi drops its sign
 and takes the first letter of the translated word "Komi" instead, so

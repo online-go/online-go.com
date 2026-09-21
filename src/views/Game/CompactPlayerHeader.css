@@ -30,8 +30,11 @@
  * stones in the middle say who is who, and the halves read as one strip.
  *
  */
+/* The same shade as the tab panels under the board, so the strip and the
+ * panels read as one surface around the board. */
 .MainGobanView .CompactPlayerHeader {
     flex-shrink: 0;
+    background: var(--shade5);
 }
 
 /* Everything below hangs off `.portrait ... .player-icons`, one class
