@@ -307,6 +307,52 @@ describe("PlayButtons", () => {
         expect(controller.goban.submit_move).toHaveBeenCalledTimes(1);
     });
 
+    test("shows the opponent passed notice under Pass in portrait", () => {
+        const controller = new GobanController({
+            moves: [
+                [16, 3, 100], // B
+                [-1, -1, 100], // White passed
+            ],
+            players: {
+                black: { id: LOGGED_IN_USER.id, username: LOGGED_IN_USER.username },
+                white: { id: 456, username: "test_user2" },
+            },
+        });
+        controller.setViewMode("portrait");
+
+        render(
+            <WrapTest controller={controller}>
+                <PlayButtons />
+            </WrapTest>,
+        );
+
+        expect(screen.getByText("Pass")).toBeDefined();
+        expect(screen.getByText("Opponent passed")).toBeDefined();
+    });
+
+    test("does not show the opponent passed notice in portrait when the opponent played", () => {
+        const controller = new GobanController({
+            moves: [
+                [16, 3, 100], // B
+                [3, 2, 100], // W
+            ],
+            players: {
+                black: { id: LOGGED_IN_USER.id, username: LOGGED_IN_USER.username },
+                white: { id: 456, username: "test_user2" },
+            },
+        });
+        controller.setViewMode("portrait");
+
+        render(
+            <WrapTest controller={controller}>
+                <PlayButtons />
+            </WrapTest>,
+        );
+
+        expect(screen.getByText("Pass")).toBeDefined();
+        expect(screen.queryByText("Opponent passed")).toBeNull();
+    });
+
     test("shows Pass on the first move", () => {
         const controller = new GobanController({
             players: {
