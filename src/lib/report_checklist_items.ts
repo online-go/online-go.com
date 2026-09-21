@@ -250,6 +250,52 @@ Please choose a different type of report, if there is a different problem.`,
     },
 };
 
+const stallingKindSelected: SyncDataCheckItem = {
+    kind: "data_check",
+    sync: true,
+    id: "stalling.kind_selected",
+    label: pgettext("A report checklist item", "Select how the other player stalled"),
+    blocking: false,
+    evaluate: (ctx) =>
+        ctx.stalling_kind
+            ? { met: true }
+            : {
+                  met: false,
+                  message: pgettext(
+                      "Asks the reporter to pick an option in the stalling report form",
+                      "Please select one of the options above.",
+                  ),
+              },
+};
+
+/**
+ * The stalling counterpart of descriptionLengthItem: a written explanation is
+ * required only when the reporter selected "something else" — every named stall
+ * kind already says what happened, so free text is optional there.
+ */
+const stallingExplanationItem: SyncDataCheckItem = {
+    kind: "data_check",
+    sync: true,
+    id: "stalling.explanation_length",
+    label: pgettext("A report checklist item", "Describe what happened"),
+    blocking: false,
+    evaluate: (ctx) => {
+        if (ctx.stalling_kind !== "other") {
+            return { met: true };
+        }
+        const minimum = 20;
+        return ctx.note.length >= minimum
+            ? { met: true }
+            : {
+                  met: false,
+                  message: interpolate(
+                      pgettext("Context of message", "{{required}} more characters needed"),
+                      { required: minimum - ctx.note.length },
+                  ),
+              };
+    },
+};
+
 /**
  * Per-report-type checklists. Mirrors REPORT_TYPE_VOTABLE_ACTIONS in the backend's
  * moderation.py: the report type is the key, and everything a type requires is
@@ -284,7 +330,12 @@ export const REPORT_CHECKLISTS: Record<string, ChecklistItem[]> = {
         escapingEnoughMoves,
         // escapingWaitedReasonableTime,
     ],
-    stalling: [gameIdentifiedItem, stallingEnoughMoves, descriptionLengthItem(20)],
+    stalling: [
+        gameIdentifiedItem,
+        stallingEnoughMoves,
+        stallingKindSelected,
+        stallingExplanationItem,
+    ],
     score_cheating: [gameIdentifiedItem],
     sandbagging: [gameIdentifiedItem],
     ai_use: [gameIdentifiedItem, descriptionLengthItem(20)],

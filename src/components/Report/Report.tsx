@@ -26,6 +26,8 @@ import { getChecklist } from "@/lib/report_checklist_items";
 import { useReportChecklist } from "@/lib/useReportChecklist";
 import { ReportChecklist } from "./ReportChecklist";
 import { ReportChecklistBlocker } from "./ReportChecklistBlocker";
+import { StallingKindSelector } from "./StallingKindSelector";
+import { composeStallingNote, type StallingKind } from "@/lib/stalling_kinds";
 import { PlayerIcon } from "@/components/PlayerIcon";
 import { post } from "@/lib/requests";
 import { alert } from "@/lib/swal_config";
@@ -217,6 +219,7 @@ export function Report(props: ReportProperties): React.ReactElement {
     const [game_id, _set_game_id] = React.useState(reported_game_id);
     const [review_id, _set_review_id] = React.useState(reported_review_id);
     const [note, set_note] = React.useState("");
+    const [stalling_kind, set_stalling_kind] = React.useState<StallingKind | "">("");
     const [submitting, set_submitting] = React.useState(false);
     const [source_report_type, set_source_report_type] = React.useState<string | null>(null);
     // Source-report URL snapshot for malicious_report's back-link, set in the
@@ -241,14 +244,17 @@ export function Report(props: ReportProperties): React.ReactElement {
         review_id,
         reported_user_id,
         note,
+        stalling_kind: stalling_kind || undefined,
         attestations,
     });
 
     const blocker = checklist.find((r) => r.state === "blocked");
 
-    // Attestations belong to the report type, so a type change clears them.
+    // Attestations and the stall-kind selection belong to the report type, so a
+    // type change clears them.
     React.useEffect(() => {
         set_attestations({});
+        set_stalling_kind("");
     }, [report_type]);
 
     function toggleAttestation(id: ChecklistItemId) {
@@ -327,7 +333,10 @@ export function Report(props: ReportProperties): React.ReactElement {
         }
 
         const payload: { [k: string]: unknown } = {
-            note,
+            note:
+                report_type === "stalling" && stalling_kind
+                    ? composeStallingNote(stalling_kind, note)
+                    : note,
             report_type,
             reported_conversation,
             reported_user_id: reported_user_id,
@@ -441,13 +450,28 @@ export function Report(props: ReportProperties): React.ReactElement {
                 <ReportChecklistBlocker result={blocker} />
             ) : category ? (
                 <div className="details">
+                    {category.type === "stalling" && (
+                        <StallingKindSelector value={stalling_kind} onChange={set_stalling_kind} />
+                    )}
                     <textarea
                         className="notes"
                         value={note}
                         onChange={(ev) => set_note(ev.target.value)}
-                        placeholder={_(
-                            "Please provide any relevant details about the problem you are reporting.",
-                        )}
+                        placeholder={
+                            category.type !== "stalling"
+                                ? _(
+                                      "Please provide any relevant details about the problem you are reporting.",
+                                  )
+                                : stalling_kind === "other"
+                                  ? pgettext(
+                                        "Placeholder of the explanation field when 'something else' is selected in the stalling report form",
+                                        "Please explain how the other player stalled.",
+                                    )
+                                  : pgettext(
+                                        "Placeholder of the optional free-text field in the stalling report form",
+                                        "Is there any other information you would like us to know? (optional)",
+                                    )
+                        }
                     />
                     <ReportChecklist results={checklist} onToggle={toggleAttestation} />
                 </div>
