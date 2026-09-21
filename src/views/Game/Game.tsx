@@ -154,12 +154,15 @@ export function Game(): React.ReactElement | null {
     //   • `chat_enabled` (preference, Settings toggle, default true) —
     //     master switch for the chat feature. When false, no chat
     //     renders anywhere and the mobile action-bar tab is hidden.
-    //   • `mobile_chat_visible` (local state, default false) — session-
-    //     level show/hide for the mobile chat. Toggled via the mobile
-    //     action-bar tab. Has no effect when `chat_enabled` is false or
-    //     on desktop (chat is always visible there if the feature is on).
+    //   • `mobile_chat_visible` (preference, default false) — show/hide
+    //     for the mobile chat, remembered across games. Toggled via the
+    //     mobile action-bar tab. Has no effect when `chat_enabled` is
+    //     false or on desktop (chat is always visible there if the
+    //     feature is on).
     const [chat_enabled] = usePreference("game.chat-enabled");
-    const [mobile_chat_visible, set_mobile_chat_visible] = React.useState(false);
+    const [mobile_chat_visible, set_mobile_chat_visible] = usePreference(
+        "game.mobile-chat-visible",
+    );
     // Whether the full settings takeover is showing. Synced from the
     // takeover tab's onToggle (the authoritative open/close signal), and
     // used to light up the settings gear while it's open.
@@ -217,11 +220,17 @@ export function Game(): React.ReactElement | null {
 
     // The mobile chat renders at the bottom of the scroll area, usually well
     // below the fold, so toggling it on would otherwise appear to do
-    // nothing. Bring it into view when it appears.
+    // nothing. Bring it into view when the user opens it, but not when it
+    // is already open on load (its visibility is remembered across games).
+    const scroll_to_chat_on_open = React.useRef(false);
     React.useEffect(() => {
         if (!is_mobile || !mobile_chat_visible || !chat_enabled) {
             return undefined;
         }
+        if (!scroll_to_chat_on_open.current) {
+            return undefined;
+        }
+        scroll_to_chat_on_open.current = false;
         const raf = requestAnimationFrame(() => {
             goban_view_ref.current
                 ?.getRootElement()
@@ -938,8 +947,8 @@ export function Game(): React.ReactElement | null {
 
     // Mobile-only chat toggle. The tab itself is hidden when the chat
     // feature is disabled in Settings (chat_enabled false) — re-enable from
-    // Settings to bring it back. Otherwise it toggles the chat's session
-    // visibility.
+    // Settings to bring it back. Otherwise it toggles the chat's
+    // remembered visibility.
     const chat_tab: GobanViewTabProps | null =
         is_mobile && chat_enabled
             ? {
@@ -954,7 +963,10 @@ export function Game(): React.ReactElement | null {
                   ),
                   title: _("Chat"),
                   active: mobile_chat_visible,
-                  onClick: () => set_mobile_chat_visible((v) => !v),
+                  onClick: () => {
+                      scroll_to_chat_on_open.current = !mobile_chat_visible;
+                      set_mobile_chat_visible(!mobile_chat_visible);
+                  },
               }
             : null;
 

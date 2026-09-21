@@ -92,6 +92,7 @@ export const defaults = {
     "label-positioning": "all" as LabelPosition,
     "label-positioning-puzzles": "all" as LabelPosition,
     "game.chat-enabled": true,
+    "game.mobile-chat-visible": false,
     "moderator.game-moderator-tab-visible": true,
     language: "auto",
     "move-tree-numbering": "move-number" as "none" | "move-coordinates" | "move-number",
