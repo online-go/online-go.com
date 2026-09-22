@@ -111,7 +111,7 @@ describe("CompactPlayerHeader", () => {
         expect(screen.getByTestId("compact-stone-white")).not.toHaveClass("on-top");
     });
 
-    test("shows the live move number", () => {
+    test("shows the current move number", () => {
         renderHeader({
             moves: [
                 [3, 3],
@@ -121,7 +121,7 @@ describe("CompactPlayerHeader", () => {
         expect(screen.getByText("2")).toBeInTheDocument();
     });
 
-    test("keeps the live move number while the move tree is browsed", () => {
+    test("follows the browsed move number while the move tree is browsed", () => {
         const { controller } = renderHeader({
             moves: [
                 [3, 3],
@@ -134,7 +134,8 @@ describe("CompactPlayerHeader", () => {
             controller.goban.showPrevious();
         });
         expect(controller.goban.engine.cur_move.move_number).toBe(1);
-        expect(screen.getByText("3")).toBeInTheDocument();
+        expect(screen.getByText("1")).toBeInTheDocument();
+        expect(screen.queryByText("3")).toBeNull();
         expect(screen.getByTestId("compact-stone-white")).toHaveClass("on-top");
     });
 });

@@ -57,11 +57,12 @@ holds across games and devices.
   the `aboveBoard` slot, drops the lower card from `belowBoard`, and adds
   the `compact` class that `Game.css` uses to hide the move controls'
   "Move #" label.
-- `useColorToMoveOnOfficialBranch` and `useOfficialMoveNumber` in
+- `useColorToMoveOnOfficialBranch` and `useCurrentMoveNumber` in
   `src/views/Game/GameHooks.ts` — which stone goes on top, and the move
-  number under the stones. Both follow the official branch, so browsing the
-  move tree changes neither. The colour hook answers null once the game is
-  over.
+  number under the stones. The stones follow the official branch, so
+  browsing the move tree does not move them, and the colour hook answers
+  null once the game is over. The move number follows the browsed
+  position, so it changes as the move tree or the move controls are used.
 
 `CompactPlayerHeader.css` overrides the player-card rules in
 `Players.css`. Its selectors are one class deeper than the rules they
