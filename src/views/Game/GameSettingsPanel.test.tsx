@@ -20,6 +20,7 @@ import * as React from "react";
 import { GameSettingsPanel } from "./GameSettingsPanel";
 import { GobanControllerContext } from "./goban_context";
 import { GobanController } from "@/lib/GobanController";
+import * as preferences from "@/lib/preferences";
 
 jest.mock("@/components/GobanThemePicker/GobanThemePicker", () => ({
     GobanThemePicker: () => null,
@@ -57,4 +58,26 @@ test("the compact (mobile) panel leaves out the landscape-only board alignment",
     const { container } = renderPanel(controller, { compact: true });
 
     expect(container.querySelector("#game-settings-board-alignment")).toBeNull();
+});
+
+test("the compact (mobile) panel toggles the compact mode preference", () => {
+    preferences.set("game.compact-mode", false);
+    const controller = new GobanController({ game_id: 123456 });
+
+    const { container } = renderPanel(controller, { compact: true });
+
+    const compact_toggle = container.querySelector("#game-settings-compact-mode");
+    expect(compact_toggle).not.toBeNull();
+
+    fireEvent.click(compact_toggle!);
+
+    expect(preferences.get("game.compact-mode")).toBe(true);
+});
+
+test("the landscape panel leaves out the compact mode toggle", () => {
+    const controller = new GobanController({ game_id: 123456 });
+
+    const { container } = renderPanel(controller);
+
+    expect(container.querySelector("#game-settings-compact-mode")).toBeNull();
 });

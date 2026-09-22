@@ -320,6 +320,24 @@ export const useOfficialMoveNumber = generateGobanHook(
     ["last_official_move"],
 );
 
+/** React hook that returns the rule set the game is played under, or
+ *  undefined before the game config has loaded. */
+export const useGameRules = generateGobanHook(
+    (goban: Goban | null) => goban?.engine?.config?.rules,
+);
+
+/** React hook that returns the number of handicap stones, 0 for an even
+ *  game. */
+export const useGameHandicap = generateGobanHook(
+    (goban: Goban | null) => goban?.engine?.config?.handicap ?? 0,
+);
+
+/** React hook that returns the komi of the game, 0 when there is none or
+ *  the game config has not loaded. */
+export const useGameKomi = generateGobanHook(
+    (goban: Goban | null) => goban?.engine?.config?.komi ?? 0,
+);
+
 /**
  * Intersections the auto-scorer wants sealed before the stone removal
  * phase can be scored correctly. Undefined when nothing needs sealing.
@@ -498,6 +516,20 @@ export const usePlayerToMove = generateGobanHook(
 export const usePlayerToMoveOnOfficialBranch = generateGobanHook(
     (goban: Goban | null) => goban?.engine.playerToMoveOnOfficialBranch() ?? 0,
     ["cur_move", "last_official_move"],
+);
+
+/** React hook that returns the colour to move in the live game, or null
+ *  when no one is waiting to play (the game is over, or being reviewed).
+ *  Follows the official branch, so browsing the move tree does not change
+ *  the answer. */
+export const useColorToMoveOnOfficialBranch = generateGobanHook(
+    (goban: Goban | null): "black" | "white" | null => {
+        if (!goban || goban.engine.phase !== "play") {
+            return null;
+        }
+        return goban.engine.last_official_move?.state.player === 2 ? "white" : "black";
+    },
+    ["cur_move", "last_official_move", "phase"],
 );
 
 /** React hook that returns true while it is the user's live turn to move.
