@@ -80,6 +80,12 @@
     top: 0;
 }
 
+/* Compact mode shows the move number between the players above the board,
+ * so the button-only move controls drop their "Move #" label. */
+.GobanView.Game.compact .MoveNumberControl-buttons .MoveNumberControl-move-number {
+    display: none;
+}
+
 .MainGobanView {
     /* The shared GobanView chrome (GobanView.css) keeps its roomier
      * default insets for the other consumers (joseki, puzzle, kibitz);

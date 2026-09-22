@@ -60,6 +60,27 @@ export function rulesText(rules: string) {
     return "[unknown]";
 }
 
+/** The handicap as a circled number, such as "②" for two stones. Empty
+ *  for no handicap. */
+export function handicapStonesString(handicap_stones: number) {
+    if (handicap_stones <= 0) {
+        return "";
+    }
+    const one = 0x2460;
+    const twenty_one = 0x3251;
+    const thirty_six = 0x32b1;
+    if (handicap_stones <= 20) {
+        return String.fromCodePoint(one + handicap_stones - 1);
+    }
+    if (handicap_stones <= 35) {
+        return String.fromCodePoint(twenty_one + handicap_stones - 21);
+    }
+    if (handicap_stones <= 50) {
+        return String.fromCodePoint(thirty_six + handicap_stones - 36);
+    }
+    return "(" + handicap_stones + ")";
+}
+
 // Create a deep copy of obj
 export function dup<T>(obj: T): T {
     let ret: T;
