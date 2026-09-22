@@ -45,7 +45,8 @@ Only run the full build once before the final push, since it is slow and not nee
 
 - Follow the repository PR template at `.github/pull_request_template.md` when creating pull requests.
 - When appropriate include screenshot(s) of what changed
-- Be concise and professional with your pull request text
+- Be concise and professional with your pull request text. Aim for 300 words or
+  less.
 
 ## OGS-Wide Development Policy
 
