@@ -69,6 +69,23 @@ describe("CompactTurnStones", () => {
         expect(container.querySelector(".CompactTurnStones-handicap")).toBeNull();
     });
 
+    test("shows the komi on its own line under the rule set", () => {
+        const { container } = render(
+            <CompactTurnStones to_move="black" move_number={0} rules="japanese" komi={6.5} />,
+        );
+        const komi = container.querySelector(".CompactTurnStones-komi");
+        expect(komi).toHaveTextContent("Komi 6.5");
+        expect(komi?.previousElementSibling).toHaveClass("CompactTurnStones-rules");
+        expect(komi?.nextElementSibling).toHaveClass("CompactTurnStones-stones");
+    });
+
+    test("omits the komi when there is none", () => {
+        const { container } = render(
+            <CompactTurnStones to_move="black" move_number={0} rules="japanese" komi={0} />,
+        );
+        expect(container.querySelector(".CompactTurnStones-komi")).toBeNull();
+    });
+
     test("omits the rule set when it is not known", () => {
         const { container } = render(
             <CompactTurnStones to_move="black" move_number={34} rules="bogus" />,

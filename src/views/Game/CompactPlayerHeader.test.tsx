@@ -81,9 +81,10 @@ describe("CompactPlayerHeader", () => {
         expect(screen.queryByTestId("compact-score-backdrop")).toBeNull();
     });
 
-    test("abbreviates the komi to the initial of Komi", () => {
+    test("shows the komi under the rule set instead of on white's card", () => {
         const { container } = renderHeader({ komi: 6.5 });
-        expect(container.querySelector(".white.player-container .komi")).toHaveTextContent("K 6.5");
+        expect(container.querySelector(".CompactTurnStones-komi")).toHaveTextContent("Komi 6.5");
+        expect(container.querySelector(".white.player-container .komi")).toBeNull();
     });
 
     test("shows a card for each player", () => {

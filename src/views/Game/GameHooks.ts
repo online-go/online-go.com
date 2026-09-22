@@ -332,6 +332,12 @@ export const useGameHandicap = generateGobanHook(
     (goban: Goban | null) => goban?.engine?.config?.handicap ?? 0,
 );
 
+/** React hook that returns the komi of the game, 0 when there is none or
+ *  the game config has not loaded. */
+export const useGameKomi = generateGobanHook(
+    (goban: Goban | null) => goban?.engine?.config?.komi ?? 0,
+);
+
 /**
  * Intersections the auto-scorer wants sealed before the stone removal
  * phase can be scored correctly. Undefined when nothing needs sealing.

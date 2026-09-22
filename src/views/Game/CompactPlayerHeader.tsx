@@ -22,6 +22,7 @@ import { CompactTurnStones } from "./CompactTurnStones";
 import {
     useColorToMoveOnOfficialBranch,
     useGameHandicap,
+    useGameKomi,
     useGameRules,
     useOfficialMoveNumber,
     useScorePopup,
@@ -58,6 +59,7 @@ export function CompactPlayerHeader({
     const move_number = useOfficialMoveNumber(goban);
     const rules = useGameRules(goban);
     const handicap = useGameHandicap(goban);
+    const komi = useGameKomi(goban);
 
     const card = (color: "black" | "white") => (
         <PlayerCard
@@ -81,6 +83,7 @@ export function CompactPlayerHeader({
                     move_number={move_number}
                     rules={rules}
                     handicap={handicap}
+                    komi={komi}
                 />
                 {card("white")}
             </div>

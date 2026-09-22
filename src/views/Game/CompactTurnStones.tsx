@@ -30,19 +30,23 @@ interface CompactTurnStonesProps {
     rules?: string;
     /** Handicap stones, shown next to the rule set. 0 or omitted hides it. */
     handicap?: number;
+    /** Komi, shown on its own line under the rule set. 0 or omitted hides
+     *  it. */
+    komi?: number;
 }
 
 /**
  * The centrepiece of the compact player header: a black stone left of
  * centre and a white stone overlapping it to the right, with the side to
- * move drawn on top, the rule set and the handicap above, and the move
- * number underneath.
+ * move drawn on top, the rule set, the handicap and the komi above, and
+ * the move number underneath.
  */
 export function CompactTurnStones({
     to_move,
     move_number,
     rules,
     handicap = 0,
+    komi = 0,
 }: CompactTurnStonesProps): React.ReactElement {
     const stoneClass = (color: "black" | "white") =>
         `CompactTurnStones-stone ${color}` + (to_move === color ? " on-top" : "");
@@ -72,6 +76,13 @@ export function CompactTurnStones({
                             {handicapStonesString(handicap)}
                         </span>
                     )}
+                </div>
+            )}
+            {!!komi && (
+                <div className="CompactTurnStones-komi">
+                    {interpolate(pgettext("Komi of the game", "Komi {{komi}}"), {
+                        komi: komi.toFixed(1),
+                    })}
                 </div>
             )}
             <div className="CompactTurnStones-stones">
