@@ -106,7 +106,6 @@ export function ThemePreferences(): React.ReactElement | null {
         usePreference("variation-stone-opacity");
     const [show_visit_counts, setShowVisitCounts] = usePreference("ai-review-show-visit-counts");
     const [show_on_board, setShowOnBoard] = usePreference("ai-review-show-on-board");
-    const [animate_turn_clock, setAnimateTurnClock] = usePreference("animate-turn-clock");
     const [move_number_control_mode, _setMoveNumberControlMode] = usePreference(
         "move-number-control-mode",
     );
@@ -655,19 +654,6 @@ export function ThemePreferences(): React.ReactElement | null {
                         sampleOptions={{ undo: true }}
                     />
                 </div>
-            </PreferenceLine>
-
-            <PreferenceLine
-                title={pgettext(
-                    "Theme preference: move the hands of the small clock next to the player to move",
-                    "Animate the turn clock",
-                )}
-                description={pgettext(
-                    "Theme preference description: the small clock marks the player to move",
-                    "Turn the hand of the small clock beside the player to move once a second, while they have less than an hour left. Turn this off to hold the hand still.",
-                )}
-            >
-                <Toggle checked={animate_turn_clock} onChange={setAnimateTurnClock} />
             </PreferenceLine>
 
             <PreferenceLine

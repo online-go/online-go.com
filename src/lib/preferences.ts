@@ -32,7 +32,6 @@ export const defaults = {
     "ai-review-show-on-board": true,
     "ai-summary-table-show": true,
     "always-disable-analysis": false,
-    "animate-turn-clock": true,
     "asked-to-enable-desktop-notifications": false,
     "auto-advance-after-submit": true,
     "autofocus-submit-button": false,

@@ -195,9 +195,10 @@ export function PlayerCard({
 
     /* The engine always reports a player-to-move, even once the game is
      * over — only treat it as "their turn" while moves can still be made.
-     * The player to move comes from the official branch so the turn clock
-     * stays on the player the server clock is running for while the user
-     * views an earlier move or stages (but has not yet submitted) a stone. */
+     * The player to move comes from the official branch so the their-turn
+     * class stays on the player the server clock is running for while the
+     * user views an earlier move or stages (but has not yet submitted) a
+     * stone. */
     const their_turn = phase === "play" && player_to_move === player.id;
     const rengo_team = engine.rengo && engine.rengo_teams ? engine.rengo_teams[color] : null;
     const highlight_their_turn = their_turn ? `their-turn` : "";
@@ -234,7 +235,6 @@ export function PlayerCard({
                         goban={goban}
                         color={color}
                         className="in-game-clock"
-                        show_turn_clock={their_turn}
                         hide_transmitting
                     />
                 ) : (

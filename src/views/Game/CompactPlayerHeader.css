@@ -214,7 +214,7 @@
         }
 
         /* Mirror of the usual clock: the time sits against the left edge
-         * and the turn clock follows it, on the side facing the middle. */
+         * and the pause text follows it, on the side facing the middle. */
         .in-game-clock {
             grid-column: 1 / span 2;
             justify-self: start;
@@ -222,18 +222,8 @@
 
             .pause-and-transmit {
                 order: 1;
-                flex-direction: row-reverse;
                 margin-left: 1rem;
                 margin-right: 0;
-
-                &:empty {
-                    margin: 0;
-                }
-
-                .TurnClock {
-                    margin-left: 0;
-                    margin-right: 0.35rem;
-                }
             }
         }
     }

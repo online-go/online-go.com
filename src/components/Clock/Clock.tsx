@@ -20,7 +20,6 @@ import * as data from "@/lib/data";
 import { useEffect, useState } from "react";
 import { Goban, JGOFClockWithTransmitting, JGOFPlayerClock, JGOFTimeControl } from "goban";
 import { _, pgettext, interpolate, ngettext } from "@/lib/translate";
-import { TurnClock } from "@/components/TurnClock";
 import "./Clock.css";
 
 type clock_color = "black" | "white" | "stone-removal";
@@ -31,7 +30,6 @@ export function Clock({
     className,
     compact,
     lineSummary,
-    show_turn_clock,
     hide_transmitting,
 }: {
     goban: Goban;
@@ -39,8 +37,6 @@ export function Clock({
     className?: string;
     compact?: boolean;
     lineSummary?: boolean;
-    /** Draw the analog turn clock that marks the player to move. */
-    show_turn_clock?: boolean;
     /** Leave out the transmitting icon, for callers that show it elsewhere. */
     hide_transmitting?: boolean;
 }): React.ReactElement | null {
@@ -104,17 +100,7 @@ export function Clock({
         if (clock.start_mode && clock.current_player === color) {
             clock_className += " start-mode";
             return (
-                <span className={clock_className}>
-                    {prettyTime(clock.start_time_left || 0)}
-                    {/* The same wrapper the running clock uses, so the face
-                     * keeps its usual place beside the digits. */}
-                    {show_turn_clock && (
-                        <div className="pause-and-transmit">
-                            {!hide_transmitting && <span className="transmitting" />}
-                            <TurnClock time_left={clock.start_time_left || 0} />
-                        </div>
-                    )}
-                </span>
+                <span className={clock_className}>{prettyTime(clock.start_time_left || 0)}</span>
             );
         }
 
@@ -123,16 +109,6 @@ export function Clock({
         const need_small_main_time_font = prettyTime(player_clock.main_time).length > 8;
 
         const show_pause = !compact && clock.pause_state;
-
-        /* The time the player is actually burning down: the main time until
-         * it runs out, then the overtime block of their time control. */
-        let running_time_left = player_clock.main_time;
-        if (running_time_left <= 0) {
-            running_time_left =
-                (time_control.system === "canadian"
-                    ? player_clock.block_time_left
-                    : player_clock.period_time_left) || 0;
-        }
 
         return (
             <span className={clock_className}>
@@ -206,7 +182,7 @@ export function Clock({
                         </React.Fragment>
                     )}
 
-                {(show_pause || !lineSummary || show_turn_clock) && (
+                {(show_pause || (!lineSummary && !hide_transmitting)) && (
                     <div className="pause-and-transmit">
                         {!lineSummary &&
                             !hide_transmitting &&
@@ -220,7 +196,6 @@ export function Clock({
                                 <span className="transmitting" />
                             ))}
                         {show_pause && <ClockPauseReason clock={clock} player_id={player_id} />}
-                        {show_turn_clock && <TurnClock time_left={running_time_left} />}
                     </div>
                 )}
             </span>
