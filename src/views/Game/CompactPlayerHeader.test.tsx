@@ -105,6 +105,12 @@ describe("CompactPlayerHeader", () => {
         expect(screen.getByTestId("compact-stone-black")).not.toHaveClass("on-top");
     });
 
+    test("puts white's stone on top at the start of a handicap game", () => {
+        renderHeader({ handicap: 2, free_handicap_placement: false, initial_player: "white" });
+        expect(screen.getByTestId("compact-stone-white")).toHaveClass("on-top");
+        expect(screen.getByTestId("compact-stone-black")).not.toHaveClass("on-top");
+    });
+
     test("leaves both stones level when the game is over", () => {
         renderHeader({ phase: "finished", outcome: "Resignation", winner: 11 });
         expect(screen.getByTestId("compact-stone-black")).not.toHaveClass("on-top");
