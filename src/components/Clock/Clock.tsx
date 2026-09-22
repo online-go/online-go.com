@@ -32,6 +32,7 @@ export function Clock({
     compact,
     lineSummary,
     show_turn_clock,
+    hide_transmitting,
 }: {
     goban: Goban;
     color: clock_color;
@@ -40,6 +41,8 @@ export function Clock({
     lineSummary?: boolean;
     /** Draw the analog turn clock that marks the player to move. */
     show_turn_clock?: boolean;
+    /** Leave out the transmitting icon, for callers that show it elsewhere. */
+    hide_transmitting?: boolean;
 }): React.ReactElement | null {
     const [clock, setClock] = useState<JGOFClockWithTransmitting | null>(null);
     const [submitting_move, _setSubmittingMove] = useState<boolean>(false);
@@ -107,7 +110,7 @@ export function Clock({
                      * keeps its usual place beside the digits. */}
                     {show_turn_clock && (
                         <div className="pause-and-transmit">
-                            <span className="transmitting" />
+                            {!hide_transmitting && <span className="transmitting" />}
                             <TurnClock time_left={clock.start_time_left || 0} />
                         </div>
                     )}
@@ -206,6 +209,7 @@ export function Clock({
                 {(show_pause || !lineSummary || show_turn_clock) && (
                     <div className="pause-and-transmit">
                         {!lineSummary &&
+                            !hide_transmitting &&
                             ((submitting_move && player_id !== data.get("user").id) ||
                             transmitting > 0 ? (
                                 <span

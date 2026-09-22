@@ -17,3 +17,4 @@
 
 export * from "./Clock";
 export * from "./SGFClock";
+export * from "./TransmittingIndicator";
