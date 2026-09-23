@@ -16,7 +16,6 @@
  */
 
 import * as React from "react";
-import * as data from "@/lib/data";
 import { useEffect, useState } from "react";
 import { Goban, JGOFClockWithTransmitting, JGOFPlayerClock, JGOFTimeControl } from "goban";
 import { _, pgettext, interpolate, ngettext } from "@/lib/translate";
@@ -42,23 +41,16 @@ export function Clock({
     show_turn_clock?: boolean;
 }): React.ReactElement | null {
     const [clock, setClock] = useState<JGOFClockWithTransmitting | null>(null);
-    const [submitting_move, _setSubmittingMove] = useState<boolean>(false);
 
     useEffect(() => {
-        function setSubmittingMove(submitting: boolean) {
-            _setSubmittingMove(submitting);
-        }
-
         if (goban) {
             goban.on("clock", update);
-            goban.on("submitting-move", setSubmittingMove);
         }
 
         return () => {
             // cleanup
             if (goban) {
                 goban.off("clock", update);
-                goban.off("submitting-move", setSubmittingMove);
             }
         };
     }, [goban]);
@@ -80,8 +72,6 @@ export function Clock({
             color === "black" ? clock.black_clock : clock.white_clock;
         const player_id: number =
             color === "black" ? goban.engine.players.black.id : goban.engine.players.white.id;
-        const transmitting: number =
-            color === "black" ? clock.black_move_transmitting : clock.white_move_transmitting;
 
         let clock_className = "Clock " + color;
         if (clock.pause_state) {
@@ -106,8 +96,7 @@ export function Clock({
                     {/* The same wrapper the running clock uses, so the face
                      * keeps its usual place beside the digits. */}
                     {show_turn_clock && (
-                        <div className="pause-and-transmit">
-                            <span className="transmitting" />
+                        <div className="clock-status">
                             <TurnClock time_left={clock.start_time_left || 0} />
                         </div>
                     )}
@@ -204,17 +193,7 @@ export function Clock({
                     )}
 
                 {(show_pause || !lineSummary || show_turn_clock) && (
-                    <div className="pause-and-transmit">
-                        {!lineSummary &&
-                            ((submitting_move && player_id !== data.get("user").id) ||
-                            transmitting > 0 ? (
-                                <span
-                                    className="transmitting fa fa-wifi"
-                                    title={transmitting.toFixed(0)}
-                                />
-                            ) : (
-                                <span className="transmitting" />
-                            ))}
+                    <div className="clock-status">
                         {show_pause && <ClockPauseReason clock={clock} player_id={player_id} />}
                         {show_turn_clock && <TurnClock time_left={running_time_left} />}
                     </div>

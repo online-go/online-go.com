@@ -108,6 +108,11 @@
             left: 0.15rem;
             top: 0.15rem;
         }
+
+        .TransmittingIndicator {
+            right: 0.15rem;
+            top: 0.15rem;
+        }
     }
 
     .player-name-container,
@@ -185,6 +190,12 @@
         align-self: center;
         font-size: 0.85rem;
         line-height: 1.2;
+
+        /* No turn clock face is drawn here, so there is no height to hold
+         * for it. */
+        .clock-status {
+            height: auto;
+        }
     }
 
     .Clock .main-time {
@@ -209,26 +220,19 @@
         }
 
         /* Mirror of the usual clock: the time sits against the left edge
-         * and the turn clock follows it, on the side facing the middle. */
+         * and the pause text follows it, on the side facing the middle. */
         .in-game-clock {
             grid-column: 1 / span 2;
             justify-self: start;
             justify-content: flex-start;
 
-            .pause-and-transmit {
+            .clock-status {
                 order: 1;
-                flex-direction: row-reverse;
                 margin-left: 1rem;
                 margin-right: 0;
 
-                .transmitting {
-                    margin-left: 0.5rem;
-                    margin-right: 0;
-                }
-
-                .TurnClock {
-                    margin-left: 0;
-                    margin-right: 0.35rem;
+                &:empty {
+                    margin: 0;
                 }
             }
         }
@@ -250,6 +254,11 @@
             .ChatPresenceIndicator {
                 left: unset;
                 right: 0.15rem;
+            }
+
+            .TransmittingIndicator {
+                right: unset;
+                left: 0.15rem;
             }
         }
 

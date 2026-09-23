@@ -23,7 +23,7 @@ import { user_uploads_url } from "@/lib/cdn";
 import { CountDown } from "./CountDown";
 import { Flag } from "@/components/Flag";
 import { ChatPresenceIndicator } from "@/components/ChatPresenceIndicator";
-import { Clock, SGFClock } from "@/components/Clock";
+import { Clock, SGFClock, TransmittingIndicator } from "@/components/Clock";
 import { Player } from "@/components/Player";
 import { lookup, fetch } from "@/lib/player_cache";
 import { _, interpolate, ngettext, pgettext } from "@/lib/translate";
@@ -222,6 +222,7 @@ export function PlayerCard({
                             <PlayerFlag player_id={player.id} />
                         </div>
                         <ChatPresenceIndicator channel={chat_channel} userId={player.id} />
+                        <TransmittingIndicator goban={goban} color={color} />
                     </div>
                 ) : (
                     /* Placeholder icon for SGF records (gradient background via CSS) */
@@ -233,7 +234,7 @@ export function PlayerCard({
                         goban={goban}
                         color={color}
                         className="in-game-clock"
-                        show_turn_clock={their_turn}
+                        show_turn_clock={their_turn && !compact}
                     />
                 ) : (
                     goban.engine.sgf_time_settings && (

@@ -15,6 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from "./Clock";
-export * from "./SGFClock";
-export * from "./TransmittingIndicator";
+/* Floats on the top-right corner of a player's avatar. The avatar must be
+ * the positioning box (`position: relative`). */
+.TransmittingIndicator {
+    position: absolute;
+    right: 0.35rem;
+    top: 0.35rem;
+    font-size: 0.7rem;
+    color: #fff;
+    text-shadow:
+        -1px -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        1px 1px 0 #000;
+}

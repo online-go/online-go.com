@@ -127,6 +127,7 @@
         min-height: 4rem;
         min-width: 4rem;
         border-radius: 0.4rem;
+        position: relative;
     }
 
     /* .MainGobanView.squashed was previously a Stylus parent reference, commenting out */
