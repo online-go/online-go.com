@@ -75,7 +75,7 @@
             text-align: center;
         }
 
-        .pause-and-transmit {
+        .clock-status {
             width: 100%;
             font-size: var(--font-size-small);
             margin-left: 0.5rem;
@@ -83,12 +83,6 @@
 
             .pause-text {
                 margin-left: 0.5rem;
-            }
-
-            .transmitting {
-                margin-right: 0.5rem;
-                width: 0.8rem;
-                display: inline-block;
             }
         }
 
@@ -147,8 +141,9 @@
 }
 
 /* In the game view's player cards the turn clock and the pause text sit on
-   the same line as the digits, to their left. Everywhere else `.pause-and-transmit` carries `width: 100%`, so the
-   `flex-wrap: wrap` row breaks it onto a line of its own below the time.
+   the same line as the digits, to their left. Everywhere else
+   `.clock-status` carries `width: 100%`, so the `flex-wrap: wrap` row
+   breaks it onto a line of its own below the time.
    Dropping the width and ordering it first pulls the group up beside the
    digits; the wrap still catches it if a long pause reason needs the space.
    The digits must not grow, or the row's free space would open up between
@@ -160,7 +155,7 @@
         flex-grow: 0;
     }
 
-    .pause-and-transmit {
+    .clock-status {
         order: -1;
         width: auto;
         height: 1.4em;
@@ -176,18 +171,13 @@
 }
 
 .MiniGoban {
-    .pause-and-transmit {
+    .clock-status {
         width: auto;
         display: inline-block;
         margin-left: 0;
 
         .pause-text {
             margin-left: 0;
-        }
-
-        .transmitting {
-            margin-left: 0;
-            width: 0;
         }
     }
 }

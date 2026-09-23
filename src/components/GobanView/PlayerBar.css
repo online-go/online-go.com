@@ -34,6 +34,12 @@
         width: 40px;
         height: 40px;
         flex-shrink: 0;
+        position: relative;
+
+        .TransmittingIndicator {
+            right: 0.1rem;
+            top: 0.1rem;
+        }
 
         /* PlayerIcon asks the CDN for a 64px asset and puts a .PlayerIcon-64
            size class on its own root element, so the root is what has to

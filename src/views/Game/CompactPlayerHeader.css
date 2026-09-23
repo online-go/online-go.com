@@ -193,7 +193,7 @@
 
         /* No turn clock face is drawn here, so there is no height to hold
          * for it. */
-        .pause-and-transmit {
+        .clock-status {
             height: auto;
         }
     }
@@ -226,7 +226,7 @@
             justify-self: start;
             justify-content: flex-start;
 
-            .pause-and-transmit {
+            .clock-status {
                 order: 1;
                 margin-left: 1rem;
                 margin-right: 0;

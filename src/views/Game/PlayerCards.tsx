@@ -235,7 +235,6 @@ export function PlayerCard({
                         color={color}
                         className="in-game-clock"
                         show_turn_clock={their_turn && !compact}
-                        hide_transmitting
                     />
                 ) : (
                     goban.engine.sgf_time_settings && (

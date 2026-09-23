@@ -19,7 +19,7 @@ import * as React from "react";
 import { GobanEnginePlayerEntry, GobanEvents, GobanRenderer } from "goban";
 import type { GobanController } from "@/lib/GobanController";
 import { _, interpolate, ngettext } from "@/lib/translate";
-import { Clock } from "@/components/Clock";
+import { Clock, TransmittingIndicator } from "@/components/Clock";
 import { PlayerIcon } from "@/components/PlayerIcon";
 import { Player } from "@/components/Player";
 import { useGobanController } from "./GobanViewContext";
@@ -119,6 +119,7 @@ export function PlayerBar({
                 ) : (
                     <div className={`PlayerBar-stone ${color}`} />
                 )}
+                <TransmittingIndicator goban={goban} color={color} />
             </div>
             <div className="PlayerBar-text">
                 <div className="PlayerBar-name">

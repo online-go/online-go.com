@@ -316,20 +316,6 @@
         }
     }
 
-    /* Mirrors the chat presence indicator, on the opposite corner. */
-    .TransmittingIndicator {
-        position: absolute;
-        right: 0.35rem;
-        top: 0.35rem;
-        font-size: 0.7rem;
-        color: #fff;
-        text-shadow:
-            -1px -1px 0 #000,
-            1px -1px 0 #000,
-            -1px 1px 0 #000,
-            1px 1px 0 #000;
-    }
-
     /* note: I have not been able to find a place that generates an online-status-indicator class */
     /* if there is one, then this should be themed properly. */
     .white.player-container {
