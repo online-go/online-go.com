@@ -190,6 +190,12 @@
         align-self: center;
         font-size: 0.85rem;
         line-height: 1.2;
+
+        /* No turn clock face is drawn here, so there is no height to hold
+         * for it. */
+        .pause-and-transmit {
+            height: auto;
+        }
     }
 
     .Clock .main-time {
@@ -224,6 +230,10 @@
                 order: 1;
                 margin-left: 1rem;
                 margin-right: 0;
+
+                &:empty {
+                    margin: 0;
+                }
             }
         }
     }

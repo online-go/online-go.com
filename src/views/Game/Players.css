@@ -225,6 +225,9 @@
         }
     }
 
+    /* The player to move is marked by the TurnClock face in their clock,
+     * so the card itself needs no marker. */
+
     .player-container.shortgame.offline {
         border: 1px solid #f66 !important;
     }

@@ -146,13 +146,15 @@
     }
 }
 
-/* In the game view's player cards the pause text sits on the same line as
-   the digits, to their left. Everywhere else `.pause-and-transmit` carries
-   `width: 100%`, so the `flex-wrap: wrap` row breaks it onto a line of its
-   own below the time. Dropping the width and ordering it first pulls it up
-   beside the digits; the wrap still catches it if a long pause reason needs
-   the space. The digits must not grow, or the row's free space would open
-   up between the text and them instead of collecting to the left of both. */
+/* In the game view's player cards the turn clock and the pause text sit on
+   the same line as the digits, to their left. Everywhere else `.pause-and-transmit` carries `width: 100%`, so the
+   `flex-wrap: wrap` row breaks it onto a line of its own below the time.
+   Dropping the width and ordering it first pulls the group up beside the
+   digits; the wrap still catches it if a long pause reason needs the space.
+   The digits must not grow, or the row's free space would open up between
+   the group and them instead of collecting to the left of both.
+   The group keeps the height of the turn clock face while the face is
+   hidden, so the card does not change height when the turn passes. */
 .Clock.in-game-clock {
     .main-time {
         flex-grow: 0;
@@ -161,10 +163,15 @@
     .pause-and-transmit {
         order: -1;
         width: auto;
+        height: 1.4em;
         display: inline-flex;
         align-items: center;
         margin-left: 0;
         margin-right: 1rem;
+
+        &:empty {
+            margin: 0;
+        }
     }
 }
 
