@@ -15,13 +15,13 @@ let keys = fs.existsSync("./keys.json") ? JSON.parse(fs.readFileSync("./keys.jso
 const deepl_translator = keys ? new deepl.Translator(keys.deepl_api_key) : null;
 const googleTranslate = keys
     ? new GoogleTranslate({
-          projectId: keys.google_credentials.project_id,
-          credentials: keys.google_credentials,
-      })
+        projectId: keys.google_credentials.project_id,
+        credentials: keys.google_credentials,
+    })
     : null;
 
 const openrouter = keys ? new OpenRouter({ apiKey: keys.openrouter_api_key }) : null;
-const OPENROUTER_MODEL = "anthropic/claude-opus-4.6";
+const OPENROUTER_MODEL = "~anthropic/claude-opus-latest";
 
 let limit = 1;
 
@@ -184,8 +184,7 @@ async function main() {
 
         if (Object.keys(vandalized_languages).length > 0) {
             console.error(
-                `Critical error: ${
-                    Object.keys(vandalized_languages).length
+                `Critical error: ${Object.keys(vandalized_languages).length
                 } languages have been vandalized`,
             );
             console.error(JSON.stringify(vandalized_languages, undefined, 4));
@@ -303,11 +302,11 @@ async function main() {
                 console.error("Failed to find a translator for " + lang);
                 console.info(
                     "Deepl supported languages: " +
-                        JSON.stringify(Object.keys(deeplSupportedLanguages), undefined, 4),
+                    JSON.stringify(Object.keys(deeplSupportedLanguages), undefined, 4),
                 );
                 console.info(
                     "Google supported languages: " +
-                        JSON.stringify(Object.keys(googleSupportedLanguages), undefined, 4),
+                    JSON.stringify(Object.keys(googleSupportedLanguages), undefined, 4),
                 );
             }
         }
@@ -356,14 +355,14 @@ function decode(str) {
 
 let bad_symbols = decode(
     "WyLljZAiLCLikrYiLCLimK0iLCLinK8iLCLimK4iLCLinKEiLCLljY0iLCLgv5UiLCLgv5YiLCLi" +
-        "nJkiLCLgv5ciLCLgv5giLCLqlqYiLCLwn4+0Iiwi4ZuL4ZuLIl0=",
+    "nJkiLCLgv5ciLCLgv5giLCLqlqYiLCLwn4+0Iiwi4ZuL4ZuLIl0=",
 );
 
 let profanity_regex = {};
 
 let profanity_dictionary = decode(
     "eyJlbiI6WyJuaWdnZXIiLCJjdWNrIiwiZnVjayIsInNoaXQiLCJuYXppIiwiMTQ4OCIsImhpdGxl" +
-        "ciIsInN0cmFpZ2h0IHByaWRlIiwiZ2F5IHByaWRlIiwiZ2F5IiwiZ2F5cyJdfQ==",
+    "ciIsInN0cmFpZ2h0IHByaWRlIiwiZ2F5IHByaWRlIiwiZ2F5IiwiZ2F5cyJdfQ==",
 );
 
 for (let lang in profanity_dictionary) {
