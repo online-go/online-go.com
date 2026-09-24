@@ -7,6 +7,14 @@
     border: 1px solid var(--shade4);
     border-radius: 3px;
 
+    @media (max-width: 600px) {
+        padding-left: 0;
+        padding-right: 0;
+        border-left: none;
+        border-right: none;
+        border-radius: 0;
+    }
+
     .poll-note {
         font-size: 0.85rem;
         font-style: italic;

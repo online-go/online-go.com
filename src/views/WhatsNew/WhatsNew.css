@@ -2,9 +2,11 @@
  * Copyright (C)  Online-Go.com
  */
 .WhatsNew {
+    box-sizing: border-box;
     padding: 1rem;
-    width: 40rem;
-    max-width: 100dvw;
+    /* 40rem of text plus the padding, never wider than the screen. */
+    width: 42rem;
+    max-width: 100%;
     margin: 0 auto;
     color: var(--text-color);
 
