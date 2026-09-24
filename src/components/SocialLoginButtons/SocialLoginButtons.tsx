@@ -24,7 +24,7 @@ type SocialLoginButtonsProps = {
 };
 
 export function SocialLoginButtons(props: SocialLoginButtonsProps): React.ReactElement {
-    const next = props.next_url ? `?next=${props.next_url}` : "";
+    const next = props.next_url ? `?next=${encodeURIComponent(props.next_url)}` : "";
 
     return (
         <div className="social-buttons">
