@@ -23,7 +23,14 @@ import { openModal, Modal, ModalConstructorInput } from "@/components/Modal";
 import { timeControlDescription } from "@/components/TimeControl";
 import { Player } from "@/components/Player";
 import { handicapText } from "@/components/GameAcceptModal";
-import { errorAlerter, rulesText, yesno, getGameResultText, navigateTo } from "@/lib/misc";
+import {
+    errorAlerter,
+    rulesText,
+    yesno,
+    getGameResultText,
+    navigateTo,
+    shouldOpenNewTab,
+} from "@/lib/misc";
 import { rankString } from "@/lib/rank_utils";
 import { browserHistory } from "@/lib/ogsHistory";
 import { alert } from "@/lib/swal_config";
@@ -87,7 +94,9 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
 
     openLink = (path: string) => (ev: React.MouseEvent) => {
         ev.preventDefault();
-        this.close();
+        if (!shouldOpenNewTab(ev)) {
+            this.close();
+        }
         navigateTo(path, ev);
     };
 
