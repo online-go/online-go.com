@@ -16,16 +16,18 @@
  */
 
 import * as React from "react";
-import type { WhatsNewPollQuestion as WhatsNewPollQuestionData } from "./types";
+import { WhatsNewPollScale } from "./WhatsNewPollScale";
+import type { WhatsNewPollAnswer, WhatsNewPollQuestion as WhatsNewPollQuestionData } from "./types";
 import "./WhatsNewPollQuestion.css";
 
 export const POLL_TEXT_MAX_LENGTH = 2000;
 
 interface WhatsNewPollQuestionProps {
     question: WhatsNewPollQuestionData;
-    value: string[] | string | undefined;
+    value: WhatsNewPollAnswer | undefined;
     disabled: boolean;
     onChoicesChange: (questionId: string, choices: string[]) => void;
+    onScaleChange: (questionId: string, value: number | null) => void;
     onTextChange: (questionId: string, text: string) => void;
     onTextBlur: () => void;
 }
@@ -35,6 +37,7 @@ export function WhatsNewPollQuestion({
     value,
     disabled,
     onChoicesChange,
+    onScaleChange,
     onTextChange,
     onTextBlur,
 }: WhatsNewPollQuestionProps): React.ReactElement {
@@ -45,7 +48,16 @@ export function WhatsNewPollQuestion({
         <fieldset className="WhatsNewPollQuestion" disabled={disabled}>
             <legend className="question-text">{question.text}</legend>
 
-            {question.type === "text" ? (
+            {question.type === "scale" ? (
+                <WhatsNewPollScale
+                    name={inputName}
+                    value={typeof value === "number" ? value : null}
+                    disabled={disabled}
+                    lowLabel={question.low_label}
+                    highLabel={question.high_label}
+                    onChange={(v) => onScaleChange(question.id, v)}
+                />
+            ) : question.type === "text" ? (
                 <textarea
                     className="question-textarea"
                     name={inputName}

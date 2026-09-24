@@ -24,7 +24,11 @@ import { PollSaveQueue } from "./pollSaveQueue";
 import { recallPollAnswers, rememberPollAnswers } from "./pollAnswerMemory";
 import { visiblePollQuestions } from "./pollVisibility";
 import { WhatsNewPollQuestion } from "./WhatsNewPollQuestion";
-import type { WhatsNewPoll as WhatsNewPollData, WhatsNewPollAnswers } from "./types";
+import type {
+    WhatsNewPoll as WhatsNewPollData,
+    WhatsNewPollAnswer,
+    WhatsNewPollAnswers,
+} from "./types";
 import "./WhatsNewPoll.css";
 
 interface WhatsNewPollProps {
@@ -65,9 +69,12 @@ export function WhatsNewPoll({
 
     const disabled = user.anonymous || !poll.is_open;
 
-    function updateAnswer(questionId: string, value: string[] | string): WhatsNewPollAnswers {
+    function updateAnswer(
+        questionId: string,
+        value: WhatsNewPollAnswer | null,
+    ): WhatsNewPollAnswers {
         const next = { ...answersRef.current };
-        if (value.length === 0) {
+        if (value === null || (typeof value !== "number" && value.length === 0)) {
             delete next[questionId];
         } else {
             next[questionId] = value;
@@ -83,6 +90,13 @@ export function WhatsNewPoll({
             return;
         }
         queueRef.current?.saveNow(updateAnswer(questionId, choices));
+    }
+
+    function onScaleChange(questionId: string, value: number | null): void {
+        if (disabled) {
+            return;
+        }
+        queueRef.current?.saveNow(updateAnswer(questionId, value));
     }
 
     function onTextChange(questionId: string, text: string): void {
@@ -126,6 +140,7 @@ export function WhatsNewPoll({
                     value={answers[question.id]}
                     disabled={disabled}
                     onChoicesChange={onChoicesChange}
+                    onScaleChange={onScaleChange}
                     onTextChange={onTextChange}
                     onTextBlur={onTextBlur}
                 />

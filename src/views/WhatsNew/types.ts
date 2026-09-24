@@ -25,21 +25,26 @@ export interface WhatsNewPollChoice {
     label: string;
 }
 
-export type WhatsNewPollQuestionType = "single" | "multiple" | "text";
+export type WhatsNewPollQuestionType = "single" | "multiple" | "text" | "scale";
 
 export interface WhatsNewPollQuestion {
     id: string;
     type: WhatsNewPollQuestionType;
     text: string;
     choices?: WhatsNewPollChoice[];
+    /** Overridden end labels of a `scale` question; the defaults are "Dislike" and "Like". */
+    low_label?: string;
+    high_label?: string;
     show_if?: {
         question: string;
         choices: string[];
     };
 }
 
-/** Maps a question id to the selected choice ids, or to the free-text answer. */
-export type WhatsNewPollAnswers = Record<string, string[] | string>;
+export type WhatsNewPollAnswer = string[] | string | number;
+
+/** Maps a question id to the selected choice ids, the free-text answer, or a 1-5 scale value. */
+export type WhatsNewPollAnswers = Record<string, WhatsNewPollAnswer>;
 
 export interface WhatsNewPoll {
     is_open: boolean;

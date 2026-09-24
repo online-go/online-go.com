@@ -1,0 +1,100 @@
+/*
+ * Copyright (C)  Online-Go.com
+ */
+.WhatsNewPollScale {
+    --scale-track-height: 0.35rem;
+    --scale-thumb-size: 1.1rem;
+
+    max-width: 24rem;
+
+    /* Drawn by hand so the track has no filled part: an unanswered slider must
+       not look half answered. */
+    input[type="range"] {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 100%;
+        height: var(--scale-thumb-size);
+        margin: 0;
+        padding: 0;
+        border: none;
+        box-shadow: none;
+        background: transparent;
+        cursor: pointer;
+
+        &::-webkit-slider-runnable-track {
+            height: var(--scale-track-height);
+            border-radius: var(--scale-track-height);
+            background: var(--shade3);
+        }
+
+        &::-moz-range-track {
+            height: var(--scale-track-height);
+            border-radius: var(--scale-track-height);
+            background: var(--shade3);
+        }
+
+        &::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: var(--scale-thumb-size);
+            height: var(--scale-thumb-size);
+            margin-top: calc((var(--scale-track-height) - var(--scale-thumb-size)) / 2);
+            border: none;
+            border-radius: 50%;
+            background: var(--primary);
+        }
+
+        &::-moz-range-thumb {
+            width: var(--scale-thumb-size);
+            height: var(--scale-thumb-size);
+            border: none;
+            border-radius: 50%;
+            background: var(--primary);
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--primary-light);
+            outline-offset: 2px;
+        }
+
+        &:disabled {
+            cursor: default;
+
+            &::-webkit-slider-thumb {
+                background: var(--shade1);
+            }
+
+            &::-moz-range-thumb {
+                background: var(--shade1);
+            }
+        }
+    }
+
+    &.unanswered input[type="range"] {
+        &::-webkit-slider-thumb {
+            opacity: 0;
+        }
+
+        &::-moz-range-thumb {
+            opacity: 0;
+        }
+    }
+
+    .scale-labels {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        font-size: 0.85rem;
+        color: var(--text-dimmed);
+    }
+
+    .scale-clear {
+        margin: 0.25rem 0 0 0;
+        padding: 0;
+        border: none;
+        background: none;
+        box-shadow: none;
+        font-size: 0.8rem;
+        color: var(--link-color);
+        cursor: pointer;
+    }
+}
