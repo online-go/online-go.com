@@ -1,0 +1,26 @@
+/*
+ * Copyright (C)  Online-Go.com
+ */
+.WhatsNewPoll {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    border: 1px solid var(--shade4);
+    border-radius: 3px;
+
+    .poll-note {
+        font-size: 0.85rem;
+        font-style: italic;
+        color: var(--text-dimmed);
+        margin-bottom: 1rem;
+
+        a {
+            color: var(--link-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: var(--link-color-active);
+            text-decoration: underline;
+        }
+    }
+}

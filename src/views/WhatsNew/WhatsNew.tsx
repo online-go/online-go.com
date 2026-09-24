@@ -26,6 +26,8 @@ import { Markdown } from "@/components/Markdown";
 import { useUser } from "@/lib/hooks";
 import { UIPush } from "@/components/UIPush";
 import { LoadingPage } from "@/components/Loading";
+import { WhatsNewPoll } from "./WhatsNewPoll";
+import type { WhatsNewPost } from "./types";
 import "./WhatsNew.css";
 
 const EMOJI_DISPLAY: Record<string, string> = {
@@ -36,23 +38,6 @@ const EMOJI_DISPLAY: Record<string, string> = {
 };
 
 const ALL_EMOJIS = Object.keys(EMOJI_DISPLAY);
-
-interface NavLink {
-    id: number;
-    title: string;
-}
-
-interface WhatsNewPost {
-    id: number;
-    created_at: string;
-    updated_at: string;
-    title: string;
-    content: string | null;
-    reaction_counts: Record<string, number>;
-    previous: NavLink | null;
-    next: NavLink | null;
-    user_reactions: string[];
-}
 
 export function WhatsNew(): React.ReactElement | null {
     const user = useUser();
@@ -289,6 +274,14 @@ export function WhatsNew(): React.ReactElement | null {
                         </button>
                     )}
                 </div>
+            )}
+            {currentPost.poll && (
+                <WhatsNewPoll
+                    key={currentPost.id}
+                    postId={currentPost.id}
+                    poll={showOriginal && originalPost?.poll ? originalPost.poll : currentPost.poll}
+                    initialAnswers={currentPost.poll.my_answers}
+                />
             )}
             <div className="reactions-bar">
                 {ALL_EMOJIS.map((emoji) => {
