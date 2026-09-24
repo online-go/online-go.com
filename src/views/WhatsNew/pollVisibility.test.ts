@@ -108,3 +108,23 @@ describe("after_previous", () => {
         expect(visiblePollQuestions(withText, { t: "ok" }).map((q) => q.id)).toEqual(["t", "next"]);
     });
 });
+
+describe("scale conditions", () => {
+    const scaleQuestions = (op: "lt" | "gt"): WhatsNewPollQuestion[] => [
+        { id: "s", type: "scale", text: "How do you like it?" },
+        { id: "why", type: "text", text: "Why?", show_if: { question: "s", op, value: 3 } },
+    ];
+    const shown = (op: "lt" | "gt", answers: Record<string, number>) =>
+        visiblePollQuestions(scaleQuestions(op), answers).some((q) => q.id === "why");
+
+    test("less than", () => {
+        expect(shown("lt", {})).toBe(false);
+        expect(shown("lt", { s: 2 })).toBe(true);
+        expect(shown("lt", { s: 3 })).toBe(false);
+    });
+
+    test("greater than", () => {
+        expect(shown("gt", { s: 4 })).toBe(true);
+        expect(shown("gt", { s: 3 })).toBe(false);
+    });
+});

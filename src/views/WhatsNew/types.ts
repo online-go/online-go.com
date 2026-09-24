@@ -25,6 +25,13 @@ export interface WhatsNewPollChoice {
     label: string;
 }
 
+/** Show a question when an earlier choice question has any of `choices`, or
+ * when an earlier scale question's answer is less than (`lt`) or greater
+ * than (`gt`) `value`. */
+export type WhatsNewPollCondition =
+    | { question: string; choices: string[] }
+    | { question: string; op: "lt" | "gt"; value: number };
+
 export type WhatsNewPollQuestionType = "single" | "multiple" | "text" | "scale";
 
 export interface WhatsNewPollQuestion {
@@ -35,10 +42,7 @@ export interface WhatsNewPollQuestion {
     /** Overridden end labels of a `scale` question; the defaults are "Dislike" and "Like". */
     low_label?: string;
     high_label?: string;
-    show_if?: {
-        question: string;
-        choices: string[];
-    };
+    show_if?: WhatsNewPollCondition;
     /** Shown only once every visible question before it is answered. */
     after_previous?: boolean;
 }
