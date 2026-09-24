@@ -82,3 +82,29 @@ test("a text answer never meets a condition", () => {
 test("display order is kept", () => {
     expect(ids({ q1: ["yes"], q2: ["s9"] })).toEqual(["q1", "q2", "q3", "q4"]);
 });
+
+describe("after_previous", () => {
+    const progressive: WhatsNewPollQuestion[] = [
+        ...questions,
+        { id: "last", type: "scale", text: "Overall?", after_previous: true },
+    ];
+    const ids = (answers: Record<string, string[] | string | number>) =>
+        visiblePollQuestions(progressive, answers).map((q) => q.id);
+
+    test("waits until every visible earlier question is answered", () => {
+        expect(ids({})).not.toContain("last");
+        expect(ids({ q1: ["no"] })).not.toContain("last");
+        expect(ids({ q1: ["no"], q4: "fine" })).toContain("last");
+        expect(ids({ q1: ["yes"], q4: "fine" })).not.toContain("last");
+        expect(ids({ q1: ["yes"], q2: ["s19"], q4: "fine" })).toContain("last");
+    });
+
+    test("does not count whitespace as a text answer", () => {
+        const withText: WhatsNewPollQuestion[] = [
+            { id: "t", type: "text", text: "Why?" },
+            { id: "next", type: "single", text: "Next", choices: [], after_previous: true },
+        ];
+        expect(visiblePollQuestions(withText, { t: "  " }).map((q) => q.id)).toEqual(["t"]);
+        expect(visiblePollQuestions(withText, { t: "ok" }).map((q) => q.id)).toEqual(["t", "next"]);
+    });
+});

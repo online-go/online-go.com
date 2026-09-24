@@ -39,6 +39,8 @@ export interface WhatsNewPollQuestion {
         question: string;
         choices: string[];
     };
+    /** Shown only once every visible question before it is answered. */
+    after_previous?: boolean;
 }
 
 export type WhatsNewPollAnswer = string[] | string | number;
