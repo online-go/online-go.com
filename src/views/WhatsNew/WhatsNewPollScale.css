@@ -32,7 +32,7 @@
     }
 
     .scale-dot {
-        --scale-dot-size: 0.55rem;
+        --scale-dot-size: 0.85rem;
 
         left: calc(
             var(--scale-thumb-size) / 2 + (100% - var(--scale-thumb-size)) * var(--scale-position) -
