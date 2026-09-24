@@ -7,11 +7,48 @@
 
     max-width: 24rem;
 
-    /* Drawn by hand so the track has no filled part: an unanswered slider must
-       not look half answered. */
+    /* The line and its dots are drawn behind a transparent range input, so
+       the track has no filled part (an unanswered slider must not look half
+       answered) and the dots mark where each value's thumb sits. */
+    .scale-track {
+        position: relative;
+        height: var(--scale-thumb-size);
+    }
+
+    .scale-line,
+    .scale-dot {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .scale-line {
+        left: 0;
+        right: 0;
+        height: var(--scale-track-height);
+        border-radius: var(--scale-track-height);
+        background: var(--shade3);
+    }
+
+    .scale-dot {
+        --scale-dot-size: 0.55rem;
+
+        left: calc(
+            var(--scale-thumb-size) / 2 + (100% - var(--scale-thumb-size)) * var(--scale-position) -
+                var(--scale-dot-size) / 2
+        );
+        width: var(--scale-dot-size);
+        height: var(--scale-dot-size);
+        border-radius: 50%;
+        background: var(--shade1);
+    }
+
     input[type="range"] {
         appearance: none;
         -webkit-appearance: none;
+        position: relative;
+        display: block;
         width: 100%;
         height: var(--scale-thumb-size);
         margin: 0;
@@ -22,22 +59,19 @@
         cursor: pointer;
 
         &::-webkit-slider-runnable-track {
-            height: var(--scale-track-height);
-            border-radius: var(--scale-track-height);
-            background: var(--shade3);
+            height: var(--scale-thumb-size);
+            background: transparent;
         }
 
         &::-moz-range-track {
-            height: var(--scale-track-height);
-            border-radius: var(--scale-track-height);
-            background: var(--shade3);
+            height: var(--scale-thumb-size);
+            background: transparent;
         }
 
         &::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: var(--scale-thumb-size);
             height: var(--scale-thumb-size);
-            margin-top: calc((var(--scale-track-height) - var(--scale-thumb-size)) / 2);
             border: none;
             border-radius: 50%;
             background: var(--primary);

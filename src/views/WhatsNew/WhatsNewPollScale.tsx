@@ -21,6 +21,7 @@ import "./WhatsNewPollScale.css";
 const SCALE_MIN = 1;
 const SCALE_MAX = 5;
 const SCALE_MIDDLE = 3;
+const SCALE_VALUES = [1, 2, 3, 4, 5];
 const VALUE_KEYS = new Set([
     "ArrowLeft",
     "ArrowRight",
@@ -71,41 +72,55 @@ export function WhatsNewPollScale({
 
     return (
         <div className={"WhatsNewPollScale" + (shown === null ? " unanswered" : "")}>
-            <input
-                type="range"
-                name={name}
-                min={SCALE_MIN}
-                max={SCALE_MAX}
-                step={1}
-                value={shown ?? SCALE_MIDDLE}
-                disabled={disabled}
-                aria-valuetext={
-                    shown === null
-                        ? pgettext(
-                              "Screen reader text for an unanswered poll slider",
-                              "Not answered",
-                          )
-                        : interpolate(
-                              pgettext(
-                                  "Screen reader text for a poll slider value",
-                                  "{{value}} of 5",
-                              ),
-                              { value: shown },
-                          )
-                }
-                onChange={(ev) => setDraft(Number(ev.target.value))}
-                onPointerUp={(ev) => commit(ev.currentTarget)}
-                onKeyUp={(ev) => {
-                    if (VALUE_KEYS.has(ev.key)) {
-                        commit(ev.currentTarget);
+            <div className="scale-track">
+                <div className="scale-line" />
+                {SCALE_VALUES.map((v) => (
+                    <span
+                        key={v}
+                        className="scale-dot"
+                        style={
+                            {
+                                "--scale-position": (v - SCALE_MIN) / (SCALE_MAX - SCALE_MIN),
+                            } as React.CSSProperties
+                        }
+                    />
+                ))}
+                <input
+                    type="range"
+                    name={name}
+                    min={SCALE_MIN}
+                    max={SCALE_MAX}
+                    step={1}
+                    value={shown ?? SCALE_MIDDLE}
+                    disabled={disabled}
+                    aria-valuetext={
+                        shown === null
+                            ? pgettext(
+                                  "Screen reader text for an unanswered poll slider",
+                                  "Not answered",
+                              )
+                            : interpolate(
+                                  pgettext(
+                                      "Screen reader text for a poll slider value",
+                                      "{{value}} of 5",
+                                  ),
+                                  { value: shown },
+                              )
                     }
-                }}
-                onBlur={(ev) => {
-                    if (draft !== null) {
-                        commit(ev.currentTarget);
-                    }
-                }}
-            />
+                    onChange={(ev) => setDraft(Number(ev.target.value))}
+                    onPointerUp={(ev) => commit(ev.currentTarget)}
+                    onKeyUp={(ev) => {
+                        if (VALUE_KEYS.has(ev.key)) {
+                            commit(ev.currentTarget);
+                        }
+                    }}
+                    onBlur={(ev) => {
+                        if (draft !== null) {
+                            commit(ev.currentTarget);
+                        }
+                    }}
+                />
+            </div>
             <div className="scale-labels">
                 <span>{low}</span>
                 <span>{high}</span>
