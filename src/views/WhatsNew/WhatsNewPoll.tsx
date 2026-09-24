@@ -21,6 +21,7 @@ import { put } from "@/lib/requests";
 import { pgettext } from "@/lib/translate";
 import { useUser } from "@/lib/hooks";
 import { PollSaveQueue } from "./pollSaveQueue";
+import { recallPollAnswers, rememberPollAnswers } from "./pollAnswerMemory";
 import { visiblePollQuestions } from "./pollVisibility";
 import { WhatsNewPollQuestion } from "./WhatsNewPollQuestion";
 import type { WhatsNewPoll as WhatsNewPollData, WhatsNewPollAnswers } from "./types";
@@ -39,7 +40,9 @@ export function WhatsNewPoll({
     initialAnswers,
 }: WhatsNewPollProps): React.ReactElement {
     const user = useUser();
-    const [answers, setAnswers] = React.useState<WhatsNewPollAnswers>(initialAnswers ?? {});
+    const [answers, setAnswers] = React.useState<WhatsNewPollAnswers>(
+        () => recallPollAnswers(postId) ?? initialAnswers ?? {},
+    );
     const answersRef = React.useRef(answers);
     const queueRef = React.useRef<PollSaveQueue | null>(null);
 
@@ -49,7 +52,10 @@ export function WhatsNewPoll({
             onError: (err) => console.error(err),
         });
         queueRef.current = queue;
+        const onPageHide = () => queue.flush();
+        window.addEventListener("pagehide", onPageHide);
         return () => {
+            window.removeEventListener("pagehide", onPageHide);
             queue.dispose();
             if (queueRef.current === queue) {
                 queueRef.current = null;
@@ -67,6 +73,7 @@ export function WhatsNewPoll({
             next[questionId] = value;
         }
         answersRef.current = next;
+        rememberPollAnswers(postId, next);
         setAnswers(next);
         return next;
     }
