@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import { isAnswered } from "./pollVisibility";
 import { WhatsNewPollScale } from "./WhatsNewPollScale";
 import type { WhatsNewPollAnswer, WhatsNewPollQuestion as WhatsNewPollQuestionData } from "./types";
 import "./WhatsNewPollQuestion.css";
@@ -45,7 +46,12 @@ export function WhatsNewPollQuestion({
     const selected = Array.isArray(value) ? value : [];
 
     return (
-        <fieldset className="WhatsNewPollQuestion" disabled={disabled}>
+        <fieldset
+            className={
+                "WhatsNewPollQuestion" + (!disabled && !isAnswered(value) ? " unanswered" : "")
+            }
+            disabled={disabled}
+        >
             <legend className="question-text">{question.text}</legend>
 
             {question.type === "scale" ? (

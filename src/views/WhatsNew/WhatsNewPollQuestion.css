@@ -5,13 +5,27 @@
     margin: 0 0 1.25rem 0;
     padding: 0;
     border: none;
+    /* Always reserved, so answering does not shift the question sideways. */
+    border-left: 3px solid transparent;
+    padding-left: 0.75rem;
     min-width: 0;
+
+    &.unanswered {
+        border-left-color: var(--primary);
+    }
+
+    & > :not(legend) {
+        clear: both;
+    }
 
     &:last-child {
         margin-bottom: 0;
     }
 
+    /* Floated so the fieldset's border runs past it instead of starting at its middle. */
     .question-text {
+        float: left;
+        width: 100%;
         padding: 0;
         margin-bottom: 0.5rem;
         font-weight: bold;

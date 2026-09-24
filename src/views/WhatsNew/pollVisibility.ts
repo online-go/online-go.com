@@ -18,7 +18,7 @@
 import type { WhatsNewPollAnswer, WhatsNewPollAnswers, WhatsNewPollQuestion } from "./types";
 
 /** Whether an answer counts as given, matching what the server keeps. */
-function isAnswered(answer: WhatsNewPollAnswer | undefined): boolean {
+export function isAnswered(answer: WhatsNewPollAnswer | undefined): boolean {
     if (answer === undefined) {
         return false;
     }
