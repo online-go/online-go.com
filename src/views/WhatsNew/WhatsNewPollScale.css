@@ -1,0 +1,134 @@
+/*
+ * Copyright (C)  Online-Go.com
+ */
+.WhatsNewPollScale {
+    --scale-track-height: 0.35rem;
+    --scale-thumb-size: 1.1rem;
+
+    max-width: 24rem;
+
+    /* The line and its dots are drawn behind a transparent range input, so
+       the track has no filled part (an unanswered slider must not look half
+       answered) and the dots mark where each value's thumb sits. */
+    .scale-track {
+        position: relative;
+        height: var(--scale-thumb-size);
+    }
+
+    .scale-line,
+    .scale-dot {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .scale-line {
+        left: 0;
+        right: 0;
+        height: var(--scale-track-height);
+        border-radius: var(--scale-track-height);
+        background: var(--shade3);
+    }
+
+    .scale-dot {
+        --scale-dot-size: 0.85rem;
+
+        left: calc(
+            var(--scale-thumb-size) / 2 + (100% - var(--scale-thumb-size)) * var(--scale-position) -
+                var(--scale-dot-size) / 2
+        );
+        width: var(--scale-dot-size);
+        height: var(--scale-dot-size);
+        border-radius: 50%;
+        background: var(--shade1);
+    }
+
+    input[type="range"] {
+        appearance: none;
+        -webkit-appearance: none;
+        position: relative;
+        display: block;
+        width: 100%;
+        height: var(--scale-thumb-size);
+        margin: 0;
+        padding: 0;
+        border: none;
+        box-shadow: none;
+        background: transparent;
+        cursor: pointer;
+
+        &::-webkit-slider-runnable-track {
+            height: var(--scale-thumb-size);
+            background: transparent;
+        }
+
+        &::-moz-range-track {
+            height: var(--scale-thumb-size);
+            background: transparent;
+        }
+
+        &::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: var(--scale-thumb-size);
+            height: var(--scale-thumb-size);
+            border: none;
+            border-radius: 50%;
+            background: var(--primary);
+        }
+
+        &::-moz-range-thumb {
+            width: var(--scale-thumb-size);
+            height: var(--scale-thumb-size);
+            border: none;
+            border-radius: 50%;
+            background: var(--primary);
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--primary-light);
+            outline-offset: 2px;
+        }
+
+        &:disabled {
+            cursor: default;
+
+            &::-webkit-slider-thumb {
+                background: var(--shade1);
+            }
+
+            &::-moz-range-thumb {
+                background: var(--shade1);
+            }
+        }
+    }
+
+    &.unanswered input[type="range"] {
+        &::-webkit-slider-thumb {
+            opacity: 0;
+        }
+
+        &::-moz-range-thumb {
+            opacity: 0;
+        }
+    }
+
+    .scale-labels {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        font-size: 0.85rem;
+        color: var(--text-dimmed);
+    }
+
+    .scale-clear {
+        margin: 0.25rem 0 0 0;
+        padding: 0;
+        border: none;
+        background: none;
+        box-shadow: none;
+        font-size: 0.8rem;
+        color: var(--link-color);
+        cursor: pointer;
+    }
+}
