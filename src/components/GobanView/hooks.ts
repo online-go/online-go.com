@@ -19,7 +19,7 @@ import * as React from "react";
 import { Goban, GobanEvents } from "goban";
 import { GobanController } from "@/lib/GobanController";
 import { ViewMode, stageFitsWithSlider } from "./util";
-import { useGameLayout } from "./layout";
+import { legacyViewMode, useGameLayout } from "./layout";
 
 /**
  * Generates a custom react hook that returns a prop derived from a goban object.
@@ -66,7 +66,7 @@ export function subscribeAllEvents(
 
 export function useViewMode(controller: GobanController | null): ViewMode {
     const layout = useGameLayout();
-    const view_mode: ViewMode = layout.mode === "stacked" ? "portrait" : "wide";
+    const view_mode: ViewMode = legacyViewMode(layout.mode);
     React.useEffect(() => {
         if (controller && controller.view_mode !== view_mode) {
             controller.setViewMode(view_mode);

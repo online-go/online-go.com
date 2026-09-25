@@ -10,6 +10,7 @@
 import * as React from "react";
 
 export type GameLayoutMode = "stacked" | "compactHorizontal" | "fullHorizontal";
+export type LegacyViewMode = "portrait" | "wide";
 
 export interface ViewportGeometry {
     width: number;
@@ -46,6 +47,10 @@ export function classifyGameLayout(viewport: ViewportGeometry): GameLayoutMode {
         return "fullHorizontal";
     }
     return "compactHorizontal";
+}
+
+export function legacyViewMode(mode: GameLayoutMode): LegacyViewMode {
+    return mode === "stacked" ? "portrait" : "wide";
 }
 
 export interface GameLayoutSnapshot extends ViewportGeometry {

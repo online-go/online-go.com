@@ -1,6 +1,11 @@
 /* Copyright (C) Online-Go.com */
 
-import { classifyGameLayout, FULL_HORIZONTAL_REQUIREMENTS, ViewportGeometry } from "./layout";
+import {
+    classifyGameLayout,
+    FULL_HORIZONTAL_REQUIREMENTS,
+    legacyViewMode,
+    ViewportGeometry,
+} from "./layout";
 
 const layout = (width: number, height: number): ViewportGeometry => ({ width, height });
 
@@ -52,5 +57,35 @@ describe("classifyGameLayout", () => {
     test("is deterministic and does not depend on prior mode", () => {
         const viewport = layout(844, 390);
         expect(classifyGameLayout(viewport)).toBe(classifyGameLayout(viewport));
+    });
+
+    test.each([
+        [390, 844, "stacked", "portrait"],
+        [844, 390, "compactHorizontal", "wide"],
+        [1440, 900, "fullHorizontal", "wide"],
+    ])("projects %sx%s to the legacy controller mode", (width, height, mode, legacy) => {
+        expect(classifyGameLayout(layout(width, height))).toBe(mode);
+        expect(legacyViewMode(mode as "stacked" | "compactHorizontal" | "fullHorizontal")).toBe(
+            legacy,
+        );
+    });
+
+    test("rotation and geometry callbacks cannot retain a prior mode", () => {
+        const sequence = [
+            layout(390, 844),
+            layout(844, 390),
+            layout(390, 844),
+            layout(844, 390),
+            layout(390, 844),
+        ];
+        expect(sequence.map(classifyGameLayout)).toEqual([
+            "stacked",
+            "compactHorizontal",
+            "stacked",
+            "compactHorizontal",
+            "stacked",
+        ]);
+        expect(classifyGameLayout(layout(844, 390))).toBe("compactHorizontal");
+        expect(classifyGameLayout(layout(844, 390))).toBe("compactHorizontal");
     });
 });
