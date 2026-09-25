@@ -88,8 +88,9 @@ ogsTest.describe("@Kibitz responsive layout", () => {
                 element.scrollTop = element.scrollHeight;
             });
             const afterScroll = await playerCards.boundingBox();
-            expect(afterScroll?.bottom ?? 0).toBeLessThanOrEqual(
-                (await body.boundingBox())?.y ?? 0,
+            const bodyBox = await body.boundingBox();
+            expect((afterScroll?.y ?? 0) + (afterScroll?.height ?? 0)).toBeLessThanOrEqual(
+                bodyBox?.y ?? 0,
             );
             expect(await moveControls.isVisible()).toBe(true);
             expect(await tabs.isVisible()).toBe(true);
