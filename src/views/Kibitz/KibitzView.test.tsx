@@ -118,6 +118,7 @@ function baseProps(overrides: Partial<KibitzViewProps> = {}): KibitzViewProps {
             isDraftDirty: () => false,
         },
         isPortrait: false,
+        layoutMode: "fullHorizontal",
         leftAside: variationLeftAside(),
         chat: {} as KibitzViewProps["chat"],
         proposals: { activeProposal: undefined, queuedProposals: [], onVote: jest.fn() },

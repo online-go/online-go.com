@@ -1228,6 +1228,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 room={resolvedRoom}
                 gobans={gobans}
                 isPortrait={isPortrait}
+                layoutMode={layout.mode}
                 banner={
                     resolvedRoom.preset?.selection_status === "change_pending" &&
                     resolvedRoom.preset.change_effective_at ? (

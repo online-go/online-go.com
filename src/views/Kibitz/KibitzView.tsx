@@ -21,6 +21,7 @@ import * as data from "@/lib/data";
 import { GobanController } from "@/lib/GobanController";
 import { popover, PopOver } from "@/lib/popover";
 import { GobanView, generateGobanHook } from "@/components/GobanView";
+import type { GameLayoutMode } from "@/components/GobanView";
 import { KBShortcut } from "@/components/KBShortcut";
 import type { KibitzRoomSummary } from "@/models/kibitz";
 import type { KibitzGobans } from "./useKibitzGobans";
@@ -48,6 +49,7 @@ export interface KibitzViewProps {
     room: KibitzRoomSummary;
     gobans: KibitzGobans;
     isPortrait: boolean;
+    layoutMode: GameLayoutMode;
     leftAside: Omit<KibitzLeftAsideProps, "miniBoardController" | "onExitVariation">;
     chat: Omit<
         KibitzChatPanelProps,
@@ -124,7 +126,7 @@ const useBehindLive = generateGobanHook(
  * and chat on the right.
  */
 export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
-    const { room, gobans, isPortrait } = props;
+    const { room, gobans, isPortrait, layoutMode } = props;
     const settingsPopoverRef = React.useRef<PopOver | null>(null);
     const moreActionsPopoverRef = React.useRef<PopOver | null>(null);
     const behindLive = useBehindLive(
@@ -494,7 +496,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             leftAside={leftAside}
             centerPlaceholder={waitingMessage}
             playerBars={gobans.playerBars ?? !!gobans.center}
-            portraitSplit
+            portraitSplit={layoutMode === "stacked"}
         >
             {gobans.center && <KibitzKeyboardShortcuts />}
             {viewingOther && <KBShortcut shortcut="esc" action={onEscape} />}
