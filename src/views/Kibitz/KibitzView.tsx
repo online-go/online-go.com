@@ -499,7 +499,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             centerPlaceholder={waitingMessage}
             playerBars={gobans.playerBars ?? !!gobans.center}
             sidebarContentBefore={
-                layoutMode === "compactHorizontal" ? (
+                layoutMode === "compactHorizontal" && gobans.center ? (
                     <div className="MainGobanView Kibitz-compact-player-cards">
                         <PlayerCards
                             historical_black={null}
