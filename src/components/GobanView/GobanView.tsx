@@ -206,7 +206,7 @@ function GobanViewComponent({
         .join(",");
 
     const layout = useGameLayout();
-    const viewMode: ViewMode = layout.mode === "fullHorizontal" ? "wide" : "portrait";
+    const viewMode: ViewMode = layout.mode === "stacked" ? "portrait" : "wide";
     const squashed = layout.squashed;
     const [toggleVisibility, setToggleVisibility] = React.useState<Record<string, boolean>>({});
     const [activeTakeover, setActiveTakeover] = React.useState<string | null>(
@@ -346,7 +346,7 @@ function GobanViewComponent({
         [toggleVisibility, activeTakeover, setToggle, setActiveTakeover],
     );
 
-    const isPortrait = layout.mode !== "fullHorizontal";
+    const isPortrait = layout.mode === "stacked";
     const splitActive = isPortrait && !!portraitSplit;
 
     // The stage and the panels are the only parts of the split column that
@@ -406,6 +406,8 @@ function GobanViewComponent({
     const user = useUser();
     const barsController: GobanController | null =
         playerBars && typeof playerBars === "object" ? playerBars : playerBars ? controller : null;
+    const landscapeBarsController = layout.mode === "compactHorizontal" ? null : barsController;
+    const compactSidebarBars = layout.mode === "compactHorizontal" ? barsController : null;
     const barsGoban = (barsController ?? controller)?.goban ?? null;
     usePlayerIds(barsGoban);
     // Only meaningful when there are bars to label; without a goban the
@@ -621,7 +623,7 @@ function GobanViewComponent({
                         (dragSidebarWidth !== null ? " is-resizing-sidebar" : "") +
                         customSliderClass +
                         (leftAside ? " has-left-aside" : "") +
-                        (playerBars ? " has-player-bars" : "") +
+                        (landscapeBarsController ? " has-player-bars" : "") +
                         (className ? ` ${className}` : "")
                     }
                     style={
@@ -634,7 +636,7 @@ function GobanViewComponent({
                 >
                     {leftAside && <div className="GobanView-left-aside">{leftAside}</div>}
                     <div className="GobanView-center">
-                        {barsController ? (
+                        {landscapeBarsController ? (
                             <div className="GobanView-stage">
                                 {topBar}
                                 {landscapeGobanContainer}
@@ -652,10 +654,12 @@ function GobanViewComponent({
                     />
                     <div className="GobanView-sidebar" ref={sidebarRef}>
                         <div className="GobanView-header">{header}</div>
+                        {compactSidebarBars && topBar}
                         <div className="GobanView-sidebar-content">
                             {inlinePanels.map((t) => renderPanel(t, isInlineVisible(t)))}
                             {takeoverPanels.map((t) => renderPanel(t, activeTakeover === t.id))}
                         </div>
+                        {compactSidebarBars && bottomBar}
                         {sliderSlot}
                         <TabBar tabs={tabs} />
                     </div>

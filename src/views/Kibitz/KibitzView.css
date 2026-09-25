@@ -148,56 +148,6 @@
     }
 }
 
-/* Landscape phones use the mobile pane navigation, but give the board the
-   primary height allocation instead of reserving a second panel column. */
-.GobanView.Kibitz.compactHorizontal {
-    .GobanView-mobile-scroll {
-        overflow: hidden;
-    }
-
-    .GobanView-stage {
-        flex: 1 1 auto;
-        min-height: 0;
-        max-height: none;
-        position: relative;
-    }
-
-    .GobanView-player-bar {
-        position: absolute;
-        left: 0;
-        right: 0;
-        z-index: 1;
-    }
-
-    .GobanView-player-bar.top {
-        top: 0;
-    }
-
-    .GobanView-player-bar.bottom {
-        bottom: 0;
-    }
-
-    .GobanView-center {
-        flex: 1 1 auto;
-        min-height: 0;
-        height: auto;
-        width: 100%;
-        aspect-ratio: auto;
-    }
-
-    .GobanView-center .goban-container {
-        align-self: center;
-        width: auto;
-        height: 100%;
-        aspect-ratio: 1;
-        max-width: 100%;
-    }
-
-    .GobanView-mobile-panels {
-        display: none;
-    }
-}
-
 /* The unread dot on the tab-bar button of a chat pane that is off screen;
    the same dot the chat panel's own tab strip uses in landscape. */
 .Kibitz-pane-icon {

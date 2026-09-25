@@ -28,8 +28,21 @@ ogsTest.describe("@Kibitz responsive layout", () => {
                 return {
                     compact: root.classList.contains("compactHorizontal"),
                     hasDesktopAside: Boolean(root.querySelector(".GobanView-left-aside")),
-                    hasDesktopSidebar: Boolean(root.querySelector(".GobanView-sidebar")),
+                    hasRightColumn: Boolean(root.querySelector(".GobanView-sidebar")),
                     hasNavigation: Boolean(root.querySelector(".GobanView-tab-bar")),
+                    hasRightPlayerBars:
+                        root.querySelectorAll(".GobanView-sidebar .GobanView-player-bar").length ===
+                        2,
+                    boardLeftOfRightColumn: (() => {
+                        const board = root.querySelector<HTMLElement>(".Goban");
+                        const right = root.querySelector<HTMLElement>(".GobanView-sidebar");
+                        return Boolean(
+                            board &&
+                            right &&
+                            board.getBoundingClientRect().right <=
+                                right.getBoundingClientRect().left,
+                        );
+                    })(),
                     board: rect
                         ? { width: rect.width, height: rect.height, bottom: rect.bottom }
                         : null,
@@ -39,10 +52,24 @@ ogsTest.describe("@Kibitz responsive layout", () => {
 
             expect(layout.compact).toBe(true);
             expect(layout.hasDesktopAside).toBe(false);
-            expect(layout.hasDesktopSidebar).toBe(false);
+            expect(layout.hasRightColumn).toBe(true);
             expect(layout.hasNavigation).toBe(true);
+            expect(layout.hasRightPlayerBars).toBe(true);
+            expect(layout.boardLeftOfRightColumn).toBe(true);
             expect(layout.board?.width).toBeGreaterThan(0);
             expect(layout.board?.bottom).toBeLessThanOrEqual(layout.visibleHeight + 1);
+
+            const initialBoard = await page.locator(".Goban").boundingBox();
+            for (const title of ["Game chat", "Kibitz chat", "Rooms", "Variations", "People"]) {
+                await page.getByTitle(title, { exact: true }).click();
+                await expect(page.locator(".GobanView.Kibitz.compactHorizontal")).toBeVisible();
+                await expect(page.locator(".Goban")).toBeVisible();
+                const board = await page.locator(".Goban").boundingBox();
+                expect(board).not.toBeNull();
+                expect(board?.x).toBeCloseTo(initialBoard?.x ?? 0, 0);
+                expect(board?.y).toBeCloseTo(initialBoard?.y ?? 0, 0);
+                expect(board?.width).toBeCloseTo(initialBoard?.width ?? 0, 0);
+            }
         });
     }
 });
