@@ -43,7 +43,7 @@ import { post } from "@/lib/requests";
 import { alert } from "@/lib/swal_config";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
-import { goban_view_mode, shared_ip_with_player_map, ViewMode } from "@/views/Game/util";
+import { shared_ip_with_player_map, ViewMode } from "@/views/Game/util";
 import { ChatMode } from "@/views/Game/GameChat";
 import { chat_manager, ChatChannelProxy, inGameModChannel } from "@/lib/chat_manager";
 import { Resizable } from "@/components/Resizable";
@@ -897,7 +897,6 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     };
     toggleZenMode = () => {
         this.setZenMode(!this.zen_mode);
-        this.emit("view_mode", goban_view_mode());
         this.emit("resize");
     };
     toggleAIReview = () => {

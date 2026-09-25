@@ -38,7 +38,7 @@ import { KibitzPresetChangePendingBanner } from "./KibitzPresetChangePendingBann
 import type { KibitzController } from "./KibitzController";
 import { KibitzView } from "./KibitzView";
 import { useKibitzGobans } from "./useKibitzGobans";
-import { goban_view_mode } from "@/components/GobanView";
+import { useGameLayout } from "@/components/GobanView/layout";
 import {
     EMPTY_VISIBLE_VARIATIONS,
     MAX_VISIBLE_VARIATIONS,
@@ -322,8 +322,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         React.useState<number | null>(null);
     const currentGameBaseSnapshotRef = React.useRef<KibitzCurrentGameBaseSnapshot | null>(null);
     const [gameVariations, setGameVariations] = React.useState<KibitzVariationSummary[]>([]);
-    const [viewMode, setViewMode] = React.useState(() => goban_view_mode());
-    const isPortrait = viewMode === "portrait";
+    const layout = useGameLayout();
+    const isPortrait = layout.mode !== "fullHorizontal";
     const [visibleVariations, setVisibleVariations] = React.useState(EMPTY_VISIBLE_VARIATIONS);
     const visibleVariationIds = visibleVariations.ids;
     const variationColorIndexes = visibleVariations.colors;
@@ -339,19 +339,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         setCachedGamesVersion((previous) => previous + 1);
     }, []);
     const [pickerMode, setPickerMode] = React.useState<KibitzGamePickerMode>(null);
-
-    React.useEffect(() => {
-        const syncViewMode = () => {
-            setViewMode(goban_view_mode());
-        };
-
-        window.addEventListener("resize", syncViewMode);
-        syncViewMode();
-
-        return () => {
-            window.removeEventListener("resize", syncViewMode);
-        };
-    }, []);
 
     React.useEffect(() => {
         controller.on("rooms-changed", setRooms);

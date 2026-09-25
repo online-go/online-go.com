@@ -19,7 +19,7 @@ import * as React from "react";
 import { PersistentElement } from "@/components/PersistentElement";
 import { OgsResizeDetector } from "@/components/OgsResizeDetector";
 import { GobanRenderer, GobanRendererConfig } from "goban";
-import { goban_view_mode, useGobanControllerOrNull } from "@/components/GobanView";
+import { useGobanControllerOrNull } from "@/components/GobanView";
 
 import { usePreference } from "@/lib/preferences";
 
@@ -165,16 +165,9 @@ export function GobanContainer({
                 return;
             }
 
-            const view_mode = goban_view_mode();
-
             if (respectContainerBounds) {
                 ref_goban_container.current.style.removeProperty("min-height");
                 ref_goban_container.current.style.removeProperty("flex-basis");
-            } else if (view_mode === "portrait") {
-                const w = window.innerWidth + 10;
-                if (ref_goban_container.current.style.minHeight !== `${w}px`) {
-                    ref_goban_container.current.style.minHeight = `${w}px`;
-                }
             } else {
                 if (ref_goban_container.current.style.minHeight !== `initial`) {
                     ref_goban_container.current.style.minHeight = `initial`;

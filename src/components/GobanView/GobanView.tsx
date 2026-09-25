@@ -38,13 +38,8 @@ import {
 } from "./resizerUtil";
 import { PlayerBar } from "./PlayerBar";
 import { generateGobanHook } from "./hooks";
-import {
-    boardAlignmentClass,
-    goban_view_mode,
-    goban_view_squashed,
-    user_color,
-    ViewMode,
-} from "./util";
+import { boardAlignmentClass, user_color, ViewMode } from "./util";
+import { useGameLayout } from "./layout";
 import { usePreference } from "@/lib/preferences";
 import { useSliderFits } from "./hooks";
 import "./GobanView.css";
@@ -210,8 +205,9 @@ function GobanViewComponent({
         .map((t) => `${t.id}:${t.type}:${t.disabled ? 1 : 0}:${t.defaultVisible ? 1 : 0}`)
         .join(",");
 
-    const [viewMode, setViewMode] = React.useState<ViewMode>(() => goban_view_mode());
-    const [squashed, setSquashed] = React.useState<boolean>(() => goban_view_squashed());
+    const layout = useGameLayout();
+    const viewMode: ViewMode = layout.mode === "fullHorizontal" ? "wide" : "portrait";
+    const squashed = layout.squashed;
     const [toggleVisibility, setToggleVisibility] = React.useState<Record<string, boolean>>({});
     const [activeTakeover, setActiveTakeover] = React.useState<string | null>(
         defaultActiveTakeover ?? null,
@@ -340,26 +336,6 @@ function GobanViewComponent({
         [],
     );
 
-    const onResize = React.useCallback(() => {
-        const newMode = goban_view_mode();
-        const newSquashed = goban_view_squashed();
-        setViewMode((prev) => (prev !== newMode ? newMode : prev));
-        setSquashed((prev) => (prev !== newSquashed ? newSquashed : prev));
-    }, []);
-
-    // The GobanContainer normally reports resizes, and it is what keeps
-    // `viewMode` current. Without a controller there is no container, so the
-    // view would keep whatever orientation it mounted with — listen directly
-    // for as long as that is the case.
-    React.useEffect(() => {
-        if (controller) {
-            return;
-        }
-        onResize();
-        window.addEventListener("resize", onResize);
-        return () => window.removeEventListener("resize", onResize);
-    }, [controller, onResize]);
-
     const tabState: GobanViewTabState = React.useMemo(
         () => ({
             toggleVisibility,
@@ -370,7 +346,7 @@ function GobanViewComponent({
         [toggleVisibility, activeTakeover, setToggle, setActiveTakeover],
     );
 
-    const isPortrait = viewMode === "portrait";
+    const isPortrait = layout.mode !== "fullHorizontal";
     const splitActive = isPortrait && !!portraitSplit;
 
     // The stage and the panels are the only parts of the split column that
@@ -452,7 +428,7 @@ function GobanViewComponent({
     ) : null;
     const hasTakeover = activeTakeover !== null;
     const landscapeGobanContainer = controller ? (
-        <GobanContainer onResize={onResize} onWheel={onWheel} respectContainerBounds />
+        <GobanContainer onWheel={onWheel} respectContainerBounds />
     ) : (
         centerPlaceholder
     );
@@ -548,7 +524,8 @@ function GobanViewComponent({
                     <div
                         ref={rootRef}
                         className={
-                            `GobanView portrait` +
+                            `GobanView ${viewMode}` +
+                            (layout.mode === "compactHorizontal" ? " compactHorizontal" : "") +
                             (controller ? "" : " has-no-board") +
                             (squashed ? " squashed" : "") +
                             (hasTakeover ? " has-takeover" : "") +
@@ -590,11 +567,7 @@ function GobanViewComponent({
                                 {topBar}
                                 <div className="GobanView-center" ref={centerRef}>
                                     {controller ? (
-                                        <GobanContainer
-                                            onResize={onResize}
-                                            onWheel={onWheel}
-                                            respectContainerBounds
-                                        />
+                                        <GobanContainer onWheel={onWheel} respectContainerBounds />
                                     ) : (
                                         centerPlaceholder
                                     )}
@@ -640,6 +613,7 @@ function GobanViewComponent({
                     ref={rootRef}
                     className={
                         `GobanView ${viewMode} ${boardAlignmentClass(boardAlignment)}` +
+                        (layout.mode === "compactHorizontal" ? " compactHorizontal" : "") +
                         (controller ? "" : " has-no-board") +
                         (squashed ? " squashed" : "") +
                         (hasTakeover ? " has-takeover" : "") +

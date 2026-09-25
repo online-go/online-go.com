@@ -31,7 +31,6 @@ import { setExtraActionCallback, PlayerDetails } from "@/components/Player";
 import * as player_cache from "@/lib/player_cache";
 import { notification_manager } from "@/components/Notifications";
 import { GameChat } from "./GameChat";
-import { goban_view_mode } from "./util";
 import { PlayerCard, PlayerCards } from "./PlayerCards";
 import { CompactPlayerHeader } from "./CompactPlayerHeader";
 import { PlayControls, ReviewControls } from "./PlayControls";
@@ -307,24 +306,6 @@ export function Game(): React.ReactElement | null {
         window.document.title = on_refocus_title.current;
     };
 
-    /* Keep goban_controller.view_mode in sync on viewport changes for any
-     * downstream consumer that still subscribes via useViewMode. GobanView
-     * tracks its own layout independently. */
-    React.useEffect(() => {
-        const onResize = () => {
-            const controller = goban_controller.current;
-            if (!controller) {
-                return;
-            }
-            const new_mode = goban_view_mode();
-            if (new_mode !== controller.view_mode) {
-                controller.setViewMode(new_mode);
-            }
-        };
-        window.addEventListener("resize", onResize);
-        return () => window.removeEventListener("resize", onResize);
-    }, []);
-
     React.useEffect(() => {
         if (!goban_controller.current) {
             return;
@@ -426,8 +407,6 @@ export function Game(): React.ReactElement | null {
         const setLabelHandler = goban_controller.current.setLabelHandler;
         document.addEventListener("keypress", setLabelHandler);
 
-        // Seed goban_controller.view_mode now that the controller exists.
-        goban_controller.current.setViewMode(goban_view_mode());
         if (review_id) {
             goban.setMode("analyze");
         }

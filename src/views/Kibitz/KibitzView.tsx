@@ -169,6 +169,13 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const paneBeforeAnalysis = React.useRef<KibitzPortraitPane | null>(null);
     const centerShowsVariation = gobans.centerMode !== "main";
     const secondaryController = gobans.secondary;
+    // The pane state stores reader intent. Analysis is a presentation of a
+    // non-live centre, so derive it for this render instead of first
+    // rendering an invalid pane and repairing it in an effect.
+    const displayedPane: KibitzPortraitPane =
+        !centerShowsVariation && pane === "analysis"
+            ? (paneBeforeAnalysis.current ?? readPortraitPane())
+            : pane;
     React.useEffect(() => {
         if (!isPortrait) {
             return;
@@ -498,7 +505,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 {!isPortrait && variationPanel}
                 {isPortrait ? (
                     <KibitzPortraitPanes
-                        active={pane}
+                        active={displayedPane}
                         chat={{
                             ...props.chat,
                             onOpenVariation: onOpenVariationByReader,
@@ -573,7 +580,9 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                     align="center"
                     icon="sitemap"
                     title={pgettext("Action that starts a new Kibitz variation", "New variation")}
-                    active={isPortrait ? pane === "analysis" : gobans.centerMode === "draft"}
+                    active={
+                        isPortrait ? displayedPane === "analysis" : gobans.centerMode === "draft"
+                    }
                     disabled={!gobans.main}
                     onClick={() => {
                         // Pressing it again on the pane it opened leaves the draft.
