@@ -20,7 +20,7 @@
     width: 32px;
     vertical-align: text-top;
     line-height: 32px;
-    background: url('https://cdn.online-go.com/assets/flags32.2026-04-14.png') no-repeat;
+    background: url('https://cdn.online-go.com/assets/flags32.2026-09-25.png') no-repeat;
 }
 
 .f32 ._African_Union {
@@ -51,7 +51,8 @@
     background-position: 0 -224px;
 }
 
-.f32 ._European_Union, .f32 .eu {
+.f32 ._European_Union,
+.f32 .eu {
     background-position: 0 -256px;
 }
 
@@ -59,7 +60,8 @@
     background-position: 0 -288px;
 }
 
-.f32 ._Kosovo, .f32 .xk {
+.f32 ._Kosovo,
+.f32 .xk {
     background-position: 0 -320px;
 }
 
@@ -380,7 +382,10 @@
     background-position: 0 -2848px;
 }
 
-.f32 .bl, .f32 .cp, .f32 .mf, .f32 .yt {
+.f32 .bl,
+.f32 .cp,
+.f32 .mf,
+.f32 .yt {
     background-position: 0 -2848px;
 }
 
@@ -732,7 +737,9 @@
     background-position: 0 -5536px;
 }
 
-.f32 .bv, .f32 .nq, .f32 .sj {
+.f32 .bv,
+.f32 .nq,
+.f32 .sj {
     background-position: 0 -5536px;
 }
 
@@ -1089,7 +1096,8 @@
     background-position: 0 -8352px;
 }
 
-.f32 .ct { /* same as .ki */
+.f32 .ct {
+    /* same as .ki */
     background-position: 0 -4096px;
 }
 
@@ -1130,7 +1138,8 @@
     background-position: 0 -8672px;
 }
 
-.f32 .hm { /* same as .au */
+.f32 .hm {
+    /* same as .au */
     background-position: 0 -1088px;
 }
 
@@ -1139,12 +1148,14 @@
     background-position: 0 -8704px;
 }
 
-.f32 .jt { /* same as .us */
+.f32 .jt {
+    /* same as .us */
     background-position: 0 -7328px;
 }
 
 /* same as .us */
-.f32 .mi { /* same as .us */
+.f32 .mi {
+    /* same as .us */
     background-position: 0 -7328px;
 }
 
@@ -1292,12 +1303,15 @@
 .f32 ._Galicia {
     background-position: 0 -9920px;
 }
-.f32 ._eus{
-    background-position:0 -9952px;
+
+.f32 ._eus {
+    background-position: 0 -9952px;
 }
-.f32 ._by-alt{
-    background-position:0 -9984px;
+
+.f32 ._by-alt {
+    background-position: 0 -9984px;
 }
-.f32 ._nz_mi{
-    background-position:0 -10016px;
+
+.f32 ._nz_mi {
+    background-position: 0 -10016px;
 }
