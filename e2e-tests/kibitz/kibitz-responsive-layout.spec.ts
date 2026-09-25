@@ -30,9 +30,12 @@ ogsTest.describe("@Kibitz responsive layout", () => {
                     hasDesktopAside: Boolean(root.querySelector(".GobanView-left-aside")),
                     hasRightColumn: Boolean(root.querySelector(".GobanView-sidebar")),
                     hasNavigation: Boolean(root.querySelector(".GobanView-tab-bar")),
-                    hasRightPlayerBars:
-                        root.querySelectorAll(".GobanView-sidebar .GobanView-player-bar").length ===
-                        2,
+                    hasMobilePlayerBars: root.querySelectorAll(".GobanView-player-bar").length > 0,
+                    playerCardWidths: Array.from(
+                        root.querySelectorAll<HTMLElement>(
+                            ".Kibitz-compact-player-cards .player-container",
+                        ),
+                    ).map((card) => card.getBoundingClientRect().width),
                     boardLeftOfRightColumn: (() => {
                         const board = root.querySelector<HTMLElement>(".Goban");
                         const right = root.querySelector<HTMLElement>(".GobanView-sidebar");
@@ -54,7 +57,9 @@ ogsTest.describe("@Kibitz responsive layout", () => {
             expect(layout.hasDesktopAside).toBe(false);
             expect(layout.hasRightColumn).toBe(true);
             expect(layout.hasNavigation).toBe(true);
-            expect(layout.hasRightPlayerBars).toBe(true);
+            expect(layout.hasMobilePlayerBars).toBe(false);
+            expect(layout.playerCardWidths).toHaveLength(2);
+            expect(layout.playerCardWidths[0]).toBeCloseTo(layout.playerCardWidths[1], 0);
             expect(layout.boardLeftOfRightColumn).toBe(true);
             expect(layout.board?.width).toBeGreaterThan(0);
             expect(layout.board?.bottom).toBeLessThanOrEqual(layout.visibleHeight + 1);
@@ -70,6 +75,26 @@ ogsTest.describe("@Kibitz responsive layout", () => {
                 expect(board?.y).toBeCloseTo(initialBoard?.y ?? 0, 0);
                 expect(board?.width).toBeCloseTo(initialBoard?.width ?? 0, 0);
             }
+
+            await page.getByTitle("Rooms", { exact: true }).click();
+            const body = page.locator(".GobanView-sidebar-content");
+            const playerCards = page.locator(".Kibitz-compact-player-cards");
+            const moveControls = page.locator(".MoveNumberControl");
+            const tabs = page.locator(".GobanView-tab-bar");
+            await expect(body).toHaveJSProperty("scrollHeight", expect.any(Number));
+            const beforeScroll = await playerCards.boundingBox();
+            const boardBeforeScroll = await page.locator(".Goban").boundingBox();
+            await body.evaluate((element) => {
+                element.scrollTop = element.scrollHeight;
+            });
+            const afterScroll = await playerCards.boundingBox();
+            expect(afterScroll?.bottom ?? 0).toBeLessThanOrEqual(
+                (await body.boundingBox())?.y ?? 0,
+            );
+            expect(await moveControls.isVisible()).toBe(true);
+            expect(await tabs.isVisible()).toBe(true);
+            expect(await page.locator(".Goban").boundingBox()).toEqual(boardBeforeScroll);
+            expect(beforeScroll).not.toBeNull();
         });
     }
 });

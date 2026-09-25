@@ -42,8 +42,10 @@ import {
     KibitzRoomSettingsPopoverView,
 } from "./KibitzRoomSettingsPopover";
 import { KibitzKeyboardShortcuts } from "./KibitzKeyboardShortcuts";
+import { PlayerCards } from "@/views/Game/PlayerCards";
 import { KibitzMoreActionsRoomActions, openKibitzMoreActions } from "./KibitzMoreActionsPopover";
 import "./KibitzView.css";
+import "@/views/Game/Players.css";
 
 export interface KibitzViewProps {
     room: KibitzRoomSummary;
@@ -496,6 +498,17 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             leftAside={leftAside}
             centerPlaceholder={waitingMessage}
             playerBars={gobans.playerBars ?? !!gobans.center}
+            sidebarContentBefore={
+                layoutMode === "compactHorizontal" ? (
+                    <div className="MainGobanView Kibitz-compact-player-cards">
+                        <PlayerCards
+                            historical_black={null}
+                            historical_white={null}
+                            estimating_score={false}
+                        />
+                    </div>
+                ) : null
+            }
             portraitSplit={layoutMode === "stacked"}
         >
             {gobans.center && <KibitzKeyboardShortcuts />}

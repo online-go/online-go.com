@@ -123,6 +123,7 @@ interface GobanViewProps {
      *  to show that game's players and clocks instead of the center
      *  board's, e.g. the live game while the center shows a variation. */
     playerBars?: boolean | GobanController;
+    sidebarContentBefore?: React.ReactNode;
     /** Portrait only: split the view between the board stage and the tab
      *  panels, with a drag handle between them, instead of scrolling both as
      *  one column. The panel area then scrolls on its own and the board is
@@ -190,6 +191,7 @@ function GobanViewComponent({
     aboveBoard,
     belowBoard,
     playerBars,
+    sidebarContentBefore,
     portraitSplit,
     leftAside,
     onWheel,
@@ -407,7 +409,6 @@ function GobanViewComponent({
     const barsController: GobanController | null =
         playerBars && typeof playerBars === "object" ? playerBars : playerBars ? controller : null;
     const landscapeBarsController = layout.mode === "compactHorizontal" ? null : barsController;
-    const compactSidebarBars = layout.mode === "compactHorizontal" ? barsController : null;
     const barsGoban = (barsController ?? controller)?.goban ?? null;
     usePlayerIds(barsGoban);
     // Only meaningful when there are bars to label; without a goban the
@@ -654,12 +655,11 @@ function GobanViewComponent({
                     />
                     <div className="GobanView-sidebar" ref={sidebarRef}>
                         <div className="GobanView-header">{header}</div>
-                        {compactSidebarBars && topBar}
                         <div className="GobanView-sidebar-content">
+                            {layout.mode === "compactHorizontal" && sidebarContentBefore}
                             {inlinePanels.map((t) => renderPanel(t, isInlineVisible(t)))}
                             {takeoverPanels.map((t) => renderPanel(t, activeTakeover === t.id))}
                         </div>
-                        {compactSidebarBars && bottomBar}
                         {sliderSlot}
                         <TabBar tabs={tabs} />
                     </div>
