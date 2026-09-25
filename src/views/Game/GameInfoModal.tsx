@@ -18,12 +18,19 @@
 import * as React from "react";
 import * as data from "@/lib/data";
 import { _, moment } from "@/lib/translate";
-import { post, patch, del } from "@/lib/requests";
+import { get, post, patch, del } from "@/lib/requests";
 import { openModal, Modal, ModalConstructorInput } from "@/components/Modal";
 import { timeControlDescription } from "@/components/TimeControl";
 import { Player } from "@/components/Player";
 import { handicapText } from "@/components/GameAcceptModal";
-import { errorAlerter, rulesText, yesno, getGameResultText } from "@/lib/misc";
+import {
+    errorAlerter,
+    rulesText,
+    yesno,
+    getGameResultText,
+    navigateTo,
+    shouldOpenNewTab,
+} from "@/lib/misc";
 import { rankString } from "@/lib/rank_utils";
 import { browserHistory } from "@/lib/ogsHistory";
 import { alert } from "@/lib/swal_config";
@@ -42,6 +49,10 @@ interface GameInfoModalProperties {
 
 interface GameInfoModalState {
     komi: string;
+    tournament_id?: number;
+    tournament_name?: string;
+    ladder_id?: number;
+    ladder_name?: string;
 }
 export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameInfoModalState> {
     constructor(props: ModalConstructorInput<GameInfoModalProperties>) {
@@ -50,6 +61,44 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
             komi: props.config.komi?.toFixed(1) || "",
         };
     }
+
+    componentDidMount() {
+        super.componentDidMount();
+        const game_id = this.props.config.game_id;
+        if (!game_id) {
+            return;
+        }
+        get(`games/${game_id}`)
+            .then((game: rest_api.GameDetails) => {
+                if (game.tournament) {
+                    const tournament_id = game.tournament;
+                    this.setState({ tournament_id });
+                    get(`tournaments/${tournament_id}`)
+                        .then((tournament: { name: string }) =>
+                            this.setState({ tournament_name: tournament.name }),
+                        )
+                        .catch(() => {});
+                }
+                if (game.ladder) {
+                    const ladder_id = game.ladder;
+                    this.setState({ ladder_id });
+                    get(`ladders/${ladder_id}`)
+                        .then((ladder: { name: string }) =>
+                            this.setState({ ladder_name: ladder.name }),
+                        )
+                        .catch(() => {});
+                }
+            })
+            .catch(() => {});
+    }
+
+    openLink = (path: string) => (ev: React.MouseEvent) => {
+        ev.preventDefault();
+        if (!shouldOpenNewTab(ev)) {
+            this.close();
+        }
+        navigateTo(path, ev);
+    };
 
     save = () => {
         const config = this.props.config;
@@ -320,6 +369,36 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
                                     )}
                                 </dd>
                             </React.Fragment>
+                        )}
+                        {!!this.state.tournament_id && (
+                            <>
+                                <dt>{_("Tournament")}</dt>
+                                <dd>
+                                    <a
+                                        href={`/tournament/${this.state.tournament_id}`}
+                                        onClick={this.openLink(
+                                            `/tournament/${this.state.tournament_id}`,
+                                        )}
+                                    >
+                                        {this.state.tournament_name || _("Tournament")}
+                                    </a>
+                                </dd>
+                            </>
+                        )}
+                        {!!this.state.ladder_id && (
+                            <>
+                                <dt>{_("Ladder")}</dt>
+                                <dd>
+                                    <a
+                                        href={`/ladder/${this.state.ladder_id}`}
+                                        onClick={this.openLink(`/ladder/${this.state.ladder_id}`)}
+                                    >
+                                        {this.state.ladder_name
+                                            ? _(this.state.ladder_name)
+                                            : _("Ladder")}
+                                    </a>
+                                </dd>
+                            </>
                         )}
                         <dt>{_("Time")}</dt>
                         <dd>
