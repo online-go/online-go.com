@@ -77,6 +77,26 @@
         min-height: 0;
         height: auto;
     }
+
+    &.compactHorizontal {
+        .GobanView-sidebar-content {
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        .GobanView-sidebar-content .GobanView-tab-panel.always {
+            flex: 0 0 auto;
+            min-height: 100%;
+        }
+
+        .GobanView-sidebar-content .KibitzPortraitPanes {
+            height: auto;
+        }
+
+        .Kibitz-compact-player-cards {
+            flex: 0 0 auto;
+        }
+    }
 }
 
 /* Portrait: the panes fill the panel area below the board, so the chat log

@@ -17,8 +17,15 @@
 
 import { Goban } from "goban";
 import { pgettext } from "@/lib/translate";
+import { getGameLayoutSnapshot, useGameLayout } from "./layout";
 
 export type ViewMode = "portrait" | "wide" | "square";
+export {
+    classifyGameLayout,
+    FULL_HORIZONTAL_REQUIREMENTS,
+    getGameLayoutSnapshot,
+    useGameLayout,
+} from "./layout";
 
 /**
  * Where the board sits in the landscape layout.
@@ -66,20 +73,12 @@ export function boardAlignmentClass(alignment: GobanViewBoardAlignment): string 
     return `board-align-${valid}`;
 }
 
-export function goban_view_mode(bar_width?: number): ViewMode {
-    if (!bar_width) {
-        bar_width = 300;
-    }
+export function goban_view_mode(_bar_width?: number): ViewMode {
+    return getGameLayoutSnapshot().mode === "stacked" ? "portrait" : "wide";
+}
 
-    const h = window.innerHeight || 1;
-    const w = window.innerWidth || 1;
-    const aspect_ratio = w / h;
-
-    if ((aspect_ratio <= 0.8 || w < bar_width * 2) && w < 1280) {
-        return "portrait";
-    }
-
-    return "wide";
+export function useGameLayoutSnapshot() {
+    return useGameLayout();
 }
 
 export interface StageMeasurements {
@@ -103,8 +102,7 @@ export function stageFitsWithSlider(m: StageMeasurements): boolean {
 }
 
 export function goban_view_squashed(): boolean {
-    /* This value needs to match the "dock-inline-height" found in Dock.css */
-    return window.innerHeight <= 500;
+    return getGameLayoutSnapshot().squashed;
 }
 
 /** Which seat the given player occupies, including rengo team membership.

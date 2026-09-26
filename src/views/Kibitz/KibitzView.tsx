@@ -21,6 +21,7 @@ import * as data from "@/lib/data";
 import { GobanController } from "@/lib/GobanController";
 import { popover, PopOver } from "@/lib/popover";
 import { GobanView, generateGobanHook } from "@/components/GobanView";
+import type { GameLayoutMode } from "@/components/GobanView";
 import { KBShortcut } from "@/components/KBShortcut";
 import type { KibitzRoomSummary } from "@/models/kibitz";
 import type { KibitzGobans } from "./useKibitzGobans";
@@ -41,13 +42,16 @@ import {
     KibitzRoomSettingsPopoverView,
 } from "./KibitzRoomSettingsPopover";
 import { KibitzKeyboardShortcuts } from "./KibitzKeyboardShortcuts";
+import { PlayerCards } from "@/views/Game/PlayerCards";
 import { KibitzMoreActionsRoomActions, openKibitzMoreActions } from "./KibitzMoreActionsPopover";
 import "./KibitzView.css";
+import "@/views/Game/Players.css";
 
 export interface KibitzViewProps {
     room: KibitzRoomSummary;
     gobans: KibitzGobans;
     isPortrait: boolean;
+    layoutMode: GameLayoutMode;
     leftAside: Omit<KibitzLeftAsideProps, "miniBoardController" | "onExitVariation">;
     chat: Omit<
         KibitzChatPanelProps,
@@ -124,7 +128,7 @@ const useBehindLive = generateGobanHook(
  * and chat on the right.
  */
 export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
-    const { room, gobans, isPortrait } = props;
+    const { room, gobans, isPortrait, layoutMode } = props;
     const settingsPopoverRef = React.useRef<PopOver | null>(null);
     const moreActionsPopoverRef = React.useRef<PopOver | null>(null);
     const behindLive = useBehindLive(
@@ -169,6 +173,13 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const paneBeforeAnalysis = React.useRef<KibitzPortraitPane | null>(null);
     const centerShowsVariation = gobans.centerMode !== "main";
     const secondaryController = gobans.secondary;
+    // The pane state stores reader intent. Analysis is a presentation of a
+    // non-live centre, so derive it for this render instead of first
+    // rendering an invalid pane and repairing it in an effect.
+    const displayedPane: KibitzPortraitPane =
+        !centerShowsVariation && pane === "analysis"
+            ? (paneBeforeAnalysis.current ?? readPortraitPane())
+            : pane;
     React.useEffect(() => {
         if (!isPortrait) {
             return;
@@ -487,7 +498,18 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             leftAside={leftAside}
             centerPlaceholder={waitingMessage}
             playerBars={gobans.playerBars ?? !!gobans.center}
-            portraitSplit
+            sidebarContentBefore={
+                layoutMode === "compactHorizontal" && gobans.center ? (
+                    <div className="MainGobanView Kibitz-compact-player-cards">
+                        <PlayerCards
+                            historical_black={null}
+                            historical_white={null}
+                            estimating_score={false}
+                        />
+                    </div>
+                ) : null
+            }
+            portraitSplit={layoutMode === "stacked"}
         >
             {gobans.center && <KibitzKeyboardShortcuts />}
             {viewingOther && <KBShortcut shortcut="esc" action={onEscape} />}
@@ -498,7 +520,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 {!isPortrait && variationPanel}
                 {isPortrait ? (
                     <KibitzPortraitPanes
-                        active={pane}
+                        active={displayedPane}
                         chat={{
                             ...props.chat,
                             onOpenVariation: onOpenVariationByReader,
@@ -573,7 +595,9 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                     align="center"
                     icon="sitemap"
                     title={pgettext("Action that starts a new Kibitz variation", "New variation")}
-                    active={isPortrait ? pane === "analysis" : gobans.centerMode === "draft"}
+                    active={
+                        isPortrait ? displayedPane === "analysis" : gobans.centerMode === "draft"
+                    }
                     disabled={!gobans.main}
                     onClick={() => {
                         // Pressing it again on the pane it opened leaves the draft.
