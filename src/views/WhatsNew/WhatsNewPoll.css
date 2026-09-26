@@ -31,4 +31,21 @@
             text-decoration: underline;
         }
     }
+
+    .poll-submit {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem 1rem;
+        margin-top: 1rem;
+    }
+
+    .poll-submit-status {
+        font-size: 0.9rem;
+        color: var(--text-dimmed);
+
+        &.error {
+            color: var(--reject);
+        }
+    }
 }

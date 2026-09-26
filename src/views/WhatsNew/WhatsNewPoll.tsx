@@ -22,7 +22,7 @@ import { pgettext } from "@/lib/translate";
 import { useUser } from "@/lib/hooks";
 import { PollSaveQueue } from "./pollSaveQueue";
 import { recallPollAnswers, rememberPollAnswers } from "./pollAnswerMemory";
-import { visiblePollQuestions } from "./pollVisibility";
+import { isAnswered, visiblePollQuestions } from "./pollVisibility";
 import { WhatsNewPollQuestion } from "./WhatsNewPollQuestion";
 import type {
     WhatsNewPoll as WhatsNewPollData,
@@ -38,6 +38,8 @@ interface WhatsNewPollProps {
     initialAnswers: WhatsNewPollAnswers | null;
 }
 
+type SubmitStatus = "idle" | "saving" | "saved" | "error";
+
 export function WhatsNewPoll({
     postId,
     poll,
@@ -49,6 +51,7 @@ export function WhatsNewPoll({
     );
     const answersRef = React.useRef(answers);
     const queueRef = React.useRef<PollSaveQueue | null>(null);
+    const [submitStatus, setSubmitStatus] = React.useState<SubmitStatus>("idle");
 
     React.useEffect(() => {
         const queue = new PollSaveQueue({
@@ -82,6 +85,7 @@ export function WhatsNewPoll({
         answersRef.current = next;
         rememberPollAnswers(postId, next);
         setAnswers(next);
+        setSubmitStatus("idle");
         return next;
     }
 
@@ -108,6 +112,18 @@ export function WhatsNewPoll({
 
     function onTextBlur(): void {
         queueRef.current?.flush();
+    }
+
+    function onSubmit(): void {
+        const queue = queueRef.current;
+        if (disabled || !queue) {
+            return;
+        }
+        setSubmitStatus("saving");
+        queue.submit(answersRef.current).then(
+            () => setSubmitStatus("saved"),
+            () => setSubmitStatus("error"),
+        );
     }
 
     const questions = visiblePollQuestions(poll.questions, answers);
@@ -145,6 +161,38 @@ export function WhatsNewPoll({
                     onTextBlur={onTextBlur}
                 />
             ))}
+            {!disabled && (
+                <div className="poll-submit">
+                    <button
+                        type="button"
+                        className="primary"
+                        onClick={onSubmit}
+                        disabled={
+                            submitStatus === "saving" ||
+                            submitStatus === "saved" ||
+                            !questions.some((q) => isAnswered(answers[q.id]))
+                        }
+                    >
+                        {pgettext("Button to submit answers to a What's New poll", "Submit")}
+                    </button>
+                    {submitStatus === "saved" && (
+                        <span className="poll-submit-status">
+                            {pgettext(
+                                "Message shown after What's New poll answers are saved",
+                                "Thank you, your answers are saved",
+                            )}
+                        </span>
+                    )}
+                    {submitStatus === "error" && (
+                        <span className="poll-submit-status error">
+                            {pgettext(
+                                "Message shown when What's New poll answers could not be saved",
+                                "Your answers could not be saved. Please try again.",
+                            )}
+                        </span>
+                    )}
+                </div>
+            )}
         </div>
     );
 }

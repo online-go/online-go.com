@@ -193,3 +193,46 @@ test("dispose during a save still sends the newest waiting answers after it", as
     await settle();
     expect(sent).toEqual([{ q1: ["a"] }, { q1: ["a"], q2: "x" }]);
 });
+
+test("submit resolves when its answers are saved", async () => {
+    const { queue, sent, requests } = setup();
+    let done = false;
+    void queue.submit({ q1: ["a"] }).then(() => {
+        done = true;
+    });
+    expect(sent).toEqual([{ q1: ["a"] }]);
+    await settle();
+    expect(done).toBe(false);
+    requests[0].resolve();
+    await settle();
+    expect(done).toBe(true);
+});
+
+test("submit during a save waits for the save that carries its answers", async () => {
+    const { queue, sent, requests } = setup();
+    queue.saveNow({ q1: ["a"] });
+    let done = false;
+    void queue.submit({ q1: ["b"] }).then(() => {
+        done = true;
+    });
+    requests[0].resolve();
+    await settle();
+    expect(done).toBe(false);
+    expect(sent).toEqual([{ q1: ["a"] }, { q1: ["b"] }]);
+    requests[1].resolve();
+    await settle();
+    expect(done).toBe(true);
+});
+
+test("submit rejects when its save fails", async () => {
+    const { queue, requests, errors } = setup();
+    const failure = new Error("boom");
+    let rejected: unknown = null;
+    queue.submit({ q1: ["a"] }).catch((err: unknown) => {
+        rejected = err;
+    });
+    requests[0].reject(failure);
+    await settle();
+    expect(rejected).toBe(failure);
+    expect(errors).toEqual([failure]);
+});
