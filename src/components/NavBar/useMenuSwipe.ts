@@ -20,17 +20,40 @@ import * as React from "react";
 /* Matches $hamburger-cutoff in 00_constants.css */
 const HAMBURGER_MEDIA_QUERY = "(max-width: 900px)";
 
-/* A swipe that opens the menu must start this close to the left edge. */
-const EDGE_ZONE_PX = 32;
-
 /* Horizontal travel needed before the swipe takes effect. */
 const SWIPE_DISTANCE_PX = 60;
 
 /**
- * Opens the mobile menu with a swipe to the right that starts at the left
- * edge of the screen, and closes it with a swipe to the left. Only active
- * at the hamburger width. Touches that another handler has consumed (for
- * example the board's draw tool, which calls preventDefault) are ignored.
+ * True when the touch belongs to something that handles its own
+ * horizontal drags: an element marked with `data-no-menu-swipe`, a slider,
+ * a container that can scroll to the left, or the board while the analysis
+ * draw tool is active.
+ */
+function touchHasOtherUse(target: EventTarget | null): boolean {
+    if (!(target instanceof Element)) {
+        return false;
+    }
+    if (target.closest("[data-no-menu-swipe], input[type=range]")) {
+        return true;
+    }
+    const goban = window.global_goban;
+    if (goban?.mode === "analyze" && goban.analyze_tool === "draw" && target.closest(".Goban")) {
+        return true;
+    }
+    for (let elt: Element | null = target; elt; elt = elt.parentElement) {
+        if (elt.scrollLeft > 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Opens the mobile menu with a swipe to the right and closes it with a
+ * swipe to the left. The swipe can start anywhere on the screen, because
+ * iOS Safari and Android gesture navigation use swipes that start at the
+ * screen edge to go back, and the page does not get those touches. Only
+ * active at the hamburger width.
  */
 export function useMenuSwipe(open: boolean, setOpen: (open: boolean) => void): void {
     const open_ref = React.useRef(open);
@@ -43,13 +66,14 @@ export function useMenuSwipe(open: boolean, setOpen: (open: boolean) => void): v
 
         const onTouchStart = (ev: TouchEvent) => {
             start = null;
-            if (ev.touches.length !== 1 || !window.matchMedia(HAMBURGER_MEDIA_QUERY).matches) {
+            if (
+                ev.touches.length !== 1 ||
+                !window.matchMedia(HAMBURGER_MEDIA_QUERY).matches ||
+                touchHasOtherUse(ev.target)
+            ) {
                 return;
             }
             const touch = ev.touches[0];
-            if (!open_ref.current && touch.clientX > EDGE_ZONE_PX) {
-                return;
-            }
             start = { x: touch.clientX, y: touch.clientY };
         };
 

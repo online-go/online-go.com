@@ -220,7 +220,7 @@ export function Game(): React.ReactElement | null {
     }, [zen_mode]);
 
     // `body.hide-mobile-navbar` hides the navbar at mobile widths until the
-    // menu is opened with a swipe from the left edge.
+    // menu is opened with a swipe to the right.
     React.useEffect(() => {
         document.body.classList.add("hide-mobile-navbar");
         return () => document.body.classList.remove("hide-mobile-navbar");

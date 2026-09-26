@@ -209,6 +209,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         super();
 
         this.canvas = config.canvas;
+        this.canvas.dataset.noMenuSwipe = "true";
         this.list_hits = [];
         this.challengeFilter = config.filter;
         this.redraw();
