@@ -97,20 +97,43 @@ function isEditingText(): boolean {
     );
 }
 
+/** The snapshot from just before an on-screen keyboard opened, while it is
+ *  open. See `nextSnapshot`. */
+let beforeKeyboard: GameLayoutSnapshot | null = null;
+
 /**
  * Compute the next snapshot. When an on-screen keyboard opens, the viewport
  * gets shorter but not narrower. Changing the layout at that time would
  * unmount the focused input and close the keyboard, so the mode and
- * squashed state of the previous snapshot are kept.
+ * squashed state from before the keyboard opened are kept. They are kept
+ * until the viewport is as tall as it was before, the width changes, or no
+ * text input has focus. The keyboard can change its height while it is open
+ * or closing, so a height increase alone does not release them.
  */
 function nextSnapshot(prev: GameLayoutSnapshot | null): GameLayoutSnapshot {
     const next = readSnapshot();
-    if (prev && next.width === prev.width && next.height <= prev.height && isEditingText()) {
+    const editing = isEditingText();
+    if (
+        !beforeKeyboard &&
+        prev &&
+        editing &&
+        next.width === prev.width &&
+        next.height < prev.height
+    ) {
+        beforeKeyboard = prev;
+    }
+    if (
+        beforeKeyboard &&
+        (!editing || next.width !== beforeKeyboard.width || next.height >= beforeKeyboard.height)
+    ) {
+        beforeKeyboard = null;
+    }
+    if (beforeKeyboard) {
         return {
             ...next,
-            mode: prev.mode,
-            squashed: prev.squashed,
-            keyboardOpen: prev.keyboardOpen || next.height < prev.height,
+            mode: beforeKeyboard.mode,
+            squashed: beforeKeyboard.squashed,
+            keyboardOpen: true,
         };
     }
     return next;
