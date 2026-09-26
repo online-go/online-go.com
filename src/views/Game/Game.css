@@ -80,9 +80,9 @@
     top: 0;
 }
 
-/* Compact mode shows the move number between the players above the board,
- * so the button-only move controls drop their "Move #" label. */
-.GobanView.Game.compact .MoveNumberControl-buttons .MoveNumberControl-move-number {
+/* Mobile shows the move number between the players above the board, so
+ * the button-only move controls drop their "Move #" label. */
+.GobanView.Game.mobile .MoveNumberControl-buttons .MoveNumberControl-move-number {
     display: none;
 }
 
@@ -173,116 +173,6 @@
         width: 8rem;
         max-width: 70%;
         display: inline-block;
-    }
-
-    /* Mobile (portrait) layout: the two player cards straddle the board —
-     * the opponent above it, the local player below it — each one full
-     * width in its own .GameMobilePlayers wrapper. A card is a 2-row grid:
-     *
-     *       col1        col2         col3
-     *     ┌──────┬─────────────┬─────────┐
-     *   1 │      │ name        │         │
-     *     │ icon ├─────────────┤  clock  │  ← icon and clock each span
-     *   2 │      │ score       │         │    both rows
-     *     └──────┴─────────────┴─────────┘
-     *
-     * The icon and the clock fill the card's full height on either side and
-     * centre in it, with the name and the score stacked between them.
-     *
-     * Extra specificity (`.player-icons`) is required throughout to win
-     * against the same-length `.MainGobanView.portrait .player-icons ...`
-     * rules in Players.css. */
-    &.mobile .GameMobilePlayers {
-        flex-shrink: 0;
-
-        .player-icons {
-            display: flex;
-            flex-direction: row;
-            width: 100%;
-        }
-
-        .player-icons .player-container {
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            grid-template-rows: auto auto;
-            column-gap: 0.5rem;
-            row-gap: 0.1rem;
-            width: 100%;
-            padding: 0.3rem 0.5rem;
-            min-width: 0;
-            /* Full-width cards sit flush against the board, so they carry no
-             * border of their own. */
-            border: none;
-        }
-
-        /* Flatten the icon-clock-row so the icon and clock can land in
-         * their own grid cells (col 1 and col 3 respectively). */
-        .player-icons .player-icon-clock-row {
-            display: contents;
-        }
-
-        .player-icons .player-icon-container {
-            grid-column: 1;
-            grid-row: 1 / span 2;
-            align-self: center;
-            flex-basis: 2.5rem;
-            min-height: 2.5rem;
-            min-width: 2.5rem;
-            width: 2.5rem;
-            height: 2.5rem;
-        }
-
-        .player-icons .player-name-container,
-        .player-icons .player-name-plain {
-            grid-column: 2;
-            grid-row: 1;
-            align-self: start;
-            font-size: 0.8rem;
-            line-height: 1.1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            min-width: 0;
-        }
-
-        .player-icons .score-container {
-            grid-column: 2;
-            grid-row: 2;
-            align-self: end;
-            margin-top: 0;
-            justify-content: flex-start;
-            /* Players.css relies on space-between to separate the score
-             * items; with flex-start they'd run together ("0+ 0.5"), so
-             * restore the separation with an explicit gap. */
-            gap: 0.4rem;
-            font-size: 0.8rem;
-            line-height: 1.1;
-        }
-
-        /* The Player component's leading margin would set the name in from
-         * the column edge, out of line with the score stacked below it. */
-        .player-icons .Player-username {
-            margin-left: 0;
-        }
-
-        /* Hide the "captures" unit text on mobile — just show the count
-         * since the row's already labelled by context. */
-        .player-icons .num-captures-units {
-            display: none;
-        }
-
-        /* The clock owns the right-hand column outright, so the face and
-         * the digits sit level with the middle of the card rather than
-         * hanging off the score row. */
-        .player-icons .in-game-clock {
-            grid-column: 3;
-            grid-row: 1 / span 2;
-            align-self: center;
-            justify-self: end;
-            justify-content: flex-end;
-            font-size: 0.9rem;
-            line-height: 1.2;
-        }
     }
 
     /* Unread marker on the mobile chat tab's comment icon. */
