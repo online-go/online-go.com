@@ -22,7 +22,7 @@ import { pgettext } from "@/lib/translate";
 import { useUser } from "@/lib/hooks";
 import { PollSaveQueue } from "./pollSaveQueue";
 import { recallPollAnswers, rememberPollAnswers } from "./pollAnswerMemory";
-import { visiblePollQuestions } from "./pollVisibility";
+import { isAnswered, visiblePollQuestions } from "./pollVisibility";
 import { WhatsNewPollQuestion } from "./WhatsNewPollQuestion";
 import type {
     WhatsNewPoll as WhatsNewPollData,
@@ -170,7 +170,7 @@ export function WhatsNewPoll({
                         disabled={
                             submitStatus === "saving" ||
                             submitStatus === "saved" ||
-                            Object.keys(answers).length === 0
+                            !questions.some((q) => isAnswered(answers[q.id]))
                         }
                     >
                         {pgettext("Button to submit answers to a What's New poll", "Submit")}
