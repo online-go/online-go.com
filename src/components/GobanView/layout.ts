@@ -59,6 +59,9 @@ export function legacyViewMode(mode: GameLayoutMode): LegacyViewMode {
 export interface GameLayoutSnapshot extends ViewportGeometry {
     mode: GameLayoutMode;
     squashed: boolean;
+    /** True while an on-screen keyboard holds the layout from before it
+     *  opened. See `nextSnapshot`. */
+    keyboardOpen: boolean;
 }
 
 function readSnapshot(): GameLayoutSnapshot {
@@ -73,6 +76,7 @@ function readSnapshot(): GameLayoutSnapshot {
         clientHeight,
         mode: classifyGameLayout({ width, height, clientWidth, clientHeight }),
         squashed: height <= 500,
+        keyboardOpen: false,
     };
 }
 
@@ -102,7 +106,12 @@ function isEditingText(): boolean {
 function nextSnapshot(prev: GameLayoutSnapshot | null): GameLayoutSnapshot {
     const next = readSnapshot();
     if (prev && next.width === prev.width && next.height <= prev.height && isEditingText()) {
-        return { ...next, mode: prev.mode, squashed: prev.squashed };
+        return {
+            ...next,
+            mode: prev.mode,
+            squashed: prev.squashed,
+            keyboardOpen: prev.keyboardOpen || next.height < prev.height,
+        };
     }
     return next;
 }
@@ -151,5 +160,6 @@ export function useGameLayout(): GameLayoutSnapshot {
         clientHeight: 1,
         mode: "stacked",
         squashed: false,
+        keyboardOpen: false,
     }));
 }
