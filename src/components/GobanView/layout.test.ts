@@ -19,6 +19,9 @@ describe("classifyGameLayout", () => {
         [768, 1024, "stacked"],
         [1000, 600, "compactHorizontal"],
         [1440, 500, "compactHorizontal"],
+        [390, 450, "stacked"],
+        [599, 700, "stacked"],
+        [600, 700, "compactHorizontal"],
     ])("classifies %sx%s as %s", (width, height, expected) => {
         expect(classifyGameLayout(layout(width, height))).toBe(expected);
     });

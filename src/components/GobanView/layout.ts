@@ -29,11 +29,14 @@ export const FULL_HORIZONTAL_REQUIREMENTS = {
     minimumHeight: 600,
 } as const;
 
+/** Viewports narrower than this always stack, whatever their aspect ratio. */
+export const MINIMUM_HORIZONTAL_WIDTH = 600;
+
 export function classifyGameLayout(viewport: ViewportGeometry): GameLayoutMode {
     const width = viewport.clientWidth ?? viewport.width;
     const height = viewport.clientHeight ?? viewport.height;
     const vertical = width / Math.max(height, 1) <= 0.8;
-    if (vertical) {
+    if (vertical || width < MINIMUM_HORIZONTAL_WIDTH) {
         return "stacked";
     }
 
@@ -73,6 +76,37 @@ function readSnapshot(): GameLayoutSnapshot {
     };
 }
 
+/** True when the focused element brings up the on-screen keyboard. */
+function isEditingText(): boolean {
+    const el = document.activeElement;
+    if (!(el instanceof HTMLElement)) {
+        return false;
+    }
+    if (el.isContentEditable || el instanceof HTMLTextAreaElement) {
+        return true;
+    }
+    return (
+        el instanceof HTMLInputElement &&
+        !["button", "checkbox", "radio", "range", "submit", "reset", "file", "color"].includes(
+            el.type,
+        )
+    );
+}
+
+/**
+ * Compute the next snapshot. When an on-screen keyboard opens, the viewport
+ * gets shorter but not narrower. Changing the layout at that time would
+ * unmount the focused input and close the keyboard, so the mode and
+ * squashed state of the previous snapshot are kept.
+ */
+function nextSnapshot(prev: GameLayoutSnapshot | null): GameLayoutSnapshot {
+    const next = readSnapshot();
+    if (prev && next.width === prev.width && next.height <= prev.height && isEditingText()) {
+        return { ...next, mode: prev.mode, squashed: prev.squashed };
+    }
+    return next;
+}
+
 let snapshot: GameLayoutSnapshot | null = null;
 const listeners = new Set<() => void>();
 let listening = false;
@@ -83,7 +117,7 @@ function ensureListening(): void {
     }
     listening = true;
     const update = () => {
-        const next = readSnapshot();
+        const next = nextSnapshot(snapshot);
         if (JSON.stringify(next) !== JSON.stringify(snapshot)) {
             snapshot = next;
             listeners.forEach((listener) => listener());
