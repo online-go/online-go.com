@@ -19,6 +19,11 @@ import type { WhatsNewPollAnswers } from "./types";
 
 export const POLL_TEXT_SAVE_DELAY_MS = 800;
 
+interface Waiter {
+    resolve: () => void;
+    reject: (err: unknown) => void;
+}
+
 interface PollSaveQueueOptions {
     save: (answers: WhatsNewPollAnswers) => Promise<unknown>;
     onError: (err: unknown) => void;
@@ -42,6 +47,7 @@ export class PollSaveQueue {
     private inFlight = false;
     private timer: ReturnType<typeof setTimeout> | null = null;
     private disposed = false;
+    private waiters: Waiter[] = [];
 
     constructor(options: PollSaveQueueOptions) {
         this.save = options.save;
@@ -56,6 +62,22 @@ export class PollSaveQueue {
         }
         this.pending = answers;
         this.markReady();
+    }
+
+    /**
+     * Sends the answers as soon as no other save is in flight. The returned
+     * promise settles when the save that carries these answers (or newer
+     * answers that replaced them) finishes.
+     */
+    submit(answers: WhatsNewPollAnswers): Promise<void> {
+        if (this.disposed) {
+            return Promise.resolve();
+        }
+        const done = new Promise<void>((resolve, reject) => {
+            this.waiters.push({ resolve, reject });
+        });
+        this.saveNow(answers);
+        return done;
     }
 
     /** Sends the answers after `debounceMs` with no further changes. */
@@ -108,6 +130,8 @@ export class PollSaveQueue {
         this.pending = null;
         this.ready = false;
         this.inFlight = true;
+        const waiters = this.waiters;
+        this.waiters = [];
 
         let request: Promise<unknown>;
         try {
@@ -116,7 +140,13 @@ export class PollSaveQueue {
             request = Promise.reject(err);
         }
         request
-            .catch((err: unknown) => this.onError(err))
+            .then(
+                () => waiters.forEach((w) => w.resolve()),
+                (err: unknown) => {
+                    this.onError(err);
+                    waiters.forEach((w) => w.reject(err));
+                },
+            )
             .finally(() => {
                 this.inFlight = false;
                 this.send();
