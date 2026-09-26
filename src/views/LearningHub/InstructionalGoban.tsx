@@ -21,6 +21,11 @@ import "./InstructionalGoban.css";
 import { createGoban, GobanRenderer } from "goban";
 import { sfx } from "@/lib/sfx";
 import { PersistentElement } from "@/components/PersistentElement";
+import {
+    FALLBACK_VERTICAL_CHROME,
+    instructionalGobanDisplayWidth,
+    visibleIntersectionSpan,
+} from "./instructionalGobanSize";
 
 interface InstructionalGobanProps {
     width?: number;
@@ -33,6 +38,7 @@ interface InstructionalGobanProps {
 
 export class InstructionalGoban extends React.Component<InstructionalGobanProps> {
     goban_div: HTMLDivElement;
+    container_div: HTMLDivElement | null = null;
     goban?: GobanRenderer;
 
     constructor(props: InstructionalGobanProps) {
@@ -74,12 +80,7 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps>
                 draw_left_labels: this.props.config.draw_left_labels ?? false,
                 draw_right_labels: this.props.config.draw_right_labels ?? false,
                 bounds: this.props.config.bounds,
-                display_width:
-                    this.props.displayWidth ||
-                    Math.min(
-                        document.body.offsetWidth - 50,
-                        (document.getElementById("em10")?.offsetWidth ?? 0) * 2,
-                    ),
+                display_width: this.boardDisplayWidth(),
                 square_size: "auto",
 
                 puzzle_opponent_move_mode: "automatic",
@@ -134,6 +135,48 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps>
             this.goban.on("error", this.props.config.onError);
         }
     }
+
+    private boardDisplayWidth(): number {
+        const anchor = this.container_div ?? this.goban_div;
+        const page = anchor.closest(".LearningPage");
+        const hub = document.getElementById("LearningHub");
+        const nav = hub?.querySelector(".LearningHub-section-nav");
+        const text = page?.querySelector(".LearningPage-pages");
+        let measuredBesideColumns: number | undefined;
+        if (hub && nav instanceof HTMLElement && text instanceof HTMLElement && page) {
+            const sameRow =
+                Math.abs(page.getBoundingClientRect().top - nav.getBoundingClientRect().top) < 8;
+            if (sameRow) {
+                measuredBesideColumns = hub.clientWidth - outerWidth(nav) - outerWidth(text);
+            }
+        }
+
+        let verticalChrome = FALLBACK_VERTICAL_CHROME;
+        const container = document.getElementById("LearningHub-container");
+        if (container && page instanceof HTMLElement && container.clientHeight > 0) {
+            const style = getComputedStyle(page);
+            const pad =
+                (parseFloat(style.paddingTop) || 0) + (parseFloat(style.paddingBottom) || 0);
+            const chrome = window.innerHeight - container.clientHeight + pad;
+            if (chrome > 0) {
+                verticalChrome = chrome;
+            }
+        }
+
+        const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+
+        return instructionalGobanDisplayWidth({
+            visibleSpan: visibleIntersectionSpan(this.props.config),
+            explicitDisplayWidth: this.props.displayWidth,
+            em10Width: document.getElementById("em10")?.offsetWidth ?? 0,
+            viewportWidth: document.body.offsetWidth,
+            viewportHeight: window.innerHeight,
+            verticalChrome,
+            rootFontSize,
+            measuredBesideColumns,
+        });
+    }
+
     destroy() {
         if (this.goban) {
             this.goban.destroy();
@@ -141,11 +184,25 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps>
     }
     render() {
         return (
-            <div className="InstructionalGoban">
+            <div
+                className="InstructionalGoban"
+                ref={(el) => {
+                    this.container_div = el;
+                }}
+            >
                 <div className="goban-container">
                     <PersistentElement elt={this.goban_div} />
                 </div>
             </div>
         );
     }
+}
+
+function outerWidth(el: HTMLElement): number {
+    const style = getComputedStyle(el);
+    return (
+        el.getBoundingClientRect().width +
+        (parseFloat(style.marginLeft) || 0) +
+        (parseFloat(style.marginRight) || 0)
+    );
 }
