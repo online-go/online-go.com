@@ -1287,7 +1287,6 @@ export function Game(): React.ReactElement | null {
 
                 {!zen_mode && chat_enabled && (!is_mobile || mobile_chat_visible) && (
                     <GameChat
-                        key={game_id ? `game-${game_id}` : `review-${review_id}`}
                         channel={game_id ? `game-${game_id}` : `review-${review_id}`}
                         game_id={game_id}
                         review_id={review_id}

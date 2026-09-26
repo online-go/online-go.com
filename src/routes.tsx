@@ -42,7 +42,7 @@ import { OnlineLeaguesAdmin } from "@/views/Admin";
 import { WhatsNew } from "@/views/WhatsNew";
 import { ChatView } from "@/views/ChatView";
 import { Developer } from "@/views/Developer";
-import { Game } from "@/views/Game";
+import { GameRoute } from "@/views/Game";
 import { GameEmbed } from "@/views/GameEmbed";
 import { Joseki } from "@/views/Joseki";
 import { Group } from "@/views/Group";
@@ -321,15 +321,15 @@ export const routes = (
                 <Route path="/kibitz/:roomId" element={<Kibitz />} />
                 <Route path="/kibitz" element={<Kibitz />} />
                 <Route path="/observe-games" element={<ObserveGames />} />
-                <Route path="/game/view/:game_id" element={<Game />} />
-                <Route path="/game/:game_id/:move_number" element={<Game />} />
-                <Route path="/game/:game_id" element={<Game />} />
-                <Route path="/review/view/:review_id" element={<Game />} />
-                <Route path="/review/:review_id/:move_number" element={<Game />} />
-                <Route path="/review/:review_id" element={<Game />} />
-                <Route path="/demo/view/:review_id" element={<Game />} />
-                <Route path="/demo/:review_id/:move_number" element={<Game />} />
-                <Route path="/demo/:review_id" element={<Game />} />
+                <Route path="/game/view/:game_id" element={<GameRoute />} />
+                <Route path="/game/:game_id/:move_number" element={<GameRoute />} />
+                <Route path="/game/:game_id" element={<GameRoute />} />
+                <Route path="/review/view/:review_id" element={<GameRoute />} />
+                <Route path="/review/:review_id/:move_number" element={<GameRoute />} />
+                <Route path="/review/:review_id" element={<GameRoute />} />
+                <Route path="/demo/view/:review_id" element={<GameRoute />} />
+                <Route path="/demo/:review_id/:move_number" element={<GameRoute />} />
+                <Route path="/demo/:review_id" element={<GameRoute />} />
                 <Route path="/game/:game_id/embed" element={<GameEmbed />} />
                 <Route path="/review/:review_id/embed" element={<GameEmbed />} />
                 <Route path="/joseki/" element={<Joseki />} />{" "}
