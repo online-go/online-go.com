@@ -31,7 +31,7 @@ import { setExtraActionCallback, PlayerDetails } from "@/components/Player";
 import * as player_cache from "@/lib/player_cache";
 import { notification_manager } from "@/components/Notifications";
 import { GameChat } from "./GameChat";
-import { PlayerCard, PlayerCards } from "./PlayerCards";
+import { PlayerCards } from "./PlayerCards";
 import { CompactPlayerHeader } from "./CompactPlayerHeader";
 import { PlayControls, ReviewControls } from "./PlayControls";
 import { GameActionArea } from "./GameActionArea";
@@ -54,7 +54,6 @@ import {
     GobanControllerContext,
     GobanView,
     GobanViewRef,
-    user_color,
     GobanViewTabProps,
 } from "@/components/GobanView";
 import { ModalContext } from "@/components/ModalProvider";
@@ -163,7 +162,6 @@ export function Game(): React.ReactElement | null {
     const [mobile_chat_visible, set_mobile_chat_visible] = usePreference(
         "game.mobile-chat-visible",
     );
-    const [compact_mode] = usePreference("game.compact-mode");
     // Whether the full settings takeover is showing. Synced from the
     // takeover tab's onToggle (the authoritative open/close signal), and
     // used to light up the settings gear while it's open.
@@ -1138,67 +1136,28 @@ export function Game(): React.ReactElement | null {
 
     (window as any)["goban_controller"] = goban_controller.current;
 
-    const renderPlayerCard = (color: "black" | "white") => (
-        <PlayerCard
-            color={color}
-            goban={goban!}
-            historical={color === "black" ? historical_black : historical_white}
-            estimating_score={estimating_score}
-            zen_mode={zen_mode}
-        />
-    );
-
-    /* Mobile straddles the board with the two cards: the opponent above it
-     * and the user below it, so each player sits on the side of the board
-     * they face. Spectators, reviews and game records have no "user"
-     * colour, so they fall back to black above and white below. */
-    const bottom_color = user_color(goban!, user.id) ?? "white";
-    const top_color: "black" | "white" = bottom_color === "black" ? "white" : "black";
-    const renderMobilePlayerCard = (color: "black" | "white") => (
-        <div className="GameMobilePlayers">
-            <div className="player-icons">{renderPlayerCard(color)}</div>
-        </div>
-    );
-
-    /* Compact mode gathers both players into one strip above the board, so
-     * the row the lower card would have taken goes back to the board. */
-    const compact_players = is_mobile && compact_mode;
-
     return (
         <GobanView
             ref={goban_view_ref}
             controller={goban_controller.current}
             className={
-                "Game MainGobanView" +
-                (is_mobile ? " mobile" : "") +
-                (zen_mode ? " zen" : "") +
-                (compact_players ? " compact" : "")
+                "Game MainGobanView" + (is_mobile ? " mobile" : "") + (zen_mode ? " zen" : "")
             }
             onWheel={onWheel}
             header={<GameStateHeader />}
             aboveBoard={
-                is_mobile &&
-                (compact_players ? (
+                is_mobile && (
                     <CompactPlayerHeader
                         historical_black={historical_black}
                         historical_white={historical_white}
                         estimating_score={estimating_score}
                     />
-                ) : (
-                    renderMobilePlayerCard(top_color)
-                ))
+                )
             }
             /* The action area sits in the stage with the player cards, so
              * the board gives up room for it instead of pushing it below
              * the fold. */
-            belowBoard={
-                is_mobile && (
-                    <>
-                        {!compact_players && renderMobilePlayerCard(bottom_color)}
-                        <GameActionArea />
-                    </>
-                )
-            }
+            belowBoard={is_mobile && <GameActionArea />}
             /* On mobile the move slider always gets its row while analyzing,
              * or while stepping back through played moves in a game with
              * analysis disabled. During play it only gets the row when the

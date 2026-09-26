@@ -26,15 +26,25 @@
  *   │ clock            │        │            clock │  ← clock spans the half
  *   └──────────────────┴────────┴──────────────────┘
  *
- * The card colours are dropped here: with the two players side by side the
+ * The card fills are dropped here: with the two players side by side the
  * stones in the middle say who is who, and the halves read as one strip.
+ * The card colours stay only as a gradient across the strip background.
  *
  */
-/* The same shade as the tab panels under the board, so the strip and the
- * panels read as one surface around the board. */
+/* Each end takes its player's card colour and fades into the shade of the
+ * tab panels under the board, which holds across the middle fifth, so the
+ * strip and the panels read as one surface around the board. */
 .MainGobanView .CompactPlayerHeader {
     flex-shrink: 0;
-    background: var(--shade5);
+    background: linear-gradient(
+        to right,
+        var(--player-black-card-color) 0%,
+        var(--player-black-card-color) 25%,
+        var(--shade5) 45%,
+        var(--shade5) 55%,
+        var(--player-white-card-color) 75%,
+        var(--player-white-card-color) 100%
+    );
 }
 
 /* Everything below hangs off `.portrait ... .player-icons`, one class
@@ -60,15 +70,15 @@
         text-align: left;
     }
 
-    /* The colour of the card is carried by the stones in the middle now, so
-     * the fills and the edges that divided the two cards come off. Both
-     * selectors name the colour, to outrank the `.black.player-container`
-     * rules they undo. */
+    /* The strip background carries the card colours, so the fills and the
+     * edges that divided the two cards come off. The card text colours and
+     * username palettes from Players.css stay, because each end of the
+     * strip is the colour of its card. Both selectors name the colour, to
+     * outrank the `.black.player-container` rules they undo. */
     .black.player-container,
     .white.player-container {
         background: none;
         border: none;
-        color: var(--fg);
     }
 
     /* Flatten the icon-clock row so the icon and the clock reach their own
@@ -151,38 +161,21 @@
         font-size: 0.75rem;
     }
 
-    /* The count becomes a stone-coloured disc: a player's captures are the
-     * opponent's stones, so black's sit in a white disc and white's in a
-     * black one. The "captures" word and the zen-mode stone image are the
-     * label everywhere else, and the disc replaces both. */
-    .num-captures-units,
-    .num-captures-stone {
-        display: none;
-    }
-
-    .num-captures-count {
+    /* The count and its label read outward to inward: "3 captures" on
+     * black's half and "captures 3" on white's, so the label always faces
+     * the middle. */
+    .num-captures-container {
         display: inline-flex;
         align-items: center;
-        justify-content: center;
-        box-sizing: border-box;
-        min-width: 1.3rem;
-        height: 1.3rem;
-        padding: 0 0.3rem;
-        border-radius: 0.65rem;
-        font-size: 0.7rem;
-        font-weight: bold;
+        gap: 0.25rem;
     }
 
-    .black.player-container .num-captures-count {
-        background: #f0f0f0;
-        color: #1a1a1a;
-        border: 1px solid #999;
+    .num-captures-units {
+        display: inline;
     }
 
-    .white.player-container .num-captures-count {
-        background: #1a1a1a;
-        color: #f0f0f0;
-        border: 1px solid #666;
+    .white.player-container .num-captures-container {
+        flex-direction: row-reverse;
     }
 
     .in-game-clock {
@@ -272,40 +265,6 @@
         .in-game-clock {
             grid-column: 1 / span 2;
             justify-self: end;
-        }
-    }
-
-    /* Players.css forces the light/dark username palettes onto the coloured
-     * cards. Without those backgrounds the names go back to the theme's own
-     * colours. */
-    .black.player-container,
-    .white.player-container {
-        .Player {
-            color: var(--user);
-        }
-        .Player.supporter {
-            color: var(--supporter) !important;
-        }
-        .Player.professional {
-            color: var(--professional) !important;
-        }
-        .Player.ambassador {
-            color: var(--ambassador) !important;
-        }
-        .Player.teacher {
-            color: var(--teacher) !important;
-        }
-        .Player.bot {
-            color: var(--bot) !important;
-        }
-        .Player.moderator {
-            color: var(--moderator) !important;
-        }
-        .Player.aga {
-            color: var(--aga-official) !important;
-        }
-        .Player.admin {
-            color: var(--admin) !important;
         }
     }
 }

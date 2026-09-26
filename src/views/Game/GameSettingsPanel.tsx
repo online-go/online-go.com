@@ -98,9 +98,6 @@ export function GameSettingsPanel({
     const isPrivate = !!engine.config.private;
 
     const [chat_enabled, set_chat_enabled] = usePreference("game.chat-enabled");
-    /* The board layout the user picks, not this panel's own `compact`
-     * prop — that one is which version of the panel we are drawing. */
-    const [compact_mode, set_compact_mode] = usePreference("game.compact-mode");
 
     const zen_mode = useZenMode(goban_controller);
 
@@ -158,25 +155,6 @@ export function GameSettingsPanel({
                     }}
                 />
             </div>
-
-            {compact && (
-                <div className="GameSidebarPanel-labeled-row">
-                    <label htmlFor="game-settings-compact-mode">
-                        <i className="fa fa-compress" />
-                        <span>
-                            {pgettext(
-                                "Toggle that puts both players in one strip above the board",
-                                "Compact Mode",
-                            )}
-                        </span>
-                    </label>
-                    <Toggle
-                        id="game-settings-compact-mode"
-                        checked={compact_mode}
-                        onChange={(checked) => set_compact_mode(checked)}
-                    />
-                </div>
-            )}
 
             <div className="GameSidebarPanel-labeled-row">
                 <label htmlFor="game-settings-coords">
