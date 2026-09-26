@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+@import "../../global_styl/00_constants.css";
 
 /* The Game view applies both `Game` and `MainGobanView` classes to the
  * GobanView root. `MainGobanView` is preserved for backward compat with
@@ -72,6 +73,15 @@
 
     .condensed-game-rules {
         text-align: right;
+    }
+}
+
+/* The navbar is hidden on mobile (see body.hide-mobile-navbar in NavBar.css),
+ * so the view starts at the top of the screen. */
+@media only screen and (max-width: $hamburger-cutoff) {
+    .GobanView.Game {
+        --navbar-height: 0rem;
+        --below-navbar: 0rem;
     }
 }
 

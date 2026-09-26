@@ -219,6 +219,13 @@ export function Game(): React.ReactElement | null {
         return () => document.body.classList.remove("zen");
     }, [zen_mode]);
 
+    // `body.hide-mobile-navbar` hides the navbar at mobile widths until the
+    // menu is opened with a swipe from the left edge.
+    React.useEffect(() => {
+        document.body.classList.add("hide-mobile-navbar");
+        return () => document.body.classList.remove("hide-mobile-navbar");
+    }, []);
+
     // The mobile chat renders at the bottom of the scroll area, usually well
     // below the fold, so toggling it on would otherwise appear to do
     // nothing. Bring it into view when the user opens it, but not when it

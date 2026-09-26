@@ -42,6 +42,7 @@ import { Menu, MenuContext } from "./Menu";
 import { logout } from "@/lib/auth";
 import { useUser, useData } from "@/lib/hooks";
 import { OmniSearch } from "./OmniSearch";
+import { useMenuSwipe } from "./useMenuSwipe";
 import { Hamburger } from "./Hamburger";
 import { forwardRef, useId, useState } from "react";
 import { MODERATOR_POWERS } from "@/lib/moderation";
@@ -129,6 +130,12 @@ export function NavBar(): React.ReactElement {
         setActiveMenu(null);
         setHamburgerExpanded(!hamburger_expanded);
     };
+
+    useMenuSwipe(hamburger_expanded, (open: boolean) => {
+        if (open !== hamburger_expanded) {
+            toggleHamburgerExpanded();
+        }
+    });
 
     const newDemo = () => {
         closeNavbar();

@@ -359,6 +359,27 @@ header.NavBar {
             }
         }
 
+        /* Pages such as the game page have no navbar on mobile. The bar
+         * floats above the page and shows only while the menu is open. */
+        body.hide-mobile-navbar & {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: var(--z-nav-menu-menu);
+            visibility: hidden;
+            transition: visibility 0s 200ms;
+
+            & > .left {
+                position: fixed;
+            }
+
+            &.hamburger-expanded {
+                visibility: visible;
+                transition: visibility 0s;
+            }
+        }
+
         &.hamburger-expanded > .left {
             visibility: visible;
             transform: translateX(0);
