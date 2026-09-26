@@ -167,7 +167,11 @@ export function WhatsNewPoll({
                         type="button"
                         className="primary"
                         onClick={onSubmit}
-                        disabled={submitStatus === "saving" || Object.keys(answers).length === 0}
+                        disabled={
+                            submitStatus === "saving" ||
+                            submitStatus === "saved" ||
+                            Object.keys(answers).length === 0
+                        }
                     >
                         {pgettext("Button to submit answers to a What's New poll", "Submit")}
                     </button>
