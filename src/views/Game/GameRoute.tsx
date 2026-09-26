@@ -15,10 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from "./Game";
-export * from "./GameRoute";
-export * from "./GameChat";
-export * from "./GameHooks";
-export * from "./goban_context";
-export * from "./util";
-export * from "./GameLog";
+import * as React from "react";
+import { useParams } from "react-router-dom";
+import { Game } from "./Game";
+
+/**
+ * Route element for games, reviews and demos. It keys Game by the game or
+ * review id, so a change to a different game mounts a new Game. Without
+ * this, React reuses the old Game and its children keep their state
+ * (inputs, timers, loaded game data) on the new game.
+ */
+export function GameRoute(): React.ReactElement {
+    const { game_id, review_id } = useParams<"game_id" | "review_id">();
+    return <Game key={game_id ? `game-${game_id}` : `review-${review_id}`} />;
+}
