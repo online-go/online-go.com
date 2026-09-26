@@ -29,11 +29,14 @@ export const FULL_HORIZONTAL_REQUIREMENTS = {
     minimumHeight: 600,
 } as const;
 
+/** Viewports narrower than this always stack, whatever their aspect ratio. */
+export const MINIMUM_HORIZONTAL_WIDTH = 600;
+
 export function classifyGameLayout(viewport: ViewportGeometry): GameLayoutMode {
     const width = viewport.clientWidth ?? viewport.width;
     const height = viewport.clientHeight ?? viewport.height;
     const vertical = width / Math.max(height, 1) <= 0.8;
-    if (vertical) {
+    if (vertical || width < MINIMUM_HORIZONTAL_WIDTH) {
         return "stacked";
     }
 
@@ -56,6 +59,9 @@ export function legacyViewMode(mode: GameLayoutMode): LegacyViewMode {
 export interface GameLayoutSnapshot extends ViewportGeometry {
     mode: GameLayoutMode;
     squashed: boolean;
+    /** True while an on-screen keyboard holds the layout from before it
+     *  opened. See `nextSnapshot`. */
+    keyboardOpen: boolean;
 }
 
 function readSnapshot(): GameLayoutSnapshot {
@@ -70,7 +76,67 @@ function readSnapshot(): GameLayoutSnapshot {
         clientHeight,
         mode: classifyGameLayout({ width, height, clientWidth, clientHeight }),
         squashed: height <= 500,
+        keyboardOpen: false,
     };
+}
+
+/** True when the focused element brings up the on-screen keyboard. */
+function isEditingText(): boolean {
+    const el = document.activeElement;
+    if (!(el instanceof HTMLElement)) {
+        return false;
+    }
+    if (el.isContentEditable || el instanceof HTMLTextAreaElement) {
+        return true;
+    }
+    return (
+        el instanceof HTMLInputElement &&
+        !["button", "checkbox", "radio", "range", "submit", "reset", "file", "color"].includes(
+            el.type,
+        )
+    );
+}
+
+/** The snapshot from just before an on-screen keyboard opened, while it is
+ *  open. See `nextSnapshot`. */
+let beforeKeyboard: GameLayoutSnapshot | null = null;
+
+/**
+ * Compute the next snapshot. When an on-screen keyboard opens, the viewport
+ * gets shorter but not narrower. Changing the layout at that time would
+ * unmount the focused input and close the keyboard, so the mode and
+ * squashed state from before the keyboard opened are kept. They are kept
+ * until the viewport is as tall as it was before, the width changes, or no
+ * text input has focus. The keyboard can change its height while it is open
+ * or closing, so a height increase alone does not release them.
+ */
+function nextSnapshot(prev: GameLayoutSnapshot | null): GameLayoutSnapshot {
+    const next = readSnapshot();
+    const editing = isEditingText();
+    if (
+        !beforeKeyboard &&
+        prev &&
+        editing &&
+        next.width === prev.width &&
+        next.height < prev.height
+    ) {
+        beforeKeyboard = prev;
+    }
+    if (
+        beforeKeyboard &&
+        (!editing || next.width !== beforeKeyboard.width || next.height >= beforeKeyboard.height)
+    ) {
+        beforeKeyboard = null;
+    }
+    if (beforeKeyboard) {
+        return {
+            ...next,
+            mode: beforeKeyboard.mode,
+            squashed: beforeKeyboard.squashed,
+            keyboardOpen: true,
+        };
+    }
+    return next;
 }
 
 let snapshot: GameLayoutSnapshot | null = null;
@@ -83,7 +149,7 @@ function ensureListening(): void {
     }
     listening = true;
     const update = () => {
-        const next = readSnapshot();
+        const next = nextSnapshot(snapshot);
         if (JSON.stringify(next) !== JSON.stringify(snapshot)) {
             snapshot = next;
             listeners.forEach((listener) => listener());
@@ -117,5 +183,6 @@ export function useGameLayout(): GameLayoutSnapshot {
         clientHeight: 1,
         mode: "stacked",
         squashed: false,
+        keyboardOpen: false,
     }));
 }

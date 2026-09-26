@@ -395,6 +395,44 @@ function GobanViewComponent({
         return () => observer.disconnect();
     }, [splitActive]);
 
+    // Without the split, the stage is capped to the height of the scroll area,
+    // so an on-screen keyboard would shrink the board. The last height the
+    // stage had without a keyboard is recorded and kept while the keyboard is
+    // open; the scroll area then scrolls to the focused input instead.
+    const keyboardOpenRef = React.useRef(layout.keyboardOpen);
+    keyboardOpenRef.current = layout.keyboardOpen;
+    const [keyboardFreeStageHeight, setKeyboardFreeStageHeight] = React.useState<number | null>(
+        null,
+    );
+    React.useLayoutEffect(() => {
+        const stage = stageRef.current;
+        if (!isPortrait || splitActive || !stage || typeof window.ResizeObserver !== "function") {
+            setKeyboardFreeStageHeight(null);
+            return;
+        }
+        const record = () => {
+            if (!keyboardOpenRef.current) {
+                setKeyboardFreeStageHeight(stage.offsetHeight);
+            }
+        };
+        record();
+        const observer = new ResizeObserver(record);
+        observer.observe(stage);
+        return () => observer.disconnect();
+    }, [isPortrait, splitActive]);
+    React.useLayoutEffect(() => {
+        const focused = document.activeElement;
+        if (layout.keyboardOpen && focused instanceof HTMLElement) {
+            if (scrollRef.current?.contains(focused)) {
+                focused.scrollIntoView({ block: "nearest" });
+            }
+        }
+    }, [layout.keyboardOpen, layout.height]);
+    const keyboardStageStyle: React.CSSProperties | undefined =
+        layout.keyboardOpen && keyboardFreeStageHeight
+            ? { height: `${keyboardFreeStageHeight}px`, maxHeight: "none" }
+            : undefined;
+
     const requestedStageHeight = dragStageHeight ?? savedStageHeight;
     const stageHeight =
         requestedStageHeight === null || splitMetrics === null
@@ -559,7 +597,7 @@ function GobanViewComponent({
                                               // already clamped to leave them their minimum.
                                               flexShrink: 0,
                                           } as React.CSSProperties)
-                                        : undefined
+                                        : keyboardStageStyle
                                 }
                             >
                                 {aboveBoard && (
