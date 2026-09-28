@@ -56,6 +56,7 @@ declare namespace rest_api {
             | "ai_report_cancelled"
             | "annul_no_warning"
             | "ack_annul_no_warning"
+            | "ack_report_cancelled_already_handled"
             | "final_warn_escaper"
             | "final_warn_escaper_and_annul"
             | "final_warn_staller"
