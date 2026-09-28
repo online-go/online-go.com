@@ -81,7 +81,8 @@ ogsTest.describe("@Kibitz responsive layout", () => {
             const playerCards = page.locator(".Kibitz-compact-player-cards");
             const moveControls = page.locator(".MoveNumberControl");
             const tabs = page.locator(".GobanView-tab-bar");
-            await expect(body).toHaveJSProperty("scrollHeight", expect.any(Number));
+            const scrollHeight = await body.evaluate((element) => element.scrollHeight);
+            expect(typeof scrollHeight).toBe("number");
             const beforeScroll = await playerCards.boundingBox();
             const boardBeforeScroll = await page.locator(".Goban").boundingBox();
             await body.evaluate((element) => {
