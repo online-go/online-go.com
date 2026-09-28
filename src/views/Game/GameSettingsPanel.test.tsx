@@ -192,6 +192,47 @@ describe("layout group", () => {
         fireEvent.click(screen.getByRole("radio", { name: "Under the board" }));
         expect(preferences.get("goban-view-move-controls")).toBe("under-board");
     });
+
+    test("mobile with scrolling on disables move controls and shows the note", () => {
+        preferences.set("goban-view-mobile-scroll", true);
+        renderSettings({ compact: true });
+
+        const group = screen.getByRole("radiogroup", { name: "Move controls" });
+        expect(group).toHaveAttribute("aria-disabled", "true");
+        const note = screen.getByText(
+            "The scrolling layout always puts the move controls under the board.",
+        );
+        expect(note).not.toBeNull();
+        expect(group).toHaveAttribute("aria-describedby", note.id);
+
+        fireEvent.click(screen.getByRole("radio", { name: "Under the board" }));
+        expect(preferences.get("goban-view-move-controls")).toBe("docked");
+    });
+
+    test("mobile with scrolling off leaves move controls enabled with no note", () => {
+        renderSettings({ compact: true });
+
+        const group = screen.getByRole("radiogroup", { name: "Move controls" });
+        expect(group).not.toHaveAttribute("aria-disabled");
+        expect(
+            screen.queryByText(
+                "The scrolling layout always puts the move controls under the board.",
+            ),
+        ).toBeNull();
+    });
+
+    test("desktop is unaffected by the scrolling layout preference", () => {
+        preferences.set("goban-view-mobile-scroll", true);
+        renderSettings({ compact: false });
+
+        const group = screen.getByRole("radiogroup", { name: "Move controls" });
+        expect(group).not.toHaveAttribute("aria-disabled");
+        expect(
+            screen.queryByText(
+                "The scrolling layout always puts the move controls under the board.",
+            ),
+        ).toBeNull();
+    });
 });
 
 describe("more options footer", () => {

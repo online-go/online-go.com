@@ -199,10 +199,13 @@ a drawing of the layout and a label.
 
 The desktop popover shows Action buttons, Move controls, Chat column and
 Board alignment. The mobile popover shows Scrolling layout and Move
-controls, with phone drawings. Board alignment applies only to the
-landscape layout, so the mobile popover does not show it. Settings > Theme
-shows all five. The "More options" panel in the game sidebar shows the
-Settings > Theme component.
+controls, with phone drawings; the mobile popover greys out the Move
+controls picker, with a note, while Scrolling layout is on, because the
+resolver forces `"under-board"` there regardless of the stored choice.
+Board alignment applies only to the landscape layout, so the mobile
+popover does not show it. Settings > Theme shows all five, and its Move
+controls picker is never disabled. The "More options" panel in the game
+sidebar shows the Settings > Theme component.
 
 `goban-view-mobile-scroll` is not only a Game page setting. It changes
 every `GobanView` that does not use `portraitSplit`: today the Game,

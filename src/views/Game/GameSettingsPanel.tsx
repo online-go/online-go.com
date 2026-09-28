@@ -116,6 +116,9 @@ export function GameSettingsPanel({
 
     const zen_mode = useZenMode(goban_controller);
 
+    const [mobile_scroll] = usePreference("goban-view-mobile-scroll");
+    const move_controls_note_id = React.useId();
+
     const [label_position, setLabelPositionPref] = usePreference("label-positioning");
     // The preference is the source of truth; the goban needs an explicit
     // sync call since it doesn't subscribe to this specific preference.
@@ -270,7 +273,23 @@ export function GameSettingsPanel({
                 <div className="GameSettingsPanel-layout-pickers">
                     {!compact && <ActionButtonsPicker size="compact" />}
                     {compact && <ScrollingLayoutPicker size="compact" />}
-                    <MoveControlsPicker size="compact" device={compact ? "phone" : "desktop"} />
+                    <MoveControlsPicker
+                        size="compact"
+                        device={compact ? "phone" : "desktop"}
+                        disabled={compact && mobile_scroll}
+                        describedBy={compact && mobile_scroll ? move_controls_note_id : undefined}
+                    />
+                    {compact && mobile_scroll && (
+                        <p
+                            className="GameSettingsPanel-move-controls-note"
+                            id={move_controls_note_id}
+                        >
+                            {pgettext(
+                                "Why the move controls setting is disabled",
+                                "The scrolling layout always puts the move controls under the board.",
+                            )}
+                        </p>
+                    )}
                     {!compact && <ChatColumnPicker size="compact" />}
                     {/* Board alignment only applies to the landscape layout. */}
                     {!compact && <BoardAlignmentPicker size="compact" />}

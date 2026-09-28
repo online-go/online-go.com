@@ -40,6 +40,13 @@ interface LayoutChoicePickerProps<T> {
      *  stays in the document and keeps naming the radio group for
      *  assistive technology. */
     hideTitle?: boolean;
+    /** Grey out the picker and ignore clicks and keys, without changing
+     *  the stored selection. Use this when another setting overrides the
+     *  choice, so the current selection stays visible but inert. */
+    disabled?: boolean;
+    /** Id of an element (for example, a note explaining why the picker is
+     *  disabled) to wire to the radio group's `aria-describedby`. */
+    describedBy?: string;
 }
 
 /**
@@ -57,18 +64,26 @@ export function LayoutChoicePicker<T>({
     onChange,
     size = "compact",
     hideTitle = false,
+    disabled = false,
+    describedBy,
 }: LayoutChoicePickerProps<T>): React.ReactElement {
     const card_refs = React.useRef<(HTMLButtonElement | null)[]>([]);
     const title_id = React.useId();
     const checked_index = options.findIndex((option) => option.value === value);
 
     const select = (index: number) => {
+        if (disabled) {
+            return;
+        }
         if (options[index].value !== value) {
             onChange(options[index].value);
         }
     };
 
     const onKeyDown = (ev: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+        if (disabled) {
+            return;
+        }
         let target: number | null = null;
         switch (ev.key) {
             case "ArrowRight":
@@ -93,17 +108,29 @@ export function LayoutChoicePicker<T>({
     };
 
     return (
-        <div className={`LayoutChoicePicker ${size} choices-${options.length}`}>
+        <div
+            className={
+                `LayoutChoicePicker ${size} choices-${options.length}` +
+                (disabled ? " disabled" : "")
+            }
+        >
             <div
                 className={"LayoutChoicePicker-title" + (hideTitle ? " sr-only" : "")}
                 id={title_id}
             >
                 {title}
             </div>
-            <div className="LayoutChoicePicker-cards" role="radiogroup" aria-labelledby={title_id}>
+            <div
+                className="LayoutChoicePicker-cards"
+                role="radiogroup"
+                aria-labelledby={title_id}
+                aria-disabled={disabled || undefined}
+                aria-describedby={describedBy}
+            >
                 {options.map((option, index) => {
                     const checked = index === checked_index;
-                    const tabbable = checked || (checked_index === -1 && index === 0);
+                    const tabbable =
+                        !disabled && (checked || (checked_index === -1 && index === 0));
                     return (
                         <button
                             key={String(option.value)}
@@ -113,6 +140,7 @@ export function LayoutChoicePicker<T>({
                             type="button"
                             role="radio"
                             aria-checked={checked}
+                            aria-disabled={disabled || undefined}
                             tabIndex={tabbable ? 0 : -1}
                             className={"LayoutChoicePicker-card" + (checked ? " checked" : "")}
                             onClick={() => select(index)}

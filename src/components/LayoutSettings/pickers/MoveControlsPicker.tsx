@@ -32,11 +32,17 @@ export function MoveControlsPicker({
     size,
     device,
     hideTitle,
+    disabled,
+    describedBy,
 }: {
     size: "compact" | "large";
     device: "desktop" | "phone";
     /** See `LayoutChoicePicker`'s prop of the same name. */
     hideTitle?: boolean;
+    /** See `LayoutChoicePicker`'s prop of the same name. */
+    disabled?: boolean;
+    /** See `LayoutChoicePicker`'s prop of the same name. */
+    describedBy?: string;
 }): React.ReactElement {
     const [move_controls, setMoveControls] = usePreference("goban-view-move-controls");
     const [under_board, docked] = moveControlsOptions();
@@ -48,6 +54,8 @@ export function MoveControlsPicker({
             onChange={setMoveControls}
             size={size}
             hideTitle={hideTitle}
+            disabled={disabled}
+            describedBy={describedBy}
             options={[
                 {
                     ...under_board,

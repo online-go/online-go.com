@@ -182,6 +182,113 @@ test("works with boolean values", () => {
     expect(onChange).toHaveBeenCalledWith(true);
 });
 
+describe("disabled", () => {
+    test("marks the radio group as disabled", () => {
+        render(
+            <LayoutChoicePicker
+                title="Side"
+                value="left"
+                options={OPTIONS}
+                onChange={jest.fn()}
+                disabled={true}
+            />,
+        );
+
+        expect(screen.getByRole("radiogroup", { name: "Side" })).toHaveAttribute(
+            "aria-disabled",
+            "true",
+        );
+    });
+
+    test("a click on the other choice does not call onChange", () => {
+        const onChange = jest.fn();
+        render(
+            <LayoutChoicePicker
+                title="Side"
+                value="left"
+                options={OPTIONS}
+                onChange={onChange}
+                disabled={true}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole("radio", { name: "Right side" }));
+
+        expect(onChange).not.toHaveBeenCalled();
+    });
+
+    test("arrow keys do not call onChange", () => {
+        const onChange = jest.fn();
+        render(
+            <LayoutChoicePicker
+                title="Side"
+                value="left"
+                options={OPTIONS}
+                onChange={onChange}
+                disabled={true}
+            />,
+        );
+
+        fireEvent.keyDown(screen.getByRole("radio", { name: "Left side" }), {
+            key: "ArrowRight",
+        });
+
+        expect(onChange).not.toHaveBeenCalled();
+    });
+
+    test("no card is tabbable", () => {
+        render(
+            <LayoutChoicePicker
+                title="Side"
+                value="left"
+                options={OPTIONS}
+                onChange={jest.fn()}
+                disabled={true}
+            />,
+        );
+
+        for (const radio of screen.getAllByRole("radio")) {
+            expect(radio).toHaveAttribute("tabindex", "-1");
+            expect(radio).toHaveAttribute("aria-disabled", "true");
+        }
+    });
+
+    test("the stored selection stays checked", () => {
+        render(
+            <LayoutChoicePicker
+                title="Side"
+                value="right"
+                options={OPTIONS}
+                onChange={jest.fn()}
+                disabled={true}
+            />,
+        );
+
+        expect(screen.getByRole("radio", { name: "Right side" })).toHaveAttribute(
+            "aria-checked",
+            "true",
+        );
+    });
+
+    test("describedBy wires the group to a note element", () => {
+        render(
+            <LayoutChoicePicker
+                title="Side"
+                value="left"
+                options={OPTIONS}
+                onChange={jest.fn()}
+                disabled={true}
+                describedBy="side-note"
+            />,
+        );
+
+        expect(screen.getByRole("radiogroup", { name: "Side" })).toHaveAttribute(
+            "aria-describedby",
+            "side-note",
+        );
+    });
+});
+
 describe("three choices", () => {
     type Spot = "window" | "container" | "group";
 

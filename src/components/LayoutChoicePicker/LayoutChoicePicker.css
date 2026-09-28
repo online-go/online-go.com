@@ -164,4 +164,22 @@
             transition: none;
         }
     }
+
+    /* The stored selection stays visible; only its look and interaction
+     * are turned off. */
+    &.disabled {
+        opacity: 0.5;
+
+        .LayoutChoicePicker-card {
+            cursor: default;
+
+            &:hover {
+                border-color: var(--shade3);
+            }
+
+            &.checked:hover {
+                border-color: var(--primary);
+            }
+        }
+    }
 }

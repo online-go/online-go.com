@@ -236,6 +236,16 @@
         }
     }
 
+    /* Sits directly under the picker it explains, so a screen reader
+     * announces it right after the disabled radio group. */
+    .GameSettingsPanel-move-controls-note {
+        margin: -0.4rem 0 0;
+        padding: 0 0.25rem;
+        font-size: 0.75rem;
+        color: var(--shade2);
+        text-align: center;
+    }
+
     /* Wrapper for the embedded GobanThemePicker — it has its own internal
      * grid layout; we just give it a bit of horizontal breathing room
      * inside the sidebar's padding-free panel. */
