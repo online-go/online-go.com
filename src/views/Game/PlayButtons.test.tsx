@@ -48,7 +48,14 @@ beforeEach(() => {
 afterEach(() => {
     data.remove("user");
     cleanup();
+    resize(1024, 768);
 });
+
+function resize(width: number, height: number): void {
+    Object.defineProperty(window, "innerWidth", { value: width, configurable: true });
+    Object.defineProperty(window, "innerHeight", { value: height, configurable: true });
+    window.dispatchEvent(new Event("resize"));
+}
 
 function WrapTest(props: { controller: GobanController; children: any }): React.ReactElement {
     const { controller } = props;
@@ -318,7 +325,7 @@ describe("PlayButtons", () => {
                 white: { id: 456, username: "test_user2" },
             },
         });
-        controller.setViewMode("portrait");
+        resize(390, 844);
 
         render(
             <WrapTest controller={controller}>
@@ -341,7 +348,7 @@ describe("PlayButtons", () => {
                 white: { id: 456, username: "test_user2" },
             },
         });
-        controller.setViewMode("portrait");
+        resize(390, 844);
 
         render(
             <WrapTest controller={controller}>
