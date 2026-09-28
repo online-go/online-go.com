@@ -239,7 +239,7 @@ export function KibitzMoreActionsPopover({
     );
 }
 
-/** Opens the popover under `button`, right edge aligned to the button. */
+/** Opens the popover under `button`. */
 export function openKibitzMoreActions(
     button: HTMLElement,
     controller: GobanController | null,
@@ -258,8 +258,5 @@ export function openKibitzMoreActions(
         below: button,
         minWidth: 220,
     });
-    const rect = button.getBoundingClientRect();
-    instance.container.style.left = "auto";
-    instance.container.style.right = `${Math.max(0, window.innerWidth - rect.right)}px`;
     return instance;
 }

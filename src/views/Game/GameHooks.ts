@@ -27,7 +27,7 @@ import {
 } from "goban";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
-import { useGobanController } from "@/components/GobanView";
+import { useGobanControllerOrNull } from "@/components/GobanView";
 import { GobanController } from "@/lib/GobanController";
 import { useUser } from "@/lib/hooks";
 import { ChatMode } from "./GameChat";
@@ -91,24 +91,48 @@ export function useScorePopup(goban: Goban | null): {
     return { show_score_breakdown, toggleScorePopup };
 }
 
-/** React hook that returns true if an undo was requested on the current move */
-export function useShowUndoRequested(goban: Goban): boolean {
-    const [show_undo_requested, setShowUndoRequested] = React.useState(
-        !!goban &&
-            goban.engine.undo_requested === goban.engine.last_official_move.move_number &&
-            goban.engine.undo_requested === goban.engine.cur_move.move_number,
-    );
-    const goban_controller = useGobanController();
+/**
+ * The controller for the undo hooks: the one given, else the one from
+ * GobanControllerContext. The game page calls these hooks above its
+ * GobanView, where there is no context, so it passes the controller.
+ */
+function useUndoController(controller: GobanController | null | undefined): GobanController | null {
+    const context_controller = useGobanControllerOrNull();
+    return controller ?? context_controller;
+}
+
+/** Tracks the controller's `in_pushed_analysis` flag. */
+function useInPushedAnalysis(goban_controller: GobanController | null): boolean {
     const [in_pushed_analysis, set_in_pushed_analysis] = React.useState(
-        goban_controller.in_pushed_analysis,
+        goban_controller?.in_pushed_analysis ?? false,
     );
 
     React.useEffect(() => {
+        if (!goban_controller) {
+            return undefined;
+        }
+        set_in_pushed_analysis(goban_controller.in_pushed_analysis);
         goban_controller.on("in_pushed_analysis", set_in_pushed_analysis);
         return () => {
             goban_controller.off("in_pushed_analysis", set_in_pushed_analysis);
         };
     }, [goban_controller]);
+
+    return in_pushed_analysis;
+}
+
+/** React hook that returns true if an undo was requested on the current move */
+export function useShowUndoRequested(
+    goban: Goban | null,
+    controller?: GobanController | null,
+): boolean {
+    const [show_undo_requested, setShowUndoRequested] = React.useState(
+        !!goban &&
+            goban.engine.undo_requested === goban.engine.last_official_move.move_number &&
+            goban.engine.undo_requested === goban.engine.cur_move.move_number,
+    );
+    const goban_controller = useUndoController(controller);
+    const in_pushed_analysis = useInPushedAnalysis(goban_controller);
 
     React.useEffect(() => {
         if (!goban) {
@@ -222,14 +246,15 @@ export function useSubmittingMove(goban: Goban): boolean {
 /** React hook that returns true when the opponent has an undo request
  *  pending on the current move and this user is the one who can accept or
  *  reject it. */
-export function useCanAnswerUndoRequest(goban: Goban): boolean {
-    const goban_controller = useGobanController();
+export function useCanAnswerUndoRequest(
+    goban: Goban | null,
+    controller?: GobanController | null,
+): boolean {
+    const goban_controller = useUndoController(controller);
     const user_id = data.get("user")?.id;
-    const [in_pushed_analysis, set_in_pushed_analysis] = React.useState(
-        goban_controller.in_pushed_analysis,
-    );
+    const in_pushed_analysis = useInPushedAnalysis(goban_controller);
     const readCanAnswer = React.useCallback((): boolean => {
-        if (in_pushed_analysis || user_id === undefined) {
+        if (!goban || in_pushed_analysis || user_id === undefined) {
             return false;
         }
 
@@ -255,15 +280,11 @@ export function useCanAnswerUndoRequest(goban: Goban): boolean {
     const [can_answer, set_can_answer] = React.useState(readCanAnswer);
 
     React.useEffect(() => {
-        goban_controller.on("in_pushed_analysis", set_in_pushed_analysis);
-        return () => {
-            goban_controller.off("in_pushed_analysis", set_in_pushed_analysis);
-        };
-    }, [goban_controller]);
-
-    React.useEffect(() => {
         const syncCanAnswer = () => set_can_answer(readCanAnswer());
         syncCanAnswer();
+        if (!goban) {
+            return undefined;
+        }
 
         return subscribeAllEvents(
             goban,
@@ -272,7 +293,7 @@ export function useCanAnswerUndoRequest(goban: Goban): boolean {
         );
     }, [goban, readCanAnswer]);
 
-    const show_undo_requested = useShowUndoRequested(goban);
+    const show_undo_requested = useShowUndoRequested(goban, goban_controller);
 
     return show_undo_requested && can_answer;
 }

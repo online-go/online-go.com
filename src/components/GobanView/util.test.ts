@@ -56,13 +56,7 @@ describe("user_color", () => {
     });
 });
 
-import {
-    boardAlignmentClass,
-    GobanViewBoardAlignment,
-    selectVisibleTabs,
-    stageFitsWithSlider,
-    TabBarSlot,
-} from "./util";
+import { selectVisibleTabs, stageFitsWithSlider, TabBarSlot } from "./util";
 
 interface Tab extends TabBarSlot {
     id: string;
@@ -132,23 +126,6 @@ describe("selectVisibleTabs", () => {
         const reordered = [info, more, link, settings, estimate, analyze, undo];
         const width = group(3) + group(1) + group(3);
         expect(ids(selectVisibleTabs(reordered, width, BUTTON, GAP))).toEqual(ids(reordered));
-    });
-});
-
-describe("boardAlignmentClass", () => {
-    test("maps each alignment to its root class", () => {
-        expect(boardAlignmentClass("window")).toBe("board-align-window");
-        expect(boardAlignmentClass("container")).toBe("board-align-container");
-        expect(boardAlignmentClass("group")).toBe("board-align-group");
-    });
-
-    test("falls back to container centering for unknown stored values", () => {
-        expect(boardAlignmentClass("bogus" as GobanViewBoardAlignment)).toBe(
-            "board-align-container",
-        );
-        expect(boardAlignmentClass(undefined as unknown as GobanViewBoardAlignment)).toBe(
-            "board-align-container",
-        );
     });
 });
 

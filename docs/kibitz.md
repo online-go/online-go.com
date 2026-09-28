@@ -8,11 +8,13 @@ game together, chat, and share variations. It renders through the shared
 
 Landscape: a left aside with the room list, the variation list and, while
 the center is not showing the live game, a small live-game thumbnail — the
-thumbnail is landscape only; the
-board with a player bar above and below it in the center; on the right the
-header (the room title with the game's result pulled right on the same line,
-or the variation chip in their place),
-pending proposals, variation controls and the two-tab chat (Game, Kibitz).
+thumbnail is landscape only; the board with a player bar above and below it
+in the center; on the right the header (the room title with the game's
+result pulled right on the same line, or the variation chip in their
+place), pending proposals, variation controls and the two-tab chat (Game,
+Kibitz). The left aside is resizable, with the drag handle on its right
+edge; its width is the `goban-view-left-aside-width` preference, shared
+with the Game page's chat column.
 A people column stands beside the chat log; the People action switches it
 off and it drops on its own when the chat panel is narrower than 22rem.
 

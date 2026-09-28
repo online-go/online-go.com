@@ -16,8 +16,9 @@
  */
 
 import { Goban } from "goban";
-import { pgettext } from "@/lib/translate";
-import { getGameLayoutSnapshot, useGameLayout } from "./layout";
+import { usePreference } from "@/lib/preferences";
+import { getGameLayoutSnapshot, normalizeActionButtonsPosition, useGameLayout } from "./layout";
+import type { ActionButtonsPosition } from "./layout";
 
 export type ViewMode = "portrait" | "wide" | "square";
 export {
@@ -28,49 +29,16 @@ export {
 } from "./layout";
 
 /**
- * Where the board sits in the landscape layout.
- *
- * - `window`: the board is centered in the window; the sidebar sits in
- *   the space to its right.
- * - `container`: the board is centered in the space beside the sidebar.
- * - `group`: the board and the sidebar are centered together, as one
- *   block, with equal empty space on both sides.
+ * The "goban-view-action-buttons" preference, read through
+ * `normalizeActionButtonsPosition` so an unknown value reads as a valid
+ * position.
  */
-export type GobanViewBoardAlignment = "window" | "container" | "group";
-
-export const GOBAN_VIEW_BOARD_ALIGNMENTS: readonly GobanViewBoardAlignment[] = [
-    "window",
-    "container",
-    "group",
-];
-
-export interface BoardAlignmentOption {
-    value: GobanViewBoardAlignment;
-    label: string;
-}
-
-/** Translated labels for the board alignment preference, in display order. */
-export function boardAlignmentOptions(): BoardAlignmentOption[] {
-    return [
-        {
-            value: "window",
-            label: pgettext("Board alignment on the game page", "Center in window"),
-        },
-        {
-            value: "container",
-            label: pgettext("Board alignment on the game page", "Center beside sidebar"),
-        },
-        {
-            value: "group",
-            label: pgettext("Board alignment on the game page", "Center with sidebar"),
-        },
-    ];
-}
-
-/** Root class for the alignment; unknown stored values fall back to `container`. */
-export function boardAlignmentClass(alignment: GobanViewBoardAlignment): string {
-    const valid = GOBAN_VIEW_BOARD_ALIGNMENTS.includes(alignment) ? alignment : "container";
-    return `board-align-${valid}`;
+export function useActionButtonsPosition(): [
+    ActionButtonsPosition,
+    (position: ActionButtonsPosition) => void,
+] {
+    const [stored, setStored] = usePreference("goban-view-action-buttons");
+    return [normalizeActionButtonsPosition(stored), setStored];
 }
 
 export function goban_view_mode(_bar_width?: number): ViewMode {

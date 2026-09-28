@@ -174,10 +174,16 @@
     }
 
     /* Buttons layout: the buttons and the move label spread across the
-       full width of the strip. */
+       full width of the strip. The nav group wraps only the buttons, so the
+       under-board layout in GobanView.css can center them as one item; here
+       it does not make a box, and each button is a flex item of the strip. */
     &.MoveNumberControl-buttons {
         justify-content: space-between;
         gap: 0.25rem;
+
+        .MoveNumberControl-nav {
+            display: contents;
+        }
 
         .MoveNumberControl-button {
             font-size: 1.1rem;
@@ -201,8 +207,10 @@
    buttons, a "Move 123" label of about 4rem and a 0.25rem gap between each of
    the eight items. The slider layout and custom sliders (e.g. joseki) keep
    their size, so their buttons stay in proportion with the knob and they fit
-   the room GobanView.css reserves for a custom slider above a takeover. */
-.GobanView.portrait > .MoveNumberControl.MoveNumberControl-buttons {
+   the room GobanView.css reserves for a custom slider above a takeover.
+   The selector matches at any depth, because the "under-board" position puts
+   the strip inside .GobanView-stage. Only this strip has these classes. */
+.GobanView.portrait .MoveNumberControl.MoveNumberControl-buttons {
     container-type: inline-size;
 
     .MoveNumberControl-button {

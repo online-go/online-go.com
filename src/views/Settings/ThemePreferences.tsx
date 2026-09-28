@@ -36,7 +36,18 @@ import { MiniGoban } from "@/components/MiniGoban";
 import { GobanEngineConfig, setGobanRenderer } from "goban";
 import { Toggle } from "@/components/Toggle";
 import { GobanThemeImportExport } from "./GobanThemeImportExport";
-import { boardAlignmentOptions } from "@/components/GobanView/util";
+import { BoardAlignmentPicker } from "@/components/LayoutSettings/pickers/BoardAlignmentPicker";
+import { ActionButtonsPicker } from "@/components/LayoutSettings/pickers/ActionButtonsPicker";
+import { ChatColumnPicker } from "@/components/LayoutSettings/pickers/ChatColumnPicker";
+import { MoveControlsPicker } from "@/components/LayoutSettings/pickers/MoveControlsPicker";
+import { ScrollingLayoutPicker } from "@/components/LayoutSettings/pickers/ScrollingLayoutPicker";
+import {
+    actionButtonsTitle,
+    boardAlignmentTitle,
+    chatColumnTitle,
+    moveControlsTitle,
+    scrollingLayoutTitle,
+} from "@/components/LayoutSettings/options";
 import "./ThemePreferences.css";
 
 const sample_board_data: GobanEngineConfig = {
@@ -57,7 +68,6 @@ const sample_board_data: GobanEngineConfig = {
 };
 
 export function ThemePreferences(): React.ReactElement | null {
-    const [board_alignment, setBoardAlignment] = usePreference("goban-view-board-alignment");
     const [stone_removal_graphic, _setStoneRemovalGraphic] = usePreference(
         "goban-theme-removal-graphic",
     );
@@ -255,12 +265,27 @@ export function ThemePreferences(): React.ReactElement | null {
                 <GobanThemeImportExport />
             </PreferenceLine>
 
-            <PreferenceLine title={pgettext("Board alignment on the game page", "Board alignment")}>
-                <PreferenceDropdown
-                    value={board_alignment}
-                    options={boardAlignmentOptions()}
-                    onChange={setBoardAlignment}
-                />
+            <PreferenceLine className="layout-picker-line" title={actionButtonsTitle()}>
+                <ActionButtonsPicker size="large" hideTitle={true} />
+            </PreferenceLine>
+            <PreferenceLine className="layout-picker-line" title={moveControlsTitle()}>
+                <MoveControlsPicker size="large" device="desktop" hideTitle={true} />
+            </PreferenceLine>
+            <PreferenceLine className="layout-picker-line" title={chatColumnTitle()}>
+                <ChatColumnPicker size="large" hideTitle={true} />
+            </PreferenceLine>
+            <PreferenceLine
+                className="layout-picker-line"
+                title={scrollingLayoutTitle()}
+                description={pgettext(
+                    "Explains the scrolling layout setting",
+                    "On phones and narrow screens",
+                )}
+            >
+                <ScrollingLayoutPicker size="large" hideTitle={true} />
+            </PreferenceLine>
+            <PreferenceLine className="layout-picker-line" title={boardAlignmentTitle()}>
+                <BoardAlignmentPicker size="large" hideTitle={true} />
             </PreferenceLine>
             <PreferenceLine title={_("Board label positioning")}>
                 <PreferenceDropdown

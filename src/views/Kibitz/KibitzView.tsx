@@ -21,7 +21,6 @@ import * as data from "@/lib/data";
 import { GobanController } from "@/lib/GobanController";
 import { popover, PopOver } from "@/lib/popover";
 import { GobanView, generateGobanHook } from "@/components/GobanView";
-import type { GameLayoutMode } from "@/components/GobanView";
 import { KBShortcut } from "@/components/KBShortcut";
 import type { KibitzRoomSummary } from "@/models/kibitz";
 import type { KibitzGobans } from "./useKibitzGobans";
@@ -50,8 +49,9 @@ import "@/views/Game/Players.css";
 export interface KibitzViewProps {
     room: KibitzRoomSummary;
     gobans: KibitzGobans;
+    /** True when the layout has no left aside (see `leftAsideAllowed`), so
+     *  the rooms and variations lists go in the panes instead. */
     isPortrait: boolean;
-    layoutMode: GameLayoutMode;
     leftAside: Omit<KibitzLeftAsideProps, "miniBoardController" | "onExitVariation">;
     chat: Omit<
         KibitzChatPanelProps,
@@ -128,7 +128,7 @@ const useBehindLive = generateGobanHook(
  * and chat on the right.
  */
 export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
-    const { room, gobans, isPortrait, layoutMode } = props;
+    const { room, gobans, isPortrait } = props;
     const settingsPopoverRef = React.useRef<PopOver | null>(null);
     const moreActionsPopoverRef = React.useRef<PopOver | null>(null);
     const behindLive = useBehindLive(
@@ -498,8 +498,10 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             leftAside={leftAside}
             centerPlaceholder={waitingMessage}
             playerBars={gobans.playerBars ?? !!gobans.center}
+            /* GobanView shows this only in compactHorizontal, where the
+             * player bars are not shown. */
             sidebarContentBefore={
-                layoutMode === "compactHorizontal" && gobans.center ? (
+                gobans.center ? (
                     <div className="MainGobanView Kibitz-compact-player-cards">
                         <PlayerCards
                             historical_black={null}
@@ -509,7 +511,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                     </div>
                 ) : null
             }
-            portraitSplit={layoutMode === "stacked"}
+            portraitSplit
         >
             {gobans.center && <KibitzKeyboardShortcuts />}
             {viewingOther && <KBShortcut shortcut="esc" action={onEscape} />}
