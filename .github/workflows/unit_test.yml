@@ -41,4 +41,3 @@ jobs:
 
             - name: Run unit tests
               run: yarn test
-
