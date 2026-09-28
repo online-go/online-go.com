@@ -84,6 +84,7 @@ declare namespace rest_api {
             | "warn_duplicate_reporter"
             | "suspend_user"
             | "suspend_user_and_annul"
+            | "cancel_already_handled"
             | "suspend_ai_user"
             | "warn_ai_user"
             | "first_warn_ai_user"
