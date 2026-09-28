@@ -325,9 +325,10 @@
      * white page background. */
     --player-black-background: linear-gradient(to bottom, #4d525b 0%, #3a3e45 100%);
     --player-white-background: linear-gradient(to bottom, #ffffff 0%, #f1efea 100%);
-    /* Solid midpoints of the card gradients, for use as gradient stops. */
+    /* Solid card colours for the compact mobile header. The white one is
+     * darker than the card gradient, to stand apart from --shade5. */
     --player-black-card-color: #43484f;
-    --player-white-card-color: #f8f7f5;
+    --player-white-card-color: #e8e5de;
     --player-black-border: #2c3036;
     --player-white-border: #d3d0c9;
     --inactive-support-gradient: linear-gradient(to bottom, #ffffff 0%, #e5e5e5 100%);
