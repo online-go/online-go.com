@@ -38,7 +38,7 @@ import { KibitzPresetChangePendingBanner } from "./KibitzPresetChangePendingBann
 import type { KibitzController } from "./KibitzController";
 import { KibitzView } from "./KibitzView";
 import { useKibitzGobans } from "./useKibitzGobans";
-import { useGameLayout } from "@/components/GobanView/layout";
+import { leftAsideAllowed, useGameLayout } from "@/components/GobanView/layout";
 import {
     EMPTY_VISIBLE_VARIATIONS,
     MAX_VISIBLE_VARIATIONS,
@@ -323,7 +323,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const currentGameBaseSnapshotRef = React.useRef<KibitzCurrentGameBaseSnapshot | null>(null);
     const [gameVariations, setGameVariations] = React.useState<KibitzVariationSummary[]>([]);
     const layout = useGameLayout();
-    const isPortrait = layout.mode !== "fullHorizontal";
+    const isPortrait = !leftAsideAllowed(layout.mode);
     const [visibleVariations, setVisibleVariations] = React.useState(EMPTY_VISIBLE_VARIATIONS);
     const visibleVariationIds = visibleVariations.ids;
     const variationColorIndexes = visibleVariations.colors;
@@ -1228,7 +1228,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 room={resolvedRoom}
                 gobans={gobans}
                 isPortrait={isPortrait}
-                layoutMode={layout.mode}
                 banner={
                     resolvedRoom.preset?.selection_status === "change_pending" &&
                     resolvedRoom.preset.change_effective_at ? (

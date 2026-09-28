@@ -359,6 +359,14 @@
     /* The official best move. The blue, the excellent blue-green and the
      * great green share one perceptual lightness. */
     --ai-blue-move: #0082ff;
+
+    /* Board, grid and stones of the layout picker illustrations */
+    --layout-illustration-board: #dcb35c;
+    --layout-illustration-grid: #6b4f1d;
+    --layout-illustration-black-stone: #1b1b1b;
+    --layout-illustration-white-stone: #f7f7f7;
+    /* Opacity of the grey line art, higher on the light panels */
+    --layout-illustration-line-opacity: 0.6;
 }
 
 /* Dark theme mixin */
@@ -562,6 +570,13 @@
     --move-quality-mistake: #f5924b;
     --move-quality-blunder: #ef5555;
     --ai-blue-move: #0082ff;
+
+    /* Board, grid and stones of the layout picker illustrations */
+    --layout-illustration-board: #b58d45;
+    --layout-illustration-grid: #4a3512;
+    --layout-illustration-black-stone: #111111;
+    --layout-illustration-white-stone: #e4e4e4;
+    --layout-illustration-line-opacity: 0.45;
 }
 
 /* Accessible theme (extends dark with colorblind-friendly overrides) */
@@ -585,6 +600,14 @@
     --indicate-online: #70b3ff;
     --indicate-online-shadow: -1px -1px 0 #000, 1px -1px 0 #111, -1px 1px 0 #222, 1px 1px 0 #111;
     --quickmatch-player-waiting: #70b3ff;
+
+    /* Layout picker illustrations: a lighter board and darker grid for
+     * more contrast, and pure black and white stones */
+    --layout-illustration-board: #d0a655;
+    --layout-illustration-grid: #2a1c06;
+    --layout-illustration-black-stone: #000000;
+    --layout-illustration-white-stone: #ffffff;
+    --layout-illustration-line-opacity: 0.5;
 }
 
 /* Apply light theme by default */

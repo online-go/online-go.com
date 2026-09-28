@@ -19,13 +19,19 @@ import * as React from "react";
 import { _, pgettext } from "@/lib/translate";
 import { sfx } from "@/lib/sfx";
 import { usePreference } from "@/lib/preferences";
+import { useData, useIsTouchOnlyDevice } from "@/lib/hooks";
 import type { LabelPosition } from "goban";
 import { Toggle } from "@/components/Toggle";
 import { GobanThemePicker } from "@/components/GobanThemePicker/GobanThemePicker";
 import { openACLModal } from "@/components/ACLModal";
-import { boardAlignmentOptions, GobanViewBoardAlignment } from "@/components/GobanView/util";
+import { BoardAlignmentPicker } from "@/components/LayoutSettings/pickers/BoardAlignmentPicker";
+import { ActionButtonsPicker } from "@/components/LayoutSettings/pickers/ActionButtonsPicker";
+import { ChatColumnPicker } from "@/components/LayoutSettings/pickers/ChatColumnPicker";
+import { MoveControlsPicker } from "@/components/LayoutSettings/pickers/MoveControlsPicker";
+import { ScrollingLayoutPicker } from "@/components/LayoutSettings/pickers/ScrollingLayoutPicker";
 import { useAIReviewEnabled, useZenMode } from "./GameHooks";
 import { useGobanController } from "./goban_context";
+import { openGameKeyboardShortcutsModal } from "./GameKeyboardShortcutsModal";
 import "./GameSidebarPanels.css";
 
 interface GameSettingsPanelProps {
@@ -35,8 +41,8 @@ interface GameSettingsPanelProps {
     onClose?: () => void;
     /** Mobile (portrait) layout: leave out the landscape-only options. */
     compact?: boolean;
-    /** When provided, a "More options" item renders under the theme quick
-     *  select; clicking it fires this (the Game view opens the full
+    /** When provided, a "More options" item renders in a footer under the
+     *  scrolling body; clicking it fires this (the Game view opens the full
      *  Themes & Visuals takeover) and then onClose. */
     onShowThemeSettings?: () => void;
 }
@@ -50,9 +56,19 @@ export function GameSettingsPanel({
     const goban = goban_controller.goban;
     const engine = goban.engine;
 
+    // Phones and tablets have no keyboard to speak of, so the shortcut
+    // list is only offered where a mouse or trackpad suggests one is
+    // present.
+    const touch_only_device = useIsTouchOnlyDevice();
+    const showKeyboardShortcuts = () => {
+        openGameKeyboardShortcutsModal();
+        onClose?.();
+    };
+
     const ai_review_enabled = useAIReviewEnabled(goban_controller);
 
-    const [volume, set_volume] = React.useState(sfx.getVolume("master"));
+    // Subscribed, so the slider follows volume changes made elsewhere.
+    const [volume] = useData("sound.volume.master", sfx.getVolume("master"));
     const volume_slider_ref = React.useRef<HTMLInputElement>(null);
 
     // Stone-placement sample for volume feedback. Fires on commit (pointer or
@@ -76,7 +92,6 @@ export function GameSettingsPanel({
 
     const _setVolume = (new_volume: number) => {
         sfx.setVolume("master", new_volume);
-        set_volume(new_volume);
     };
     const toggleVolume = () => {
         _setVolume(volume > 0 ? 0 : 0.5);
@@ -102,7 +117,6 @@ export function GameSettingsPanel({
     const zen_mode = useZenMode(goban_controller);
 
     const [label_position, setLabelPositionPref] = usePreference("label-positioning");
-    const [board_alignment, setBoardAlignment] = usePreference("goban-view-board-alignment");
     // The preference is the source of truth; the goban needs an explicit
     // sync call since it doesn't subscribe to this specific preference.
     const setCoordinates = (pos: LabelPosition) => {
@@ -112,158 +126,170 @@ export function GameSettingsPanel({
 
     return (
         <div className="GameSidebarPanel GameSettingsPanel">
-            <h3 className="GameSidebarPanel-title">{_("Settings")}</h3>
+            <div className="GameSettingsPanel-body">
+                <div className="GameSettingsPanel-title-row">
+                    <h3 className="GameSidebarPanel-title">{_("Settings")}</h3>
+                    {!touch_only_device && (
+                        <button
+                            type="button"
+                            className="GameSettingsPanel-shortcuts-link"
+                            onClick={showKeyboardShortcuts}
+                            title={_("Keyboard shortcuts")}
+                            aria-label={_("Keyboard shortcuts")}
+                        >
+                            <i className="fa fa-keyboard-o" />
+                        </button>
+                    )}
+                </div>
 
-            <div className="GameSidebarPanel-row">
-                <i
-                    className={
-                        "fa volume-icon " +
-                        (volume === 0
-                            ? "fa-volume-off"
-                            : volume > 0.5
-                              ? "fa-volume-up"
-                              : "fa-volume-down")
-                    }
-                    onClick={toggleVolume}
-                    role="button"
-                    title={_("Toggle volume")}
-                />
-                <input
-                    ref={volume_slider_ref}
-                    type="range"
-                    className="volume-slider"
-                    onChange={setVolume}
-                    value={volume}
-                    min={0}
-                    max={1.0}
-                    step={0.01}
-                    aria-label={_("Volume")}
-                />
-            </div>
+                <div className="GameSidebarPanel-row">
+                    <i
+                        className={
+                            "fa volume-icon " +
+                            (volume === 0
+                                ? "fa-volume-off"
+                                : volume > 0.5
+                                  ? "fa-volume-up"
+                                  : "fa-volume-down")
+                        }
+                        onClick={toggleVolume}
+                        role="button"
+                        title={_("Toggle volume")}
+                    />
+                    <input
+                        ref={volume_slider_ref}
+                        type="range"
+                        className="volume-slider"
+                        onChange={setVolume}
+                        value={volume}
+                        min={0}
+                        max={1.0}
+                        step={0.01}
+                        aria-label={_("Volume")}
+                    />
+                </div>
 
-            <div className="GameSidebarPanel-labeled-row">
-                <label htmlFor="game-settings-zen-mode">
-                    <i className="fa fa-expand" />
-                    <span>{_("Zen Mode")}</span>
-                </label>
-                <Toggle
-                    id="game-settings-zen-mode"
-                    checked={zen_mode}
-                    onChange={() => {
-                        goban_controller.toggleZenMode();
-                        onClose?.();
-                    }}
-                />
-            </div>
-
-            <div className="GameSidebarPanel-labeled-row">
-                <label htmlFor="game-settings-coords">
-                    <i className="ogs-coordinates" />
-                    <span>{_("Coordinates")}</span>
-                </label>
-                <select
-                    id="game-settings-coords"
-                    value={label_position}
-                    onChange={(e) => setCoordinates(e.target.value as LabelPosition)}
-                >
-                    <option value="all">{pgettext("Coordinate label position", "All")}</option>
-                    <option value="none">{pgettext("Coordinate label position", "None")}</option>
-                    <option value="top-left">
-                        {pgettext("Coordinate label position", "Top Left")}
-                    </option>
-                    <option value="top-right">
-                        {pgettext("Coordinate label position", "Top Right")}
-                    </option>
-                    <option value="bottom-left">
-                        {pgettext("Coordinate label position", "Bottom Left")}
-                    </option>
-                    <option value="bottom-right">
-                        {pgettext("Coordinate label position", "Bottom Right")}
-                    </option>
-                </select>
-            </div>
-
-            <div className="GameSidebarPanel-labeled-row">
-                <label htmlFor="game-settings-chat-enabled">
-                    <i className="fa fa-comment" />
-                    <span>{_("Enable chat")}</span>
-                </label>
-                <Toggle
-                    id="game-settings-chat-enabled"
-                    checked={chat_enabled}
-                    onChange={(checked) => set_chat_enabled(checked)}
-                />
-            </div>
-
-            <div className="GameSidebarPanel-labeled-row">
-                <label htmlFor="game-settings-ai-review">
-                    <i className="fa fa-desktop" />
-                    <span>{_("Enable AI review")}</span>
-                </label>
-                <Toggle
-                    id="game-settings-ai-review"
-                    checked={ai_review_enabled}
-                    onChange={() => goban_controller.toggleAIReview()}
-                />
-            </div>
-
-            {isPrivate && (
-                <button
-                    className="GameSidebarPanel-item"
-                    onClick={openACL}
-                    title={pgettext("Control who can access the game or review", "Access settings")}
-                >
-                    <i className="fa fa-lock" />
-                    <span>
-                        {pgettext("Control who can access the game or review", "Access settings")}
-                    </span>
-                </button>
-            )}
-
-            {/* Board alignment only applies to the landscape layout, so the
-                portrait (compact) panel leaves it out. */}
-            {!compact && (
                 <div className="GameSidebarPanel-labeled-row">
-                    <label htmlFor="game-settings-board-alignment">
-                        <i className="fa fa-arrows-h" />
-                        <span>
-                            {pgettext("Board alignment on the game page", "Board alignment")}
-                        </span>
+                    <label htmlFor="game-settings-zen-mode">
+                        <i className="fa fa-expand" />
+                        <span>{_("Zen Mode")}</span>
+                    </label>
+                    <Toggle
+                        id="game-settings-zen-mode"
+                        checked={zen_mode}
+                        onChange={() => {
+                            goban_controller.toggleZenMode();
+                            onClose?.();
+                        }}
+                    />
+                </div>
+
+                <div className="GameSidebarPanel-labeled-row">
+                    <label htmlFor="game-settings-coords">
+                        <i className="ogs-coordinates" />
+                        <span>{_("Coordinates")}</span>
                     </label>
                     <select
-                        id="game-settings-board-alignment"
-                        value={board_alignment}
-                        onChange={(e) =>
-                            setBoardAlignment(e.target.value as GobanViewBoardAlignment)
-                        }
+                        id="game-settings-coords"
+                        value={label_position}
+                        onChange={(e) => setCoordinates(e.target.value as LabelPosition)}
                     >
-                        {boardAlignmentOptions().map((option) => (
-                            <option key={option.value} value={option.value}>
-                                {option.label}
-                            </option>
-                        ))}
+                        <option value="all">{pgettext("Coordinate label position", "All")}</option>
+                        <option value="none">
+                            {pgettext("Coordinate label position", "None")}
+                        </option>
+                        <option value="top-left">
+                            {pgettext("Coordinate label position", "Top Left")}
+                        </option>
+                        <option value="top-right">
+                            {pgettext("Coordinate label position", "Top Right")}
+                        </option>
+                        <option value="bottom-left">
+                            {pgettext("Coordinate label position", "Bottom Left")}
+                        </option>
+                        <option value="bottom-right">
+                            {pgettext("Coordinate label position", "Bottom Right")}
+                        </option>
                     </select>
                 </div>
-            )}
 
-            <div className="GameSidebarPanel-section-header">
-                {pgettext("Goban theme section in the Game settings panel", "Theme")}
-            </div>
-            <div className="GameSettingsPanel-theme-picker">
-                <GobanThemePicker size={32} />
+                <div className="GameSidebarPanel-labeled-row">
+                    <label htmlFor="game-settings-chat-enabled">
+                        <i className="fa fa-comment" />
+                        <span>{_("Enable chat")}</span>
+                    </label>
+                    <Toggle
+                        id="game-settings-chat-enabled"
+                        checked={chat_enabled}
+                        onChange={(checked) => set_chat_enabled(checked)}
+                    />
+                </div>
+
+                <div className="GameSidebarPanel-labeled-row">
+                    <label htmlFor="game-settings-ai-review">
+                        <i className="fa fa-desktop" />
+                        <span>{_("Enable AI review")}</span>
+                    </label>
+                    <Toggle
+                        id="game-settings-ai-review"
+                        checked={ai_review_enabled}
+                        onChange={() => goban_controller.toggleAIReview()}
+                    />
+                </div>
+
+                {isPrivate && (
+                    <button
+                        className="GameSidebarPanel-item"
+                        onClick={openACL}
+                        title={pgettext(
+                            "Control who can access the game or review",
+                            "Access settings",
+                        )}
+                    >
+                        <i className="fa fa-lock" />
+                        <span>
+                            {pgettext(
+                                "Control who can access the game or review",
+                                "Access settings",
+                            )}
+                        </span>
+                    </button>
+                )}
+
+                <div className="GameSidebarPanel-section-header">
+                    {pgettext("Goban theme section in the Game settings panel", "Theme")}
+                </div>
+                <div className="GameSettingsPanel-theme-picker">
+                    <GobanThemePicker size={32} />
+                </div>
+
+                <div className="GameSidebarPanel-section-header">
+                    {pgettext("Layout section in the Game settings panel", "Layout")}
+                </div>
+
+                <div className="GameSettingsPanel-layout-pickers">
+                    {!compact && <ActionButtonsPicker size="compact" />}
+                    {compact && <ScrollingLayoutPicker size="compact" />}
+                    <MoveControlsPicker size="compact" device={compact ? "phone" : "desktop"} />
+                    {!compact && <ChatColumnPicker size="compact" />}
+                    {/* Board alignment only applies to the landscape layout. */}
+                    {!compact && <BoardAlignmentPicker size="compact" />}
+                </div>
             </div>
             {onShowThemeSettings && (
-                <button
-                    className="GameSidebarPanel-item"
-                    onClick={() => {
-                        onShowThemeSettings();
-                        onClose?.();
-                    }}
-                    title={pgettext("Open the full theme settings", "More options")}
-                >
-                    <i className="fa fa-sliders" />
-                    <span>{pgettext("Open the full theme settings", "More options")}</span>
-                </button>
+                <div className="GameSettingsPanel-footer">
+                    <button
+                        className="GameSidebarPanel-item"
+                        onClick={() => {
+                            onShowThemeSettings();
+                            onClose?.();
+                        }}
+                        title={pgettext("Open the full theme settings", "More options")}
+                    >
+                        <i className="fa fa-sliders" />
+                        <span>{pgettext("Open the full theme settings", "More options")}</span>
+                    </button>
+                </div>
             )}
         </div>
     );

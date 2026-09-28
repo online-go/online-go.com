@@ -1,0 +1,133 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* One action row. These rules are top level, so a row looks the same in the
+ * "..." menu, in the action dock and in the mobile action list. The dock and
+ * the list set their own row layout (see GobanView.css). The icon is the
+ * row's first child and the label is the last. Hosts size the icon through
+ * `> :first-child`, never through every nested `i`, so composite icons such
+ * as UndoIcon keep their inner layout. */
+.GameActionRow {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0;
+    height: auto;
+    box-shadow: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--fg);
+    text-align: left;
+    font-family: inherit;
+    font-size: 0.9rem;
+    line-height: 1.2;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    /* The global `button` rule adds a ::before for inline-block alignment.
+     * In a flex row it is an extra item, so remove it. */
+    &::before {
+        content: none;
+        display: none;
+    }
+
+    i,
+    .UndoIcon,
+    .game-chat-tab-icon {
+        color: var(--shade1);
+    }
+
+    /* Unread marker on the chat row's icon. */
+    .game-chat-tab-icon {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        .game-chat-unread-dot {
+            position: absolute;
+            top: -0.15rem;
+            right: -0.3rem;
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            background: var(--reject);
+        }
+    }
+
+    .GameActionRow-label {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &:hover,
+    &:focus,
+    &:active {
+        color: var(--fg);
+        text-decoration: none;
+    }
+
+    &:hover:not(.disabled):not(:disabled) {
+        background: var(--shade4);
+    }
+
+    &.active {
+        background: var(--shade4);
+        border-color: var(--primary);
+    }
+
+    /* The icon also shows the active state, because the collapsed dock
+     * clips the rest of the row. */
+    &.active:not(.disabled) i,
+    &.active:not(.disabled) .UndoIcon,
+    &.active:not(.disabled) .game-chat-tab-icon {
+        color: var(--primary);
+    }
+
+    &.disabled,
+    &:disabled {
+        color: var(--shade2);
+        cursor: not-allowed;
+
+        i,
+        .UndoIcon,
+        .game-chat-tab-icon {
+            color: var(--shade3);
+        }
+    }
+}
+
+/* The "..." menu. Every icon, plain or composite, takes the same 1.1rem
+ * gutter, so every label starts at the same x. */
+.GameActionsPanel > .GameActionRow {
+    padding: 0.45rem 0.5rem;
+
+    > :first-child {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 1.1rem;
+        width: 1.1rem;
+        text-align: center;
+    }
+}

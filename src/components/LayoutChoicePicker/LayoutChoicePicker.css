@@ -1,0 +1,167 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.LayoutChoicePicker {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+
+    .LayoutChoicePicker-title {
+        font-weight: 600;
+    }
+
+    /* The top and right padding leave room for the check badge, which
+     * sits over the card corner, in containers that clip overflow. */
+    .LayoutChoicePicker-cards {
+        display: flex;
+        gap: 0.5rem;
+        min-width: 0;
+        padding: 0.4rem 0.4rem 0 0;
+    }
+
+    .LayoutChoicePicker-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.35rem;
+        flex: 1 1 0;
+        min-width: 0;
+        margin: 0;
+        padding: 0.5rem;
+        background: var(--bg);
+        color: var(--fg);
+        border: 1px solid var(--shade3);
+        border-radius: 8px;
+        box-shadow: none;
+        height: auto;
+        font: inherit;
+        line-height: normal;
+        text-transform: none;
+        cursor: pointer;
+        transition: border-color 120ms;
+
+        /* Undo the global button styles: the icon spacer, the brightness
+         * filter on hover, focus and press, and its transition. */
+        &:before {
+            display: none;
+        }
+
+        &:hover,
+        &:focus,
+        &:active {
+            filter: none;
+        }
+
+        &:hover {
+            border-color: var(--shade1);
+        }
+
+        &:focus {
+            outline: none;
+        }
+
+        /* The ring uses the text color so it stands out from the primary
+         * border of the checked card. */
+        &:focus-visible {
+            outline: 2px solid var(--fg);
+            outline-offset: 3px;
+        }
+
+        /* A 1px wider border for the checked card; the padding shrinks
+         * by the same amount so the content does not move. */
+        &.checked {
+            border: 2px solid var(--primary);
+            padding: calc(0.5rem - 1px);
+
+            .LayoutChoicePicker-label {
+                font-weight: 600;
+            }
+        }
+    }
+
+    .LayoutChoicePicker-check {
+        position: absolute;
+        top: -0.4rem;
+        right: -0.4rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.1rem;
+        height: 1.1rem;
+        border-radius: 50%;
+        background: var(--primary);
+        color: var(--colored-background-fg);
+        font-size: 0.65rem;
+    }
+
+    .LayoutChoicePicker-illustration {
+        display: block;
+        line-height: 0;
+
+        svg {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+    }
+
+    .LayoutChoicePicker-label {
+        font-size: 0.8rem;
+        line-height: 1.2;
+        text-align: center;
+        white-space: normal;
+    }
+
+    &.compact {
+        .LayoutChoicePicker-title {
+            font-size: 0.875rem;
+        }
+
+        .LayoutChoicePicker-card {
+            max-width: 130px;
+        }
+
+        /* Three cards must fit the width of the Settings popover. */
+        &.choices-3 .LayoutChoicePicker-card {
+            max-width: 110px;
+        }
+    }
+
+    &.large {
+        .LayoutChoicePicker-card {
+            max-width: 200px;
+        }
+
+        .LayoutChoicePicker-label {
+            font-size: 0.9rem;
+        }
+
+        /* Draw phones in the same box as the wide screens, so all the
+         * cards on the Settings page have the same height. */
+        .LayoutChoicePicker-illustration svg.phone {
+            aspect-ratio: 16 / 10;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .LayoutChoicePicker-card {
+            transition: none;
+        }
+    }
+}

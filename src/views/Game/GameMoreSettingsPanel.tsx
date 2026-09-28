@@ -41,7 +41,9 @@ export function GameMoreSettingsPanel({ onClose }: GameMoreSettingsPanelProps): 
         <div className="GameSidebarPanel GameMoreSettingsPanel">
             <div className="Settings GameMoreSettingsPanel-content">
                 <h4 className="GameSidebarPanel-section-header">{_("Themes & Visuals")}</h4>
-                <ThemePreferences />
+                <div className="GameMoreSettingsPanel-themes-visuals">
+                    <ThemePreferences />
+                </div>
                 <h4 className="GameSidebarPanel-section-header">{_("Game Preferences")}</h4>
                 <GamePreferences />
             </div>

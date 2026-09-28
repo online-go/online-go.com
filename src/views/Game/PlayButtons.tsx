@@ -306,10 +306,10 @@ export function PlayButtons(): React.ReactElement | null {
         goban.isAnalysisDisabled() &&
         cur_move_number < official_move_number;
 
-    // Requesting an undo lives in the More actions menu; what is left here
-    // is the response to the opponent's undo request, withdrawing your own,
-    // the move controls, and resign. Collapse the strip entirely when none
-    // of them apply so it takes up no space.
+    // Requesting an undo lives in the More actions menu and the action
+    // list; what is left here is the response to the opponent's undo
+    // request, withdrawing your own, the move controls, and resign. Collapse
+    // the strip entirely when none of them apply so it takes up no space.
     if (
         !show_undo_response &&
         !show_cancel_undo &&

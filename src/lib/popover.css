@@ -36,7 +36,7 @@
 }
 
 .popover-container {
-    position: absolute;
+    position: fixed;
     display: inline-block;
     /* Size from the content, never from the available space to the right,
      * so the rendered size does not change when popover() moves it. */

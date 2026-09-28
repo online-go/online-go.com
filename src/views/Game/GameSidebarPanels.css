@@ -31,6 +31,52 @@
         letter-spacing: 0.02em;
     }
 
+    /* Settings popover only: the title shares its row with the "Keyboard
+     * shortcuts" link, so the row (not the title itself) carries the
+     * bottom border and spacing. */
+    .GameSettingsPanel-title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin: 0 0 0.5rem 0;
+        padding-bottom: 0.4rem;
+        border-bottom: 1px solid var(--shade4);
+
+        .GameSidebarPanel-title {
+            margin: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+    }
+
+    .GameSettingsPanel-shortcuts-link {
+        flex: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.7rem;
+        height: 1.7rem;
+        margin: 0;
+        padding: 0;
+        border: none;
+        border-radius: 4px;
+        box-shadow: none;
+        background: transparent;
+        color: var(--shade1);
+        cursor: pointer;
+
+        &::before {
+            content: none;
+            display: none;
+        }
+
+        &:hover {
+            color: var(--fg);
+            filter: none;
+        }
+    }
+
     .GameSidebarPanel-section-header {
         font-size: 0.75rem;
         font-weight: 600;
@@ -74,7 +120,10 @@
             display: none;
         }
 
-        i {
+        /* The row's icon takes the same 1.1rem gutter, so every label
+         * starts at the same x. Only the first child: a composite icon's
+         * inner glyphs keep their own size. */
+        > :first-child {
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -84,33 +133,10 @@
             color: var(--shade1);
         }
 
-        /* Composite icons occupy the same 1.1rem gutter as the plain ones so
-         * every label in the list starts at the same x. */
-        .UndoIcon,
-        .game-chat-tab-icon {
-            flex: 0 0 1.1rem;
-            width: 1.1rem;
-            color: var(--shade1);
-        }
-
-        .game-chat-tab-icon {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-
-            .game-chat-unread-dot {
-                position: absolute;
-                top: -0.15rem;
-                right: -0.3rem;
-                width: 0.5rem;
-                height: 0.5rem;
-                border-radius: 50%;
-                background: var(--reject);
-            }
-        }
-
-        span {
+        /* The label: the last child, after the icon. Plain rows (the
+         * Settings panel, the Kibitz menu) use a bare span. Never the
+         * first child, so a composite icon's span is not clipped. */
+        > span:last-child:not(:first-child) {
             min-width: 0;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -130,7 +156,7 @@
             color: var(--shade2);
             cursor: not-allowed;
 
-            i {
+            > :first-child {
                 color: var(--shade3);
             }
         }
@@ -191,6 +217,25 @@
         }
     }
 
+    /* Each picker's title and cards are centered in the section. The
+     * cards row gets the same left padding as the right padding that makes
+     * room for the check badge, so the pair sits on the center line. */
+    .GameSettingsPanel-layout-pickers {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 0.25rem 0.25rem 0;
+
+        .LayoutChoicePicker {
+            text-align: center;
+        }
+
+        .LayoutChoicePicker-cards {
+            justify-content: center;
+            padding-left: 0.4rem;
+        }
+    }
+
     /* Wrapper for the embedded GobanThemePicker — it has its own internal
      * grid layout; we just give it a bit of horizontal breathing room
      * inside the sidebar's padding-free panel. */
@@ -224,7 +269,9 @@
 /* Shared base for popover-mounted sidebar panels (Settings, More-actions).
  * The popover container is just a positioned wrapper, so the inner wrapper
  * (.GamePopover) needs to look standalone — card chrome, padding, capped
- * at viewport width, shrinkable. */
+ * at viewport width, shrinkable. Its height is capped at the space
+ * popover() leaves in the viewport and the content scrolls inside it, so
+ * the whole box, with its border, corners and shadow, stays on screen. */
 .popover-container .GamePopover {
     background: var(--shade5);
     border: 1px solid var(--shade3);
@@ -233,9 +280,45 @@
     padding: 0.4rem;
     min-width: 14rem;
     max-width: 100dvw;
+    max-height: var(--popover-max-height, none);
+    overflow-y: auto;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
+}
+
+/* The Settings popover scrolls its body and keeps the "More options"
+ * footer in view, so the box itself does not scroll. */
+.popover-container .GamePopover.GameSettingsPopover {
+    overflow: hidden;
+}
+
+/* The Settings panel is a scrolling body and a fixed footer. The panel
+ * can shrink below its content height (min-height: 0), so when the
+ * popover caps its height only the body shrinks and scrolls. When there
+ * is room, the footer sits directly under the body. */
+.GameSidebarPanel.GameSettingsPanel {
+    gap: 0;
+    padding: 0;
+    min-height: 0;
+    overflow: hidden;
+
+    .GameSettingsPanel-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        min-height: 0;
+        padding: 0.25rem 0.5rem;
+        overflow-y: auto;
+    }
+
+    .GameSettingsPanel-footer {
+        display: flex;
+        flex-direction: column;
+        flex: none;
+        padding: 0.25rem 0.5rem 0;
+        border-top: 1px solid var(--shade4);
+    }
 }
 
 /* Cap each actions column so a long label (for example a tournament name)

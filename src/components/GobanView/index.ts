@@ -36,3 +36,5 @@ export type {
     ViewportGeometry,
 } from "./layout";
 export { generateGobanHook, subscribeAllEvents, useViewMode, useZenMode } from "./hooks";
+export { useGobanViewLayout } from "./GobanViewLayoutContext";
+export type { GobanViewLayout } from "./layout";

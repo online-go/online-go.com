@@ -33,6 +33,30 @@
         }
     }
 
+    /* Lay out the illustrated layout pickers like the rest of the page's
+     * settings: a fixed-width title on the left, then the cards in the body
+     * column.
+     * Each row is taller than a line of text, so the title is pinned to
+     * the top, the same as the "share or import theme" row above. */
+    .PreferenceLine.layout-picker-line {
+        display: flex;
+        width: 100%;
+        align-items: flex-start;
+
+        .PreferenceLineTitle {
+            padding-top: 0.5rem;
+        }
+
+        .PreferenceLineBody {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .LayoutChoicePicker.large {
+            width: 100%;
+        }
+    }
+
     .select-custom {
         font-size: larger;
         font-weight: bold;

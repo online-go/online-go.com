@@ -229,45 +229,50 @@ export function MoveNumberControl(): React.ReactElement {
         // saved solution, so only single-step forward navigation is offered.
         return (
             <div className="MoveNumberControl MoveNumberControl-buttons">
-                <button
-                    className="MoveNumberControl-button"
-                    onClick={handleFirst}
-                    disabled={at_start}
-                    title={pgettext("Move navigation: first move", "First move")}
-                >
-                    <i className="fa fa-fast-backward" />
-                </button>
-                <button
-                    className="MoveNumberControl-button"
-                    onClick={handlePrev10}
-                    disabled={at_start}
-                    title={pgettext("Move navigation: back 10 moves", "Back 10 moves")}
-                >
-                    <i className="fa fa-backward" />
-                </button>
-                {prev_button}
-                {play_pause_button}
-                {next_button}
-                {!restrict_forward && (
+                <div className="MoveNumberControl-nav">
                     <button
                         className="MoveNumberControl-button"
-                        onClick={handleNext10}
-                        disabled={at_end}
-                        title={pgettext("Move navigation: forward 10 moves", "Forward 10 moves")}
+                        onClick={handleFirst}
+                        disabled={at_start}
+                        title={pgettext("Move navigation: first move", "First move")}
                     >
-                        <i className="fa fa-forward" />
+                        <i className="fa fa-fast-backward" />
                     </button>
-                )}
-                {!restrict_forward && (
                     <button
                         className="MoveNumberControl-button"
-                        onClick={handleLast}
-                        disabled={at_end}
-                        title={pgettext("Move navigation: last move", "Last move")}
+                        onClick={handlePrev10}
+                        disabled={at_start}
+                        title={pgettext("Move navigation: back 10 moves", "Back 10 moves")}
                     >
-                        <i className="fa fa-fast-forward" />
+                        <i className="fa fa-backward" />
                     </button>
-                )}
+                    {prev_button}
+                    {play_pause_button}
+                    {next_button}
+                    {!restrict_forward && (
+                        <button
+                            className="MoveNumberControl-button"
+                            onClick={handleNext10}
+                            disabled={at_end}
+                            title={pgettext(
+                                "Move navigation: forward 10 moves",
+                                "Forward 10 moves",
+                            )}
+                        >
+                            <i className="fa fa-forward" />
+                        </button>
+                    )}
+                    {!restrict_forward && (
+                        <button
+                            className="MoveNumberControl-button"
+                            onClick={handleLast}
+                            disabled={at_end}
+                            title={pgettext("Move navigation: last move", "Last move")}
+                        >
+                            <i className="fa fa-fast-forward" />
+                        </button>
+                    )}
+                </div>
                 <span className="MoveNumberControl-move-number">
                     {interpolate(pgettext("Current move number", "Move {{move_number}}"), {
                         move_number: current,

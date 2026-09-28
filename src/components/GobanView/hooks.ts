@@ -116,14 +116,16 @@ const SLIDER_FALLBACK_HEIGHT_REM = 3.6;
 /**
  * Portrait only: whether the board stage (the above/below slots and the
  * board at its full width) still fits in the scroll area, without the board
- * shrinking, when the move slider takes its row above the tab bar.
+ * shrinking, when the move slider takes its row, docked above the tab bar
+ * or under the board.
  *
  * The layout is measured with a ResizeObserver, so the answer follows
- * viewport changes and content changes in the slots. Showing the slider
- * moves its height out of the scroll area, so the measurement adds it back
- * and the answer is the same whether the slider is currently shown or not.
- * The slider's height is read from the strip once it has been rendered;
- * before that a fallback matching its CSS is used.
+ * viewport changes and content changes in the slots. Docked, the slider
+ * takes its height out of the scroll area, so the measurement adds it back;
+ * under the board it is already part of the stage and the scroll area
+ * already includes it, so the answer is the same whether the slider is
+ * currently shown or not. The slider's height is read from the strip once
+ * it has been rendered; before that a fallback matching its CSS is used.
  */
 export function useSliderFits(refs: SliderFitRefs, enabled: boolean): boolean {
     const [fits, set_fits] = React.useState(false);
@@ -142,7 +144,7 @@ export function useSliderFits(refs: SliderFitRefs, enabled: boolean): boolean {
                 return;
             }
 
-            const slider = root.querySelector<HTMLElement>(":scope > .MoveNumberControl");
+            const slider = root.querySelector<HTMLElement>(".MoveNumberControl");
             if (slider) {
                 measured_slider_height.current = Math.max(
                     measured_slider_height.current ?? 0,
@@ -154,8 +156,13 @@ export function useSliderFits(refs: SliderFitRefs, enabled: boolean): boolean {
                 SLIDER_FALLBACK_HEIGHT_REM *
                     parseFloat(getComputedStyle(document.documentElement).fontSize);
 
+            // Docked, the strip is a row of the root and takes its height
+            // out of the scroll area, so that height is added back. Under
+            // the board it is part of the stage, and the scroll area
+            // already includes it.
+            const docked = slider?.parentElement === root;
             const next = stageFitsWithSlider({
-                available: scroll.clientHeight + (slider?.offsetHeight ?? 0),
+                available: scroll.clientHeight + (docked && slider ? slider.offsetHeight : 0),
                 slider: slider_height,
                 slots:
                     (refs.above.current?.offsetHeight ?? 0) +

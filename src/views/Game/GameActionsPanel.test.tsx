@@ -23,107 +23,84 @@ import { BrowserRouter as Router } from "react-router-dom";
 import * as data from "@/lib/data";
 import { GobanController } from "@/lib/GobanController";
 import { openSGFCollectionModal } from "@/components/SGFCollectionModal";
-import { openGameKeyboardShortcutsModal } from "./GameKeyboardShortcutsModal";
+import { openGameInfo } from "./game_actions";
+import { useGameActions } from "./useGameActions";
+import { TEST_USER } from "./test_user";
 
 // Mock the SGF Collection Modal
 jest.mock("@/components/SGFCollectionModal", () => ({
     openSGFCollectionModal: jest.fn(),
 }));
 
-jest.mock("./GameKeyboardShortcutsModal", () => ({
-    openGameKeyboardShortcutsModal: jest.fn(),
+jest.mock("./game_actions", () => ({
+    ...jest.requireActual("./game_actions"),
+    openGameInfo: jest.fn(),
 }));
 
-const TEST_USER = {
-    anonymous: false,
-    id: 123,
-    username: "test_user",
-    registration_date: "2022-05-10 11:03:24.299562+00:00",
-    ratings: {
-        version: 5,
-        overall: { rating: 1500, deviation: 350, volatility: 0.06 },
-    },
-    country: "un",
-    professional: false,
-    ranking: 23,
-    provisional: 0,
-    can_create_tournaments: true,
-    is_moderator: false,
-    is_superuser: false,
-    moderator_powers: 0,
-    offered_moderator_powers: 0,
-    is_tournament_moderator: false,
-    supporter: true,
-    supporter_level: 4,
-    tournament_admin: false,
-    ui_class: "",
-    icon: "https://secure.gravatar.com/avatar/8d809ecc50408afc399a4cb7c8fd4510?s=32&d=retro",
-    email: "",
-    email_validated: false,
-    is_announcer: false,
-    last_supporter_trial: "",
-} as const;
+function PanelFromHook(props: {
+    controller: GobanController;
+    onClose?: () => void;
+}): React.ReactElement {
+    const actions = useGameActions({
+        controller: props.controller,
+        is_mobile: false,
+        historical_black: null,
+        historical_white: null,
+        estimating_score: false,
+        settings: { open: false, onClick: () => undefined },
+        chat: { enabled: true, visible: false, unread: false, toggle: () => undefined },
+        moderator: { visible: false, onToggle: () => undefined },
+    });
+    return <GameActionsPanel actions={actions} onClose={props.onClose} />;
+}
 
-const BASE_PROPS = {
-    historical_black: null,
-    historical_white: null,
-};
-
-function renderPanel(
-    gameController: GobanController,
-    extra_props: Partial<React.ComponentProps<typeof GameActionsPanel>> = {},
-) {
+function renderPanel(gameController: GobanController, extra_props: { onClose?: () => void } = {}) {
     return render(
         <Router>
             <GobanControllerContext.Provider value={gameController}>
-                <GameActionsPanel {...BASE_PROPS} {...extra_props} />
+                <PanelFromHook controller={gameController} {...extra_props} />
             </GobanControllerContext.Provider>
         </Router>,
     );
 }
 
-test("action-bar tabs are listed by name at the top of the menu", () => {
+test("a menu row runs its action and closes the menu", () => {
     data.set("user", TEST_USER);
-    const gameController = new GobanController({ game_id: 123456 });
-    const onAnalyze = jest.fn();
-    const onConditional = jest.fn();
+    const controller = playerController();
     const onClose = jest.fn();
 
-    const { container } = renderPanel(gameController, {
-        onClose,
-        action_tabs: [
-            {
-                id: "game-analyze",
-                type: "action",
-                icon: "sitemap",
-                title: "Analyze game",
-                active: true,
-                onClick: onAnalyze,
-            },
-            {
-                id: "game-conditional",
-                type: "action",
-                icon: "exchange",
-                title: "Plan conditional moves",
-                disabled: true,
-                onClick: onConditional,
-            },
-        ],
-    });
+    const { container } = renderPanel(controller, { onClose });
 
-    const items = container.querySelectorAll(".GameSidebarPanel-item");
-    expect(items[0].textContent).toBe("Analyze game");
-    expect(items[0].classList.contains("active")).toBe(true);
-    expect(items[0].querySelector("i.fa-sitemap")).not.toBeNull();
-    expect(items[1].textContent).toBe("Plan conditional moves");
-    expect((items[1] as HTMLButtonElement).disabled).toBe(true);
-
-    fireEvent.click(screen.getByText("Analyze game"));
-    expect(onAnalyze).toHaveBeenCalledTimes(1);
+    expect(container.querySelector("[data-action-id=game-info] i.fa-info")).not.toBeNull();
+    fireEvent.click(screen.getByText("Game information"));
+    expect(openGameInfo).toHaveBeenCalledTimes(1);
     expect(onClose).toHaveBeenCalledTimes(1);
+});
 
-    fireEvent.click(screen.getByText("Plan conditional moves"));
-    expect(onConditional).not.toHaveBeenCalled();
+test("a divider follows a section only when rows come after it", () => {
+    const row = (id: string, menuOrder: number, menuSection?: "tabs" | "play") => ({
+        id,
+        icon: "info",
+        label: id,
+        bar: null,
+        menuOrder,
+        menuSection,
+        kind: "action" as const,
+    });
+    const { container } = render(
+        <GameActionsPanel
+            actions={[
+                row("c", 30),
+                row("a", 10, "tabs"),
+                row("b", 20, "play"),
+                row("d", 40, "tabs"),
+            ]}
+        />,
+    );
+    const children = Array.from(container.querySelectorAll(".GameActionsPanel > *"));
+    expect(
+        children.map((c) => (c.tagName === "HR" ? "hr" : c.getAttribute("data-action-id"))),
+    ).toEqual(["a", "hr", "b", "hr", "c", "d"]);
 });
 
 test("providing both Game ID and Review ID cause SGF buttons to link to review SGFs", () => {
@@ -178,38 +155,6 @@ test("'Add to library' button is disabled for anonymous users", () => {
     expect(addToLibraryButton).toBeInTheDocument();
     expect(addToLibraryButton).toBeDisabled();
     expect(addToLibraryButton).toHaveClass("disabled");
-});
-
-test("clicking 'Keyboard shortcuts' opens the shortcuts modal and closes the menu", () => {
-    data.set("user", TEST_USER);
-    const gameController = new GobanController({ game_id: 456789 });
-    const onClose = jest.fn();
-
-    renderPanel(gameController, { onClose });
-
-    fireEvent.click(screen.getByText("Keyboard shortcuts"));
-
-    expect(openGameKeyboardShortcutsModal).toHaveBeenCalledTimes(1);
-    expect(onClose).toHaveBeenCalledTimes(1);
-});
-
-test("'Keyboard shortcuts' is hidden on touch-only devices", () => {
-    data.set("user", TEST_USER);
-    const gameController = new GobanController({ game_id: 456789 });
-
-    const matchMedia = jest.fn().mockImplementation((query: string) => ({
-        matches: query === "(any-hover: none) and (any-pointer: coarse)",
-        media: query,
-        addEventListener: jest.fn(),
-        removeEventListener: jest.fn(),
-    }));
-    Object.defineProperty(window, "matchMedia", { configurable: true, value: matchMedia });
-    try {
-        renderPanel(gameController);
-        expect(screen.queryByText("Keyboard shortcuts")).toBeNull();
-    } finally {
-        delete (window as { matchMedia?: unknown }).matchMedia;
-    }
 });
 
 const OPPONENT = { id: 456, username: "test_user2" };

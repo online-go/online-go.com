@@ -24,21 +24,12 @@
     height: 1em;
     flex: 0 0 auto;
 
-    /* Host containers size their own icons (the actions menu pins every
-     * `i` to 1.1rem, for instance). Opt both glyphs out of that so the
-     * badge stays pinned to the arrow's corner. */
-    .fa-undo {
-        position: static;
-        width: auto;
-        flex: 0 0 auto;
-    }
-
+    /* A host sizes the UndoIcon box (width and font-size). The badge sits
+     * on the arrow's top-right corner at any size. */
     .UndoIcon-badge {
         position: absolute;
         top: -0.45em;
         right: -0.35em;
-        width: auto;
-        flex: 0 0 auto;
         font-size: 0.6em;
     }
 }
