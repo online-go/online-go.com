@@ -18,7 +18,6 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import * as React from "react";
 import { GameActionsPanel } from "./GameActionsPanel";
-import { GobanControllerContext } from "./goban_context";
 import { BrowserRouter as Router } from "react-router-dom";
 import * as data from "@/lib/data";
 import { GobanController } from "@/lib/GobanController";
@@ -57,9 +56,7 @@ function PanelFromHook(props: {
 function renderPanel(gameController: GobanController, extra_props: { onClose?: () => void } = {}) {
     return render(
         <Router>
-            <GobanControllerContext.Provider value={gameController}>
-                <PanelFromHook controller={gameController} {...extra_props} />
-            </GobanControllerContext.Provider>
+            <PanelFromHook controller={gameController} {...extra_props} />
         </Router>,
     );
 }

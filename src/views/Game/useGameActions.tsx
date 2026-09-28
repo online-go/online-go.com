@@ -306,7 +306,9 @@ export function useGameActions(args: GameActionsArgs): GameAction[] {
     // with analysis disabled the greyed-out analyze button would leave no
     // way to look at earlier moves. Swap it for a "Previous move" button
     // that steps back and thereby brings up the slider. Desktop keeps the
-    // disabled analyze button since its slider is always visible.
+    // disabled analyze button since its slider is always visible. The swap
+    // exists only on mobile, so it has no `dockOrder`: the dock is desktop
+    // only, and the mobile scrolling list always shows the move controls.
     if (game && !review) {
         if (is_mobile && analysis_disabled) {
             actions.push({

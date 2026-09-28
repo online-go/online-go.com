@@ -20,12 +20,20 @@ import * as React from "react";
 /**
  * The content width of an element, kept current with a ResizeObserver.
  * Before the first measurement, and where ResizeObserver is missing, it
- * is the window width.
+ * is the window width. The element is read after every render, so an
+ * element that mounts after the first render is still observed.
  */
 export function useRootWidth(ref: React.RefObject<HTMLElement | null>): number {
     const [width, setWidth] = React.useState(() => window.innerWidth || 1);
+    const [element, setElement] = React.useState<HTMLElement | null>(null);
+
     React.useLayoutEffect(() => {
-        const element = ref.current;
+        if (ref.current !== element) {
+            setElement(ref.current);
+        }
+    });
+
+    React.useLayoutEffect(() => {
         if (!element || typeof ResizeObserver !== "function") {
             const onResize = () => setWidth(window.innerWidth || 1);
             window.addEventListener("resize", onResize);
@@ -39,6 +47,7 @@ export function useRootWidth(ref: React.RefObject<HTMLElement | null>): number {
         });
         observer.observe(element);
         return () => observer.disconnect();
-    }, [ref]);
+    }, [element]);
+
     return width;
 }

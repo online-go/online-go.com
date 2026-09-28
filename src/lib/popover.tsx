@@ -31,7 +31,9 @@ interface PopupCoordinates {
 
 interface PopoverConfig {
     elt: React.ReactElement<any>;
-    at?: PopupCoordinates; // Relative to the viewport (e.g. clientX / clientY)
+    /** A point on the page, in viewport coordinates (e.g. clientX / clientY)
+     *  when the popover opens. It moves with the page when the page scrolls. */
+    at?: PopupCoordinates;
     below?: HTMLElement;
     /** Place the popover to the left of this element: its right edge at the
      *  element's left edge, its top aligned with the element's top, moved

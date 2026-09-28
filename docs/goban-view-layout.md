@@ -131,7 +131,8 @@ Rules:
    `clampLeftAsideWidth` clamps its stored width so the board pane keeps at
    least `MIN_BOARD_PANE_REM` (24rem). The resize handles use the same
    limit (`resizerUtil.ts`). The clamp never goes below the default width
-   (24rem).
+   (24rem), so on narrow `fullHorizontal` screens the board pane can go
+   under 24rem (see Known exceptions above).
 4. The action dock shows only when the `goban-view-action-buttons`
    preference is `"dock"` and the board width, with every other column
    that shows, is at least `minimumUsefulGoban`. There is no automatic
