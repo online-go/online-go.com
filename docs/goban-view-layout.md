@@ -321,16 +321,20 @@ rule. A link action always has `bar: null`, so the tab bar has no link
 tabs.
 
 Volume and Keyboard shortcuts are not game actions. The Settings popover
-has a volume slider and a keyboard shortcuts link.
+has a volume slider and a keyboard shortcuts link. On touch-only devices
+(`useIsTouchOnlyDevice`) a close button replaces the shortcuts link.
 
 `src/views/Game/gameActionOrder.test.tsx` pins the exact order of each of
 the three for representative states.
 
 The Settings row in the dock opens the Settings popover to the left of
 the collapsed dock, level with the row (`popover({ leftOf, alignTop })`).
-From the tab bar and the mobile list, the popover opens below the button,
-or above it when there is no room below. `src/lib/popover.tsx` documents
-how a popover is placed.
+From the tab bar on a device with a mouse, it opens above the gear
+(`popover({ above })`): it never covers the gear, is only as tall as the
+space above it, and scrolls inside. On touch-only devices and from the
+mobile list, it opens below the button, or above it when there is no room
+below, and can use the full viewport height. `src/lib/popover.tsx`
+documents how a popover is placed.
 
 ## Adding a view
 

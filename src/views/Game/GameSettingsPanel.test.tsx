@@ -268,10 +268,21 @@ describe("more options footer", () => {
     });
 });
 
-describe("keyboard shortcuts link", () => {
+function emulateTouchOnlyDevice(): void {
+    const matchMedia = jest.fn().mockImplementation((query: string) => ({
+        matches: query === "(any-hover: none) and (any-pointer: coarse)",
+        media: query,
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+    }));
+    Object.defineProperty(window, "matchMedia", { configurable: true, value: matchMedia });
+}
+
+describe("title row button", () => {
+    beforeEach(() => jest.mocked(openGameKeyboardShortcutsModal).mockClear());
     afterEach(() => delete (window as { matchMedia?: unknown }).matchMedia);
 
-    test("opens the shortcuts modal and closes the popover", () => {
+    test("the shortcuts link opens the shortcuts modal and closes the popover", () => {
         const onClose = jest.fn();
         renderSettings({ onClose });
 
@@ -281,18 +292,26 @@ describe("keyboard shortcuts link", () => {
         expect(onClose).toHaveBeenCalledTimes(1);
     });
 
-    test("is hidden on touch-only devices", () => {
-        const matchMedia = jest.fn().mockImplementation((query: string) => ({
-            matches: query === "(any-hover: none) and (any-pointer: coarse)",
-            media: query,
-            addEventListener: jest.fn(),
-            removeEventListener: jest.fn(),
-        }));
-        Object.defineProperty(window, "matchMedia", { configurable: true, value: matchMedia });
+    test("devices with a mouse show the shortcuts link and no close button", () => {
+        renderSettings({ onClose: jest.fn() });
 
-        renderSettings();
+        expect(screen.getByTitle("Keyboard shortcuts")).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Close" })).toBeNull();
+    });
+
+    test("touch-only devices show a close button and no shortcuts link", () => {
+        emulateTouchOnlyDevice();
+        const onClose = jest.fn();
+        renderSettings({ onClose });
 
         expect(screen.queryByTitle("Keyboard shortcuts")).toBeNull();
+        const close = screen.getByRole("button", { name: "Close" });
+        expect(close).toHaveAttribute("title", "Close");
+
+        fireEvent.click(close);
+
+        expect(onClose).toHaveBeenCalledTimes(1);
+        expect(openGameKeyboardShortcutsModal).not.toHaveBeenCalled();
     });
 });
 

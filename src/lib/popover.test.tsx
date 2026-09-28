@@ -238,6 +238,91 @@ describe("popover placement", () => {
         expect(parseFloat(container.style.top)).toBe(VIEWPORT_MARGIN);
     });
 
+    function openAbove(anchor: HTMLElement, minWidth: number): HTMLElement {
+        act(() => {
+            instance = popover({ elt: <div>content</div>, above: anchor, minWidth });
+        });
+        return instance!.container;
+    }
+
+    // The bottom edge of a popover placed with `bottom`, in viewport
+    // coordinates.
+    function bottomEdge(container: HTMLElement): number {
+        return VIEWPORT_HEIGHT - parseFloat(container.style.bottom);
+    }
+
+    test("above puts the bottom edge just above the element, left edges aligned", () => {
+        const anchor = makeAnchor({ left: 100, top: 700, width: 40, height: 40 });
+        const container = openAbove(anchor, 320);
+
+        setRenderedSize(container, 320, 200);
+        act(() => {
+            last_observer?.trigger();
+        });
+
+        expect(container.style.top).toBe("");
+        expect(bottomEdge(container)).toBeLessThan(700);
+        expect(bottomEdge(container)).toBeGreaterThanOrEqual(690);
+        expect(parseFloat(container.style.left)).toBe(100);
+    });
+
+    test("a tall `above` popover never covers the element", () => {
+        // The content is taller than the space above the element. A
+        // `below` popover in this place starts at the top margin and
+        // covers the element.
+        const anchor = makeAnchor({ left: 100, top: 400, width: 40, height: 40 });
+        const container = openAbove(anchor, 320);
+
+        setRenderedSize(container, 320, 600);
+        act(() => {
+            last_observer?.trigger();
+        });
+
+        expect(container.style.top).toBe("");
+        expect(bottomEdge(container)).toBeLessThan(400);
+    });
+
+    test("the maximum height of an `above` popover is the space above the element", () => {
+        const anchor = makeAnchor({ left: 100, top: 400, width: 40, height: 40 });
+        const container = openAbove(anchor, 320);
+        const max_height = bottomEdge(container) - VIEWPORT_MARGIN;
+
+        expect(max_height).toBeLessThan(400 - VIEWPORT_MARGIN);
+        expect(container.style.maxHeight).toBe(`${max_height}px`);
+        expect(container.style.getPropertyValue("--popover-max-height")).toBe(`${max_height}px`);
+    });
+
+    test("an `above` popover moves right to stay inside the viewport", () => {
+        const anchor = makeAnchor({ left: 1200, top: 700, width: 40, height: 40 });
+        const container = openAbove(anchor, 320);
+
+        setRenderedSize(container, 404, 200);
+        act(() => {
+            last_observer?.trigger();
+        });
+
+        expect(parseFloat(container.style.left) + 404).toBeLessThanOrEqual(
+            VIEWPORT_WIDTH - VIEWPORT_MARGIN,
+        );
+    });
+
+    test("an `above` popover stays above the element when the page scrolls", () => {
+        const top = { value: 700 };
+        const anchor = movableAnchor(top);
+        const container = openAbove(anchor, 320);
+        setRenderedSize(container, 320, 900);
+        act(() => {
+            last_observer?.trigger();
+        });
+        expect(bottomEdge(container)).toBeLessThan(700);
+
+        top.value = 300;
+        scrollDocument();
+
+        expect(bottomEdge(container)).toBeLessThan(300);
+        expect(container.style.maxHeight).toBe(`${bottomEdge(container) - VIEWPORT_MARGIN}px`);
+    });
+
     test("a popover taller than the viewport starts at the margin and scrolls", () => {
         const anchor = makeAnchor({ left: 1200, top: 400, width: 32, height: 32 });
         const container = openLeftOf(anchor, 320);

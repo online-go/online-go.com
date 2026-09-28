@@ -58,7 +58,9 @@ export function GameSettingsPanel({
 
     // Phones and tablets have no keyboard to speak of, so the shortcut
     // list is only offered where a mouse or trackpad suggests one is
-    // present.
+    // present. Touch-only devices get a close button in its place, because
+    // the Settings popover there can cover the button that opened it. The
+    // Game view uses the same hook to choose the popover placement.
     const touch_only_device = useIsTouchOnlyDevice();
     const showKeyboardShortcuts = () => {
         openGameKeyboardShortcutsModal();
@@ -132,7 +134,17 @@ export function GameSettingsPanel({
             <div className="GameSettingsPanel-body">
                 <div className="GameSettingsPanel-title-row">
                     <h3 className="GameSidebarPanel-title">{_("Settings")}</h3>
-                    {!touch_only_device && (
+                    {touch_only_device ? (
+                        <button
+                            type="button"
+                            className="GameSettingsPanel-close"
+                            onClick={() => onClose?.()}
+                            title={_("Close")}
+                            aria-label={_("Close")}
+                        >
+                            <i className="fa fa-times" aria-hidden="true" />
+                        </button>
+                    ) : (
                         <button
                             type="button"
                             className="GameSettingsPanel-shortcuts-link"

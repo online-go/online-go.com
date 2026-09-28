@@ -46,7 +46,7 @@ import {
 } from "./GameHooks";
 import { GobanControllerContext, GobanView, GobanViewRef } from "@/components/GobanView";
 import { ModalContext } from "@/components/ModalProvider";
-import { useUser } from "@/lib/hooks";
+import { useIsTouchOnlyDevice, useUser } from "@/lib/hooks";
 import { is_valid_url } from "@/lib/url_validation";
 import { BotDetectionResults } from "./BotDetectionResults";
 import { ActiveTournament } from "@/lib/types";
@@ -137,6 +137,9 @@ export function Game(): React.ReactElement | null {
     // action bar.
     const view_mode = useViewMode(goban_controller.current);
     const is_mobile = view_mode === "portrait";
+    // The same condition hides the keyboard shortcuts link in
+    // GameSettingsPanel and shows its close button there.
+    const touch_only_device = useIsTouchOnlyDevice();
     // Two-level chat gating:
     //   • `chat_enabled` (preference, Settings toggle, default true) —
     //     master switch for the chat feature. When false, no chat
@@ -823,6 +826,12 @@ export function Game(): React.ReactElement | null {
         };
         const button = event.currentTarget;
         const dock = button.closest<HTMLElement>(".GobanView-action-dock");
+        const in_tab_bar = !!button.closest(".GobanView-tab-bar");
+        const placement = dock
+            ? { leftOf: dock, alignTop: button }
+            : in_tab_bar && !touch_only_device
+              ? { above: button }
+              : { below: button };
         const instance = popover({
             elt: (
                 <GobanControllerContext.Provider value={controller}>
@@ -842,10 +851,14 @@ export function Game(): React.ReactElement | null {
             // From the dock the popover opens to the left of the collapsed
             // dock, level with the row, over the side panel. The dock
             // collapses when the popover opens, so the row's own left edge
-            // is not a stable anchor. Elsewhere (tab bar, mobile list) it
-            // opens below the button, or above it when there is no room
-            // below.
-            ...(dock ? { leftOf: dock, alignTop: button } : { below: button }),
+            // is not a stable anchor. From the tab bar on a device with a
+            // mouse it opens above the gear and never covers it, so a
+            // second click on the gear closes it. Elsewhere (tab bar on
+            // touch-only devices, mobile list) it opens below the button,
+            // or above it when there is no room below, and can use the
+            // full height. On touch-only devices the panel shows its own
+            // close button.
+            ...placement,
             // Wide enough for the 7-column board theme grid (7 * 38px swatch
             // + padding) plus the white / black stone rows.
             minWidth: 320,

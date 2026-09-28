@@ -77,6 +77,37 @@
         }
     }
 
+    /* Touch-only devices: a close button in the place of the shortcuts
+     * link. The negative margin keeps the 44px hit area from making the
+     * title row taller. */
+    .GameSettingsPanel-close {
+        flex: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        margin: -0.6rem -0.5rem -0.6rem 0;
+        padding: 0;
+        border: none;
+        border-radius: 4px;
+        box-shadow: none;
+        background: transparent;
+        color: var(--shade1);
+        font-size: 1.2rem;
+        cursor: pointer;
+
+        &::before {
+            content: none;
+            display: none;
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: -2px;
+        }
+    }
+
     .GameSidebarPanel-section-header {
         font-size: 0.75rem;
         font-weight: 600;

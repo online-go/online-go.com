@@ -34,7 +34,19 @@ interface PopoverConfig {
     /** A point on the page, in viewport coordinates (e.g. clientX / clientY)
      *  when the popover opens. It moves with the page when the page scrolls. */
     at?: PopupCoordinates;
+    /** Place the popover under this element: its top-left corner at the
+     *  element's bottom-left corner. When it does not fit below, it sits
+     *  above the element, and when it fits in neither place it starts at
+     *  the top margin of the viewport and can cover the element. */
     below?: HTMLElement;
+    /** Place the popover above this element: its bottom edge a small gap
+     *  above the element's top, its left edge at the element's left edge
+     *  (moved left as needed to stay inside the viewport). The maximum
+     *  height is the space from the top margin of the viewport to that
+     *  bottom edge, so the popover never covers the element and the
+     *  element stays clickable. Taller content must scroll inside the
+     *  box (see `--popover-max-height`). */
+    above?: HTMLElement;
     /** Place the popover to the left of this element: its right edge at the
      *  element's left edge, its top aligned with the element's top, moved
      *  up or down as needed to stay inside the viewport. */
@@ -53,6 +65,8 @@ interface PopoverConfig {
 const VIEWPORT_MARGIN = 16;
 // Gap between a `leftOf` popover and the element it is opened from.
 const LEFT_OF_GAP = 4;
+// Gap between an `above` popover and the element it is opened from.
+const ABOVE_GAP = 4;
 
 let last_id = 0;
 const open_popovers: { [id: number]: PopOver } = {};
@@ -146,12 +160,14 @@ export function popover(config: PopoverConfig): PopOver {
     // Anchor point: the popover's top-left corner goes here when it fits.
     // For `below`, `flip_bottom` is where the popover's bottom edge goes
     // when it has to sit above the element instead so it never covers what
-    // it was opened from. For `leftOf`, `anchor_right` is where the
-    // popover's right edge goes. Recomputed when the page scrolls, so the
-    // popover follows the element it was opened from.
+    // it was opened from. For `above`, `above_bottom` is where the
+    // popover's bottom edge always goes. For `leftOf`, `anchor_right` is
+    // where the popover's right edge goes. Recomputed when the page
+    // scrolls, so the popover follows the element it was opened from.
     let anchor_x = 0;
     let anchor_y = 0;
     let flip_bottom = 0;
+    let above_bottom: number | null = null;
     let anchor_right: number | null = null;
     // The last usable rectangle of each anchor element. An element that has
     // left the DOM or is not displayed (a re-rendered Player link, a
@@ -178,21 +194,34 @@ export function popover(config: PopoverConfig): PopOver {
             anchor_x = rectangle.left;
             anchor_y = rectangle.bottom;
             flip_bottom = rectangle.top;
+        } else if (config.above) {
+            const rectangle = rectOf(config.above);
+            anchor_x = rectangle.left;
+            above_bottom = rectangle.top - ABOVE_GAP;
         } else if (config.leftOf) {
             const rectangle = rectOf(config.leftOf);
             anchor_right = rectangle.left - LEFT_OF_GAP;
             anchor_y = (config.alignTop ? rectOf(config.alignTop) : rectangle).top;
         }
     };
-    measureAnchor();
 
     // A popover taller than the viewport starts at the top margin and
     // scrolls inside its container. Content that draws its own box (border,
     // radius, shadow) can cap its height with `--popover-max-height` and
-    // scroll inside that box, so the container never clips the box.
-    const max_height = window.innerHeight - 2 * VIEWPORT_MARGIN;
-    container.style.maxHeight = `${max_height}px`;
-    container.style.setProperty("--popover-max-height", `${max_height}px`);
+    // scroll inside that box, so the container never clips the box. An
+    // `above` popover gets only the space above its element, so it is
+    // recomputed each time the element is measured.
+    let max_height = 0;
+    const setMaxHeight = () => {
+        max_height =
+            above_bottom === null
+                ? window.innerHeight - 2 * VIEWPORT_MARGIN
+                : Math.max(0, above_bottom - VIEWPORT_MARGIN);
+        container.style.maxHeight = `${max_height}px`;
+        container.style.setProperty("--popover-max-height", `${max_height}px`);
+    };
+    measureAnchor();
+    setMaxHeight();
 
     // Place the container so that a popover of the given size stays inside
     // the viewport (with a small margin).
@@ -209,15 +238,20 @@ export function popover(config: PopoverConfig): PopOver {
         container.style.overflowY =
             height >= max_height && container.scrollHeight > container.clientHeight ? "auto" : "";
 
-        // The top clamp covers every placement (`at`, `below`, `leftOf`):
+        // The top clamp covers the `at`, `below` and `leftOf` placements:
         // no popover starts above the top margin of the viewport. An `at`
-        // popover opened at y = 0 moves down to the margin.
+        // popover opened at y = 0 moves down to the margin. An `above`
+        // popover needs no clamp, because its maximum height ends at the
+        // top margin.
         const setTop = (top: number) => {
             container.style.top = `${Math.max(min_y, top)}px`;
             container.style.bottom = "";
         };
 
-        if (anchor_right !== null) {
+        if (above_bottom !== null) {
+            container.style.top = "";
+            container.style.bottom = `${window.innerHeight - above_bottom}px`;
+        } else if (anchor_right !== null) {
             setTop(Math.min(anchor_y, max_y - height));
         } else if (anchor_y + height <= max_y) {
             setTop(anchor_y);
@@ -271,7 +305,7 @@ export function popover(config: PopoverConfig): PopOver {
     // Follow the anchor when the page, or a scrolling element around the
     // anchor, scrolls. Other scrolls (the popover itself, a chat log, the
     // move tree) cannot move the anchor and do not force a layout read.
-    const anchors = [config.below, config.leftOf, config.alignTop].filter(
+    const anchors = [config.below, config.above, config.leftOf, config.alignTop].filter(
         (elt): elt is HTMLElement => !!elt,
     );
     const onScroll = (ev: Event) => {
@@ -286,6 +320,7 @@ export function popover(config: PopoverConfig): PopOver {
             return;
         }
         measureAnchor();
+        setMaxHeight();
         placeMeasured(true);
     };
     window.addEventListener("scroll", onScroll, { capture: true, passive: true });
