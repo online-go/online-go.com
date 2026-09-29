@@ -116,7 +116,6 @@ export function ThemePreferences(): React.ReactElement | null {
         usePreference("variation-stone-opacity");
     const [show_visit_counts, setShowVisitCounts] = usePreference("ai-review-show-visit-counts");
     const [show_on_board, setShowOnBoard] = usePreference("ai-review-show-on-board");
-    const [show_playouts, setShowPlayouts] = usePreference("ai-review-show-playouts");
     const [animate_turn_clock, setAnimateTurnClock] = usePreference("animate-turn-clock");
     const [move_number_control_mode, _setMoveNumberControlMode] = usePreference(
         "move-number-control-mode",
@@ -747,20 +746,6 @@ export function ThemePreferences(): React.ReactElement | null {
                     checked={show_on_board}
                     onChange={(tf) => {
                         setShowOnBoard(tf);
-                    }}
-                />
-            </PreferenceLine>
-
-            <PreferenceLine
-                title={_("Show AI playouts in variations")}
-                description={_(
-                    "In AI reviews, when you follow a suggested move, keep the AI's numbered playout on the board together with the AI's suggestions for the new position.",
-                )}
-            >
-                <Toggle
-                    checked={show_playouts}
-                    onChange={(tf) => {
-                        setShowPlayouts(tf);
                     }}
                 />
             </PreferenceLine>
