@@ -20,13 +20,20 @@ move as quality-colored circles with their score or win rate difference. The
 move that was actually played is one of those circles, badged with a small
 triangle in its quality color. Positions without analysis draw nothing.
 
-Two preferences control the board marks:
+Three preferences control the board marks:
 
 - `ai-review-show-on-board` (default on): the four-dot button at the left of
   the Win % / Score row, also in Settings. Off hides every AI mark on the
   board; the panel's win rate, chart and summary table are unaffected.
 - `ai-review-show-visit-counts` (default off): shows each suggestion's
   playout count under its score difference.
+- `ai-review-show-playouts` (default on): in a variation that follows one of
+  the AI's playouts (for example after a click on a suggestion), the board
+  shows the rest of that playout as numbered stones. The variation is still
+  sent for analysis, and the panel uses the result. Off, the board replaces
+  the playout with the variation's own suggestions when the analysis
+  arrives. A variation that leaves the playout always shows its own
+  suggestions.
 
 The goban holds no review state. The review draws with ordinary marks and
 colored circles, and clicks in the move tree and shift-clicks on the board

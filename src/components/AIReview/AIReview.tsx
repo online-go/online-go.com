@@ -122,6 +122,7 @@ export function AIReview({
     const [theme] = useData("theme", "system");
     const [showVisitCounts] = preferences.usePreference("ai-review-show-visit-counts");
     const [showOnBoard] = preferences.usePreference("ai-review-show-on-board");
+    const [showPlayouts] = preferences.usePreference("ai-review-show-playouts");
     const [tableHidden, setTableHidden] = useState(!preferences.get("ai-summary-table-show"));
     const [currentPopupMoves, setCurrentPopupMoves] = useState<number[]>([]);
 
@@ -405,7 +406,25 @@ export function AIReview({
         let colored_circles: ColoredCircle[] = [];
 
         try {
-            if ((cur_move.trunk || have_variation_results) && ai_review_move) {
+            // In a variation that follows one of the AI's playouts, the
+            // playout stays on the board in place of the variation's own
+            // candidates. The variation is still analyzed for the panel.
+            const show_playout =
+                showPlayouts &&
+                !cur_move.trunk &&
+                fillAIMarksBacktracking(
+                    cur_move,
+                    trunk_move,
+                    marks,
+                    reviewData || null,
+                    goban.engine || null,
+                );
+
+            if (show_playout) {
+                if (!have_variation_results) {
+                    requestAnalysisOfVariation(cur_move, trunk_move);
+                }
+            } else if ((cur_move.trunk || have_variation_results) && ai_review_move) {
                 // The move played from this position, shown as an outlined
                 // circle. Clicking it follows the trunk to the next move.
                 const played_move = cur_move.trunk_next || null;
@@ -490,6 +509,7 @@ export function AIReview({
         useScore,
         showVisitCounts,
         showOnBoard,
+        showPlayouts,
         updateCount,
         moveCategoryMap,
         theme,
