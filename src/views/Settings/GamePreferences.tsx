@@ -262,7 +262,7 @@ export function GamePreferences(): React.ReactElement {
             <PreferenceLine
                 title={_("Show AI playouts in variations")}
                 description={_(
-                    "In AI reviews, when you follow a suggested move, keep the AI's numbered playout on the board together with the AI's suggestions for the new position.",
+                    "In AI reviews, when you follow a suggested move, show the AI's numbered playout on the board together with the AI's suggestions for the new position. When off, only the suggestions are shown.",
                 )}
             >
                 <Toggle checked={show_playouts} onChange={setShowPlayouts} />

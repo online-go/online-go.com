@@ -474,13 +474,15 @@ export function AIReview({
                 if (!cur_move.trunk) {
                     requestAnalysisOfVariation(cur_move, trunk_move);
                 }
-                fillAIMarksBacktracking(
-                    cur_move,
-                    trunk_move,
-                    marks,
-                    reviewData || null,
-                    goban.engine || null,
-                );
+                if (cur_move.trunk || showPlayouts) {
+                    fillAIMarksBacktracking(
+                        cur_move,
+                        trunk_move,
+                        marks,
+                        reviewData || null,
+                        goban.engine || null,
+                    );
+                }
             }
         } catch (e) {
             errorLogger(e);

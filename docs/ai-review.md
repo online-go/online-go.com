@@ -32,7 +32,9 @@ Three preferences control the board marks:
   shows the rest of that playout as numbered stones. When the variation's
   own analysis arrives, its suggestions are drawn with the playout. Where a
   playout move and a suggestion are on the same point, they overlap. Off,
-  the suggestions replace the playout.
+  a variation never shows the playout, only its own suggestions when its
+  analysis arrives. Variation analysis needs a supporter account, so with
+  this off, other users see no AI marks in variations.
 
 The goban holds no review state. The review draws with ordinary marks and
 colored circles, and clicks in the move tree and shift-clicks on the board
