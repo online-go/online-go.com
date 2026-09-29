@@ -406,25 +406,7 @@ export function AIReview({
         let colored_circles: ColoredCircle[] = [];
 
         try {
-            // In a variation that follows one of the AI's playouts, the
-            // playout stays on the board in place of the variation's own
-            // candidates. The variation is still analyzed for the panel.
-            const show_playout =
-                showPlayouts &&
-                !cur_move.trunk &&
-                fillAIMarksBacktracking(
-                    cur_move,
-                    trunk_move,
-                    marks,
-                    reviewData || null,
-                    goban.engine || null,
-                );
-
-            if (show_playout) {
-                if (!have_variation_results) {
-                    requestAnalysisOfVariation(cur_move, trunk_move);
-                }
-            } else if ((cur_move.trunk || have_variation_results) && ai_review_move) {
+            if ((cur_move.trunk || have_variation_results) && ai_review_move) {
                 // The move played from this position, shown as an outlined
                 // circle. Clicking it follows the trunk to the next move.
                 const played_move = cur_move.trunk_next || null;
@@ -475,6 +457,19 @@ export function AIReview({
 
                 marks = result.marks;
                 colored_circles = result.colored_circles;
+
+                // In a variation that follows one of the AI's playouts, the
+                // rest of the playout stays on the board with the
+                // variation's own candidates
+                if (showPlayouts && !cur_move.trunk) {
+                    fillAIMarksBacktracking(
+                        cur_move,
+                        trunk_move,
+                        marks,
+                        reviewData || null,
+                        goban.engine || null,
+                    );
+                }
             } else {
                 if (!cur_move.trunk) {
                     requestAnalysisOfVariation(cur_move, trunk_move);

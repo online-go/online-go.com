@@ -754,7 +754,7 @@ export function ThemePreferences(): React.ReactElement | null {
             <PreferenceLine
                 title={_("Show AI playouts in variations")}
                 description={_(
-                    "In AI reviews, when you follow a suggested move, keep the AI's numbered playout on the board. Turn this off to show the AI's suggestions for the new position instead.",
+                    "In AI reviews, when you follow a suggested move, keep the AI's numbered playout on the board together with the AI's suggestions for the new position.",
                 )}
             >
                 <Toggle
