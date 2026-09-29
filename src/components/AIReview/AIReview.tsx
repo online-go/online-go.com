@@ -122,6 +122,7 @@ export function AIReview({
     const [theme] = useData("theme", "system");
     const [showVisitCounts] = preferences.usePreference("ai-review-show-visit-counts");
     const [showOnBoard] = preferences.usePreference("ai-review-show-on-board");
+    const [showPlayouts] = preferences.usePreference("ai-review-show-playouts");
     const [tableHidden, setTableHidden] = useState(!preferences.get("ai-summary-table-show"));
     const [currentPopupMoves, setCurrentPopupMoves] = useState<number[]>([]);
 
@@ -456,17 +457,32 @@ export function AIReview({
 
                 marks = result.marks;
                 colored_circles = result.colored_circles;
+
+                // In a variation that follows one of the AI's playouts, the
+                // rest of the playout stays on the board with the
+                // variation's own candidates
+                if (showPlayouts && !cur_move.trunk) {
+                    fillAIMarksBacktracking(
+                        cur_move,
+                        trunk_move,
+                        marks,
+                        reviewData || null,
+                        goban.engine || null,
+                    );
+                }
             } else {
                 if (!cur_move.trunk) {
                     requestAnalysisOfVariation(cur_move, trunk_move);
                 }
-                fillAIMarksBacktracking(
-                    cur_move,
-                    trunk_move,
-                    marks,
-                    reviewData || null,
-                    goban.engine || null,
-                );
+                if (cur_move.trunk || showPlayouts) {
+                    fillAIMarksBacktracking(
+                        cur_move,
+                        trunk_move,
+                        marks,
+                        reviewData || null,
+                        goban.engine || null,
+                    );
+                }
             }
         } catch (e) {
             errorLogger(e);
@@ -490,6 +506,7 @@ export function AIReview({
         useScore,
         showVisitCounts,
         showOnBoard,
+        showPlayouts,
         updateCount,
         moveCategoryMap,
         theme,

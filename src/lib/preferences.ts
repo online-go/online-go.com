@@ -34,6 +34,7 @@ export const defaults = {
     "ai-review-use-score": true,
     "ai-review-show-visit-counts": false,
     "ai-review-show-on-board": true,
+    "ai-review-show-playouts": true,
     "ai-summary-table-show": true,
     "always-disable-analysis": false,
     "animate-turn-clock": true,
