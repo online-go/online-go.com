@@ -27,10 +27,16 @@ jobs:
           find /home/greenasjade/src/OGS/ogs/.git /home/greenasjade/src/OGS/ogs-ui/.git \
                -name '*.lock' -delete
 
-      # run-tests.sh lives in ogs; get its latest version. ogs stays on main —
-      # this is a frontend PR tested against the warm main backend.
-      - name: Update ogs (latest run-tests.sh)
-        run: cd /home/greenasjade/src/OGS/ogs && git checkout main && git pull origin main
+      # Belt-and-braces: run-tests.sh traps SIGTERM/INT/HUP and restores ogs-ui to
+      # main on exit, but a hard SIGKILL (e.g. cancel-in-progress that outruns the
+      # grace window) could skip that. Force both checkouts back to main before we
+      # start so a prior run left detached on a PR SHA can't leak in. run-tests.sh
+      # lives in ogs, so pull its latest version here too. ogs stays on main — this
+      # is a frontend PR tested against the warm main backend.
+      - name: Reset shared checkouts to main (+ latest run-tests.sh)
+        run: |
+          cd /home/greenasjade/src/OGS/ogs-ui && git checkout --force main
+          cd /home/greenasjade/src/OGS/ogs && git checkout --force main && git pull origin main
 
       # run-tests.sh (PR mode) checks out this SHA in ogs-ui AFTER preempting any
       # in-flight merge run, runs the quick suite, and restores ogs-ui to main.
