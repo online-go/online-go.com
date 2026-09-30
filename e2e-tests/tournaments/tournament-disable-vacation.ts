@@ -260,7 +260,7 @@ export const tournamentDisableVacationTest = async ({
     const moreActions = player1Page.locator('button.GobanView-tab-button[title="More actions"]');
     await expect(moreActions).toBeVisible();
     await moreActions.click();
-    const menuItems = player1Page.locator("button.GameSidebarPanel-item");
+    const menuItems = player1Page.locator("button.GameActionRow");
     await expect(menuItems.filter({ hasText: "Game information" })).toBeVisible();
     await expect(menuItems.filter({ hasText: "Pause game" })).not.toBeVisible();
     // The popover has no Escape handling; clicking its backdrop dismisses

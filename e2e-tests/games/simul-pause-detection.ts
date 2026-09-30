@@ -160,7 +160,7 @@ export const simulPauseDetectionTest = async (
     await expect(moreActions1).toBeVisible();
     await moreActions1.click();
     const pauseItem = challengerGame1Page
-        .locator("button.GameSidebarPanel-item")
+        .locator("button.GameActionRow")
         .filter({ hasText: "Pause game" });
     await expect(pauseItem).toBeVisible();
     await pauseItem.click();
