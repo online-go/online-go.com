@@ -1,0 +1,46 @@
+# Same-repo PR e2e: run the quick suite against the warm e2etesting stack
+# (fast + stable messaging) with the PR's frontend checked out over main's
+# backend. Fork PRs are excluded — their code must not run on the self-hosted
+# runner; forks stay covered by the post-merge run.
+name: PR E2E (same-repo)
+
+on:
+  pull_request:
+    branches: [main]
+
+# Supersede older runs for the same PR; PR runs preempt in-flight merge runs
+# via run-tests.sh's priority lock (manual > pr > merge).
+concurrency:
+  group: pr-e2e-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  pr-e2e:
+    runs-on: self-hosted
+    if: >-
+      github.repository == 'online-go/online-go.com' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      # A cancelled run may leave git locks behind; clear them first.
+      - name: Clear stale git locks
+        run: |
+          find /home/greenasjade/src/OGS/ogs/.git /home/greenasjade/src/OGS/ogs-ui/.git \
+               -name '*.lock' -delete
+
+      # Belt-and-braces: run-tests.sh traps SIGTERM/INT/HUP and restores ogs-ui to
+      # main on exit, but a hard SIGKILL (e.g. cancel-in-progress that outruns the
+      # grace window) could skip that. Force both checkouts back to main before we
+      # start so a prior run left detached on a PR SHA can't leak in. run-tests.sh
+      # lives in ogs, so pull its latest version here too. ogs stays on main — this
+      # is a frontend PR tested against the warm main backend.
+      - name: Reset shared checkouts to main (+ latest run-tests.sh)
+        run: |
+          cd /home/greenasjade/src/OGS/ogs-ui && git checkout --force main
+          cd /home/greenasjade/src/OGS/ogs && git checkout --force main && git pull origin main
+
+      # run-tests.sh (PR mode) checks out this SHA in ogs-ui AFTER preempting any
+      # in-flight merge run, runs the quick suite, and restores ogs-ui to main.
+      - name: Run PR E2E (warm stack, quick suite)
+        env:
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: /home/greenasjade/src/OGS/ogs/.e2e-ci/run-tests.sh "" "pr-ogs-ui"
