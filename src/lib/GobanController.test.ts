@@ -16,6 +16,9 @@
  */
 
 import type { MoveTree } from "goban";
+import * as data from "@/lib/data";
+import { TEST_USER } from "@/views/Game/test_user";
+import { shared_ip_with_player_map } from "@/views/Game/util";
 import { GobanController, getMoveTreeTrunkTail } from "./GobanController";
 
 function makeMoveNode(move_number: number, trunk_next?: MoveTree): MoveTree {
@@ -153,5 +156,51 @@ describe("GobanController", () => {
 
         controller.gotoLastMove();
         expect(goban.engine.cur_move.move_number).toBe(3);
+    });
+
+    describe("estimateScore", () => {
+        const GAME_ID = 4242;
+
+        function makeLiveGameController(): GobanController {
+            return new GobanController({
+                game_id: GAME_ID,
+                width: 9,
+                height: 9,
+                players: {
+                    black: { id: 1, username: "black" },
+                    white: { id: 2, username: "white" },
+                },
+            });
+        }
+
+        beforeEach(() => {
+            data.set("user", { ...TEST_USER, id: 0, anonymous: true });
+        });
+
+        afterEach(() => {
+            delete shared_ip_with_player_map[GAME_ID];
+        });
+
+        it("uses the AI estimator for a spectator of a live game", () => {
+            shared_ip_with_player_map[GAME_ID] = false;
+            const controller = makeLiveGameController();
+            const setScoringMode = jest
+                .spyOn(controller.goban, "setScoringMode")
+                .mockImplementation(() => controller.goban.engine.cur_move);
+
+            expect(controller.estimateScore()).toBe(true);
+            expect(setScoringMode).toHaveBeenCalledWith(true, true);
+        });
+
+        it("does not use the AI estimator for a spectator that shares an IP with a player", () => {
+            shared_ip_with_player_map[GAME_ID] = true;
+            const controller = makeLiveGameController();
+            const setScoringMode = jest
+                .spyOn(controller.goban, "setScoringMode")
+                .mockImplementation(() => controller.goban.engine.cur_move);
+
+            expect(controller.estimateScore()).toBe(true);
+            expect(setScoringMode).toHaveBeenCalledWith(true, false);
+        });
     });
 });
