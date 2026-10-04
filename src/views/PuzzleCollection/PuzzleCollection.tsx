@@ -17,10 +17,12 @@
 
 import * as React from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
-import { get, put } from "@/lib/requests";
+import { browserHistory } from "@/lib/ogsHistory";
+import { get, put, del } from "@/lib/requests";
 import { errorAlerter } from "@/lib/misc";
 import { _ } from "@/lib/translate";
 import * as data from "@/lib/data";
+import { alert } from "@/lib/swal_config";
 import { PuzzleLibrary } from "@/views/Puzzle/PuzzleLibrary";
 import "./PuzzleCollection.css";
 
@@ -34,7 +36,8 @@ import "./PuzzleCollection.css";
  * An empty collection has no puzzle to land on, so we render the same
  * PuzzleLibrary list standalone (with no entries). The owner gets the
  * library's usual rename control and "New puzzle" link, so a brand-new
- * collection is immediately manageable.
+ * collection is immediately manageable, plus a delete action: the server
+ * only deletes empty collections, so this page is the one place it applies.
  */
 export function PuzzleCollection(): React.ReactElement | null {
     const { collection_id } = useParams<{ collection_id: string }>();
@@ -74,6 +77,29 @@ export function PuzzleCollection(): React.ReactElement | null {
         [collection],
     );
 
+    // The server refuses to delete a collection that still has puzzles, and
+    // this page only renders for an empty one, so no client-side check.
+    const deleteCollection = React.useCallback(() => {
+        if (!collection) {
+            return;
+        }
+        void alert
+            .fire({
+                text: _("Are you sure you want to delete this collection?"),
+                showCancelButton: true,
+            })
+            .then(({ value: accept }) => {
+                if (!accept) {
+                    return;
+                }
+                del(`puzzles/collections/${collection.id}`)
+                    .then(() => {
+                        browserHistory.push(`/puzzle-collections/${collection.owner.id}`);
+                    })
+                    .catch(errorAlerter);
+            });
+    }, [collection]);
+
     if (target) {
         return <Navigate to={target} replace />;
     }
@@ -102,6 +128,11 @@ export function PuzzleCollection(): React.ReactElement | null {
                 <Link className="PuzzleCollection-browse" to="/puzzles/">
                     {_("Browse puzzles")}
                 </Link>
+                {can_edit && (
+                    <button className="reject PuzzleCollection-delete" onClick={deleteCollection}>
+                        {_("Delete collection")}
+                    </button>
+                )}
             </div>
         </div>
     );
