@@ -456,18 +456,11 @@
 
     .opponent-rank-range {
         display: flex;
-        justify-content: space-around;
-        align-items: flex-end;
-        gap: 0.5rem;
-    }
-
-    .rank-title-group {
-        display: flex;
         align-items: center;
         gap: 1rem;
     }
 
-    .rank-title-group h2 {
+    .opponent-rank-range h2 {
         margin: 0;
         font-size: 1.2rem;
         line-height: 1;
@@ -489,10 +482,27 @@
     }
 
     .opponent-rank-container {
-        .ogs-react-select__menu {
-            right: 0;
-            width: 6rem;
-            max-width: 40dvw;
+        justify-content: center;
+        flex-direction: column;
+
+        .opponent-rank-selector {
+            position: relative;
+            display: flex;
+            flex-wrap: nowrap;
+
+            .rank-center-marker {
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                margin: auto;
+
+                width: 4px;
+                height: 20px;
+                border-radius: 2px;
+                background: var(--text-color);
+            }
         }
     }
 }
