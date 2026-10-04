@@ -314,8 +314,7 @@ contexts.
 All 638 normal frontend tests pass, as do TypeScript, lint, modified-file
 formatting and the production build. Three board-input regressions check the
 requested intersection through a resize, including a scoped board and centre
-click. Graphify is not installed in this environment, so `graphify update .`
-cannot run.
+click.
 
 Two controlled browser experiments establish the shared timing dependencies:
 
