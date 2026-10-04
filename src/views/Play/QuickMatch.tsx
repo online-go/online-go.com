@@ -27,7 +27,7 @@ import {
     Size,
     Speed,
 } from "goban";
-import { _, llm_pgettext, pgettext, moment } from "@/lib/translate";
+import { _, llm_pgettext, pgettext, interpolate, moment } from "@/lib/translate";
 import { automatch_manager } from "@/lib/automatch_manager";
 import { Bot, bot_event_emitter, bots_list, getAcceptableTimeSetting } from "@/lib/bots";
 import { alert } from "@/lib/swal_config";
@@ -677,9 +677,16 @@ export function QuickMatch(): React.ReactElement {
         if (ranksHidden) {
             if (diff === 0) {
                 return llm_pgettext("Player is the same rank as you", "Your Rank");
+            } else if (diff > 0) {
+                return interpolate(
+                    llm_pgettext("Player is a higher rank than you", "{{num}} Stronger"),
+                    { num: Math.abs(diff) },
+                );
             } else {
-                const suffix = diff > 0 ? llm_pgettext("", "Stronger") : llm_pgettext("", "Weaker");
-                return `${Math.abs(diff)} ${suffix}`;
+                return interpolate(
+                    llm_pgettext("Player is a lower rank than you", "{{num}} Weaker"),
+                    { num: Math.abs(diff) },
+                );
             }
         } else if (computedRank < 30) {
             // Kyu ranks: 29 = 1k, 28 = 2k, 27 = 3k, etc.
