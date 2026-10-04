@@ -1042,10 +1042,10 @@ export function QuickMatch(): React.ReactElement {
                                 onChange={(ev) => {
                                     const value = parseInt(ev.target.value);
                                     if (0 <= value && value <= 9) {
-                                        setLowerRankDiff(-value);
+                                        setLowerRankDiff(value);
                                     }
                                 }}
-                                value={Math.abs(lower_rank_diff)}
+                                value={lower_rank_diff}
                             />
                             <input
                                 style={{ marginLeft: 0 }}
@@ -1064,7 +1064,7 @@ export function QuickMatch(): React.ReactElement {
                         </div>
                         <div className="opponent-rank-range">
                             <h2 id={opponentRankId}>
-                                {`${_("Opponent Rank")}: ${rank_diff_label(lower_rank_diff)} - ${rank_diff_label(upper_rank_diff)}`}
+                                {`${_("Opponent Rank")}: ${rank_diff_label(-lower_rank_diff)} - ${rank_diff_label(upper_rank_diff)}`}
                             </h2>
                         </div>
                     </div>
