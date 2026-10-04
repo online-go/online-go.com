@@ -1046,6 +1046,7 @@ export function QuickMatch(): React.ReactElement {
                                     }
                                 }}
                                 value={lower_rank_diff}
+                                disabled={automatch_search_active}
                             />
                             <input
                                 style={{ marginLeft: 0 }}
@@ -1060,6 +1061,7 @@ export function QuickMatch(): React.ReactElement {
                                     }
                                 }}
                                 value={upper_rank_diff}
+                                disabled={automatch_search_active}
                             />
                         </div>
                         <div className="opponent-rank-range">
