@@ -39,6 +39,7 @@ import type { KibitzController } from "./KibitzController";
 import { KibitzView } from "./KibitzView";
 import { useKibitzGobans } from "./useKibitzGobans";
 import { leftAsideAllowed, useGameLayout } from "@/components/GobanView/layout";
+import { kibitzTelemetry } from "./kibitzTelemetry";
 import {
     EMPTY_VISIBLE_VARIATIONS,
     MAX_VISIBLE_VARIATIONS,
@@ -323,6 +324,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const currentGameBaseSnapshotRef = React.useRef<KibitzCurrentGameBaseSnapshot | null>(null);
     const [gameVariations, setGameVariations] = React.useState<KibitzVariationSummary[]>([]);
     const layout = useGameLayout();
+    React.useEffect(() => {
+        kibitzTelemetry.setLayout(layout.mode);
+    }, [layout.mode]);
     const isPortrait = !leftAsideAllowed(layout.mode);
     const [visibleVariations, setVisibleVariations] = React.useState(EMPTY_VISIBLE_VARIATIONS);
     const visibleVariationIds = visibleVariations.ids;
@@ -880,9 +884,10 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     // Opening a variation from the chat or the list while a draft has
     // unposted moves asks first; the post-variation effect opens directly.
     const onOpenVariationFromUser = React.useCallback(
-        (variationId: string, focusVariation: boolean = false) => {
+        (variationId: string, focusVariation: boolean, source: "chat" | "list") => {
             void confirmDiscardDraft().then((confirmed) => {
                 if (confirmed) {
+                    kibitzTelemetry.record("open_variation", { source });
                     onOpenVariation(variationId, focusVariation);
                 }
             });
@@ -1250,7 +1255,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                     selectedVariationId: secondaryPane.variation_id ?? null,
                     variationFocusRequestId,
                     blockedVariationFlashId,
-                    onRecallVariation: (variationId) => onOpenVariationFromUser(variationId, true),
+                    onRecallVariation: (variationId) =>
+                        onOpenVariationFromUser(variationId, true, "list"),
                     onHideVariation: onToggleVariation,
                     onCreateVariation,
                     onClearVariations,
@@ -1260,7 +1266,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                     room: resolvedRoom,
                     items: stream,
                     variations: displayedVariations,
-                    onOpenVariation: onOpenVariationFromUser,
+                    onOpenVariation: (variationId, focusVariation = false) =>
+                        onOpenVariationFromUser(variationId, focusVariation, "chat"),
                     variationColorIndexes,
                 }}
                 proposals={{
