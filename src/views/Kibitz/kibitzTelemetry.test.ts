@@ -127,6 +127,40 @@ describe("KibitzTelemetry", () => {
         expect(sent.filter((p) => p.event === "leave")).toHaveLength(1);
     });
 
+    it("starts a new session when the page is restored from the back/forward cache", () => {
+        telemetry.enter();
+        window.dispatchEvent(new Event("pagehide"));
+        expect(sent.map((p) => p.event)).toEqual(["enter", "leave"]);
+        // A restore resumes the frozen page: no remount, so no effect runs enter().
+        window.dispatchEvent(Object.assign(new Event("pageshow"), { persisted: true }));
+        telemetry.record("send_message");
+        jest.advanceTimersByTime(60_000);
+        expect(sent.map((p) => p.event)).toEqual([
+            "enter",
+            "leave",
+            "enter",
+            "send_message",
+            "heartbeat",
+        ]);
+    });
+
+    it("does not revive a session whose view unmounted after pagehide", () => {
+        telemetry.enter();
+        window.dispatchEvent(new Event("pagehide"));
+        telemetry.leave();
+        window.dispatchEvent(Object.assign(new Event("pageshow"), { persisted: true }));
+        expect(sent.map((p) => p.event)).toEqual(["enter", "leave"]);
+    });
+
+    it("ignores a pageshow that is not a cache restore", () => {
+        telemetry.enter();
+        window.dispatchEvent(Object.assign(new Event("pageshow"), { persisted: false }));
+        expect(sent.map((p) => p.event)).toEqual(["enter"]);
+        telemetry.leave();
+        window.dispatchEvent(Object.assign(new Event("pageshow"), { persisted: false }));
+        expect(sent.map((p) => p.event)).toEqual(["enter", "leave"]);
+    });
+
     it("forgets the room and layout when the session ends", () => {
         telemetry.enter();
         telemetry.setLayout("stacked");

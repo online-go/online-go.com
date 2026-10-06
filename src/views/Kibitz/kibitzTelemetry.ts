@@ -108,6 +108,10 @@ export class KibitzTelemetry {
     }
 
     leave(): void {
+        // A session ended by `pagehide` leaves a `pageshow` listener armed for
+        // a cache restore; an explicit leave after that (the view unmounting)
+        // must disarm it even though the session is already over.
+        window.removeEventListener("pageshow", this.onPageShow);
         if (!this.active) {
             return;
         }
@@ -189,8 +193,19 @@ export class KibitzTelemetry {
         this.settleClock();
     };
 
+    /** `pagehide` ends the session whether the page is unloading or being
+     *  frozen into the back/forward cache. A restore from that cache resumes
+     *  the page without remounting, so no effect calls `enter()` again; the
+     *  one-shot `pageshow` listener starts the new session instead. */
     private onPageHide = (): void => {
         this.leave();
+        window.addEventListener("pageshow", this.onPageShow, { once: true });
+    };
+
+    private onPageShow = (event: PageTransitionEvent): void => {
+        if (event.persisted) {
+            this.enter();
+        }
     };
 }
 
