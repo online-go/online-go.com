@@ -29,6 +29,7 @@ import { push_manager } from "@/components/UIPush/UIPush";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { User } from "goban";
 import { getCurrentKibitzUser, isKibitzAccessBlockedForUser } from "./kibitzAnalysisPolicy";
+import { kibitzTelemetry } from "./kibitzTelemetry";
 import type {
     KibitzPresetBlock,
     KibitzProposal,
@@ -560,6 +561,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
 
     public setActiveRoom(room: KibitzRoom | null): void {
         this._active_room = room;
+        kibitzTelemetry.setRoom(room?.id ?? null);
         this.emit("room-changed", this._active_room);
     }
 
@@ -990,6 +992,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
 
     public async selectRoom(roomId: string | null): Promise<void> {
         const token = ++this._select_room_token;
+        const reason: "initial" | "switch" = this._active_room ? "switch" : "initial";
 
         if (!roomId) {
             this.unsubscribeActiveRoom();
@@ -1056,6 +1059,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             // placeholder from before 1C-b wired chat-derived state and would
             // wipe whatever syncMessagesFromChat had just produced.
             this.subscribeActiveRoom(full.channel);
+            kibitzTelemetry.record("load_room", { reason });
         } catch (error) {
             if (token !== this._select_room_token || this._destroyed) {
                 return;
@@ -1067,6 +1071,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             this.setProposals([]);
             this.clearAccessBlocked();
             console.warn("kibitz: failed to hydrate room", roomId, error);
+            kibitzTelemetry.record("load_room", { reason, outcome: "error", error: String(error) });
         }
     }
 
@@ -1091,10 +1096,12 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             // Insert locally so the UI updates immediately; the room-created
             // UIPush broadcast will arrive too and be deduped by id.
             this.onRoomCreated(payload);
+            kibitzTelemetry.record("create_room");
             void this.selectRoom(payload.id);
             return payload.id;
         } catch (error) {
             console.warn("kibitz: createRoom failed", error);
+            kibitzTelemetry.record("create_room", { outcome: "error", error: String(error) });
             return null;
         }
     }
@@ -1117,9 +1124,11 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             // Per briefing § 2.8: the initiating client posts the resulting
             // system chat line so the room's stream has a record of the swap.
             this.postChangeBoardSystemMessage(game);
+            kibitzTelemetry.record("change_board");
             return true;
         } catch (error) {
             console.warn("kibitz: changeBoard failed", roomId, error);
+            kibitzTelemetry.record("change_board", { outcome: "error", error: String(error) });
             return false;
         }
     }
@@ -1226,6 +1235,10 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 officialTailMoveNumber,
                 payload: body,
             });
+            kibitzTelemetry.record("post_variation", {
+                outcome: "error",
+                error: "malformed_payload",
+            });
             return null;
         }
         if (
@@ -1243,6 +1256,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             });
         }
         this.sendTypedToActiveChannel(body);
+        kibitzTelemetry.record("post_variation");
         boardController.recordAnalysisSent(prepared.analysis);
         return body;
     }
@@ -1263,6 +1277,8 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         if (!currentGameId) {
             return;
         }
+
+        kibitzTelemetry.record("start_variation");
 
         this.setSecondaryPane({
             ...this._secondary_pane,
@@ -1295,6 +1311,8 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             this._active_room?.current_game?.game_id === variation.game_id
                 ? this._active_room.current_game
                 : undefined;
+
+        kibitzTelemetry.record("start_variation");
 
         this.setSecondaryPane({
             ...this._secondary_pane,
