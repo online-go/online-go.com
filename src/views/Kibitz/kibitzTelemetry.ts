@@ -114,6 +114,10 @@ export class KibitzTelemetry {
         this.settleClock();
         this.send("leave", { active_ms: this.activeMs });
         this.active = false;
+        // The context belongs to the session that just ended; the next
+        // session reports its own room and layout as it learns them.
+        this.roomId = null;
+        this.layout = "unknown";
         document.removeEventListener("visibilitychange", this.onVisibilityChange);
         window.removeEventListener("pagehide", this.onPageHide);
         if (this.heartbeat) {

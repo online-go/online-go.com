@@ -96,6 +96,7 @@ jest.mock("./kibitzTelemetry", () => ({
 }));
 
 const mockedGet = requests.get as jest.MockedFunction<typeof requests.get>;
+const mockedPost = requests.post as jest.MockedFunction<typeof requests.post>;
 const mockedUpdateCachedChannelInformation =
     chatManager.updateCachedChannelInformation as jest.MockedFunction<
         typeof chatManager.updateCachedChannelInformation
@@ -458,6 +459,70 @@ describe("KibitzController telemetry", () => {
             "start_variation",
             "start_variation",
         ]);
+        controller.destroy();
+    });
+
+    const game = { game_id: 5, title: "g" } as never;
+
+    it("records create_room ok on success and error on failure", async () => {
+        mockedGet.mockResolvedValueOnce([]);
+        const controller = new KibitzController();
+        await flushPromises();
+        mockedPost.mockResolvedValueOnce(roomPayload("user-2").room);
+        mockedGet.mockResolvedValueOnce(roomPayload("user-2"));
+        await controller.createRoom(game, "name", "");
+        expect(mockedRecord).toHaveBeenCalledWith("create_room");
+        mockedPost.mockRejectedValueOnce(new Error("403"));
+        await controller.createRoom(game, "name", "");
+        expect(mockedRecord).toHaveBeenLastCalledWith("create_room", {
+            outcome: "error",
+            error: "Error: 403",
+        });
+        controller.destroy();
+    });
+
+    it("records change_board ok on success and error on failure", async () => {
+        mockedGet.mockResolvedValueOnce([]);
+        const controller = new KibitzController();
+        await flushPromises();
+        mockedPost.mockResolvedValueOnce(roomPayload("user-3").room);
+        await controller.changeBoard("user-3", game);
+        expect(mockedRecord).toHaveBeenCalledWith("change_board");
+        mockedPost.mockRejectedValueOnce(new Error("500"));
+        await controller.changeBoard("user-3", game);
+        expect(mockedRecord).toHaveBeenLastCalledWith("change_board", {
+            outcome: "error",
+            error: "Error: 500",
+        });
+        controller.destroy();
+    });
+
+    it("records post_variation ok when sent and malformed_payload when refused", async () => {
+        mockedGet.mockResolvedValueOnce([]);
+        const controller = new KibitzController();
+        await flushPromises();
+        mockedGet.mockResolvedValueOnce(roomPayload("user-4"));
+        await controller.selectRoom("user-4");
+        mockedRecord.mockClear();
+        const boardController = (analysis: { from: unknown; moves: unknown }) =>
+            ({
+                buildAnalysisSnapshot: () => ({
+                    is_duplicate: false,
+                    analysis,
+                    moves: [],
+                    move_count: 0,
+                }),
+                recordAnalysisSent: jest.fn(),
+                goban: { engine: { last_official_move: { move_number: 4 } } },
+            }) as never;
+        jest.spyOn(console, "warn").mockImplementation(() => undefined);
+        controller.postVariation("user-4", boardController({ from: "x", moves: "" }), 5);
+        expect(mockedRecord).toHaveBeenLastCalledWith("post_variation", {
+            outcome: "error",
+            error: "malformed_payload",
+        });
+        controller.postVariation("user-4", boardController({ from: 4, moves: "aa" }), 5);
+        expect(mockedRecord).toHaveBeenLastCalledWith("post_variation");
         controller.destroy();
     });
 });

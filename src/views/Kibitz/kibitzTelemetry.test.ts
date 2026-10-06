@@ -127,6 +127,21 @@ describe("KibitzTelemetry", () => {
         expect(sent.filter((p) => p.event === "leave")).toHaveLength(1);
     });
 
+    it("forgets the room and layout when the session ends", () => {
+        telemetry.enter();
+        telemetry.setLayout("stacked");
+        telemetry.setRoom("user-9");
+        telemetry.leave();
+        telemetry.enter();
+        const secondEnter = sent[sent.length - 1];
+        expect(secondEnter).toMatchObject({
+            event: "enter",
+            room_id: null,
+            room_kind: "unknown",
+            layout: "unknown",
+        });
+    });
+
     it("is a no-op before configure", () => {
         const bare = new KibitzTelemetry();
         expect(() => {
