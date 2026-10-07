@@ -122,6 +122,11 @@
             cursor: pointer;
         }
 
+        &::-moz-range-track,
+        &::-moz-range-progress {
+            background: transparent;
+        }
+
         &::-moz-range-thumb {
             width: var(--thumb-size);
             height: var(--thumb-size);
