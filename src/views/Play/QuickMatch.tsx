@@ -1054,6 +1054,10 @@ export function QuickMatch(): React.ReactElement {
                                 }}
                                 value={lower_rank_diff}
                                 disabled={automatch_search_active}
+                                aria-label={llm_pgettext(
+                                    "Accessible name of the slider that sets how much weaker than you an automatch opponent can be",
+                                    "Weakest opponent rank",
+                                )}
                                 aria-valuetext={rank_diff_label(-lower_rank_diff)}
                             />
                             <input
@@ -1070,6 +1074,10 @@ export function QuickMatch(): React.ReactElement {
                                 }}
                                 value={upper_rank_diff}
                                 disabled={automatch_search_active}
+                                aria-label={llm_pgettext(
+                                    "Accessible name of the slider that sets how much stronger than you an automatch opponent can be",
+                                    "Strongest opponent rank",
+                                )}
                                 aria-valuetext={rank_diff_label(upper_rank_diff)}
                             />
                         </div>
