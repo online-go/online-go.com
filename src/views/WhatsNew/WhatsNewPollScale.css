@@ -68,6 +68,10 @@
             background: transparent;
         }
 
+        &::-moz-range-progress {
+            background: transparent;
+        }
+
         &::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: var(--scale-thumb-size);

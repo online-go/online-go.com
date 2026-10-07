@@ -241,6 +241,49 @@ input[type="datetime-local"] {
     color-scheme: var(--control-color-scheme);
 }
 
+/* Firefox draws the unfilled part of a native range slider almost white, even
+ * with a dark color-scheme. The track can only be restyled once the native
+ * appearance is turned off, so in the dark themes Firefox gets a hand-drawn
+ * slider at the native size. Chrome and Safari already draw a dark track.
+ * The specificity is kept low so that custom sliders override it. Custom
+ * sliders that set `appearance: none` must clear ::-moz-range-track and
+ * ::-moz-range-progress if they do not want them drawn. */
+@supports selector(::-moz-range-track) {
+    :where([data-theme="dark"], [data-theme="accessible"]) input[type="range"] {
+        appearance: none;
+        height: 1.25rem;
+        border: none;
+        background: transparent;
+
+        &::-moz-range-track,
+        &::-moz-range-progress {
+            height: 0.375rem;
+            border-radius: 0.1875rem;
+        }
+
+        &::-moz-range-track {
+            background: var(--shade4);
+        }
+
+        &::-moz-range-progress {
+            background: var(--primary);
+        }
+
+        &::-moz-range-thumb {
+            box-sizing: border-box;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 0.125rem solid var(--shade0);
+            border-radius: 50%;
+            background: var(--shade2);
+        }
+
+        &:disabled {
+            opacity: 0.5;
+        }
+    }
+}
+
 textarea {
     border: 1px solid transparent;
     border-color: var(--input-border);
