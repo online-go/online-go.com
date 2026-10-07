@@ -1040,14 +1040,7 @@ export function QuickMatch(): React.ReactElement {
                         <div className="opponent-rank-selector">
                             <div className="rank-center-marker" inert></div>
                             <input
-                                className="weaker"
-                                style={
-                                    {
-                                        direction: "rtl",
-                                        marginRight: 0,
-                                        "--fill": `${(lower_rank_diff / 9) * 100}%`,
-                                    } as React.CSSProperties
-                                }
+                                style={{ direction: "rtl", marginRight: 0 }}
                                 type="range"
                                 step="1"
                                 min="0"
@@ -1067,13 +1060,7 @@ export function QuickMatch(): React.ReactElement {
                                 aria-valuetext={rank_diff_label(-lower_rank_diff)}
                             />
                             <input
-                                className="stronger"
-                                style={
-                                    {
-                                        marginLeft: 0,
-                                        "--fill": `${(upper_rank_diff / 9) * 100}%`,
-                                    } as React.CSSProperties
-                                }
+                                style={{ marginLeft: 0 }}
                                 type="range"
                                 step="1"
                                 min="0"
