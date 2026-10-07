@@ -18,6 +18,8 @@
 import { KibitzController } from "./KibitzController";
 import * as requests from "@/lib/requests";
 import * as chatManager from "@/lib/chat_manager";
+import { kibitzTelemetry } from "./kibitzTelemetry";
+import * as analysisPolicy from "./kibitzAnalysisPolicy";
 
 const pushHandlers: Record<string, (payload: unknown) => void> = {};
 
@@ -51,7 +53,14 @@ jest.mock("@/components/UIPush/UIPush", () => ({
 
 jest.mock("@/lib/chat_manager", () => ({
     __esModule: true,
-    chat_manager: {},
+    chat_manager: {
+        join: jest.fn(() => ({
+            on: jest.fn(),
+            off: jest.fn(),
+            part: jest.fn(),
+            channel: { chat_log: [], users_by_join: [] },
+        })),
+    },
     updateCachedChannelInformation: jest.fn(),
 }));
 
@@ -78,7 +87,16 @@ jest.mock("./kibitzAnalysisPolicy", () => ({
     isKibitzAccessBlockedForUser: jest.fn(() => false),
 }));
 
+jest.mock("./kibitzTelemetry", () => ({
+    __esModule: true,
+    kibitzTelemetry: {
+        record: jest.fn(),
+        setRoom: jest.fn(),
+    },
+}));
+
 const mockedGet = requests.get as jest.MockedFunction<typeof requests.get>;
+const mockedPost = requests.post as jest.MockedFunction<typeof requests.post>;
 const mockedUpdateCachedChannelInformation =
     chatManager.updateCachedChannelInformation as jest.MockedFunction<
         typeof chatManager.updateCachedChannelInformation
@@ -350,6 +368,161 @@ describe("KibitzController room ordering", () => {
         resolveRoom({});
         await pending;
         expect(controller.secondary_pane.collapsed).toBe(false);
+        controller.destroy();
+    });
+});
+
+describe("KibitzController telemetry", () => {
+    const mockedRecord = kibitzTelemetry.record as jest.Mock;
+    const mockedSetRoom = kibitzTelemetry.setRoom as jest.Mock;
+    const mockedBlocked = analysisPolicy.isKibitzAccessBlockedForUser as jest.Mock;
+
+    const roomPayload = (id: string) => ({
+        room: {
+            id,
+            channel: `kibitz-${id}`,
+            title: id,
+            kind: id.startsWith("preset-") ? "preset" : "user",
+            description: null,
+            current_game_id: null,
+            creator_id: null,
+            created_at: "2026-05-01T10:00:00Z",
+            last_activity_at: "2026-05-01T10:00:00Z",
+            viewer_count: 1,
+        },
+        permissions: {},
+    });
+
+    beforeEach(() => {
+        mockedGet.mockReset();
+        mockedRecord.mockReset();
+        mockedSetRoom.mockReset();
+        mockedBlocked.mockReturnValue(false);
+    });
+
+    it("records load_room initial then switch, and mirrors the room into telemetry", async () => {
+        mockedGet.mockResolvedValueOnce([]); // directory refresh in the constructor
+        const controller = new KibitzController();
+        await flushPromises();
+        mockedGet.mockResolvedValueOnce(roomPayload("preset-a"));
+        await controller.selectRoom("preset-a");
+        expect(mockedRecord).toHaveBeenCalledWith("load_room", { reason: "initial" });
+        expect(mockedSetRoom).toHaveBeenLastCalledWith("preset-a");
+        mockedGet.mockResolvedValueOnce(roomPayload("user-7"));
+        await controller.selectRoom("user-7");
+        expect(mockedRecord).toHaveBeenLastCalledWith("load_room", { reason: "switch" });
+        controller.destroy();
+    });
+
+    it("records load_room error when hydration fails", async () => {
+        mockedGet.mockResolvedValueOnce([]);
+        const controller = new KibitzController();
+        await flushPromises();
+        mockedGet.mockRejectedValueOnce(new Error("404"));
+        await controller.selectRoom("user-9");
+        expect(mockedRecord).toHaveBeenCalledWith("load_room", {
+            reason: "initial",
+            outcome: "error",
+            error: "Error: 404",
+        });
+        expect(mockedSetRoom).toHaveBeenLastCalledWith(null);
+        controller.destroy();
+    });
+
+    it("records nothing for an access-blocked room", async () => {
+        mockedGet.mockResolvedValueOnce([]);
+        const controller = new KibitzController();
+        await flushPromises();
+        mockedBlocked.mockReturnValue(true);
+        mockedGet.mockResolvedValueOnce(roomPayload("user-3"));
+        await controller.selectRoom("user-3");
+        expect(mockedRecord).not.toHaveBeenCalled();
+        controller.destroy();
+    });
+
+    it("records start_variation from the current board and from a posted variation", async () => {
+        mockedGet.mockResolvedValueOnce([]);
+        const controller = new KibitzController();
+        await flushPromises();
+        controller.setActiveRoom({
+            id: "user-1",
+            channel: "kibitz-user-1",
+            title: "r",
+            kind: "user",
+            description: null,
+            viewer_count: 1,
+            current_game: { game_id: 5, title: "g" },
+        } as never);
+        controller.startVariationFromCurrentBoard();
+        controller.startVariationFromPostedVariation({ id: "v1", game_id: 5 } as never);
+        expect(mockedRecord.mock.calls.map((c) => c[0])).toEqual([
+            "start_variation",
+            "start_variation",
+        ]);
+        controller.destroy();
+    });
+
+    const game = { game_id: 5, title: "g" } as never;
+
+    it("records create_room ok on success and error on failure", async () => {
+        mockedGet.mockResolvedValueOnce([]);
+        const controller = new KibitzController();
+        await flushPromises();
+        mockedPost.mockResolvedValueOnce(roomPayload("user-2").room);
+        mockedGet.mockResolvedValueOnce(roomPayload("user-2"));
+        await controller.createRoom(game, "name", "");
+        expect(mockedRecord).toHaveBeenCalledWith("create_room");
+        mockedPost.mockRejectedValueOnce(new Error("403"));
+        await controller.createRoom(game, "name", "");
+        expect(mockedRecord).toHaveBeenLastCalledWith("create_room", {
+            outcome: "error",
+            error: "Error: 403",
+        });
+        controller.destroy();
+    });
+
+    it("records change_board ok on success and error on failure", async () => {
+        mockedGet.mockResolvedValueOnce([]);
+        const controller = new KibitzController();
+        await flushPromises();
+        mockedPost.mockResolvedValueOnce(roomPayload("user-3").room);
+        await controller.changeBoard("user-3", game);
+        expect(mockedRecord).toHaveBeenCalledWith("change_board");
+        mockedPost.mockRejectedValueOnce(new Error("500"));
+        await controller.changeBoard("user-3", game);
+        expect(mockedRecord).toHaveBeenLastCalledWith("change_board", {
+            outcome: "error",
+            error: "Error: 500",
+        });
+        controller.destroy();
+    });
+
+    it("records post_variation ok when sent and malformed_payload when refused", async () => {
+        mockedGet.mockResolvedValueOnce([]);
+        const controller = new KibitzController();
+        await flushPromises();
+        mockedGet.mockResolvedValueOnce(roomPayload("user-4"));
+        await controller.selectRoom("user-4");
+        mockedRecord.mockClear();
+        const boardController = (analysis: { from: unknown; moves: unknown }) =>
+            ({
+                buildAnalysisSnapshot: () => ({
+                    is_duplicate: false,
+                    analysis,
+                    moves: [],
+                    move_count: 0,
+                }),
+                recordAnalysisSent: jest.fn(),
+                goban: { engine: { last_official_move: { move_number: 4 } } },
+            }) as never;
+        jest.spyOn(console, "warn").mockImplementation(() => undefined);
+        controller.postVariation("user-4", boardController({ from: "x", moves: "" }), 5);
+        expect(mockedRecord).toHaveBeenLastCalledWith("post_variation", {
+            outcome: "error",
+            error: "malformed_payload",
+        });
+        controller.postVariation("user-4", boardController({ from: 4, moves: "aa" }), 5);
+        expect(mockedRecord).toHaveBeenLastCalledWith("post_variation");
         controller.destroy();
     });
 });

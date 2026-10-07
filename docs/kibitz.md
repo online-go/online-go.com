@@ -169,6 +169,10 @@ connecting `MiniGoban`s (through `ObserveGamesComponent`) that send
 game's preview and the proposal bar use `KibitzBoardPreview`, a read-only
 board that never connects to a game.
 
+Usage telemetry for the launch window is emitted from the controller and the
+view through `kibitzTelemetry.ts`; the schema, switch and queries are in
+`ogs/docs/kibitz-telemetry.md`.
+
 ## State
 
 `KibitzController` holds rooms, the active room, stream items, proposals,

@@ -210,7 +210,7 @@ let last_connection_duration_ms = 0;
 let timing_needed = 0; // if non zero, this is the speed that they are playing at (in ms)
 
 const route_name = getRouteName(main_websocket_host);
-const device_info = getDeviceInfo();
+export const device_info = getDeviceInfo();
 
 socket.on("connect", () => {
     debug.log("Connection to server established.");
