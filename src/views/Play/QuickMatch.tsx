@@ -676,17 +676,16 @@ export function QuickMatch(): React.ReactElement {
 
         if (ranksHidden) {
             if (diff === 0) {
-                return llm_pgettext("Player is the same rank as you", "Your Rank");
+                return pgettext("Player is the same rank as you", "Your Rank");
             } else if (diff > 0) {
                 return interpolate(
-                    llm_pgettext("Player is a higher rank than you", "{{num}} Stronger"),
+                    pgettext("Player is a higher rank than you", "{{num}} Stronger"),
                     { num: Math.abs(diff) },
                 );
             } else {
-                return interpolate(
-                    llm_pgettext("Player is a lower rank than you", "{{num}} Weaker"),
-                    { num: Math.abs(diff) },
-                );
+                return interpolate(pgettext("Player is a lower rank than you", "{{num}} Weaker"), {
+                    num: Math.abs(diff),
+                });
             }
         } else if (computedRank < 30) {
             // Kyu ranks: 29 = 1k, 28 = 2k, 27 = 3k, etc.
@@ -1054,7 +1053,7 @@ export function QuickMatch(): React.ReactElement {
                                 }}
                                 value={lower_rank_diff}
                                 disabled={automatch_search_active}
-                                aria-label={llm_pgettext(
+                                aria-label={pgettext(
                                     "Accessible name of the slider that sets how much weaker than you an automatch opponent can be",
                                     "Weakest opponent rank",
                                 )}
@@ -1074,7 +1073,7 @@ export function QuickMatch(): React.ReactElement {
                                 }}
                                 value={upper_rank_diff}
                                 disabled={automatch_search_active}
-                                aria-label={llm_pgettext(
+                                aria-label={pgettext(
                                     "Accessible name of the slider that sets how much stronger than you an automatch opponent can be",
                                     "Strongest opponent rank",
                                 )}
