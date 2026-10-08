@@ -876,7 +876,7 @@ describe("rematch color preference", () => {
         );
     });
 
-    it("still saves a color the player chose on a normal challenge", async () => {
+    it("saves a direct challenge apart from the custom game template", async () => {
         const user = userEvent.setup();
         jest.mocked(post).mockResolvedValueOnce({ id: 123 });
         render(
@@ -890,9 +890,82 @@ describe("rematch color preference", () => {
         await user.click(screen.getByRole("button", { name: /send challenge/i }));
 
         expect(data.set).toHaveBeenCalledWith(
-            "challenge.challenge.live",
+            "challenge.player.live",
             expect.objectContaining({ challenger_color: "black" }),
         );
+        expect(data.set).toHaveBeenCalledWith("challenge.player.restrict_rank", false);
+        expect(data.set).not.toHaveBeenCalledWith("challenge.challenge.live", expect.anything());
+        expect(data.set).not.toHaveBeenCalledWith("challenge.restrict_rank", expect.anything());
+    });
+});
+
+describe("direct challenge settings", () => {
+    const storedGame = {
+        name: "",
+        rules: "japanese",
+        ranked: true,
+        width: 19,
+        height: 19,
+        handicap: -1,
+        komi_auto: "automatic",
+        komi: 5.5,
+        disable_analysis: false,
+        initial_state: null,
+        private: false,
+        rengo: false,
+        rengo_casual_mode: true,
+    };
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        mockPreferredSettings = [];
+        mockDataValues.clear();
+    });
+
+    it("loads a direct challenge from its own saved color", () => {
+        mockDataValues.set("challenge.player.live", {
+            initialized: false,
+            min_ranking: 5,
+            max_ranking: 36,
+            challenger_color: "white",
+            rengo_auto_start: 0,
+            game: storedGame,
+        });
+
+        render(<ChallengeModalBody mode="player" playerId={456} modal={mockModal} />);
+
+        expect(screen.getByLabelText("Your Color")).toHaveValue("white");
+    });
+
+    it("keeps the custom game on its own color", () => {
+        mockDataValues.set("challenge.player.live", {
+            initialized: false,
+            min_ranking: 5,
+            max_ranking: 36,
+            challenger_color: "white",
+            rengo_auto_start: 0,
+            game: storedGame,
+        });
+        mockDataValues.set("challenge.restrict_rank", true);
+
+        render(<ChallengeModalBody mode="open" modal={mockModal} />);
+
+        expect(screen.getByLabelText("Your Color")).toHaveValue("automatic");
+        expect(screen.getByLabelText("Restrict Rank")).toBeChecked();
+    });
+
+    it("saves a custom game into the shared template", async () => {
+        const user = userEvent.setup();
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+        render(<ChallengeModalBody {...openProps} modal={mockModal} />);
+
+        await user.click(screen.getByRole("button", { name: /create game/i }));
+
+        expect(data.set).toHaveBeenCalledWith(
+            "challenge.challenge.live",
+            expect.objectContaining({ challenger_color: "automatic" }),
+        );
+        expect(data.set).not.toHaveBeenCalledWith("challenge.player.live", expect.anything());
     });
 });
 
