@@ -29,7 +29,9 @@
     /* Uncomment this to make charts resize.  But only when they support that. */
     /* max-width: calc(100dvw - 2em); */
     svg {
-        font-size: var(--font-size-smaller);
+        /* Match the rank-over-time chart: 8pt labels were hard to read.
+           See online-go.com issue 3168. */
+        font-size: var(--font-size-small);
     }
 
     .area {
@@ -43,6 +45,12 @@
         fill: none;
         stroke: var(--shade3);
         shape-rendering: crispEdges;
+    }
+
+    /* D3 writes font-size="10" on the axis group. Only the rank side
+       grows; year labels stay packed. See issue 3168. */
+    .y.axis {
+        font-size: var(--font-size-small);
     }
 
     .brush {
