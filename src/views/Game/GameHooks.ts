@@ -450,6 +450,11 @@ export function useAutoScoring(goban: Goban): { in_progress: boolean; taking_too
  *     pauses are not user-resumable, but a player pause stacks on top of
  *     them and outlives them, so the affordance stays available.
  *
+ * `pauseDisabled` is true when this player has no pauses left. The count
+ * arrives on the game as `pauses_left_<player id>`, and again on the clock
+ * while a player pause is active. The clock copy is written back onto the
+ * engine so it is still known after the game is unpaused.
+ *
  * Moderators bypass the vacation / participant gating that applies to
  * players — `disable_vacation` only constrains player-side pauses, and
  * the server stamps the pause as `moderator_paused` regardless. This
@@ -459,6 +464,7 @@ export function useAutoScoring(goban: Goban): { in_progress: boolean; taking_too
 export function usePauseControl(goban: GobanRenderer | null): {
     paused: boolean;
     action: "pause" | "resume" | null;
+    pauseDisabled: boolean;
     togglePause: () => void;
 } {
     const user = useUser();
@@ -478,6 +484,12 @@ export function usePauseControl(goban: GobanRenderer | null): {
             return undefined;
         }
         const onClock = (clock: JGOFClockWithTransmitting | null) => {
+            const player_pause = clock?.pause_state?.player;
+            if (player_pause && typeof player_pause.pauses_left === "number" && goban.engine) {
+                (goban.engine as unknown as Record<string, number>)[
+                    `pauses_left_${player_pause.player_id}`
+                ] = player_pause.pauses_left;
+            }
             set_pause_state(clock?.pause_state ?? null);
         };
         goban.on("clock", onClock);
@@ -501,8 +513,20 @@ export function usePauseControl(goban: GobanRenderer | null): {
           ? "pause"
           : null;
 
+    const stored_pauses_left =
+        user.id === undefined
+            ? undefined
+            : (engine as unknown as Record<string, unknown> | undefined)?.[
+                  `pauses_left_${user.id}`
+              ];
+    const pauseDisabled =
+        action === "pause" &&
+        !user.is_moderator &&
+        typeof stored_pauses_left === "number" &&
+        stored_pauses_left <= 0;
+
     const togglePause = () => {
-        if (!goban) {
+        if (!goban || pauseDisabled) {
             return;
         }
         if (action === "resume") {
@@ -512,7 +536,7 @@ export function usePauseControl(goban: GobanRenderer | null): {
         }
     };
 
-    return { paused, action, togglePause };
+    return { paused, action, pauseDisabled, togglePause };
 }
 
 /** React hook that returns the current move tree from goban */

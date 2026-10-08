@@ -397,6 +397,7 @@ export function useGameActions(args: GameActionsArgs): GameAction[] {
             menuSection: "tabs",
             dockOrder: 90,
             kind: "action",
+            disabled: pause_control.pauseDisabled,
             onClick: pause_control.togglePause,
         });
     }
