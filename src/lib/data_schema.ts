@@ -181,8 +181,12 @@ type ChallengeSchema = {
     bot: number;
     speed: TimeControlSpeed;
     restrict_rank: boolean;
+    "player.restrict_rank": boolean;
+    "player.time_control": TimeControl;
 } & {
     [speed in `challenge.${TimeControlSpeed}`]: rest_api.ChallengeDetails;
+} & {
+    [speed in `player.${TimeControlSpeed}`]: rest_api.ChallengeDetails;
 };
 
 export interface DemoSettings {
