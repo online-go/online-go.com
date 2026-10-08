@@ -29,16 +29,11 @@ class Device {
 
 export default new Device();
 
-let em10_width: number | undefined;
 let document_body_width = window.innerWidth || document.body.clientWidth;
 // on resize, we need to recompute the display width
 window.addEventListener("resize", () => {
     //document_body_width = document.body.clientWidth;
     document_body_width = window.innerWidth || document.body.clientWidth;
-    em10_width = undefined;
-    if (!em10_width) {
-        em10_width = parseInt(getComputedStyle(document.documentElement).fontSize, 10) * 10;
-    }
 });
 
 export function getWindowWidth(): number {
@@ -46,11 +41,13 @@ export function getWindowWidth(): number {
     //return $(window).width() || document_body_width;
 }
 
+/**
+ * The width of 10em at the root font-size, read fresh each call: a text-only
+ * zoom or font scaling change alters the root font-size without a resize
+ * event, so a cached value would go stale.
+ */
 export function getEm10Width(): number {
-    if (!em10_width) {
-        em10_width = parseInt(getComputedStyle(document.documentElement).fontSize, 10) * 10;
-    }
-    return em10_width;
+    return parseInt(getComputedStyle(document.documentElement).fontSize, 10) * 10;
 }
 
 /**

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { isTouchOnlyDevice, onTouchOnlyDeviceChange } from "./device";
+import { getEm10Width, isTouchOnlyDevice, onTouchOnlyDeviceChange } from "./device";
 
 type Listener = (ev: { matches: boolean }) => void;
 
@@ -38,6 +38,15 @@ function installMatchMedia(matches: boolean) {
 
 afterEach(() => {
     delete (window as { matchMedia?: unknown }).matchMedia;
+    document.documentElement.style.fontSize = "";
+});
+
+test("getEm10Width follows a root font-size change that fires no resize event", () => {
+    document.documentElement.style.fontSize = "20px";
+    expect(getEm10Width()).toBe(200);
+
+    document.documentElement.style.fontSize = "16px";
+    expect(getEm10Width()).toBe(160);
 });
 
 test("assumes a keyboard when matchMedia is unavailable", () => {

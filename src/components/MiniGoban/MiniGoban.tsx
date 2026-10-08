@@ -87,6 +87,11 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
         })(),
     );
     const goban = React.useRef<GobanRenderer | undefined>(undefined);
+    const display_width = React.useRef(0);
+    const root = React.useRef<HTMLElement | null>(null);
+    const setRoot = React.useCallback((element: HTMLElement | null) => {
+        root.current = element;
+    }, []);
 
     const [white_points, setWhitePoints] = React.useState("");
     const [black_points, setBlackPoints] = React.useState("");
@@ -123,6 +128,7 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
         props.labels_positioning === "bottom-right";
 
     React.useEffect(() => {
+        display_width.current = props.displayWidth || computedDisplayWidth();
         const controller = new GobanController({
             board_div: goban_div.current,
             draw_top_labels,
@@ -132,7 +138,7 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
             connect_to_chat: !!props.chat,
             game_id: props.game_id,
             review_id: props.review_id,
-            display_width: props.displayWidth || computedDisplayWidth(),
+            display_width: display_width.current,
             square_size: "auto",
             width: props.width || (props.json ? props.json.width : 19),
             height: props.height || (props.json ? props.json.height : 19),
@@ -372,7 +378,33 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
         if (!goban.current || props.displayWidth == null) {
             return;
         }
+        display_width.current = props.displayWidth;
         goban.current.setSquareSizeBasedOnDisplayWidth(props.displayWidth);
+    }, [props.displayWidth]);
+
+    // The board is sized in pixels from the root font-size, while the cell
+    // around it is sized in rem. A text-only zoom or font scaling change
+    // resizes the cell without a window resize event, so watch the cell and
+    // re-derive the board size whenever it changes.
+    React.useLayoutEffect(() => {
+        const element = root.current;
+        if (props.displayWidth != null || !element) {
+            return;
+        }
+        const follow_root_font_size = () => {
+            const width = computedDisplayWidth();
+            if (goban.current && display_width.current !== width) {
+                display_width.current = width;
+                goban.current.setSquareSizeBasedOnDisplayWidth(width);
+            }
+        };
+        if (typeof ResizeObserver !== "function") {
+            window.addEventListener("resize", follow_root_font_size);
+            return () => window.removeEventListener("resize", follow_root_font_size);
+        }
+        const observer = new ResizeObserver(follow_root_font_size);
+        observer.observe(element);
+        return () => observer.disconnect();
     }, [props.displayWidth]);
 
     const inner = (
@@ -457,11 +489,16 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
     }
 
     if (props.noLink || (!props.game_id && !props.review_id)) {
-        return <div className={"MiniGoban nolink " + (props.className ?? "")}>{inner}</div>;
+        return (
+            <div ref={setRoot} className={"MiniGoban nolink " + (props.className ?? "")}>
+                {inner}
+            </div>
+        );
     } else {
         if (props.game_id) {
             return (
                 <Link
+                    ref={setRoot}
                     to={`/game/${props.game_id}`}
                     className={"MiniGoban link " + (props.className ?? "")}
                     onClick={
@@ -480,6 +517,7 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
         } else {
             return (
                 <Link
+                    ref={setRoot}
                     to={`/review/${props.review_id}`}
                     className={"MiniGoban link " + (props.className ?? "")}
                     {...new_tab_attributes}
