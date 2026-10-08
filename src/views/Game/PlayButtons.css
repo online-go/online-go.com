@@ -110,8 +110,14 @@
 
     /* Resign (or cancel) control at the right edge of the play-buttons
      * strip. Quiet by default so it never competes with the primary
-     * Pass / Submit buttons beside it. */
+     * Pass / Submit buttons beside it.
+     *
+     * The Game sidebar has no padding, so this strip sits against the
+     * action dock. Without a gap, the pointer reaches the dock while
+     * aiming for Resign and the dock menu opens over the button.
+     * See online-go.com issue 3564. */
     .resign-button {
+        margin-right: 0.75rem;
         display: inline-flex;
         align-items: center;
         justify-content: center;
