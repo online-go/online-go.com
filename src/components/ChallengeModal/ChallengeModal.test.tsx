@@ -100,7 +100,11 @@ jest.mock("@/lib/player_cache", () => ({
 jest.mock("@/lib/requests", () => ({
     post: jest.fn(),
     del: jest.fn(),
-    get: jest.fn(() => Promise.resolve({})),
+    get: jest.fn(() =>
+        Promise.resolve({
+            user: { id: 123, ranking: 10, anonymous: false },
+        }),
+    ),
 }));
 
 jest.mock("@/components/ChallengeLinkButton", () => ({
@@ -836,14 +840,37 @@ describe("ChallengeModalBody", () => {
     });
 });
 
-describe("rematch color preference", () => {
+describe("rematch saved settings", () => {
     beforeEach(() => {
         jest.clearAllMocks();
         mockPreferredSettings = [];
         mockDataValues.clear();
+        mockDataValues.set("user", { id: 123, ranking: 10, anonymous: false });
+        mockDataValues.set("challenge.restrict_rank", true);
+        mockDataValues.set("challenge.challenge.live", {
+            initialized: false,
+            min_ranking: 5,
+            max_ranking: 36,
+            challenger_color: "automatic",
+            rengo_auto_start: 0,
+            game: {
+                name: "",
+                rules: "japanese",
+                ranked: true,
+                width: 19,
+                height: 19,
+                handicap: -1,
+                komi_auto: "automatic",
+                disable_analysis: false,
+                initial_state: null,
+                private: false,
+                rengo: false,
+                rengo_casual_mode: true,
+            },
+        });
     });
 
-    function rematchProps(color: "black" | "white" | "automatic") {
+    function rematchProps(color: "black" | "white" | "automatic"): ChallengeModalProperties {
         return {
             ...defaultProps,
             mode: "player" as const,
@@ -851,15 +878,25 @@ describe("rematch color preference", () => {
             persistColor: false,
             config: {
                 ...defaultProps.config!,
+                conf: {
+                    ...defaultProps.config!.conf,
+                    restrict_rank: false,
+                },
                 challenge: {
                     ...defaultProps.config!.challenge,
                     challenger_color: color,
+                    game: {
+                        ...defaultProps.config!.challenge.game,
+                        ranked: false,
+                        komi_auto: "custom",
+                        komi: 0.5,
+                    },
                 },
             },
         };
     }
 
-    it("sends the rematch color but keeps the saved color for later games", async () => {
+    it("sends the rematch as-is but does not replace saved custom game settings", async () => {
         const user = userEvent.setup();
         jest.mocked(post).mockResolvedValueOnce({ id: 123 });
         render(<ChallengeModalBody {...rematchProps("black")} modal={mockModal} />);
@@ -868,12 +905,15 @@ describe("rematch color preference", () => {
 
         expect(post).toHaveBeenCalledWith(
             "players/456/challenge",
-            expect.objectContaining({ challenger_color: "black" }),
+            expect.objectContaining({
+                challenger_color: "black",
+                game: expect.objectContaining({ komi_auto: "custom", komi: 0.5, ranked: false }),
+            }),
         );
-        expect(data.set).toHaveBeenCalledWith(
-            "challenge.challenge.live",
-            expect.objectContaining({ challenger_color: "automatic" }),
-        );
+        const savedKeys = jest.mocked(data.set).mock.calls.map((call) => call[0]);
+        expect(savedKeys).not.toContain("challenge.challenge.live");
+        expect(savedKeys).not.toContain("challenge.restrict_rank");
+        expect(savedKeys).not.toContain("time_control.speed");
     });
 
     it("still saves a color the player chose on a normal challenge", async () => {
