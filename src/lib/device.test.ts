@@ -39,6 +39,23 @@ function installMatchMedia(matches: boolean) {
 afterEach(() => {
     delete (window as { matchMedia?: unknown }).matchMedia;
     document.documentElement.style.fontSize = "";
+    document.getElementById("em10")?.remove();
+});
+
+function installEm10Probe(offsetWidth: number) {
+    const probe = document.createElement("div");
+    probe.id = "em10";
+    Object.defineProperty(probe, "offsetWidth", { configurable: true, value: offsetWidth });
+    document.body.appendChild(probe);
+}
+
+test("getEm10Width measures the em probe, so a clamped minimum font size does not inflate it", () => {
+    // Chromium reports the clamped size through getComputedStyle while
+    // em and rem lengths keep the unclamped size.
+    document.documentElement.style.fontSize = "20px";
+    installEm10Probe(160);
+
+    expect(getEm10Width()).toBe(160);
 });
 
 test("getEm10Width follows a root font-size change that fires no resize event", () => {

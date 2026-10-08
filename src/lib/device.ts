@@ -42,11 +42,21 @@ export function getWindowWidth(): number {
 }
 
 /**
- * The width of 10em at the root font-size, read fresh each call: a text-only
- * zoom or font scaling change alters the root font-size without a resize
- * event, so a cached value would go stale.
+ * The width of 10em at the root font-size, measured fresh each call from the
+ * `#em10` probe element in index.html.
+ *
+ * Measuring a laid-out element rather than reading the root font-size keeps
+ * this in step with em and rem lengths: Chromium reports a clamped minimum
+ * font size through getComputedStyle while em and rem lengths keep the
+ * unclamped size, and a text-only zoom or font scaling change alters the
+ * root font-size without a resize event, so a cached value would go stale.
+ * Without a laid-out probe (jsdom) the root font-size is used.
  */
 export function getEm10Width(): number {
+    const probe_width = document.getElementById("em10")?.offsetWidth ?? 0;
+    if (probe_width > 0) {
+        return probe_width;
+    }
     return parseInt(getComputedStyle(document.documentElement).fontSize, 10) * 10;
 }
 
