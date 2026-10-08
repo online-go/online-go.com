@@ -33,7 +33,15 @@ function aiMove(move_number: number, branches: Array<Array<[number, number]>>): 
 
 describe("fillAIMarksBacktracking", () => {
     test("a variation only keeps the AI playout that stays on the tree", () => {
-        const engine = new GobanEngine({ width: 9, height: 9, moves: "aaabac" });
+        const engine = new GobanEngine({
+            width: 9,
+            height: 9,
+            moves: [
+                [0, 0],
+                [0, 1],
+                [0, 2],
+            ],
+        });
         const trunk = engine.cur_move;
         expect(trunk.trunk).toBe(true);
         engine.followPath(3, "dddeee");
@@ -78,7 +86,15 @@ describe("fillAIMarksBacktracking", () => {
     });
 
     test("a variation with no matching AI playout draws nothing", () => {
-        const engine = new GobanEngine({ width: 9, height: 9, moves: "aaabac" });
+        const engine = new GobanEngine({
+            width: 9,
+            height: 9,
+            moves: [
+                [0, 0],
+                [0, 1],
+                [0, 2],
+            ],
+        });
         const trunk = engine.cur_move;
         expect(trunk.trunk).toBe(true);
         engine.followPath(3, "dddeee");
@@ -107,7 +123,15 @@ describe("fillAIMarksBacktracking", () => {
     });
 
     test("the end of a variation still shows the AI's own continuation", () => {
-        const engine = new GobanEngine({ width: 9, height: 9, moves: "aaabac" });
+        const engine = new GobanEngine({
+            width: 9,
+            height: 9,
+            moves: [
+                [0, 0],
+                [0, 1],
+                [0, 2],
+            ],
+        });
         const trunk = engine.cur_move;
         engine.followPath(3, "dd");
         expect(engine.cur_move.next()).toBeNull();
@@ -137,7 +161,16 @@ describe("fillAIMarksBacktracking", () => {
     });
 
     test("on the trunk an AI playout may differ from the game", () => {
-        const engine = new GobanEngine({ width: 9, height: 9, moves: "aaabacad" });
+        const engine = new GobanEngine({
+            width: 9,
+            height: 9,
+            moves: [
+                [0, 0],
+                [0, 1],
+                [0, 2],
+                [0, 3],
+            ],
+        });
         const at3 = engine.move_tree.index(3);
         engine.jumpTo(at3);
         expect(at3.trunk).toBe(true);
