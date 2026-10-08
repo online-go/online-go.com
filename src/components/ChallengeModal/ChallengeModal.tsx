@@ -282,6 +282,26 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         );
     }
 
+    /** Why the Rengo checkbox is locked, or null when it can be turned on.
+     *  Ranked and private games cannot be rengo, and the box starts disabled
+     *  with no other hint. See online-go.com issue 3026. */
+    rengoDisabledReason(): string | null {
+        const game = this.state.challenge.game;
+        if (this.props.mode !== "open" || game.rengo) {
+            return null;
+        }
+        if (game.ranked && game.private) {
+            return _("Rengo is unavailable for ranked or private games.");
+        }
+        if (game.ranked) {
+            return _("Rengo is unavailable for ranked games.");
+        }
+        if (game.private) {
+            return _("Rengo is unavailable for private games.");
+        }
+        return null;
+    }
+
     gameStateOf(state: ChallengeModalState): any {
         return state.challenge.game;
     }
@@ -880,6 +900,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         const mode = this.props.mode;
         const bots = bots_list();
         const selected_bot = bots.find((bot) => bot.id === this.state.conf.bot_id);
+        const rengo_disabled_reason = this.rengoDisabledReason();
 
         return (
             <div
@@ -976,7 +997,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                     </div>
                 )}
                 {mode === "open" && (
-                    <div className="form-group">
+                    <div className="form-group rengo-option">
                         <label className="control-label" htmlFor="rengo-option">
                             {_("Rengo")}
                         </label>
@@ -985,15 +1006,20 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                 <input
                                     type="checkbox"
                                     id="rengo-option"
-                                    disabled={
-                                        !this.state.challenge.game.rengo &&
-                                        (this.state.challenge.game.private ||
-                                            this.state.challenge.game.ranked)
+                                    disabled={rengo_disabled_reason !== null}
+                                    title={rengo_disabled_reason ?? undefined}
+                                    aria-describedby={
+                                        rengo_disabled_reason ? "rengo-disabled-reason" : undefined
                                     }
                                     checked={this.state.challenge.game.rengo}
                                     onChange={(ev) => this.update_rengo(ev.target.checked)}
                                 />
                             </div>
+                            {rengo_disabled_reason && (
+                                <div id="rengo-disabled-reason" className="rengo-disabled-reason">
+                                    {rengo_disabled_reason}
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

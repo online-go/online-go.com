@@ -343,6 +343,34 @@ describe("ChallengeModalBody", () => {
         expect(screen.getByLabelText("Ranked")).toBeEnabled();
         await user.click(screen.getByLabelText("Ranked"));
         expect(screen.getByLabelText("Rengo")).toBeDisabled();
+        expect(screen.getByText("Rengo is unavailable for ranked games.")).toBeInTheDocument();
+    });
+
+    it("explains why Rengo is unavailable and clears the note when Ranked is turned off", async () => {
+        const user = userEvent.setup();
+        render(
+            <ChallengeModalBody
+                {...openProps}
+                config={{
+                    ...openProps.config,
+                    challenge: {
+                        ...openProps.config.challenge,
+                        game: { ...openProps.config.challenge.game, ranked: true, private: false },
+                    },
+                }}
+                modal={mockModal}
+            />,
+        );
+        const rengo = screen.getByLabelText("Rengo");
+        expect(rengo).toBeDisabled();
+        expect(rengo).toHaveAttribute("title", "Rengo is unavailable for ranked games.");
+        expect(screen.getByText("Rengo is unavailable for ranked games.")).toBeInTheDocument();
+
+        await user.click(screen.getByLabelText("Ranked"));
+        expect(screen.getByLabelText("Rengo")).toBeEnabled();
+        expect(
+            screen.queryByText("Rengo is unavailable for ranked games."),
+        ).not.toBeInTheDocument();
     });
 
     it("saves distinct rank preferences and restores the unrestricted request", async () => {
