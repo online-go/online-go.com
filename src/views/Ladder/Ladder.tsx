@@ -196,8 +196,13 @@ class _Ladder extends React.PureComponent<LadderProperties, LadderState> {
                             onComplete={this.updateAutocompletedPlayer as any}
                         />
 
+                        {/* Drop out stays available for anyone already on the ladder.
+                            The group check only gates Join, so a private or
+                            closed group cannot trap a ranked player.
+                            See online-go.com issue 3331. */}
                         {this.state.ladder &&
-                            (!this.state.ladder.group ||
+                            (this.state.ladder.player_rank > 0 ||
+                                !this.state.ladder.group ||
                                 this.state.ladder.player_is_member_of_group) && (
                                 <span>
                                     {this.state.ladder.player_rank > 0 ? (
