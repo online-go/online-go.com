@@ -16,9 +16,11 @@
  */
 .ChatView {
     position: fixed;
-    /* Pinned to the visible region so the on-screen keyboard cannot cover
-       the input or pan the header away; see lib/visual_viewport.ts. */
-    top: max(calc(var(--navbar-height) + 0.2rem), var(--visual-viewport-top));
+    /* Sit just under the navbar. Both follow the visual viewport: iOS
+       Safari pans that viewport when the chat input is focused, and a bar
+       left at the top of the layout viewport scrolls out of view while this
+       pane stays. See online-go.com issue 3011 and lib/visual_viewport.ts. */
+    top: calc(var(--visual-viewport-top) + var(--navbar-height) + 0.2rem);
     bottom: var(--visual-viewport-bottom);
     left: 0;
     right: 0;
