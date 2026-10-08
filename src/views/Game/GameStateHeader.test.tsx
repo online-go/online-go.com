@@ -117,8 +117,13 @@ describe("GameStateHeader undo help flows", () => {
         renderHeader(controller, triggerFlow);
 
         requestUndo(controller, ME.id);
+        controller.goban.updatePlayerToMoveTitle();
 
-        expect(screen.getByText("test_user has requested an undo")).toBeDefined();
+        expect(
+            screen.getByText("You asked to undo a move. Your opponent may accept or reject it."),
+        ).toBeDefined();
+        expect(screen.queryByText("Your move")).toBeNull();
+        expect(screen.queryByText("test_user has requested an undo")).toBeNull();
         expect(triggerFlow).toHaveBeenCalledWith("undo-requested-intro");
         expect(triggerFlow).not.toHaveBeenCalledWith("undo-request-received-intro");
     });
@@ -131,8 +136,10 @@ describe("GameStateHeader undo help flows", () => {
         renderHeader(controller, triggerFlow);
 
         requestUndo(controller, OPPONENT.id);
+        controller.goban.updatePlayerToMoveTitle();
 
         expect(screen.getByText("test_user2 has requested an undo")).toBeDefined();
+        expect(screen.queryByText("Black to move")).toBeNull();
         expect(triggerFlow).toHaveBeenCalledWith("undo-request-received-intro");
         expect(triggerFlow).not.toHaveBeenCalledWith("undo-requested-intro");
     });
