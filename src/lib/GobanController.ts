@@ -530,6 +530,15 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         this.goban.nextSibling();
         this.goban.syncReviewMove();
     };
+    /** Analysis-disabled games cannot keep a preview stone. History controls
+     *  must remove it and clear the submit marker, or the last-move mark
+     *  stays a plus and the stone looks as if it was played. */
+    private discardStagedMoveWhenAnalysisIsDisabled(): boolean {
+        if (!this.goban.isAnalysisDisabled() || !this.goban.move_selected) {
+            return false;
+        }
+        return this.goban.unstagePendingMove();
+    }
     public gotoFirstMove = () => {
         if (this.goban.mode === "conditional") {
             return;
@@ -537,6 +546,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
+        this.discardStagedMoveWhenAnalysisIsDisabled();
         this.goban.showFirst();
         this.goban.syncReviewMove();
     };
@@ -544,6 +554,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
+        this.discardStagedMoveWhenAnalysisIsDisabled();
         for (let i = 0; i < 10; ++i) {
             this.goban.showPrevious();
         }
@@ -553,6 +564,12 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
+        // One step back while a submit-move stone is only staged must cancel
+        // that stone. Leaving it in the tree, with submit_move still set,
+        // draws a plus on the move and looks like the stone was sent.
+        if (this.discardStagedMoveWhenAnalysisIsDisabled()) {
+            return;
+        }
         const cur = this.goban.engine.cur_move;
         this.goban.showPrevious();
         const prev = this.goban.engine.cur_move;
@@ -569,6 +586,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             this.stopAutoplay();
         }
         this.checkAndEnterAnalysis(last_estimate_move);
+        this.discardStagedMoveWhenAnalysisIsDisabled();
         this.goban.showNext();
         this.goban.syncReviewMove();
     };
@@ -576,6 +594,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
+        this.discardStagedMoveWhenAnalysisIsDisabled();
         for (let i = 0; i < 10; ++i) {
             this.goban.showNext();
         }
@@ -585,6 +604,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
+        this.discardStagedMoveWhenAnalysisIsDisabled();
         if (this.goban.engine.last_official_move.move_number !== 0) {
             this.goban.jumpToLastOfficialMove();
         } else {

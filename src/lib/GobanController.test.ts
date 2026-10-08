@@ -16,6 +16,7 @@
  */
 
 import type { MoveTree } from "goban";
+import { callbacks } from "goban";
 import * as data from "@/lib/data";
 import { TEST_USER } from "@/views/Game/test_user";
 import { shared_ip_with_player_map } from "@/views/Game/util";
@@ -156,6 +157,41 @@ describe("GobanController", () => {
 
         controller.gotoLastMove();
         expect(goban.engine.cur_move.move_number).toBe(3);
+    });
+
+    it("cancels a staged submit move instead of leaving it on the board", () => {
+        const previous = callbacks.isAnalysisDisabled;
+        callbacks.isAnalysisDisabled = () => true;
+        try {
+            const controller = new GobanController({
+                width: 9,
+                height: 9,
+                moves: [
+                    [2, 2],
+                    [3, 3],
+                ],
+            });
+            const goban = controller.goban;
+            goban.setMode("play");
+            const official = goban.engine.cur_move;
+            goban.engine.place(4, 4);
+            goban.move_selected = { x: 4, y: 4 };
+            goban.submit_move = () => {
+                /* staged, not sent */
+            };
+
+            controller.previousMove();
+
+            expect(goban.submit_move).toBeUndefined();
+            expect(goban.move_selected).toBeUndefined();
+            expect(goban.engine.cur_move).toBe(official);
+            expect(official.trunk_next?.x).not.toBe(4);
+            expect(official.branches.some((branch) => branch.x === 4 && branch.y === 4)).toBe(
+                false,
+            );
+        } finally {
+            callbacks.isAnalysisDisabled = previous;
+        }
     });
 
     describe("estimateScore", () => {
