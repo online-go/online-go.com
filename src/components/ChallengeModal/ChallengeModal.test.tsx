@@ -92,6 +92,11 @@ jest.mock("@/lib/data", () => ({
     unwatch: jest.fn(),
 }));
 
+jest.mock("@/lib/player_cache", () => ({
+    lookup: () => ({ id: 456, username: "opponent" }),
+    fetch: () => Promise.resolve({ id: 456, username: "opponent" }),
+}));
+
 jest.mock("@/lib/requests", () => ({
     post: jest.fn(),
     del: jest.fn(),
@@ -800,6 +805,66 @@ describe("ChallengeModalBody", () => {
 
         challengeDetails.game.komi = "4.5";
         expect(sanitizeChallengeDetails(challengeDetails).game.komi).toBe(4.5);
+    });
+});
+
+describe("rematch color preference", () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+        mockPreferredSettings = [];
+        mockDataValues.clear();
+    });
+
+    function rematchProps(color: "black" | "white" | "automatic") {
+        return {
+            ...defaultProps,
+            mode: "player" as const,
+            playerId: 456,
+            persistColor: false,
+            config: {
+                ...defaultProps.config!,
+                challenge: {
+                    ...defaultProps.config!.challenge,
+                    challenger_color: color,
+                },
+            },
+        };
+    }
+
+    it("sends the rematch color but keeps the saved color for later games", async () => {
+        const user = userEvent.setup();
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+        render(<ChallengeModalBody {...rematchProps("black")} modal={mockModal} />);
+
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({ challenger_color: "black" }),
+        );
+        expect(data.set).toHaveBeenCalledWith(
+            "challenge.challenge.live",
+            expect.objectContaining({ challenger_color: "automatic" }),
+        );
+    });
+
+    it("still saves a color the player chose on a normal challenge", async () => {
+        const user = userEvent.setup();
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+        render(
+            <ChallengeModalBody
+                {...rematchProps("black")}
+                persistColor={undefined}
+                modal={mockModal}
+            />,
+        );
+
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(data.set).toHaveBeenCalledWith(
+            "challenge.challenge.live",
+            expect.objectContaining({ challenger_color: "black" }),
+        );
     });
 });
 
