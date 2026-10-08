@@ -82,9 +82,13 @@ function parsePosition(position: string, goban: Goban | null): { i: number; j: n
 
 const positionTokenRegex = /(^|\s)([a-zA-Z][0-9]{1,2})([,.!?]*)(?=\s|$)/gm;
 
-function renderChatBodyText(bodyText: string, goban: Goban | null): React.ReactNode[] {
+export function renderTextWithBoardPositions(
+    bodyText: string,
+    goban: Goban | null,
+    renderPlain: (text: string) => React.ReactNode = (text) => text,
+): React.ReactNode[] {
     if (!goban) {
-        return chat_markup(bodyText);
+        return [<React.Fragment key="plain">{renderPlain(bodyText)}</React.Fragment>];
     }
 
     const nodes: React.ReactNode[] = [];
@@ -100,7 +104,11 @@ function renderChatBodyText(bodyText: string, goban: Goban | null): React.ReactN
         const punctuation = match[3] ?? "";
 
         if (start > cursor) {
-            nodes.push(...chat_markup(bodyText.slice(cursor, start)));
+            nodes.push(
+                <React.Fragment key={`plain-${tokenIndex}`}>
+                    {renderPlain(bodyText.slice(cursor, start))}
+                </React.Fragment>,
+            );
         }
 
         const parsed = parsePosition(position, goban);
@@ -143,10 +151,18 @@ function renderChatBodyText(bodyText: string, goban: Goban | null): React.ReactN
     }
 
     if (cursor < bodyText.length) {
-        nodes.push(...chat_markup(bodyText.slice(cursor)));
+        nodes.push(
+            <React.Fragment key={`plain-${tokenIndex}`}>
+                {renderPlain(bodyText.slice(cursor))}
+            </React.Fragment>,
+        );
     }
 
     return nodes;
+}
+
+function renderChatBodyText(bodyText: string, goban: Goban | null): React.ReactNode[] {
+    return renderTextWithBoardPositions(bodyText, goban, chat_markup);
 }
 
 function getChatIdPrefix(gameId?: number, reviewId?: number): string {
