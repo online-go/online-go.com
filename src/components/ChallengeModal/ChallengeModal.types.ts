@@ -36,6 +36,8 @@ export interface ChallengeModalProperties {
     config?: ChallengeModalConfig;
     autoCreate?: boolean;
     created?: (c: CreatedChallengeInfo) => void;
+    /** When false, the color in this dialog is for this game only and is not saved. */
+    persistColor?: boolean;
 }
 
 export interface ChallengeModalInput extends ChallengeModalProperties {

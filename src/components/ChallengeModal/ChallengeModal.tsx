@@ -356,10 +356,10 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         const speed = data.get("challenge.speed", "live");
 
         let challenge_to_save = next.challenge;
+        const persisted: any = data.get(`challenge.challenge.${speed}`);
         if (this.props.mode === "computer") {
             // ranked and disable_analysis are forced in bot mode, so don't let
             // them overwrite the user's persisted preference used by other modes.
-            const persisted: any = data.get(`challenge.challenge.${speed}`);
             challenge_to_save = {
                 ...next.challenge,
                 game: {
@@ -368,6 +368,15 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                     disable_analysis:
                         persisted?.game?.disable_analysis ?? next.challenge.game.disable_analysis,
                 },
+            };
+        }
+
+        // A rematch locks the color for this one game. That must not replace
+        // the color the player uses when creating later games.
+        if (this.props.persistColor === false) {
+            challenge_to_save = {
+                ...challenge_to_save,
+                challenger_color: persisted?.challenger_color ?? "automatic",
             };
         }
 
