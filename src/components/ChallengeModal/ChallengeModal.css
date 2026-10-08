@@ -47,6 +47,19 @@
             width: 1rem;
         }
 
+        .rengo-option .controls {
+            width: auto;
+            max-width: 16rem;
+            flex-wrap: wrap;
+        }
+
+        .rengo-disabled-reason {
+            flex-basis: 100%;
+            font-size: 0.8rem;
+            line-height: 1.25rem;
+            color: var(--shade1);
+        }
+
         /* we ease this warning in after about a second, in case */
         /* the user is in the middle of typing a valid number that */
         /* starts with the invalid values '1' or '2' */
