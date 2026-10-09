@@ -46,6 +46,7 @@ import { useUser } from "@/lib/hooks";
 import { AntiGrief } from "./AntiGrief";
 import { GobanAnalyzeButtonBar } from "@/components/GobanAnalyzeButtonBar/GobanAnalyzeButtonBar";
 import { EstimateScore } from "./fragments";
+import { renderTextWithBoardPositions } from "@/components/Chat/GameChatLine";
 import "./PlayControls.css";
 
 const MAX_SEALING_LOCATIONS_TO_LIST = 5;
@@ -306,6 +307,102 @@ export function AnalyzeButtonBar(): React.ReactElement {
     return <GobanAnalyzeButtonBar controller={goban_controller} />;
 }
 
+interface MoveCommentBoxProps {
+    text: string;
+    canEdit: boolean;
+    goban: Goban;
+    onChange: (value: string) => void;
+}
+
+/** Review comments are read more often than they are typed. Show the same
+ *  coordinate links as chat, and turn back into a text box when the controller
+ *  clicks to edit. See online-go.com issue 1418. */
+export function MoveCommentBox({
+    text,
+    canEdit,
+    goban,
+    onChange,
+}: MoveCommentBoxProps): React.ReactElement {
+    const [editing, setEditing] = React.useState(false);
+    const area = React.useRef<HTMLTextAreaElement>(null);
+
+    React.useEffect(() => {
+        if (!canEdit) {
+            setEditing(false);
+        }
+    }, [canEdit]);
+
+    React.useEffect(() => {
+        if (!editing) {
+            return;
+        }
+        const el = area.current;
+        if (!el) {
+            return;
+        }
+        el.focus();
+        const end = el.value.length;
+        el.setSelectionRange(end, end);
+    }, [editing]);
+
+    if (editing && canEdit) {
+        return (
+            <textarea
+                ref={area}
+                id="game-move-node-text"
+                placeholder={_("Move comments...")}
+                rows={5}
+                className="form-control"
+                value={text}
+                onChange={(event) => onChange(event.target.value)}
+                onBlur={() => setEditing(false)}
+            />
+        );
+    }
+
+    return (
+        <div
+            id="game-move-node-text"
+            className={"move-comment-rendered" + (canEdit ? " editable" : "")}
+            role="textbox"
+            aria-readonly={!canEdit}
+            aria-multiline="true"
+            tabIndex={canEdit ? 0 : undefined}
+            onClick={(event) => {
+                if (!canEdit) {
+                    return;
+                }
+                const target = event.target as HTMLElement;
+                if (target.closest(".position, .position-trailing")) {
+                    return;
+                }
+                setEditing(true);
+            }}
+            onKeyDown={(event) => {
+                if (!canEdit) {
+                    return;
+                }
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    setEditing(true);
+                    return;
+                }
+                if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+                    event.preventDefault();
+                    onChange(`${text}${event.key}`);
+                    setEditing(true);
+                }
+            }}
+        >
+            {text ? (
+                renderTextWithBoardPositions(text, goban)
+            ) : (
+                <span className="move-comment-placeholder">{_("Move comments...")}</span>
+            )}
+        </div>
+    );
+}
+
 interface ReviewControlsProps {
     review_id: number;
 }
@@ -442,15 +539,26 @@ export function ReviewControls({ review_id }: ReviewControlsProps) {
         setExtraActionCallback(renderExtraPlayerActions);
     }, [goban]);
 
-    const [move_text, set_move_text] = React.useState<string>();
-    const updateMoveText = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
-        set_move_text(ev.target.value);
-        goban.syncReviewMove(undefined, ev.target.value);
+    const [move_text, set_move_text] = React.useState<string>("");
+    const updateMoveText = (value: string) => {
+        set_move_text(value);
+        goban.syncReviewMove(undefined, value);
     };
     React.useEffect(() => {
         const sync_move_text = () => set_move_text(goban.engine.cur_move?.text || "");
+        // Review text is written onto the current node after the cur_move
+        // event, so the review events are what make the comment appear.
         goban.on("load", sync_move_text);
         goban.on("cur_move", sync_move_text);
+        goban.on("review.updated", sync_move_text);
+        goban.on("review.load-end", sync_move_text);
+        sync_move_text();
+        return () => {
+            goban.off("load", sync_move_text);
+            goban.off("cur_move", sync_move_text);
+            goban.off("review.updated", sync_move_text);
+            goban.off("review.load-end", sync_move_text);
+        };
     }, [goban]);
 
     const syncToCurrentReviewMove = () => {
@@ -509,15 +617,12 @@ export function ReviewControls({ review_id }: ReviewControlsProps) {
                     />
 
                     <div className="move-comments">
-                        <textarea
-                            id="game-move-node-text"
-                            placeholder={_("Move comments...")}
-                            rows={5}
-                            className="form-control"
-                            value={move_text}
-                            disabled={review_controller_id !== data.get("user").id}
+                        <MoveCommentBox
+                            text={move_text}
+                            canEdit={review_controller_id === user.id}
+                            goban={goban}
                             onChange={updateMoveText}
-                        ></textarea>
+                        />
                     </div>
 
                     <div style={{ padding: "0.5em" }}>
