@@ -74,8 +74,14 @@ export interface MiniGobanProps {
     };
 }
 
+/**
+ * 19rem: with the board card's 1.2em padding on each side this fits inside
+ * the 22rem MiniGoban cell with a small gutter, where 20rem did not.
+ */
+const DEFAULT_DISPLAY_WIDTH_EM10 = 1.9;
+
 function computedDisplayWidth(): number {
-    return Math.min(getWindowWidth(), getEm10Width() * 2);
+    return Math.min(getWindowWidth(), getEm10Width() * DEFAULT_DISPLAY_WIDTH_EM10);
 }
 
 export function MiniGoban(props: MiniGobanProps): React.ReactElement {
@@ -488,9 +494,14 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
         new_tab_attributes = { target: "_blank", rel: "noopener noreferrer" };
     }
 
+    // default-size: the board is 19rem wide and the card around it a fixed
+    // 19rem box, so cards in a list match whatever the board size.
+    const size_class = props.displayWidth == null ? "default-size " : "";
+    const class_name = "MiniGoban " + size_class + (props.className ?? "");
+
     if (props.noLink || (!props.game_id && !props.review_id)) {
         return (
-            <div ref={setRoot} className={"MiniGoban nolink " + (props.className ?? "")}>
+            <div ref={setRoot} className={class_name + " nolink"}>
                 {inner}
             </div>
         );
@@ -500,7 +511,7 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
                 <Link
                     ref={setRoot}
                     to={`/game/${props.game_id}`}
-                    className={"MiniGoban link " + (props.className ?? "")}
+                    className={class_name + " link"}
                     onClick={
                         props.onSelectGameId
                             ? (event) => {
@@ -519,7 +530,7 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
                 <Link
                     ref={setRoot}
                     to={`/review/${props.review_id}`}
-                    className={"MiniGoban link " + (props.className ?? "")}
+                    className={class_name + " link"}
                     {...new_tab_attributes}
                 >
                     {inner}
