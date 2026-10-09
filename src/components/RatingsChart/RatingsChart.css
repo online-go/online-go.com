@@ -26,7 +26,10 @@
     /* Uncomment this to make charts resize.  But only when they support that. */
     /* max-width: calc(100dvw - 2em); */
     svg {
-        font-size: var(--font-size-smaller);
+        /* 8pt axis and hover text was hard to read. The y axes use fewer
+           ticks so this size does not stack the labels.
+           See online-go.com issue 3168. */
+        font-size: var(--font-size-small);
     }
 
     .area {
@@ -40,6 +43,13 @@
         fill: none;
         stroke: var(--shade3);
         shape-rendering: crispEdges;
+    }
+
+    /* D3 writes font-size="10" on the axis group, which beats the svg
+       font-size above. Only the vertical labels grow: the year labels
+       are already packed. See online-go.com issue 3168. */
+    .y.axis {
+        font-size: var(--font-size-small);
     }
 
     .brush {

@@ -109,8 +109,8 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
 
     selected_axis = d3.axisBottom(this.ratings_x);
     timeline_axis = d3.axisBottom(this.timeline_x);
-    rating_axis = d3.axisLeft(this.ratings_y);
-    rank_axis = d3.axisRight(this.ratings_y);
+    rating_axis = d3.axisLeft(this.ratings_y).ticks(5);
+    rank_axis = d3.axisRight(this.ratings_y).ticks(5);
 
     rating_line = d3
         .line<RatingEntry>()
