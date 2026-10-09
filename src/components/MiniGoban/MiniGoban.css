@@ -172,11 +172,11 @@
         opacity: 0.8;
     }
 
-    /* A default-size board is 19rem wide, but drawn at a whole number of
-     * pixels per square, so a 9x9 and a 19x19 differ by a few pixels. The
-     * card is a fixed 19rem box with the board centred, so cards in a list
-     * are all the same size, and the cells align on their top edge rather
-     * than on the board's baseline. */
+    /* A default-size board is drawn at a whole number of pixels per square,
+     * so a 9x9 and a 19x19 differ by a few pixels. The component sets the
+     * card to the board's display width and the board is centred in it, so
+     * cards in a list are all the same size, and the cells align on their
+     * top edge rather than on the board's baseline. */
     &.default-size {
         vertical-align: top;
     }
@@ -185,8 +185,6 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 19rem;
-        height: 19rem;
     }
 
     .board:hover {

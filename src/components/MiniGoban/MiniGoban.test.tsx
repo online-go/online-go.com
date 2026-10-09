@@ -88,6 +88,7 @@ beforeEach(() => {
         disconnect() {}
     } as unknown as typeof ResizeObserver;
     Object.defineProperty(window, "innerWidth", { value: 1920, configurable: true });
+    window.dispatchEvent(new Event("resize"));
     setRootFontSize(20);
 });
 
@@ -122,6 +123,37 @@ describe("MiniGoban board sizing", () => {
         fireResize();
 
         expect(goban.setSquareSizeBasedOnDisplayWidth).not.toHaveBeenCalled();
+    });
+
+    it("sizes the card box from the board's display width", () => {
+        const { container } = renderMiniGoban();
+
+        expect(container.querySelector<HTMLElement>(".board")?.style.width).toBe("380px");
+        expect(container.querySelector<HTMLElement>(".board")?.style.height).toBe("380px");
+    });
+
+    it("keeps the card box in step with the board after a root font-size change", () => {
+        const { container } = renderMiniGoban();
+
+        setRootFontSize(16);
+        fireResize();
+
+        expect(container.querySelector<HTMLElement>(".board")?.style.width).toBe("304px");
+    });
+
+    it("keeps the card box inside a viewport narrower than 19rem", () => {
+        Object.defineProperty(window, "innerWidth", { value: 300, configurable: true });
+        window.dispatchEvent(new Event("resize"));
+        const { container } = renderMiniGoban();
+
+        expect(created_gobans[0].display_width).toBe(300);
+        expect(container.querySelector<HTMLElement>(".board")?.style.width).toBe("300px");
+    });
+
+    it("leaves the card box alone when given an explicit displayWidth", () => {
+        const { container } = renderMiniGoban({ displayWidth: 250 });
+
+        expect(container.querySelector<HTMLElement>(".board")?.style.width).toBe("");
     });
 
     it("marks itself default-size when it computes its own width", () => {
