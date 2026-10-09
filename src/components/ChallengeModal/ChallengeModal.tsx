@@ -371,6 +371,13 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     }
 
     saveSettings() {
+        // A rematch copies that game's color, komi, board, and rank limits.
+        // Those belong to this one game, not the next custom game.
+        // See online-go.com issue 2253.
+        if (this.props.persistColor === false) {
+            return;
+        }
+
         const next = this.next();
         saveTimeControlSettings(this.state.time_control);
         const speed = data.get("challenge.speed", "live");
@@ -388,15 +395,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                     disable_analysis:
                         persisted?.game?.disable_analysis ?? next.challenge.game.disable_analysis,
                 },
-            };
-        }
-
-        // A rematch locks the color for this one game. That must not replace
-        // the color the player uses when creating later games.
-        if (this.props.persistColor === false) {
-            challenge_to_save = {
-                ...challenge_to_save,
-                challenger_color: persisted?.challenger_color ?? "automatic",
             };
         }
 
