@@ -74,8 +74,14 @@ export interface MiniGobanProps {
     };
 }
 
+/**
+ * 19rem: with the board card's 1.2em padding on each side this fits inside
+ * the 22rem MiniGoban cell with a small gutter, where 20rem did not.
+ */
+const DEFAULT_DISPLAY_WIDTH_EM10 = 1.9;
+
 function computedDisplayWidth(): number {
-    return Math.min(getWindowWidth(), getEm10Width() * 2);
+    return Math.min(getWindowWidth(), getEm10Width() * DEFAULT_DISPLAY_WIDTH_EM10);
 }
 
 export function MiniGoban(props: MiniGobanProps): React.ReactElement {
@@ -108,6 +114,10 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
     const [in_stone_removal_phase, setInStoneRemovalPhase] = React.useState(false);
     const [finished, setFinished] = React.useState(false);
     const [game_name, setGameName] = React.useState("");
+    // The card box around a default-size board: the board's display width,
+    // so every card in a list is the same size whatever the board size, and
+    // the box shrinks with the board on a viewport narrower than 19rem.
+    const [card_size, setCardSize] = React.useState<number | undefined>(undefined);
     const [last_move_opacity] = usePreference("last-move-opacity");
 
     const draw_top_labels =
@@ -129,6 +139,9 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
 
     React.useEffect(() => {
         display_width.current = props.displayWidth || computedDisplayWidth();
+        if (props.displayWidth == null) {
+            setCardSize(display_width.current);
+        }
         const controller = new GobanController({
             board_div: goban_div.current,
             draw_top_labels,
@@ -396,6 +409,7 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
             if (goban.current && display_width.current !== width) {
                 display_width.current = width;
                 goban.current.setSquareSizeBasedOnDisplayWidth(width);
+                setCardSize(width);
             }
         };
         if (typeof ResizeObserver !== "function") {
@@ -429,6 +443,11 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
                         (finished ? " finished" : "")
                     }
                     elt={goban_div.current}
+                    extra_props={
+                        card_size == null
+                            ? undefined
+                            : { style: { width: card_size, height: card_size } }
+                    }
                 />
                 {props.rightLabel && (
                     <span className="side-label right-label">{props.rightLabel}</span>
@@ -488,9 +507,14 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
         new_tab_attributes = { target: "_blank", rel: "noopener noreferrer" };
     }
 
+    // default-size: the component computed the board's display width and
+    // sizes the card from it, so cards in a list match whatever the board size.
+    const size_class = props.displayWidth == null ? "default-size " : "";
+    const class_name = "MiniGoban " + size_class + (props.className ?? "");
+
     if (props.noLink || (!props.game_id && !props.review_id)) {
         return (
-            <div ref={setRoot} className={"MiniGoban nolink " + (props.className ?? "")}>
+            <div ref={setRoot} className={class_name + " nolink"}>
                 {inner}
             </div>
         );
@@ -500,7 +524,7 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
                 <Link
                     ref={setRoot}
                     to={`/game/${props.game_id}`}
-                    className={"MiniGoban link " + (props.className ?? "")}
+                    className={class_name + " link"}
                     onClick={
                         props.onSelectGameId
                             ? (event) => {
@@ -519,7 +543,7 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
                 <Link
                     ref={setRoot}
                     to={`/review/${props.review_id}`}
-                    className={"MiniGoban link " + (props.className ?? "")}
+                    className={class_name + " link"}
                     {...new_tab_attributes}
                 >
                     {inner}
