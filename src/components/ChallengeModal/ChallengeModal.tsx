@@ -121,6 +121,13 @@ function coerceKomiForAutoHandicap(game: GameInput): GameInput {
     return game;
 }
 
+// A challenge sent to one player should remember its own last settings.
+// A rematch is also mode "player", but those settings belong to that one game
+// and already have their own handling. See online-go.com issue 2430.
+function isDirectChallenge(props: { mode: string; persistColor?: boolean }): boolean {
+    return props.mode === "player" && props.persistColor !== false;
+}
+
 export class ChallengeModal extends Modal<{}, ChallengeModalProperties, ChallengeModalState> {
     constructor(props: ChallengeModalProperties) {
         super(props);
@@ -138,30 +145,32 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         super(props);
 
         const speed = data.get("challenge.speed", "live");
+        const direct = isDirectChallenge(this.props);
 
+        const customChallenge = data.get(`challenge.challenge.${speed}`, {
+            initialized: false,
+            min_ranking: 5,
+            max_ranking: 36,
+            challenger_color: "automatic",
+            rengo_auto_start: 0,
+            game: {
+                name: "",
+                rules: "japanese",
+                ranked: true,
+                width: 19,
+                height: 19,
+                handicap: -1,
+                komi_auto: "automatic",
+                komi: 5.5,
+                disable_analysis: false,
+                initial_state: null,
+                private: false,
+                rengo: false,
+                rengo_casual_mode: true,
+            },
+        });
         const challenge: ChallengeDetails = sanitizeChallengeDetails(
-            data.get(`challenge.challenge.${speed}`, {
-                initialized: false,
-                min_ranking: 5,
-                max_ranking: 36,
-                challenger_color: "automatic",
-                rengo_auto_start: 0,
-                game: {
-                    name: "",
-                    rules: "japanese",
-                    ranked: true,
-                    width: 19,
-                    height: 19,
-                    handicap: -1,
-                    komi_auto: "automatic",
-                    komi: 5.5,
-                    disable_analysis: false,
-                    initial_state: null,
-                    private: false,
-                    rengo: false,
-                    rengo_casual_mode: true,
-                },
-            }),
+            direct ? data.get(`challenge.player.${speed}`, customChallenge) : customChallenge,
         );
 
         const game_settings = challenge.game;
@@ -207,7 +216,12 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                 selected_board_size:
                     standard_board_sizes[`${game_settings.width}x${game_settings.height}`] ||
                     "custom",
-                restrict_rank: data.get("challenge.restrict_rank", false),
+                restrict_rank: direct
+                    ? data.get(
+                          "challenge.player.restrict_rank",
+                          data.get("challenge.restrict_rank", false),
+                      )
+                    : data.get("challenge.restrict_rank", false),
             },
             challenge: challenge,
             forking_game: !!this.props.initialState,
@@ -374,9 +388,16 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         const next = this.next();
         saveTimeControlSettings(this.state.time_control);
         const speed = data.get("challenge.speed", "live");
+        // Direct challenges are stored apart from the Custom Game template,
+        // so changing color or rank limits for one person does not change
+        // the next game anyone can join. See online-go.com issue 2430.
+        const direct = isDirectChallenge(this.props);
+        const restrictKey = direct ? "challenge.player.restrict_rank" : "challenge.restrict_rank";
 
         let challenge_to_save = next.challenge;
-        const persisted: any = data.get(`challenge.challenge.${speed}`);
+        const persisted: any = direct
+            ? data.get(`challenge.player.${speed}`)
+            : data.get(`challenge.challenge.${speed}`);
         if (this.props.mode === "computer") {
             // ranked and disable_analysis are forced in bot mode, so don't let
             // them overwrite the user's persisted preference used by other modes.
@@ -400,9 +421,13 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             };
         }
 
-        data.set(`challenge.challenge.${speed}`, challenge_to_save);
+        if (direct) {
+            data.set(`challenge.player.${speed}`, challenge_to_save);
+        } else {
+            data.set(`challenge.challenge.${speed}`, challenge_to_save);
+        }
         data.set("challenge.bot", next.conf.bot_id);
-        data.set("challenge.restrict_rank", next.conf.restrict_rank);
+        data.set(restrictKey, next.conf.restrict_rank);
     }
 
     addToPreferredSettings = () => {
