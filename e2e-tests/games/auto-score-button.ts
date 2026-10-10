@@ -16,8 +16,9 @@
  */
 
 /*
- * The server proposes the dead stones when a game enters stone removal, and
- * the players' browsers do not score the game themselves.
+ * The "Auto-score" button runs the browser's own scoring: it asks ai-term
+ * for the dead stones and marks them. A player un-marks the dead stone by
+ * hand, presses Auto-score, and the stone is marked dead again.
  *
  * Uses init_e2e data:
  *  - E2E_MODERATOR : opens the game log
@@ -25,7 +26,7 @@
 
 import type { CreateContextOptions } from "@helpers";
 
-import { BrowserContext, TestInfo, expect } from "@playwright/test";
+import { BrowserContext, Page, TestInfo, expect } from "@playwright/test";
 import {
     generateUniqueTestIPv6,
     loginAsUser,
@@ -38,10 +39,17 @@ import {
     createDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
-import { playMoves, waitForGameFinished } from "@helpers/game-utils";
+import { clickOnGobanIntersection, playMoves, waitForGameFinished } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 
-export const serverAutoscoreTest = async (
+/** Whether B5 (x=1, y=4 on a 9x9) is marked dead on this page's board. */
+const b5MarkedDead = (page: Page) =>
+    page.evaluate(() => {
+        const engine = (window as any).global_goban?.engine;
+        return engine ? !!engine.removal[4][1] : null;
+    });
+
+export const autoScoreButtonTest = async (
     {
         createContext,
     }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
@@ -49,15 +57,15 @@ export const serverAutoscoreTest = async (
 ) => {
     const { userPage: blackPage } = await prepareNewUser(
         createContext,
-        newTestUsername("SrvScoreB"), // cspell:disable-line
+        newTestUsername("AutoScoreB"), // cspell:disable-line
         "test",
     );
-    const whiteUsername = newTestUsername("SrvScoreW"); // cspell:disable-line
+    const whiteUsername = newTestUsername("AutoScoreW"); // cspell:disable-line
     const { userPage: whitePage } = await prepareNewUser(createContext, whiteUsername, "test");
 
     await createDirectChallenge(blackPage, whiteUsername, {
         ...defaultChallengeSettings,
-        gameName: "E2E Server Autoscore Test Game",
+        gameName: "E2E Auto-score Button Test Game",
         boardSize: "9x9",
         speed: "live",
         timeControl: "byoyomi",
@@ -69,7 +77,7 @@ export const serverAutoscoreTest = async (
     await acceptDirectChallenge(whitePage, blackPage);
 
     // Two walls split the board; white's last stone at B5 is dead inside
-    // black's area, so the proposal has a stone to mark.
+    // black's area.
     const moves = [
         "D9",
         "E9",
@@ -94,38 +102,26 @@ export const serverAutoscoreTest = async (
     ];
     await playMoves(blackPage, whitePage, moves, "9x9");
 
-    // This test is about the server's proposal. The dev stack's CPU KataGo
-    // can take longer than the client's 15 s fallback to produce it, and a
-    // client that scores first makes the server drop its proposal, so keep
-    // the browsers' own scorer calls from going out. The browser's own
-    // scoring is covered by the Auto-score button test.
-    for (const page of [blackPage, whitePage]) {
-        await page.route("**/api/score", (route) => route.abort());
-    }
-
     for (const page of [blackPage, whitePage]) {
         await expect(page.getByText(/^Your move(?: - opponent passed)?$/)).toBeVisible();
         await (await expectOGSClickableByName(page, /^Pass$/)).click();
     }
 
-    // The server's proposal lands on both boards as the stone removal state.
-    // Wait on the client state rather than the "Scoring game" indicator, and
-    // check its content: B5 (x=1, y=4) is the dead white stone.
-    await Promise.all(
-        [blackPage, whitePage].map(async (page) => {
-            await expect(page.locator(".stone-removal-buttons")).toBeVisible();
-            await expect
-                .poll(
-                    () =>
-                        page.evaluate(() => {
-                            const engine = (window as any).global_goban?.engine;
-                            return engine?.auto_scoring_done ? engine.removal[4][1] : null;
-                        }),
-                    { timeout: 90000 },
-                )
-                .toBe(true);
-        }),
-    );
+    // Let the initial scoring settle (the server's proposal, or the client's
+    // own fallback) so the manual click below is not raced by it.
+    await expect(blackPage.locator(".stone-removal-buttons")).toBeVisible();
+    await expect.poll(() => b5MarkedDead(blackPage), { timeout: 90000 }).toBe(true);
+    await expect(blackPage.locator(".autoscoring-in-progress")).toBeHidden({ timeout: 30000 });
+
+    // Black marks B5 alive by hand.
+    await clickOnGobanIntersection(blackPage, "B5", "9x9");
+    await expect.poll(() => b5MarkedDead(blackPage)).toBe(false);
+
+    // Auto-score marks it dead again: the browser's own scorer call, not the
+    // server's proposal.
+    await (await expectOGSClickableByName(blackPage, /^Auto-score$/)).click();
+    await expect.poll(() => b5MarkedDead(blackPage), { timeout: 60000 }).toBe(true);
+    await expect.poll(() => b5MarkedDead(whitePage), { timeout: 10000 }).toBe(true);
 
     await (await expectOGSClickableByName(whitePage, /^Accept removed stones/)).click();
     await expect(blackPage.locator(".white .stone-removal-accepted.accepted")).toBeVisible();
@@ -152,9 +148,11 @@ export const serverAutoscoreTest = async (
     await (await expectOGSClickableByName(modPage, "Game log")).click();
     await expect(modPage.locator("table.GameLog")).toBeVisible();
 
-    const events = modPage.locator(".GameLog tr.entry td.event");
-    await expect(events.filter({ hasText: "server autoscore" })).toHaveCount(1);
-    await expect(
-        modPage.locator(".GameLog tr.entry").filter({ hasText: "server autoscore" }),
-    ).toContainText("stones marked dead");
+    // The button's scoring is logged as the browser's own stone removal
+    // update, labelled as an auto-scorer update.
+    const autoScorerRows = modPage
+        .locator(".GameLog tr.entry")
+        .filter({ hasText: "stone removal stones set" })
+        .filter({ hasText: "auto-scorer update" });
+    await expect(autoScorerRows.first()).toBeVisible();
 };
