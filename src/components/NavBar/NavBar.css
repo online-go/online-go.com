@@ -45,6 +45,10 @@ header.NavBar {
         left: 0;
         right: 0;
         margin-bottom: 0;
+        /* The fixed bar is its own stacking context. Without a z-index the
+           chat pane, also fixed and later in the DOM, paints over the
+           dropdowns and the mobile drawer. */
+        z-index: var(--z-nav-menu-backdrop);
         /* Dropdowns hang below this short bar. The mobile rule clips
            overflow-x, which would clip them once the bar is their
            containing block. */
