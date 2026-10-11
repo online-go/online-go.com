@@ -533,7 +533,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     /** Analysis-disabled games cannot keep a preview stone. History controls
      *  must remove it and clear the submit marker, or the last-move mark
      *  stays a plus and the stone looks as if it was played. */
-    private discardStagedMoveWhenAnalysisIsDisabled(): boolean {
+    public discardStagedMoveWhenAnalysisIsDisabled(): boolean {
         if (!this.goban.isAnalysisDisabled() || !this.goban.move_selected) {
             return false;
         }

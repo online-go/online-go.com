@@ -500,6 +500,7 @@ export function GameChatLine(props: GameChatLineProperties): React.ReactElement 
     ) {
         const jumpToMove = () => {
             goban_controller.stopEstimatingScore();
+            goban_controller.discardStagedMoveWhenAnalysisIsDisabled();
             const line = props.line;
 
             // In a demo/review, line.move_number is never set. For lines that
