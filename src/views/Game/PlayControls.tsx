@@ -387,7 +387,7 @@ export function MoveCommentBox({
                     }
                     const move = goban.engine?.cur_move;
                     hovered.current = {
-                        move: move?.getMarks ? move : { getMarks: (i, j) => goban.getMarks(i, j) },
+                        move: move ?? { getMarks: (i, j) => goban.getMarks(i, j) },
                         i: point.i,
                         j: point.j,
                     };
