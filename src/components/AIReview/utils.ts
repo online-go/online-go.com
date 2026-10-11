@@ -259,7 +259,11 @@ export function fillAIMarksBacktracking(
                 if (agreed === 0) {
                     continue;
                 }
-                decoded_moves = decoded_moves.slice(0, agreed);
+                // Cut only where the tree leaves this line. A prefix still
+                // agrees, so the rest of the playout stays.
+                if (agreed < variation_ahead.length) {
+                    decoded_moves = decoded_moves.slice(0, agreed);
+                }
             }
 
             let black = "";
