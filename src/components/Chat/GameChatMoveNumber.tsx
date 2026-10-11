@@ -57,6 +57,7 @@ export function GameChatMoveNumber({
 
         const goban = goban_controller.goban;
         goban_controller.stopEstimatingScore();
+        goban_controller.discardStagedMoveWhenAnalysisIsDisabled();
 
         if ((line.from ?? -1) >= 0 && "moves" in line) {
             goban.engine.followPath(line.from as number, line.moves as string);

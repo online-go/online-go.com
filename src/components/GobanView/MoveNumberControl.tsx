@@ -156,6 +156,7 @@ export function MoveNumberControl(): React.ReactElement {
             const last_estimate_move = controller.stopEstimatingScore();
             controller.stopAutoplay();
             controller.checkAndEnterAnalysis(last_estimate_move);
+            controller.discardStagedMoveWhenAnalysisIsDisabled();
             // Read cur AFTER checkAndEnterAnalysis: in puzzle mode it may
             // jumpTo(last_estimate_move) and shift cur_move out from under
             // us. Mirrors the previousMove / nextMove pattern.
