@@ -63,8 +63,6 @@ const margin2 = { top: 320, right: 20, bottom: 30, left: 20 }; // Margins around
 const chart_min_width = 64;
 const chart_height = 380;
 
-const date_legend_width = 70;
-
 const height = chart_height - margin.top - margin.bottom;
 const secondary_charts_height = chart_height - margin2.top - margin2.bottom;
 
@@ -290,10 +288,6 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             return "";
         });
 
-        const boundDataLegendX = (x: number) => {
-            return Math.min(width - date_legend_width / 2, Math.max(date_legend_width / 2, x));
-        };
-
         this.svg = d3
             .select(this.chart_div)
             .append("svg")
@@ -350,9 +344,9 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         this.dateLegendBackground = this.dateLegend
             .append("rect")
             .attr("class", "date-legend-background")
-            .attr("width", date_legend_width)
+            .attr("width", 70)
             .attr("height", 20)
-            .attr("x", -(date_legend_width / 2))
+            .attr("x", -35)
             .attr("y", -10)
             .attr("rx", 10);
 
@@ -450,39 +444,37 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                     return;
                 }
 
-                self.helperText.text(
-                    interpolate(
-                        self.shouldDisplayRankInformation()
-                            ? pgettext(
-                                  "Glicko-2 rating +- rating deviation text on the ratings chart",
-                                  "After {{n}} games, rating: {{rating}} ± {{deviation}} rank: {{rank}} ± {{rank_deviation}}",
-                              )
-                            : pgettext(
-                                  "Glicko-2 rating +- rating deviation text on the ratings chart",
-                                  "After {{n}} games, rating: {{rating}} ± {{deviation}}",
-                              ),
-                        {
-                            n: n,
-                            rating: Math.floor(humble_rating(d.rating, d.deviation)),
-                            deviation: Math.round(d.deviation),
-                            rank: rankString(
-                                bounded_rank(rating_to_rank(humble_rating(d.rating, d.deviation))),
-                                true,
-                            ),
-                            rank_deviation: (
-                                rating_to_rank(d.rating + d.deviation) - rating_to_rank(d.rating)
-                            ).toFixed(1),
-                        },
-                    ),
+                const summary = interpolate(
+                    self.shouldDisplayRankInformation()
+                        ? pgettext(
+                              "Glicko-2 rating +- rating deviation text on the ratings chart",
+                              "After {{n}} games, rating: {{rating}} ± {{deviation}} rank: {{rank}} ± {{rank_deviation}}",
+                          )
+                        : pgettext(
+                              "Glicko-2 rating +- rating deviation text on the ratings chart",
+                              "After {{n}} games, rating: {{rating}} ± {{deviation}}",
+                          ),
+                    {
+                        n: n,
+                        rating: Math.floor(humble_rating(d.rating, d.deviation)),
+                        deviation: Math.round(d.deviation),
+                        rank: rankString(
+                            bounded_rank(rating_to_rank(humble_rating(d.rating, d.deviation))),
+                            true,
+                        ),
+                        rank_deviation: (
+                            rating_to_rank(d.rating + d.deviation) - rating_to_rank(d.rating)
+                        ).toFixed(1),
+                    },
                 );
-                self.dateLegendText.text(format_date(new Date(d.ended)));
-                self.dateLegend.attr(
-                    "transform",
-                    "translate(" +
-                        (boundDataLegendX(self.ratings_x(n)) + margin.left) +
-                        "," +
-                        (margin.top + height + 10) +
-                        ")",
+                const comma = summary.indexOf(", ");
+                self.setHelperText(
+                    comma > 0 ? [summary.slice(0, comma), summary.slice(comma + 2)] : [summary],
+                );
+                self.placeDateLegend(
+                    format_date(new Date(d.ended)),
+                    self.ratings_x(n),
+                    margin.top + height + 10,
                 );
                 self.ratingTooltip.attr(
                     "transform",
@@ -564,6 +556,65 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             width: width,
             height: height,
         };
+    }
+
+    /** Size the date pill from the text, so a longer date stays inside it. */
+    placeDateLegend(label: string, xInGraph: number, y: number) {
+        this.dateLegend.style("display", null);
+        this.dateLegendText.text(label);
+        const node = this.dateLegendText.node();
+        const textWidth = node ? node.getComputedTextLength() : 0;
+        const boxWidth = textWidth > 0 ? Math.ceil(textWidth) + 16 : 70;
+        this.dateLegendBackground.attr("width", boxWidth).attr("x", -boxWidth / 2);
+        const bounded = Math.min(this.graph_width - boxWidth / 2, Math.max(boxWidth / 2, xInGraph));
+        this.dateLegend.attr("transform", `translate(${bounded + margin.left},${y})`);
+    }
+
+    /** One line when it fits. More lines when a hover line is wider than the graph. */
+    setHelperText(parts: string[]) {
+        this.helper.style("display", null);
+        const lines = parts.filter((part) => part.length > 0);
+        const full = lines.join(" ");
+        this.helperText.text(full);
+        const fullWidth = this.helperText.node()?.getComputedTextLength() ?? 0;
+        if (fullWidth <= this.graph_width) {
+            return;
+        }
+
+        const draw = () => {
+            this.helperText.text(null);
+            const widths: number[] = [];
+            lines.forEach((line, index) => {
+                const tspan = this.helperText
+                    .append("tspan")
+                    .attr("x", 0)
+                    .attr("dy", index === 0 ? "-1.15em" : "1.15em")
+                    .text(line);
+                widths.push(tspan.node()?.getComputedTextLength() ?? 0);
+            });
+            return widths;
+        };
+
+        let widths = draw();
+        while (Math.max(...widths) > this.graph_width && lines.length < 3) {
+            let longest = 0;
+            widths.forEach((width, index) => {
+                if (width > widths[longest]) {
+                    longest = index;
+                }
+            });
+            const text = lines[longest];
+            const mid = Math.floor(text.length / 2);
+            let split = text.lastIndexOf(" ", mid);
+            if (split < 1) {
+                split = text.indexOf(" ");
+            }
+            if (split < 1) {
+                break;
+            }
+            lines.splice(longest, 1, text.slice(0, split), text.slice(split + 1));
+            widths = draw();
+        }
     }
 
     onResize = (no_debounce: boolean = false) => {

@@ -62,7 +62,6 @@ const margin = { top: 30, right: 20, bottom: 100, left: 20 }; // Margins around 
 const margin2 = { top: 210, right: 20, bottom: 20, left: 20 }; // Margins around the 'timeline' chart with respect to the whole space
 const chart_min_width = 64;
 const chart_height = 283;
-const date_legend_width = 70;
 const win_loss_bars_start_y = 155;
 const win_loss_bars_height = 65;
 const height = chart_height - margin.top - margin.bottom;
@@ -286,10 +285,6 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
             return "";
         });
 
-        const boundDataLegendX = (x: number) => {
-            return Math.min(width - date_legend_width / 2, Math.max(date_legend_width / 2, x));
-        };
-
         this.svg = d3
             .select(this.chart_div)
             .append("svg")
@@ -381,14 +376,10 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
                         );
 
                         self.helperText!.text(format_month(new Date(d)));
-                        self.dateLegendText?.text(format_month(new Date(d)));
-                        self.dateLegend?.attr(
-                            "transform",
-                            "translate(" +
-                                (boundDataLegendX(self.ratings_x(midDate)) + margin.left) +
-                                "," +
-                                (margin.top + win_loss_bars_start_y + win_loss_bars_height + 23) +
-                                ")",
+                        self.placeDateLegend(
+                            format_month(new Date(d)),
+                            self.ratings_x(midDate),
+                            margin.top + win_loss_bars_start_y + win_loss_bars_height + 23,
                         );
 
                         self.setState({ hovered_month: d });
@@ -420,9 +411,9 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
         this.dateLegendBackground = this.dateLegend
             .append("rect")
             .attr("class", "date-legend-background")
-            .attr("width", date_legend_width)
+            .attr("width", 70)
             .attr("height", 20)
-            .attr("x", -(date_legend_width / 2))
+            .attr("x", -35)
             .attr("y", -10)
             .attr("rx", 10);
 
@@ -534,45 +525,31 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
 
                 const d =
                     x0.getTime() - d0.ended.getTime() > d1.ended.getTime() - x0.getTime() ? d1 : d0;
-                self.helperText.text(
-                    format_date(new Date(d.ended)) +
-                        "  " +
-                        interpolate(
-                            self.shouldDisplayRankInformation()
-                                ? pgettext(
-                                      "Glicko-2 rating +- rating deviation text on the ratings chart",
-                                      "rating: {{rating}} ± {{deviation}} rank: {{rank}} ± {{rank_deviation}}",
-                                  )
-                                : pgettext(
-                                      "Glicko-2 rating +- rating deviation text on the ratings chart",
-                                      "rating: {{rating}} ± {{deviation}}",
-                                  ),
-                            {
-                                //rating: Math.floor(d.rating),
-                                rating: Math.floor(humble_rating(d.rating, d.deviation)),
-                                deviation: Math.round(d.deviation),
-                                rank: rankString(
-                                    bounded_rank(
-                                        rating_to_rank(humble_rating(d.rating, d.deviation)),
-                                    ),
-                                    true,
-                                ),
-                                rank_deviation: (
-                                    rating_to_rank(d.rating + d.deviation) -
-                                    rating_to_rank(d.rating)
-                                ).toFixed(1),
-                            },
+                const dateLabel = format_date(new Date(d.ended));
+                const valuesLabel = interpolate(
+                    self.shouldDisplayRankInformation()
+                        ? pgettext(
+                              "Glicko-2 rating +- rating deviation text on the ratings chart",
+                              "rating: {{rating}} ± {{deviation}} rank: {{rank}} ± {{rank_deviation}}",
+                          )
+                        : pgettext(
+                              "Glicko-2 rating +- rating deviation text on the ratings chart",
+                              "rating: {{rating}} ± {{deviation}}",
+                          ),
+                    {
+                        rating: Math.floor(humble_rating(d.rating, d.deviation)),
+                        deviation: Math.round(d.deviation),
+                        rank: rankString(
+                            bounded_rank(rating_to_rank(humble_rating(d.rating, d.deviation))),
+                            true,
                         ),
+                        rank_deviation: (
+                            rating_to_rank(d.rating + d.deviation) - rating_to_rank(d.rating)
+                        ).toFixed(1),
+                    },
                 );
-                self.dateLegendText.text(format_date(new Date(d.ended)));
-                self.dateLegend.attr(
-                    "transform",
-                    "translate(" +
-                        (boundDataLegendX(self.ratings_x(d.ended)) + margin.left) +
-                        "," +
-                        (margin.top + height + 10) +
-                        ")",
-                );
+                self.setHelperText([dateLabel, valuesLabel]);
+                self.placeDateLegend(dateLabel, self.ratings_x(d.ended), margin.top + height + 10);
                 self.ratingTooltip.attr(
                     "transform",
                     "translate(" +
@@ -630,6 +607,65 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
         )
             .then(this.loadDataAndPlot)
             .catch(errorLogger);
+    }
+
+    /** Size the date pill from the text, so a longer date stays inside it. */
+    placeDateLegend(label: string, xInGraph: number, y: number) {
+        this.dateLegend.style("display", null);
+        this.dateLegendText.text(label);
+        const node = this.dateLegendText.node();
+        const textWidth = node ? node.getComputedTextLength() : 0;
+        const boxWidth = textWidth > 0 ? Math.ceil(textWidth) + 16 : 70;
+        this.dateLegendBackground.attr("width", boxWidth).attr("x", -boxWidth / 2);
+        const bounded = Math.min(this.graph_width - boxWidth / 2, Math.max(boxWidth / 2, xInGraph));
+        this.dateLegend.attr("transform", `translate(${bounded + margin.left},${y})`);
+    }
+
+    /** One line when it fits. More lines when a hover line is wider than the graph. */
+    setHelperText(parts: string[]) {
+        this.helper.style("display", null);
+        const lines = parts.filter((part) => part.length > 0);
+        const full = lines.join(" ");
+        this.helperText.text(full);
+        const fullWidth = this.helperText.node()?.getComputedTextLength() ?? 0;
+        if (fullWidth <= this.graph_width) {
+            return;
+        }
+
+        const draw = () => {
+            this.helperText.text(null);
+            const widths: number[] = [];
+            lines.forEach((line, index) => {
+                const tspan = this.helperText
+                    .append("tspan")
+                    .attr("x", 0)
+                    .attr("dy", index === 0 ? "-1.15em" : "1.15em")
+                    .text(line);
+                widths.push(tspan.node()?.getComputedTextLength() ?? 0);
+            });
+            return widths;
+        };
+
+        let widths = draw();
+        while (Math.max(...widths) > this.graph_width && lines.length < 3) {
+            let longest = 0;
+            widths.forEach((width, index) => {
+                if (width > widths[longest]) {
+                    longest = index;
+                }
+            });
+            const text = lines[longest];
+            const mid = Math.floor(text.length / 2);
+            let split = text.lastIndexOf(" ", mid);
+            if (split < 1) {
+                split = text.indexOf(" ");
+            }
+            if (split < 1) {
+                break;
+            }
+            lines.splice(longest, 1, text.slice(0, split), text.slice(split + 1));
+            widths = draw();
+        }
     }
 
     /* The area we can draw all of our charting in */
