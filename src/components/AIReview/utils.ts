@@ -183,6 +183,17 @@ interface Engine {
     player: number;
 }
 
+/** Moves the right arrow would play from here, in order. Empty at the end of a line. */
+function movesAheadInTree(cur_move: MoveTree): Array<{ x: number; y: number }> {
+    const ahead: Array<{ x: number; y: number }> = [];
+    let node = cur_move.next();
+    while (node) {
+        ahead.push({ x: node.x, y: node.y });
+        node = node.next();
+    }
+    return ahead;
+}
+
 /**
  * Fills AI marks by backtracking through the move tree to find matching variations
  * @param cur_move Current move in the tree
@@ -203,6 +214,13 @@ export function fillAIMarksBacktracking(
         return false;
     }
 
+    // Off the trunk, the right arrow follows this variation. An AI playout
+    // that leaves it draws ghost stones the tree does not have
+    // (online-go.com issue 3373). null means "do not constrain": on the
+    // trunk the playout is the AI's own idea, and once a variation has
+    // ended there is nothing in the tree left to contradict it.
+    const variation_ahead = cur_move.trunk ? null : movesAheadInTree(cur_move);
+
     for (let j = 0; j <= trunk_move.move_number; j++) {
         const ai_review_move = reviewData.moves[trunk_move.move_number - j];
         if (!ai_review_move) {
@@ -213,18 +231,41 @@ export function fillAIMarksBacktracking(
         trunk_move_string = trunk_move_string.slice(0, trunk_move_string.length - 2 * j);
 
         const cur_move_string = cur_move.getMoveStringToThisPoint();
-        let next_moves: string | undefined;
 
         for (const branch of ai_review_move.branches) {
             const move_str: string = trunk_move_string + encodeMoves(branch.moves);
-            if (move_str.startsWith(cur_move_string)) {
-                next_moves = move_str.slice(cur_move_string.length, Infinity);
+            if (!move_str.startsWith(cur_move_string)) {
+                continue;
+            }
+            const next_moves = move_str.slice(cur_move_string.length, Infinity);
+            // An AI branch that ends exactly here used to stop the search
+            // at this depth. Keep that, so a longer branch is not picked
+            // in its place.
+            if (!next_moves) {
                 break;
             }
-        }
 
-        if (next_moves) {
-            const decoded_moves = engine.decodeMoves(next_moves);
+            let decoded_moves = engine.decodeMoves(next_moves);
+            if (variation_ahead && variation_ahead.length) {
+                let agreed = 0;
+                while (
+                    agreed < decoded_moves.length &&
+                    agreed < variation_ahead.length &&
+                    decoded_moves[agreed].x === variation_ahead[agreed].x &&
+                    decoded_moves[agreed].y === variation_ahead[agreed].y
+                ) {
+                    agreed++;
+                }
+                if (agreed === 0) {
+                    continue;
+                }
+                // Cut only where the tree leaves this line. A prefix still
+                // agrees, so the rest of the playout stays.
+                if (agreed < variation_ahead.length) {
+                    decoded_moves = decoded_moves.slice(0, agreed);
+                }
+            }
+
             let black = "";
             let white = "";
 
