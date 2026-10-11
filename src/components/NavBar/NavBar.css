@@ -35,6 +35,31 @@ header.NavBar {
         color: var(--supporter-gold);
     }
 
+    /* Chat page only. This bar is in normal flow, while the chat pane is
+       fixed to the visual viewport, so a page scroll or an iOS Safari pan
+       carries the bar off screen and leaves the chat behind. Pin the bar to
+       the same visible region. See online-go.com issue 3011. */
+    body:has(.ChatView) & {
+        position: fixed;
+        top: var(--visual-viewport-top);
+        left: 0;
+        right: 0;
+        margin-bottom: 0;
+        /* The fixed bar is its own stacking context. Without a z-index the
+           chat pane, also fixed and later in the DOM, paints over the
+           dropdowns and the mobile drawer. */
+        z-index: var(--z-nav-menu-backdrop);
+        /* Dropdowns hang below this short bar. The mobile rule clips
+           overflow-x, which would clip them once the bar is their
+           containing block. */
+        overflow: visible;
+    }
+
+    body:has(.ChatView) & .nav-menu-modal-backdrop {
+        top: calc(var(--visual-viewport-top) + var(--navbar-height));
+        bottom: var(--visual-viewport-bottom);
+    }
+
     & > .left,
     & > .right {
         flex: 1rem;
@@ -255,6 +280,16 @@ header.NavBar {
             }
         }
 
+        /* The drawer is sized with top and bottom. Once the chat page pins
+           the bar, that bar is only as tall as the navbar, which collapses
+           the drawer, and the bar's overflow would clip it. Pin the drawer
+           to the visible viewport instead. */
+        body:has(.ChatView) & > .left {
+            position: fixed;
+            top: calc(var(--visual-viewport-top) + var(--navbar-height));
+            bottom: var(--visual-viewport-bottom);
+        }
+
         .Menu.desktop-only {
             display: none !important;
         }
@@ -344,6 +379,10 @@ header.NavBar {
             .OmniSearch-container .OmniSearch {
                 position: fixed;
                 z-index: var(--z-nav-menu-omnisearch);
+            }
+
+            body:has(.ChatView) & .OmniSearch-container .OmniSearch {
+                top: calc(var(--visual-viewport-top) + var(--navbar-height));
             }
 
             .ogs-nav-logo {
@@ -884,4 +923,8 @@ button.theme-button {
             color: var(--link-color);
         }
     }
+}
+
+body:has(.ChatView) .BanIndicator {
+    top: calc(var(--visual-viewport-top) + var(--navbar-height));
 }
