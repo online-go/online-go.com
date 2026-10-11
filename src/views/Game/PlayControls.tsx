@@ -314,48 +314,59 @@ interface MoveCommentBoxProps {
     onChange: (value: string) => void;
 }
 
-/** Review comments are read more often than they are typed. Show the same
- *  coordinate links as chat, and turn back into a text box when the controller
- *  clicks to edit. See online-go.com issue 1418. */
+/** The controller keeps a normal text box, so the caret, the height and the
+ *  keyboard stay as they were. Everyone else sees the same coordinate links
+ *  as chat. See online-go.com issue 1418. */
 export function MoveCommentBox({
     text,
     canEdit,
     goban,
     onChange,
 }: MoveCommentBoxProps): React.ReactElement {
-    const [editing, setEditing] = React.useState(false);
-    const area = React.useRef<HTMLTextAreaElement>(null);
+    const hovered = React.useRef<{
+        move: { getMarks: (i: number, j: number) => { chat_triangle?: boolean } };
+        i: number;
+        j: number;
+    } | null>(null);
 
-    React.useEffect(() => {
-        if (!canEdit) {
-            setEditing(false);
-        }
-    }, [canEdit]);
-
-    React.useEffect(() => {
-        if (!editing) {
+    const clearHovered = React.useCallback(() => {
+        const current = hovered.current;
+        if (!current) {
             return;
         }
-        const el = area.current;
-        if (!el) {
+        hovered.current = null;
+        const marks = current.move.getMarks(current.i, current.j);
+        if (marks?.chat_triangle) {
+            marks.chat_triangle = false;
+            goban.drawSquare(current.i, current.j);
+        }
+    }, [goban]);
+
+    React.useEffect(() => {
+        if (typeof goban?.on !== "function") {
             return;
         }
-        el.focus();
-        const end = el.value.length;
-        el.setSelectionRange(end, end);
-    }, [editing]);
+        const onMove = () => clearHovered();
+        goban.on("cur_move", onMove);
+        goban.on("review.updated", onMove);
+        return () => {
+            goban.off("cur_move", onMove);
+            goban.off("review.updated", onMove);
+            clearHovered();
+        };
+    }, [goban, clearHovered]);
 
-    if (editing && canEdit) {
+    React.useEffect(() => clearHovered, [text, clearHovered]);
+
+    if (canEdit) {
         return (
             <textarea
-                ref={area}
                 id="game-move-node-text"
                 placeholder={_("Move comments...")}
                 rows={5}
                 className="form-control"
                 value={text}
                 onChange={(event) => onChange(event.target.value)}
-                onBlur={() => setEditing(false)}
             />
         );
     }
@@ -363,39 +374,24 @@ export function MoveCommentBox({
     return (
         <div
             id="game-move-node-text"
-            className={"move-comment-rendered" + (canEdit ? " editable" : "")}
+            className="move-comment-rendered"
             role="textbox"
-            aria-readonly={!canEdit}
+            aria-readonly="true"
             aria-multiline="true"
-            tabIndex={canEdit ? 0 : undefined}
-            onClick={(event) => {
-                if (!canEdit) {
-                    return;
-                }
-                const target = event.target as HTMLElement;
-                if (target.closest(".position, .position-trailing")) {
-                    return;
-                }
-                setEditing(true);
-            }}
-            onKeyDown={(event) => {
-                if (!canEdit) {
-                    return;
-                }
-                if (event.key === "Enter") {
-                    event.preventDefault();
-                    setEditing(true);
-                    return;
-                }
-                if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
-                    event.preventDefault();
-                    onChange(`${text}${event.key}`);
-                    setEditing(true);
-                }
-            }}
         >
             {text ? (
-                renderTextWithBoardPositions(text, goban)
+                renderTextWithBoardPositions(text, goban, undefined, (point) => {
+                    if (!point) {
+                        hovered.current = null;
+                        return;
+                    }
+                    const move = goban.engine?.cur_move;
+                    hovered.current = {
+                        move: move?.getMarks ? move : { getMarks: (i, j) => goban.getMarks(i, j) },
+                        i: point.i,
+                        j: point.j,
+                    };
+                })
             ) : (
                 <span className="move-comment-placeholder">{_("Move comments...")}</span>
             )}

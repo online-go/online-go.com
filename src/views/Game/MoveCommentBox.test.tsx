@@ -16,18 +16,22 @@
  */
 
 import * as React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom";
 import type { Goban } from "goban";
 import { MoveCommentBox } from "./PlayControls";
 
-function fakeGoban(): { goban: Goban; drawn: Array<{ i: number; j: number }> } {
+function fakeGoban(): {
+    goban: Goban;
+    drawn: Array<{ i: number; j: number }>;
+    marks: Record<string, { chat_triangle?: boolean }>;
+    emit: (event: string) => void;
+} {
     const drawn: Array<{ i: number; j: number }> = [];
     const marks: Record<string, { chat_triangle?: boolean }> = {};
-    const goban = {
-        width: 19,
-        height: 19,
+    const listeners: Record<string, Array<() => void>> = {};
+    const move = {
         getMarks: (i: number, j: number) => {
             const key = `${i},${j}`;
             if (!marks[key]) {
@@ -35,11 +39,33 @@ function fakeGoban(): { goban: Goban; drawn: Array<{ i: number; j: number }> } {
             }
             return marks[key];
         },
+    };
+    const goban = {
+        width: 19,
+        height: 19,
+        engine: { cur_move: move },
+        getMarks: (i: number, j: number) => move.getMarks(i, j),
         drawSquare: (i: number, j: number) => {
             drawn.push({ i, j });
         },
+        on: (event: string, cb: () => void) => {
+            listeners[event] = listeners[event] || [];
+            listeners[event].push(cb);
+        },
+        off: (event: string, cb: () => void) => {
+            listeners[event] = (listeners[event] || []).filter((item) => item !== cb);
+        },
     } as unknown as Goban;
-    return { goban, drawn };
+    return {
+        goban,
+        drawn,
+        marks,
+        emit: (event: string) => {
+            for (const cb of listeners[event] || []) {
+                cb();
+            }
+        },
+    };
 }
 
 describe("MoveCommentBox", () => {
@@ -82,26 +108,39 @@ describe("MoveCommentBox", () => {
         expect(screen.getByRole("textbox")).toHaveTextContent("Z99 is not a point");
     });
 
-    test("opens the editor when the comment is clicked, not when the coordinate is", async () => {
+    test("keeps a text box for the controller", async () => {
         const user = userEvent.setup();
         const { goban } = fakeGoban();
         const onChange = jest.fn();
 
         render(<MoveCommentBox text="Play at K10 now" canEdit goban={goban} onChange={onChange} />);
 
-        await user.click(document.querySelector(".position")!);
-        expect(document.querySelector("textarea")).toBeNull();
-
-        await user.click(screen.getByRole("textbox"));
         const area = document.querySelector("textarea");
         expect(area).toHaveValue("Play at K10 now");
+        expect(document.querySelector(".position")).toBeNull();
 
-        await user.type(area!, "!");
-        expect(onChange).toHaveBeenCalledWith("Play at K10 now!");
+        await user.type(area!, "X");
+        expect(onChange).toHaveBeenCalledWith("Play at K10 nowX");
+    });
 
-        fireEvent.blur(area!);
-        expect(document.querySelector("textarea")).toBeNull();
-        expect(document.querySelector(".position")).toHaveTextContent("K10");
+    test("clears the hover triangle when the review moves on", async () => {
+        const user = userEvent.setup();
+        const { goban, marks, emit } = fakeGoban();
+
+        render(
+            <MoveCommentBox
+                text="Play at K10 now"
+                canEdit={false}
+                goban={goban}
+                onChange={() => undefined}
+            />,
+        );
+
+        await user.hover(document.querySelector(".position")!);
+        expect(marks["9,9"].chat_triangle).toBe(true);
+
+        emit("cur_move");
+        expect(marks["9,9"].chat_triangle).toBe(false);
     });
 
     test("does not open the editor for someone who is not the controller", async () => {

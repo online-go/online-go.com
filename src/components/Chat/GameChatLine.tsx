@@ -86,6 +86,7 @@ export function renderTextWithBoardPositions(
     bodyText: string,
     goban: Goban | null,
     renderPlain: (text: string) => React.ReactNode = (text) => text,
+    onHover?: (point: { i: number; j: number } | null) => void,
 ): React.ReactNode[] {
     if (!goban) {
         return [<React.Fragment key="plain">{renderPlain(bodyText)}</React.Fragment>];
@@ -127,6 +128,7 @@ export function renderTextWithBoardPositions(
                                 if (point.i >= 0) {
                                     goban.getMarks(point.i, point.j).chat_triangle = true;
                                     goban.drawSquare(point.i, point.j);
+                                    onHover?.(point);
                                 }
                             }}
                             onMouseLeave={() => {
@@ -134,6 +136,7 @@ export function renderTextWithBoardPositions(
                                 if (point.i >= 0) {
                                     goban.getMarks(point.i, point.j).chat_triangle = false;
                                     goban.drawSquare(point.i, point.j);
+                                    onHover?.(null);
                                 }
                             }}
                         >

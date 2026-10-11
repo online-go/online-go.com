@@ -167,9 +167,8 @@
         }
 
         .move-comment-rendered {
-            min-height: 8.2rem;
+            height: 8.2rem;
             overflow: auto;
-            resize: vertical;
             white-space: pre-wrap;
             font-size: var(--font-size-normal);
             font-family: inherit;
@@ -179,10 +178,6 @@
             border: 1px solid var(--input-border);
             padding: 0.3rem;
             cursor: default;
-        }
-
-        .move-comment-rendered.editable {
-            cursor: text;
         }
 
         .move-comment-placeholder {
