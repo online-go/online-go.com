@@ -17,6 +17,8 @@
 
 import { ogsTest } from "@helpers";
 import { basicScoringTest } from "./basic-scoring";
+import { serverAutoscoreTest } from "./server-autoscore";
+import { autoScoreButtonTest } from "./auto-score-button";
 import { conditionalMovesArrowBugTest } from "./conditional-moves-arrow";
 import { simulDetectionTest } from "./simul-detection";
 import { simulPauseDetectionTest } from "./simul-pause-detection";
@@ -27,6 +29,8 @@ import { multiMoveUndoTest, multiMoveUndoWhiteRequesterTest } from "./multi-move
 
 ogsTest.describe("@Games Tests", () => {
     ogsTest("Pass and score a game", basicScoringTest);
+    ogsTest("Server proposes the dead stones at stone removal", serverAutoscoreTest);
+    ogsTest("Auto-score button marks the dead stone", autoScoreButtonTest);
     ogsTest("Use arrow in conditional moves", conditionalMovesArrowBugTest);
     ogsTest("Detect simultaneous games", simulDetectionTest);
     ogsTest("Paused games excluded from simul detection", simulPauseDetectionTest);
