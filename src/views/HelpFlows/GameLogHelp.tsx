@@ -37,7 +37,7 @@ export function GameLogHelp(): React.ReactElement {
                 <div>
                     {llm_pgettext(
                         "",
-                        "These come from the user's browser during autoscoring.   Two of these from each user, at the beginning of the scoring phase, and if the users presses 'auto-score'",
+                        "Auto-scorer updates. 'server autoscore' is the server's proposal at the start of the scoring phase. 'stone removal stones set' entries with this label come from a user's browser: two per user when it scores locally (boards over 19x19, or no server proposal), and when the user presses 'Auto-score'.",
                     )}
                 </div>
             </HelpItem>
