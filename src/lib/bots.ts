@@ -236,8 +236,9 @@ function timeSettingsProblem(
  * (Mostly applicable for bots that don't have the Rapid time setting but do
  * accept games in that speed under the Live category.)
  *
- * The checks follow the ones gtp2ogs does when a challenge arrives. Things
- * that depend on the bot's current state, such as how many games it is
+ * The checks follow the ones gtp2ogs does when a challenge arrives
+ * (`handleNotification` in gtp2ogs `src/main.ts`), so change them together.
+ * Things that depend on the bot's current state, such as how many games it is
  * playing, can not be checked here.
  *
  * When the bot does not have a config set, we will return the original options but
