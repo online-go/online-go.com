@@ -20,7 +20,12 @@
 
     .bot-links {
         display: flex;
+        align-items: center;
         gap: 0.75rem;
+
+        a {
+            display: flex;
+        }
     }
 
     .challenge-pane-container {
