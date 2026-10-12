@@ -65,6 +65,7 @@ import { GameStateHeader } from "./GameStateHeader";
 import { toast } from "@/lib/toast";
 import { ignore } from "@/lib/misc";
 import { updateAntiGriefGameState } from "./AntiGrief";
+import { exitVacationIfPaused } from "./auto_exit_vacation";
 import "./Game.css";
 import "./Players.css";
 import "./MoveTree.css";
@@ -460,9 +461,15 @@ export function Game(): React.ReactElement | null {
             });
         }
 
-        goban.on("submitting-move", () => {
+        goban.on("submitting-move", (submitting) => {
             // clear any pending "your move" notifications
             notification_manager.clearTimecopNotification(game_id);
+
+            // Attempt to auto-exit vacation mode
+            // if the pref flag is set and this game is correspondence
+            if (submitting) {
+                exitVacationIfPaused(goban!);
+            }
         });
 
         /* Ensure our state is kept up to date */
