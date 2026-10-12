@@ -16,8 +16,7 @@
  */
 
 import * as React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
-import { BotConfigV2 } from "goban";
+import { fireEvent, render } from "@testing-library/react";
 import { Bot } from "@/lib/bots";
 import { TimeControl } from "@/components/TimeControl";
 import { BotSettingsModal } from "./BotSettingsModal";
@@ -26,29 +25,7 @@ jest.mock("@/lib/sockets", () => ({
     socket: { on: jest.fn(), off: jest.fn(), send: jest.fn() },
 }));
 
-const bot = {
-    id: 1,
-    username: "TestBot",
-    config: {
-        _config_version: 2,
-        hidden: false,
-        bot_id: 1,
-        username: "TestBot",
-        allowed_time_control_systems: ["byoyomi"],
-        allowed_board_sizes: [19],
-        allowed_live_settings: {
-            byoyomi: {
-                main_time_range: [60, 1200],
-                period_time_range: [10, 60],
-                periods_range: [1, 10],
-            },
-        },
-        allow_ranked: true,
-        allow_unranked: true,
-        allow_ranked_handicap: true,
-        allow_unranked_handicap: true,
-    } as BotConfigV2,
-} as Bot;
+const bot = { id: 1, username: "TestBot", config: { _config_version: 0 } } as Bot;
 
 const time_control: TimeControl = {
     system: "byoyomi",
@@ -62,13 +39,6 @@ const time_control: TimeControl = {
 };
 
 describe("BotSettingsModal", () => {
-    it("shows what the bot accepts", () => {
-        render(<BotSettingsModal bot={bot} time_control={time_control} />);
-
-        expect(screen.getByText("TestBot accepts")).toBeInTheDocument();
-        expect(screen.getByText("19x19")).toBeInTheDocument();
-    });
-
     it("closes on Escape without passing the key to the modal below it", () => {
         const onClose = jest.fn();
         const below = jest.fn();

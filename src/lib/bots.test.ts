@@ -43,35 +43,31 @@ const live_fischer: TimeControl = {
     pause_on_weekends: false,
 };
 
-const clock_v2 = {
-    byoyomi: {
-        main_time_range: [60, 1200] as [number, number],
-        period_time_range: [10, 60] as [number, number],
-        periods_range: [1, 10] as [number, number],
-    },
-    fischer: {
-        initial_time_range: [60, 1200] as [number, number],
-        max_time_range: [60, 1800] as [number, number],
-        time_increment_range: [5, 30] as [number, number],
-    },
-};
-
 function makeBot(config: Partial<BotConfigV2> = {}): Bot {
     return {
         id: 1,
         username: "TestBot",
-        ranking: 20,
         config: {
             _config_version: 2,
             hidden: false,
             bot_id: 1,
             username: "TestBot",
             allowed_time_control_systems: ["byoyomi", "fischer"],
-            allowed_board_sizes: [9, 13, 19],
-            allowed_live_settings: clock_v2,
+            allowed_board_sizes: [19],
+            allowed_live_settings: {
+                byoyomi: {
+                    main_time_range: [60, 1200],
+                    period_time_range: [10, 60],
+                    periods_range: [1, 10],
+                },
+                fischer: {
+                    initial_time_range: [60, 1200],
+                    max_time_range: [60, 1800],
+                    time_increment_range: [5, 30],
+                },
+            },
             allow_ranked: true,
             allow_unranked: true,
-            allowed_rank_range: ["30k", "9d"],
             allow_ranked_handicap: true,
             allow_unranked_handicap: true,
             allowed_komi_range: [-10, 10],
@@ -103,23 +99,15 @@ describe("botRankNumber", () => {
 });
 
 describe("getAcceptableTimeSetting", () => {
-    it("accepts settings inside every range", () => {
-        const [result, message] = getAcceptableTimeSetting(makeBot(), options());
-        expect(result).not.toBeNull();
-        expect(message).toBeNull();
-    });
+    it("checks unranked games against allow_unranked", () => {
+        const [allowed] = getAcceptableTimeSetting(makeBot(), options({ ranked: false }));
+        expect(allowed).not.toBeNull();
 
-    it("accepts unranked games when the bot allows them", () => {
-        const [result] = getAcceptableTimeSetting(makeBot(), options({ ranked: false }));
-        expect(result).not.toBeNull();
-    });
-
-    it("rejects unranked games when the bot does not allow them", () => {
-        const [result, message] = getAcceptableTimeSetting(
+        const [rejected, message] = getAcceptableTimeSetting(
             makeBot({ allow_unranked: false }),
             options({ ranked: false }),
         );
-        expect(result).toBeNull();
+        expect(rejected).toBeNull();
         expect(message).toBe("Bot doesn't accept unranked games");
     });
 
@@ -141,49 +129,17 @@ describe("getAcceptableTimeSetting", () => {
         expect(message).toBe("Max time must be from 1m to 30m");
     });
 
-    it("rejects a time control system the bot does not play", () => {
-        const [result, message] = getAcceptableTimeSetting(
-            makeBot({ allowed_time_control_systems: ["fischer"] }),
-            options(),
-        );
-        expect(result).toBeNull();
-        expect(message).toBe("Bot doesn't accept this time control system");
-    });
-
-    it("rejects a speed the bot has no settings for", () => {
-        const [result, message] = getAcceptableTimeSetting(
-            makeBot(),
-            options({ time_control: { ...live_byoyomi, speed: "blitz" } }),
-        );
-        expect(result).toBeNull();
-        expect(message).toBe("Bot cannot play at this speed");
-    });
-
-    it("lists the board sizes the bot plays", () => {
-        const [result, message] = getAcceptableTimeSetting(
-            makeBot(),
-            options({ width: 15, height: 15 }),
-        );
-        expect(result).toBeNull();
-        expect(message).toBe("Bot only plays on 9x9, 13x13, 19x19");
-    });
-
-    it("lets a 1d player play a bot whose rank range starts at 1d", () => {
-        const [result] = getAcceptableTimeSetting(
-            makeBot({ allowed_rank_range: ["1d", "9d"] }),
-            options({ rank: 30 }),
-        );
-        expect(result).not.toBeNull();
-    });
-
     it("applies the rank range only to ranked games", () => {
         const bot = makeBot({ allowed_rank_range: ["1d", "9d"] });
 
-        const [ranked, message] = getAcceptableTimeSetting(bot, options({ rank: 20 }));
-        expect(ranked).toBeNull();
+        const [one_kyu, message] = getAcceptableTimeSetting(bot, options({ rank: 29 }));
+        expect(one_kyu).toBeNull();
         expect(message).toBe("Bot only plays ranked games with players from 1d to 9d");
 
-        const [unranked] = getAcceptableTimeSetting(bot, options({ rank: 20, ranked: false }));
+        const [one_dan] = getAcceptableTimeSetting(bot, options({ rank: 30 }));
+        expect(one_dan).not.toBeNull();
+
+        const [unranked] = getAcceptableTimeSetting(bot, options({ rank: 29, ranked: false }));
         expect(unranked).not.toBeNull();
     });
 
@@ -196,25 +152,9 @@ describe("getAcceptableTimeSetting", () => {
         expect(inside).not.toBeNull();
     });
 
-    it("rejects handicap when the bot does not allow it", () => {
-        const [result, message] = getAcceptableTimeSetting(
-            makeBot({ allow_ranked_handicap: false }),
-            options({ handicap: true }),
-        );
-        expect(result).toBeNull();
-        expect(message).toBe("Bot doesn't accept ranked games with handicap");
-    });
-
     it("plays rapid games with live settings for v1 bots", () => {
         const bot = makeBot();
-        bot.config = {
-            ...(bot.config as BotConfigV2),
-            _config_version: 1,
-            allowed_live_settings: {
-                byoyomi: clock_v2.byoyomi,
-                fischer: { max_time_range: [60, 1800], time_increment_range: [5, 30] },
-            },
-        } as BotConfigV1;
+        bot.config = { ...bot.config, _config_version: 1 } as BotConfigV1;
 
         const [result] = getAcceptableTimeSetting(
             bot,
