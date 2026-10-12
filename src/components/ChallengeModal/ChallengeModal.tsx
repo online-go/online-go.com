@@ -80,6 +80,7 @@ import {
     RejectionDetails,
     UpdateFn,
 } from "@/components/ChallengeModal/ChallengeModal.types";
+import { openBotSettingsModal } from "./BotSettingsModal";
 import "./ChallengeModal.css";
 
 /* Constants  */
@@ -943,9 +944,44 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                 {selected_bot ? selected_bot.username : ""}
                             </span>
                             {selected_bot && (
-                                <a href={`/player/${selected_bot?.id}`}>
-                                    <i className="fa fa-external-link"></i>
-                                </a>
+                                <span className="bot-links">
+                                    {(selected_bot.config?._config_version === 1 ||
+                                        selected_bot.config?._config_version === 2) && (
+                                        <span
+                                            className="fakelink"
+                                            role="button"
+                                            tabIndex={0}
+                                            title={llm_pgettext(
+                                                "Button that opens the list of game settings a bot accepts",
+                                                "Settings this bot accepts",
+                                            )}
+                                            aria-label={llm_pgettext(
+                                                "Button that opens the list of game settings a bot accepts",
+                                                "Settings this bot accepts",
+                                            )}
+                                            onClick={() =>
+                                                openBotSettingsModal(
+                                                    selected_bot,
+                                                    this.state.time_control,
+                                                )
+                                            }
+                                            onKeyDown={(ev) => {
+                                                if (ev.key === "Enter" || ev.key === " ") {
+                                                    ev.preventDefault();
+                                                    openBotSettingsModal(
+                                                        selected_bot,
+                                                        this.state.time_control,
+                                                    );
+                                                }
+                                            }}
+                                        >
+                                            <i className="fa fa-gear"></i>
+                                        </span>
+                                    )}
+                                    <a href={`/player/${selected_bot?.id}`}>
+                                        <i className="fa fa-external-link"></i>
+                                    </a>
+                                </span>
                             )}
                         </div>
                     </div>

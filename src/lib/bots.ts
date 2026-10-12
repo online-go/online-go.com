@@ -83,7 +83,7 @@ export function botRankNumber(rank: string): number {
 }
 
 /** Formats a duration in seconds for bot setting messages */
-function botDurationString(seconds: number): string {
+export function botDurationString(seconds: number): string {
     return (
         shortDurationString(seconds).trim() ||
         interpolate(pgettext("Short time (seconds)", "%ss"), [0])
@@ -104,7 +104,7 @@ function outOfRangeMessage(
     );
 }
 
-interface BotTimeSettingRange {
+export interface BotTimeSettingRange {
     /** Translated name of the setting, such as "Main time" */
     setting: string;
     range: [number, number];
@@ -116,7 +116,7 @@ interface BotTimeSettingRange {
 /** Lists the ranges a bot accepts for each setting of a time control system,
  * or returns null when the bot does not play that system with these
  * settings. */
-function botTimeSettingRanges(
+export function botTimeSettingRanges(
     bot: Bot,
     system: TimeControl["system"],
     settings?: BotAllowedClockSettingsV1 | BotAllowedClockSettingsV2,

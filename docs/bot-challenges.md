@@ -43,3 +43,14 @@ Some rejections depend on the bot's state when the challenge arrives: the
 blacklist, too many games at a speed, too many games with one player, and
 `decline_new_challenges`. The modal shows the bot's rejection message for
 these (`rejectionDetailsToMessage()` in `ChallengeModal.utils.ts`).
+
+## Showing what a bot accepts
+
+A gear next to the selected bot's name ("AI Player") opens `BotSettingsModal`.
+It lists the bot's board sizes, ranked and handicap rules, komi, player rank,
+and the time ranges at the selected speed. It uses `botTimeSettingRanges()`, so
+it shows the same ranges that the check uses. The gear shows only for bots with
+a version 1 or 2 config.
+
+The modal opens on top of the challenge modal. It catches Escape on `window` in
+the capture phase, so Escape closes only this modal.

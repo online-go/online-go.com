@@ -18,6 +18,11 @@
     width: 50rem;
     max-width: 100%;
 
+    .bot-links {
+        display: flex;
+        gap: 0.75rem;
+    }
+
     .challenge-pane-container {
         display: flex;
         flex-wrap: wrap;
