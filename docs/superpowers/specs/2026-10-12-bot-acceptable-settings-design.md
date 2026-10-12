@@ -37,8 +37,12 @@ the setting and the accepted range, for example "Main time must be from 1m to
 `botTimeSettingRanges()` lists the accepted range for each setting of a time
 control system.
 
-The modal layout does not change. The reason text below a greyed out bot is the
-only place that shows the result.
+The reason text below a greyed out bot shows the result of the check.
+
+A gear next to the "AI Player" link opens `BotSettingsModal`, which lists what
+the selected bot accepts: board sizes, ranked or unranked, handicap, komi,
+player rank for ranked games, and the time ranges for each system at the
+selected speed. It is on top of the challenge modal, so Escape closes only it.
 
 The unused bot list in `QuickMatch` is removed. It called the same function and
 its result was never rendered.
@@ -46,8 +50,8 @@ its result was never rendered.
 ## Out of scope
 
 - Changing the player's settings automatically to fit a bot.
-- A summary of everything the selected bot accepts. A first version had one;
-  it was removed because it added too much text to the modal.
+- A summary always visible in the challenge modal. A first version had one
+  below the bot list; it added too much text, so it moved to the gear modal.
 - Rejections that depend on the bot's state: blacklist, too many games, not
   accepting challenges. The modal still shows the bot's rejection message.
 - Opening the modal again with the same settings after a rejection.

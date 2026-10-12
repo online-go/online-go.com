@@ -10,7 +10,10 @@ Spec: `docs/superpowers/specs/2026-10-12-bot-acceptable-settings-design.md`
 2. `src/lib/bots.test.ts`: one test per fix and per message.
 3. `src/components/ChallengeModal/ChallengeModal.tsx`: build the options from
    the modal state, not from `SPEED_OPTIONS`.
-4. `src/views/Play/QuickMatch.tsx`: remove the unused bot list.
-5. `docs/bot-challenges.md`: durable description of the check.
-6. Verify: `yarn type-check`, `yarn lint`, `yarn prettier:file`, jest, `yarn
+4. `src/components/ChallengeModal/BotAcceptedSettings.tsx` (the list) and
+   `BotSettingsModal.tsx` (the modal), with tests. A gear next to the
+   "AI Player" link opens the modal.
+5. `src/views/Play/QuickMatch.tsx`: remove the unused bot list.
+6. `docs/bot-challenges.md`: durable description of the check and the modal.
+7. Verify: `yarn type-check`, `yarn lint`, `yarn prettier:file`, jest, `yarn
 build`, and a browser check at 1600x900 and 400x800 with test bots.
