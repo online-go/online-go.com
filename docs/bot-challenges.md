@@ -43,9 +43,3 @@ Some rejections depend on the bot's state when the challenge arrives: the
 blacklist, too many games at a speed, too many games with one player, and
 `decline_new_challenges`. The modal shows the bot's rejection message for
 these (`rejectionDetailsToMessage()` in `ChallengeModal.utils.ts`).
-
-## Showing what a bot accepts
-
-`BotAcceptedSettings` lists the selected bot's accepted settings below the bot
-list. It uses `botTimeSettingRanges()` for the time ranges at the selected
-speed, so it shows the same ranges that the check uses.

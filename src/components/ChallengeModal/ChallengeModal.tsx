@@ -80,7 +80,6 @@ import {
     RejectionDetails,
     UpdateFn,
 } from "@/components/ChallengeModal/ChallengeModal.types";
-import { BotAcceptedSettings } from "./BotAcceptedSettings";
 import "./ChallengeModal.css";
 
 /* Constants  */
@@ -1759,70 +1758,60 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                 {_("No bots available that can play with the selected settings")}
             </div>
         ) : (
-            <>
-                <div className="bot-categories">
-                    {categories.map((category) => {
-                        return (
-                            <div key={category.upper_bound} className="bot-category">
-                                <h1>{category.label}</h1>
+            <div className="bot-categories">
+                {categories.map((category) => {
+                    return (
+                        <div key={category.upper_bound} className="bot-category">
+                            <h1>{category.label}</h1>
 
-                                <div key={category.upper_bound} className="bot-options">
-                                    {available_bots
-                                        //.filter((bot) => !bot.disabled)
-                                        .filter((bot) => bot.category === category)
-                                        .map((bot) => {
-                                            return (
-                                                <div
-                                                    key={bot.id}
-                                                    className={
-                                                        "bot-option" +
-                                                        (bot.id === selected_bot_value?.id
-                                                            ? " selected"
-                                                            : "") +
-                                                        (bot.disabled ? " disabled" : "")
+                            <div key={category.upper_bound} className="bot-options">
+                                {available_bots
+                                    //.filter((bot) => !bot.disabled)
+                                    .filter((bot) => bot.category === category)
+                                    .map((bot) => {
+                                        return (
+                                            <div
+                                                key={bot.id}
+                                                className={
+                                                    "bot-option" +
+                                                    (bot.id === selected_bot_value?.id
+                                                        ? " selected"
+                                                        : "") +
+                                                    (bot.disabled ? " disabled" : "")
+                                                }
+                                                onClick={() => {
+                                                    if (!bot.disabled) {
+                                                        this.update_bot_id(bot.id);
                                                     }
-                                                    onClick={() => {
-                                                        if (!bot.disabled) {
-                                                            this.update_bot_id(bot.id);
-                                                        }
-                                                    }}
-                                                >
-                                                    <PlayerIcon
-                                                        user={bot}
-                                                        size={64}
-                                                        style={{ width: "48px", height: "48px" }}
-                                                    />
-                                                    <span className="username-rank">
-                                                        <span className="username">
-                                                            {bot.username}
-                                                        </span>
-                                                        {!preferences.get("hide-ranks") && (
-                                                            <span className="rank">
-                                                                ({rankString(bot.ranking || 0)})
-                                                            </span>
-                                                        )}
-                                                    </span>
-
-                                                    {bot.disabled && (
-                                                        <span className="disabled-reason">
-                                                            {bot.disabled}
+                                                }}
+                                            >
+                                                <PlayerIcon
+                                                    user={bot}
+                                                    size={64}
+                                                    style={{ width: "48px", height: "48px" }}
+                                                />
+                                                <span className="username-rank">
+                                                    <span className="username">{bot.username}</span>
+                                                    {!preferences.get("hide-ranks") && (
+                                                        <span className="rank">
+                                                            ({rankString(bot.ranking || 0)})
                                                         </span>
                                                     )}
-                                                </div>
-                                            );
-                                        })}
-                                </div>
+                                                </span>
+
+                                                {bot.disabled && (
+                                                    <span className="disabled-reason">
+                                                        {bot.disabled}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                             </div>
-                        );
-                    })}
-                </div>
-                {selected_bot_value && !selected_bot_value.disabled && (
-                    <BotAcceptedSettings
-                        bot={selected_bot_value}
-                        time_control={this.state.time_control}
-                    />
-                )}
-            </>
+                        </div>
+                    );
+                })}
+            </div>
         );
     }
 
