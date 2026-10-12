@@ -17,16 +17,11 @@
 
 import { socket } from "@/lib/sockets";
 import { getUserRating } from "@/lib/rank_utils";
-import {
-    BotAllowedClockSettingsV1,
-    BotAllowedClockSettingsV2,
-    BotConfig,
-    Speed,
-    User,
-} from "goban";
+import { BotAllowedClockSettingsV1, BotAllowedClockSettingsV2, BotConfig, User } from "goban";
 import EventEmitter from "eventemitter3";
-import { TimeControlSystem } from "./types";
-import { llm_pgettext } from "./translate";
+import { interpolate, llm_pgettext, pgettext } from "./translate";
+import type { TimeControl, TimeControlTypes } from "@/components/TimeControl";
+import { shortDurationString } from "@/components/TimeControl/util";
 
 interface Events {
     updated: () => void;
@@ -56,51 +51,199 @@ export function bot_count() {
     return Object.keys(active_bots).length;
 }
 
-interface BotChallengeOptions {
+export interface BotChallengeOptions {
+    /** The challenging player's ranking */
     rank: number;
     width: number;
     height: number;
-    speed: Speed;
-    system: TimeControlSystem;
     ranked: boolean;
     handicap: boolean;
-    //komi: number;
-    byoyomi?: {
-        main_time: number;
-        period_time: number;
-        periods: number;
-    };
-    fischer?: {
-        initial_time: number;
-        max_time: number;
-        time_increment: number;
-    };
-    simple?: {
-        time_per_move: number;
-    };
+    /** Only set when the player picked a custom komi */
+    komi?: number;
+    time_control: TimeControl;
 
     /* This will be set by getAcceptableTimeSetting() to match the config
      * version the bot is using */
     _config_version?: number;
 }
 
-/** Submit a desirable time setting for a bot. This will return null if the
- * bot is not compatible with the requested time setting, or a BotChallengeOptions
- * object that can be used to create a challenge. This will generally be the same
- * object as the one passed in, however the speed may be changed to match an acceptable
- * bot speed when the bot can accept the requested time setting in a different speed
- * category. (Mostly applicable for bots that don't have the Rapid time setting but
- * do accept games in that speed under either the Blitz or Live category.)
+/** Converts a rank string such as "25k", "3d" or "1p" to a ranking number,
+ * the same way gtp2ogs does when it checks `allowed_rank_range`. */
+export function botRankNumber(rank: string): number {
+    const base = parseInt(rank);
+    const suffix = rank[rank.length - 1].toLowerCase();
+
+    if (suffix === "p") {
+        return 999;
+    }
+    if (suffix === "d") {
+        return 29 + base;
+    }
+    return 30 - base;
+}
+
+/** Formats a duration in seconds for bot setting messages */
+export function botDurationString(seconds: number): string {
+    return (
+        shortDurationString(seconds).trim() ||
+        interpolate(pgettext("Short time (seconds)", "%ss"), [0])
+    );
+}
+
+function outOfRangeMessage(
+    setting: string,
+    range: [number, number],
+    format: (value: number) => string,
+): string {
+    return interpolate(
+        llm_pgettext(
+            "Why a bot can not play with the selected game settings. {{setting}} is the name of a time setting such as 'Main time'.",
+            "{{setting}} must be from {{min}} to {{max}}",
+        ),
+        { setting, min: format(range[0]), max: format(range[1]) },
+    );
+}
+
+export interface BotTimeSettingRange {
+    /** Translated name of the setting, such as "Main time" */
+    setting: string;
+    range: [number, number];
+    format: (value: number) => string;
+    /** Reads the setting from a time control of the same system */
+    value: (time_control: TimeControl) => number;
+}
+
+/** Lists the ranges a bot accepts for each setting of a time control system,
+ * or returns null when the bot does not play that system with these
+ * settings. */
+export function botTimeSettingRanges(
+    bot: Bot,
+    system: TimeControl["system"],
+    settings?: BotAllowedClockSettingsV1 | BotAllowedClockSettingsV2,
+): BotTimeSettingRange[] | null {
+    const count = (value: number) => value.toString();
+
+    switch (system) {
+        case "simple":
+            if (!settings?.simple) {
+                return null;
+            }
+            return [
+                {
+                    setting: llm_pgettext("Name of a time setting", "Time per move"),
+                    range: settings.simple.per_move_time_range,
+                    format: botDurationString,
+                    value: (tc) => (tc as TimeControlTypes.Simple).per_move,
+                },
+            ];
+
+        case "fischer": {
+            if (!settings?.fischer) {
+                return null;
+            }
+            const initial_time = {
+                setting: llm_pgettext("Name of a time setting", "Initial time"),
+                format: botDurationString,
+                value: (tc: TimeControl) => (tc as TimeControlTypes.Fischer).initial_time,
+            };
+            const time_increment = {
+                setting: llm_pgettext("Name of a time setting", "Time increment"),
+                range: settings.fischer.time_increment_range,
+                format: botDurationString,
+                value: (tc: TimeControl) => (tc as TimeControlTypes.Fischer).time_increment,
+            };
+            if (bot.config._config_version === 1) {
+                // v1 configs compare the initial time against max_time_range
+                return [
+                    { ...initial_time, range: settings.fischer.max_time_range },
+                    time_increment,
+                ];
+            }
+            const fischer = (settings as BotAllowedClockSettingsV2).fischer!;
+            return [
+                { ...initial_time, range: fischer.initial_time_range },
+                {
+                    setting: llm_pgettext("Name of a time setting", "Max time"),
+                    range: fischer.max_time_range,
+                    format: botDurationString,
+                    value: (tc) => (tc as TimeControlTypes.Fischer).max_time,
+                },
+                time_increment,
+            ];
+        }
+
+        case "byoyomi":
+            if (!settings?.byoyomi) {
+                return null;
+            }
+            return [
+                {
+                    setting: llm_pgettext("Name of a time setting", "Main time"),
+                    range: settings.byoyomi.main_time_range,
+                    format: botDurationString,
+                    value: (tc) => (tc as TimeControlTypes.ByoYomi).main_time,
+                },
+                {
+                    setting: llm_pgettext("Name of a time setting", "Periods"),
+                    range: settings.byoyomi.periods_range,
+                    format: count,
+                    value: (tc) => (tc as TimeControlTypes.ByoYomi).periods,
+                },
+                {
+                    setting: llm_pgettext("Name of a time setting", "Period time"),
+                    range: settings.byoyomi.period_time_range,
+                    format: botDurationString,
+                    value: (tc) => (tc as TimeControlTypes.ByoYomi).period_time,
+                },
+            ];
+
+        default:
+            return null;
+    }
+}
+
+/** Returns a message that describes the first time setting that is outside
+ * the bot's accepted ranges, or null when all of them are inside. */
+function timeSettingsProblem(
+    bot: Bot,
+    time_control: TimeControl,
+    settings?: BotAllowedClockSettingsV1 | BotAllowedClockSettingsV2,
+): string | null {
+    const ranges = botTimeSettingRanges(bot, time_control.system, settings);
+    if (!ranges) {
+        return llm_pgettext(
+            "Unable to find a compatible game setting for bot",
+            "Bot cannot play at this speed",
+        );
+    }
+
+    for (const { setting, range, format, value } of ranges) {
+        const v = value(time_control);
+        if (v < range[0] || v > range[1]) {
+            return outOfRangeMessage(setting, range, format);
+        }
+    }
+
+    return null;
+}
+
+/** Checks if a bot accepts a challenge with the given options. This will
+ * return null and a message that tells why if the bot will not accept the
+ * challenge, or a BotChallengeOptions object that can be used to create a
+ * challenge. This will generally be the same object as the one passed in,
+ * however the speed may be changed to match an acceptable bot speed when the
+ * bot can accept the requested time setting in a different speed category.
+ * (Mostly applicable for bots that don't have the Rapid time setting but do
+ * accept games in that speed under the Live category.)
+ *
+ * The checks follow the ones gtp2ogs does when a challenge arrives. Things
+ * that depend on the bot's current state, such as how many games it is
+ * playing, can not be checked here.
  *
  * When the bot does not have a config set, we will return the original options but
  * the _config_version will be set to 0, so the caller can exclude the result or not
  * as they see fit.
- *
- * The second return value is a string that describes the reason or note associated
- * with the return value (Why the bot can't work with these options, or a note describing
- * the lack of configuration)
  * */
-
 export function getAcceptableTimeSetting(
     _bot: Bot | number,
     options: BotChallengeOptions,
@@ -138,25 +281,6 @@ export function getAcceptableTimeSetting(
                     ),
                 ];
             }
-        } else if (typeof bot.config.allowed_board_sizes === "number") {
-            if (options.width !== options.height) {
-                return [
-                    null,
-                    llm_pgettext(
-                        "Unable to find a compatible game setting for bot",
-                        "Bot requires a square board",
-                    ),
-                ];
-            }
-            if (options.width !== bot.config.allowed_board_sizes) {
-                return [
-                    null,
-                    llm_pgettext(
-                        "Unable to find a compatible game setting for bot",
-                        "Bot is unable to play this board size",
-                    ),
-                ];
-            }
         } else if (
             Array.isArray(bot.config.allowed_board_sizes) &&
             bot.config.allowed_board_sizes.length === 1 &&
@@ -164,7 +288,10 @@ export function getAcceptableTimeSetting(
         ) {
             // 0 means any board size too..
         } else {
-            // If the bot doesn't accept all board sizes, non square are rejected
+            const allowed_sizes = Array.isArray(bot.config.allowed_board_sizes)
+                ? bot.config.allowed_board_sizes
+                : [bot.config.allowed_board_sizes];
+
             if (options.width !== options.height) {
                 return [
                     null,
@@ -175,49 +302,18 @@ export function getAcceptableTimeSetting(
                 ];
             }
 
-            let found = false;
-            if (Array.isArray(bot.config.allowed_board_sizes)) {
-                for (const size of bot.config.allowed_board_sizes) {
-                    if (size === options.width) {
-                        found = true;
-                        break;
-                    }
-                }
-            }
-            if (!found) {
+            if (!allowed_sizes.includes(options.width)) {
                 return [
                     null,
-                    llm_pgettext(
-                        "Unable to find a compatible game setting for bot",
-                        "Bot is unable to play this board size",
+                    interpolate(
+                        llm_pgettext(
+                            "Why a bot can not play with the selected board size. {{sizes}} is a list such as '9x9, 19x19'.",
+                            "Bot only plays on {{sizes}}",
+                        ),
+                        { sizes: allowed_sizes.map((size) => `${size}x${size}`).join(", ") },
                     ),
                 ];
             }
-        }
-
-        /* Check allowed rank */
-        function rankNumber(rank: string) {
-            if (rank.endsWith("p") || rank.endsWith("p")) {
-                return parseInt(rank) + 45;
-            } else if (rank.endsWith("d") || rank.endsWith("D")) {
-                return parseInt(rank) + 30;
-            } else {
-                return 30 - parseInt(rank);
-            }
-        }
-
-        if (
-            bot.config?.allowed_rank_range &&
-            (options.rank < rankNumber(bot.config?.allowed_rank_range[0]) ||
-                options.rank > rankNumber(bot.config?.allowed_rank_range[1]))
-        ) {
-            return [
-                null,
-                llm_pgettext(
-                    "Unable to find a compatible game setting for bot",
-                    "Bot has an unsuitable rank restriction",
-                ),
-            ];
         }
 
         /* Check our ranked setting */
@@ -230,12 +326,32 @@ export function getAcceptableTimeSetting(
                 ),
             ];
         }
-        if (!options.ranked && bot.config.allow_unranked) {
+        if (!options.ranked && !bot.config.allow_unranked) {
             return [
                 null,
                 llm_pgettext(
                     "Unable to find a compatible game setting for bot",
                     "Bot doesn't accept unranked games",
+                ),
+            ];
+        }
+
+        /* Check allowed rank. Like gtp2ogs, only ranked games are restricted. */
+        const rank_range = bot.config.allowed_rank_range;
+        if (
+            options.ranked &&
+            rank_range &&
+            (options.rank < botRankNumber(rank_range[0]) ||
+                options.rank > botRankNumber(rank_range[1]))
+        ) {
+            return [
+                null,
+                interpolate(
+                    llm_pgettext(
+                        "Why a bot can not play a ranked game with the player. {{min}} and {{max}} are ranks such as '25k' and '3d'.",
+                        "Bot only plays ranked games with players from {{min}} to {{max}}",
+                    ),
+                    { min: rank_range[0], max: rank_range[1] },
                 ),
             ];
         }
@@ -261,118 +377,59 @@ export function getAcceptableTimeSetting(
         }
 
         /* Check our komi setting */
-        /*
+        const komi_range = bot.config.allowed_komi_range;
         if (
-            options.komi < bot.config.allowed_komi_range[0] ||
-            options.komi > bot.config.allowed_komi_range[1]
+            options.komi !== undefined &&
+            komi_range &&
+            (options.komi < komi_range[0] || options.komi > komi_range[1])
         ) {
             return [
                 null,
-                llm_pgettext(
-                    "Unable to find a compatible game setting for bot",
-                    "Komi not accepted",
-                ),
-            ];
-        }
-        */
-
-        /* Check our speed settings */
-
-        if (!(options as any)[options.system]) {
-            console.error(
-                `Caller didn't provide ${options.system} time control system settings`,
-                options,
-            );
-            return [
-                null,
-                llm_pgettext(
-                    "Unable to find a compatible game setting for bot",
-                    "Time control system not provided",
+                outOfRangeMessage(
+                    llm_pgettext("Name of a game setting", "Komi"),
+                    komi_range,
+                    (value) => value.toString(),
                 ),
             ];
         }
 
-        function isInRange(
-            system: TimeControlSystem,
-            settings?: BotAllowedClockSettingsV1 | BotAllowedClockSettingsV2,
-        ) {
-            if (!settings) {
-                return false;
-            }
+        /* Check our time settings */
+        const time_control = options.time_control;
 
-            if (system === "simple") {
-                return (
-                    settings.simple &&
-                    options.simple!.time_per_move >= settings.simple.per_move_time_range[0] &&
-                    options.simple!.time_per_move <= settings.simple.per_move_time_range[1]
-                );
-            }
-
-            if (system === "fischer") {
-                if (bot.config._config_version === 1) {
-                    // bug in v1 was that max_time_range was used instead of initial_time_range
-                    return (
-                        settings.fischer &&
-                        options.fischer!.initial_time >= settings.fischer.max_time_range[0] &&
-                        options.fischer!.initial_time <= settings.fischer.max_time_range[1] &&
-                        options.fischer!.time_increment >=
-                            settings.fischer.time_increment_range[0] &&
-                        options.fischer!.time_increment <= settings.fischer.time_increment_range[1]
-                    );
-                } else if (bot.config._config_version === 2) {
-                    const settingsV2 = settings as BotAllowedClockSettingsV2;
-                    return (
-                        settingsV2.fischer &&
-                        options.fischer!.initial_time >= settingsV2.fischer.initial_time_range[0] &&
-                        options.fischer!.initial_time <= settingsV2.fischer.initial_time_range[1] &&
-                        options.fischer!.max_time >= settingsV2.fischer.max_time_range[0] &&
-                        options.fischer!.max_time <= settingsV2.fischer.max_time_range[1] &&
-                        options.fischer!.time_increment >=
-                            settingsV2.fischer.time_increment_range[0] &&
-                        options.fischer!.time_increment <=
-                            settingsV2.fischer.time_increment_range[1]
-                    );
-                }
-            }
-
-            if (system === "byoyomi") {
-                return (
-                    settings.byoyomi &&
-                    options.byoyomi!.main_time >= settings.byoyomi.main_time_range[0] &&
-                    options.byoyomi!.main_time <= settings.byoyomi.main_time_range[1] &&
-                    options.byoyomi!.period_time >= settings.byoyomi.period_time_range[0] &&
-                    options.byoyomi!.period_time <= settings.byoyomi.period_time_range[1] &&
-                    options.byoyomi!.periods >= settings.byoyomi.periods_range[0] &&
-                    options.byoyomi!.periods <= settings.byoyomi.periods_range[1]
-                );
-            }
-
-            return false;
+        if (!(bot.config.allowed_time_control_systems as string[]).includes(time_control.system)) {
+            return [
+                null,
+                llm_pgettext(
+                    "Unable to find a compatible game setting for bot",
+                    "Bot doesn't accept this time control system",
+                ),
+            ];
         }
 
-        if (isInRange(options.system, bot.config[`allowed_${options.speed}_settings`])) {
+        const problem = timeSettingsProblem(
+            bot,
+            time_control,
+            bot.config[`allowed_${time_control.speed}_settings`],
+        );
+        if (!problem) {
             return [{ ...options, _config_version: bot.config._config_version }, null];
         }
 
-        if (bot.config._config_version === 1) {
+        if (bot.config._config_version === 1 && time_control.speed === "rapid") {
             // v1 bots didn't have rapid settings, but we map that to live settings on the server
-            for (const speed of ["live"] as Speed[]) {
-                if (isInRange(options.system, bot.config[`allowed_${speed}_settings`])) {
-                    return [
-                        { ...options, speed, _config_version: bot.config._config_version },
-                        null,
-                    ];
-                }
+            if (!timeSettingsProblem(bot, time_control, bot.config.allowed_live_settings)) {
+                return [
+                    {
+                        ...options,
+                        time_control: { ...time_control, speed: "live" },
+                        _config_version: bot.config._config_version,
+                    },
+                    null,
+                ];
             }
         }
 
-        return [
-            null,
-            llm_pgettext(
-                "Unable to find a compatible game setting for bot",
-                "Bot cannot play at this speed",
-            ),
-        ];
+        return [null, problem];
     } catch (e) {
         console.error("Error getting acceptable time setting", e);
         return [

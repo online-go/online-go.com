@@ -1,0 +1,58 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.BotAcceptedSettings {
+    margin-top: 1rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--shade3);
+    border-radius: 0.25rem;
+    font-size: 0.9rem;
+
+    .bot-accepted-title {
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    dl {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 0.25rem 1rem;
+        margin: 0;
+    }
+
+    dt {
+        color: var(--shade0);
+        font-weight: normal;
+    }
+
+    dd {
+        margin: 0;
+    }
+}
+
+@media (max-width: 30rem) {
+    .BotAcceptedSettings {
+        dl {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+
+        dd {
+            margin-bottom: 0.5rem;
+        }
+    }
+}
