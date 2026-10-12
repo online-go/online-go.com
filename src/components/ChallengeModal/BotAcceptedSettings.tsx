@@ -82,7 +82,12 @@ export function BotAcceptedSettings({
         return null;
     }
 
-    const speed_settings = config[`allowed_${time_control.speed}_settings`];
+    // v1 configs have no rapid settings, and the server plays rapid games with
+    // their live settings
+    const speed_settings =
+        config._config_version === 1 && time_control.speed === "rapid"
+            ? (config.allowed_rapid_settings ?? config.allowed_live_settings)
+            : config[`allowed_${time_control.speed}_settings`];
     const time_rows = config.allowed_time_control_systems.map((system) => {
         const ranges = botTimeSettingRanges(bot, system, speed_settings);
         return {
