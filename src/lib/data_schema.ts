@@ -177,16 +177,18 @@ interface AnnouncementsSchema {
     hard_cleared: { [id: number]: number };
 }
 
+/* Last used challenge settings. See docs/challenge-modal-saved-settings.md. */
 type ChallengeSchema = {
     bot: number;
-    speed: TimeControlSpeed;
+    /* Custom Game settings. There is only one copy; "live" is a historical name. */
+    "challenge.live": rest_api.ChallengeDetails;
     restrict_rank: boolean;
-    "player.restrict_rank": boolean;
-    "player.time_control": TimeControl;
 } & {
-    [speed in `challenge.${TimeControlSpeed}`]: rest_api.ChallengeDetails;
+    [key in `${"player" | "computer"}.details`]: rest_api.ChallengeDetails;
 } & {
-    [speed in `player.${TimeControlSpeed}`]: rest_api.ChallengeDetails;
+    [key in `${"player" | "computer"}.restrict_rank`]: boolean;
+} & {
+    [key in `${"player" | "computer"}.time_control`]: TimeControl;
 };
 
 export interface DemoSettings {
