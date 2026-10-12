@@ -24,29 +24,21 @@ jobs:
       github.repository == 'online-go/online-go.com' &&
       github.event.pull_request.head.repo.full_name == github.repository
     steps:
-      # A cancelled run may leave git locks behind; clear them first.
-      - name: Clear stale git locks
+      # Nothing in this job touches the shared checkouts before run-tests.sh holds
+      # its priority lock: another runner may be mid-run in them. The script, and
+      # the helpers it finds beside itself, come from a private clone of ogs main in
+      # this runner's own temp dir. Stale git locks, the reset of both checkouts to
+      # main, and the pull all happen inside the script, behind the lock.
+      - name: Fetch run-tests.sh from ogs main (private clone)
         run: |
-          find /home/greenasjade/src/OGS/ogs/.git /home/greenasjade/src/OGS/ogs-ui/.git \
-               -name '*.lock' -delete
-
-      # run-tests.sh traps SIGTERM/INT/HUP and restores ogs-ui to main on exit, but
-      # a hard SIGKILL (e.g. a cancel-in-progress that outruns the grace window) can
-      # skip that and leave ogs-ui detached on a PR SHA. Reset both checkouts to main
-      # so that can't leak in. Deliberately NOT --force: this host also carries
-      # interactive work, and --force would silently discard uncommitted edits. On a
-      # dirty tree `git checkout main` fails closed and the run goes red with a
-      # reason, rather than destroying work (a detached-but-clean checkout switches
-      # fine). run-tests.sh lives in ogs, so pull its latest version here too; ogs
-      # stays on main — this is a frontend PR against the warm main backend.
-      - name: Reset shared checkouts to main (+ latest run-tests.sh)
-        run: |
-          cd /home/greenasjade/src/OGS/ogs-ui && git checkout main
-          cd /home/greenasjade/src/OGS/ogs && git checkout main && git pull origin main
+          git clone --depth 1 --filter=blob:none --sparse --branch main \
+              git@github.com:online-go/ogs.git "$RUNNER_TEMP/ogs-e2e-ci"
+          git -C "$RUNNER_TEMP/ogs-e2e-ci" sparse-checkout set .e2e-ci
 
       # run-tests.sh (PR mode) checks out this SHA in ogs-ui AFTER preempting any
       # in-flight merge run, runs the quick suite, and restores ogs-ui to main.
       - name: Run PR E2E (warm stack, quick suite)
         env:
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: /home/greenasjade/src/OGS/ogs/.e2e-ci/run-tests.sh "" "pr-ogs-ui"
+        run: |
+          "$RUNNER_TEMP/ogs-e2e-ci/.e2e-ci/run-tests.sh" "" "pr-ogs-ui"
