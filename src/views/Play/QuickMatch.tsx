@@ -27,9 +27,8 @@ import {
     Size,
     Speed,
 } from "goban";
-import { _, llm_pgettext, pgettext, interpolate, moment } from "@/lib/translate";
+import { _, pgettext, interpolate, moment } from "@/lib/translate";
 import { automatch_manager } from "@/lib/automatch_manager";
-import { Bot, bot_event_emitter, bots_list, getAcceptableTimeSetting } from "@/lib/bots";
 import { alert } from "@/lib/swal_config";
 import { useRefresh, useUser } from "@/lib/hooks";
 //import { Toggle } from "@/components/Toggle";
@@ -193,7 +192,6 @@ export function QuickMatch(): React.ReactElement {
         automatch_manager.on("entry", refresh);
         automatch_manager.on("start", refresh);
         automatch_manager.on("cancel", refresh);
-        bot_event_emitter.on("updated", refresh);
 
         function onGameStarted(game?: Notification) {
             console.log("game-started", game);
@@ -208,7 +206,6 @@ export function QuickMatch(): React.ReactElement {
             automatch_manager.off("entry", refresh);
             automatch_manager.off("start", refresh);
             automatch_manager.off("cancel", refresh);
-            bot_event_emitter.off("updated", refresh);
             notification_manager.event_emitter.off("game-started", onGameStarted);
         };
     }, []);
@@ -506,46 +503,6 @@ export function QuickMatch(): React.ReactElement {
         : multiple_sizes["13x13"]
           ? "13x13"
           : "9x9";
-
-    let available_bots: (Bot & { disabled?: string })[] = bots_list().filter((b) => b.id > 0);
-
-    if (game_clock !== "multiple") {
-        available_bots = available_bots.filter((b) => {
-            const settings = {
-                rank: user.ranking,
-                width: parseInt(board_size),
-                height: parseInt(board_size),
-                ranked: true,
-                handicap: handicaps === "disabled" ? false : true,
-                system: time_control_system,
-                speed: game_speed,
-                [time_control_system]: SPEED_OPTIONS[board_size][game_speed][time_control_system],
-            };
-            const [options, message] = getAcceptableTimeSetting(b, settings);
-            if (!options) {
-                b.disabled = message || undefined;
-            } else if (options && options._config_version && options._config_version === 0) {
-                b.disabled = llm_pgettext(
-                    "Bot is not configured correctly",
-                    "Bot is not configured correctly",
-                );
-            } else {
-                b.disabled = undefined;
-            }
-
-            return true;
-        });
-    }
-
-    available_bots.sort((a, b) => {
-        if (a.disabled && !b.disabled) {
-            return 1;
-        }
-        if (b.disabled && !a.disabled) {
-            return -1;
-        }
-        return (a.ranking || 0) - (b.ranking || 0);
-    });
 
     /* Filter available quick matches to the applicable ones for button highlighting  */
     const available_human_match_count_by_size: { [size: string]: number } = {

@@ -22,7 +22,7 @@ import * as preferences from "@/lib/preferences";
 
 import { OgsResizeDetector } from "@/components/OgsResizeDetector";
 import { browserHistory } from "@/lib/ogsHistory";
-import { _, pgettext, interpolate, llm_pgettext } from "@/lib/translate";
+import { _, pgettext, interpolate } from "@/lib/translate";
 import { post, del } from "@/lib/requests";
 import { Modal } from "@/components/Modal";
 import { socket } from "@/lib/sockets";
@@ -36,7 +36,14 @@ import {
     notification_manager,
     NotificationManagerEvents,
 } from "@/components/Notifications/NotificationManager";
-import { one_bot, bot_count, bots_list, getAcceptableTimeSetting, Bot } from "@/lib/bots";
+import {
+    one_bot,
+    bot_count,
+    bots_list,
+    getAcceptableTimeSetting,
+    Bot,
+    BotChallengeOptions,
+} from "@/lib/bots";
 import { goban_view_mode } from "@/views/Game/util";
 
 import { copyChallengeLinkURL } from "@/components/ChallengeLinkButton";
@@ -47,7 +54,6 @@ import {
     saveTimeControlSettings,
     updateSystem,
 } from "@/components/TimeControl/TimeControlUpdates";
-import { SPEED_OPTIONS } from "@/views/Play/SPEED_OPTIONS";
 import Select from "react-select";
 import {
     rejectionDetailsToMessage,
@@ -74,6 +80,7 @@ import {
     RejectionDetails,
     UpdateFn,
 } from "@/components/ChallengeModal/ChallengeModal.types";
+import { openBotSettingsModal } from "./BotSettingsModal";
 import "./ChallengeModal.css";
 
 /* Constants  */
@@ -908,6 +915,12 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         const bots = bots_list();
         const selected_bot = bots.find((bot) => bot.id === this.state.conf.bot_id);
         const rengo_disabled_reason = this.rengoDisabledReason();
+        const bot_settings_label = pgettext(
+            "Button that opens the list of game settings a bot accepts",
+            "Settings this bot accepts",
+        );
+        const openSelectedBotSettings = () =>
+            selected_bot && openBotSettingsModal(selected_bot, this.state.time_control);
 
         return (
             <div
@@ -937,9 +950,28 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                 {selected_bot ? selected_bot.username : ""}
                             </span>
                             {selected_bot && (
-                                <a href={`/player/${selected_bot?.id}`}>
-                                    <i className="fa fa-external-link"></i>
-                                </a>
+                                <span className="bot-links">
+                                    {(selected_bot.config?._config_version === 1 ||
+                                        selected_bot.config?._config_version === 2) && (
+                                        <i
+                                            className="fa fa-gear fakelink"
+                                            role="button"
+                                            tabIndex={0}
+                                            title={bot_settings_label}
+                                            aria-label={bot_settings_label}
+                                            onClick={openSelectedBotSettings}
+                                            onKeyDown={(ev) => {
+                                                if (ev.key === "Enter" || ev.key === " ") {
+                                                    ev.preventDefault();
+                                                    openSelectedBotSettings();
+                                                }
+                                            }}
+                                        />
+                                    )}
+                                    <a href={`/player/${selected_bot?.id}`}>
+                                        <i className="fa fa-external-link"></i>
+                                    </a>
+                                </span>
                             )}
                         </div>
                     </div>
@@ -1662,7 +1694,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
         const user = data.get("user");
         let available_bots: (Bot & { category?: Category })[] = bots_list().filter((b) => b.id > 0);
-        const board_size = `${this.state.challenge.game.width}x${this.state.challenge.game.height}`;
 
         const categories = [
             {
@@ -1684,32 +1715,21 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                 upper_bound: 99,
             },
         ];
-        available_bots = available_bots.filter((b) => {
-            const speed_settings = (SPEED_OPTIONS as any)?.[board_size]?.[
-                this.state.time_control.speed
-            ]?.[this.state.time_control.system];
-            if (!speed_settings) {
-                return false;
-            }
+        const game = this.state.challenge.game;
+        const settings: BotChallengeOptions = {
+            rank: user.ranking,
+            width: game.width ?? -1,
+            height: game.height ?? -1,
+            ranked: game.ranked,
+            handicap: game.handicap !== 0,
+            komi: game.komi_auto === "custom" ? (game.komi ?? undefined) : undefined,
+            time_control: this.state.time_control,
+        };
 
-            const settings = {
-                rank: user.ranking,
-                width: this.state.challenge.game.width ?? -1,
-                height: this.state.challenge.game.height ?? -1,
-                ranked: true,
-                handicap: this.state.challenge.game.handicap !== 0,
-                system: this.state.time_control.system,
-                speed: this.state.time_control.speed,
-                [this.state.time_control.system]: speed_settings,
-            };
+        available_bots = available_bots.filter((b) => {
             const [options, message] = getAcceptableTimeSetting(b, settings);
-            if (!options) {
+            if (!options || options._config_version === 0) {
                 b.disabled = message || undefined;
-            } else if (options && options._config_version && options._config_version === 0) {
-                b.disabled = llm_pgettext(
-                    "Bot is not configured correctly",
-                    "Bot is not configured correctly",
-                );
             } else {
                 b.disabled = undefined;
             }
