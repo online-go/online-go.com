@@ -78,7 +78,10 @@ To open issues or make code contributions you'll need to have a GitHub account, 
 1. Navigate to the branch you created in your forked repository on github.
 2. Select [`New Pull Request`](https://help.github.com/articles/creating-a-pull-request/).
 3. Write an appropriate title and comment for the proposed updates.
-4. Create the pull request.
+4. Make sure **Allow edits and access to secrets by maintainers** is selected. This lets the maintainers push fixes to your branch. The "Allow edits by maintainers" check fails on pull requests that do not allow it.
+    - If you forgot, select it in the sidebar of the pull request, then push a commit.
+    - GitHub does not show this option when your fork belongs to an organization. Fork the repository to your personal account instead.
+5. Create the pull request.
 
 ## Technologies Utilized
 

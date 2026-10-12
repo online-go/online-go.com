@@ -1,0 +1,58 @@
+# Fails fork PRs that do not allow edits by maintainers, so that maintainers
+# can always push fixes to a contributor's branch. Runs on pull_request_target
+# so it can comment on fork PRs. It never checks out or runs PR code.
+name: Maintainer Edits
+
+on:
+    pull_request_target:
+        types: [opened, reopened, synchronize, edited]
+
+permissions:
+    pull-requests: write
+
+concurrency:
+    group: maintainer-edits-${{ github.event.pull_request.number }}
+    cancel-in-progress: true
+
+jobs:
+    check:
+        name: Allow edits by maintainers
+        if: github.event.pull_request.head.repo.full_name != github.repository
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+
+        steps:
+            - name: Require "Allow edits by maintainers"
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  REPO: ${{ github.repository }}
+                  PR: ${{ github.event.pull_request.number }}
+              run: |
+                  marker='<!-- maintainer-edits-check -->'
+
+                  # Read the flag from the API, not the event payload: a re-run
+                  # reuses the payload of the original event.
+                  allowed=$(gh api "repos/$REPO/pulls/$PR" --jq .maintainer_can_modify)
+                  comment_ids=$(gh api --paginate "repos/$REPO/issues/$PR/comments" \
+                      --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | contains(\"$marker\"))) | .id")
+
+                  if [ "$allowed" = "true" ]; then
+                      for id in $comment_ids; do
+                          gh api -X DELETE "repos/$REPO/issues/comments/$id" || true
+                      done
+                      exit 0
+                  fi
+
+                  if [ -z "$comment_ids" ]; then
+                      gh api "repos/$REPO/issues/$PR/comments" -F body=@- > /dev/null <<EOF
+                  $marker
+                  Thank you for this pull request. Please select **Allow edits and access to secrets by maintainers** in the sidebar of this pull request. This lets the maintainers push small fixes directly to your branch.
+
+                  GitHub does not show this option when the fork belongs to an organization. In that case, please fork the repository to your personal account and open the pull request from that fork.
+
+                  After you select the option, push a commit, or close and reopen this pull request, to run this check again.
+                  EOF
+                  fi
+
+                  echo "::error::This pull request does not allow edits by maintainers."
+                  exit 1
