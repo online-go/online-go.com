@@ -8,7 +8,7 @@
  */
 
 import * as React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { GameList } from "./GameList";
 
 type TestMiniGobanProps = {
@@ -20,8 +20,37 @@ type TestMiniGobanProps = {
         move_tree?: { id?: number | string };
     };
     onSelectGameId?: (gameId: number) => void;
+    onGobanCreated?: (controller: { goban: FakeGoban }) => void;
     miniGobanSnapshotOverrides?: unknown;
 };
+
+class FakeGoban {
+    config = { time_control: { system: "fischer", speed: "correspondence" } };
+    engine = { getMoveNumber: () => 0 };
+    last_emitted_clock: unknown = undefined;
+    private listeners: Record<string, Array<(arg: unknown) => void>> = {};
+
+    on(event: string, cb: (arg: unknown) => void) {
+        (this.listeners[event] ??= []).push(cb);
+    }
+    once(event: string, cb: (arg: unknown) => void) {
+        const wrapped = (arg: unknown) => {
+            this.listeners[event] = this.listeners[event].filter((l) => l !== wrapped);
+            cb(arg);
+        };
+        this.on(event, wrapped);
+    }
+    emit(event: string, arg: unknown) {
+        if (event === "clock") {
+            this.last_emitted_clock = arg;
+        }
+        for (const cb of [...(this.listeners[event] ?? [])]) {
+            cb(arg);
+        }
+    }
+}
+
+const mockGobans = new Map<number, FakeGoban>();
 
 type TestSnapshotMiniGobanProps = TestMiniGobanProps & {
     snapshot?: TestMiniGobanProps["json"] | null;
@@ -30,6 +59,12 @@ type TestSnapshotMiniGobanProps = TestMiniGobanProps & {
 jest.mock("@/components/MiniGoban", () => ({
     __esModule: true,
     MiniGoban: (props: TestMiniGobanProps) => {
+        React.useEffect(() => {
+            const goban = mockGobans.get(props.game_id as number);
+            if (goban) {
+                props.onGobanCreated?.({ goban });
+            }
+        }, []);
         const gobanConfig = { game_id: props.game_id, ...props.json };
         return (
             <button
@@ -215,5 +250,48 @@ describe("GameList thumbnail snapshots", () => {
             game_id: undefined,
             move_tree: { id: "official-tree" },
         });
+    });
+});
+
+describe("GameList clock sort", () => {
+    afterEach(() => {
+        mockGobans.clear();
+        jest.restoreAllMocks();
+    });
+
+    function emitClock(goban: FakeGoban, at: number, main_time: number) {
+        jest.spyOn(Date, "now").mockReturnValue(at);
+        act(() => {
+            goban.emit("clock", {
+                current_player: "black",
+                current_player_id: "10",
+                time_of_last_move: 0,
+                black_clock: { main_time },
+                white_clock: { main_time: 100000 },
+            });
+        });
+    }
+
+    it("compares running clocks at the same instant, not when each was emitted", () => {
+        const a = new FakeGoban();
+        const b = new FakeGoban();
+        mockGobans.set(1, a);
+        mockGobans.set(2, b);
+
+        render(
+            <GameList
+                list={[makeGame(2), makeGame(1)]}
+                player={{ id: 10 }}
+                lineSummaryMode="both-players"
+            />,
+        );
+
+        // Game 1 runs out at 11000, game 2 at 11010. Game 2's clock was
+        // emitted later, so its raw main_time is the smaller of the two.
+        emitClock(a, 1000, 10000);
+        emitClock(b, 1050, 9960);
+
+        const order = screen.getAllByRole("button").map((el) => el.getAttribute("data-game-id"));
+        expect(order).toEqual(["1", "2"]);
     });
 });
