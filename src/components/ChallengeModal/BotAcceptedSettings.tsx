@@ -16,7 +16,8 @@
  */
 
 import * as React from "react";
-import { interpolate, pgettext } from "@/lib/translate";
+import { _, interpolate, pgettext } from "@/lib/translate";
+import { BotConfigV2 } from "goban";
 import { Bot, botTimeSettingRanges } from "@/lib/bots";
 import { TimeControl, timeControlSystemText } from "@/components/TimeControl";
 import "./BotAcceptedSettings.css";
@@ -36,7 +37,7 @@ function rangeText(min: string, max: string): string {
     });
 }
 
-function boardSizesText(sizes: number[] | "all" | "square" | number): string {
+function boardSizesText(sizes: BotConfigV2["allowed_board_sizes"]): string {
     if (sizes === "all" || (Array.isArray(sizes) && sizes.length === 1 && sizes[0] === 0)) {
         return pgettext("A bot accepts every board size", "Any size");
     }
@@ -110,15 +111,15 @@ export function BotAcceptedSettings({
             <dt>{pgettext("Game setting", "Board size")}</dt>
             <dd>{boardSizesText(config.allowed_board_sizes)}</dd>
 
-            <dt>{pgettext("Game setting: ranked or unranked", "Ranked")}</dt>
+            <dt>{_("Ranked")}</dt>
             <dd>{rankedText(config.allow_ranked, config.allow_unranked)}</dd>
 
-            <dt>{pgettext("Game setting", "Handicap")}</dt>
+            <dt>{_("Handicap")}</dt>
             <dd>{handicapText(config.allow_ranked_handicap, config.allow_unranked_handicap)}</dd>
 
             {config.allowed_komi_range && (
                 <>
-                    <dt>{pgettext("Game setting", "Komi")}</dt>
+                    <dt>{_("Komi")}</dt>
                     <dd>
                         {rangeText(
                             config.allowed_komi_range[0].toString(),

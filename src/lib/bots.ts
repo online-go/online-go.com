@@ -19,7 +19,7 @@ import { socket } from "@/lib/sockets";
 import { getUserRating } from "@/lib/rank_utils";
 import { BotAllowedClockSettingsV1, BotAllowedClockSettingsV2, BotConfig, User } from "goban";
 import EventEmitter from "eventemitter3";
-import { interpolate, pgettext } from "./translate";
+import { _, interpolate, pgettext } from "./translate";
 import type { TimeControl, TimeControlTypes } from "@/components/TimeControl";
 import { shortDurationString } from "@/components/TimeControl/util";
 
@@ -83,7 +83,7 @@ export function botRankNumber(rank: string): number {
 }
 
 /** Formats a duration in seconds for bot setting messages */
-export function botDurationString(seconds: number): string {
+function botDurationString(seconds: number): string {
     return (
         shortDurationString(seconds).trim() ||
         interpolate(pgettext("Short time (seconds)", "%ss"), [0])
@@ -97,14 +97,14 @@ function outOfRangeMessage(
 ): string {
     return interpolate(
         pgettext(
-            "Why a bot can not play with the selected game settings. {{setting}} is the name of a time setting such as 'Main time'.",
+            "Why a bot can not play with the selected game settings. {{setting}} is the name of a game setting such as 'Main time' or 'Komi'.",
             "{{setting}} must be from {{min}} to {{max}}",
         ),
         { setting, min: format(range[0]), max: format(range[1]) },
     );
 }
 
-export interface BotTimeSettingRange {
+interface BotTimeSettingRange {
     /** Translated name of the setting, such as "Main time" */
     setting: string;
     range: [number, number];
@@ -121,8 +121,6 @@ export function botTimeSettingRanges(
     system: TimeControl["system"],
     settings?: BotAllowedClockSettingsV1 | BotAllowedClockSettingsV2,
 ): BotTimeSettingRange[] | null {
-    const count = (value: number) => value.toString();
-
     switch (system) {
         case "simple":
             if (!settings?.simple) {
@@ -186,7 +184,7 @@ export function botTimeSettingRanges(
                 {
                     setting: pgettext("Name of a time setting", "Periods"),
                     range: settings.byoyomi.periods_range,
-                    format: count,
+                    format: String,
                     value: (tc) => (tc as TimeControlTypes.ByoYomi).periods,
                 },
                 {
@@ -384,12 +382,7 @@ export function getAcceptableTimeSetting(
             komi_range &&
             (options.komi < komi_range[0] || options.komi > komi_range[1])
         ) {
-            return [
-                null,
-                outOfRangeMessage(pgettext("Name of a game setting", "Komi"), komi_range, (value) =>
-                    value.toString(),
-                ),
-            ];
+            return [null, outOfRangeMessage(_("Komi"), komi_range, String)];
         }
 
         /* Check our time settings */

@@ -915,6 +915,12 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         const bots = bots_list();
         const selected_bot = bots.find((bot) => bot.id === this.state.conf.bot_id);
         const rengo_disabled_reason = this.rengoDisabledReason();
+        const bot_settings_label = pgettext(
+            "Button that opens the list of game settings a bot accepts",
+            "Settings this bot accepts",
+        );
+        const openSelectedBotSettings = () =>
+            selected_bot && openBotSettingsModal(selected_bot, this.state.time_control);
 
         return (
             <div
@@ -947,36 +953,20 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                 <span className="bot-links">
                                     {(selected_bot.config?._config_version === 1 ||
                                         selected_bot.config?._config_version === 2) && (
-                                        <span
-                                            className="fakelink"
+                                        <i
+                                            className="fa fa-gear fakelink"
                                             role="button"
                                             tabIndex={0}
-                                            title={pgettext(
-                                                "Button that opens the list of game settings a bot accepts",
-                                                "Settings this bot accepts",
-                                            )}
-                                            aria-label={pgettext(
-                                                "Button that opens the list of game settings a bot accepts",
-                                                "Settings this bot accepts",
-                                            )}
-                                            onClick={() =>
-                                                openBotSettingsModal(
-                                                    selected_bot,
-                                                    this.state.time_control,
-                                                )
-                                            }
+                                            title={bot_settings_label}
+                                            aria-label={bot_settings_label}
+                                            onClick={openSelectedBotSettings}
                                             onKeyDown={(ev) => {
                                                 if (ev.key === "Enter" || ev.key === " ") {
                                                     ev.preventDefault();
-                                                    openBotSettingsModal(
-                                                        selected_bot,
-                                                        this.state.time_control,
-                                                    );
+                                                    openSelectedBotSettings();
                                                 }
                                             }}
-                                        >
-                                            <i className="fa fa-gear"></i>
-                                        </span>
+                                        />
                                     )}
                                     <a href={`/player/${selected_bot?.id}`}>
                                         <i className="fa fa-external-link"></i>
