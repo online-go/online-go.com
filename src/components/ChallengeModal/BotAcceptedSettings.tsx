@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { interpolate, llm_pgettext } from "@/lib/translate";
+import { interpolate, pgettext } from "@/lib/translate";
 import { Bot, botTimeSettingRanges } from "@/lib/bots";
 import { TimeControl, timeControlSystemText } from "@/components/TimeControl";
 import "./BotAcceptedSettings.css";
@@ -30,46 +30,43 @@ function rangeText(min: string, max: string): string {
     if (min === max) {
         return min;
     }
-    return interpolate(
-        llm_pgettext("A range of values, such as '1m to 10m'", "{{min}} to {{max}}"),
-        {
-            min,
-            max,
-        },
-    );
+    return interpolate(pgettext("A range of values, such as '1m to 10m'", "{{min}} to {{max}}"), {
+        min,
+        max,
+    });
 }
 
 function boardSizesText(sizes: number[] | "all" | "square" | number): string {
     if (sizes === "all" || (Array.isArray(sizes) && sizes.length === 1 && sizes[0] === 0)) {
-        return llm_pgettext("A bot accepts every board size", "Any size");
+        return pgettext("A bot accepts every board size", "Any size");
     }
     if (sizes === "square") {
-        return llm_pgettext("A bot accepts every square board size", "Any square board");
+        return pgettext("A bot accepts every square board size", "Any square board");
     }
     return (Array.isArray(sizes) ? sizes : [sizes]).map((size) => `${size}x${size}`).join(", ");
 }
 
 function rankedText(allow_ranked: boolean, allow_unranked: boolean): string {
     if (allow_ranked && allow_unranked) {
-        return llm_pgettext("A bot accepts ranked and unranked games", "Ranked and unranked");
+        return pgettext("A bot accepts ranked and unranked games", "Ranked and unranked");
     }
     if (allow_ranked) {
-        return llm_pgettext("A bot accepts only ranked games", "Ranked only");
+        return pgettext("A bot accepts only ranked games", "Ranked only");
     }
-    return llm_pgettext("A bot accepts only unranked games", "Unranked only");
+    return pgettext("A bot accepts only unranked games", "Unranked only");
 }
 
 function handicapText(allow_ranked: boolean, allow_unranked: boolean): string {
     if (allow_ranked && allow_unranked) {
-        return llm_pgettext("A bot accepts handicap games", "Allowed");
+        return pgettext("A bot accepts handicap games", "Allowed");
     }
     if (allow_ranked) {
-        return llm_pgettext("A bot accepts handicap only in ranked games", "Ranked games only");
+        return pgettext("A bot accepts handicap only in ranked games", "Ranked games only");
     }
     if (allow_unranked) {
-        return llm_pgettext("A bot accepts handicap only in unranked games", "Unranked games only");
+        return pgettext("A bot accepts handicap only in unranked games", "Unranked games only");
     }
-    return llm_pgettext("A bot does not accept handicap games", "Not allowed");
+    return pgettext("A bot does not accept handicap games", "Not allowed");
 }
 
 /** Lists the game settings a bot accepts, so the player can pick settings
@@ -93,7 +90,7 @@ export function BotAcceptedSettings({
                 ? ranges
                       .map(({ setting, range, format }) =>
                           interpolate(
-                              llm_pgettext(
+                              pgettext(
                                   "A time setting and the range a bot accepts for it, such as 'Main time: 1m to 10m'",
                                   "{{setting}}: {{range}}",
                               ),
@@ -101,7 +98,7 @@ export function BotAcceptedSettings({
                           ),
                       )
                       .join(", ")
-                : llm_pgettext(
+                : pgettext(
                       "A bot does not play this time control system at the selected speed",
                       "Not at this speed",
                   ),
@@ -110,18 +107,18 @@ export function BotAcceptedSettings({
 
     return (
         <dl className="BotAcceptedSettings">
-            <dt>{llm_pgettext("Game setting", "Board size")}</dt>
+            <dt>{pgettext("Game setting", "Board size")}</dt>
             <dd>{boardSizesText(config.allowed_board_sizes)}</dd>
 
-            <dt>{llm_pgettext("Game setting: ranked or unranked", "Ranked")}</dt>
+            <dt>{pgettext("Game setting: ranked or unranked", "Ranked")}</dt>
             <dd>{rankedText(config.allow_ranked, config.allow_unranked)}</dd>
 
-            <dt>{llm_pgettext("Game setting", "Handicap")}</dt>
+            <dt>{pgettext("Game setting", "Handicap")}</dt>
             <dd>{handicapText(config.allow_ranked_handicap, config.allow_unranked_handicap)}</dd>
 
             {config.allowed_komi_range && (
                 <>
-                    <dt>{llm_pgettext("Game setting", "Komi")}</dt>
+                    <dt>{pgettext("Game setting", "Komi")}</dt>
                     <dd>
                         {rangeText(
                             config.allowed_komi_range[0].toString(),
@@ -134,7 +131,7 @@ export function BotAcceptedSettings({
             {config.allowed_rank_range && (
                 <>
                     <dt>
-                        {llm_pgettext(
+                        {pgettext(
                             "The ranks of players a bot plays ranked games with",
                             "Player rank (ranked games)",
                         )}

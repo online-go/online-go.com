@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { _, interpolate, llm_pgettext } from "@/lib/translate";
+import { _, interpolate, pgettext } from "@/lib/translate";
 import { Modal, openModal } from "@/components/Modal";
 import { Bot } from "@/lib/bots";
 import { TimeControl } from "@/components/TimeControl";
@@ -55,7 +55,7 @@ export class BotSettingsModal extends Modal<Events, BotSettingsModalProperties, 
                 <div className="header">
                     <h2>
                         {interpolate(
-                            llm_pgettext(
+                            pgettext(
                                 "Title of a dialog that lists the game settings a bot accepts",
                                 "{{username}} accepts",
                             ),

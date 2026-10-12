@@ -22,7 +22,7 @@ import * as preferences from "@/lib/preferences";
 
 import { OgsResizeDetector } from "@/components/OgsResizeDetector";
 import { browserHistory } from "@/lib/ogsHistory";
-import { _, pgettext, interpolate, llm_pgettext } from "@/lib/translate";
+import { _, pgettext, interpolate } from "@/lib/translate";
 import { post, del } from "@/lib/requests";
 import { Modal } from "@/components/Modal";
 import { socket } from "@/lib/sockets";
@@ -951,11 +951,11 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                             className="fakelink"
                                             role="button"
                                             tabIndex={0}
-                                            title={llm_pgettext(
+                                            title={pgettext(
                                                 "Button that opens the list of game settings a bot accepts",
                                                 "Settings this bot accepts",
                                             )}
-                                            aria-label={llm_pgettext(
+                                            aria-label={pgettext(
                                                 "Button that opens the list of game settings a bot accepts",
                                                 "Settings this bot accepts",
                                             )}
@@ -1741,7 +1741,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             if (!options) {
                 b.disabled = message || undefined;
             } else if (options && options._config_version && options._config_version === 0) {
-                b.disabled = llm_pgettext(
+                b.disabled = pgettext(
                     "Bot is not configured correctly",
                     "Bot is not configured correctly",
                 );

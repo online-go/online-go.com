@@ -19,7 +19,7 @@ import { socket } from "@/lib/sockets";
 import { getUserRating } from "@/lib/rank_utils";
 import { BotAllowedClockSettingsV1, BotAllowedClockSettingsV2, BotConfig, User } from "goban";
 import EventEmitter from "eventemitter3";
-import { interpolate, llm_pgettext, pgettext } from "./translate";
+import { interpolate, pgettext } from "./translate";
 import type { TimeControl, TimeControlTypes } from "@/components/TimeControl";
 import { shortDurationString } from "@/components/TimeControl/util";
 
@@ -96,7 +96,7 @@ function outOfRangeMessage(
     format: (value: number) => string,
 ): string {
     return interpolate(
-        llm_pgettext(
+        pgettext(
             "Why a bot can not play with the selected game settings. {{setting}} is the name of a time setting such as 'Main time'.",
             "{{setting}} must be from {{min}} to {{max}}",
         ),
@@ -130,7 +130,7 @@ export function botTimeSettingRanges(
             }
             return [
                 {
-                    setting: llm_pgettext("Name of a time setting", "Time per move"),
+                    setting: pgettext("Name of a time setting", "Time per move"),
                     range: settings.simple.per_move_time_range,
                     format: botDurationString,
                     value: (tc) => (tc as TimeControlTypes.Simple).per_move,
@@ -142,12 +142,12 @@ export function botTimeSettingRanges(
                 return null;
             }
             const initial_time = {
-                setting: llm_pgettext("Name of a time setting", "Initial time"),
+                setting: pgettext("Name of a time setting", "Initial time"),
                 format: botDurationString,
                 value: (tc: TimeControl) => (tc as TimeControlTypes.Fischer).initial_time,
             };
             const time_increment = {
-                setting: llm_pgettext("Name of a time setting", "Time increment"),
+                setting: pgettext("Name of a time setting", "Time increment"),
                 range: settings.fischer.time_increment_range,
                 format: botDurationString,
                 value: (tc: TimeControl) => (tc as TimeControlTypes.Fischer).time_increment,
@@ -163,7 +163,7 @@ export function botTimeSettingRanges(
             return [
                 { ...initial_time, range: fischer.initial_time_range },
                 {
-                    setting: llm_pgettext("Name of a time setting", "Max time"),
+                    setting: pgettext("Name of a time setting", "Max time"),
                     range: fischer.max_time_range,
                     format: botDurationString,
                     value: (tc) => (tc as TimeControlTypes.Fischer).max_time,
@@ -178,19 +178,19 @@ export function botTimeSettingRanges(
             }
             return [
                 {
-                    setting: llm_pgettext("Name of a time setting", "Main time"),
+                    setting: pgettext("Name of a time setting", "Main time"),
                     range: settings.byoyomi.main_time_range,
                     format: botDurationString,
                     value: (tc) => (tc as TimeControlTypes.ByoYomi).main_time,
                 },
                 {
-                    setting: llm_pgettext("Name of a time setting", "Periods"),
+                    setting: pgettext("Name of a time setting", "Periods"),
                     range: settings.byoyomi.periods_range,
                     format: count,
                     value: (tc) => (tc as TimeControlTypes.ByoYomi).periods,
                 },
                 {
-                    setting: llm_pgettext("Name of a time setting", "Period time"),
+                    setting: pgettext("Name of a time setting", "Period time"),
                     range: settings.byoyomi.period_time_range,
                     format: botDurationString,
                     value: (tc) => (tc as TimeControlTypes.ByoYomi).period_time,
@@ -211,7 +211,7 @@ function timeSettingsProblem(
 ): string | null {
     const ranges = botTimeSettingRanges(bot, time_control.system, settings);
     if (!ranges) {
-        return llm_pgettext(
+        return pgettext(
             "Unable to find a compatible game setting for bot",
             "Bot cannot play at this speed",
         );
@@ -254,14 +254,14 @@ export function getAcceptableTimeSetting(
         if (!bot) {
             return [
                 null,
-                llm_pgettext("Unable to find a compatible game setting for bot", "Bot not found"),
+                pgettext("Unable to find a compatible game setting for bot", "Bot not found"),
             ];
         }
 
         if (bot.config._config_version === 0) {
             return [
                 { ...options, _config_version: 0 },
-                llm_pgettext(
+                pgettext(
                     "Unable to find a compatible game setting for bot",
                     "Bot has no configuration",
                 ),
@@ -275,7 +275,7 @@ export function getAcceptableTimeSetting(
             if (options.width !== options.height) {
                 return [
                     null,
-                    llm_pgettext(
+                    pgettext(
                         "Unable to find a compatible game setting for bot",
                         "Bot requires a square board",
                     ),
@@ -295,7 +295,7 @@ export function getAcceptableTimeSetting(
             if (options.width !== options.height) {
                 return [
                     null,
-                    llm_pgettext(
+                    pgettext(
                         "Unable to find a compatible game setting for bot",
                         "Bot requires a square board",
                     ),
@@ -306,7 +306,7 @@ export function getAcceptableTimeSetting(
                 return [
                     null,
                     interpolate(
-                        llm_pgettext(
+                        pgettext(
                             "Why a bot can not play with the selected board size. {{sizes}} is a list such as '9x9, 19x19'.",
                             "Bot only plays on {{sizes}}",
                         ),
@@ -320,7 +320,7 @@ export function getAcceptableTimeSetting(
         if (options.ranked && !bot.config.allow_ranked) {
             return [
                 null,
-                llm_pgettext(
+                pgettext(
                     "Unable to find a compatible game setting for bot",
                     "Bot doesn't accept ranked games",
                 ),
@@ -329,7 +329,7 @@ export function getAcceptableTimeSetting(
         if (!options.ranked && !bot.config.allow_unranked) {
             return [
                 null,
-                llm_pgettext(
+                pgettext(
                     "Unable to find a compatible game setting for bot",
                     "Bot doesn't accept unranked games",
                 ),
@@ -347,7 +347,7 @@ export function getAcceptableTimeSetting(
             return [
                 null,
                 interpolate(
-                    llm_pgettext(
+                    pgettext(
                         "Why a bot can not play a ranked game with the player. {{min}} and {{max}} are ranks such as '25k' and '3d'.",
                         "Bot only plays ranked games with players from {{min}} to {{max}}",
                     ),
@@ -360,7 +360,7 @@ export function getAcceptableTimeSetting(
         if (options.handicap && options.ranked && !bot.config.allow_ranked_handicap) {
             return [
                 null,
-                llm_pgettext(
+                pgettext(
                     "Unable to find a compatible game setting for bot",
                     "Bot doesn't accept ranked games with handicap",
                 ),
@@ -369,7 +369,7 @@ export function getAcceptableTimeSetting(
         if (options.handicap && !options.ranked && !bot.config.allow_unranked_handicap) {
             return [
                 null,
-                llm_pgettext(
+                pgettext(
                     "Unable to find a compatible game setting for bot",
                     "Bot doesn't accept unranked games with handicap",
                 ),
@@ -385,10 +385,8 @@ export function getAcceptableTimeSetting(
         ) {
             return [
                 null,
-                outOfRangeMessage(
-                    llm_pgettext("Name of a game setting", "Komi"),
-                    komi_range,
-                    (value) => value.toString(),
+                outOfRangeMessage(pgettext("Name of a game setting", "Komi"), komi_range, (value) =>
+                    value.toString(),
                 ),
             ];
         }
@@ -399,7 +397,7 @@ export function getAcceptableTimeSetting(
         if (!(bot.config.allowed_time_control_systems as string[]).includes(time_control.system)) {
             return [
                 null,
-                llm_pgettext(
+                pgettext(
                     "Unable to find a compatible game setting for bot",
                     "Bot doesn't accept this time control system",
                 ),
@@ -434,7 +432,7 @@ export function getAcceptableTimeSetting(
         console.error("Error getting acceptable time setting", e);
         return [
             null,
-            llm_pgettext(
+            pgettext(
                 "Unable to find a compatible game setting for bot",
                 "Unable to find a compatible settings",
             ),
