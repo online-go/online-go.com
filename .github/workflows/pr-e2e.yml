@@ -36,9 +36,14 @@ jobs:
           git -C "$RUNNER_TEMP/ogs-e2e-ci" sparse-checkout set .e2e-ci
 
       # run-tests.sh (PR mode) checks out this SHA in ogs-ui AFTER preempting any
-      # in-flight merge run, runs the quick suite, and restores ogs-ui to main.
+      # in-flight merge run, runs the quick suite, and restores ogs-ui to main. The
+      # number, URL and title only name the PR in its Slack notices and the check
+      # annotation; they are passed as env, never interpolated into a shell command.
       - name: Run PR E2E (warm stack, quick suite)
         env:
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           "$RUNNER_TEMP/ogs-e2e-ci/.e2e-ci/run-tests.sh" "" "pr-ogs-ui"
