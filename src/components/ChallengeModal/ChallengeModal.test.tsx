@@ -1015,6 +1015,24 @@ describe("ChallengeModalBotFiltering", () => {
         );
     });
 
+    it("disables a bot that has no configuration", () => {
+        const { bot_count, getAcceptableTimeSetting } = jest.requireMock("@/lib/bots");
+        (bots_list as jest.Mock).mockReturnValue([
+            { id: 6, username: "UnconfiguredBot", ranking: 20, config: { _config_version: 0 } },
+        ]);
+        bot_count.mockReturnValue(1);
+        getAcceptableTimeSetting.mockReturnValue([
+            { _config_version: 0 },
+            "Bot has no configuration",
+        ]);
+
+        render(<ChallengeModalBody {...computerProps} modal={mockModal} />);
+
+        const option = screen.getByText("UnconfiguredBot").closest(".bot-option");
+        expect(option).toHaveClass("disabled");
+        expect(option).toHaveTextContent("Bot has no configuration");
+    });
+
     it("should show TopAdvancedBot99 in Advanced category", () => {
         // Rank 99.0 = Stronger than 9d
         renderAndCheckBot(

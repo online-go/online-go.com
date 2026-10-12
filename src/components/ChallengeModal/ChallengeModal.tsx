@@ -1728,13 +1728,8 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
         available_bots = available_bots.filter((b) => {
             const [options, message] = getAcceptableTimeSetting(b, settings);
-            if (!options) {
+            if (!options || options._config_version === 0) {
                 b.disabled = message || undefined;
-            } else if (options && options._config_version && options._config_version === 0) {
-                b.disabled = pgettext(
-                    "Bot is not configured correctly",
-                    "Bot is not configured correctly",
-                );
             } else {
                 b.disabled = undefined;
             }
