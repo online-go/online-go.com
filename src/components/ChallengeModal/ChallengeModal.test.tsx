@@ -46,9 +46,6 @@ jest.mock("@/lib/data", () => ({
         if (key === "user") {
             return { id: 123, ranking: 10 };
         }
-        if (key === "challenge.speed") {
-            return "live";
-        }
         if (key === "challenge.challenge.live") {
             return {
                 initialized: false,
@@ -916,32 +913,29 @@ describe("rematch saved settings", () => {
         expect(savedKeys).not.toContain("time_control.speed");
     });
 
-    it("saves a direct challenge apart from the custom game template", async () => {
+    it("sends a fork but does not save its settings", async () => {
         const user = userEvent.setup();
         jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+        const forkState = { komi: 0.5, moves: [], width: 19, height: 19, initial_player: "white" };
         render(
             <ChallengeModalBody
-                {...rematchProps("black")}
-                persistColor={undefined}
+                mode="player"
+                playerId={456}
+                initialState={forkState}
                 modal={mockModal}
             />,
         );
 
         await user.click(screen.getByRole("button", { name: /send challenge/i }));
 
-        expect(data.set).toHaveBeenCalledWith(
-            "challenge.player.live",
-            expect.objectContaining({ challenger_color: "black" }),
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({ initial_state: forkState, ranked: false }),
+            }),
         );
-        expect(data.set).toHaveBeenCalledWith("challenge.player.restrict_rank", false);
-        expect(data.set).toHaveBeenCalledWith(
-            "challenge.player.time_control",
-            expect.objectContaining({ speed: "live", system: "byoyomi" }),
-        );
-        expect(data.set).not.toHaveBeenCalledWith("challenge.challenge.live", expect.anything());
-        expect(data.set).not.toHaveBeenCalledWith("challenge.restrict_rank", expect.anything());
-        expect(data.set).not.toHaveBeenCalledWith("time_control.speed", expect.anything());
-        expect(data.set).not.toHaveBeenCalledWith("time_control.system", expect.anything());
+        const savedKeys = jest.mocked(data.set).mock.calls.map((call) => call[0]);
+        expect(savedKeys.filter((key) => /^(challenge|time_control)\./.test(key))).toEqual([]);
     });
 });
 
@@ -968,8 +962,40 @@ describe("direct challenge settings", () => {
         mockDataValues.clear();
     });
 
+    it("saves a direct challenge apart from the custom game template", async () => {
+        const user = userEvent.setup();
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+        render(
+            <ChallengeModalBody
+                {...defaultProps}
+                config={{
+                    ...defaultProps.config!,
+                    challenge: { ...defaultProps.config!.challenge, challenger_color: "black" },
+                }}
+                playerId={456}
+                modal={mockModal}
+            />,
+        );
+
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(data.set).toHaveBeenCalledWith(
+            "challenge.player.details",
+            expect.objectContaining({ challenger_color: "black" }),
+        );
+        expect(data.set).toHaveBeenCalledWith("challenge.player.restrict_rank", false);
+        expect(data.set).toHaveBeenCalledWith(
+            "challenge.player.time_control",
+            expect.objectContaining({ speed: "live", system: "byoyomi" }),
+        );
+        expect(data.set).not.toHaveBeenCalledWith("challenge.challenge.live", expect.anything());
+        expect(data.set).not.toHaveBeenCalledWith("challenge.restrict_rank", expect.anything());
+        expect(data.set).not.toHaveBeenCalledWith("time_control.speed", expect.anything());
+        expect(data.set).not.toHaveBeenCalledWith("time_control.system", expect.anything());
+    });
+
     it("loads a direct challenge from its own saved color", () => {
-        mockDataValues.set("challenge.player.live", {
+        mockDataValues.set("challenge.player.details", {
             initialized: false,
             min_ranking: 5,
             max_ranking: 36,
@@ -1015,7 +1041,7 @@ describe("direct challenge settings", () => {
     });
 
     it("keeps the custom game on its own color", () => {
-        mockDataValues.set("challenge.player.live", {
+        mockDataValues.set("challenge.player.details", {
             initialized: false,
             min_ranking: 5,
             max_ranking: 36,
@@ -1042,7 +1068,115 @@ describe("direct challenge settings", () => {
             "challenge.challenge.live",
             expect.objectContaining({ challenger_color: "automatic" }),
         );
-        expect(data.set).not.toHaveBeenCalledWith("challenge.player.live", expect.anything());
+        expect(data.set).not.toHaveBeenCalledWith("challenge.player.details", expect.anything());
+    });
+});
+
+describe("computer challenge settings", () => {
+    const storedGame = {
+        name: "",
+        rules: "japanese",
+        ranked: true,
+        width: 19,
+        height: 19,
+        handicap: 0,
+        komi_auto: "automatic",
+        komi: 5.5,
+        disable_analysis: false,
+        initial_state: null,
+        private: false,
+        rengo: false,
+        rengo_casual_mode: true,
+    };
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        mockPreferredSettings = [];
+        mockDataValues.clear();
+        const { bot_count, getAcceptableTimeSetting } = jest.requireMock("@/lib/bots");
+        (bots_list as jest.Mock).mockReturnValue([
+            { id: 1, username: "TestBot", ranking: 20, config: {} as any },
+        ]);
+        bot_count.mockReturnValue(1);
+        getAcceptableTimeSetting.mockReturnValue([{}, ""]);
+    });
+
+    function showComputerSettings() {
+        fireEvent.click(screen.getByRole("button", { name: /Show Custom Settings/i }));
+    }
+
+    it("saves a computer game apart from the custom game template", async () => {
+        const user = userEvent.setup();
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+        render(<ChallengeModalBody mode="computer" modal={mockModal} />);
+        showComputerSettings();
+        await user.selectOptions(screen.getByLabelText("Your Color"), "white");
+        await user.selectOptions(screen.getByLabelText(/board size/i), "9x9");
+
+        await user.click(screen.getByRole("button", { name: /^Play$/ }));
+
+        expect(data.set).toHaveBeenCalledWith(
+            "challenge.computer.details",
+            expect.objectContaining({
+                challenger_color: "white",
+                game: expect.objectContaining({ width: 9, height: 9 }),
+            }),
+        );
+        expect(data.set).toHaveBeenCalledWith(
+            "challenge.computer.time_control",
+            expect.objectContaining({ speed: expect.any(String) }),
+        );
+        const savedKeys = jest.mocked(data.set).mock.calls.map((call) => call[0]);
+        expect(savedKeys).not.toContain("challenge.challenge.live");
+        expect(savedKeys).not.toContain("challenge.restrict_rank");
+        expect(savedKeys.filter((key) => key.startsWith("time_control."))).toEqual([]);
+    });
+
+    it("loads a computer game from its own saved settings", () => {
+        mockDataValues.set("challenge.computer.details", {
+            initialized: false,
+            min_ranking: 5,
+            max_ranking: 36,
+            challenger_color: "white",
+            rengo_auto_start: 0,
+            game: { ...storedGame, width: 13, height: 13 },
+        });
+        mockDataValues.set("challenge.computer.time_control", {
+            speed: "blitz",
+            system: "fischer",
+            initial_time: 30,
+            time_increment: 10,
+            max_time: 60,
+            pause_on_weekends: false,
+        });
+
+        const { unmount } = render(<ChallengeModalBody mode="computer" modal={mockModal} />);
+        showComputerSettings();
+        expect(screen.getByLabelText("Your Color")).toHaveValue("white");
+        expect(screen.getByLabelText(/board size/i)).toHaveValue("13x13");
+        expect(screen.getByLabelText("Game Speed")).toHaveValue("blitz");
+        unmount();
+
+        render(<ChallengeModalBody mode="open" modal={mockModal} />);
+        expect(screen.getByLabelText("Your Color")).toHaveValue("automatic");
+        expect(screen.getByLabelText(/board size/i)).toHaveValue("19x19");
+    });
+
+    it("uses the custom game settings the first time a computer game is opened", () => {
+        mockDataValues.set("challenge.challenge.live", {
+            initialized: false,
+            min_ranking: 5,
+            max_ranking: 36,
+            challenger_color: "black",
+            rengo_auto_start: 0,
+            game: { ...storedGame, width: 13, height: 13 },
+        });
+
+        render(<ChallengeModalBody mode="computer" modal={mockModal} />);
+        showComputerSettings();
+
+        expect(screen.getByLabelText("Your Color")).toHaveValue("black");
+        expect(screen.getByLabelText(/board size/i)).toHaveValue("13x13");
     });
 });
 

@@ -128,12 +128,29 @@ function coerceKomiForAutoHandicap(game: GameInput): GameInput {
     return game;
 }
 
-// A challenge sent to one player should remember its own last settings.
-// A rematch is also mode "player", but those settings belong to that one game
-// and already have their own handling. See online-go.com issue 2430.
-function isDirectChallenge(props: { mode: string; persistColor?: boolean }): boolean {
-    return props.mode === "player" && props.persistColor !== false;
-}
+/** The data keys where each kind of challenge keeps its last used settings,
+ *  so that one kind does not change the next game of another kind. The
+ *  "player" and "computer" keys fall back to the "open" (Custom Game) values
+ *  until they are first saved. A null time_control key means the shared
+ *  per-speed clock settings in `time_control.*`.
+ *  See docs/challenge-modal-saved-settings.md. */
+const SAVED_SETTINGS_KEYS = {
+    open: {
+        challenge: "challenge.challenge.live",
+        restrict_rank: "challenge.restrict_rank",
+        time_control: null,
+    },
+    player: {
+        challenge: "challenge.player.details",
+        restrict_rank: "challenge.player.restrict_rank",
+        time_control: "challenge.player.time_control",
+    },
+    computer: {
+        challenge: "challenge.computer.details",
+        restrict_rank: "challenge.computer.restrict_rank",
+        time_control: "challenge.computer.time_control",
+    },
+} as const;
 
 export class ChallengeModal extends Modal<{}, ChallengeModalProperties, ChallengeModalState> {
     constructor(props: ChallengeModalProperties) {
@@ -151,10 +168,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     constructor(props: ChallengeModalInput) {
         super(props);
 
-        const speed = data.get("challenge.speed", "live");
-        const direct = isDirectChallenge(this.props);
+        const keys = SAVED_SETTINGS_KEYS[this.props.mode];
 
-        const customChallenge = data.get(`challenge.challenge.${speed}`, {
+        const customChallenge = data.get(SAVED_SETTINGS_KEYS.open.challenge, {
             initialized: false,
             min_ranking: 5,
             max_ranking: 36,
@@ -177,7 +193,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             },
         });
         const challenge: ChallengeDetails = sanitizeChallengeDetails(
-            direct ? data.get(`challenge.player.${speed}`, customChallenge) : customChallenge,
+            data.get(keys.challenge, customChallenge),
         );
 
         const game_settings = challenge.game;
@@ -223,12 +239,10 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                 selected_board_size:
                     standard_board_sizes[`${game_settings.width}x${game_settings.height}`] ||
                     "custom",
-                restrict_rank: direct
-                    ? data.get(
-                          "challenge.player.restrict_rank",
-                          data.get("challenge.restrict_rank", false),
-                      )
-                    : data.get("challenge.restrict_rank", false),
+                restrict_rank: data.get(
+                    keys.restrict_rank,
+                    data.get(SAVED_SETTINGS_KEYS.open.restrict_rank, false),
+                ),
             },
             challenge: challenge,
             forking_game: !!this.props.initialState,
@@ -386,11 +400,10 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     }
 
     loadLastTimeControlSettings(): TimeControl {
-        if (isDirectChallenge(this.props)) {
-            const saved = data.get("challenge.player.time_control");
-            if (saved) {
-                return saved;
-            }
+        const key = SAVED_SETTINGS_KEYS[this.props.mode].time_control;
+        const saved = key && data.get(key);
+        if (saved) {
+            return saved;
         }
         const speed = data.get(`time_control.speed`, "correspondence");
         const system = data.get(`time_control.system`, "byoyomi");
@@ -398,51 +411,23 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     }
 
     saveSettings() {
-        // A rematch copies that game's color, komi, board, and rank limits.
-        // Those belong to this one game, not the next custom game.
-        // See online-go.com issue 2253.
-        if (this.props.persistColor === false) {
+        // A rematch (online-go.com issue 2253) or a fork copies one game's
+        // color, komi, board, and rank limits. Those belong to that game, not
+        // to the next challenge.
+        if (this.props.persistColor === false || this.props.initialState) {
             return;
         }
 
         const next = this.next();
-        const speed = data.get("challenge.speed", "live");
-        // Direct challenges are stored apart from the Custom Game template,
-        // so changing color, rank limits or the clock for one person does not
-        // change the next game anyone can join. See online-go.com issue 2430.
-        const direct = isDirectChallenge(this.props);
-        if (direct) {
-            data.set("challenge.player.time_control", this.state.time_control);
+        const keys = SAVED_SETTINGS_KEYS[this.props.mode];
+        if (keys.time_control) {
+            data.set(keys.time_control, this.state.time_control);
         } else {
             saveTimeControlSettings(this.state.time_control);
         }
-        const restrictKey = direct ? "challenge.player.restrict_rank" : "challenge.restrict_rank";
-
-        let challenge_to_save = next.challenge;
-        const persisted: any = direct
-            ? data.get(`challenge.player.${speed}`)
-            : data.get(`challenge.challenge.${speed}`);
-        if (this.props.mode === "computer") {
-            // ranked and disable_analysis are forced in bot mode, so don't let
-            // them overwrite the user's persisted preference used by other modes.
-            challenge_to_save = {
-                ...next.challenge,
-                game: {
-                    ...next.challenge.game,
-                    ranked: persisted?.game?.ranked ?? next.challenge.game.ranked,
-                    disable_analysis:
-                        persisted?.game?.disable_analysis ?? next.challenge.game.disable_analysis,
-                },
-            };
-        }
-
-        if (direct) {
-            data.set(`challenge.player.${speed}`, challenge_to_save);
-        } else {
-            data.set(`challenge.challenge.${speed}`, challenge_to_save);
-        }
+        data.set(keys.challenge, next.challenge);
+        data.set(keys.restrict_rank, next.conf.restrict_rank);
         data.set("challenge.bot", next.conf.bot_id);
-        data.set(restrictKey, next.conf.restrict_rank);
     }
 
     addToPreferredSettings = () => {
