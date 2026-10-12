@@ -28,9 +28,8 @@ import { _, pgettext } from "@/lib/translate";
 import { Card } from "@/components/material";
 import { SeekGraph, SeekGraphLegend } from "@/components/SeekGraph";
 import { PersistentElement } from "@/components/PersistentElement";
-import { isLiveGame, timeControlSystemText } from "@/components/TimeControl";
-import { errorAlerter, rulesText, ignore } from "@/lib/misc";
-import { automatch_manager } from "@/lib/automatch_manager";
+import { isLiveGame } from "@/components/TimeControl";
+import { errorAlerter, ignore } from "@/lib/misc";
 import { allocateCanvasOrError } from "goban";
 import { Challenge, ChallengeFilter, ChallengeFilterKey } from "@/lib/challenge_utils";
 //import { challenge } from "@/components/ChallengeModal";
@@ -86,14 +85,6 @@ export function CustomGames(): React.ReactElement {
     const [correspondence_list, setCorrespondenceList] = React.useState<Array<Challenge>>([]);
     const [rengo_list, setRengoList] = React.useState<Array<Challenge>>([]);
 
-    const corr_automatcher_uuids = Object.keys(
-        automatch_manager.active_correspondence_automatchers,
-    );
-    const corr_automatchers = corr_automatcher_uuids.map(
-        (uuid) => automatch_manager.active_correspondence_automatchers[uuid],
-    );
-    corr_automatchers.sort((a, b) => (a.timestamp as number) - (b.timestamp as number));
-
     const default_filter: Partial<ChallengeFilter> = {};
     filterPreferenceMapping.forEach((pref, key) => {
         if (user.anonymous) {
@@ -116,11 +107,6 @@ export function CustomGames(): React.ReactElement {
     const [rengo_manage_pane_lock, setRengoManagePaneLock] = React.useState<{
         [id: number]: boolean;
     }>({});
-
-    const liveOwnChallengePending = React.useCallback((): Challenge | undefined => {
-        // a user should have only one of these at any time
-        return live_list.find((c) => c.user_challenge);
-    }, [live_list]);
 
     const [show_custom_games, setShowCustomGames] = preferences.usePreference(
         "automatch.show-custom-games",
@@ -392,14 +378,6 @@ export function CustomGames(): React.ReactElement {
         );
     }, [rengo_list]);
 
-    const cancelOwnChallenges = React.useCallback(() => {
-        live_list.forEach((c) => {
-            if (c.user_challenge) {
-                cancelOpenChallenge(c);
-            }
-        });
-    }, [live_list, cancelOpenChallenge]);
-
     const customGamesHeadingTitle = pgettext("Games available to accept", "Available Games");
 
     if (!show_custom_games) {
@@ -457,22 +435,7 @@ export function CustomGames(): React.ReactElement {
                 </div>
 
                 <div id="CustomGames">
-                    {liveOwnChallengePending() ? (
-                        <Card>
-                            <div className="automatch-header">{_("Waiting for opponent...")}</div>
-                            <div className="automatch-row-container">
-                                <div className="spinner">
-                                    <div className="double-bounce1"></div>
-                                    <div className="double-bounce2"></div>
-                                </div>
-                            </div>
-                            <div className="automatch-settings">
-                                <button className="danger sm" onClick={cancelOwnChallenges}>
-                                    {pgettext("Cancel challenge", "Cancel")}
-                                </button>
-                            </div>
-                        </Card>
-                    ) : live_rengo_challenge_to_show ? (
+                    {live_rengo_challenge_to_show ? (
                         <Card>
                             <RengoManagementPane
                                 challenge_id={live_rengo_challenge_to_show.challenge_id}
@@ -549,84 +512,6 @@ export function CustomGames(): React.ReactElement {
                     <div id="challenge-list-container">
                         <div id="challenge-list-inner-container">
                             <div id="challenge-list" onMouseMove={freezeChallenges}>
-                                {(corr_automatchers.length || null) && (
-                                    <div className="challenge-row">
-                                        <span className="cell break">
-                                            {_("Your Automatch Requests")}
-                                        </span>
-                                        <CellBreaks width={7} />
-                                    </div>
-                                )}
-                                {(corr_automatchers.length || null) && (
-                                    <div className="challenge-row">
-                                        <span className="head">{/* buttons */}</span>
-                                        <span className="head">{_("Rank")}</span>
-                                        <span className="head">{_("Size")}</span>
-                                        <span className="head">{_("Time Control")}</span>
-                                        <span className="head">{_("Handicap")}</span>
-                                        <span className="head">{_("Rules")}</span>
-                                    </div>
-                                )}
-                                {corr_automatchers.map((m) => (
-                                    <div
-                                        className="challenge-row automatch-challenge-row"
-                                        key={m.uuid}
-                                    >
-                                        <span className="cell">
-                                            <button
-                                                className="danger xs"
-                                                onClick={() => {
-                                                    automatch_manager.cancel(m.uuid);
-                                                }}
-                                            >
-                                                {pgettext("Cancel automatch", "Cancel")}
-                                            </button>
-                                        </span>
-
-                                        <span className="cell">
-                                            {m.lower_rank_diff === m.upper_rank_diff ? (
-                                                <span>&plusmn; {m.lower_rank_diff}</span>
-                                            ) : (
-                                                <span>
-                                                    -{m.lower_rank_diff} &nbsp; +{m.upper_rank_diff}
-                                                </span>
-                                            )}
-                                        </span>
-
-                                        <span className="cell">
-                                            {m.size_speed_options
-                                                .filter((x) => x.speed === "correspondence")
-                                                .map((x) => x.size)
-                                                .join(",")}
-                                        </span>
-
-                                        <span className={m.size_speed_options[0].system + " cell"}>
-                                            {timeControlSystemText(m.size_speed_options[0].system)}
-                                        </span>
-
-                                        <span className={m.handicap.condition + " cell"}>
-                                            {m.handicap.condition === "no-preference"
-                                                ? pgettext(
-                                                      "Automatch: no preference",
-                                                      "No preference",
-                                                  )
-                                                : m.handicap.value === "enabled"
-                                                  ? pgettext("Handicap enabled", "Enabled")
-                                                  : pgettext("Handicap disabled", "Disabled")}
-                                        </span>
-
-                                        <span className={m.rules.condition + " cell"}>
-                                            {m.rules.condition === "no-preference"
-                                                ? pgettext(
-                                                      "Automatch: no preference",
-                                                      "No preference",
-                                                  )
-                                                : rulesText(m.rules.value)}
-                                        </span>
-                                        <span className="cell"></span>
-                                    </div>
-                                ))}
-
                                 <div className="challenge-row">
                                     <span className="cell break">{_("Short Games")}</span>
                                     <CellBreaks width={9} />

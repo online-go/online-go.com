@@ -20,6 +20,7 @@ import * as React from "react";
 import { _ } from "@/lib/translate";
 import { QuickMatch } from "./QuickMatch";
 import { CustomGames } from "./CustomGames";
+import { GameSearchStatus } from "./GameSearchStatus";
 import { PriceIncreaseMessage } from "@/components/PriceIncreaseMessage";
 import "./Play.css";
 
@@ -31,6 +32,7 @@ export function Play(): React.ReactElement {
     return (
         <div className="Play container">
             <PriceIncreaseMessage />
+            <GameSearchStatus />
             <QuickMatch />
             <CustomGames />
         </div>

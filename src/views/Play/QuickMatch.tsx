@@ -178,7 +178,6 @@ export function QuickMatch(): React.ReactElement {
         "automatch.upper-rank-diff",
     );
 
-    const [correspondence_spinner, setCorrespondenceSpinner] = React.useState(false);
     const [game_clock, setGameClock] = preferences.usePreference("automatch.game-clock");
     const have_active_game_search = useHaveActiveGameSearch();
 
@@ -332,10 +331,6 @@ export function QuickMatch(): React.ReactElement {
 
         automatch_manager.findMatch(preferences);
         refresh();
-
-        if (game_speed === "correspondence") {
-            setCorrespondenceSpinner(true);
-        }
     }, [
         board_size,
         game_speed,
@@ -347,7 +342,6 @@ export function QuickMatch(): React.ReactElement {
         time_control_system,
         refresh,
         automatch_manager,
-        setCorrespondenceSpinner,
         multiple_sizes,
         multiple_speeds,
     ]);
@@ -422,12 +416,7 @@ export function QuickMatch(): React.ReactElement {
         doAutomatch();
     }, [doAutomatch]);
 
-    const dismissCorrespondenceSpinner = React.useCallback(() => {
-        setCorrespondenceSpinner(false);
-    }, []);
-
-    const automatch_search_active =
-        !!automatch_manager.active_live_automatcher || correspondence_spinner;
+    const automatch_search_active = !!automatch_manager.active_live_automatcher;
 
     function isSizeActive(size: Size) {
         if (game_clock === "multiple") {
@@ -1117,26 +1106,6 @@ export function QuickMatch(): React.ReactElement {
                     </div>
                 )}
 
-                {correspondence_spinner && (
-                    <div>
-                        <div className="automatch-header">{_("Finding you a game...")}</div>
-                        <div className="automatch-settings-corr">
-                            {_(
-                                'This can take several minutes. You will be notified when your match has been found. To view or cancel your automatch requests, please see the list below labeled "Your Automatch Requests".',
-                            )}
-                        </div>
-                        <div className="automatch-row-container">
-                            <button className="primary" onClick={dismissCorrespondenceSpinner}>
-                                {_(
-                                    pgettext(
-                                        "Dismiss the 'finding correspondence automatch' message",
-                                        "Got it",
-                                    ),
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                )}
                 {user.anonymous && (
                     <Card className="anonymous-container">
                         {_("Please sign in to play")}

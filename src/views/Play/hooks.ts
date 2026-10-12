@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { automatch_manager } from "@/lib/automatch_manager";
+import { automatch_manager, AutomatchPreferences } from "@/lib/automatch_manager";
 import { Challenge } from "@/lib/challenge_utils";
 import { EventEmitter } from "eventemitter3";
 
@@ -29,11 +29,71 @@ interface Events {
  * SeekGraph instance which does the work of subscribing to this data. */
 export const active_challenges_emitter = new EventEmitter<Events>();
 
+function isOwnLiveChallenge(challenge: Challenge): boolean {
+    return !!(
+        challenge.user_challenge &&
+        challenge.time_per_move > 0 &&
+        challenge.time_per_move < 3600
+    );
+}
+
+/** The player's own open live challenge, if there is one. The data comes from
+ * the SeekGraph created by CustomGames, so this only works on the Play page. */
+export function useOwnLiveChallenge(): Challenge | undefined {
+    const [own_live_challenge, setOwnLiveChallenge] = React.useState<Challenge | undefined>();
+
+    React.useEffect(() => {
+        function updateChallenges(args?: { [id: string]: Challenge }) {
+            setOwnLiveChallenge(Object.values(args || {}).find(isOwnLiveChallenge));
+        }
+
+        active_challenges_emitter.on("challenges", updateChallenges);
+        active_challenges_emitter.on("clear", updateChallenges);
+
+        return () => {
+            active_challenges_emitter.removeListener("challenges", updateChallenges);
+            active_challenges_emitter.removeListener("clear", updateChallenges);
+        };
+    }, []);
+
+    return own_live_challenge;
+}
+
+function sortedCorrespondenceAutomatchers(): AutomatchPreferences[] {
+    return Object.values(automatch_manager.active_correspondence_automatchers).sort(
+        (a, b) => (a.timestamp ?? 0) - (b.timestamp ?? 0),
+    );
+}
+
+/** The player's active correspondence automatch requests, oldest first. */
+export function useCorrespondenceAutomatchers(): AutomatchPreferences[] {
+    const [automatchers, setAutomatchers] = React.useState(sortedCorrespondenceAutomatchers);
+
+    React.useEffect(() => {
+        function update() {
+            setAutomatchers(sortedCorrespondenceAutomatchers());
+        }
+
+        automatch_manager.on("entry", update);
+        automatch_manager.on("start", update);
+        automatch_manager.on("cancel", update);
+        update();
+
+        return () => {
+            automatch_manager.removeListener("entry", update);
+            automatch_manager.removeListener("start", update);
+            automatch_manager.removeListener("cancel", update);
+        };
+    }, []);
+
+    return automatchers;
+}
+
 export function useHaveActiveGameSearch(): boolean {
     const [have_active_automatch, setHaveActiveAutomatch] = React.useState(
         automatch_manager.active_live_automatcher,
     );
-    const [have_live_user_challenge, setHaveLiveUserChallenge] = React.useState(false);
+    const own_live_challenge = useOwnLiveChallenge();
 
     React.useEffect(() => {
         function updateLiveAutomatcherStatus() {
@@ -51,31 +111,5 @@ export function useHaveActiveGameSearch(): boolean {
         };
     }, []);
 
-    React.useEffect(() => {
-        function updateChallenges(args?: { [id: string]: Challenge }) {
-            let found_live_user_challenge = false;
-
-            for (const challenge of Object.values(args || {})) {
-                if (
-                    challenge.user_challenge &&
-                    challenge.time_per_move > 0 &&
-                    challenge.time_per_move < 3600
-                ) {
-                    found_live_user_challenge = true;
-                }
-            }
-
-            setHaveLiveUserChallenge(found_live_user_challenge);
-        }
-
-        active_challenges_emitter.on("challenges", updateChallenges);
-        active_challenges_emitter.on("clear", updateChallenges);
-
-        return () => {
-            active_challenges_emitter.removeListener("challenges", updateChallenges);
-            active_challenges_emitter.removeListener("clear", updateChallenges);
-        };
-    }, []);
-
-    return !!(have_active_automatch || have_live_user_challenge);
+    return !!(have_active_automatch || own_live_challenge);
 }
