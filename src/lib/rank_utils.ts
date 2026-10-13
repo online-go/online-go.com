@@ -95,14 +95,15 @@ interface CompactRatingType {
     volatility: number;
 }
 interface RatingsType {
+    version?: number;
     overall?: CompactRatingType;
-    [key: string]: CompactRatingType | undefined;
+    [key: string]: CompactRatingType | number | undefined;
 }
 
 interface UserType {
     ranking?: number;
     rank?: number;
-    pro?: boolean;
+    pro?: boolean | 0 | 1;
     professional?: boolean;
     ratings?: RatingsType;
 }
@@ -232,7 +233,7 @@ export function getUserRating(
 ): Rating {
     const ret: Partial<Rating> = {};
     const ratings: RatingsType = (user.ratings as any) || {};
-    ret.professional = (user as UserType).pro || user.professional || false;
+    ret.professional = !!((user as UserType).pro || user.professional);
 
     let key: string = speed;
     if (size > 0) {

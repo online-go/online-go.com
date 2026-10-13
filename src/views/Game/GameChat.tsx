@@ -52,7 +52,7 @@ interface ChatLine {
     move_number?: number;
     from?: number;
     moves?: string;
-    channel: string;
+    channel?: string;
     player_id: number;
     username?: string;
 }
