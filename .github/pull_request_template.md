@@ -10,8 +10,3 @@ For a change to an existing UI, show "before" and "after".
 If the change has an effect on mobile layouts, add a mobile screenshot also.
 If there is no visible change, write "No UI change".
 -->
-
-## Checklist
-
-- [ ] I added screenshots, or this change has no effect on the UI
-- [ ] I selected **Allow edits and access to secrets by maintainers**
