@@ -19,10 +19,12 @@ import { AdHocPauseControl, JGOFTimeControl } from "goban";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
 import { del } from "@/lib/requests";
+import { toast } from "@/lib/toast";
 import { GobanController } from "@/lib/GobanController";
 import { exitVacationIfPaused } from "./auto_exit_vacation";
 
 jest.mock("@/lib/requests", () => ({ del: jest.fn(() => Promise.resolve()) }));
+jest.mock("@/lib/toast", () => ({ toast: jest.fn() }));
 
 const ME = { id: 123, username: "test_user" };
 const OPPONENT = { id: 456, username: "test_user2" };
@@ -62,6 +64,7 @@ beforeEach(() => {
     data.set("user", { ...ME, anonymous: false } as rest_api.UserConfig);
     preferences.set("auto-exit-vacation-on-move", true);
     jest.mocked(del).mockClear();
+    jest.mocked(toast).mockClear();
 });
 
 afterEach(() => {
@@ -75,6 +78,34 @@ describe("exitVacationIfPaused", () => {
 
         expect(del).toHaveBeenCalledTimes(1);
         expect(del).toHaveBeenCalledWith("me/vacation");
+    });
+
+    test("shows a toast after the vacation has ended", async () => {
+        moveIn(CORRESPONDENCE, MY_VACATION);
+        await Promise.resolve();
+
+        expect(toast).toHaveBeenCalledTimes(1);
+    });
+
+    test("does not show a toast when ending the vacation fails", async () => {
+        jest.spyOn(console, "error").mockImplementation(() => {});
+        jest.mocked(del).mockReturnValueOnce(Promise.reject(new Error("failed")));
+
+        moveIn(CORRESPONDENCE, MY_VACATION);
+        await new Promise(process.nextTick);
+
+        expect(toast).not.toHaveBeenCalled();
+        jest.mocked(console.error).mockRestore();
+    });
+
+    test("does not throw when the vacation check fails", () => {
+        jest.spyOn(console, "error").mockImplementation(() => {});
+        jest.mocked(del).mockImplementationOnce(() => {
+            throw new Error("failed");
+        });
+
+        expect(() => moveIn(CORRESPONDENCE, MY_VACATION)).not.toThrow();
+        jest.mocked(console.error).mockRestore();
     });
 
     test("does nothing when the preference is off", () => {
