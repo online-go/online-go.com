@@ -40,6 +40,7 @@ export const defaults = {
     "animate-turn-clock": true,
     "asked-to-enable-desktop-notifications": false,
     "auto-advance-after-submit": true,
+    "auto-exit-vacation-on-move": false,
     "autofocus-submit-button": false,
     "accessibility.keyboard-coordinate-input": false,
     "accessibility.last-move-crosshair": false,

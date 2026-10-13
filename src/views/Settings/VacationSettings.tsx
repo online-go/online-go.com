@@ -17,9 +17,12 @@
 
 import * as React from "react";
 
-import { _, interpolate, ngettext } from "@/lib/translate";
+import { _, interpolate, ngettext, pgettext } from "@/lib/translate";
 import { get, put, del, abort_requests_in_flight } from "@/lib/requests";
 import { errorAlerter } from "@/lib/misc";
+import * as data from "@/lib/data";
+import * as preferences from "@/lib/preferences";
+import { usePreference } from "@/lib/preferences";
 
 import { durationString } from "@/components/TimeControl";
 import { Toggle } from "@/components/Toggle";
@@ -38,6 +41,7 @@ export function VacationSettings(props: SettingGroupPageProps): React.ReactEleme
     const [disable_vacation_games, set_disable_vacation_games] = React.useState<
         DisableVacationGame[]
     >([]);
+    const [auto_exit_vacation_on_move] = usePreference("auto-exit-vacation-on-move");
 
     React.useEffect(() => {
         const vacation_interval = setInterval(() => {
@@ -168,6 +172,25 @@ export function VacationSettings(props: SettingGroupPageProps): React.ReactEleme
                         })
                             .then(() => props.refresh())
                             .catch(errorAlerter);
+                    }}
+                />
+            </PreferenceLine>
+
+            <PreferenceLine
+                title={pgettext("Vacation setting", "Auto-exit vacation on move")}
+                description={pgettext(
+                    "Vacation setting",
+                    "Automatically exit vacation mode when making a move in a correspondence game.",
+                )}
+            >
+                <Toggle
+                    checked={auto_exit_vacation_on_move}
+                    onChange={(checked) => {
+                        preferences.set(
+                            "auto-exit-vacation-on-move",
+                            checked,
+                            data.Replication.REMOTE_OVERWRITES_LOCAL,
+                        );
                     }}
                 />
             </PreferenceLine>

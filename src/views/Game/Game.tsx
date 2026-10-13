@@ -65,6 +65,7 @@ import { GameStateHeader } from "./GameStateHeader";
 import { toast } from "@/lib/toast";
 import { ignore } from "@/lib/misc";
 import { updateAntiGriefGameState } from "./AntiGrief";
+import { exitVacationIfPaused } from "./auto_exit_vacation";
 import "./Game.css";
 import "./Players.css";
 import "./MoveTree.css";
@@ -485,6 +486,7 @@ export function Game(): React.ReactElement | null {
         goban.on("load", onLoad);
         onLoad();
 
+        goban.on("move-made", () => exitVacationIfPaused(goban!));
         goban.on("move-made", auto_advance);
 
         goban.on("played-by-click", (event) => {
