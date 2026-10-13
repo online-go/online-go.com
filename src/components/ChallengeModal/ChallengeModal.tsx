@@ -528,7 +528,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
          * old legacy reasons.. hopefully we can reconcile that someday */
         (challenge.game.time_control_parameters as any).time_control =
             this.state.time_control.system;
-        challenge.game.pause_on_weekends = this.state.time_control.pause_on_weekends;
+        challenge.game.pause_on_weekends = this.state.time_control.pause_on_weekends ?? false;
 
         // Autostart only in casual mode
         challenge.rengo_auto_start =

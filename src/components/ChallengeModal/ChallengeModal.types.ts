@@ -125,7 +125,7 @@ interface TimeControlConfig {
     max_time?: number;
     period_time?: number;
     periods?: number;
-    pause_on_weekends: boolean;
+    pause_on_weekends?: boolean;
 }
 
 export type ChallengeModalConf = {

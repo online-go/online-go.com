@@ -31,6 +31,9 @@ describe("GameChatLine", () => {
             date: 1715600000,
             move_number: 1,
             channel: "main",
+            professional: 0,
+            ui_class: "",
+            ranking: 0,
             player_id: 0,
             username: "Oroton", // cspell: ignore Oroton
         };

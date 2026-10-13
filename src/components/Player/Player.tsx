@@ -42,7 +42,7 @@ export interface PlayerObjectType {
     player_id?: number; // alias for id, should be removed but here for backwards compatibility
 
     professional?: boolean;
-    pro?: boolean;
+    pro?: boolean | 0 | 1;
 
     rank?: number;
     ranking?: number;

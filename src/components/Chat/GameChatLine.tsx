@@ -201,7 +201,12 @@ export function GameChatLine(props: GameChatLineProps): React.ReactElement {
                         </span>
                     )}
                     {(line.player_id || null) && (
-                        <Player user={line} flare disableCacheUpdate tabIndex={-1} />
+                        <Player
+                            user={{ ...line, professional: !!line.professional }}
+                            flare
+                            disableCacheUpdate
+                            tabIndex={-1}
+                        />
                     )}
                     <span className="body">
                         {isMe ? " " : ": "}
