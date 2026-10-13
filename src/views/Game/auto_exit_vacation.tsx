@@ -27,25 +27,30 @@ import { isLiveGame } from "@/components/TimeControl";
 
 const TOAST_DURATION_MS = 5000;
 
+let exit_in_flight = false;
+
 /**
- * Ends the user's vacation if this is a correspondence game that their
- * vacation has paused and the "auto-exit-vacation-on-move" preference is on.
+ * Ends the user's vacation if they have just made a move in a correspondence
+ * game that their vacation has paused, and the "auto-exit-vacation-on-move"
+ * preference is on.
+ *
+ * Call this when the server's echo of a move arrives ("move-made"). The echo
+ * means the server has accepted the move, so a rejected move does not end the
+ * vacation. The checks run synchronously, before auto-advance can navigate
+ * away and destroy the goban.
  *
  * The client has no account-wide way of knowing the user is on vacation, so
  * we look for a `vacation-<player_id>` key in the game's pause control.
  * This means games with vacation disabled won't trigger this.
  *
- * Call this when the move is sent, not when the server acknowledges the move.
- * Auto-advance can navigate to the next board as soon as the move echo
- * arrives, which destroys the goban and its listeners, so we can't rely on an
- * acknowledgement listener.
+ * Only one request is sent at a time, because other games can still show the
+ * vacation pause until the server's clock updates arrive.
  *
- * This is called before the move is sent, so it never throws: an error here
- * must not stop the move.
+ * This never throws, so an error here cannot interfere with move handling.
  */
 export function exitVacationIfPaused(goban: Goban): void {
     try {
-        if (!preferences.get("auto-exit-vacation-on-move")) {
+        if (exit_in_flight || !preferences.get("auto-exit-vacation-on-move")) {
             return;
         }
 
@@ -53,12 +58,14 @@ export function exitVacationIfPaused(goban: Goban): void {
         const engine = goban.engine;
         if (
             user.anonymous ||
+            engine.playerNotToMove() !== user.id ||
             isLiveGame(engine.time_control, engine.width, engine.height) ||
             !goban.pause_control?.[`vacation-${user.id}`]
         ) {
             return;
         }
 
+        exit_in_flight = true;
         del("me/vacation")
             .then(() => {
                 toast(
@@ -71,8 +78,12 @@ export function exitVacationIfPaused(goban: Goban): void {
                     TOAST_DURATION_MS,
                 );
             })
-            .catch(errorLogger);
+            .catch(errorLogger)
+            .finally(() => {
+                exit_in_flight = false;
+            });
     } catch (e) {
+        exit_in_flight = false;
         errorLogger(e);
     }
 }

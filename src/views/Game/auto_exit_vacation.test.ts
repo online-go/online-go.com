@@ -49,14 +49,22 @@ const LIVE: JGOFTimeControl = {
 
 const MY_VACATION: AdHocPauseControl = { [`vacation-${ME.id}`]: true };
 
-function moveIn(time_control: JGOFTimeControl, pause_control: AdHocPauseControl) {
+function moveIn(
+    time_control: JGOFTimeControl,
+    pause_control: AdHocPauseControl,
+    mover: typeof ME = ME,
+) {
     const controller = new GobanController({
         width: 19,
         height: 19,
         time_control,
-        players: { black: ME, white: OPPONENT },
+        players: {
+            black: mover,
+            white: mover === ME ? OPPONENT : ME,
+        },
     });
     controller.goban.pause_control = pause_control;
+    controller.goban.engine.place(3, 3);
     exitVacationIfPaused(controller.goban);
 }
 
@@ -106,6 +114,31 @@ describe("exitVacationIfPaused", () => {
 
         expect(() => moveIn(CORRESPONDENCE, MY_VACATION)).not.toThrow();
         jest.mocked(console.error).mockRestore();
+    });
+
+    test("sends one request while a request is in flight", async () => {
+        let resolve_del: () => void = () => {};
+        jest.mocked(del).mockReturnValueOnce(
+            new Promise<void>((resolve) => {
+                resolve_del = resolve;
+            }),
+        );
+
+        moveIn(CORRESPONDENCE, MY_VACATION);
+        moveIn(CORRESPONDENCE, MY_VACATION);
+        expect(del).toHaveBeenCalledTimes(1);
+
+        resolve_del();
+        await new Promise(process.nextTick);
+
+        moveIn(CORRESPONDENCE, MY_VACATION);
+        expect(del).toHaveBeenCalledTimes(2);
+    });
+
+    test("does nothing when the opponent made the move", () => {
+        moveIn(CORRESPONDENCE, MY_VACATION, OPPONENT);
+
+        expect(del).not.toHaveBeenCalled();
     });
 
     test("does nothing when the preference is off", () => {

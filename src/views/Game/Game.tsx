@@ -461,15 +461,9 @@ export function Game(): React.ReactElement | null {
             });
         }
 
-        goban.on("submitting-move", (submitting) => {
+        goban.on("submitting-move", () => {
             // clear any pending "your move" notifications
             notification_manager.clearTimecopNotification(game_id);
-
-            // Attempt to auto-exit vacation mode
-            // if the pref flag is set and this game is correspondence
-            if (submitting) {
-                exitVacationIfPaused(goban!);
-            }
         });
 
         /* Ensure our state is kept up to date */
@@ -492,6 +486,7 @@ export function Game(): React.ReactElement | null {
         goban.on("load", onLoad);
         onLoad();
 
+        goban.on("move-made", () => exitVacationIfPaused(goban!));
         goban.on("move-made", auto_advance);
 
         goban.on("played-by-click", (event) => {
