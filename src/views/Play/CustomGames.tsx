@@ -388,7 +388,7 @@ export function CustomGames(): React.ReactElement {
 
     const live_rengo_challenge_to_show = React.useMemo(() => {
         return rengo_list.find(
-            (c) => c.user_challenge && c.time_per_move > 0 && c.time_per_move < 3600,
+            (c) => c.user_challenge && c.time_per_move > 0 && c.time_per_move <= 3600,
         );
     }, [rengo_list]);
 
