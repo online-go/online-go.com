@@ -595,6 +595,9 @@
     --strong-w-text: #1a1a1a;
     --strong-l-text: #1a1a1a;
 
+    /* AI suggestions: blue for the best move, orange for alternatives */
+    --ai-alternative-move: #e69f00;
+
     /* Accessible online indicators */
     --chat-offline: #1a1a1a;
     --chat-offline-shadow: -1px -1px 0 #ccc, 1px -1px 0 #ccc, -1px 1px 0 #ddd, 1px 1px 0 #ccc;
