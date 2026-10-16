@@ -26,7 +26,7 @@ type TestMiniGobanProps = {
 
 class FakeGoban {
     config = { time_control: { system: "fischer", speed: "correspondence" } };
-    engine = { getMoveNumber: () => 0 };
+    engine = { phase: "play", getMoveNumber: () => 0 };
     last_emitted_clock: unknown = undefined;
     private listeners: Record<string, Array<(arg: unknown) => void>> = {};
 
@@ -259,7 +259,16 @@ describe("GameList clock sort", () => {
         jest.restoreAllMocks();
     });
 
-    function emitClock(goban: FakeGoban, at: number, main_time: number) {
+    function emitClock(
+        goban: FakeGoban,
+        at: number,
+        main_time: number,
+        extraClock: {
+            start_mode?: boolean;
+            start_time_left?: number;
+            stone_removal_time_left?: number;
+        } = {},
+    ) {
         jest.spyOn(Date, "now").mockReturnValue(at);
         act(() => {
             goban.emit("clock", {
@@ -268,9 +277,49 @@ describe("GameList clock sort", () => {
                 time_of_last_move: 0,
                 black_clock: { main_time },
                 white_clock: { main_time: 100000 },
+                ...extraClock,
             });
         });
     }
+
+    it.each([
+        ["normal play", {}],
+        ["start mode", { start_mode: true, start_time_left: 60000 }],
+        ["stone removal", { stone_removal_time_left: 60000 }],
+    ])("does not advance a finished game's clock after %s", (_phase, extraClock) => {
+        const finished = new FakeGoban();
+        const a = new FakeGoban();
+        const b = new FakeGoban();
+        mockGobans.set(1, finished);
+        mockGobans.set(2, a);
+        mockGobans.set(3, b);
+
+        render(
+            <GameList
+                list={[makeGame(1), makeGame(3), makeGame(2)]}
+                player={{ id: 10 }}
+                lineSummaryMode="both-players"
+            />,
+        );
+
+        emitClock(finished, 1000, 60000, extraClock);
+        finished.engine.phase = "finished";
+        emitClock(a, 11000, 30000);
+        emitClock(b, 11000, 40000);
+
+        const order = () =>
+            screen.getAllByRole("button").map((el) => el.getAttribute("data-game-id"));
+        expect(order()).toEqual(["2", "3", "1"]);
+
+        for (const now of [51000, 81000]) {
+            emitClock(a, now, 30000);
+            emitClock(b, now, 40000);
+            act(() => {
+                a.emit("move-made", undefined);
+            });
+            expect(order()).toEqual(["2", "3", "1"]);
+        }
+    });
 
     it("compares running clocks at the same instant, not when each was emitted", () => {
         const a = new FakeGoban();
