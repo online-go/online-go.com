@@ -25,6 +25,7 @@ import { Flag } from "@/components/Flag";
 import { ChatPresenceIndicator } from "@/components/ChatPresenceIndicator";
 import { Clock, SGFClock, TransmittingIndicator } from "@/components/Clock";
 import { Player } from "@/components/Player";
+import { PlayerIcon } from "@/components/PlayerIcon";
 import { lookup, fetch } from "@/lib/player_cache";
 import { _, interpolate, ngettext, pgettext } from "@/lib/translate";
 import * as data from "@/lib/data";
@@ -177,10 +178,11 @@ export function PlayerCard({
         historical = null;
     }
 
-    // In rengo we always will have a player icon to show (after initialization).
-    // In other cases, we only have one if `historical` is set
+    // Rengo icons arrive with the engine player. Standard player cards use
+    // historical icons when available, and the player cache otherwise.
     const player_bg: React.CSSProperties = {};
-    if (engine.rengo && player && (player as any)["icon-url"]) {
+    const hasRengoIcon = Boolean(engine.rengo && player && (player as any)["icon-url"]);
+    if (hasRengoIcon) {
         // Does icon-url need to be added to GobanEnginePlayerEntry? -BPJ
         const icon = user_uploads_url((player as any)["icon-url"], 64);
         player_bg.backgroundImage = `url("${icon}")`;
@@ -212,6 +214,9 @@ export function PlayerCard({
             <div className="player-icon-clock-row">
                 {player && !!player.id ? (
                     <div className="player-icon-container" style={player_bg}>
+                        {!engine.rengo && !historical && !goban.is_game_record && (
+                            <PlayerIcon id={player.id} size={64} className="player-card-avatar" />
+                        )}
                         {!!auto_resign_expiration && (
                             <div className={`auto-resign-overlay`}>
                                 <i className="fa fa-bolt" />

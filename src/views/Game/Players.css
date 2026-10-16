@@ -129,6 +129,15 @@
         min-width: 4rem;
         border-radius: 0.4rem;
         position: relative;
+
+        .player-card-avatar {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: inherit;
+            object-fit: cover;
+        }
     }
 
     /* .MainGobanView.squashed was previously a Stylus parent reference, commenting out */

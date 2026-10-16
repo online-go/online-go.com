@@ -171,4 +171,119 @@ describe("CompactPlayerHeader", () => {
         expect(screen.queryByText("3")).toBeNull();
         expect(screen.getByText("variation-black")).toBeInTheDocument();
     });
+
+    test("restores score popup marks to the Goban it was opened on when controllers change", () => {
+        const first = new GobanController({
+            game_id: 111,
+            players: {
+                black: { id: 11, username: "first-black", rank: 20 },
+                white: { id: 22, username: "first-white", rank: 20 },
+            },
+            moves: [[3, 3]],
+        } as ConstructorParameters<typeof GobanController>[0]);
+        const second = new GobanController({
+            game_id: 222,
+            players: {
+                black: { id: 33, username: "second-black", rank: 20 },
+                white: { id: 44, username: "second-white", rank: 20 },
+            },
+            moves: [[4, 4]],
+        } as ConstructorParameters<typeof GobanController>[0]);
+        const firstGoban = first.goban;
+        const secondGoban = second.goban;
+        const firstMove = firstGoban.engine.cur_move!;
+        const secondMove = secondGoban.engine.cur_move!;
+        const firstMarks = { triangle: "A1" } as any;
+        const firstSetMarks = jest.spyOn(firstMove, "setAllMarks");
+        const secondSetMarks = jest.spyOn(secondMove, "setAllMarks");
+        jest.spyOn(firstMove, "getAllMarks").mockReturnValue(firstMarks);
+        jest.spyOn(firstGoban.engine, "computeScore").mockReturnValue({
+            black: {
+                total: 0,
+                stones: 0,
+                territory: 0,
+                prisoners: 0,
+                scoring_positions: "",
+                handicap: 0,
+                komi: 0,
+            },
+            white: {
+                total: 0,
+                stones: 0,
+                territory: 0,
+                prisoners: 0,
+                scoring_positions: "",
+                handicap: 0,
+                komi: 0,
+            },
+        } as any);
+        jest.spyOn(firstGoban, "showScores").mockImplementation(() => undefined);
+        const firstHideScores = jest.spyOn(firstGoban, "hideScores");
+
+        const headerProps = {
+            historical_black: null,
+            historical_white: null,
+            estimating_score: false,
+        };
+        const { container, rerender } = render(
+            <Router>
+                <GobanControllerContext.Provider value={first}>
+                    <CompactPlayerHeader {...headerProps} controller={first} />
+                </GobanControllerContext.Provider>
+            </Router>,
+        );
+
+        fireEvent.click(container.querySelector(".white.player-container .has-score-details")!);
+        expect(screen.getByTestId("compact-score-backdrop")).toBeInTheDocument();
+
+        rerender(
+            <Router>
+                <GobanControllerContext.Provider value={first}>
+                    <CompactPlayerHeader {...headerProps} controller={second} />
+                </GobanControllerContext.Provider>
+            </Router>,
+        );
+
+        expect(firstHideScores).toHaveBeenCalledTimes(1);
+        expect(firstSetMarks).toHaveBeenCalledWith(firstMarks);
+        expect(secondSetMarks).not.toHaveBeenCalled();
+        expect(screen.queryByTestId("compact-score-backdrop")).toBeNull();
+    });
+
+    test("restores score popup marks when the header unmounts", () => {
+        const { container, controller, unmount } = renderHeader({ moves: [[3, 3]] });
+        const goban = controller.goban;
+        const currentMove = goban.engine.cur_move!;
+        const marks = { triangle: "A1" } as any;
+        const setAllMarks = jest.spyOn(currentMove, "setAllMarks");
+        jest.spyOn(currentMove, "getAllMarks").mockReturnValue(marks);
+        jest.spyOn(goban.engine, "computeScore").mockReturnValue({
+            black: {
+                total: 0,
+                stones: 0,
+                territory: 0,
+                prisoners: 0,
+                scoring_positions: "",
+                handicap: 0,
+                komi: 0,
+            },
+            white: {
+                total: 0,
+                stones: 0,
+                territory: 0,
+                prisoners: 0,
+                scoring_positions: "",
+                handicap: 0,
+                komi: 0,
+            },
+        } as any);
+        jest.spyOn(goban, "showScores").mockImplementation(() => undefined);
+        const hideScores = jest.spyOn(goban, "hideScores");
+
+        fireEvent.click(container.querySelector(".white.player-container .has-score-details")!);
+        unmount();
+
+        expect(hideScores).toHaveBeenCalledTimes(1);
+        expect(setAllMarks).toHaveBeenCalledWith(marks);
+    });
 });
