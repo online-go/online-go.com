@@ -26,7 +26,7 @@ type TestMiniGobanProps = {
 
 class FakeGoban {
     config = { time_control: { system: "fischer", speed: "correspondence" } };
-    engine = { getMoveNumber: () => 0 };
+    engine = { phase: "play", getMoveNumber: () => 0 };
     last_emitted_clock: unknown = undefined;
     private listeners: Record<string, Array<(arg: unknown) => void>> = {};
 
@@ -271,6 +271,54 @@ describe("GameList clock sort", () => {
             });
         });
     }
+
+    it.each([false, true])(
+        "keeps finished clocks fixed as time passes (stone removal: %s)",
+        (stoneRemoval) => {
+            const live = new FakeGoban();
+            const finished = new FakeGoban();
+            const otherLive = new FakeGoban();
+            mockGobans.set(1, live);
+            mockGobans.set(2, finished);
+            mockGobans.set(3, otherLive);
+
+            render(
+                <GameList
+                    list={[makeGame(2), makeGame(3), makeGame(1)]}
+                    player={{ id: 10 }}
+                    lineSummaryMode="both-players"
+                />,
+            );
+
+            emitClock(finished, 1000, 60000);
+            if (stoneRemoval) {
+                act(() => {
+                    finished.emit("clock", {
+                        current_player: "black",
+                        current_player_id: "10",
+                        time_of_last_move: 0,
+                        black_clock: { main_time: 60000 },
+                        white_clock: { main_time: 100000 },
+                        stone_removal_time_left: 60000,
+                    });
+                });
+            }
+            finished.engine.phase = "finished";
+            emitClock(live, 11000, 25000);
+            emitClock(otherLive, 11000, 20000);
+
+            const order = () =>
+                screen.getAllByRole("button").map((el) => el.getAttribute("data-game-id"));
+            expect(order()).toEqual(["3", "1", "2"]);
+
+            emitClock(live, 71000, 25000);
+            emitClock(otherLive, 71000, 20000);
+            act(() => {
+                live.emit("move-made", undefined);
+            });
+            expect(order()).toEqual(["3", "1", "2"]);
+        },
+    );
 
     it("compares running clocks at the same instant, not when each was emitted", () => {
         const a = new FakeGoban();
