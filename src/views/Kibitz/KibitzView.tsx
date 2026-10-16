@@ -42,6 +42,7 @@ import {
 } from "./KibitzRoomSettingsPopover";
 import { KibitzKeyboardShortcuts } from "./KibitzKeyboardShortcuts";
 import { PlayerCards } from "@/views/Game/PlayerCards";
+import { CompactPlayerHeader } from "@/views/Game/CompactPlayerHeader";
 import { KibitzMoreActionsRoomActions, openKibitzMoreActions } from "./KibitzMoreActionsPopover";
 import "./KibitzView.css";
 import "@/views/Game/Players.css";
@@ -497,7 +498,17 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             }
             leftAside={leftAside}
             centerPlaceholder={waitingMessage}
-            playerBars={gobans.playerBars ?? !!gobans.center}
+            aboveBoard={
+                isPortrait && gobans.center ? (
+                    <CompactPlayerHeader
+                        historical_black={null}
+                        historical_white={null}
+                        estimating_score={false}
+                        controller={gobans.playerBars ?? gobans.center}
+                    />
+                ) : null
+            }
+            playerBars={isPortrait ? false : (gobans.playerBars ?? !!gobans.center)}
             /* GobanView shows this only in compactHorizontal, where the
              * player bars are not shown. */
             sidebarContentBefore={

@@ -29,6 +29,7 @@ import {
     useZenMode,
 } from "./GameHooks";
 import { useGobanController } from "./goban_context";
+import type { GobanController } from "@/lib/GobanController";
 import "./CompactPlayerHeader.css";
 
 type PlayerType = rest_api.games.Player;
@@ -37,6 +38,9 @@ interface CompactPlayerHeaderProps {
     historical_black: PlayerType | null;
     historical_white: PlayerType | null;
     estimating_score: boolean;
+    /** Defaults to GobanView's controller; views that show a different
+     *  game's player information can supply the matching controller. */
+    controller?: GobanController;
 }
 
 /**
@@ -49,8 +53,10 @@ export function CompactPlayerHeader({
     historical_black,
     historical_white,
     estimating_score,
+    controller,
 }: CompactPlayerHeaderProps): React.ReactElement {
-    const goban_controller = useGobanController();
+    const contextController = useGobanController();
+    const goban_controller = controller ?? contextController;
     const goban = goban_controller.goban;
 
     const zen_mode = useZenMode(goban_controller);

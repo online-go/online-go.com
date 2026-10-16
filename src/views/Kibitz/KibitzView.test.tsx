@@ -38,6 +38,19 @@ jest.mock("@/components/GobanView/PlayerBar", () => ({
     __esModule: true,
     PlayerBar: ({ color }: { color: string }) => <div data-testid={`bar-${color}`} />,
 }));
+jest.mock("@/views/Game/CompactPlayerHeader", () => ({
+    __esModule: true,
+    CompactPlayerHeader: ({
+        controller,
+    }: {
+        controller?: { goban?: { config?: { game_id?: number } } };
+    }) => (
+        <div
+            data-testid="compact-player-header"
+            data-game-id={controller?.goban?.config?.game_id ?? ""}
+        />
+    ),
+}));
 jest.mock("@/components/GobanView/MoveNumberControl", () => ({
     __esModule: true,
     MoveNumberControl: () => <div data-testid="slider" />,
@@ -364,6 +377,94 @@ describe("KibitzView", () => {
             );
             expect(screen.queryByTestId("chat")).toBeNull();
             expect(screen.queryByTestId("left-aside")).toBeNull();
+        });
+
+        test("uses the selected player controller for the compact header", () => {
+            const previousSize = {
+                width: window.innerWidth,
+                height: window.innerHeight,
+                clientWidth: document.documentElement.clientWidth,
+                clientHeight: document.documentElement.clientHeight,
+            };
+            Object.defineProperty(window, "innerWidth", { configurable: true, value: 390 });
+            Object.defineProperty(window, "innerHeight", { configurable: true, value: 844 });
+            Object.defineProperty(document.documentElement, "clientWidth", {
+                configurable: true,
+                value: 390,
+            });
+            Object.defineProperty(document.documentElement, "clientHeight", {
+                configurable: true,
+                value: 844,
+            });
+            window.dispatchEvent(new Event("resize"));
+
+            const props = baseProps({ isPortrait: true });
+            const main = props.gobans.main!;
+            const otherGame = fakeController();
+            otherGame.goban.config.game_id = 200;
+            props.gobans = {
+                ...props.gobans,
+                secondary: otherGame,
+                center: otherGame,
+                centerMode: "variation",
+                playerBars: main,
+            };
+
+            const view = render(<KibitzView {...props} />);
+            try {
+                expect(screen.getByTestId("compact-player-header")).toHaveAttribute(
+                    "data-game-id",
+                    "100",
+                );
+                expect(screen.queryByTestId("bar-black")).toBeNull();
+                expect(screen.queryByTestId("bar-white")).toBeNull();
+
+                // Variations from a different game use their own controller;
+                // switching back to the live board follows the new room game.
+                view.rerender(
+                    <KibitzView {...props} gobans={{ ...props.gobans, playerBars: otherGame }} />,
+                );
+                expect(screen.getByTestId("compact-player-header")).toHaveAttribute(
+                    "data-game-id",
+                    "200",
+                );
+
+                main.goban.config.game_id = 300;
+                view.rerender(
+                    <KibitzView
+                        {...props}
+                        gobans={{
+                            ...props.gobans,
+                            center: main,
+                            centerMode: "main",
+                            playerBars: main,
+                        }}
+                    />,
+                );
+                expect(screen.getByTestId("compact-player-header")).toHaveAttribute(
+                    "data-game-id",
+                    "300",
+                );
+            } finally {
+                view.unmount();
+                Object.defineProperty(window, "innerWidth", {
+                    configurable: true,
+                    value: previousSize.width,
+                });
+                Object.defineProperty(window, "innerHeight", {
+                    configurable: true,
+                    value: previousSize.height,
+                });
+                Object.defineProperty(document.documentElement, "clientWidth", {
+                    configurable: true,
+                    value: previousSize.clientWidth,
+                });
+                Object.defineProperty(document.documentElement, "clientHeight", {
+                    configurable: true,
+                    value: previousSize.clientHeight,
+                });
+                window.dispatchEvent(new Event("resize"));
+            }
         });
 
         test("the action bar switches the pane and remembers the choice", () => {

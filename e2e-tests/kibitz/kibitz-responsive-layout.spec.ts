@@ -15,7 +15,88 @@ const compactSizes = [
     [932, 430],
 ] as const;
 
+const portraitSizes = [
+    [320, 568],
+    [390, 844],
+    [430, 932],
+] as const;
+
 ogsTest.describe("@Kibitz responsive layout", () => {
+    for (const [width, height] of portraitSizes) {
+        ogsTest(
+            `keeps the compact player header and board visible at ${width}x${height}`,
+            async ({ page }) => {
+                await page.setViewportSize({ width, height });
+                await load(page, "/kibitz/preset-english-chat-live");
+                const root = page.locator(".GobanView.Kibitz.portrait");
+                await expect(root).toBeVisible();
+                await expect(root.locator(".CompactPlayerHeader")).toBeVisible();
+                await expect(root.locator(".CompactPlayerHeader .score-details").first()).toHaveCSS(
+                    "visibility",
+                    "hidden",
+                );
+
+                const layout = await root.evaluate((element) => {
+                    const header = element.querySelector<HTMLElement>(".CompactPlayerHeader");
+                    const board = element.querySelector<HTMLElement>(".Goban");
+                    const headerBox = header?.getBoundingClientRect();
+                    const boardBox = board?.getBoundingClientRect();
+                    return {
+                        playerCount: header?.querySelectorAll(".player-container").length ?? 0,
+                        headerFits: Boolean(
+                            headerBox &&
+                            headerBox.left >= element.getBoundingClientRect().left - 1 &&
+                            headerBox.right <= element.getBoundingClientRect().right + 1,
+                        ),
+                        boardWidth: boardBox?.width ?? 0,
+                        boardBottom: boardBox?.bottom ?? Infinity,
+                        viewportHeight: window.visualViewport?.height ?? window.innerHeight,
+                        playerBars: element.querySelectorAll(".GobanView-player-bar").length,
+                    };
+                });
+
+                expect(layout.playerCount).toBe(2);
+                expect(layout.headerFits).toBe(true);
+                expect(layout.boardWidth).toBeGreaterThan(100);
+                expect(layout.boardBottom).toBeLessThanOrEqual(layout.viewportHeight + 1);
+                expect(layout.playerBars).toBe(0);
+                await expect(root.locator(".GobanView-tab-bar")).toBeVisible();
+                for (const title of ["Game chat", "Kibitz chat", "Rooms", "Variations", "People"]) {
+                    await expect(page.getByTitle(title, { exact: true })).toBeVisible();
+                }
+            },
+        );
+    }
+
+    ogsTest(
+        "keeps the header, board and pane navigation stable through repeated rotation",
+        async ({ page }) => {
+            await page.setViewportSize({ width: 390, height: 844 });
+            await load(page, "/kibitz/preset-english-chat-live");
+            await expect(
+                page.locator(".GobanView.Kibitz.portrait .CompactPlayerHeader"),
+            ).toBeVisible();
+
+            for (let rotation = 0; rotation < 2; rotation++) {
+                await page.setViewportSize({ width: 844, height: 390 });
+                const landscape = page.locator(".GobanView.Kibitz.compactHorizontal");
+                await expect(landscape).toBeVisible();
+                await expect(landscape.locator(".Goban")).toBeVisible();
+                await expect(
+                    landscape.locator(".Kibitz-compact-player-cards .player-container"),
+                ).toHaveCount(2);
+
+                await page.setViewportSize({ width: 390, height: 844 });
+                const portrait = page.locator(".GobanView.Kibitz.portrait");
+                await expect(portrait.locator(".CompactPlayerHeader")).toBeVisible();
+                await expect(portrait.locator(".GobanView-player-bar")).toHaveCount(0);
+                await expect(portrait.locator(".Goban")).toBeVisible();
+                await page.getByTitle("Rooms", { exact: true }).click();
+                await page.getByTitle("Game chat", { exact: true }).click();
+            }
+        },
+    );
+
     for (const [width, height] of compactSizes) {
         ogsTest(`keeps the compact board visible at ${width}x${height}`, async ({ page }) => {
             await page.setViewportSize({ width, height });

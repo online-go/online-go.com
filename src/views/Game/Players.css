@@ -43,7 +43,8 @@
     background-color: var(--shade4);
 }
 
-.MainGobanView .player-icons {
+.MainGobanView .player-icons,
+.GobanView.Kibitz .CompactPlayerHeader .player-icons {
     flex-shrink: 0;
     flex-grow: 0;
     display: flex;

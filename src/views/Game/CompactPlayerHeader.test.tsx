@@ -28,7 +28,7 @@ import { GobanController } from "@/lib/GobanController";
 import { CompactPlayerHeader } from "./CompactPlayerHeader";
 import { GobanControllerContext } from "./goban_context";
 
-function renderHeader(config: Record<string, unknown>) {
+function renderHeader(config: Record<string, unknown>, headerController?: GobanController) {
     const controller = new GobanController({
         game_id: 123456,
         players: {
@@ -45,6 +45,7 @@ function renderHeader(config: Record<string, unknown>) {
                     historical_black={null}
                     historical_white={null}
                     estimating_score={false}
+                    controller={headerController}
                 />
             </GobanControllerContext.Provider>
         </Router>,
@@ -143,5 +144,31 @@ describe("CompactPlayerHeader", () => {
         expect(screen.getByText("1")).toBeInTheDocument();
         expect(screen.queryByText("3")).toBeNull();
         expect(screen.getByTestId("compact-stone-white")).toHaveClass("on-top");
+    });
+
+    test("uses an explicitly supplied controller for variation details", () => {
+        const variation = new GobanController({
+            game_id: 654321,
+            players: {
+                black: { id: 11, username: "variation-black", rank: 20 },
+                white: { id: 22, username: "variation-white", rank: 20 },
+            },
+            moves: [[3, 3]],
+        } as ConstructorParameters<typeof GobanController>[0]);
+
+        renderHeader(
+            {
+                moves: [
+                    [3, 3],
+                    [15, 15],
+                    [3, 15],
+                ],
+            },
+            variation,
+        );
+
+        expect(screen.getByText("1")).toBeInTheDocument();
+        expect(screen.queryByText("3")).toBeNull();
+        expect(screen.getByText("variation-black")).toBeInTheDocument();
     });
 });
