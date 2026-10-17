@@ -61,6 +61,7 @@ function KibitzStackedPlayerHeader({
             historical_black={null}
             historical_white={null}
             estimating_score={false}
+            show_cached_avatar_fallback
             controller={controller}
         />
     );
@@ -81,6 +82,7 @@ function KibitzSidebarPlayerCards({
                 historical_black={null}
                 historical_white={null}
                 estimating_score={false}
+                show_cached_avatar_fallback
                 controller={controller}
             />
         </div>

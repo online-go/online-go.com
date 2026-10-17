@@ -50,6 +50,8 @@ interface PlayerCardsProps {
     historical_black: PlayerType | null;
     historical_white: PlayerType | null;
     estimating_score: boolean;
+    /** Show cache-backed avatars when historical player data is unavailable. */
+    show_cached_avatar_fallback?: boolean;
     /** Defaults to GobanView's controller. Views that show player information
      *  for a different board can pass its controller explicitly. */
     controller?: GobanController;
@@ -59,6 +61,7 @@ export function PlayerCards({
     historical_black,
     historical_white,
     estimating_score,
+    show_cached_avatar_fallback = false,
     controller,
 }: PlayerCardsProps): React.ReactElement {
     const contextController = useGobanController();
@@ -76,6 +79,7 @@ export function PlayerCards({
                     color="black"
                     goban={goban}
                     estimating_score={estimating_score}
+                    show_cached_avatar_fallback={show_cached_avatar_fallback}
                     show_score_breakdown={show_score_breakdown}
                     onScoreClick={toggleScorePopup}
                     zen_mode={zen_mode}
@@ -85,6 +89,7 @@ export function PlayerCards({
                     color="white"
                     goban={goban}
                     estimating_score={estimating_score}
+                    show_cached_avatar_fallback={show_cached_avatar_fallback}
                     show_score_breakdown={show_score_breakdown}
                     onScoreClick={toggleScorePopup}
                     zen_mode={zen_mode}
@@ -149,6 +154,7 @@ interface PlayerCardProps {
     goban: GobanRenderer;
     historical: PlayerType | null;
     estimating_score: boolean;
+    show_cached_avatar_fallback?: boolean;
     /** Omit to disable the score-details popup. */
     show_score_breakdown?: boolean;
     onScoreClick?: () => void;
@@ -163,6 +169,7 @@ export function PlayerCard({
     goban,
     historical,
     estimating_score,
+    show_cached_avatar_fallback = false,
     show_score_breakdown = false,
     onScoreClick,
     zen_mode,
@@ -221,6 +228,7 @@ export function PlayerCard({
                 {player && !!player.id ? (
                     <div className="player-icon-container" style={player_bg}>
                         {!engine.rengo &&
+                            show_cached_avatar_fallback &&
                             !historical &&
                             !goban.is_game_record &&
                             !player_is_ignored(player.id) && (

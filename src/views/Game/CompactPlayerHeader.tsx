@@ -38,6 +38,8 @@ interface CompactPlayerHeaderProps {
     historical_black: PlayerType | null;
     historical_white: PlayerType | null;
     estimating_score: boolean;
+    /** Enable cache-backed avatars when historical player data is unavailable. */
+    show_cached_avatar_fallback?: boolean;
     /** Defaults to GobanView's controller; views that show a different
      *  game's player information can supply the matching controller. */
     controller?: GobanController;
@@ -53,6 +55,7 @@ export function CompactPlayerHeader({
     historical_black,
     historical_white,
     estimating_score,
+    show_cached_avatar_fallback = false,
     controller,
 }: CompactPlayerHeaderProps): React.ReactElement {
     const contextController = useGobanController();
@@ -73,6 +76,7 @@ export function CompactPlayerHeader({
             goban={goban}
             historical={color === "black" ? historical_black : historical_white}
             estimating_score={estimating_score}
+            show_cached_avatar_fallback={show_cached_avatar_fallback}
             show_score_breakdown={show_score_breakdown}
             onScoreClick={toggleScorePopup}
             zen_mode={zen_mode}

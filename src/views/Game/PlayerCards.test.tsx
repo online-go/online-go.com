@@ -121,7 +121,7 @@ test("make sure komi is not displayed for black", () => {
     }
 });
 
-test("uses current player cache avatars when historical player data is unavailable", async () => {
+test("uses cached avatar fallback when enabled and historical data is unavailable", async () => {
     data.set("user", TEST_USER);
     data.set("preferences.moderator.hide-flags", false);
     data.set("preferences.moderator.hide-player-card-mod-controls", false);
@@ -147,8 +147,18 @@ test("uses current player cache avatars when historical player data is unavailab
         <Router>
             <GobanControllerContext.Provider value={controller}>
                 <>
-                    <PlayerCard {...BASE_PROPS} color="black" goban={controller.goban} />
-                    <PlayerCard {...BASE_PROPS} color="white" goban={controller.goban} />
+                    <PlayerCard
+                        {...BASE_PROPS}
+                        color="black"
+                        goban={controller.goban}
+                        show_cached_avatar_fallback
+                    />
+                    <PlayerCard
+                        {...BASE_PROPS}
+                        color="white"
+                        goban={controller.goban}
+                        show_cached_avatar_fallback
+                    />
                 </>
             </GobanControllerContext.Provider>
         </Router>,
@@ -198,6 +208,29 @@ test("keeps the historical avatar when historical player data is available", () 
     expect(container.querySelector(".player-card-avatar")).toBeNull();
 });
 
+test("does not add a cache-backed avatar without opting in", () => {
+    data.set("user", TEST_USER);
+    data.set("preferences.moderator.hide-flags", false);
+    data.set("preferences.moderator.hide-player-card-mod-controls", false);
+    const controller = new GobanController({
+        game_id: 123456,
+        players: {
+            black: { id: 11, username: "blackie", rank: 20 },
+            white: { id: 22, username: "whitey", rank: 20 },
+        },
+    });
+
+    const { container } = render(
+        <Router>
+            <GobanControllerContext.Provider value={controller}>
+                <PlayerCard {...BASE_PROPS} color="black" goban={controller.goban} />
+            </GobanControllerContext.Provider>
+        </Router>,
+    );
+
+    expect(container.querySelector(".player-card-avatar")).toBeNull();
+});
+
 test("does not show the cache-backed avatar for an ignored player", () => {
     data.set("user", TEST_USER);
     data.set("preferences.moderator.hide-flags", false);
@@ -217,7 +250,12 @@ test("does not show the cache-backed avatar for an ignored player", () => {
     const { container } = render(
         <Router>
             <GobanControllerContext.Provider value={controller}>
-                <PlayerCard {...BASE_PROPS} color="black" goban={controller.goban} />
+                <PlayerCard
+                    {...BASE_PROPS}
+                    color="black"
+                    goban={controller.goban}
+                    show_cached_avatar_fallback
+                />
             </GobanControllerContext.Provider>
         </Router>,
     );
