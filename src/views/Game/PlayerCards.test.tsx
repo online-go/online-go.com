@@ -25,13 +25,18 @@ import { BrowserRouter as Router } from "react-router-dom";
 import * as data from "@/lib/data";
 import { GobanController } from "../../lib/GobanController";
 import { openRengoTeamModal } from "@/components/RengoTeamModal";
+import { BlockState } from "@/components/BlockPlayer";
+import cached from "@/lib/cached";
 import * as player_cache from "@/lib/player_cache";
 
 jest.mock("@/components/RengoTeamModal", () => ({
     openRengoTeamModal: jest.fn(),
 }));
 
-afterEach(() => jest.restoreAllMocks());
+afterEach(() => {
+    jest.restoreAllMocks();
+    data.set(cached.blocks, []);
+});
 
 const TEST_USER = {
     anonymous: false,
@@ -191,6 +196,34 @@ test("keeps the historical avatar when historical player data is available", () 
         backgroundImage: `url("${historicalIcon}")`,
     });
     expect(container.querySelector(".player-card-avatar")).toBeNull();
+});
+
+test("does not show the cache-backed avatar for an ignored player", () => {
+    data.set("user", TEST_USER);
+    data.set("preferences.moderator.hide-flags", false);
+    data.set("preferences.moderator.hide-player-card-mod-controls", false);
+    jest.spyOn(player_cache, "lookup").mockReturnValue(null);
+    const ignoredPlayer = new BlockState(11);
+    ignoredPlayer.block_chat = true;
+    data.set(cached.blocks, [ignoredPlayer]);
+
+    const controller = new GobanController({
+        game_id: 123456,
+        players: {
+            black: { id: 11, username: "blackie", rank: 20 },
+            white: { id: 22, username: "whitey", rank: 20 },
+        },
+    });
+    const { container } = render(
+        <Router>
+            <GobanControllerContext.Provider value={controller}>
+                <PlayerCard {...BASE_PROPS} color="black" goban={controller.goban} />
+            </GobanControllerContext.Provider>
+        </Router>,
+    );
+
+    expect(container.querySelector(".player-card-avatar")).toBeNull();
+    expect(container.querySelector(".player-icon-container")).toHaveStyle({ backgroundImage: "" });
 });
 
 const RENGO_PLAYERS = {

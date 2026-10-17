@@ -220,9 +220,16 @@ export function PlayerCard({
             <div className="player-icon-clock-row">
                 {player && !!player.id ? (
                     <div className="player-icon-container" style={player_bg}>
-                        {!engine.rengo && !historical && !goban.is_game_record && (
-                            <PlayerIcon id={player.id} size={64} className="player-card-avatar" />
-                        )}
+                        {!engine.rengo &&
+                            !historical &&
+                            !goban.is_game_record &&
+                            !player_is_ignored(player.id) && (
+                                <PlayerIcon
+                                    id={player.id}
+                                    size={64}
+                                    className="player-card-avatar"
+                                />
+                            )}
                         {!!auto_resign_expiration && (
                             <div className={`auto-resign-overlay`}>
                                 <i className="fa fa-bolt" />
