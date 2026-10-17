@@ -16,7 +16,7 @@
 import "@/lib/data";
 import "@/lib/sockets";
 
-import { fireEvent, render } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import * as React from "react";
 import { PlayerCard } from "./PlayerCards";
@@ -25,10 +25,18 @@ import { BrowserRouter as Router } from "react-router-dom";
 import * as data from "@/lib/data";
 import { GobanController } from "../../lib/GobanController";
 import { openRengoTeamModal } from "@/components/RengoTeamModal";
+import { BlockState } from "@/components/BlockPlayer";
+import cached from "@/lib/cached";
+import * as player_cache from "@/lib/player_cache";
 
 jest.mock("@/components/RengoTeamModal", () => ({
     openRengoTeamModal: jest.fn(),
 }));
+
+afterEach(() => {
+    jest.restoreAllMocks();
+    data.set(cached.blocks, []);
+});
 
 const TEST_USER = {
     anonymous: false,
@@ -113,8 +121,156 @@ test("make sure komi is not displayed for black", () => {
     }
 });
 
+test("uses cached avatar fallback when enabled and historical data is unavailable", async () => {
+    data.set("user", TEST_USER);
+    data.set("preferences.moderator.hide-flags", false);
+    data.set("preferences.moderator.hide-player-card-mod-controls", false);
+    const blackHash = "11111111111111111111111111111111";
+    const whiteDefaultAvatar =
+        "https://secure.gravatar.com/avatar/803b30a87717c3bbadd467fcfa891c82?s=80&d=retro";
+    jest.spyOn(player_cache, "lookup").mockReturnValue(null);
+    jest.spyOn(player_cache, "fetch").mockImplementation((id) =>
+        Promise.resolve({
+            id: id!,
+            icon: id === 11 ? blackHash : whiteDefaultAvatar,
+        }),
+    );
+
+    const controller = new GobanController({
+        game_id: 123456,
+        players: {
+            black: { id: 11, username: "blackie", rank: 20 },
+            white: { id: 22, username: "whitey", rank: 20 },
+        },
+    });
+    const { container } = render(
+        <Router>
+            <GobanControllerContext.Provider value={controller}>
+                <>
+                    <PlayerCard
+                        {...BASE_PROPS}
+                        color="black"
+                        goban={controller.goban}
+                        show_cached_avatar_fallback
+                    />
+                    <PlayerCard
+                        {...BASE_PROPS}
+                        color="white"
+                        goban={controller.goban}
+                        show_cached_avatar_fallback
+                    />
+                </>
+            </GobanControllerContext.Provider>
+        </Router>,
+    );
+
+    await waitFor(() => {
+        expect(container.querySelector(".black .player-card-avatar")).toHaveAttribute(
+            "src",
+            `https://user-uploads.online-go.com/${blackHash}-64.png`,
+        );
+        expect(container.querySelector(".white .player-card-avatar")).toHaveAttribute(
+            "src",
+            whiteDefaultAvatar,
+        );
+    });
+});
+
+test("keeps the historical avatar when historical player data is available", () => {
+    data.set("user", TEST_USER);
+    data.set("preferences.moderator.hide-flags", false);
+    data.set("preferences.moderator.hide-player-card-mod-controls", false);
+    const historicalIcon = "https://example.com/historical-avatar.png";
+    const controller = new GobanController({
+        game_id: 123456,
+        players: {
+            black: { id: 11, username: "blackie", rank: 20 },
+            white: { id: 22, username: "whitey", rank: 20 },
+        },
+    });
+
+    const { container } = render(
+        <Router>
+            <GobanControllerContext.Provider value={controller}>
+                <PlayerCard
+                    {...BASE_PROPS}
+                    color="white"
+                    goban={controller.goban}
+                    historical={{ icon: historicalIcon } as any}
+                />
+            </GobanControllerContext.Provider>
+        </Router>,
+    );
+
+    expect(container.querySelector(".player-icon-container")).toHaveStyle({
+        backgroundImage: `url("${historicalIcon}")`,
+    });
+    expect(container.querySelector(".player-card-avatar")).toBeNull();
+});
+
+test("does not add a cache-backed avatar without opting in", () => {
+    data.set("user", TEST_USER);
+    data.set("preferences.moderator.hide-flags", false);
+    data.set("preferences.moderator.hide-player-card-mod-controls", false);
+    const controller = new GobanController({
+        game_id: 123456,
+        players: {
+            black: { id: 11, username: "blackie", rank: 20 },
+            white: { id: 22, username: "whitey", rank: 20 },
+        },
+    });
+
+    const { container } = render(
+        <Router>
+            <GobanControllerContext.Provider value={controller}>
+                <PlayerCard {...BASE_PROPS} color="black" goban={controller.goban} />
+            </GobanControllerContext.Provider>
+        </Router>,
+    );
+
+    expect(container.querySelector(".player-card-avatar")).toBeNull();
+});
+
+test("does not show the cache-backed avatar for an ignored player", () => {
+    data.set("user", TEST_USER);
+    data.set("preferences.moderator.hide-flags", false);
+    data.set("preferences.moderator.hide-player-card-mod-controls", false);
+    jest.spyOn(player_cache, "lookup").mockReturnValue(null);
+    const ignoredPlayer = new BlockState(11);
+    ignoredPlayer.block_chat = true;
+    data.set(cached.blocks, [ignoredPlayer]);
+
+    const controller = new GobanController({
+        game_id: 123456,
+        players: {
+            black: { id: 11, username: "blackie", rank: 20 },
+            white: { id: 22, username: "whitey", rank: 20 },
+        },
+    });
+    const { container } = render(
+        <Router>
+            <GobanControllerContext.Provider value={controller}>
+                <PlayerCard
+                    {...BASE_PROPS}
+                    color="black"
+                    goban={controller.goban}
+                    show_cached_avatar_fallback
+                />
+            </GobanControllerContext.Provider>
+        </Router>,
+    );
+
+    expect(container.querySelector(".player-card-avatar")).toBeNull();
+    expect(container.querySelector(".player-icon-container")).toHaveStyle({ backgroundImage: "" });
+});
+
 const RENGO_PLAYERS = {
-    alice: { id: 1, username: "alice", rank: 10 },
+    alice: {
+        id: 1,
+        username: "alice",
+        rank: 10,
+        "icon-url": "22222222222222222222222222222222",
+    },
     bob: { id: 2, username: "bob", rank: 11 },
     carol: { id: 3, username: "carol", rank: 12 },
     dave: { id: 4, username: "dave", rank: 13 },
@@ -149,6 +305,11 @@ test("rengo card shows the number of other team members instead of the full list
 
     expect(container.querySelector(".rengo-team-count")).toHaveTextContent("+ 2");
     expect(container.querySelector(".rengo-team-members")).toBeNull();
+    expect(container.querySelector(".player-icon-container")).toHaveStyle({
+        backgroundImage:
+            'url("https://user-uploads.online-go.com/22222222222222222222222222222222-64.png")',
+    });
+    expect(container.querySelector(".player-card-avatar")).toBeNull();
 });
 
 test("rengo card hides the team count when the team has one player", () => {

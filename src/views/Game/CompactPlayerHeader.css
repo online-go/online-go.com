@@ -30,7 +30,8 @@
  * of the fill is the rim of a large circle, so it curves slightly where it
  * meets the middle, which takes the shade of the tab panels under the board.
  */
-.MainGobanView .CompactPlayerHeader {
+.MainGobanView .CompactPlayerHeader,
+.GobanView.Kibitz .CompactPlayerHeader {
     flex-shrink: 0;
     background: var(--shade5);
 }
@@ -39,7 +40,8 @@
  * deeper than the `.MainGobanView.portrait .player-icons ...` defaults each
  * rule replaces, so the overrides win on specificity rather than on
  * stylesheet order. The header is only ever rendered in portrait. */
-.MainGobanView.portrait .CompactPlayerHeader .player-icons {
+.MainGobanView.portrait .CompactPlayerHeader .player-icons,
+.GobanView.Kibitz.portrait .CompactPlayerHeader .player-icons {
     display: flex;
     flex-direction: row;
     align-items: stretch;
