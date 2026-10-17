@@ -20,7 +20,7 @@ import { _, interpolate, pgettext } from "@/lib/translate";
 import * as data from "@/lib/data";
 import { GobanController } from "@/lib/GobanController";
 import { popover, PopOver } from "@/lib/popover";
-import { GobanView, generateGobanHook } from "@/components/GobanView";
+import { GobanView, generateGobanHook, useGobanViewLayout } from "@/components/GobanView";
 import { KBShortcut } from "@/components/KBShortcut";
 import type { KibitzRoomSummary } from "@/models/kibitz";
 import type { KibitzGobans } from "./useKibitzGobans";
@@ -46,6 +46,46 @@ import { CompactPlayerHeader } from "@/views/Game/CompactPlayerHeader";
 import { KibitzMoreActionsRoomActions, openKibitzMoreActions } from "./KibitzMoreActionsPopover";
 import "./KibitzView.css";
 import "@/views/Game/Players.css";
+
+function KibitzStackedPlayerHeader({
+    controller,
+}: {
+    controller: GobanController | null;
+}): React.ReactElement | null {
+    const { mode } = useGobanViewLayout();
+    if (mode !== "stacked" || !controller) {
+        return null;
+    }
+    return (
+        <CompactPlayerHeader
+            historical_black={null}
+            historical_white={null}
+            estimating_score={false}
+            controller={controller}
+        />
+    );
+}
+
+function KibitzSidebarPlayerCards({
+    controller,
+}: {
+    controller: GobanController | null;
+}): React.ReactElement | null {
+    const { mode } = useGobanViewLayout();
+    if (mode === "stacked" || !controller) {
+        return null;
+    }
+    return (
+        <div className="MainGobanView Kibitz-sidebar-player-cards">
+            <PlayerCards
+                historical_black={null}
+                historical_white={null}
+                estimating_score={false}
+                controller={controller}
+            />
+        </div>
+    );
+}
 
 export interface KibitzViewProps {
     room: KibitzRoomSummary;
@@ -387,6 +427,9 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     );
 
     const viewingOther = gobans.centerMode !== "main";
+    // Player information intentionally follows useKibitzGobans' selection,
+    // which can differ from the centre board when analyzing the live game.
+    const playerInfoController = gobans.playerBars ?? gobans.center;
     // Landscape only: the thumbnail keeps the live game in view beside a
     // variation, and portrait has no width to spare for it — the analysis
     // pane's Back to game button is the way back there.
@@ -498,36 +541,17 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             }
             leftAside={leftAside}
             centerPlaceholder={waitingMessage}
-            aboveBoard={
-                isPortrait && gobans.center ? (
-                    <CompactPlayerHeader
-                        historical_black={null}
-                        historical_white={null}
-                        estimating_score={false}
-                        controller={gobans.playerBars ?? gobans.center}
-                    />
-                ) : null
-            }
-            playerBars={isPortrait ? false : (gobans.playerBars ?? !!gobans.center)}
-            /* GobanView shows this only in compactHorizontal, where the
-             * player bars are not shown. */
-            sidebarContentBefore={
-                gobans.center ? (
-                    <div className="MainGobanView Kibitz-compact-player-cards">
-                        <PlayerCards
-                            historical_black={null}
-                            historical_white={null}
-                            estimating_score={false}
-                        />
-                    </div>
-                ) : null
-            }
+            aboveBoard={<KibitzStackedPlayerHeader controller={playerInfoController} />}
+            /* Kibitz presents both players together in the sidebar on every
+             * horizontal layout, and in the compact header when stacked. */
+            playerBars={false}
             portraitSplit
         >
             {gobans.center && <KibitzKeyboardShortcuts />}
             {viewingOther && <KBShortcut shortcut="esc" action={onEscape} />}
 
             <GobanView.Tab id="kibitz-main" type="always">
+                <KibitzSidebarPlayerCards controller={playerInfoController} />
                 {props.banner}
                 <KibitzProposalPanel {...props.proposals} />
                 {!isPortrait && variationPanel}

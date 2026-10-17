@@ -83,7 +83,7 @@ ogsTest.describe("@Kibitz responsive layout", () => {
                 await expect(landscape).toBeVisible();
                 await expect(landscape.locator(".Goban")).toBeVisible();
                 await expect(
-                    landscape.locator(".Kibitz-compact-player-cards .player-container"),
+                    landscape.locator(".Kibitz-sidebar-player-cards .player-container"),
                 ).toHaveCount(2);
 
                 await page.setViewportSize({ width: 390, height: 844 });
@@ -114,7 +114,7 @@ ogsTest.describe("@Kibitz responsive layout", () => {
                     hasMobilePlayerBars: root.querySelectorAll(".GobanView-player-bar").length > 0,
                     playerCardWidths: Array.from(
                         root.querySelectorAll<HTMLElement>(
-                            ".Kibitz-compact-player-cards .player-container",
+                            ".Kibitz-sidebar-player-cards .player-container",
                         ),
                     ).map((card) => card.getBoundingClientRect().width),
                     boardLeftOfRightColumn: (() => {
@@ -159,7 +159,7 @@ ogsTest.describe("@Kibitz responsive layout", () => {
 
             await page.getByTitle("Rooms", { exact: true }).click();
             const body = page.locator(".GobanView-sidebar-content");
-            const playerCards = page.locator(".Kibitz-compact-player-cards");
+            const playerCards = page.locator(".Kibitz-sidebar-player-cards");
             const moveControls = page.locator(".MoveNumberControl");
             const tabs = page.locator(".GobanView-tab-bar");
             const scrollHeight = await body.evaluate((element) => element.scrollHeight);
@@ -170,14 +170,73 @@ ogsTest.describe("@Kibitz responsive layout", () => {
                 element.scrollTop = element.scrollHeight;
             });
             const afterScroll = await playerCards.boundingBox();
-            const bodyBox = await body.boundingBox();
-            expect((afterScroll?.y ?? 0) + (afterScroll?.height ?? 0)).toBeLessThanOrEqual(
-                bodyBox?.y ?? 0,
-            );
+            expect(afterScroll?.y ?? 0).toBeLessThanOrEqual((beforeScroll?.y ?? 0) + 1);
             expect(await moveControls.isVisible()).toBe(true);
             expect(await tabs.isVisible()).toBe(true);
             expect(await page.locator(".Goban").boundingBox()).toEqual(boardBeforeScroll);
+            await page.getByTitle("Kibitz chat", { exact: true }).click();
+            const composer = page.locator(".KibitzChatPanel-composer");
+            await expect(composer).toBeVisible();
+            const composerBox = await composer.boundingBox();
+            const sidebarBox = await page.locator(".GobanView-sidebar").boundingBox();
+            expect((composerBox?.y ?? Infinity) + (composerBox?.height ?? 0)).toBeLessThanOrEqual(
+                (sidebarBox?.y ?? 0) + (sidebarBox?.height ?? 0) + 1,
+            );
             expect(beforeScroll).not.toBeNull();
         });
+    }
+
+    for (const [width, height] of [
+        [1280, 800],
+        [1440, 900],
+        [1920, 1080],
+    ] as const) {
+        ogsTest(
+            `places the player cards at the top of the sidebar at ${width}x${height}`,
+            async ({ page }) => {
+                await page.setViewportSize({ width, height });
+                await load(page, "/kibitz/preset-english-chat-live");
+                const root = page.locator(".GobanView.Kibitz.wide.has-left-aside");
+                await expect(root).toBeVisible();
+                await expect(root.locator(".Goban")).toBeVisible();
+                await expect(root.locator(".GobanView-player-bar")).toHaveCount(0);
+
+                const cards = root.locator(".Kibitz-sidebar-player-cards");
+                await expect(cards.locator(".player-container")).toHaveCount(2);
+                const placement = await root.evaluate((element) => {
+                    const panel = element.querySelector<HTMLElement>(
+                        ".GobanView-sidebar-content .GobanView-tab-panel.always",
+                    );
+                    const cards = element.querySelector<HTMLElement>(
+                        ".Kibitz-sidebar-player-cards",
+                    );
+                    const board = element.querySelector<HTMLElement>(".Goban");
+                    const sidebar = element.querySelector<HTMLElement>(".GobanView-sidebar");
+                    const cardsBox = cards?.getBoundingClientRect();
+                    const sidebarBox = sidebar?.getBoundingClientRect();
+                    return {
+                        firstPanelChild: panel?.firstElementChild === cards,
+                        boardHasSidebarClearance: Boolean(
+                            board &&
+                            sidebar &&
+                            board.getBoundingClientRect().right <=
+                                sidebar.getBoundingClientRect().left,
+                        ),
+                        cardsAtTop: Boolean(
+                            cardsBox && sidebarBox && cardsBox.top <= sidebarBox.top + 100,
+                        ),
+                        cardCount: cards?.querySelectorAll(".player-container").length ?? 0,
+                        cardOverflow: Array.from(
+                            cards?.querySelectorAll<HTMLElement>(".player-container") ?? [],
+                        ).some((card) => card.scrollWidth > card.clientWidth + 1),
+                    };
+                });
+                expect(placement.firstPanelChild).toBe(true);
+                expect(placement.boardHasSidebarClearance).toBe(true);
+                expect(placement.cardsAtTop).toBe(true);
+                expect(placement.cardCount).toBe(2);
+                expect(placement.cardOverflow).toBe(false);
+            },
+        );
     }
 });

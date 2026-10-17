@@ -51,6 +51,19 @@ jest.mock("@/views/Game/CompactPlayerHeader", () => ({
         />
     ),
 }));
+jest.mock("@/views/Game/PlayerCards", () => ({
+    __esModule: true,
+    PlayerCards: ({
+        controller,
+    }: {
+        controller?: { goban?: { config?: { game_id?: number } } };
+    }) => (
+        <div data-testid="player-cards" data-game-id={controller?.goban?.config?.game_id ?? ""}>
+            <div className="player-container" />
+            <div className="player-container" />
+        </div>
+    ),
+}));
 jest.mock("@/components/GobanView/MoveNumberControl", () => ({
     __esModule: true,
     MoveNumberControl: () => <div data-testid="slider" />,
@@ -201,14 +214,26 @@ function variationLeftAside(
     };
 }
 
-// jsdom reports a 1024x768 window, which goban_view_mode classifies as
-// "wide", so these tests exercise the landscape layout.
+// jsdom reports a 1024x768 window, which GobanView resolves as a horizontal
+// desktop layout unless a test sets a compact viewport explicitly.
 describe("KibitzView", () => {
-    test("main mode shows the board, bars, chat and no variation panel", () => {
-        render(<KibitzView {...baseProps()} />);
+    test("horizontal mode shows sidebar cards before Kibitz content and no board bars", () => {
+        const props = baseProps({ banner: <div data-testid="banner" /> });
+        const { container } = render(<KibitzView {...props} />);
         expect(screen.getByTestId("goban-container")).toBeInTheDocument();
-        expect(screen.getByTestId("bar-white")).toBeInTheDocument();
-        expect(screen.getByTestId("bar-black")).toBeInTheDocument();
+        expect(screen.getByTestId("player-cards")).toHaveAttribute("data-game-id", "100");
+        expect(container.querySelectorAll(".player-container")).toHaveLength(2);
+        expect(container.querySelectorAll(".GobanView-player-bar")).toHaveLength(0);
+        const panel = container.querySelector(
+            ".GobanView-sidebar-content .GobanView-tab-panel.always",
+        )!;
+        expect(panel.firstElementChild).toHaveClass("Kibitz-sidebar-player-cards");
+        expect(panel.children[0].compareDocumentPosition(screen.getByTestId("banner"))).toBe(
+            Node.DOCUMENT_POSITION_FOLLOWING,
+        );
+        expect(panel.children[0].compareDocumentPosition(screen.getByTestId("proposals"))).toBe(
+            Node.DOCUMENT_POSITION_FOLLOWING,
+        );
         expect(screen.getByTestId("chat")).toBeInTheDocument();
         expect(screen.queryByTestId(/variation-panel/)).toBeNull();
         expect(screen.getByTestId("left-aside")).toHaveAttribute("data-mini", "no");
@@ -358,7 +383,78 @@ describe("KibitzView", () => {
         expect(screen.getByTestId("chat")).toBeInTheDocument();
         expect(screen.getByTestId("left-aside")).toBeInTheDocument();
         expect(screen.queryByTestId("goban-container")).toBeNull();
+        expect(screen.queryByTestId("player-cards")).toBeNull();
     });
+
+    test.each([
+        [844, 390, "compactHorizontal"],
+        [1280, 800, "fullHorizontal"],
+    ])(
+        "horizontal player cards follow the selected controller at %ix%i (%s)",
+        (width, height, mode) => {
+            const previousSize = {
+                width: window.innerWidth,
+                height: window.innerHeight,
+                clientWidth: document.documentElement.clientWidth,
+                clientHeight: document.documentElement.clientHeight,
+            };
+            Object.defineProperty(window, "innerWidth", { configurable: true, value: width });
+            Object.defineProperty(window, "innerHeight", { configurable: true, value: height });
+            Object.defineProperty(document.documentElement, "clientWidth", {
+                configurable: true,
+                value: width,
+            });
+            Object.defineProperty(document.documentElement, "clientHeight", {
+                configurable: true,
+                value: height,
+            });
+            window.dispatchEvent(new Event("resize"));
+
+            const props = baseProps();
+            const otherGame = fakeController();
+            otherGame.goban.config.game_id = 200;
+            props.gobans = {
+                ...props.gobans,
+                secondary: otherGame,
+                center: otherGame,
+                centerMode: "variation",
+                playerBars: props.gobans.main,
+            };
+            const view = render(<KibitzView {...props} />);
+            try {
+                const root = view.container.querySelector(".GobanView.Kibitz")!;
+                expect(root).toHaveClass(
+                    mode === "fullHorizontal" ? "has-left-aside" : "compactHorizontal",
+                );
+                expect(screen.getByTestId("player-cards")).toHaveAttribute("data-game-id", "100");
+                expect(root.querySelectorAll(".GobanView-player-bar")).toHaveLength(0);
+
+                view.rerender(
+                    <KibitzView {...props} gobans={{ ...props.gobans, playerBars: otherGame }} />,
+                );
+                expect(screen.getByTestId("player-cards")).toHaveAttribute("data-game-id", "200");
+            } finally {
+                view.unmount();
+                Object.defineProperty(window, "innerWidth", {
+                    configurable: true,
+                    value: previousSize.width,
+                });
+                Object.defineProperty(window, "innerHeight", {
+                    configurable: true,
+                    value: previousSize.height,
+                });
+                Object.defineProperty(document.documentElement, "clientWidth", {
+                    configurable: true,
+                    value: previousSize.clientWidth,
+                });
+                Object.defineProperty(document.documentElement, "clientHeight", {
+                    configurable: true,
+                    value: previousSize.clientHeight,
+                });
+                window.dispatchEvent(new Event("resize"));
+            }
+        },
+    );
 
     describe("portrait", () => {
         beforeEach(() => {
@@ -379,7 +475,7 @@ describe("KibitzView", () => {
             expect(screen.queryByTestId("left-aside")).toBeNull();
         });
 
-        test("uses the selected player controller for the compact header", () => {
+        test("uses stacked layout and the selected controller for the compact header", () => {
             const previousSize = {
                 width: window.innerWidth,
                 height: window.innerHeight,
@@ -398,7 +494,10 @@ describe("KibitzView", () => {
             });
             window.dispatchEvent(new Event("resize"));
 
-            const props = baseProps({ isPortrait: true });
+            // The outer left-aside flag is intentionally not the source of
+            // truth for player placement; GobanView resolves this viewport
+            // as stacked even when that flag is false.
+            const props = baseProps({ isPortrait: false });
             const main = props.gobans.main!;
             const otherGame = fakeController();
             otherGame.goban.config.game_id = 200;
@@ -416,6 +515,7 @@ describe("KibitzView", () => {
                     "data-game-id",
                     "100",
                 );
+                expect(screen.queryByTestId("player-cards")).toBeNull();
                 expect(screen.queryByTestId("bar-black")).toBeNull();
                 expect(screen.queryByTestId("bar-white")).toBeNull();
 

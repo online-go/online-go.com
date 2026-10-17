@@ -42,6 +42,7 @@ import { get_network_latency, get_clock_drift } from "@/lib/sockets";
 import { useGobanController } from "./goban_context";
 import { player_is_ignored } from "@/components/BlockPlayer";
 import { openRengoTeamModal } from "@/components/RengoTeamModal";
+import type { GobanController } from "@/lib/GobanController";
 
 type PlayerType = rest_api.games.Player;
 
@@ -49,14 +50,19 @@ interface PlayerCardsProps {
     historical_black: PlayerType | null;
     historical_white: PlayerType | null;
     estimating_score: boolean;
+    /** Defaults to GobanView's controller. Views that show player information
+     *  for a different board can pass its controller explicitly. */
+    controller?: GobanController;
 }
 
 export function PlayerCards({
     historical_black,
     historical_white,
     estimating_score,
+    controller,
 }: PlayerCardsProps): React.ReactElement {
-    const goban_controller = useGobanController();
+    const contextController = useGobanController();
+    const goban_controller = controller ?? contextController;
     const goban = goban_controller.goban;
 
     const zen_mode = useZenMode(goban_controller);
