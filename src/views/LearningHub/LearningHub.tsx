@@ -24,7 +24,7 @@ import { CardLink } from "@/components/material";
 import { _, pgettext } from "@/lib/translate";
 import { sections, all_sections } from "./sections";
 import { Ribbon } from "@/components/misc-ui";
-import { getSectionCompletion, getSectionByName } from "./util";
+import { getSectionCompletion, getSectionByName, resetProgress } from "./util";
 import { browserHistory } from "@/lib/ogsHistory";
 import { MiniGoban } from "@/components/MiniGoban";
 import { alert } from "@/lib/swal_config";
@@ -416,7 +416,7 @@ function SectionNav(): React.ReactElement {
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    data.removePrefix("learning-hub.");
+                    resetProgress();
                     browserHistory.push("/learn-to-play-go");
                 }
             });
