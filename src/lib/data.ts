@@ -235,6 +235,17 @@ export function get<KeyT extends Extract<keyof DataSchema, string>>(
     return default_value;
 }
 
+/**
+ * The server's copy of a replicated value, as last synced to this device.
+ * Undefined when the user is anonymous or nothing has been replicated for the
+ * key. Unlike `get`, this ignores the locally set value.
+ */
+export function getRemote<KeyT extends Extract<keyof DataSchema, string>>(
+    key: KeyT,
+): DataSchema[KeyT] | undefined {
+    return remote_get(key) as DataSchema[KeyT] | undefined;
+}
+
 export function watch<KeyT extends Extract<keyof DataSchema, string>>(
     key: KeyT,
     cb: (data: DataSchema[KeyT] | undefined) => void,

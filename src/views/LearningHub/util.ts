@@ -48,7 +48,7 @@ export function getSectionCompletion(section_name: string): SectionCompletion {
         }
     }
 
-    const completion = data.get(`learning-hub.${section_name}`, {});
+    const completion = getCompletion(section_name);
     total = section.pages().length;
     for (let i = 0; i < total; ++i) {
         if (i in completion) {
@@ -79,7 +79,7 @@ export function getSectionByName(section_name: string): typeof LearningHubSectio
 }
 
 export function getFirstUncompletedPage(section_name: string): number {
-    const completion = data.get(`learning-hub.${section_name}`, {});
+    const completion = getCompletion(section_name);
     let section: any = null;
     for (const S of all_sections) {
         if (S.section() === section_name) {
@@ -97,13 +97,40 @@ export function getFirstUncompletedPage(section_name: string): number {
     return 0;
 }
 
+type Completion = { [page_number: number]: true };
+
+function completionKey(section_name: string): `learning-hub.${string}` {
+    return `learning-hub.${section_name}`;
+}
+
+/**
+ * Pages completed in a section: the union of this device's copy and the
+ * server's copy. A device can hold pages the server has never seen (completed
+ * while logged out, or before progress was replicated), and the server can
+ * hold pages completed on other devices. Neither side is allowed to hide the
+ * other's pages.
+ */
+function getCompletion(section_name: string): Completion {
+    const key = completionKey(section_name);
+    return { ...(data.getRemote(key) ?? {}), ...(data.get(key) ?? {}) };
+}
+
 export function setSectionPageCompleted(section_name: string, page_number: number): void {
-    const completion = { ...data.get(`learning-hub.${section_name}`, {}) };
+    const completion: Completion = { ...getCompletion(section_name) };
     completion[page_number] = true;
-    data.set(`learning-hub.${section_name}`, completion, data.Replication.REMOTE_OVERWRITES_LOCAL);
+    // LOCAL_OVERWRITES_REMOTE keeps the server's copy separate from this
+    // device's copy, so the union above survives a sync. A replicated reset
+    // (see resetProgress) still clears this device.
+    data.set(completionKey(section_name), completion, data.Replication.LOCAL_OVERWRITES_REMOTE);
 }
 
 export function getSectionPageCompleted(section_name: string, page_number: number): boolean {
-    const completion = data.get(`learning-hub.${section_name}`, {});
-    return page_number in completion;
+    return page_number in getCompletion(section_name);
+}
+
+/** Clears lesson progress on this device, on the server, and on every other device. */
+export function resetProgress(): void {
+    for (const S of all_sections) {
+        data.remove(completionKey(S.section()), data.Replication.REMOTE_OVERWRITES_LOCAL);
+    }
 }
