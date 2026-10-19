@@ -270,9 +270,10 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
         const is_black = is_current_player === (clock.current_player === "black");
         const use_black = use_this_player === is_black;
         const running =
-            clock.start_mode ||
-            !!clock.stone_removal_time_left ||
-            (!paused && clock.current_player === (use_black ? "black" : "white"));
+            game.goban?.engine?.phase !== "finished" &&
+            (clock.start_mode ||
+                !!clock.stone_removal_time_left ||
+                (!paused && clock.current_player === (use_black ? "black" : "white")));
         const time_control = game.goban?.config?.time_control;
         const remaining = this.computeRemainingTime(
             time_control,
