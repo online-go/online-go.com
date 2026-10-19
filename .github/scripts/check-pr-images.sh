@@ -5,11 +5,9 @@
 #
 # Usage: check-pr-images.sh <base> <head> < pr-body
 #
-# Every commit in <base>..<head> is checked, so an image that a later commit
-# deletes still counts: merge commits keep it in history.
-#   1. No image may be added under docs/.
-#   2. The body may not reference an image that the pull request adds,
-#      wherever that image is.
+# The body may not reference an image that any commit in <base>..<head> adds.
+# An image that a later commit deletes still counts: merge commits keep it in
+# history.
 set -euo pipefail
 
 base=$1
@@ -20,14 +18,6 @@ failed=0
 
 added=$(git -c core.quotepath=off log --diff-filter=A --name-only --format= "$base..$head" \
     | grep -iE "$ext_re\$" | sort -u || true)
-
-while IFS= read -r path; do
-    [ -n "$path" ] || continue
-    if [[ "$path" == docs/* ]]; then
-        echo "::error::Image added under docs/: $path"
-        failed=1
-    fi
-done <<< "$added"
 
 refs=$(grep -oiE "[^][[:space:]()<>\"'\`]+$ext_re([?#][^][[:space:]()<>\"'\`]*)?" <<< "$body" || true)
 

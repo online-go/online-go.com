@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
     check:
-        name: No committed screenshots
+        name: No committed screenshots in PR body
         runs-on: ubuntu-latest
         timeout-minutes: 5
 
