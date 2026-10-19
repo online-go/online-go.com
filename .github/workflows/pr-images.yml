@@ -1,0 +1,40 @@
+# Fails pull requests that commit images only to show them in review. See
+# .github/scripts/check-pr-images.sh. Runs again when the body is edited.
+name: PR Images
+
+on:
+    pull_request:
+        branches: [main]
+        types: [opened, reopened, synchronize, edited]
+
+permissions:
+    contents: read
+    pull-requests: read
+
+concurrency:
+    group: pr-images-${{ github.event.pull_request.number }}
+    cancel-in-progress: true
+
+jobs:
+    check:
+        name: No committed screenshots
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  fetch-depth: 0
+
+            - name: Check for committed images
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  REPO: ${{ github.repository }}
+                  PR: ${{ github.event.pull_request.number }}
+              run: |
+                  # Read the body from the API, not the event payload: a re-run
+                  # reuses the payload of the original event.
+                  # The checkout is the PR merge commit: HEAD^1 is the base and
+                  # HEAD^2 is the PR head.
+                  gh api "repos/$REPO/pulls/$PR" --jq '.body // ""' \
+                      | .github/scripts/check-pr-images.sh HEAD^1 HEAD^2
