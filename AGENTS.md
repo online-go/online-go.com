@@ -43,7 +43,8 @@ Only run the full build once before the final push, since it is slow and not nee
 
 ## Pull Requests
 
-- When appropriate include screenshot(s) of what changed
+- When appropriate include screenshot(s) of what changed. Attach them to the
+  pull request description. Do not commit them to the repository.
 - Be concise and professional with your pull request text. Aim for 300 words or
   less.
 

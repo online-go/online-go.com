@@ -110,3 +110,22 @@ jobs:
 
             - name: Run type check
               run: yarn type-check
+
+    no-committed-screenshots:
+        if: github.event_name == 'pull_request'
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  fetch-depth: 2
+
+            - name: Reject images added under docs/
+              run: |
+                  added=$(git diff --name-only --diff-filter=A HEAD^1 HEAD -- docs/ | grep -iE '\.(png|jpe?g|gif|webp)$' || true)
+                  if [ -n "$added" ]; then
+                      echo "Images must not be committed under docs/. Attach screenshots to the pull request description instead:"
+                      echo "$added"
+                      exit 1
+                  fi
