@@ -32,6 +32,7 @@ jobs:
                   REPO: ${{ github.repository }}
                   PR: ${{ github.event.pull_request.number }}
               run: |
+                  set -o pipefail
                   # Read the body from the API, not the event payload: a re-run
                   # reuses the payload of the original event.
                   # The checkout is the PR merge commit: HEAD^1 is the base and
