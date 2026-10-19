@@ -50,42 +50,69 @@ export function useScorePopup(goban: Goban | null): {
     show_score_breakdown: boolean;
     toggleScorePopup: () => void;
 } {
-    const orig_marks = React.useRef<string | null>(null);
-    const showing_scores = React.useRef<boolean>(false);
-    const [show_score_breakdown, set_show_score_breakdown] = React.useState(false);
+    const popup = React.useRef<{
+        goban: Goban;
+        orig_marks: string | null;
+        showing_scores: boolean;
+    } | null>(null);
+    const [popup_goban, set_popup_goban] = React.useState<Goban | null>(null);
+
+    const restoreScores = (saved: NonNullable<typeof popup.current>) => {
+        if (!saved.showing_scores) {
+            saved.goban.hideScores();
+        }
+        if (saved.goban.engine.cur_move && saved.orig_marks) {
+            saved.goban.engine.cur_move.setAllMarks(JSON.parse(saved.orig_marks));
+        }
+        saved.goban.redraw();
+    };
 
     const popupScores = () => {
         if (!goban) {
             return;
         }
+        if (popup.current && popup.current.goban !== goban) {
+            restoreScores(popup.current);
+            popup.current = null;
+        }
+        let orig_marks: string | null = null;
         if (goban.engine.cur_move) {
-            orig_marks.current = JSON.stringify(goban.engine.cur_move.getAllMarks());
+            orig_marks = JSON.stringify(goban.engine.cur_move.getAllMarks());
             goban.engine.cur_move.clearMarks();
-        } else {
-            orig_marks.current = null;
         }
 
         const scores = goban.engine.computeScore(false);
-        showing_scores.current = goban.showing_scores;
+        popup.current = {
+            goban,
+            orig_marks,
+            showing_scores: goban.showing_scores,
+        };
         goban.showScores(scores);
 
-        set_show_score_breakdown(true);
+        set_popup_goban(goban);
     };
     const hideScores = () => {
-        if (!goban) {
-            return;
+        if (popup.current) {
+            restoreScores(popup.current);
+            popup.current = null;
         }
-        if (!showing_scores.current) {
-            goban.hideScores();
-        }
-        if (goban.engine.cur_move && orig_marks.current) {
-            goban.engine.cur_move.setAllMarks(JSON.parse(orig_marks.current));
-        }
-        goban.redraw();
-
-        set_show_score_breakdown(false);
+        set_popup_goban(null);
     };
 
+    React.useEffect(
+        () => () => {
+            // A compact header can switch controllers without unmounting. Keep
+            // the saved marks and score visibility attached to the Goban that
+            // was opened, and restore them when that Goban leaves this hook.
+            if (popup.current?.goban === goban) {
+                restoreScores(popup.current);
+                popup.current = null;
+            }
+        },
+        [goban],
+    );
+
+    const show_score_breakdown = !!goban && popup_goban === goban && popup.current?.goban === goban;
     const toggleScorePopup = () => (show_score_breakdown ? hideScores() : popupScores());
 
     return { show_score_breakdown, toggleScorePopup };

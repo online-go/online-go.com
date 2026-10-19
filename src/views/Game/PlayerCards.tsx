@@ -25,6 +25,7 @@ import { Flag } from "@/components/Flag";
 import { ChatPresenceIndicator } from "@/components/ChatPresenceIndicator";
 import { Clock, SGFClock, TransmittingIndicator } from "@/components/Clock";
 import { Player } from "@/components/Player";
+import { PlayerIcon } from "@/components/PlayerIcon";
 import { lookup, fetch } from "@/lib/player_cache";
 import { _, interpolate, ngettext, pgettext } from "@/lib/translate";
 import * as data from "@/lib/data";
@@ -41,6 +42,7 @@ import { get_network_latency, get_clock_drift } from "@/lib/sockets";
 import { useGobanController } from "./goban_context";
 import { player_is_ignored } from "@/components/BlockPlayer";
 import { openRengoTeamModal } from "@/components/RengoTeamModal";
+import type { GobanController } from "@/lib/GobanController";
 
 type PlayerType = rest_api.games.Player;
 
@@ -48,14 +50,22 @@ interface PlayerCardsProps {
     historical_black: PlayerType | null;
     historical_white: PlayerType | null;
     estimating_score: boolean;
+    /** Show cache-backed avatars when historical player data is unavailable. */
+    show_cached_avatar_fallback?: boolean;
+    /** Defaults to GobanView's controller. Views that show player information
+     *  for a different board can pass its controller explicitly. */
+    controller?: GobanController;
 }
 
 export function PlayerCards({
     historical_black,
     historical_white,
     estimating_score,
+    show_cached_avatar_fallback = false,
+    controller,
 }: PlayerCardsProps): React.ReactElement {
-    const goban_controller = useGobanController();
+    const contextController = useGobanController();
+    const goban_controller = controller ?? contextController;
     const goban = goban_controller.goban;
 
     const zen_mode = useZenMode(goban_controller);
@@ -69,6 +79,7 @@ export function PlayerCards({
                     color="black"
                     goban={goban}
                     estimating_score={estimating_score}
+                    show_cached_avatar_fallback={show_cached_avatar_fallback}
                     show_score_breakdown={show_score_breakdown}
                     onScoreClick={toggleScorePopup}
                     zen_mode={zen_mode}
@@ -78,6 +89,7 @@ export function PlayerCards({
                     color="white"
                     goban={goban}
                     estimating_score={estimating_score}
+                    show_cached_avatar_fallback={show_cached_avatar_fallback}
                     show_score_breakdown={show_score_breakdown}
                     onScoreClick={toggleScorePopup}
                     zen_mode={zen_mode}
@@ -142,6 +154,7 @@ interface PlayerCardProps {
     goban: GobanRenderer;
     historical: PlayerType | null;
     estimating_score: boolean;
+    show_cached_avatar_fallback?: boolean;
     /** Omit to disable the score-details popup. */
     show_score_breakdown?: boolean;
     onScoreClick?: () => void;
@@ -156,6 +169,7 @@ export function PlayerCard({
     goban,
     historical,
     estimating_score,
+    show_cached_avatar_fallback = false,
     show_score_breakdown = false,
     onScoreClick,
     zen_mode,
@@ -177,10 +191,11 @@ export function PlayerCard({
         historical = null;
     }
 
-    // In rengo we always will have a player icon to show (after initialization).
-    // In other cases, we only have one if `historical` is set
+    // Rengo icons arrive with the engine player. Standard player cards use
+    // historical icons when available, and the player cache otherwise.
     const player_bg: React.CSSProperties = {};
-    if (engine.rengo && player && (player as any)["icon-url"]) {
+    const hasRengoIcon = Boolean(engine.rengo && player && (player as any)["icon-url"]);
+    if (hasRengoIcon) {
         // Does icon-url need to be added to GobanEnginePlayerEntry? -BPJ
         const icon = user_uploads_url((player as any)["icon-url"], 64);
         player_bg.backgroundImage = `url("${icon}")`;
@@ -212,6 +227,17 @@ export function PlayerCard({
             <div className="player-icon-clock-row">
                 {player && !!player.id ? (
                     <div className="player-icon-container" style={player_bg}>
+                        {!engine.rengo &&
+                            show_cached_avatar_fallback &&
+                            !historical &&
+                            !goban.is_game_record &&
+                            !player_is_ignored(player.id) && (
+                                <PlayerIcon
+                                    id={player.id}
+                                    size={64}
+                                    className="player-card-avatar"
+                                />
+                            )}
                         {!!auto_resign_expiration && (
                             <div className={`auto-resign-overlay`}>
                                 <i className="fa fa-bolt" />
