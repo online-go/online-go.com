@@ -23,6 +23,19 @@ import { current_language } from "./translate";
 Howler.autoUnlock = true;
 let unlocked_message_logged = false;
 
+/* Howler queues a volume change while a howl is not loaded or while its
+ * audio context waits to resume, and the queue drains recursively. A volume
+ * change on every play can make the queue so long that draining it exceeds
+ * the call stack, so we set the volume of the whole howl, and only when it
+ * changes. */
+const howl_volumes = new WeakMap<Howl, number>();
+function setHowlVolume(howl: Howl, volume: number): void {
+    if (howl_volumes.get(howl) !== volume) {
+        howl_volumes.set(howl, volume);
+        howl.volume(volume);
+    }
+}
+
 const GameVoiceSounds = [
     "period",
     "5_periods_left",
@@ -294,7 +307,7 @@ export class SFXSprite {
     set volume(v: number) {
         this._volume = v;
         if (this.id) {
-            this.howl.volume(this.volume, this.id);
+            setHowlVolume(this.howl, this.volume);
         }
     }
 
@@ -316,9 +329,8 @@ export class SFXSprite {
         }
 
         //console.debug('Playing sound bite:', this.name, 'at volume:', this.volume);
-        const id = this.howl.play(this.name);
-        this.howl.volume(this.volume, id);
-        this.id = id;
+        setHowlVolume(this.howl, this.volume);
+        this.id = this.howl.play(this.name);
         this.then(() => delete this.id);
         this.last_time_played = Date.now();
     }
@@ -495,6 +507,7 @@ export class SFXManager {
                 }
             });
             const silence = new SFXSprite(howl, group_name, "silence");
+            silence.volume = this.getVolume(group_name);
             silence.play();
             silence.then(() => {
                 //console.debug("Successfully played silence from ", group_name);
