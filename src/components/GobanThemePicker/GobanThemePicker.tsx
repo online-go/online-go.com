@@ -880,7 +880,8 @@ function ThemeSample({
             g.appendChild(marker);
         }
 
-        host.replaceChildren(svg);
+        host.textContent = "";
+        host.appendChild(svg);
 
         return () => {
             if (host.contains(svg)) {
