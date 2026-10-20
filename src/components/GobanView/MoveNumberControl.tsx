@@ -87,9 +87,11 @@ export function MoveNumberControl(): React.ReactElement {
         initial_mode_ref.current = goban?.mode ?? null;
         setHwm(goban?.engine.cur_move.move_number ?? 0);
     }
-    React.useEffect(() => {
+    const [prev_current, setPrevCurrent] = React.useState(current);
+    if (prev_current !== current) {
+        setPrevCurrent(current);
         setHwm((prev) => (prev < current ? current : prev));
-    }, [current]);
+    }
 
     const restrict_forward = initial_mode_ref.current === "puzzle";
     const max = restrict_forward ? Math.max(current, hwm) : reachable;
