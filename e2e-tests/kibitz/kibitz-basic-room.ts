@@ -60,14 +60,18 @@ export const kibitzBasicRoomTest = async ({
     expect(watcherPage.url()).toMatch(new RegExp(`/kibitz/${roomId}$`));
 
     // Positive functional assertions on what the watcher sees: the room is
-    // laid out on GobanView with the board painted in the center, a player
-    // bar above and below it, and the two-tab chat in the sidebar.
+    // laid out on GobanView with the board painted in the center, both player
+    // cards at the top of the sidebar (KibitzView.tsx renders PlayerCards
+    // there on every horizontal layout and never offers GobanView's
+    // board-adjacent player bars), and the two-tab chat in the sidebar.
     await expect(watcherPage.locator(".GobanView.Kibitz")).toBeVisible();
     await expect(
         watcherPage.locator(".GobanView-center .goban-container svg").first(),
     ).toBeVisible();
-    await expect(watcherPage.locator(".GobanView-player-bar.top .PlayerBar")).toBeVisible();
-    await expect(watcherPage.locator(".GobanView-player-bar.bottom .PlayerBar")).toBeVisible();
+    const sidebarPlayerCards = watcherPage.locator(".Kibitz-sidebar-player-cards");
+    await expect(sidebarPlayerCards.locator(".player-container.black")).toBeVisible();
+    await expect(sidebarPlayerCards.locator(".player-container.white")).toBeVisible();
+    await expect(watcherPage.locator(".GobanView-player-bar")).toHaveCount(0);
     await expect(watcherPage.locator(".KibitzChatPanel")).toBeVisible();
 
     // The active room is highlighted in the left aside (KibitzRoomList.tsx
@@ -219,9 +223,9 @@ export const kibitzBasicRoomTest = async ({
         { timeout: 15000 },
     );
     await waitForKibitzReady(watcherPage);
-    await expect(watcherPage.locator(".PlayerBar.white .PlayerBar-name")).toContainText(
-        whiteUsername,
-    );
+    await expect(
+        watcherPage.locator(".Kibitz-sidebar-player-cards .player-container.white"),
+    ).toContainText(whiteUsername);
 
     const moreActionsButton = watcherPage.locator('.GobanView-tab-button[title="More actions"]');
     await expect(moreActionsButton).toBeOGSClickable();
