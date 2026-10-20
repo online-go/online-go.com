@@ -96,6 +96,8 @@ describe("remote storage socket callbacks", () => {
         for (const r of sent) {
             r.cb?.({ success: true });
         }
+        // A disconnect cancels a pending wal retry timer.
+        socket.emit("disconnect", 1006);
         send.mockRestore();
         jest.useRealTimers();
     });
@@ -169,4 +171,58 @@ describe("remote storage socket callbacks", () => {
         reconnect();
         expect(sentFor("remote_storage/sync")).toHaveLength(2);
     });
+
+    for (const failure of ["socket error", "server retry"] as const) {
+        test(`failing writes for several keys retry at a bounded rate (${failure})`, () => {
+            let failing = true;
+            send.mockImplementation(((command: string, args: unknown, cb?: Callback) => {
+                sent.push({ command, args, cb });
+                if (command !== "remote_storage/set") {
+                    return;
+                }
+                setTimeout(() => {
+                    if (!failing) {
+                        cb?.({ success: true });
+                    } else if (failure === "socket error") {
+                        cb?.(undefined, { code: "error", message: "boom" });
+                    } else {
+                        cb?.({ error: "db down", retry: true });
+                    }
+                }, 100);
+            }) as unknown as typeof socket.send);
+            const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+            const error = jest.spyOn(console, "error").mockImplementation(() => {});
+
+            const keys = [
+                "learning-hub.rate-1",
+                "learning-hub.rate-2",
+                "learning-hub.rate-3",
+            ] as const;
+            for (const key of keys) {
+                data.set(key, { 1: true }, data.Replication.LOCAL_OVERWRITES_REMOTE);
+            }
+            expect(sentFor("remote_storage/set")).toHaveLength(keys.length);
+
+            // A retry round starts at least 3 s after the last failure, so a
+            // 6 s window holds at most two rounds of one send per key.
+            for (let round = 0; round < 20; ++round) {
+                const before = sentFor("remote_storage/set").length;
+                jest.advanceTimersByTime(6000);
+                const sends = sentFor("remote_storage/set").length - before;
+                expect(sends).toBeGreaterThanOrEqual(keys.length);
+                expect(sends).toBeLessThanOrEqual(2 * keys.length);
+                expect(jest.getTimerCount()).toBeLessThanOrEqual(keys.length + 1);
+            }
+
+            // Once the server accepts the writes, the wal empties.
+            failing = false;
+            jest.advanceTimersByTime(7000);
+            for (const key of keys) {
+                expect(localStorage.getItem(`ogs-remote-storage-wal.${USER_ID}.${key}`)).toBeNull();
+            }
+
+            warn.mockRestore();
+            error.mockRestore();
+        });
+    }
 });

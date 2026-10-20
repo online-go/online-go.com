@@ -418,6 +418,9 @@ let wal: { [key: string]: { key: string; value?: any; replication: Replication }
  * is also sent on reconnect, so the same key can get two replies. */
 let wal_currently_processing: { [k: string]: number } = {};
 let last_wal_write_id = 0;
+/* One retry timer serves the whole wal, because each retry re-sends every key
+ * that is not in flight. */
+let wal_retry_timer: ReturnType<typeof setTimeout> | null = null;
 let last_modified = "2000-01-01T00:00:00.000Z";
 let loaded_user_id: number | null = null; // user id we've currently loaded data for
 
@@ -490,6 +493,26 @@ function _enqueue_remove(user_id: number, key: string, replication: Replication)
     _process_write_ahead_log(user_id);
 }
 
+function _schedule_wal_retry(user_id: number): void {
+    if (wal_retry_timer !== null) {
+        return;
+    }
+    wal_retry_timer = setTimeout(
+        () => {
+            wal_retry_timer = null;
+            _process_write_ahead_log(user_id);
+        },
+        3000 + 3000 * Math.random(),
+    );
+}
+
+function _cancel_wal_retry(): void {
+    if (wal_retry_timer !== null) {
+        clearTimeout(wal_retry_timer);
+        wal_retry_timer = null;
+    }
+}
+
 function _process_write_ahead_log(user_id: number): void {
     for (const data_key in wal) {
         const kv = wal[data_key];
@@ -524,7 +547,7 @@ function _process_write_ahead_log(user_id: number): void {
                 // failed, or the server raised an exception. Keep the entry
                 // in the wal and try again.
                 console.warn("Remote storage write failed, retrying", err);
-                setTimeout(() => _process_write_ahead_log(user_id), 3000 + 3000 * Math.random());
+                _schedule_wal_retry(user_id);
                 return;
             }
 
@@ -533,10 +556,7 @@ function _process_write_ahead_log(user_id: number): void {
                 // unexpected errors (internal exceptions) will set a retry flag, in which case
                 // we should retry this after a short while.
                 if (res.retry) {
-                    setTimeout(
-                        () => _process_write_ahead_log(user_id),
-                        3000 + 3000 * Math.random(),
-                    );
+                    _schedule_wal_retry(user_id);
                     return;
                 }
                 // otherwise, this was an error such as we've set too many keys
@@ -584,6 +604,7 @@ function _process_write_ahead_log(user_id: number): void {
 // so we retry everything that's in our wal when we reconnect
 socket.on("disconnect", () => {
     wal_currently_processing = {};
+    _cancel_wal_retry();
 });
 
 let currently_synchronizing = false;
@@ -717,6 +738,7 @@ function load_from_local_storage_and_sync() {
     remote_store = {};
     wal = {};
     wal_currently_processing = {};
+    _cancel_wal_retry();
     last_modified = "2000-01-01T00:00:00.000Z";
 
     try {
