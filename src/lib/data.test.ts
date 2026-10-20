@@ -192,6 +192,14 @@ describe("remote storage socket callbacks", () => {
             }) as unknown as typeof socket.send);
             const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
             const error = jest.spyOn(console, "error").mockImplementation(() => {});
+            // The retry delay is 3 s + 3 s * Math.random(). With the 100 ms
+            // reply delay, these values start rounds 3.1 s to 5.8 s apart. The
+            // values differ so that separate retry timers do not fire together.
+            const random_values = [0, 0.5, 0.9];
+            let random_calls = 0;
+            const random = jest
+                .spyOn(Math, "random")
+                .mockImplementation(() => random_values[random_calls++ % random_values.length]);
 
             const keys = [
                 "learning-hub.rate-1",
@@ -203,8 +211,7 @@ describe("remote storage socket callbacks", () => {
             }
             expect(sentFor("remote_storage/set")).toHaveLength(keys.length);
 
-            // A retry round starts at least 3 s after the last failure, so a
-            // 6 s window holds at most two rounds of one send per key.
+            // Each 6 s window holds one or two retry rounds of one send per key.
             for (let round = 0; round < 20; ++round) {
                 const before = sentFor("remote_storage/set").length;
                 jest.advanceTimersByTime(6000);
@@ -223,6 +230,7 @@ describe("remote storage socket callbacks", () => {
 
             warn.mockRestore();
             error.mockRestore();
+            random.mockRestore();
         });
     }
 });
