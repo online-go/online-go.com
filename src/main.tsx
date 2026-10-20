@@ -17,6 +17,7 @@
 
 import * as Sentry from "@sentry/browser";
 import { configure_goban } from "@/lib/configure-goban";
+import { isThirdPartyError, SENTRY_IGNORE_ERRORS } from "@/lib/sentry_filters";
 import {
     init_wasm_ownership_estimator,
     init_remote_ownership_estimator,
@@ -67,37 +68,14 @@ try {
             // (equivalent to old autoSessionTracking: false)
         ],
 
-        /* Several users have weird addons and extensions that cause errors
-         * that have nothing to do with OGS. This code filters some of these
-         * out so they don't get reported to Sentry. */
-        ignoreErrors: [
-            "ReferenceError",
-            "coinbase",
-            "ethereum",
-            "hideMyLocation",
-            "userAgent",
-            "zaloJSV2", // cspell:disable-line
-            "evaluating 'a.L'",
-            "document.querySelector(\"[title='Kaya']\").style",
-            "onHide is not defined",
-            "outputCurrentConfiguration",
-            "mvpConfig",
-            "?(<anonymous>)",
-            "Cannot read properties of undefined (reading 'ns')",
+        beforeSend(event) {
+            if (isThirdPartyError(event)) {
+                return null;
+            }
+            return event;
+        },
 
-            // Transient network failures when loading CSS for lazy chunks
-            "Unable to preload CSS",
-
-            // Library bugs
-            ").ended is not a function", // d3
-
-            // Safari bugs
-            //   broken mac app WKWebView, see
-            //   https://github.com/getsentry/sentry-javascript/issues/3040
-            "evaluating 'window.webkit.messageHandlers'",
-            //   Audio
-            "cannot call stop without calling start first",
-        ],
+        ignoreErrors: SENTRY_IGNORE_ERRORS,
     });
 
     Sentry.setTag("version", ogs_version || "dev");
