@@ -20,7 +20,7 @@ import * as data from "@/lib/data";
 import * as ReactDOM from "react-dom/client";
 import * as player_cache from "@/lib/player_cache";
 import { Card } from "@/components/material";
-import { _, pgettext } from "@/lib/translate";
+import { _, interpolate, pgettext } from "@/lib/translate";
 import { checklistSatisfied, type ChecklistItemId } from "@/lib/report_checklist";
 import { getChecklist } from "@/lib/report_checklist_items";
 import { useReportChecklist } from "@/lib/useReportChecklist";
@@ -31,7 +31,7 @@ import { composeStallingNote, type StallingKind } from "@/lib/stalling_kinds";
 import { PlayerIcon } from "@/components/PlayerIcon";
 import { post } from "@/lib/requests";
 import { alert } from "@/lib/swal_config";
-import { setIgnore } from "@/components/BlockPlayer";
+import { player_is_ignored, setIgnore } from "@/components/BlockPlayer";
 import { useUser } from "@/lib/hooks";
 import { get } from "@/lib/requests";
 import { toast } from "@/lib/toast";
@@ -325,10 +325,14 @@ export function Report(props: ReportProperties): React.ReactElement {
 
         set_submitting(true);
 
+        // These report types block the reported user as a side effect. The
+        // reporter is told about the block only when this report applied it.
+        let newly_blocked = false;
         if (
             (report_type === "inappropriate_content" || report_type === "harassment") &&
             reported_user_id
         ) {
+            newly_blocked = !player_is_ignored(reported_user_id);
             setIgnore(reported_user_id, true);
         }
 
@@ -350,7 +354,21 @@ export function Report(props: ReportProperties): React.ReactElement {
             .then(() => {
                 set_submitting(false);
                 onClose?.();
-                void alert.fire({ text: _("Thanks for the report!") });
+                void alert.fire({ text: _("Thanks for the report!") }).then(() => {
+                    if (newly_blocked) {
+                        toast(
+                            <div>
+                                {interpolate(
+                                    _(
+                                        "We've blocked {{username}} for you. You can undo this from their player card.",
+                                    ),
+                                    { username: username || _("the reported user") },
+                                )}
+                            </div>,
+                            10000,
+                        );
+                    }
+                });
             })
             .catch((err) => {
                 set_submitting(false);
