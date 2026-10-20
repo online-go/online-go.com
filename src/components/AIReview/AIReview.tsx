@@ -31,6 +31,7 @@ import { ReviewChart } from "./ReviewChart";
 import { SummaryTable } from "./SummaryTable";
 import { FairPlayGameSummary } from "@moderator-ui/FairPlay";
 import {
+    AIReviewData,
     MoveTree,
     JGOFAIReview,
     JGOFAIReviewMove,
@@ -90,6 +91,68 @@ interface AIReviewProperties {
     handicap?: number;
     /** Callback for when GameTimings calculates the final action time */
     onFinalActionCalculated?: (final_action_timing: moment.Duration) => void;
+}
+
+interface ReviewedPosition {
+    /** The review entry for the position, if the AI analyzed it */
+    ai_review_move: JGOFAIReviewMove | undefined;
+    /** True when `ai_review_move` is an analyzed variation, not a trunk move */
+    have_variation_results: boolean;
+    win_rate: number;
+    score: number;
+}
+
+/**
+ * Finds the review entry for `cur_move` and the win rate and score to show
+ * for it. An analyzed variation has its own entry. Other positions use the
+ * entry of the trunk move that the variation branches from.
+ */
+function getReviewedPosition(reviewData: AIReviewData, cur_move: MoveTree): ReviewedPosition {
+    let ai_review_move: JGOFAIReviewMove | undefined;
+    let win_rate: number;
+    let score: number;
+    const trunk_move = cur_move.getBranchPoint();
+    const move_number = trunk_move.move_number;
+
+    const trunk_move_string = trunk_move.getMoveStringToThisPoint();
+    const cur_move_string = cur_move.getMoveStringToThisPoint();
+    const var_string = cur_move_string.slice(trunk_move_string.length);
+    const var_key = `${trunk_move.move_number}-${var_string}`;
+    let have_variation_results = false;
+
+    // Check for interactive review move
+    if (reviewData.analyzed_variations && var_key in reviewData.analyzed_variations) {
+        have_variation_results = true;
+        ai_review_move = reviewData.analyzed_variations[var_key];
+    } else if (reviewData.moves[move_number]) {
+        ai_review_move = reviewData.moves[move_number];
+    }
+
+    const win_rates = reviewData?.win_rates || [];
+    const scores = reviewData?.scores || [];
+
+    if (ai_review_move) {
+        win_rate = ai_review_move.win_rate;
+        score = ai_review_move.score || 0;
+    } else {
+        win_rate = win_rates[move_number] || reviewData.win_rate;
+        score = scores[move_number];
+
+        if (!score && score !== 0) {
+            if (scores?.some((s) => typeof s === "number")) {
+                const last_score =
+                    scores
+                        .slice(0, move_number + 1)
+                        .reverse()
+                        .find((s) => s) || 0;
+                if (last_score && last_score !== 0) {
+                    score = last_score;
+                }
+            }
+        }
+    }
+
+    return { ai_review_move, have_variation_results, win_rate, score };
 }
 
 /**
@@ -250,9 +313,6 @@ export function AIReview({
         [refresh],
     );
 
-    // State for win rate and score from highlights update
-    const [winRateScore, setWinRateScore] = useState<[number, number]>([0, 0]);
-
     /**
      * Single categorization pass per review update, shared by the played-move
      * badge map and the summary table. categorize() walks the whole game, so
@@ -326,58 +386,21 @@ export function AIReview({
 
     /**
      * Updates the board visualization with AI analysis marks and colored circles
-     * @returns Tuple of [win_rate, score] for current position
      */
-    const updateHighlightsMarksAndHeatmaps = useCallback((): [number, number] => {
+    const updateHighlightsMarksAndHeatmaps = useCallback((): void => {
         if (!reviewData || !gobanController?.goban) {
-            return [0, 0];
+            return;
         }
 
         const goban = gobanController.goban;
-        let ai_review_move: JGOFAIReviewMove | undefined;
-        let win_rate: number;
-        let score: number;
         const cur_move = move;
         const trunk_move = cur_move.getBranchPoint();
-        const move_number = trunk_move.move_number;
-
-        const trunk_move_string = trunk_move.getMoveStringToThisPoint();
-        const cur_move_string = cur_move.getMoveStringToThisPoint();
-        const var_string = cur_move_string.slice(trunk_move_string.length);
-        const var_key = `${trunk_move.move_number}-${var_string}`;
-        let have_variation_results = false;
-
-        // Check for interactive review move
-        if (reviewData.analyzed_variations && var_key in reviewData.analyzed_variations) {
-            have_variation_results = true;
-            ai_review_move = reviewData.analyzed_variations[var_key];
-        } else if (reviewData.moves[move_number]) {
-            ai_review_move = reviewData.moves[move_number];
-        }
-
-        const win_rates = reviewData?.win_rates || [];
-        const scores = reviewData?.scores || [];
-
-        if (ai_review_move) {
-            win_rate = ai_review_move.win_rate;
-            score = ai_review_move.score || 0;
-        } else {
-            win_rate = win_rates[move_number] || reviewData.win_rate;
-            score = scores[move_number];
-
-            if (!score && score !== 0) {
-                if (scores?.some((s) => typeof s === "number")) {
-                    const last_score =
-                        scores
-                            .slice(0, move_number + 1)
-                            .reverse()
-                            .find((s) => s) || 0;
-                    if (last_score && last_score !== 0) {
-                        score = last_score;
-                    }
-                }
-            }
-        }
+        const { ai_review_move, have_variation_results } = getReviewedPosition(
+            reviewData,
+            cur_move,
+        );
+        const win_rates = reviewData.win_rates || [];
+        const scores = reviewData.scores || [];
 
         // Marks are written to the engine's current move. When the engine has
         // already navigated away from the move this render is for (rapid
@@ -385,7 +408,7 @@ export function AIReview({
         // move's marks onto another node; skip, the effect for the new move
         // will redraw.
         if (goban.engine.cur_move.id !== cur_move.id) {
-            return [win_rate, score];
+            return;
         }
 
         // Clear this move's previous AI marks so marks from earlier updates
@@ -399,7 +422,7 @@ export function AIReview({
             goban.setHeatmap(undefined, true);
             goban.setColoredCircles([], true);
             goban.redraw(true);
-            return [win_rate, score];
+            return;
         }
 
         let marks: { [mark: string]: string } = {};
@@ -497,8 +520,6 @@ export function AIReview({
         } catch (e) {
             errorLogger(e);
         }
-
-        return [win_rate, score];
     }, [
         reviewData,
         gobanController,
@@ -555,15 +576,18 @@ export function AIReview({
     // CRITICAL: Include updateCount to re-run when review data syncs internally
     useEffect(() => {
         if (reviewData && !hidden) {
-            const [newWinRate, newScore] = updateHighlightsMarksAndHeatmaps();
-            setWinRateScore([newWinRate, newScore]);
-        } else {
-            setWinRateScore([0, 0]);
+            updateHighlightsMarksAndHeatmaps();
         }
     }, [reviewData, hidden, move, updateHighlightsMarksAndHeatmaps, updateCount]);
 
-    // Prepare data for rendering
-    const [win_rate, score] = winRateScore;
+    // Derived during render. Storing these as state from the effect above
+    // queues an extra render after each move change, and a held arrow key
+    // then makes React throw "Maximum update depth exceeded".
+    let win_rate = 0;
+    let score = 0;
+    if (reviewData && !hidden && gobanController?.goban) {
+        ({ win_rate, score } = getReviewedPosition(reviewData, move));
+    }
 
     const ai_review_chart_entries: Array<AIReviewEntry> =
         reviewData?.win_rates?.map((x, idx) => ({

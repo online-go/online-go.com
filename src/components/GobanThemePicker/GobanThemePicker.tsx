@@ -135,7 +135,6 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React
     );
     const [background_image, _setBackgroundImage] = usePreference("goban-theme-custom-board-url");
     const [grid_backgrounds] = usePreference("goban-theme-custom-board-grid-backgrounds");
-    const sample_canvas = React.useRef<HTMLCanvasElement | undefined>(undefined);
     const [, refresh] = React.useState(0);
     const theme = Goban.THEMES_SORTED.board.filter((x) => x.theme_name === "Custom")[0];
     const [, setBoard] = usePreference("goban-theme-board");
@@ -155,10 +154,16 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React
         requestAnimationFrame(() => refresh((x) => x + 1));
     }
 
-    React.useEffect(() => {
-        sample_canvas.current = document.createElement("canvas");
-        renderSampleBoard(sample_canvas.current, theme, size);
-        refresh((x) => x + 1);
+    // Drawn during render. Drawing in an effect needs an extra render to
+    // show the sample, and the stream of input events from a color picker
+    // then makes React throw "Maximum update depth exceeded".
+    const sample_canvas = React.useMemo(() => {
+        if (!theme) {
+            return undefined;
+        }
+        const canvas = document.createElement("canvas");
+        renderSampleBoard(canvas, theme, size);
+        return canvas;
     }, [theme, size, background_color, line_color, label_color, background_image]);
 
     function setBackgroundColor(ev: React.ChangeEvent<HTMLInputElement>) {
@@ -177,7 +182,7 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React
         _setBackgroundImage(ev.target.value);
     }
 
-    if (!sample_canvas.current) {
+    if (!sample_canvas) {
         return <></>;
     }
 
@@ -197,7 +202,7 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React
                             style={{ ...theme.styles, width: size + "px", height: size + "px" }}
                             onClick={() => setBoard("Custom")}
                         >
-                            {sample_canvas && <PersistentElement elt={sample_canvas.current} />}
+                            <PersistentElement elt={sample_canvas} />
                         </div>
                     </div>
 
