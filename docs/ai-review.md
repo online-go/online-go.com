@@ -20,6 +20,11 @@ move as quality-colored circles with their score or win rate difference. The
 move that was actually played is one of those circles, badged with a small
 triangle in its quality color. Positions without analysis draw nothing.
 
+In the accessible theme, the best suggestion stays blue and every alternative
+circle is orange, including a played move outside the analyzed branches. Score
+and win rate differences, visit-count opacity, and played-move badges retain
+their usual behavior. Other themes use the move quality color gradient.
+
 Three preferences control the board marks:
 
 - `ai-review-show-on-board` (default on): the four-dot button at the left of
