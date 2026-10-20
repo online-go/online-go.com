@@ -66,6 +66,9 @@ jest.mock("@/lib/translate", () => ({
         ),
     ),
     pgettext: jest.fn((_: string, text: string) => text),
+    npgettext: jest.fn((_: string, singular: string, plural: string, count: number) =>
+        count === 1 ? singular : plural,
+    ),
 }));
 
 jest.mock("@/lib/rank_utils", () => ({
@@ -127,6 +130,20 @@ describe("ChatKibitzRoom", () => {
         expect(matchup).toHaveTextContent("alice[35r]vsbob[33r]");
         expect(matchup).toHaveAttribute("title", "alice [35r] vs bob [33r]");
         expect(screen.getByText("7")).toBeInTheDocument();
+        expect(document.querySelector(".room-viewer-count")).toHaveAttribute(
+            "title",
+            "7 people here",
+        );
+    });
+
+    it("uses the singular viewer count tooltip for one viewer", async () => {
+        mockBackend({ rooms: [{ ...english_room, viewer_count: 1 }] });
+        render(<ChatKibitzRoom channel="global-english" />);
+        await screen.findByText("English chat game");
+        expect(document.querySelector(".room-viewer-count")).toHaveAttribute(
+            "title",
+            "1 person here",
+        );
     });
 
     it("falls back to the room description when there is no current game", async () => {
@@ -151,20 +168,88 @@ describe("ChatKibitzRoom", () => {
         expect(browserHistory.push).toHaveBeenCalledWith("/kibitz/preset-english-chat-live");
     });
 
-    it("subscribes to the directory and room push channels", async () => {
+    it("subscribes to the directory push channel only", async () => {
         mockBackend();
         render(<ChatKibitzRoom channel="global-english" />);
         await screen.findByText("English chat game");
         expect(mock_push_manager.subscribe).toHaveBeenCalledWith("kibitz-rooms");
-        expect(mock_push_manager.subscribe).toHaveBeenCalledWith("kibitz-preset-english-chat-live");
+        expect(mock_push_manager.subscribe).not.toHaveBeenCalledWith(
+            "kibitz-preset-english-chat-live",
+        );
     });
 
-    it("updates the matchup from a board-changed push", async () => {
+    it("subscribes to the directory even when the first fetch finds no room", async () => {
+        mockBackend({ rooms: [] });
+        const { container } = render(<ChatKibitzRoom channel="global-english" />);
+        await waitFor(() => expect(mock_get).toHaveBeenCalledWith("kibitz/directory"));
+        expect(mock_push_manager.subscribe).toHaveBeenCalledWith("kibitz-rooms");
+        expect(container).toBeEmptyDOMElement();
+    });
+
+    it("shows the card when a matching room-created push arrives after an empty fetch", async () => {
+        mockBackend({ rooms: [] });
+        render(<ChatKibitzRoom channel="global-english" />);
+        await waitFor(() => expect(mock_get).toHaveBeenCalledWith("kibitz/directory"));
+        act(() => {
+            mock_push_manager.fire("room-created", english_room);
+        });
+        expect(await screen.findByText("English chat game")).toBeInTheDocument();
+    });
+
+    it("ignores room-created pushes for other presets", async () => {
+        mockBackend({ rooms: [] });
+        const { container } = render(<ChatKibitzRoom channel="global-english" />);
+        await waitFor(() => expect(mock_get).toHaveBeenCalledWith("kibitz/directory"));
+        act(() => {
+            mock_push_manager.fire("room-created", {
+                ...english_room,
+                id: "preset-fast-live",
+                preset: { preset_key: "fast-live" },
+            });
+        });
+        expect(container).toBeEmptyDOMElement();
+    });
+
+    it("hides the card on room-removed and shows it again when the room is recreated", async () => {
+        mockBackend();
+        const { container } = render(<ChatKibitzRoom channel="global-english" />);
+        await screen.findByText("English chat game");
+        act(() => {
+            mock_push_manager.fire("room-removed", {
+                id: english_room.id,
+                channel: english_room.channel,
+            });
+        });
+        expect(container).toBeEmptyDOMElement();
+        act(() => {
+            mock_push_manager.fire("room-created", english_room);
+        });
+        expect(await screen.findByText("English chat game")).toBeInTheDocument();
+    });
+
+    it("shows the card again from a rooms-refresh push after it was removed", async () => {
+        mockBackend();
+        const { container } = render(<ChatKibitzRoom channel="global-english" />);
+        await screen.findByText("English chat game");
+        act(() => {
+            mock_push_manager.fire("room-removed", {
+                id: english_room.id,
+                channel: english_room.channel,
+            });
+        });
+        expect(container).toBeEmptyDOMElement();
+        act(() => {
+            mock_push_manager.fire("rooms-refresh", undefined);
+        });
+        expect(await screen.findByText("English chat game")).toBeInTheDocument();
+    });
+
+    it("updates the matchup from a room-updated push", async () => {
         mockBackend();
         render(<ChatKibitzRoom channel="global-english" />);
         await screen.findByText("English chat game");
         act(() => {
-            mock_push_manager.fire("board-changed", {
+            mock_push_manager.fire("room-updated", {
                 ...english_room,
                 current_game: {
                     black: { username: "carol", ranking: 20, professional: false },
@@ -175,14 +260,16 @@ describe("ChatKibitzRoom", () => {
         expect(document.querySelector(".room-matchup")).toHaveTextContent("carol[20r]vsdave[21r]");
     });
 
-    it("ignores board-changed pushes for other rooms", async () => {
+    it("ignores room-updated pushes for other rooms", async () => {
         mockBackend();
         render(<ChatKibitzRoom channel="global-english" />);
         await screen.findByText("English chat game");
         act(() => {
-            mock_push_manager.fire("board-changed", {
+            mock_push_manager.fire("room-updated", {
                 ...english_room,
                 id: "preset-fast-live",
+                channel: "kibitz-preset-fast-live",
+                preset: { preset_key: "fast-live" },
                 current_game: {
                     black: { username: "carol", ranking: 20, professional: false },
                     white: { username: "dave", ranking: 21, professional: false },
@@ -205,14 +292,11 @@ describe("ChatKibitzRoom", () => {
         expect(screen.getByText("12")).toBeInTheDocument();
     });
 
-    it("unsubscribes from both push channels on unmount", async () => {
+    it("unsubscribes from the directory push channel on unmount", async () => {
         mockBackend();
         const { unmount } = render(<ChatKibitzRoom channel="global-english" />);
         await screen.findByText("English chat game");
         unmount();
         expect(mock_push_manager.unsubscribe).toHaveBeenCalledWith("kibitz-rooms");
-        expect(mock_push_manager.unsubscribe).toHaveBeenCalledWith(
-            "kibitz-preset-english-chat-live",
-        );
     });
 });

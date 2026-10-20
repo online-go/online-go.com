@@ -20,7 +20,7 @@ import { useEffect, useState } from "react";
 import { get } from "@/lib/requests";
 import { browserHistory } from "@/lib/ogsHistory";
 import { socket } from "@/lib/sockets";
-import { interpolate, pgettext } from "@/lib/translate";
+import { interpolate, npgettext, pgettext } from "@/lib/translate";
 import { rankString } from "@/lib/rank_utils";
 import { push_manager } from "@/components/UIPush/UIPush";
 import "./ChatKibitzRoom.css";
@@ -77,12 +77,13 @@ function playerNameClass(player: DirectoryPlayer): string {
  * Renders nothing when the channel has no such room, the kibitz feature is
  * nav-disabled, or the directory cannot be fetched.
  *
- * State is push-driven after one initial directory fetch: board changes
- * arrive as `board-changed` on the room's own UIPush channel (and as
- * `room-updated` on the directory channel where the server publishes
- * them there), viewer counts as `viewer-count-changed` on the directory
- * channel. The fetch re-runs on socket reconnect to cover events missed
- * while disconnected.
+ * State comes from one initial directory fetch and then from pushes on the
+ * `kibitz-rooms` directory channel only. The subscription stays active
+ * while the feature is enabled, also when no matching room exists.
+ * `room-created` and `room-updated` (sent for each board change) adopt the
+ * room by preset key, `viewer-count-changed` updates the count and
+ * `room-removed` hides the card. `rooms-refresh` and socket reconnect
+ * fetch the directory again.
  */
 export function ChatKibitzRoom({ channel }: ChatKibitzRoomProps): React.ReactElement | null {
     const preset_key: string | undefined = CHANNEL_PRESET_KEYS[channel];
@@ -113,6 +114,7 @@ export function ChatKibitzRoom({ channel }: ChatKibitzRoomProps): React.ReactEle
             return;
         }
         let cancelled = false;
+
         const refresh = () => {
             get("kibitz/directory")
                 .then((rooms: DirectoryRoom[]) => {
@@ -128,61 +130,50 @@ export function ChatKibitzRoom({ channel }: ChatKibitzRoomProps): React.ReactEle
                     }
                 });
         };
-        refresh();
-        socket.on("connect", refresh);
-        return () => {
-            cancelled = true;
-            socket.off("connect", refresh);
-        };
-    }, [preset_key, enabled]);
 
-    const room_id = room?.id;
-    const room_channel = room?.channel;
-
-    useEffect(() => {
-        if (!preset_key || !enabled || !room_id || !room_channel) {
-            return;
-        }
-
-        const mergeRoomPayload = (payload: DirectoryRoom) => {
-            if (!payload || payload.id !== room_id) {
+        const onRoomPayload = (payload: DirectoryRoom) => {
+            if (payload?.preset?.preset_key !== preset_key) {
                 return;
             }
-            setRoom((prev) => (prev ? { ...prev, ...payload } : prev));
+            setRoom((prev) => (prev?.id === payload.id ? { ...prev, ...payload } : payload));
         };
 
         const onViewerCountChanged = (payload: { channel?: string; viewer_count?: number }) => {
-            if (payload?.channel !== room_channel || typeof payload.viewer_count !== "number") {
+            if (typeof payload?.viewer_count !== "number") {
                 return;
             }
             const viewer_count = payload.viewer_count;
-            setRoom((prev) => (prev ? { ...prev, viewer_count } : prev));
+            setRoom((prev) =>
+                prev && prev.channel === payload.channel ? { ...prev, viewer_count } : prev,
+            );
         };
 
-        const onRoomRemoved = (payload: { id?: string } | string | undefined) => {
-            const id = typeof payload === "string" ? payload : payload?.id;
-            if (id === room_id) {
-                setRoom(null);
-            }
+        const onRoomRemoved = (payload: { id?: string } | undefined) => {
+            setRoom((prev) => (prev && prev.id === payload?.id ? null : prev));
         };
 
         const handlers = [
-            push_manager.on("board-changed", mergeRoomPayload),
-            push_manager.on("room-updated", mergeRoomPayload),
+            push_manager.on("room-created", onRoomPayload),
+            push_manager.on("room-updated", onRoomPayload),
             push_manager.on("viewer-count-changed", onViewerCountChanged),
             push_manager.on("room-removed", onRoomRemoved),
+            push_manager.on("rooms-refresh", refresh),
         ];
+        /* Subscribe before the first fetch so that no event published
+           between the fetch and the subscription is lost. */
         push_manager.subscribe(KIBITZ_DIRECTORY_CHANNEL);
-        push_manager.subscribe(room_channel);
+        refresh();
+        socket.on("connect", refresh);
 
         return () => {
+            cancelled = true;
             for (const handler of handlers) {
                 push_manager.off(handler);
             }
-            push_manager.unsubscribe(room_channel);
             push_manager.unsubscribe(KIBITZ_DIRECTORY_CHANNEL);
+            socket.off("connect", refresh);
         };
-    }, [preset_key, enabled, room_id, room_channel]);
+    }, [preset_key, enabled]);
 
     if (!preset_key || !enabled || !room) {
         return null;
@@ -230,9 +221,11 @@ export function ChatKibitzRoom({ channel }: ChatKibitzRoomProps): React.ReactEle
                     <span
                         className="room-viewer-count"
                         title={interpolate(
-                            pgettext(
+                            npgettext(
                                 "Tooltip for the viewer count shown on the chat page's kibitz room card",
+                                "{{count}} person here",
                                 "{{count}} people here",
+                                viewer_count,
                             ),
                             { count: viewer_count },
                         )}
