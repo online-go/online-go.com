@@ -245,30 +245,6 @@ export function AIReview({
         [setSelectedAiReviewInList, setSelectedAIReviewData, onAIReviewSelected],
     );
 
-    // Sync AI review data when reviewData or selectedAiReview changes
-    useEffect(() => {
-        if (!reviewData || !selectedAiReview) {
-            return;
-        }
-
-        for (const k in reviewData.moves) {
-            const move = reviewData.moves[k];
-            reviewData.win_rates[move.move_number] = move.win_rate;
-            if (move.score !== undefined && reviewData.scores !== undefined) {
-                reviewData.scores[move.move_number] = move.score;
-            }
-        }
-
-        // Fill in missing win rates
-        let last_win_rate = 0.5;
-        for (let move_number = 0; move_number < reviewData.win_rates.length; ++move_number) {
-            if (reviewData.win_rates[move_number] === undefined) {
-                reviewData.win_rates[move_number] = last_win_rate;
-            }
-            last_win_rate = reviewData.win_rates[move_number];
-        }
-    }, [reviewData, selectedAiReview, updateCount]);
-
     // Start new AI review
     const startNewAIReview = useCallback(
         (analysis_type: "fast" | "full", engine: "leela_zero" | "katago") => {

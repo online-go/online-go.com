@@ -31,6 +31,31 @@ import { errorLogger } from "@/lib/misc";
 
 // ==================== useAIReviewData Hook ====================
 
+/**
+ * Copies the win rate and score of each analyzed trunk move into the
+ * review's `win_rates` and `scores` arrays, and fills the gaps in
+ * `win_rates` with the last known win rate. The chart and the win rate
+ * display read these arrays during render, so call this before the state
+ * change that causes the render.
+ */
+function syncWinRatesAndScores(reviewData: AIReviewData): void {
+    for (const k in reviewData.moves) {
+        const move = reviewData.moves[k];
+        reviewData.win_rates[move.move_number] = move.win_rate;
+        if (move.score !== undefined && reviewData.scores !== undefined) {
+            reviewData.scores[move.move_number] = move.score;
+        }
+    }
+
+    let last_win_rate = 0.5;
+    for (let move_number = 0; move_number < reviewData.win_rates.length; ++move_number) {
+        if (reviewData.win_rates[move_number] === undefined) {
+            reviewData.win_rates[move_number] = last_win_rate;
+        }
+        last_win_rate = reviewData.win_rates[move_number];
+    }
+}
+
 interface UseAIReviewDataProps {
     gameId: number;
     moveTree?: MoveTree;
@@ -70,9 +95,14 @@ export function useAIReviewData({
 
             // Create new AIReviewData instance if we have the required data
             if (aiReview?.uuid && aiReview?.id && ai_socket && moveTree) {
-                reviewDataRef.current = new AIReviewData(ai_socket, moveTree, aiReview, gameId);
+                const reviewData = new AIReviewData(ai_socket, moveTree, aiReview, gameId);
+                reviewDataRef.current = reviewData;
 
                 const handleUpdate = (context: AIReviewUpdateContext) => {
+                    if (context.type === "move") {
+                        syncWinRatesAndScores(reviewData);
+                    }
+
                     // Filter updates to only trigger re-renders when relevant to current view
                     const cur = currentMoveRef.current;
                     if (!cur) {
@@ -103,14 +133,16 @@ export function useAIReviewData({
                 };
 
                 const handleMetadata = () => {
+                    syncWinRatesAndScores(reviewData);
                     // Metadata updates always trigger a refresh
                     setUpdateCount((prev) => prev + 1);
                 };
 
-                reviewDataRef.current.on("update", handleUpdate);
-                reviewDataRef.current.on("metadata", handleMetadata);
+                reviewData.on("update", handleUpdate);
+                reviewData.on("metadata", handleMetadata);
 
-                // Trigger initial sync
+                syncWinRatesAndScores(reviewData);
+                // Render the new review
                 setUpdateCount((prev) => prev + 1);
             }
         },
