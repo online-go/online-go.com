@@ -39,12 +39,22 @@
  *  Covers subpixel rounding of the screen and viewport metrics. */
 const MATCH_TOLERANCE = 4;
 
-function measure_reported_inset(): number {
+/**
+ * Reads `env(safe-area-inset-bottom)` by laying out a hidden probe element.
+ *
+ * `document.body` can be null when a resize event arrives, so the probe falls
+ * back to the root element. Returns null when the document has neither.
+ */
+function measure_reported_inset(): number | null {
+    const parent = document.body ?? document.documentElement;
+    if (!parent) {
+        return null;
+    }
     const probe = document.createElement("div");
     probe.style.cssText =
         "position:absolute;top:0;left:0;width:0;visibility:hidden;pointer-events:none;" +
         "height:env(safe-area-inset-bottom)";
-    document.body.appendChild(probe);
+    parent.appendChild(probe);
     const inset = probe.getBoundingClientRect().height;
     probe.remove();
     return inset;
@@ -72,10 +82,11 @@ export function effective_bottom_inset(reported_inset: number, gap_below_viewpor
 }
 
 export function update_safe_area_variables(): void {
-    const effective = effective_bottom_inset(
-        measure_reported_inset(),
-        measure_gap_below_viewport(),
-    );
+    const reported_inset = measure_reported_inset();
+    if (reported_inset === null) {
+        return;
+    }
+    const effective = effective_bottom_inset(reported_inset, measure_gap_below_viewport());
 
     document.documentElement.style.setProperty("--safe-area-inset-bottom", `${effective}px`);
 }

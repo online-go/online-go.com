@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { effective_bottom_inset } from "./safe_area";
+import { effective_bottom_inset, update_safe_area_variables } from "./safe_area";
 
 describe("effective_bottom_inset", () => {
     test("drops an inset the viewport already stops above", () => {
@@ -54,5 +54,34 @@ describe("effective_bottom_inset", () => {
 
     test("survives unmeasurable screen metrics", () => {
         expect(effective_bottom_inset(34, NaN)).toBe(34);
+    });
+});
+
+describe("update_safe_area_variables", () => {
+    afterEach(() => {
+        document.documentElement.style.removeProperty("--safe-area-inset-bottom");
+    });
+
+    test("sets the variable when the document has a body", () => {
+        update_safe_area_variables();
+        expect(document.documentElement.style.getPropertyValue("--safe-area-inset-bottom")).toBe(
+            "0px",
+        );
+    });
+
+    test("measures without a body", () => {
+        /* A resize event can arrive while document.body is null. */
+        const body = document.body;
+        body.remove();
+        try {
+            expect(document.body).toBeNull();
+            expect(() => update_safe_area_variables()).not.toThrow();
+            expect(
+                document.documentElement.style.getPropertyValue("--safe-area-inset-bottom"),
+            ).toBe("0px");
+            expect(document.documentElement.childElementCount).toBe(1);
+        } finally {
+            document.documentElement.appendChild(body);
+        }
     });
 });
