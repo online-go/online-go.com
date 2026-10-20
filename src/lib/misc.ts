@@ -265,19 +265,58 @@ export function getGameResultText(
     return result;
 }
 
-function lengthInUtf8Bytes(str: string): number {
-    // Matches only the 10.. bytes that are non-initial characters in a multi-byte sequence.
-    const m = encodeURIComponent(str).match(/%[89ABab]/g);
-    return str.length + (m ? m.length : 0);
+/**
+ * Returns the number of UTF-16 code units and the number of UTF-8 bytes of
+ * the character that starts at index `i`. A surrogate pair is one character.
+ * A lone surrogate counts as 3 bytes, the size of the U+FFFD replacement
+ * character that a UTF-8 encoder writes for it.
+ */
+function utf8CharAt(str: string, i: number): [number, number] {
+    const c = str.charCodeAt(i);
+    if (c < 0x80) {
+        return [1, 1];
+    }
+    if (c < 0x800) {
+        return [1, 2];
+    }
+    if (c >= 0xd800 && c <= 0xdbff && i + 1 < str.length) {
+        const next = str.charCodeAt(i + 1);
+        if (next >= 0xdc00 && next <= 0xdfff) {
+            return [2, 4];
+        }
+    }
+    return [1, 3];
 }
-export function splitOnBytes(message: string, bytes: number): [string, string] {
-    let offs = 0;
 
-    while (lengthInUtf8Bytes(message.substr(0, bytes - offs)) > bytes) {
-        ++offs;
+export function lengthInUtf8Bytes(str: string): number {
+    let bytes = 0;
+    for (let i = 0; i < str.length; ) {
+        const [units, size] = utf8CharAt(str, i);
+        i += units;
+        bytes += size;
+    }
+    return bytes;
+}
+
+/**
+ * Splits `message` into a head of at most `bytes` UTF-8 bytes and the
+ * remainder. The split never falls inside a surrogate pair. The head always
+ * contains at least one character when `message` is not empty, so callers
+ * that loop until the message is consumed always make progress.
+ */
+export function splitOnBytes(message: string, bytes: number): [string, string] {
+    let i = 0;
+    let total = 0;
+    while (i < message.length) {
+        const [units, size] = utf8CharAt(message, i);
+        if (i > 0 && total + size > bytes) {
+            break;
+        }
+        i += units;
+        total += size;
     }
 
-    return [message.substr(0, bytes - offs), message.substr(bytes - offs)];
+    return [message.substring(0, i), message.substring(i)];
 }
 export function getPrintableError(err: any): string | undefined {
     if (err === "esc" || err === "cancel" || err === "overlay" || err === "timer") {
