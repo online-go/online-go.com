@@ -109,6 +109,10 @@ try {
 
 // Reload the page when a lazy chunk's CSS fails to preload for whatever
 // reason.
+//
+// Reading the `sessionStorage` property itself throws a SecurityError when the
+// browser blocks site storage, so every access is guarded. Without storage we
+// cannot count reloads, so we do not reload, to prevent an infinite loop.
 const PRELOAD_INFINITE_LOOP_GUARD_KEY = "preloadErrorReloads";
 let preload_error_processed = false;
 window.addEventListener("vite:preloadError", () => {
@@ -116,19 +120,27 @@ window.addEventListener("vite:preloadError", () => {
         return;
     }
     preload_error_processed = true;
-    const times_loaded = parseInt(
-        sessionStorage.getItem(PRELOAD_INFINITE_LOOP_GUARD_KEY) ?? "0",
-        10,
-    );
-    if (times_loaded < 2) {
-        sessionStorage.setItem(PRELOAD_INFINITE_LOOP_GUARD_KEY, String(times_loaded + 1));
-        window.location.reload();
+    try {
+        const times_loaded = parseInt(
+            sessionStorage.getItem(PRELOAD_INFINITE_LOOP_GUARD_KEY) ?? "0",
+            10,
+        );
+        if (times_loaded < 2) {
+            sessionStorage.setItem(PRELOAD_INFINITE_LOOP_GUARD_KEY, String(times_loaded + 1));
+            window.location.reload();
+        }
+    } catch (e) {
+        console.warn("Unable to access sessionStorage, not reloading after preload error", e);
     }
 });
 setTimeout(() => {
     // If this timer fires it means we're not in a preload infinite loop so we can
     // clear out the guard
-    sessionStorage.removeItem(PRELOAD_INFINITE_LOOP_GUARD_KEY);
+    try {
+        sessionStorage.removeItem(PRELOAD_INFINITE_LOOP_GUARD_KEY);
+    } catch {
+        // sessionStorage is unavailable, so there is no guard to clear
+    }
 }, 60000);
 
 try {
