@@ -406,9 +406,18 @@ interface RemoteKV {
     modified?: string;
 }
 
+type RemoteStorageResponse =
+    | { error?: string; retry?: boolean }
+    | { error?: undefined; success: true };
+
 let remote_store: { [key in keyof DataSchema]?: RemoteKV } = {};
 let wal: { [key: string]: { key: string; value?: any; replication: Replication } } = {};
-let wal_currently_processing: { [k: string]: boolean } = {};
+/* Maps a key to the id of the write that is in flight for it. A reply is only
+ * acted on when its id still matches, because a disconnect clears this map and
+ * the WAL then re-sends the key. A write that was queued before the disconnect
+ * is also sent on reconnect, so the same key can get two replies. */
+let wal_currently_processing: { [k: string]: number } = {};
+let last_wal_write_id = 0;
 let last_modified = "2000-01-01T00:00:00.000Z";
 let loaded_user_id: number | null = null; // user id we've currently loaded data for
 
@@ -492,20 +501,14 @@ function _process_write_ahead_log(user_id: number): void {
             continue;
         }
 
-        wal_currently_processing[kv.key] = true;
-        let cb_already_called = false;
+        const write_id = ++last_wal_write_id;
+        wal_currently_processing[kv.key] = write_id;
 
-        const cb = (
-            res:
-                | { error?: string | undefined; retry?: boolean | undefined }
-                | { error?: undefined; success: true },
-        ) => {
-            /* I believe this might happen in some cases where the connection
-             * has reset, I'm not entirely sure though. anoek - 2024-01-10 */
-            if (cb_already_called) {
+        const cb = (res: RemoteStorageResponse | null | undefined, err?: unknown) => {
+            if (wal_currently_processing[kv.key] !== write_id) {
+                // A newer write for this key has superseded this one.
                 return;
             }
-            cb_already_called = true;
 
             if (loaded_user_id !== user_id) {
                 console.warn(
@@ -515,6 +518,15 @@ function _process_write_ahead_log(user_id: number): void {
             }
 
             delete wal_currently_processing[kv.key];
+
+            if (err || !res) {
+                // The request failed: the socket closed, the socket worker
+                // failed, or the server raised an exception. Keep the entry
+                // in the wal and try again.
+                console.warn("Remote storage write failed, retrying", err);
+                setTimeout(() => _process_write_ahead_log(user_id), 3000 + 3000 * Math.random());
+                return;
+            }
 
             if (res.error) {
                 console.error(res.error);
@@ -602,11 +614,11 @@ function remote_sync() {
         {
             since: last_modified,
         },
-        (ret) => {
-            if ("error" in ret && ret.error) {
+        (ret: RemoteStorageResponse | null | undefined, err?: unknown) => {
+            if (err) {
+                console.warn("Remote storage sync failed", err);
+            } else if (ret?.error) {
                 console.error(ret.error);
-            } else {
-                // success
             }
             currently_synchronizing = false;
             if (need_another_synchronization_call) {
