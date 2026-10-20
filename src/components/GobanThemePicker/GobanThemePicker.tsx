@@ -154,9 +154,6 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React
         requestAnimationFrame(() => refresh((x) => x + 1));
     }
 
-    // Drawn during render. Drawing in an effect needs an extra render to
-    // show the sample, and the stream of input events from a color picker
-    // then makes React throw "Maximum update depth exceeded".
     const sample_canvas = React.useMemo(() => {
         if (!theme) {
             return undefined;

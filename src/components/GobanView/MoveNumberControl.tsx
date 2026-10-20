@@ -87,9 +87,6 @@ export function MoveNumberControl(): React.ReactElement {
         initial_mode_ref.current = goban?.mode ?? null;
         setHwm(goban?.engine.cur_move.move_number ?? 0);
     }
-    // Raise the hwm during render. Doing it in an effect queues an extra
-    // render after each move change, and a held arrow key then makes React
-    // throw "Maximum update depth exceeded".
     const [prev_current, setPrevCurrent] = React.useState(current);
     if (prev_current !== current) {
         setPrevCurrent(current);

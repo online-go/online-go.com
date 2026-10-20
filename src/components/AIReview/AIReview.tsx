@@ -556,9 +556,6 @@ export function AIReview({
         }
     }, [reviewData, hidden, move, updateHighlightsMarksAndHeatmaps, updateCount]);
 
-    // Derived during render. Storing these as state from the effect above
-    // queues an extra render after each move change, and a held arrow key
-    // then makes React throw "Maximum update depth exceeded".
     let win_rate = 0;
     let score = 0;
     if (reviewData && !hidden && gobanController?.goban) {
