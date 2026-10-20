@@ -49,6 +49,26 @@ if (
     sentry_env = "development";
 }
 
+/**
+ * Returns true when every stack frame of the error has the file name
+ * "<anonymous>". Browser extensions, in-app browsers and automation tools
+ * evaluate their scripts without a file name, so their frames look like this.
+ * Our code always loads from a script file, so an error from our code has at
+ * least one frame that names that file. (Chrome also uses "<anonymous>" for
+ * built-in functions such as `JSON.parse`, but our code is always further up
+ * the stack when it calls them.)
+ */
+function isFromAnonymousScript(event: Sentry.ErrorEvent): boolean {
+    const values = event.exception?.values;
+    if (!values?.length) {
+        return false;
+    }
+    return values.every((value) => {
+        const frames = value.stacktrace?.frames;
+        return !!frames?.length && frames.every((frame) => frame.filename === "<anonymous>");
+    });
+}
+
 try {
     Sentry.init({
         dsn: "https://f8e3b8de571e412b98ff8f98e12c7f58@o589780.ingest.sentry.io/5750726",
@@ -67,6 +87,13 @@ try {
             // (equivalent to old autoSessionTracking: false)
         ],
 
+        beforeSend(event) {
+            if (isFromAnonymousScript(event)) {
+                return null;
+            }
+            return event;
+        },
+
         /* Several users have weird addons and extensions that cause errors
          * that have nothing to do with OGS. This code filters some of these
          * out so they don't get reported to Sentry. */
@@ -82,8 +109,22 @@ try {
             "onHide is not defined",
             "outputCurrentConfiguration",
             "mvpConfig",
-            "?(<anonymous>)",
             "Cannot read properties of undefined (reading 'ns')",
+
+            // Scripts that some Android apps and browsers (for example Baidu)
+            // inject to call their native Java side.
+            "window.android.unLoad",
+            "Java bridge method invocation error",
+            "Java object is gone",
+
+            // A user script that polls `global_goban.engine`. Our code always
+            // reads it as `window.global_goban`.
+            "(evaluating 'global_goban.engine')",
+
+            // An Android in-app browser runs a script with a syntax error. The
+            // reported position is in the <head> meta tags of our page, not in
+            // a script, and our bundle is generated code.
+            "Unexpected token 'else'",
 
             // Transient network failures when loading CSS for lazy chunks
             "Unable to preload CSS",
