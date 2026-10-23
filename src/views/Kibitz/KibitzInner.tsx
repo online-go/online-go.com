@@ -123,6 +123,49 @@ function moveTreeIdAsNumber(moveTreeId: number | string | null): number | undefi
     return typeof moveTreeId === "number" ? moveTreeId : undefined;
 }
 
+interface StartVariationAfterDiscardConfirmArgs {
+    confirmDiscardDraft: () => Promise<boolean>;
+    getSnapshot: () => KibitzCurrentGameBaseSnapshot | null;
+    currentRoomIdRef: { current: string | null };
+    currentRoomGameIdRef: { current: number | null };
+    showNotReady: () => void;
+    startVariation: (snapshot: KibitzCurrentGameBaseSnapshot) => void;
+}
+
+/**
+ * Starts a variation after the discard confirm.
+ *
+ * The confirm yields. `getSnapshot` is the helper captured on click, so a
+ * room switch in that gap can still return the previous game. The room and
+ * game refs are read after the confirm. A snapshot for another room or game
+ * is refused, and the caller shows the base-not-ready notice.
+ */
+export function startVariationAfterDiscardConfirm(
+    args: StartVariationAfterDiscardConfirmArgs,
+): Promise<void> {
+    return args.confirmDiscardDraft().then((confirmed) => {
+        if (!confirmed) {
+            return;
+        }
+
+        const snapshot = args.getSnapshot();
+        const roomId = args.currentRoomIdRef.current;
+        const gameId = args.currentRoomGameIdRef.current;
+        if (
+            !snapshot ||
+            roomId == null ||
+            gameId == null ||
+            snapshot.roomId !== roomId ||
+            snapshot.gameId !== gameId
+        ) {
+            args.showNotReady();
+            return;
+        }
+
+        args.startVariation(snapshot);
+    });
+}
+
 function isLiveRootSnapshotAllowed(params: {
     game: KibitzWatchedGame | null | undefined;
     snapshotTailMoveNumber: number;
@@ -859,21 +902,19 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         }
     }, [controller, secondaryPane.variation_id]);
     const onCreateVariation = React.useCallback(() => {
-        void confirmDiscardDraft().then((confirmed) => {
-            if (!confirmed) {
-                return;
-            }
-            const snapshot = getCurrentGameBaseSnapshotForVariation();
-            if (!snapshot) {
-                showCurrentGameBaseNotReadyToast();
-                return;
-            }
-
-            controller.startVariationFromCurrentBoard(
-                snapshot.config.move_tree,
-                snapshot.movePath,
-                moveTreeIdAsNumber(snapshot.moveTreeId),
-            );
+        void startVariationAfterDiscardConfirm({
+            confirmDiscardDraft,
+            getSnapshot: getCurrentGameBaseSnapshotForVariation,
+            currentRoomIdRef,
+            currentRoomGameIdRef,
+            showNotReady: showCurrentGameBaseNotReadyToast,
+            startVariation: (snapshot) => {
+                controller.startVariationFromCurrentBoard(
+                    snapshot.config.move_tree,
+                    snapshot.movePath,
+                    moveTreeIdAsNumber(snapshot.moveTreeId),
+                );
+            },
         });
     }, [
         confirmDiscardDraft,

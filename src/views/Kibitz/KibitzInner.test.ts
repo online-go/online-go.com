@@ -16,7 +16,11 @@
  */
 
 import type { GobanController } from "@/lib/GobanController";
-import { isCurrentGameBaseSnapshotUsable, isMainBoardSafeForReconnect } from "./KibitzInner";
+import {
+    isCurrentGameBaseSnapshotUsable,
+    isMainBoardSafeForReconnect,
+    startVariationAfterDiscardConfirm,
+} from "./KibitzInner";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 import type { KibitzWatchedGame } from "@/models/kibitz";
 
@@ -120,5 +124,103 @@ describe("isMainBoardSafeForReconnect", () => {
                 mainBoardLastOfficialMoveNumber: 0,
             }),
         ).toBe(false);
+    });
+});
+
+function roomSnapshot(gameId: number, roomId: string): KibitzCurrentGameBaseSnapshot {
+    return {
+        gameId,
+        roomId,
+        trunkTailMoveNumber: 50,
+        moveTreeId: 1,
+        movePath: "",
+        source: "main-board",
+        config: {},
+    } as KibitzCurrentGameBaseSnapshot;
+}
+
+describe("startVariationAfterDiscardConfirm", () => {
+    function pendingConfirm(): {
+        confirmDiscardDraft: () => Promise<boolean>;
+        resolve: (confirmed: boolean) => void;
+    } {
+        let resolveConfirm: (confirmed: boolean) => void = () => undefined;
+        return {
+            confirmDiscardDraft: () =>
+                new Promise<boolean>((resolve) => {
+                    resolveConfirm = resolve;
+                }),
+            resolve: (confirmed) => resolveConfirm(confirmed),
+        };
+    }
+
+    it("refuses a snapshot when the room changes during the discard confirm", async () => {
+        const previousRoom = roomSnapshot(50, "preset-room");
+        const currentRoomIdRef = { current: "preset-room" as string | null };
+        const currentRoomGameIdRef = { current: 50 as number | null };
+        const startVariation = jest.fn();
+        const showNotReady = jest.fn();
+        const confirm = pendingConfirm();
+
+        const pending = startVariationAfterDiscardConfirm({
+            confirmDiscardDraft: confirm.confirmDiscardDraft,
+            getSnapshot: () => previousRoom,
+            currentRoomIdRef,
+            currentRoomGameIdRef,
+            showNotReady,
+            startVariation,
+        });
+
+        currentRoomIdRef.current = "user-room";
+        currentRoomGameIdRef.current = 9;
+        confirm.resolve(true);
+        await pending;
+
+        expect(startVariation).not.toHaveBeenCalled();
+        expect(showNotReady).toHaveBeenCalledTimes(1);
+    });
+
+    it("refuses a snapshot when only the game changes during the discard confirm", async () => {
+        const previousGame = roomSnapshot(50, "user-room");
+        const currentRoomIdRef = { current: "user-room" as string | null };
+        const currentRoomGameIdRef = { current: 50 as number | null };
+        const startVariation = jest.fn();
+        const showNotReady = jest.fn();
+        const confirm = pendingConfirm();
+
+        const pending = startVariationAfterDiscardConfirm({
+            confirmDiscardDraft: confirm.confirmDiscardDraft,
+            getSnapshot: () => previousGame,
+            currentRoomIdRef,
+            currentRoomGameIdRef,
+            showNotReady,
+            startVariation,
+        });
+
+        currentRoomGameIdRef.current = 9;
+        confirm.resolve(true);
+        await pending;
+
+        expect(startVariation).not.toHaveBeenCalled();
+        expect(showNotReady).toHaveBeenCalledTimes(1);
+    });
+
+    it("starts a variation when the snapshot still matches the current room", async () => {
+        const snapshot = roomSnapshot(9, "user-room");
+        const startVariation = jest.fn();
+        const showNotReady = jest.fn();
+
+        await startVariationAfterDiscardConfirm({
+            confirmDiscardDraft: () => Promise.resolve(true),
+            getSnapshot: () => snapshot,
+            currentRoomIdRef: { current: "user-room" },
+            currentRoomGameIdRef: { current: 9 },
+            showNotReady,
+            startVariation,
+        });
+
+        expect(showNotReady).not.toHaveBeenCalled();
+        expect(startVariation).toHaveBeenCalledTimes(1);
+        expect(startVariation).toHaveBeenCalledWith(snapshot);
     });
 });
