@@ -105,25 +105,27 @@ function makeMoveTree(moveNumber: number, trunkNext?: TestMoveTree): TestMoveTre
     };
 }
 
-function makeController(moveTree: TestMoveTree): GobanController {
+function makeController(moveTree: TestMoveTree, gameId = 4321): GobanController {
     const parent = document.createElement("div");
     document.body.appendChild(parent);
     const controller = {
         goban: {
+            game_id: gameId,
             parent,
             config: {
-                game_id: 87165523,
+                game_id: gameId,
             },
             mode: "play",
-            load: jest.fn((config: { move_tree?: TestMoveTree }) => {
+            load: jest.fn((config: { move_tree?: TestMoveTree; game_id?: number }) => {
                 controller.goban.engine.move_tree =
                     config.move_tree ?? controller.goban.engine.move_tree;
-                controller.goban.engine.config = config;
+                controller.goban.engine.config = { game_id: gameId, ...config };
             }),
             redraw: jest.fn(),
             jumpToLastOfficialMove: jest.fn(),
             engine: {
-                config: {},
+                game_id: gameId,
+                config: { game_id: gameId },
                 move_tree: moveTree,
                 cur_move: moveTree,
                 last_official_move: moveTree,
@@ -322,6 +324,15 @@ describe("captureCurrentGameBaseSnapshotFromController", () => {
                 "room-base-broker",
             )?.trunkTailMoveNumber,
         ).toBe(2);
+    });
+
+    it("rejects an old controller labeled with the new room and game", () => {
+        const moveTree = makeMoveTree(0, makeMoveTree(1, makeMoveTree(50)));
+        const controller = makeController(moveTree, 50);
+
+        expect(
+            captureCurrentGameBaseSnapshotFromController(controller, makeGame(9, 4), "user-room"),
+        ).toBeNull();
     });
 });
 

@@ -1269,13 +1269,22 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     }
 
     public startVariationFromCurrentBoard(
+        source: { roomId: string; gameId: number },
         variation_source_move_tree?: KibitzVariationLineTree,
         variation_source_move_path?: string,
         variation_source_move_tree_id?: number,
-    ): void {
-        const currentGameId = this._active_room?.current_game?.game_id;
-        if (!currentGameId) {
-            return;
+    ): boolean {
+        const activeRoom = this._active_room;
+        const currentGameId = activeRoom?.current_game?.game_id;
+        // The directory entry for the next room can be visible while this
+        // controller is still hydrating the previous room.
+        if (
+            !activeRoom ||
+            currentGameId == null ||
+            source.roomId !== activeRoom.id ||
+            source.gameId !== currentGameId
+        ) {
+            return false;
         }
 
         kibitzTelemetry.record("start_variation");
@@ -1295,6 +1304,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             variation_draft_base_path: undefined,
             variation_draft_nonce: ++this._draft_nonce,
         });
+        return true;
     }
 
     /** `variation_draft_base_path` is where in the posted variation the

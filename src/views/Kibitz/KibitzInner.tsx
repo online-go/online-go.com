@@ -129,7 +129,7 @@ interface StartVariationAfterDiscardConfirmArgs {
     currentRoomIdRef: { current: string | null };
     currentRoomGameIdRef: { current: number | null };
     showNotReady: () => void;
-    startVariation: (snapshot: KibitzCurrentGameBaseSnapshot) => void;
+    startVariation: (snapshot: KibitzCurrentGameBaseSnapshot) => boolean;
 }
 
 /**
@@ -162,7 +162,9 @@ export function startVariationAfterDiscardConfirm(
             return;
         }
 
-        args.startVariation(snapshot);
+        if (!args.startVariation(snapshot)) {
+            args.showNotReady();
+        }
     });
 }
 
@@ -908,13 +910,16 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             currentRoomIdRef,
             currentRoomGameIdRef,
             showNotReady: showCurrentGameBaseNotReadyToast,
-            startVariation: (snapshot) => {
+            startVariation: (snapshot) =>
                 controller.startVariationFromCurrentBoard(
+                    {
+                        roomId: snapshot.roomId ?? "",
+                        gameId: snapshot.gameId,
+                    },
                     snapshot.config.move_tree,
                     snapshot.movePath,
                     moveTreeIdAsNumber(snapshot.moveTreeId),
-                );
-            },
+                ),
         });
     }, [
         confirmDiscardDraft,

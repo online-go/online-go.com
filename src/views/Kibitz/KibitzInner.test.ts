@@ -207,7 +207,7 @@ describe("startVariationAfterDiscardConfirm", () => {
 
     it("starts a variation when the snapshot still matches the current room", async () => {
         const snapshot = roomSnapshot(9, "user-room");
-        const startVariation = jest.fn();
+        const startVariation = jest.fn(() => true);
         const showNotReady = jest.fn();
 
         await startVariationAfterDiscardConfirm({
@@ -222,5 +222,23 @@ describe("startVariationAfterDiscardConfirm", () => {
         expect(showNotReady).not.toHaveBeenCalled();
         expect(startVariation).toHaveBeenCalledTimes(1);
         expect(startVariation).toHaveBeenCalledWith(snapshot);
+    });
+
+    it("shows not ready when the active room rejects the snapshot", async () => {
+        const snapshot = roomSnapshot(9, "user-room");
+        const startVariation = jest.fn(() => false);
+        const showNotReady = jest.fn();
+
+        await startVariationAfterDiscardConfirm({
+            confirmDiscardDraft: () => Promise.resolve(true),
+            getSnapshot: () => snapshot,
+            currentRoomIdRef: { current: "user-room" },
+            currentRoomGameIdRef: { current: 9 },
+            showNotReady,
+            startVariation,
+        });
+
+        expect(startVariation).toHaveBeenCalledWith(snapshot);
+        expect(showNotReady).toHaveBeenCalledTimes(1);
     });
 });
