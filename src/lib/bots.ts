@@ -120,24 +120,43 @@ export interface BoardSizeRanges {
  * that goban's `BotConfigV2` type does not list. */
 export type BotBoardSizes = BotConfigV2["allowed_board_sizes"] | BoardSizeRanges;
 
-function isNumberPair(value: unknown): value is [number, number] {
+function isOrderedFinitePair(value: unknown): value is [number, number] {
     return (
         Array.isArray(value) &&
         value.length === 2 &&
-        typeof value[0] === "number" &&
-        typeof value[1] === "number"
+        Number.isFinite(value[0]) &&
+        Number.isFinite(value[1]) &&
+        value[0] <= value[1]
     );
 }
 
-/** True when `sizes` is a gtp2ogs board size range object. */
+/** True when `sizes` is a gtp2ogs board size range with finite, ordered bounds. */
 export function isBoardSizeRanges(sizes: unknown): sizes is BoardSizeRanges {
-    if (typeof sizes !== "object" || sizes === null) {
+    if (typeof sizes !== "object" || sizes === null || Array.isArray(sizes)) {
         return false;
     }
     if (!("width_range" in sizes) || !("height_range" in sizes)) {
         return false;
     }
-    return isNumberPair(sizes.width_range) && isNumberPair(sizes.height_range);
+    return isOrderedFinitePair(sizes.width_range) && isOrderedFinitePair(sizes.height_range);
+}
+
+/** True when `sizes` is an object this client cannot use as a board size.
+ * Arrays, numbers, "all", and "square" are handled separately. */
+export function isUnsupportedBoardSizeSetting(sizes: unknown): boolean {
+    return (
+        typeof sizes === "object" &&
+        sizes !== null &&
+        !Array.isArray(sizes) &&
+        !isBoardSizeRanges(sizes)
+    );
+}
+
+export function unsupportedBoardSizeSettingMessage(): string {
+    return pgettext(
+        "Unable to find a compatible game setting for bot",
+        "Bot has an unsupported board size setting",
+    );
 }
 
 /** Text for a board size range, such as "9x9 to 19x19". When both ends are
@@ -359,6 +378,8 @@ export function getAcceptableTimeSetting(
             allowed_board_sizes[0] === 0
         ) {
             // 0 means any board size too..
+        } else if (isUnsupportedBoardSizeSetting(allowed_board_sizes)) {
+            return [null, unsupportedBoardSizeSettingMessage()];
         } else {
             const allowed_sizes = Array.isArray(allowed_board_sizes)
                 ? allowed_board_sizes

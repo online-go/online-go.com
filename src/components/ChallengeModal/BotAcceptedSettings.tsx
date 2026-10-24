@@ -23,6 +23,8 @@ import {
     boardSizeRangeText,
     botTimeSettingRanges,
     isBoardSizeRanges,
+    isUnsupportedBoardSizeSetting,
+    unsupportedBoardSizeSettingMessage,
 } from "@/lib/bots";
 import { TimeControl, timeControlSystemText } from "@/components/TimeControl";
 import "./BotAcceptedSettings.css";
@@ -51,6 +53,9 @@ function boardSizesText(sizes: BotBoardSizes): string {
     }
     if (sizes === "square") {
         return pgettext("A bot accepts every square board size", "Any square board");
+    }
+    if (isUnsupportedBoardSizeSetting(sizes)) {
+        return unsupportedBoardSizeSettingMessage();
     }
     return (Array.isArray(sizes) ? sizes : [sizes]).map((size) => `${size}x${size}`).join(", ");
 }

@@ -75,6 +75,23 @@ describe("BotAcceptedSettings", () => {
 
         expect(screen.getByText("19x19")).toBeInTheDocument();
     });
+
+    it.each([
+        ["short range", { width_range: [9], height_range: [9, 19] }],
+        ["string endpoint", { width_range: ["9", 19], height_range: [9, 19] }],
+        ["reversed range", { width_range: [19, 9], height_range: [9, 19] }],
+        ["NaN endpoint", { width_range: [Number.NaN, 19], height_range: [9, 19] }],
+    ])("shows a readable fallback for a %s", (_label, sizes) => {
+        render(
+            <BotAcceptedSettings
+                bot={botWithBoardSizes(sizes)}
+                time_control={rapidTimeControl()}
+            />,
+        );
+
+        expect(screen.getByText("Bot has an unsupported board size setting")).toBeInTheDocument();
+        expect(screen.queryByText(/\[object Object\]/)).not.toBeInTheDocument();
+    });
 });
 
 function rapidTimeControl(): TimeControl {
@@ -86,10 +103,7 @@ function rapidTimeControl(): TimeControl {
     };
 }
 
-function botWithBoardSizes(allowed_board_sizes: {
-    width_range: [number, number];
-    height_range: [number, number];
-}): Bot {
+function botWithBoardSizes(allowed_board_sizes: unknown): Bot {
     return {
         id: 1,
         username: "TestBot",

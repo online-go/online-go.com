@@ -82,6 +82,14 @@ function makeBot(
     } as Bot;
 }
 
+function makeBotWithBoardSizes(allowed_board_sizes: unknown): Bot {
+    const bot = makeBot();
+    return {
+        ...bot,
+        config: { ...bot.config, allowed_board_sizes } as unknown as BotConfigV2,
+    };
+}
+
 function options(fields: Partial<BotChallengeOptions> = {}): BotChallengeOptions {
     return {
         rank: 20,
@@ -227,6 +235,20 @@ describe("getAcceptableTimeSetting", () => {
 
         const [allowed] = getAcceptableTimeSetting(bot, options({ width: 19, height: 19 }));
         expect(allowed).not.toBeNull();
+    });
+
+    it.each([
+        ["short range", { width_range: [9], height_range: [9, 19] }],
+        ["string endpoint", { width_range: ["9", 19], height_range: [9, 19] }],
+        ["reversed range", { width_range: [19, 9], height_range: [9, 19] }],
+        ["NaN endpoint", { width_range: [Number.NaN, 19], height_range: [9, 19] }],
+    ])("rejects a %s with a readable message", (_label, allowed_board_sizes) => {
+        const [rejected, message] = getAcceptableTimeSetting(
+            makeBotWithBoardSizes(allowed_board_sizes),
+            options(),
+        );
+        expect(rejected).toBeNull();
+        expect(message).toBe("Bot has an unsupported board size setting");
     });
 
     it("plays rapid games with live settings for v1 bots", () => {
