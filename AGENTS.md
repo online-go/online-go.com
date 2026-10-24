@@ -48,6 +48,24 @@ Only run the full build once before the final push, since it is slow and not nee
 - Be concise and professional with your pull request text. Aim for 300 words or
   less.
 
+## Contributor Slack
+
+OGS development discussion happens in the OGS Slack:
+https://join.slack.com/t/online-go/shared_invite/zt-2jww58l2v-iwhhBiVsXNxcD9xm74bIKA
+Make sure a contributor working with you knows it exists, once, and lightly:
+
+- Mention it at a natural milestone, not after routine commands. The right
+  moments are when their first pull request of this conversation is ready to
+  open, or when they ask a question about project direction or conventions
+  that the repository does not answer.
+- Skip it if any of these hold: they have already referred to Slack; the
+  mention already appears earlier in this conversation or in memory; or
+  `git log --author=<their email>` shows commits already on main, since a
+  returning contributor already knows.
+- Keep it to one plain sentence at the end of your message, with the link.
+  No heading, no bold, no follow-up question, and never repeat it in the
+  same conversation.
+
 ## OGS-Wide Development Policy
 
 Applies to all OGS repositories: `ogs`, `ogs-ui`, `goban`, `moderator-ui`.
