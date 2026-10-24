@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { render, screen } from "@testing-library/react";
-import { BotConfigV1 } from "goban";
+import { BotConfigV1, BotConfigV2 } from "goban";
 import { Bot } from "@/lib/bots";
 import { TimeControl } from "@/components/TimeControl";
 import { BotAcceptedSettings } from "./BotAcceptedSettings";
@@ -53,4 +53,54 @@ describe("BotAcceptedSettings", () => {
 
         expect(screen.getByText("Time per move: 10s to 1m")).toBeInTheDocument();
     });
+
+    it("shows a board size range", () => {
+        render(
+            <BotAcceptedSettings
+                bot={botWithBoardSizes({ width_range: [9, 19], height_range: [9, 19] })}
+                time_control={rapidTimeControl()}
+            />,
+        );
+
+        expect(screen.getByText("9x9 to 19x19")).toBeInTheDocument();
+    });
+
+    it("shows a fixed board size range as one size", () => {
+        render(
+            <BotAcceptedSettings
+                bot={botWithBoardSizes({ width_range: [19, 19], height_range: [19, 19] })}
+                time_control={rapidTimeControl()}
+            />,
+        );
+
+        expect(screen.getByText("19x19")).toBeInTheDocument();
+    });
 });
+
+function rapidTimeControl(): TimeControl {
+    return {
+        system: "simple",
+        speed: "rapid",
+        per_move: 30,
+        pause_on_weekends: false,
+    };
+}
+
+function botWithBoardSizes(allowed_board_sizes: {
+    width_range: [number, number];
+    height_range: [number, number];
+}): Bot {
+    return {
+        id: 1,
+        username: "TestBot",
+        config: {
+            _config_version: 2,
+            allowed_time_control_systems: ["simple"],
+            allowed_board_sizes,
+            allow_ranked: true,
+            allow_unranked: true,
+            allow_ranked_handicap: true,
+            allow_unranked_handicap: true,
+        } as unknown as BotConfigV2,
+    } as Bot;
+}

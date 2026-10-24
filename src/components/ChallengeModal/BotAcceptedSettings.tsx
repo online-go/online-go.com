@@ -17,8 +17,13 @@
 
 import * as React from "react";
 import { _, interpolate, pgettext } from "@/lib/translate";
-import { BotConfigV2 } from "goban";
-import { Bot, botTimeSettingRanges } from "@/lib/bots";
+import {
+    Bot,
+    BotBoardSizes,
+    boardSizeRangeText,
+    botTimeSettingRanges,
+    isBoardSizeRanges,
+} from "@/lib/bots";
 import { TimeControl, timeControlSystemText } from "@/components/TimeControl";
 import "./BotAcceptedSettings.css";
 
@@ -37,7 +42,10 @@ function rangeText(min: string, max: string): string {
     });
 }
 
-function boardSizesText(sizes: BotConfigV2["allowed_board_sizes"]): string {
+function boardSizesText(sizes: BotBoardSizes): string {
+    if (isBoardSizeRanges(sizes)) {
+        return boardSizeRangeText(sizes);
+    }
     if (sizes === "all" || (Array.isArray(sizes) && sizes.length === 1 && sizes[0] === 0)) {
         return pgettext("A bot accepts every board size", "Any size");
     }

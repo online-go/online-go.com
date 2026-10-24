@@ -43,7 +43,13 @@ const live_fischer: TimeControl = {
     pause_on_weekends: false,
 };
 
-function makeBot(config: Partial<BotConfigV2> = {}): Bot {
+function makeBot(
+    config: Partial<Omit<BotConfigV2, "allowed_board_sizes">> & {
+        allowed_board_sizes?:
+            | BotConfigV2["allowed_board_sizes"]
+            | { width_range: [number, number]; height_range: [number, number] };
+    } = {},
+): Bot {
     return {
         id: 1,
         username: "TestBot",
@@ -150,6 +156,77 @@ describe("getAcceptableTimeSetting", () => {
 
         const [inside] = getAcceptableTimeSetting(makeBot(), options({ komi: 6.5 }));
         expect(inside).not.toBeNull();
+    });
+
+    it("accepts boards inside an inclusive width and height range", () => {
+        const bot = makeBot({
+            allowed_board_sizes: {
+                width_range: [9, 19],
+                height_range: [13, 25],
+            },
+        });
+
+        for (const size of [
+            { width: 9, height: 13 },
+            { width: 19, height: 25 },
+            { width: 9, height: 25 },
+            { width: 19, height: 13 },
+            { width: 13, height: 13 },
+            { width: 19, height: 19 },
+        ]) {
+            const [allowed, message] = getAcceptableTimeSetting(bot, options(size));
+            expect(message).toBeNull();
+            expect(allowed).not.toBeNull();
+        }
+    });
+
+    it("rejects boards outside a size range with a readable message", () => {
+        const bot = makeBot({
+            allowed_board_sizes: {
+                width_range: [9, 19],
+                height_range: [13, 25],
+            },
+        });
+
+        const [too_small, small_message] = getAcceptableTimeSetting(
+            bot,
+            options({ width: 5, height: 5 }),
+        );
+        expect(too_small).toBeNull();
+        expect(small_message).toBe("Bot only plays on 9x13 to 19x25");
+
+        const [too_wide, wide_message] = getAcceptableTimeSetting(
+            bot,
+            options({ width: 20, height: 19 }),
+        );
+        expect(too_wide).toBeNull();
+        expect(wide_message).toBe("Bot only plays on 9x13 to 19x25");
+
+        const [too_short, short_message] = getAcceptableTimeSetting(
+            bot,
+            options({ width: 9, height: 12 }),
+        );
+        expect(too_short).toBeNull();
+        expect(short_message).toBe("Bot only plays on 9x13 to 19x25");
+    });
+
+    it("describes a size range with equal ends as one board size", () => {
+        const bot = makeBot({
+            allowed_board_sizes: {
+                width_range: [19, 19],
+                height_range: [19, 19],
+            },
+        });
+
+        const [rejected, message] = getAcceptableTimeSetting(
+            bot,
+            options({ width: 13, height: 13 }),
+        );
+        expect(rejected).toBeNull();
+        expect(message).toBe("Bot only plays on 19x19");
+
+        const [allowed] = getAcceptableTimeSetting(bot, options({ width: 19, height: 19 }));
+        expect(allowed).not.toBeNull();
     });
 
     it("plays rapid games with live settings for v1 bots", () => {

@@ -17,7 +17,13 @@
 
 import { socket } from "@/lib/sockets";
 import { getUserRating } from "@/lib/rank_utils";
-import { BotAllowedClockSettingsV1, BotAllowedClockSettingsV2, BotConfig, User } from "goban";
+import {
+    BotAllowedClockSettingsV1,
+    BotAllowedClockSettingsV2,
+    BotConfig,
+    BotConfigV2,
+    User,
+} from "goban";
 import EventEmitter from "eventemitter3";
 import { _, interpolate, pgettext } from "./translate";
 import type { TimeControl, TimeControlTypes } from "@/components/TimeControl";
@@ -101,6 +107,60 @@ function outOfRangeMessage(
             "{{setting}} must be from {{min}} to {{max}}",
         ),
         { setting, min: format(range[0]), max: format(range[1]) },
+    );
+}
+
+/** Inclusive width and height ranges, as in gtp2ogs `BoardSizeRanges`. */
+export interface BoardSizeRanges {
+    width_range: [number, number];
+    height_range: [number, number];
+}
+
+/** Board sizes a bot config can carry, including the gtp2ogs range object
+ * that goban's `BotConfigV2` type does not list. */
+export type BotBoardSizes = BotConfigV2["allowed_board_sizes"] | BoardSizeRanges;
+
+function isNumberPair(value: unknown): value is [number, number] {
+    return (
+        Array.isArray(value) &&
+        value.length === 2 &&
+        typeof value[0] === "number" &&
+        typeof value[1] === "number"
+    );
+}
+
+/** True when `sizes` is a gtp2ogs board size range object. */
+export function isBoardSizeRanges(sizes: unknown): sizes is BoardSizeRanges {
+    if (typeof sizes !== "object" || sizes === null) {
+        return false;
+    }
+    if (!("width_range" in sizes) || !("height_range" in sizes)) {
+        return false;
+    }
+    return isNumberPair(sizes.width_range) && isNumberPair(sizes.height_range);
+}
+
+/** Text for a board size range, such as "9x9 to 19x19". When both ends are
+ * the same size, the text is that size, such as "19x19". */
+export function boardSizeRangeText(ranges: BoardSizeRanges): string {
+    const min = `${ranges.width_range[0]}x${ranges.height_range[0]}`;
+    const max = `${ranges.width_range[1]}x${ranges.height_range[1]}`;
+    if (min === max) {
+        return min;
+    }
+    return interpolate(pgettext("A range of values, such as '1m to 10m'", "{{min}} to {{max}}"), {
+        min,
+        max,
+    });
+}
+
+function boardSizesNotAllowedMessage(sizes: string): string {
+    return interpolate(
+        pgettext(
+            "Why a bot can not play with the selected board size. {{sizes}} is a list such as '9x9, 19x19'.",
+            "Bot only plays on {{sizes}}",
+        ),
+        { sizes },
     );
 }
 
@@ -267,10 +327,23 @@ export function getAcceptableTimeSetting(
             ];
         }
 
-        /* Check the board size */
-        if (bot.config.allowed_board_sizes === "all") {
+        /* Check the board size. A range object allows any width and height
+         * inside its inclusive ranges, including boards that are not square. */
+        const allowed_board_sizes: BotBoardSizes = bot.config.allowed_board_sizes;
+
+        if (isBoardSizeRanges(allowed_board_sizes)) {
+            const { width_range, height_range } = allowed_board_sizes;
+            if (
+                options.width < width_range[0] ||
+                options.width > width_range[1] ||
+                options.height < height_range[0] ||
+                options.height > height_range[1]
+            ) {
+                return [null, boardSizesNotAllowedMessage(boardSizeRangeText(allowed_board_sizes))];
+            }
+        } else if (allowed_board_sizes === "all") {
             // whatever is allowed
-        } else if (bot.config.allowed_board_sizes === "square") {
+        } else if (allowed_board_sizes === "square") {
             if (options.width !== options.height) {
                 return [
                     null,
@@ -281,15 +354,15 @@ export function getAcceptableTimeSetting(
                 ];
             }
         } else if (
-            Array.isArray(bot.config.allowed_board_sizes) &&
-            bot.config.allowed_board_sizes.length === 1 &&
-            bot.config.allowed_board_sizes[0] === 0
+            Array.isArray(allowed_board_sizes) &&
+            allowed_board_sizes.length === 1 &&
+            allowed_board_sizes[0] === 0
         ) {
             // 0 means any board size too..
         } else {
-            const allowed_sizes = Array.isArray(bot.config.allowed_board_sizes)
-                ? bot.config.allowed_board_sizes
-                : [bot.config.allowed_board_sizes];
+            const allowed_sizes = Array.isArray(allowed_board_sizes)
+                ? allowed_board_sizes
+                : [allowed_board_sizes];
 
             if (options.width !== options.height) {
                 return [
@@ -304,12 +377,8 @@ export function getAcceptableTimeSetting(
             if (!allowed_sizes.includes(options.width)) {
                 return [
                     null,
-                    interpolate(
-                        pgettext(
-                            "Why a bot can not play with the selected board size. {{sizes}} is a list such as '9x9, 19x19'.",
-                            "Bot only plays on {{sizes}}",
-                        ),
-                        { sizes: allowed_sizes.map((size) => `${size}x${size}`).join(", ") },
+                    boardSizesNotAllowedMessage(
+                        allowed_sizes.map((size) => `${size}x${size}`).join(", "),
                     ),
                 ];
             }
