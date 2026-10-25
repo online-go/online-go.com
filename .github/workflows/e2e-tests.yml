@@ -23,21 +23,25 @@ concurrency:
 jobs:
     e2e-tests:
         runs-on: self-hosted
+        # A hung pytest/Playwright would otherwise hold the runner for GitHub's
+        # default six hours, blocking every later run. Sized to a full merge run
+        # (bring-up + pytest + build + quick + flaky + @Slow) with headroom.
+        timeout-minutes: 45
         # Only run on the original repo, not forks
         if: github.repository == 'online-go/online-go.com'
 
         steps:
-            # A previous cancel-in-progress kill may have left git locks or
-            # orphan playwright processes behind; clean them up before starting.
-            - name: Clear stale git locks and orphan playwright processes
+            # Nothing in this job touches the shared checkouts before run-tests.sh
+            # holds its priority lock: another runner may be mid-run in them. The
+            # script, and the helpers it finds beside itself, come from a private
+            # clone of ogs main in this runner's own temp dir. Stale git locks, the
+            # checkout of main, the pull and orphan-process cleanup all happen inside
+            # the script, behind the lock.
+            - name: Fetch run-tests.sh from ogs main (private clone)
               run: |
-                  find /home/greenasjade/src/OGS/ogs/.git /home/greenasjade/src/OGS/ogs-ui/.git \
-                       -name '*.lock' -delete
-                  pkill -f 'chrome-headless-shell.*playwright_chromiumdev_profile' || true
-                  pkill -f 'node.*node_modules/playwright' || true
-
-            - name: Update ogs repo to get latest script
-              run: cd /home/greenasjade/src/OGS/ogs && git pull origin main
+                  git clone --depth 1 --filter=blob:none --sparse --branch main \
+                      git@github.com:online-go/ogs.git "$RUNNER_TEMP/ogs-e2e-ci"
+                  git -C "$RUNNER_TEMP/ogs-e2e-ci" sparse-checkout set .e2e-ci
 
             - name: Determine trigger source
               id: trigger
@@ -57,4 +61,4 @@ jobs:
                   TEST_FILTER: ${{ github.event.inputs.test_filter || '' }}
                   TRIGGER_SOURCE: ${{ steps.trigger.outputs.source }}
               run: |
-                  /home/greenasjade/src/OGS/ogs/.e2e-ci/run-tests.sh "$TEST_FILTER" "$TRIGGER_SOURCE"
+                  "$RUNNER_TEMP/ogs-e2e-ci/.e2e-ci/run-tests.sh" "$TEST_FILTER" "$TRIGGER_SOURCE"

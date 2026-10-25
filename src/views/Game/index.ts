@@ -16,6 +16,7 @@
  */
 
 export * from "./Game";
+export * from "./GameRoute";
 export * from "./GameChat";
 export * from "./GameHooks";
 export * from "./goban_context";

@@ -17,8 +17,10 @@
 
 import * as React from "react";
 import { pgettext } from "@/lib/translate";
+import { socket, device_info } from "@/lib/sockets";
 import { KibitzController } from "./KibitzController";
 import { KibitzInner } from "./KibitzInner";
+import { kibitzTelemetry } from "./kibitzTelemetry";
 
 export function Kibitz(): React.ReactElement {
     const [controller, setController] = React.useState<KibitzController | null>(null);
@@ -26,8 +28,20 @@ export function Kibitz(): React.ReactElement {
     React.useEffect(() => {
         const nextController = new KibitzController();
         setController(nextController);
+        kibitzTelemetry.configure({
+            // `kibitz/telemetry` is not in the goban `ClientToServer` protocol
+            // union; this relies on the same looseness as `net/connects`.
+            send: (payload) =>
+                (socket as { send: (command: string, data: unknown) => void }).send(
+                    "kibitz/telemetry",
+                    payload,
+                ),
+            deviceInfo: device_info,
+        });
+        kibitzTelemetry.enter();
 
         return () => {
+            kibitzTelemetry.leave();
             nextController.destroy();
         };
     }, []);

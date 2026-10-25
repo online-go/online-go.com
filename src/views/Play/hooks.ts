@@ -59,7 +59,7 @@ export function useHaveActiveGameSearch(): boolean {
                 if (
                     challenge.user_challenge &&
                     challenge.time_per_move > 0 &&
-                    challenge.time_per_move < 3600
+                    challenge.time_per_move <= 3600
                 ) {
                     found_live_user_challenge = true;
                 }

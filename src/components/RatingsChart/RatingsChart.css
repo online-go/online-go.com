@@ -15,7 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 .RatingsChart {
-    height: 380px;
+    /* The graph itself is a fixed size. On a narrow screen the win/loss
+       key is HTML under that graph and wraps onto a second line. A fixed
+       height lets that line spill onto the next section (the about text,
+       or Active Games). Grow the box when the key needs the room.
+       See online-go.com issue 3461. */
+    min-height: 380px;
     max-width: calc(100dvw - 2em);
 
     /* Uncomment this to make charts resize.  But only when they support that. */

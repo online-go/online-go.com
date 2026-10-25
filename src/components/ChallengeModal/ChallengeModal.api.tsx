@@ -33,6 +33,7 @@ export function challenge(
     computer?: boolean,
     config?: ChallengeModalConfig,
     created?: (c: CreatedChallengeInfo) => void,
+    persistColor?: boolean,
 ) {
     // TODO: Support challenge by player, w/ initial state, or computer
 
@@ -56,6 +57,7 @@ export function challenge(
             config={config}
             mode={mode}
             created={created}
+            persistColor={persistColor}
         />,
     );
 }
@@ -105,5 +107,5 @@ export function challengeRematch(
         time_control: dup(conf.time_control),
     };
 
-    challenge(opponent.id, null, false, config);
+    challenge(opponent.id, null, false, config, undefined, false);
 }

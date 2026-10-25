@@ -29,6 +29,7 @@ import {
     useShowTitle,
     useShowUndoRequested,
     useTitle,
+    useUndoRequestIsMine,
     useViewMode,
     useWinner,
     useZenMode,
@@ -53,6 +54,7 @@ export function GameStateHeader(): React.ReactElement | null {
     const show_title = useShowTitle(goban);
     const title = useTitle(goban);
     const show_undo_requested = useShowUndoRequested(goban);
+    const undo_request_is_mine = useUndoRequestIsMine(goban);
     const winner = useWinner(goban);
     const annulled = useAnnulled(goban_controller);
     const can_answer_undo = useCanAnswerUndoRequest(goban);
@@ -96,6 +98,19 @@ export function GameStateHeader(): React.ReactElement | null {
         return _("A player");
     }, [show_undo_requested, engine.undo_requested_by, engine.players]);
 
+    const undo_message = undo_request_is_mine
+        ? pgettext(
+              "Shown to the player who asked to take a move back",
+              "You asked to undo a move. Your opponent may accept or reject it.",
+          )
+        : interpolate(
+              pgettext(
+                  "Notification that a player has requested to undo their last move",
+                  "{{player_name}} has requested an undo",
+              ),
+              { player_name: undo_requester_name },
+          );
+
     const sse = engine.stalling_score_estimate;
 
     // Score estimation keeps the header content of the mode it was entered
@@ -136,16 +151,10 @@ export function GameStateHeader(): React.ReactElement | null {
         <div className="game-state-header">
             {isPlayPlay && (
                 <span>
-                    {show_play_title && <span>{title}</span>}
+                    {show_play_title && !show_undo_requested && <span>{title}</span>}
                     {show_undo_requested && (
                         <span className="undo-requested-message" ref={undo_message_ref}>
-                            {interpolate(
-                                pgettext(
-                                    "Notification that a player has requested to undo their last move",
-                                    "{{player_name}} has requested an undo",
-                                ),
-                                { player_name: undo_requester_name },
-                            )}
+                            {undo_message}
                         </span>
                     )}
                 </span>
@@ -157,13 +166,7 @@ export function GameStateHeader(): React.ReactElement | null {
                 <span>
                     {show_undo_requested ? (
                         <span className="undo-requested-message" ref={undo_message_ref}>
-                            {interpolate(
-                                pgettext(
-                                    "Notification that a player has requested to undo their last move",
-                                    "{{player_name}} has requested an undo",
-                                ),
-                                { player_name: undo_requester_name },
-                            )}
+                            {undo_message}
                         </span>
                     ) : (
                         <span>{_("Analyze Mode")}</span>

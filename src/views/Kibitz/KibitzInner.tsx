@@ -38,7 +38,8 @@ import { KibitzPresetChangePendingBanner } from "./KibitzPresetChangePendingBann
 import type { KibitzController } from "./KibitzController";
 import { KibitzView } from "./KibitzView";
 import { useKibitzGobans } from "./useKibitzGobans";
-import { goban_view_mode } from "@/components/GobanView";
+import { leftAsideAllowed, useGameLayout } from "@/components/GobanView/layout";
+import { kibitzTelemetry } from "./kibitzTelemetry";
 import {
     EMPTY_VISIBLE_VARIATIONS,
     MAX_VISIBLE_VARIATIONS,
@@ -120,6 +121,51 @@ interface KibitzSnapshotGameDetails {
 
 function moveTreeIdAsNumber(moveTreeId: number | string | null): number | undefined {
     return typeof moveTreeId === "number" ? moveTreeId : undefined;
+}
+
+interface StartVariationAfterDiscardConfirmArgs {
+    confirmDiscardDraft: () => Promise<boolean>;
+    getSnapshot: () => KibitzCurrentGameBaseSnapshot | null;
+    currentRoomIdRef: { current: string | null };
+    currentRoomGameIdRef: { current: number | null };
+    showNotReady: () => void;
+    startVariation: (snapshot: KibitzCurrentGameBaseSnapshot) => boolean;
+}
+
+/**
+ * Starts a variation after the discard confirm.
+ *
+ * The confirm yields. `getSnapshot` is the helper captured on click, so a
+ * room switch in that gap can still return the previous game. The room and
+ * game refs are read after the confirm. A snapshot for another room or game
+ * is refused, and the caller shows the base-not-ready notice.
+ */
+export function startVariationAfterDiscardConfirm(
+    args: StartVariationAfterDiscardConfirmArgs,
+): Promise<void> {
+    return args.confirmDiscardDraft().then((confirmed) => {
+        if (!confirmed) {
+            return;
+        }
+
+        const snapshot = args.getSnapshot();
+        const roomId = args.currentRoomIdRef.current;
+        const gameId = args.currentRoomGameIdRef.current;
+        if (
+            !snapshot ||
+            roomId == null ||
+            gameId == null ||
+            snapshot.roomId !== roomId ||
+            snapshot.gameId !== gameId
+        ) {
+            args.showNotReady();
+            return;
+        }
+
+        if (!args.startVariation(snapshot)) {
+            args.showNotReady();
+        }
+    });
 }
 
 function isLiveRootSnapshotAllowed(params: {
@@ -322,8 +368,11 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         React.useState<number | null>(null);
     const currentGameBaseSnapshotRef = React.useRef<KibitzCurrentGameBaseSnapshot | null>(null);
     const [gameVariations, setGameVariations] = React.useState<KibitzVariationSummary[]>([]);
-    const [viewMode, setViewMode] = React.useState(() => goban_view_mode());
-    const isPortrait = viewMode === "portrait";
+    const layout = useGameLayout();
+    React.useEffect(() => {
+        kibitzTelemetry.setLayout(layout.mode);
+    }, [layout.mode]);
+    const isPortrait = !leftAsideAllowed(layout.mode);
     const [visibleVariations, setVisibleVariations] = React.useState(EMPTY_VISIBLE_VARIATIONS);
     const visibleVariationIds = visibleVariations.ids;
     const variationColorIndexes = visibleVariations.colors;
@@ -339,19 +388,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         setCachedGamesVersion((previous) => previous + 1);
     }, []);
     const [pickerMode, setPickerMode] = React.useState<KibitzGamePickerMode>(null);
-
-    React.useEffect(() => {
-        const syncViewMode = () => {
-            setViewMode(goban_view_mode());
-        };
-
-        window.addEventListener("resize", syncViewMode);
-        syncViewMode();
-
-        return () => {
-            window.removeEventListener("resize", syncViewMode);
-        };
-    }, []);
 
     React.useEffect(() => {
         controller.on("rooms-changed", setRooms);
@@ -868,21 +904,22 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         }
     }, [controller, secondaryPane.variation_id]);
     const onCreateVariation = React.useCallback(() => {
-        void confirmDiscardDraft().then((confirmed) => {
-            if (!confirmed) {
-                return;
-            }
-            const snapshot = getCurrentGameBaseSnapshotForVariation();
-            if (!snapshot) {
-                showCurrentGameBaseNotReadyToast();
-                return;
-            }
-
-            controller.startVariationFromCurrentBoard(
-                snapshot.config.move_tree,
-                snapshot.movePath,
-                moveTreeIdAsNumber(snapshot.moveTreeId),
-            );
+        void startVariationAfterDiscardConfirm({
+            confirmDiscardDraft,
+            getSnapshot: getCurrentGameBaseSnapshotForVariation,
+            currentRoomIdRef,
+            currentRoomGameIdRef,
+            showNotReady: showCurrentGameBaseNotReadyToast,
+            startVariation: (snapshot) =>
+                controller.startVariationFromCurrentBoard(
+                    {
+                        roomId: snapshot.roomId ?? "",
+                        gameId: snapshot.gameId,
+                    },
+                    snapshot.config.move_tree,
+                    snapshot.movePath,
+                    moveTreeIdAsNumber(snapshot.moveTreeId),
+                ),
         });
     }, [
         confirmDiscardDraft,
@@ -893,9 +930,10 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     // Opening a variation from the chat or the list while a draft has
     // unposted moves asks first; the post-variation effect opens directly.
     const onOpenVariationFromUser = React.useCallback(
-        (variationId: string, focusVariation: boolean = false) => {
+        (variationId: string, focusVariation: boolean, source: "chat" | "list") => {
             void confirmDiscardDraft().then((confirmed) => {
                 if (confirmed) {
+                    kibitzTelemetry.record("open_variation", { source });
                     onOpenVariation(variationId, focusVariation);
                 }
             });
@@ -1263,7 +1301,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                     selectedVariationId: secondaryPane.variation_id ?? null,
                     variationFocusRequestId,
                     blockedVariationFlashId,
-                    onRecallVariation: (variationId) => onOpenVariationFromUser(variationId, true),
+                    onRecallVariation: (variationId) =>
+                        onOpenVariationFromUser(variationId, true, "list"),
                     onHideVariation: onToggleVariation,
                     onCreateVariation,
                     onClearVariations,
@@ -1273,7 +1312,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                     room: resolvedRoom,
                     items: stream,
                     variations: displayedVariations,
-                    onOpenVariation: onOpenVariationFromUser,
+                    onOpenVariation: (variationId, focusVariation = false) =>
+                        onOpenVariationFromUser(variationId, focusVariation, "chat"),
                     variationColorIndexes,
                 }}
                 proposals={{

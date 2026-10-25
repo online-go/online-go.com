@@ -1,0 +1,8 @@
+.StallingKindSelector {
+    width: 100%;
+    margin-bottom: 0.6rem;
+
+    &.required {
+        border-color: var(--primary);
+    }
+}

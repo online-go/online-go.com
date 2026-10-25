@@ -495,6 +495,15 @@ const submitReportForm = async (page: Page, type: string, notes: string) => {
 
     await page.selectOption(".type-picker select", { value: type });
 
+    // A stalling report requires a stall kind to be selected before it can be
+    // submitted. Pick a named kind (not "other", which would additionally
+    // require a 20-character explanation).
+    if (type === "stalling") {
+        const kindSelector = page.locator("select.StallingKindSelector");
+        await kindSelector.selectOption({ value: "pointless_moves" });
+        await expect(kindSelector).toHaveValue("pointless_moves");
+    }
+
     // textarea.notes (not bare .notes): some background pages (e.g. the
     // source-report detail view) render a sibling div.notes block that
     // would otherwise satisfy a strict locator match.

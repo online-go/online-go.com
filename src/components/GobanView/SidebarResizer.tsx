@@ -17,11 +17,8 @@
 
 import * as React from "react";
 import { pgettext } from "@/lib/translate";
-import { remToPx } from "./resizerUtil";
+import { MIN_BOARD_PANE_REM, remToPx } from "./resizerUtil";
 
-/** The narrowest the board pane may become. Below this a 19x19 board stops
- *  being legible, so the sidebar is not allowed to take the width. */
-const MIN_BOARD_PANE_REM = 24;
 const KEYBOARD_STEP_REM = 1;
 const KEYBOARD_LARGE_STEP_REM = 5;
 
@@ -29,20 +26,30 @@ interface SidebarResizerProps {
     /** The GobanView root, used to bound the width so the board pane keeps
      *  its minimum width. */
     rootRef: React.RefObject<HTMLDivElement | null>;
-    /** The sidebar element, measured when a drag or key press starts. */
-    sidebarRef: React.RefObject<HTMLDivElement | null>;
+    /** The element this handle resizes, measured when a drag or key press
+     *  starts. */
+    targetRef: React.RefObject<HTMLDivElement | null>;
+    /** "start": the handle is on the target's left edge (the main sidebar);
+     *  dragging left widens it. "end": the handle is on its right edge
+     *  (the left aside); dragging right widens it. */
+    edge: "start" | "end";
+    /** CSS variable holding the target's minimum width, e.g.
+     *  "--goban-view-sidebar-width". */
+    minWidthVar: string;
+    /** Accessible name of the handle. */
+    label: string;
     /** Called on every pointer move while dragging with the clamped width. */
     onPreview: (width: number) => void;
     /** Called when the drag ends or a key changes the width. Null resets the
-     *  sidebar to its automatic width. */
+     *  target to its automatic width. */
     onCommit: (width: number | null) => void;
 }
 
-/** The smallest width the user can drag the sidebar to: the fixed width the
- *  sidebar had before it became resizable, read from the CSS variable so the
- *  two never drift apart. */
-function minSidebarWidthPx(root: HTMLElement | null): number {
-    const value = root ? getComputedStyle(root).getPropertyValue("--goban-view-sidebar-width") : "";
+/** The smallest width the user can drag the target to: the fixed width the
+ *  target had before it became resizable, read from the given CSS variable
+ *  so the two never drift apart. */
+function minWidthPx(root: HTMLElement | null, varName: string): number {
+    const value = root ? getComputedStyle(root).getPropertyValue(varName) : "";
     const parsed = parseFloat(value);
     if (!Number.isFinite(parsed) || parsed <= 0) {
         return 400;
@@ -50,32 +57,34 @@ function minSidebarWidthPx(root: HTMLElement | null): number {
     return value.trim().endsWith("rem") ? remToPx(parsed) : parsed;
 }
 
-/** Maximum sidebar width before layout has run, when the board pane and
- *  sidebar cannot yet be measured: reserves the left aside's measured width
- *  (zero if there is none) out of the view instead. */
-function fallbackMaxSidebarWidthPx(root: HTMLElement | null): number {
-    const view_width = root?.offsetWidth ?? window.innerWidth;
-    const aside_width = root?.querySelector<HTMLElement>(".GobanView-left-aside")?.offsetWidth ?? 0;
-    return view_width - aside_width - remToPx(MIN_BOARD_PANE_REM);
-}
-
-/** The range the sidebar width can be set to, in pixels. The maximum always
- *  keeps the board pane at least its minimum width: the board pane and the
- *  sidebar's combined current width is exactly the space the two share,
- *  with every fixed margin and gap around them already excluded by measuring
- *  rather than modelling, and that sum stays constant while dragging, since
- *  the sidebar only ever grows by what the board pane gives up. Before
- *  layout has run either can measure zero, so it falls back to reserving
- *  the left aside's width out of the view instead. */
-export function sidebarWidthBoundsPx(root: HTMLElement | null): { min: number; max: number } {
-    const min = minSidebarWidthPx(root);
+/** The range a resizable column can be set to, in pixels. The maximum keeps
+ *  the board pane at least its minimum width: the board pane and the target
+ *  share exactly their combined measured width, since the target only grows
+ *  by what the board pane gives up. Before layout has run, it reserves the
+ *  other columns' widths out of the view instead. */
+export function resizableWidthBoundsPx(
+    root: HTMLElement | null,
+    target: HTMLElement | null,
+    minWidthVar: string,
+): { min: number; max: number } {
+    const min = minWidthPx(root, minWidthVar);
     const center_width = root?.querySelector<HTMLElement>(".GobanView-center")?.offsetWidth ?? 0;
-    const sidebar_width = root?.querySelector<HTMLElement>(".GobanView-sidebar")?.offsetWidth ?? 0;
-    const shared_width = center_width + sidebar_width;
-    const max =
-        shared_width > 0
-            ? shared_width - remToPx(MIN_BOARD_PANE_REM)
-            : fallbackMaxSidebarWidthPx(root);
+    const target_width = target?.offsetWidth ?? 0;
+    const shared_width = center_width + target_width;
+    let max: number;
+    if (shared_width > 0 && center_width > 0) {
+        max = shared_width - remToPx(MIN_BOARD_PANE_REM);
+    } else {
+        const view_width = root?.offsetWidth ?? window.innerWidth;
+        const others = Array.from(
+            root?.querySelectorAll<HTMLElement>(
+                ".GobanView-left-aside, .GobanView-sidebar, .GobanView-action-dock",
+            ) ?? [],
+        )
+            .filter((el) => el !== target)
+            .reduce((sum, el) => sum + el.offsetWidth, 0);
+        max = view_width - others - remToPx(MIN_BOARD_PANE_REM);
+    }
     return { min: Math.round(min), max: Math.round(Math.max(min, max)) };
 }
 
@@ -90,13 +99,17 @@ function sameValues(a: SidebarWidthValues | null, b: SidebarWidthValues): boolea
 }
 
 /**
- * The drag handle in the gap between the goban and the landscape sidebar.
- * Dragging it left widens the sidebar. Double-click, Enter or Escape reset
- * the sidebar to its automatic width; the arrow keys nudge it.
+ * The drag handle beside a resizable GobanView column: the landscape
+ * sidebar (edge "start") or the left aside (edge "end"). Dragging widens
+ * the target toward its edge. Double-click, Enter or Escape reset the
+ * target to its automatic width; the arrow keys nudge it.
  */
 export function SidebarResizer({
     rootRef,
-    sidebarRef,
+    targetRef,
+    edge,
+    minWidthVar,
+    label,
     onPreview,
     onCommit,
 }: SidebarResizerProps): React.ReactElement {
@@ -110,27 +123,31 @@ export function SidebarResizer({
 
     const clampWidth = React.useCallback(
         (width: number): number => {
-            const { min, max } = sidebarWidthBoundsPx(rootRef.current);
+            const { min, max } = resizableWidthBoundsPx(
+                rootRef.current,
+                targetRef.current,
+                minWidthVar,
+            );
             return Math.round(Math.min(max, Math.max(min, width)));
         },
-        [rootRef],
+        [rootRef, targetRef, minWidthVar],
     );
 
-    // The sidebar width is CSS-driven when no custom width is set, so the
+    // The target width is CSS-driven when no custom width is set, so the
     // values reported to assistive technology are measured from the DOM and
-    // kept current as the sidebar or the view changes size. This is a passive
-    // effect because the sidebar is rendered after the resizer, so its ref is
+    // kept current as the target or the view changes size. This is a passive
+    // effect because the target is rendered after the resizer, so its ref is
     // not attached yet when layout effects run.
     const [width_values, setWidthValues] = React.useState<SidebarWidthValues | null>(null);
     React.useEffect(() => {
         const measure = () => {
-            const sidebar = sidebarRef.current;
-            if (!sidebar) {
+            const target = targetRef.current;
+            if (!target) {
                 return;
             }
             const next = {
-                now: Math.round(sidebar.offsetWidth),
-                ...sidebarWidthBoundsPx(rootRef.current),
+                now: Math.round(target.offsetWidth),
+                ...resizableWidthBoundsPx(rootRef.current, target, minWidthVar),
             };
             setWidthValues((prev) => (sameValues(prev, next) ? prev : next));
         };
@@ -140,21 +157,21 @@ export function SidebarResizer({
             return () => window.removeEventListener("resize", measure);
         }
         const observer = new ResizeObserver(measure);
-        if (sidebarRef.current) {
-            observer.observe(sidebarRef.current);
+        if (targetRef.current) {
+            observer.observe(targetRef.current);
         }
         if (rootRef.current) {
             observer.observe(rootRef.current);
         }
         return () => observer.disconnect();
-    }, [rootRef, sidebarRef]);
+    }, [rootRef, targetRef, minWidthVar]);
 
     const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-        if (event.button !== 0 || !sidebarRef.current) {
+        if (event.button !== 0 || !targetRef.current) {
             return;
         }
         event.preventDefault();
-        const start_width = sidebarRef.current.offsetWidth;
+        const start_width = targetRef.current.offsetWidth;
         drag_ref.current = {
             pointer_id: event.pointerId,
             start_x: event.clientX,
@@ -170,7 +187,9 @@ export function SidebarResizer({
         if (!drag || drag.pointer_id !== event.pointerId) {
             return;
         }
-        drag.width = clampWidth(drag.start_width + (drag.start_x - event.clientX));
+        const delta =
+            edge === "start" ? drag.start_x - event.clientX : event.clientX - drag.start_x;
+        drag.width = clampWidth(drag.start_width + delta);
         onPreview(drag.width);
     };
 
@@ -188,17 +207,19 @@ export function SidebarResizer({
     };
 
     const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-        const current_width = sidebarRef.current?.offsetWidth;
+        const current_width = targetRef.current?.offsetWidth;
         if (current_width === undefined) {
             return;
         }
         const step = remToPx(event.shiftKey ? KEYBOARD_LARGE_STEP_REM : KEYBOARD_STEP_REM);
+        const grow = edge === "start" ? "ArrowLeft" : "ArrowRight";
+        const shrink = edge === "start" ? "ArrowRight" : "ArrowLeft";
         let next: number | null | undefined;
         switch (event.key) {
-            case "ArrowLeft":
+            case grow:
                 next = clampWidth(current_width + step);
                 break;
-            case "ArrowRight":
+            case shrink:
                 next = clampWidth(current_width - step);
                 break;
             case "Enter":
@@ -215,11 +236,6 @@ export function SidebarResizer({
         event.nativeEvent.stopImmediatePropagation();
         onCommit(next);
     };
-
-    const label = pgettext(
-        "Accessible name of the handle that resizes the panel next to the board",
-        "Resize sidebar",
-    );
 
     return (
         <div

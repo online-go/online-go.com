@@ -1,0 +1,123 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* Shared classes for the layout picker illustrations. The drawings use
+ * theme tokens only, so they follow the site theme. The part that differs
+ * between the two choices of a setting uses the accent classes. */
+.LayoutIllustration {
+    color: var(--fg);
+
+    .LayoutIllustration-frame {
+        fill: none;
+        stroke: currentColor;
+        stroke-opacity: 0.35;
+        stroke-width: 1.5;
+    }
+
+    .LayoutIllustration-speaker {
+        stroke: currentColor;
+        stroke-opacity: 0.35;
+        stroke-width: 1.5;
+        stroke-linecap: round;
+    }
+
+    .LayoutIllustration-panel {
+        fill: var(--shade4);
+    }
+
+    .LayoutIllustration-card {
+        fill: var(--bg);
+    }
+
+    .LayoutIllustration-line {
+        fill: none;
+        stroke: currentColor;
+        stroke-opacity: var(--layout-illustration-line-opacity);
+        stroke-width: 2;
+        stroke-linecap: round;
+    }
+
+    .LayoutIllustration-button {
+        fill: currentColor;
+        fill-opacity: 0.35;
+    }
+
+    .LayoutIllustration-accent-area {
+        fill: var(--primary);
+        fill-opacity: 0.15;
+        stroke: var(--primary);
+        stroke-width: 1.25;
+    }
+
+    .LayoutIllustration-accent {
+        fill: var(--primary);
+    }
+
+    .LayoutIllustration-accent-line {
+        fill: none;
+        stroke: var(--primary);
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    /* The bracket and center line that show what the board is centered
+     * on, for the board alignment choices. */
+    .LayoutIllustration-guide {
+        fill: none;
+        stroke: var(--primary);
+        stroke-width: 2.25;
+        stroke-linecap: round;
+
+        &.dashed {
+            stroke-width: 2;
+            stroke-dasharray: 4 3;
+        }
+    }
+
+    /* Content below the bottom edge of the phone: the part the reader
+     * scrolls to. */
+    .LayoutIllustration-overflow {
+        opacity: 0.55;
+
+        .LayoutIllustration-panel {
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1;
+            stroke-dasharray: 2 1.5;
+        }
+    }
+
+    .LayoutIllustration-board {
+        fill: var(--layout-illustration-board);
+    }
+
+    .LayoutIllustration-grid {
+        stroke: var(--layout-illustration-grid);
+        stroke-width: 0.75;
+    }
+
+    .LayoutIllustration-black-stone {
+        fill: var(--layout-illustration-black-stone);
+    }
+
+    .LayoutIllustration-white-stone {
+        fill: var(--layout-illustration-white-stone);
+        stroke: var(--layout-illustration-grid);
+        stroke-width: 0.5;
+    }
+}

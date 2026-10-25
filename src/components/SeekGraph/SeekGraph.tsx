@@ -264,11 +264,11 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                 // rengo "other players" on this page need to be sent to the game when it starts
                 // the creator already gets sent, by the normal challenge modal mechanism
                 if (entry.rengo && entry.creator !== this_user_id) {
-                    if (
-                        entry
-                            .rengo_black_team!.concat(entry.rengo_white_team as any)
-                            .includes(this_user_id)
-                    ) {
+                    const players = [
+                        ...(entry.rengo_black_team ?? []),
+                        ...(entry.rengo_white_team ?? []),
+                    ];
+                    if (players.includes(this_user_id)) {
                         browserHistory.push(`/game/${entry.game_id}`);
                     }
                 }

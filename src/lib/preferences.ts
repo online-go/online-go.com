@@ -23,18 +23,24 @@ import { DataSchema } from "./data_schema";
 import { FollowedChannel } from "@/views/GoTV";
 import { getWindowWidth } from "./device";
 import { createGobanThemePreferenceDefaults } from "./goban_theme_defaults";
-import type { GobanViewBoardAlignment } from "@/components/GobanView/util";
+import type {
+    ActionButtonsPosition,
+    GobanViewBoardAlignment,
+    MoveControlsPosition,
+} from "@/components/GobanView/layout";
 
 export const defaults = {
     "ai-review-enabled": true,
     "ai-review-use-score": true,
     "ai-review-show-visit-counts": false,
     "ai-review-show-on-board": true,
+    "ai-review-show-playouts": true,
     "ai-summary-table-show": true,
     "always-disable-analysis": false,
     "animate-turn-clock": true,
     "asked-to-enable-desktop-notifications": false,
     "auto-advance-after-submit": true,
+    "auto-exit-vacation-on-move": false,
     "autofocus-submit-button": false,
     "accessibility.keyboard-coordinate-input": false,
     "accessibility.last-move-crosshair": false,
@@ -88,10 +94,16 @@ export const defaults = {
     "goban-view-sidebar-width": null as number | null,
     "goban-view-board-alignment": "container" as GobanViewBoardAlignment,
     "goban-view-portrait-split": null as number | null,
+    "goban-view-action-buttons": "bar" as ActionButtonsPosition,
+    "goban-view-left-aside-width": null as number | null,
+    "goban-view-mobile-scroll": false,
+    "goban-view-move-controls": "docked" as MoveControlsPosition,
     "hide-ranks": false,
     "label-positioning": "all" as LabelPosition,
     "label-positioning-puzzles": "all" as LabelPosition,
     "game.chat-enabled": true,
+    "game.chat-column": false,
+    "game.mobile-chat-visible": false,
     "moderator.game-moderator-tab-visible": true,
     language: "auto",
     "move-tree-numbering": "move-number" as "none" | "move-coordinates" | "move-number",

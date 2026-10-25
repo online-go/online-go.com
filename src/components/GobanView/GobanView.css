@@ -35,30 +35,105 @@
         padding: var(--goban-view-player-bar-padding) 0;
     }
 
-    /* Landscape with player bars: the bars and the board form a stage that
-     * is as wide as the board. The board is height limited, so the stage
-     * width is the board size; when the column is narrower than that the
-     * stage shrinks to the column and the board follows its width. The
-     * stage is centered in the column both ways, so on a narrow column the
-     * bars still hug the board and the group floats in the middle. */
-    &.has-player-bars .GobanView-center {
+    /* Landscape: the board stage holds the board, and the player bars and
+     * the move controls under the board when the layout has them. It is as
+     * wide as the board. The board is height limited, so the stage width
+     * is the board size; when the column is narrower than that the stage
+     * shrinks to the column and the board follows its width. The stage is
+     * centered in the column both ways, so on a narrow column it still
+     * floats in the middle.
+     *
+     * These rules key on the stage element, which GobanView renders
+     * whenever there is a board, and not on a root class: what the stage
+     * holds must never change how it is laid out.
+     *
+     * Landscape only: portrait nests the stage and the center the other
+     * way round (.GobanView-stage holds .GobanView-center, not the
+     * reverse), so centering .GobanView-center here would break the
+     * stretch that gives .goban-container its width there. */
+    &:not(.portrait) .GobanView-center {
         align-items: center;
         justify-content: center;
+    }
 
-        .GobanView-stage {
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
-            width: min(100%, var(--goban-view-board-size));
-            max-height: 100%;
-        }
+    &:not(.portrait) .GobanView-center > .GobanView-stage {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        width: min(100%, var(--goban-view-board-size));
+        max-height: 100%;
 
-        .GobanView-stage .goban-container {
+        .goban-container {
             flex: 0 1 auto;
             flex-basis: auto;
             width: 100%;
             aspect-ratio: 1;
             min-height: 0;
+        }
+
+        > .MoveNumberControl {
+            box-sizing: border-box;
+            flex-shrink: 0;
+            height: var(--goban-view-move-controls-height);
+            width: min(100%, var(--goban-view-board-size));
+            align-self: center;
+        }
+    }
+
+    /* Without container query units the board size above is not known, so
+     * the stage fills the column instead and GobanContainer centers the
+     * board in it. */
+    @supports not (width: 1cqw) {
+        &:not(.portrait) .GobanView-center > .GobanView-stage {
+            width: 100%;
+            height: 100%;
+
+            .goban-container {
+                flex: 1 1 auto;
+                aspect-ratio: auto;
+            }
+
+            > .MoveNumberControl {
+                width: 100%;
+            }
+        }
+    }
+
+    /* Under the board, in landscape and portrait, the move controls sit on
+     * the page, not in a panel: no background and no border. Docked
+     * controls keep their strip look. */
+    .GobanView-stage > .MoveNumberControl {
+        background: transparent;
+        border-top: none;
+        box-shadow: none;
+    }
+
+    /* Under the board, in the buttons layout, an empty spacer, the
+     * navigation group and the move number share the spare width equally,
+     * and the buttons spread evenly across the group. The group starts at 30rem
+     * and gives up width first when the strip is narrow. The buttons keep
+     * their size; each one sits in the middle of an equal share of the
+     * group. */
+    .GobanView-stage > .MoveNumberControl.MoveNumberControl-buttons {
+        justify-content: center;
+        gap: 0;
+
+        &::before {
+            content: "";
+            flex: 1 0 auto;
+        }
+
+        .MoveNumberControl-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            flex: 1 1 30rem;
+            min-width: 0;
+        }
+
+        .MoveNumberControl-move-number {
+            flex: 1 0 1rem;
+            text-align: right;
         }
     }
 
@@ -73,33 +148,134 @@
      * Auto: the sidebar reaches from the right edge of the view to the
      * right edge of a viewport-centered board, i.e. half of the space the
      * board does not use, minus the gap and margin around the sidebar. It
-     * never drops below the fixed fallback width and never exceeds 80rem.
+     * never drops below the fixed fallback width and never exceeds 35rem;
+     * past that width the extra space stays around the board.
      *
      * The user can override this by dragging the gap between the board and
      * the sidebar; the override is bounded to the fallback width and to
      * whatever keeps the board pane at least its minimum width. */
     --goban-view-sidebar-gap: 1.25rem;
 
+    /* The space between the outer columns and the edges of the view: the
+     * 0.3rem the sidebar sits below the navbar (--below-navbar minus the
+     * navbar height), repeated at the sides so the framing reads evenly. */
+    --goban-view-edge-margin: 0.3rem;
+
     /* Height the board cannot use: the player bars above and below it
-     * (each 3rem plus 0.3rem of padding on both sides). Zero without bars,
-     * so the board is the full view height and 100cqh is its size. */
-    --goban-view-board-inset: 0px;
+     * (each 3rem plus 0.3rem of padding on both sides), plus the
+     * under-board move controls strip. Zero without either, so the board is
+     * the full view height and 100cqh is its size. The root classes that
+     * add each part come from the same resolved layout that renders the
+     * part, and each part is held to the height counted here. */
+    --goban-view-move-controls-height: 2.6rem;
+    --goban-view-player-bars-inset: 0px;
+    --goban-view-move-controls-inset: 0px;
+    --goban-view-board-inset: calc(
+        var(--goban-view-player-bars-inset) + var(--goban-view-move-controls-inset)
+    );
     --goban-view-board-size: calc(100cqh - var(--goban-view-board-inset));
 
     &.has-player-bars {
-        --goban-view-board-inset: calc(
+        --goban-view-player-bars-inset: calc(
             2 * (var(--goban-view-player-bar-height) + 2 * var(--goban-view-player-bar-padding))
         );
     }
 
+    &.has-move-controls-under-board {
+        --goban-view-move-controls-inset: var(--goban-view-move-controls-height);
+    }
+
+    /* What sits right of the sidebar: its edge margin, plus the collapsed
+     * dock when the dock shows. */
+    --goban-view-sidebar-right-edge: var(--goban-view-edge-margin);
+
     --goban-view-sidebar-effective-width: clamp(
         var(--goban-view-sidebar-width),
-        calc((100cqw - var(--goban-view-board-size)) / 2 - var(--goban-view-sidebar-gap) - 0.3rem),
-        80rem
+        calc(
+            (100cqw - var(--goban-view-board-size)) / 2 - var(--goban-view-sidebar-gap) -
+                var(--goban-view-sidebar-right-edge)
+        ),
+        35rem
     );
     --goban-view-sidebar-outer-width: calc(
-        var(--goban-view-sidebar-effective-width) + var(--goban-view-sidebar-gap) + 0.3rem
+        var(--goban-view-sidebar-effective-width) + var(--goban-view-sidebar-gap) +
+            var(--goban-view-sidebar-right-edge)
     );
+
+    &.has-action-dock {
+        --goban-view-sidebar-right-edge: calc(
+            var(--dock-collapsed-width) + var(--goban-view-edge-margin)
+        );
+
+        .GobanView-sidebar {
+            margin-right: 0;
+        }
+    }
+
+    /* The action dock: a strip of icons attached to the sidebar's right
+     * edge. Its collapsed width is a real column, so it never covers the
+     * board. On hover or keyboard focus the panel grows to the left, over
+     * the sidebar, and shows the labels; the layout does not move. */
+    .GobanView-action-dock {
+        position: relative;
+        flex-shrink: 0;
+        width: var(--dock-collapsed-width);
+        margin: 0 var(--goban-view-edge-margin) var(--goban-view-bottom-margin) 0;
+        z-index: var(--z-dock);
+    }
+
+    .GobanView-action-dock-panel {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: var(--dock-collapsed-width);
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding: 1rem 0;
+        background-color: var(--bg);
+        border-radius: 0.5rem 0 0 0.5rem;
+        box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+        transition: all 0.1s ease-in;
+        user-select: none;
+
+        > * {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            width: var(--dock-width);
+            padding: 0 0 0 0.5rem;
+            white-space: nowrap;
+            text-align: left;
+        }
+
+        /* The row's icon is its first child. Size only that element, so a
+         * composite icon (several glyphs) keeps its own inner layout. */
+        > * > :first-child {
+            flex-shrink: 0;
+            font-size: 1.3rem;
+            width: 1.3rem;
+            /* Margin, not padding: a composite icon places its badge
+             * against its own padding box. */
+            margin: 0.5rem 0.7rem 0.5rem 0;
+            text-align: center;
+        }
+    }
+
+    /* Expand for a pointer that can hover, and for keyboard focus. A click
+     * or a tap leaves focus on the row without :focus-visible, so the dock
+     * collapses again when the pointer leaves. */
+    @media (hover: hover) {
+        .GobanView-action-dock:hover .GobanView-action-dock-panel {
+            width: var(--dock-width);
+            box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.26);
+        }
+    }
+
+    .GobanView-action-dock:has(:focus-visible) .GobanView-action-dock-panel {
+        width: var(--dock-width);
+        box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.26);
+    }
 
     &.has-custom-sidebar-width {
         --goban-view-sidebar-effective-width: clamp(
@@ -113,10 +289,16 @@
      * Zero when no aside is rendered, so the centering math below holds
      * for every consumer. */
     --goban-view-left-aside-outer-width: 0px;
+    --goban-view-left-aside-effective-width: var(--goban-view-left-aside-width);
+
+    &.has-custom-left-aside-width {
+        --goban-view-left-aside-effective-width: var(--goban-view-left-aside-user-width);
+    }
 
     &.has-left-aside {
         --goban-view-left-aside-outer-width: calc(
-            var(--goban-view-left-aside-width) + 1.25rem + 0.3rem
+            var(--goban-view-left-aside-effective-width) + var(--goban-view-sidebar-gap) +
+                var(--goban-view-edge-margin)
         );
     }
 
@@ -130,27 +312,6 @@
         align-items: stretch;
         overflow: hidden;
         z-index: 1;
-
-        /* Keep the board centered in the viewport for as long as it fits:
-         * mirror the sidebar's outer width as left padding so the board
-         * centers in the space between. Once the sidebar is too wide for
-         * that, the padding shrinks so the board sits against the sidebar
-         * gap, and once it hits zero the board itself starts to shrink.
-         * Browsers without container query units skip this declaration and
-         * center the board in the remaining space instead. */
-        padding-left: clamp(
-            0px,
-            calc(
-                100cqw - var(--goban-view-sidebar-outer-width) - var(--goban-view-board-size) -
-                    var(--goban-view-left-aside-outer-width)
-            ),
-            max(
-                0px,
-                calc(
-                    var(--goban-view-sidebar-outer-width) - var(--goban-view-left-aside-outer-width)
-                )
-            )
-        );
 
         .goban-container {
             flex-grow: 1;
@@ -168,12 +329,33 @@
         }
     }
 
-    /* Board alignment preference (landscape only). `board-align-window` is
-     * the default described above and needs no extra rules. */
+    /* Board alignment (landscape only). The resolver sets exactly one
+     * board-align-* class in landscape and none in portrait, so these are
+     * the only rules that place the board sideways. With
+     * `board-align-container` the center column needs no extra rule: the
+     * board is centered in the space beside the sidebar. */
 
-    /* Center the board in the space beside the sidebar. */
-    &.board-align-container .GobanView-center {
-        padding-left: 0;
+    /* Keep the board centered in the viewport for as long as it fits:
+     * mirror the sidebar's outer width as left padding so the board
+     * centers in the space between. Once the sidebar is too wide for
+     * that, the padding shrinks so the board sits against the sidebar
+     * gap, and once it hits zero the board itself starts to shrink.
+     * Browsers without container query units skip this declaration and
+     * center the board in the remaining space instead. */
+    &.board-align-window .GobanView-center {
+        padding-left: clamp(
+            0px,
+            calc(
+                100cqw - var(--goban-view-sidebar-outer-width) - var(--goban-view-board-size) -
+                    var(--goban-view-left-aside-outer-width)
+            ),
+            max(
+                0px,
+                calc(
+                    var(--goban-view-sidebar-outer-width) - var(--goban-view-left-aside-outer-width)
+                )
+            )
+        );
     }
 
     /* Center the board and the sidebar together: the center column hugs
@@ -194,8 +376,7 @@
             @supports (width: 1cqw) {
                 flex-basis: var(--goban-view-board-size);
             }
-            padding-left: 0;
-            margin-left: 0.3rem;
+            margin-left: var(--goban-view-edge-margin);
         }
     }
 
@@ -262,20 +443,20 @@
         /* The right margin matches the 0.3rem the sidebar sits below the
          * navbar (--below-navbar minus the navbar height) and the 0.3rem
          * bottom margin, so the framing reads evenly on all three edges. */
-        margin: 0 0.3rem var(--goban-view-bottom-margin) 0;
+        margin: 0 var(--goban-view-edge-margin) var(--goban-view-bottom-margin) 0;
         overflow: hidden;
     }
 
     .GobanView-left-aside {
         display: flex;
         flex-direction: column;
-        width: var(--goban-view-left-aside-width);
+        width: var(--goban-view-left-aside-effective-width);
         flex-shrink: 0;
         z-index: 2;
         background: var(--shade5);
         border-radius: 8px;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-        margin: 0 1.25rem var(--goban-view-bottom-margin) 0.3rem;
+        margin: 0 0 var(--goban-view-bottom-margin) var(--goban-view-edge-margin);
         overflow-y: auto;
         overflow-x: hidden;
     }
@@ -564,6 +745,31 @@
             }
         }
 
+        /* Scrolling mode: one long column. The stage is not capped to the
+           screen, so the board is as wide as the screen, and the actions
+           follow the panels. */
+        &.has-mobile-scroll {
+            .GobanView-stage {
+                max-height: none;
+            }
+
+            .GobanView-center {
+                flex-shrink: 0;
+            }
+        }
+
+        /* The action list replaces the tab bar (see has-action-list on the
+           root, below), so nothing needs to be cleared above it: the
+           overlay takeover only needs to clear the safe area, not a tab bar
+           that isn't there. Scoped to has-action-list rather than
+           has-mobile-scroll, since scrolling mode without an actionDock
+           still renders the tab bar. */
+        &.has-action-list {
+            .GobanView-tab-panel.takeover.active:not(.keep-goban-visible) {
+                bottom: var(--safe-area-inset-bottom);
+            }
+        }
+
         /* Takeover panels overlay the scroll area */
         .GobanView-tab-panel.takeover {
             display: none;
@@ -594,6 +800,41 @@
        visible above the tab bar. */
     &.has-custom-slider.portrait .GobanView-tab-panel.takeover.active:not(.keep-goban-visible) {
         bottom: calc(var(--goban-view-tab-bar-height) + 2.6rem + var(--safe-area-inset-bottom));
+    }
+
+    /* Same as above, but the action list has replaced the tab bar (see
+       has-action-list on the root), so only the custom slider's own height
+       needs clearing. The extra class outweighs the rule above regardless
+       of source order, so this combination always wins it. */
+    &.has-custom-slider.has-action-list.portrait
+        .GobanView-tab-panel.takeover.active:not(.keep-goban-visible) {
+        bottom: calc(2.6rem + var(--safe-area-inset-bottom));
+    }
+
+    /* The actions list at the end of the scroll: rows wrap into columns. */
+    .GobanView-action-list {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 0.5rem 0;
+
+        > * {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            flex: 1 0 30%;
+            min-width: 7rem;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+            text-align: left;
+        }
+
+        > * > :first-child {
+            flex-shrink: 0;
+            font-size: 1rem;
+            width: 1.3rem;
+            margin-right: 0.5rem;
+            text-align: center;
+        }
     }
 }
 

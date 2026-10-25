@@ -35,6 +35,7 @@ interface UseReportChecklistArgs {
     review_id?: number;
     reported_user_id?: number;
     note: string;
+    stalling_kind?: string;
     attestations: Record<ChecklistItemId, boolean>;
 }
 
@@ -44,6 +45,7 @@ export function useReportChecklist({
     review_id,
     reported_user_id,
     note,
+    stalling_kind,
     attestations,
 }: UseReportChecklistArgs): ChecklistItemResult[] {
     const [outcomes, set_outcomes] = React.useState<AsyncOutcomes | null>(null);
@@ -89,24 +91,25 @@ export function useReportChecklist({
             review_id,
             reported_user_id,
             note,
+            stalling_kind,
             fetchGamedata,
         }).then((result) => {
             if (generation.current === mine) {
                 set_outcomes(result);
             }
         });
-        // `note` is deliberately absent from the dependencies. Async checks must not
-        // read `ctx.note`: they would see a stale value frozen at the last report-type
-        // or game change, not what the reporter is currently typing, and including it
-        // here would restart evaluation — flashing every check back to pending — on
-        // every keystroke. A check that needs live form state must be `sync: true`;
-        // synchronous checks read the live note through buildResults below, which runs
-        // on every render.
+        // `note` and `stalling_kind` are deliberately absent from the dependencies.
+        // Async checks must not read them: they would see a stale value frozen at the
+        // last report-type or game change, not what the reporter is currently
+        // entering, and including them here would restart evaluation — flashing every
+        // check back to pending — on every change. A check that needs live form state
+        // must be `sync: true`; synchronous checks read the live values through
+        // buildResults below, which runs on every render.
     }, [items, game_id, review_id, reported_user_id, fetchGamedata]);
 
     return buildResults(
         items,
-        { game_id, review_id, reported_user_id, note, fetchGamedata },
+        { game_id, review_id, reported_user_id, note, stalling_kind, fetchGamedata },
         outcomes,
         attestations,
     );

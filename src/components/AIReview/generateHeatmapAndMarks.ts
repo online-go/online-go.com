@@ -148,7 +148,10 @@ export const DEFAULT_WIN_RATE_DIFF_THRESHOLDS: ScoreDiffThresholds = {
     Mistake: 20.0,
 };
 
-export type QualityPalette = { [quality in AIQualityMark]: string } & { blue_move: string };
+export type QualityPalette = { [quality in AIQualityMark]: string } & {
+    blue_move: string;
+    alternative_move?: string;
+};
 
 function cssColor(style: CSSStyleDeclaration | null, name: string, fallback: string): string {
     const value = style?.getPropertyValue(name).trim();
@@ -159,8 +162,9 @@ function cssColor(style: CSSStyleDeclaration | null, name: string, fallback: str
  * The move quality colors for the current theme, read from the
  * `--move-quality-*` and `--ai-blue-move` CSS variables that also color the
  * board badges and the summary table, so every quality indicator agrees.
- * Falls back to the light theme defaults where the variables are not
- * available.
+ * The optional `--ai-alternative-move` overrides suggestion circle colors
+ * without changing quality badge colors. Falls back to the light theme
+ * defaults where the variables are not available.
  */
 export function resolveQualityPalette(): QualityPalette {
     const style =
@@ -174,6 +178,7 @@ export function resolveQualityPalette(): QualityPalette {
         );
     }
     palette.blue_move = cssColor(style, "--ai-blue-move", BLUE_MOVE_COLOR);
+    palette.alternative_move = cssColor(style, "--ai-alternative-move", "") || undefined;
     return palette;
 }
 
@@ -436,11 +441,13 @@ export function generateHeatmapAndMarks({
              * quality. The displayed delta is negative for a loss, while the
              * quality thresholds classify a positive loss. */
             const color =
+                palette.alternative_move ??
                 qualityColor(
                     score_delta === undefined ? undefined : -score_delta,
                     -win_rate_delta,
                     palette,
-                ) ?? NEUTRAL_CIRCLE_COLOR;
+                ) ??
+                NEUTRAL_CIRCLE_COLOR;
             /* Opacity starts at a visible base and scales up with the
              * suggestion's visits relative to the most-visited branch */
             const fill_alpha = 0.25 + 0.55 * (branch.visits / max_branch_visits);
@@ -476,7 +483,7 @@ export function generateHeatmapAndMarks({
                     ? qualityColor(-played_move_delta, undefined, palette)
                     : qualityColor(undefined, -played_move_delta, palette);
         }
-        const circle_color = color ?? NEUTRAL_CIRCLE_COLOR;
+        const circle_color = palette.alternative_move ?? color ?? NEUTRAL_CIRCLE_COLOR;
         colored_circles.push({
             move: { x: played_move.x, y: played_move.y },
             color: withAlpha(circle_color, 0.25),

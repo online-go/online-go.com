@@ -36,6 +36,8 @@ export interface ChallengeModalProperties {
     config?: ChallengeModalConfig;
     autoCreate?: boolean;
     created?: (c: CreatedChallengeInfo) => void;
+    /** When false, the color in this dialog is for this game only and is not saved. */
+    persistColor?: boolean;
 }
 
 export interface ChallengeModalInput extends ChallengeModalProperties {
@@ -123,7 +125,7 @@ interface TimeControlConfig {
     max_time?: number;
     period_time?: number;
     periods?: number;
-    pause_on_weekends: boolean;
+    pause_on_weekends?: boolean;
 }
 
 export type ChallengeModalConf = {

@@ -1384,6 +1384,11 @@ export function GoResources(): React.ReactElement {
                                 title="Ukrainian Go Federation"
                                 href="https://ufgo.org"
                             />,
+                            <BasicResource
+                                countries={["cr"]}
+                                title="Asociación Deportiva de Go de Costa Rica"
+                                href="https://go-tico.org/"
+                            />,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
                         ))}

@@ -118,5 +118,23 @@ export const emptyCollectionRedirectTest = async ({
     });
     log("New puzzle link from the empty collection page landed on the editor");
 
+    // The owner can delete the still-empty collection from its page. The
+    // page confirms first, then returns to "My puzzles", where the
+    // collection no longer appears.
+    await load(userPage, `/puzzle-collection/${collectionId}`);
+    await expect(userPage.locator(".PuzzleLibrary-title")).toHaveText(collectionName, {
+        timeout: 15000,
+    });
+    const deleteCollectionButton = await expectOGSClickableByName(userPage, /^Delete collection$/);
+    await deleteCollectionButton.click();
+    await expect(userPage.locator(".swal2-confirm")).toBeVisible({ timeout: 5000 });
+    await userPage.locator(".swal2-confirm").click();
+
+    await expect(userPage).toHaveURL(/\/puzzle-collections\/\d+/, { timeout: 15000 });
+    await expect(userPage.locator("tr", { hasText: collectionName })).toHaveCount(0, {
+        timeout: 15000,
+    });
+    log("Deleting the empty collection returned to My puzzles without it");
+
     log("=== Empty Puzzle Collection Redirect Test Complete ===");
 };

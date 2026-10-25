@@ -205,6 +205,7 @@ export const cmEscalatedEscapingAllOptionsTest = async (
             "suspend_user",
             "suspend_user_and_annul",
             "annul_no_warning",
+            "cancel_already_handled",
         ];
 
         for (const action of expectedActions) {

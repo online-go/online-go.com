@@ -71,7 +71,7 @@ export interface PlayerCacheEntry {
     id: number;
     country?: string;
     icon?: string;
-    pro?: boolean;
+    pro?: boolean | 0 | 1;
     ranking?: number;
     rating?: number;
     ratings?: {

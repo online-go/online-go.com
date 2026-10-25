@@ -27,9 +27,8 @@ import {
     Size,
     Speed,
 } from "goban";
-import { _, llm_pgettext, pgettext, moment } from "@/lib/translate";
+import { _, pgettext, interpolate, moment } from "@/lib/translate";
 import { automatch_manager } from "@/lib/automatch_manager";
-import { Bot, bot_event_emitter, bots_list, getAcceptableTimeSetting } from "@/lib/bots";
 import { alert } from "@/lib/swal_config";
 import { useRefresh, useUser } from "@/lib/hooks";
 //import { Toggle } from "@/components/Toggle";
@@ -193,7 +192,6 @@ export function QuickMatch(): React.ReactElement {
         automatch_manager.on("entry", refresh);
         automatch_manager.on("start", refresh);
         automatch_manager.on("cancel", refresh);
-        bot_event_emitter.on("updated", refresh);
 
         function onGameStarted(game?: Notification) {
             console.log("game-started", game);
@@ -208,7 +206,6 @@ export function QuickMatch(): React.ReactElement {
             automatch_manager.off("entry", refresh);
             automatch_manager.off("start", refresh);
             automatch_manager.off("cancel", refresh);
-            bot_event_emitter.off("updated", refresh);
             notification_manager.event_emitter.off("game-started", onGameStarted);
         };
     }, []);
@@ -507,46 +504,6 @@ export function QuickMatch(): React.ReactElement {
           ? "13x13"
           : "9x9";
 
-    let available_bots: (Bot & { disabled?: string })[] = bots_list().filter((b) => b.id > 0);
-
-    if (game_clock !== "multiple") {
-        available_bots = available_bots.filter((b) => {
-            const settings = {
-                rank: user.ranking,
-                width: parseInt(board_size),
-                height: parseInt(board_size),
-                ranked: true,
-                handicap: handicaps === "disabled" ? false : true,
-                system: time_control_system,
-                speed: game_speed,
-                [time_control_system]: SPEED_OPTIONS[board_size][game_speed][time_control_system],
-            };
-            const [options, message] = getAcceptableTimeSetting(b, settings);
-            if (!options) {
-                b.disabled = message || undefined;
-            } else if (options && options._config_version && options._config_version === 0) {
-                b.disabled = llm_pgettext(
-                    "Bot is not configured correctly",
-                    "Bot is not configured correctly",
-                );
-            } else {
-                b.disabled = undefined;
-            }
-
-            return true;
-        });
-    }
-
-    available_bots.sort((a, b) => {
-        if (a.disabled && !b.disabled) {
-            return 1;
-        }
-        if (b.disabled && !a.disabled) {
-            return -1;
-        }
-        return (a.ranking || 0) - (b.ranking || 0);
-    });
-
     /* Filter available quick matches to the applicable ones for button highlighting  */
     const available_human_match_count_by_size: { [size: string]: number } = {
         "9x9": 0,
@@ -670,43 +627,31 @@ export function QuickMatch(): React.ReactElement {
         return " activity ";
     }
 
-    const lower_rank_diff_options = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0].map((v) => {
-        // For weaker opponents (left side), we want ranks that are numerically higher (weaker)
-        // So we subtract the difference to get weaker ranks
-        const computedRank = user.ranking - v;
-        let rankLabel;
-        if (computedRank < 30) {
-            // Kyu ranks: 29 = 1k, 28 = 2k, 27 = 3k, etc.
-            rankLabel = `${30 - computedRank}k`;
-        } else {
-            // Dan ranks: 30 = 1d, 31 = 2d, 32 = 3d, etc.
-            rankLabel = `${computedRank - 29}d`;
-        }
-        return {
-            value: v.toString(),
-            label: rankLabel,
-            description: v === 0 ? llm_pgettext("Player is the same rank as you", "Your rank") : "",
-        };
-    });
+    function rank_diff_label(diff: number): string {
+        const ranksHidden = preferences.get("hide-ranks");
+        const computedRank = user.ranking + diff;
 
-    const upper_rank_diff_options = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((v) => {
-        // For stronger opponents (right side), we want ranks that are numerically lower (stronger)
-        // So we add the difference to get stronger ranks
-        const computedRank = user.ranking + v;
-        let rankLabel;
-        if (computedRank < 30) {
+        if (ranksHidden) {
+            if (diff === 0) {
+                return pgettext("Player is the same rank as you", "Your Rank");
+            } else if (diff > 0) {
+                return interpolate(
+                    pgettext("Player is a higher rank than you", "{{num}} Stronger"),
+                    { num: Math.abs(diff) },
+                );
+            } else {
+                return interpolate(pgettext("Player is a lower rank than you", "{{num}} Weaker"), {
+                    num: Math.abs(diff),
+                });
+            }
+        } else if (computedRank < 30) {
             // Kyu ranks: 29 = 1k, 28 = 2k, 27 = 3k, etc.
-            rankLabel = `${30 - computedRank}k`;
+            return `${30 - computedRank}k`;
         } else {
             // Dan ranks: 30 = 1d, 31 = 2d, 32 = 3d, etc.
-            rankLabel = `${computedRank - 29}d`;
+            return `${computedRank - 29}d`;
         }
-        return {
-            value: v.toString(),
-            label: rankLabel,
-            description: v === 0 ? llm_pgettext("Player is the same rank as you", "Your rank") : "",
-        };
-    });
+    }
 
     // ensure a valid handicap value is selected
     if (!handicap_options.find((o) => o.value === handicaps)) {
@@ -1049,75 +994,53 @@ export function QuickMatch(): React.ReactElement {
                 {/* Opponent Rank */}
                 <section className="GameOption-cell" aria-labelledby={opponentRankId}>
                     <div className="GameOption opponent-rank-container">
-                        <div className="opponent-rank-range">
-                            <div className="rank-title-group">
-                                <h2 id={opponentRankId}>{_("Opponent Rank")}</h2>
-                                <Select
-                                    classNamePrefix="ogs-react-select"
-                                    value={lower_rank_diff_options.find(
-                                        (o) => o.value === lower_rank_diff.toString(),
-                                    )}
-                                    styles={
-                                        {
-                                            ...select_styles,
-                                            menu: (base) => ({
-                                                ...base,
-                                                width: "120",
-                                            }),
-                                        } as StylesConfig<
-                                            OptionWithDescription,
-                                            false,
-                                            GroupBase<OptionWithDescription>
-                                        >
+                        <div className="opponent-rank-selector">
+                            <div className="rank-center-marker" inert></div>
+                            <input
+                                style={{ direction: "rtl", marginRight: 0 }}
+                                type="range"
+                                step="1"
+                                min="0"
+                                max="9"
+                                onChange={(ev) => {
+                                    const value = parseInt(ev.target.value);
+                                    if (0 <= value && value <= 9) {
+                                        setLowerRankDiff(value);
                                     }
-                                    isSearchable={false}
-                                    isDisabled={automatch_search_active}
-                                    menuPlacement="auto"
-                                    onChange={(opt) => {
-                                        if (opt) {
-                                            setLowerRankDiff(parseInt(opt.value));
-                                        }
-                                    }}
-                                    options={lower_rank_diff_options}
-                                    components={{
-                                        Option: RenderOptionWithDescription,
-                                    }}
-                                />
-                            </div>
-
-                            <div className="rank-separator">{" - "}</div>
-
-                            <Select
-                                classNamePrefix="ogs-react-select"
-                                value={upper_rank_diff_options.find(
-                                    (o) => o.value === upper_rank_diff.toString(),
+                                }}
+                                value={lower_rank_diff}
+                                disabled={automatch_search_active}
+                                aria-label={pgettext(
+                                    "Accessible name of the slider that sets how much weaker than you an automatch opponent can be",
+                                    "Weakest opponent rank",
                                 )}
-                                styles={
-                                    {
-                                        ...select_styles,
-                                        menu: (base) => ({
-                                            ...base,
-                                            width: "120",
-                                        }),
-                                    } as StylesConfig<
-                                        OptionWithDescription,
-                                        false,
-                                        GroupBase<OptionWithDescription>
-                                    >
-                                }
-                                isSearchable={false}
-                                isDisabled={automatch_search_active}
-                                menuPlacement="auto"
-                                onChange={(opt) => {
-                                    if (opt) {
-                                        setUpperRankDiff(parseInt(opt.value));
+                                aria-valuetext={rank_diff_label(-lower_rank_diff)}
+                            />
+                            <input
+                                style={{ marginLeft: 0 }}
+                                type="range"
+                                step="1"
+                                min="0"
+                                max="9"
+                                onChange={(ev) => {
+                                    const value = parseInt(ev.target.value);
+                                    if (0 <= value && value <= 9) {
+                                        setUpperRankDiff(value);
                                     }
                                 }}
-                                options={upper_rank_diff_options}
-                                components={{
-                                    Option: RenderOptionWithDescription,
-                                }}
+                                value={upper_rank_diff}
+                                disabled={automatch_search_active}
+                                aria-label={pgettext(
+                                    "Accessible name of the slider that sets how much stronger than you an automatch opponent can be",
+                                    "Strongest opponent rank",
+                                )}
+                                aria-valuetext={rank_diff_label(upper_rank_diff)}
                             />
+                        </div>
+                        <div className="opponent-rank-range">
+                            <h2 id={opponentRankId}>
+                                {`${_("Opponent Rank")}: ${rank_diff_label(-lower_rank_diff)} - ${rank_diff_label(upper_rank_diff)}`}
+                            </h2>
                         </div>
                     </div>
                 </section>

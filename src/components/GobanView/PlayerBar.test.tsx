@@ -24,6 +24,7 @@ import { PlayerBar } from "./PlayerBar";
 jest.mock("@/components/Clock", () => ({
     __esModule: true,
     Clock: ({ color }: { color: string }) => <div data-testid={`clock-${color}`} />,
+    TransmittingIndicator: () => null,
 }));
 jest.mock("@/components/PlayerIcon", () => ({
     __esModule: true,

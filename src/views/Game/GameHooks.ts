@@ -27,7 +27,7 @@ import {
 } from "goban";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
-import { useGobanController } from "@/components/GobanView";
+import { useGobanControllerOrNull } from "@/components/GobanView";
 import { GobanController } from "@/lib/GobanController";
 import { useUser } from "@/lib/hooks";
 import { ChatMode } from "./GameChat";
@@ -50,65 +50,116 @@ export function useScorePopup(goban: Goban | null): {
     show_score_breakdown: boolean;
     toggleScorePopup: () => void;
 } {
-    const orig_marks = React.useRef<string | null>(null);
-    const showing_scores = React.useRef<boolean>(false);
-    const [show_score_breakdown, set_show_score_breakdown] = React.useState(false);
+    const popup = React.useRef<{
+        goban: Goban;
+        orig_marks: string | null;
+        showing_scores: boolean;
+    } | null>(null);
+    const [popup_goban, set_popup_goban] = React.useState<Goban | null>(null);
+
+    const restoreScores = (saved: NonNullable<typeof popup.current>) => {
+        if (!saved.showing_scores) {
+            saved.goban.hideScores();
+        }
+        if (saved.goban.engine.cur_move && saved.orig_marks) {
+            saved.goban.engine.cur_move.setAllMarks(JSON.parse(saved.orig_marks));
+        }
+        saved.goban.redraw();
+    };
 
     const popupScores = () => {
         if (!goban) {
             return;
         }
+        if (popup.current && popup.current.goban !== goban) {
+            restoreScores(popup.current);
+            popup.current = null;
+        }
+        let orig_marks: string | null = null;
         if (goban.engine.cur_move) {
-            orig_marks.current = JSON.stringify(goban.engine.cur_move.getAllMarks());
+            orig_marks = JSON.stringify(goban.engine.cur_move.getAllMarks());
             goban.engine.cur_move.clearMarks();
-        } else {
-            orig_marks.current = null;
         }
 
         const scores = goban.engine.computeScore(false);
-        showing_scores.current = goban.showing_scores;
+        popup.current = {
+            goban,
+            orig_marks,
+            showing_scores: goban.showing_scores,
+        };
         goban.showScores(scores);
 
-        set_show_score_breakdown(true);
+        set_popup_goban(goban);
     };
     const hideScores = () => {
-        if (!goban) {
-            return;
+        if (popup.current) {
+            restoreScores(popup.current);
+            popup.current = null;
         }
-        if (!showing_scores.current) {
-            goban.hideScores();
-        }
-        if (goban.engine.cur_move && orig_marks.current) {
-            goban.engine.cur_move.setAllMarks(JSON.parse(orig_marks.current));
-        }
-        goban.redraw();
-
-        set_show_score_breakdown(false);
+        set_popup_goban(null);
     };
 
+    React.useEffect(
+        () => () => {
+            // A compact header can switch controllers without unmounting. Keep
+            // the saved marks and score visibility attached to the Goban that
+            // was opened, and restore them when that Goban leaves this hook.
+            if (popup.current?.goban === goban) {
+                restoreScores(popup.current);
+                popup.current = null;
+            }
+        },
+        [goban],
+    );
+
+    const show_score_breakdown = !!goban && popup_goban === goban && popup.current?.goban === goban;
     const toggleScorePopup = () => (show_score_breakdown ? hideScores() : popupScores());
 
     return { show_score_breakdown, toggleScorePopup };
 }
 
-/** React hook that returns true if an undo was requested on the current move */
-export function useShowUndoRequested(goban: Goban): boolean {
-    const [show_undo_requested, setShowUndoRequested] = React.useState(
-        !!goban &&
-            goban.engine.undo_requested === goban.engine.last_official_move.move_number &&
-            goban.engine.undo_requested === goban.engine.cur_move.move_number,
-    );
-    const goban_controller = useGobanController();
+/**
+ * The controller for the undo hooks: the one given, else the one from
+ * GobanControllerContext. The game page calls these hooks above its
+ * GobanView, where there is no context, so it passes the controller.
+ */
+function useUndoController(controller: GobanController | null | undefined): GobanController | null {
+    const context_controller = useGobanControllerOrNull();
+    return controller ?? context_controller;
+}
+
+/** Tracks the controller's `in_pushed_analysis` flag. */
+function useInPushedAnalysis(goban_controller: GobanController | null): boolean {
     const [in_pushed_analysis, set_in_pushed_analysis] = React.useState(
-        goban_controller.in_pushed_analysis,
+        goban_controller?.in_pushed_analysis ?? false,
     );
 
     React.useEffect(() => {
+        if (!goban_controller) {
+            return undefined;
+        }
+        set_in_pushed_analysis(goban_controller.in_pushed_analysis);
         goban_controller.on("in_pushed_analysis", set_in_pushed_analysis);
         return () => {
             goban_controller.off("in_pushed_analysis", set_in_pushed_analysis);
         };
     }, [goban_controller]);
+
+    return in_pushed_analysis;
+}
+
+/** React hook that returns true if an undo was requested on the current move */
+export function useShowUndoRequested(
+    goban: Goban | null,
+    controller?: GobanController | null,
+): boolean {
+    const [show_undo_requested, setShowUndoRequested] = React.useState(
+        !!goban &&
+            goban.engine.undo_requested === goban.engine.last_official_move.move_number &&
+            goban.engine.undo_requested === goban.engine.cur_move.move_number,
+    );
+    const goban_controller = useUndoController(controller);
+    const in_pushed_analysis = useInPushedAnalysis(goban_controller);
 
     React.useEffect(() => {
         if (!goban) {
@@ -222,14 +273,15 @@ export function useSubmittingMove(goban: Goban): boolean {
 /** React hook that returns true when the opponent has an undo request
  *  pending on the current move and this user is the one who can accept or
  *  reject it. */
-export function useCanAnswerUndoRequest(goban: Goban): boolean {
-    const goban_controller = useGobanController();
+export function useCanAnswerUndoRequest(
+    goban: Goban | null,
+    controller?: GobanController | null,
+): boolean {
+    const goban_controller = useUndoController(controller);
     const user_id = data.get("user")?.id;
-    const [in_pushed_analysis, set_in_pushed_analysis] = React.useState(
-        goban_controller.in_pushed_analysis,
-    );
+    const in_pushed_analysis = useInPushedAnalysis(goban_controller);
     const readCanAnswer = React.useCallback((): boolean => {
-        if (in_pushed_analysis || user_id === undefined) {
+        if (!goban || in_pushed_analysis || user_id === undefined) {
             return false;
         }
 
@@ -255,15 +307,11 @@ export function useCanAnswerUndoRequest(goban: Goban): boolean {
     const [can_answer, set_can_answer] = React.useState(readCanAnswer);
 
     React.useEffect(() => {
-        goban_controller.on("in_pushed_analysis", set_in_pushed_analysis);
-        return () => {
-            goban_controller.off("in_pushed_analysis", set_in_pushed_analysis);
-        };
-    }, [goban_controller]);
-
-    React.useEffect(() => {
         const syncCanAnswer = () => set_can_answer(readCanAnswer());
         syncCanAnswer();
+        if (!goban) {
+            return undefined;
+        }
 
         return subscribeAllEvents(
             goban,
@@ -272,7 +320,7 @@ export function useCanAnswerUndoRequest(goban: Goban): boolean {
         );
     }, [goban, readCanAnswer]);
 
-    const show_undo_requested = useShowUndoRequested(goban);
+    const show_undo_requested = useShowUndoRequested(goban, goban_controller);
 
     return show_undo_requested && can_answer;
 }
@@ -318,6 +366,24 @@ export const usePhase = generateGobanHook((goban: Goban | null) => goban?.engine
 export const useOfficialMoveNumber = generateGobanHook(
     (goban: Goban | null) => goban?.engine.last_official_move?.move_number ?? -1,
     ["last_official_move"],
+);
+
+/** React hook that returns the rule set the game is played under, or
+ *  undefined before the game config has loaded. */
+export const useGameRules = generateGobanHook(
+    (goban: Goban | null) => goban?.engine?.config?.rules,
+);
+
+/** React hook that returns the number of handicap stones, 0 for an even
+ *  game. */
+export const useGameHandicap = generateGobanHook(
+    (goban: Goban | null) => goban?.engine?.config?.handicap ?? 0,
+);
+
+/** React hook that returns the komi of the game, 0 when there is none or
+ *  the game config has not loaded. */
+export const useGameKomi = generateGobanHook(
+    (goban: Goban | null) => goban?.engine?.config?.komi ?? 0,
 );
 
 /**
@@ -411,6 +477,11 @@ export function useAutoScoring(goban: Goban): { in_progress: boolean; taking_too
  *     pauses are not user-resumable, but a player pause stacks on top of
  *     them and outlives them, so the affordance stays available.
  *
+ * `pauseDisabled` is true when this player has no pauses left. The count
+ * arrives on the game as `pauses_left_<player id>`, and again on the clock
+ * while a player pause is active. The clock copy is written back onto the
+ * engine so it is still known after the game is unpaused.
+ *
  * Moderators bypass the vacation / participant gating that applies to
  * players — `disable_vacation` only constrains player-side pauses, and
  * the server stamps the pause as `moderator_paused` regardless. This
@@ -420,6 +491,7 @@ export function useAutoScoring(goban: Goban): { in_progress: boolean; taking_too
 export function usePauseControl(goban: GobanRenderer | null): {
     paused: boolean;
     action: "pause" | "resume" | null;
+    pauseDisabled: boolean;
     togglePause: () => void;
 } {
     const user = useUser();
@@ -439,6 +511,12 @@ export function usePauseControl(goban: GobanRenderer | null): {
             return undefined;
         }
         const onClock = (clock: JGOFClockWithTransmitting | null) => {
+            const player_pause = clock?.pause_state?.player;
+            if (player_pause && typeof player_pause.pauses_left === "number" && goban.engine) {
+                (goban.engine as unknown as Record<string, number>)[
+                    `pauses_left_${player_pause.player_id}`
+                ] = player_pause.pauses_left;
+            }
             set_pause_state(clock?.pause_state ?? null);
         };
         goban.on("clock", onClock);
@@ -462,8 +540,20 @@ export function usePauseControl(goban: GobanRenderer | null): {
           ? "pause"
           : null;
 
+    const stored_pauses_left =
+        user.id === undefined
+            ? undefined
+            : (engine as unknown as Record<string, unknown> | undefined)?.[
+                  `pauses_left_${user.id}`
+              ];
+    const pauseDisabled =
+        action === "pause" &&
+        !user.is_moderator &&
+        typeof stored_pauses_left === "number" &&
+        stored_pauses_left <= 0;
+
     const togglePause = () => {
-        if (!goban) {
+        if (!goban || pauseDisabled) {
             return;
         }
         if (action === "resume") {
@@ -473,7 +563,7 @@ export function usePauseControl(goban: GobanRenderer | null): {
         }
     };
 
-    return { paused, action, togglePause };
+    return { paused, action, pauseDisabled, togglePause };
 }
 
 /** React hook that returns the current move tree from goban */
@@ -498,6 +588,20 @@ export const usePlayerToMove = generateGobanHook(
 export const usePlayerToMoveOnOfficialBranch = generateGobanHook(
     (goban: Goban | null) => goban?.engine.playerToMoveOnOfficialBranch() ?? 0,
     ["cur_move", "last_official_move"],
+);
+
+/** React hook that returns the colour to move in the live game, or null
+ *  when no one is waiting to play (the game is over, or being reviewed).
+ *  Follows the official branch, so browsing the move tree does not change
+ *  the answer. */
+export const useColorToMoveOnOfficialBranch = generateGobanHook(
+    (goban: Goban | null): "black" | "white" | null => {
+        if (!goban || goban.engine.phase !== "play") {
+            return null;
+        }
+        return goban.engine.last_official_move?.state.player === 2 ? "white" : "black";
+    },
+    ["cur_move", "last_official_move", "phase"],
 );
 
 /** React hook that returns true while it is the user's live turn to move.

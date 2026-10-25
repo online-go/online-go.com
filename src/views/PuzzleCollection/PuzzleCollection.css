@@ -31,4 +31,8 @@
     .PuzzleCollection-browse {
         text-align: center;
     }
+
+    .PuzzleCollection-delete {
+        align-self: center;
+    }
 }

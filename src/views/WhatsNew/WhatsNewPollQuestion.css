@@ -1,0 +1,75 @@
+/*
+ * Copyright (C)  Online-Go.com
+ */
+.WhatsNewPollQuestion {
+    margin: 0 0 1.25rem 0;
+    padding: 0;
+    border: none;
+    /* Always reserved, so answering does not shift the question sideways. */
+    border-left: 3px solid transparent;
+    padding-left: 0.75rem;
+    min-width: 0;
+
+    &.unanswered {
+        border-left-color: var(--primary);
+    }
+
+    & > :not(legend) {
+        clear: both;
+    }
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+
+    /* Floated so the fieldset's border runs past it instead of starting at its middle. */
+    .question-text {
+        float: left;
+        width: 100%;
+        padding: 0;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+        color: var(--text-color-active);
+    }
+
+    .question-choices {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .question-choice {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        cursor: pointer;
+
+        input {
+            margin: 0.2rem 0 0 0;
+            flex-shrink: 0;
+        }
+    }
+
+    .question-textarea {
+        width: 100%;
+        padding: 0.5rem;
+        font-size: 0.9rem;
+        resize: vertical;
+        box-sizing: border-box;
+        background-color: var(--shade5);
+        border: 1px solid var(--input-border);
+        color: var(--input-fg);
+        border-radius: 3px;
+    }
+
+    &:disabled {
+        .question-choice {
+            cursor: default;
+            color: var(--text-dimmed);
+        }
+
+        .question-textarea {
+            opacity: 0.7;
+        }
+    }
+}

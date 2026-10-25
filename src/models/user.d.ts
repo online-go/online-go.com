@@ -35,15 +35,7 @@ declare namespace rest_api {
         volatility: number;
     }
 
-    type RatingsBySizeAndSpeed = {
-        version: number;
-        overall: RatingsConfig;
-    } & {
-        [game_type in
-            | import("../lib/types").Size
-            | import("../lib/types").Speed
-            | `${import("../lib/types").Speed}-${import("../lib/types").Size}`]?: RatingsConfig;
-    };
+    type RatingsBySizeAndSpeed = import("goban").Ratings;
 
     type StartingRankHint =
         | "new"
@@ -112,15 +104,7 @@ declare namespace rest_api {
             ranking: number;
             rating: number;
             deviation: number;
-            ratings: {
-                version: number;
-                overall: RatingsConfig;
-            } & {
-                [game_type in
-                    | import("../lib/types").Size
-                    | import("../lib/types").Speed
-                    | `${import("../lib/types").Speed}-${import("../lib/types").Size}`]?: RatingsConfig;
-            };
+            ratings: RatingsBySizeAndSpeed;
             country: string; // country code
             language: string;
             name: string | null;

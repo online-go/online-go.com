@@ -39,7 +39,7 @@ socket.on("connect", () => {
 
 socket.on("user/state", (states) => {
     for (const id in states) {
-        state[id] = states[id];
+        state[id] = !!states[id];
         for (let i = 0; i < listeners[id].length; ++i) {
             listeners[id][i](id, state[id]);
         }

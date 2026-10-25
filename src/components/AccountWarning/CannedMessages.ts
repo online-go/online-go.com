@@ -483,6 +483,19 @@ No-one was at fault - we felt this was the best way to resolve the situation.
             ),
             { game_id },
         ),
+    ack_report_cancelled_already_handled: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement message to a user whose report was closed because the matter was already dealt with",
+                `
+Thanks for your report about '{{reported}}'.
+
+We closed it without further action, because the matter you reported had already been handled - for example, through an earlier report about the same thing.
+
+Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
+            ),
+            { reported },
+        ),
     final_warn_escaper: (game_id) =>
         interpolate(
             llm_pgettext(

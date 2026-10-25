@@ -17,6 +17,7 @@
 
 import * as Sentry from "@sentry/browser";
 import { configure_goban } from "@/lib/configure-goban";
+import { isThirdPartyError, SENTRY_IGNORE_ERRORS } from "@/lib/sentry_filters";
 import {
     init_wasm_ownership_estimator,
     init_remote_ownership_estimator,
@@ -67,37 +68,14 @@ try {
             // (equivalent to old autoSessionTracking: false)
         ],
 
-        /* Several users have weird addons and extensions that cause errors
-         * that have nothing to do with OGS. This code filters some of these
-         * out so they don't get reported to Sentry. */
-        ignoreErrors: [
-            "ReferenceError",
-            "coinbase",
-            "ethereum",
-            "hideMyLocation",
-            "userAgent",
-            "zaloJSV2", // cspell:disable-line
-            "evaluating 'a.L'",
-            "document.querySelector(\"[title='Kaya']\").style",
-            "onHide is not defined",
-            "outputCurrentConfiguration",
-            "mvpConfig",
-            "?(<anonymous>)",
-            "Cannot read properties of undefined (reading 'ns')",
+        beforeSend(event) {
+            if (isThirdPartyError(event)) {
+                return null;
+            }
+            return event;
+        },
 
-            // Transient network failures when loading CSS for lazy chunks
-            "Unable to preload CSS",
-
-            // Library bugs
-            ").ended is not a function", // d3
-
-            // Safari bugs
-            //   broken mac app WKWebView, see
-            //   https://github.com/getsentry/sentry-javascript/issues/3040
-            "evaluating 'window.webkit.messageHandlers'",
-            //   Audio
-            "cannot call stop without calling start first",
-        ],
+        ignoreErrors: SENTRY_IGNORE_ERRORS,
     });
 
     Sentry.setTag("version", ogs_version || "dev");
@@ -109,6 +87,10 @@ try {
 
 // Reload the page when a lazy chunk's CSS fails to preload for whatever
 // reason.
+//
+// Reading the `sessionStorage` property itself throws a SecurityError when the
+// browser blocks site storage, so every access is guarded. Without storage we
+// cannot count reloads, so we do not reload, to prevent an infinite loop.
 const PRELOAD_INFINITE_LOOP_GUARD_KEY = "preloadErrorReloads";
 let preload_error_processed = false;
 window.addEventListener("vite:preloadError", () => {
@@ -116,19 +98,27 @@ window.addEventListener("vite:preloadError", () => {
         return;
     }
     preload_error_processed = true;
-    const times_loaded = parseInt(
-        sessionStorage.getItem(PRELOAD_INFINITE_LOOP_GUARD_KEY) ?? "0",
-        10,
-    );
-    if (times_loaded < 2) {
-        sessionStorage.setItem(PRELOAD_INFINITE_LOOP_GUARD_KEY, String(times_loaded + 1));
-        window.location.reload();
+    try {
+        const times_loaded = parseInt(
+            sessionStorage.getItem(PRELOAD_INFINITE_LOOP_GUARD_KEY) ?? "0",
+            10,
+        );
+        if (times_loaded < 2) {
+            sessionStorage.setItem(PRELOAD_INFINITE_LOOP_GUARD_KEY, String(times_loaded + 1));
+            window.location.reload();
+        }
+    } catch (e) {
+        console.warn("Unable to access sessionStorage, not reloading after preload error", e);
     }
 });
 setTimeout(() => {
     // If this timer fires it means we're not in a preload infinite loop so we can
     // clear out the guard
-    sessionStorage.removeItem(PRELOAD_INFINITE_LOOP_GUARD_KEY);
+    try {
+        sessionStorage.removeItem(PRELOAD_INFINITE_LOOP_GUARD_KEY);
+    } catch {
+        // sessionStorage is unavailable, so there is no guard to clear
+    }
 }, 60000);
 
 try {

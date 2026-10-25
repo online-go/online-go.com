@@ -51,6 +51,7 @@ export function GamePreferences(): React.ReactElement {
         preferences.get("autoplay-delay") / 1000,
     );
     const [variation_move_count, _setVariationMoveCount] = usePreference("variation-move-count");
+    const [show_playouts, setShowPlayouts] = usePreference("ai-review-show-playouts");
     const [zen_mode_by_default, setZenModeByDefault] = usePreference("start-in-zen-mode");
     const [scroll_to_navigate, setScrollToNavigate] = usePreference("scroll-to-navigate");
 
@@ -256,6 +257,15 @@ export function GamePreferences(): React.ReactElement {
                               num_moves: variation_move_count,
                           })}
                 </span>
+            </PreferenceLine>
+
+            <PreferenceLine
+                title={_("Show AI playouts in variations")}
+                description={_(
+                    "In AI reviews, when you follow a suggested move, show the AI's numbered playout on the board together with the AI's suggestions for the new position. When off, only the suggestions are shown.",
+                )}
+            >
+                <Toggle checked={show_playouts} onChange={setShowPlayouts} />
             </PreferenceLine>
 
             <PreferenceLine

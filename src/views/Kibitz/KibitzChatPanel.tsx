@@ -42,6 +42,7 @@ import type {
 } from "@/models/kibitz";
 import { formatVariationBranchLabel, formatVariationLengthLabel } from "./kibitzVariationQuickList";
 import { KibitzVariationSwatch } from "./KibitzVariationSwatch";
+import { kibitzTelemetry } from "./kibitzTelemetry";
 import "./KibitzChatPanel.css";
 import "@/components/Chat/ChatLog.css";
 
@@ -572,6 +573,7 @@ export function KibitzChatPanel({
             }
 
             roomProxy.channel.send(value);
+            kibitzTelemetry.record("send_message");
             input.value = "";
             return false;
         },

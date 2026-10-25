@@ -69,15 +69,30 @@
                 box-sizing: border-box;
             }
 
-            /* Rows whose control is a toggle, a dropdown or a short button
-             * group: the control sits at the right end of the title line. */
+            /* Rows whose control is a toggle, a dropdown, a short button
+             * group or a bare range slider: the control sits at the right
+             * end of the title line. */
             &:has(> .PreferenceLineBody > .Toggle),
             &:has(> .PreferenceLineBody > .PreferenceDropdown),
-            &:has(> .PreferenceLineBody > .theme-button) {
+            &:has(> .PreferenceLineBody > .theme-button),
+            &:has(> .PreferenceLineBody > input[type="range"]) {
                 .PreferenceLineBody {
                     grid-column: 2;
                     grid-row: 1;
                     justify-self: end;
+
+                    /* Fixed slider and value widths so the sliders line up
+                     * across rows regardless of the value's length. */
+                    input[type="range"] {
+                        width: 8rem;
+                        flex-shrink: 0;
+                    }
+
+                    > span {
+                        min-width: 2.5rem;
+                        text-align: right;
+                        margin-right: 0;
+                    }
                 }
 
                 .Toggle {
@@ -170,6 +185,60 @@
         .GobanThemePicker .theme-set .selector,
         .GobanThemePicker .custom-theme-set .selector {
             flex-shrink: 0;
+        }
+
+        /* Themes & Visuals: every option's title/label stays left-aligned
+         * (the default PreferenceLineTitle placement), but the controls
+         * underneath it are centered instead of hugging the left edge.
+         * This covers the site theme buttons, the board/black/white stone
+         * theme grids, the "Customize …" rows, the "Advanced" disclosure
+         * toggles, and the illustrated layout pickers. */
+        .GameMoreSettingsPanel-themes-visuals {
+            .PreferenceLineBody {
+                justify-content: center;
+            }
+
+            /* Rows whose body stacks its children vertically (the board /
+             * black / white stone theme rows: the theme grid above the
+             * "Customize …" row): center each child block instead of
+             * left-aligning them. `flex-wrap` must be turned back off
+             * here: left as `wrap` (its value for the row-direction
+             * bodies above), a column-direction flex box treats each
+             * child as its own single-item line, and a single-item line's
+             * cross size collapses to that item's own size, which
+             * silently defeats `align-items: center`. */
+            .PreferenceLine.body-as-column .PreferenceLineBody {
+                flex-wrap: nowrap;
+                align-items: center;
+            }
+
+            /* The illustrated layout picker cards (Action buttons, Move
+             * controls, Chat column, Scrolling layout, Board alignment):
+             * center the card row instead of leaving it flush left when
+             * the cards don't fill the panel's width. */
+            .LayoutChoicePicker-cards {
+                justify-content: center;
+            }
+
+            /* The "Advanced" disclosure toggle (under the board, black
+             * stone, and white stone "Customize …" rows): ThemeAdvancedSection.css
+             * pins it to the left of its own box with `align-self:
+             * flex-start` so it doesn't drift when that box is wider than
+             * its label; override that here so the toggle centers along
+             * with everything else. */
+            .ThemeAdvancedSection .advanced-toggle {
+                align-self: center;
+            }
+
+            /* The opened "Advanced" content (the custom URL / grid
+             * background controls): ThemeAdvancedSection.css indents it
+             * with a left-only padding so it reads as nested under the
+             * toggle above it, which also shifts its center 4px right of
+             * the toggle and the rest of the section. Matching padding on
+             * the right keeps the same left-inset while re-centering it. */
+            .ThemeAdvancedSection .advanced-content {
+                padding-right: 0.5rem;
+            }
         }
     }
 

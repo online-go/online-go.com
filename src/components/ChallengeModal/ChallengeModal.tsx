@@ -22,7 +22,7 @@ import * as preferences from "@/lib/preferences";
 
 import { OgsResizeDetector } from "@/components/OgsResizeDetector";
 import { browserHistory } from "@/lib/ogsHistory";
-import { _, pgettext, interpolate, llm_pgettext } from "@/lib/translate";
+import { _, pgettext, interpolate } from "@/lib/translate";
 import { post, del } from "@/lib/requests";
 import { Modal } from "@/components/Modal";
 import { socket } from "@/lib/sockets";
@@ -36,7 +36,14 @@ import {
     notification_manager,
     NotificationManagerEvents,
 } from "@/components/Notifications/NotificationManager";
-import { one_bot, bot_count, bots_list, getAcceptableTimeSetting, Bot } from "@/lib/bots";
+import {
+    one_bot,
+    bot_count,
+    bots_list,
+    getAcceptableTimeSetting,
+    Bot,
+    BotChallengeOptions,
+} from "@/lib/bots";
 import { goban_view_mode } from "@/views/Game/util";
 
 import { copyChallengeLinkURL } from "@/components/ChallengeLinkButton";
@@ -47,7 +54,6 @@ import {
     saveTimeControlSettings,
     updateSystem,
 } from "@/components/TimeControl/TimeControlUpdates";
-import { SPEED_OPTIONS } from "@/views/Play/SPEED_OPTIONS";
 import Select from "react-select";
 import {
     rejectionDetailsToMessage,
@@ -74,6 +80,7 @@ import {
     RejectionDetails,
     UpdateFn,
 } from "@/components/ChallengeModal/ChallengeModal.types";
+import { openBotSettingsModal } from "./BotSettingsModal";
 import "./ChallengeModal.css";
 
 /* Constants  */
@@ -121,6 +128,30 @@ function coerceKomiForAutoHandicap(game: GameInput): GameInput {
     return game;
 }
 
+/** The data keys where each kind of challenge keeps its last used settings,
+ *  so that one kind does not change the next game of another kind. The
+ *  "player" and "computer" keys fall back to the "open" (Custom Game) values
+ *  until they are first saved. A null time_control key means the shared
+ *  per-speed clock settings in `time_control.*`.
+ *  See docs/challenge-modal-saved-settings.md. */
+const SAVED_SETTINGS_KEYS = {
+    open: {
+        challenge: "challenge.challenge.live",
+        restrict_rank: "challenge.restrict_rank",
+        time_control: null,
+    },
+    player: {
+        challenge: "challenge.player.details",
+        restrict_rank: "challenge.player.restrict_rank",
+        time_control: "challenge.player.time_control",
+    },
+    computer: {
+        challenge: "challenge.computer.details",
+        restrict_rank: "challenge.computer.restrict_rank",
+        time_control: "challenge.computer.time_control",
+    },
+} as const;
+
 export class ChallengeModal extends Modal<{}, ChallengeModalProperties, ChallengeModalState> {
     constructor(props: ChallengeModalProperties) {
         super(props);
@@ -137,31 +168,32 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     constructor(props: ChallengeModalInput) {
         super(props);
 
-        const speed = data.get("challenge.speed", "live");
+        const keys = SAVED_SETTINGS_KEYS[this.props.mode];
 
+        const customChallenge = data.get(SAVED_SETTINGS_KEYS.open.challenge, {
+            initialized: false,
+            min_ranking: 5,
+            max_ranking: 36,
+            challenger_color: "automatic",
+            rengo_auto_start: 0,
+            game: {
+                name: "",
+                rules: "japanese",
+                ranked: true,
+                width: 19,
+                height: 19,
+                handicap: -1,
+                komi_auto: "automatic",
+                komi: 5.5,
+                disable_analysis: false,
+                initial_state: null,
+                private: false,
+                rengo: false,
+                rengo_casual_mode: true,
+            },
+        });
         const challenge: ChallengeDetails = sanitizeChallengeDetails(
-            data.get(`challenge.challenge.${speed}`, {
-                initialized: false,
-                min_ranking: 5,
-                max_ranking: 36,
-                challenger_color: "automatic",
-                rengo_auto_start: 0,
-                game: {
-                    name: "",
-                    rules: "japanese",
-                    ranked: true,
-                    width: 19,
-                    height: 19,
-                    handicap: -1,
-                    komi_auto: "automatic",
-                    komi: 5.5,
-                    disable_analysis: false,
-                    initial_state: null,
-                    private: false,
-                    rengo: false,
-                    rengo_casual_mode: true,
-                },
-            }),
+            data.get(keys.challenge, customChallenge),
         );
 
         const game_settings = challenge.game;
@@ -207,7 +239,10 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                 selected_board_size:
                     standard_board_sizes[`${game_settings.width}x${game_settings.height}`] ||
                     "custom",
-                restrict_rank: data.get("challenge.restrict_rank", false),
+                restrict_rank: data.get(
+                    keys.restrict_rank,
+                    data.get(SAVED_SETTINGS_KEYS.open.restrict_rank, false),
+                ),
             },
             challenge: challenge,
             forking_game: !!this.props.initialState,
@@ -282,6 +317,26 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         );
     }
 
+    /** Why the Rengo checkbox is locked, or null when it can be turned on.
+     *  Ranked and private games cannot be rengo, and the box starts disabled
+     *  with no other hint. See online-go.com issue 3026. */
+    rengoDisabledReason(): string | null {
+        const game = this.state.challenge.game;
+        if (this.props.mode !== "open" || game.rengo) {
+            return null;
+        }
+        if (game.ranked && game.private) {
+            return _("Rengo is unavailable for ranked or private games.");
+        }
+        if (game.ranked) {
+            return _("Rengo is unavailable for ranked games.");
+        }
+        if (game.private) {
+            return _("Rengo is unavailable for private games.");
+        }
+        return null;
+    }
+
     gameStateOf(state: ChallengeModalState): any {
         return state.challenge.game;
     }
@@ -345,35 +400,34 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     }
 
     loadLastTimeControlSettings(): TimeControl {
+        const key = SAVED_SETTINGS_KEYS[this.props.mode].time_control;
+        const saved = key && data.get(key);
+        if (saved) {
+            return saved;
+        }
         const speed = data.get(`time_control.speed`, "correspondence");
         const system = data.get(`time_control.system`, "byoyomi");
         return recallTimeControlSettings(speed, system);
     }
 
     saveSettings() {
-        const next = this.next();
-        saveTimeControlSettings(this.state.time_control);
-        const speed = data.get("challenge.speed", "live");
-
-        let challenge_to_save = next.challenge;
-        if (this.props.mode === "computer") {
-            // ranked and disable_analysis are forced in bot mode, so don't let
-            // them overwrite the user's persisted preference used by other modes.
-            const persisted: any = data.get(`challenge.challenge.${speed}`);
-            challenge_to_save = {
-                ...next.challenge,
-                game: {
-                    ...next.challenge.game,
-                    ranked: persisted?.game?.ranked ?? next.challenge.game.ranked,
-                    disable_analysis:
-                        persisted?.game?.disable_analysis ?? next.challenge.game.disable_analysis,
-                },
-            };
+        // A rematch (online-go.com issue 2253) or a fork copies one game's
+        // color, komi, board, and rank limits. Those belong to that game, not
+        // to the next challenge.
+        if (this.props.persistColor === false || this.props.initialState) {
+            return;
         }
 
-        data.set(`challenge.challenge.${speed}`, challenge_to_save);
+        const next = this.next();
+        const keys = SAVED_SETTINGS_KEYS[this.props.mode];
+        if (keys.time_control) {
+            data.set(keys.time_control, this.state.time_control);
+        } else {
+            saveTimeControlSettings(this.state.time_control);
+        }
+        data.set(keys.challenge, next.challenge);
+        data.set(keys.restrict_rank, next.conf.restrict_rank);
         data.set("challenge.bot", next.conf.bot_id);
-        data.set("challenge.restrict_rank", next.conf.restrict_rank);
     }
 
     addToPreferredSettings = () => {
@@ -474,7 +528,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
          * old legacy reasons.. hopefully we can reconcile that someday */
         (challenge.game.time_control_parameters as any).time_control =
             this.state.time_control.system;
-        challenge.game.pause_on_weekends = this.state.time_control.pause_on_weekends;
+        challenge.game.pause_on_weekends = this.state.time_control.pause_on_weekends ?? false;
 
         // Autostart only in casual mode
         challenge.rengo_auto_start =
@@ -880,6 +934,13 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         const mode = this.props.mode;
         const bots = bots_list();
         const selected_bot = bots.find((bot) => bot.id === this.state.conf.bot_id);
+        const rengo_disabled_reason = this.rengoDisabledReason();
+        const bot_settings_label = pgettext(
+            "Button that opens the list of game settings a bot accepts",
+            "Settings this bot accepts",
+        );
+        const openSelectedBotSettings = () =>
+            selected_bot && openBotSettingsModal(selected_bot, this.state.time_control);
 
         return (
             <div
@@ -909,9 +970,28 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                 {selected_bot ? selected_bot.username : ""}
                             </span>
                             {selected_bot && (
-                                <a href={`/player/${selected_bot?.id}`}>
-                                    <i className="fa fa-external-link"></i>
-                                </a>
+                                <span className="bot-links">
+                                    {(selected_bot.config?._config_version === 1 ||
+                                        selected_bot.config?._config_version === 2) && (
+                                        <i
+                                            className="fa fa-gear fakelink"
+                                            role="button"
+                                            tabIndex={0}
+                                            title={bot_settings_label}
+                                            aria-label={bot_settings_label}
+                                            onClick={openSelectedBotSettings}
+                                            onKeyDown={(ev) => {
+                                                if (ev.key === "Enter" || ev.key === " ") {
+                                                    ev.preventDefault();
+                                                    openSelectedBotSettings();
+                                                }
+                                            }}
+                                        />
+                                    )}
+                                    <a href={`/player/${selected_bot?.id}`}>
+                                        <i className="fa fa-external-link"></i>
+                                    </a>
+                                </span>
                             )}
                         </div>
                     </div>
@@ -976,7 +1056,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                     </div>
                 )}
                 {mode === "open" && (
-                    <div className="form-group">
+                    <div className="form-group rengo-option">
                         <label className="control-label" htmlFor="rengo-option">
                             {_("Rengo")}
                         </label>
@@ -985,15 +1065,20 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                 <input
                                     type="checkbox"
                                     id="rengo-option"
-                                    disabled={
-                                        !this.state.challenge.game.rengo &&
-                                        (this.state.challenge.game.private ||
-                                            this.state.challenge.game.ranked)
+                                    disabled={rengo_disabled_reason !== null}
+                                    title={rengo_disabled_reason ?? undefined}
+                                    aria-describedby={
+                                        rengo_disabled_reason ? "rengo-disabled-reason" : undefined
                                     }
                                     checked={this.state.challenge.game.rengo}
                                     onChange={(ev) => this.update_rengo(ev.target.checked)}
                                 />
                             </div>
+                            {rengo_disabled_reason && (
+                                <div id="rengo-disabled-reason" className="rengo-disabled-reason">
+                                    {rengo_disabled_reason}
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
@@ -1629,7 +1714,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
         const user = data.get("user");
         let available_bots: (Bot & { category?: Category })[] = bots_list().filter((b) => b.id > 0);
-        const board_size = `${this.state.challenge.game.width}x${this.state.challenge.game.height}`;
 
         const categories = [
             {
@@ -1651,32 +1735,21 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                 upper_bound: 99,
             },
         ];
-        available_bots = available_bots.filter((b) => {
-            const speed_settings = (SPEED_OPTIONS as any)?.[board_size]?.[
-                this.state.time_control.speed
-            ]?.[this.state.time_control.system];
-            if (!speed_settings) {
-                return false;
-            }
+        const game = this.state.challenge.game;
+        const settings: BotChallengeOptions = {
+            rank: user.ranking,
+            width: game.width ?? -1,
+            height: game.height ?? -1,
+            ranked: game.ranked,
+            handicap: game.handicap !== 0,
+            komi: game.komi_auto === "custom" ? (game.komi ?? undefined) : undefined,
+            time_control: this.state.time_control,
+        };
 
-            const settings = {
-                rank: user.ranking,
-                width: this.state.challenge.game.width ?? -1,
-                height: this.state.challenge.game.height ?? -1,
-                ranked: true,
-                handicap: this.state.challenge.game.handicap !== 0,
-                system: this.state.time_control.system,
-                speed: this.state.time_control.speed,
-                [this.state.time_control.system]: speed_settings,
-            };
+        available_bots = available_bots.filter((b) => {
             const [options, message] = getAcceptableTimeSetting(b, settings);
-            if (!options) {
+            if (!options || options._config_version === 0) {
                 b.disabled = message || undefined;
-            } else if (options && options._config_version && options._config_version === 0) {
-                b.disabled = llm_pgettext(
-                    "Bot is not configured correctly",
-                    "Bot is not configured correctly",
-                );
             } else {
                 b.disabled = undefined;
             }

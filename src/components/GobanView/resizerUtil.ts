@@ -21,6 +21,12 @@ export function remToPx(rem: number): number {
     return rem * root_font_size;
 }
 
+/** The narrowest the board pane may become beside a resizable column: the
+ *  main sidebar (`SidebarResizer`) and the left aside (`clampLeftAsideWidth`
+ *  in layout.ts). Below this a 19x19 board stops being legible, so neither
+ *  column may take the width. */
+export const MIN_BOARD_PANE_REM = 24;
+
 /** The smallest the board itself may become in the portrait split. Matches the
  *  portrait board's CSS min-height so the two never drift apart. The stage
  *  holds more than the board, so this is not the stage's floor: see

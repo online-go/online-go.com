@@ -54,16 +54,24 @@ const OGS_I18N_BUILD_MODE = (process.env.OGS_I18N_BUILD_MODE || "false").toLower
 let OGS_BACKEND = process.env.OGS_BACKEND;
 OGS_BACKEND = OGS_BACKEND ? OGS_BACKEND.toUpperCase() : "BETA";
 
-// Get version information for chunk naming
+// Version string for chunk naming. Memoised: chunk naming asks for it many times
+// per build, so shelling out to git each time is wasteful — and on a tag-less
+// checkout it printed a `git describe` fatal for every call. `--tags --always`
+// degrades to a short commit hash instead of failing when no tag describes HEAD.
+let _versionInfo: string | undefined;
 function getVersionInfo(): string {
-    try {
-        // Try to get git version (format: 5.1-8740-g70dbb6a6)
-        const gitVersion = execSync("git describe --long", { encoding: "utf-8" }).trim();
-        return gitVersion;
-    } catch {
-        console.warn("Could not get git version, using timestamp");
-        return Date.now().toString();
+    if (_versionInfo === undefined) {
+        try {
+            // Format: 5.1-8740-g70dbb6a6 with a describing tag, else the short hash.
+            _versionInfo = execSync("git describe --tags --long --always", {
+                encoding: "utf-8",
+            }).trim();
+        } catch {
+            console.warn("Could not get git version, using timestamp");
+            _versionInfo = Date.now().toString();
+        }
     }
+    return _versionInfo;
 }
 
 /*

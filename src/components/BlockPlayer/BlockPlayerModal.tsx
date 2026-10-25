@@ -128,16 +128,10 @@ export function openBlockPlayerControls(
         });
     }
     const rect = elt.getBoundingClientRect();
-    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const offset = {
-        left: rect.left + scrollLeft,
-        top: rect.top + scrollTop,
-    };
 
     return popover({
         elt: <BlockPlayerModal playerId={user_id} />,
-        at: { x: offset.left, y: offset.top + elt.offsetHeight },
+        at: { x: rect.left, y: rect.top + elt.offsetHeight },
         minWidth: 300,
         minHeight: 50,
     });

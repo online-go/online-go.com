@@ -82,6 +82,7 @@ function Probe({ controller }: { controller: GobanController }): React.ReactElem
     return (
         <div>
             <span data-testid="pause-action">{pause_control.action ?? "none"}</span>
+            <span data-testid="pause-disabled">{pause_control.pauseDisabled ? "yes" : "no"}</span>
             <span data-testid="official-player-to-move">{official_player_to_move}</span>
             <span data-testid="can-request-undo">{can_request_undo ? "yes" : "no"}</span>
             <span data-testid="undo-request-is-mine">{undo_request_is_mine ? "yes" : "no"}</span>
@@ -104,6 +105,7 @@ const resignMode = () => screen.getByTestId("resign-mode").textContent;
 const officialPlayerToMove = () =>
     parseInt(screen.getByTestId("official-player-to-move").textContent ?? "", 10);
 const pauseAction = () => screen.getByTestId("pause-action").textContent;
+const pauseDisabled = () => screen.getByTestId("pause-disabled").textContent === "yes";
 
 /** Feeds the hook a clock update carrying only the pause state. */
 function emitPauseState(
@@ -160,6 +162,50 @@ describe("usePauseControl", () => {
         emitPauseState(controller, { player: { player_id: String(OPPONENT.id), pauses_left: 3 } });
 
         expect(pauseAction()).toBe("none");
+    });
+
+    test("disables pause when this player has no pauses left", () => {
+        const controller = new GobanController(GAME_IN_PROGRESS);
+        (controller.goban.engine as unknown as Record<string, number>).pauses_left_123 = 0;
+        renderProbe(controller);
+
+        expect(pauseAction()).toBe("pause");
+        expect(pauseDisabled()).toBe(true);
+    });
+
+    test("keeps pause enabled when pauses remain", () => {
+        const controller = new GobanController(GAME_IN_PROGRESS);
+        (controller.goban.engine as unknown as Record<string, number>).pauses_left_123 = 2;
+        renderProbe(controller);
+
+        expect(pauseAction()).toBe("pause");
+        expect(pauseDisabled()).toBe(false);
+    });
+
+    test("remembers that no pauses are left after the game is unpaused", () => {
+        const controller = new GobanController(GAME_IN_PROGRESS);
+        renderProbe(controller);
+
+        emitPauseState(controller, { player: { player_id: String(ME.id), pauses_left: 0 } });
+        expect(pauseAction()).toBe("resume");
+        expect(pauseDisabled()).toBe(false);
+
+        emitPauseState(controller, undefined);
+        expect(pauseAction()).toBe("pause");
+        expect(pauseDisabled()).toBe(true);
+        expect((controller.goban.engine as unknown as Record<string, number>).pauses_left_123).toBe(
+            0,
+        );
+    });
+
+    test("does not disable pause for a moderator who is out of player pauses", () => {
+        data.set("user", { ...LOGGED_IN_USER, is_moderator: true });
+        const controller = new GobanController(GAME_IN_PROGRESS);
+        (controller.goban.engine as unknown as Record<string, number>).pauses_left_123 = 0;
+        renderProbe(controller);
+
+        expect(pauseAction()).toBe("pause");
+        expect(pauseDisabled()).toBe(false);
     });
 });
 

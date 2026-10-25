@@ -46,6 +46,13 @@ interface GameType {
     black: UserType;
     white: UserType;
     goban?: GobanRenderer;
+    /**
+     * The last clock a goban for this game emitted, and the Date.now() when it
+     * arrived. These are kept on the game, not read from the goban, so a goban
+     * that is recreated for the same game keeps its place in the sort order.
+     */
+    clock?: JGOFClock;
+    clock_received_at?: number;
     json?: {
         clock: AdHocClock;
         moves: AdHocPackedMove[];
@@ -150,44 +157,60 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
         }
     }
 
+    /**
+     * Remaining time for one player, `elapsed` milliseconds after the clock
+     * was emitted. A running clock must be advanced to a common instant before
+     * games are compared: each goban emits its clock at a different moment,
+     * and comparing those raw values reorders games with close times on every
+     * render.
+     */
     computeRemainingTime(
         time_control: JGOFTimeControl | undefined,
         clock: JGOFClock,
         player_clock: JGOFPlayerClock,
         guessMovesLeft: () => number,
+        elapsed: number,
     ) {
         if (clock?.start_mode) {
-            return clock.start_time_left || 0;
+            return (clock.start_time_left || 0) - elapsed;
         }
         if (clock?.stone_removal_time_left) {
-            return clock.stone_removal_time_left || 0;
+            return clock.stone_removal_time_left - elapsed;
         }
+
+        // Main time runs out first, then the period or block time.
+        const main_elapsed = Math.min(elapsed, player_clock.main_time);
+        const main_time = player_clock.main_time - main_elapsed;
+        const overtime_elapsed = elapsed - main_elapsed;
+
         switch (time_control?.system) {
             case "none":
             default:
                 return Number.MAX_SAFE_INTEGER;
 
             case "absolute":
-                return player_clock.main_time / guessMovesLeft();
+                return main_time / guessMovesLeft();
 
             case "fischer":
             case "simple":
-                return player_clock.main_time;
+                return main_time;
 
             case "byoyomi": {
                 // JGOFClock.periods_left includes the current, partially used,
                 // period, but we just need to count the full ones.
                 const full_periods_left = (player_clock.periods_left || 1) - 1;
                 return (
-                    player_clock.main_time +
-                    (player_clock.period_time_left || 0) +
+                    main_time +
+                    (player_clock.period_time_left || 0) -
+                    overtime_elapsed +
                     full_periods_left * (time_control.period_time as number) * 1000
                 );
             }
             case "canadian":
                 return (
-                    player_clock.main_time +
-                    (player_clock.block_time_left || 0) / (player_clock.moves_left || 1)
+                    main_time +
+                    ((player_clock.block_time_left || 0) - overtime_elapsed) /
+                        (player_clock.moves_left || 1)
                 );
         }
     }
@@ -228,30 +251,36 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
         };
     }
 
-    extractClockSortFields(game: GameType, use_this_player: boolean) {
+    extractClockSortFields(game: GameType, use_this_player: boolean, now: number) {
         const guessMovesLeft = () => {
             const total_moves_guess = game.width * game.height * 0.75;
             return Math.max(10, total_moves_guess - (game?.goban?.engine?.getMoveNumber() || 0));
         };
 
-        if (game?.goban?.last_emitted_clock === undefined) {
+        if (game.clock === undefined || game.clock_received_at === undefined) {
             // No JGOFClock yet. Use the AdHocClock.
             return this.extractClockSortFieldsAdHoc(game, use_this_player, guessMovesLeft);
         }
 
-        const clock = game.goban.last_emitted_clock;
+        const clock = game.clock;
         const paused = this.isPaused(clock.pause_state);
 
         // Figure out which player clock to use.
         const is_current_player = clock.current_player_id === this.props.player?.id?.toString();
         const is_black = is_current_player === (clock.current_player === "black");
         const use_black = use_this_player === is_black;
-        const time_control = game.goban.config?.time_control;
+        const running =
+            game.goban?.engine?.phase !== "finished" &&
+            (clock.start_mode ||
+                !!clock.stone_removal_time_left ||
+                (!paused && clock.current_player === (use_black ? "black" : "white")));
+        const time_control = game.goban?.config?.time_control;
         const remaining = this.computeRemainingTime(
             time_control,
             clock,
             use_black ? clock.black_clock : clock.white_clock,
             guessMovesLeft,
+            running ? now - game.clock_received_at : 0,
         );
         const live = (time_control?.speed ?? "correspondence") !== "correspondence";
         return {
@@ -263,12 +292,13 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
     }
 
     applyCurrentSort(games: GameType[]) {
+        const now = Date.now();
         switch (this.state.sort_order) {
             case "-clock":
             case "clock":
                 games.sort((a, b) => {
-                    const a_clock = this.extractClockSortFields(a, true);
-                    const b_clock = this.extractClockSortFields(b, true);
+                    const a_clock = this.extractClockSortFields(a, true, now);
+                    const b_clock = this.extractClockSortFields(b, true, now);
                     return (
                         +b_clock.live - +a_clock.live ||
                         +b_clock.is_current_player - +a_clock.is_current_player ||
@@ -282,8 +312,8 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
             case "-opponent-clock":
             case "opponent-clock":
                 games.sort((a, b) => {
-                    const a_clock = this.extractClockSortFields(a, false);
-                    const b_clock = this.extractClockSortFields(b, false);
+                    const a_clock = this.extractClockSortFields(a, false, now);
+                    const b_clock = this.extractClockSortFields(b, false, now);
                     return (
                         +a_clock.is_current_player - +b_clock.is_current_player ||
                         +a_clock.paused - +b_clock.paused ||
@@ -406,6 +436,13 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
     onGobanCreated(game: GameType, goban: GobanRenderer) {
         // Save a pointer into the goban to use when sorting.
         game.goban = goban;
+
+        goban.on("clock", (clock) => {
+            if (clock) {
+                game.clock = clock;
+                game.clock_received_at = Date.now();
+            }
+        });
 
         // Re-sort when a move is made so games where it's your turn
         // are sorted to the top.

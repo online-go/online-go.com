@@ -186,6 +186,27 @@ export function restoreMainBoardToOfficialTail(controller: GobanController): Mov
     return restoreGobanToOfficialTail(controller.goban);
 }
 
+function positiveGameId(value: unknown): number | null {
+    const id = typeof value === "string" ? Number(value) : value;
+    if (typeof id === "number" && Number.isFinite(id) && id > 0) {
+        return id;
+    }
+    return null;
+}
+
+/** Game ids the board itself reports. A detached details board has none. */
+function sourceBoardGameIds(controller: GobanController): number[] {
+    const goban = controller.goban;
+    const engine = goban?.engine;
+    const ids = [
+        positiveGameId(goban?.game_id),
+        positiveGameId(engine?.game_id),
+        positiveGameId(engine?.config?.game_id),
+        positiveGameId(goban?.config?.game_id),
+    ];
+    return ids.filter((id): id is number => id != null);
+}
+
 export function captureCurrentGameBaseSnapshotFromController(
     controller: GobanController | null,
     game: KibitzWatchedGame | null | undefined,
@@ -209,6 +230,12 @@ export function captureCurrentGameBaseSnapshotFromController(
     const requiredMoveNumber = expectedMoveNumber ?? game.move_number ?? 0;
 
     if (!officialTail || officialTail.move_number < requiredMoveNumber) {
+        return null;
+    }
+
+    // The previous controller stays mounted until its effect is replaced.
+    // Do not stamp the next game's id onto that controller's move tree.
+    if (sourceBoardGameIds(controller).some((id) => id !== game.game_id)) {
         return null;
     }
 

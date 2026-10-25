@@ -50,7 +50,7 @@ function PlayerAutocompleteImpl(
     props: PlayerAutocompleteProperties,
     ref: React.ForwardedRef<PlayerAutocompleteRef>,
 ): React.ReactElement {
-    const [value, setValue]: [string, (x: string) => void] = React.useState(
+    const [value, setValue] = React.useState<string>(
         player_cache.lookup(props.playerId || 0)?.username || "",
     );
     const [suggestions, setSuggestions]: [SuggestionEntry[], (x: SuggestionEntry[]) => void] =
@@ -72,6 +72,24 @@ function PlayerAutocompleteImpl(
     React.useEffect(() => {
         setValue(player_cache.lookup(props.playerId || 0)?.username || "");
         setSuggestions([]);
+
+        if (!props.playerId || player_cache.lookup(props.playerId)?.username) {
+            return;
+        }
+
+        let cancelled = false;
+        player_cache
+            .fetch(props.playerId)
+            .then((player) => {
+                if (!cancelled) {
+                    setValue((current) => current || player.username || "");
+                }
+            })
+            .catch(console.error);
+
+        return () => {
+            cancelled = true;
+        };
     }, [props.playerId]);
 
     function onBlur(

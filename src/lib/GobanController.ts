@@ -43,7 +43,7 @@ import { post } from "@/lib/requests";
 import { alert } from "@/lib/swal_config";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
-import { goban_view_mode, shared_ip_with_player_map, ViewMode } from "@/views/Game/util";
+import { shared_ip_with_player_map, ViewMode } from "@/views/Game/util";
 import { ChatMode } from "@/views/Game/GameChat";
 import { chat_manager, ChatChannelProxy, inGameModChannel } from "@/lib/chat_manager";
 import { Resizable } from "@/components/Resizable";
@@ -897,7 +897,6 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     };
     toggleZenMode = () => {
         this.setZenMode(!this.zen_mode);
-        this.emit("view_mode", goban_view_mode());
         this.emit("resize");
     };
     toggleAIReview = () => {
@@ -1112,10 +1111,11 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         }
         this.saveSubmitMove();
         const user = data.get("user");
+        const shared_ip_with_player = !!(this.game_id && shared_ip_with_player_map[this.game_id]);
         const is_player =
             user.id === this.goban.engine.players.black.id ||
             user.id === this.goban.engine.players.white.id ||
-            (this.game_id && shared_ip_with_player_map[this.game_id]);
+            shared_ip_with_player;
 
         if (this.goban.isAnalysisDisabled() && is_player) {
             return false;
@@ -1130,7 +1130,8 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         this._estimating_score = true;
         this.emit("estimating_score", true);
         const use_ai_estimate =
-            this.goban.engine.phase === "finished" || !this.goban.engine.isParticipant(user.id);
+            this.goban.engine.phase === "finished" ||
+            (!this.goban.engine.isParticipant(user.id) && !shared_ip_with_player);
         this.goban.setScoringMode(true, use_ai_estimate);
         return true;
     };

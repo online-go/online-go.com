@@ -21,7 +21,7 @@ const googleTranslate = keys
     : null;
 
 const openrouter = keys ? new OpenRouter({ apiKey: keys.openrouter_api_key }) : null;
-const OPENROUTER_MODEL = "anthropic/claude-opus-4.6";
+const OPENROUTER_MODEL = "~anthropic/claude-opus-latest";
 
 let limit = 1;
 
@@ -449,8 +449,7 @@ async function llm_translate(key, entry, lang, language) {
                         },
                         {
                             role: "system",
-                            content:
-                                "Translate the provided string from English to " + language,
+                            content: "Translate the provided string from English to " + language,
                         },
                         { role: "user", content: entry.msgid },
                     ],

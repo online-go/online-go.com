@@ -28,4 +28,13 @@ export {
 } from "./GobanViewContext";
 export { goban_view_mode, goban_view_squashed, outcomeHasScore, user_color } from "./util";
 export type { ViewMode } from "./util";
+export { classifyGameLayout, getGameLayoutSnapshot, legacyViewMode, useGameLayout } from "./layout";
+export type {
+    GameLayoutMode,
+    GameLayoutSnapshot,
+    LegacyViewMode,
+    ViewportGeometry,
+} from "./layout";
 export { generateGobanHook, subscribeAllEvents, useViewMode, useZenMode } from "./hooks";
+export { useGobanViewLayout } from "./GobanViewLayoutContext";
+export type { GobanViewLayout } from "./layout";

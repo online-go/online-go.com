@@ -1,0 +1,96 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* Two overlapping stones marking whose turn it is, with the rule set, the
+ * handicap and the komi above them and the move number below them. Sits
+ * between the two halves of the compact player header. */
+.CompactTurnStones {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    padding: 0 0.2rem;
+    user-select: none;
+
+    .CompactTurnStones-stones {
+        position: relative;
+        width: 2.6rem;
+        height: 1.7rem;
+    }
+
+    /* The two stones overlap in the middle of the strip: black hangs to
+     * the left of centre, white to the right. The side to move is lifted
+     * over the other one rather than being recoloured, so the marker
+     * stays readable in both themes. */
+    .CompactTurnStones-stone {
+        position: absolute;
+        top: 0;
+        width: 1.7rem;
+        height: 1.7rem;
+        border-radius: 50%;
+        box-sizing: border-box;
+
+        &.black {
+            left: 0;
+            background: radial-gradient(circle at 35% 30%, #555, #111 70%);
+            /* A neutral rim, not a black one: on the dark theme the stone
+             * would otherwise melt into the strip behind it. */
+            border: 1px solid #6b6b6b;
+        }
+
+        &.white {
+            right: 0;
+            background: radial-gradient(circle at 35% 30%, #fff, #d8d8d8 70%);
+            border: 1px solid #999;
+        }
+
+        &.on-top {
+            z-index: 1;
+        }
+    }
+
+    .CompactTurnStones-rules {
+        font-size: 0.55rem;
+        line-height: 1;
+        margin-bottom: 0.15rem;
+        white-space: nowrap;
+        color: var(--shade1);
+        display: flex;
+        align-items: center;
+        gap: 0.2rem;
+    }
+
+    .CompactTurnStones-handicap {
+        font-size: 0.7rem;
+    }
+
+    .CompactTurnStones-komi {
+        font-size: 0.55rem;
+        line-height: 1;
+        margin-bottom: 0.15rem;
+        white-space: nowrap;
+        color: var(--shade1);
+    }
+
+    .CompactTurnStones-move-number {
+        font-size: 0.7rem;
+        line-height: 1.1;
+        margin-top: 0.15rem;
+        color: var(--shade1);
+    }
+}

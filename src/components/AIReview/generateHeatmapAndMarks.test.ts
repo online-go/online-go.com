@@ -68,6 +68,10 @@ describe("qualityColor", () => {
 });
 
 describe("generateHeatmapAndMarks played move", () => {
+    afterEach(() => {
+        document.documentElement.style.removeProperty("--ai-alternative-move");
+    });
+
     function makeGoban() {
         const calls: string[] = [];
         const board: number[][] = [];
@@ -124,6 +128,86 @@ describe("generateHeatmapAndMarks played move", () => {
             ...extra,
         });
     }
+
+    test.each([true, false])(
+        "accessible alternatives use orange across losses (score view: %s)",
+        (useScore) => {
+            document.documentElement.style.setProperty("--ai-alternative-move", "#e69f00");
+            const goban = makeGoban();
+            const result = run(
+                goban,
+                { x: 2, y: 2, player: JGOFNumericPlayerColor.BLACK } as MoveTree,
+                {
+                    useScore,
+                    ai_review_move: {
+                        ...review_move,
+                        branches: [
+                            review_move.branches[0],
+                            { moves: [{ x: 2, y: 2 }], visits: 200, win_rate: 0.49, score: -0.1 },
+                            { moves: [{ x: 3, y: 3 }], visits: 200, win_rate: 0.4, score: -3 },
+                            { moves: [{ x: 5, y: 5 }], visits: 200, win_rate: 0.1, score: -15 },
+                        ],
+                    },
+                },
+            );
+
+            expect(result.colored_circles.map((circle) => circle.border_color)).toEqual([
+                "#0082FF",
+                "#e69f00",
+                "#e69f00",
+                "#e69f00",
+            ]);
+            expect(result.colored_circles[0].color).toBe("rgba(0, 130, 255, 0.7)");
+            expect(
+                result.colored_circles
+                    .slice(1)
+                    .every((circle) => circle.color.startsWith("rgba(230, 159, 0,")),
+            ).toBe(true);
+            expect(goban.calls).toContain("quality 2,2 inaccuracy");
+            expect(goban.calls).toContain(useScore ? "subscript 5,5 -15" : "subscript 5,5 -40");
+        },
+    );
+
+    test.each([-9, null])(
+        "accessible played moves outside the branches use orange (delta: %s)",
+        (played_move_delta) => {
+            document.documentElement.style.setProperty("--ai-alternative-move", "#e69f00");
+            const result = run(
+                makeGoban(),
+                { x: 6, y: 6, player: JGOFNumericPlayerColor.BLACK } as MoveTree,
+                { played_move_delta },
+            );
+            const played = result.colored_circles.find((circle) => circle.move.x === 6);
+            expect(played?.border_color).toBe("#e69f00");
+            expect(played?.color).toBe("rgba(230, 159, 0, 0.25)");
+        },
+    );
+
+    test("a played best move stays blue in the accessible palette", () => {
+        document.documentElement.style.setProperty("--ai-alternative-move", "#e69f00");
+        const goban = makeGoban();
+        const result = run(
+            goban,
+            { x: 4, y: 4, player: JGOFNumericPlayerColor.BLACK } as MoveTree,
+            { played_move_category: "excellent" },
+        );
+        expect(result.colored_circles[0].border_color).toBe("#0082FF");
+        expect(result.colored_circles[0].color).toBe("rgba(0, 130, 255, 0.7)");
+        expect(goban.calls).toContain("quality 4,4 excellent");
+        expect(goban.calls).toContain("mark 4,4 blue_move");
+    });
+
+    test("switching away from the accessible palette restores quality colors", () => {
+        const played_move = { x: 2, y: 2, player: JGOFNumericPlayerColor.BLACK } as MoveTree;
+        document.documentElement.style.setProperty("--ai-alternative-move", "#e69f00");
+        const accessible = run(makeGoban(), played_move);
+        document.documentElement.style.removeProperty("--ai-alternative-move");
+        const normal = run(makeGoban(), played_move);
+
+        expect(accessible.colored_circles[1].border_color).toBe("#e69f00");
+        expect(normal.colored_circles[1].border_color).toBe(qualityColor(2, 5));
+        expect(normal.colored_circles[0]).toEqual(accessible.colored_circles[0]);
+    });
 
     test("the played move is a normal quality-colored circle with a badge, not a stone", () => {
         const goban = makeGoban();

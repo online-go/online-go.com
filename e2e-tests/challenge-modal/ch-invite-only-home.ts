@@ -19,10 +19,13 @@
 
 // This test verifies that invite-only challenges appear on the user's home page
 // with the correct details, including whether analysis is enabled or disabled.
+//
+// The server allows one outstanding live open challenge per player, so each
+// invite is deleted from the home page before the next one is created.
 
 import type { CreateContextOptions } from "@helpers";
 
-import { BrowserContext, expect } from "@playwright/test";
+import { BrowserContext, Page, expect } from "@playwright/test";
 
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
 
@@ -31,6 +34,20 @@ import { createInviteOnlyChallenge } from "@helpers/challenge-utils";
 import { actAndWaitForResponse } from "@helpers/requests";
 
 import { log } from "@helpers/logger";
+
+// Deletes the single open invite shown on the home page and waits for the
+// "Your Open Invites" section to go away.
+// (FabX component has class "fab reject raiser")
+const deleteOnlyOpenInvite = async (userPage: Page) => {
+    const deleteButtons = userPage.locator(".InviteList .Card .fab.reject");
+    await expect(deleteButtons).toHaveCount(1);
+    await actAndWaitForResponse(
+        userPage,
+        { method: "DELETE", path: /^\/api\/v1\/challenges\/\d+$/ },
+        () => deleteButtons.first().click(),
+    );
+    await expect(userPage.getByText("Your Open Invites")).not.toBeVisible({ timeout: 5000 });
+};
 
 export const chInviteOnlyHomeTest = async ({
     createContext,
@@ -85,6 +102,12 @@ export const chInviteOnlyHomeTest = async ({
     await expect(challengeCard).not.toContainText("analysis disabled");
     log("Confirmed: 'analysis disabled' not shown for analysis-enabled challenge");
 
+    // The server allows one live open challenge at a time, so delete this one
+    // before creating the next
+    log("Deleting the analysis-enabled challenge...");
+    await deleteOnlyOpenInvite(userPage);
+    log("Analysis-enabled challenge deleted");
+
     // Test 2: Create invite-only challenge WITH analysis disabled
     log("Creating invite-only challenge with analysis DISABLED...");
     await createInviteOnlyChallenge(userPage, {
@@ -105,6 +128,7 @@ export const chInviteOnlyHomeTest = async ({
 
     // Verify the second challenge name appears
     log("Verifying challenge 'E2E Invite Analysis Off' appears...");
+    await expect(userPage.getByText("Your Open Invites")).toBeVisible({ timeout: 10000 });
     await expect(userPage.getByText("E2E Invite Analysis Off")).toBeVisible();
     log("Challenge name visible");
 
@@ -117,23 +141,9 @@ export const chInviteOnlyHomeTest = async ({
     await expect(challengeCardDisabled).toContainText("analysis disabled");
     log("Confirmed: 'analysis disabled' shown for analysis-disabled challenge");
 
-    // Clean up: delete both challenges
-    // FabX component has class "fab reject raiser"
-    log("Cleaning up: deleting challenges...");
-    const deleteButtons = userPage.locator(".InviteList .Card .fab.reject");
-    await expect(deleteButtons).toHaveCount(2);
-    for (let remaining = 2; remaining > 0; remaining--) {
-        await actAndWaitForResponse(
-            userPage,
-            { method: "DELETE", path: /^\/api\/v1\/challenges\/\d+$/ },
-            () => deleteButtons.first().click(),
-        );
-        await expect(deleteButtons).toHaveCount(remaining - 1);
-    }
-
-    // Verify challenges are gone
-    log("Verifying challenges are deleted...");
-    await expect(userPage.getByText("Your Open Invites")).not.toBeVisible({ timeout: 5000 });
+    // Clean up: delete the remaining challenge
+    log("Cleaning up: deleting the analysis-disabled challenge...");
+    await deleteOnlyOpenInvite(userPage);
     log("All challenges deleted");
 
     log("=== Test completed successfully ===");

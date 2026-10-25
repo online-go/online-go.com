@@ -42,8 +42,13 @@ export async function passAndScoreGame(blackPage: Page, whitePage: Page): Promis
     await Promise.all(
         [blackPage, whitePage].map(async (page) => {
             await expect(page.locator(".stone-removal-buttons")).toBeVisible();
-            // Accept becomes enabled after two seconds even if scoring is still running.
-            await expect(page.locator(".autoscoring-in-progress")).toBeHidden({ timeout: 35000 });
+            // Scoring is settled once the indicator clears: the server's
+            // proposal landed, or the client fell back to its own scorer
+            // after 15 s. The dev stack's CPU KataGo can take most of a
+            // minute per request, and the fallback queues behind the
+            // server's, so allow for both in sequence. Accepting before this
+            // would race a late proposal, which resets the acceptance.
+            await expect(page.locator(".autoscoring-in-progress")).toBeHidden({ timeout: 150000 });
         }),
     );
     await (await expectOGSClickableByName(whitePage, /^Accept removed stones/)).click();

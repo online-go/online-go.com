@@ -17,6 +17,7 @@
 
 import { ogsTest } from "@helpers";
 import { autoSuspensionTest } from "./mod-auto-suspension";
+import { socketDeviceIdCaptureTest } from "./mod-socket-device-id-capture";
 
 import { modWarnFirstTurnEscapersTest } from "./mod-auto-warn-first-turn-escaper";
 import { modBlockEscapeReportUnfinishedGameTest } from "./mod-block-escape-report-unfinished-game";
@@ -28,6 +29,7 @@ import { modBlockEscapeReportDuringGameTest } from "./mod-block-escape-report-du
 import { suspendAppealRestoreTest } from "./mod-suspend-appeal-restore";
 import { suspendedUserCanLoginToAppealTest } from "./mod-suspended-user-can-login-to-appeal";
 import { systemPMButtonTest } from "./mod-system-pm-button";
+import { reportBlockToastTest } from "./mod-report-block-toast";
 // import { aiDetectionFastSMRReportTest } from "./ai-detection-fast-smr-report";
 import { playerCheckAIButtonTest } from "./player-check-ai-button";
 import { aiDetectorVoteSuspendAndAnnulTest } from "./ai-detector-vote-suspend-annul";
@@ -52,7 +54,9 @@ ogsTest.describe("@Mod Moderation Tests", () => {
     );
     ogsTest("Suspended user can login to reach appeal page", suspendedUserCanLoginToAppealTest);
     ogsTest("Auto-suspend users with previously suspended accounts", autoSuspensionTest);
+    ogsTest("Socket device id reaches the aliases table", socketDeviceIdCaptureTest);
     ogsTest("System PM button appears for non-suspended users", systemPMButtonTest);
+    ogsTest("Harassment report tells the reporter the accused was blocked", reportBlockToastTest);
     // TODO: aiDetectionFastSMRReportTest needs assertion rework - temporarily disabled
     // ogsTest("AI Detection FastSMR report button works correctly", aiDetectionFastSMRReportTest);
     ogsTest(

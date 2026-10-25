@@ -23,11 +23,13 @@ import { user_uploads_url } from "@/lib/cdn";
 import { CountDown } from "./CountDown";
 import { Flag } from "@/components/Flag";
 import { ChatPresenceIndicator } from "@/components/ChatPresenceIndicator";
-import { Clock, SGFClock } from "@/components/Clock";
+import { Clock, SGFClock, TransmittingIndicator } from "@/components/Clock";
 import { Player } from "@/components/Player";
+import { PlayerIcon } from "@/components/PlayerIcon";
 import { lookup, fetch } from "@/lib/player_cache";
 import { _, interpolate, ngettext, pgettext } from "@/lib/translate";
 import * as data from "@/lib/data";
+import { handicapStonesString } from "@/lib/misc";
 import {
     generateGobanHook,
     usePhase,
@@ -40,6 +42,7 @@ import { get_network_latency, get_clock_drift } from "@/lib/sockets";
 import { useGobanController } from "./goban_context";
 import { player_is_ignored } from "@/components/BlockPlayer";
 import { openRengoTeamModal } from "@/components/RengoTeamModal";
+import type { GobanController } from "@/lib/GobanController";
 
 type PlayerType = rest_api.games.Player;
 
@@ -47,14 +50,22 @@ interface PlayerCardsProps {
     historical_black: PlayerType | null;
     historical_white: PlayerType | null;
     estimating_score: boolean;
+    /** Show cache-backed avatars when historical player data is unavailable. */
+    show_cached_avatar_fallback?: boolean;
+    /** Defaults to GobanView's controller. Views that show player information
+     *  for a different board can pass its controller explicitly. */
+    controller?: GobanController;
 }
 
 export function PlayerCards({
     historical_black,
     historical_white,
     estimating_score,
+    show_cached_avatar_fallback = false,
+    controller,
 }: PlayerCardsProps): React.ReactElement {
-    const goban_controller = useGobanController();
+    const contextController = useGobanController();
+    const goban_controller = controller ?? contextController;
     const goban = goban_controller.goban;
 
     const zen_mode = useZenMode(goban_controller);
@@ -68,6 +79,7 @@ export function PlayerCards({
                     color="black"
                     goban={goban}
                     estimating_score={estimating_score}
+                    show_cached_avatar_fallback={show_cached_avatar_fallback}
                     show_score_breakdown={show_score_breakdown}
                     onScoreClick={toggleScorePopup}
                     zen_mode={zen_mode}
@@ -77,6 +89,7 @@ export function PlayerCards({
                     color="white"
                     goban={goban}
                     estimating_score={estimating_score}
+                    show_cached_avatar_fallback={show_cached_avatar_fallback}
                     show_score_breakdown={show_score_breakdown}
                     onScoreClick={toggleScorePopup}
                     zen_mode={zen_mode}
@@ -141,10 +154,14 @@ interface PlayerCardProps {
     goban: GobanRenderer;
     historical: PlayerType | null;
     estimating_score: boolean;
+    show_cached_avatar_fallback?: boolean;
     /** Omit to disable the score-details popup. */
     show_score_breakdown?: boolean;
     onScoreClick?: () => void;
     zen_mode: boolean;
+    /** Leaves the handicap and the komi out, for the compact player
+     *  header, which shows them next to the rule set. */
+    compact?: boolean;
 }
 
 export function PlayerCard({
@@ -152,9 +169,11 @@ export function PlayerCard({
     goban,
     historical,
     estimating_score,
+    show_cached_avatar_fallback = false,
     show_score_breakdown = false,
     onScoreClick,
     zen_mode,
+    compact = false,
 }: PlayerCardProps) {
     const engine = goban.engine;
     const player = { ...engine.players[color] };
@@ -172,10 +191,11 @@ export function PlayerCard({
         historical = null;
     }
 
-    // In rengo we always will have a player icon to show (after initialization).
-    // In other cases, we only have one if `historical` is set
+    // Rengo icons arrive with the engine player. Standard player cards use
+    // historical icons when available, and the player cache otherwise.
     const player_bg: React.CSSProperties = {};
-    if (engine.rengo && player && (player as any)["icon-url"]) {
+    const hasRengoIcon = Boolean(engine.rengo && player && (player as any)["icon-url"]);
+    if (hasRengoIcon) {
         // Does icon-url need to be added to GobanEnginePlayerEntry? -BPJ
         const icon = user_uploads_url((player as any)["icon-url"], 64);
         player_bg.backgroundImage = `url("${icon}")`;
@@ -207,6 +227,17 @@ export function PlayerCard({
             <div className="player-icon-clock-row">
                 {player && !!player.id ? (
                     <div className="player-icon-container" style={player_bg}>
+                        {!engine.rengo &&
+                            show_cached_avatar_fallback &&
+                            !historical &&
+                            !goban.is_game_record &&
+                            !player_is_ignored(player.id) && (
+                                <PlayerIcon
+                                    id={player.id}
+                                    size={64}
+                                    className="player-card-avatar"
+                                />
+                            )}
                         {!!auto_resign_expiration && (
                             <div className={`auto-resign-overlay`}>
                                 <i className="fa fa-bolt" />
@@ -217,6 +248,7 @@ export function PlayerCard({
                             <PlayerFlag player_id={player.id} />
                         </div>
                         <ChatPresenceIndicator channel={chat_channel} userId={player.id} />
+                        <TransmittingIndicator goban={goban} color={color} />
                     </div>
                 ) : (
                     /* Placeholder icon for SGF records (gradient background via CSS) */
@@ -228,7 +260,7 @@ export function PlayerCard({
                         goban={goban}
                         color={color}
                         className="in-game-clock"
-                        show_turn_clock={their_turn}
+                        show_turn_clock={their_turn && !compact}
                     />
                 ) : (
                     goban.engine.sgf_time_settings && (
@@ -308,8 +340,8 @@ export function PlayerCard({
                         hidden={show_points && !estimating_score}
                     />
                 )}
-                {color === "black" && handicapStones(engine.config.handicap)}
-                {!show_points && !!score.komi && (
+                {color === "black" && !compact && handicapStones(engine.config.handicap)}
+                {!show_points && !compact && !!score.komi && (
                     <div className="komi">{komiString(score.komi)}</div>
                 )}
                 {onScoreClick && (
@@ -357,31 +389,12 @@ function komiString(komi: number) {
 }
 
 function handicapStones(handicap_stones: number | undefined) {
-    const stones = handicap_stones ? stonesString(handicap_stones) : "";
+    const stones = handicap_stones ? handicapStonesString(handicap_stones) : "";
     return (
         <div className="handicap-stones">
             {stones && <span title={_("Handicap") + ": " + handicap_stones}>{stones}</span>}
         </div>
     );
-}
-
-function stonesString(handicap_stones: number) {
-    if (handicap_stones <= 0) {
-        return "";
-    }
-    const one = 0x2460;
-    const twenty_one = 0x3251;
-    const thirty_six = 0x32b1;
-    if (handicap_stones <= 20) {
-        return String.fromCodePoint(one + handicap_stones - 1);
-    }
-    if (handicap_stones <= 35) {
-        return String.fromCodePoint(twenty_one + handicap_stones - 21);
-    }
-    if (handicap_stones <= 50) {
-        return String.fromCodePoint(thirty_six + handicap_stones - 36);
-    }
-    return "(" + handicap_stones + ")";
 }
 
 function useAutoResignExpiration(goban: Goban, color: "black" | "white") {

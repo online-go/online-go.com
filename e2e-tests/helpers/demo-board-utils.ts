@@ -150,9 +150,7 @@ export const verifyDemoBoardGameModalInfo = async (page: Page, boardSize: string
     await expect(moreActions).toBeVisible();
     await moreActions.click();
 
-    const gameInfo = page
-        .locator("button.GameSidebarPanel-item")
-        .filter({ hasText: "Game information" });
+    const gameInfo = page.locator("button.GameActionRow").filter({ hasText: "Game information" });
     await expect(gameInfo).toBeVisible();
     await gameInfo.click();
     await page.waitForSelector(".Modal.GameInfoModal", { state: "visible" });

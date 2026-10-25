@@ -39,6 +39,20 @@ room. GobanView measures this with a ResizeObserver (`useSliderFits`), so a
 control added to the action area can push the slider off a screen that was
 just tall enough.
 
+The `goban-view-move-controls` preference can put the strip under the board
+instead, directly above the bottom player card, as part of the board stage
+(`goban-view-move-controls: "under-board"`). There, `hideSlider="when-cramped"`
+counts the strip's row as part of the stage that must fit on screen, the
+same as in the docked position, so the strip still gives way to the board
+first.
+
+In the mobile scrolling layout (`goban-view-mobile-scroll` on), the strip is
+always under the board, and `hideSlider="when-cramped"` does not hide it:
+nothing needs to fit on one screen when the whole column scrolls. It still
+hides in zen mode (`hideSlider={true}`). An overlay takeover covers it with
+the rest of the scroll area. A takeover with `keepGobanVisible` leaves it
+visible.
+
 ## Adding to it
 
 Put a control here only when a player must see it without scrolling and it

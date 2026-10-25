@@ -58,7 +58,7 @@ const openMoreActionsPanel = async (page: import("@playwright/test").Page) => {
  */
 const getSgfDownloadLink = async (page: import("@playwright/test").Page) => {
     const popover = await openMoreActionsPanel(page);
-    return popover.locator("a.GameSidebarPanel-item").filter({ hasText: "Download SGF" });
+    return popover.locator("a.GameActionRow").filter({ hasText: "Download SGF" });
 };
 
 /**
@@ -84,7 +84,7 @@ const expectSgfDownloadDisabled = async (page: import("@playwright/test").Page) 
  */
 const getAddToLibraryLink = async (page: import("@playwright/test").Page) => {
     const popover = await openMoreActionsPanel(page);
-    return popover.locator("button.GameSidebarPanel-item").filter({ hasText: "Add to library" });
+    return popover.locator("button.GameActionRow").filter({ hasText: "Add to library" });
 };
 
 /**

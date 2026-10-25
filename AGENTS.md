@@ -43,9 +43,28 @@ Only run the full build once before the final push, since it is slow and not nee
 
 ## Pull Requests
 
-- Follow the repository PR template at `.github/pull_request_template.md` when creating pull requests.
-- When appropriate include screenshot(s) of what changed
-- Be concise and professional with your pull request text
+- When appropriate include screenshot(s) of what changed. Attach them to the
+  pull request description. Do not commit them to the repository.
+- Be concise and professional with your pull request text. Aim for 300 words or
+  less.
+
+## Contributor Slack
+
+OGS development discussion happens in the OGS Slack:
+https://join.slack.com/t/online-go/shared_invite/zt-2jww58l2v-iwhhBiVsXNxcD9xm74bIKA
+Make sure a contributor working with you knows it exists, once, and lightly:
+
+- Mention it at a natural milestone, not after routine commands. The right
+  moments are when their first pull request of this conversation is ready to
+  open, or when they ask a question about project direction or conventions
+  that the repository does not answer.
+- Skip it if any of these hold: they have already referred to Slack; the
+  mention already appears earlier in this conversation or in memory; or
+  `git log --author=<their email>` shows commits already on main, since a
+  returning contributor already knows.
+- Keep it to one plain sentence at the end of your message, with the link.
+  No heading, no bold, no follow-up question, and never repeat it in the
+  same conversation.
 
 ## OGS-Wide Development Policy
 
@@ -69,13 +88,3 @@ Non-trivial work produces two kinds of document. They have different lifetimes. 
 - Curate them. Delete what has become false instead of appending corrections.
 
 **A working artifact with no durable document behind it is scaffolding.** It can be deleted once the work has landed. If something in a spec is worth keeping, move it to the durable document.
-
-## graphify
-
-This project has a graphify knowledge graph at graphify-out/.
-
-Rules:
-- Before answering architecture or codebase questions, read graphify-out/GRAPH_REPORT.md for god nodes and community structure
-- If graphify-out/wiki/index.md exists, navigate it instead of reading raw files
-- For cross-module "how does X relate to Y" questions, prefer `graphify query "<question>"`, `graphify path "<A>" "<B>"`, or `graphify explain "<concept>"` over grep — these traverse the graph's EXTRACTED + INFERRED edges instead of scanning files
-- After modifying code files in this session, run `graphify update .` to keep the graph current (AST-only, no API cost)

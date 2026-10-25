@@ -1,0 +1,49 @@
+# Same-repo PR e2e: run the quick suite against the warm e2etesting stack
+# (fast + stable messaging) with the PR's frontend checked out over main's
+# backend. Fork PRs are excluded — their code must not run on the self-hosted
+# runner; forks stay covered by the post-merge run.
+name: PR E2E (same-repo)
+
+on:
+  pull_request:
+    branches: [main]
+
+# Supersede older runs for the same PR; PR runs preempt in-flight merge runs
+# via run-tests.sh's priority lock (manual > pr > merge).
+concurrency:
+  group: pr-e2e-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  pr-e2e:
+    runs-on: self-hosted
+    # A hung run would otherwise hold the ui runner for GitHub's default six hours,
+    # queuing every later PR behind it. Quick-only, so 30 is generous headroom.
+    timeout-minutes: 30
+    if: >-
+      github.repository == 'online-go/online-go.com' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      # Nothing in this job touches the shared checkouts before run-tests.sh holds
+      # its priority lock: another runner may be mid-run in them. The script, and
+      # the helpers it finds beside itself, come from a private clone of ogs main in
+      # this runner's own temp dir. Stale git locks, the reset of both checkouts to
+      # main, and the pull all happen inside the script, behind the lock.
+      - name: Fetch run-tests.sh from ogs main (private clone)
+        run: |
+          git clone --depth 1 --filter=blob:none --sparse --branch main \
+              git@github.com:online-go/ogs.git "$RUNNER_TEMP/ogs-e2e-ci"
+          git -C "$RUNNER_TEMP/ogs-e2e-ci" sparse-checkout set .e2e-ci
+
+      # run-tests.sh (PR mode) checks out this SHA in ogs-ui AFTER preempting any
+      # in-flight merge run, runs the quick suite, and restores ogs-ui to main. The
+      # number, URL and title only name the PR in its Slack notices and the check
+      # annotation; they are passed as env, never interpolated into a shell command.
+      - name: Run PR E2E (warm stack, quick suite)
+        env:
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          "$RUNNER_TEMP/ogs-e2e-ci/.e2e-ci/run-tests.sh" "" "pr-ogs-ui"
