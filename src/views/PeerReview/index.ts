@@ -16,3 +16,5 @@
  */
 
 export * from "./PeerReview";
+export * from "./JoinPage";
+export * from "./RequestInfoPage";

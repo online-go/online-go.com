@@ -46,6 +46,7 @@ import { Hamburger } from "./Hamburger";
 import { forwardRef, useId, useState } from "react";
 import { MODERATOR_POWERS } from "@/lib/moderation";
 import { openDemoBoardModal } from "../DemoBoardModal";
+import { usePeerReviewEnabled } from "@/views/PeerReview/usePeerReviewEnabled";
 import "./NavBar.css";
 
 function setTheme(theme: string) {
@@ -78,6 +79,8 @@ export function NavBar(): React.ReactElement {
     const [force_nav_close, setForceNavClose] = React.useState(false);
     const [banned_user_id] = useData("appeals.banned_user_id");
     const [kibitzShowInNav, setKibitzShowInNav] = React.useState<boolean>(false);
+
+    const peerReviewEnabled = usePeerReviewEnabled();
 
     React.useEffect(() => {
         let cancelled = false;
@@ -234,6 +237,13 @@ export function NavBar(): React.ReactElement {
                                 to="/puzzles"
                                 icon={<i className="fa fa-puzzle-piece" />}
                             />
+                            {peerReviewEnabled && (
+                                <MenuLink
+                                    title={_("Request a peer review")}
+                                    to="/peer-review/request"
+                                    icon={<i className="fa fa-search-plus" />}
+                                />
+                            )}
                             <MenuLink
                                 title={_("Other Go Resources")}
                                 to="/docs/other-go-resources"
@@ -283,6 +293,13 @@ export function NavBar(): React.ReactElement {
                                 to="/groups"
                                 icon={<i className="fa fa-users" />}
                             />
+                            {peerReviewEnabled && (
+                                <MenuLink
+                                    title={_("Become a peer reviewer")}
+                                    to="/peer-review/join"
+                                    icon={<i className="fa fa-search-plus" />}
+                                />
+                            )}
                             <MenuLink
                                 title={_("What's New")}
                                 to="/whats-new"

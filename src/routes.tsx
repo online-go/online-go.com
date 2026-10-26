@@ -140,6 +140,29 @@ function PeerReviewWithLoading() {
     );
 }
 
+const JoinPage = React.lazy(() =>
+    import("@/views/PeerReview/JoinPage").then((m) => ({ default: m.JoinPage })),
+);
+const RequestInfoPage = React.lazy(() =>
+    import("@/views/PeerReview/RequestInfoPage").then((m) => ({ default: m.RequestInfoPage })),
+);
+
+function JoinPageWithLoading() {
+    return (
+        <React.Suspense fallback={<Loading />}>
+            <JoinPage />
+        </React.Suspense>
+    );
+}
+
+function RequestInfoPageWithLoading() {
+    return (
+        <React.Suspense fallback={<Loading />}>
+            <RequestInfoPage />
+        </React.Suspense>
+    );
+}
+
 /*** Layout our main view and routes ***/
 function AppLayout(props: { children: any }): React.ReactElement {
     useOGSNavigationInitializer();
@@ -439,6 +462,8 @@ export const routes = (
                   <Route path="/admin/tournament-schedule-list" element={<AdminTournamentScheduleList />}/>
                 */}
                 <Route path="/moderator" element={<Moderator />} />
+                <Route path="/peer-review/join" element={<JoinPageWithLoading />} />
+                <Route path="/peer-review/request" element={<RequestInfoPageWithLoading />} />
                 <Route path="/peer-review/:tab" element={<PeerReviewWithLoading />} />
                 <Route path="/peer-review" element={<PeerReviewWithLoading />} />
                 <Route path="/learning-hub/:section/:page" element={<LearningHubWithLoading />} />
