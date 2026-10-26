@@ -23,6 +23,7 @@ import { _, pgettext } from "@/lib/translate";
 import { fetchMyProfile } from "./api";
 import { QueueTab } from "./QueueTab";
 import { FinishedTab } from "./FinishedTab";
+import { MyQueueTab } from "./MyQueueTab";
 import "./PeerReview.css";
 
 type Tab = "queue" | "finished" | "mine";
@@ -32,7 +33,10 @@ export function PeerReview(): React.ReactElement {
     const { tab } = useParams<{ tab?: Tab }>();
     const user = useUser();
     const [isReviewer, setIsReviewer] = React.useState(false);
-    const selected: Tab = tab === "finished" || tab === "mine" ? tab : "queue";
+    const [profileChecked, setProfileChecked] = React.useState(false);
+    const requested: Tab = tab === "finished" || tab === "mine" ? tab : "queue";
+    const selected: Tab =
+        requested === "mine" && profileChecked && !isReviewer ? "queue" : requested;
 
     React.useEffect(() => {
         window.document.title = _("Peer review");
@@ -41,6 +45,7 @@ export function PeerReview(): React.ReactElement {
     React.useEffect(() => {
         if (user.anonymous) {
             setIsReviewer(false);
+            setProfileChecked(true);
             return;
         }
         let cancelled = false;
@@ -48,11 +53,13 @@ export function PeerReview(): React.ReactElement {
             .then((profile) => {
                 if (!cancelled) {
                     setIsReviewer(profile.active);
+                    setProfileChecked(true);
                 }
             })
             .catch(() => {
                 if (!cancelled) {
                     setIsReviewer(false);
+                    setProfileChecked(true);
                 }
             });
         return () => {
@@ -92,7 +99,7 @@ export function PeerReview(): React.ReactElement {
             <hr />
             {selected === "queue" && <QueueTab />}
             {selected === "finished" && <FinishedTab />}
-            {selected === "mine" && isReviewer && null}
+            {selected === "mine" && isReviewer && <MyQueueTab />}
         </div>
     );
 }
