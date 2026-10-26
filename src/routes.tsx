@@ -128,6 +128,18 @@ function LearningHubWithLoading() {
     );
 }
 
+const PeerReview = React.lazy(() =>
+    import("@/views/PeerReview/PeerReview").then((m) => ({ default: m.PeerReview })),
+);
+
+function PeerReviewWithLoading() {
+    return (
+        <React.Suspense fallback={<Loading />}>
+            <PeerReview />
+        </React.Suspense>
+    );
+}
+
 /*** Layout our main view and routes ***/
 function AppLayout(props: { children: any }): React.ReactElement {
     useOGSNavigationInitializer();
@@ -427,6 +439,8 @@ export const routes = (
                   <Route path="/admin/tournament-schedule-list" element={<AdminTournamentScheduleList />}/>
                 */}
                 <Route path="/moderator" element={<Moderator />} />
+                <Route path="/peer-review/:tab" element={<PeerReviewWithLoading />} />
+                <Route path="/peer-review" element={<PeerReviewWithLoading />} />
                 <Route path="/learning-hub/:section/:page" element={<LearningHubWithLoading />} />
                 <Route path="/learning-hub/:section" element={<LearningHubWithLoading />} />
                 <Route path="/learning-hub" element={<LearningHubWithLoading />} />
