@@ -68,8 +68,11 @@ export const serverAutoscoreTest = async (
     });
     await acceptDirectChallenge(whitePage, blackPage);
 
-    // Two walls split the board; white's last stone at B5 is dead inside
-    // black's area, so the proposal has a stone to mark.
+    // Two walls split the board; white's last stone at B6 is dead inside
+    // black's area, so the proposal has a stone to mark. B6 rather than the
+    // Auto-score button test's B5: the two tests run side by side, and the
+    // scorer rejects a second request for a position identical to one it is
+    // already working on, which here read as "server autoscore failed".
     const moves = [
         "D9",
         "E9",
@@ -90,7 +93,7 @@ export const serverAutoscoreTest = async (
         "D1",
         "E1",
         "A1",
-        "B5",
+        "B6",
     ];
     await playMoves(blackPage, whitePage, moves, "9x9");
 
@@ -110,7 +113,7 @@ export const serverAutoscoreTest = async (
 
     // The server's proposal lands on both boards as the stone removal state.
     // Wait on the client state rather than the "Scoring game" indicator, and
-    // check its content: B5 (x=1, y=4) is the dead white stone.
+    // check its content: B6 (x=1, y=3) is the dead white stone.
     await Promise.all(
         [blackPage, whitePage].map(async (page) => {
             await expect(page.locator(".stone-removal-buttons")).toBeVisible();
@@ -119,7 +122,7 @@ export const serverAutoscoreTest = async (
                     () =>
                         page.evaluate(() => {
                             const engine = (window as any).global_goban?.engine;
-                            return engine?.auto_scoring_done ? engine.removal[4][1] : null;
+                            return engine?.auto_scoring_done ? engine.removal[3][1] : null;
                         }),
                     { timeout: 90000 },
                 )
