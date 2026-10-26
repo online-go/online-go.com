@@ -18,8 +18,9 @@
 import * as React from "react";
 import { Card } from "@/components/material";
 import { useUser } from "@/lib/hooks";
-import { errorAlerter } from "@/lib/misc";
+import { errorAlerter, ignore } from "@/lib/misc";
 import { browserHistory } from "@/lib/ogsHistory";
+import { alert } from "@/lib/swal_config";
 import { _, pgettext } from "@/lib/translate";
 import { fetchMyProfile, joinPool, patchProfile } from "./api";
 import type { PeerReviewerProfile } from "./types";
@@ -65,8 +66,15 @@ export function JoinPage(): React.ReactElement {
             })
             .catch(errorAlerter);
     };
-    const setActive = (active: boolean) => {
-        patchProfile({ active }).then(setProfile).catch(errorAlerter);
+    const leave = () => {
+        alert
+            .fire({ text: _("Leave the peer reviewer pool?"), showCancelButton: true })
+            .then(({ value: accept }) => {
+                if (accept) {
+                    patchProfile({ active: false }).then(setProfile).catch(errorAlerter);
+                }
+            })
+            .catch(ignore);
     };
 
     return (
@@ -103,12 +111,12 @@ export function JoinPage(): React.ReactElement {
                         >
                             {pgettext("Button to open the reviewer's own queue", "Open my queue")}
                         </button>
-                        <button className="reject" onClick={() => setActive(false)}>
+                        <button className="reject" onClick={leave}>
                             {pgettext("Button to leave the peer reviewer pool", "Leave the pool")}
                         </button>
                     </div>
                 ) : profile ? (
-                    <button className="primary" onClick={() => setActive(true)}>
+                    <button className="primary" onClick={join}>
                         {pgettext("Button to rejoin the peer reviewer pool", "Rejoin the pool")}
                     </button>
                 ) : (

@@ -50,8 +50,6 @@ export const requestClaimSubmitTest = async ({
         await joinButton.click();
     } else if (await rejoinButton.isVisible()) {
         await rejoinButton.click();
-        await expect(openQueueButton).toBeVisible();
-        await openQueueButton.click();
     } else {
         await openQueueButton.click();
     }
@@ -71,6 +69,10 @@ export const requestClaimSubmitTest = async ({
         .locator(".ClaimedRequestCard", { hasText: requesterName })
         .getByRole("button", { name: "Submit", exact: true })
         .click();
+    await reviewerPage
+        .locator('[role="dialog"]')
+        .getByRole("button", { name: "OK", exact: true })
+        .click();
     await expect(
         reviewerPage.locator(".ClaimedRequestCard", { hasText: requesterName }),
     ).toHaveCount(0);
@@ -84,7 +86,8 @@ export const requestClaimSubmitTest = async ({
     ).toBeVisible();
 
     await load(requesterPage, "/peer-review/finished");
-    await expect(
-        requesterPage.locator(".peer-review-finished-table").getByText("E2E_PEER_REVIEWER"),
-    ).toBeVisible();
+    const finishedRow = requesterPage
+        .locator(".peer-review-finished-table tr", { hasText: "E2E Peer Review Game" })
+        .first();
+    await expect(finishedRow.getByText("E2E_PEER_REVIEWER")).toBeVisible();
 };

@@ -132,6 +132,14 @@ export function format_message(props: MessageProps): string {
             return _("Your rank does not allow you to review this request.");
         case "peer_review_state_conflict":
             return _("This request has changed. Please refresh and try again.");
+        case "not_found":
+            return _("That request no longer exists.");
+        case "forbidden":
+            return _("You are not allowed to do that.");
+        case "review_creation_failed":
+            return _("The review could not be started. Please try again.");
+        case "invalid_range":
+            return _("The weakest rank must not be stronger than the strongest rank.");
     }
 
     return message_id;

@@ -65,7 +65,25 @@ export function PeerReviewRequest({ gameId }: PeerReviewRequestProps): React.Rea
         if (!status.request) {
             return;
         }
-        requestAction(status.request.id, "withdraw").then(load).catch(errorAlerter);
+        const id = status.request.id;
+        const doWithdraw = () => {
+            requestAction(id, "withdraw").then(load).catch(errorAlerter);
+        };
+        if (status.request.state !== "claimed") {
+            doWithdraw();
+            return;
+        }
+        alert
+            .fire({
+                text: _("A reviewer is working on this request. Withdraw it anyway?"),
+                showCancelButton: true,
+            })
+            .then(({ value: accept }) => {
+                if (accept) {
+                    doWithdraw();
+                }
+            })
+            .catch(ignore);
     };
 
     const req = status.request;

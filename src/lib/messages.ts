@@ -48,6 +48,10 @@ export type MessageIdAPI =
     | "peer_review_provisional"
     | "peer_review_rank_not_allowed"
     | "peer_review_state_conflict"
+    | "not_found"
+    | "forbidden"
+    | "review_creation_failed"
+    | "invalid_range"
     | "komi_invalid"
     | "test";
 

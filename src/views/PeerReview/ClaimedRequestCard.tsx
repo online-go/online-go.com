@@ -19,7 +19,8 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { Player } from "@/components/Player";
 import { durationString } from "@/components/TimeControl";
-import { errorAlerter } from "@/lib/misc";
+import { errorAlerter, ignore } from "@/lib/misc";
+import { alert } from "@/lib/swal_config";
 import { _, interpolate, pgettext } from "@/lib/translate";
 import { requestAction } from "./api";
 import { RequestRankCell } from "./RequestRankCell";
@@ -46,6 +47,19 @@ export function ClaimedRequestCard({
             .then(onChanged)
             .catch(errorAlerter)
             .finally(() => setBusy(false));
+    };
+    const confirmSubmit = () => {
+        alert
+            .fire({
+                text: _("Submit this peer review? The requester will be told it is ready."),
+                showCancelButton: true,
+            })
+            .then(({ value: accept }) => {
+                if (accept) {
+                    act("submit");
+                }
+            })
+            .catch(ignore);
     };
     return (
         <div className="ClaimedRequestCard">
@@ -75,7 +89,7 @@ export function ClaimedRequestCard({
                 <button disabled={busy} onClick={() => act("release")}>
                     {pgettext("Give a claimed request back to the queue", "Release")}
                 </button>
-                <button className="primary" disabled={busy} onClick={() => act("submit")}>
+                <button className="primary" disabled={busy} onClick={confirmSubmit}>
                     {pgettext("Mark a peer review as finished", "Submit")}
                 </button>
             </div>
