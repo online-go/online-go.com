@@ -58,6 +58,7 @@ export function FinishedTab(): React.ReactElement {
                 </button>
             </div>
             <PaginatedTable
+                key={order}
                 className="peer-review-finished-table"
                 name="peer-review-finished"
                 method="GET"
