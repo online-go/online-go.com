@@ -82,14 +82,14 @@ export function BotAcceptedSettings({
         return null;
     }
 
-    // v1 configs have no rapid settings, and the server plays rapid games with
-    // their live settings
-    const speed_settings =
-        config._config_version === 1 && time_control.speed === "rapid"
-            ? (config.allowed_rapid_settings ?? config.allowed_live_settings)
-            : config[`allowed_${time_control.speed}_settings`];
+    // The server always sends v1 allowed_rapid_settings, at least as {}. Use a
+    // system's rapid entry when it exists, and otherwise the live entry.
     const time_rows = config.allowed_time_control_systems.map((system) => {
-        const ranges = botTimeSettingRanges(bot, system, speed_settings);
+        const v1_rapid = config._config_version === 1 && time_control.speed === "rapid";
+        const ranges = v1_rapid
+            ? (botTimeSettingRanges(bot, system, config.allowed_rapid_settings) ??
+              botTimeSettingRanges(bot, system, config.allowed_live_settings))
+            : botTimeSettingRanges(bot, system, config[`allowed_${time_control.speed}_settings`]);
         return {
             system,
             text: ranges
