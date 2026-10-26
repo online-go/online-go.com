@@ -23,12 +23,7 @@ import { GameChatMoveNumber } from "@/components/Chat/GameChatMoveNumber";
 import { TabCompleteInput } from "@/components/TabCompleteInput";
 import { ChatUserList } from "@/components/ChatUserList";
 import { Player } from "@/components/Player";
-import {
-    cachedChannelInformation,
-    chat_manager,
-    ChatChannelProxy,
-    ChatMessage,
-} from "@/lib/chat_manager";
+import { chat_manager, ChatChannelProxy, ChatMessage } from "@/lib/chat_manager";
 import * as data from "@/lib/data";
 import { useUser } from "@/lib/hooks";
 import type { GobanController } from "@/lib/GobanController";
@@ -285,7 +280,6 @@ export function KibitzChatPanel({
     const paneVisible = visible ?? true;
     const roomVisible = paneVisible && tab === "room";
     const gameVisible = paneVisible && tab === "game";
-    const channelName = cachedChannelInformation(room.channel)?.name ?? room.title;
     const roomEntries = React.useMemo<PaneEntry[]>(() => {
         const entries: PaneEntry[] = [];
 
@@ -754,9 +748,9 @@ export function KibitzChatPanel({
         );
     };
 
-    const roomPlaceholder = interpolate(
-        pgettext("Placeholder text for the kibitz room chat input", "Message {{who}}"),
-        { who: channelName },
+    const roomPlaceholder = pgettext(
+        "Placeholder text for the kibitz room chat input",
+        "Message kibitz",
     );
 
     const roomDisabledPlaceholder = pgettext(

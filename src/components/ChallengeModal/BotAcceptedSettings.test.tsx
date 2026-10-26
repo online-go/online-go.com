@@ -35,6 +35,7 @@ describe("BotAcceptedSettings", () => {
                 _config_version: 1,
                 allowed_time_control_systems: ["simple"],
                 allowed_board_sizes: [19],
+                allowed_rapid_settings: {},
                 allowed_live_settings: { simple: { per_move_time_range: [10, 60] } },
                 allow_ranked: true,
                 allow_unranked: true,
@@ -91,6 +92,38 @@ describe("BotAcceptedSettings", () => {
 
         expect(screen.getByText("Bot has an unsupported board size setting")).toBeInTheDocument();
         expect(screen.queryByText(/\[object Object\]/)).not.toBeInTheDocument();
+    it("uses live settings when v1 rapid settings omit a time system", () => {
+        const bot = {
+            id: 1,
+            username: "TestBot",
+            config: {
+                _config_version: 1,
+                allowed_time_control_systems: ["simple", "fischer"],
+                allowed_board_sizes: [19],
+                allowed_rapid_settings: { simple: { per_move_time_range: [5, 20] } },
+                allowed_live_settings: {
+                    simple: { per_move_time_range: [10, 60] },
+                    fischer: { max_time_range: [60, 600], time_increment_range: [5, 30] },
+                },
+                allow_ranked: true,
+                allow_unranked: true,
+                allow_ranked_handicap: true,
+                allow_unranked_handicap: true,
+            } as BotConfigV1,
+        } as Bot;
+        const rapid: TimeControl = {
+            system: "simple",
+            speed: "rapid",
+            per_move: 30,
+            pause_on_weekends: false,
+        };
+
+        render(<BotAcceptedSettings bot={bot} time_control={rapid} />);
+
+        expect(screen.getByText("Time per move: 5s to 20s")).toBeInTheDocument();
+        expect(
+            screen.getByText("Initial time: 1m to 10m, Time increment: 5s to 30s"),
+        ).toBeInTheDocument();
     });
 });
 

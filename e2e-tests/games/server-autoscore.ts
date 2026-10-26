@@ -47,13 +47,34 @@ export const serverAutoscoreTest = async (
     }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     _testInfo: TestInfo,
 ) => {
+    // This test is about the server's proposal. A player's browser scores
+    // on its own 15 s after entering stone removal if no proposal has
+    // arrived, with its local WASM estimator (the remote scorer is only used
+    // by the Auto-score button), and a client result applied first makes
+    // the server drop its proposal. The dev stack's CPU KataGo can take
+    // longer than 15 s under load, so keep the estimator from loading in the
+    // players' browsers: the fallback then waits on a script that never
+    // arrives, and the server's proposal is the only scorer in this game.
+    // Accept is enabled two seconds into any scoring run, so the suspended
+    // fallback does not block the players. The browser's own scoring is
+    // covered by the Auto-score button test.
+    const createContextWithoutLocalScorer = async (options?: CreateContextOptions) => {
+        const context = await createContext(options);
+        await context.route("**/OGSScoreEstimator/**", (route) => route.abort());
+        return context;
+    };
+
     const { userPage: blackPage } = await prepareNewUser(
-        createContext,
+        createContextWithoutLocalScorer,
         newTestUsername("SrvScoreB"), // cspell:disable-line
         "test",
     );
     const whiteUsername = newTestUsername("SrvScoreW"); // cspell:disable-line
-    const { userPage: whitePage } = await prepareNewUser(createContext, whiteUsername, "test");
+    const { userPage: whitePage } = await prepareNewUser(
+        createContextWithoutLocalScorer,
+        whiteUsername,
+        "test",
+    );
 
     await createDirectChallenge(blackPage, whiteUsername, {
         ...defaultChallengeSettings,
@@ -68,8 +89,11 @@ export const serverAutoscoreTest = async (
     });
     await acceptDirectChallenge(whitePage, blackPage);
 
-    // Two walls split the board; white's last stone at B5 is dead inside
-    // black's area, so the proposal has a stone to mark.
+    // Two walls split the board; white's last stone at B6 is dead inside
+    // black's area, so the proposal has a stone to mark. B6 rather than the
+    // Auto-score button test's B5: the two tests run side by side, and the
+    // scorer rejects a second request for a position identical to one it is
+    // already working on, which here read as "server autoscore failed".
     const moves = [
         "D9",
         "E9",
@@ -90,18 +114,9 @@ export const serverAutoscoreTest = async (
         "D1",
         "E1",
         "A1",
-        "B5",
+        "B6",
     ];
     await playMoves(blackPage, whitePage, moves, "9x9");
-
-    // This test is about the server's proposal. The dev stack's CPU KataGo
-    // can take longer than the client's 15 s fallback to produce it, and a
-    // client that scores first makes the server drop its proposal, so keep
-    // the browsers' own scorer calls from going out. The browser's own
-    // scoring is covered by the Auto-score button test.
-    for (const page of [blackPage, whitePage]) {
-        await page.route("**/api/score", (route) => route.abort());
-    }
 
     for (const page of [blackPage, whitePage]) {
         await expect(page.getByText(/^Your move(?: - opponent passed)?$/)).toBeVisible();
@@ -110,7 +125,7 @@ export const serverAutoscoreTest = async (
 
     // The server's proposal lands on both boards as the stone removal state.
     // Wait on the client state rather than the "Scoring game" indicator, and
-    // check its content: B5 (x=1, y=4) is the dead white stone.
+    // check its content: B6 (x=1, y=3) is the dead white stone.
     await Promise.all(
         [blackPage, whitePage].map(async (page) => {
             await expect(page.locator(".stone-removal-buttons")).toBeVisible();
@@ -119,7 +134,7 @@ export const serverAutoscoreTest = async (
                     () =>
                         page.evaluate(() => {
                             const engine = (window as any).global_goban?.engine;
-                            return engine?.auto_scoring_done ? engine.removal[4][1] : null;
+                            return engine?.auto_scoring_done ? engine.removal[3][1] : null;
                         }),
                     { timeout: 90000 },
                 )

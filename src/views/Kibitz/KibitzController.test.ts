@@ -453,12 +453,74 @@ describe("KibitzController telemetry", () => {
             viewer_count: 1,
             current_game: { game_id: 5, title: "g" },
         } as never);
-        controller.startVariationFromCurrentBoard();
+        controller.startVariationFromCurrentBoard({ roomId: "user-1", gameId: 5 });
         controller.startVariationFromPostedVariation({ id: "v1", game_id: 5 } as never);
         expect(mockedRecord.mock.calls.map((c) => c[0])).toEqual([
             "start_variation",
             "start_variation",
         ]);
+        controller.destroy();
+    });
+
+    it("does not start a draft from a ready snapshot while room hydration is pending", async () => {
+        mockedGet.mockResolvedValueOnce([]);
+        const controller = new KibitzController();
+        await flushPromises();
+        controller.setActiveRoom({
+            id: "preset-room",
+            channel: "kibitz-preset-room",
+            title: "preset",
+            kind: "preset",
+            description: null,
+            viewer_count: 1,
+            current_game: { game_id: 50, title: "old" },
+        } as never);
+
+        let resolveRoom: (value: unknown) => void = () => undefined;
+        mockedGet.mockReturnValueOnce(
+            new Promise((resolve) => {
+                resolveRoom = resolve;
+            }),
+        );
+        const pending = controller.selectRoom("user-room");
+
+        expect(controller.active_room?.id).toBe("preset-room");
+        expect(
+            controller.startVariationFromCurrentBoard(
+                { roomId: "user-room", gameId: 9 },
+                { x: -1, y: -1 },
+            ),
+        ).toBe(false);
+        expect(controller.secondary_pane.variation_source_game_id).toBeUndefined();
+        expect(mockedRecord).not.toHaveBeenCalledWith("start_variation");
+
+        resolveRoom({
+            ...roomPayload("user-room"),
+            room: {
+                ...roomPayload("user-room").room,
+                current_game: {
+                    game_id: 9,
+                    board_size: "9x9",
+                    title: "new",
+                    black: null,
+                    white: null,
+                    tournament_name: null,
+                    move_number: 4,
+                    live: true,
+                    analysis_disabled: false,
+                },
+            },
+        });
+        await pending;
+
+        expect(controller.active_room?.id).toBe("user-room");
+        expect(
+            controller.startVariationFromCurrentBoard(
+                { roomId: "user-room", gameId: 9 },
+                { x: -1, y: -1 },
+            ),
+        ).toBe(true);
+        expect(controller.secondary_pane.variation_source_game_id).toBe(9);
         controller.destroy();
     });
 
