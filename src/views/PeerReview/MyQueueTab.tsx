@@ -34,13 +34,20 @@ export function MyQueueTab(): React.ReactElement {
     const [sort, setSort] = React.useState<QueueSort>("rank");
     const [queue, setQueue] = React.useState<ReviewerQueue | null>(null);
     const [error, setError] = React.useState(false);
+    const [range, setRange] = React.useState<{ min: number; max: number } | null>(null);
     const timer = React.useRef<number | null>(null);
+    const pending = React.useRef<{ min: number; max: number } | null>(null);
+    const patching = React.useRef(false);
 
+    /** Loads never overwrite the slider while an edit is waiting to be saved or is being saved. */
     const load = React.useCallback(() => {
         fetchQueue(sort)
             .then((q) => {
                 setQueue(q);
                 setError(false);
+                if (timer.current === null && !patching.current) {
+                    setRange({ min: q.profile.min_rank, max: q.profile.max_rank });
+                }
             })
             .catch(() => setError(true));
     }, [sort]);
@@ -53,20 +60,32 @@ export function MyQueueTab(): React.ReactElement {
         return () => {
             if (timer.current !== null) {
                 window.clearTimeout(timer.current);
+                if (pending.current) {
+                    patchProfile({
+                        min_rank: pending.current.min,
+                        max_rank: pending.current.max,
+                    }).catch(() => {});
+                }
             }
         };
     }, []);
 
     const onRange = (min: number, max: number) => {
-        if (!queue) {
-            return;
-        }
-        setQueue({ ...queue, profile: { ...queue.profile, min_rank: min, max_rank: max } });
+        setRange({ min, max });
+        pending.current = { min, max };
         if (timer.current !== null) {
             window.clearTimeout(timer.current);
         }
         timer.current = window.setTimeout(() => {
-            patchProfile({ min_rank: min, max_rank: max }).then(load).catch(errorAlerter);
+            timer.current = null;
+            pending.current = null;
+            patching.current = true;
+            patchProfile({ min_rank: min, max_rank: max })
+                .catch(errorAlerter)
+                .finally(() => {
+                    patching.current = false;
+                    load();
+                });
         }, 400);
     };
 
@@ -117,8 +136,8 @@ export function MyQueueTab(): React.ReactElement {
                 <>
                     <div className="controls">
                         <RankRangeSlider
-                            min={profile.min_rank}
-                            max={profile.max_rank}
+                            min={range?.min ?? profile.min_rank}
+                            max={range?.max ?? profile.max_rank}
                             allowedMin={profile.allowed_min as number}
                             allowedMax={profile.allowed_max as number}
                             onChange={onRange}
