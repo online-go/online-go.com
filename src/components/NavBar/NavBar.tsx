@@ -461,6 +461,13 @@ export function NavBar(): React.ReactElement {
                             )}
                             {user.is_superuser && (
                                 <MenuLink
+                                    title={_("Peer review settings")}
+                                    to="/admin/peer-review"
+                                    icon={<i className="fa fa-search-plus" />}
+                                />
+                            )}
+                            {user.is_superuser && (
+                                <MenuLink
                                     title="Admin"
                                     icon={<i className="fa fa-wrench" />}
                                     to={adminInterfaceUrl()}

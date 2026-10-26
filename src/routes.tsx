@@ -38,7 +38,7 @@ import { SignIn } from "@/views/SignIn";
 import { Register } from "@/views/Register";
 import { ChallengeLinkLanding } from "@/views/ChallengeLinkLanding";
 import { Home } from "@/views/Home";
-import { OnlineLeaguesAdmin } from "@/views/Admin";
+import { OnlineLeaguesAdmin, PeerReviewSettings } from "@/views/Admin";
 import { WhatsNew } from "@/views/WhatsNew";
 import { ChatView } from "@/views/ChatView";
 import { Developer } from "@/views/Developer";
@@ -448,6 +448,7 @@ export const routes = (
                 <Route path="/moderator/fair-play-logic-dump" element={<FairPlayLogicDump />} />
                 <Route path="/admin/firewall" element={<Firewall />} />
                 <Route path="/admin/online_leagues" element={<OnlineLeaguesAdmin />} />
+                <Route path="/admin/peer-review" element={<PeerReviewSettings />} />
                 <Route path="/whats-new" element={<WhatsNew />} />
                 <Route path="/whats-new/:postId" element={<WhatsNew />} />
                 <Route path="/announcement-center" element={<AnnouncementCenter />} />
