@@ -26,7 +26,7 @@ export const withdrawAndRerequestTest = async ({
 }) => {
     const { requesterPage } = await playFinishedGame(createContext, "prWd");
     await requestPeerReview(requesterPage);
-    await requesterPage.getByRole("button", { name: "Withdraw" }).click();
+    await requesterPage.getByRole("button", { name: "Withdraw", exact: true }).click();
     // A withdrawn request is inert: it does not use the weekly allowance and the same game may be requested again.
     await expect(requesterPage.getByRole("button", { name: "Request peer review" })).toBeVisible();
     await requestPeerReview(requesterPage);

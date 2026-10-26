@@ -44,18 +44,22 @@ export const requestClaimSubmitTest = async ({
     );
     const joinButton = reviewerPage.getByRole("button", { name: "I agree, join the pool" });
     const rejoinButton = reviewerPage.getByRole("button", { name: "Rejoin the pool" });
-    await expect(joinButton.or(rejoinButton)).toBeVisible();
-    if (await rejoinButton.isVisible()) {
-        await rejoinButton.click();
-        await load(reviewerPage, "/peer-review/mine");
-    } else {
+    const openQueueButton = reviewerPage.getByRole("button", { name: "Open my queue" });
+    await expect(joinButton.or(rejoinButton).or(openQueueButton)).toBeVisible();
+    if (await joinButton.isVisible()) {
         await joinButton.click();
+    } else if (await rejoinButton.isVisible()) {
+        await rejoinButton.click();
+        await expect(openQueueButton).toBeVisible();
+        await openQueueButton.click();
+    } else {
+        await openQueueButton.click();
     }
     await reviewerPage.waitForURL((url) => url.pathname === "/peer-review/mine");
 
     const row = reviewerPage.locator(".my-queue-table tr", { hasText: requesterName });
     await expect(row).toBeVisible();
-    await row.getByRole("button", { name: "Claim" }).click();
+    await row.getByRole("button", { name: "Claim", exact: true }).click();
     await reviewerPage.waitForURL((url) => /^\/review\/\d+/.test(url.pathname));
 
     await load(requesterPage, `/game/${gameId}`);
@@ -65,7 +69,7 @@ export const requestClaimSubmitTest = async ({
     await load(reviewerPage, "/peer-review/mine");
     await reviewerPage
         .locator(".ClaimedRequestCard", { hasText: requesterName })
-        .getByRole("button", { name: "Submit" })
+        .getByRole("button", { name: "Submit", exact: true })
         .click();
     await expect(
         reviewerPage.locator(".ClaimedRequestCard", { hasText: requesterName }),
