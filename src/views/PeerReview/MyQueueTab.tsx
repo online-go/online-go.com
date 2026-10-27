@@ -20,9 +20,11 @@ import { Link } from "react-router-dom";
 import { Player } from "@/components/Player";
 import { errorAlerter } from "@/lib/misc";
 import { browserHistory } from "@/lib/ogsHistory";
-import { _, pgettext } from "@/lib/translate";
+import { _, interpolate, pgettext } from "@/lib/translate";
 import { fetchQueue, patchProfile, requestAction } from "./api";
 import { ClaimedRequestCard } from "./ClaimedRequestCard";
+import { CompletedReviewsSection } from "./CompletedReviewsSection";
+import { Honorific } from "./Honorific";
 import { RankRangeSlider } from "./RankRangeSlider";
 import { RequestRankCell } from "./RequestRankCell";
 import { WaitTime } from "./WaitTime";
@@ -115,6 +117,18 @@ export function MyQueueTab(): React.ReactElement {
 
     return (
         <div className="MyQueueTab">
+            <div className="me">
+                <Honorific name={profile.honorific} />
+                {profile.stats && (
+                    <span className="stats">
+                        {interpolate(_("{{completed}} completed, score {{score}}"), {
+                            completed: profile.stats.completed,
+                            score:
+                                profile.stats.score === null ? "–" : profile.stats.score.toFixed(1),
+                        })}
+                    </span>
+                )}
+            </div>
             {queue.claimed.length > 0 && (
                 <div className="claimed">
                     <h3>
@@ -201,6 +215,7 @@ export function MyQueueTab(): React.ReactElement {
                     </table>
                 </>
             )}
+            <CompletedReviewsSection />
         </div>
     );
 }

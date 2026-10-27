@@ -16,6 +16,12 @@
  */
 
 .MyQueueTab {
+    .me {
+        display: flex;
+        gap: 0.75rem;
+        align-items: baseline;
+        margin-bottom: 0.5rem;
+    }
     .claimed {
         margin-bottom: 1rem;
     }
