@@ -110,11 +110,12 @@ export const requestClaimSubmitTest = async ({
     await expect(completed.getByText("Thanks, the opening comments helped.")).toBeVisible();
     await expect(completed.locator(".StarRating .star.filled")).toHaveCount(4);
 
-    // Delivered feedback is frozen for the requester.
-    await requesterPage.reload();
-    await expect(
-        requesterPage.locator(".PeerReviewFeedbackPanel").getByText("Delivered"),
-    ).toBeVisible();
+    // Delivered feedback is frozen for the requester. The reviewer's page marks it
+    // delivered without waiting, so reload until the requester sees it.
+    await expect(async () => {
+        await requesterPage.reload();
+        await expect(panel.getByText("Delivered")).toBeVisible({ timeout: 2000 });
+    }).toPass({ timeout: 20000 });
 
     await load(requesterPage, "/peer-review/finished");
     const finishedRow = requesterPage
@@ -128,4 +129,6 @@ export const requestClaimSubmitTest = async ({
     });
     await expect(reviewerRow).toBeVisible();
     await expect(reviewerRow.locator(".completed")).not.toHaveText("0");
+    // The rating given above means the reviewer has a score.
+    await expect(reviewerRow.locator(".score")).not.toHaveText("–");
 };

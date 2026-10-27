@@ -16,6 +16,7 @@
  */
 import * as React from "react";
 import { format_message } from "@/components/Errcode";
+import { useUser } from "@/lib/hooks";
 import type { MessageId } from "@/lib/messages";
 import { errorAlerter, ignore } from "@/lib/misc";
 import { _, interpolate, moment, pgettext } from "@/lib/translate";
@@ -43,6 +44,7 @@ export function PeerReviewFeedbackPanel({
     const [saved, setSaved] = React.useState(false);
     const [busy, setBusy] = React.useState(false);
     const touched = React.useRef(false);
+    const anonymous = useUser().anonymous;
 
     const apply = React.useCallback((s: ReviewFeedbackStatus) => {
         setStatus(s);
@@ -53,6 +55,9 @@ export function PeerReviewFeedbackPanel({
     }, []);
 
     React.useEffect(() => {
+        if (anonymous) {
+            return;
+        }
         let cancelled = false;
         fetchReviewFeedbackStatus(reviewId)
             .then((s) => {
@@ -81,9 +86,9 @@ export function PeerReviewFeedbackPanel({
         return () => {
             cancelled = true;
         };
-    }, [reviewId, apply]);
+    }, [reviewId, apply, anonymous]);
 
-    if (!status || status.state !== "submitted") {
+    if (anonymous || !status || status.state !== "submitted") {
         return null;
     }
 

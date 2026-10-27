@@ -35,8 +35,17 @@ jest.mock("@/views/PeerReview/api", () => ({
 jest.mock("@/components/Errcode", () => ({
     format_message: (m: { message_id: string }) => m.message_id,
 }));
+const mockUser = { anonymous: false };
+jest.mock("@/lib/hooks", () => ({
+    useUser: () => mockUser,
+}));
 
 const mocked = api as jest.Mocked<typeof api>;
+
+beforeEach(() => {
+    jest.clearAllMocks();
+    mockUser.anonymous = false;
+});
 const base = {
     request_id: 5,
     state: "submitted" as const,
@@ -62,6 +71,14 @@ test("renders nothing when the request is not submitted and does not mark seen",
     await flush();
     expect(container.querySelector(".PeerReviewFeedbackPanel")).toBeNull();
     expect(mocked.markReviewSeen).not.toHaveBeenCalled();
+});
+
+test("anonymous viewers make no request and see nothing", async () => {
+    mockUser.anonymous = true;
+    const { container } = render(<PeerReviewFeedbackPanel reviewId={77} />);
+    await flush();
+    expect(mocked.fetchReviewFeedbackStatus).not.toHaveBeenCalled();
+    expect(container.querySelector(".PeerReviewFeedbackPanel")).toBeNull();
 });
 
 test("requester: marks seen once, saves a rating, then shows delivered", async () => {

@@ -53,8 +53,6 @@ export interface PeerReviewRequest {
     created: string;
     reviewers_total?: number | null;
     reviewers_available?: number | null;
-    review_seen_at: string | null;
-    feedback_due_at: string | null;
     reviewer_honorific: string | null;
 }
 

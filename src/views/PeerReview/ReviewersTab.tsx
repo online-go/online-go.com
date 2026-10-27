@@ -69,7 +69,9 @@ export function ReviewersTab(): React.ReactElement {
                     {
                         header: _("Rank"),
                         className: () => "rank",
-                        render: (r: ReviewerRow) => <RequestRankCell rank={r.rank} />,
+                        render: (r: ReviewerRow) => (
+                            <RequestRankCell rank={r.rank} professional={r.professional} />
+                        ),
                     },
                     {
                         header: _("Reviewer"),
