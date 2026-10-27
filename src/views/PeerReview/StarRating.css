@@ -1,0 +1,25 @@
+.StarRating {
+    display: inline-flex;
+    gap: 0.15rem;
+
+    .star {
+        color: var(--shade3);
+        cursor: default;
+        input {
+            position: absolute;
+            opacity: 0;
+            width: 1px;
+            height: 1px;
+        }
+    }
+    label.star {
+        cursor: pointer;
+    }
+    .star.filled {
+        color: var(--star-color, #f0b400);
+    }
+    label.star:focus-within {
+        outline: 2px solid var(--primary);
+        border-radius: 2px;
+    }
+}

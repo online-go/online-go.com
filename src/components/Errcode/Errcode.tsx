@@ -136,6 +136,18 @@ export function format_message(props: MessageProps): string {
             return _("Your rank does not allow you to review this request.");
         case "peer_review_state_conflict":
             return _("This request has changed. Please refresh and try again.");
+        case "peer_review_feedback_not_open":
+            return _("You can rate the review once it has been submitted.");
+        case "peer_review_feedback_closed":
+            return _("The feedback window for this review has closed.");
+        case "peer_review_feedback_delivered":
+            return _(
+                "The reviewer has already read your feedback, so it can no longer be changed.",
+            );
+        case "peer_review_feedback_too_long":
+            return _("Your feedback is too long.");
+        case "peer_review_feedback_invalid":
+            return _("Choose a rating from 1 to 5.");
         case "not_found":
             return _("That request no longer exists.");
         case "forbidden":

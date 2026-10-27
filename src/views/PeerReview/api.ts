@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { get, patch, post } from "@/lib/requests";
+import { get, patch, post, put } from "@/lib/requests";
 import type {
     GameRequestStatus,
     PeerReviewConfig,
@@ -24,6 +24,7 @@ import type {
     QueueSort,
     RequestAction,
     ReviewerQueue,
+    ReviewFeedbackStatus,
 } from "./types";
 
 export function fetchConfig(): Promise<PeerReviewConfig> {
@@ -58,4 +59,24 @@ export function patchProfile(
     changes: Partial<Pick<PeerReviewerProfile, "min_rank" | "max_rank" | "active">>,
 ): Promise<PeerReviewerProfile> {
     return patch("peer_review/reviewers/me", changes);
+}
+
+export function fetchReviewFeedbackStatus(reviewId: number): Promise<ReviewFeedbackStatus> {
+    return get(`peer_review/reviews/${reviewId}`);
+}
+
+export function markReviewSeen(requestId: number): Promise<ReviewFeedbackStatus> {
+    return post(`peer_review/requests/${requestId}/seen`, {});
+}
+
+export function saveFeedback(
+    requestId: number,
+    score: number,
+    text: string,
+): Promise<ReviewFeedbackStatus> {
+    return put(`peer_review/requests/${requestId}/feedback`, { score, text });
+}
+
+export function markFeedbackDelivered(requestId: number): Promise<ReviewFeedbackStatus> {
+    return post(`peer_review/requests/${requestId}/delivered`, {});
 }
