@@ -92,6 +92,8 @@ describe("BotAcceptedSettings", () => {
 
         expect(screen.getByText("Bot has an unsupported board size setting")).toBeInTheDocument();
         expect(screen.queryByText(/\[object Object\]/)).not.toBeInTheDocument();
+    });
+
     it("uses live settings when v1 rapid settings omit a time system", () => {
         const bot = {
             id: 1,
