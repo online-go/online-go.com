@@ -16,17 +16,23 @@
  */
 
 /*
- * The "Auto-score" button runs the browser's own scoring: it asks ai-term
- * for the dead stones and marks them. A player un-marks the dead stone by
- * hand, presses Auto-score, and the stone is marked dead again.
+ * Scoring a game, end to end: the players pass, the server proposes the dead
+ * stones, a player marks one alive by hand and the Auto-score button marks it
+ * dead again, both accept, and the game log records each step.
  *
- * ai-term's answer is served by the test, not by ai-term. Its KataGo is
- * shared with the server's proposals and the other scoring tests, and in the
- * parallel run the real call took 32-47 s against the 30 s the browser waits
- * (goban runStoneRemovalAutoScoring), so this test failed on scorer speed,
- * not on the button. The server-proposal test keeps the real scorer covered;
- * this one covers the button: the request it sends, the marks it applies,
- * the update it sends the server, and the game log entry.
+ * One game carries all of these checks. They are successive phases of the
+ * same position, and every game that enters stone removal costs the e2e
+ * stack a KataGo request: three games doing so together, in three separate
+ * tests, made all three tests flaky.
+ *
+ * The players' browsers do not score the game themselves:
+ *  - the local WASM estimator is kept from loading, so the client's 15 s
+ *    fallback never pre-empts the server's proposal (a client result applied
+ *    first makes the server drop its proposal), and
+ *  - the Auto-score button's call to ai-term is answered by the test with the
+ *    answer ai-term returned for this position in a real run, so the button is
+ *    checked independent of scorer speed (goban abandons the call at 30 s).
+ * The server's proposal is the real scorer in this game.
  *
  * Uses init_e2e data:
  *  - E2E_MODERATOR : opens the game log
@@ -50,13 +56,6 @@ import {
 import { clickOnGobanIntersection, playMoves, waitForGameFinished } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 
-/** Whether B5 (x=1, y=4 on a 9x9) is marked dead on this page's board. */
-const b5MarkedDead = (page: Page) =>
-    page.evaluate(() => {
-        const engine = (window as any).global_goban?.engine;
-        return engine ? !!engine.removal[4][1] : null;
-    });
-
 /**
  * ai-term's answer for the position below, as it returned it in a real run:
  * columns A-D are black's, E-J white's, and white's stone at B5 (x=1, y=4)
@@ -76,17 +75,35 @@ const SCORER_ANSWER = {
     recommended_moves: { black: { x: 7, y: 4 }, white: { x: -1, y: -1 } },
 };
 
-export const autoScoreButtonTest = async (
+/** Whether B5 (x=1, y=4 on a 9x9) is marked dead on this page's board. */
+const b5MarkedDead = (page: Page) =>
+    page.evaluate(() => {
+        const engine = (window as any).global_goban?.engine;
+        return engine ? !!engine.removal[4][1] : null;
+    });
+
+/** As b5MarkedDead, but null until the server's proposal has landed. */
+const b5MarkedDeadByProposal = (page: Page) =>
+    page.evaluate(() => {
+        const engine = (window as any).global_goban?.engine;
+        return engine?.auto_scoring_done ? !!engine.removal[4][1] : null;
+    });
+
+export const scoringTest = async (
     {
         createContext,
     }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     _testInfo: TestInfo,
 ) => {
-    // Both players' browsers get the canned answer, whichever of them the
-    // button's scoring runs in. The route matches ai-term's /api/score only;
-    // the client's own fallback scorer is local WASM and never calls it.
-    const createContextWithStubbedScorer = async (options?: CreateContextOptions) => {
+    // With its script blocked, a fallback run (a proposal later than 15 s)
+    // waits forever for the estimator to load: "Scoring game" stays up and
+    // the goban's "Processing..." message covers the board. That is harmless
+    // here, see the hand mark below. A stand-in script is no better: goban's
+    // estimator returns an all-zero ownership for any module that fails,
+    // which the fallback would apply as every stone dead.
+    const createPlayerContext = async (options?: CreateContextOptions) => {
         const context = await createContext(options);
+        await context.route("**/OGSScoreEstimator/**", (route) => route.abort());
         await context.route("**/api/score", (route) =>
             route.fulfill({
                 status: 200,
@@ -98,20 +115,20 @@ export const autoScoreButtonTest = async (
     };
 
     const { userPage: blackPage } = await prepareNewUser(
-        createContextWithStubbedScorer,
-        newTestUsername("AutoScoreB"), // cspell:disable-line
+        createPlayerContext,
+        newTestUsername("ScoringB"), // cspell:disable-line
         "test",
     );
-    const whiteUsername = newTestUsername("AutoScoreW"); // cspell:disable-line
+    const whiteUsername = newTestUsername("ScoringW"); // cspell:disable-line
     const { userPage: whitePage } = await prepareNewUser(
-        createContextWithStubbedScorer,
+        createPlayerContext,
         whiteUsername,
         "test",
     );
 
     await createDirectChallenge(blackPage, whiteUsername, {
         ...defaultChallengeSettings,
-        gameName: "E2E Auto-score Button Test Game",
+        gameName: "E2E Scoring Test Game",
         boardSize: "9x9",
         speed: "live",
         timeControl: "byoyomi",
@@ -123,7 +140,7 @@ export const autoScoreButtonTest = async (
     await acceptDirectChallenge(whitePage, blackPage);
 
     // Two walls split the board; white's last stone at B5 is dead inside
-    // black's area.
+    // black's area, so the scorers have a stone to mark.
     const moves = [
         "D9",
         "E9",
@@ -153,22 +170,28 @@ export const autoScoreButtonTest = async (
         await (await expectOGSClickableByName(page, /^Pass$/)).click();
     }
 
-    // Let the initial scoring settle (the server's proposal, or the client's
-    // own fallback) so the manual click below is not raced by it.
-    await expect(blackPage.locator(".stone-removal-buttons")).toBeVisible();
-    await expect.poll(() => b5MarkedDead(blackPage), { timeout: 90000 }).toBe(true);
-    await expect(blackPage.locator(".autoscoring-in-progress")).toBeHidden({ timeout: 30000 });
-
-    // Black marks B5 alive by hand.
+    // The server's proposal lands on both boards as the stone removal state,
+    // with B5 dead.
+    await Promise.all(
+        [blackPage, whitePage].map(async (page) => {
+            await expect(page.locator(".stone-removal-buttons")).toBeVisible();
+            await expect.poll(() => b5MarkedDeadByProposal(page), { timeout: 90000 }).toBe(true);
+        }),
+    );
+    // Black marks B5 alive by hand; Auto-score marks it dead again with the
+    // browser's own scorer call (answered by the stub), not the server's
+    // proposal. No wait for "Scoring game" to clear first: a hung fallback
+    // run keeps it up, with its message over the board, until the button's
+    // own run replaces it. The click still lands, as the goban's pointer
+    // handlers are on the board's container and read the position from the
+    // event.
     await clickOnGobanIntersection(blackPage, "B5", "9x9");
     await expect.poll(() => b5MarkedDead(blackPage)).toBe(false);
-
-    // Auto-score marks it dead again: the browser's own scorer call (answered
-    // by the stub above), not the server's proposal.
     await (await expectOGSClickableByName(blackPage, /^Auto-score$/)).click();
-    await expect.poll(() => b5MarkedDead(blackPage), { timeout: 60000 }).toBe(true);
-    await expect.poll(() => b5MarkedDead(whitePage), { timeout: 10000 }).toBe(true);
+    await expect.poll(() => b5MarkedDead(blackPage), { timeout: 15000 }).toBe(true);
+    await expect.poll(() => b5MarkedDead(whitePage), { timeout: 15000 }).toBe(true);
 
+    // Both accept and the game ends.
     await (await expectOGSClickableByName(whitePage, /^Accept removed stones/)).click();
     await expect(blackPage.locator(".white .stone-removal-accepted.accepted")).toBeVisible();
     await (await expectOGSClickableByName(blackPage, /^Accept removed stones/)).click();
@@ -178,6 +201,8 @@ export const autoScoreButtonTest = async (
     await waitForGameFinished(blackPage);
     const gameUrl = blackPage.url();
 
+    // The game log has an entry per step: the server's proposal, the button's
+    // update, both acceptances and the end of the game.
     const moderatorPassword = process.env.E2E_MODERATOR_PASSWORD;
     if (!moderatorPassword) {
         throw new Error("E2E_MODERATOR_PASSWORD environment variable must be set");
@@ -194,11 +219,17 @@ export const autoScoreButtonTest = async (
     await (await expectOGSClickableByName(modPage, "Game log")).click();
     await expect(modPage.locator("table.GameLog")).toBeVisible();
 
-    // The button's scoring is logged as the browser's own stone removal
-    // update, labelled as an auto-scorer update.
-    const autoScorerRows = modPage
-        .locator(".GameLog tr.entry")
-        .filter({ hasText: "stone removal stones set" })
-        .filter({ hasText: "auto-scorer update" });
-    await expect(autoScorerRows.first()).toBeVisible();
+    const entries = modPage.locator(".GameLog tr.entry");
+    const events = entries.locator("td.event");
+    await expect(events.filter({ hasText: "server autoscore" })).toHaveCount(1);
+    await expect(entries.filter({ hasText: "server autoscore" })).toContainText(
+        "stones marked dead",
+    );
+    await expect(
+        entries
+            .filter({ hasText: "stone removal stones set" })
+            .filter({ hasText: "auto-scorer update" }),
+    ).toHaveCount(1);
+    await expect(events.filter({ hasText: "stone removal stones accepted" })).toHaveCount(2);
+    await expect(events.filter({ hasText: "game ended" })).toHaveCount(1);
 };
