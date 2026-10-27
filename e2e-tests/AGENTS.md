@@ -15,6 +15,10 @@ When creating e2e tests, note that:
 
 (The problem is that tests can fail if the wrong number of reports is open, due to previously failed tests)
 
+- A run can be killed mid-test: GitHub cancels it for a newer push, or a higher-priority trigger preempts it. The test's `finally` does not run then, so its fixtures survive into later runs. Where such a leftover can break the test (a per-user cap, a uniqueness rule), remove the test's own leftovers at the start, as the ladder vacation test does with the groups its founder owns.
+
+- Prefer one test that checks successive phases of one scenario over several tests that each set up that scenario again. The set-up (registering users, playing a game, filing a report) is most of a test's run time, and the quick phase's wall-clock is the total test time divided by the workers, so a shared set-up is what shortens it. `games/scoring.ts` is the pattern: one game carries the server's proposal, the Auto-score button and the acceptance.
+
 - Any actions or assertions using buttons need to use `expectOGSClickable` to find the button, because OGS buttons are implemented in a range of ways.
 
 - Users (user data) can be created either by seeding it or using `prepareNewUser`.

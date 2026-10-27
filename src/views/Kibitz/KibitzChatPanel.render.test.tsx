@@ -312,6 +312,11 @@ describe("KibitzChatPanel variation posts", () => {
         expect(container.querySelector(".KibitzChatPanel-composer .ChatUserCount")).toBeNull();
     });
 
+    test("the composer placeholder reads the same in every room, not the room title", () => {
+        render(<KibitzChatPanel {...baseProps()} />);
+        expect(screen.getByPlaceholderText("Message kibitz")).toBeInTheDocument();
+    });
+
     test("an external mode picks the chat and drops the tab strip", () => {
         const { container, rerender } = render(
             <KibitzChatPanel

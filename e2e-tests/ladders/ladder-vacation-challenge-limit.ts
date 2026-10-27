@@ -21,6 +21,9 @@
  * those slots - and a player already on vacation cannot be challenged at all.
  *
  * Flow:
+ * 0. P1 deletes any group a killed earlier run left it owning: the backend
+ *    caps a player at two founded groups, and a run killed mid-test (GitHub
+ *    cancelling it for a newer push, or a preemption) never reaches step 7.
  * 1. P1 creates a public group; P1-P6 join it and its 9x9 ladder in order,
  *    so P6 sits at the bottom and can challenge everyone above.
  * 2. P6 challenges P1, P2 and P3 - at the cap. P4 reports 0x005.
@@ -98,6 +101,34 @@ const deleteGroup = async (page: Page, groupUrl: string) => {
     await page.waitForURL(/\/groups\/?$/, { timeout: 30000 });
 };
 
+/**
+ * Delete any group this player already founded. A run killed mid-test (GitHub
+ * cancelling it for a newer push, or a higher-priority trigger preempting it)
+ * skips the finally below and leaves the group behind, and the backend caps a
+ * player at two founded groups, so two such leftovers stop this test creating
+ * its own. Fixture setup, so the lookup is by API; the deletion drives the UI
+ * like the teardown does.
+ */
+const deleteLeftoverGroups = async (page: Page) => {
+    const me = await page.request.get("/api/v1/me");
+    expect(me.ok(), "Look up the signed-in player").toBeTruthy();
+    const { id, username } = (await me.json()) as { id: number; username: string };
+
+    const groups = await page.request.get(`/api/v1/players/${id}/groups`);
+    expect(groups.ok(), `List the groups ${username} belongs to`).toBeTruthy();
+    const { results } = (await groups.json()) as {
+        results: { id: number; name: string; founder?: { username: string } | null }[];
+    };
+
+    for (const group of results) {
+        if (group.founder?.username !== username) {
+            continue;
+        }
+        log(`Deleting leftover group ${group.id} (${group.name}) founded by ${username}`);
+        await deleteGroup(page, `/group/${group.id}`);
+    }
+};
+
 export const ladderVacationChallengeLimitTest = async (
     {
         createContext,
@@ -140,6 +171,7 @@ export const ladderVacationChallengeLimitTest = async (
 
     try {
         await Promise.all([ensureVacationOff(p1Page), ensureVacationOff(p5Page)]);
+        await deleteLeftoverGroups(p1Page);
 
         await p1Page.goto("/group/create");
 
