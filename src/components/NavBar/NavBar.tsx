@@ -371,7 +371,7 @@ export function NavBar(): React.ReactElement {
 
                             {peerReviewAvailable && (
                                 <MenuLink
-                                    title={_("Peer review")}
+                                    title={_("Peer Review Queue")}
                                     to="/peer-review"
                                     icon={<i className="fa fa-search-plus" />}
                                 />
