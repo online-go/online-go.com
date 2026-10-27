@@ -75,7 +75,10 @@ export function QueueTab(): React.ReactElement {
                             ),
                     },
                     {
-                        header: pgettext("Reviewers available / total for this rank", "Reviewers"),
+                        header: pgettext(
+                            "Column: reviewers free to claim / all reviewers covering this rank",
+                            "Available reviewers",
+                        ),
                         className: () => "reviewers",
                         render: (r: PeerReviewRequest) =>
                             r.reviewers_total === null || r.reviewers_total === undefined
