@@ -15,6 +15,8 @@ When creating e2e tests, note that:
 
 (The problem is that tests can fail if the wrong number of reports is open, due to previously failed tests)
 
+- A run can be killed mid-test: GitHub cancels it for a newer push, or a higher-priority trigger preempts it. The test's `finally` does not run then, so its fixtures survive into later runs. Where such a leftover can break the test (a per-user cap, a uniqueness rule), remove the test's own leftovers at the start, as the ladder vacation test does with the groups its founder owns.
+
 - Any actions or assertions using buttons need to use `expectOGSClickable` to find the button, because OGS buttons are implemented in a range of ways.
 
 - Users (user data) can be created either by seeding it or using `prepareNewUser`.
