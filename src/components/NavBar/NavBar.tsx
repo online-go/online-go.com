@@ -369,6 +369,14 @@ export function NavBar(): React.ReactElement {
                                 icon={<i className="fa fa-calculator" />}
                             />
 
+                            {peerReviewAvailable && (
+                                <MenuLink
+                                    title={_("Peer review")}
+                                    to="/peer-review"
+                                    icon={<i className="fa fa-search-plus" />}
+                                />
+                            )}
+
                             <MenuLink
                                 title={_("Contribute To Translation")}
                                 to="https://translate.online-go.com/projects/ogs/"

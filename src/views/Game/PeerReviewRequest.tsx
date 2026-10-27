@@ -92,12 +92,16 @@ export function PeerReviewRequest({ gameId }: PeerReviewRequestProps): React.Rea
             <div className="PeerReviewRequest">
                 {req.state === "open" ? (
                     <span>
-                        {pgettext("Peer review request status", "Peer review requested")}{" "}
+                        <Link to="/peer-review">
+                            {pgettext("Peer review request status", "Peer review requested")}
+                        </Link>{" "}
                         <WaitTime since={req.created} />
                     </span>
                 ) : (
                     <span>
-                        {pgettext("Peer review request status", "Being reviewed by")}{" "}
+                        <Link to="/peer-review">
+                            {pgettext("Peer review request status", "Being reviewed by")}
+                        </Link>{" "}
                         {req.reviewer && <Player user={req.reviewer} rank disableCacheUpdate />}
                     </span>
                 )}
