@@ -62,8 +62,13 @@ export default defineConfig({
         baseURL: process.env.FRONTEND_URL || "http://localhost:8080",
         actionTimeout: 15_000,
         navigationTimeout: 30_000,
-        trace: "retain-on-failure",
-        video: "retain-on-failure",
+        // A failing test keeps its trace: actions, DOM snapshots, network and
+        // console. The trace's screencast and the separate video are off because
+        // recording them costs about a quarter of the e2e runner's browser time;
+        // the DOM snapshots show the page at each action. Pass `--trace on` for a
+        // local repro that needs the film strip.
+        trace: { mode: "retain-on-failure", screenshots: false },
+        video: "off",
         screenshot: "only-on-failure",
     },
     projects: [

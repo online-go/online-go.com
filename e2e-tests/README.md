@@ -101,8 +101,11 @@ failure. Inspect the failure trace and reproduce the cause.
 
 ## Failure artifacts and screenshots
 
-Playwright retains failure screenshots, traces, and videos when available.
-CI uploads these under the test job's **Upload e2e results** step.
+Playwright retains a failure screenshot and the failing test's trace. The
+trace holds the actions, DOM snapshots, network and console, but no
+screencast, and no video is recorded: those cost about a quarter of the e2e
+runner's browser time. Pass `--trace on` when a local repro needs the film
+strip. CI uploads these under the test job's **Upload e2e results** step.
 
 To update smoke screenshots, run the smoke tests with
 `--update-snapshots`, review each changed image, and rerun the smoke tests.
