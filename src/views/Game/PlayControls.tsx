@@ -46,6 +46,7 @@ import { useUser } from "@/lib/hooks";
 import { AntiGrief } from "./AntiGrief";
 import { GobanAnalyzeButtonBar } from "@/components/GobanAnalyzeButtonBar/GobanAnalyzeButtonBar";
 import { EstimateScore } from "./fragments";
+import { PeerReviewFeedbackPanel } from "./PeerReviewFeedbackPanel";
 import { PeerReviewRequest } from "./PeerReviewRequest";
 import "./PlayControls.css";
 
@@ -470,6 +471,7 @@ export function ReviewControls({ review_id }: ReviewControlsProps) {
 
     return (
         <div className="PlayControls">
+            <PeerReviewFeedbackPanel reviewId={review_id} />
             <div className="game-state">
                 {(mode === "analyze" || null) && (
                     <div>
