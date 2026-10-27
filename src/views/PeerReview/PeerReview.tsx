@@ -20,6 +20,7 @@ import { useParams } from "react-router-dom";
 import { browserHistory } from "@/lib/ogsHistory";
 import { useUser } from "@/lib/hooks";
 import { _, pgettext } from "@/lib/translate";
+import { AvailabilityNotice } from "./AvailabilityNotice";
 import { fetchMyProfile } from "./api";
 import { QueueTab } from "./QueueTab";
 import { FinishedTab } from "./FinishedTab";
@@ -97,6 +98,7 @@ export function PeerReview(): React.ReactElement {
                 </div>
             </div>
             <hr />
+            <AvailabilityNotice />
             {selected === "queue" && <QueueTab />}
             {selected === "finished" && <FinishedTab />}
             {selected === "mine" && isReviewer && <MyQueueTab />}

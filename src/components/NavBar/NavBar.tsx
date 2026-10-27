@@ -46,7 +46,7 @@ import { Hamburger } from "./Hamburger";
 import { forwardRef, useId, useState } from "react";
 import { MODERATOR_POWERS } from "@/lib/moderation";
 import { openDemoBoardModal } from "../DemoBoardModal";
-import { usePeerReviewEnabled } from "@/views/PeerReview/usePeerReviewEnabled";
+import { usePeerReviewAvailability } from "@/views/PeerReview/usePeerReviewAvailability";
 import "./NavBar.css";
 
 function setTheme(theme: string) {
@@ -80,7 +80,7 @@ export function NavBar(): React.ReactElement {
     const [banned_user_id] = useData("appeals.banned_user_id");
     const [kibitzShowInNav, setKibitzShowInNav] = React.useState<boolean>(false);
 
-    const peerReviewEnabled = usePeerReviewEnabled();
+    const peerReviewAvailable = usePeerReviewAvailability().available;
 
     React.useEffect(() => {
         let cancelled = false;
@@ -237,7 +237,7 @@ export function NavBar(): React.ReactElement {
                                 to="/puzzles"
                                 icon={<i className="fa fa-puzzle-piece" />}
                             />
-                            {peerReviewEnabled && (
+                            {peerReviewAvailable && (
                                 <MenuLink
                                     title={_("Request a peer review")}
                                     to="/peer-review/request"
@@ -293,7 +293,7 @@ export function NavBar(): React.ReactElement {
                                 to="/groups"
                                 icon={<i className="fa fa-users" />}
                             />
-                            {peerReviewEnabled && (
+                            {peerReviewAvailable && (
                                 <MenuLink
                                     title={_("Become a peer reviewer")}
                                     to="/peer-review/join"

@@ -24,7 +24,7 @@ import { alert } from "@/lib/swal_config";
 import { _, interpolate, moment, pgettext } from "@/lib/translate";
 import { createRequest, fetchGameRequestStatus, requestAction } from "@/views/PeerReview/api";
 import type { GameRequestStatus } from "@/views/PeerReview/types";
-import { usePeerReviewEnabled } from "@/views/PeerReview/usePeerReviewEnabled";
+import { usePeerReviewAvailability } from "@/views/PeerReview/usePeerReviewAvailability";
 import { WaitTime } from "@/views/PeerReview/WaitTime";
 import "./PeerReviewRequest.css";
 
@@ -34,7 +34,7 @@ interface PeerReviewRequestProps {
 
 /** On a finished game: the request button, or the player's request status with withdraw and the review link. */
 export function PeerReviewRequest({ gameId }: PeerReviewRequestProps): React.ReactElement | null {
-    const enabled = usePeerReviewEnabled();
+    const { available } = usePeerReviewAvailability();
     const [status, setStatus] = React.useState<GameRequestStatus | null>(null);
 
     const load = React.useCallback(() => {
@@ -42,12 +42,12 @@ export function PeerReviewRequest({ gameId }: PeerReviewRequestProps): React.Rea
     }, [gameId]);
 
     React.useEffect(() => {
-        if (enabled) {
+        if (available) {
             load();
         }
-    }, [enabled, load]);
+    }, [available, load]);
 
-    if (!enabled || !status) {
+    if (!available || !status) {
         return null;
     }
 

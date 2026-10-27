@@ -20,6 +20,7 @@ import { Link } from "react-router-dom";
 import { Card } from "@/components/material";
 import { useUser } from "@/lib/hooks";
 import { _ } from "@/lib/translate";
+import { AvailabilityNotice } from "./AvailabilityNotice";
 import "./RequestInfoPage.css";
 
 /** Explains how to request a peer review and points the player at their finished games. */
@@ -31,6 +32,7 @@ export function RequestInfoPage(): React.ReactElement {
     return (
         <div className="RequestInfoPage container">
             <h2>{_("Request a peer review")}</h2>
+            <AvailabilityNotice />
             <Card>
                 <p>
                     {_(

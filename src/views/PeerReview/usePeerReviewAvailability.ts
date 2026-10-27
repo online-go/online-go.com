@@ -18,15 +18,30 @@
 import * as React from "react";
 import { fetchConfig } from "./api";
 
-/** Whether the launch switch is on. False until the config has loaded or if it cannot be read. */
-export function usePeerReviewEnabled(): boolean {
-    const [enabled, setEnabled] = React.useState(false);
+export interface PeerReviewAvailability {
+    /** True once the config has been read, so pages can tell "dark" from "not loaded yet". */
+    loaded: boolean;
+    /** Whether this user may see and use the feature: live, or dark and a moderator. */
+    available: boolean;
+    /** Whether the launch switch is on for everyone. */
+    live: boolean;
+}
+
+const HIDDEN: PeerReviewAvailability = { loaded: false, available: false, live: false };
+
+/** Reads the peer review config once. Everything stays hidden until it loads or if it cannot be read. */
+export function usePeerReviewAvailability(): PeerReviewAvailability {
+    const [state, setState] = React.useState<PeerReviewAvailability>(HIDDEN);
     React.useEffect(() => {
         let cancelled = false;
         fetchConfig()
             .then((cfg) => {
                 if (!cancelled) {
-                    setEnabled(Boolean(cfg.enabled));
+                    setState({
+                        loaded: true,
+                        available: Boolean(cfg.available),
+                        live: Boolean(cfg.enabled),
+                    });
                 }
             })
             .catch(() => {
@@ -36,5 +51,5 @@ export function usePeerReviewEnabled(): boolean {
             cancelled = true;
         };
     }, []);
-    return enabled;
+    return state;
 }

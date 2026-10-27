@@ -62,7 +62,10 @@ export interface PeerReviewerProfile {
 }
 
 export interface PeerReviewConfig {
+    /** The launch switch: true means live for everyone, false means dark. */
     enabled: boolean;
+    /** Whether the calling user may see and use the feature: live, or dark and a moderator. */
+    available: boolean;
     min_reviewer_rank: number;
 }
 

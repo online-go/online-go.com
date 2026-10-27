@@ -22,6 +22,7 @@ import { errorAlerter, ignore } from "@/lib/misc";
 import { browserHistory } from "@/lib/ogsHistory";
 import { alert } from "@/lib/swal_config";
 import { _, pgettext } from "@/lib/translate";
+import { AvailabilityNotice } from "./AvailabilityNotice";
 import { fetchMyProfile, joinPool, patchProfile } from "./api";
 import type { PeerReviewerProfile } from "./types";
 import "./JoinPage.css";
@@ -80,6 +81,7 @@ export function JoinPage(): React.ReactElement {
     return (
         <div className="JoinPage container">
             <h2>{_("Become a peer reviewer")}</h2>
+            <AvailabilityNotice />
             <Card>
                 <p>
                     {_(
