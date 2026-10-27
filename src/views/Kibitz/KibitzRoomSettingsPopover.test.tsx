@@ -5,7 +5,7 @@
  */
 
 import * as React from "react";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import type { KibitzRoomSummary } from "@/models/kibitz";
 import { KibitzRoomSettingsPopover } from "./KibitzRoomSettingsPopover";
 
@@ -79,5 +79,29 @@ describe("KibitzRoomSettingsPopover", () => {
         expect(screen.getByText("Edit room details")).toBeInTheDocument();
         expect(screen.getByText("Change live game")).toBeInTheDocument();
         expect(screen.queryByText("You do not have room management access yet.")).toBeNull();
+    });
+
+    it("says why when the server refuses the room details as offensive", async () => {
+        render(
+            <KibitzRoomSettingsPopover
+                room={makeRoom()}
+                initialView="edit-details"
+                canEditRoom={true}
+                canDeleteRoom={false}
+                canChangeBoard={false}
+                onClose={jest.fn()}
+                onRequestChangeBoard={jest.fn()}
+                onDeleteRoom={async () => false}
+                onSaveRoomDetails={() => Promise.reject({ errcode: "kibitzroom_offensive" })}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+        expect(
+            await screen.findByText(
+                "Sorry, that room title or description is not allowed. Please choose a different one.",
+            ),
+        ).toBeInTheDocument();
     });
 });
