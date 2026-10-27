@@ -20,6 +20,14 @@
  * for the dead stones and marks them. A player un-marks the dead stone by
  * hand, presses Auto-score, and the stone is marked dead again.
  *
+ * ai-term's answer is served by the test, not by ai-term. Its KataGo is
+ * shared with the server's proposals and the other scoring tests, and in the
+ * parallel run the real call took 32-47 s against the 30 s the browser waits
+ * (goban runStoneRemovalAutoScoring), so this test failed on scorer speed,
+ * not on the button. The server-proposal test keeps the real scorer covered;
+ * this one covers the button: the request it sends, the marks it applies,
+ * the update it sends the server, and the game log entry.
+ *
  * Uses init_e2e data:
  *  - E2E_MODERATOR : opens the game log
  */
@@ -49,19 +57,57 @@ const b5MarkedDead = (page: Page) =>
         return engine ? !!engine.removal[4][1] : null;
     });
 
+/**
+ * ai-term's answer for the position below, as it returned it in a real run:
+ * columns A-D are black's, E-J white's, and white's stone at B5 (x=1, y=4)
+ * is dead. The button applies autoscored_removed (ScoreEstimator's
+ * getProbablyDead) and autoscored_board_state; the rest is what ai-term sends
+ * alongside.
+ */
+const SCORER_ANSWER = {
+    autoscored_board_state: Array.from({ length: 9 }, () => [1, 1, 1, 1, 2, 2, 2, 2, 2]),
+    autoscored_removed: [
+        { x: 1, y: 4, removal_reason: "both players agree this is captured by black" },
+    ],
+    autoscored_needs_sealing: [],
+    score: -17.07,
+    win_rate: 0.00085,
+    ownership: Array.from({ length: 9 }, () => [1, 1, 1, 1, -1, -1, -1, -1, -1]),
+    recommended_moves: { black: { x: 7, y: 4 }, white: { x: -1, y: -1 } },
+};
+
 export const autoScoreButtonTest = async (
     {
         createContext,
     }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     _testInfo: TestInfo,
 ) => {
+    // Both players' browsers get the canned answer, whichever of them the
+    // button's scoring runs in. The route matches ai-term's /api/score only;
+    // the client's own fallback scorer is local WASM and never calls it.
+    const createContextWithStubbedScorer = async (options?: CreateContextOptions) => {
+        const context = await createContext(options);
+        await context.route("**/api/score", (route) =>
+            route.fulfill({
+                status: 200,
+                contentType: "application/json",
+                body: JSON.stringify(SCORER_ANSWER),
+            }),
+        );
+        return context;
+    };
+
     const { userPage: blackPage } = await prepareNewUser(
-        createContext,
+        createContextWithStubbedScorer,
         newTestUsername("AutoScoreB"), // cspell:disable-line
         "test",
     );
     const whiteUsername = newTestUsername("AutoScoreW"); // cspell:disable-line
-    const { userPage: whitePage } = await prepareNewUser(createContext, whiteUsername, "test");
+    const { userPage: whitePage } = await prepareNewUser(
+        createContextWithStubbedScorer,
+        whiteUsername,
+        "test",
+    );
 
     await createDirectChallenge(blackPage, whiteUsername, {
         ...defaultChallengeSettings,
@@ -117,8 +163,8 @@ export const autoScoreButtonTest = async (
     await clickOnGobanIntersection(blackPage, "B5", "9x9");
     await expect.poll(() => b5MarkedDead(blackPage)).toBe(false);
 
-    // Auto-score marks it dead again: the browser's own scorer call, not the
-    // server's proposal.
+    // Auto-score marks it dead again: the browser's own scorer call (answered
+    // by the stub above), not the server's proposal.
     await (await expectOGSClickableByName(blackPage, /^Auto-score$/)).click();
     await expect.poll(() => b5MarkedDead(blackPage), { timeout: 60000 }).toBe(true);
     await expect.poll(() => b5MarkedDead(whitePage), { timeout: 10000 }).toBe(true);
