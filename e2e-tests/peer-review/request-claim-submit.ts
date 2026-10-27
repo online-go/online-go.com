@@ -89,9 +89,43 @@ export const requestClaimSubmitTest = async ({
         requesterPage.getByText("Your peer review of E2E Peer Review Game is ready"),
     ).toBeVisible();
 
+    // The requester opens the review, which starts the feedback window, and rates it.
+    // Reloading the game page also dismisses the notification list that covers the link.
+    await load(requesterPage, `/game/${gameId}`);
+    await requesterPage.getByRole("link", { name: "Peer review ready" }).click();
+    await requesterPage.waitForURL((url) => /^\/review\/\d+/.test(url.pathname));
+    const panel = requesterPage.locator(".PeerReviewFeedbackPanel");
+    await expect(panel.getByText("Feedback closes")).toBeVisible();
+    await panel.getByRole("radio", { name: "4 of 5" }).check();
+    await panel.getByRole("textbox").fill("Thanks, the opening comments helped.");
+    await expect(panel.getByRole("textbox")).toHaveValue("Thanks, the opening comments helped.");
+    await panel.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(panel.getByText("Saved")).toBeVisible();
+
+    // The reviewer reads it in My queue, which delivers it.
+    await load(reviewerPage, "/peer-review/mine");
+    const completed = reviewerPage.locator(".completed-reviews-table tr", {
+        hasText: requesterName,
+    });
+    await expect(completed.getByText("Thanks, the opening comments helped.")).toBeVisible();
+    await expect(completed.locator(".StarRating .star.filled")).toHaveCount(4);
+
+    // Delivered feedback is frozen for the requester.
+    await requesterPage.reload();
+    await expect(
+        requesterPage.locator(".PeerReviewFeedbackPanel").getByText("Delivered"),
+    ).toBeVisible();
+
     await load(requesterPage, "/peer-review/finished");
     const finishedRow = requesterPage
         .locator(".peer-review-finished-table tr", { hasText: "E2E Peer Review Game" })
         .first();
     await expect(finishedRow.getByText("E2E_PEER_REVIEWER")).toBeVisible();
+
+    await load(requesterPage, "/peer-review/reviewers");
+    const reviewerRow = requesterPage.locator(".peer-reviewers-table tr", {
+        hasText: "E2E_PEER_REVIEWER",
+    });
+    await expect(reviewerRow).toBeVisible();
+    await expect(reviewerRow.locator(".completed")).not.toHaveText("0");
 };
