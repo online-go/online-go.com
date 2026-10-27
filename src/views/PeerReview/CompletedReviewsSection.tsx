@@ -32,7 +32,12 @@ export function CompletedReviewsSection(): React.ReactElement {
     const delivered = React.useRef<Set<number>>(new Set());
     const groom = (rows: CompletedReview[]) => {
         for (const r of rows) {
-            if (r.feedback && !r.feedback.delivered && !delivered.current.has(r.id)) {
+            if (
+                r.feedback &&
+                !r.feedback.none_provided &&
+                !r.feedback.delivered &&
+                !delivered.current.has(r.id)
+            ) {
                 delivered.current.add(r.id);
                 markFeedbackDelivered(r.id).catch(ignore);
             }
