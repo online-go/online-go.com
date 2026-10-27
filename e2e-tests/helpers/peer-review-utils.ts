@@ -25,7 +25,9 @@ import {
 } from "@helpers/challenge-utils";
 import { playMoves, resignActiveGame } from "@helpers/game-utils";
 
-/** Two fresh users play an unranked 9x9 to resignation; returns the requester (black) on the finished game page. */
+/** Two fresh users play an unranked 13x13 to resignation; returns the requester (black) on the finished game page.
+ *
+ * 13x13 because fresh accounts are weaker than the 9x9 requester floor. */
 export async function playFinishedGame(
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     role: string,
@@ -38,7 +40,7 @@ export async function playFinishedGame(
     await createDirectChallenge(requesterPage, opponentName, {
         ...defaultChallengeSettings,
         gameName: "E2E Peer Review Game",
-        boardSize: "9x9",
+        boardSize: "13x13",
         ranked: false,
     });
     await acceptDirectChallenge(opponentPage, requesterPage);
@@ -46,7 +48,7 @@ export async function playFinishedGame(
         requesterPage,
         opponentPage,
         ["D5", "E5", "D4", "E4", "D6", "E6", "C5", "F5"],
-        "9x9",
+        "13x13",
     );
     await resignActiveGame(opponentPage);
     await expect(requesterPage.getByText("by Resignation")).toBeVisible();

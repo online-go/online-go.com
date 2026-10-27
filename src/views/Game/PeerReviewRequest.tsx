@@ -38,6 +38,8 @@ export function PeerReviewRequest({ gameId }: PeerReviewRequestProps): React.Rea
     const { available } = usePeerReviewAvailability();
     const [status, setStatus] = React.useState<GameRequestStatus | null>(null);
 
+    const retries = React.useRef(0);
+
     const load = React.useCallback(() => {
         fetchGameRequestStatus(gameId).then(setStatus).catch(ignore);
     }, [gameId]);
@@ -47,6 +49,19 @@ export function PeerReviewRequest({ gameId }: PeerReviewRequestProps): React.Rea
             load();
         }
     }, [available, load]);
+
+    // This block mounts when the client sees the game end, which can be a moment before the
+    // server has recorded it. Ask again a few times rather than show "once the game has finished".
+    React.useEffect(() => {
+        if (status?.reason !== "peer_review_game_not_finished" || retries.current >= 10) {
+            return;
+        }
+        const timer = setTimeout(() => {
+            retries.current += 1;
+            load();
+        }, 2000);
+        return () => clearTimeout(timer);
+    }, [status, load]);
 
     if (!available || !status) {
         return null;
