@@ -62,6 +62,10 @@ export const requestClaimSubmitTest = async ({
 
     await load(requesterPage, `/game/${gameId}`);
     await expect(requesterPage.getByText("Being reviewed by")).toBeVisible();
+    // Once claimed the request is the reviewer's to finish: no withdraw.
+    await expect(requesterPage.getByRole("button", { name: "Withdraw", exact: true })).toHaveCount(
+        0,
+    );
     await assertNotificationIndicatorActive(requesterPage, 1);
 
     await load(reviewerPage, "/peer-review/mine");

@@ -61,4 +61,5 @@ export async function requestPeerReview(page: Page): Promise<void> {
     await page.getByRole("button", { name: "Request peer review" }).click();
     await page.locator('[role="dialog"]').getByRole("button", { name: "OK", exact: true }).click();
     await expect(page.getByText("Peer review requested")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Withdraw", exact: true })).toBeVisible();
 }
