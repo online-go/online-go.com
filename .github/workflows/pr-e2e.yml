@@ -47,3 +47,21 @@ jobs:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           "$RUNNER_TEMP/ogs-e2e-ci/.e2e-ci/run-tests.sh" "" "pr-ogs-ui"
+
+      # A newer push to the PR cancels this job (the concurrency group above) and
+      # the runner kills the script's process tree within a second, before its
+      # signal handler can log or post; the interrupted test's teardown never
+      # runs. This step is the only record that the run was cut short.
+      - name: Record the cancellation
+        if: cancelled()
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          script="$RUNNER_TEMP/ogs-e2e-ci/.e2e-ci/report-cancelled.sh"
+          if [ -x "$script" ]; then
+            "$script" "pr-ogs-ui"
+          else
+            echo "cancelled before the harness clone finished; nothing had started"
+          fi

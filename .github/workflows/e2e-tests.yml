@@ -62,3 +62,21 @@ jobs:
                   TRIGGER_SOURCE: ${{ steps.trigger.outputs.source }}
               run: |
                   "$RUNNER_TEMP/ogs-e2e-ci/.e2e-ci/run-tests.sh" "$TEST_FILTER" "$TRIGGER_SOURCE"
+
+            # GitHub cancels this job when a newer push supersedes it (the
+            # concurrency group above) or someone presses Cancel. The runner then
+            # kills the script's process tree within a second, before its signal
+            # handler can log or post, and the interrupted test's teardown never
+            # runs. This step is the only record that the run was cut short: one
+            # event-log line and one Slack notice.
+            - name: Record the cancellation
+              if: cancelled()
+              env:
+                  TRIGGER_SOURCE: ${{ steps.trigger.outputs.source }}
+              run: |
+                  script="$RUNNER_TEMP/ogs-e2e-ci/.e2e-ci/report-cancelled.sh"
+                  if [ -x "$script" ]; then
+                    "$script" "$TRIGGER_SOURCE"
+                  else
+                    echo "cancelled before the harness clone finished; nothing had started"
+                  fi
