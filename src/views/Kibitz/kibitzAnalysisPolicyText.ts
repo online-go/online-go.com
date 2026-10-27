@@ -64,6 +64,18 @@ export function getKibitzPickerFailedCreateMessage(): string {
     );
 }
 
+/** The server refuses offensive room titles and descriptions with this errcode */
+export function isKibitzRoomOffensiveError(error: unknown): boolean {
+    return (error as { errcode?: unknown } | null)?.errcode === "kibitzroom_offensive";
+}
+
+export function getKibitzRoomOffensiveMessage(): string {
+    return pgettext(
+        "Error shown when a Kibitz room title or description is refused as offensive",
+        "Sorry, that room title or description is not allowed. Please choose a different one.",
+    );
+}
+
 export function getKibitzPickerFailedChangeMessage(): string {
     return pgettext(
         "Error shown when Kibitz board switching fails",

@@ -135,6 +135,9 @@ jest.mock("./kibitzAnalysisPolicyText", () => ({
     getKibitzAnalysisDisabledSpectatorMessage: () => "disabled",
     getKibitzPickerFailedChangeMessage: () => "change failed",
     getKibitzPickerFailedCreateMessage: () => "create failed",
+    getKibitzRoomOffensiveMessage: () => "offensive",
+    isKibitzRoomOffensiveError: jest.requireActual("./kibitzAnalysisPolicyText")
+        .isKibitzRoomOffensiveError,
 }));
 
 const mockedGet = get as jest.MockedFunction<typeof get>;
@@ -325,6 +328,28 @@ describe("KibitzGamePickerOverlay", () => {
         await waitFor(() => {
             expect(screen.getByRole("button", { name: "Create room" })).toBeEnabled();
         });
+    });
+
+    it("says why when the server refuses the room as offensive", async () => {
+        mockedGet.mockResolvedValue(makeGameDetails());
+
+        render(
+            <KibitzGamePickerOverlay
+                mode="create-room"
+                rooms={[]}
+                canOpenCreateRoomFlow={true}
+                signInHref="/sign-in#/kibitz"
+                onClose={jest.fn()}
+                onCreateRoom={() => Promise.reject({ errcode: "kibitzroom_offensive" })}
+                onChangeBoard={jest.fn()}
+                onJoinRoom={jest.fn()}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole("button", { name: "Select game" }));
+        fireEvent.click(await screen.findByRole("button", { name: "Create room" }));
+
+        expect(await screen.findByText("offensive")).toBeInTheDocument();
     });
 
     it("hydrates the desktop selected preview from the resolved game details", async () => {
