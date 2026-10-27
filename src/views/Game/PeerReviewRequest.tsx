@@ -20,6 +20,7 @@ import { format_message } from "@/components/Errcode";
 import { Player } from "@/components/Player";
 import type { MessageId } from "@/lib/messages";
 import { errorAlerter, ignore } from "@/lib/misc";
+import { rankString } from "@/lib/rank_utils";
 import { alert } from "@/lib/swal_config";
 import { _, interpolate, moment, pgettext } from "@/lib/translate";
 import { createRequest, fetchGameRequestStatus, requestAction } from "@/views/PeerReview/api";
@@ -65,25 +66,7 @@ export function PeerReviewRequest({ gameId }: PeerReviewRequestProps): React.Rea
         if (!status.request) {
             return;
         }
-        const id = status.request.id;
-        const doWithdraw = () => {
-            requestAction(id, "withdraw").then(load).catch(errorAlerter);
-        };
-        if (status.request.state !== "claimed") {
-            doWithdraw();
-            return;
-        }
-        alert
-            .fire({
-                text: _("A reviewer is working on this request. Withdraw it anyway?"),
-                showCancelButton: true,
-            })
-            .then(({ value: accept }) => {
-                if (accept) {
-                    doWithdraw();
-                }
-            })
-            .catch(ignore);
+        requestAction(status.request.id, "withdraw").then(load).catch(errorAlerter);
     };
 
     const req = status.request;
@@ -105,9 +88,11 @@ export function PeerReviewRequest({ gameId }: PeerReviewRequestProps): React.Rea
                         {req.reviewer && <Player user={req.reviewer} rank disableCacheUpdate />}
                     </span>
                 )}
-                <button onClick={withdraw}>
-                    {pgettext("Withdraw a peer review request", "Withdraw")}
-                </button>
+                {req.state === "open" && (
+                    <button onClick={withdraw}>
+                        {pgettext("Withdraw a peer review request", "Withdraw")}
+                    </button>
+                )}
             </div>
         );
     }
@@ -136,8 +121,15 @@ export function PeerReviewRequest({ gameId }: PeerReviewRequestProps): React.Rea
             ? interpolate(_("You can request another peer review {{when}}"), {
                   when: moment(status.cooldown_until).fromNow(),
               })
-            : status.reason
-              ? format_message({ message_id: status.reason as MessageId })
-              : null;
+            : status.reason === "peer_review_9x9_rank"
+              ? interpolate(
+                    _("Peer review of 9x9 games is open to players of {{rank}} or stronger"),
+                    {
+                        rank: rankString(status.min_rank_for_9x9),
+                    },
+                )
+              : status.reason
+                ? format_message({ message_id: status.reason as MessageId })
+                : null;
     return reason ? <div className="PeerReviewRequest reason">{reason}</div> : null;
 }

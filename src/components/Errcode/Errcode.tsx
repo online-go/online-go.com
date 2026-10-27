@@ -110,6 +110,10 @@ export function format_message(props: MessageProps): string {
             return _("You can request a peer review once the game has finished.");
         case "peer_review_board_size":
             return _("Peer review is available for 9x9, 13x13 and 19x19 games.");
+        case "peer_review_9x9_rank":
+            return _(
+                "Peer review of 9x9 games is for stronger players; try a 13x13 or 19x19 game.",
+            );
         case "peer_review_bot_game":
             return _("Games against bots cannot be submitted for peer review.");
         case "peer_review_private_game":

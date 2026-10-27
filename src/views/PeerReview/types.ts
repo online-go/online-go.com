@@ -43,7 +43,10 @@ export interface PeerReviewRequest {
     state: PeerReviewState;
     reviewer: PeerReviewPlayer | null;
     claimed_at: string | null;
+    /** When the reviewer is warned; the claim lapses at release_deadline. */
     claim_deadline: string | null;
+    claim_warned_at: string | null;
+    release_deadline: string | null;
     review_id: number | null;
     submitted_at: string | null;
     reviewer_rank_at_submit: number | null;
@@ -55,6 +58,7 @@ export interface PeerReviewRequest {
 export interface PeerReviewerProfile {
     joined: string;
     active: boolean;
+    last_active: string;
     min_rank: number;
     max_rank: number;
     allowed_min: number | null;
@@ -73,6 +77,8 @@ export interface GameRequestStatus {
     may_request: boolean;
     reason: string | null;
     cooldown_until: string | null;
+    /** Weakest requester rank allowed to ask for a 9x9 review, for the refusal text. */
+    min_rank_for_9x9: number;
     request: PeerReviewRequest | null;
 }
 

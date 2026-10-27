@@ -168,7 +168,7 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
                 return "/supporter";
 
             case "peerReviewClaimed":
-            case "peerReviewWithdrawn":
+            case "peerReviewClaimWarning":
             case "peerReviewClaimExpired":
                 return `/game/${notification.game_id}`;
             case "peerReviewSubmitted":
@@ -633,12 +633,18 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
                         })}
                     </div>
                 );
-            case "peerReviewWithdrawn":
+            case "peerReviewClaimWarning":
                 return (
                     <div>
-                        {interpolate(_("The peer review request for {{game_name}} was withdrawn"), {
-                            game_name: notification.game_name,
-                        })}
+                        {interpolate(
+                            _(
+                                "Your peer review of {{game_name}} is overdue. Submit it within {{hours}} hours or it goes back to the queue",
+                            ),
+                            {
+                                game_name: notification.game_name,
+                                hours: notification.hours_left,
+                            },
+                        )}
                     </div>
                 );
             case "peerReviewClaimExpired":

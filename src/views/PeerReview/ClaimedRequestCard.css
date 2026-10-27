@@ -30,6 +30,10 @@
         gap: 0.5rem;
     }
 
+    .deadline.overdue {
+        color: var(--reject);
+    }
+
     @media (max-width: 700px) {
         grid-template-columns: 1fr;
     }

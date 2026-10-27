@@ -38,6 +38,7 @@ export type MessageIdAPI =
     | "peer_review_not_player"
     | "peer_review_game_not_finished"
     | "peer_review_board_size"
+    | "peer_review_9x9_rank"
     | "peer_review_bot_game"
     | "peer_review_private_game"
     | "peer_review_already_requested_game"

@@ -38,9 +38,10 @@ export function ClaimedRequestCard({
     onChanged,
 }: ClaimedRequestCardProps): React.ReactElement {
     const [busy, setBusy] = React.useState(false);
-    const secondsLeft = request.claim_deadline
-        ? Math.max(0, Math.floor((new Date(request.claim_deadline).getTime() - Date.now()) / 1000))
-        : 0;
+    const secondsUntil = (iso: string | null) =>
+        iso ? Math.max(0, Math.floor((new Date(iso).getTime() - Date.now()) / 1000)) : 0;
+    const secondsLeft = secondsUntil(request.claim_deadline);
+    const graceLeft = secondsUntil(request.release_deadline);
     const act = (action: "release" | "submit") => {
         setBusy(true);
         requestAction(request.id, action)
@@ -73,12 +74,16 @@ export function ClaimedRequestCard({
             <div className="game">
                 <Link to={`/game/${request.game.id}`}>{request.game.name}</Link>
             </div>
-            <div className="deadline">
+            <div className={"deadline" + (secondsLeft > 0 ? "" : " overdue")}>
                 {secondsLeft > 0
                     ? interpolate(_("{{time_left}} left"), {
                           time_left: durationString(secondsLeft),
                       })
-                    : _("Deadline passed")}
+                    : graceLeft > 0
+                      ? interpolate(_("Overdue: back to the queue in {{time_left}}"), {
+                            time_left: durationString(graceLeft),
+                        })
+                      : _("Overdue: returning to the queue")}
             </div>
             <div className="buttons">
                 {request.review_id && (
