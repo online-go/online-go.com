@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import EventEmitter from "eventemitter3";
+import type { ChatMessage, ChatChannelProxy } from "@/lib/chat_manager";
 import { KibitzController } from "./KibitzController";
 import * as requests from "@/lib/requests";
 import * as chatManager from "@/lib/chat_manager";
@@ -636,4 +638,149 @@ test("keeps room message game and move metadata after loading chat history", asy
         }),
     );
     controller.destroy();
+});
+
+describe("Kibitz history replay batching", () => {
+    let frames: Map<number, FrameRequestCallback>;
+    let nextFrame: number;
+    beforeEach(() => {
+        frames = new Map();
+        nextFrame = 0;
+        jest.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+            frames.set(++nextFrame, callback);
+            return nextFrame;
+        });
+        jest.spyOn(window, "cancelAnimationFrame").mockImplementation((id) => {
+            frames.delete(id);
+        });
+        mockedGet.mockReset();
+    });
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
+    function flushFrames() {
+        const pending = [...frames.values()];
+        frames.clear();
+        pending.forEach((callback) => callback(0));
+    }
+    function message(index: number): ChatMessage {
+        return {
+            channel: "kibitz-test",
+            id: 1,
+            username: "Author",
+            ranking: 0,
+            professional: false,
+            ui_class: "",
+            message: { i: `message-${index}`, t: index, m: `Message ${index}` },
+        };
+    }
+    async function setup() {
+        mockedGet.mockResolvedValueOnce([]);
+        const controller = new KibitzController();
+        await flushPromises();
+        const proxy = Object.assign(new EventEmitter(), {
+            channel: { chat_log: [] as ChatMessage[], users_by_join: [] },
+            part: jest.fn(),
+        });
+        jest.mocked(chatManager.chat_manager.join).mockReturnValueOnce(
+            proxy as unknown as ChatChannelProxy,
+        );
+        mockedGet.mockResolvedValueOnce({
+            room: { id: "test", channel: "kibitz-test", title: "Test", kind: "user" },
+            permissions: {},
+        });
+        await controller.selectRoom("test");
+        return { controller, proxy };
+    }
+    test("publishes a replay burst once, in order, including its variations", async () => {
+        const { controller, proxy } = await setup();
+        const streamChanged = jest.fn();
+        controller.on("stream-changed", streamChanged);
+        for (let index = 0; index < 500; ++index) {
+            const line = message(index);
+            proxy.channel.chat_log.push(line);
+            proxy.emit("chat", line);
+        }
+        const variation = message(500);
+        variation.message.m = {
+            type: "analysis",
+            game_id: 42,
+            name: "Variation",
+            from: 0,
+            moves: "aa",
+        } as ChatMessage["message"]["m"];
+        proxy.channel.chat_log.push(variation);
+        proxy.emit("chat", variation);
+        expect(streamChanged).not.toHaveBeenCalled();
+        expect(frames.size).toBe(1);
+        flushFrames();
+        expect(streamChanged).toHaveBeenCalledTimes(1);
+        expect(controller.stream.map((item) => item.id)).toEqual(
+            proxy.channel.chat_log.map((line) => line.message.i),
+        );
+        expect(controller.variations).toEqual([
+            expect.objectContaining({ id: "message-500", game_id: 42 }),
+        ]);
+        const previous = controller.stream;
+        const live = message(501);
+        proxy.channel.chat_log.push(live);
+        proxy.emit("chat", live);
+        flushFrames();
+        expect(controller.stream).toHaveLength(502);
+        expect(previous).toHaveLength(501);
+        controller.destroy();
+    });
+    test("removal cancels a queued replay and rebuilds from the remaining log", async () => {
+        const { controller, proxy } = await setup();
+        proxy.channel.chat_log.push(message(1), message(2));
+        proxy.emit("chat", message(2));
+        proxy.channel.chat_log.splice(0, 1);
+        proxy.emit("chat-removed", { uuid: "message-1" });
+        expect(frames.size).toBe(0);
+        expect(controller.stream.map((item) => item.id)).toEqual(["message-2"]);
+        controller.destroy();
+    });
+    test("rebuilds when a bulk clear and append replace already displayed messages", async () => {
+        const { controller, proxy } = await setup();
+        proxy.channel.chat_log.push(message(1), message(2));
+        proxy.emit("chat", message(2));
+        flushFrames();
+        proxy.channel.chat_log.splice(0, 1);
+        proxy.emit("chat", null);
+        proxy.channel.chat_log.push(message(3), message(4));
+        proxy.emit("chat", message(4));
+        flushFrames();
+        expect(controller.stream.map((item) => item.id)).toEqual([
+            "message-2",
+            "message-3",
+            "message-4",
+        ]);
+        controller.destroy();
+    });
+    test("cancels queued history when leaving a room", async () => {
+        const { controller, proxy } = await setup();
+        proxy.channel.chat_log.push(message(1));
+        proxy.emit("chat", message(1));
+        mockedGet.mockResolvedValueOnce({
+            room: { id: "next", channel: "kibitz-next", title: "Next", kind: "user" },
+            permissions: {},
+        });
+        await controller.selectRoom("next");
+        expect(frames.size).toBe(0);
+        expect(controller.stream).toEqual([]);
+        expect(proxy.part).toHaveBeenCalled();
+        controller.destroy();
+    });
+    test("cancels queued history on destruction", async () => {
+        const { controller, proxy } = await setup();
+        proxy.channel.chat_log.push(message(1));
+        proxy.emit("chat", message(1));
+        const changed = jest.fn();
+        controller.on("stream-changed", changed);
+        controller.destroy();
+        expect(frames.size).toBe(0);
+        flushFrames();
+        expect(changed).not.toHaveBeenCalled();
+    });
 });

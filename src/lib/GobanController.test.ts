@@ -202,5 +202,95 @@ describe("GobanController", () => {
             expect(controller.estimateScore()).toBe(true);
             expect(setScoringMode).toHaveBeenCalledWith(true, false);
         });
+
+        function makeDetachedController() {
+            const source = makeLiveGameController();
+            const variation = new GobanController({
+                width: 9,
+                height: 9,
+                players: source.goban.engine.players,
+                phase: "play",
+            });
+            const setScoringMode = jest
+                .spyOn(variation.goban, "setScoringMode")
+                .mockImplementation(() => variation.goban.engine.cur_move);
+            return { source, variation, setScoringMode };
+        }
+
+        it("uses the source game's shared-IP restriction for a detached variation", () => {
+            const { source, variation, setScoringMode } = makeDetachedController();
+            shared_ip_with_player_map[GAME_ID] = true;
+            expect(variation.estimateScore({ source })).toBe(true);
+            expect(setScoringMode).toHaveBeenCalledWith(true, false);
+            expect(variation.goban.game_id).toBeFalsy();
+        });
+
+        it("uses the source game's participant status for a detached variation", () => {
+            const { source, variation, setScoringMode } = makeDetachedController();
+            data.set("user", { ...TEST_USER, id: 1 });
+            expect(variation.estimateScore({ source })).toBe(true);
+            expect(setScoringMode).toHaveBeenCalledWith(true, false);
+        });
+
+        it("honors disabled analysis on the source game", () => {
+            const { source, variation, setScoringMode } = makeDetachedController();
+            data.set("user", { ...TEST_USER, id: 1 });
+            jest.spyOn(source.goban, "isAnalysisDisabled").mockReturnValue(true);
+            expect(variation.canEstimateScore(source)).toBe(false);
+            expect(variation.estimateScore({ source })).toBe(false);
+            expect(setScoringMode).not.toHaveBeenCalled();
+        });
+
+        it("refuses estimation while the source game is in stone removal", () => {
+            const { source, variation, setScoringMode } = makeDetachedController();
+            jest.spyOn(source.goban.engine, "phase", "get").mockReturnValue("stone removal");
+            expect(variation.canEstimateScore(source)).toBe(false);
+            expect(variation.estimateScore({ source })).toBe(false);
+            expect(setScoringMode).not.toHaveBeenCalled();
+        });
+
+        it("allows AI estimates of finished source games even on a play-mode copy", () => {
+            const { source, variation, setScoringMode } = makeDetachedController();
+            shared_ip_with_player_map[GAME_ID] = true;
+            jest.spyOn(source.goban.engine, "phase", "get").mockReturnValue("finished");
+            expect(variation.goban.engine.phase).toBe("play");
+            expect(variation.estimateScore({ source })).toBe(true);
+            expect(setScoringMode).toHaveBeenCalledWith(true, true);
+        });
+
+        it("preserves variation position, labels, shapes and drawings across estimation", () => {
+            const { source, variation, setScoringMode } = makeDetachedController();
+            variation.goban.engine.place(3, 3);
+            const node = variation.goban.engine.cur_move;
+            node.getMarks(2, 2).triangle = true;
+            node.getMarks(4, 4).letter = "A";
+            const penMarks = [{ color: "#ff0000", points: [10, 10, 20, 20] }];
+            variation.goban.pen_marks = penMarks;
+            const drawPenMarks = jest
+                .spyOn(variation.goban, "drawPenMarks")
+                .mockImplementation(() => {});
+            // Play-mode scoring exits clear the node's marks and visible pen drawing.
+            setScoringMode.mockImplementation(() => {
+                node.clearMarks();
+                variation.goban.pen_marks = [];
+                return node;
+            });
+            expect(variation.estimateScore({ source, preserveAnnotations: true })).toBe(true);
+            variation.stopEstimatingScore();
+            expect(variation.goban.engine.cur_move).toBe(node);
+            expect(node.move_number).toBe(1);
+            expect(node.getMarks(2, 2).triangle).toBe(true);
+            expect(node.getMarks(4, 4).letter).toBe("A");
+            expect(drawPenMarks).toHaveBeenCalledWith(penMarks);
+        });
+
+        it("does not activate an estimator on a destroyed board or source", () => {
+            const { source, variation, setScoringMode } = makeDetachedController();
+            source.destroy();
+            expect(variation.estimateScore({ source })).toBe(false);
+            variation.destroy();
+            expect(variation.canEstimateScore()).toBe(false);
+            expect(setScoringMode).not.toHaveBeenCalled();
+        });
     });
 });

@@ -285,6 +285,11 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     public destroyed: boolean = false;
     private enable_sounds: boolean = true;
     private _estimating_score: boolean = false;
+    private score_estimation_annotations?: {
+        node: MoveTree;
+        marks: MarkInterface[][];
+        penMarks: MoveTreePenMarks;
+    };
     private _stashed_submit_move?: () => void;
     private readonly unregisterMoveTreeBoard: () => void;
 
@@ -1105,33 +1110,57 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
                 .catch(ignore);
         }
     };
-    estimateScore = (): boolean => {
-        if (this.goban.mode === "conditional") {
+    canEstimateScore = (source: GobanController = this): boolean => {
+        if (
+            this.destroyed ||
+            source.destroyed ||
+            this.goban.mode === "conditional" ||
+            source.goban.engine.phase === "stone removal"
+        ) {
+            return false;
+        }
+        const user = data.get("user");
+        const shared_ip_with_player = !!(
+            source.game_id && shared_ip_with_player_map[source.game_id]
+        );
+        const is_player =
+            user.id === source.goban.engine.players.black.id ||
+            user.id === source.goban.engine.players.white.id ||
+            shared_ip_with_player;
+        return !(source.goban.isAnalysisDisabled() && is_player);
+    };
+
+    estimateScore = ({
+        source = this,
+        preserveAnnotations = false,
+    }: {
+        source?: GobanController;
+        preserveAnnotations?: boolean;
+    } = {}): boolean => {
+        if (!this.canEstimateScore(source)) {
             return false;
         }
         this.saveSubmitMove();
+        if (preserveAnnotations) {
+            const node = this.goban.engine.cur_move;
+            this.score_estimation_annotations = {
+                node,
+                marks: node.getAllMarks().map((row) => row.map((mark) => ({ ...mark }))),
+                penMarks: this.goban.pen_marks.map((mark) => ({
+                    color: mark.color,
+                    points: [...mark.points],
+                })),
+            };
+        }
         const user = data.get("user");
-        const shared_ip_with_player = !!(this.game_id && shared_ip_with_player_map[this.game_id]);
-        const is_player =
-            user.id === this.goban.engine.players.black.id ||
-            user.id === this.goban.engine.players.white.id ||
-            shared_ip_with_player;
-
-        if (this.goban.isAnalysisDisabled() && is_player) {
-            return false;
-        }
-
-        if (this.goban.engine.phase === "stone removal") {
-            console.log(
-                "Cowardly refusing to enter score estimation phase while stone removal phase is active",
-            );
-            return false;
-        }
+        const shared_ip_with_player = !!(
+            source.game_id && shared_ip_with_player_map[source.game_id]
+        );
         this._estimating_score = true;
         this.emit("estimating_score", true);
         const use_ai_estimate =
-            this.goban.engine.phase === "finished" ||
-            (!this.goban.engine.isParticipant(user.id) && !shared_ip_with_player);
+            source.goban.engine.phase === "finished" ||
+            (!source.goban.engine.isParticipant(user.id) && !shared_ip_with_player);
         this.goban.setScoringMode(true, use_ai_estimate);
         return true;
     };
@@ -1145,6 +1174,15 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         this.goban.hideScores();
         this.goban.score_estimator = null;
         this.goban.engine.jumpTo(ret);
+        const annotations = this.score_estimation_annotations;
+        this.score_estimation_annotations = undefined;
+        if (annotations) {
+            annotations.node.setAllMarks(annotations.marks);
+            if (this.goban.engine.cur_move === annotations.node) {
+                this.goban.drawPenMarks(annotations.penMarks);
+            }
+            this.goban.redraw(true);
+        }
         this.restoreSubmitMove();
         this.goban.updateTitleAndStonePlacement();
         if (this.goban.submit_move) {

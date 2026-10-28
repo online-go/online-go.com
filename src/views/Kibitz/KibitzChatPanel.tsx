@@ -386,20 +386,32 @@ export function KibitzChatPanel({
             nextRoomProxy.channel.markAsRead();
             refresh((value) => value + 1);
         };
+        let frame: number | null = null;
+        const scheduleSync = () => {
+            if (frame === null) {
+                frame = requestAnimationFrame(() => {
+                    frame = null;
+                    sync();
+                });
+            }
+        };
 
-        nextRoomProxy.on("chat", sync);
-        nextRoomProxy.on("chat-removed", sync);
-        nextRoomProxy.on("join", sync);
-        nextRoomProxy.on("part", sync);
-        nextRoomProxy.on("user-metadata-update", sync);
+        nextRoomProxy.on("chat", scheduleSync);
+        nextRoomProxy.on("chat-removed", scheduleSync);
+        nextRoomProxy.on("join", scheduleSync);
+        nextRoomProxy.on("part", scheduleSync);
+        nextRoomProxy.on("user-metadata-update", scheduleSync);
         sync();
 
         return () => {
-            nextRoomProxy.off("chat", sync);
-            nextRoomProxy.off("chat-removed", sync);
-            nextRoomProxy.off("join", sync);
-            nextRoomProxy.off("part", sync);
-            nextRoomProxy.off("user-metadata-update", sync);
+            if (frame !== null) {
+                cancelAnimationFrame(frame);
+            }
+            nextRoomProxy.off("chat", scheduleSync);
+            nextRoomProxy.off("chat-removed", scheduleSync);
+            nextRoomProxy.off("join", scheduleSync);
+            nextRoomProxy.off("part", scheduleSync);
+            nextRoomProxy.off("user-metadata-update", scheduleSync);
             nextRoomProxy.part();
         };
     }, [room.channel]);

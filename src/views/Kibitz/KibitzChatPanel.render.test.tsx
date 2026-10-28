@@ -648,3 +648,65 @@ describe.each(["room", "game"] as const)("%s chat scrolling", (mode) => {
         expect(container.querySelector(".chat-lines")?.scrollTop).toBe(scrollHeight);
     });
 });
+
+describe("room presence and read-state batching", () => {
+    let frames: Map<number, FrameRequestCallback>;
+    let nextFrame: number;
+    beforeEach(() => {
+        frames = new Map();
+        nextFrame = 0;
+        mockRoomProxy.on.mockClear();
+        mockRoomProxy.channel.markAsRead.mockClear();
+        jest.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+            frames.set(++nextFrame, callback);
+            return nextFrame;
+        });
+        jest.spyOn(window, "cancelAnimationFrame").mockImplementation((id) => {
+            frames.delete(id);
+        });
+    });
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+    function flushFrames() {
+        act(() => {
+            const pending = [...frames.values()];
+            frames.clear();
+            pending.forEach((callback) => callback(0));
+        });
+    }
+    test("updates read state once per replay burst instead of once per message", () => {
+        const { unmount } = render(<KibitzChatPanel {...baseProps()} />);
+        flushFrames();
+        mockRoomProxy.channel.markAsRead.mockClear();
+        const chat = mockRoomProxy.on.mock.calls.find(([event]) => event === "chat")![1];
+        act(() => {
+            for (let index = 0; index < 500; ++index) {
+                chat();
+            }
+        });
+        expect(mockRoomProxy.channel.markAsRead).not.toHaveBeenCalled();
+        expect(frames.size).toBe(1);
+        flushFrames();
+        expect(mockRoomProxy.channel.markAsRead).toHaveBeenCalledTimes(1);
+        unmount();
+    });
+    test("does not refresh or mark the previous room as read after switching rooms", () => {
+        const { rerender, unmount } = render(<KibitzChatPanel {...baseProps()} />);
+        flushFrames();
+        const chat = mockRoomProxy.on.mock.calls.find(([event]) => event === "chat")![1];
+        act(() => {
+            chat();
+        });
+        rerender(
+            <KibitzChatPanel
+                {...baseProps()}
+                room={{ ...makeRoom(), id: "next", channel: "kibitz-next" }}
+            />,
+        );
+        mockRoomProxy.channel.markAsRead.mockClear();
+        flushFrames();
+        expect(mockRoomProxy.channel.markAsRead).not.toHaveBeenCalled();
+        unmount();
+    });
+});
