@@ -39,7 +39,7 @@ export function NotificationPreferences(props: SettingGroupPageProps): React.Rea
                 <span>
                     {pgettext(
                         "Notification delivery method: push notifications to a mobile app",
-                        "Push",
+                        "Mobile",
                     )}
                 </span>
             </div>
