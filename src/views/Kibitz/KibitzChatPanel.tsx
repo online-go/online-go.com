@@ -327,6 +327,15 @@ export function KibitzChatPanel({
         return entries.sort(sortEntries);
     }, [gobanGameEntries, items, room]);
 
+    React.useLayoutEffect(() => {
+        setRoomFollowLatest(true);
+        setGameFollowLatest(true);
+        setRoomUnread(false);
+        setGameUnread(false);
+        roomPreviousEntryCountRef.current = 0;
+        gamePreviousEntryCountRef.current = 0;
+    }, [roomChannel]);
+
     React.useEffect(() => {
         const body = bodyRef.current;
         if (!body || typeof ResizeObserver === "undefined") {
@@ -470,7 +479,7 @@ export function KibitzChatPanel({
         }
 
         roomPreviousEntryCountRef.current = current;
-    }, [roomFollowLatest, roomVisible, roomEntries.length]);
+    }, [roomChannel, roomFollowLatest, roomVisible, roomEntries.length]);
 
     React.useEffect(() => {
         const previous = gamePreviousEntryCountRef.current;
@@ -482,7 +491,7 @@ export function KibitzChatPanel({
         }
 
         gamePreviousEntryCountRef.current = current;
-    }, [gameEntries.length, gameFollowLatest, gameVisible]);
+    }, [roomChannel, gameEntries.length, gameFollowLatest, gameVisible]);
 
     React.useEffect(() => {
         if (roomVisible && roomFollowLatest) {
@@ -534,7 +543,7 @@ export function KibitzChatPanel({
                 roomScrollRef.current.scrollTop = roomScrollRef.current.scrollHeight;
             }
         });
-    }, [roomEntries.length, roomFollowLatest, roomVisible]);
+    }, [roomChannel, roomEntries.length, roomFollowLatest, roomVisible]);
 
     React.useLayoutEffect(() => {
         const container = gameScrollRef.current;
@@ -548,7 +557,7 @@ export function KibitzChatPanel({
                 gameScrollRef.current.scrollTop = gameScrollRef.current.scrollHeight;
             }
         });
-    }, [gameEntries.length, gameFollowLatest, gameVisible]);
+    }, [roomChannel, gameEntries.length, gameFollowLatest, gameVisible]);
 
     const onRoomKeyPress = React.useCallback(
         (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
