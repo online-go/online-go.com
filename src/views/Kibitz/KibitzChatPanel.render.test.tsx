@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import type { ChatMessage } from "@/lib/chat_manager";
 import type { KibitzRoomSummary, KibitzStreamItem, KibitzVariationSummary } from "@/models/kibitz";
 import { KibitzChatPanel } from "./KibitzChatPanel";
@@ -422,5 +422,107 @@ describe("opening date separator", () => {
         expect(Number.isFinite(t)).toBe(true);
         expect(t).toBeGreaterThanOrEqual(before);
         expect(t).toBeLessThanOrEqual(after);
+    });
+});
+
+describe.each(["room", "game"] as const)("%s chat scrolling", (mode) => {
+    let scrollHeight: number;
+    let frames: FrameRequestCallback[];
+
+    beforeEach(() => {
+        scrollHeight = 1000;
+        frames = [];
+        jest.spyOn(HTMLElement.prototype, "scrollHeight", "get").mockImplementation(
+            () => scrollHeight,
+        );
+        jest.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(200);
+        jest.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+            frames.push(callback);
+            return frames.length;
+        });
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
+    function flushFrames() {
+        act(() => {
+            const pending = frames;
+            frames = [];
+            pending.forEach((callback) => callback(0));
+        });
+    }
+
+    function chatProps(roomId = "room-1", count = 2) {
+        return {
+            ...baseProps(),
+            mode,
+            room: { ...makeRoom(), id: roomId, channel: `kibitz-${roomId}` },
+            items: Array.from({ length: count }, (_, index) => ({
+                ...makeChatItem(
+                    `${roomId}-${index}`,
+                    mode === "room" ? "room-stream" : "game-chat",
+                    `Message ${index}`,
+                ),
+                room_id: roomId,
+            })),
+        };
+    }
+
+    test("opens at the latest message when history arrives after mount", () => {
+        const { container, rerender } = render(<KibitzChatPanel {...chatProps("room-1", 0)} />);
+        rerender(<KibitzChatPanel {...chatProps()} />);
+        flushFrames();
+        expect(container.querySelector(".chat-lines")?.scrollTop).toBe(scrollHeight);
+    });
+
+    test("keeps the reading position when messages arrive in the same room", () => {
+        const { container, rerender } = render(<KibitzChatPanel {...chatProps()} />);
+        flushFrames();
+        const log = container.querySelector<HTMLDivElement>(".chat-lines")!;
+        fireEvent.scroll(log, { target: { scrollTop: 100 } });
+        scrollHeight = 1200;
+        rerender(<KibitzChatPanel {...chatProps("room-1", 3)} />);
+        flushFrames();
+        expect(log.scrollTop).toBe(100);
+    });
+
+    test("opens the new room at the latest message after reading older messages", () => {
+        const { container, rerender } = render(<KibitzChatPanel {...chatProps()} />);
+        flushFrames();
+        fireEvent.scroll(container.querySelector(".chat-lines")!, { target: { scrollTop: 0 } });
+        rerender(<KibitzChatPanel {...chatProps("room-2")} />);
+        flushFrames();
+        expect(container.querySelector(".chat-lines")?.scrollTop).toBe(scrollHeight);
+    });
+
+    test("scrolls a new room with the same history length even when already following", () => {
+        const { container, rerender } = render(<KibitzChatPanel {...chatProps()} />);
+        flushFrames();
+        scrollHeight = 1500;
+        rerender(<KibitzChatPanel {...chatProps("room-2")} />);
+        flushFrames();
+        expect(container.querySelector(".chat-lines")?.scrollTop).toBe(scrollHeight);
+    });
+
+    test("opens the new room at the latest message when a hidden pane becomes visible", () => {
+        const { container, rerender } = render(<KibitzChatPanel {...chatProps()} />);
+        flushFrames();
+        fireEvent.scroll(container.querySelector(".chat-lines")!, { target: { scrollTop: 0 } });
+        rerender(<KibitzChatPanel {...chatProps("room-2")} visible={false} />);
+        rerender(<KibitzChatPanel {...chatProps("room-2")} visible={true} />);
+        flushFrames();
+        expect(container.querySelector(".chat-lines")?.scrollTop).toBe(scrollHeight);
+    });
+
+    test("follows delayed history in a new room after reading older messages", () => {
+        const { container, rerender } = render(<KibitzChatPanel {...chatProps()} />);
+        flushFrames();
+        fireEvent.scroll(container.querySelector(".chat-lines")!, { target: { scrollTop: 0 } });
+        rerender(<KibitzChatPanel {...chatProps("room-2", 0)} />);
+        rerender(<KibitzChatPanel {...chatProps("room-2")} />);
+        flushFrames();
+        expect(container.querySelector(".chat-lines")?.scrollTop).toBe(scrollHeight);
     });
 });
