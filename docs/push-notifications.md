@@ -130,6 +130,9 @@ opens, fetch the player's notifications from `GET /api/v1/me/notifications`.
 Players choose which notification types they want pushed under Settings.
 `yourMove` is only sent when the player isn't online.
 
+A push goes out about 10 seconds after the notification is created, if the
+player hasn't read it by then. Email notifications still wait about 2 minutes.
+
 ## When something goes wrong
 
 The developer page shows how many devices are registered, how many pushes
@@ -146,3 +149,102 @@ Problems that only affect some devices don't count towards this: a device in
 an environment your APNs key isn't enabled for, or an iOS device Firebase
 can't reach because the APNs credentials in your Firebase project are missing
 or invalid. Those show up in the recent errors list instead.
+
+## Webhooks
+
+A site that uses Online-Go.com as its backend can have players' notifications
+POSTed to its own server instead of, or as well as, pushed to devices.
+
+### Setting it up
+
+On the [developer page](https://online-go.com/developer), under your
+application's Webhook section, enter an `https://` URL. OGS only sends to
+public addresses, and doesn't follow redirects. When you save, OGS POSTs a
+`ping` event to the URL, which has to answer with any 2xx status. Your server
+can't check the signature of the very first ping, since it hasn't seen the
+secret yet.
+
+The signing secret is shown once: when the webhook is first set up, and when
+you generate a new one. Copy it then. Changing only the URL keeps the secret.
+Generating a new one stops the old one working immediately.
+
+### Subscribing players
+
+Subscribe a player, authenticated as that player:
+
+```
+POST https://online-go.com/api/v1/me/push_devices
+{
+    "client_id": "<your OAuth application's client_id>",
+    "provider": "webhook"
+}
+```
+
+If the request uses an OAuth access token, it has to be one issued to your own
+application. To unsubscribe the player:
+
+```
+DELETE https://online-go.com/api/v1/me/push_devices?webhook=<your client_id>
+```
+
+Players see the subscription under Settings, and can remove it there.
+
+### What's sent
+
+Every notification for a subscribed player, whatever their per-type Mobile
+settings, which only cover their own devices. `yourMove` is only sent while
+the player isn't connected to Online-Go.com, as for pushes. A notification is
+sent about 10 seconds after it's created, if it's still unread then, so one
+the player reads straight away on online-go.com isn't sent.
+
+Each event is one request:
+
+```
+POST <your URL>
+Content-Type: application/json
+User-Agent: OGS-Webhooks/1
+OGS-Webhook-Id: <event id>
+OGS-Webhook-Timestamp: <UNIX time in seconds>
+OGS-Webhook-Signature: v1=<hex HMAC-SHA256 of "<timestamp>.<raw body>", keyed with the signing secret>
+
+{
+    "id": "<event id>",
+    "type": "notification" | "test" | "ping",
+    "player_id": <the player's id, or null for a ping>,
+    "title": "<localized one line summary>",
+    "body": "<may be empty>",
+    "notification": {<the full notification, as in /api/v1/me/notifications>} or null
+}
+```
+
+The event id is the same on every retry of an event, so use it to drop
+duplicates. Check the signature with a constant time comparison, and reject
+timestamps more than about 5 minutes old:
+
+```python
+import hashlib, hmac, time
+
+def verify(secret: str, headers, raw_body: bytes) -> bool:
+    timestamp = headers["OGS-Webhook-Timestamp"]
+    if abs(time.time() - int(timestamp)) > 300:
+        return False
+    expected = "v1=" + hmac.new(secret.encode(), timestamp.encode() + b"." + raw_body, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected, headers["OGS-Webhook-Signature"])
+```
+
+### Responses
+
+| Your response               | What OGS does                                                                              |
+| --------------------------- | ------------------------------------------------------------------------------------------ |
+| 2xx                         | Delivered                                                                                  |
+| 410                         | Stops sending this player's notifications, unsubscribing them                              |
+| 401, 403, 404               | Counts as a broken setup; 10 in a row pause the webhook and email the application's owner  |
+| 408, 429, 5xx, or no answer | Retried up to 5 times, backing off from a minute, or after `Retry-After` when you send one |
+| Anything else               | Dropped                                                                                    |
+
+Response bodies are never read. Each phase of a request (connecting, sending,
+waiting for the answer) times out after 10 seconds.
+
+**Send test push** on the developer page also sends a `test` event to the
+webhook if your own account is subscribed to it, and the webhook's sent and
+failed counts and recent errors show alongside the push platforms'.

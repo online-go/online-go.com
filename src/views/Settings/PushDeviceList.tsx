@@ -25,7 +25,7 @@ import "./PushDeviceList.css";
 interface PushDevice {
     id: number;
     application: { id: number; name: string };
-    provider: "apns" | "fcm";
+    provider: "apns" | "fcm" | "webhook";
     apns_environment: "production" | "sandbox" | null;
     created_at: string;
     last_seen_at: string;
@@ -62,9 +62,14 @@ export function PushDeviceList(): React.ReactElement {
                 <div key={device.id} className="push-device">
                     <span className="push-device-app">{device.application.name}</span>
                     <span className="push-device-platform">
-                        {device.provider === "apns"
-                            ? pgettext("Mobile platform", "iOS")
-                            : pgettext("Mobile platform", "Android")}
+                        {device.provider === "webhook"
+                            ? pgettext(
+                                  "A site that receives the player's notifications on its own server",
+                                  "Webhook: receives your notifications on its server",
+                              )
+                            : device.provider === "apns"
+                              ? pgettext("Mobile platform", "iOS")
+                              : pgettext("Mobile platform", "Android")}
                         {device.apns_environment === "sandbox" &&
                             " " +
                                 pgettext(

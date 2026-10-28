@@ -17,7 +17,7 @@
 
 /* Shapes returned by the /api/v1/me/api_clients/<id>/push endpoints. */
 
-export type PushProvider = "apns" | "fcm";
+export type PushProvider = "apns" | "fcm" | "webhook";
 
 export interface ApiClient {
     id: number;
@@ -45,6 +45,10 @@ export interface FcmCredentialsStatus extends PushProviderState {
     client_email: string;
 }
 
+export interface WebhookStatus extends PushProviderState {
+    url: string;
+}
+
 export interface PushDayStats {
     date: string;
     sent: number;
@@ -54,9 +58,13 @@ export interface PushDayStats {
 export interface PushStatus {
     apns: ApnsCredentialsStatus | null;
     fcm: FcmCredentialsStatus | null;
-    devices: { apns: { production: number; sandbox: number }; fcm: number };
-    stats: { apns: PushDayStats[]; fcm: PushDayStats[] };
+    webhook: WebhookStatus | null;
+    /** Players subscribed to the webhook, under webhook */
+    devices: { apns: { production: number; sandbox: number }; fcm: number; webhook: number };
+    stats: { apns: PushDayStats[]; fcm: PushDayStats[]; webhook: PushDayStats[] };
     recent_errors: Array<{ time: string; provider: PushProvider; outcome: string; detail: string }>;
+    /** Only in the response that generated a new webhook signing secret */
+    signing_secret?: string;
 }
 
 export interface PushTestResult {
