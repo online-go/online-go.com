@@ -588,3 +588,52 @@ describe("KibitzController telemetry", () => {
         controller.destroy();
     });
 });
+
+test("keeps room message game and move metadata after loading chat history", async () => {
+    mockedGet.mockResolvedValueOnce([]);
+    const controller = new KibitzController();
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    const proxy = {
+        on: jest.fn(),
+        off: jest.fn(),
+        part: jest.fn(),
+        channel: {
+            chat_log: [
+                {
+                    channel: "kibitz-room-1",
+                    id: 9,
+                    username: "Author",
+                    ranking: 0,
+                    professional: false,
+                    ui_class: "",
+                    message: {
+                        i: "message-1",
+                        t: 100,
+                        m: {
+                            type: "chat",
+                            text: "Look here",
+                            game_id: 42,
+                            move_number: 17,
+                        },
+                    },
+                },
+            ],
+            users_by_join: [],
+        },
+    };
+    jest.mocked(chatManager.chat_manager.join).mockReturnValueOnce(proxy as never);
+    mockedGet.mockResolvedValueOnce({
+        room: { id: "room-1", channel: "kibitz-room-1", title: "Room", kind: "user" },
+        permissions: {},
+    });
+    await controller.selectRoom("room-1");
+    expect(controller.stream).toContainEqual(
+        expect.objectContaining({
+            id: "message-1",
+            text: "Look here",
+            game_id: 42,
+            move_number: 17,
+        }),
+    );
+    controller.destroy();
+});

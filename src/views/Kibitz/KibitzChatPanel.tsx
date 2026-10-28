@@ -20,6 +20,7 @@ import { ChatLine } from "@/components/Chat";
 import { GameChatLine } from "@/components/Chat/GameChatLine";
 import { ChatDateLine } from "@/components/Chat/ChatDateLine";
 import { GameChatMoveNumber } from "@/components/Chat/GameChatMoveNumber";
+import { LineText } from "@/components/misc-ui";
 import { TabCompleteInput } from "@/components/TabCompleteInput";
 import { ChatUserList } from "@/components/ChatUserList";
 import { Player } from "@/components/Player";
@@ -56,6 +57,7 @@ type PaneEntry =
           // matching GameChat.css's .chat-line.spectator rule.
           gobanChannel?: string;
           gobanLine?: protocol.GameChatLine;
+          position?: { game_id: number; move_number: number };
       }
     | {
           kind: "variation";
@@ -69,6 +71,7 @@ export interface KibitzChatPanelProps {
     items: KibitzStreamItem[];
     variations: KibitzVariationSummary[];
     onOpenVariation: (variationId: string, focusVariation?: boolean) => void;
+    onOpenChatMove?: (gameId: number, moveNumber: number) => void;
     /** Live game controller whose chat_log feeds the Game tab. */
     gameController: GobanController | null;
     /** Move-tree line colour of each variation that is on the board, by id. */
@@ -202,6 +205,16 @@ function createChatLineFromItem(
         key: item.id,
         createdAt: item.created_at,
         source,
+        position:
+            item.type === "chat" &&
+            typeof item.game_id === "number" &&
+            Number.isSafeInteger(item.game_id) &&
+            item.game_id > 0 &&
+            typeof item.move_number === "number" &&
+            Number.isSafeInteger(item.move_number) &&
+            item.move_number >= 0
+                ? { game_id: item.game_id, move_number: item.move_number }
+                : undefined,
         line: {
             channel: room.channel,
             username: item.author?.username ?? "system",
@@ -241,6 +254,7 @@ export function KibitzChatPanel({
     items,
     variations,
     onOpenVariation,
+    onOpenChatMove,
     gameController,
     variationColorIndexes,
     showPeople,
@@ -566,12 +580,24 @@ export function KibitzChatPanel({
                 return false;
             }
 
-            roomProxy.channel.send(value);
+            const gameId = room.current_game?.game_id;
+            const goban = watchedController?.goban;
+            const moveNumber = goban?.engine.last_official_move?.move_number;
+            const position =
+                gameId != null &&
+                goban?.game_id === gameId &&
+                !watchedController?.destroyed &&
+                typeof moveNumber === "number" &&
+                Number.isSafeInteger(moveNumber) &&
+                moveNumber >= 0
+                    ? { game_id: gameId, move_number: moveNumber }
+                    : undefined;
+            roomProxy.channel.send(value, position);
             kibitzTelemetry.record("send_message");
             input.value = "";
             return false;
         },
-        [roomProxy],
+        [roomProxy, room.current_game?.game_id, watchedController],
     );
 
     // Both line components draw a date separator whenever the previous line
@@ -587,6 +613,7 @@ export function KibitzChatPanel({
     } as protocol.GameChatLine;
 
     const renderEntries = (entries: PaneEntry[], source: "room" | "game") => {
+        let previousPosition: { game_id: number; move_number: number } | undefined;
         if (entries.length === 0) {
             return (
                 <div className="stream-empty">
@@ -611,6 +638,7 @@ export function KibitzChatPanel({
             >
                 {entries.map((entry) => {
                     if (entry.kind === "variation") {
+                        previousPosition = undefined;
                         const variation = variations.find(
                             (candidate) => candidate.id === entry.item.variation_id,
                         );
@@ -679,6 +707,18 @@ export function KibitzChatPanel({
                         );
                     }
 
+                    const position = source === "room" ? entry.position : undefined;
+                    const showPosition =
+                        position &&
+                        (position.game_id !== previousPosition?.game_id ||
+                            position.move_number !== previousPosition?.move_number);
+                    previousPosition = position;
+                    const canOpenPosition =
+                        position &&
+                        onOpenChatMove &&
+                        position.game_id === room.current_game?.game_id &&
+                        position.game_id === watchedController?.goban.game_id &&
+                        !watchedController.destroyed;
                     const previousRoomLine = roomLastLine;
                     const previousGameLine = gameLastLine;
                     if (source === "room") {
@@ -711,6 +751,36 @@ export function KibitzChatPanel({
                                     previousTimestamp={previousRoomLine?.message.t}
                                     hasPreviousLine={Boolean(previousRoomLine)}
                                 />
+                            )}
+                            {showPosition && (
+                                <LineText className="move-number kibitz-chat-move-number">
+                                    {canOpenPosition ? (
+                                        <button
+                                            type="button"
+                                            className="chat-move-link"
+                                            onClick={() =>
+                                                onOpenChatMove(
+                                                    position.game_id,
+                                                    position.move_number,
+                                                )
+                                            }
+                                        >
+                                            {pgettext(
+                                                "Label for a jump-to-move control in game chat",
+                                                "Move",
+                                            )}{" "}
+                                            {position.move_number}
+                                        </button>
+                                    ) : (
+                                        <span>
+                                            {pgettext(
+                                                "Label for a jump-to-move control in game chat",
+                                                "Move",
+                                            )}{" "}
+                                            {position.move_number}
+                                        </span>
+                                    )}
+                                </LineText>
                             )}
                             <div
                                 className={

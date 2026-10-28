@@ -21,7 +21,8 @@ import * as data from "@/lib/data";
 import { Player } from "@/components/Player";
 import { chat_markup } from "./chat_markup";
 import { ChatDateLine } from "./ChatDateLine";
-import { ChatMessage, TypedChatBody } from "@/lib/chat_manager";
+import type { ChatMessage, TypedChatBody } from "@/lib/chat_manager";
+import { getChatMessageText } from "@/lib/chatMessageText";
 import { profanity_filter } from "@/lib/profanity_filter";
 
 let name_match_regex = /^loading...$/;
@@ -69,7 +70,7 @@ export function ChatLine(props: ChatLineInterface): React.ReactElement {
     const message = line.message;
     const ts = message.t ? new Date(message.t * 1000) : null;
     let third_person = false;
-    let body = message.m;
+    let body = getChatMessageText(message.m) ?? message.m;
 
     let body_rendered: React.ReactNode;
     if (typeof body === "string") {

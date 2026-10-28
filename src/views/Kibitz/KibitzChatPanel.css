@@ -155,6 +155,16 @@
         padding: 0 0.75rem;
     }
 
+    .kibitz-chat-move-number .chat-move-link {
+        background: none;
+        border: 0;
+        box-shadow: none;
+        color: inherit;
+        font: inherit;
+        padding: 0;
+        text-decoration: underline;
+    }
+
     .chat-lines > .date {
         margin: 0.5rem 0 0.15rem;
     }

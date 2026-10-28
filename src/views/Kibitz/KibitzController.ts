@@ -391,7 +391,7 @@ function mapChatToStreamItem(msg: ChatMessage, roomId: string): KibitzStreamItem
     }
 
     if (typeof m === "object" && m !== null) {
-        const typed = m as TypedChatBody & { game_id?: number };
+        const typed = m as TypedChatBody;
         if (typed.type === "system") {
             return {
                 id,
@@ -421,6 +421,9 @@ function mapChatToStreamItem(msg: ChatMessage, roomId: string): KibitzStreamItem
             created_at,
             author,
             text: typed.text ?? "",
+            ...(typed.type === "chat"
+                ? { game_id: typed.game_id, move_number: typed.move_number }
+                : {}),
         };
     }
 

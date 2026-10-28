@@ -134,6 +134,7 @@ export interface KibitzStreamItem {
     text: string;
     variation_id?: string;
     game_id?: number;
+    move_number?: number;
     proposal_id?: string;
     source?: KibitzStreamItemSource;
 }

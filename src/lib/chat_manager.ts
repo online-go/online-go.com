@@ -17,6 +17,7 @@
 
 /* spell-checker: disable */
 
+import { getChatMessageText } from "@/lib/chatMessageText";
 import cached from "@/lib/cached";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
@@ -43,6 +44,13 @@ export interface TypedChatBody {
     type: string;
     name?: string;
     text?: string;
+    game_id?: number;
+    move_number?: number;
+}
+
+export interface ChatGamePosition {
+    game_id: number;
+    move_number: number;
 }
 
 export interface ChatMessage {
@@ -467,16 +475,17 @@ class ChatChannel extends TypedEventEmitter<Events> {
         let unread_delta = 0;
 
         try {
-            if (typeof obj.message.m === "string") {
+            const text = getChatMessageText(obj.message.m);
+            if (text !== undefined) {
                 if (!(getBlocks(obj.id).block_chat || obj.id === user_id)) {
                     // ignore messages from blocked users or oneself
-                    if (name_match_regex.test(obj.message.m)) {
+                    if (name_match_regex.test(text)) {
                         if (obj.message.t > this.last_seen_timestamp) {
                             // TODO remember chat read position
                             this.mentioned = true;
                             emitNotification(
                                 "[" + this.name + "]: " + obj.username,
-                                "[" + this.name + "] " + obj.username + ": " + obj.message.m,
+                                "[" + this.name + "] " + obj.username + ": " + text,
                             );
                         } else {
                             //console.debug("Not sending name match notification since we just joined the channel ", obj.channel);
@@ -607,11 +616,11 @@ class ChatChannel extends TypedEventEmitter<Events> {
         );
     }
 
-    public send(text: string): void {
+    public send(text: string, position?: ChatGamePosition): void {
         text = sanitizeMessage(text);
         if (text.length > maxMessageLength) {
             for (const split_str of string_splitter(text)) {
-                this.send(split_str);
+                this.send(split_str, position);
             }
             return;
         }
@@ -676,7 +685,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         const _send_obj = {
             channel: this.channel,
             uuid: chatSoftUid(user.id),
-            message: text,
+            message: position ? { type: "chat", text, ...position } : text,
         };
 
         socket.send("chat/send", _send_obj);
@@ -687,7 +696,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
             ranking: user.ranking,
             professional: user.professional,
             ui_class: user.ui_class,
-            message: { i: _send_obj.uuid, t: Math.floor(Date.now() / 1000), m: text },
+            message: { i: _send_obj.uuid, t: Math.floor(Date.now() / 1000), m: _send_obj.message },
         };
         this.chat_log.push(obj);
         if (obj.message.i) {
