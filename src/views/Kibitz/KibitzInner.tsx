@@ -21,7 +21,7 @@ import { GobanController, getMoveTreeTrunkTail } from "@/lib/GobanController";
 import { toast } from "@/lib/toast";
 import { alert } from "@/lib/swal_config";
 import { get } from "@/lib/requests";
-import { pgettext } from "@/lib/translate";
+import { interpolate, pgettext } from "@/lib/translate";
 import { type GobanConfig, type GobanRendererConfig, protocol } from "goban";
 import type {
     KibitzProposal,
@@ -452,6 +452,15 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const isSelectedRoomBlocked = !selectedRoomPolicy.allowed;
     const isBlockedRoom = Boolean(accessBlocked?.room_id === roomId || isSelectedRoomBlocked);
     const resolvedRoom = isBlockedRoom ? null : selectedRoom;
+
+    const resolvedRoomTitle = resolvedRoom?.title;
+    React.useEffect(() => {
+        window.document.title = resolvedRoomTitle
+            ? interpolate(pgettext("Browser tab title for a Kibitz room", "Kibitz: %s"), [
+                  resolvedRoomTitle,
+              ])
+            : pgettext("Browser tab title for the Kibitz page", "Kibitz");
+    }, [resolvedRoomTitle]);
 
     React.useEffect(() => {
         if (!roomId) {
