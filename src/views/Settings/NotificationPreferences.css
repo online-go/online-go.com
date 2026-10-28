@@ -16,31 +16,29 @@
  */
 
 .NotificationPreferences {
-    .notification-toggle-header,
-    .NotificationToggleRow {
+    .notification-toggles {
         display: grid;
         grid-template-columns: minmax(0, 20rem) 4rem 4rem;
-        column-gap: 0.5rem;
+        gap: 1rem 0.5rem;
         align-items: center;
         margin-left: 1rem;
-    }
 
-    .notification-toggle-header {
-        font-weight: bold;
+        .heading {
+            font-weight: bold;
+        }
 
-        span:not(:first-child) {
-            text-align: center;
+        .heading:not(:first-child),
+        label {
+            display: flex;
+            justify-content: center;
         }
     }
 }
 
 /* Mobile */
 @media (max-width: 767px) {
-    .NotificationPreferences {
-        .notification-toggle-header,
-        .NotificationToggleRow {
-            grid-template-columns: minmax(0, 1fr) 4rem 4rem;
-            margin-left: 0;
-        }
+    .NotificationPreferences .notification-toggles {
+        grid-template-columns: minmax(0, 1fr) 4rem 4rem;
+        margin-left: 0;
     }
 }
