@@ -63,8 +63,7 @@ Before signing the player out, while the request is still authenticated:
 DELETE https://online-go.com/api/v1/me/push_devices?token=<the device token>
 ```
 
-Players can also remove devices themselves under Settings, and changing their
-password removes all of them.
+Players can also remove devices themselves under Settings.
 
 ## What a push contains
 
