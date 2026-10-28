@@ -637,14 +637,10 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
             case "peerReviewFeedback":
                 return (
                     <div>
-                        {interpolate(
-                            _("{{requester}} rated your review of {{game_name}} {{score}} of 5"),
-                            {
-                                requester: notification.requester?.username,
-                                game_name: notification.game_name,
-                                score: notification.score,
-                            },
-                        )}
+                        {interpolate(_("{{requester}} rated your review of {{game_name}}"), {
+                            requester: notification.requester?.username,
+                            game_name: notification.game_name,
+                        })}
                     </div>
                 );
             case "peerReviewClaimWarning":
