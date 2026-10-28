@@ -98,7 +98,7 @@ test.each([
             cwd,
             env: {
                 ...process.env,
-                CI: "",
+                E2E_SMOKE: "",
                 E2E_MODERATOR_PASSWORD: "fixture-password",
                 FRONTEND_URL: frontendURL,
                 E2E_PREVIEW_PORT: "18081",
@@ -169,10 +169,10 @@ test.each([
 });
 
 test.each([
-    { args: [], ci: "", expectedStatus: 1, startsPlaywright: false },
-    { args: ["--list"], ci: "", expectedStatus: 0, startsPlaywright: true },
-    { args: ["--help"], ci: "", expectedStatus: 0, startsPlaywright: true },
-    { args: [], ci: "true", expectedStatus: 0, startsPlaywright: true },
+    { args: [], smoke: "", expectedStatus: 1, startsPlaywright: false },
+    { args: ["--list"], smoke: "", expectedStatus: 0, startsPlaywright: true },
+    { args: ["--help"], smoke: "", expectedStatus: 0, startsPlaywright: true },
+    { args: [], smoke: "1", expectedStatus: 0, startsPlaywright: true },
 ])("checks prerequisites before building or opening browsers: %j", async (options) => {
     const cwd = mkdtempSync(join(tmpdir(), "ogs-e2e-prerequisites-"));
     try {
@@ -201,7 +201,7 @@ test.each([
                 cwd,
                 env: {
                     ...process.env,
-                    CI: options.ci,
+                    E2E_SMOKE: options.smoke,
                     E2E_MODERATOR_PASSWORD: "",
                     FRONTEND_URL: "http://127.0.0.1:1",
                 },
