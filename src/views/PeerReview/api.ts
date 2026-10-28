@@ -18,7 +18,6 @@
 import { get, patch, post, put } from "@/lib/requests";
 import type {
     GameRequestStatus,
-    PeerReviewConfig,
     PeerReviewerProfile,
     PeerReviewRequest,
     QueueSort,
@@ -26,10 +25,6 @@ import type {
     ReviewerQueue,
     ReviewFeedbackStatus,
 } from "./types";
-
-export function fetchConfig(): Promise<PeerReviewConfig> {
-    return get("peer_review/config");
-}
 
 export function fetchGameRequestStatus(gameId: number): Promise<GameRequestStatus> {
     return get(`games/${gameId}/peer_review_request`);

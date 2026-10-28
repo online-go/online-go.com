@@ -17,38 +17,46 @@
 
 import * as React from "react";
 import { act, render } from "@testing-library/react";
+import * as data from "@/lib/data";
+import type { ConfigSchema } from "@/lib/data_schema";
 import { AvailabilityNotice } from "./AvailabilityNotice";
-import { fetchConfig } from "./api";
 
-jest.mock("@/lib/translate", () => ({
-    _: (s: string) => s,
-}));
-jest.mock("./api", () => ({
-    fetchConfig: jest.fn(),
-}));
-
-const mockedFetchConfig = fetchConfig as jest.MockedFunction<typeof fetchConfig>;
-
-async function renderWith(cfg: { enabled: boolean; available: boolean }) {
-    mockedFetchConfig.mockResolvedValue({ ...cfg, min_reviewer_rank: 15 });
-    const result = render(<AvailabilityNotice />);
-    await act(async () => {
-        await Promise.resolve();
-    });
-    return result;
+/** The peer review block arrives bundled inside the main ui/config object. */
+function setConfig(cfg: { enabled: boolean; available: boolean }) {
+    data.set("config", {
+        peer_review: { ...cfg, min_reviewer_rank: 15 },
+    } as Partial<ConfigSchema> as ConfigSchema);
 }
 
-test("says nothing while live", async () => {
-    const { container } = await renderWith({ enabled: true, available: true });
+beforeEach(() => {
+    data.remove("config");
+});
+
+test("says nothing until the config has loaded", () => {
+    const { container } = render(<AvailabilityNotice />);
     expect(container.querySelector(".AvailabilityNotice")).toBeNull();
 });
 
-test("tells a moderator the feature is dark", async () => {
-    const { container } = await renderWith({ enabled: false, available: true });
+test("says nothing while live", () => {
+    setConfig({ enabled: true, available: true });
+    const { container } = render(<AvailabilityNotice />);
+    expect(container.querySelector(".AvailabilityNotice")).toBeNull();
+});
+
+test("tells a moderator the feature is dark", () => {
+    setConfig({ enabled: false, available: true });
+    const { container } = render(<AvailabilityNotice />);
     expect(container.querySelector(".AvailabilityNotice")).toHaveTextContent("dark");
 });
 
-test("tells an ordinary player the feature is not open", async () => {
-    const { container } = await renderWith({ enabled: false, available: false });
+test("tells an ordinary player the feature is not open", () => {
+    setConfig({ enabled: false, available: false });
+    const { container } = render(<AvailabilityNotice />);
+    expect(container.querySelector(".AvailabilityNotice")).toHaveTextContent("not open");
+});
+
+test("follows a config refresh after mounting", () => {
+    const { container } = render(<AvailabilityNotice />);
+    act(() => setConfig({ enabled: false, available: false }));
     expect(container.querySelector(".AvailabilityNotice")).toHaveTextContent("not open");
 });
