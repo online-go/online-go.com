@@ -200,8 +200,10 @@ Players see the subscription under Settings, and can remove it there.
 
 ### What's sent
 
-Every notification for a subscribed player, whatever their per-type Mobile
-settings, which only cover their own devices. Each event is one request:
+Every notification for a subscribed player, whatever their per-type Email and
+Mobile settings. Those settings only control what OGS itself sends, so each
+event includes the player's settings for that kind of notification, for you to
+follow or not as suits your site. Each event is one request:
 
 ```
 POST <your URL>
@@ -217,12 +219,14 @@ OGS-Webhook-Signature: v1=<hex HMAC-SHA256 of "<timestamp>.<raw body>", keyed wi
     "player_id": <the player's id, or null for a ping>,
     "title": "<localized one line summary>",
     "body": "<may be empty>",
-    "notification": {<the full notification, as in /api/v1/me/notifications>} or null
+    "notification": {<the full notification, as in /api/v1/me/notifications>} or null,
+    "settings": {"email": true | false, "mobile": true | false} or null
 }
 ```
 
-The event id is the same on every retry of an event, so use it to drop
-duplicates. Check the signature with a constant time comparison, and reject
+`settings` is null for pings, tests, and the few kinds of notification that
+have no setting. The event id is the same on every retry of an event, so use it
+to drop duplicates. Check the signature with a constant time comparison, and reject
 timestamps more than about 5 minutes old:
 
 ```python
