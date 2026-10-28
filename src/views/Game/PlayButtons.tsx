@@ -22,6 +22,7 @@ import * as preferences from "@/lib/preferences";
 import { alert } from "@/lib/swal_config";
 import {
     useCanAnswerUndoRequest,
+    useCanRequestUndo,
     useCurrentMoveNumber,
     useMode,
     useOfficialMoveNumber,
@@ -35,7 +36,7 @@ import {
     useUserIsParticipant,
     useViewMode,
 } from "./GameHooks";
-import { cancelOrResignGame } from "./game_actions";
+import { cancelOrResignGame, requestUndo } from "./game_actions";
 import { enableTouchAction } from "./touch_actions";
 import * as DynamicHelp from "react-dynamic-help";
 import { useGobanController } from "./goban_context";
@@ -242,8 +243,10 @@ export function PlayButtons(): React.ReactElement | null {
         };
     }, [goban]);
 
-    // The receiving side of an undo request answers it here; the requesting
-    // side gets a button to withdraw it while it is still pending.
+    // Undo sits at the left edge of this strip. The receiving side of an
+    // undo request answers it here; the requesting side gets a button to
+    // withdraw it while it is still pending.
+    const can_request_undo = useCanRequestUndo(goban);
     const show_undo_response = useCanAnswerUndoRequest(goban);
     const show_cancel_undo = useUndoRequestIsMine(goban);
 
@@ -255,6 +258,7 @@ export function PlayButtons(): React.ReactElement | null {
     const mode = useMode(goban);
     const phase = usePhase(goban);
     const show_resign = user_is_player && mode === "play" && phase === "play";
+    const show_undo = show_resign && can_request_undo;
     const resign_label = resign_mode === "cancel" ? _("Cancel game") : _("Resign");
 
     const pass = () => {
@@ -306,11 +310,10 @@ export function PlayButtons(): React.ReactElement | null {
         goban.isAnalysisDisabled() &&
         cur_move_number < official_move_number;
 
-    // Requesting an undo lives in the More actions menu and the action
-    // list; what is left here is the response to the opponent's undo
-    // request, withdrawing your own, the move controls, and resign. Collapse
-    // the strip entirely when none of them apply so it takes up no space.
+    // Collapse the strip entirely when none of its controls apply so it
+    // takes up no space.
     if (
+        !show_undo &&
         !show_undo_response &&
         !show_cancel_undo &&
         !show_pass &&
@@ -325,6 +328,16 @@ export function PlayButtons(): React.ReactElement | null {
     return (
         <span className="play-buttons">
             <span>
+                {show_undo && (
+                    <button
+                        className="sm undo-button"
+                        onClick={() => requestUndo(goban, user_id)}
+                        title={_("Undo")}
+                    >
+                        <i className="fa fa-undo" />
+                        <span>{_("Undo")}</span>
+                    </button>
+                )}
                 {show_undo_response && (
                     <button
                         className="sm primary bold accept-undo-button"

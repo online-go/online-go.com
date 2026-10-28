@@ -26,7 +26,7 @@ const args = process.argv.slice(2).filter((arg) => arg !== "--build");
 const nodeOptions = process.version.startsWith("v23") ? ["--no-experimental-strip-types"] : [];
 const playwrightArgs = [...nodeOptions, resolve("node_modules/playwright/cli.js"), "test", ...args];
 const inspectOnly = args.some((arg) => ["--list", "--help", "-h"].includes(arg));
-if (inspectOnly || process.env.CI) {
+if (inspectOnly || process.env.E2E_SMOKE) {
     process.exit(await runNode(playwrightArgs));
 }
 if (!process.env.E2E_MODERATOR_PASSWORD) {

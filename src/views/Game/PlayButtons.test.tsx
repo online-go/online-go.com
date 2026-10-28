@@ -69,7 +69,7 @@ function WrapTest(props: { controller: GobanController; children: any }): React.
 }
 
 describe("PlayButtons", () => {
-    test("renders only resign when it's my opponent's turn.", () => {
+    test("renders only undo and resign when it's my opponent's turn.", () => {
         const controller = new GobanController({
             moves: [
                 [16, 3, 9136.12], // B
@@ -93,7 +93,35 @@ describe("PlayButtons", () => {
         expect(screen.queryByText("Pass")).toBeNull();
         expect(screen.queryByText("Submit Move")).toBeNull();
         expect(screen.queryByText("Accept Undo")).toBeNull();
+        expect(container.querySelector(".undo-button")).not.toBeNull();
         expect(container.querySelector(".resign-button")).not.toBeNull();
+    });
+
+    test("the undo button requests an undo of the last move", () => {
+        const controller = new GobanController({
+            moves: [
+                [16, 3, 9136.12], // B
+                [3, 2, 1897.853], // W
+                [15, 16, 4274.0], // Black went last
+            ],
+            players: {
+                black: { id: LOGGED_IN_USER.id, username: LOGGED_IN_USER.username },
+                white: { id: 456, username: "test_user2" },
+            },
+        });
+        const request_undo = jest
+            .spyOn(controller.goban, "requestUndo")
+            .mockImplementation(() => {});
+
+        const { container } = render(
+            <WrapTest controller={controller}>
+                <PlayButtons />
+            </WrapTest>,
+        );
+
+        fireEvent.click(container.querySelector(".undo-button")!);
+
+        expect(request_undo).toHaveBeenCalledTimes(1);
     });
 
     test("normal game when it's my turn.", () => {
@@ -249,6 +277,7 @@ describe("PlayButtons", () => {
         expect(screen.getByText("Cancel Undo")).toBeDefined();
         expect(screen.queryByText("Accept Undo")).toBeNull();
         expect(screen.queryByText("Reject Undo")).toBeNull();
+        expect(container.querySelector(".undo-button")).toBeNull();
         expect(container.querySelector(".resign-button")).not.toBeNull();
     });
 
@@ -407,9 +436,10 @@ describe("PlayButtons", () => {
             controller.goban.engine.showPrevious();
         });
 
-        // Move controls need the current position; resign does not.
+        // Move controls and undo need the current position; resign does not.
         expect(screen.queryByText("Pass")).toBeNull();
         expect(screen.queryByText("Submit Move")).toBeNull();
+        expect(container.querySelector(".undo-button")).toBeNull();
         expect(container.querySelector(".resign-button")).not.toBeNull();
     });
 

@@ -18,7 +18,10 @@
 import { defineConfig, devices } from "@playwright/test";
 import { arch, availableParallelism, cpus, platform, totalmem } from "node:os";
 
-const smoke = !!process.env.CI;
+// E2E_SMOKE (set by `yarn test:e2e:smoke`) selects the smoke suite. CI is not
+// used for this: every CI service sets it and other tools read it, and the e2e
+// runner, itself a CI job, had to unset it to get the full suite.
+const smoke = !!process.env.E2E_SMOKE;
 const workers = process.env.E2E_WORKERS ? Number(process.env.E2E_WORKERS) : 1;
 const hostMemory = totalmem();
 const memoryLimit = process.constrainedMemory?.() || 0;
@@ -40,7 +43,7 @@ export default defineConfig({
     forbidOnly: !!process.env.CI || !!process.env.E2E,
     // The automated e2e runner (E2E=1) retries a failing test so the overall
     // run stays green when it passes on a retry; run-tests.sh then records it
-    // as flaky. Smoke (CI) and dev keep 0 retries to fail fast.
+    // as flaky. Smoke and dev keep 0 retries to fail fast.
     retries: process.env.E2E ? 2 : 0,
     workers,
     metadata: {
@@ -57,6 +60,11 @@ export default defineConfig({
             apiDelayMs: Number(process.env.E2E_API_DELAY_MS || 0),
         },
     },
+    // Under GitHub Actions, Playwright's diff capture runs `git fetch --depth=1` of
+    // the PR base in this checkout to attach a diff to the report. On the e2e runner
+    // this checkout is a shared full clone, and that fetch made it shallow on every
+    // PR run. The commit info, which only reads the repository, is still captured.
+    captureGitInfo: { diff: false },
     reporter: [["list"], ["json", { outputFile: "test-results/e2e-results.json" }]],
     use: {
         baseURL: process.env.FRONTEND_URL || "http://localhost:8080",
