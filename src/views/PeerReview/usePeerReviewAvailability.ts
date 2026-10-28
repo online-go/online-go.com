@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
-import { fetchConfig } from "./api";
+import { useData } from "@/lib/hooks";
 
 export interface PeerReviewAvailability {
     /** True once the config has been read, so pages can tell "dark" from "not loaded yet". */
@@ -29,27 +28,15 @@ export interface PeerReviewAvailability {
 
 const HIDDEN: PeerReviewAvailability = { loaded: false, available: false, live: false };
 
-/** Reads the peer review config once. Everything stays hidden until it loads or if it cannot be read. */
+/**
+ * Reads the peer review block that the server bundles into ui/config.
+ * Everything stays hidden until the config has loaded.
+ */
 export function usePeerReviewAvailability(): PeerReviewAvailability {
-    const [state, setState] = React.useState<PeerReviewAvailability>(HIDDEN);
-    React.useEffect(() => {
-        let cancelled = false;
-        fetchConfig()
-            .then((cfg) => {
-                if (!cancelled) {
-                    setState({
-                        loaded: true,
-                        available: Boolean(cfg.available),
-                        live: Boolean(cfg.enabled),
-                    });
-                }
-            })
-            .catch(() => {
-                // Leave the feature hidden when the config cannot be read.
-            });
-        return () => {
-            cancelled = true;
-        };
-    }, []);
-    return state;
+    const [config] = useData("config");
+    const cfg = config?.peer_review;
+    if (!cfg) {
+        return HIDDEN;
+    }
+    return { loaded: true, available: Boolean(cfg.available), live: Boolean(cfg.enabled) };
 }
