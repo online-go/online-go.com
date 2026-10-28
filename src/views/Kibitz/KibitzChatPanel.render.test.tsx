@@ -51,8 +51,20 @@ const mockRoomProxy = {
 
 jest.mock("@/components/Chat", () => ({
     __esModule: true,
-    ChatLine: ({ line, lastLine }: { line: ChatMessage; lastLine?: ChatMessage }) => (
-        <div data-testid="chat-line" data-last-line-t={lastLine ? String(lastLine.message.t) : ""}>
+    ChatLine: ({
+        line,
+        lastLine,
+        goban,
+    }: {
+        line: ChatMessage;
+        lastLine?: ChatMessage;
+        goban?: { game_id: number } | null;
+    }) => (
+        <div
+            data-testid="chat-line"
+            data-last-line-t={lastLine ? String(lastLine.message.t) : ""}
+            data-board={goban?.game_id ?? ""}
+        >
             {typeof line.message.m === "string" ? line.message.m : line.message.m.type}
         </div>
     ),
@@ -515,5 +527,22 @@ describe("Kibitz room chat move references", () => {
         );
         expect(screen.getByRole("button", { name: "Move 0" })).toBeInTheDocument();
         expect(screen.queryByText("Move -1")).not.toBeInTheDocument();
+    });
+    test("highlights coordinates only for messages belonging to the current game", () => {
+        const props = propsWithGame();
+        const items = [
+            { ...makeChatItem("a", "room-stream", "Current A19"), game_id: 42, move_number: 12 },
+            { ...makeChatItem("b", "room-stream", "Older S7"), game_id: 41, move_number: 12 },
+            makeChatItem("c", "room-stream", "Unknown A19"),
+        ];
+        const { rerender } = render(<KibitzChatPanel {...props} items={items} />);
+        expect(screen.getByText("Current A19")).toHaveAttribute("data-board", "42");
+        expect(screen.getByText("Older S7")).toHaveAttribute("data-board", "");
+        expect(screen.getByText("Unknown A19")).toHaveAttribute("data-board", "");
+        rerender(<KibitzChatPanel {...props} items={items} coordinateGoban={null} />);
+        expect(screen.getByText("Current A19")).toHaveAttribute("data-board", "");
+        const variationBoard = { game_id: 0 } as import("goban").Goban;
+        rerender(<KibitzChatPanel {...props} items={items} coordinateGoban={variationBoard} />);
+        expect(screen.getByText("Current A19")).toHaveAttribute("data-board", "0");
     });
 });

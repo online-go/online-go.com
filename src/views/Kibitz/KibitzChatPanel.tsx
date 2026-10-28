@@ -29,7 +29,7 @@ import * as data from "@/lib/data";
 import { useUser } from "@/lib/hooks";
 import type { GobanController } from "@/lib/GobanController";
 import { interpolate, moment, pgettext } from "@/lib/translate";
-import { protocol } from "goban";
+import { protocol, type Goban } from "goban";
 import type {
     KibitzRoomSummary,
     KibitzStreamItem,
@@ -74,6 +74,7 @@ export interface KibitzChatPanelProps {
     onOpenChatMove?: (gameId: number, moveNumber: number) => void;
     /** Live game controller whose chat_log feeds the Game tab. */
     gameController: GobanController | null;
+    coordinateGoban?: Goban | null;
     /** Move-tree line colour of each variation that is on the board, by id. */
     variationColorIndexes: Record<string, number>;
     /** Whether the people column is switched on, from the action bar. */
@@ -256,6 +257,7 @@ export function KibitzChatPanel({
     onOpenVariation,
     onOpenChatMove,
     gameController,
+    coordinateGoban,
     variationColorIndexes,
     showPeople,
     mode,
@@ -808,6 +810,15 @@ export function KibitzChatPanel({
                                         line={entry.line}
                                         lastLine={previousRoomLine}
                                         showDate={false}
+                                        goban={
+                                            position &&
+                                            position.game_id === room.current_game?.game_id &&
+                                            position.game_id === watchedController?.goban.game_id
+                                                ? coordinateGoban === undefined
+                                                    ? watchedController.goban
+                                                    : coordinateGoban
+                                                : null
+                                        }
                                     />
                                 )}
                             </div>

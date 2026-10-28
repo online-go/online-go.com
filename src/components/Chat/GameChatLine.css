@@ -16,8 +16,7 @@
  */
 
 .GameChatLine {
-    .variation,
-    .position {
+    .variation {
         font-weight: bold;
         color: var(--variation);
         border-radius: 2px;
@@ -28,27 +27,12 @@
         text-decoration: none;
     }
 
-    .variation:hover,
-    .position:hover {
+    .variation:hover {
         color: var(--variation-hover);
         text-decoration: underline;
     }
 
     .variation {
         cursor: pointer;
-    }
-
-    .position {
-        cursor: crosshair;
-
-        &.tight-right {
-            margin-right: 0;
-            padding-right: 0;
-        }
-    }
-
-    .position-trailing {
-        margin-right: 0.2em;
-        padding-right: 0.2em;
     }
 }

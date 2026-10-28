@@ -20,6 +20,8 @@ import * as React from "react";
 import * as data from "@/lib/data";
 import { Player } from "@/components/Player";
 import { chat_markup } from "./chat_markup";
+import type { Goban } from "goban";
+import { ChatBodyText } from "./ChatBodyText";
 import { ChatDateLine } from "./ChatDateLine";
 import type { ChatMessage, TypedChatBody } from "@/lib/chat_manager";
 import { getChatMessageText } from "@/lib/chatMessageText";
@@ -48,6 +50,7 @@ interface ChatLineInterface {
     /** False where the caller renders the date itself, outside the line. It
      *  separates a run of lines rather than belongs to one. */
     showDate?: boolean;
+    goban?: Goban | null;
 }
 
 export function ChatLine(props: ChatLineInterface): React.ReactElement {
@@ -91,7 +94,7 @@ export function ChatLine(props: ChatLineInterface): React.ReactElement {
             body = generateChatSearchLine("https://www.google.com/#q=", "/google ", body);
         }
 
-        body_rendered = chat_markup(body);
+        body_rendered = <ChatBodyText text={body} goban={props.goban} />;
     } else {
         body_rendered = renderTypedBody(body);
     }
