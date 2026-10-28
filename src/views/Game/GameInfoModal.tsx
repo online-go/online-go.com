@@ -49,6 +49,7 @@ interface GameInfoModalProperties {
 
 interface GameInfoModalState {
     komi: string;
+    creatorId: number;
     tournament_id?: number;
     tournament_name?: string;
     ladder_id?: number;
@@ -59,6 +60,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
         super(props);
         this.state = {
             komi: props.config.komi?.toFixed(1) || "",
+            creatorId: props.creatorId,
         };
     }
 
@@ -70,6 +72,9 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
         }
         get(`games/${game_id}`)
             .then((game: rest_api.GameDetails) => {
+                if (!this.props.creatorId && !this.props.config.review_id) {
+                    this.setState({ creatorId: game.creator });
+                }
                 if (game.tournament) {
                     const tournament_id = game.tournament;
                     this.setState({ tournament_id });
@@ -225,7 +230,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
         this.forceUpdate();
     };
     twoPlayerTeamList = () =>
-        this.props.creatorId ? (
+        this.state.creatorId ? (
             <h3>
                 <Player disableCacheUpdate icon rank user={this.props.black} />
                 {_("vs.")}
@@ -289,8 +294,8 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
                         </dd>
                         <dt>{_("Creator")}</dt>
                         <dd>
-                            {!!this.props.creatorId && (
-                                <Player icon rank user={this.props.creatorId} />
+                            {!!this.state.creatorId && (
+                                <Player icon rank user={this.state.creatorId} />
                             )}
                         </dd>
                         {(config.rengo || null) && (
@@ -330,7 +335,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
                                     ) : (
                                         <Player
                                             disableCacheUpdate
-                                            icon={!!this.props.creatorId}
+                                            icon={!!this.state.creatorId}
                                             rank
                                             user={this.props.black}
                                         />
@@ -362,7 +367,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
                                     ) : (
                                         <Player
                                             disableCacheUpdate
-                                            icon={!!this.props.creatorId}
+                                            icon={!!this.state.creatorId}
                                             rank
                                             user={this.props.white}
                                         />
