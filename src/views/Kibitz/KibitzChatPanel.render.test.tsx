@@ -51,8 +51,20 @@ const mockRoomProxy = {
 
 jest.mock("@/components/Chat", () => ({
     __esModule: true,
-    ChatLine: ({ line, lastLine }: { line: ChatMessage; lastLine?: ChatMessage }) => (
-        <div data-testid="chat-line" data-last-line-t={lastLine ? String(lastLine.message.t) : ""}>
+    ChatLine: ({
+        line,
+        lastLine,
+        goban,
+    }: {
+        line: ChatMessage;
+        lastLine?: ChatMessage;
+        goban?: { game_id: number } | null;
+    }) => (
+        <div
+            data-testid="chat-line"
+            data-last-line-t={lastLine ? String(lastLine.message.t) : ""}
+            data-board={goban?.game_id ?? ""}
+        >
             {typeof line.message.m === "string" ? line.message.m : line.message.m.type}
         </div>
     ),
@@ -422,6 +434,116 @@ describe("opening date separator", () => {
         expect(Number.isFinite(t)).toBe(true);
         expect(t).toBeGreaterThanOrEqual(before);
         expect(t).toBeLessThanOrEqual(after);
+    });
+});
+
+describe("Kibitz room chat move references", () => {
+    function propsWithGame() {
+        return {
+            ...baseProps(),
+            mode: "room" as const,
+            room: { ...makeRoom(), current_game: { game_id: 42 } } as KibitzRoomSummary,
+            gameController: {
+                destroyed: false,
+                goban: {
+                    game_id: 42,
+                    chat_log: [],
+                    engine: {
+                        last_official_move: { move_number: 17 },
+                        cur_move: { move_number: 3 },
+                    },
+                    on: jest.fn(),
+                    off: jest.fn(),
+                },
+            } as unknown as import("@/lib/GobanController").GobanController,
+            onOpenChatMove: jest.fn(),
+        };
+    }
+
+    test("sends the live move rather than the position being viewed", () => {
+        const props = propsWithGame();
+        render(<KibitzChatPanel {...props} />);
+        const input = screen.getByPlaceholderText("Message kibitz");
+        fireEvent.change(input, { target: { value: "Hello" } });
+        fireEvent.keyPress(input, { key: "Enter", charCode: 13 });
+        expect(mockRoomProxy.channel.send).toHaveBeenLastCalledWith("Hello", {
+            game_id: 42,
+            move_number: 17,
+        });
+    });
+
+    test("sends plain chat while the main board belongs to the previous game", () => {
+        const props = propsWithGame();
+        props.room = { ...props.room, current_game: { game_id: 43 } } as KibitzRoomSummary;
+        render(<KibitzChatPanel {...props} />);
+        const input = screen.getByPlaceholderText("Message kibitz");
+        fireEvent.change(input, { target: { value: "Hello again" } });
+        fireEvent.keyPress(input, { key: "Enter", charCode: 13 });
+        expect(mockRoomProxy.channel.send).toHaveBeenLastCalledWith("Hello again", undefined);
+    });
+
+    test("groups same-position messages and makes old-game headings plain text", () => {
+        const props = propsWithGame();
+        const items = [
+            { ...makeChatItem("a", "room-stream", "First"), game_id: 42, move_number: 12 },
+            { ...makeChatItem("b", "room-stream", "Second"), game_id: 42, move_number: 12 },
+            { ...makeChatItem("c", "room-stream", "Earlier game"), game_id: 41, move_number: 12 },
+            makeChatItem("d", "room-stream", "Legacy message"),
+        ];
+        const { rerender } = render(<KibitzChatPanel {...props} items={items} />);
+        expect(screen.getAllByRole("button", { name: "Move 12" })).toHaveLength(1);
+        fireEvent.click(screen.getByRole("button", { name: "Move 12" }));
+        expect(props.onOpenChatMove).toHaveBeenCalledWith(42, 12);
+        expect(screen.getAllByText("Move 12")).toHaveLength(2);
+        rerender(
+            <KibitzChatPanel
+                {...props}
+                room={{ ...props.room, current_game: undefined }}
+                items={items}
+            />,
+        );
+        expect(screen.queryByRole("button", { name: "Move 12" })).not.toBeInTheDocument();
+        expect(screen.getAllByText("Move 12")).toHaveLength(2);
+    });
+
+    test("keeps move zero and ignores malformed metadata", () => {
+        const props = propsWithGame();
+        render(
+            <KibitzChatPanel
+                {...props}
+                items={[
+                    {
+                        ...makeChatItem("a", "room-stream", "Before the first move"),
+                        game_id: 42,
+                        move_number: 0,
+                    },
+                    {
+                        ...makeChatItem("b", "room-stream", "Invalid move"),
+                        game_id: 42,
+                        move_number: -1,
+                    },
+                ]}
+            />,
+        );
+        expect(screen.getByRole("button", { name: "Move 0" })).toBeInTheDocument();
+        expect(screen.queryByText("Move -1")).not.toBeInTheDocument();
+    });
+    test("highlights coordinates only for messages belonging to the current game", () => {
+        const props = propsWithGame();
+        const items = [
+            { ...makeChatItem("a", "room-stream", "Current A19"), game_id: 42, move_number: 12 },
+            { ...makeChatItem("b", "room-stream", "Older S7"), game_id: 41, move_number: 12 },
+            makeChatItem("c", "room-stream", "Unknown A19"),
+        ];
+        const { rerender } = render(<KibitzChatPanel {...props} items={items} />);
+        expect(screen.getByText("Current A19")).toHaveAttribute("data-board", "42");
+        expect(screen.getByText("Older S7")).toHaveAttribute("data-board", "");
+        expect(screen.getByText("Unknown A19")).toHaveAttribute("data-board", "");
+        rerender(<KibitzChatPanel {...props} items={items} coordinateGoban={null} />);
+        expect(screen.getByText("Current A19")).toHaveAttribute("data-board", "");
+        const variationBoard = { game_id: 0 } as import("goban").Goban;
+        rerender(<KibitzChatPanel {...props} items={items} coordinateGoban={variationBoard} />);
+        expect(screen.getByText("Current A19")).toHaveAttribute("data-board", "0");
     });
 });
 

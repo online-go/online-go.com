@@ -63,6 +63,7 @@ import {
     captureCurrentGameBaseSnapshotFromController,
     chooseFresherCurrentGameBaseSnapshot,
 } from "./kibitzCurrentGameBaseSnapshot";
+import { openKibitzChatMove } from "./kibitzChatMove";
 import "./KibitzInner.css";
 
 type KibitzGamePickerMode = "create-room" | "change-board" | null;
@@ -1213,6 +1214,27 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         });
     }, [confirmDiscardDraft, controller]);
 
+    const onOpenChatMove = React.useCallback(
+        (gameId: number, moveNumber: number) => {
+            const main = gobans.main;
+            const sourceRoomId = currentRoomIdRef.current;
+            if (!main) {
+                return;
+            }
+            void openKibitzChatMove({
+                controller: main,
+                gameId,
+                moveNumber,
+                isCurrentGame: () =>
+                    currentRoomIdRef.current === sourceRoomId &&
+                    currentRoomGameIdRef.current === gameId,
+                confirmDiscardDraft,
+                closeVariation: () => controller.closeSecondaryPane(),
+            });
+        },
+        [gobans.main, confirmDiscardDraft, controller],
+    );
+
     const onRoomsOpened = React.useCallback(() => {
         void controller.refreshRoomDirectory();
     }, [controller]);
@@ -1324,6 +1346,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                     onOpenVariation: (variationId, focusVariation = false) =>
                         onOpenVariationFromUser(variationId, focusVariation, "chat"),
                     variationColorIndexes,
+                    onOpenChatMove,
                 }}
                 proposals={{
                     activeProposal,

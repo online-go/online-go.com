@@ -20,8 +20,11 @@ import * as React from "react";
 import * as data from "@/lib/data";
 import { Player } from "@/components/Player";
 import { chat_markup } from "./chat_markup";
+import type { Goban } from "goban";
+import { ChatBodyText } from "./ChatBodyText";
 import { ChatDateLine } from "./ChatDateLine";
-import { ChatMessage, TypedChatBody } from "@/lib/chat_manager";
+import type { ChatMessage, TypedChatBody } from "@/lib/chat_manager";
+import { getChatMessageText } from "@/lib/chatMessageText";
 import { profanity_filter } from "@/lib/profanity_filter";
 
 let name_match_regex = /^loading...$/;
@@ -47,6 +50,7 @@ interface ChatLineInterface {
     /** False where the caller renders the date itself, outside the line. It
      *  separates a run of lines rather than belongs to one. */
     showDate?: boolean;
+    goban?: Goban | null;
 }
 
 export function ChatLine(props: ChatLineInterface): React.ReactElement {
@@ -69,7 +73,7 @@ export function ChatLine(props: ChatLineInterface): React.ReactElement {
     const message = line.message;
     const ts = message.t ? new Date(message.t * 1000) : null;
     let third_person = false;
-    let body = message.m;
+    let body = getChatMessageText(message.m) ?? message.m;
 
     let body_rendered: React.ReactNode;
     if (typeof body === "string") {
@@ -90,7 +94,7 @@ export function ChatLine(props: ChatLineInterface): React.ReactElement {
             body = generateChatSearchLine("https://www.google.com/#q=", "/google ", body);
         }
 
-        body_rendered = chat_markup(body);
+        body_rendered = <ChatBodyText text={body} goban={props.goban} />;
     } else {
         body_rendered = renderTypedBody(body);
     }

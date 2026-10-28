@@ -104,7 +104,7 @@ export interface KibitzViewProps {
     leftAside: Omit<KibitzLeftAsideProps, "miniBoardController" | "onExitVariation">;
     chat: Omit<
         KibitzChatPanelProps,
-        "gameController" | "showPeople" | "mode" | "visible" | "onUnreadChange"
+        "gameController" | "coordinateGoban" | "showPeople" | "mode" | "visible" | "onUnreadChange"
     >;
     proposals: KibitzProposalPanelProps;
     onPostVariation: (controller: GobanController) => void;
@@ -185,6 +185,10 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             gobans.center.stopEstimatingScore();
         }
     }, [gobans.center]);
+    const coordinateGoban =
+        scoreSource?.goban.game_id === room.current_game?.game_id
+            ? (gobans.center?.goban ?? null)
+            : null;
     const settingsPopoverRef = React.useRef<PopOver | null>(null);
     const moreActionsPopoverRef = React.useRef<PopOver | null>(null);
     const behindLive = useBehindLive(
@@ -617,6 +621,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                             ...props.chat,
                             onOpenVariation: onOpenVariationByReader,
                             gameController: gobans.main,
+                            coordinateGoban,
                             showPeople: false,
                             onUnreadChange: setChatUnread,
                         }}
@@ -641,6 +646,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         {...props.chat}
                         onOpenVariation={onOpenVariationByReader}
                         gameController={gobans.main}
+                        coordinateGoban={coordinateGoban}
                         showPeople={showPeople}
                     />
                 )}
