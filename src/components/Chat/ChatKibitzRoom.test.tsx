@@ -91,11 +91,8 @@ const english_room = {
     },
 };
 
-function mockBackend(options?: { show_in_nav?: boolean; rooms?: unknown[] }): void {
+function mockBackend(options?: { rooms?: unknown[] }): void {
     mock_get.mockImplementation((url: string) => {
-        if (url === "kibitz/nav-config") {
-            return Promise.resolve({ show_in_nav: options?.show_in_nav ?? true });
-        }
         if (url === "kibitz/directory") {
             return Promise.resolve(options?.rooms ?? [english_room]);
         }
@@ -113,13 +110,6 @@ describe("ChatKibitzRoom", () => {
         const { container } = render(<ChatKibitzRoom channel="global-francais" />);
         expect(container).toBeEmptyDOMElement();
         expect(mock_get).not.toHaveBeenCalled();
-    });
-
-    it("renders nothing when kibitz is nav-disabled", async () => {
-        mockBackend({ show_in_nav: false });
-        const { container } = render(<ChatKibitzRoom channel="global-english" />);
-        await waitFor(() => expect(mock_get).toHaveBeenCalledWith("kibitz/nav-config"));
-        expect(container).toBeEmptyDOMElement();
     });
 
     it("shows the room card with the current matchup and viewer count", async () => {

@@ -74,12 +74,12 @@ function playerNameClass(player: DirectoryPlayer): string {
 /**
  * Footer card for the chat page's user column, linking to the kibitz preset
  * room scoped to this chat channel (e.g. #English -> english-chat-live).
- * Renders nothing when the channel has no such room, the kibitz feature is
- * nav-disabled, or the directory cannot be fetched.
+ * Renders nothing when the channel has no such room or the directory cannot
+ * be fetched.
  *
  * State comes from one initial directory fetch and then from pushes on the
  * `kibitz-rooms` directory channel only. The subscription stays active
- * while the feature is enabled, also when no matching room exists.
+ * also when no matching room exists.
  * `room-created` and `room-updated` (sent for each board change) adopt the
  * room by preset key, `viewer-count-changed` updates the count and
  * `room-removed` hides the card. `rooms-refresh` and socket reconnect
@@ -87,30 +87,10 @@ function playerNameClass(player: DirectoryPlayer): string {
  */
 export function ChatKibitzRoom({ channel }: ChatKibitzRoomProps): React.ReactElement | null {
     const preset_key: string | undefined = CHANNEL_PRESET_KEYS[channel];
-    const [enabled, setEnabled] = useState(false);
     const [room, setRoom] = useState<DirectoryRoom | null>(null);
 
     useEffect(() => {
         if (!preset_key) {
-            return;
-        }
-        let cancelled = false;
-        get("kibitz/nav-config")
-            .then((res: { show_in_nav?: boolean }) => {
-                if (!cancelled) {
-                    setEnabled(Boolean(res?.show_in_nav));
-                }
-            })
-            .catch(() => {
-                // Kibitz stays hidden when the flag cannot be fetched.
-            });
-        return () => {
-            cancelled = true;
-        };
-    }, [preset_key]);
-
-    useEffect(() => {
-        if (!preset_key || !enabled) {
             return;
         }
         let cancelled = false;
@@ -173,9 +153,9 @@ export function ChatKibitzRoom({ channel }: ChatKibitzRoomProps): React.ReactEle
             push_manager.unsubscribe(KIBITZ_DIRECTORY_CHANNEL);
             socket.off("connect", refresh);
         };
-    }, [preset_key, enabled]);
+    }, [preset_key]);
 
-    if (!preset_key || !enabled || !room) {
+    if (!preset_key || !room) {
         return null;
     }
 
