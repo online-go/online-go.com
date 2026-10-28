@@ -180,6 +180,24 @@ export const kibitzEditRoomDetailsTest = async ({
     });
     console.log("[kibitz edit-room-details] description persisted");
 
+    // A title another room already carries is refused (kibitz/views.py
+    // _title_taken_response, 409 kibitzroom_title_taken). The seeded preset
+    // room "High-ranked game" always exists, and the comparison ignores
+    // case, so a differently-cased copy must be refused too. The popover
+    // stays open on the form with the error shown and the header keeps the
+    // saved title.
+    const takenTitle = "high-RANKED game";
+    await titleInput.fill(takenTitle);
+    await expect(titleInput).toHaveValue(takenTitle);
+    await expect(saveButton).toBeOGSClickable();
+    await saveButton.click();
+    await expect(
+        popover.getByText("A room with that name already exists. Please choose another name."),
+    ).toBeVisible({ timeout: 15000 });
+    await expect(popover).toBeVisible();
+    await expect(watcherPage.locator(".Kibitz-room-title")).toHaveText(newTitle);
+    console.log("[kibitz edit-room-details] duplicate title refused");
+
     // No popover dismiss needed: the next phase runs on nonOwnerPage (a
     // separate browser context), so the watcher's open popover does not
     // shadow it. The popover module (lib/popover.tsx) dismisses only on

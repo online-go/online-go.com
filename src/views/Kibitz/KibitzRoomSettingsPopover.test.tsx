@@ -104,4 +104,28 @@ describe("KibitzRoomSettingsPopover", () => {
             ),
         ).toBeInTheDocument();
     });
+
+    it("says why when the server refuses the room name as already used", async () => {
+        render(
+            <KibitzRoomSettingsPopover
+                room={makeRoom()}
+                initialView="edit-details"
+                canEditRoom={true}
+                canDeleteRoom={false}
+                canChangeBoard={false}
+                onClose={jest.fn()}
+                onRequestChangeBoard={jest.fn()}
+                onDeleteRoom={async () => false}
+                onSaveRoomDetails={() => Promise.reject({ errcode: "kibitzroom_title_taken" })}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+        expect(
+            await screen.findByText(
+                "A room with that name already exists. Please choose another name.",
+            ),
+        ).toBeInTheDocument();
+    });
 });

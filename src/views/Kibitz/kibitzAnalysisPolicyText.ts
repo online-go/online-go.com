@@ -76,6 +76,18 @@ export function getKibitzRoomOffensiveMessage(): string {
     );
 }
 
+/** The server refuses a room title that another room already has with this errcode */
+export function isKibitzRoomTitleTakenError(error: unknown): boolean {
+    return (error as { errcode?: unknown } | null)?.errcode === "kibitzroom_title_taken";
+}
+
+export function getKibitzRoomTitleTakenMessage(): string {
+    return pgettext(
+        "Error shown when a Kibitz room title is already used by another room",
+        "A room with that name already exists. Please choose another name.",
+    );
+}
+
 export function getKibitzPickerFailedChangeMessage(): string {
     return pgettext(
         "Error shown when Kibitz board switching fails",

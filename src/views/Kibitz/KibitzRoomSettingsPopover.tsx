@@ -23,7 +23,9 @@ import type { KibitzRoomSummary, KibitzRoomUser } from "@/models/kibitz";
 import { KibitzUserAvatar } from "./KibitzUserAvatar";
 import {
     getKibitzRoomOffensiveMessage,
+    getKibitzRoomTitleTakenMessage,
     isKibitzRoomOffensiveError,
+    isKibitzRoomTitleTakenError,
 } from "./kibitzAnalysisPolicyText";
 import "./KibitzRoomSettingsPopover.css";
 
@@ -127,11 +129,15 @@ export function KibitzRoomSettingsPopover({
         setSaving(true);
         setErrorMessage(null);
         let saved = false;
-        let offensive = false;
+        let refusal: string | null = null;
         try {
             saved = await onSaveRoomDetails(roomTitle, roomDescription);
         } catch (error) {
-            offensive = isKibitzRoomOffensiveError(error);
+            if (isKibitzRoomOffensiveError(error)) {
+                refusal = getKibitzRoomOffensiveMessage();
+            } else if (isKibitzRoomTitleTakenError(error)) {
+                refusal = getKibitzRoomTitleTakenMessage();
+            }
         }
         setSaving(false);
 
@@ -141,12 +147,11 @@ export function KibitzRoomSettingsPopover({
         }
 
         setErrorMessage(
-            offensive
-                ? getKibitzRoomOffensiveMessage()
-                : pgettext(
-                      "Error shown when room details fail to save in the Kibitz room settings popover",
-                      "Could not save room details.",
-                  ),
+            refusal ??
+                pgettext(
+                    "Error shown when room details fail to save in the Kibitz room settings popover",
+                    "Could not save room details.",
+                ),
         );
     }, [canEditRoom, onClose, onSaveRoomDetails, roomDescription, roomTitle, saving]);
 
