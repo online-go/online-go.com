@@ -34,7 +34,9 @@ registered for the old one, because their tokens can't be reached with the new
 credentials.
 
 APNs keys can be restricted to the sandbox or production environment. OGS
-checks the key in both and shows which it works in. Devices registered for an
+checks the key in both and shows which it works in. If Apple can't be
+reached about one of them at the time, the key is saved for the other; save
+it again later to add the missing one. Devices registered for an
 environment the key doesn't cover aren't sent to.
 
 ## 3. Register the device
