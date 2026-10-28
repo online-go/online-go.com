@@ -20,12 +20,7 @@ import { useUser } from "@/lib/hooks";
 import type { MessageId } from "@/lib/messages";
 import { errorAlerter, ignore } from "@/lib/misc";
 import { _, interpolate, moment, pgettext } from "@/lib/translate";
-import {
-    fetchReviewFeedbackStatus,
-    markFeedbackDelivered,
-    markReviewSeen,
-    saveFeedback,
-} from "@/views/PeerReview/api";
+import { fetchReviewFeedbackStatus, markReviewSeen, saveFeedback } from "@/views/PeerReview/api";
 import { StarRating } from "@/views/PeerReview/StarRating";
 import type { ReviewFeedbackStatus } from "@/views/PeerReview/types";
 import "./PeerReviewFeedbackPanel.css";
@@ -71,14 +66,6 @@ export function PeerReviewFeedbackPanel({
                 if (s.role === "requester" && s.review_seen_at === null && !touched.current) {
                     touched.current = true;
                     markReviewSeen(s.request_id).then(apply).catch(ignore);
-                } else if (
-                    s.role === "reviewer" &&
-                    s.feedback &&
-                    !s.feedback.delivered &&
-                    !touched.current
-                ) {
-                    touched.current = true;
-                    markFeedbackDelivered(s.request_id).then(apply).catch(ignore);
                 }
                 apply(s);
             })

@@ -71,7 +71,3 @@ export function saveFeedback(
 ): Promise<ReviewFeedbackStatus> {
     return put(`peer_review/requests/${requestId}/feedback`, { score, text });
 }
-
-export function markFeedbackDelivered(requestId: number): Promise<ReviewFeedbackStatus> {
-    return post(`peer_review/requests/${requestId}/delivered`, {});
-}

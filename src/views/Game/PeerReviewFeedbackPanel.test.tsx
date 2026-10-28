@@ -30,7 +30,6 @@ jest.mock("@/views/PeerReview/api", () => ({
     fetchReviewFeedbackStatus: jest.fn(),
     markReviewSeen: jest.fn(),
     saveFeedback: jest.fn(),
-    markFeedbackDelivered: jest.fn(),
 }));
 jest.mock("@/components/Errcode", () => ({
     format_message: (m: { message_id: string }) => m.message_id,
@@ -105,13 +104,8 @@ test("requester: marks seen once, saves a rating, then shows delivered", async (
     expect(screen.getByText("Saved")).toBeTruthy();
 });
 
-test("reviewer: shows the feedback and marks it delivered once", async () => {
+test("reviewer: shows the feedback the server has already frozen", async () => {
     mocked.fetchReviewFeedbackStatus.mockResolvedValue({
-        ...base,
-        role: "reviewer",
-        feedback: { score: 5, text: "thanks", none_provided: false, delivered: false },
-    });
-    mocked.markFeedbackDelivered.mockResolvedValue({
         ...base,
         role: "reviewer",
         feedback: { score: 5, text: "thanks", none_provided: false, delivered: true },
@@ -119,5 +113,5 @@ test("reviewer: shows the feedback and marks it delivered once", async () => {
     render(<PeerReviewFeedbackPanel reviewId={77} />);
     await flush();
     expect(screen.getByText("thanks")).toBeTruthy();
-    expect(mocked.markFeedbackDelivered).toHaveBeenCalledTimes(1);
+    expect(mocked.markReviewSeen).not.toHaveBeenCalled();
 });

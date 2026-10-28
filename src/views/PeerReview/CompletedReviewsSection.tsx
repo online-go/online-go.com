@@ -19,31 +19,14 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { PaginatedTable } from "@/components/PaginatedTable";
 import { Player } from "@/components/Player";
-import { ignore } from "@/lib/misc";
 import { _, moment, pgettext } from "@/lib/translate";
-import { markFeedbackDelivered } from "./api";
 import { RequestRankCell } from "./RequestRankCell";
 import { StarRating } from "./StarRating";
 import type { CompletedReview } from "./types";
 import "./CompletedReviewsSection.css";
 
-/** The reviewer's submitted reviews with the requester's rating and private text. Rendering undelivered feedback delivers it. */
+/** The reviewer's submitted reviews with the requester's rating and private text. The server freezes feedback as it serves it here. */
 export function CompletedReviewsSection(): React.ReactElement {
-    const delivered = React.useRef<Set<number>>(new Set());
-    const groom = (rows: CompletedReview[]) => {
-        for (const r of rows) {
-            if (
-                r.feedback &&
-                !r.feedback.none_provided &&
-                !r.feedback.delivered &&
-                !delivered.current.has(r.id)
-            ) {
-                delivered.current.add(r.id);
-                markFeedbackDelivered(r.id).catch(ignore);
-            }
-        }
-        return rows;
-    };
     return (
         <div className="CompletedReviewsSection">
             <h3>
@@ -55,7 +38,6 @@ export function CompletedReviewsSection(): React.ReactElement {
                 method="GET"
                 source="peer_review/reviewers/me/completed"
                 pageSizeOptions={[10, 25]}
-                groom={groom}
                 columns={[
                     {
                         header: _("Date"),

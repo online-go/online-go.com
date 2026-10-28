@@ -102,7 +102,7 @@ export const requestClaimSubmitTest = async ({
     await panel.getByRole("button", { name: "Save", exact: true }).click();
     await expect(panel.getByText("Saved")).toBeVisible();
 
-    // The reviewer reads it in My queue, which delivers it.
+    // The reviewer reads it in My queue; the server freezes it as it serves it.
     await load(reviewerPage, "/peer-review/mine");
     const completed = reviewerPage.locator(".completed-reviews-table tr", {
         hasText: requesterName,
@@ -110,8 +110,7 @@ export const requestClaimSubmitTest = async ({
     await expect(completed.getByText("Thanks, the opening comments helped.")).toBeVisible();
     await expect(completed.locator(".StarRating .star.filled")).toHaveCount(4);
 
-    // Delivered feedback is frozen for the requester. The reviewer's page marks it
-    // delivered without waiting, so reload until the requester sees it.
+    // Delivered feedback is frozen for the requester; reload until that shows.
     await expect(async () => {
         await requesterPage.reload();
         await expect(panel.getByText("Delivered")).toBeVisible({ timeout: 2000 });
