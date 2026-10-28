@@ -29,7 +29,10 @@ import { push_manager } from "@/components/UIPush/UIPush";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { User } from "goban";
 import { getCurrentKibitzUser, isKibitzAccessBlockedForUser } from "./kibitzAnalysisPolicy";
-import { isKibitzRoomOffensiveError } from "./kibitzAnalysisPolicyText";
+import {
+    isKibitzRoomOffensiveError,
+    isKibitzRoomTitleTakenError,
+} from "./kibitzAnalysisPolicyText";
 import { kibitzTelemetry } from "./kibitzTelemetry";
 import type {
     KibitzPresetBlock,
@@ -1103,7 +1106,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         } catch (error) {
             console.warn("kibitz: createRoom failed", error);
             kibitzTelemetry.record("create_room", { outcome: "error", error: String(error) });
-            if (isKibitzRoomOffensiveError(error)) {
+            if (isKibitzRoomOffensiveError(error) || isKibitzRoomTitleTakenError(error)) {
                 throw error;
             }
             return null;
@@ -1161,7 +1164,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             return true;
         } catch (error) {
             console.warn("kibitz: updateRoomDetails failed", roomId, error);
-            if (isKibitzRoomOffensiveError(error)) {
+            if (isKibitzRoomOffensiveError(error) || isKibitzRoomTitleTakenError(error)) {
                 throw error;
             }
             return false;

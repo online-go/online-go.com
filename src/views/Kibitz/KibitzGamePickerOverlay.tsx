@@ -31,7 +31,9 @@ import {
     getKibitzPickerFailedChangeMessage,
     getKibitzPickerFailedCreateMessage,
     getKibitzRoomOffensiveMessage,
+    getKibitzRoomTitleTakenMessage,
     isKibitzRoomOffensiveError,
+    isKibitzRoomTitleTakenError,
 } from "./kibitzAnalysisPolicyText";
 import { parseGameId } from "./parseGameId";
 import { useCurrentKibitzUser } from "./useCurrentKibitzUser";
@@ -399,11 +401,13 @@ export function KibitzGamePickerOverlay({
                 setErrorMessage(getKibitzPickerFailedCreateMessage());
             })
             .catch((error) => {
-                setErrorMessage(
-                    isKibitzRoomOffensiveError(error)
-                        ? getKibitzRoomOffensiveMessage()
-                        : getKibitzPickerFailedCreateMessage(),
-                );
+                if (isKibitzRoomOffensiveError(error)) {
+                    setErrorMessage(getKibitzRoomOffensiveMessage());
+                } else if (isKibitzRoomTitleTakenError(error)) {
+                    setErrorMessage(getKibitzRoomTitleTakenMessage());
+                } else {
+                    setErrorMessage(getKibitzPickerFailedCreateMessage());
+                }
             })
             .finally(() => {
                 setLoading(false);
