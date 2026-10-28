@@ -64,7 +64,7 @@ export function NotificationToggleRow(props: {
             <label aria-label={interpolate(pgettext("Toggle label", "Email: %s"), [props.name])}>
                 <Toggle onChange={(on) => save({ email: on })} checked={methods.email} />
             </label>
-            <label aria-label={interpolate(pgettext("Toggle label", "Push: %s"), [props.name])}>
+            <label aria-label={interpolate(pgettext("Toggle label", "Mobile: %s"), [props.name])}>
                 <Toggle onChange={(on) => save({ mobile: on })} checked={methods.mobile} />
             </label>
         </div>
