@@ -44,13 +44,17 @@ import { KibitzKeyboardShortcuts } from "./KibitzKeyboardShortcuts";
 import { PlayerCards } from "@/views/Game/PlayerCards";
 import { CompactPlayerHeader } from "@/views/Game/CompactPlayerHeader";
 import { KibitzMoreActionsRoomActions, openKibitzMoreActions } from "./KibitzMoreActionsPopover";
+import { KibitzScoreEstimate } from "./KibitzScoreEstimate";
+import { useKibitzScoreEstimation } from "./useKibitzScoreEstimation";
 import "./KibitzView.css";
 import "@/views/Game/Players.css";
 
 function KibitzStackedPlayerHeader({
     controller,
+    estimatingScore,
 }: {
     controller: GobanController | null;
+    estimatingScore: boolean;
 }): React.ReactElement | null {
     const { mode } = useGobanViewLayout();
     if (mode !== "stacked" || !controller) {
@@ -60,7 +64,7 @@ function KibitzStackedPlayerHeader({
         <CompactPlayerHeader
             historical_black={null}
             historical_white={null}
-            estimating_score={false}
+            estimating_score={estimatingScore}
             show_cached_avatar_fallback
             controller={controller}
         />
@@ -69,8 +73,10 @@ function KibitzStackedPlayerHeader({
 
 function KibitzSidebarPlayerCards({
     controller,
+    estimatingScore,
 }: {
     controller: GobanController | null;
+    estimatingScore: boolean;
 }): React.ReactElement | null {
     const { mode } = useGobanViewLayout();
     if (mode === "stacked" || !controller) {
@@ -81,7 +87,7 @@ function KibitzSidebarPlayerCards({
             <PlayerCards
                 historical_black={null}
                 historical_white={null}
-                estimating_score={false}
+                estimating_score={estimatingScore}
                 show_cached_avatar_fallback
                 controller={controller}
             />
@@ -172,6 +178,13 @@ const useBehindLive = generateGobanHook(
  */
 export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const { room, gobans, isPortrait } = props;
+    const scoreSource = gobans.playerBars ?? gobans.center;
+    const scoreEstimation = useKibitzScoreEstimation(gobans.center, scoreSource, room.channel);
+    const stopEstimate = React.useCallback(() => {
+        if (gobans.center?.estimating_score) {
+            gobans.center.stopEstimatingScore();
+        }
+    }, [gobans.center]);
     const settingsPopoverRef = React.useRef<PopOver | null>(null);
     const moreActionsPopoverRef = React.useRef<PopOver | null>(null);
     const behindLive = useBehindLive(
@@ -179,6 +192,14 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     );
 
     const { onExitVariation, onRoomsOpened, roomSettings } = props;
+    const onCreateVariation = React.useCallback(() => {
+        stopEstimate();
+        (props.onCreateVariation ?? props.leftAside.onCreateVariation)?.();
+    }, [props.onCreateVariation, props.leftAside.onCreateVariation, stopEstimate]);
+    const onBranchFromVariation = React.useCallback(() => {
+        stopEstimate();
+        props.onBranchFromVariation?.();
+    }, [props.onBranchFromVariation, stopEstimate]);
 
     // Portrait only: which of the five panels below the board is on screen,
     // and the unread state the two chat panes report for their tab dots.
@@ -265,6 +286,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const propsOnPostVariation = props.onPostVariation;
     const onPostVariation = React.useCallback(
         (boardController: GobanController) => {
+            stopEstimate();
             if (isPortrait) {
                 // After the pane call, which clears the flag as a reader's
                 // own navigation would.
@@ -273,7 +295,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             }
             propsOnPostVariation(boardController);
         },
-        [isPortrait, propsOnPostVariation, selectPane],
+        [isPortrait, propsOnPostVariation, selectPane, stopEstimate],
     );
 
     // Opening a variation by hand is the reader steering, so the analysis
@@ -283,18 +305,20 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const chatOnOpenVariation = props.chat.onOpenVariation;
     const onOpenVariationByReader = React.useCallback(
         (variationId: string, focusVariation?: boolean) => {
+            stopEstimate();
             chatAfterPost.current = false;
             chatOnOpenVariation(variationId, focusVariation);
         },
-        [chatOnOpenVariation],
+        [chatOnOpenVariation, stopEstimate],
     );
     const asideOnRecallVariation = props.leftAside.onRecallVariation;
     const onRecallVariationByReader = React.useCallback(
         (variationId: string) => {
+            stopEstimate();
             chatAfterPost.current = false;
             asideOnRecallVariation(variationId);
         },
-        [asideOnRecallVariation],
+        [asideOnRecallVariation, stopEstimate],
     );
 
     // The room and variation lists open over whatever the reader was reading,
@@ -407,8 +431,12 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
         ) {
             return;
         }
-        onExitVariation();
-    }, [onExitVariation]);
+        if (gobans.center?.estimating_score) {
+            stopEstimate();
+        } else {
+            onExitVariation();
+        }
+    }, [gobans.center, onExitVariation, stopEstimate]);
 
     if (!gobans.center && room.current_game?.game_id) {
         // The live controller is created after the first commit. Render
@@ -462,7 +490,9 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 onPost={onPostVariation}
                 onBackToGame={onExitVariation}
                 onBranch={
-                    gobans.centerMode === "variation" ? props.onBranchFromVariation : undefined
+                    gobans.centerMode === "variation" && props.onBranchFromVariation
+                        ? onBranchFromVariation
+                        : undefined
                 }
                 colorIndex={panelColorIndex}
             />
@@ -509,6 +539,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const leftAside = isPortrait ? null : (
         <KibitzLeftAside
             {...props.leftAside}
+            onCreateVariation={props.leftAside.onCreateVariation ? onCreateVariation : undefined}
             onRecallVariation={onRecallVariationByReader}
             miniBoardController={miniBoardController}
             createVariationDisabled={!gobans.main}
@@ -543,17 +574,39 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             }
             leftAside={leftAside}
             centerPlaceholder={waitingMessage}
-            aboveBoard={<KibitzStackedPlayerHeader controller={playerInfoController} />}
+            aboveBoard={
+                <KibitzStackedPlayerHeader
+                    controller={playerInfoController}
+                    estimatingScore={
+                        scoreEstimation.estimating && playerInfoController === gobans.center
+                    }
+                />
+            }
+            belowBoard={
+                isPortrait && scoreEstimation.estimating && gobans.center ? (
+                    <KibitzScoreEstimate controller={gobans.center} />
+                ) : null
+            }
             /* Kibitz presents both players together in the sidebar on every
              * horizontal layout, and in the compact header when stacked. */
             playerBars={false}
             portraitSplit
         >
             {gobans.center && <KibitzKeyboardShortcuts />}
-            {viewingOther && <KBShortcut shortcut="esc" action={onEscape} />}
+            {(viewingOther || scoreEstimation.estimating) && (
+                <KBShortcut shortcut="esc" action={onEscape} />
+            )}
 
             <GobanView.Tab id="kibitz-main" type="always">
-                <KibitzSidebarPlayerCards controller={playerInfoController} />
+                <KibitzSidebarPlayerCards
+                    controller={playerInfoController}
+                    estimatingScore={
+                        scoreEstimation.estimating && playerInfoController === gobans.center
+                    }
+                />
+                {!isPortrait && scoreEstimation.estimating && gobans.center && (
+                    <KibitzScoreEstimate controller={gobans.center} />
+                )}
                 {props.banner}
                 <KibitzProposalPanel {...props.proposals} />
                 {!isPortrait && variationPanel}
@@ -569,6 +622,9 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         }}
                         leftAside={{
                             ...props.leftAside,
+                            onCreateVariation: props.leftAside.onCreateVariation
+                                ? onCreateVariation
+                                : undefined,
                             onRecallVariation: onRecallVariationByReader,
                             miniBoardController: null,
                             // Same condition as the analysis action in the
@@ -654,10 +710,21 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                             selectPane("analysis");
                             return;
                         }
-                        props.onCreateVariation?.();
+                        onCreateVariation();
                     }}
                 />
             )}
+
+            <GobanView.Tab
+                id="kibitz-estimate-score"
+                type="action"
+                align="center"
+                icon="tachometer"
+                title={_("Estimate score")}
+                active={scoreEstimation.estimating}
+                disabled={scoreEstimation.disabled && !scoreEstimation.estimating}
+                onClick={scoreEstimation.toggle}
+            />
 
             {!isPortrait && (
                 <GobanView.Tab

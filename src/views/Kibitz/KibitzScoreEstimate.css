@@ -1,0 +1,13 @@
+.KibitzScoreEstimate {
+    display: flex;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+
+    [role="status"] {
+        font-weight: bold;
+    }
+}
