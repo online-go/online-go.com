@@ -30,6 +30,11 @@ export function useKibitzScoreEstimation(
             return;
         }
         const sync = () => refresh();
+        const redrawEstimate = () => {
+            if (controller.estimating_score && !controller.destroyed) {
+                controller.goban.redraw(true);
+            }
+        };
         const checkMode = () => {
             if (controller.estimating_score && controller.goban.mode !== "score estimation") {
                 controller.stopEstimatingScore();
@@ -44,12 +49,14 @@ export function useKibitzScoreEstimation(
         };
         controller.on("estimating_score", sync);
         controller.goban.on("mode", checkMode);
+        controller.goban.on("score_estimate", redrawEstimate);
         source.goban.on("phase", checkAccess);
         source.goban.on("load", checkAccess);
         sync();
         return () => {
             controller.off("estimating_score", sync);
             controller.goban.off("mode", checkMode);
+            controller.goban.off("score_estimate", redrawEstimate);
             source.goban.off("phase", checkAccess);
             source.goban.off("load", checkAccess);
             if (!controller.destroyed && controller.estimating_score) {

@@ -22,7 +22,7 @@ import { useKibitzScoreEstimation } from "./useKibitzScoreEstimation";
 
 function fakeController() {
     const events = new EventEmitter();
-    const goban = Object.assign(new EventEmitter(), { mode: "play" });
+    const goban = Object.assign(new EventEmitter(), { mode: "play", redraw: jest.fn() });
     const fake = {
         goban,
         estimating_score: false,
@@ -126,4 +126,20 @@ test("disables the action while no board is available", () => {
     expect(result.current.disabled).toBe(true);
     expect(result.current.estimating).toBe(false);
     act(() => result.current.toggle());
+});
+
+test("redraws ownership when an estimate arrives and ignores results after stopping", () => {
+    const { fake, controller } = fakeController();
+    const { result, unmount } = renderHook(() =>
+        useKibitzScoreEstimation(controller, controller, "room"),
+    );
+    act(() => result.current.toggle());
+    act(() => fake.goban.emit("score_estimate"));
+    expect(fake.goban.redraw).toHaveBeenCalledWith(true);
+    act(() => result.current.toggle());
+    fake.goban.redraw.mockClear();
+    act(() => fake.goban.emit("score_estimate"));
+    expect(fake.goban.redraw).not.toHaveBeenCalled();
+    unmount();
+    expect(fake.goban.listenerCount("score_estimate")).toBe(0);
 });
