@@ -23,5 +23,6 @@ docker run --rm \
   -w /app \
   -e FRONTEND_URL=http://$HOST_IP:8080 \
   -e CI=$CI \
+  -e E2E_SMOKE=$E2E_SMOKE \
   $PLAYWRIGHT_DOCKER \
   npx playwright test "$@"
