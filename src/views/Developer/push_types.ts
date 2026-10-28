@@ -36,6 +36,8 @@ export interface ApnsCredentialsStatus extends PushProviderState {
     key_id: string;
     team_id: string;
     bundle_id: string;
+    /** The environments Apple accepted the key in when it was uploaded. */
+    environments: Array<"production" | "sandbox">;
 }
 
 export interface FcmCredentialsStatus extends PushProviderState {

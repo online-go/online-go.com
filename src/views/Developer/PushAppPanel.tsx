@@ -80,6 +80,13 @@ export function PushAppPanel({ app }: { app: ApiClient }): React.ReactElement {
                                     pgettext("APNs credential field", "Bundle ID"),
                                     status.apns.bundle_id,
                                 ],
+                                [
+                                    pgettext(
+                                        "APNs environments (production and/or sandbox) the key works in",
+                                        "Environments",
+                                    ),
+                                    (status.apns.environments ?? []).join(", "),
+                                ],
                             ]
                         }
                         devices={interpolate(
