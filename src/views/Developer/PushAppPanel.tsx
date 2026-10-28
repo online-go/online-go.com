@@ -17,45 +17,44 @@
 
 import * as React from "react";
 
-import { interpolate, pgettext } from "@/lib/translate";
+import { interpolate, npgettext, pgettext } from "@/lib/translate";
 import { get, post } from "@/lib/requests";
-import { getPrintableError } from "@/lib/misc";
+import { errorAlerter } from "@/lib/misc";
 
-import { ApiClient, PushStatus, PushTestResult } from "./push_types";
-import { PushProviderSummary } from "./PushProviderSummary";
-import { ApnsCredentialsForm } from "./ApnsCredentialsForm";
-import { FcmCredentialsForm } from "./FcmCredentialsForm";
-import { WebhookForm } from "./WebhookForm";
+import { ApiClient, PushProvider, PushStatus } from "./push_types";
+import { PushProviderPanel } from "./PushProviderPanel";
 import "./PushAppPanel.css";
 
-/** Push notification status, credentials and diagnostics for one OAuth application. */
+const PROVIDERS: PushProvider[] = ["apns", "fcm", "webhook"];
+
+/** Push notification and webhook setup, counts and recent errors for one OAuth application. */
 export function PushAppPanel({ app }: { app: ApiClient }): React.ReactElement {
     const base = `me/api_clients/${app.id}/push`;
     const [status, setStatus] = React.useState<PushStatus | null>(null);
-    const [error, setError] = React.useState("");
-    const [test_results, setTestResults] = React.useState<PushTestResult[] | null>(null);
-    const [testing, setTesting] = React.useState(false);
-    const [show_errors, setShowErrors] = React.useState(false);
+    const [signing_secret, setSigningSecret] = React.useState("");
+    const [test_devices, setTestDevices] = React.useState<number | null>(null);
 
     const refresh = React.useCallback(() => {
         get(base)
             .then((res: PushStatus) => setStatus(res))
-            .catch((err) => setError(getPrintableError(err) ?? ""));
+            .catch(errorAlerter);
     }, [base]);
 
     React.useEffect(refresh, [refresh]);
 
+    function update(res: PushStatus) {
+        setStatus(res);
+        setSigningSecret(res.signing_secret ?? "");
+    }
+
     function sendTest() {
-        setTesting(true);
-        setError("");
         post(`${base}/test`, {})
-            .then((res: { results: PushTestResult[] }) => setTestResults(res.results))
-            .catch((err) => setError(getPrintableError(err) ?? ""))
-            .finally(() => {
-                setTesting(false);
-                // A test can remove dead device tokens and changes the counts.
-                refresh();
-            });
+            .then((res: { devices: number }) => {
+                setTestDevices(res.devices);
+                // The pushes go out on the push workers, then show in the counts and errors
+                setTimeout(refresh, 5000);
+            })
+            .catch(errorAlerter);
     }
 
     return (
@@ -65,147 +64,51 @@ export function PushAppPanel({ app }: { app: ApiClient }): React.ReactElement {
                 {pgettext("OAuth application identifier", "Client ID")}:{" "}
                 <code>{app.client_id}</code>
             </div>
-            {error && <div className="push-error">{error}</div>}
             {status && (
                 <>
-                    <PushProviderSummary
-                        base={base}
-                        provider="apns"
-                        title={pgettext("Push notification service name", "iOS (APNs)")}
-                        configured={status.apns}
-                        details={
-                            status.apns && [
-                                [pgettext("APNs credential field", "Key ID"), status.apns.key_id],
-                                [pgettext("APNs credential field", "Team ID"), status.apns.team_id],
-                                [
-                                    pgettext("APNs credential field", "Bundle ID"),
-                                    status.apns.bundle_id,
-                                ],
-                                [
-                                    pgettext(
-                                        "APNs environments (production and/or sandbox) the key works in",
-                                        "Environments",
-                                    ),
-                                    (status.apns.environments ?? []).join(", "),
-                                ],
-                            ]
-                        }
-                        devices={interpolate(
-                            pgettext(
-                                "Counts of registered iOS devices",
-                                "%s devices (%s development builds)",
-                            ),
-                            [
-                                status.devices.apns.production + status.devices.apns.sandbox,
-                                status.devices.apns.sandbox,
-                            ],
-                        )}
-                        stats={status.stats.apns}
-                        onStatus={setStatus}
-                    >
-                        <ApnsCredentialsForm
+                    {PROVIDERS.map((provider) => (
+                        <PushProviderPanel
+                            // Saved settings start a fresh form
+                            key={provider + (status[provider]?.updated_at ?? "")}
                             base={base}
-                            current={status.apns}
-                            device_count={
-                                status.devices.apns.production + status.devices.apns.sandbox
-                            }
-                            onSaved={setStatus}
+                            provider={provider}
+                            status={status}
+                            onStatus={update}
                         />
-                    </PushProviderSummary>
-                    <PushProviderSummary
-                        base={base}
-                        provider="fcm"
-                        title={pgettext("Push notification service name", "Android (FCM)")}
-                        configured={status.fcm}
-                        details={
-                            status.fcm && [
-                                [
-                                    pgettext("FCM credential field", "Project ID"),
-                                    status.fcm.project_id,
-                                ],
-                                [
-                                    pgettext("FCM credential field", "Service account"),
-                                    status.fcm.client_email,
-                                ],
-                            ]
-                        }
-                        devices={interpolate(
-                            pgettext("Count of registered Android devices", "%s devices"),
-                            [status.devices.fcm],
-                        )}
-                        stats={status.stats.fcm}
-                        onStatus={setStatus}
-                    >
-                        <FcmCredentialsForm
-                            base={base}
-                            current={status.fcm}
-                            device_count={status.devices.fcm}
-                            onSaved={setStatus}
-                        />
-                    </PushProviderSummary>
-                    <PushProviderSummary
-                        base={base}
-                        provider="webhook"
-                        title={pgettext("Notification delivery to the app's own server", "Webhook")}
-                        configured={status.webhook}
-                        details={
-                            status.webhook && [
-                                [pgettext("Webhook setting", "URL"), status.webhook.url],
-                            ]
-                        }
-                        devices={interpolate(
-                            pgettext(
-                                "Count of players whose notifications are sent to the webhook",
-                                "%s players subscribed",
-                            ),
-                            [status.devices.webhook],
-                        )}
-                        stats={status.stats.webhook}
-                        onStatus={setStatus}
-                    >
-                        <WebhookForm base={base} current={status.webhook} onSaved={setStatus} />
-                    </PushProviderSummary>
+                    ))}
+                    {signing_secret && (
+                        <div className="webhook-signing-secret">
+                            {pgettext(
+                                "Developer page: shown once after a webhook signing secret is generated",
+                                "Your signing secret. Copy it now: it won't be shown again.",
+                            )}
+                            <code>{signing_secret}</code>
+                        </div>
+                    )}
 
                     <div className="push-test">
-                        <button onClick={sendTest} disabled={testing}>
+                        <button onClick={sendTest}>
                             {pgettext("Developer page button", "Send test push")}
-                        </button>
-                        {test_results?.length === 0 && (
-                            <p>
-                                {pgettext(
-                                    "Developer page: test push found no devices",
-                                    "You have no devices or webhook subscription registered with this application. Sign in to your app on your own phone, or subscribe your own account to the webhook, then try again.",
-                                )}
-                            </p>
-                        )}
-                        {test_results?.map((result) => (
-                            <div key={result.device_id} className="push-test-result">
-                                <span>
-                                    {result.provider === "webhook"
-                                        ? pgettext(
-                                              "Notification delivery to the app's own server",
-                                              "Webhook",
-                                          )
-                                        : result.provider === "apns"
-                                          ? pgettext("Mobile platform", "iOS")
-                                          : pgettext("Mobile platform", "Android")}
-                                    {result.apns_environment === "sandbox" &&
-                                        " " +
-                                            pgettext(
-                                                "Mobile app build type",
-                                                "(development build)",
-                                            )}
-                                </span>
-                                <span className={"push-outcome " + result.outcome}>
-                                    {result.outcome}
-                                </span>
-                                <span>{result.detail}</span>
-                            </div>
-                        ))}
+                        </button>{" "}
+                        {test_devices === 0 &&
+                            pgettext(
+                                "Developer page: test push found no devices",
+                                "You have no devices or webhook subscription registered with this application. Sign in to your app on your own phone, or subscribe your own account to the webhook, then try again.",
+                            )}
+                        {!!test_devices &&
+                            interpolate(
+                                npgettext(
+                                    "Developer page: test push was sent",
+                                    "Sent to %s of your devices. Any problem shows under Recent errors.",
+                                    "Sent to %s of your devices. Any problems show under Recent errors.",
+                                    test_devices,
+                                ),
+                                [test_devices],
+                            )}
                     </div>
 
-                    <div className="push-recent-errors">
-                        <button className="xs" onClick={() => setShowErrors(!show_errors)}>
+                    <details>
+                        <summary>
                             {interpolate(
                                 pgettext(
                                     "Developer page: toggles the list of delivery errors",
@@ -213,17 +116,14 @@ export function PushAppPanel({ app }: { app: ApiClient }): React.ReactElement {
                                 ),
                                 [status.recent_errors.length],
                             )}
-                        </button>
-                        {show_errors &&
-                            status.recent_errors.map((e, idx) => (
-                                <div key={idx} className="push-recent-error">
-                                    <span>{new Date(e.time).toLocaleString()}</span>
-                                    <span>{e.provider}</span>
-                                    <span className={"push-outcome " + e.outcome}>{e.outcome}</span>
-                                    <span>{e.detail}</span>
-                                </div>
-                            ))}
-                    </div>
+                        </summary>
+                        {status.recent_errors.map((e, idx) => (
+                            <div key={idx}>
+                                {new Date(e.time).toLocaleString()} {e.provider} {e.outcome}:{" "}
+                                {e.detail}
+                            </div>
+                        ))}
+                    </details>
                 </>
             )}
         </div>

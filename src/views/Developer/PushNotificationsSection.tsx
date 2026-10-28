@@ -24,9 +24,8 @@ import { useUser } from "@/lib/hooks";
 
 import { ApiClient } from "./push_types";
 import { PushAppPanel } from "./PushAppPanel";
-import "./PushNotificationsSection.css";
 
-/** Lets the owners of OAuth applications manage push notification credentials. */
+/** Lets the owners of OAuth applications set up push notifications and webhooks for them. */
 export function PushNotificationsSection(): React.ReactElement {
     const user = useUser();
     const [apps, setApps] = React.useState<ApiClient[] | null>(null);

@@ -4,7 +4,9 @@ Online-Go.com can send push notifications (your move, challenges, game
 results, messages, and so on) to your iOS and Android app through Apple Push
 Notification service (APNs) and Firebase Cloud Messaging (FCM). Pushes are
 signed with your app's own credentials, so you need to give OGS those, and
-your app needs to tell OGS which device tokens belong to which player.
+your app needs to tell OGS which device tokens belong to which player. Sites
+can also have notifications POSTed to their own server; see
+[Webhooks](#webhooks).
 
 ## 1. Create an OAuth application
 
@@ -66,8 +68,7 @@ it to that application too. APNs tokens can be sent in either case.
 [How pushes are shown](#how-pushes-are-shown).
 
 Devices that haven't registered in 90 days are forgotten, as are devices whose
-tokens Apple or Google report as no longer valid. (Webhook subscriptions don't
-expire; see [Webhooks](#webhooks).)
+tokens Apple or Google report as no longer valid.
 
 ## 4. Unregister on sign out
 
@@ -78,6 +79,14 @@ DELETE https://online-go.com/api/v1/me/push_devices?token=<the device token>
 ```
 
 Players can also remove devices themselves under Settings.
+
+## When notifications are sent
+
+A notification is pushed, or sent to webhooks, about 10 seconds after it's
+created if the player hasn't read it by then. Email notifications still wait
+about 2 minutes. `yourMove` is only sent while the player isn't connected to
+Online-Go.com. Players choose which notification types are pushed to their
+devices under Settings.
 
 ## What a push contains
 
@@ -130,20 +139,15 @@ Either way, Apple also keeps only the latest push for your app while an iOS
 device is offline. Don't treat pushes as a complete record: when your app
 opens, fetch the player's notifications from `GET /api/v1/me/notifications`.
 
-Players choose which notification types they want pushed under Settings.
-`yourMove` is only sent when the player isn't online.
-
-A push goes out about 10 seconds after the notification is created, if the
-player hasn't read it by then. Email notifications still wait about 2 minutes.
-
 ## When something goes wrong
 
-The developer page shows how many devices are registered, how many pushes
-were sent or failed over the last week, and the recent errors Apple or Google
-returned. **Send test push** sends a push to your own devices registered with
-the app, and shows the provider's answer for each. If Apple or Google are slow
-to answer, the test stops after about 20 seconds; any errors still show up in
-the recent errors list.
+The developer page shows, for each platform and the webhook, how many devices
+are registered, how many sends succeeded or failed over the last week, and
+the recent errors Apple, Google or your server returned. **Send test push**
+sends a push to your own devices registered with the app, and a `test` event
+to the webhook if your own account is subscribed to it. It goes out like any
+other push, so check your phone, and look for problems under recent errors a
+few seconds later.
 
 If Apple or Google reject your credentials 10 times in a row, OGS stops
 sending for that platform and emails the application's owner. Upload new
@@ -151,8 +155,7 @@ credentials, or press Resume if the problem was on the provider's side.
 Problems that only affect some devices don't count towards this. An iOS device
 Firebase can't reach, because the APNs credentials in your Firebase project are
 missing or invalid, shows up in the recent errors list, and is kept so it works
-again once you fix them. A device in an environment your APNs key isn't enabled
-for is simply not sent to.
+again once you fix them.
 
 ## Webhooks
 
@@ -198,12 +201,7 @@ Players see the subscription under Settings, and can remove it there.
 ### What's sent
 
 Every notification for a subscribed player, whatever their per-type Mobile
-settings, which only cover their own devices. `yourMove` is only sent while
-the player isn't connected to Online-Go.com, as for pushes. A notification is
-sent about 10 seconds after it's created, if it's still unread then, so one
-the player reads straight away on online-go.com isn't sent.
-
-Each event is one request:
+settings, which only cover their own devices. Each event is one request:
 
 ```
 POST <your URL>
@@ -252,7 +250,3 @@ Response bodies are never read. Connecting times out after 3 seconds, and
 sending or waiting for the answer after 5. When your server doesn't answer at
 all, OGS waits a minute before trying it again; events due in the meantime are
 retried later rather than dropped.
-
-**Send test push** on the developer page also sends a `test` event to the
-webhook if your own account is subscribed to it, and the webhook's sent and
-failed counts and recent errors show alongside the push platforms'.

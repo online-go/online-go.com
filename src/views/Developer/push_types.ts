@@ -25,52 +25,31 @@ export interface ApiClient {
     name: string;
 }
 
-interface PushProviderState {
+/** One provider's settings for an application, without the secret. */
+export interface PushCredentials {
     updated_at: string;
+    /** Set while delivery is paused after repeated authentication failures */
     paused_at: string | null;
-    pause_reason: string | null;
-    consecutive_auth_failures: number;
-}
-
-export interface ApnsCredentialsStatus extends PushProviderState {
-    key_id: string;
-    team_id: string;
-    bundle_id: string;
-    /** The environments Apple accepted the key in when it was uploaded. */
-    environments: Array<"production" | "sandbox">;
-}
-
-export interface FcmCredentialsStatus extends PushProviderState {
-    project_id: string;
-    client_email: string;
-}
-
-export interface WebhookStatus extends PushProviderState {
-    url: string;
-}
-
-export interface PushDayStats {
-    date: string;
-    sent: number;
-    failed: number;
+    pause_reason: string;
+    key_id?: string;
+    team_id?: string;
+    bundle_id?: string;
+    /** The APNs environments Apple accepted the key in */
+    environments?: string[];
+    project_id?: string;
+    client_email?: string;
+    url?: string;
 }
 
 export interface PushStatus {
-    apns: ApnsCredentialsStatus | null;
-    fcm: FcmCredentialsStatus | null;
-    webhook: WebhookStatus | null;
-    /** Players subscribed to the webhook, under webhook */
-    devices: { apns: { production: number; sandbox: number }; fcm: number; webhook: number };
-    stats: { apns: PushDayStats[]; fcm: PushDayStats[]; webhook: PushDayStats[] };
+    apns: PushCredentials | null;
+    fcm: PushCredentials | null;
+    webhook: PushCredentials | null;
+    /** For webhooks, the players subscribed to it */
+    devices: Record<PushProvider, number>;
+    /** Over the last 7 days */
+    stats: Record<PushProvider, { sent: number; failed: number }>;
     recent_errors: Array<{ time: string; provider: PushProvider; outcome: string; detail: string }>;
     /** Only in the response that generated a new webhook signing secret */
     signing_secret?: string;
-}
-
-export interface PushTestResult {
-    device_id: number;
-    provider: PushProvider;
-    apns_environment: "production" | "sandbox" | null;
-    outcome: string;
-    detail: string;
 }
