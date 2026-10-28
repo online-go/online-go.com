@@ -28,6 +28,7 @@ import {
     PushDayStats,
     PushProvider,
     PushStatus,
+    WebhookStatus,
 } from "./push_types";
 import "./PushProviderSummary.css";
 
@@ -35,7 +36,7 @@ interface PushProviderSummaryProps {
     base: string;
     provider: PushProvider;
     title: string;
-    configured: ApnsCredentialsStatus | FcmCredentialsStatus | null;
+    configured: ApnsCredentialsStatus | FcmCredentialsStatus | WebhookStatus | null;
     details: Array<[string, string]> | null;
     devices: string;
     stats: PushDayStats[];
@@ -61,10 +62,16 @@ export function PushProviderSummary(props: PushProviderSummaryProps): React.Reac
     function remove() {
         void alert
             .fire({
-                text: pgettext(
-                    "Developer page confirmation",
-                    "Remove these credentials? Push notifications to this platform stop until you upload new ones.",
-                ),
+                text:
+                    props.provider === "webhook"
+                        ? pgettext(
+                              "Developer page confirmation",
+                              "Remove the webhook? Notifications stop being sent to it, and setting it up again makes a new signing secret.",
+                          )
+                        : pgettext(
+                              "Developer page confirmation",
+                              "Remove these credentials? Push notifications to this platform stop until you upload new ones.",
+                          ),
                 showCancelButton: true,
             })
             .then(({ value: yes }) => {
@@ -100,7 +107,9 @@ export function PushProviderSummary(props: PushProviderSummaryProps): React.Reac
                 )}
                 {configured && (
                     <button className="xs reject" onClick={remove}>
-                        {pgettext("Developer page button", "Remove credentials")}
+                        {props.provider === "webhook"
+                            ? pgettext("Developer page button", "Remove webhook")
+                            : pgettext("Developer page button", "Remove credentials")}
                     </button>
                 )}
             </div>

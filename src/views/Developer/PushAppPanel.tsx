@@ -25,6 +25,7 @@ import { ApiClient, PushStatus, PushTestResult } from "./push_types";
 import { PushProviderSummary } from "./PushProviderSummary";
 import { ApnsCredentialsForm } from "./ApnsCredentialsForm";
 import { FcmCredentialsForm } from "./FcmCredentialsForm";
+import { WebhookForm } from "./WebhookForm";
 import "./PushAppPanel.css";
 
 /** Push notification status, credentials and diagnostics for one OAuth application. */
@@ -142,6 +143,28 @@ export function PushAppPanel({ app }: { app: ApiClient }): React.ReactElement {
                             onSaved={setStatus}
                         />
                     </PushProviderSummary>
+                    <PushProviderSummary
+                        base={base}
+                        provider="webhook"
+                        title={pgettext("Notification delivery to the app's own server", "Webhook")}
+                        configured={status.webhook}
+                        details={
+                            status.webhook && [
+                                [pgettext("Webhook setting", "URL"), status.webhook.url],
+                            ]
+                        }
+                        devices={interpolate(
+                            pgettext(
+                                "Count of players whose notifications are sent to the webhook",
+                                "%s players subscribed",
+                            ),
+                            [status.devices.webhook],
+                        )}
+                        stats={status.stats.webhook}
+                        onStatus={setStatus}
+                    >
+                        <WebhookForm base={base} current={status.webhook} onSaved={setStatus} />
+                    </PushProviderSummary>
 
                     <div className="push-test">
                         <button onClick={sendTest} disabled={testing}>
@@ -151,16 +174,21 @@ export function PushAppPanel({ app }: { app: ApiClient }): React.ReactElement {
                             <p>
                                 {pgettext(
                                     "Developer page: test push found no devices",
-                                    "You have no devices registered with this application. Sign in to your app on your own phone, then try again.",
+                                    "You have no devices or webhook subscription registered with this application. Sign in to your app on your own phone, or subscribe your own account to the webhook, then try again.",
                                 )}
                             </p>
                         )}
                         {test_results?.map((result) => (
                             <div key={result.device_id} className="push-test-result">
                                 <span>
-                                    {result.provider === "apns"
-                                        ? pgettext("Mobile platform", "iOS")
-                                        : pgettext("Mobile platform", "Android")}
+                                    {result.provider === "webhook"
+                                        ? pgettext(
+                                              "Notification delivery to the app's own server",
+                                              "Webhook",
+                                          )
+                                        : result.provider === "apns"
+                                          ? pgettext("Mobile platform", "iOS")
+                                          : pgettext("Mobile platform", "Android")}
                                     {result.apns_environment === "sandbox" &&
                                         " " +
                                             pgettext(
