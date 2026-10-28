@@ -121,6 +121,15 @@ export const kibitzBasicRoomTest = async ({
     console.log("[kibitz basic-room] black resigning the first game");
     await resignActiveGame(blackPlayerPage);
 
+    // The end-game task posts the result into every room watching the game
+    // (ogs kibitz/chat_lines.py announce_game_end), so the watcher's chat
+    // log gains a system line naming the winner. The line arrives once the
+    // game server's end-game call has been processed by celery.
+    await expect(roomFeed.getByText(`${whiteUsername} won by Resignation`)).toBeVisible({
+        timeout: 30000,
+    });
+    console.log("[kibitz basic-room] game-ended line rendered in room chat");
+
     // Give the second game a title whose HEAD differs from the prelude's
     // first game ("E2E Kibitz live source game"). The board-subtitle-link
     // assertion below matches a head-anchored regex, so anchoring the
