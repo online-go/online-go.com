@@ -49,6 +49,18 @@ export function PushNotificationsSection(): React.ReactElement {
                     "Mobile apps can receive OGS notifications as push notifications. Upload your app's APNs (iOS) and FCM (Android) credentials below. Your app registers each install by sending its device token and your application's client ID to /api/v1/me/push_devices.",
                 )}
             </p>
+            <p>
+                <a
+                    href="https://github.com/online-go/online-go.com/blob/main/docs/push-notifications.md"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    {pgettext(
+                        "Developer page link to the push notification setup guide",
+                        "How to set up push notifications for your app",
+                    )}
+                </a>
+            </p>
             {user.anonymous && (
                 <p>
                     {pgettext(
