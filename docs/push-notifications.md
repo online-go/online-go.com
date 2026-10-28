@@ -66,7 +66,8 @@ it to that application too. APNs tokens can be sent in either case.
 [How pushes are shown](#how-pushes-are-shown).
 
 Devices that haven't registered in 90 days are forgotten, as are devices whose
-tokens Apple or Google report as no longer valid.
+tokens Apple or Google report as no longer valid. (Webhook subscriptions don't
+expire; see [Webhooks](#webhooks).)
 
 ## 4. Unregister on sign out
 
@@ -121,8 +122,8 @@ registered with:
 - `data` sends data-only messages, which always go to `onMessageReceived`,
   even in the background, and are never collapsed or throttled that way.
   Android shows nothing unless your app builds the notification. The data
-  includes `title` and `body`, plus `collapse_key` and `thread_id` when the
-  push has them: use `collapse_key` as the notification tag to replace the
+  includes `title` and `body`, plus `tag` and `thread_id` when the
+  push has them: use `tag` as the notification tag to replace the
   previous push for the same game, as `notification` messages do.
 
 Either way, Apple also keeps only the latest push for your app while an iOS
@@ -147,10 +148,11 @@ the recent errors list.
 If Apple or Google reject your credentials 10 times in a row, OGS stops
 sending for that platform and emails the application's owner. Upload new
 credentials, or press Resume if the problem was on the provider's side.
-Problems that only affect some devices don't count towards this: a device in
-an environment your APNs key isn't enabled for, or an iOS device Firebase
-can't reach because the APNs credentials in your Firebase project are missing
-or invalid. Those show up in the recent errors list instead.
+Problems that only affect some devices don't count towards this. An iOS device
+Firebase can't reach, because the APNs credentials in your Firebase project are
+missing or invalid, shows up in the recent errors list, and is kept so it works
+again once you fix them. A device in an environment your APNs key isn't enabled
+for is simply not sent to.
 
 ## Webhooks
 
@@ -162,13 +164,14 @@ POSTed to its own server instead of, or as well as, pushed to devices.
 On the [developer page](https://online-go.com/developer), under your
 application's Webhook section, enter an `https://` URL. OGS only sends to
 public addresses, and doesn't follow redirects. When you save, OGS POSTs a
-`ping` event to the URL, which has to answer with any 2xx status. Your server
-can't check the signature of the very first ping, since it hasn't seen the
-secret yet.
+`ping` event to the URL, which has to answer with any 2xx status. The ping is
+signed with the secret your server already has, so it can check it, except on
+first setup, when your server hasn't seen the secret yet.
 
 The signing secret is shown once: when the webhook is first set up, and when
 you generate a new one. Copy it then. Changing only the URL keeps the secret.
-Generating a new one stops the old one working immediately.
+Generating a new one stops the old one working immediately: every event after
+that is signed with the new secret.
 
 ### Subscribing players
 
@@ -183,7 +186,8 @@ POST https://online-go.com/api/v1/me/push_devices
 ```
 
 If the request uses an OAuth access token, it has to be one issued to your own
-application. To unsubscribe the player:
+application. A subscription lasts until it's removed; it doesn't need renewing,
+and doesn't count towards the player's devices. To unsubscribe the player:
 
 ```
 DELETE https://online-go.com/api/v1/me/push_devices?webhook=<your client_id>
@@ -244,8 +248,10 @@ def verify(secret: str, headers, raw_body: bytes) -> bool:
 | 408, 429, 5xx, or no answer | Retried up to 5 times, backing off from a minute, or after `Retry-After` when you send one |
 | Anything else               | Dropped                                                                                    |
 
-Response bodies are never read. Each phase of a request (connecting, sending,
-waiting for the answer) times out after 10 seconds.
+Response bodies are never read. Connecting times out after 3 seconds, and
+sending or waiting for the answer after 5. When your server doesn't answer at
+all, OGS waits a minute before trying it again; events due in the meantime are
+retried later rather than dropped.
 
 **Send test push** on the developer page also sends a `test` event to the
 webhook if your own account is subscribed to it, and the webhook's sent and
