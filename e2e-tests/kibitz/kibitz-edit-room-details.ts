@@ -63,6 +63,10 @@ export const kibitzEditRoomDetailsTest = async ({
     }
     console.log(`[kibitz edit-room-details] original room title: "${originalTitle}"`);
 
+    // The browser tab names the room too (KibitzInner.tsx sets document.title
+    // from the resolved room).
+    await expect(watcherPage).toHaveTitle(`Kibitz: ${originalTitle}`);
+
     // Set up the non-owner BEFORE the rename, navigated to /kibitz (the
     // directory landing -- not into the room). The watcher is sitting in the
     // room so viewer_count >= 1, which qualifies the room for inclusion in
@@ -143,6 +147,7 @@ export const kibitzEditRoomDetailsTest = async ({
     await expect(watcherPage.locator(".Kibitz-room-title")).toHaveText(newTitle, {
         timeout: 15000,
     });
+    await expect(watcherPage).toHaveTitle(`Kibitz: ${newTitle}`);
     console.log("[kibitz edit-room-details] owner save reflected in header");
 
     // The rename is broadcast on the directory channel and the non-owner's
