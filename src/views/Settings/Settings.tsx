@@ -47,7 +47,7 @@ import { VacationSettings } from "./VacationSettings";
 import { AccountSettings } from "./AccountSettings";
 import { LinkPreferences } from "./LinkPreferences";
 import { AnnouncementPreferences } from "./AnnouncementPreferences";
-import { EmailPreferences } from "./EmailPreferences";
+import { NotificationPreferences } from "./NotificationPreferences";
 import { HelpSettings } from "./HelpSettings";
 import { Supporter } from "@/views/Supporter";
 import { GoTVPreferences } from "./GoTVPreferences";
@@ -132,7 +132,7 @@ export function Settings(): React.ReactElement {
         },
         { key: "moderator", label: _("Moderator Preferences") },
         { key: "vacation", label: _("Vacation") },
-        { key: "email", label: _("Email Notifications") },
+        { key: "email", label: _("Notifications") },
         { key: "announcement", label: _("Announcements Preferences") },
         { key: "blocked_players", label: _("Blocked Players") },
         { key: "account", label: _("Account Settings"), ref: accountSettingsButton },
@@ -190,7 +190,7 @@ export function Settings(): React.ReactElement {
             SelectedPage = VacationSettings;
             break;
         case "email":
-            SelectedPage = EmailPreferences;
+            SelectedPage = NotificationPreferences;
             break;
         case "account":
             SelectedPage = AccountSettings;

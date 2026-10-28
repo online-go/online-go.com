@@ -362,7 +362,7 @@ export function AccountSettings(props: SettingGroupPageProps): React.ReactElemen
                             {_("Email address")}
                             <InfoBall>
                                 {_(
-                                    'Providing your email address is optional. Your email address is used for sending things like password reset requests and turn notifications. Notification emails may be turned off under "Email Notifications".',
+                                    'Providing your email address is optional. Your email address is used for sending things like password reset requests and turn notifications. Notification emails may be turned off under "Notifications".',
                                 )}
                             </InfoBall>
                         </dt>

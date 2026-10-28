@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import { _ } from "@/lib/translate";
+import { PushNotificationsSection } from "./PushNotificationsSection";
 import "./Developer.css";
 
 export class Developer extends React.PureComponent {
@@ -43,6 +44,7 @@ export class Developer extends React.PureComponent {
                 <h2>
                     <a href="/oauth2/applications/">OAuth2 Application Manager</a>
                 </h2>
+                <PushNotificationsSection />
                 <hr></hr>
                 <h1>API Documentation</h1>
                 <h2>(out-dated)</h2>

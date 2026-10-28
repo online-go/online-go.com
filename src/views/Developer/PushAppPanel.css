@@ -1,0 +1,59 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.PushAppPanel {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border: 1px solid var(--shade4);
+    border-radius: 0.3rem;
+    max-width: 50rem;
+
+    h2 {
+        margin-top: 0;
+    }
+
+    .push-error {
+        color: var(--reject);
+        margin: 0.5rem 0;
+    }
+
+    .push-test,
+    .push-recent-errors {
+        margin-top: 1rem;
+    }
+
+    .push-test-result,
+    .push-recent-error {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem 1rem;
+        margin-top: 0.3rem;
+        font-size: 0.9rem;
+    }
+
+    .push-outcome {
+        font-weight: bold;
+
+        &.sent {
+            color: var(--success);
+        }
+    }
+
+    .push-outcome:not(.sent) {
+        color: var(--reject);
+    }
+}
