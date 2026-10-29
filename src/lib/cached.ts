@@ -74,10 +74,12 @@ export const cached = {
                         data.remove("appeals.ban-reason");
                     }
 
-                    /* The server writes emails and pushes in the language it has recorded */
+                    /* The server writes emails and pushes in the language it has recorded.
+                     * A server too old to send that language doesn't get told on every load. */
                     if (
                         config.user &&
                         !config.user.anonymous &&
+                        typeof config.user.language === "string" &&
                         config.user.language !== current_language &&
                         current_language !== "debug"
                     ) {
