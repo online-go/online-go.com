@@ -18,6 +18,7 @@
 import * as React from "react";
 
 import { _, interpolate, pgettext } from "@/lib/translate";
+import * as data from "@/lib/data";
 import { put } from "@/lib/requests";
 import { errorAlerter } from "@/lib/misc";
 import { Toggle } from "@/components/Toggle";
@@ -29,6 +30,7 @@ import "./NotificationPreferences.css";
 interface DeliveryMethods {
     email: boolean;
     mobile: boolean;
+    desktop: boolean;
 }
 
 /** Separate email and mobile toggles for each kind of notification, and the devices getting them. */
@@ -42,6 +44,12 @@ export function NotificationPreferences(props: SettingGroupPageProps): React.Rea
         };
         props.state.notifications[type] = entry;
         setNotifications({ ...notifications, [type]: entry });
+        if (update.desktop !== undefined) {
+            data.set("config.desktop_notifications", {
+                ...data.get("config.desktop_notifications"),
+                [type]: update.desktop,
+            });
+        }
         put("me/settings", { notifications: { [type]: entry } })
             .then(() => 0)
             .catch(errorAlerter);
@@ -63,9 +71,15 @@ export function NotificationPreferences(props: SettingGroupPageProps): React.Rea
                         "Mobile",
                     )}
                 </span>
+                <span className="heading">
+                    {pgettext(
+                        "Notification delivery method: notifications in a desktop browser",
+                        "Desktop",
+                    )}
+                </span>
                 {Object.keys(notifications).map((type) => {
                     const name = _(notifications[type].description);
-                    const { email, mobile } = notifications[type].value;
+                    const { email, mobile, desktop } = notifications[type].value;
                     return (
                         <React.Fragment key={type}>
                             <span>{name}</span>
@@ -87,6 +101,16 @@ export function NotificationPreferences(props: SettingGroupPageProps): React.Rea
                                 <Toggle
                                     checked={!!mobile}
                                     onChange={(on) => save(type, { mobile: on })}
+                                />
+                            </label>
+                            <label
+                                aria-label={interpolate(pgettext("Toggle label", "Desktop: %s"), [
+                                    name,
+                                ])}
+                            >
+                                <Toggle
+                                    checked={desktop !== false}
+                                    onChange={(on) => save(type, { desktop: on })}
                                 />
                             </label>
                         </React.Fragment>

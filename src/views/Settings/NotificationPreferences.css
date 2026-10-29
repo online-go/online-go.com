@@ -18,7 +18,7 @@
 .NotificationPreferences {
     .notification-toggles {
         display: grid;
-        grid-template-columns: minmax(0, 20rem) 4rem 4rem;
+        grid-template-columns: minmax(0, 20rem) 4rem 4rem 4rem;
         gap: 1rem 0.5rem;
         align-items: center;
         margin-left: 1rem;
@@ -38,7 +38,7 @@
 /* Mobile */
 @media (max-width: 767px) {
     .NotificationPreferences .notification-toggles {
-        grid-template-columns: minmax(0, 1fr) 4rem 4rem;
+        grid-template-columns: minmax(0, 1fr) 4rem 4rem 4rem;
         margin-left: 0;
     }
 }
