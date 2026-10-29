@@ -243,6 +243,57 @@ function baseProps() {
 }
 
 describe("KibitzChatPanel variation posts", () => {
+    test("removes the pending warning on completion or cancellation without removing other history", () => {
+        const props = baseProps();
+        const warning: KibitzStreamItem = {
+            id: "pending-switch",
+            room_id: props.room.id,
+            type: "system",
+            game_id: 42,
+            created_at: Date.now(),
+            text: "This room will switch to a new game soon: Friendly Match",
+        };
+        const completed = {
+            ...warning,
+            id: "completed-switch",
+            text: "The watched game changed to Friendly Match",
+        };
+        const items = [warning, completed];
+        const pendingRoom: KibitzRoomSummary = {
+            ...props.room,
+            preset: {
+                preset_key: "high-ranked-live",
+                selection_status: "change_pending",
+                pending_game_id: 42,
+                change_effective_at: new Date(Date.now() + 30000).toISOString(),
+            },
+        };
+        const { rerender } = render(
+            <KibitzChatPanel {...props} room={pendingRoom} items={items} mode="room" />,
+        );
+        expect(screen.getByText(warning.text)).toBeInTheDocument();
+
+        rerender(
+            <KibitzChatPanel
+                {...props}
+                room={{
+                    ...pendingRoom,
+                    preset: {
+                        ...pendingRoom.preset!,
+                        selection_status: "watching",
+                        pending_game_id: null,
+                        change_effective_at: null,
+                    },
+                }}
+                items={items}
+                mode="room"
+            />,
+        );
+        expect(screen.queryByText(warning.text)).not.toBeInTheDocument();
+        expect(screen.getByText(completed.text)).toBeInTheDocument();
+        expect(items).toHaveLength(2);
+    });
+
     beforeEach(() => {
         mockRoomProxy.channel.markAsRead.mockClear();
         mockRoomProxy.channel.send.mockClear();
