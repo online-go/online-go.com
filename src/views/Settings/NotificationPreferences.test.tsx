@@ -64,3 +64,29 @@ test("each notification's email, mobile and desktop toggles are saved independen
         },
     });
 });
+
+test("streak notifications, which aren't released yet, have no settings row", async () => {
+    const state = {
+        notifications: {
+            yourMove: {
+                description: "It is my turn to move",
+                value: { email: true, mobile: true },
+            },
+            streak_at_risk_reminder: {
+                description: "My streak is at risk",
+                value: { email: false, mobile: false, desktop: false },
+            },
+        },
+    };
+    const view = render(
+        <NotificationPreferences
+            state={state}
+            vacation_base_time={0}
+            refresh={() => () => 0}
+            updateSelfReportedAccountLinkages={() => 0}
+        />,
+    );
+    await view.findByText(/No devices/);
+    expect(view.getByText("It is my turn to move")).toBeTruthy();
+    expect(view.queryByText("My streak is at risk")).toBeNull();
+});
