@@ -116,7 +116,7 @@ export function formFactor(): "mobile" | "desktop" {
     if (mobile !== undefined) {
         return mobile ? "mobile" : "desktop";
     }
-    return /Mobi|Android|iPhone|iPad/.test(navigator.userAgent) ? "mobile" : "desktop";
+    return /Mobi|Android|iPhone|iPad/.test(navigator.userAgent) || isIOS() ? "mobile" : "desktop";
 }
 
 /** Names this browser for the player's list of devices, e.g. "Chrome on Android". */
@@ -186,7 +186,7 @@ export async function enableWebPush(): Promise<void> {
     } catch (e) {
         /* A subscription made with an older VAPID key has to go first */
         const stale = await registration.pushManager.getSubscription();
-        if (!stale) {
+        if (!stale || (e as Error | null)?.name !== "InvalidStateError") {
             throw e;
         }
         await stale.unsubscribe();

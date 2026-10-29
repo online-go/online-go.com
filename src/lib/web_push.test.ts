@@ -17,7 +17,7 @@
 
 import * as data from "@/lib/data";
 import { post } from "@/lib/requests";
-import { refreshWebPush, webPushState } from "./web_push";
+import { formFactor, refreshWebPush, webPushState } from "./web_push";
 
 jest.mock("@/lib/requests", () => ({
     post: jest.fn(),
@@ -27,6 +27,8 @@ jest.mock("@/lib/requests", () => ({
 const ENDPOINT = "https://fcm.googleapis.com/fcm/send/abc123";
 const IPHONE_SAFARI =
     "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1";
+const IPADOS_SAFARI =
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15";
 const original_user_agent = navigator.userAgent;
 
 let subscription: {
@@ -91,6 +93,7 @@ beforeEach(() => {
 
 afterEach(() => {
     defineGlobal(navigator, "userAgent", original_user_agent);
+    delete (navigator as { maxTouchPoints?: unknown }).maxTouchPoints;
     delete (navigator as { serviceWorker?: unknown }).serviceWorker;
     delete (window as { PushManager?: unknown }).PushManager;
     delete (window as { Notification?: unknown }).Notification;
@@ -129,4 +132,11 @@ test("iOS Safari outside the home screen needs the home screen", async () => {
     delete (window as { PushManager?: unknown }).PushManager;
 
     expect(await webPushState()).toBe("needs-home-screen");
+});
+
+test("an iPad is a mobile device though it reports a Mac user agent", () => {
+    defineGlobal(navigator, "userAgent", IPADOS_SAFARI);
+    defineGlobal(navigator, "maxTouchPoints", 5);
+
+    expect(formFactor()).toBe("mobile");
 });
