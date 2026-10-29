@@ -17,7 +17,8 @@
 
 import { push_manager } from "@/components/UIPush";
 import * as data from "@/lib/data";
-import { get } from "@/lib/requests";
+import { get, put } from "@/lib/requests";
+import { current_language } from "@/lib/translate";
 import ITC from "@/lib/ITC";
 import * as player_cache from "@/lib/player_cache";
 import { get_browser_timezone } from "@/lib/browser_timezone";
@@ -71,6 +72,18 @@ export const cached = {
                         data.remove("appeals.banned_user_id");
                         data.remove("appeals.jwt");
                         data.remove("appeals.ban-reason");
+                    }
+
+                    /* The server writes emails and pushes in the language it has recorded */
+                    if (
+                        config.user &&
+                        !config.user.anonymous &&
+                        config.user.language !== current_language &&
+                        current_language !== "debug"
+                    ) {
+                        put("me/settings", {
+                            site_preferences: { language: current_language },
+                        }).catch((err) => console.error("Error recording language: ", err));
                     }
 
                     disable_refresh_callback_on_user_change = true;
