@@ -35,7 +35,8 @@ export function WebPushControl({ devices, onChange }: WebPushControlProps): Reac
         webPushState().then(setState).catch(errorAlerter);
     }, []);
 
-    React.useEffect(readState, [readState]);
+    /* Re-read when the list changes, as removing this browser from it turns push off */
+    React.useEffect(readState, [readState, devices]);
 
     /* enableWebPush has to run straight from the click, so nothing is awaited first */
     function change(action: () => Promise<void>) {
