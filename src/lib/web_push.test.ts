@@ -97,6 +97,7 @@ afterEach(() => {
     delete (navigator as { maxTouchPoints?: unknown }).maxTouchPoints;
     delete (navigator as { userAgentData?: unknown }).userAgentData;
     delete (navigator as { serviceWorker?: unknown }).serviceWorker;
+    delete (navigator as { language?: unknown }).language;
     delete (window as { PushManager?: unknown }).PushManager;
     delete (window as { Notification?: unknown }).Notification;
     delete (window as { matchMedia?: unknown }).matchMedia;
@@ -140,6 +141,20 @@ test("a subscription the browser rotated is registered again as opted in", async
     expect(jest.mocked(post).mock.calls.map((call) => call[1])).toEqual([
         expect.objectContaining({ token: ENDPOINT, opt_in: true }),
         expect.objectContaining({ token: ENDPOINT, opt_in: false }),
+    ]);
+});
+
+test("a browser's subscription carries its language, so its pushes can be written in it", async () => {
+    signInAs(1);
+    rememberPlayers([1], "https://fcm.googleapis.com/fcm/send/old");
+    defineGlobal(navigator, "language", "de-DE");
+
+    await refreshWebPush();
+    await refreshWebPush();
+
+    expect(jest.mocked(post).mock.calls.map((call) => call[1])).toEqual([
+        expect.objectContaining({ opt_in: true, language: "de-DE" }),
+        expect.objectContaining({ opt_in: false, language: "de-DE" }),
     ]);
 });
 
