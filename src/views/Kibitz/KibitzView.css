@@ -96,6 +96,20 @@
         .Kibitz-sidebar-player-cards {
             flex: 0 0 auto;
         }
+
+        /* The sidebar scrolls as a whole here, so a longer log would push the
+           composer below the fold. It stays at the bottom of the visible
+           sidebar while the cards and the log scroll above it. The pane is not
+           a scroll container in this layout (it is as tall as its content), and
+           must not count as one, or the composer would stick to the pane. */
+        .GobanView-sidebar-content .KibitzPortraitPanes-pane {
+            overflow: visible;
+        }
+
+        .GobanView-sidebar-content .KibitzChatPanel-composer {
+            position: sticky;
+            bottom: 0;
+        }
     }
 }
 
