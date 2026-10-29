@@ -84,10 +84,11 @@ Players can also remove devices themselves under Settings.
 
 A notification is pushed, or sent to webhooks, about 10 seconds after it's
 created if the player hasn't read it by then. Email notifications still wait
-about 2 minutes. Nothing is pushed to the player's devices while they're
-connected to Online-Go.com (an open page shows it instead), or for about a
-minute after they leave; a skipped push is not sent later. Webhooks get every
-notification either way, along with whether the player was connected. Players
+about 2 minutes. Nothing is pushed to the player's devices while they have
+anything connected to Online-Go.com, such as an open page or an app's
+websocket, which shows it instead; a skipped push is not sent later. Webhooks
+get every notification either way, along with whether the player was
+connected, except `yourMove`, which is only sent while they aren't. Players
 choose which notification types are pushed to their devices under Settings.
 
 ## What a push contains
@@ -203,11 +204,12 @@ Players see the subscription under Settings, and can remove it there.
 ### What's sent
 
 Every notification for a subscribed player, whatever their per-type Email,
-Mobile and Desktop settings, and whether or not they're on Online-Go.com.
-Those only control what OGS itself sends, so each event includes the player's
-settings for that kind of notification, and whether they were connected to
-Online-Go.com when it was sent, for you to follow or not as suits your site.
-Each event is one request:
+Mobile and Desktop settings, and whether or not they're on Online-Go.com,
+except `yourMove`, which is only sent while they aren't. The settings only
+control what OGS itself sends, so each event includes the player's settings for
+that kind of notification, and whether they were connected to Online-Go.com
+when it was sent, for you to follow or not as suits your site. Each event is
+one request:
 
 ```
 POST <your URL>
@@ -231,10 +233,14 @@ OGS-Webhook-Signature: v1=<hex HMAC-SHA256 of "<timestamp>.<raw body>", keyed wi
 
 `settings` is null for pings, tests, and the kinds of notification that have
 no setting, and `online` is null for pings and tests. `title` is empty for the
-kinds of notification OGS doesn't email, such as `lateChatReceivedInGame`.
+kinds of notification OGS doesn't email, such as `friendAccepted`.
+
 `yourMove` notifications include the game's `phase`, which is `stone removal`
-once both players have passed, and `lateChatReceivedInGame` includes the chat
-line's `channel` and `body`.
+once both players have passed, and `your_move_count`, the number of the
+player's games waiting on their move or on them accepting the score, counted as
+the site counts them, for badging your app; it isn't sent again when the player
+moves, so lower it yourself when they do. `lateChatReceivedInGame` includes the
+chat line's `channel` and `body`.
 
 The event id is the same on every retry of an event, so use it to drop
 duplicates. Check the signature with a constant time comparison, and reject
