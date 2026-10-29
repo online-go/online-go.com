@@ -132,7 +132,7 @@ export function Settings(): React.ReactElement {
         },
         { key: "moderator", label: _("Moderator Preferences") },
         { key: "vacation", label: _("Vacation") },
-        { key: "email", label: _("Notifications") },
+        { key: "notifications", label: _("Notifications") },
         { key: "announcement", label: _("Announcements Preferences") },
         { key: "blocked_players", label: _("Blocked Players") },
         { key: "account", label: _("Account Settings"), ref: accountSettingsButton },
@@ -189,7 +189,7 @@ export function Settings(): React.ReactElement {
         case "vacation":
             SelectedPage = VacationSettings;
             break;
-        case "email":
+        case "notifications":
             SelectedPage = NotificationPreferences;
             break;
         case "account":
