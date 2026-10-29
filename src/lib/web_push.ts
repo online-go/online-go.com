@@ -117,6 +117,7 @@ function subscriptionBody(subscription: PushSubscription, opt_in: boolean) {
         keys: subscription.toJSON().keys,
         form_factor: formFactor(),
         label: deviceLabel(),
+        language: navigator.language,
         opt_in,
     };
 }
