@@ -53,7 +53,7 @@ export const kibitzBasicRoomTest = async ({
     // second challenge) before the board change is verified, which is longer
     // than the default test timeout allows.
     test.setTimeout(6 * 60 * 1000);
-    const { watcherPage, blackPlayerPage, whitePlayerPage, whiteUsername, roomId } =
+    const { watcherPage, blackPlayerPage, whitePlayerPage, whiteUsername, roomId, gameId } =
         await createKibitzRoomForLiveGame(createContext);
 
     // URL ends up at /kibitz/<roomId>.
@@ -128,7 +128,14 @@ export const kibitzBasicRoomTest = async ({
     await expect(roomFeed.getByText(`${whiteUsername} won by Resignation`)).toBeVisible({
         timeout: 30000,
     });
-    console.log("[kibitz basic-room] game-ended line rendered in room chat");
+    // The line names the game, and the name links to it (the system body
+    // carries a same-site link; system_line_markup.tsx renders it).
+    await expect(
+        roomFeed.locator(".chat-line.system").getByRole("link", {
+            name: "E2E Kibitz live source game",
+        }),
+    ).toHaveAttribute("href", `/game/${gameId}`);
+    console.log("[kibitz basic-room] game-ended line rendered in room chat, game name linked");
 
     // Give the second game a title whose HEAD differs from the prelude's
     // first game ("E2E Kibitz live source game"). The board-subtitle-link
@@ -253,4 +260,15 @@ export const kibitzBasicRoomTest = async ({
     await gameInfo.locator(".buttons button", { hasText: "Close" }).click();
     await expect(gameInfo).toBeHidden({ timeout: 15000 });
     console.log(`[kibitz basic-room] room now watching game ${secondGameId}`);
+
+    // The watcher's browser posted the board-change line, naming the new game
+    // with a link to it (KibitzController postChangeBoardSystemMessage).
+    // Following the link opens the game.
+    const changedLink = roomFeed
+        .locator(".chat-line.system")
+        .getByRole("link", { name: secondGameName });
+    await expect(changedLink).toHaveAttribute("href", `/game/${secondGameId}`, { timeout: 15000 });
+    await changedLink.click();
+    await watcherPage.waitForURL(new RegExp(`/game/${secondGameId}$`), { timeout: 15000 });
+    console.log("[kibitz basic-room] board-change line links to the new game");
 };
