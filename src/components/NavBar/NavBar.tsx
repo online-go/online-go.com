@@ -578,12 +578,16 @@ export function NavBar(): React.ReactElement {
     );
 }
 
-/** The unified admin interface, which is a separate site on an `admin.`
- * hostname rather than a route here. Derived from wherever this page is
- * being served so that production, beta and a development stack each reach
- * their own, without a build-time constant to keep in step. */
+/** The unified admin interface, which is a separate site rather than a
+ * route here. Derived from wherever this page is being served so that
+ * production, beta and a development stack each reach their own, without a
+ * build-time constant to keep in step. A bare domain gets an `admin.`
+ * subdomain (`admin.online-go.com`, `admin.localhost`), while a host that is
+ * already a subdomain gets an `admin-` prefix (`admin-beta.online-go.com`). */
 function adminInterfaceUrl(): string {
-    return `${window.location.protocol}//admin.${window.location.host}`;
+    const { protocol, hostname, host } = window.location;
+    const separator = hostname.split(".").length > 2 ? "-" : ".";
+    return `${protocol}//admin${separator}${host}`;
 }
 
 interface MenuLinkProps {
