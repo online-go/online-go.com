@@ -20,12 +20,15 @@ import * as React from "react";
 import { interpolate, pgettext } from "@/lib/translate";
 import { del, get } from "@/lib/requests";
 import { errorAlerter } from "@/lib/misc";
+import { WebPushControl } from "./WebPushControl";
 import "./PushDeviceList.css";
 
 interface PushDevice {
     id: number;
-    application: { id: number; name: string };
-    provider: "apns" | "fcm" | "webhook";
+    application: { id: number; name: string } | null;
+    provider: "apns" | "fcm" | "webhook" | "webpush";
+    label: string | null;
+    form_factor: "mobile" | "desktop" | null;
     apns_environment: "production" | "sandbox" | null;
     created_at: string;
     last_seen_at: string;
@@ -50,26 +53,31 @@ export function PushDeviceList(): React.ReactElement {
     return (
         <div className="PushDeviceList">
             <h3>{pgettext("Settings section heading", "Devices receiving push notifications")}</h3>
+            <WebPushControl devices={devices} onChange={refresh} />
             {devices?.length === 0 && (
                 <div>
                     {pgettext(
-                        "Shown when no mobile app has registered for push notifications",
-                        "No devices. Sign in to a mobile app that supports push notifications to add one.",
+                        "Shown when no device has registered for push notifications",
+                        "No devices. Turn on push notifications in this browser, or sign in to a mobile app that supports them.",
                     )}
                 </div>
             )}
             {devices?.map((device) => (
                 <div key={device.id} className="push-device">
-                    <span className="push-device-app">{device.application.name}</span>
+                    <span className="push-device-app">
+                        {device.application?.name ?? "Online-Go.com"}
+                    </span>
                     <span className="push-device-platform">
-                        {device.provider === "webhook"
-                            ? pgettext(
-                                  "A site that receives the player's notifications on its own server",
-                                  "Webhook: receives your notifications on its server",
-                              )
-                            : device.provider === "apns"
-                              ? pgettext("Mobile platform", "iOS")
-                              : pgettext("Mobile platform", "Android")}
+                        {device.provider === "webpush"
+                            ? device.label
+                            : device.provider === "webhook"
+                              ? pgettext(
+                                    "A site that receives the player's notifications on its own server",
+                                    "Webhook: receives your notifications on its server",
+                                )
+                              : device.provider === "apns"
+                                ? pgettext("Mobile platform", "iOS")
+                                : pgettext("Mobile platform", "Android")}
                         {device.apns_environment === "sandbox" &&
                             " " +
                                 pgettext(

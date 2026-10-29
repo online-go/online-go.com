@@ -18,6 +18,19 @@
 .PushDeviceList {
     margin-top: 2rem;
 
+    .WebPushControl {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .web-push-warning {
+        flex-basis: 100%;
+        color: var(--shade3);
+    }
+
     .push-device {
         display: flex;
         flex-wrap: wrap;
