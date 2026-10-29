@@ -50,6 +50,7 @@ interface ChatLineInterface {
     /** False where the caller renders the date itself, outside the line. It
      *  separates a run of lines rather than belongs to one. */
     showDate?: boolean;
+    showRank?: boolean;
     goban?: Goban | null;
 }
 
@@ -130,10 +131,18 @@ export function ChatLine(props: ChatLineInterface): React.ReactElement {
             )}
             {ts && <span className="timestamp">[{timestamp_str}]</span>}
             {(user.id || null) && (
-                <Player user={user} flare rank={false} noextracontrols disableCacheUpdate />
+                <Player
+                    user={user}
+                    flare
+                    rank={props.showRank ?? false}
+                    noextracontrols
+                    disableCacheUpdate
+                />
             )}
-            {third_person ? " " : ": "}
-            <span className="body">{body_rendered}</span>
+            <span className="body">
+                {third_person ? " " : ": "}
+                {body_rendered}
+            </span>
         </div>
     );
 }
