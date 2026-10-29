@@ -84,9 +84,10 @@ Players can also remove devices themselves under Settings.
 
 A notification is pushed, or sent to webhooks, about 10 seconds after it's
 created if the player hasn't read it by then. Email notifications still wait
-about 2 minutes. `yourMove` is only sent while the player isn't connected to
-Online-Go.com. Players choose which notification types are pushed to their
-devices under Settings.
+about 2 minutes. Nothing is pushed, or sent to webhooks, while the player is
+connected to Online-Go.com (an open page shows it instead), or for about a
+minute after they leave; a skipped push is not sent later. Players choose which
+notification types are pushed to their devices under Settings.
 
 ## What a push contains
 
