@@ -155,6 +155,7 @@ for (const base_path of [
     "/fair_play",
     "/__debug__",
     "/static",
+    "/sw.js",
 ]) {
     proxy[base_path] = {
         target: backend_url,
@@ -780,6 +781,11 @@ function ogs_vite_middleware(): Plugin {
                                     src: "https://cdn.online-go.com/icons/android-chrome-192x192.png",
                                     type: "image/png",
                                     sizes: "192x192",
+                                },
+                                {
+                                    src: "https://cdn.online-go.com/icons/ogslogo-512.png",
+                                    type: "image/png",
+                                    sizes: "512x512",
                                 },
                             ],
                             start_url: "/",
