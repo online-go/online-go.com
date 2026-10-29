@@ -21,7 +21,8 @@
  * A browser has one push subscription, and the server gives its endpoint to
  * one player at a time. localStorage remembers which player opted in here, so
  * a different player signing in on the same browser does not take it over by
- * just loading a page.
+ * just loading a page. It also remembers the endpoint they opted in with, so
+ * an endpoint the browser rotated can be told apart from one that was removed.
  */
 
 import * as data from "@/lib/data";
@@ -32,6 +33,7 @@ import { interpolate, pgettext } from "@/lib/translate";
 export type WebPushState = "on" | "off" | "blocked" | "unsupported" | "needs-home-screen";
 
 const PLAYERS_KEY = "web-push-players";
+const ENDPOINT_KEY = "web-push-endpoint";
 const SERVICE_WORKER_URL = "/sw.js";
 const SCOPE = "/";
 
@@ -46,11 +48,20 @@ function rememberedPlayers(): number[] {
 
 /* The endpoint belongs to the last player who opted in, so that is the only
  * player remembered. */
-function rememberPlayer(player_id: number): void {
+function rememberPlayer(player_id: number, endpoint: string): void {
     try {
         localStorage.setItem(PLAYERS_KEY, JSON.stringify([player_id]));
+        localStorage.setItem(ENDPOINT_KEY, endpoint);
     } catch (e) {
         console.warn(e);
+    }
+}
+
+function rememberedEndpoint(): string | null {
+    try {
+        return localStorage.getItem(ENDPOINT_KEY);
+    } catch {
+        return null;
     }
 }
 
@@ -111,10 +122,12 @@ function subscriptionBody(subscription: PushSubscription, opt_in: boolean) {
 }
 
 export function formFactor(): "mobile" | "desktop" {
-    const mobile = (navigator as Navigator & { userAgentData?: { mobile: boolean } }).userAgentData
-        ?.mobile;
-    if (mobile !== undefined) {
-        return mobile ? "mobile" : "desktop";
+    const ua_data = (
+        navigator as Navigator & { userAgentData?: { mobile: boolean; platform: string } }
+    ).userAgentData;
+    if (ua_data) {
+        /* Android tablets report mobile: false */
+        return ua_data.mobile || ua_data.platform === "Android" ? "mobile" : "desktop";
     }
     return /Mobi|Android|iPhone|iPad/.test(navigator.userAgent) || isIOS() ? "mobile" : "desktop";
 }
@@ -123,7 +136,14 @@ export function formFactor(): "mobile" | "desktop" {
 export function deviceLabel(): string {
     const label = interpolate(
         pgettext("Names a web browser that gets push notifications", "{{browser}} on {{os}}"),
-        { browser: device_info.browser_name, os: device_info.os_name },
+        {
+            browser: device_info.browser_name,
+            /* iPadOS claims to be a Mac */
+            os:
+                isIOS() && /Macintosh/.test(navigator.userAgent)
+                    ? pgettext("Operating system name", "iPadOS")
+                    : device_info.os_name,
+        },
     );
     if (isStandalone()) {
         return (
@@ -194,7 +214,7 @@ export async function enableWebPush(): Promise<void> {
     }
 
     await post("me/push_devices", subscriptionBody(subscription, true));
-    rememberPlayer(player_id);
+    rememberPlayer(player_id, subscription.endpoint);
 }
 
 /** Unsubscribes this browser and tells the server to stop pushing to it. */
@@ -218,12 +238,26 @@ export async function disableWebPush(): Promise<void> {
  * push off here if the server no longer gives it to this player. */
 export async function refreshWebPush(): Promise<void> {
     const player_id = signedInPlayerId();
-    if (player_id === null || !pushSupported() || !rememberedPlayers().includes(player_id)) {
+    if (player_id === null || !pushSupported()) {
+        return;
+    }
+    const remembered = rememberedPlayers();
+    if (!remembered.includes(player_id)) {
+        /* Another player opted in here: stop showing their notifications to this one */
+        if (remembered.length > 0) {
+            await (await currentSubscription())?.unsubscribe();
+        }
         return;
     }
     const subscription = await currentSubscription();
     if (!subscription) {
         forgetPlayer(player_id);
+        return;
+    }
+    if (subscription.endpoint !== rememberedEndpoint()) {
+        /* The browser replaced the subscription this player opted in with */
+        await post("me/push_devices", subscriptionBody(subscription, true));
+        rememberPlayer(player_id, subscription.endpoint);
         return;
     }
     try {
