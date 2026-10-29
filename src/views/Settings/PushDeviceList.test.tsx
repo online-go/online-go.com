@@ -16,13 +16,18 @@
  */
 
 import * as React from "react";
-import { fireEvent, render } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import * as requests from "@/lib/requests";
 import * as webPush from "@/lib/web_push";
+import { alert } from "@/lib/swal_config";
 
 jest.mock("@/lib/requests", () => ({
     get: jest.fn(),
     del: jest.fn(() => Promise.resolve()),
+    post: jest.fn(() => Promise.resolve()),
+}));
+jest.mock("@/lib/swal_config", () => ({
+    alert: { fire: jest.fn(() => Promise.resolve({ value: true })) },
 }));
 jest.mock("@/lib/web_push", () => ({
     webPushState: jest.fn(),
@@ -38,6 +43,25 @@ import { PushDeviceList } from "./PushDeviceList";
 const ENDPOINT = "https://fcm.googleapis.com/fcm/send/abc123";
 const mockedRequests = requests as jest.Mocked<typeof requests>;
 const mockedWebPush = webPush as jest.Mocked<typeof webPush>;
+const mockedFire = alert.fire as jest.Mock;
+
+const BROWSER = {
+    id: 3,
+    application: null,
+    provider: "webpush",
+    token: ENDPOINT,
+    label: "Chrome on Linux",
+    form_factor: "desktop",
+    apns_environment: null,
+    created_at: "2026-10-01T00:00:00Z",
+    last_seen_at: "2026-10-29T00:00:00Z",
+};
+
+beforeEach(() => {
+    jest.clearAllMocks();
+    mockedFire.mockImplementation(() => Promise.resolve({ value: true }));
+    mockedWebPush.webPushState.mockResolvedValue("off");
+});
 
 test("removing this browser from the list turns push off here", async () => {
     let devices = [
@@ -72,4 +96,27 @@ test("removing this browser from the list turns push off here", async () => {
 
     await view.findByRole("button", { name: "Turn on push notifications in this browser" });
     expect(mockedRequests.del).toHaveBeenCalledWith("me/push_devices/3");
+});
+
+test("removing a device asks first, and keeps it when cancelled", async () => {
+    mockedRequests.get.mockImplementation(() => Promise.resolve({ results: [BROWSER] }));
+    mockedFire.mockImplementation(() => Promise.resolve({ value: false }));
+
+    const view = render(<PushDeviceList />);
+    fireEvent.click(await view.findByText("Remove"));
+
+    await waitFor(() => expect(mockedFire).toHaveBeenCalled());
+    expect(mockedFire.mock.calls[0][0].text).toContain("Chrome on Linux");
+    expect(mockedRequests.del).not.toHaveBeenCalled();
+});
+
+test("a test notification is sent to that device", async () => {
+    mockedRequests.get.mockImplementation(() => Promise.resolve({ results: [BROWSER] }));
+
+    const view = render(<PushDeviceList />);
+    fireEvent.click(await view.findByText("Send test notification"));
+
+    await waitFor(() =>
+        expect(mockedRequests.post).toHaveBeenCalledWith("me/push_devices/3/test", {}),
+    );
 });
