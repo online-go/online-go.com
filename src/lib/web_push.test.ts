@@ -17,6 +17,7 @@
 
 import * as data from "@/lib/data";
 import { post } from "@/lib/requests";
+import { current_language } from "@/lib/translate";
 import { formFactor, refreshWebPush, webPushState } from "./web_push";
 
 jest.mock("@/lib/requests", () => ({
@@ -144,7 +145,7 @@ test("a subscription the browser rotated is registered again as opted in", async
     ]);
 });
 
-test("a browser's subscription carries its language, so its pushes can be written in it", async () => {
+test("a browser's subscription carries the language the site is shown in, so its pushes can be written in it", async () => {
     signInAs(1);
     rememberPlayers([1], "https://fcm.googleapis.com/fcm/send/old");
     defineGlobal(navigator, "language", "de-DE");
@@ -153,8 +154,8 @@ test("a browser's subscription carries its language, so its pushes can be writte
     await refreshWebPush();
 
     expect(jest.mocked(post).mock.calls.map((call) => call[1])).toEqual([
-        expect.objectContaining({ opt_in: true, language: "de-DE" }),
-        expect.objectContaining({ opt_in: false, language: "de-DE" }),
+        expect.objectContaining({ opt_in: true, language: current_language }),
+        expect.objectContaining({ opt_in: false, language: current_language }),
     ]);
 });
 

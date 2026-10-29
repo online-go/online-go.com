@@ -28,7 +28,7 @@
 import * as data from "@/lib/data";
 import { del, post } from "@/lib/requests";
 import { device_info } from "@/lib/sockets";
-import { interpolate, pgettext } from "@/lib/translate";
+import { current_language, interpolate, pgettext } from "@/lib/translate";
 
 export type WebPushState = "on" | "off" | "blocked" | "unsupported" | "needs-home-screen";
 
@@ -117,7 +117,7 @@ function subscriptionBody(subscription: PushSubscription, opt_in: boolean) {
         keys: subscription.toJSON().keys,
         form_factor: formFactor(),
         label: deviceLabel(),
-        language: navigator.language,
+        language: current_language,
         opt_in,
     };
 }
