@@ -155,7 +155,7 @@ for (const base_path of [
     "/fair_play",
     "/__debug__",
     "/static",
-    "/sw.js",
+    "/push-notification-worker.js",
 ]) {
     proxy[base_path] = {
         target: backend_url,
