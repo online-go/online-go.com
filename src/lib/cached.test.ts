@@ -58,6 +58,12 @@ test("the server is not told a language it already has recorded", async () => {
     expect(put).not.toHaveBeenCalled();
 });
 
+test("a server that doesn't send the recorded language isn't told one", async () => {
+    await loadConfig({ id: 1, anonymous: false });
+
+    expect(put).not.toHaveBeenCalled();
+});
+
 test("the debug pseudo-language is not recorded", async () => {
     mockLanguage = "debug";
 
