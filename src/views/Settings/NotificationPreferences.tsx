@@ -77,45 +77,50 @@ export function NotificationPreferences(props: SettingGroupPageProps): React.Rea
                         "Desktop",
                     )}
                 </span>
-                {Object.keys(notifications).map((type) => {
-                    const name = _(notifications[type].description);
-                    const { email, mobile, desktop } = notifications[type].value;
-                    return (
-                        <React.Fragment key={type}>
-                            <span>{name}</span>
-                            <label
-                                aria-label={interpolate(pgettext("Toggle label", "Email: %s"), [
-                                    name,
-                                ])}
-                            >
-                                <Toggle
-                                    checked={!!email}
-                                    onChange={(on) => save(type, { email: on })}
-                                />
-                            </label>
-                            <label
-                                aria-label={interpolate(pgettext("Toggle label", "Mobile: %s"), [
-                                    name,
-                                ])}
-                            >
-                                <Toggle
-                                    checked={!!mobile}
-                                    onChange={(on) => save(type, { mobile: on })}
-                                />
-                            </label>
-                            <label
-                                aria-label={interpolate(pgettext("Toggle label", "Desktop: %s"), [
-                                    name,
-                                ])}
-                            >
-                                <Toggle
-                                    checked={desktop !== false}
-                                    onChange={(on) => save(type, { desktop: on })}
-                                />
-                            </label>
-                        </React.Fragment>
-                    );
-                })}
+                {/* Streak notifications aren't released yet, so their settings stay hidden */}
+                {Object.keys(notifications)
+                    .filter((type) => !type.startsWith("streak_"))
+                    .map((type) => {
+                        const name = _(notifications[type].description);
+                        const { email, mobile, desktop } = notifications[type].value;
+                        return (
+                            <React.Fragment key={type}>
+                                <span>{name}</span>
+                                <label
+                                    aria-label={interpolate(pgettext("Toggle label", "Email: %s"), [
+                                        name,
+                                    ])}
+                                >
+                                    <Toggle
+                                        checked={!!email}
+                                        onChange={(on) => save(type, { email: on })}
+                                    />
+                                </label>
+                                <label
+                                    aria-label={interpolate(
+                                        pgettext("Toggle label", "Mobile: %s"),
+                                        [name],
+                                    )}
+                                >
+                                    <Toggle
+                                        checked={!!mobile}
+                                        onChange={(on) => save(type, { mobile: on })}
+                                    />
+                                </label>
+                                <label
+                                    aria-label={interpolate(
+                                        pgettext("Toggle label", "Desktop: %s"),
+                                        [name],
+                                    )}
+                                >
+                                    <Toggle
+                                        checked={desktop !== false}
+                                        onChange={(on) => save(type, { desktop: on })}
+                                    />
+                                </label>
+                            </React.Fragment>
+                        );
+                    })}
             </div>
             <PushDeviceList />
         </div>
