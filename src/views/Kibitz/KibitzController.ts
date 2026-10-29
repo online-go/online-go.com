@@ -387,6 +387,7 @@ function mapChatToStreamItem(msg: ChatMessage, roomId: string): KibitzStreamItem
             type: "system",
             created_at,
             text: typeof m === "string" ? m : (m.text ?? ""),
+            game_id: typeof m === "object" && m !== null ? m.game_id : undefined,
         };
     }
 
@@ -400,6 +401,7 @@ function mapChatToStreamItem(msg: ChatMessage, roomId: string): KibitzStreamItem
                 created_at,
                 author,
                 text: typed.text ?? "",
+                game_id: typed.game_id,
             };
         }
         if (typed.type === "analysis") {

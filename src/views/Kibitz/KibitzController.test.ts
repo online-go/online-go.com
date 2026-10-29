@@ -591,7 +591,11 @@ describe("KibitzController telemetry", () => {
     });
 });
 
-test("keeps room message game and move metadata after loading chat history", async () => {
+test.each([
+    { type: "chat", system: false },
+    { type: "system", system: false },
+    { type: "system", system: true },
+])("keeps game metadata in $type history (system flag: $system)", async ({ type, system }) => {
     mockedGet.mockResolvedValueOnce([]);
     const controller = new KibitzController();
     await new Promise<void>((resolve) => setTimeout(resolve, 0));
@@ -608,11 +612,12 @@ test("keeps room message game and move metadata after loading chat history", asy
                     ranking: 0,
                     professional: false,
                     ui_class: "",
+                    system,
                     message: {
                         i: "message-1",
                         t: 100,
                         m: {
-                            type: "chat",
+                            type,
                             text: "Look here",
                             game_id: 42,
                             move_number: 17,
@@ -634,7 +639,7 @@ test("keeps room message game and move metadata after loading chat history", asy
             id: "message-1",
             text: "Look here",
             game_id: 42,
-            move_number: 17,
+            ...(type === "chat" ? { move_number: 17 } : {}),
         }),
     );
     controller.destroy();

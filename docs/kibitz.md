@@ -18,6 +18,11 @@ with the Game page's chat column.
 A people column stands beside the chat log; the People action switches it
 off and it drops on its own when the chat panel is narrower than 22rem.
 
+The room chat shows only the latest game-switch warning for the active
+pending game. Once the switch completes or is cancelled, that warning is
+hidden, including when replaying chat history. Completed-switch messages
+and other system messages remain visible; stored chat history is unchanged.
+
 Portrait: GobanView's `portraitSplit` layout — a board stage, a drag handle,
 and one panel area below it. `KibitzLeftAside` is landscape only. Six panes
 share the panel area — Game chat (read-only, so it carries no composer),

@@ -39,6 +39,7 @@ import type {
 import { formatVariationBranchLabel, formatVariationLengthLabel } from "./kibitzVariationQuickList";
 import { KibitzVariationSwatch } from "./KibitzVariationSwatch";
 import { kibitzTelemetry } from "./kibitzTelemetry";
+import { getVisibleKibitzStreamItems } from "./kibitzVisibleStreamItems";
 import "./KibitzChatPanel.css";
 import "@/components/Chat/ChatLog.css";
 
@@ -299,7 +300,7 @@ export function KibitzChatPanel({
     const roomEntries = React.useMemo<PaneEntry[]>(() => {
         const entries: PaneEntry[] = [];
 
-        for (const item of items) {
+        for (const item of getVisibleKibitzStreamItems(room, items)) {
             const source = item.source ?? "room-stream";
             if (source === "game-chat") {
                 continue;
