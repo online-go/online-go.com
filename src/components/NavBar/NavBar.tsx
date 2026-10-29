@@ -581,9 +581,12 @@ export function NavBar(): React.ReactElement {
 /** The unified admin interface, which is a separate site on an `admin.`
  * hostname rather than a route here. Derived from wherever this page is
  * being served so that production, beta and a development stack each reach
- * their own, without a build-time constant to keep in step. */
+ * their own, without a build-time constant to keep in step. Beta is the
+ * exception: its admin site is `admin-beta.` rather than `admin.beta.`. */
 function adminInterfaceUrl(): string {
-    return `${window.location.protocol}//admin.${window.location.host}`;
+    const host = window.location.host;
+    const admin_host = host.startsWith("beta.") ? `admin-${host}` : `admin.${host}`;
+    return `${window.location.protocol}//${admin_host}`;
 }
 
 interface MenuLinkProps {
