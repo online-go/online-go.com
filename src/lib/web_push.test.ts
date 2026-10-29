@@ -16,9 +16,9 @@
  */
 
 import * as data from "@/lib/data";
-import { post } from "@/lib/requests";
+import { del, post } from "@/lib/requests";
 import { current_language } from "@/lib/translate";
-import { formFactor, refreshWebPush, webPushState } from "./web_push";
+import { disableWebPush, formFactor, refreshWebPush, webPushState } from "./web_push";
 
 jest.mock("@/lib/requests", () => ({
     post: jest.fn(),
@@ -130,6 +130,19 @@ test("another player on the same browser does not inherit push", async () => {
     expect(post).not.toHaveBeenCalled();
     expect(unsubscribe).toHaveBeenCalled();
     expect(await webPushState()).toBe("off");
+});
+
+test("signing out unsubscribes this browser before the server has answered", async () => {
+    signInAs(1);
+    rememberPlayers([1]);
+    const unsubscribe = subscription!.unsubscribe;
+    jest.mocked(del).mockReturnValueOnce(new Promise(() => {}));
+
+    void disableWebPush();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(unsubscribe).toHaveBeenCalled();
+    expect(del).toHaveBeenCalledWith(`me/push_devices?token=${encodeURIComponent(ENDPOINT)}`);
 });
 
 test("a subscription the browser rotated is registered again as opted in", async () => {

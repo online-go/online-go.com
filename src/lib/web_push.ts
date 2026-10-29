@@ -228,10 +228,12 @@ export async function disableWebPush(): Promise<void> {
     if (!subscription) {
         return;
     }
+    /* Unsubscribe here first: signing out may leave the page before the server answers */
+    const endpoint = subscription.endpoint;
     try {
-        await del(`me/push_devices?token=${encodeURIComponent(subscription.endpoint)}`);
-    } finally {
         await subscription.unsubscribe();
+    } finally {
+        await del(`me/push_devices?token=${encodeURIComponent(endpoint)}`);
     }
 }
 
