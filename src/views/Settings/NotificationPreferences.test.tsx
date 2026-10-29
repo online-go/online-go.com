@@ -26,7 +26,7 @@ jest.mock("@/lib/requests", () => ({
 
 import { NotificationPreferences } from "./NotificationPreferences";
 
-test("each notification's email and mobile toggles are saved independently", async () => {
+test("each notification's email, mobile and desktop toggles are saved independently", async () => {
     const description = "It is my turn to move";
     const state = {
         notifications: { yourMove: { description, value: { email: true, mobile: true } } },
@@ -40,15 +40,27 @@ test("each notification's email and mobile toggles are saved independently", asy
         />,
     );
     await view.findByText(/No devices/);
-    const [email, mobile] = view.getAllByRole("switch");
+    const [email, mobile, desktop] = view.getAllByRole("switch");
+    expect(desktop).toBeChecked();
+
+    fireEvent.click(desktop);
+    expect(put).toHaveBeenLastCalledWith("me/settings", {
+        notifications: {
+            yourMove: { description, value: { email: true, mobile: true, desktop: false } },
+        },
+    });
 
     fireEvent.click(mobile);
     expect(put).toHaveBeenLastCalledWith("me/settings", {
-        notifications: { yourMove: { description, value: { email: true, mobile: false } } },
+        notifications: {
+            yourMove: { description, value: { email: true, mobile: false, desktop: false } },
+        },
     });
 
     fireEvent.click(email);
     expect(put).toHaveBeenLastCalledWith("me/settings", {
-        notifications: { yourMove: { description, value: { email: false, mobile: false } } },
+        notifications: {
+            yourMove: { description, value: { email: false, mobile: false, desktop: false } },
+        },
     });
 });
