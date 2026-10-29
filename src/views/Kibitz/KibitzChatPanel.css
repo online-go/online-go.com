@@ -1,3 +1,5 @@
+@import "../../global_styl/mixins.css";
+
 .KibitzChatPanel {
     display: flex;
     flex-direction: column;
@@ -110,10 +112,6 @@
         padding: 0.25rem 0.75rem 0.5rem;
     }
 
-    /* One row per entry: the time in a gutter, then the line itself. Both
-       kinds of entry share the row so a variation post lines up with the
-       chat around it. The time is smaller than the text beside it, so the
-       two meet on the baseline of the line's first row. */
     .kibitz-chat-entry,
     .variation-post-entry {
         box-sizing: border-box;
@@ -122,23 +120,33 @@
         gap: 0.35rem;
         max-width: 100%;
         min-width: 0;
-        margin: 0.25rem 0;
-        padding: 0 0.75rem;
+        margin: 0;
+        padding: 0;
     }
 
     .kibitz-chat-entry-time,
     .variation-post-time {
+        @mixin monospace;
         flex: 0 0 auto;
         color: var(--text-dimmed);
-        font-size: 0.8rem;
+        font-size: var(--font-size-small);
         line-height: 1.25;
         white-space: nowrap;
     }
 
-    /* The line takes the rest of the row and wraps inside it, so a long
-       message hangs under the name rather than under the time. */
-    .kibitz-chat-entry > .chat-line,
-    .kibitz-chat-entry > .GameChatLine,
+    /* Keep the timestamp and message in one inline flow so wrapped text
+       starts at the left edge, as it does in regular game chat. */
+    .kibitz-chat-entry {
+        display: block;
+        overflow-wrap: break-word;
+
+        .GameChatLine,
+        .chat-line-container,
+        .chat-line {
+            display: inline;
+        }
+    }
+
     .variation-post-line {
         flex: 1 1 auto;
         min-width: 0;
@@ -152,7 +160,7 @@
         box-sizing: border-box;
         max-width: 100%;
         min-width: 0;
-        padding: 0 0.75rem;
+        padding: 0;
     }
 
     .kibitz-chat-move-number .chat-move-link {
@@ -161,12 +169,57 @@
         box-shadow: none;
         color: inherit;
         font: inherit;
+        height: auto;
+        line-height: inherit;
+        margin: 0;
         padding: 0;
-        text-decoration: underline;
+        text-decoration: none;
+    }
+
+    .move-number {
+        @mixin monospace;
+        font-size: var(--font-size-smaller);
+    }
+
+    .chat-line,
+    .variation-post-line {
+        font-size: var(--font-size-normal);
+    }
+
+    .chat-line {
+        white-space: pre-wrap;
+        overflow-wrap: break-word;
+    }
+
+    .Player {
+        font-size: var(--font-size-small);
+        margin-right: 0;
+    }
+
+    .Player.with-flare:not(
+            .supporter,
+            .professional,
+            .moderator,
+            .admin,
+            .dragon,
+            .aga,
+            .white-player,
+            .black-player
+        ) {
+        &::before {
+            content: none;
+        }
+
+        .Player-username {
+            margin-left: 0;
+        }
     }
 
     .chat-lines > .date {
-        margin: 0.5rem 0 0.15rem;
+        @mixin monospace;
+        font-size: var(--font-size-smaller);
+        margin: 0;
+        text-align: center;
     }
 
     /* Game-chat lines flow tight: the tab already separates them from room
@@ -182,16 +235,9 @@
         color: var(--spectator-text-color);
     }
 
-    .kibitz-chat-entry.room-stream .Player.provisional.with-flare {
-        &:before {
-            content: none;
-            width: 0;
-            margin: 0;
-        }
-
-        .Player-username {
-            margin-left: 0;
-        }
+    .chat-line.third-person .Player,
+    .chat-line.third-person .body {
+        font-style: italic;
     }
 
     .timestamp {

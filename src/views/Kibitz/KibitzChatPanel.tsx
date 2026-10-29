@@ -699,6 +699,7 @@ export function KibitzChatPanel({
                                             <span className="variation-post-author">
                                                 <Player
                                                     user={entry.item.author}
+                                                    flare
                                                     disableCacheUpdate
                                                 />
                                             </span>
@@ -757,23 +758,10 @@ export function KibitzChatPanel({
                     // separator instead of the name beside it.
                     return (
                         <React.Fragment key={entry.key}>
-                            {entry.gobanLine ? (
-                                <>
-                                    <ChatDateLine
-                                        timestamp={entry.gobanLine.date}
-                                        previousTimestamp={previousGameLine?.date}
-                                        hasPreviousLine={Boolean(previousGameLine)}
-                                    />
-                                    <GameChatMoveNumber
-                                        line={entry.gobanLine}
-                                        lastLine={previousGameLine}
-                                    />
-                                </>
-                            ) : (
-                                <ChatDateLine
-                                    timestamp={entry.line.message.t}
-                                    previousTimestamp={previousRoomLine?.message.t}
-                                    hasPreviousLine={Boolean(previousRoomLine)}
+                            {entry.gobanLine && (
+                                <GameChatMoveNumber
+                                    line={entry.gobanLine}
+                                    lastLine={previousGameLine}
                                 />
                             )}
                             {showPosition && (
@@ -806,6 +794,17 @@ export function KibitzChatPanel({
                                     )}
                                 </LineText>
                             )}
+                            <ChatDateLine
+                                timestamp={entry.gobanLine?.date ?? entry.line.message.t}
+                                previousTimestamp={
+                                    entry.gobanLine
+                                        ? previousGameLine?.date
+                                        : previousRoomLine?.message.t
+                                }
+                                hasPreviousLine={Boolean(
+                                    entry.gobanLine ? previousGameLine : previousRoomLine,
+                                )}
+                            />
                             <div
                                 className={
                                     "kibitz-chat-entry " +
@@ -817,7 +816,7 @@ export function KibitzChatPanel({
                                     className="kibitz-chat-entry-time"
                                     dateTime={new Date(entry.createdAt).toISOString()}
                                 >
-                                    {moment(entry.createdAt).format("HH:mm")}
+                                    {moment(entry.createdAt).format("HH:mm")}{" "}
                                 </time>
 
                                 {entry.gobanLine ? (
@@ -832,6 +831,7 @@ export function KibitzChatPanel({
                                         line={entry.line}
                                         lastLine={previousRoomLine}
                                         showDate={false}
+                                        showRank
                                         goban={
                                             position &&
                                             position.game_id === room.current_game?.game_id &&
