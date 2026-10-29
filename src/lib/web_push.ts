@@ -34,7 +34,7 @@ export type WebPushState = "on" | "off" | "blocked" | "unsupported" | "needs-hom
 
 const PLAYERS_KEY = "web-push-players";
 const ENDPOINT_KEY = "web-push-endpoint";
-const SERVICE_WORKER_URL = "/sw.js";
+const PUSH_NOTIFICATION_WORKER_URL = "/push-notification-worker.js";
 const SCOPE = "/";
 
 function rememberedPlayers(): number[] {
@@ -190,7 +190,7 @@ export async function enableWebPush(): Promise<void> {
     /* Ask before the first await, while the click still counts as the
      * player's gesture. */
     const permission_request = Notification.requestPermission();
-    await navigator.serviceWorker.register(SERVICE_WORKER_URL, { scope: SCOPE });
+    await navigator.serviceWorker.register(PUSH_NOTIFICATION_WORKER_URL, { scope: SCOPE });
     if ((await permission_request) !== "granted") {
         return;
     }
