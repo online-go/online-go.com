@@ -17,6 +17,8 @@
 
 /* cspell: words cooldown */
 
+import type { ChatSystemLink } from "@/lib/chat_manager";
+
 export type KibitzRoomKind = "preset" | "user" | "broadcast";
 
 export type KibitzMode = "live" | "demo";
@@ -137,6 +139,8 @@ export interface KibitzStreamItem {
     move_number?: number;
     proposal_id?: string;
     source?: KibitzStreamItemSource;
+    /** Spans of a system line's text to render as same-site links. */
+    links?: ChatSystemLink[];
 }
 
 export interface KibitzSecondaryPaneState {

@@ -20,6 +20,7 @@ import * as React from "react";
 import * as data from "@/lib/data";
 import { Player } from "@/components/Player";
 import { chat_markup } from "./chat_markup";
+import { system_line_markup } from "./system_line_markup";
 import type { Goban } from "goban";
 import { ChatBodyText } from "./ChatBodyText";
 import { ChatDateLine } from "./ChatDateLine";
@@ -68,7 +69,12 @@ export function ChatLine(props: ChatLineInterface): React.ReactElement {
     if (line.system || sys_body_typed) {
         const sys_body = line.message.m;
         const sys_text = typeof sys_body === "string" ? sys_body : (sys_body.text ?? "");
-        return <div className="chat-line system">{chat_markup(sys_text)}</div>;
+        const sys_links = typeof sys_body === "string" ? undefined : sys_body.links;
+        return (
+            <div className="chat-line system">
+                {sys_links ? system_line_markup(sys_text, sys_links) : chat_markup(sys_text)}
+            </div>
+        );
     }
 
     const message = line.message;

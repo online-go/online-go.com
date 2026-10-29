@@ -229,7 +229,12 @@ function createChatLineFromItem(
             message: {
                 i: item.id,
                 t: Math.floor(item.created_at / 1000),
-                m: item.text,
+                // A system line with links keeps its typed body so ChatLine can
+                // render them; everything else stays plain text.
+                m:
+                    item.type === "system" && item.links?.length
+                        ? { type: "system", text: item.text, links: item.links }
+                        : item.text,
             },
         },
     };

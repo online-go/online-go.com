@@ -40,12 +40,19 @@ import {
 } from "@/lib/misc";
 import { User } from "goban";
 
+/** A span of a system line's text rendered as a link to a same-site path. */
+export interface ChatSystemLink {
+    text: string;
+    href: string;
+}
+
 export interface TypedChatBody {
     type: string;
     name?: string;
     text?: string;
     game_id?: number;
     move_number?: number;
+    links?: ChatSystemLink[];
 }
 
 export interface ChatGamePosition {

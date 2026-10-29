@@ -388,6 +388,7 @@ function mapChatToStreamItem(msg: ChatMessage, roomId: string): KibitzStreamItem
             created_at,
             text: typeof m === "string" ? m : (m.text ?? ""),
             game_id: typeof m === "object" && m !== null ? m.game_id : undefined,
+            links: typeof m === "object" && m !== null ? m.links : undefined,
         };
     }
 
@@ -402,6 +403,7 @@ function mapChatToStreamItem(msg: ChatMessage, roomId: string): KibitzStreamItem
                 author,
                 text: typed.text ?? "",
                 game_id: typed.game_id,
+                links: typed.links,
             };
         }
         if (typed.type === "analysis") {
@@ -1213,14 +1215,20 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         if (!user || user.anonymous) {
             return;
         }
+        const title = game.title || `#${game.game_id}`;
         const text = interpolate(
             pgettext(
                 "Kibitz system message announcing the new watched game",
                 "{{username}} changed the watched game to {{title}}",
             ),
-            { username: user.username, title: game.title || `#${game.game_id}` },
+            { username: user.username, title },
         );
-        this.sendTypedToActiveChannel({ type: "system", text });
+        this.sendTypedToActiveChannel({
+            type: "system",
+            text,
+            game_id: game.game_id,
+            links: [{ text: title, href: `/game/${game.game_id}` }],
+        });
     }
 
     private sendTypedToActiveChannel(body: TypedChatBody): void {
