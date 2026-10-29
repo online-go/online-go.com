@@ -138,7 +138,7 @@ const PANE_ICONS: Record<KibitzPortraitPane, string> = {
     "room-chat": "comments",
     people: "users",
     variations: "code-fork",
-    rooms: "list",
+    rooms: "th-large",
     analysis: "sitemap",
 };
 
