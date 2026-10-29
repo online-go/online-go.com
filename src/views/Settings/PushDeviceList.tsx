@@ -20,6 +20,7 @@ import * as React from "react";
 import { interpolate, pgettext } from "@/lib/translate";
 import { del, get } from "@/lib/requests";
 import { errorAlerter } from "@/lib/misc";
+import { currentWebPushEndpoint, disableWebPush } from "@/lib/web_push";
 import { WebPushControl } from "./WebPushControl";
 import "./PushDeviceList.css";
 
@@ -27,6 +28,8 @@ interface PushDevice {
     id: number;
     application: { id: number; name: string } | null;
     provider: "apns" | "fcm" | "webhook" | "webpush";
+    /* Only given for web push, where it is the browser's endpoint */
+    token: string | null;
     label: string | null;
     form_factor: "mobile" | "desktop" | null;
     apns_environment: "production" | "sandbox" | null;
@@ -47,7 +50,15 @@ export function PushDeviceList(): React.ReactElement {
     React.useEffect(refresh, [refresh]);
 
     function remove(device: PushDevice) {
-        del(`me/push_devices/${device.id}`).then(refresh).catch(errorAlerter);
+        del(`me/push_devices/${device.id}`)
+            .then(async () => {
+                /* Removing this browser turns push off here too */
+                if (device.token && device.token === (await currentWebPushEndpoint())) {
+                    await disableWebPush();
+                }
+            })
+            .then(refresh)
+            .catch(errorAlerter);
     }
 
     return (
