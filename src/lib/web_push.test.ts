@@ -76,8 +76,9 @@ function signInAs(id: number) {
     } as rest_api.UserConfig);
 }
 
-function rememberPlayers(ids: number[]) {
+function rememberPlayers(ids: number[], endpoint = ENDPOINT) {
     localStorage.setItem("web-push-players", JSON.stringify(ids));
+    localStorage.setItem("web-push-endpoint", endpoint);
 }
 
 beforeEach(() => {
@@ -94,6 +95,7 @@ beforeEach(() => {
 afterEach(() => {
     defineGlobal(navigator, "userAgent", original_user_agent);
     delete (navigator as { maxTouchPoints?: unknown }).maxTouchPoints;
+    delete (navigator as { userAgentData?: unknown }).userAgentData;
     delete (navigator as { serviceWorker?: unknown }).serviceWorker;
     delete (window as { PushManager?: unknown }).PushManager;
     delete (window as { Notification?: unknown }).Notification;
@@ -119,11 +121,26 @@ test("refresh of a browser the server no longer holds turns push off", async () 
 test("another player on the same browser does not inherit push", async () => {
     signInAs(2);
     rememberPlayers([1]);
+    const unsubscribe = subscription!.unsubscribe;
 
     await refreshWebPush();
 
     expect(post).not.toHaveBeenCalled();
+    expect(unsubscribe).toHaveBeenCalled();
     expect(await webPushState()).toBe("off");
+});
+
+test("a subscription the browser rotated is registered again as opted in", async () => {
+    signInAs(1);
+    rememberPlayers([1], "https://fcm.googleapis.com/fcm/send/old");
+
+    await refreshWebPush();
+    await refreshWebPush();
+
+    expect(jest.mocked(post).mock.calls.map((call) => call[1])).toEqual([
+        expect.objectContaining({ token: ENDPOINT, opt_in: true }),
+        expect.objectContaining({ token: ENDPOINT, opt_in: false }),
+    ]);
 });
 
 test("iOS Safari outside the home screen needs the home screen", async () => {
@@ -132,6 +149,12 @@ test("iOS Safari outside the home screen needs the home screen", async () => {
     delete (window as { PushManager?: unknown }).PushManager;
 
     expect(await webPushState()).toBe("needs-home-screen");
+});
+
+test("an Android tablet is a mobile device though it reports itself as not mobile", () => {
+    defineGlobal(navigator, "userAgentData", { mobile: false, platform: "Android" });
+
+    expect(formFactor()).toBe("mobile");
 });
 
 test("an iPad is a mobile device though it reports a Mac user agent", () => {
