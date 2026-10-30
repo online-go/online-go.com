@@ -47,8 +47,8 @@ function deliveryMethod(device: PushDevice): "mobile" | "desktop" | null {
 
 /**
  * Separate email, mobile and desktop toggles for each kind of notification, and
- * the devices getting them. The Mobile and Desktop toggles are disabled when
- * nothing would be sent that way. Desktop also controls the notifications this
+ * the devices getting them. The Mobile and Desktop toggles are disabled, and
+ * show off, when nothing would be sent that way. Desktop also controls the notifications this
  * browser shows while the site is open, so it stays enabled when those are on.
  */
 export function NotificationPreferences(props: SettingGroupPageProps): React.ReactElement {
@@ -136,7 +136,7 @@ export function NotificationPreferences(props: SettingGroupPageProps): React.Rea
                                     )}
                                 >
                                     <Toggle
-                                        checked={!!mobile}
+                                        checked={!mobile_disabled && !!mobile}
                                         disabled={mobile_disabled}
                                         onChange={(on) => save(type, { mobile: on })}
                                     />
@@ -148,7 +148,7 @@ export function NotificationPreferences(props: SettingGroupPageProps): React.Rea
                                     )}
                                 >
                                     <Toggle
-                                        checked={desktop !== false}
+                                        checked={!desktop_disabled && desktop !== false}
                                         disabled={desktop_disabled}
                                         onChange={(on) => save(type, { desktop: on })}
                                     />
