@@ -25,7 +25,7 @@ import { currentWebPushEndpoint, disableWebPush } from "@/lib/web_push";
 import { WebPushControl } from "./WebPushControl";
 import "./PushDeviceList.css";
 
-interface PushDevice {
+export interface PushDevice {
     id: number;
     application: { id: number; name: string } | null;
     provider: "apns" | "fcm" | "webhook" | "webpush";
@@ -53,15 +53,23 @@ function deviceName(device: PushDevice): string {
     return app;
 }
 
+interface PushDeviceListProps {
+    /** Called with the devices each time the list loads */
+    onDevicesChange?: (devices: PushDevice[]) => void;
+}
+
 /** The app installs that receive this user's push notifications. */
-export function PushDeviceList(): React.ReactElement {
+export function PushDeviceList({ onDevicesChange }: PushDeviceListProps): React.ReactElement {
     const [devices, setDevices] = React.useState<PushDevice[] | null>(null);
 
     const refresh = React.useCallback(() => {
         get("me/push_devices")
-            .then((res: { results: PushDevice[] }) => setDevices(res.results))
+            .then((res: { results: PushDevice[] }) => {
+                setDevices(res.results);
+                onDevicesChange?.(res.results);
+            })
             .catch(errorAlerter);
-    }, []);
+    }, [onDevicesChange]);
 
     React.useEffect(refresh, [refresh]);
 
