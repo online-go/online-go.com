@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { lengthInUtf8Bytes, splitOnBytes } from "./misc";
+import { lengthInUtf8Bytes, sanitizeMessage, splitOnBytes } from "./misc";
 
 const EMOJI = "\u{1F600}"; // 2 UTF-16 code units, 4 UTF-8 bytes
 const HIGH = "\uD83D"; // lone high surrogate
@@ -37,6 +37,26 @@ describe("lengthInUtf8Bytes", () => {
         expect(lengthInUtf8Bytes(LOW)).toBe(3);
         expect(lengthInUtf8Bytes(`a${HIGH}`)).toBe(4);
         expect(lengthInUtf8Bytes(`${LOW}${HIGH}`)).toBe(6);
+    });
+});
+
+describe("sanitizeMessage", () => {
+    test("keeps emoji joined with a zero-width joiner", () => {
+        const woman_shrugging = "\u{1F937}\u200D\u2640\uFE0F";
+        const woman_shrugging_medium_skin = "\u{1F937}\u{1F3FD}\u200D\u2640\uFE0F";
+        const family = "\u{1F468}\u200D\u{1F469}\u200D\u{1F467}";
+        for (const emoji of [woman_shrugging, woman_shrugging_medium_skin, family]) {
+            expect(sanitizeMessage(`ok ${emoji}`)).toBe(`ok ${emoji}`);
+        }
+    });
+
+    test("keeps the zero-width non-joiner that some scripts need", () => {
+        const persian = "\u0645\u06CC\u200C\u062E\u0648\u0627\u0647\u0645";
+        expect(sanitizeMessage(persian)).toBe(persian);
+    });
+
+    test("removes zero-width spaces and byte order marks", () => {
+        expect(sanitizeMessage("a\u200Bb\uFEFFc")).toBe("abc");
     });
 });
 
