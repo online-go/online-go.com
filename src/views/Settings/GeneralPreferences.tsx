@@ -65,8 +65,7 @@ export function GeneralPreferences(props: SettingGroupPageProps): React.ReactEle
         "show-tournament-indicator-on-mobile",
     );
     const [hide_ranks, setHideRanks] = usePreference("hide-ranks");
-    const [disable_custom_styling, setDisableCustomStyling] =
-        usePreference("disable-custom-styling");
+    const [disable_custom_styling] = usePreference("disable-custom-styling");
     const [rating_graph_always_use, setAlwaysUse] = usePreference("rating-graph-always-use");
     const [rating_graph_plot_by_games, setPlotByGames] = usePreference(
         "rating-graph-plot-by-games",
@@ -333,7 +332,16 @@ export function GeneralPreferences(props: SettingGroupPageProps): React.ReactEle
                     "Show profiles and other user-written content as Markdown only. Any custom HTML, CSS, or embedded content is ignored; Markdown formatting still works.",
                 )}
             >
-                <Toggle checked={disable_custom_styling} onChange={setDisableCustomStyling} />
+                <Toggle
+                    checked={disable_custom_styling}
+                    onChange={(tf) =>
+                        preferences.set(
+                            "disable-custom-styling",
+                            tf,
+                            data.Replication.REMOTE_OVERWRITES_LOCAL,
+                        )
+                    }
+                />
             </PreferenceLine>
 
             <PreferenceLine title={_("Enable experimental interface changes")}>
