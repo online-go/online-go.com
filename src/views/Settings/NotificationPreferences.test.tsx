@@ -17,7 +17,8 @@
 
 import * as React from "react";
 import { fireEvent, render } from "@testing-library/react";
-import { put } from "@/lib/requests";
+import { get, put } from "@/lib/requests";
+import * as preferences from "@/lib/preferences";
 
 jest.mock("@/lib/requests", () => ({
     get: jest.fn(() => Promise.resolve({ results: [] })),
@@ -26,12 +27,33 @@ jest.mock("@/lib/requests", () => ({
 
 import { NotificationPreferences } from "./NotificationPreferences";
 
-test("each notification's email, mobile and desktop toggles are saved independently", async () => {
-    const description = "It is my turn to move";
-    const state = {
-        notifications: { yourMove: { description, value: { email: true, mobile: true } } },
+const mockedGet = get as jest.Mock;
+
+function device(provider: string, form_factor: string | null) {
+    return {
+        id: 1,
+        application: provider === "webpush" ? null : { id: 1, name: "SomeApp" },
+        provider,
+        token: null,
+        label: provider === "webpush" ? "Chrome on Linux" : null,
+        form_factor,
+        apns_environment: null,
+        created_at: "2026-10-01T00:00:00Z",
+        last_seen_at: "2026-10-29T00:00:00Z",
     };
-    const view = render(
+}
+
+function renderWithDevices(devices: ReturnType<typeof device>[]) {
+    mockedGet.mockImplementation(() => Promise.resolve({ results: devices }));
+    const state = {
+        notifications: {
+            yourMove: {
+                description: "It is my turn to move",
+                value: { email: true, mobile: true },
+            },
+        },
+    };
+    return render(
         <NotificationPreferences
             state={state}
             vacation_base_time={0}
@@ -39,7 +61,17 @@ test("each notification's email, mobile and desktop toggles are saved independen
             updateSelfReportedAccountLinkages={() => 0}
         />,
     );
-    await view.findByText(/No devices/);
+}
+
+beforeEach(() => {
+    mockedGet.mockImplementation(() => Promise.resolve({ results: [] }));
+    preferences.set("desktop-notifications", false);
+});
+
+test("each notification's email, mobile and desktop toggles are saved independently", async () => {
+    const description = "It is my turn to move";
+    const view = renderWithDevices([device("fcm", "mobile"), device("webpush", "desktop")]);
+    await view.findByText("Chrome on Linux");
     const [email, mobile, desktop] = view.getAllByRole("switch");
     expect(desktop).toBeChecked();
 
@@ -89,4 +121,38 @@ test("streak notifications, which aren't released yet, have no settings row", as
     await view.findByText(/No devices/);
     expect(view.getByText("It is my turn to move")).toBeTruthy();
     expect(view.queryByText("My streak is at risk")).toBeNull();
+});
+
+test("mobile and desktop toggles are disabled when no device gets notifications that way", async () => {
+    const view = renderWithDevices([device("webhook", null)]);
+    await view.findByText(/Webhook/);
+    const [email, mobile, desktop] = view.getAllByRole("switch");
+    expect(email).not.toBeDisabled();
+    expect(mobile).toBeDisabled();
+    expect(desktop).toBeDisabled();
+});
+
+test("a phone browser or native app enables only the mobile toggles", async () => {
+    const view = renderWithDevices([device("webpush", "mobile")]);
+    await view.findByText("Chrome on Linux");
+    const [, mobile, desktop] = view.getAllByRole("switch");
+    expect(mobile).not.toBeDisabled();
+    expect(desktop).toBeDisabled();
+});
+
+test("desktop toggles stay enabled while this browser shows notifications itself", async () => {
+    preferences.set("desktop-notifications", true);
+    Object.defineProperty(window, "Notification", {
+        value: { permission: "granted" },
+        configurable: true,
+    });
+    try {
+        const view = renderWithDevices([]);
+        await view.findByText(/No devices/);
+        const [, mobile, desktop] = view.getAllByRole("switch");
+        expect(mobile).toBeDisabled();
+        expect(desktop).not.toBeDisabled();
+    } finally {
+        delete (window as { Notification?: unknown }).Notification;
+    }
 });

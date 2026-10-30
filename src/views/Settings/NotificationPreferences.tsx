@@ -21,10 +21,11 @@ import { _, interpolate, pgettext } from "@/lib/translate";
 import * as data from "@/lib/data";
 import { put } from "@/lib/requests";
 import { errorAlerter } from "@/lib/misc";
+import { usePreference } from "@/lib/preferences";
 import { Toggle } from "@/components/Toggle";
 import { SettingGroupPageProps } from "@/lib/SettingsCommon";
 
-import { PushDeviceList } from "./PushDeviceList";
+import { PushDevice, PushDeviceList } from "./PushDeviceList";
 import "./NotificationPreferences.css";
 
 interface DeliveryMethods {
@@ -33,9 +34,41 @@ interface DeliveryMethods {
     desktop: boolean;
 }
 
-/** Separate email and mobile toggles for each kind of notification, and the devices getting them. */
+/** Which of the Mobile and Desktop settings a device follows, as the server picks it. */
+function deliveryMethod(device: PushDevice): "mobile" | "desktop" | null {
+    if (device.provider === "webhook") {
+        return null;
+    }
+    if (device.provider === "webpush" && device.form_factor === "desktop") {
+        return "desktop";
+    }
+    return "mobile";
+}
+
+/**
+ * Separate email, mobile and desktop toggles for each kind of notification, and
+ * the devices getting them. The Mobile and Desktop toggles are disabled when
+ * nothing would be sent that way. Desktop also controls the notifications this
+ * browser shows while the site is open, so it stays enabled when those are on.
+ */
 export function NotificationPreferences(props: SettingGroupPageProps): React.ReactElement {
     const [notifications, setNotifications] = React.useState(props.state.notifications);
+    const [devices, setDevices] = React.useState<PushDevice[] | null>(null);
+    const [in_page_notifications] = usePreference("desktop-notifications");
+
+    let in_page_permitted = false;
+    try {
+        in_page_permitted = Notification.permission === "granted";
+    } catch {
+        /* not all browsers support the Notification API */
+    }
+
+    const methods = devices?.map(deliveryMethod);
+    const mobile_disabled = methods !== undefined && !methods.includes("mobile");
+    const desktop_disabled =
+        methods !== undefined &&
+        !methods.includes("desktop") &&
+        !(in_page_notifications && in_page_permitted);
 
     function save(type: string, update: Partial<DeliveryMethods>): void {
         const entry = {
@@ -104,6 +137,7 @@ export function NotificationPreferences(props: SettingGroupPageProps): React.Rea
                                 >
                                     <Toggle
                                         checked={!!mobile}
+                                        disabled={mobile_disabled}
                                         onChange={(on) => save(type, { mobile: on })}
                                     />
                                 </label>
@@ -115,6 +149,7 @@ export function NotificationPreferences(props: SettingGroupPageProps): React.Rea
                                 >
                                     <Toggle
                                         checked={desktop !== false}
+                                        disabled={desktop_disabled}
                                         onChange={(on) => save(type, { desktop: on })}
                                     />
                                 </label>
@@ -122,7 +157,7 @@ export function NotificationPreferences(props: SettingGroupPageProps): React.Rea
                         );
                     })}
             </div>
-            <PushDeviceList />
+            <PushDeviceList onDevicesChange={setDevices} />
         </div>
     );
 }
