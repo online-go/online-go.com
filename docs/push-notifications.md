@@ -84,13 +84,15 @@ Players can also remove devices themselves under Settings.
 
 A notification is pushed, and sent to webhooks, as soon as it's created.
 
-While the player has nothing connected to Online-Go.com, they're notified once
-per game for each kind of notification until they connect again, so a run of
-chat lines in one game is one notification. While they have something
-connected, such as an open page or an app's websocket, nothing is pushed to
-their devices, since they'll see it there, and a skipped push isn't sent later.
-Webhooks still get each notification then, saying the player was connected,
-except `yourMove`, which is only sent while the player is away.
+While the player has something connected to Online-Go.com, such as an open
+page or an app's websocket, nothing is pushed to their devices, since they'll
+see it there, and a skipped push isn't sent later. Webhooks still get each
+notification then, saying the player was connected, except `yourMove`, which is
+only sent while the player is away.
+
+`yourMove` is sent once per turn. Chat after a game is pushed to an away
+player's devices once per game until they connect again, so a run of chat lines
+is one push; webhooks get every line.
 
 Email for `yourMove` goes out with its push. Other email notifications wait
 about 2 minutes, in case the player reads them on the site first. Players
