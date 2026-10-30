@@ -35,7 +35,7 @@
         "test:e2e:ui": "PW_UI=true node scripts/run-playwright.js --ui",
         "test:e2e:debug": "node scripts/run-playwright.js --debug",
         "test:ci": "yarn test:e2e:docker:smoke && yarn test",
-        "test:e2e:docker:smoke": "CI=true yarn test:e2e:docker --grep @Smoke",
+        "test:e2e:docker:smoke": "E2E_SMOKE=1 yarn test:e2e:docker --grep @Smoke",
         "test:e2e:docker": "PLAYWRIGHT_DOCKER=mcr.microsoft.com/playwright:v1.59.1-noble scripts/run-playwright-in-docker.sh"
     },
     "browserslist": [

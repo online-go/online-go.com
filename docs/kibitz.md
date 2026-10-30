@@ -15,8 +15,17 @@ place), pending proposals, variation controls and the two-tab chat (Game,
 Kibitz). The left aside is resizable, with the drag handle on its right
 edge; its width is the `goban-view-left-aside-width` preference, shared
 with the Game page's chat column.
+Kibitz allows resizing this column down to 240px without changing its 384px
+default. The chevron hides its contents and leaves a 28px restore rail;
+restoring reuses the saved width. The collapsed state is saved separately
+for Kibitz. Normal game chat keeps its existing minimum width and controls.
 A people column stands beside the chat log; the People action switches it
 off and it drops on its own when the chat panel is narrower than 22rem.
+
+The room chat shows only the latest game-switch warning for the active
+pending game. Once the switch completes or is cancelled, that warning is
+hidden, including when replaying chat history. Completed-switch messages
+and other system messages remain visible; stored chat history is unchanged.
 
 Portrait: GobanView's `portraitSplit` layout — a board stage, a drag handle,
 and one panel area below it. `KibitzLeftAside` is landscape only. Six panes

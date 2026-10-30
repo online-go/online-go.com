@@ -108,9 +108,10 @@
         white-space: nowrap;
     }
 
-    /* Resign (or cancel) control at the right edge of the play-buttons
-     * strip. Quiet by default so it never competes with the primary
-     * Pass / Submit buttons beside it. */
+    /* Undo at the left edge and resign (or cancel) at the right edge of
+     * the play-buttons strip. Quiet by default so they never compete with
+     * the primary Pass / Submit buttons between them. */
+    .undo-button,
     .resign-button {
         display: inline-flex;
         align-items: center;

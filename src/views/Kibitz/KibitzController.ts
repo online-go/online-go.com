@@ -29,6 +29,10 @@ import { push_manager } from "@/components/UIPush/UIPush";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { User } from "goban";
 import { getCurrentKibitzUser, isKibitzAccessBlockedForUser } from "./kibitzAnalysisPolicy";
+import {
+    isKibitzRoomOffensiveError,
+    isKibitzRoomTitleTakenError,
+} from "./kibitzAnalysisPolicyText";
 import { kibitzTelemetry } from "./kibitzTelemetry";
 import type {
     KibitzPresetBlock,
@@ -383,11 +387,13 @@ function mapChatToStreamItem(msg: ChatMessage, roomId: string): KibitzStreamItem
             type: "system",
             created_at,
             text: typeof m === "string" ? m : (m.text ?? ""),
+            game_id: typeof m === "object" && m !== null ? m.game_id : undefined,
+            links: typeof m === "object" && m !== null ? m.links : undefined,
         };
     }
 
     if (typeof m === "object" && m !== null) {
-        const typed = m as TypedChatBody & { game_id?: number };
+        const typed = m as TypedChatBody;
         if (typed.type === "system") {
             return {
                 id,
@@ -396,6 +402,8 @@ function mapChatToStreamItem(msg: ChatMessage, roomId: string): KibitzStreamItem
                 created_at,
                 author,
                 text: typed.text ?? "",
+                game_id: typed.game_id,
+                links: typed.links,
             };
         }
         if (typed.type === "analysis") {
@@ -417,6 +425,9 @@ function mapChatToStreamItem(msg: ChatMessage, roomId: string): KibitzStreamItem
             created_at,
             author,
             text: typed.text ?? "",
+            ...(typed.type === "chat"
+                ? { game_id: typed.game_id, move_number: typed.move_number }
+                : {}),
         };
     }
 
@@ -432,6 +443,7 @@ function mapChatToStreamItem(msg: ChatMessage, roomId: string): KibitzStreamItem
 
 export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     private _destroyed = false;
+    private _chat_sync_frame: number | null = null;
     private _rooms: KibitzRoomSummary[] = [];
     private _refresh_rooms_promise: Promise<void> | null = null;
     private _active_room: KibitzRoom | null = null;
@@ -908,7 +920,15 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.syncPresenceFromChat();
     }
 
+    private cancelChatSync(): void {
+        if (this._chat_sync_frame !== null) {
+            cancelAnimationFrame(this._chat_sync_frame);
+            this._chat_sync_frame = null;
+        }
+    }
+
     private partActiveChat(): void {
+        this.cancelChatSync();
         if (this._active_chat_proxy) {
             this._active_chat_proxy.off("chat", this.onChatMessage);
             this._active_chat_proxy.off("chat-removed", this.onChatMessageRemoved);
@@ -920,11 +940,10 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         }
     }
 
-    // Full rebuild of stream/variations from the channel's chat_log. Used
-    // for the initial sync only; per-message updates use the incremental
-    // onChatMessage / onChatMessageRemoved handlers below to avoid O(n)
-    // work per chat event over the room's lifetime.
+    // Rebuild after joining or removing messages. Ordinary arrivals append
+    // only the messages accumulated since the previous animation frame.
     private syncMessagesFromChat = (): void => {
+        this.cancelChatSync();
         const proxy = this._active_chat_proxy;
         const room = this._active_room;
         if (!proxy || !room) {
@@ -943,31 +962,44 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         this.setVariations(variations);
     };
 
-    // ChatChannelProxy._onChat / _onChatRemoved (chat_manager.ts) now forward
-    // the underlying channel's single payload correctly, but we still
-    // re-derive from proxy.channel.chat_log rather than trust the payload
-    // shape, staying incremental by inspecting whether the log grew by one
-    // (the common path for both send and receive) vs. some other delta
-    // (initial sync, bulk clear via clearSystemMessages, etc.) which falls
-    // back to a full rebuild.
     private onChatMessage = (): void => {
-        const proxy = this._active_chat_proxy;
-        const room = this._active_room;
-        if (!proxy || !room) {
+        if (this._chat_sync_frame !== null) {
             return;
         }
-        const log = proxy.channel.chat_log;
-        if (log.length !== this._stream.length + 1) {
-            this.syncMessagesFromChat();
-            return;
-        }
-        const msg = log[log.length - 1];
-        const item = mapChatToStreamItem(msg, room.id);
-        this.setStream([...this._stream, item]);
-        const variation = mapAnalysisToVariation(msg, room.id);
-        if (variation) {
-            this.setVariations([...this._variations, variation]);
-        }
+        // Firefox can render between individual replayed messages. Publish
+        // the accumulated history once per frame instead of once per line.
+        this._chat_sync_frame = requestAnimationFrame(() => {
+            this._chat_sync_frame = null;
+            const proxy = this._active_chat_proxy;
+            const room = this._active_room;
+            if (!proxy || !room) {
+                return;
+            }
+            const log = proxy.channel.chat_log;
+            if (
+                log.length < this._stream.length ||
+                (this._stream.length > 0 &&
+                    mapChatToStreamItem(log[this._stream.length - 1], room.id).id !==
+                        this._stream[this._stream.length - 1].id)
+            ) {
+                this.syncMessagesFromChat();
+                return;
+            }
+            const added = log.slice(this._stream.length);
+            if (added.length === 0) {
+                return;
+            }
+            this.setStream([
+                ...this._stream,
+                ...added.map((message) => mapChatToStreamItem(message, room.id)),
+            ]);
+            const variations = added
+                .map((message) => mapAnalysisToVariation(message, room.id))
+                .filter((variation): variation is KibitzVariationSummary => variation !== null);
+            if (variations.length > 0) {
+                this.setVariations([...this._variations, ...variations]);
+            }
+        });
     };
 
     private onChatMessageRemoved = (): void => {
@@ -1102,6 +1134,9 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         } catch (error) {
             console.warn("kibitz: createRoom failed", error);
             kibitzTelemetry.record("create_room", { outcome: "error", error: String(error) });
+            if (isKibitzRoomOffensiveError(error) || isKibitzRoomTitleTakenError(error)) {
+                throw error;
+            }
             return null;
         }
     }
@@ -1157,6 +1192,9 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             return true;
         } catch (error) {
             console.warn("kibitz: updateRoomDetails failed", roomId, error);
+            if (isKibitzRoomOffensiveError(error) || isKibitzRoomTitleTakenError(error)) {
+                throw error;
+            }
             return false;
         }
     }
@@ -1177,14 +1215,20 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         if (!user || user.anonymous) {
             return;
         }
+        const title = game.title || `#${game.game_id}`;
         const text = interpolate(
             pgettext(
                 "Kibitz system message announcing the new watched game",
                 "{{username}} changed the watched game to {{title}}",
             ),
-            { username: user.username, title: game.title || `#${game.game_id}` },
+            { username: user.username, title },
         );
-        this.sendTypedToActiveChannel({ type: "system", text });
+        this.sendTypedToActiveChannel({
+            type: "system",
+            text,
+            game_id: game.game_id,
+            links: [{ text: title, href: `/game/${game.game_id}` }],
+        });
     }
 
     private sendTypedToActiveChannel(body: TypedChatBody): void {

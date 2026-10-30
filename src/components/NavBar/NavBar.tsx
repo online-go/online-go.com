@@ -36,7 +36,6 @@ import { TournamentIndicator } from "@/components/Announcements";
 import { FriendIndicator } from "@/components/FriendList";
 import { ChatIndicator } from "@/components/Chat";
 import { GoTVIndicator } from "@/views/GoTV";
-import { get } from "@/lib/requests";
 import { Menu, MenuContext } from "./Menu";
 
 import { logout } from "@/lib/auth";
@@ -78,25 +77,7 @@ export function NavBar(): React.ReactElement {
     const search_input = React.useRef<HTMLInputElement>(null);
     const [force_nav_close, setForceNavClose] = React.useState(false);
     const [banned_user_id] = useData("appeals.banned_user_id");
-    const [kibitzShowInNav, setKibitzShowInNav] = React.useState<boolean>(false);
-
     const peerReviewAvailable = usePeerReviewAvailability().available;
-
-    React.useEffect(() => {
-        let cancelled = false;
-        get("kibitz/nav-config")
-            .then((res: { show_in_nav?: boolean }) => {
-                if (!cancelled) {
-                    setKibitzShowInNav(Boolean(res?.show_in_nav));
-                }
-            })
-            .catch(() => {
-                // Network blip / endpoint missing — leave the link hidden.
-            });
-        return () => {
-            cancelled = true;
-        };
-    }, []);
 
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
 
@@ -261,13 +242,11 @@ export function NavBar(): React.ReactElement {
                                 to="/observe-games"
                                 icon={<i className="fa fa-eye" />}
                             />
-                            {kibitzShowInNav && (
-                                <MenuLink
-                                    title={_("Kibitz")}
-                                    to="/kibitz"
-                                    icon={<i className="ogs-kibitz" />}
-                                />
-                            )}
+                            <MenuLink
+                                title={_("Kibitz")}
+                                to="/kibitz"
+                                icon={<i className="ogs-kibitz" />}
+                            />
                             <MenuLink title={"GoTV"} to="/gotv" icon={<i className="fa fa-tv" />} />
                         </Menu>
                         <Menu
@@ -630,12 +609,16 @@ export function NavBar(): React.ReactElement {
     );
 }
 
-/** The unified admin interface, which is a separate site on an `admin.`
- * hostname rather than a route here. Derived from wherever this page is
- * being served so that production, beta and a development stack each reach
- * their own, without a build-time constant to keep in step. */
+/** The unified admin interface, which is a separate site rather than a
+ * route here. Derived from wherever this page is being served so that
+ * production, beta and a development stack each reach their own, without a
+ * build-time constant to keep in step. A bare domain gets an `admin.`
+ * subdomain (`admin.online-go.com`, `admin.localhost`), while a host that is
+ * already a subdomain gets an `admin-` prefix (`admin-beta.online-go.com`). */
 function adminInterfaceUrl(): string {
-    return `${window.location.protocol}//admin.${window.location.host}`;
+    const { protocol, hostname, host } = window.location;
+    const separator = hostname.split(".").length > 2 ? "-" : ".";
+    return `${protocol}//admin${separator}${host}`;
 }
 
 interface MenuLinkProps {

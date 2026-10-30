@@ -22,7 +22,7 @@ import { useGobanControllerOrNull } from "@/components/GobanView";
 import * as preferences from "@/lib/preferences";
 import { current_language, pgettext, interpolate, _ } from "@/lib/translate";
 import { profanity_filter } from "@/lib/profanity_filter";
-import { chat_markup } from "./chat_markup";
+import { ChatBodyText } from "./ChatBodyText";
 import { ChatDateLine } from "./ChatDateLine";
 import { GameChatMoveNumber } from "./GameChatMoveNumber";
 import { protocol } from "goban";
@@ -57,96 +57,6 @@ function getTranslatedMessageText(msg: protocol.GameChatTranslatedMessage): stri
             "(translated message unavailable)",
         )
     );
-}
-
-function parsePosition(position: string, goban: Goban | null): { i: number; j: number } {
-    if (!goban || !position) {
-        return {
-            i: -1,
-            j: -1,
-        };
-    }
-
-    let i = "abcdefghjklmnopqrstuvwxyz".indexOf(position[0].toLowerCase());
-    let j = goban.height - Number.parseInt(position.substring(1), 10);
-    if (j < 0 || i < 0) {
-        i = -1;
-        j = -1;
-    }
-    if (i >= goban.width || j >= goban.height) {
-        i = -1;
-        j = -1;
-    }
-    return { i, j };
-}
-
-const positionTokenRegex = /(^|\s)([a-zA-Z][0-9]{1,2})([,.!?]*)(?=\s|$)/gm;
-
-function renderChatBodyText(bodyText: string, goban: Goban | null): React.ReactNode[] {
-    if (!goban) {
-        return chat_markup(bodyText);
-    }
-
-    const nodes: React.ReactNode[] = [];
-    let cursor = 0;
-    let tokenIndex = 0;
-
-    positionTokenRegex.lastIndex = 0;
-    let match: RegExpExecArray | null;
-    while ((match = positionTokenRegex.exec(bodyText)) !== null) {
-        const start = match.index;
-        const prefix = match[1] ?? "";
-        const position = match[2];
-        const punctuation = match[3] ?? "";
-
-        if (start > cursor) {
-            nodes.push(...chat_markup(bodyText.slice(cursor, start)));
-        }
-
-        const parsed = parsePosition(position, goban);
-        nodes.push(
-            <React.Fragment key={`position-${tokenIndex++}`}>
-                {prefix}
-                {parsed.i < 0 ? (
-                    `${position}${punctuation}`
-                ) : (
-                    <>
-                        <span
-                            className={punctuation ? "position tight-right" : "position"}
-                            data-position={position}
-                            onMouseEnter={() => {
-                                const point = parsePosition(position, goban);
-                                if (point.i >= 0) {
-                                    goban.getMarks(point.i, point.j).chat_triangle = true;
-                                    goban.drawSquare(point.i, point.j);
-                                }
-                            }}
-                            onMouseLeave={() => {
-                                const point = parsePosition(position, goban);
-                                if (point.i >= 0) {
-                                    goban.getMarks(point.i, point.j).chat_triangle = false;
-                                    goban.drawSquare(point.i, point.j);
-                                }
-                            }}
-                        >
-                            {position}
-                        </span>
-                        {punctuation ? (
-                            <span className="position-trailing">{punctuation}</span>
-                        ) : null}
-                    </>
-                )}
-            </React.Fragment>,
-        );
-
-        cursor = start + match[0].length;
-    }
-
-    if (cursor < bodyText.length) {
-        nodes.push(...chat_markup(bodyText.slice(cursor)));
-    }
-
-    return nodes;
 }
 
 function getChatIdPrefix(gameId?: number, reviewId?: number): string {
@@ -211,7 +121,7 @@ export function GameChatLine(props: GameChatLineProps): React.ReactElement {
                     <span className="body">
                         {isMe ? " " : ": "}
                         {typeof bodyText === "string" ? (
-                            <React.Fragment>{renderChatBodyText(bodyText, goban)}</React.Fragment>
+                            <ChatBodyText text={bodyText} goban={goban} />
                         ) : (
                             <TypedGameChatBody
                                 body={bodyText}

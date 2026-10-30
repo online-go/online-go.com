@@ -82,7 +82,7 @@ The UI, debug, and quick commands also use the development frontend and
 default to one worker; `yarn test:e2e:quick:parallel` runs the quick selection
 on the built runner with RAM-scaled workers instead. Utility tests (`@E2EUtils`) never run by default; `yarn
 test:e2e:util --grep <name>` includes them by setting `E2E_INCLUDE_UTILS`.
-Listing, help, and CI smoke selection bypass the build and
+Listing, help, and smoke selection (`E2E_SMOKE`) bypass the build and
 moderator-password requirement. The built runner stops before building or
 starting browsers if credentials are missing.
 

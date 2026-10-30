@@ -21,7 +21,7 @@ import { GobanController, getMoveTreeTrunkTail } from "@/lib/GobanController";
 import { toast } from "@/lib/toast";
 import { alert } from "@/lib/swal_config";
 import { get } from "@/lib/requests";
-import { pgettext } from "@/lib/translate";
+import { interpolate, pgettext } from "@/lib/translate";
 import { type GobanConfig, type GobanRendererConfig, protocol } from "goban";
 import type {
     KibitzProposal,
@@ -63,6 +63,7 @@ import {
     captureCurrentGameBaseSnapshotFromController,
     chooseFresherCurrentGameBaseSnapshot,
 } from "./kibitzCurrentGameBaseSnapshot";
+import { openKibitzChatMove } from "./kibitzChatMove";
 import "./KibitzInner.css";
 
 type KibitzGamePickerMode = "create-room" | "change-board" | null;
@@ -452,6 +453,15 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const isSelectedRoomBlocked = !selectedRoomPolicy.allowed;
     const isBlockedRoom = Boolean(accessBlocked?.room_id === roomId || isSelectedRoomBlocked);
     const resolvedRoom = isBlockedRoom ? null : selectedRoom;
+
+    const resolvedRoomTitle = resolvedRoom?.title;
+    React.useEffect(() => {
+        window.document.title = resolvedRoomTitle
+            ? interpolate(pgettext("Browser tab title for a Kibitz room", "Kibitz: %s"), [
+                  resolvedRoomTitle,
+              ])
+            : pgettext("Browser tab title for the Kibitz page", "Kibitz");
+    }, [resolvedRoomTitle]);
 
     React.useEffect(() => {
         if (!roomId) {
@@ -1204,6 +1214,27 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         });
     }, [confirmDiscardDraft, controller]);
 
+    const onOpenChatMove = React.useCallback(
+        (gameId: number, moveNumber: number) => {
+            const main = gobans.main;
+            const sourceRoomId = currentRoomIdRef.current;
+            if (!main) {
+                return;
+            }
+            void openKibitzChatMove({
+                controller: main,
+                gameId,
+                moveNumber,
+                isCurrentGame: () =>
+                    currentRoomIdRef.current === sourceRoomId &&
+                    currentRoomGameIdRef.current === gameId,
+                confirmDiscardDraft,
+                closeVariation: () => controller.closeSecondaryPane(),
+            });
+        },
+        [gobans.main, confirmDiscardDraft, controller],
+    );
+
     const onRoomsOpened = React.useCallback(() => {
         void controller.refreshRoomDirectory();
     }, [controller]);
@@ -1315,6 +1346,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                     onOpenVariation: (variationId, focusVariation = false) =>
                         onOpenVariationFromUser(variationId, focusVariation, "chat"),
                     variationColorIndexes,
+                    onOpenChatMove,
                 }}
                 proposals={{
                     activeProposal,

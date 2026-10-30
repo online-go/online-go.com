@@ -227,8 +227,7 @@ export function useGameActions(args: GameActionsArgs): GameAction[] {
 
     // The in-game player actions, in their own group in the menu so it is
     // a complete list of what a player can do. Only the undo request is
-    // also in the dock and the list; the play buttons already offer the
-    // others.
+    // also in the dock and the list.
     if (user_is_player && mode === "play" && phase === "play") {
         actions.push({
             id: "game-undo",

@@ -44,8 +44,9 @@ because development modules use more browser memory. Set `E2E_WORKERS` or pass
 `--workers` to change this; the CLI option takes precedence. Retries are disabled so failures remain visible. `@Manual`, `@Visual`, and `@E2EUtils`
 tests are excluded from automatic runs.
 
-When `CI` is set, the configuration selects only smoke tests and defaults to one
-worker. Smoke screenshots require the standard Docker image.
+When `E2E_SMOKE` is set (`yarn test:e2e:smoke` sets it), the configuration selects
+only smoke tests and defaults to one worker. Smoke screenshots require the
+standard Docker image. `CI` keeps its usual meaning and only forbids `test.only`.
 
 `test:e2e:parallel` builds automatically. For `test:e2e:built`, first run
 `yarn build` after source changes. The development server must still
@@ -71,8 +72,8 @@ command, add `-e E2E_WORKERS` to pass an exported override. Run
 
 `docker exec` does not inherit host shell variables unless `-e` passes them in.
 The built runner stops before building or starting browsers when the moderator
-password is absent. `--list`, `--help`, and CI smoke runs do not need it or a
-build. Use `test:e2e` for focused development-server testing.
+password is absent. `--list`, `--help`, and smoke runs (`E2E_SMOKE`) do not need
+it or a build. Use `test:e2e` for focused development-server testing.
 
 ## Write tests
 
@@ -101,8 +102,11 @@ failure. Inspect the failure trace and reproduce the cause.
 
 ## Failure artifacts and screenshots
 
-Playwright retains failure screenshots, traces, and videos when available.
-CI uploads these under the test job's **Upload e2e results** step.
+Playwright retains a failure screenshot and the failing test's trace. The
+trace holds the actions, DOM snapshots, network and console, but no
+screencast, and no video is recorded: those cost about a quarter of the e2e
+runner's browser time. Pass `--trace on` when a local repro needs the film
+strip. CI uploads these under the test job's **Upload e2e results** step.
 
 To update smoke screenshots, run the smoke tests with
 `--update-snapshots`, review each changed image, and rerun the smoke tests.

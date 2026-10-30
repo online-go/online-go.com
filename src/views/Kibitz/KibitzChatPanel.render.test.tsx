@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import type { ChatMessage } from "@/lib/chat_manager";
 import type { KibitzRoomSummary, KibitzStreamItem, KibitzVariationSummary } from "@/models/kibitz";
 import { KibitzChatPanel } from "./KibitzChatPanel";
@@ -51,8 +51,20 @@ const mockRoomProxy = {
 
 jest.mock("@/components/Chat", () => ({
     __esModule: true,
-    ChatLine: ({ line, lastLine }: { line: ChatMessage; lastLine?: ChatMessage }) => (
-        <div data-testid="chat-line" data-last-line-t={lastLine ? String(lastLine.message.t) : ""}>
+    ChatLine: ({
+        line,
+        lastLine,
+        goban,
+    }: {
+        line: ChatMessage;
+        lastLine?: ChatMessage;
+        goban?: { game_id: number } | null;
+    }) => (
+        <div
+            data-testid="chat-line"
+            data-last-line-t={lastLine ? String(lastLine.message.t) : ""}
+            data-board={goban?.game_id ?? ""}
+        >
             {typeof line.message.m === "string" ? line.message.m : line.message.m.type}
         </div>
     ),
@@ -231,6 +243,57 @@ function baseProps() {
 }
 
 describe("KibitzChatPanel variation posts", () => {
+    test("removes the pending warning on completion or cancellation without removing other history", () => {
+        const props = baseProps();
+        const warning: KibitzStreamItem = {
+            id: "pending-switch",
+            room_id: props.room.id,
+            type: "system",
+            game_id: 42,
+            created_at: Date.now(),
+            text: "This room will switch to a new game soon: Friendly Match",
+        };
+        const completed = {
+            ...warning,
+            id: "completed-switch",
+            text: "The watched game changed to Friendly Match",
+        };
+        const items = [warning, completed];
+        const pendingRoom: KibitzRoomSummary = {
+            ...props.room,
+            preset: {
+                preset_key: "high-ranked-live",
+                selection_status: "change_pending",
+                pending_game_id: 42,
+                change_effective_at: new Date(Date.now() + 30000).toISOString(),
+            },
+        };
+        const { rerender } = render(
+            <KibitzChatPanel {...props} room={pendingRoom} items={items} mode="room" />,
+        );
+        expect(screen.getByText(warning.text)).toBeInTheDocument();
+
+        rerender(
+            <KibitzChatPanel
+                {...props}
+                room={{
+                    ...pendingRoom,
+                    preset: {
+                        ...pendingRoom.preset!,
+                        selection_status: "watching",
+                        pending_game_id: null,
+                        change_effective_at: null,
+                    },
+                }}
+                items={items}
+                mode="room"
+            />,
+        );
+        expect(screen.queryByText(warning.text)).not.toBeInTheDocument();
+        expect(screen.getByText(completed.text)).toBeInTheDocument();
+        expect(items).toHaveLength(2);
+    });
+
     beforeEach(() => {
         mockRoomProxy.channel.markAsRead.mockClear();
         mockRoomProxy.channel.send.mockClear();
@@ -422,5 +485,279 @@ describe("opening date separator", () => {
         expect(Number.isFinite(t)).toBe(true);
         expect(t).toBeGreaterThanOrEqual(before);
         expect(t).toBeLessThanOrEqual(after);
+    });
+});
+
+describe("Kibitz room chat move references", () => {
+    function propsWithGame() {
+        return {
+            ...baseProps(),
+            mode: "room" as const,
+            room: { ...makeRoom(), current_game: { game_id: 42 } } as KibitzRoomSummary,
+            gameController: {
+                destroyed: false,
+                goban: {
+                    game_id: 42,
+                    chat_log: [],
+                    engine: {
+                        last_official_move: { move_number: 17 },
+                        cur_move: { move_number: 3 },
+                    },
+                    on: jest.fn(),
+                    off: jest.fn(),
+                },
+            } as unknown as import("@/lib/GobanController").GobanController,
+            onOpenChatMove: jest.fn(),
+        };
+    }
+
+    test("sends the live move rather than the position being viewed", () => {
+        const props = propsWithGame();
+        render(<KibitzChatPanel {...props} />);
+        const input = screen.getByPlaceholderText("Message kibitz");
+        fireEvent.change(input, { target: { value: "Hello" } });
+        fireEvent.keyPress(input, { key: "Enter", charCode: 13 });
+        expect(mockRoomProxy.channel.send).toHaveBeenLastCalledWith("Hello", {
+            game_id: 42,
+            move_number: 17,
+        });
+    });
+
+    test("sends plain chat while the main board belongs to the previous game", () => {
+        const props = propsWithGame();
+        props.room = { ...props.room, current_game: { game_id: 43 } } as KibitzRoomSummary;
+        render(<KibitzChatPanel {...props} />);
+        const input = screen.getByPlaceholderText("Message kibitz");
+        fireEvent.change(input, { target: { value: "Hello again" } });
+        fireEvent.keyPress(input, { key: "Enter", charCode: 13 });
+        expect(mockRoomProxy.channel.send).toHaveBeenLastCalledWith("Hello again", undefined);
+    });
+
+    test("groups same-position messages and makes old-game headings plain text", () => {
+        const props = propsWithGame();
+        const items = [
+            { ...makeChatItem("a", "room-stream", "First"), game_id: 42, move_number: 12 },
+            { ...makeChatItem("b", "room-stream", "Second"), game_id: 42, move_number: 12 },
+            { ...makeChatItem("c", "room-stream", "Earlier game"), game_id: 41, move_number: 12 },
+            makeChatItem("d", "room-stream", "Legacy message"),
+        ];
+        const { rerender } = render(<KibitzChatPanel {...props} items={items} />);
+        expect(screen.getAllByRole("button", { name: "Move 12" })).toHaveLength(1);
+        fireEvent.click(screen.getByRole("button", { name: "Move 12" }));
+        expect(props.onOpenChatMove).toHaveBeenCalledWith(42, 12);
+        expect(screen.getAllByText("Move 12")).toHaveLength(2);
+        rerender(
+            <KibitzChatPanel
+                {...props}
+                room={{ ...props.room, current_game: undefined }}
+                items={items}
+            />,
+        );
+        expect(screen.queryByRole("button", { name: "Move 12" })).not.toBeInTheDocument();
+        expect(screen.getAllByText("Move 12")).toHaveLength(2);
+    });
+
+    test("keeps move zero and ignores malformed metadata", () => {
+        const props = propsWithGame();
+        render(
+            <KibitzChatPanel
+                {...props}
+                items={[
+                    {
+                        ...makeChatItem("a", "room-stream", "Before the first move"),
+                        game_id: 42,
+                        move_number: 0,
+                    },
+                    {
+                        ...makeChatItem("b", "room-stream", "Invalid move"),
+                        game_id: 42,
+                        move_number: -1,
+                    },
+                ]}
+            />,
+        );
+        expect(screen.getByRole("button", { name: "Move 0" })).toBeInTheDocument();
+        expect(screen.queryByText("Move -1")).not.toBeInTheDocument();
+    });
+    test("highlights coordinates only for messages belonging to the current game", () => {
+        const props = propsWithGame();
+        const items = [
+            { ...makeChatItem("a", "room-stream", "Current A19"), game_id: 42, move_number: 12 },
+            { ...makeChatItem("b", "room-stream", "Older S7"), game_id: 41, move_number: 12 },
+            makeChatItem("c", "room-stream", "Unknown A19"),
+        ];
+        const { rerender } = render(<KibitzChatPanel {...props} items={items} />);
+        expect(screen.getByText("Current A19")).toHaveAttribute("data-board", "42");
+        expect(screen.getByText("Older S7")).toHaveAttribute("data-board", "");
+        expect(screen.getByText("Unknown A19")).toHaveAttribute("data-board", "");
+        rerender(<KibitzChatPanel {...props} items={items} coordinateGoban={null} />);
+        expect(screen.getByText("Current A19")).toHaveAttribute("data-board", "");
+        const variationBoard = { game_id: 0 } as import("goban").Goban;
+        rerender(<KibitzChatPanel {...props} items={items} coordinateGoban={variationBoard} />);
+        expect(screen.getByText("Current A19")).toHaveAttribute("data-board", "0");
+    });
+});
+
+describe.each(["room", "game"] as const)("%s chat scrolling", (mode) => {
+    let scrollHeight: number;
+    let frames: FrameRequestCallback[];
+
+    beforeEach(() => {
+        scrollHeight = 1000;
+        frames = [];
+        jest.spyOn(HTMLElement.prototype, "scrollHeight", "get").mockImplementation(
+            () => scrollHeight,
+        );
+        jest.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(200);
+        jest.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+            frames.push(callback);
+            return frames.length;
+        });
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
+    function flushFrames() {
+        act(() => {
+            const pending = frames;
+            frames = [];
+            pending.forEach((callback) => callback(0));
+        });
+    }
+
+    function chatProps(roomId = "room-1", count = 2) {
+        return {
+            ...baseProps(),
+            mode,
+            room: { ...makeRoom(), id: roomId, channel: `kibitz-${roomId}` },
+            items: Array.from({ length: count }, (_, index) => ({
+                ...makeChatItem(
+                    `${roomId}-${index}`,
+                    mode === "room" ? "room-stream" : "game-chat",
+                    `Message ${index}`,
+                ),
+                room_id: roomId,
+            })),
+        };
+    }
+
+    test("opens at the latest message when history arrives after mount", () => {
+        const { container, rerender } = render(<KibitzChatPanel {...chatProps("room-1", 0)} />);
+        rerender(<KibitzChatPanel {...chatProps()} />);
+        flushFrames();
+        expect(container.querySelector(".chat-lines")?.scrollTop).toBe(scrollHeight);
+    });
+
+    test("keeps the reading position when messages arrive in the same room", () => {
+        const { container, rerender } = render(<KibitzChatPanel {...chatProps()} />);
+        flushFrames();
+        const log = container.querySelector<HTMLDivElement>(".chat-lines")!;
+        fireEvent.scroll(log, { target: { scrollTop: 100 } });
+        scrollHeight = 1200;
+        rerender(<KibitzChatPanel {...chatProps("room-1", 3)} />);
+        flushFrames();
+        expect(log.scrollTop).toBe(100);
+    });
+
+    test("opens the new room at the latest message after reading older messages", () => {
+        const { container, rerender } = render(<KibitzChatPanel {...chatProps()} />);
+        flushFrames();
+        fireEvent.scroll(container.querySelector(".chat-lines")!, { target: { scrollTop: 0 } });
+        rerender(<KibitzChatPanel {...chatProps("room-2")} />);
+        flushFrames();
+        expect(container.querySelector(".chat-lines")?.scrollTop).toBe(scrollHeight);
+    });
+
+    test("scrolls a new room with the same history length even when already following", () => {
+        const { container, rerender } = render(<KibitzChatPanel {...chatProps()} />);
+        flushFrames();
+        scrollHeight = 1500;
+        rerender(<KibitzChatPanel {...chatProps("room-2")} />);
+        flushFrames();
+        expect(container.querySelector(".chat-lines")?.scrollTop).toBe(scrollHeight);
+    });
+
+    test("opens the new room at the latest message when a hidden pane becomes visible", () => {
+        const { container, rerender } = render(<KibitzChatPanel {...chatProps()} />);
+        flushFrames();
+        fireEvent.scroll(container.querySelector(".chat-lines")!, { target: { scrollTop: 0 } });
+        rerender(<KibitzChatPanel {...chatProps("room-2")} visible={false} />);
+        rerender(<KibitzChatPanel {...chatProps("room-2")} visible={true} />);
+        flushFrames();
+        expect(container.querySelector(".chat-lines")?.scrollTop).toBe(scrollHeight);
+    });
+
+    test("follows delayed history in a new room after reading older messages", () => {
+        const { container, rerender } = render(<KibitzChatPanel {...chatProps()} />);
+        flushFrames();
+        fireEvent.scroll(container.querySelector(".chat-lines")!, { target: { scrollTop: 0 } });
+        rerender(<KibitzChatPanel {...chatProps("room-2", 0)} />);
+        rerender(<KibitzChatPanel {...chatProps("room-2")} />);
+        flushFrames();
+        expect(container.querySelector(".chat-lines")?.scrollTop).toBe(scrollHeight);
+    });
+});
+
+describe("room presence and read-state batching", () => {
+    let frames: Map<number, FrameRequestCallback>;
+    let nextFrame: number;
+    beforeEach(() => {
+        frames = new Map();
+        nextFrame = 0;
+        mockRoomProxy.on.mockClear();
+        mockRoomProxy.channel.markAsRead.mockClear();
+        jest.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+            frames.set(++nextFrame, callback);
+            return nextFrame;
+        });
+        jest.spyOn(window, "cancelAnimationFrame").mockImplementation((id) => {
+            frames.delete(id);
+        });
+    });
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+    function flushFrames() {
+        act(() => {
+            const pending = [...frames.values()];
+            frames.clear();
+            pending.forEach((callback) => callback(0));
+        });
+    }
+    test("updates read state once per replay burst instead of once per message", () => {
+        const { unmount } = render(<KibitzChatPanel {...baseProps()} />);
+        flushFrames();
+        mockRoomProxy.channel.markAsRead.mockClear();
+        const chat = mockRoomProxy.on.mock.calls.find(([event]) => event === "chat")![1];
+        act(() => {
+            for (let index = 0; index < 500; ++index) {
+                chat();
+            }
+        });
+        expect(mockRoomProxy.channel.markAsRead).not.toHaveBeenCalled();
+        expect(frames.size).toBe(1);
+        flushFrames();
+        expect(mockRoomProxy.channel.markAsRead).toHaveBeenCalledTimes(1);
+        unmount();
+    });
+    test("does not refresh or mark the previous room as read after switching rooms", () => {
+        const { rerender, unmount } = render(<KibitzChatPanel {...baseProps()} />);
+        flushFrames();
+        const chat = mockRoomProxy.on.mock.calls.find(([event]) => event === "chat")![1];
+        act(() => {
+            chat();
+        });
+        rerender(
+            <KibitzChatPanel
+                {...baseProps()}
+                room={{ ...makeRoom(), id: "next", channel: "kibitz-next" }}
+            />,
+        );
+        mockRoomProxy.channel.markAsRead.mockClear();
+        flushFrames();
+        expect(mockRoomProxy.channel.markAsRead).not.toHaveBeenCalled();
+        unmount();
     });
 });

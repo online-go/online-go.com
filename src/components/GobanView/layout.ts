@@ -235,6 +235,8 @@ export function useGameLayout(): GameLayoutSnapshot {
 }
 
 export interface GobanViewLayoutInput {
+    leftAsideMinWidth?: number;
+    leftAsideCollapsedWidth?: number;
     mode: GameLayoutMode;
     rootWidth: number;
     prefs: {
@@ -305,13 +307,13 @@ function sidebarOuter(sidebarWidth: number | null): number {
 /**
  * Clamp a stored left aside width so the board pane keeps at least
  * `MIN_BOARD_PANE_REM` (24rem) beside the aside and the main sidebar, the
- * same limit the resize handles use. Never below the default width:
- * `classifyGameLayout` only picks fullHorizontal when that fits.
+ * same limit the resize handles use. Consumers can opt into a smaller minimum.
  */
 export function clampLeftAsideWidth(
     stored: number | null,
     rootWidth: number,
     sidebarWidth: number | null,
+    minWidth: number = LAYOUT_GEOMETRY.defaultLeftAside,
 ): number | null {
     if (stored === null) {
         return null;
@@ -322,7 +324,7 @@ export function clampLeftAsideWidth(
         MIN_BOARD_PANE_REM * 16 -
         LAYOUT_GEOMETRY.sidebarGap -
         LAYOUT_GEOMETRY.edgeMargin;
-    return Math.floor(Math.max(LAYOUT_GEOMETRY.defaultLeftAside, Math.min(stored, max)));
+    return Math.floor(Math.max(minWidth, Math.min(stored, max)));
 }
 
 /**
@@ -343,7 +345,13 @@ export function resolveGobanViewLayout(input: GobanViewLayoutInput): GobanViewLa
 
     const leftAside = leftAsideAllowed(mode) && offered.leftAside;
     const leftAsideWidth = leftAside
-        ? clampLeftAsideWidth(prefs.leftAsideWidth, input.rootWidth, prefs.sidebarWidth)
+        ? (input.leftAsideCollapsedWidth ??
+          clampLeftAsideWidth(
+              prefs.leftAsideWidth,
+              input.rootWidth,
+              prefs.sidebarWidth,
+              input.leftAsideMinWidth,
+          ))
         : null;
     const leftAsideOuter = leftAside
         ? (leftAsideWidth ?? LAYOUT_GEOMETRY.defaultLeftAside) +

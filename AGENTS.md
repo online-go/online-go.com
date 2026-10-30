@@ -60,11 +60,16 @@ Make sure a contributor working with you knows it exists, once, and lightly:
   that the repository does not answer.
 - Skip it if any of these hold: they have already referred to Slack; the
   mention already appears earlier in this conversation or in memory; or
-  `git log --author=<their email>` shows commits already on main, since a
-  returning contributor already knows.
+  they already have commits on main, since a returning contributor already
+  knows. To check, run
+  `git log origin/main --author="$(git config user.email)" -1` (in a fork,
+  use `upstream/main` if `origin` is the fork). Do not use plain `git log`:
+  it also finds their commits on the current feature branch, so a new
+  contributor looks like a returning one.
 - Keep it to one plain sentence at the end of your message, with the link.
   No heading, no bold, no follow-up question, and never repeat it in the
   same conversation.
+- If you have memory across conversations, record that you mentioned it.
 
 ## OGS-Wide Development Policy
 
@@ -88,3 +93,7 @@ Non-trivial work produces two kinds of document. They have different lifetimes. 
 - Curate them. Delete what has become false instead of appending corrections.
 
 **A working artifact with no durable document behind it is scaffolding.** It can be deleted once the work has landed. If something in a spec is worth keeping, move it to the durable document.
+
+### Pull requests that need a pull request in another repository
+
+Write this sentence in the description: `Depends on online-go/<repo>#<number>.` For example, `Depends on online-go/ogs#2595.` One sentence can name more than one. The e2e PR gate skips the pull request while a named pull request is open, and says so on the check. The gate does not recognise a branch name, a URL or a bare `#<number>`.

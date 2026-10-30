@@ -29,7 +29,21 @@ jest.mock("@/components/Player", () => ({
         <span data-testid="Player">{user?.username ?? ""}</span>
     ),
 }));
-jest.mock("@/components/KBShortcut", () => ({ __esModule: true, KBShortcut: () => null }));
+jest.mock("@/components/KBShortcut", () => ({
+    __esModule: true,
+    KBShortcut: ({ shortcut, action }: { shortcut: string; action: () => void }) => {
+        React.useEffect(() => {
+            const onKey = (event: KeyboardEvent) => {
+                if (shortcut === "esc" && event.key === "Escape") {
+                    action();
+                }
+            };
+            document.addEventListener("keydown", onKey);
+            return () => document.removeEventListener("keydown", onKey);
+        }, [shortcut, action]);
+        return null;
+    },
+}));
 jest.mock("@/components/GobanContainer", () => ({
     __esModule: true,
     GobanContainer: () => <div data-testid="goban-container" />,
@@ -90,11 +104,24 @@ jest.mock("./KibitzPortraitPanes", () => ({
 }));
 jest.mock("./KibitzVariationPanel", () => ({
     __esModule: true,
-    KibitzVariationPanel: ({ mode, onPost }: { mode: string; onPost: () => void }) => (
+    KibitzVariationPanel: ({
+        mode,
+        onPost,
+        onBranch,
+    }: {
+        mode: string;
+        onPost: () => void;
+        onBranch?: () => void;
+    }) => (
         <div data-testid={`variation-panel-${mode}`}>
             <button type="button" onClick={() => onPost()}>
                 mock post
             </button>
+            {onBranch && (
+                <button type="button" onClick={onBranch}>
+                    mock branch
+                </button>
+            )}
         </div>
     ),
 }));
@@ -114,6 +141,9 @@ jest.mock("@/lib/hooks", () => ({ useUser: () => ({ id: 1, anonymous: false }) }
 
 function fakeController(curMove = 5, lastOfficialMove = 5): GobanController {
     return {
+        canEstimateScore: jest.fn(() => true),
+        estimateScore: jest.fn(),
+        stopEstimatingScore: jest.fn(),
         goban: {
             config: { game_id: 100 },
             engine: {
@@ -813,5 +843,98 @@ describe("KibitzView", () => {
         expect(screen.queryByTestId("bar-black")).toBeNull();
         expect(screen.queryByTestId("move-number-control")).toBeNull();
         expect(container.querySelector(".GobanView.has-no-board")).not.toBeNull();
+    });
+});
+
+describe("Kibitz score estimation", () => {
+    test("the toolbar estimates the watched game", () => {
+        const props = baseProps();
+        render(<KibitzView {...props} />);
+        fireEvent.click(screen.getByTitle("Estimate score"));
+        expect(props.gobans.main?.estimateScore).toHaveBeenCalledWith({
+            source: props.gobans.main,
+            preserveAnnotations: true,
+        });
+    });
+
+    test("a displayed variation estimates itself with its source game's restrictions", () => {
+        const props = baseProps();
+        const secondary = fakeController();
+        render(
+            <KibitzView
+                {...props}
+                gobans={{ ...props.gobans, secondary, center: secondary, centerMode: "draft" }}
+            />,
+        );
+        fireEvent.click(screen.getByTitle("Estimate score"));
+        expect(secondary.estimateScore).toHaveBeenCalledWith({
+            source: props.gobans.main,
+            preserveAnnotations: true,
+        });
+        expect(props.gobans.main?.estimateScore).not.toHaveBeenCalled();
+    });
+
+    test("keeps the action disabled when the controller refuses estimation", () => {
+        const props = baseProps();
+        jest.mocked(props.gobans.main!.canEstimateScore).mockReturnValue(false);
+        render(<KibitzView {...props} />);
+        expect(screen.getByTitle("Estimate score")).toBeDisabled();
+        fireEvent.click(screen.getByTitle("Estimate score"));
+        expect(props.gobans.main?.estimateScore).not.toHaveBeenCalled();
+    });
+
+    test("the result and Back to Board control are visible on desktop", () => {
+        const props = baseProps();
+        const controller = props.gobans.main!;
+        Object.defineProperty(controller, "estimating_score", { value: true });
+        Object.assign(controller.goban, { score_estimator: { winner: "Black", amount: 2.5 } });
+        const { container } = render(<KibitzView {...props} />);
+        expect(screen.getByRole("status")).toHaveTextContent("Black by 2.5");
+        expect(
+            container.querySelector(".GobanView-sidebar-content .KibitzScoreEstimate"),
+        ).not.toBeNull();
+        fireEvent.click(screen.getByRole("button", { name: "Back to Board" }));
+        expect(controller.stopEstimatingScore).toHaveBeenCalledTimes(1);
+    });
+
+    test("Escape exits estimation before it closes a variation", () => {
+        const props = baseProps();
+        const controller = props.gobans.main!;
+        Object.defineProperty(controller, "estimating_score", { value: true });
+        render(<KibitzView {...props} />);
+        fireEvent.keyDown(document, { key: "Escape" });
+        expect(controller.stopEstimatingScore).toHaveBeenCalledTimes(1);
+        expect(props.onExitVariation).not.toHaveBeenCalled();
+    });
+
+    test("stops estimation before branching from a posted variation", () => {
+        const props = baseProps({ onBranchFromVariation: jest.fn() });
+        const secondary = fakeController();
+        Object.defineProperty(secondary, "estimating_score", { value: true });
+        render(
+            <KibitzView
+                {...props}
+                gobans={{ ...props.gobans, secondary, center: secondary, centerMode: "variation" }}
+            />,
+        );
+        fireEvent.click(screen.getByRole("button", { name: "mock branch" }));
+        expect(secondary.stopEstimatingScore).toHaveBeenCalledTimes(1);
+        expect(props.onBranchFromVariation).toHaveBeenCalledTimes(1);
+        expect(jest.mocked(secondary.stopEstimatingScore).mock.invocationCallOrder[0]).toBeLessThan(
+            jest.mocked(props.onBranchFromVariation!).mock.invocationCallOrder[0],
+        );
+    });
+
+    test("stops estimation before creating a variation snapshot", () => {
+        const props = baseProps({ onCreateVariation: jest.fn() });
+        const controller = props.gobans.main!;
+        Object.defineProperty(controller, "estimating_score", { value: true });
+        render(<KibitzView {...props} />);
+        fireEvent.click(screen.getByTitle("New variation"));
+        expect(controller.stopEstimatingScore).toHaveBeenCalledTimes(1);
+        expect(props.onCreateVariation).toHaveBeenCalledTimes(1);
+        expect(
+            jest.mocked(controller.stopEstimatingScore).mock.invocationCallOrder[0],
+        ).toBeLessThan(jest.mocked(props.onCreateVariation!).mock.invocationCallOrder[0]);
     });
 });

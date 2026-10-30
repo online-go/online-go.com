@@ -20,8 +20,12 @@ import * as React from "react";
 import * as data from "@/lib/data";
 import { Player } from "@/components/Player";
 import { chat_markup } from "./chat_markup";
+import { system_line_markup } from "./system_line_markup";
+import type { Goban } from "goban";
+import { ChatBodyText } from "./ChatBodyText";
 import { ChatDateLine } from "./ChatDateLine";
-import { ChatMessage, TypedChatBody } from "@/lib/chat_manager";
+import type { ChatMessage, TypedChatBody } from "@/lib/chat_manager";
+import { getChatMessageText } from "@/lib/chatMessageText";
 import { profanity_filter } from "@/lib/profanity_filter";
 
 let name_match_regex = /^loading...$/;
@@ -47,6 +51,8 @@ interface ChatLineInterface {
     /** False where the caller renders the date itself, outside the line. It
      *  separates a run of lines rather than belongs to one. */
     showDate?: boolean;
+    showRank?: boolean;
+    goban?: Goban | null;
 }
 
 export function ChatLine(props: ChatLineInterface): React.ReactElement {
@@ -63,13 +69,18 @@ export function ChatLine(props: ChatLineInterface): React.ReactElement {
     if (line.system || sys_body_typed) {
         const sys_body = line.message.m;
         const sys_text = typeof sys_body === "string" ? sys_body : (sys_body.text ?? "");
-        return <div className="chat-line system">{chat_markup(sys_text)}</div>;
+        const sys_links = typeof sys_body === "string" ? undefined : sys_body.links;
+        return (
+            <div className="chat-line system">
+                {sys_links ? system_line_markup(sys_text, sys_links) : chat_markup(sys_text)}
+            </div>
+        );
     }
 
     const message = line.message;
     const ts = message.t ? new Date(message.t * 1000) : null;
     let third_person = false;
-    let body = message.m;
+    let body = getChatMessageText(message.m) ?? message.m;
 
     let body_rendered: React.ReactNode;
     if (typeof body === "string") {
@@ -90,7 +101,7 @@ export function ChatLine(props: ChatLineInterface): React.ReactElement {
             body = generateChatSearchLine("https://www.google.com/#q=", "/google ", body);
         }
 
-        body_rendered = chat_markup(body);
+        body_rendered = <ChatBodyText text={body} goban={props.goban} />;
     } else {
         body_rendered = renderTypedBody(body);
     }
@@ -126,10 +137,18 @@ export function ChatLine(props: ChatLineInterface): React.ReactElement {
             )}
             {ts && <span className="timestamp">[{timestamp_str}]</span>}
             {(user.id || null) && (
-                <Player user={user} flare rank={false} noextracontrols disableCacheUpdate />
+                <Player
+                    user={user}
+                    flare
+                    rank={props.showRank ?? false}
+                    noextracontrols
+                    disableCacheUpdate
+                />
             )}
-            {third_person ? " " : ": "}
-            <span className="body">{body_rendered}</span>
+            <span className="body">
+                {third_person ? " " : ": "}
+                {body_rendered}
+            </span>
         </div>
     );
 }

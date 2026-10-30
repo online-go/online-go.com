@@ -17,8 +17,15 @@
 
 import * as React from "react";
 import { _, interpolate, pgettext } from "@/lib/translate";
-import { BotConfigV2 } from "goban";
-import { Bot, botTimeSettingRanges } from "@/lib/bots";
+import {
+    Bot,
+    BotBoardSizes,
+    boardSizeRangeText,
+    botTimeSettingRanges,
+    isBoardSizeRanges,
+    isUnsupportedBoardSizeSetting,
+    unsupportedBoardSizeSettingMessage,
+} from "@/lib/bots";
 import { TimeControl, timeControlSystemText } from "@/components/TimeControl";
 import "./BotAcceptedSettings.css";
 
@@ -37,12 +44,18 @@ function rangeText(min: string, max: string): string {
     });
 }
 
-function boardSizesText(sizes: BotConfigV2["allowed_board_sizes"]): string {
+function boardSizesText(sizes: BotBoardSizes): string {
+    if (isBoardSizeRanges(sizes)) {
+        return boardSizeRangeText(sizes);
+    }
     if (sizes === "all" || (Array.isArray(sizes) && sizes.length === 1 && sizes[0] === 0)) {
         return pgettext("A bot accepts every board size", "Any size");
     }
     if (sizes === "square") {
         return pgettext("A bot accepts every square board size", "Any square board");
+    }
+    if (isUnsupportedBoardSizeSetting(sizes)) {
+        return unsupportedBoardSizeSettingMessage();
     }
     return (Array.isArray(sizes) ? sizes : [sizes]).map((size) => `${size}x${size}`).join(", ");
 }
@@ -82,14 +95,14 @@ export function BotAcceptedSettings({
         return null;
     }
 
-    // v1 configs have no rapid settings, and the server plays rapid games with
-    // their live settings
-    const speed_settings =
-        config._config_version === 1 && time_control.speed === "rapid"
-            ? (config.allowed_rapid_settings ?? config.allowed_live_settings)
-            : config[`allowed_${time_control.speed}_settings`];
+    // The server always sends v1 allowed_rapid_settings, at least as {}. Use a
+    // system's rapid entry when it exists, and otherwise the live entry.
     const time_rows = config.allowed_time_control_systems.map((system) => {
-        const ranges = botTimeSettingRanges(bot, system, speed_settings);
+        const v1_rapid = config._config_version === 1 && time_control.speed === "rapid";
+        const ranges = v1_rapid
+            ? (botTimeSettingRanges(bot, system, config.allowed_rapid_settings) ??
+              botTimeSettingRanges(bot, system, config.allowed_live_settings))
+            : botTimeSettingRanges(bot, system, config[`allowed_${time_control.speed}_settings`]);
         return {
             system,
             text: ranges

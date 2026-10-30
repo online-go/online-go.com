@@ -64,6 +64,30 @@ export function getKibitzPickerFailedCreateMessage(): string {
     );
 }
 
+/** The server refuses offensive room titles and descriptions with this errcode */
+export function isKibitzRoomOffensiveError(error: unknown): boolean {
+    return (error as { errcode?: unknown } | null)?.errcode === "kibitzroom_offensive";
+}
+
+export function getKibitzRoomOffensiveMessage(): string {
+    return pgettext(
+        "Error shown when a Kibitz room title or description is refused as offensive",
+        "Sorry, that room title or description is not allowed. Please choose a different one.",
+    );
+}
+
+/** The server refuses a room title that another room already has with this errcode */
+export function isKibitzRoomTitleTakenError(error: unknown): boolean {
+    return (error as { errcode?: unknown } | null)?.errcode === "kibitzroom_title_taken";
+}
+
+export function getKibitzRoomTitleTakenMessage(): string {
+    return pgettext(
+        "Error shown when a Kibitz room title is already used by another room",
+        "A room with that name already exists. Please choose another name.",
+    );
+}
+
 export function getKibitzPickerFailedChangeMessage(): string {
     return pgettext(
         "Error shown when Kibitz board switching fails",

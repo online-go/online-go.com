@@ -20,6 +20,7 @@ import { ChatLine } from "@/components/Chat";
 import { GameChatLine } from "@/components/Chat/GameChatLine";
 import { ChatDateLine } from "@/components/Chat/ChatDateLine";
 import { GameChatMoveNumber } from "@/components/Chat/GameChatMoveNumber";
+import { LineText } from "@/components/misc-ui";
 import { TabCompleteInput } from "@/components/TabCompleteInput";
 import { ChatUserList } from "@/components/ChatUserList";
 import { Player } from "@/components/Player";
@@ -28,7 +29,7 @@ import * as data from "@/lib/data";
 import { useUser } from "@/lib/hooks";
 import type { GobanController } from "@/lib/GobanController";
 import { interpolate, moment, pgettext } from "@/lib/translate";
-import { protocol } from "goban";
+import { protocol, type Goban } from "goban";
 import type {
     KibitzRoomSummary,
     KibitzStreamItem,
@@ -38,6 +39,7 @@ import type {
 import { formatVariationBranchLabel, formatVariationLengthLabel } from "./kibitzVariationQuickList";
 import { KibitzVariationSwatch } from "./KibitzVariationSwatch";
 import { kibitzTelemetry } from "./kibitzTelemetry";
+import { getVisibleKibitzStreamItems } from "./kibitzVisibleStreamItems";
 import "./KibitzChatPanel.css";
 import "@/components/Chat/ChatLog.css";
 
@@ -56,6 +58,7 @@ type PaneEntry =
           // matching GameChat.css's .chat-line.spectator rule.
           gobanChannel?: string;
           gobanLine?: protocol.GameChatLine;
+          position?: { game_id: number; move_number: number };
       }
     | {
           kind: "variation";
@@ -69,8 +72,10 @@ export interface KibitzChatPanelProps {
     items: KibitzStreamItem[];
     variations: KibitzVariationSummary[];
     onOpenVariation: (variationId: string, focusVariation?: boolean) => void;
+    onOpenChatMove?: (gameId: number, moveNumber: number) => void;
     /** Live game controller whose chat_log feeds the Game tab. */
     gameController: GobanController | null;
+    coordinateGoban?: Goban | null;
     /** Move-tree line colour of each variation that is on the board, by id. */
     variationColorIndexes: Record<string, number>;
     /** Whether the people column is switched on, from the action bar. */
@@ -202,6 +207,16 @@ function createChatLineFromItem(
         key: item.id,
         createdAt: item.created_at,
         source,
+        position:
+            item.type === "chat" &&
+            typeof item.game_id === "number" &&
+            Number.isSafeInteger(item.game_id) &&
+            item.game_id > 0 &&
+            typeof item.move_number === "number" &&
+            Number.isSafeInteger(item.move_number) &&
+            item.move_number >= 0
+                ? { game_id: item.game_id, move_number: item.move_number }
+                : undefined,
         line: {
             channel: room.channel,
             username: item.author?.username ?? "system",
@@ -214,7 +229,12 @@ function createChatLineFromItem(
             message: {
                 i: item.id,
                 t: Math.floor(item.created_at / 1000),
-                m: item.text,
+                // A system line with links keeps its typed body so ChatLine can
+                // render them; everything else stays plain text.
+                m:
+                    item.type === "system" && item.links?.length
+                        ? { type: "system", text: item.text, links: item.links }
+                        : item.text,
             },
         },
     };
@@ -241,7 +261,9 @@ export function KibitzChatPanel({
     items,
     variations,
     onOpenVariation,
+    onOpenChatMove,
     gameController,
+    coordinateGoban,
     variationColorIndexes,
     showPeople,
     mode,
@@ -283,7 +305,7 @@ export function KibitzChatPanel({
     const roomEntries = React.useMemo<PaneEntry[]>(() => {
         const entries: PaneEntry[] = [];
 
-        for (const item of items) {
+        for (const item of getVisibleKibitzStreamItems(room, items)) {
             const source = item.source ?? "room-stream";
             if (source === "game-chat") {
                 continue;
@@ -327,6 +349,15 @@ export function KibitzChatPanel({
         return entries.sort(sortEntries);
     }, [gobanGameEntries, items, room]);
 
+    React.useLayoutEffect(() => {
+        setRoomFollowLatest(true);
+        setGameFollowLatest(true);
+        setRoomUnread(false);
+        setGameUnread(false);
+        roomPreviousEntryCountRef.current = 0;
+        gamePreviousEntryCountRef.current = 0;
+    }, [roomChannel]);
+
     React.useEffect(() => {
         const body = bodyRef.current;
         if (!body || typeof ResizeObserver === "undefined") {
@@ -361,20 +392,32 @@ export function KibitzChatPanel({
             nextRoomProxy.channel.markAsRead();
             refresh((value) => value + 1);
         };
+        let frame: number | null = null;
+        const scheduleSync = () => {
+            if (frame === null) {
+                frame = requestAnimationFrame(() => {
+                    frame = null;
+                    sync();
+                });
+            }
+        };
 
-        nextRoomProxy.on("chat", sync);
-        nextRoomProxy.on("chat-removed", sync);
-        nextRoomProxy.on("join", sync);
-        nextRoomProxy.on("part", sync);
-        nextRoomProxy.on("user-metadata-update", sync);
+        nextRoomProxy.on("chat", scheduleSync);
+        nextRoomProxy.on("chat-removed", scheduleSync);
+        nextRoomProxy.on("join", scheduleSync);
+        nextRoomProxy.on("part", scheduleSync);
+        nextRoomProxy.on("user-metadata-update", scheduleSync);
         sync();
 
         return () => {
-            nextRoomProxy.off("chat", sync);
-            nextRoomProxy.off("chat-removed", sync);
-            nextRoomProxy.off("join", sync);
-            nextRoomProxy.off("part", sync);
-            nextRoomProxy.off("user-metadata-update", sync);
+            if (frame !== null) {
+                cancelAnimationFrame(frame);
+            }
+            nextRoomProxy.off("chat", scheduleSync);
+            nextRoomProxy.off("chat-removed", scheduleSync);
+            nextRoomProxy.off("join", scheduleSync);
+            nextRoomProxy.off("part", scheduleSync);
+            nextRoomProxy.off("user-metadata-update", scheduleSync);
             nextRoomProxy.part();
         };
     }, [room.channel]);
@@ -470,7 +513,7 @@ export function KibitzChatPanel({
         }
 
         roomPreviousEntryCountRef.current = current;
-    }, [roomFollowLatest, roomVisible, roomEntries.length]);
+    }, [roomChannel, roomFollowLatest, roomVisible, roomEntries.length]);
 
     React.useEffect(() => {
         const previous = gamePreviousEntryCountRef.current;
@@ -482,7 +525,7 @@ export function KibitzChatPanel({
         }
 
         gamePreviousEntryCountRef.current = current;
-    }, [gameEntries.length, gameFollowLatest, gameVisible]);
+    }, [roomChannel, gameEntries.length, gameFollowLatest, gameVisible]);
 
     React.useEffect(() => {
         if (roomVisible && roomFollowLatest) {
@@ -534,7 +577,7 @@ export function KibitzChatPanel({
                 roomScrollRef.current.scrollTop = roomScrollRef.current.scrollHeight;
             }
         });
-    }, [roomEntries.length, roomFollowLatest, roomVisible]);
+    }, [roomChannel, roomEntries.length, roomFollowLatest, roomVisible]);
 
     React.useLayoutEffect(() => {
         const container = gameScrollRef.current;
@@ -548,7 +591,7 @@ export function KibitzChatPanel({
                 gameScrollRef.current.scrollTop = gameScrollRef.current.scrollHeight;
             }
         });
-    }, [gameEntries.length, gameFollowLatest, gameVisible]);
+    }, [roomChannel, gameEntries.length, gameFollowLatest, gameVisible]);
 
     const onRoomKeyPress = React.useCallback(
         (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -566,12 +609,24 @@ export function KibitzChatPanel({
                 return false;
             }
 
-            roomProxy.channel.send(value);
+            const gameId = room.current_game?.game_id;
+            const goban = watchedController?.goban;
+            const moveNumber = goban?.engine.last_official_move?.move_number;
+            const position =
+                gameId != null &&
+                goban?.game_id === gameId &&
+                !watchedController?.destroyed &&
+                typeof moveNumber === "number" &&
+                Number.isSafeInteger(moveNumber) &&
+                moveNumber >= 0
+                    ? { game_id: gameId, move_number: moveNumber }
+                    : undefined;
+            roomProxy.channel.send(value, position);
             kibitzTelemetry.record("send_message");
             input.value = "";
             return false;
         },
-        [roomProxy],
+        [roomProxy, room.current_game?.game_id, watchedController],
     );
 
     // Both line components draw a date separator whenever the previous line
@@ -587,6 +642,7 @@ export function KibitzChatPanel({
     } as protocol.GameChatLine;
 
     const renderEntries = (entries: PaneEntry[], source: "room" | "game") => {
+        let previousPosition: { game_id: number; move_number: number } | undefined;
         if (entries.length === 0) {
             return (
                 <div className="stream-empty">
@@ -611,6 +667,7 @@ export function KibitzChatPanel({
             >
                 {entries.map((entry) => {
                     if (entry.kind === "variation") {
+                        previousPosition = undefined;
                         const variation = variations.find(
                             (candidate) => candidate.id === entry.item.variation_id,
                         );
@@ -647,6 +704,7 @@ export function KibitzChatPanel({
                                             <span className="variation-post-author">
                                                 <Player
                                                     user={entry.item.author}
+                                                    flare
                                                     disableCacheUpdate
                                                 />
                                             </span>
@@ -679,6 +737,18 @@ export function KibitzChatPanel({
                         );
                     }
 
+                    const position = source === "room" ? entry.position : undefined;
+                    const showPosition =
+                        position &&
+                        (position.game_id !== previousPosition?.game_id ||
+                            position.move_number !== previousPosition?.move_number);
+                    previousPosition = position;
+                    const canOpenPosition =
+                        position &&
+                        onOpenChatMove &&
+                        position.game_id === room.current_game?.game_id &&
+                        position.game_id === watchedController?.goban.game_id &&
+                        !watchedController.destroyed;
                     const previousRoomLine = roomLastLine;
                     const previousGameLine = gameLastLine;
                     if (source === "room") {
@@ -693,25 +763,53 @@ export function KibitzChatPanel({
                     // separator instead of the name beside it.
                     return (
                         <React.Fragment key={entry.key}>
-                            {entry.gobanLine ? (
-                                <>
-                                    <ChatDateLine
-                                        timestamp={entry.gobanLine.date}
-                                        previousTimestamp={previousGameLine?.date}
-                                        hasPreviousLine={Boolean(previousGameLine)}
-                                    />
-                                    <GameChatMoveNumber
-                                        line={entry.gobanLine}
-                                        lastLine={previousGameLine}
-                                    />
-                                </>
-                            ) : (
-                                <ChatDateLine
-                                    timestamp={entry.line.message.t}
-                                    previousTimestamp={previousRoomLine?.message.t}
-                                    hasPreviousLine={Boolean(previousRoomLine)}
+                            {entry.gobanLine && (
+                                <GameChatMoveNumber
+                                    line={entry.gobanLine}
+                                    lastLine={previousGameLine}
                                 />
                             )}
+                            {showPosition && (
+                                <LineText className="move-number kibitz-chat-move-number">
+                                    {canOpenPosition ? (
+                                        <button
+                                            type="button"
+                                            className="chat-move-link"
+                                            onClick={() =>
+                                                onOpenChatMove(
+                                                    position.game_id,
+                                                    position.move_number,
+                                                )
+                                            }
+                                        >
+                                            {pgettext(
+                                                "Label for a jump-to-move control in game chat",
+                                                "Move",
+                                            )}{" "}
+                                            {position.move_number}
+                                        </button>
+                                    ) : (
+                                        <span>
+                                            {pgettext(
+                                                "Label for a jump-to-move control in game chat",
+                                                "Move",
+                                            )}{" "}
+                                            {position.move_number}
+                                        </span>
+                                    )}
+                                </LineText>
+                            )}
+                            <ChatDateLine
+                                timestamp={entry.gobanLine?.date ?? entry.line.message.t}
+                                previousTimestamp={
+                                    entry.gobanLine
+                                        ? previousGameLine?.date
+                                        : previousRoomLine?.message.t
+                                }
+                                hasPreviousLine={Boolean(
+                                    entry.gobanLine ? previousGameLine : previousRoomLine,
+                                )}
+                            />
                             <div
                                 className={
                                     "kibitz-chat-entry " +
@@ -723,7 +821,7 @@ export function KibitzChatPanel({
                                     className="kibitz-chat-entry-time"
                                     dateTime={new Date(entry.createdAt).toISOString()}
                                 >
-                                    {moment(entry.createdAt).format("HH:mm")}
+                                    {moment(entry.createdAt).format("HH:mm")}{" "}
                                 </time>
 
                                 {entry.gobanLine ? (
@@ -738,6 +836,16 @@ export function KibitzChatPanel({
                                         line={entry.line}
                                         lastLine={previousRoomLine}
                                         showDate={false}
+                                        showRank
+                                        goban={
+                                            position &&
+                                            position.game_id === room.current_game?.game_id &&
+                                            position.game_id === watchedController?.goban.game_id
+                                                ? coordinateGoban === undefined
+                                                    ? watchedController.goban
+                                                    : coordinateGoban
+                                                : null
+                                        }
                                     />
                                 )}
                             </div>

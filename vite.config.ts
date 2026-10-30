@@ -51,6 +51,10 @@ if (!_workerVersionMatch) {
 }
 const GOBAN_SOCKET_WORKER_VERSION = _workerVersionMatch[1].trim();
 const OGS_I18N_BUILD_MODE = (process.env.OGS_I18N_BUILD_MODE || "false").toLowerCase() === "true";
+// Builds whose tsc and ESLint pass is done elsewhere (the e2e runner: GitHub's
+// lint workflow checks every PR) set this to skip it. It is most of the build time.
+const OGS_SKIP_BUILD_CHECKS =
+    (process.env.OGS_SKIP_BUILD_CHECKS || "false").toLowerCase() === "true";
 let OGS_BACKEND = process.env.OGS_BACKEND;
 OGS_BACKEND = OGS_BACKEND ? OGS_BACKEND.toUpperCase() : "BETA";
 
@@ -471,7 +475,7 @@ export default defineConfig({
                   overlay: {
                       initialIsOpen: true,
                   },
-                  enableBuild: true,
+                  enableBuild: !OGS_SKIP_BUILD_CHECKS,
               })
             : null,
     ],
