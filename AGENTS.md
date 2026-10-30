@@ -88,3 +88,7 @@ Non-trivial work produces two kinds of document. They have different lifetimes. 
 - Curate them. Delete what has become false instead of appending corrections.
 
 **A working artifact with no durable document behind it is scaffolding.** It can be deleted once the work has landed. If something in a spec is worth keeping, move it to the durable document.
+
+### Pull requests that need a pull request in another repository
+
+Write this sentence in the description: `Depends on online-go/<repo>#<number>.` For example, `Depends on online-go/ogs#2595.` One sentence can name more than one. The e2e PR gate skips the pull request while a named pull request is open, and says so on the check. The gate does not recognise a branch name, a URL or a bare `#<number>`.
