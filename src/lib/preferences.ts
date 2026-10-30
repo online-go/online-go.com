@@ -99,6 +99,7 @@ export const defaults = {
     "goban-view-mobile-scroll": false,
     "goban-view-move-controls": "docked" as MoveControlsPosition,
     "hide-ranks": false,
+    "disable-custom-styling": false,
     "label-positioning": "all" as LabelPosition,
     "label-positioning-puzzles": "all" as LabelPosition,
     "game.chat-enabled": true,
