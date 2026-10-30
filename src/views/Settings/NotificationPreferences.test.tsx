@@ -129,7 +129,9 @@ test("mobile and desktop toggles are disabled when no device gets notifications 
     const [email, mobile, desktop] = view.getAllByRole("switch");
     expect(email).not.toBeDisabled();
     expect(mobile).toBeDisabled();
+    expect(mobile).not.toBeChecked();
     expect(desktop).toBeDisabled();
+    expect(desktop).not.toBeChecked();
 });
 
 test("a phone browser or native app enables only the mobile toggles", async () => {
@@ -137,7 +139,9 @@ test("a phone browser or native app enables only the mobile toggles", async () =
     await view.findByText("Chrome on Linux");
     const [, mobile, desktop] = view.getAllByRole("switch");
     expect(mobile).not.toBeDisabled();
+    expect(mobile).toBeChecked();
     expect(desktop).toBeDisabled();
+    expect(desktop).not.toBeChecked();
 });
 
 test("desktop toggles stay enabled while this browser shows notifications itself", async () => {
