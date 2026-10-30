@@ -23,7 +23,15 @@
         border: 0;
         box-shadow: none;
         background: transparent;
-        color: var(--fg);
+        color: var(--text-dimmed);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--fg);
+        }
 
         &:focus-visible {
             outline: 2px solid var(--primary);

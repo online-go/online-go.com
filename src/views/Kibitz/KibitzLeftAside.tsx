@@ -117,12 +117,15 @@ export function KibitzLeftAside(props: KibitzLeftAsideProps): React.ReactElement
                             : pgettext("Kibitz sidebar toggle", "Hide rooms and variations")
                     }
                 >
-                    <i
-                        className={
-                            "fa " + (props.collapsed ? "fa-chevron-right" : "fa-chevron-left")
-                        }
-                        aria-hidden="true"
-                    />
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path
+                            d={props.collapsed ? "M6 3L11 8L6 13" : "M10 3L5 8L10 13"}
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        />
+                    </svg>
                 </button>
             )}
             <div className="KibitzLeftAside-content" hidden={props.collapsed}>
