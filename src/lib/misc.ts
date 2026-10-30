@@ -455,7 +455,8 @@ export function sanitizeMessage(text: string): string {
         return "";
     }
 
-    normalized = normalized.replace(/[\u200B-\u200D\uFEFF]/g, "");
+    // U+200C and U+200D are kept: emoji sequences and some scripts need them.
+    normalized = normalized.replace(/[\u200B\uFEFF]/g, "");
     normalized = normalized.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
     normalized = normalized.replace(/[^\S\n]+|\n[^\S\n]*/g, (match) =>
         match.includes("\n") ? "\n" : " ",
