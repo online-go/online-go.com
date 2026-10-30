@@ -46,6 +46,8 @@ import { useUser } from "@/lib/hooks";
 import { AntiGrief } from "./AntiGrief";
 import { GobanAnalyzeButtonBar } from "@/components/GobanAnalyzeButtonBar/GobanAnalyzeButtonBar";
 import { EstimateScore } from "./fragments";
+import { PeerReviewFeedbackPanel } from "./PeerReviewFeedbackPanel";
+import { PeerReviewRequest } from "./PeerReviewRequest";
 import "./PlayControls.css";
 
 const MAX_SEALING_LOCATIONS_TO_LIST = 5;
@@ -185,6 +187,9 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
                         <button onClick={rematch} className="primary">
                             {_("Rematch")}
                         </button>
+                    )}
+                    {((user_is_player && !engine.rengo && goban.config.game_id) || null) && (
+                        <PeerReviewRequest gameId={Number(goban.config.game_id)} />
                     )}
                     {((!zen_mode && goban_controller.review_list.length > 0) || null) && (
                         <div className="review-list">
@@ -466,6 +471,7 @@ export function ReviewControls({ review_id }: ReviewControlsProps) {
 
     return (
         <div className="PlayControls">
+            <PeerReviewFeedbackPanel reviewId={review_id} />
             <div className="game-state">
                 {(mode === "analyze" || null) && (
                     <div>

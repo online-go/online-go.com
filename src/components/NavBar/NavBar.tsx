@@ -45,6 +45,7 @@ import { Hamburger } from "./Hamburger";
 import { forwardRef, useId, useState } from "react";
 import { MODERATOR_POWERS } from "@/lib/moderation";
 import { openDemoBoardModal } from "../DemoBoardModal";
+import { usePeerReviewAvailability } from "@/views/PeerReview/usePeerReviewAvailability";
 import "./NavBar.css";
 
 function setTheme(theme: string) {
@@ -76,6 +77,7 @@ export function NavBar(): React.ReactElement {
     const search_input = React.useRef<HTMLInputElement>(null);
     const [force_nav_close, setForceNavClose] = React.useState(false);
     const [banned_user_id] = useData("appeals.banned_user_id");
+    const peerReviewAvailable = usePeerReviewAvailability().available;
 
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
 
@@ -216,6 +218,13 @@ export function NavBar(): React.ReactElement {
                                 to="/puzzles"
                                 icon={<i className="fa fa-puzzle-piece" />}
                             />
+                            {peerReviewAvailable && (
+                                <MenuLink
+                                    title={_("Request a peer review")}
+                                    to="/peer-review/request"
+                                    icon={<i className="fa fa-search-plus" />}
+                                />
+                            )}
                             <MenuLink
                                 title={_("Other Go Resources")}
                                 to="/docs/other-go-resources"
@@ -263,6 +272,13 @@ export function NavBar(): React.ReactElement {
                                 to="/groups"
                                 icon={<i className="fa fa-users" />}
                             />
+                            {peerReviewAvailable && (
+                                <MenuLink
+                                    title={_("Become a peer reviewer")}
+                                    to="/peer-review/join"
+                                    icon={<i className="fa fa-search-plus" />}
+                                />
+                            )}
                             <MenuLink
                                 title={_("What's New")}
                                 to="/whats-new"
@@ -331,6 +347,14 @@ export function NavBar(): React.ReactElement {
                                 to="/rating-calculator"
                                 icon={<i className="fa fa-calculator" />}
                             />
+
+                            {peerReviewAvailable && (
+                                <MenuLink
+                                    title={_("Peer Review Queue")}
+                                    to="/peer-review"
+                                    icon={<i className="fa fa-search-plus" />}
+                                />
+                            )}
 
                             <MenuLink
                                 title={_("Contribute To Translation")}
@@ -420,6 +444,13 @@ export function NavBar(): React.ReactElement {
                                     title="Prize Batches"
                                     icon={<i className="fa fa-trophy" />}
                                     to="/prize-batches"
+                                />
+                            )}
+                            {user.is_superuser && (
+                                <MenuLink
+                                    title={_("Peer review settings")}
+                                    to="/admin/peer-review"
+                                    icon={<i className="fa fa-search-plus" />}
                                 />
                             )}
                             {user.is_superuser && (

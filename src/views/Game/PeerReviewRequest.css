@@ -1,0 +1,12 @@
+.PeerReviewRequest {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 0.5rem 0;
+
+    &.reason {
+        color: var(--shade1);
+        font-size: var(--font-size-small);
+    }
+}

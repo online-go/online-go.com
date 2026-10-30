@@ -102,6 +102,60 @@ export function format_message(props: MessageProps): string {
         // break omitted
         case "test":
             return "This is a test";
+        case "peer_review_disabled":
+            return _("Peer review is not available right now.");
+        case "peer_review_not_player":
+            return _("Only a player in the game can request a peer review of it.");
+        case "peer_review_game_not_finished":
+            return _("You can request a peer review once the game has finished.");
+        case "peer_review_board_size":
+            return _("Peer review is available for 9x9, 13x13 and 19x19 games.");
+        case "peer_review_9x9_rank":
+            return _(
+                "Peer review of 9x9 games is for stronger players; try a 13x13 or 19x19 game.",
+            );
+        case "peer_review_bot_game":
+            return _("Games against bots cannot be submitted for peer review.");
+        case "peer_review_private_game":
+            return _("Private games cannot be submitted for peer review.");
+        case "peer_review_already_requested_game":
+            return _("You have already requested a peer review of this game.");
+        case "peer_review_request_open":
+            return _(
+                "You already have a peer review request waiting. Withdraw it or wait for it to finish.",
+            );
+        case "peer_review_cooldown":
+            return _("You can make one peer review request per week.");
+        case "peer_review_not_reviewer":
+            return _("Join the peer reviewer pool first.");
+        case "peer_review_min_rank":
+            return _("Your rank is below the peer reviewer cutoff.");
+        case "peer_review_provisional":
+            return _("Your rank needs to settle before you can become a peer reviewer.");
+        case "peer_review_rank_not_allowed":
+            return _("Your rank does not allow you to review this request.");
+        case "peer_review_state_conflict":
+            return _("This request has changed. Please refresh and try again.");
+        case "peer_review_feedback_not_open":
+            return _("You can rate the review once it has been submitted.");
+        case "peer_review_feedback_closed":
+            return _("The feedback window for this review has closed.");
+        case "peer_review_feedback_delivered":
+            return _(
+                "The reviewer has already read your feedback, so it can no longer be changed.",
+            );
+        case "peer_review_feedback_too_long":
+            return _("Your feedback is too long.");
+        case "peer_review_feedback_invalid":
+            return _("Choose a rating from 1 to 5.");
+        case "not_found":
+            return _("That request no longer exists.");
+        case "forbidden":
+            return _("You are not allowed to do that.");
+        case "review_creation_failed":
+            return _("The review could not be started. Please try again.");
+        case "invalid_range":
+            return _("The weakest rank must not be stronger than the strongest rank.");
     }
 
     return message_id;

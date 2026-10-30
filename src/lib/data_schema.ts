@@ -27,6 +27,7 @@ import type { defaults as defaultPreferences, ValidPreference } from "./preferen
 import type { TimeControl, TimeControlTypes } from "@/components/TimeControl";
 import type { JosekiFilter } from "@/components/JosekiVariationFilter";
 import type { Challenge } from "@/lib/challenge_utils";
+import type { PeerReviewConfig } from "@/views/PeerReview/types";
 
 type TimeControlSpeed = TimeControlTypes.TimeControlSpeed;
 type TimeControlSystem = TimeControlTypes.TimeControlSystem;
@@ -75,6 +76,7 @@ export interface ConfigSchema {
     payment_problems?: PaymentProblems;
     last_game?: Record<string, unknown>;
     whats_new?: WhatsNewConfig;
+    peer_review?: PeerReviewConfig;
 }
 
 export interface WhatsNewConfig {

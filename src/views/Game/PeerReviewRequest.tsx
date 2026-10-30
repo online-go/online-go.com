@@ -1,0 +1,152 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+import * as React from "react";
+import { Link } from "react-router-dom";
+import { format_message } from "@/components/Errcode";
+import { Player } from "@/components/Player";
+import type { MessageId } from "@/lib/messages";
+import { errorAlerter, ignore } from "@/lib/misc";
+import { rankString } from "@/lib/rank_utils";
+import { alert } from "@/lib/swal_config";
+import { _, interpolate, moment, pgettext } from "@/lib/translate";
+import { createRequest, fetchGameRequestStatus, requestAction } from "@/views/PeerReview/api";
+import { Honorific } from "@/views/PeerReview/Honorific";
+import type { GameRequestStatus } from "@/views/PeerReview/types";
+import { usePeerReviewAvailability } from "@/views/PeerReview/usePeerReviewAvailability";
+import { WaitTime } from "@/views/PeerReview/WaitTime";
+import "./PeerReviewRequest.css";
+
+interface PeerReviewRequestProps {
+    gameId: number;
+}
+
+/** On a finished game: the request button, or the player's request status with withdraw and the review link. */
+export function PeerReviewRequest({ gameId }: PeerReviewRequestProps): React.ReactElement | null {
+    const { available } = usePeerReviewAvailability();
+    const [status, setStatus] = React.useState<GameRequestStatus | null>(null);
+
+    const retries = React.useRef(0);
+
+    const load = React.useCallback(() => {
+        fetchGameRequestStatus(gameId).then(setStatus).catch(ignore);
+    }, [gameId]);
+
+    React.useEffect(() => {
+        if (available) {
+            load();
+        }
+    }, [available, load]);
+
+    // This block mounts when the client sees the game end, which can be a moment before the
+    // server has recorded it. Ask again a few times rather than show "once the game has finished".
+    React.useEffect(() => {
+        if (status?.reason !== "peer_review_game_not_finished" || retries.current >= 10) {
+            return;
+        }
+        const timer = setTimeout(() => {
+            retries.current += 1;
+            load();
+        }, 2000);
+        return () => clearTimeout(timer);
+    }, [status, load]);
+
+    if (!available || !status) {
+        return null;
+    }
+
+    const request = () => {
+        alert
+            .fire({ text: _("Request a peer review of this game?"), showCancelButton: true })
+            .then(({ value: accept }) => {
+                if (accept) {
+                    createRequest(gameId).then(load).catch(errorAlerter);
+                }
+            })
+            .catch(ignore);
+    };
+    const withdraw = () => {
+        if (!status.request) {
+            return;
+        }
+        requestAction(status.request.id, "withdraw").then(load).catch(errorAlerter);
+    };
+
+    const req = status.request;
+    if (req && (req.state === "open" || req.state === "claimed")) {
+        return (
+            <div className="PeerReviewRequest">
+                {req.state === "open" ? (
+                    <span>
+                        <Link to="/peer-review">
+                            {pgettext("Peer review request status", "Peer review requested")}
+                        </Link>{" "}
+                        <WaitTime since={req.created} />
+                    </span>
+                ) : (
+                    <span>
+                        <Link to="/peer-review">
+                            {pgettext("Peer review request status", "Being reviewed by")}
+                        </Link>{" "}
+                        {req.reviewer && <Player user={req.reviewer} rank disableCacheUpdate />}
+                        <Honorific name={req.reviewer_honorific} />
+                    </span>
+                )}
+                {req.state === "open" && (
+                    <button onClick={withdraw}>
+                        {pgettext("Withdraw a peer review request", "Withdraw")}
+                    </button>
+                )}
+            </div>
+        );
+    }
+    if (req && req.state === "submitted") {
+        return (
+            <div className="PeerReviewRequest">
+                {req.review_id ? (
+                    <Link to={`/review/${req.review_id}`}>{_("Peer review ready")}</Link>
+                ) : (
+                    <span>{_("Peer review removed")}</span>
+                )}
+            </div>
+        );
+    }
+    if (status.may_request) {
+        return (
+            <div className="PeerReviewRequest">
+                <button className="primary" onClick={request}>
+                    {pgettext("Button on a finished game", "Request peer review")}
+                </button>
+            </div>
+        );
+    }
+    const reason =
+        status.reason === "peer_review_cooldown" && status.cooldown_until
+            ? interpolate(_("You can request another peer review {{when}}"), {
+                  when: moment(status.cooldown_until).fromNow(),
+              })
+            : status.reason === "peer_review_9x9_rank"
+              ? interpolate(
+                    _("Peer review of 9x9 games is open to players of {{rank}} or stronger"),
+                    {
+                        rank: rankString(status.min_rank_for_9x9),
+                    },
+                )
+              : status.reason
+                ? format_message({ message_id: status.reason as MessageId })
+                : null;
+    return reason ? <div className="PeerReviewRequest reason">{reason}</div> : null;
+}

@@ -38,7 +38,7 @@ import { SignIn } from "@/views/SignIn";
 import { Register } from "@/views/Register";
 import { ChallengeLinkLanding } from "@/views/ChallengeLinkLanding";
 import { Home } from "@/views/Home";
-import { OnlineLeaguesAdmin } from "@/views/Admin";
+import { OnlineLeaguesAdmin, PeerReviewSettings } from "@/views/Admin";
 import { WhatsNew } from "@/views/WhatsNew";
 import { ChatView } from "@/views/ChatView";
 import { Developer } from "@/views/Developer";
@@ -124,6 +124,41 @@ function LearningHubWithLoading() {
             }
         >
             <LearningHub />
+        </React.Suspense>
+    );
+}
+
+const PeerReview = React.lazy(() =>
+    import("@/views/PeerReview/PeerReview").then((m) => ({ default: m.PeerReview })),
+);
+
+function PeerReviewWithLoading() {
+    return (
+        <React.Suspense fallback={<Loading />}>
+            <PeerReview />
+        </React.Suspense>
+    );
+}
+
+const JoinPage = React.lazy(() =>
+    import("@/views/PeerReview/JoinPage").then((m) => ({ default: m.JoinPage })),
+);
+const RequestInfoPage = React.lazy(() =>
+    import("@/views/PeerReview/RequestInfoPage").then((m) => ({ default: m.RequestInfoPage })),
+);
+
+function JoinPageWithLoading() {
+    return (
+        <React.Suspense fallback={<Loading />}>
+            <JoinPage />
+        </React.Suspense>
+    );
+}
+
+function RequestInfoPageWithLoading() {
+    return (
+        <React.Suspense fallback={<Loading />}>
+            <RequestInfoPage />
         </React.Suspense>
     );
 }
@@ -413,6 +448,7 @@ export const routes = (
                 <Route path="/moderator/fair-play-logic-dump" element={<FairPlayLogicDump />} />
                 <Route path="/admin/firewall" element={<Firewall />} />
                 <Route path="/admin/online_leagues" element={<OnlineLeaguesAdmin />} />
+                <Route path="/admin/peer-review" element={<PeerReviewSettings />} />
                 <Route path="/whats-new" element={<WhatsNew />} />
                 <Route path="/whats-new/:postId" element={<WhatsNew />} />
                 <Route path="/announcement-center" element={<AnnouncementCenter />} />
@@ -427,6 +463,10 @@ export const routes = (
                   <Route path="/admin/tournament-schedule-list" element={<AdminTournamentScheduleList />}/>
                 */}
                 <Route path="/moderator" element={<Moderator />} />
+                <Route path="/peer-review/join" element={<JoinPageWithLoading />} />
+                <Route path="/peer-review/request" element={<RequestInfoPageWithLoading />} />
+                <Route path="/peer-review/:tab" element={<PeerReviewWithLoading />} />
+                <Route path="/peer-review" element={<PeerReviewWithLoading />} />
                 <Route path="/learning-hub/:section/:page" element={<LearningHubWithLoading />} />
                 <Route path="/learning-hub/:section" element={<LearningHubWithLoading />} />
                 <Route path="/learning-hub" element={<LearningHubWithLoading />} />

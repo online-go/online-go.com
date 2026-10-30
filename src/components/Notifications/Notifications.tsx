@@ -166,6 +166,16 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
 
             case "prizeCodeExpiring":
                 return "/supporter";
+
+            case "peerReviewClaimed":
+            case "peerReviewClaimWarning":
+            case "peerReviewClaimExpired":
+                return `/game/${notification.game_id}`;
+            case "peerReviewSubmitted":
+            case "peerReviewFeedback":
+                return notification.review_id
+                    ? `/review/${notification.review_id}`
+                    : `/game/${notification.game_id}`;
         }
 
         return null;
@@ -603,6 +613,59 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
                             {
                                 code_level: notification.code_level,
                                 expires_in_days: notification.expires_in_days,
+                            },
+                        )}
+                    </div>
+                );
+            case "peerReviewClaimed":
+                return (
+                    <div>
+                        {interpolate(_("{{reviewer}} is reviewing your game {{game_name}}"), {
+                            reviewer: notification.reviewer?.username,
+                            game_name: notification.game_name,
+                        })}
+                    </div>
+                );
+            case "peerReviewSubmitted":
+                return (
+                    <div>
+                        {interpolate(_("Your peer review of {{game_name}} is ready"), {
+                            game_name: notification.game_name,
+                        })}
+                    </div>
+                );
+            case "peerReviewFeedback":
+                return (
+                    <div>
+                        {interpolate(_("{{requester}} rated your review of {{game_name}}"), {
+                            requester: notification.requester?.username,
+                            game_name: notification.game_name,
+                        })}
+                    </div>
+                );
+            case "peerReviewClaimWarning":
+                return (
+                    <div>
+                        {interpolate(
+                            _(
+                                "Your peer review of {{game_name}} is overdue. Submit it within {{hours}} hours or it goes back to the queue",
+                            ),
+                            {
+                                game_name: notification.game_name,
+                                hours: notification.hours_left,
+                            },
+                        )}
+                    </div>
+                );
+            case "peerReviewClaimExpired":
+                return (
+                    <div>
+                        {interpolate(
+                            _(
+                                "Your claim on {{game_name}} lapsed and the request is back in the queue",
+                            ),
+                            {
+                                game_name: notification.game_name,
                             },
                         )}
                     </div>
