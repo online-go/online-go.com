@@ -101,6 +101,9 @@ again, so a run of chat lines is one push; webhooks get every line.
 Email for `yourMove` goes out with its push. Other email notifications wait
 about 2 minutes, in case the player reads them on the site first. Players
 choose which notification types are pushed to their devices under Settings.
+They can also turn email, mobile or desktop notifications off for every type at
+once. That keeps each type's own setting, so turning the method back on
+restores them.
 
 ## What a push contains
 
@@ -218,7 +221,8 @@ Every notification for a subscribed player, whatever their per-type Email,
 Mobile and Desktop settings, as described in
 [When notifications are sent](#when-notifications-are-sent). The settings only
 control what OGS itself sends, so each event includes the player's settings for
-that kind of notification, and whether they were connected to Online-Go.com
+that kind of notification, with any method the player turned off for every
+notification shown off, and whether they were connected to Online-Go.com
 when it was sent, for you to follow or not as suits your site. Each event is
 one request:
 
