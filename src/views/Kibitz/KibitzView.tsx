@@ -42,34 +42,13 @@ import {
 } from "./KibitzRoomSettingsPopover";
 import { KibitzKeyboardShortcuts } from "./KibitzKeyboardShortcuts";
 import { PlayerCards } from "@/views/Game/PlayerCards";
-import { CompactPlayerHeader } from "@/views/Game/CompactPlayerHeader";
+import { KibitzStackedPlayerHeader } from "./KibitzStackedPlayerHeader";
+import { useKibitzThinHeader } from "./kibitzThinHeader";
 import { KibitzMoreActionsRoomActions, openKibitzMoreActions } from "./KibitzMoreActionsPopover";
 import { KibitzScoreEstimate } from "./KibitzScoreEstimate";
 import { useKibitzScoreEstimation } from "./useKibitzScoreEstimation";
 import "./KibitzView.css";
 import "@/views/Game/Players.css";
-
-function KibitzStackedPlayerHeader({
-    controller,
-    estimatingScore,
-}: {
-    controller: GobanController | null;
-    estimatingScore: boolean;
-}): React.ReactElement | null {
-    const { mode } = useGobanViewLayout();
-    if (mode !== "stacked" || !controller) {
-        return null;
-    }
-    return (
-        <CompactPlayerHeader
-            historical_black={null}
-            historical_white={null}
-            estimating_score={estimatingScore}
-            show_cached_avatar_fallback
-            controller={controller}
-        />
-    );
-}
 
 function KibitzSidebarPlayerCards({
     controller,
@@ -178,6 +157,11 @@ const useBehindLive = generateGobanHook(
  */
 export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const { room, gobans, isPortrait } = props;
+    const thinHeader = useKibitzThinHeader();
+    React.useEffect(() => {
+        document.documentElement.classList.toggle("kibitz-thin-header", thinHeader);
+        return () => document.documentElement.classList.remove("kibitz-thin-header");
+    }, [thinHeader]);
     const scoreSource = gobans.playerBars ?? gobans.center;
     const scoreEstimation = useKibitzScoreEstimation(gobans.center, scoreSource, room.channel);
     const stopEstimate = React.useCallback(() => {
@@ -564,7 +548,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     return (
         <GobanView
             controller={gobans.center}
-            className="Kibitz"
+            className={`Kibitz${thinHeader ? " Kibitz-thin-header" : ""}`}
             header={
                 // The header says what the centre is showing. Watching the
                 // game that is the room and its result; showing a variation,

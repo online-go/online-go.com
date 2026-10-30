@@ -13,3 +13,17 @@
    header. Add focused tests for data updates, expansion and layout boundaries.
 6. Format modified files, run focused tests, type-check and lint, inspect the
    browser layout, then run the build once. Record any limits in the handoff.
+
+## Verification
+
+- The two focused suites pass all 48 tests, including live clock and capture
+  updates, byo-yomi, Canadian overtime, pause state, official-turn tracking,
+  controller changes, Escape, the reference boundary and keyboard stability.
+- TypeScript, lint, modified-file formatting and the production build pass.
+- Browser checks use an actual beta room at 320 by 568, 375 by 667,
+  390 by 844 and 844 by 390. The thin header is 45 pixels high including its
+  border, and its disclosure has a 44 by 44 pixel touch target. The existing
+  cards return at the reference size and in landscape. Expansion fits at 320
+  pixels. Live clock rendering is also checked with a local game fixture.
+- The browser test expectations include both header forms. The full end-to-end
+  suite is not run.

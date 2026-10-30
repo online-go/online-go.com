@@ -1,0 +1,104 @@
+.KibitzThinPlayer {
+    min-width: 0;
+    padding: 0.2rem 0.5rem;
+    color: var(--fg);
+
+    .KibitzThinPlayer-name {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        min-width: 0;
+        font-size: 0.75rem;
+        line-height: 1.2;
+    }
+
+    .Player,
+    .KibitzThinPlayer-name-plain {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0;
+    }
+
+    .Player-username {
+        margin-left: 0;
+    }
+
+    .KibitzThinPlayer-stone {
+        flex: 0 0 0.6rem;
+        width: 0.6rem;
+        height: 0.6rem;
+        border-radius: 50%;
+        border: 1px solid var(--shade1);
+        background: var(--layout-illustration-black-stone);
+    }
+
+    &.white .KibitzThinPlayer-stone {
+        background: var(--layout-illustration-white-stone);
+    }
+
+    .KibitzThinPlayer-summary {
+        position: relative;
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+        min-width: 0;
+        line-height: 1.4;
+    }
+
+    .KibitzThinPlayer-time {
+        flex: none;
+        font-size: 0.85rem;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    &.their-turn .KibitzThinPlayer-time {
+        text-decoration: underline;
+        text-underline-offset: 0.15rem;
+        text-decoration-thickness: 2px;
+    }
+
+    .Clock {
+        display: inline-flex;
+        align-items: baseline;
+        flex-wrap: nowrap;
+        gap: 0.15rem;
+        animation: none;
+        font-size: inherit;
+
+        .main-time,
+        .period-time,
+        .byo-yomi-periods {
+            font-size: inherit;
+            margin: 0;
+        }
+
+        .absolute-time {
+            display: none;
+        }
+    }
+
+    .KibitzThinPlayer-captures,
+    .KibitzThinPlayer-paused {
+        flex: none;
+        white-space: nowrap;
+        font-size: 0.7rem;
+        color: var(--text-dimmed);
+    }
+
+    .KibitzThinPlayer-captures.is-overflowing {
+        position: absolute;
+        visibility: hidden;
+        pointer-events: none;
+    }
+
+    &.white {
+        text-align: right;
+
+        .KibitzThinPlayer-name,
+        .KibitzThinPlayer-summary {
+            justify-content: flex-end;
+        }
+    }
+}
