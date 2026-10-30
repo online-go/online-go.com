@@ -667,3 +667,59 @@ describe("useKibitzGobans", () => {
         expect(includeMarksById.get("v1")).toBe(false);
     });
 });
+
+test("draft annotations remain dirty after navigating to another node and can be undone", () => {
+    let latest: KibitzGobans | null = null;
+    render(
+        <Harness
+            options={baseOptions({
+                secondaryPane: { collapsed: false, variation_source_game_id: 7 },
+            })}
+            onResult={(result) => {
+                latest = result;
+            }}
+        />,
+    );
+    const secondary = instances[1] as unknown as {
+        goban: { pen_marks: unknown[]; engine: { move_tree: unknown; cur_move: unknown } };
+    };
+    const mark: { letter?: string; needs_sealing?: boolean } = {};
+    const node = {
+        trunk: true,
+        branches: [],
+        pen_marks: [],
+        foreachMarkedPosition: (visit: (x: number, y: number) => void) => {
+            if (Object.keys(mark).length) {
+                visit(0, 0);
+            }
+        },
+        getMarks: () => mark,
+    };
+    const nextNode = {
+        trunk: true,
+        branches: [],
+        pen_marks: [{ color: "#000000", points: [1, 2, 3, 4] }],
+        foreachMarkedPosition: jest.fn(),
+        getMarks: () => ({}),
+    };
+    Object.assign(node, { trunk_next: nextNode });
+    secondary.goban.engine.move_tree = node;
+    secondary.goban.engine.cur_move = node;
+    secondary.goban.pen_marks = [];
+    emit(instances[1], "load");
+    expect(latest!.isDraftDirty()).toBe(false);
+    mark.needs_sealing = true;
+    expect(latest!.isDraftDirty()).toBe(false);
+    mark.letter = "A";
+    secondary.goban.engine.cur_move = nextNode;
+    secondary.goban.pen_marks = nextNode.pen_marks;
+    expect(latest!.isDraftDirty()).toBe(true);
+    delete mark.letter;
+    expect(latest!.isDraftDirty()).toBe(false);
+    secondary.goban.engine.cur_move = node;
+    secondary.goban.pen_marks = [];
+    secondary.goban.pen_marks.push({ color: "#000000", points: [1, 2, 3, 4] });
+    expect(latest!.isDraftDirty()).toBe(true);
+    secondary.goban.pen_marks = [];
+    expect(latest!.isDraftDirty()).toBe(false);
+});

@@ -50,7 +50,7 @@ export interface KibitzGobans {
      *  game while the center shows a draft or variation of it, the center
      *  board for a variation of another game. */
     playerBars: GobanController | null;
-    /** True while the draft in the center has moves that have not been
+    /** True while the draft in the center has moves or annotations that have not been
      *  posted yet. Always false outside draft mode. */
     isDraftDirty: () => boolean;
 }
@@ -159,6 +159,40 @@ function countBranchNodes(root: MoveTree | null | undefined): number {
         }
     }
     return count;
+}
+
+function draftAnnotations(node: MoveTree): string {
+    const marks: Array<{ x: number; y: number; values: Array<string | boolean | null> }> = [];
+    node.foreachMarkedPosition((x, y) => {
+        const mark = node.getMarks(x, y);
+        const values = [
+            mark.letter ?? null,
+            !!mark.triangle,
+            !!mark.circle,
+            !!mark.square,
+            !!mark.cross,
+            mark.score ?? null,
+            !!mark.stone_removed,
+        ];
+        if (values.some(Boolean)) {
+            marks.push({ x, y, values });
+        }
+    });
+    return JSON.stringify({ marks, pen: node.pen_marks });
+}
+
+function captureDraftAnnotations(root: MoveTree | null | undefined): Map<MoveTree, string> {
+    const result = new Map<MoveTree, string>();
+    const stack = root ? [root] : [];
+    while (stack.length > 0) {
+        const node = stack.pop() as MoveTree;
+        result.set(node, draftAnnotations(node));
+        if (node.trunk_next) {
+            stack.push(node.trunk_next);
+        }
+        stack.push(...node.branches);
+    }
+    return result;
 }
 
 /** Re-anchor the engine's last official move at the trunk tail without
@@ -312,11 +346,13 @@ export function useKibitzGobans({
     const secondaryUsesMainTrunk = centerMode !== "main" && secondaryTargetGameId === gameId;
     const secondaryGate = secondaryUsesMainTrunk ? mainReady : true;
 
-    // Branch node count of a draft right after it was composed; more nodes
-    // than this means the user has added moves that would be lost on exit.
+    // Keep original node annotations as well as the branch count: editing
+    // an existing position does not add a move-tree node.
     const draftBaselineRef = React.useRef<{
         controller: GobanController;
         nodeCount: number;
+        annotations: Map<MoveTree, string>;
+        penMarks: Map<MoveTree, string>;
     } | null>(null);
 
     // Keyed on `hasMain`, not on `main`: the secondary board only needs the
@@ -403,8 +439,8 @@ export function useKibitzGobans({
             const focus = mode === "variation" ? selectedVariation : draftBase;
             if (focus) {
                 // Compose in the order the variations appear in the list, whatever is
-                // selected, so the order nodes enter parent.branches — and with it the
-                // move tree's branch order — does not depend on the selection.
+                // selected, so the order nodes enter parent.branches â€” and with it the
+                // move tree's branch order â€” does not depend on the selection.
                 //
                 // A draft branched from a variation composes the same set as the board
                 // it was branched from, not the base variation alone: the reader may
@@ -436,9 +472,19 @@ export function useKibitzGobans({
             }
             if (mode === "draft") {
                 controller.setAnalyzeTool("stone", "alternate");
+                const annotations = captureDraftAnnotations(controller.goban.engine.move_tree);
+                const penMarks = new Map(
+                    [...annotations.keys()].map((node) => [node, JSON.stringify(node.pen_marks)]),
+                );
+                penMarks.set(
+                    controller.goban.engine.cur_move,
+                    JSON.stringify(controller.goban.pen_marks ?? []),
+                );
                 draftBaselineRef.current = {
                     controller,
                     nodeCount: countBranchNodes(controller.goban.engine.move_tree),
+                    annotations,
+                    penMarks,
                 };
             }
             controller.goban.redraw(true);
@@ -508,7 +554,15 @@ export function useKibitzGobans({
         if (!baseline || baseline.controller !== secondary) {
             return false;
         }
-        return countBranchNodes(baseline.controller.goban.engine.move_tree) > baseline.nodeCount;
+        const originalPenMarks = baseline.penMarks.get(baseline.controller.goban.engine.cur_move);
+        return (
+            countBranchNodes(baseline.controller.goban.engine.move_tree) > baseline.nodeCount ||
+            (originalPenMarks !== undefined &&
+                JSON.stringify(baseline.controller.goban.pen_marks ?? []) !== originalPenMarks) ||
+            [...baseline.annotations].some(
+                ([node, original]) => draftAnnotations(node) !== original,
+            )
+        );
     }, [secondary]);
 
     const center = centerMode === "main" ? main : (secondary ?? main);

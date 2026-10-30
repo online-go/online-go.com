@@ -621,7 +621,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const { centerMode, isDraftDirty } = gobans;
 
     // Resolves true when it is fine to leave the current draft: there is no
-    // draft, it has no unposted moves, or the user chose to discard it.
+    // draft, it has no unposted changes, or the user chose to discard it.
     const confirmDiscardDraft = React.useCallback(async (): Promise<boolean> => {
         if (centerMode !== "draft" || !isDraftDirty()) {
             return true;
@@ -938,7 +938,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         showCurrentGameBaseNotReadyToast,
     ]);
     // Opening a variation from the chat or the list while a draft has
-    // unposted moves asks first; the post-variation effect opens directly.
+    // unposted changes asks first; the post-variation effect opens directly.
     const onOpenVariationFromUser = React.useCallback(
         (variationId: string, focusVariation: boolean, source: "chat" | "list") => {
             void confirmDiscardDraft().then((confirmed) => {

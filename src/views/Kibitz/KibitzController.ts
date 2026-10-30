@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { hasKibitzAnalysisContent } from "./kibitzAnalysisContent";
 import { EventEmitter } from "eventemitter3";
 import type { GobanController } from "@/lib/GobanController";
 import {
@@ -330,7 +331,7 @@ function mapAnalysisToVariation(msg: ChatMessage, roomId: string): KibitzVariati
         });
         return null;
     }
-    if (typeof body.moves !== "string" || body.moves.trim().length === 0) {
+    if (!hasKibitzAnalysisContent(body.moves, body.marks, body.pen_marks)) {
         console.warn("kibitz-post-variation:malformed-server-response", {
             roomId,
             chatMessageId: msg.message.i ?? null,
@@ -1270,8 +1271,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         if (
             typeof body.from !== "number" ||
             !Number.isFinite(body.from) ||
-            typeof body.moves !== "string" ||
-            body.moves.trim().length === 0
+            !hasKibitzAnalysisContent(body.moves, body.marks, body.pen_marks)
         ) {
             console.warn("kibitz-post-variation:refusing-malformed-payload", {
                 roomId,

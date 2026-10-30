@@ -18,6 +18,7 @@
 import { MoveTree as GobanMoveTree, type MoveTree, type MoveTreeJson } from "goban";
 import type { GobanController } from "@/lib/GobanController";
 import type { KibitzVariationSummary } from "@/models/kibitz";
+import { hasKibitzAnalysisContent } from "./kibitzAnalysisContent";
 
 /** How many variations can be on the board at once: one per line colour.
  *  Both of goban's palettes hold the same seven. */
@@ -298,7 +299,11 @@ export function applyKibitzVariationToController(
         typeof variation.analysis_from !== "number" ||
         !Number.isFinite(variation.analysis_from) ||
         typeof variation.analysis_moves !== "string" ||
-        variation.analysis_moves.trim().length === 0
+        !hasKibitzAnalysisContent(
+            variation.analysis_moves,
+            variation.analysis_marks,
+            variation.analysis_pen_marks,
+        )
     ) {
         console.warn("kibitz-variation:refusing-malformed-variation", {
             variationId: variation.id,
@@ -316,6 +321,25 @@ export function applyKibitzVariationToController(
             lastOfficialMove: controller.goban.engine.last_official_move?.move_number ?? null,
         });
         return { variationId: variation.id, endpoint: null };
+    }
+
+    if (variation.analysis_moves === "") {
+        const anchor = officialTrunkNodeByMoveNumber(
+            controller.goban.engine.move_tree,
+            variation.analysis_from,
+        );
+        if (anchor && includeMarks) {
+            // Only the selected post annotates the secondary board's copied trunk.
+            controller.goban.engine.jumpTo(anchor);
+            anchor.clearMarks();
+            controller.goban.setMarks(variation.analysis_marks ?? {}, true);
+            anchor.pen_marks = (variation.analysis_pen_marks ?? []).map((mark) => ({
+                color: mark.color,
+                points: [...mark.points],
+            }));
+            controller.goban.pen_marks = anchor.pen_marks;
+        }
+        return { variationId: variation.id, endpoint: anchor };
     }
 
     let pathNodes: MoveTree[];

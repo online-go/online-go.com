@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { GobanController } from "@/lib/GobanController";
+import { GobanController } from "@/lib/GobanController";
 import type { KibitzVariationSummary } from "@/models/kibitz";
 import type { MoveTree } from "goban";
 import {
@@ -246,5 +246,121 @@ describe("applyKibitzVariationToController", () => {
 
         expect(isVariationOfficialAnchorReady(controller, readyVariation)).toBe(true);
         expect(isVariationOfficialAnchorReady(controller, missingAnchorVariation)).toBe(false);
+    });
+});
+
+describe("annotation-only variations on a real board", () => {
+    function board() {
+        return new GobanController({
+            width: 9,
+            height: 9,
+            players: { black: { id: 1, username: "b" }, white: { id: 2, username: "w" } },
+            move_tree: { x: -1, y: -1, trunk_next: { x: 1, y: 1, trunk_next: { x: 2, y: 2 } } },
+        });
+    }
+
+    test.each([0, 1, 2])(
+        "round trips marks at official position %i without adding a move",
+        (from) => {
+            const source = board();
+            const target = board();
+            try {
+                source.goban.engine.followPath(from, "");
+                source.goban.setMarks({ triangle: "dd", A: "ee" }, true);
+                const snapshot = source.buildAnalysisSnapshot();
+                expect(snapshot.analysis.moves).toBe("");
+                expect(snapshot.analysis.from).toBe(from);
+                expect(snapshot.analysis.line_tree).toBeUndefined();
+                const variation = {
+                    ...makeVariation("annotations", []),
+                    analysis_from: snapshot.analysis.from,
+                    analysis_moves: snapshot.analysis.moves,
+                    analysis_marks: snapshot.analysis.marks,
+                };
+                const anchor = target.goban.engine.cur_move;
+                const result = applyKibitzVariationToController(target, variation, 2, true);
+                expect(result.endpoint?.move_number).toBe(from);
+                expect(result.endpoint?.getMarks(3, 3).triangle).toBe(true);
+                expect(result.endpoint?.getMarks(4, 4).letter).toBe("A");
+                expect(target.buildAnalysisSnapshot().analysis.moves).toBe("");
+                expect(target.goban.engine.move_tree.branches).toHaveLength(0);
+                expect(target.goban.engine.move_tree.trunk_next?.branches).toHaveLength(0);
+                expect(anchor.line_color).not.toBe(2);
+            } finally {
+                source.destroy();
+                target.destroy();
+            }
+        },
+    );
+
+    test("suppresses duplicate annotations but allows changed annotations", () => {
+        const controller = board();
+        try {
+            controller.goban.setMarks({ triangle: "dd" }, true);
+            const first = controller.buildAnalysisSnapshot();
+            controller.recordAnalysisSent(first.analysis);
+            expect(controller.buildAnalysisSnapshot().is_duplicate).toBe(true);
+            controller.goban.setMarks({ A: "ee" }, true);
+            expect(controller.buildAnalysisSnapshot().is_duplicate).toBe(false);
+        } finally {
+            controller.destroy();
+        }
+    });
+
+    test("keeps selected annotations separate and ignores hidden annotations", () => {
+        const controller = board();
+        try {
+            const first = {
+                ...makeVariation("first", []),
+                analysis_moves: "",
+                analysis_marks: { A: "dd" },
+            };
+            const second = { ...first, id: "second", analysis_marks: { triangle: "ee" } };
+            const selected = applyKibitzVariationToController(controller, first, 0, true).endpoint!;
+            applyKibitzVariationToController(controller, second, 1, false);
+            expect(selected.getMarks(3, 3).letter).toBe("A");
+            expect(selected.getMarks(4, 4).triangle).toBeUndefined();
+            applyKibitzVariationToController(controller, second, 1, true);
+            expect(selected.getMarks(3, 3).letter).toBeUndefined();
+            expect(selected.getMarks(4, 4).triangle).toBe(true);
+            controller.goban.engine.place(5, 5, false, false, true, true);
+            expect(controller.buildAnalysisSnapshot().analysis.moves).not.toBe("");
+        } finally {
+            controller.destroy();
+        }
+    });
+
+    test("loads pen-only posts and rejects empty or unavailable positions", () => {
+        const controller = board();
+        try {
+            const pen = [{ color: "#000000", points: [100, 100, 20, 20] }];
+            const variation = {
+                ...makeVariation("pen", []),
+                analysis_moves: "",
+                analysis_pen_marks: pen,
+            };
+            const result = applyKibitzVariationToController(controller, variation, 0, true);
+            expect(result.endpoint?.pen_marks).toEqual(pen);
+            expect(controller.goban.pen_marks).toEqual(pen);
+            expect(result.endpoint?.pen_marks).not.toBe(pen);
+            expect(
+                applyKibitzVariationToController(
+                    controller,
+                    { ...variation, analysis_from: 99 },
+                    0,
+                    true,
+                ).endpoint,
+            ).toBeNull();
+            expect(
+                applyKibitzVariationToController(
+                    controller,
+                    { ...variation, analysis_pen_marks: [] },
+                    0,
+                    true,
+                ).endpoint,
+            ).toBeNull();
+        } finally {
+            controller.destroy();
+        }
     });
 });
