@@ -22,6 +22,28 @@ import {
 const layout = (width: number, height: number): ViewportGeometry => ({ width, height });
 
 describe("classifyGameLayout", () => {
+    test("Kibitz can shrink its aside without changing normal game minimums", () => {
+        expect(clampLeftAsideWidth(200, 1600, null, 240)).toBe(240);
+        expect(clampLeftAsideWidth(280, 1600, null, 240)).toBe(280);
+        expect(clampLeftAsideWidth(200, 1600, null)).toBe(G.defaultLeftAside);
+        expect(clampLeftAsideWidth(null, 1600, null, 240)).toBeNull();
+    });
+
+    test("the collapsed rail releases board space and restoring uses the saved width", () => {
+        const expanded = input({ offered: { leftAside: true }, prefs: { leftAsideWidth: 280 } });
+        expanded.leftAsideMinWidth = 240;
+        const original = resolveGobanViewLayout(expanded);
+        const collapsed = resolveGobanViewLayout({ ...expanded, leftAsideCollapsedWidth: 28 });
+        expect(original.leftAsideWidth).toBe(280);
+        expect(collapsed.leftAsideWidth).toBe(28);
+        expect(collapsed.leftAside).toBe(true);
+        expect(resolveGobanViewLayout(expanded).leftAsideWidth).toBe(280);
+        expect(
+            resolveGobanViewLayout({ ...expanded, mode: "stacked", leftAsideCollapsedWidth: 28 })
+                .leftAside,
+        ).toBe(false);
+    });
+
     test.each([
         [390, 844, "stacked"],
         [430, 932, "stacked"],

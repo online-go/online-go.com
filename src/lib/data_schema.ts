@@ -239,6 +239,7 @@ export interface KibitzSchema {
     portrait_pane: "game-chat" | "room-chat" | "people" | "variations" | "rooms" | "analysis";
     /** Collapsed sections of the Kibitz left aside. */
     "left_aside.collapsed": { rooms: boolean; variations: boolean };
+    "left_aside.hidden": boolean;
     /** Show the people column beside the landscape Kibitz chat. */
     people_column: boolean;
 }
