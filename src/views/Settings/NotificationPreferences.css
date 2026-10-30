@@ -23,7 +23,8 @@
         align-items: center;
         margin-left: 1rem;
 
-        .heading {
+        .heading,
+        .all-notifications {
             font-weight: bold;
         }
 
