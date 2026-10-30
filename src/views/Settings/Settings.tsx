@@ -91,6 +91,7 @@ export function Settings(): React.ReactElement {
                     setSettingsState({
                         profile: settings.profile,
                         notifications: settings.notifications,
+                        notifications_enabled: settings.notifications_enabled,
                         vacation_left: durationString(settings.profile.vacation_left),
                         hide_ui_class: settings.site_preferences.hide_ui_class,
                         self_reported_account_linkages: settings.self_reported_account_linkages,
