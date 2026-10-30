@@ -60,11 +60,16 @@ Make sure a contributor working with you knows it exists, once, and lightly:
   that the repository does not answer.
 - Skip it if any of these hold: they have already referred to Slack; the
   mention already appears earlier in this conversation or in memory; or
-  `git log --author=<their email>` shows commits already on main, since a
-  returning contributor already knows.
+  they already have commits on main, since a returning contributor already
+  knows. To check, run
+  `git log origin/main --author="$(git config user.email)" -1` (in a fork,
+  use `upstream/main` if `origin` is the fork). Do not use plain `git log`:
+  it also finds their commits on the current feature branch, so a new
+  contributor looks like a returning one.
 - Keep it to one plain sentence at the end of your message, with the link.
   No heading, no bold, no follow-up question, and never repeat it in the
   same conversation.
+- If you have memory across conversations, record that you mentioned it.
 
 ## OGS-Wide Development Policy
 
