@@ -82,13 +82,18 @@ Players can also remove devices themselves under Settings.
 
 ## When notifications are sent
 
-A notification is pushed, or sent to webhooks, about 10 seconds after it's
-created if the player hasn't read it by then. Email notifications still wait
-about 2 minutes. Nothing is pushed to the player's devices while they have
-anything connected to Online-Go.com, such as an open page or an app's
-websocket, which shows it instead; a skipped push is not sent later. Webhooks
-get every notification either way, along with whether the player was
-connected, except `yourMove`, which is only sent while they aren't. Players
+A notification is pushed, and sent to webhooks, as soon as it's created.
+
+While the player has nothing connected to Online-Go.com, they're notified once
+per game for each kind of notification until they connect again, so a run of
+chat lines in one game is one notification. While they have something
+connected, such as an open page or an app's websocket, nothing is pushed to
+their devices, since they'll see it there, and a skipped push isn't sent later.
+Webhooks still get each notification then, saying the player was connected,
+except `yourMove`, which is only sent while the player is away.
+
+Email for `yourMove` goes out with its push. Other email notifications wait
+about 2 minutes, in case the player reads them on the site first. Players
 choose which notification types are pushed to their devices under Settings.
 
 ## What a push contains
@@ -204,8 +209,8 @@ Players see the subscription under Settings, and can remove it there.
 ### What's sent
 
 Every notification for a subscribed player, whatever their per-type Email,
-Mobile and Desktop settings, and whether or not they're on Online-Go.com,
-except `yourMove`, which is only sent while they aren't. The settings only
+Mobile and Desktop settings, as described in
+[When notifications are sent](#when-notifications-are-sent). The settings only
 control what OGS itself sends, so each event includes the player's settings for
 that kind of notification, and whether they were connected to Online-Go.com
 when it was sent, for you to follow or not as suits your site. Each event is
