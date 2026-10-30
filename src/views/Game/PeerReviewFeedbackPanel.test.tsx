@@ -85,8 +85,8 @@ test("requester: marks seen once, saves a rating, then shows delivered", async (
     const seen = {
         ...base,
         role: "requester" as const,
-        review_seen_at: "2026-10-27T12:00:00Z",
-        feedback_due_at: "2026-10-29T12:00:00Z",
+        review_seen_at: new Date().toISOString(),
+        feedback_due_at: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
     };
     mocked.markReviewSeen.mockResolvedValue(seen);
     mocked.saveFeedback.mockResolvedValue({
