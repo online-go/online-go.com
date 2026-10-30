@@ -698,44 +698,48 @@ describe("Kibitz history replay batching", () => {
         await controller.selectRoom("test");
         return { controller, proxy };
     }
-    test("publishes a replay burst once, in order, including its variations", async () => {
-        const { controller, proxy } = await setup();
-        const streamChanged = jest.fn();
-        controller.on("stream-changed", streamChanged);
-        for (let index = 0; index < 500; ++index) {
-            const line = message(index);
-            proxy.channel.chat_log.push(line);
-            proxy.emit("chat", line);
-        }
-        const variation = message(500);
-        variation.message.m = {
-            type: "analysis",
-            game_id: 42,
-            name: "Variation",
-            from: 0,
-            moves: "aa",
-        } as ChatMessage["message"]["m"];
-        proxy.channel.chat_log.push(variation);
-        proxy.emit("chat", variation);
-        expect(streamChanged).not.toHaveBeenCalled();
-        expect(frames.size).toBe(1);
-        flushFrames();
-        expect(streamChanged).toHaveBeenCalledTimes(1);
-        expect(controller.stream.map((item) => item.id)).toEqual(
-            proxy.channel.chat_log.map((line) => line.message.i),
-        );
-        expect(controller.variations).toEqual([
-            expect.objectContaining({ id: "message-500", game_id: 42 }),
-        ]);
-        const previous = controller.stream;
-        const live = message(501);
-        proxy.channel.chat_log.push(live);
-        proxy.emit("chat", live);
-        flushFrames();
-        expect(controller.stream).toHaveLength(502);
-        expect(previous).toHaveLength(501);
-        controller.destroy();
-    });
+    test.each([false, true])(
+        "publishes a replay burst once with annotation-only=%p",
+        async (annotationOnly) => {
+            const { controller, proxy } = await setup();
+            const streamChanged = jest.fn();
+            controller.on("stream-changed", streamChanged);
+            for (let index = 0; index < 500; ++index) {
+                const line = message(index);
+                proxy.channel.chat_log.push(line);
+                proxy.emit("chat", line);
+            }
+            const variation = message(500);
+            variation.message.m = {
+                type: "analysis",
+                game_id: 42,
+                name: "Variation",
+                from: 0,
+                moves: annotationOnly ? "" : "aa",
+                marks: annotationOnly ? { triangle: "dd" } : undefined,
+            } as ChatMessage["message"]["m"];
+            proxy.channel.chat_log.push(variation);
+            proxy.emit("chat", variation);
+            expect(streamChanged).not.toHaveBeenCalled();
+            expect(frames.size).toBe(1);
+            flushFrames();
+            expect(streamChanged).toHaveBeenCalledTimes(1);
+            expect(controller.stream.map((item) => item.id)).toEqual(
+                proxy.channel.chat_log.map((line) => line.message.i),
+            );
+            expect(controller.variations).toEqual([
+                expect.objectContaining({ id: "message-500", game_id: 42 }),
+            ]);
+            const previous = controller.stream;
+            const live = message(501);
+            proxy.channel.chat_log.push(live);
+            proxy.emit("chat", live);
+            flushFrames();
+            expect(controller.stream).toHaveLength(502);
+            expect(previous).toHaveLength(501);
+            controller.destroy();
+        },
+    );
     test("removal cancels a queued replay and rebuilds from the remaining log", async () => {
         const { controller, proxy } = await setup();
         proxy.channel.chat_log.push(message(1), message(2));
@@ -788,4 +792,49 @@ describe("Kibitz history replay batching", () => {
         flushFrames();
         expect(changed).not.toHaveBeenCalled();
     });
+});
+
+test("posts annotation-only analysis and refuses an empty post", async () => {
+    mockedGet.mockResolvedValueOnce([]);
+    const controller = new KibitzController();
+    await flushPromises();
+    const sendTypedBody = jest.fn();
+    jest.mocked(chatManager.chat_manager.join).mockReturnValueOnce({
+        on: jest.fn(),
+        off: jest.fn(),
+        part: jest.fn(),
+        channel: { chat_log: [], users_by_join: [], sendTypedBody },
+    } as never);
+    mockedGet.mockResolvedValueOnce({
+        room: { id: "annotations", channel: "kibitz-annotations", kind: "user" },
+        permissions: {},
+    });
+    await controller.selectRoom("annotations");
+    jest.mocked(analysisPolicy.getCurrentKibitzUser).mockReturnValue({
+        id: 1,
+        username: "Author",
+        anonymous: false,
+    } as never);
+    const analysis = { type: "analysis", from: 0, moves: "", marks: { triangle: "dd", A: "ee" } };
+    const recordAnalysisSent = jest.fn();
+    const board = {
+        buildAnalysisSnapshot: () => ({ analysis, moves: [], move_count: 0, is_duplicate: false }),
+        recordAnalysisSent,
+        goban: { engine: { last_official_move: { move_number: 0 } } },
+    } as never;
+    try {
+        expect(controller.postVariation("annotations", board, 42)).toEqual(
+            expect.objectContaining(analysis),
+        );
+        expect(sendTypedBody).toHaveBeenCalledWith(
+            expect.objectContaining({ ...analysis, game_id: 42 }),
+        );
+        expect(recordAnalysisSent).toHaveBeenCalledWith(analysis);
+        analysis.marks = {} as typeof analysis.marks;
+        expect(controller.postVariation("annotations", board, 42)).toBeNull();
+        expect(sendTypedBody).toHaveBeenCalledTimes(1);
+    } finally {
+        controller.destroy();
+        jest.mocked(analysisPolicy.getCurrentKibitzUser).mockReturnValue(null);
+    }
 });

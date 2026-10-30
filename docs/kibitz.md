@@ -93,7 +93,7 @@ which names the owner, where they do not. There is no settings gear.
 Leaving a variation is the close button at the right of the variation chip in
 the header, the variation panel's Back to game button (Cancel while
 drafting), the landscape mini main board, the x on a variation row, or the
-Escape key. Leaving a draft that has unposted moves asks for confirmation
+Escape key. Leaving a draft that has unposted moves or annotations asks for confirmation
 first, as does starting another variation or opening a posted one while such
 a draft is open.
 
@@ -196,3 +196,18 @@ board is composed with every variation that was visible on the board it came
 from, not the source variation alone: the reader can have been standing in
 any of them, and a node that is not on the board is replayed as a fresh move
 rather than navigated to.
+
+## Annotation-only variations
+
+An analysis post can contain labels, shapes or pen drawings without an added
+move. It uses the existing analysis body: `from` is the official position,
+`moves` is an empty string, and `marks` or `pen_marks` supplies the annotations.
+Empty posts without annotations are rejected. Posting, room history and board
+rendering use the same content rule.
+
+An annotation-only post opens at `from`, including position zero. Only the
+selected post applies marks to the secondary board's copied trunk. It adds no
+move and does not recolour the official position. Selecting another post
+rebuilds the secondary board, so annotations from posts at the same position
+stay separate and do not change the live board. Draft discard detection includes
+annotation edits to existing positions and pen drawings.
