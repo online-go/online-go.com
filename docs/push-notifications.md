@@ -82,11 +82,25 @@ Players can also remove devices themselves under Settings.
 
 ## When notifications are sent
 
-A notification is pushed, or sent to webhooks, about 10 seconds after it's
-created if the player hasn't read it by then. Email notifications still wait
-about 2 minutes. `yourMove` is only sent while the player isn't connected to
-Online-Go.com. Players choose which notification types are pushed to their
-devices under Settings.
+A notification is pushed, and sent to webhooks, as soon as it's created.
+
+While the player has something connected to Online-Go.com, such as an open
+page or an app's websocket, nothing is pushed to their devices, since they'll
+see it there. That lasts until about 15 seconds after their last connection
+closes, so a page reload isn't taken for leaving; a connection that stops
+answering, as a suspended app's does, is closed within about 30 seconds. If they
+leave within 2 minutes of a notification they haven't dismissed, it's pushed to
+their devices then. Webhooks get each notification right away, with `online`
+saying whether the player had a connection open, except `yourMove`, which is
+only sent while the player is away, or when they leave if it's still their move.
+
+`yourMove` is only sent for correspondence games, once per turn. Chat after a
+game is pushed to an away player's devices once per game until they connect
+again, so a run of chat lines is one push; webhooks get every line.
+
+Email for `yourMove` goes out with its push. Other email notifications wait
+about 2 minutes, in case the player reads them on the site first. Players
+choose which notification types are pushed to their devices under Settings.
 
 ## What a push contains
 
@@ -200,10 +214,13 @@ Players see the subscription under Settings, and can remove it there.
 
 ### What's sent
 
-Every notification for a subscribed player, whatever their per-type Email and
-Mobile settings. Those settings only control what OGS itself sends, so each
-event includes the player's settings for that kind of notification, for you to
-follow or not as suits your site. Each event is one request:
+Every notification for a subscribed player, whatever their per-type Email,
+Mobile and Desktop settings, as described in
+[When notifications are sent](#when-notifications-are-sent). The settings only
+control what OGS itself sends, so each event includes the player's settings for
+that kind of notification, and whether they were connected to Online-Go.com
+when it was sent, for you to follow or not as suits your site. Each event is
+one request:
 
 ```
 POST <your URL>
@@ -217,16 +234,27 @@ OGS-Webhook-Signature: v1=<hex HMAC-SHA256 of "<timestamp>.<raw body>", keyed wi
     "id": "<event id>",
     "type": "notification" | "test" | "ping",
     "player_id": <the player's id, or null for a ping>,
-    "title": "<localized one line summary>",
+    "title": "<localized one line summary, or empty>",
     "body": "<may be empty>",
     "notification": {<the full notification, as in /api/v1/me/notifications>} or null,
-    "settings": {"email": true | false, "mobile": true | false} or null
+    "settings": {"email": true | false, "mobile": true | false, "desktop": true | false} or null,
+    "online": true | false or null
 }
 ```
 
-`settings` is null for pings, tests, and the few kinds of notification that
-have no setting. The event id is the same on every retry of an event, so use it
-to drop duplicates. Check the signature with a constant time comparison, and reject
+`settings` is null for pings, tests, and the kinds of notification that have
+no setting, and `online` is null for pings and tests. `title` is empty for the
+kinds of notification OGS doesn't email, such as `friendAccepted`.
+
+`yourMove` notifications include the game's `phase`, which is `stone removal`
+once both players have passed, and `your_move_count`, the number of the
+player's games waiting on their move or on them accepting the score, counted as
+the site counts them, for badging your app; it isn't sent again when the player
+moves, so lower it yourself when they do. `lateChatReceivedInGame` includes the
+chat line's `channel` and `body`.
+
+The event id is the same on every retry of an event, so use it to drop
+duplicates. Check the signature with a constant time comparison, and reject
 timestamps more than about 5 minutes old:
 
 ```python

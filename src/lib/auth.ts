@@ -17,10 +17,11 @@
 
 import * as data from "@/lib/data";
 import cached from "@/lib/cached";
-import { get } from "@/lib/requests";
+import { del, get } from "@/lib/requests";
 import { errorLogger } from "@/lib/misc";
 import ITC from "@/lib/ITC";
 import { alert } from "@/lib/swal_config";
+import { currentWebPushEndpoint, disableWebPush } from "@/lib/web_push";
 
 ITC.register("logout", (device_uuid: string) => {
     if (device_uuid !== data.get("device.uuid", "")) {
@@ -28,7 +29,17 @@ ITC.register("logout", (device_uuid: string) => {
     }
 });
 
-export function logout() {
+/* Web push must never stop a player from signing out, even if it hangs */
+async function disableWebPushForSignOut() {
+    try {
+        await Promise.race([disableWebPush(), new Promise((resolve) => setTimeout(resolve, 5000))]);
+    } catch (e) {
+        console.warn(e);
+    }
+}
+
+export async function logout() {
+    await disableWebPushForSignOut();
     get("/api/v0/logout")
         .then((config) => {
             data.set(cached.config, config);
@@ -46,12 +57,21 @@ export function logoutOtherDevices() {
         .then(({ value: accept }) => {
             if (accept) {
                 ITC.send("logout", data.get("device.uuid"));
+                currentWebPushEndpoint()
+                    .then((endpoint) =>
+                        del(
+                            `me/push_devices?webpush=all&keep=${encodeURIComponent(endpoint ?? "")}`,
+                        ),
+                    )
+                    .catch(errorLogger);
                 void alert.fire("Other devices have been logged out");
             }
         });
 }
 
-export function logoutAndClearLocalData() {
+export async function logoutAndClearLocalData() {
+    await disableWebPushForSignOut();
+
     try {
         get("/api/v0/logout")
             .then(() => {

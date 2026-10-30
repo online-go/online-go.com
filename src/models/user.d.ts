@@ -79,6 +79,7 @@ declare namespace rest_api {
         has_pending_warnings_system_message?: boolean;
         reports_handled_today?: number;
         last_supporter_trial: string; // Date
+        language?: string; // the server's record of the player's site language, "auto" if none
     }
 
     type AccountLinks = {

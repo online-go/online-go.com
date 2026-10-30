@@ -209,6 +209,7 @@ import { _, setCurrentLanguage } from "@/lib/translate";
 
 import * as player_cache from "@/lib/player_cache";
 import { toast } from "@/lib/toast";
+import { refreshWebPush } from "@/lib/web_push";
 import cached from "@/lib/cached";
 import "@/components/AutomodWarning";
 import { get_device_id } from "@/views/SignIn";
@@ -373,6 +374,8 @@ browserHistory.listen(() => {
 if (user.anonymous) {
     data.remove("rdh-system-state");
 }
+
+refreshWebPush().catch((err) => console.error("Error refreshing web push: ", err));
 
 init_safe_area_variables();
 init_visual_viewport_variables();

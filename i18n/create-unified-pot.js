@@ -121,7 +121,7 @@ function main() {
                 },
             });
 
-            PO.load("../../ogs/ogs/go_app/locale/django.pot", (err, po) => {
+            PO.load("../../ogs/services/django/ogs/go_app/locale/django.pot", (err, po) => {
                 if (err) {
                     console.error(err);
                     return;
