@@ -26,6 +26,8 @@ import { KibitzMiniMainBoard } from "./KibitzMiniMainBoard";
 import "./KibitzLeftAside.css";
 
 export interface KibitzLeftAsideProps {
+    collapsed?: boolean;
+    onToggleCollapsed?: () => void;
     rooms: KibitzRoomSummary[];
     activeRoomId: string;
     blockedRoomIds: Set<string>;
@@ -97,62 +99,89 @@ export function KibitzLeftAside(props: KibitzLeftAsideProps): React.ReactElement
     );
 
     return (
-        <div className="KibitzLeftAside">
-            <div className="KibitzLeftAside-scroll">
-                <div className="KibitzLeftAside-section">
-                    {renderHeader(
-                        "rooms",
-                        pgettext("Heading of the room list in the Kibitz left aside", "Rooms"),
-                    )}
-                    {!collapsed.rooms && (
-                        <KibitzRoomList
-                            rooms={props.rooms}
-                            activeRoomId={props.activeRoomId}
-                            onSelectRoom={props.onSelectRoom}
-                            onCreateRoom={props.onCreateRoom}
-                            canOpenCreateRoomFlow={props.canOpenCreateRoomFlow}
-                            signInHref={props.signInHref}
-                            blockedRoomIds={props.blockedRoomIds}
-                        />
-                    )}
-                </div>
-                <div className="KibitzLeftAside-section">
-                    {renderHeader(
-                        "variations",
-                        pgettext("Heading for the Kibitz variation list", "Variations"),
-                    )}
-                    {!collapsed.variations && (
-                        <KibitzVariationList
-                            variations={props.variations}
-                            currentGameId={props.currentGameId}
-                            gameById={props.variationGameById}
-                            selectedVariationId={props.selectedVariationId}
-                            variationFocusRequestId={props.variationFocusRequestId}
-                            blockedVariationFlashId={props.blockedVariationFlashId}
-                            onRecallVariation={props.onRecallVariation}
-                            onHideVariation={props.onHideVariation}
-                            onCreateVariation={props.onCreateVariation}
-                            createVariationDisabled={props.createVariationDisabled}
-                            onClearAll={props.onClearVariations}
-                            colorIndexes={props.variationColorIndexes}
-                        />
-                    )}
-                </div>
-            </div>
-            {props.miniBoardController && (
-                <div className="KibitzLeftAside-miniBoard">
-                    <div className="KibitzLeftAside-miniBoardTitle Kibitz-section-header">
-                        {pgettext(
-                            "Heading above the small live game board in the Kibitz left aside",
-                            "Main board",
+        <div className={"KibitzLeftAside" + (props.collapsed ? " collapsed" : "")}>
+            {props.onToggleCollapsed && (
+                <button
+                    type="button"
+                    className="KibitzLeftAside-collapse"
+                    onClick={props.onToggleCollapsed}
+                    aria-expanded={!props.collapsed}
+                    aria-label={
+                        props.collapsed
+                            ? pgettext("Kibitz sidebar toggle", "Show rooms and variations")
+                            : pgettext("Kibitz sidebar toggle", "Hide rooms and variations")
+                    }
+                    title={
+                        props.collapsed
+                            ? pgettext("Kibitz sidebar toggle", "Show rooms and variations")
+                            : pgettext("Kibitz sidebar toggle", "Hide rooms and variations")
+                    }
+                >
+                    <i
+                        className={
+                            "fa " + (props.collapsed ? "fa-chevron-right" : "fa-chevron-left")
+                        }
+                        aria-hidden="true"
+                    />
+                </button>
+            )}
+            <div className="KibitzLeftAside-content" hidden={props.collapsed}>
+                <div className="KibitzLeftAside-scroll">
+                    <div className="KibitzLeftAside-section">
+                        {renderHeader(
+                            "rooms",
+                            pgettext("Heading of the room list in the Kibitz left aside", "Rooms"),
+                        )}
+                        {!collapsed.rooms && (
+                            <KibitzRoomList
+                                rooms={props.rooms}
+                                activeRoomId={props.activeRoomId}
+                                onSelectRoom={props.onSelectRoom}
+                                onCreateRoom={props.onCreateRoom}
+                                canOpenCreateRoomFlow={props.canOpenCreateRoomFlow}
+                                signInHref={props.signInHref}
+                                blockedRoomIds={props.blockedRoomIds}
+                            />
                         )}
                     </div>
-                    <KibitzMiniMainBoard
-                        controller={props.miniBoardController}
-                        onClick={props.onExitVariation}
-                    />
+                    <div className="KibitzLeftAside-section">
+                        {renderHeader(
+                            "variations",
+                            pgettext("Heading for the Kibitz variation list", "Variations"),
+                        )}
+                        {!collapsed.variations && (
+                            <KibitzVariationList
+                                variations={props.variations}
+                                currentGameId={props.currentGameId}
+                                gameById={props.variationGameById}
+                                selectedVariationId={props.selectedVariationId}
+                                variationFocusRequestId={props.variationFocusRequestId}
+                                blockedVariationFlashId={props.blockedVariationFlashId}
+                                onRecallVariation={props.onRecallVariation}
+                                onHideVariation={props.onHideVariation}
+                                onCreateVariation={props.onCreateVariation}
+                                createVariationDisabled={props.createVariationDisabled}
+                                onClearAll={props.onClearVariations}
+                                colorIndexes={props.variationColorIndexes}
+                            />
+                        )}
+                    </div>
                 </div>
-            )}
+                {props.miniBoardController && (
+                    <div className="KibitzLeftAside-miniBoard">
+                        <div className="KibitzLeftAside-miniBoardTitle Kibitz-section-header">
+                            {pgettext(
+                                "Heading above the small live game board in the Kibitz left aside",
+                                "Main board",
+                            )}
+                        </div>
+                        <KibitzMiniMainBoard
+                            controller={props.miniBoardController}
+                            onClick={props.onExitVariation}
+                        />
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

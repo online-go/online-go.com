@@ -15,6 +15,10 @@ place), pending proposals, variation controls and the two-tab chat (Game,
 Kibitz). The left aside is resizable, with the drag handle on its right
 edge; its width is the `goban-view-left-aside-width` preference, shared
 with the Game page's chat column.
+Kibitz allows resizing this column down to 240px without changing its 384px
+default. The chevron hides its contents and leaves a 28px restore rail;
+restoring reuses the saved width. The collapsed state is saved separately
+for Kibitz. Normal game chat keeps its existing minimum width and controls.
 A people column stands beside the chat log; the People action switches it
 off and it drops on its own when the chat panel is narrower than 22rem.
 

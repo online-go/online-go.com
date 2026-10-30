@@ -209,6 +209,14 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     // and the unread state the two chat panes report for their tab dots.
     const [pane, setPane] = React.useState(readPortraitPane);
     const [chatUnread, setChatUnread] = React.useState({ room: false, game: false });
+    const [leftAsideCollapsed, setLeftAsideCollapsed] = React.useState(
+        () => data.get("kibitz.left_aside.hidden", false) === true,
+    );
+    const toggleLeftAside = () => {
+        const next = !leftAsideCollapsed;
+        data.set("kibitz.left_aside.hidden", next);
+        setLeftAsideCollapsed(next);
+    };
     // Posting ends the composing session, and the post itself lands in the
     // Kibitz chat, so that is where the reader is sent. The flag carries that
     // through the render where the posted variation arrives as a controller
@@ -543,6 +551,8 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const leftAside = isPortrait ? null : (
         <KibitzLeftAside
             {...props.leftAside}
+            collapsed={leftAsideCollapsed}
+            onToggleCollapsed={toggleLeftAside}
             onCreateVariation={props.leftAside.onCreateVariation ? onCreateVariation : undefined}
             onRecallVariation={onRecallVariationByReader}
             miniBoardController={miniBoardController}
@@ -577,6 +587,8 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 </div>
             }
             leftAside={leftAside}
+            leftAsideMinWidth={240}
+            leftAsideCollapsedWidth={leftAsideCollapsed ? 28 : undefined}
             centerPlaceholder={waitingMessage}
             aboveBoard={
                 <KibitzStackedPlayerHeader

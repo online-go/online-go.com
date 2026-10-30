@@ -136,6 +136,8 @@ interface GobanViewProps {
      *  sidebar. Ignored in portrait; consumers provide takeover tabs for
      *  the same content there. */
     leftAside?: React.ReactNode;
+    leftAsideMinWidth?: number;
+    leftAsideCollapsedWidth?: number;
     /** The view's labelled actions list. On desktop it goes in the dock
      *  beside the sidebar; in mobile scrolling mode at the end of the
      *  scroll. While it shows, the tab bar is not rendered. */
@@ -203,6 +205,8 @@ function GobanViewComponent({
     sidebarContentBefore,
     portraitSplit,
     leftAside,
+    leftAsideMinWidth,
+    leftAsideCollapsedWidth,
     actionDock,
     onWheel,
     ref,
@@ -388,6 +392,8 @@ function GobanViewComponent({
             resolveGobanViewLayout({
                 mode: layout.mode,
                 rootWidth,
+                leftAsideMinWidth,
+                leftAsideCollapsedWidth,
                 prefs: {
                     actionButtons: actionButtonsPref,
                     mobileScroll: mobileScrollPref,
@@ -409,6 +415,8 @@ function GobanViewComponent({
         [
             layout.mode,
             rootWidth,
+            leftAsideMinWidth,
+            leftAsideCollapsedWidth,
             actionButtonsPref,
             mobileScrollPref,
             moveControlsPref,
@@ -519,7 +527,7 @@ function GobanViewComponent({
                   splitMetrics.stageExtra,
               );
 
-    const leftAsideWidth = dragLeftAsideWidth ?? resolved.leftAsideWidth;
+    const leftAsideWidth = leftAsideCollapsedWidth ?? dragLeftAsideWidth ?? resolved.leftAsideWidth;
 
     const barsGoban = (barsController ?? controller)?.goban ?? null;
     usePlayerIds(barsGoban);
@@ -747,6 +755,9 @@ function GobanViewComponent({
     }
 
     const rootStyle: Record<string, string> = {};
+    if (leftAsideMinWidth !== undefined) {
+        rootStyle["--goban-view-left-aside-min-width"] = `${leftAsideMinWidth}px`;
+    }
     if (sidebarWidth !== null) {
         rootStyle["--goban-view-sidebar-user-width"] = `${sidebarWidth}px`;
     }
@@ -773,18 +784,20 @@ function GobanViewComponent({
                                 <div className="GobanView-left-aside" ref={leftAsideRef}>
                                     {leftAside}
                                 </div>
-                                <SidebarResizer
-                                    rootRef={rootRef}
-                                    targetRef={leftAsideRef}
-                                    edge="end"
-                                    minWidthVar="--goban-view-left-aside-width"
-                                    label={pgettext(
-                                        "Accessible name of the handle that resizes the panel left of the board",
-                                        "Resize left panel",
-                                    )}
-                                    onPreview={setDragLeftAsideWidth}
-                                    onCommit={commitLeftAsideWidth}
-                                />
+                                {leftAsideCollapsedWidth === undefined && (
+                                    <SidebarResizer
+                                        rootRef={rootRef}
+                                        targetRef={leftAsideRef}
+                                        edge="end"
+                                        minWidthVar="--goban-view-left-aside-min-width"
+                                        label={pgettext(
+                                            "Accessible name of the handle that resizes the panel left of the board",
+                                            "Resize left panel",
+                                        )}
+                                        onPreview={setDragLeftAsideWidth}
+                                        onCommit={commitLeftAsideWidth}
+                                    />
+                                )}
                             </>
                         )}
                         {/* The whole center column takes the wheel, the gutters

@@ -289,6 +289,7 @@
      * Zero when no aside is rendered, so the centering math below holds
      * for every consumer. */
     --goban-view-left-aside-outer-width: 0px;
+    --goban-view-left-aside-min-width: var(--goban-view-left-aside-width);
     --goban-view-left-aside-effective-width: var(--goban-view-left-aside-width);
 
     &.has-custom-left-aside-width {

@@ -59,6 +59,22 @@ function baseProps(overrides: Partial<KibitzLeftAsideProps> = {}): KibitzLeftAsi
 }
 
 describe("KibitzLeftAside", () => {
+    test("collapse leaves an accessible restore button and retains section state", () => {
+        const onToggleCollapsed = jest.fn();
+        const props = baseProps({ onToggleCollapsed });
+        const { rerender } = render(<KibitzLeftAside {...props} />);
+        fireEvent.click(screen.getByRole("button", { name: "Hide rooms and variations" }));
+        expect(onToggleCollapsed).toHaveBeenCalledTimes(1);
+        rerender(<KibitzLeftAside {...props} collapsed />);
+        expect(screen.getByTestId("room-list").closest("[hidden]")).not.toBeNull();
+        const restore = screen.getByRole("button", { name: "Show rooms and variations" });
+        expect(restore).toHaveAttribute("aria-expanded", "false");
+        fireEvent.click(restore);
+        expect(onToggleCollapsed).toHaveBeenCalledTimes(2);
+        rerender(<KibitzLeftAside {...props} collapsed={false} />);
+        expect(screen.getByTestId("room-list").closest("[hidden]")).toBeNull();
+    });
+
     test("shows the room list and the variation list without a mini board", () => {
         render(<KibitzLeftAside {...baseProps()} />);
         expect(screen.getByTestId("room-list")).toBeInTheDocument();

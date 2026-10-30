@@ -8,6 +8,41 @@
     gap: 0.75rem;
     padding: 0.75rem;
 
+    &.collapsed {
+        padding: 0;
+        gap: 0;
+    }
+
+    .KibitzLeftAside-collapse {
+        align-self: flex-end;
+        flex-shrink: 0;
+        width: 1.75rem;
+        height: 1.75rem;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        box-shadow: none;
+        background: transparent;
+        color: var(--fg);
+
+        &:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: -2px;
+        }
+    }
+
+    .KibitzLeftAside-content {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
+        gap: 0.75rem;
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
     /* Rooms and variations share the space above the board and scroll
        together; the board below keeps its full size and never scrolls. */
     .KibitzLeftAside-scroll {
