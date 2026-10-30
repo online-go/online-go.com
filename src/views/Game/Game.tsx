@@ -66,6 +66,7 @@ import { toast } from "@/lib/toast";
 import { ignore } from "@/lib/misc";
 import { updateAntiGriefGameState } from "./AntiGrief";
 import { exitVacationIfPaused } from "./auto_exit_vacation";
+import { useAcceptChallengePrompt } from "./useAcceptChallengePrompt";
 import "./Game.css";
 import "./Players.css";
 import "./MoveTree.css";
@@ -118,6 +119,8 @@ export function Game(): React.ReactElement | null {
     const [tournament, set_tournament] = React.useState<ActiveTournament>();
     const [, set_undo_requested] = React.useState<number | undefined>();
     const [bot_detection_results, set_bot_detection_results] = React.useState<any>(null);
+    const [unstarted_challenge, set_unstarted_challenge] = React.useState(false);
+    useAcceptChallengePrompt(game_id, unstarted_challenge);
     const [show_bot_detection_results, set_show_bot_detection_results] = React.useState(false);
     const [simul_black, set_simul_black] = React.useState<boolean | null>(null);
     const [simul_white, set_simul_white] = React.useState<boolean | null>(null);
@@ -600,6 +603,13 @@ export function Game(): React.ReactElement | null {
                     }
 
                     set_annulment_reason(game.annulment_reason);
+                    // A challenge nobody has accepted yet: its game has no players
+                    set_unstarted_challenge(
+                        game.mode === "game" &&
+                            game.source === "play" &&
+                            !game.players.black.id &&
+                            !game.players.white.id,
+                    );
                     set_historical_black(game.historical_ratings.black);
                     set_historical_white(game.historical_ratings.white);
                     set_bot_detection_results(game.bot_detection_results);
