@@ -451,7 +451,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         [currentUser, selectedRoom?.current_game],
     );
     const isSelectedRoomBlocked = !selectedRoomPolicy.allowed;
-    const isBlockedRoom = Boolean(accessBlocked?.room_id === roomId || isSelectedRoomBlocked);
+    const isBlockedRoom = Boolean(
+        (accessBlocked && accessBlocked.room_id === roomId) || isSelectedRoomBlocked,
+    );
     const resolvedRoom = isBlockedRoom ? null : selectedRoom;
 
     const resolvedRoomTitle = resolvedRoom?.title;
