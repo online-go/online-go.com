@@ -90,7 +90,7 @@ see it there, and a skipped push isn't sent later. Webhooks still get each
 notification then, saying the player was connected, except `yourMove`, which is
 only sent while the player is away.
 
-`yourMove` is sent once per turn. Chat after a game is pushed to an away
+`yourMove` is only sent for correspondence games, once per turn. Chat after a game is pushed to an away
 player's devices once per game until they connect again, so a run of chat lines
 is one push; webhooks get every line.
 
