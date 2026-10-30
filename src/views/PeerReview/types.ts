@@ -53,9 +53,54 @@ export interface PeerReviewRequest {
     created: string;
     reviewers_total?: number | null;
     reviewers_available?: number | null;
+    reviewer_honorific: string | null;
 }
 
+export interface PeerReviewFeedback {
+    score: number | null;
+    text: string;
+    none_provided: boolean;
+    delivered: boolean;
+}
+
+export interface ReviewFeedbackStatus {
+    role: "requester" | "reviewer";
+    request_id: number;
+    state: PeerReviewState;
+    review_seen_at: string | null;
+    feedback_due_at: string | null;
+    max_chars: number;
+    feedback: PeerReviewFeedback | null;
+}
+
+export interface ReviewerStats {
+    completed: number;
+    in_progress: number;
+    rating_count: number;
+    score: number | null;
+    ddk_share: number;
+    sdk_share: number;
+}
+
+export interface ReviewerRow {
+    player: PeerReviewPlayer;
+    rank: number;
+    professional: boolean;
+    score: number | null;
+    honorific: string;
+    completed: number;
+    in_progress: number;
+}
+
+export interface CompletedReview extends PeerReviewRequest {
+    feedback: PeerReviewFeedback | null;
+}
+
+export type ReviewersOrder = "-completed" | "completed" | "-score" | "score" | "-rank" | "rank";
+
 export interface PeerReviewerProfile {
+    stats: ReviewerStats | null;
+    honorific: string | null;
     joined: string;
     active: boolean;
     last_active: string;

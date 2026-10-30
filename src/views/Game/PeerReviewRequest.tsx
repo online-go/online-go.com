@@ -24,6 +24,7 @@ import { rankString } from "@/lib/rank_utils";
 import { alert } from "@/lib/swal_config";
 import { _, interpolate, moment, pgettext } from "@/lib/translate";
 import { createRequest, fetchGameRequestStatus, requestAction } from "@/views/PeerReview/api";
+import { Honorific } from "@/views/PeerReview/Honorific";
 import type { GameRequestStatus } from "@/views/PeerReview/types";
 import { usePeerReviewAvailability } from "@/views/PeerReview/usePeerReviewAvailability";
 import { WaitTime } from "@/views/PeerReview/WaitTime";
@@ -101,6 +102,7 @@ export function PeerReviewRequest({ gameId }: PeerReviewRequestProps): React.Rea
                             {pgettext("Peer review request status", "Being reviewed by")}
                         </Link>{" "}
                         {req.reviewer && <Player user={req.reviewer} rank disableCacheUpdate />}
+                        <Honorific name={req.reviewer_honorific} />
                     </span>
                 )}
                 {req.state === "open" && (

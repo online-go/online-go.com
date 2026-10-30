@@ -25,9 +25,10 @@ import { fetchMyProfile } from "./api";
 import { QueueTab } from "./QueueTab";
 import { FinishedTab } from "./FinishedTab";
 import { MyQueueTab } from "./MyQueueTab";
+import { ReviewersTab } from "./ReviewersTab";
 import "./PeerReview.css";
 
-type Tab = "queue" | "finished" | "mine";
+type Tab = "queue" | "finished" | "reviewers" | "mine";
 
 /** The peer review area: public queue, finished reviews archive, and a joined reviewer's own queue. */
 export function PeerReview(): React.ReactElement {
@@ -35,7 +36,8 @@ export function PeerReview(): React.ReactElement {
     const user = useUser();
     const [isReviewer, setIsReviewer] = React.useState(false);
     const [profileChecked, setProfileChecked] = React.useState(false);
-    const requested: Tab = tab === "finished" || tab === "mine" ? tab : "queue";
+    const requested: Tab =
+        tab === "finished" || tab === "reviewers" || tab === "mine" ? tab : "queue";
     const selected: Tab =
         requested === "mine" && profileChecked && !isReviewer ? "queue" : requested;
 
@@ -87,6 +89,9 @@ export function PeerReview(): React.ReactElement {
                             "Finished reviews",
                         )}
                     </span>
+                    <span className={tabClass("reviewers")} onClick={() => select("reviewers")}>
+                        {pgettext("Peer review tab: the reviewer leaderboard", "Reviewers")}
+                    </span>
                     {isReviewer && (
                         <span className={tabClass("mine")} onClick={() => select("mine")}>
                             {pgettext(
@@ -101,6 +106,7 @@ export function PeerReview(): React.ReactElement {
             <AvailabilityNotice />
             {selected === "queue" && <QueueTab />}
             {selected === "finished" && <FinishedTab />}
+            {selected === "reviewers" && <ReviewersTab />}
             {selected === "mine" && isReviewer && <MyQueueTab />}
         </div>
     );

@@ -172,6 +172,7 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
             case "peerReviewClaimExpired":
                 return `/game/${notification.game_id}`;
             case "peerReviewSubmitted":
+            case "peerReviewFeedback":
                 return notification.review_id
                     ? `/review/${notification.review_id}`
                     : `/game/${notification.game_id}`;
@@ -629,6 +630,15 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
                 return (
                     <div>
                         {interpolate(_("Your peer review of {{game_name}} is ready"), {
+                            game_name: notification.game_name,
+                        })}
+                    </div>
+                );
+            case "peerReviewFeedback":
+                return (
+                    <div>
+                        {interpolate(_("{{requester}} rated your review of {{game_name}}"), {
+                            requester: notification.requester?.username,
                             game_name: notification.game_name,
                         })}
                     </div>

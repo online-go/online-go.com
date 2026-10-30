@@ -20,6 +20,7 @@ import { Link } from "react-router-dom";
 import { PaginatedTable } from "@/components/PaginatedTable";
 import { Player } from "@/components/Player";
 import { _, moment, pgettext } from "@/lib/translate";
+import { Honorific } from "./Honorific";
 import { RequestRankCell } from "./RequestRankCell";
 import type { PeerReviewRequest } from "./types";
 import "./FinishedTab.css";
@@ -90,7 +91,14 @@ export function FinishedTab(): React.ReactElement {
                         header: _("Reviewer"),
                         className: () => "player",
                         render: (r: PeerReviewRequest) =>
-                            r.reviewer ? <Player user={r.reviewer} disableCacheUpdate /> : "",
+                            r.reviewer ? (
+                                <>
+                                    <Player user={r.reviewer} disableCacheUpdate />
+                                    <Honorific name={r.reviewer_honorific} />
+                                </>
+                            ) : (
+                                ""
+                            ),
                     },
                     {
                         header: _("Review"),
