@@ -84,8 +84,8 @@ test("the directory without a selected room does not show a player block", () =>
     expect(screen.getByRole("button", { name: "Room" })).toBeEnabled();
 });
 
-test("an actual own-game block leaves other rooms available", async () => {
-    const rooms: KibitzRoomSummary[] = [
+function makeAccessRooms(): KibitzRoomSummary[] {
+    return [
         {
             id: "own",
             channel: "kibitz-own",
@@ -115,11 +115,42 @@ test("an actual own-game block leaves other rooms available", async () => {
             viewer_count: 1,
         },
     ];
-    const controller = makeController(rooms);
+}
+
+test("an actual own-game block leaves other rooms available", async () => {
+    const controller = makeController(makeAccessRooms());
     renderPage(controller, "/kibitz/own");
     expect(screen.getByText(/You can't stay in "Own game"/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Own game 1" })).toBeDisabled();
     fireEvent.click(screen.getByRole("button", { name: "Other room 1" }));
     await waitFor(() => expect(controller.selectRoom).toHaveBeenCalledWith("other"));
+    expect(screen.queryByText(/You can't stay in/)).toBeNull();
+});
+
+test("opening Kibitz skips a blocked first room", async () => {
+    const controller = makeController(makeAccessRooms());
+    renderPage(controller);
+    await waitFor(() => expect(controller.selectRoom).toHaveBeenCalledWith("other"));
+    expect(controller.selectRoom).not.toHaveBeenCalledWith("own");
+    expect(controller.setAccessBlocked).not.toHaveBeenCalled();
+    expect(screen.queryByText(/You can't stay in/)).toBeNull();
+});
+
+test("opening Kibitz keeps the first room when it is accessible", async () => {
+    const rooms = makeAccessRooms();
+    rooms.reverse();
+    const controller = makeController(rooms);
+    renderPage(controller);
+    await waitFor(() => expect(controller.selectRoom).toHaveBeenCalledWith("other"));
+});
+
+test("opening Kibitz with only blocked rooms shows the directory without joining", () => {
+    const controller = makeController(makeAccessRooms().slice(0, 1));
+    renderPage(controller);
+    expect(screen.getByText("No rooms are available to join right now.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Own game 1" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Room" })).toBeEnabled();
+    expect(controller.selectRoom).not.toHaveBeenCalled();
+    expect(controller.setAccessBlocked).not.toHaveBeenCalled();
     expect(screen.queryByText(/You can't stay in/)).toBeNull();
 });

@@ -1,5 +1,10 @@
 # Kibitz
 
+Opening `/kibitz` selects the first accessible room in the directory's viewer-count
+order. Rooms watching the current player's active game are skipped. If all rooms
+are blocked, the directory stays open without joining a room. Explicit links to
+blocked rooms still show the access warning.
+
 The Kibitz page (`/kibitz/:roomId`) is a room where spectators watch one live
 game together, chat, and share variations. It renders through the shared
 `GobanView` layout (`src/components/GobanView`).
