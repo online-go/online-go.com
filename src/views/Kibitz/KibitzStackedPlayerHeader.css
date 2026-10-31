@@ -10,6 +10,7 @@
     .KibitzStackedPlayerHeader-toggle {
         all: unset;
         position: absolute;
+        z-index: 2;
         inset-block: 0;
         left: calc(50% - 22px);
         width: 44px;
