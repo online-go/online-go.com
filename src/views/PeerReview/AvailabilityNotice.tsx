@@ -29,7 +29,9 @@ export function AvailabilityNotice(): React.ReactElement | null {
     return (
         <div className="AvailabilityNotice">
             {available
-                ? _("Peer review is dark: only moderators can see and use it.")
+                ? _(
+                      "Peer review is dark: only moderators and peer review moderators can see and use it.",
+                  )
                 : _("Peer review is not open yet.")}
         </div>
     );
