@@ -423,8 +423,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         };
     }, [controller, handleCachedGamesChanged]);
 
-    const defaultRoomId = rooms[0]?.id ?? null;
-    const navigateToRoom = useKibitzRoomNavigation(defaultRoomId, pickerMode === "create-room");
     const blockedRoomIds = React.useMemo(() => {
         if (!currentUser) {
             return new Set<string>();
@@ -438,14 +436,17 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         }
         return blockedIds;
     }, [currentUser, rooms]);
+    const defaultRoom = rooms.find((room) => !blockedRoomIds.has(room.id)) ?? null;
+    const defaultRoomId = defaultRoom?.id ?? null;
+    const navigateToRoom = useKibitzRoomNavigation(defaultRoomId, pickerMode === "create-room");
     // While the URL points at a room other than the hydrated one (a switch
     // in progress), show the directory's entry for the target room rather
     // than the room being left.
     const roomFromDirectory = roomId
         ? (rooms.find((room) => room.id === roomId) ?? null)
-        : (rooms[0] ?? null);
+        : defaultRoom;
     const selectedRoom: KibitzRoomSummary | null =
-        activeRoom && (!roomId || activeRoom.id === roomId) ? activeRoom : roomFromDirectory;
+        activeRoom && activeRoom.id === roomId ? activeRoom : roomFromDirectory;
     const selectedRoomPolicy = React.useMemo(
         () => getKibitzAccessPolicyForUser(currentUser, selectedRoom?.current_game),
         [currentUser, selectedRoom?.current_game],
@@ -1297,7 +1298,12 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                                   "Kibitz placeholder shown when no rooms exist",
                                   "Create a Kibitz room to start watching a game with friends.",
                               )
-                            : pgettext("Kibitz loading state", "Loading Kibitz...")}
+                            : !roomId && !defaultRoom
+                              ? pgettext(
+                                    "Kibitz placeholder when all rooms are blocked for the current player",
+                                    "No rooms are available to join right now.",
+                                )
+                              : pgettext("Kibitz loading state", "Loading Kibitz...")}
                     </div>
                     <div className="Kibitz-empty-rooms">{roomList}</div>
                 </div>
