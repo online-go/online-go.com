@@ -17,8 +17,11 @@ A fixed underline marks the player to move on the official branch. Rules,
 flags and komi are omitted from the thin strip. Clocks take priority;
 captures use a small captured stone and count when the full label does not fit.
 
-There is no centre disclosure or expansion of the original header. Names keep
-their standard player links; rules and komi remain in Game information.
+Both headers have an invisible 44-pixel-wide centre button that switches the
+whole Kibitz layout between its thin and original forms. The choice lasts until
+page reload. The button has a translated accessible label and a keyboard focus
+outline. Names keep their standard player links; rules and komi remain in
+Game information.
 
 The room-title strip has less padding in this mode. The site navigation height
 is capped at 44 pixels at the default font size while this Kibitz view is open;

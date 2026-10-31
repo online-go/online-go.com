@@ -10,14 +10,14 @@
 import * as data from "@/lib/data";
 import "@/lib/sockets";
 import * as React from "react";
-import { act, render } from "@testing-library/react";
+import { act, fireEvent, render } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { GobanController } from "@/lib/GobanController";
 import { GobanControllerContext } from "@/components/GobanView";
 import type { GameLayoutSnapshot } from "@/components/GobanView";
 import type { JGOFClockWithTransmitting } from "goban";
 import { KibitzStackedPlayerHeader } from "./KibitzStackedPlayerHeader";
-import { usesKibitzThinHeader } from "./kibitzThinHeader";
+import { setKibitzHeaderOverride, usesKibitzThinHeader } from "./kibitzThinHeader";
 
 jest.mock("@/components/GobanView", () => ({
     ...jest.requireActual("@/components/GobanView"),
@@ -91,6 +91,7 @@ function tick(game: GobanController, overrides: Partial<JGOFClockWithTransmittin
 }
 
 afterEach(() => {
+    act(() => setKibitzHeaderOverride(undefined));
     data.set("user", originalUser);
     act(() => setSize(originalSize.width, originalSize.height));
     Object.defineProperty(document.documentElement, "clientWidth", {
@@ -102,6 +103,26 @@ afterEach(() => {
         value: originalSize.clientHeight,
     });
     jest.restoreAllMocks();
+});
+
+test.each([
+    [375, 667],
+    [390, 844],
+])("switches both header layouts at %i by %i", (width, height) => {
+    setSize(width, height);
+    const game = controller();
+    const { container, getByRole } = render(header(game));
+    const startsThin = width < 390;
+    expect(Boolean(container.querySelector(".KibitzThinPlayer"))).toBe(startsThin);
+    fireEvent.click(
+        getByRole("button", { name: startsThin ? "Use original header" : "Use compact header" }),
+    );
+    expect(Boolean(container.querySelector(".KibitzThinPlayer"))).toBe(!startsThin);
+    fireEvent.click(
+        getByRole("button", { name: startsThin ? "Use compact header" : "Use original header" }),
+    );
+    expect(Boolean(container.querySelector(".KibitzThinPlayer"))).toBe(startsThin);
+    game.destroy();
 });
 
 test.each([

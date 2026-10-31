@@ -11,6 +11,25 @@ import * as React from "react";
 import { useGameLayout } from "@/components/GobanView";
 import type { GameLayoutSnapshot } from "@/components/GobanView";
 
+let headerOverride: boolean | undefined;
+const headerListeners = new Set<() => void>();
+
+export function setKibitzHeaderOverride(thin: boolean | undefined): void {
+    headerOverride = thin;
+    headerListeners.forEach((listener) => listener());
+}
+
+function subscribeHeader(listener: () => void): () => void {
+    headerListeners.add(listener);
+    return () => {
+        headerListeners.delete(listener);
+    };
+}
+
+function getHeaderOverride(): boolean | undefined {
+    return headerOverride;
+}
+
 export function usesKibitzThinHeader(layout: GameLayoutSnapshot): boolean {
     const width = layout.clientWidth ?? layout.width;
     const height = layout.clientHeight ?? layout.height;
@@ -19,6 +38,7 @@ export function usesKibitzThinHeader(layout: GameLayoutSnapshot): boolean {
 
 export function useKibitzThinHeader(): boolean {
     const layout = useGameLayout();
+    const manualOverride = React.useSyncExternalStore(subscribeHeader, getHeaderOverride);
     const next = usesKibitzThinHeader(layout);
     const [thin, setThin] = React.useState(next);
     React.useLayoutEffect(() => {
@@ -26,5 +46,5 @@ export function useKibitzThinHeader(): boolean {
             setThin(next);
         }
     }, [layout.keyboardOpen, next]);
-    return layout.mode === "stacked" && thin;
+    return layout.mode === "stacked" && (manualOverride ?? thin);
 }

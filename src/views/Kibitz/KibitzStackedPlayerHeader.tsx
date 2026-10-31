@@ -11,8 +11,9 @@ import * as React from "react";
 import { useGobanViewLayout } from "@/components/GobanView";
 import { CompactPlayerHeader } from "@/views/Game/CompactPlayerHeader";
 import type { GobanController } from "@/lib/GobanController";
+import { pgettext } from "@/lib/translate";
 import { KibitzThinPlayer } from "./KibitzThinPlayer";
-import { useKibitzThinHeader } from "./kibitzThinHeader";
+import { setKibitzHeaderOverride, useKibitzThinHeader } from "./kibitzThinHeader";
 import "./KibitzStackedPlayerHeader.css";
 
 export function KibitzStackedPlayerHeader({
@@ -36,23 +37,36 @@ export function KibitzStackedPlayerHeader({
             controller={controller}
         />
     );
-    if (!thin) {
-        return fullHeader;
-    }
     return (
-        <div className="KibitzStackedPlayerHeader">
-            <div className="KibitzStackedPlayerHeader-strip">
-                <KibitzThinPlayer
-                    key={`black-${controller.goban.game_id}`}
-                    controller={controller}
-                    color="black"
-                />
-                <KibitzThinPlayer
-                    key={`white-${controller.goban.game_id}`}
-                    controller={controller}
-                    color="white"
-                />
-            </div>
+        <div
+            className={`KibitzStackedPlayerHeader${thin ? "" : " KibitzStackedPlayerHeader-full"}`}
+        >
+            {thin ? (
+                <div className="KibitzStackedPlayerHeader-strip">
+                    <KibitzThinPlayer
+                        key={`black-${controller.goban.game_id}`}
+                        controller={controller}
+                        color="black"
+                    />
+                    <KibitzThinPlayer
+                        key={`white-${controller.goban.game_id}`}
+                        controller={controller}
+                        color="white"
+                    />
+                </div>
+            ) : (
+                fullHeader
+            )}
+            <button
+                type="button"
+                className="KibitzStackedPlayerHeader-toggle"
+                aria-label={
+                    thin
+                        ? pgettext("Kibitz header", "Use original header")
+                        : pgettext("Kibitz header", "Use compact header")
+                }
+                onClick={() => setKibitzHeaderOverride(!thin)}
+            />
         </div>
     );
 }

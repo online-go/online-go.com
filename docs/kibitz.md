@@ -128,7 +128,11 @@ The two halves use the standard player-card colours: a dark Black panel and
 a light White panel, with matching clock, text and player-link colours in
 both site themes.
 
-The compact header has no disclosure or expanded player cards. Player names
+Both stacked headers have an invisible 44-pixel-wide button at the centre.
+Tapping it switches between the original and thin layouts, including the
+navigation spacing. The choice stays active until the page reloads and applies
+only to Kibitz. The button also works with the keyboard and has a visible focus
+outline. Player names
 retain their usual player links. The room-title strip is shorter in this mode,
 and site navigation is 2.75rem high, except that the existing 2rem navigation
 on viewports at most 500 CSS pixels tall remains in use. The navigation size

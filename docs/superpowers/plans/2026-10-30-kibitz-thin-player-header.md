@@ -5,8 +5,9 @@
    keyboard is open.
 2. Extract the stacked header into its own component. Add a dedicated thin
    player component using existing player, clock and goban subscriptions.
-3. Put 32-pixel avatars at the two outer edges. The thin header has no
-   disclosure or expansion into the old cards. Abbreviate capture labels
+3. Put 32-pixel avatars at the two outer edges. Add an invisible centre button
+   to both stacked headers to switch layouts and navigation spacing together.
+   Keep the manual choice until page reload. Abbreviate capture labels
    to a captured stone and count when the full text does not fit. Use the
    original player-card palettes for backgrounds, clocks, text and player links.
 4. Apply thin room-title and navigation spacing only while the thin Kibitz
@@ -20,9 +21,10 @@
 
 ## Verification
 
-- The three focused suites pass all 71 tests, including live clock and capture
+- The three focused suites pass all 73 tests, including live clock and capture
   updates, byo-yomi, Canadian overtime, pause state, official-turn tracking,
-  controller changes, avatars, the reference boundary and keyboard stability.
+  controller changes, avatars, the reference boundary, keyboard stability and
+  switching both header layouts through the centre button.
 - TypeScript, lint and modified-file formatting pass. The production build
   remains a final-push check for the avatar revision.
 - Browser checks use an actual beta room at 320 by 568, 375 by 667,
