@@ -8,6 +8,10 @@
 }
 
 .GobanView.Kibitz.portrait.Kibitz-thin-header {
+    &.has-portrait-split .GobanView-mobile-panels {
+        flex-basis: 10rem;
+    }
+
     .GobanView-header {
         padding: 0.15rem 0.75rem;
     }

@@ -98,17 +98,18 @@ export function portraitStageExtraHeightPx(stage: HTMLElement | null): number {
  *  `stage_extra_height` is what the stage holds besides the board, from
  *  `portraitStageExtraHeightPx`. The minimum keeps all of it on screen along
  *  with a board of at least `MIN_PORTRAIT_BOARD_REM`; the maximum keeps the
- *  panel area at least `MIN_PORTRAIT_PANEL_REM`. A viewport too short for both
+ *  panel area at least `panel_min_height_rem` (8rem by default). A viewport too short for both
  *  reports a maximum equal to the minimum rather than an empty range. */
 export function portraitStageBoundsPx(
     available_height: number,
     stage_extra_height: number = 0,
+    panel_min_height_rem: number = MIN_PORTRAIT_PANEL_REM,
 ): {
     min: number;
     max: number;
 } {
     const min = Math.round(remToPx(MIN_PORTRAIT_BOARD_REM) + stage_extra_height);
-    const max = Math.max(min, Math.round(available_height - remToPx(MIN_PORTRAIT_PANEL_REM)));
+    const max = Math.max(min, Math.round(available_height - remToPx(panel_min_height_rem)));
     return { min, max };
 }
 
@@ -119,7 +120,12 @@ export function clampPortraitStage(
     height: number,
     available_height: number,
     stage_extra_height: number = 0,
+    panel_min_height_rem: number = MIN_PORTRAIT_PANEL_REM,
 ): number {
-    const { min, max } = portraitStageBoundsPx(available_height, stage_extra_height);
+    const { min, max } = portraitStageBoundsPx(
+        available_height,
+        stage_extra_height,
+        panel_min_height_rem,
+    );
     return Math.round(Math.min(max, Math.max(min, height)));
 }

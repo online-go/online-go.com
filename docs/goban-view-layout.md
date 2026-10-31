@@ -222,6 +222,11 @@ preference: its widths are the CSS variables `--dock-collapsed-width`
 `goban-view-portrait-split`, the user sizes of the sidebar and the
 portrait split.
 
+`portraitPanelMinHeightRem` sets the panel reserve for a manually resized
+portrait split. It defaults to 8rem. The stored height, pointer dragging,
+keyboard adjustments and separator accessibility bounds all use this value.
+Compact Kibitz sets it to 6rem; other views keep the default.
+
 ## Slots
 
 - **`leftAside`**: a landscape-only column before the board, styled like

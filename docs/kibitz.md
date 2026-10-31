@@ -146,6 +146,12 @@ maximum height of 2.4rem and smaller arrow glyphs. This applies only to the
 buttons layout in compact Kibitz; the slider and other pages keep their
 existing sizes.
 
+In the thin layout, the board–chat divider starts with a 10rem panel basis
+instead of 12rem. Dragging it down can leave 6rem for chat instead of 8rem,
+giving the board up to 2rem more height (32 pixels at the default font size).
+Switching to the original header restores both defaults and clamps any saved
+divider position to its range.
+
 The game's result goes beside the room title rather than under the winner's
 name. `KibitzKeyboardShortcuts` binds the Game page's
 move navigation keys (arrows, Home, End, Page Up, Page Down) to whichever

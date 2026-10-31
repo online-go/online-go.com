@@ -154,6 +154,20 @@ test("no stored height leaves the stage with no inline style at all", () => {
     expect(renderSplit().getAttribute("style")).toBeNull();
 });
 
+test("reclamps a stored height when the panel reserve changes", () => {
+    preferences.set("goban-view-portrait-split", 5000);
+    const view = (panelMin: number) => (
+        <GobanView controller={fakeController()} portraitSplit portraitPanelMinHeightRem={panelMin}>
+            <div />
+        </GobanView>
+    );
+    const { container, rerender } = render(view(6));
+    const stage = container.querySelector<HTMLElement>(".GobanView-stage")!;
+    expect(stage.style.height).toBe("704px");
+    rerender(view(8));
+    expect(stage.style.height).toBe("672px");
+});
+
 describe("a drag that ends where it started", () => {
     /** jsdom has no PointerEvent, and the plain Event its absence falls back
      *  to carries none of the properties the handle reads. */

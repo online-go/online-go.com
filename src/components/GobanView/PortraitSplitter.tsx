@@ -37,6 +37,7 @@ interface PortraitSplitterProps {
     /** The panel area below the handle. It and the stage share the space the
      *  handle divides, so the two together measure how much there is. */
     panelsRef: React.RefObject<HTMLDivElement | null>;
+    panelMinHeightRem?: number;
     /** Called on every pointer move while dragging with the clamped height. */
     onPreview: (height: number) => void;
     /** Called when the drag ends or a key changes the height. Null resets the
@@ -58,6 +59,7 @@ export function PortraitSplitter({
     rootRef,
     stageRef,
     panelsRef,
+    panelMinHeightRem,
     onPreview,
     onCommit,
     onCancel,
@@ -81,8 +83,9 @@ export function PortraitSplitter({
     );
 
     const clampHeight = React.useCallback(
-        (height: number) => clampPortraitStage(height, availableHeight(), stageExtraHeight()),
-        [availableHeight, stageExtraHeight],
+        (height: number) =>
+            clampPortraitStage(height, availableHeight(), stageExtraHeight(), panelMinHeightRem),
+        [availableHeight, stageExtraHeight, panelMinHeightRem],
     );
 
     const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -160,7 +163,7 @@ export function PortraitSplitter({
         onCommit(next);
     };
 
-    const bounds = portraitStageBoundsPx(availableHeight(), stageExtraHeight());
+    const bounds = portraitStageBoundsPx(availableHeight(), stageExtraHeight(), panelMinHeightRem);
 
     return (
         <div

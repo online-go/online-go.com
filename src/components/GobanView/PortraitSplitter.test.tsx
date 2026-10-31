@@ -165,7 +165,7 @@ describe("the handle", () => {
     }
 
     /** A 400px stage beside a 200px panel area, so the range is 128..472. */
-    function renderHandle(): {
+    function renderHandle(panelMinHeightRem?: number): {
         handle: HTMLElement;
         onCommit: jest.Mock;
         onCancel: jest.Mock;
@@ -183,6 +183,7 @@ describe("the handle", () => {
                 rootRef={{ current: root }}
                 stageRef={{ current: stage }}
                 panelsRef={{ current: panels }}
+                panelMinHeightRem={panelMinHeightRem}
                 onPreview={onPreview}
                 onCommit={onCommit}
                 onCancel={onCancel}
@@ -204,6 +205,15 @@ describe("the handle", () => {
 
         expect(onCommit).toHaveBeenCalledWith(450);
         expect(onCancel).not.toHaveBeenCalled();
+    });
+
+    test("allows a smaller panel reserve for compact layouts", () => {
+        const { handle, onCommit } = renderHandle(6);
+        expect(handle).toHaveAttribute("aria-valuemax", "504");
+        pointer(handle, "pointerdown", 300);
+        pointer(handle, "pointermove", 1000);
+        pointer(handle, "pointerup", 1000);
+        expect(onCommit).toHaveBeenCalledWith(504);
     });
 
     test("cancels instead of committing when a tap does not move the handle", () => {

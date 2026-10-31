@@ -591,6 +591,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
              * horizontal layout, and in the compact header when stacked. */
             playerBars={false}
             portraitSplit
+            portraitPanelMinHeightRem={thinHeader ? 6 : undefined}
         >
             {gobans.center && <KibitzKeyboardShortcuts />}
             {(viewingOther || scoreEstimation.estimating) && (

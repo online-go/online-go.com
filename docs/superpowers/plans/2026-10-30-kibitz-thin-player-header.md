@@ -14,6 +14,9 @@
    layout is active, including less vertical padding and smaller arrow
    buttons in the move-navigation strip. Add capture overflow handling
    without hiding clocks.
+   Reduce the compact chat basis to 10rem and expose a panel reserve for the
+   shared portrait split, defaulting to 8rem and set to 6rem only by compact
+   Kibitz. Apply it to stored heights, drag limits and keyboard bounds.
 5. Update docs/kibitz.md to describe the current player layouts and the thin
    header. Add focused tests for data updates, avatars and layout boundaries.
 6. Format modified files, run focused tests, type-check and lint, inspect the
@@ -25,6 +28,9 @@
   updates, byo-yomi, Canadian overtime, pause state, official-turn tracking,
   controller changes, avatars, the reference boundary, keyboard stability and
   switching both header layouts through the centre button.
+- With the portrait splitter suites included, all 107 tests pass. The tests
+  cover the smaller drag reserve and reclamping stored heights when the
+  reserve changes.
 - TypeScript, lint and modified-file formatting pass. The production build
   remains a final-push check for the avatar revision.
 - Browser checks use an actual beta room at 320 by 568, 375 by 667,

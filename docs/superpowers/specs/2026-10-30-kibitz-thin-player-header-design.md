@@ -34,12 +34,18 @@ Responsive button widths, navigation actions and the move label do not change.
 The existing/new screenshot switch includes this strip. Other pages and the
 slider presentation do not change.
 
+The thin layout reduces the chat-panel basis from 12rem to 10rem and the
+manual divider reserve from 8rem to 6rem. This permits up to 2rem more board
+height. The header toggle restores the original defaults and reclamps stored
+divider heights. Pointer and keyboard resizing use the same limits.
+
 ## Data and compatibility
 
 Use the selected player-information controller already chosen by KibitzView.
 Use the existing Clock component for time controls and overtime. Capture counts
 follow the displayed position. The turn marker follows the official branch.
-Do not change shared Game-page components or the board engine.
+Preserve shared Game-page behaviour and the board engine. The shared split
+accepts an optional panel reserve with its existing 8rem default.
 
 ## Verification
 
