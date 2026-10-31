@@ -8,7 +8,9 @@
 3. Add an accessible disclosure for the existing full header. Close it on
    Escape, controller changes and layout changes.
 4. Apply thin room-title and navigation spacing only while the thin Kibitz
-   layout is active. Add capture overflow handling without hiding clocks.
+   layout is active, including less vertical padding and smaller arrow
+   buttons in the move-navigation strip. Add capture overflow handling
+   without hiding clocks.
 5. Update docs/kibitz.md to describe the current player layouts and the thin
    header. Add focused tests for data updates, expansion and layout boundaries.
 6. Format modified files, run focused tests, type-check and lint, inspect the

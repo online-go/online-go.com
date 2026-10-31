@@ -15,6 +15,16 @@
     .Kibitz-room-title {
         font-size: 0.8rem;
     }
+
+    .MoveNumberControl.MoveNumberControl-buttons {
+        padding-top: 0.15rem;
+        padding-bottom: 0.15rem;
+
+        .MoveNumberControl-button {
+            max-height: 2.4rem;
+            font-size: 1.15rem;
+        }
+    }
 }
 
 .Kibitz-section-header {

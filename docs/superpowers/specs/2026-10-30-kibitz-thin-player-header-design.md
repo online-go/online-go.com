@@ -23,6 +23,12 @@ is capped at 44 pixels at the default font size while this Kibitz view is open;
 the existing 32-pixel navigation on very short screens stays intact. Global
 spacing is restored on leaving Kibitz.
 
+The same compact mode reduces the move-arrow strip's vertical padding to
+0.15rem per side and caps its buttons at 2.4rem high with 1.15rem glyphs.
+Responsive button widths, navigation actions and the move label do not change.
+The existing/new screenshot switch includes this strip. Other pages and the
+slider presentation do not change.
+
 ## Data and compatibility
 
 Use the selected player-information controller already chosen by KibitzView.

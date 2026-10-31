@@ -132,6 +132,12 @@ on viewports at most 500 CSS pixels tall remains in use. The navigation size
 returns to normal when the thin Kibitz layout closes. Rules and komi stay out
 of the thin strip and remain in the expanded cards and Game information.
 
+The thin layout also reduces the vertical padding of the move-arrow strip
+to 0.15rem on each side. Its buttons keep their responsive widths, with a
+maximum height of 2.4rem and smaller arrow glyphs. This applies only to the
+buttons layout in compact Kibitz; the slider and other pages keep their
+existing sizes.
+
 The game's result goes beside the room title rather than under the winner's
 name. `KibitzKeyboardShortcuts` binds the Game page's
 move navigation keys (arrows, Home, End, Page Up, Page Down) to whichever
