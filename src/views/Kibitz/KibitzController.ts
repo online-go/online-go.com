@@ -239,14 +239,49 @@ function mapBackendRoomToSummary(
     };
 }
 
+// Preset rooms are listed in this definition order. A later preset that has
+// more viewers must not move ahead of an earlier one. A preset key that is
+// not in the list stays with the presets, after these, ordered by id.
+const PRESET_ROOM_DEFINITION_ORDER = ["high-ranked-live", "mid-ranked-live", "english-chat-live"];
+
+function presetRoomSortIndex(room: KibitzRoomSummary): number | null {
+    if (room.kind !== "preset") {
+        return null;
+    }
+    const key =
+        room.preset?.preset_key ??
+        (room.id.startsWith("preset-") ? room.id.slice("preset-".length) : room.id);
+    const index = PRESET_ROOM_DEFINITION_ORDER.indexOf(key);
+    return index === -1 ? PRESET_ROOM_DEFINITION_ORDER.length : index;
+}
+
+function compareRoomsByPopulation(roomA: KibitzRoomSummary, roomB: KibitzRoomSummary): number {
+    const viewerDiff = roomB.viewer_count - roomA.viewer_count;
+    if (viewerDiff !== 0) {
+        return viewerDiff;
+    }
+
+    return roomA.id.localeCompare(roomB.id);
+}
+
 function sortRoomSummariesByPopulation(rooms: KibitzRoomSummary[]): KibitzRoomSummary[] {
     return [...rooms].sort((roomA, roomB) => {
-        const viewerDiff = roomB.viewer_count - roomA.viewer_count;
-        if (viewerDiff !== 0) {
-            return viewerDiff;
+        const indexA = presetRoomSortIndex(roomA);
+        const indexB = presetRoomSortIndex(roomB);
+        if (indexA !== null && indexB !== null) {
+            if (indexA !== indexB) {
+                return indexA - indexB;
+            }
+            return roomA.id.localeCompare(roomB.id);
+        }
+        if (indexA !== null) {
+            return -1;
+        }
+        if (indexB !== null) {
+            return 1;
         }
 
-        return roomA.id.localeCompare(roomB.id);
+        return compareRoomsByPopulation(roomA, roomB);
     });
 }
 

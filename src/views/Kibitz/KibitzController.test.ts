@@ -125,7 +125,7 @@ describe("KibitzController room ordering", () => {
                 id: "room-c",
                 channel: "channel-c",
                 title: "Room C",
-                kind: "preset",
+                kind: "user",
                 description: null,
                 current_game_id: null,
                 creator_id: null,
@@ -137,7 +137,7 @@ describe("KibitzController room ordering", () => {
                 id: "room-a",
                 channel: "channel-a",
                 title: "Room A",
-                kind: "preset",
+                kind: "user",
                 description: null,
                 current_game_id: null,
                 creator_id: null,
@@ -149,7 +149,7 @@ describe("KibitzController room ordering", () => {
                 id: "room-b",
                 channel: "channel-b",
                 title: "Room B",
-                kind: "preset",
+                kind: "user",
                 description: null,
                 current_game_id: null,
                 creator_id: null,
@@ -178,7 +178,7 @@ describe("KibitzController room ordering", () => {
             id: "room-new",
             channel: "channel-new",
             title: "Room New",
-            kind: "preset",
+            kind: "user",
             description: null,
             current_game_id: null,
             creator_id: null,
@@ -197,6 +197,64 @@ describe("KibitzController room ordering", () => {
         pushHandlers["room-removed"]?.({ id: "room-b" });
 
         expect(controller.rooms.map((room) => room.id)).toEqual(["room-a", "room-c", "room-new"]);
+    });
+
+    it("lists preset rooms in definition order, then custom rooms by viewer count", async () => {
+        const directoryRoom = (
+            id: string,
+            kind: "user" | "preset" | "broadcast",
+            viewer_count: number,
+            preset_key?: string,
+        ) => ({
+            id,
+            channel: `channel-${id}`,
+            title: id,
+            kind,
+            description: null,
+            current_game_id: null,
+            creator_id: null,
+            created_at: "2026-05-01T10:00:00Z",
+            last_activity_at: "2026-05-01T10:00:00Z",
+            viewer_count,
+            preset: preset_key
+                ? {
+                      preset_key,
+                      selection_status: "watching" as const,
+                      pending_game_id: null,
+                      change_effective_at: null,
+                  }
+                : null,
+        });
+
+        mockedGet.mockResolvedValueOnce([
+            directoryRoom("user-busy", "user", 50),
+            directoryRoom("preset-english-chat-live", "preset", 40),
+            directoryRoom("broadcast-featured", "broadcast", 100),
+            directoryRoom("preset-mid-ranked-live", "preset", 3, "mid-ranked-live"),
+            directoryRoom("user-tied-b", "user", 9),
+            directoryRoom("preset-alpha-extra", "preset", 99, "alpha-extra"),
+            directoryRoom("preset-high-ranked-live", "preset", 0, "high-ranked-live"),
+            directoryRoom("user-quiet", "user", 1),
+            directoryRoom("preset-zeta-extra", "preset", 1, "zeta-extra"),
+            directoryRoom("user-tied-a", "user", 9),
+        ]);
+
+        const controller = new KibitzController();
+        await flushPromises();
+        await flushPromises();
+
+        expect(controller.rooms.map((room) => room.id)).toEqual([
+            "preset-high-ranked-live",
+            "preset-mid-ranked-live",
+            "preset-english-chat-live",
+            "preset-alpha-extra",
+            "preset-zeta-extra",
+            "broadcast-featured",
+            "user-busy",
+            "user-tied-a",
+            "user-tied-b",
+            "user-quiet",
+        ]);
     });
 
     it("deduplicates overlapping room directory refreshes", async () => {
