@@ -22,6 +22,7 @@ import { ChatDateLine } from "@/components/Chat/ChatDateLine";
 import { GameChatMoveNumber } from "@/components/Chat/GameChatMoveNumber";
 import { LineText } from "@/components/misc-ui";
 import { TabCompleteInput } from "@/components/TabCompleteInput";
+import { sanitizeMessage } from "@/lib/misc";
 import { ChatUserList } from "@/components/ChatUserList";
 import { Player } from "@/components/Player";
 import { chat_manager, ChatChannelProxy, ChatMessage } from "@/lib/chat_manager";
@@ -277,6 +278,13 @@ export function KibitzChatPanel({
     // via Scylla — the real game chat path). chat_manager.join("game-X")
     // would join an unrelated comm-server Redis channel and stay empty.
     const watchedController = gameController;
+    const gameChatReady = Boolean(
+        watchedController &&
+        !watchedController.destroyed &&
+        !watchedController.goban.destroyed &&
+        room.current_game?.game_id &&
+        watchedController.goban.game_id === room.current_game.game_id,
+    );
     const roomScrollRef = React.useRef<HTMLDivElement | null>(null);
     const gameScrollRef = React.useRef<HTMLDivElement | null>(null);
     const [roomProxy, setRoomProxy] = React.useState<ChatChannelProxy | null>(null);
@@ -637,6 +645,36 @@ export function KibitzChatPanel({
     let roomLastLine: ChatMessage | undefined = {
         message: { t: nowSeconds },
     } as ChatMessage;
+    const onGameKeyPress = React.useCallback(
+        (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+            if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) {
+                return;
+            }
+            event.preventDefault();
+            if (
+                tab !== "game" ||
+                chatDisabled ||
+                !gameChatReady ||
+                !watchedController ||
+                watchedController.destroyed ||
+                watchedController.goban.destroyed ||
+                watchedController.goban.game_id !== room.current_game?.game_id
+            ) {
+                return false;
+            }
+            const input = event.target as HTMLTextAreaElement;
+            const message = sanitizeMessage(input.value);
+            if (!message) {
+                return false;
+            }
+            watchedController.goban.sendChat(message, "main");
+            input.value = "";
+            input.style.height = "auto";
+            return false;
+        },
+        [tab, chatDisabled, gameChatReady, watchedController, room.current_game?.game_id],
+    );
+
     let gameLastLine: protocol.GameChatLine | undefined = {
         date: nowSeconds,
     } as protocol.GameChatLine;
@@ -906,9 +944,13 @@ export function KibitzChatPanel({
                 </div>
                 {showPeople && hasRoomForPeople ? <ChatUserList channel={room.channel} /> : null}
             </div>
-            {tab === "room" ? (
-                <div className="KibitzChatPanel-composer chat-input-container input-group">
+            {mode !== "game" && (
+                <div
+                    className="KibitzChatPanel-composer chat-input-container input-group"
+                    hidden={tab !== "room"}
+                >
                     <TabCompleteInput
+                        key={room.id}
                         id={"kibitz-chat-input-" + room.id}
                         className="chat-input"
                         placeholder={chatDisabled ? roomDisabledPlaceholder : roomPlaceholder}
@@ -916,7 +958,38 @@ export function KibitzChatPanel({
                         onKeyPress={onRoomKeyPress}
                     />
                 </div>
-            ) : null}
+            )}
+            {mode !== "room" && (
+                <div
+                    className="KibitzChatPanel-composer chat-input-container input-group"
+                    hidden={tab !== "game"}
+                >
+                    <TabCompleteInput
+                        key={`${room.id}-${room.current_game?.game_id ?? "none"}`}
+                        id={"kibitz-game-chat-input-" + room.id}
+                        className="chat-input main"
+                        aria-label={pgettext(
+                            "Accessible name of the watched game chat input",
+                            "Game chat message",
+                        )}
+                        placeholder={
+                            chatDisabled
+                                ? roomDisabledPlaceholder
+                                : !gameChatReady
+                                  ? pgettext(
+                                        "Kibitz game chat placeholder while the watched game loads",
+                                        "Waiting for the watched game…",
+                                    )
+                                  : pgettext(
+                                        "Placeholder for the watched game chat input",
+                                        "Message game chat",
+                                    )
+                        }
+                        disabled={chatDisabled || !gameChatReady}
+                        onKeyPress={onGameKeyPress}
+                    />
+                </div>
+            )}
         </div>
     );
 }
