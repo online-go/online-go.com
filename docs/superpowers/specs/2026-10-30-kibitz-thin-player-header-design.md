@@ -10,6 +10,9 @@ Desktop and landscape player cards do not change.
 The thin header puts Black and White side by side. Each player has a colour
 stone and linked name on the first row, with a clock and captures on the second.
 Black's 32-pixel avatar sits on the left edge; White's sits on the right edge.
+The halves use the existing player-card background, foreground and clock
+colours. Player links use the dark palette on Black's panel and the light
+palette on White's panel, including player-role colours in both themes.
 A fixed underline marks the player to move on the official branch. Rules,
 flags and komi are omitted from the thin strip. Clocks take priority;
 captures use a small captured stone and count when the full label does not fit.

@@ -124,6 +124,9 @@ turn underline follows the official branch; captures follow the displayed
 position. Clocks keep their overtime information and take priority over
 capture labels when the row is too narrow: a captured stone and count replace
 the full label. Paused clocks have a static label.
+The two halves use the standard player-card colours: a dark Black panel and
+a light White panel, with matching clock, text and player-link colours in
+both site themes.
 
 The compact header has no disclosure or expanded player cards. Player names
 retain their usual player links. The room-title strip is shorter in this mode,

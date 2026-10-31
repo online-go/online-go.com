@@ -7,7 +7,8 @@
    player component using existing player, clock and goban subscriptions.
 3. Put 32-pixel avatars at the two outer edges. The thin header has no
    disclosure or expansion into the old cards. Abbreviate capture labels
-   to a captured stone and count when the full text does not fit.
+   to a captured stone and count when the full text does not fit. Use the
+   original player-card palettes for backgrounds, clocks, text and player links.
 4. Apply thin room-title and navigation spacing only while the thin Kibitz
    layout is active, including less vertical padding and smaller arrow
    buttons in the move-navigation strip. Add capture overflow handling

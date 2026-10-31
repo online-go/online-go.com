@@ -6,7 +6,21 @@
     align-items: center;
     min-width: 0;
     padding: 0.2rem 0.5rem;
-    color: var(--fg);
+    &.black {
+        --user: var(--dark-user);
+        --supporter: var(--dark-supporter);
+        --professional: var(--dark-professional);
+        --ambassador: var(--dark-ambassador);
+        --teacher: var(--dark-teacher);
+        --bot: var(--dark-bot);
+        --moderator: var(--dark-moderator);
+        --aga-official: var(--dark-aga-official);
+        --admin: var(--dark-admin);
+        --kibitz-clock: var(--player-black-clock);
+        --kibitz-paused-clock: var(--player-black-paused-clock);
+        background: var(--player-black-card-color);
+        color: var(--player-black-fg);
+    }
 
     .KibitzThinPlayer-avatar {
         grid-column: 1;
@@ -51,7 +65,7 @@
         width: 0.6rem;
         height: 0.6rem;
         border-radius: 50%;
-        border: 1px solid var(--shade1);
+        border: 1px solid currentColor;
         background: var(--layout-illustration-black-stone);
     }
 
@@ -71,6 +85,7 @@
     }
 
     .KibitzThinPlayer-time {
+        color: var(--kibitz-clock);
         flex: none;
         font-size: 0.85rem;
         font-variant-numeric: tabular-nums;
@@ -101,6 +116,11 @@
         .absolute-time {
             display: none;
         }
+
+        &.paused,
+        &.paused-correspondence {
+            color: var(--kibitz-paused-clock);
+        }
     }
 
     .KibitzThinPlayer-captures,
@@ -108,7 +128,7 @@
         flex: none;
         white-space: nowrap;
         font-size: 0.7rem;
-        color: var(--text-dimmed);
+        color: inherit;
     }
 
     .KibitzThinPlayer-capture-short {
@@ -120,7 +140,7 @@
     .KibitzThinPlayer-capture-stone {
         width: 0.5rem;
         height: 0.5rem;
-        border: 1px solid var(--shade1);
+        border: 1px solid currentColor;
         border-radius: 50%;
         background: var(--layout-illustration-white-stone);
     }
@@ -139,6 +159,19 @@
     }
 
     &.white {
+        --user: var(--light-user);
+        --supporter: var(--light-supporter);
+        --professional: var(--light-professional);
+        --ambassador: var(--light-ambassador);
+        --teacher: var(--light-teacher);
+        --bot: var(--light-bot);
+        --moderator: var(--light-moderator);
+        --aga-official: var(--light-aga-official);
+        --admin: var(--light-admin);
+        --kibitz-clock: var(--player-white-clock);
+        --kibitz-paused-clock: var(--player-white-paused-clock);
+        background: var(--player-white-card-color);
+        color: var(--player-white-fg);
         grid-template-columns: minmax(0, 1fr) 2rem;
         text-align: right;
 
