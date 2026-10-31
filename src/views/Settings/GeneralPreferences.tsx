@@ -21,7 +21,7 @@ import Select from "react-select";
 
 import * as data from "@/lib/data";
 
-import { _, llm_pgettext } from "@/lib/translate";
+import { _, llm_pgettext, pgettext } from "@/lib/translate";
 import { put } from "@/lib/requests";
 import { errorAlerter, ignore, dev_site } from "@/lib/misc";
 
@@ -65,6 +65,7 @@ export function GeneralPreferences(props: SettingGroupPageProps): React.ReactEle
         "show-tournament-indicator-on-mobile",
     );
     const [hide_ranks, setHideRanks] = usePreference("hide-ranks");
+    const [disable_custom_styling] = usePreference("disable-custom-styling");
     const [rating_graph_always_use, setAlwaysUse] = usePreference("rating-graph-always-use");
     const [rating_graph_plot_by_games, setPlotByGames] = usePreference(
         "rating-graph-plot-by-games",
@@ -319,6 +320,28 @@ export function GeneralPreferences(props: SettingGroupPageProps): React.ReactEle
 
             <PreferenceLine title={_("Hide ranks and ratings")}>
                 <Toggle checked={hide_ranks} onChange={setHideRanks} />
+            </PreferenceLine>
+
+            <PreferenceLine
+                title={pgettext(
+                    "Settings: label for a toggle that strips user-authored HTML and CSS",
+                    "Disable custom styling on profiles and other pages",
+                )}
+                description={pgettext(
+                    "Settings: description of the toggle that disables user-authored HTML and CSS",
+                    "Show profiles and other user-written content as Markdown only. Any custom HTML, CSS, or embedded content is ignored; Markdown formatting still works.",
+                )}
+            >
+                <Toggle
+                    checked={disable_custom_styling}
+                    onChange={(tf) =>
+                        preferences.set(
+                            "disable-custom-styling",
+                            tf,
+                            data.Replication.REMOTE_OVERWRITES_LOCAL,
+                        )
+                    }
+                />
             </PreferenceLine>
 
             <PreferenceLine title={_("Enable experimental interface changes")}>

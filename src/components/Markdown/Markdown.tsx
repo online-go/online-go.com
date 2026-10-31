@@ -21,16 +21,27 @@ import sanitizeHtml from "sanitize-html";
 //import moment from "moment";
 import { profanity_filter } from "@/lib/profanity_filter";
 import { localize_time_strings } from "@/lib/localize-time";
+import * as preferences from "@/lib/preferences";
 
 interface MarkdownProps {
     source?: string;
     className?: string;
 }
 
-interface MarkdownState {}
+interface MarkdownState {
+    plain: boolean;
+}
 
 const md = markdown_it({
     html: true,
+    linkify: true,
+    typographer: true,
+});
+
+// Used when the viewer has disabled custom styling: raw HTML in the source is
+// escaped rather than rendered, so only Markdown-generated markup survives.
+const md_plain = markdown_it({
+    html: false,
     linkify: true,
     typographer: true,
 });
@@ -187,9 +198,20 @@ function sanitize(src: string) {
 // this component is protected from calling sanitizeHtml to often by memoizing, below.
 
 class _Markdown extends React.PureComponent<MarkdownProps, MarkdownState> {
+    private onDisableCustomStyling: (v: boolean) => void;
+
     constructor(props: MarkdownProps) {
         super(props);
-        this.state = {};
+        this.state = { plain: preferences.get("disable-custom-styling") };
+        this.onDisableCustomStyling = (v: boolean) => this.setState({ plain: v });
+    }
+
+    componentDidMount() {
+        preferences.watch("disable-custom-styling", this.onDisableCustomStyling, false, true);
+    }
+
+    componentWillUnmount() {
+        preferences.unwatch("disable-custom-styling", this.onDisableCustomStyling);
     }
 
     //
@@ -210,8 +232,9 @@ class _Markdown extends React.PureComponent<MarkdownProps, MarkdownState> {
     }
 
     render() {
+        const renderer = this.state.plain ? md_plain : md;
         const html = this.props.source
-            ? sanitize(md.render(this.preprocess(this.props.source)))
+            ? sanitize(renderer.render(this.preprocess(this.props.source)))
             : "";
 
         return (
