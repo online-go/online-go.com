@@ -8,8 +8,8 @@ game together, chat, and share variations. It renders through the shared
 
 Landscape: a left aside with the room list, the variation list and, while
 the center is not showing the live game, a small live-game thumbnail — the
-thumbnail is landscape only; the board with a player bar above and below it
-in the center; on the right the header (the room title with the game's
+thumbnail is landscape only; the board in the center; on the right the two
+player cards and the header (the room title with the game's
 result pulled right on the same line, or the variation chip in their
 place), pending proposals, variation controls and the two-tab chat (Game,
 Kibitz). The left aside is resizable, with the drag handle on its right
@@ -115,13 +115,51 @@ puts the light set in front of the renderers for the light theme, repaints
 the trees that are on screen through `move_tree_boards`, and tells the
 swatches through `useMoveTreeLineColors`.
 
-The player bars show the live game's players and clocks whenever the center
+The player headers show the live game's players and clocks whenever the center
 shows the live game or a draft or variation of it; a variation of another
-game shows that game's players. A bar puts the name on its top edge and the
-capture count on its bottom, with the clock centred between them, so the two
-bars keep their text nearest the board. Komi rides on the capture line the
-way it does on the game page — "0 captures + 6.5" — and the game's result
-goes beside the room title rather than under the winner's name. `KibitzKeyboardShortcuts` binds the Game page's
+game shows that game's players. Horizontal layouts put both cards in the
+sidebar. Stacked layouts put a compact header above the board.
+
+At phone widths below 600 CSS pixels, the stacked header becomes a thin strip
+when the viewport is narrower than 390 CSS pixels or shorter than 844 CSS
+pixels. Exactly 390 by 844 retains the standard compact header. Opening the
+keyboard keeps the header mode from before it opened. The thin strip has a
+32-pixel avatar at each outer edge, with a colour stone and linked player
+name above each clock and capture count. Its
+turn underline follows the official branch; captures follow the displayed
+position. Clocks keep their overtime information and take priority over
+capture labels when the row is too narrow: a captured stone and count replace
+the full label. Paused clocks have a static label.
+The two halves use the standard player-card colours: a dark Black panel and
+a light White panel, with matching clock, text and player-link colours in
+both site themes.
+
+Both stacked headers have an invisible 44-pixel-wide button at the centre.
+Tapping it switches between the original and thin layouts, including the
+navigation spacing. The choice stays active until the page reloads and applies
+only to Kibitz. The button also works with the keyboard and has a visible focus
+outline. Player names
+retain their usual player links. The room-title strip is shorter in this mode,
+and site navigation is 2.75rem high, except that the existing 2rem navigation
+on viewports at most 500 CSS pixels tall remains in use. The navigation size
+returns to normal when the thin Kibitz layout closes. Rules and komi stay out
+of the thin strip and remain in Game information. Larger stacked viewports
+retain the existing compact player cards.
+
+The thin layout also reduces the vertical padding of the move-arrow strip
+to 0.15rem on each side. Its buttons keep their responsive widths, with a
+maximum height of 2.4rem and smaller arrow glyphs. This applies only to the
+buttons layout in compact Kibitz; the slider and other pages keep their
+existing sizes.
+
+In the thin layout, the board–chat divider starts with a 10rem panel basis
+instead of 12rem. Dragging it down can leave 6rem for chat instead of 8rem,
+giving the board up to 2rem more height (32 pixels at the default font size).
+Switching to the original header restores both defaults and clamps any saved
+divider position to its range.
+
+The game's result goes beside the room title rather than under the winner's
+name. `KibitzKeyboardShortcuts` binds the Game page's
 move navigation keys (arrows, Home, End, Page Up, Page Down) to whichever
 board the center shows.
 

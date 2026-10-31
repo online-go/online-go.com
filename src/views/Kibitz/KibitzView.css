@@ -1,5 +1,36 @@
 /* Small section heading used across the Kibitz panels; matches the game
    sidebar's section headers. */
+@media (min-height: 501px) {
+    :root.kibitz-thin-header {
+        --navbar-height: 2.75rem;
+        --below-navbar: 3.05rem;
+    }
+}
+
+.GobanView.Kibitz.portrait.Kibitz-thin-header {
+    &.has-portrait-split .GobanView-mobile-panels {
+        flex-basis: 10rem;
+    }
+
+    .GobanView-header {
+        padding: 0.15rem 0.75rem;
+    }
+
+    .Kibitz-room-title {
+        font-size: 0.8rem;
+    }
+
+    .MoveNumberControl.MoveNumberControl-buttons {
+        padding-top: 0.15rem;
+        padding-bottom: 0.15rem;
+
+        .MoveNumberControl-button {
+            max-height: 2.4rem;
+            font-size: 1.15rem;
+        }
+    }
+}
+
 .Kibitz-section-header {
     font-size: 0.75rem;
     font-weight: 600;

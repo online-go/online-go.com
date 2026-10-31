@@ -1,0 +1,31 @@
+.KibitzStackedPlayerHeader {
+    position: relative;
+    background: var(--shade5);
+    border-bottom: 1px solid var(--shade3);
+
+    &.KibitzStackedPlayerHeader-full {
+        border-bottom: none;
+    }
+
+    .KibitzStackedPlayerHeader-toggle {
+        all: unset;
+        position: absolute;
+        z-index: 2;
+        inset-block: 0;
+        left: calc(50% - 22px);
+        width: 44px;
+        cursor: pointer;
+
+        &:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: -2px;
+        }
+    }
+
+    .KibitzStackedPlayerHeader-strip {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: stretch;
+        min-height: 2.75rem;
+    }
+}

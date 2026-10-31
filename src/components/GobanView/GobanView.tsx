@@ -132,6 +132,9 @@ interface GobanViewProps {
      *  one column. The panel area then scrolls on its own and the board is
      *  always on screen. Ignored in landscape. */
     portraitSplit?: boolean;
+    /** Minimum panel height for a manually resized portrait split, in rem.
+     *  Defaults to 8. */
+    portraitPanelMinHeightRem?: number;
     /** Landscape-only column rendered before the board, styled like the
      *  sidebar. Ignored in portrait; consumers provide takeover tabs for
      *  the same content there. */
@@ -204,6 +207,7 @@ function GobanViewComponent({
     playerBars,
     sidebarContentBefore,
     portraitSplit,
+    portraitPanelMinHeightRem,
     leftAside,
     leftAsideMinWidth,
     leftAsideCollapsedWidth,
@@ -525,6 +529,7 @@ function GobanViewComponent({
                   requestedStageHeight,
                   splitMetrics.available,
                   splitMetrics.stageExtra,
+                  portraitPanelMinHeightRem,
               );
 
     const leftAsideWidth = leftAsideCollapsedWidth ?? dragLeftAsideWidth ?? resolved.leftAsideWidth;
@@ -728,6 +733,7 @@ function GobanViewComponent({
                                         rootRef={rootRef}
                                         stageRef={stageRef}
                                         panelsRef={panelsRef}
+                                        panelMinHeightRem={portraitPanelMinHeightRem}
                                         onPreview={setDragStageHeight}
                                         onCommit={commitStageHeight}
                                         onCancel={cancelStageDrag}

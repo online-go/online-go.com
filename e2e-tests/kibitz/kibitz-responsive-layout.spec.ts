@@ -17,6 +17,7 @@ const compactSizes = [
 
 const portraitSizes = [
     [320, 568],
+    [375, 667],
     [390, 844],
     [430, 932],
 ] as const;
@@ -24,25 +25,33 @@ const portraitSizes = [
 ogsTest.describe("@Kibitz responsive layout", () => {
     for (const [width, height] of portraitSizes) {
         ogsTest(
-            `keeps the compact player header and board visible at ${width}x${height}`,
+            `keeps the player header and board visible at ${width}x${height}`,
             async ({ page }) => {
                 await page.setViewportSize({ width, height });
                 await load(page, "/kibitz/preset-english-chat-live");
                 const root = page.locator(".GobanView.Kibitz.portrait");
                 await expect(root).toBeVisible();
-                await expect(root.locator(".CompactPlayerHeader")).toBeVisible();
-                await expect(root.locator(".CompactPlayerHeader .score-details").first()).toHaveCSS(
-                    "visibility",
-                    "hidden",
-                );
+                const thin = width < 390 || height < 844;
+                await expect(
+                    root.locator(thin ? ".KibitzStackedPlayerHeader" : ".CompactPlayerHeader"),
+                ).toBeVisible();
+                if (!thin) {
+                    await expect(
+                        root.locator(".CompactPlayerHeader .score-details").first(),
+                    ).toHaveCSS("visibility", "hidden");
+                }
 
                 const layout = await root.evaluate((element) => {
-                    const header = element.querySelector<HTMLElement>(".CompactPlayerHeader");
+                    const header = element.querySelector<HTMLElement>(
+                        ".KibitzStackedPlayerHeader, .CompactPlayerHeader",
+                    );
                     const board = element.querySelector<HTMLElement>(".Goban");
                     const headerBox = header?.getBoundingClientRect();
                     const boardBox = board?.getBoundingClientRect();
                     return {
-                        playerCount: header?.querySelectorAll(".player-container").length ?? 0,
+                        playerCount:
+                            header?.querySelectorAll(".KibitzThinPlayer, .player-container")
+                                .length ?? 0,
                         headerFits: Boolean(
                             headerBox &&
                             headerBox.left >= element.getBoundingClientRect().left - 1 &&
